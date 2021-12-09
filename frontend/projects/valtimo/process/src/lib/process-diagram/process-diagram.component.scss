@@ -1,0 +1,58 @@
+/*
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.process-diagram-container {
+
+  .diagram-container {
+    height: 50vh;
+    width: 100%;
+  }
+
+  .diagram-container-switch-holder {
+    position: absolute;
+    width: 100%;
+    z-index: 1000;
+  }
+
+  .highlight-overlay-past:not(.djs-connection) .djs-visual > :nth-child(1) {
+    fill: #d8d8d8 !important;
+  }
+
+  .highlight-overlay-current:not(.djs-connection) .djs-visual > :nth-child(1) {
+    fill: #b2e0ff !important;
+  }
+
+  .legenda-holder {
+    font-size: 1em;
+  }
+
+  .legenda {
+    border: 2px solid black;
+    border-radius: 3px;
+    padding: 7px;
+    display: inline-block;
+    margin-bottom: -4px;
+    margin-right: 5px;
+  }
+
+  .legenda.highlight-overlay-past {
+    background-color: #d8d8d8;
+  }
+
+  .legenda.highlight-overlay-current {
+    background-color: #b2e0ff;
+  }
+}

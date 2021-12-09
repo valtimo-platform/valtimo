@@ -1,0 +1,55 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container *ngIf="connectorTypes$ | async as connectorTypes; else loading">
+  <ng-container *ngIf="(selectedConnector$ | async) === undefined; else configure">
+    <p class="lead">
+      {{'connectorManagement.' + (connectorTypes?.length > 0 ? 'addHeader' : 'noConnectorsAvailable') | translate}}
+    </p>
+    <div class="cards-container mt-3">
+      <div *ngFor="let connectorType of connectorTypes" class="card card-border text-center">
+        <div class="card-header">{{connectorType.name}}</div>
+        <div class="card-body">
+          <button class="btn btn-primary" (click)="selectConnector(connectorType)">
+            {{'connectorManagement.configureButton' | translate}}
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</ng-container>
+
+<ng-template #configure>
+  <ng-container *ngIf="selectedConnector$ | async as connector">
+    <button class="btn btn-outline-secondary btn-sm btn-back" (click)="goBack()" [disabled]="disabled$ | async">
+      <i class="icon mdi mdi-arrow-left mr-1"></i>
+      {{'connectorManagement.goBack' | translate}}
+    </button>
+    <p class="lead text-center mb-3 pb-3 border-bottom">
+      {{('connectorManagement.configureWith' | translate) + ' ' + connector.name}}
+    </p>
+    <valtimo-edit-connector-form
+      [connectorName]="connector.name"
+      [properties]="(selectedConnector$ | async).properties"
+      (propertiesSave)="onSave($event)"
+    >
+    </valtimo-edit-connector-form>
+  </ng-container>
+</ng-template>
+
+<ng-template #loading>
+  <valtimo-spinner></valtimo-spinner>
+</ng-template>

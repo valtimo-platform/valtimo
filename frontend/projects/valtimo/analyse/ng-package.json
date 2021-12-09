@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../../dist/valtimo/analyse",
+  "lib": {
+    "entryFile": "src/public_api.ts",
+    "umdModuleIds": {
+      "@valtimo/contract": "contract",
+      "@valtimo/security": "security",
+      "@valtimo/process": "process",
+      "@valtimo/components": "components",
+      "bpmn-js/dist/bpmn-navigated-viewer.production.min.js": "BpmnJS",
+      "heatmap.js": "heatmap_js"
+    }
+  }
+}

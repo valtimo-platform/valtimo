@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../../dist/valtimo/dossier",
+  "lib": {
+    "entryFile": "src/public_api.ts",
+    "umdModuleIds": {
+      "@valtimo/document": "document",
+      "@valtimo/process": "process",
+      "@valtimo/task": "task",
+      "@valtimo/s3": "s3",
+      "@valtimo/form": "form",
+      "@valtimo/components": "components",
+      "@valtimo/config": "config",
+      "@valtimo/contract": "contract",
+      "ngx-logger": "ngxLogger",
+      "ngx-spinner": "ngxSpinner",
+      "moment": "moment",
+      "@valtimo/auth0": "auth0",
+      "@ngx-translate/core": "core$1",
+      "@ngx-translate/http-loader": "httpLoader",
+      "ngx-toastr": "ngxToastr",
+      "@valtimo/security": "security",
+      "@ng-bootstrap/ng-bootstrap": "ngBootstrap",
+      "@valtimo/form-link": "formLink"
+    }
+  },
+  "whitelistedNonPeerDependencies": ["."]
+}

@@ -1,0 +1,117 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<valtimo-modal
+        #formLinkModal
+        elementId="formLinkModal"
+        [title]="selectedElement?.type + ' '  + selectedElement?.id"
+        [subtitle]="'formLink.subtitle' | translate: {type: selectedElement?.type}"
+        [showFooter]="true"
+>
+  <div body *ngIf="selectedElement">
+    <p>{{'formLink.title' | translate}}</p>
+    <div class="accordion mb-0" id="associationAccordion">
+      <div class="card">
+        <div class="card-header" id="headingFormDefinition">
+          <button class="btn collapsed" data-toggle="collapse" data-target="#collapseFormDefinition"
+                  aria-expanded="false"
+                  aria-controls="collapseFormDefinition">
+            <i class="icon icon-not-selected mdi mdi-circle-o"></i>
+            <i class="icon icon-selected mdi mdi-dot-circle"></i>
+            {{'formLink.formDefinition' | translate}}
+            <i class="icon icon-info mdi mdi-info-outline click-able mr-0"
+               [title]="'formLink.infoPredefined' | translate"></i>
+          </button>
+        </div>
+        <div class="collapse" id="collapseFormDefinition" aria-labelledby="headingFormDefinition"
+             data-parent="#associationAccordion">
+          <div class="card-body">
+            <div class="mt-2">
+              <valtimo-searchable-dropdown-select
+                [style]="'button'"
+                [items]="mapFormDefinitionsForDropdown(formDefinitions)"
+                [buttonText]="'formLink.header' | translate"
+                [searchText]="'interface.typeToSearch' | translate"
+                [noResultsText]="'interface.noSearchResults' | translate"
+                [selectedText]="'formLink.linkedDefinition' | translate"
+                [selectedTextValue]="selectedFormDefinition?.name"
+                [clearSelectionButtonTitle]="'formLink.deselect' | translate"
+                [hasSelection]="!!selectedFormDefinition"
+                [width]="400"
+                (itemSelected)="onFormDefinitionSelected($event)"
+                (clearSelection)="clearSelectedFormDefinition()"
+              >
+              </valtimo-searchable-dropdown-select>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header" id="headingAngularState">
+          <button class="btn collapsed" data-toggle="collapse" data-target="#collapseAngularState" aria-expanded="false"
+                  aria-controls="collapseAngularState">
+            <i class="icon icon-not-selected mdi mdi-circle-o"></i>
+            <i class="icon icon-selected mdi mdi-dot-circle"></i>
+            {{'formLink.angularState' | translate}}
+            <i class="icon icon-info mdi mdi-info-outline click-able mr-0"
+               [title]="'formLink.infoUrl' | translate"></i>
+          </button>
+        </div>
+        <div class="collapse" id="collapseAngularState" aria-labelledby="headingAngularState"
+             data-parent="#associationAccordion">
+          <div class="card-body">
+            <label for="angularStateInput">{{'formLink.redirect' | translate}}</label>
+            <input class="form-control" type="text" placeholder="/form-links" id="angularStateInput"
+                   [(ngModel)]="enteredAngularState">
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header" id="headingCustomUrl">
+          <button class="btn collapsed" data-toggle="collapse" data-target="#collapseCustomUrl" aria-expanded="false"
+                  aria-controls="collapseCustomUrl">
+            <i class="icon icon-not-selected mdi mdi-circle-o"></i>
+            <i class="icon icon-selected mdi mdi-dot-circle"></i>
+            {{'formLink.externalUrl' | translate}}
+            <i class="icon icon-info mdi mdi-info-outline click-able mr-0"
+               [title]="'formLink.infoExternal' | translate"></i>
+          </button>
+        </div>
+        <div class="collapse" id="collapseCustomUrl" aria-labelledby="headingCustomUrl"
+             data-parent="#associationAccordion">
+          <div class="card-body">
+            <label for="customUrlInput">{{'formLink.newWindow' | translate}}</label>
+            <input class="form-control" type="text" placeholder="https://www.example.com" id="customUrlInput"
+                   [(ngModel)]="enteredCustomUrl">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div footer class="w-100">
+    <button [disabled]="previousFormLink === null" (click)="deleteFormAssociation()"
+            class="btn btn-danger float-left" data-dismiss="modal">{{'formLink.clear' | translate}}
+    </button>
+    <button [disabled]="selectedAssociationType === null ||
+            (selectedAssociationType === 'form-definition' && !selectedFormDefinition) ||
+            (selectedAssociationType === 'custom-url' && !enteredCustomUrl) ||
+            (selectedAssociationType === 'angular-state' && !enteredAngularState)"
+            (click)="submit(selectedAssociationType)"
+            class="btn btn-primary float-right" data-dismiss="modal">{{'formLink.save' | translate}}
+    </button>
+  </div>
+</valtimo-modal>

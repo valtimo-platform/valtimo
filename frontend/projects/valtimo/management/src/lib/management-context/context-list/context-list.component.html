@@ -1,0 +1,45 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="main-content pt-0">
+  <div class="container-fluid">
+    <div class="text-right">
+      <div class="btn-group mt-m3px mb-3">
+        <button [routerLink]="'create'" class="btn btn-primary btn-space mr-0">
+          <i class="icon mdi mdi-plus"></i> &nbsp;
+          <span>{{ 'Create new Context' | translate }}</span>
+        </button>
+      </div>
+    </div>
+    <valtimo-widget>
+      <valtimo-list [items]="collection"
+                    [fields]="fields"
+                    (rowClicked)="rowClick($event)"
+                    [pagination]="pagination"
+                    [viewMode]="true"
+                    [isSearchable]="true"
+                    paginationIdentifier="contextList"
+                    (paginationSet)="paginationSet()"
+                    (paginationClicked)="paginationClicked($event)"
+                    [header]="true">
+        <div header>
+          <h3 class="list-header-title">{{ 'Contexts' | translate }}</h3>
+          <h5 class="list-header-description">{{ 'Overview of all Contexts' | translate }}</h5>
+        </div>
+      </valtimo-list>
+    </valtimo-widget>
+  </div>
+</div>

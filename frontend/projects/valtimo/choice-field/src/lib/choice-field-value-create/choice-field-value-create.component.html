@@ -1,0 +1,110 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="col-12 px-0 mb-5">
+      <valtimo-widget *ngIf="choiceField">
+        <div>
+          <div class="card-body bg-light">
+            <div class="row py-5">
+              <div class="col-12">
+                <div class="row mb-3">
+                  <div class="col-12">
+                    <strong>Choice field</strong>
+                    <hr />
+                  </div>
+                </div>
+                <div class="row mb-3">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>ID</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6">{{ choiceField.id }}</div>
+                </div>
+                <div class="row mb-3">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>Key</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6">{{ choiceField.keyName }}</div>
+                </div>
+                <div class="row">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>Title</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6">{{ choiceField.title }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-5">
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+              <div class="form-group row">
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="name">Key</label>
+                <div class="col-12 col-sm-8 col-lg-6">
+                  <input valtimoFieldAutoFocus type="text" id="name" formControlName="name" class="form-control" placeholder="Choice field value key"
+                         [ngClass]="{'is-valid': formControls.name.touched && formControls.name.valid, 'is-invalid': formControls.name.touched && formControls.name.errors}"
+                         required/>
+                  <div *ngIf="formControls.name.touched && formControls.name.errors" class="invalid-feedback">
+                    <div *ngIf="formControls.name.errors.required">Choice field value key is required</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group row">
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="value">Value</label>
+                <div class="col-12 col-sm-8 col-lg-6">
+                  <input type="text" id="value" formControlName="value" class="form-control" placeholder="Choice field value"
+                         [ngClass]="{'is-valid': formControls.value.touched && formControls.value.valid, 'is-invalid': formControls.value.touched && formControls.value.errors}"
+                         required/>
+                  <div *ngIf="formControls.value.touched && formControls.value.errors" class="invalid-feedback">
+                    <div *ngIf="formControls.value.errors.required">Choice field value is required</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group row">
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="sortOrder">Sequence</label>
+                <div class="col-12 col-sm-8 col-lg-6">
+                  <input type="number" id="sortOrder" formControlName="sortOrder" class="form-control" placeholder="Choice field value sequence"
+                         [ngClass]="{'is-valid': formControls.sortOrder.touched && formControls.sortOrder.valid, 'is-invalid': formControls.sortOrder.touched && formControls.sortOrder.errors}"
+                         required/>
+                  <div *ngIf="formControls.sortOrder.touched && formControls.sortOrder.errors" class="invalid-feedback">
+                    <div *ngIf="formControls.sortOrder.errors.required">Choice field value sequence is required</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group row">
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="deprecated">Deprecated</label>
+                <div class="col-12 col-sm-8 col-lg-6">
+                  <div class="switch-button switch-button-sm switch-button-success">
+                    <input type="checkbox" formControlName="deprecated" id="deprecated"><span>
+                        <label for="deprecated"></label></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row pt-3 mt-1">
+                <div class="col-12 col-sm-6 text-left">
+                  <a [routerLink]="'../'" class="btn btn-space btn-default">Back</a>
+                </div>
+                <div class="col-12 col-sm-6 text-right">
+                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()">Reset</button>
+                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">Submit</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </valtimo-widget>
+    </div>
+  </div>
+</div>

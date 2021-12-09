@@ -1,0 +1,67 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="container-fluid">
+  <div class="row p-4 bg-light options">
+    <div class="col-sm-3">
+      <label><strong>Process</strong></label><br/>
+      <select class="form-control" (change)="setProcessDefinitionKey($event.target.value)">
+        <option *ngFor="let processDefinition of processDefinitions"
+                [value]="processDefinition.key"
+                [selected]="processDefinitionKey === processDefinition.key">
+          {{ processDefinition.name }}
+        </option>
+      </select>
+    </div>
+    <div class="col-sm-1">
+      <label><strong>Version</strong></label><br/>
+      <select class="form-control" (change)="setProcessDefinitionVersion($event.target.value)">
+        <option *ngFor="let processDefinitionVersion of processDefinitionVersions"
+                [value]="processDefinitionVersion.version"
+                [selected]="processDefinitionVersion.version === version">
+          {{ processDefinitionVersion.version }}
+        </option>
+      </select>
+    </div>
+    <div class="col-sm-3" *ngIf="showHeatmap">
+      <label><strong>Heatmap type</strong></label><br/>
+      <select class="form-control w-sm-50" (change)="setHeatmapOption($event.target.value)">
+        <option *ngFor="let option of enumHeatmapOptions"
+                [value]="option"
+                [selected]="option === heatmapOption">
+          {{ option | titlecase }}
+        </option>
+      </select>
+    </div>
+    <div class="text-sm-right col-sm-3" [ngClass]="{'offset-sm-2': showHeatmap, 'offset-sm-5': !showHeatmap}">
+      <label><strong>Show heatmap</strong></label><br/>
+      <div class="text-left switch-button switch-button-sm switch-button-success">
+        <input type="checkbox" id="toggleHeatmap" [checked]="showHeatmap" (click)="toggleShowHeatmap()"><span>
+          <label for="toggleHeatmap"></label></span>
+      </div>
+    </div>
+  </div>
+  <div class="row p-4 bg-white">
+    <div class="col">
+      <div #ref (window:resize)="onWindowResize()" class="diagram-container"></div>
+    </div>
+  </div>
+</div>
+
+<div class="p-4 text-center legenda-holder">
+  <span><span class="badge badge-pill badge-primary">N</span>&nbsp;&nbsp;Amount of currently active instances of this task.</span>
+  <span>&nbsp;&nbsp;|&nbsp;&nbsp;Red/yellow/green orbs: The amount of times the task is executed in comparison to the other tasks.</span>
+</div>

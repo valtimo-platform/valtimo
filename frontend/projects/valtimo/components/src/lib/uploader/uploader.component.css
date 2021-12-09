@@ -1,0 +1,55 @@
+/*
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.upload-file-container {
+  background-repeat: no-repeat;
+  background-size: 100px;
+  background-position: center;
+  margin: 0 0 1rem 0;
+  border: 2px dashed #d5d8de;
+  text-align: center;
+  color: #d5d8de;
+  background-color: white;
+}
+
+.upload-file-container i.mdi-cloud-upload {
+  font-size: 5em;
+}
+
+.upload-file-container:hover {
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.files-list {
+  display: flex;
+  justify-content: space-between;
+  margin: 1rem auto;
+  background: #ffffff;
+  border: 1px solid #bdc0c7;
+  padding: 5px;
+  font-size: 1em;
+}
+
+.files-list .delete-file {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.files-list .delete-file i{
+  font-size: 1.5em;
+}

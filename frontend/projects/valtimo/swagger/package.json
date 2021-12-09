@@ -1,0 +1,12 @@
+{
+  "name": "@valtimo/swagger",
+  "version": "4.15.2",
+  "peerDependencies": {
+    "@angular/common": "^10.0.11",
+    "@angular/core": "^10.0.11"
+  },
+  "dependencies": {
+    "swagger-ui": "^3.25.0",
+    "tslib": "^2.0.0"
+  }
+}

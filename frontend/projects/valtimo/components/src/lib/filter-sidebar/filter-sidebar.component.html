@@ -1,0 +1,35 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div>
+  <a
+    class="toggle-filter-sidebar"
+    data-toggle="tooltip"
+    data-trigger="hover"
+    data-placement="right"
+    title="Show / hide"
+    href="javascript:void(0)"
+    (click)="toggleFilterSidebar()"
+    [ngClass]="this.filterSidebar === 'show' && 'toggle-expanded'"
+  >
+    <div class="icon-container p-0 bg-transparent">
+      <i class="click-able icon shadow mdi mdi-filter-list"></i>
+    </div>
+  </a>
+  <aside class="page-aside p-4 mb-4 bg-light filter-holder" *ngIf="this.filterSidebar === 'show'">
+    <ng-content></ng-content>
+  </aside>
+</div>

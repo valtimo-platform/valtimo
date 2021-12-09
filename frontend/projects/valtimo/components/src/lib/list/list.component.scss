@@ -1,0 +1,87 @@
+/*!
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.table {
+  table-layout: fixed;
+}
+
+.click-able {
+  cursor: pointer;
+}
+
+.pagination-holder {
+  border-top: 1px solid #dee2e6;
+}
+
+.search-holder {
+  border-bottom: 1px solid #dee2e6;
+  padding-left: 18px;
+  padding-right: 18px;
+  height: 80px;
+}
+
+.switch-view-holder i {
+  font-size: 1.8rem;
+  line-height: 1.2rem;
+  margin-top: 9px;
+}
+
+.tile-holder {
+  background-color: whitesmoke;
+  border: 1px solid transparent;
+  &:hover {
+    background-color: #eee;
+    border: 1px solid #dee2e6;
+  }
+}
+
+.page-count {
+  margin-bottom: 1rem;
+}
+
+th:first-child,
+td:first-child {
+  padding-left: 25px;
+}
+
+th {
+  &.sortable {
+    cursor: pointer;
+    user-select: none;
+
+    &:after {
+      font-family: 'Font Awesome 5 Free';
+      content: ' \f0dd';
+      position: absolute;
+      margin: auto 0;
+      margin-left: 5px;
+      opacity: 0;
+      transition: all 0.15s ease;
+    }
+
+    &.is-being-sorted.ascending:after {
+      transform: rotate(-180deg);
+    }
+
+    &:hover:after {
+      opacity: 0.5;
+    }
+
+    &.is-being-sorted:after {
+      opacity: 1;
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../../dist/valtimo/migration",
+  "lib": {
+    "entryFile": "src/public-api.ts",
+    "umdModuleIds": {
+      "@valtimo/contract": "contract",
+      "@valtimo/process": "process",
+      "@valtimo/components": "components",
+      "@valtimo/security": "security",
+      "bpmn-js/dist/bpmn-navigated-viewer.production.min.js": "BpmnJS",
+      "ngx-logger": "ngxLogger"
+    }
+  }
+}

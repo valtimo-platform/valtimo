@@ -1,0 +1,18 @@
+{
+  "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../../dist/valtimo/form-link",
+  "lib": {
+    "entryFile": "src/public-api.ts",
+    "umdModuleIds": {
+      "@ng-bootstrap/ng-bootstrap": "ngBootstrap",
+      "@valtimo/components": "components",
+      "@valtimo/security": "security",
+      "@valtimo/process": "process",
+      "@valtimo/form-management": "formManagement",
+      "@valtimo/config": "config",
+      "@valtimo/contract": "contract",
+      "bpmn-js/dist/bpmn-navigated-viewer.production.min.js": "BpmnJS",
+      "ngx-logger": "ngxLogger"
+    }
+  }
+}

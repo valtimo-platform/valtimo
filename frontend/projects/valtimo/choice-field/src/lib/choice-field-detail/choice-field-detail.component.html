@@ -1,0 +1,72 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="col-12 px-0 mb-5">
+      <valtimo-widget *ngIf="choiceField">
+        <div>
+          <div class="card-body bg-light">
+            <div class="row py-5">
+              <div class="col-12">
+                <div class="row mb-3">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>ID</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6">{{ choiceField.id }}</div>
+                </div>
+                <div class="row">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>Key</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6">{{ choiceField.keyName }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-5 bg-white">
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+              <div class="form-group row">
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="title">Title</label>
+                <div class="col-12 col-sm-8 col-lg-6">
+                  <input valtimoFieldAutoFocus type="text" id="title" formControlName="title" class="form-control" placeholder="Choice field title"
+                         [ngClass]="{'is-valid': formControls.title.touched && formControls.title.valid, 'is-invalid': formControls.title.touched && formControls.title.errors}"
+                         required/>
+                  <div *ngIf="formControls.title.touched && formControls.title.errors" class="invalid-feedback">
+                    <div *ngIf="formControls.title.errors.required">Title is required</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row pt-3 mt-1">
+                <div class="col-12 col-sm-6 text-left">
+                  <a [routerLink]="'/choice-fields'" class="btn btn-space btn-default">Back</a>
+                  <button class="btn btn-space btn-danger" type="button" (click)="delete()">Delete</button>
+                </div>
+                <div class="col-12 col-sm-6 text-right">
+                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()">Reset</button>
+                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">Submit</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </valtimo-widget>
+    </div>
+  </div>
+</div>
+
+<div class="page-head">
+  <h2 class="page-head-title">Choice field values</h2>
+</div>
+<valtimo-choice-field-value-list></valtimo-choice-field-value-list>

@@ -1,0 +1,34 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="p-4" *ngIf="heatmapDuration || heatmapCount">
+  <div class="switch-button switch-button-sm switch-button-success">
+    <input type="checkbox" id="toggleHeatmap" [checked]="heatmapMode" (click)="toggleHeatmap()"><span>
+    <label for="toggleHeatmap"></label></span>
+  </div>
+</div>
+
+<div #ref class="diagram-container"></div>
+
+<div *ngIf="historicActivityInstances" class="p-4 text-center legenda-holder">
+  <span><div class="legenda highlight-overlay-past"></div> Executed tasks</span>
+  <span class="ml-3"><div class="legenda highlight-overlay-current"></div> Current tasks</span>
+</div>
+
+<div *ngIf="heatmapDuration || heatmapCount" class="p-4 text-center legenda-holder">
+  <span><span class="badge badge-pill badge-primary">N</span>&nbsp;&nbsp;Amount of currently active instances of this task.</span>
+  <span>&nbsp;&nbsp;|&nbsp;&nbsp;Red/yellow/green orbs: The amount of times the task is executed in comparison to the other tasks.</span>
+</div>

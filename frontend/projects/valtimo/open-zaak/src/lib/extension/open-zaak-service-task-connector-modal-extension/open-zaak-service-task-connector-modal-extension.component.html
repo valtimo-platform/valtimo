@@ -1,0 +1,161 @@
+<!--
+  ~ Copyright 2020 Dimpact.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<valtimo-modal
+        #openZaakServiceTaskConnectorModal
+        elementId="openZaakServiceTaskConnectorModal"
+        [title]="selectedElement?.type + ' '  + selectedElement?.id"
+        [subtitle]="'serviceTaskManagement.subtitle' | translate: {selectedElement: selectedElement?.id}"
+        [showFooter]="true"
+>
+  <div body *ngIf="selectedElement">
+    <ng-container
+            *ngIf="connectedZaakTypeLinks != null && connectedZaakTypeLinks.length > 0; else noConnectedZaakTypeLinks">
+      <div class="card mb-0">
+        <div class="card-header pt-2 pb-0 mb-0">Open Zaak</div>
+        <div class="card-body">
+          <ng-container *ngIf="displayForm; else connectedServiceTaskTiles">
+            <label class="mt-1" for="selectDocumentDefinitionName">
+              <span [translate]="'serviceTaskManagement.selectDocumentDefinitionName'"></span>
+            </label>
+            <select class="form-control" [(ngModel)]="selectedZaakTypeLink"
+                    id="selectDocumentDefinitionName"
+                    (change)="getZaakTypeLink(selectedZaakTypeLink.documentDefinitionName)" required>
+              <option *ngFor="let zaakTypeLink of filteredConnectedZaakTypeLinks"
+                      [ngValue]="zaakTypeLink">{{zaakTypeLink.documentDefinitionName}}</option>
+            </select>
+
+            <ng-container *ngIf="selectedZaakType">
+              <label class="mt-3 w-100" for="selectedZaakType">
+                <span [translate]="'serviceTaskManagement.selectedZaakType'"></span>
+              </label>
+              <input id="selectedZaakType" disabled readonly class="form-control"
+                     [value]="selectedZaakType.omschrijving">
+            </ng-container>
+
+            <ng-container *ngIf="selectedZaakType">
+              <label class="mt-3" for="selectZaakOperation">
+                <span [translate]="'serviceTaskManagement.selectZaakOperation'"></span>
+              </label>
+              <select class="form-control" [(ngModel)]="selectedZaakOperation"
+                      id="selectZaakOperation"
+                      (change)="getZaakInformation(selectedZaakTypeLink.zaakTypeUrl, selectedZaakOperation)" required>
+                <option *ngFor="let operation of operations"
+                        [ngValue]="operation.type">{{operation.label}}</option>
+              </select>
+            </ng-container>
+
+            <ng-container *ngIf="selectedZaakOperation != null && selectedZaakOperation === 'SET_STATUS'">
+              <label class="mt-3" for="selectZaakStatus">
+                <span [translate]="'serviceTaskManagement.selectZaakStatus'"></span>
+              </label>
+              <select *ngIf="statusTypes != null && statusTypes.length > 0" class="form-control" [(ngModel)]="selectedZaakStatus"
+                      id="selectZaakStatus" required>
+                <option *ngFor="let status of statusTypes" [ngValue]="status">{{status?.omschrijving}}</option>
+              </select>
+              <div *ngIf="statusTypes != null && !statusTypes.length"
+                   class="bg-warning text-black mb-0 p-2 pl-3 pr-3" role="alert">
+                {{'serviceTaskManagement.noZaakStatusConfigured' | translate}}
+              </div>
+            </ng-container>
+
+            <ng-container
+                    *ngIf="selectedZaakOperation
+                         != null && selectedZaakOperation === 'SET_RESULTAAT'">
+              <label class="mt-3" for="selectZaakResult">
+                <span [translate]="'serviceTaskManagement.selectZaakResult'"></span>
+              </label>
+              <select *ngIf="resultTypes != null && resultTypes.length > 0" class="form-control" [(ngModel)]="selectedZaakResult"
+                      id="selectZaakResult" required>
+                <option *ngFor="let result of resultTypes" [ngValue]="result">{{result?.omschrijving}}</option>
+              </select>
+              <div *ngIf="resultTypes != null && !resultTypes.length"
+                   class="bg-warning text-black mb-0 p-2 pl-3 pr-3" role="alert">
+                {{'serviceTaskManagement.noZaakResultConfigured' | translate}}
+              </div>
+            </ng-container>
+          </ng-container>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <div *ngIf="displayForm; else addMoreServiceTask" footer class="w-100">
+    <button *ngIf="connectedServiceTasks.length > 0" (click)="setFormMode(false)"
+            class="btn btn-danger float-left" data-dismiss="modal">{{ 'serviceTaskManagement.back' | translate }}
+    </button>
+    <button [disabled]="!selectedZaakTypeLink || !selectedZaakOperation ||
+      (selectedZaakOperation === 'SET_STATUS' && !selectedZaakStatus) ||
+      (selectedZaakOperation === 'SET_RESULTAAT' && !selectedZaakResult)"
+            (click)="submit(selectedZaakType, selectedZaakOperation)"
+            class="btn btn-primary float-right" data-dismiss="modal">{{ 'serviceTaskManagement.save' | translate }}
+    </button>
+  </div>
+</valtimo-modal>
+
+<ng-template #connectedServiceTaskTiles>
+  <div *ngFor="let connectedZaakTypeLink of connectedZaakTypeLinks">
+    <ng-container *ngFor="let serviceTaskHandler of connectedZaakTypeLink.serviceTaskHandlers">
+      <div *ngIf="selectedElement.id === serviceTaskHandler['serviceTaskId']"
+           class="card mt-1 mb-4 bg-light shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title text-capitalize pt-2 mb-1">{{ connectedZaakTypeLink.documentDefinitionName}}</h5>
+          <h6 class="card-subtitle mb-2 text-muted">{{ serviceTaskHandler['serviceTaskId'] }}</h6>
+          <p class="card-text">
+            <strong>{{ 'serviceTaskManagement.serviceTaskHandler.operation' | translate }}
+            </strong> {{ serviceTaskHandler['operation']}} <br>
+            <span *ngIf="serviceTaskHandler['operation'] === 'SET_STATUS' && selectedZaakStatus != null">
+                            <strong>{{ 'serviceTaskManagement.serviceTaskHandler.status' | translate }}</strong>
+              {{ selectedZaakStatus.omschrijving }}
+                          </span>
+            <span *ngIf="serviceTaskHandler['operation'] === 'SET_RESULTAAT' && selectedZaakResult != null">
+                            <strong>{{ 'serviceTaskManagement.serviceTaskHandler.result' | translate }}</strong>
+              {{ selectedZaakResult.omschrijving }}
+                          </span>
+          </p>
+          <button (click)="deleteServiceTaskFromHandler(connectedZaakTypeLink.documentDefinitionName, serviceTaskHandler['serviceTaskId'])"
+                  type="button" class="btn btn-danger mr-2">{{ 'serviceTaskManagement.delete' | translate }}
+          </button>
+          <button (click)="editConnectedZaakTypeLink(connectedZaakTypeLink, serviceTaskHandler)" type="button"
+                  class="btn btn-primary">{{ 'serviceTaskManagement.edit' | translate }}
+          </button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #noConnectedZaakTypeLinks>
+  <div class="bg-warning text-black mb-0 p-3 text-center" [translate]="'serviceTaskManagement.noZaakTypeLinkFound'">
+  </div>
+  <div class="mb-0 mt-4 p-3 text-center">
+    <button class="btn btn-secondary btn-space" type="button"
+            (click)="gotoDossierManagementScreen();"
+            id="form-link-button">{{'serviceTaskManagement.gotoDossierManagementButton' | translate}}
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #addMoreServiceTask>
+  <ng-container *ngIf="connectedServiceTasks.length !== 0 &&
+                  (connectedServiceTasks.length !== connectedZaakTypeLinks.length || filteredConnectedZaakTypeLinks.length > 0)">
+    <div class="clearfix">
+      <button (click)="setFormMode(true)" type="button" class="btn btn-secondary float-right">
+        {{ 'serviceTaskManagement.addMore' | translate }}
+      </button>
+    </div>
+  </ng-container>
+</ng-template>

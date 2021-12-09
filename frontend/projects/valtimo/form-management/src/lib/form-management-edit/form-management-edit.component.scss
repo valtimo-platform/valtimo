@@ -1,0 +1,84 @@
+/*!
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.formbuilder .btn.formcomponent.drag-copy, .btn.formcomponent.gu-mirror {
+  font-weight: normal;
+  background-color: silver;
+  border-color: silver;
+  color: white;
+}
+
+.formbuilder .btn.formcomponent.drag-copy, .btn.formcomponent.gu-mirror {
+  &:hover, &:active {
+    box-shadow: none;
+  }
+
+  &:active {
+    background-color: silver;
+    border-color: silver;
+  }
+}
+
+.formbuilder-header {
+  padding-left: 18px;
+  padding-right: 18px;
+  font-size: 18px;
+  height: 80px;
+  border: 1px solid #dee2e6;
+  border-bottom: 0;
+
+  .formbuilder-title {
+    margin-top: 21px;
+    margin-bottom: 7px;
+  }
+
+  .formbuilder-subtitle {
+    margin-top: 0px;
+    margin-bottom: 12px;
+  }
+}
+
+.formbuilder {
+  background: white;
+  padding: 1rem;
+  border: 1px solid #dee2e6;
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+
+  .form-builder-panel .builder-group-button {
+    &[aria-expanded="false"], &[aria-expanded=""] {
+      color: #a9a9a9;
+    }
+
+    &[aria-expanded="true"] {
+      color: black;
+    }
+  }
+
+  .drag-and-drop-alert {
+    display: none;
+  }
+
+  .formarea {
+    padding: 10px;
+    border: solid 1px silver;
+    background-color: white;
+  }
+}
+
+.increase-size {
+  font-size: 1rem;
+}

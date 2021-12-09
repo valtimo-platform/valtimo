@@ -1,0 +1,139 @@
+<!--
+  ~ Copyright 2020 Dimpact.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="col-12 px-0 mb-5">
+      <valtimo-widget>
+        <div>
+          <div class="card-body bg-light">
+            <div class="row py-5">
+              <div class="col-12">
+                <div class="row">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>OpenZaak - Config</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6">Configureer hier de connectie met OpenZaak</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-5">
+            <form [formGroup]="config" (ngSubmit)="onSubmit()">
+              <div class="form-group row">
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="url">OpenZaak Url</label>
+                <div class="col-12 col-sm-8 col-lg-6">
+                  <input valtimoFieldAutoFocus type="url" id="url" autocomplete="off" formControlName="url"
+                         class="form-control" placeholder="OpenZaak URL"
+                         [ngClass]="{
+                          'is-valid': formControls.url.touched && formControls.url.valid,
+                          'is-invalid': formControls.url.touched && formControls.url.errors
+                          }"
+                         required/>
+                  <div *ngIf="formControls.url.touched && formControls.url.errors" class="invalid-feedback">
+                    <div *ngIf="formControls.url.errors.required">OpenZaak URL is required</div>
+                    <div *ngIf="formControls.url.errors.maxLength">Maximum length is 1024</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group row">
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="clientId">Client Id</label>
+                <div class="col-12 col-sm-8 col-lg-6">
+                  <input type="text" id="clientId" autocomplete="off" formControlName="clientId" class="form-control"
+                         placeholder="Client Id"
+                         [ngClass]="{
+                          'is-valid': formControls.clientId.touched && formControls.clientId.valid,
+                          'is-invalid': formControls.clientId.touched && formControls.clientId.errors
+                          }"
+                         required/>
+                  <div *ngIf="formControls.clientId.touched && formControls.clientId.errors"
+                       class="invalid-feedback">
+                    <div *ngIf="formControls.clientId.errors.required">Client Id is required</div>
+                    <div *ngIf="formControls.clientId.errors.maxlength">Maximum length is 255</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group row">
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="secret">Secret</label>
+                <div class="col-12 col-sm-8 col-lg-6">
+                  <input type="password" id="secret" autocomplete="off" formControlName="secret" class="form-control"
+                         placeholder="Secret"
+                         [ngClass]="{
+                          'is-valid': formControls.secret.touched && formControls.secret.valid,
+                          'is-invalid': formControls.secret.touched && formControls.secret.errors
+                          }"
+                         required/>
+                  <div *ngIf="formControls.secret.touched && formControls.secret.errors" class="invalid-feedback">
+                    <div *ngIf="formControls.secret.errors.required">Secret is required</div>
+                    <div *ngIf="formControls.secret.errors.minlength">Minimum length is {{OZ_SECRET_MIN_LENGTH}}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group row">
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="rsin">RSIN / Organisation</label>
+                <div class="col-12 col-sm-8 col-lg-6">
+                  <input type="text" id="rsin" autocomplete="off" formControlName="rsin" class="form-control"
+                         placeholder="RSIN"
+                         [ngClass]="{
+                          'is-valid': formControls.rsin.touched && formControls.rsin.valid,
+                          'is-invalid': formControls.rsin.touched && formControls.rsin.errors
+                          }"
+                         required/>
+                  <div *ngIf="formControls.rsin.touched && formControls.rsin.errors"
+                       class="invalid-feedback">
+                    <div *ngIf="formControls.rsin.errors.required">RSIN is required</div>
+                    <div *ngIf="formControls.rsin.errors.maxlength">Length should be 9</div>
+                    <div *ngIf="formControls.rsin.errors.minlength">Length should be 9</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row pt-3 mt-1">
+                <div class="col-12 col-sm-6 text-right">
+                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()">Reset</button>
+                  <button class="btn btn-space btn-primary" type="submit" [disabled]="config.invalid">Submit</button>
+                </div>
+                <div class="col-6 col-sm-3 text-right">
+                  <valtimo-modal
+                          #openZaakConfigModal
+                          elementId="openZaakConfigModal"
+                          [title]="'Remove open zaak config'"
+                          subtitle="Disconnect from open zaak"
+                          showFooter="true"
+                  >
+                    <div class="text-left" body>
+                      <p>
+                        Remove open zaak config will disconnect you from open zaak. <br>
+                        Bear in mind that you might have active files which depend on this connection.<br>
+                        Are you sure you want to continue?
+                      </p>
+                    </div>
+                    <div footer>
+                      <button (click)="remove()" class="btn btn-primary" data-dismiss="modal">Remove</button>
+                    </div>
+                  </valtimo-modal>
+                  <button class="btn btn-secondary btn-space" type="button" [disabled]="id == null" (click)="openModal()">Remove</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </valtimo-widget>
+    </div>
+  </div>
+</div>

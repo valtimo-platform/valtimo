@@ -1,0 +1,116 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="col-12 px-0 mb-5">
+      <valtimo-widget *ngIf="profile">
+        <div>
+          <div class="card-body">
+            <div class="row py-5">
+              <div class="col-12">
+                <div class="row mb-3">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>Nickname</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6">{{ profile.nickname }}</div>
+                </div>
+
+                <div class="row mb-3">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>Email</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6">{{ profile.email }}</div>
+                </div>
+
+                <div class="row mb-3">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>Authorities</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6">
+                        <span class="badge badge-pill badge-success mb-1 mr-1"
+                              *ngFor="let role of profile.roles">{{ role }}</span>
+                  </div>
+                </div>
+
+                <div class="row mb-3">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>Account status</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6" [ngClass]="{ 'text-danger': profile.blocked }">{{ profile.blocked ? 'Blocked' : 'Activated' }}</div>
+                </div>
+
+                <div class="row mb-3">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>Account created</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6">{{ profile.humanize_dates.created_at }}</div>
+                </div>
+
+                <div class="row">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>Last updated</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6">{{ profile.humanize_dates.updated_at }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body-contrast p-5">
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+              <div class="form-group row">
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="firstName">First name</label>
+                <div class="col-12 col-sm-8 col-lg-6">
+                  <input valtimoFieldAutoFocus type="text" id="firstName" formControlName="firstName" class="form-control" placeholder="Your first name"
+                         [ngClass]="{'is-valid': formControls.firstName.touched && formControls.firstName.valid, 'is-invalid': formControls.firstName.touched && formControls.firstName.errors}"
+                         required />
+                  <div *ngIf="formControls.firstName.touched && formControls.firstName.errors" class="invalid-feedback">
+                    <div *ngIf="formControls.firstName.errors.required">Your first name is required</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group row">
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="lastName">Last name</label>
+                <div class="col-12 col-sm-8 col-lg-6">
+                  <input type="text" id="lastName" formControlName="lastName" class="form-control" placeholder="Your last name"
+                         [ngClass]="{'is-valid': formControls.lastName.touched && formControls.lastName.valid, 'is-invalid': formControls.lastName.touched && formControls.lastName.errors}"
+                         required/>
+                  <div *ngIf="formControls.lastName.touched && formControls.lastName.errors" class="invalid-feedback">
+                    <div *ngIf="formControls.lastName.errors.required">Your last name is required</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group row">
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="langKey">Language</label>
+                <div class="col-12 col-sm-8 col-lg-6">
+                  <select id="langKey" formControlName="langKey" class="form-control"
+                          [ngClass]="{'is-valid': formControls.langKey.touched && formControls.langKey.valid, 'is-invalid': formControls.langKey.touched && formControls.langKey.errors}"
+                          required>
+                    <option value="nl">Nederlands</option>
+                    <option value="en">English</option>
+                  </select>
+                  <div *ngIf="formControls.langKey.touched && formControls.langKey.errors" class="invalid-feedback">
+                    <div *ngIf="formControls.langKey.errors.required">Your language is required</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row pt-3 mt-1">
+                <div class="col-12">
+                  <div class="text-right">
+                    <button class="btn btn-space btn-secondary" type="button" (click)="reset()">Reset</button>
+                    <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">Submit</button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </valtimo-widget>
+    </div>
+  </div>
+</div>

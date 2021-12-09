@@ -1,0 +1,43 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="modal fade" id="uploadProcess" tabindex="-1" role="dialog" aria-labelledby="uploadProcessLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="uploadProcessLabel">Upload process</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h5>BPMN Model</h5>
+        <input #bpmnFile type="file"
+               id="file"
+               accept=".bpmn"
+               (change)="onChange($event.target.files)">
+      </div>
+      <div class="modal-footer">
+        <div class="btn-group">
+          <button type="button" class="btn btn-primary btn-space" (click)="uploadProcessBpmn()" [disabled]="!bpmn"
+                  data-dismiss="modal">Upload
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

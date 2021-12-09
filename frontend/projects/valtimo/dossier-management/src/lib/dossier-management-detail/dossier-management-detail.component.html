@@ -1,0 +1,113 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="main-content pt-0">
+  <div class="container-fluid">
+    <div *ngIf="documentDefinition" class="btn-group mt-m3px mb-3 float-right">
+      <button class="btn btn-primary btn-space" (click)="downloadDefinition()">
+        <i class="icon mdi mdi-download"></i>&nbsp;
+        {{ 'Download document definition' | translate }}
+      </button>
+      <a id="downloadAnchorElement" style="display: none"></a>
+      <button *ngIf="!this.documentDefinition.readOnly" class="btn btn-secondary btn-space mr-0"
+              (click)="openDossierRemoveModal()">
+        <i class="icon mdi mdi-delete"></i>&nbsp;
+        {{ 'Remove document definition' | translate }}
+      </button>
+    </div>
+    <div class="clearfix"></div>
+    <valtimo-widget *ngIf="documentDefinition">
+      <div class="bg-light dossier-header">
+        <h3 class="dossier-title">{{ documentDefinition.schema.title }}
+          <div *ngIf="documentDefinition.readOnly" class="pull-right">
+            <span class="badge badge-pill badge-info increase-size">Read-only</span>
+          </div>
+        </h3>
+      </div>
+      <div class="row bg-white mt-5 mb-2 pl-2 pr-2">
+        <div class="col-5">
+          <h2>{{ 'document definition' | translate }}</h2>
+        </div>
+        <div class="col-5 offset-2">
+          <h2>Connected processes</h2>
+        </div>
+      </div>
+      <div class="row bg-white mb-5 pb-4 pl-2 pr-2">
+        <div class="col-5 bg-red">
+          <textarea class="w-100 dossier-schema" rows="25" disabled>{{ documentDefinition | json }}
+          </textarea>
+        </div>
+        <div class="col-5 offset-2 bg-blue">
+          <div class="input-group mb-5"
+               *ngFor="let processDocumentDefinition of processDocumentDefinitions">
+            <div class="input-group-prepend w-75">
+              <button class="btn btn-danger" (click)="deleteProcessDocumentDefinition(processDocumentDefinition)"
+                      data-toggle="tooltip" data-placement="left" title="Delete this connected process">
+                <i class="fa fa-trash"></i>
+              </button>
+              <input class="form-control"
+                     [value]="processDocumentDefinition.processName ? processDocumentDefinition.processName
+                    : '' + ' (' + processDocumentDefinition.id.processDefinitionKey + ')'"
+                     type="text"
+                     disabled
+              />
+            </div>
+            <div class="row mb-2 mt-2">
+              <label class="custom-control custom-checkbox custom-control-inline pl-6 mr-5">
+                <input
+                        class="custom-control-input"
+                        type="checkbox"
+                        [checked]="processDocumentDefinition.canInitializeDocument"
+                        disabled
+                /><span class="custom-control-label custom-control-color">Init document?</span>
+              </label>
+              <label class="custom-control custom-checkbox custom-control-inline pl-6">
+                <input
+                        class="custom-control-input"
+                        type="checkbox"
+                        [checked]="processDocumentDefinition.startableByUser"
+                        disabled
+                /><span class="custom-control-label custom-control-color">{{ 'Startable by user' | translate }}?</span>
+              </label>
+            </div>
+          </div>
+          <div class="text-right mt-5 mb-5">
+            <button class="btn btn-primary" (click)="openDossierConnectModal()">
+              <i class="icon mdi mdi-plus"></i> &nbsp; Connect process
+            </button>
+          </div>
+          <valtimo-extension
+                  module="dossier-management"
+                  page="dossier"
+                  section="openzaak-zaaktype-link"
+          ></valtimo-extension>
+          <valtimo-extension
+                  module="dossier-management"
+                  page="dossier"
+                  section="connector-link"
+          ></valtimo-extension>
+        </div>
+      </div>
+    </valtimo-widget>
+
+    <valtimo-dossier-management-connect-modal
+            #dossierConnectModal
+            (reloadProcessDocumentDefinitions)="loadProcessDocumentDefinitions()"
+    ></valtimo-dossier-management-connect-modal>
+    <valtimo-dossier-management-remove-modal #dossierRemoveModal></valtimo-dossier-management-remove-modal>
+  </div>
+
+</div>

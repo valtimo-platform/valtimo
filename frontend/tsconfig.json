@@ -1,0 +1,218 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./src/tsconfig.app.json"
+    },
+    {
+      "path": "./src/tsconfig.spec.json"
+    },
+    {
+      "path": "./e2e/tsconfig.e2e.json"
+    },
+    {
+      "path": "./projects/valtimo/layout/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/layout/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/auth0/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/auth0/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/components/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/components/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/task/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/task/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/security/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/security/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/dossier/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/dossier/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/choicefield/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/choicefield/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/process/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/process/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/view-configurator/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/view-configurator/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/context/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/context/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/dashboard/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/dashboard/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/document/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/document/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/account/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/account/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/user-management/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/user-management/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/authority/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/authority/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/choice-field/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/choice-field/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/form/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/form/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/management/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/management/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/analyse/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/analyse/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/swagger/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/swagger/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/connector-management/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/connector-management/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/process-management/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/process-management/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/decision/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/decision/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/milestone/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/milestone/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/form-management/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/form-management/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/form-link/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/form-link/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/migration/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/migration/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/dossier-management/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/dossier-management/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/keycloak/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/keycloak/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/bootstrap/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/bootstrap/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/contract/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/contract/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/config/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/config/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/open-zaak/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/open-zaak/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/resource/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/resource/tsconfig.spec.json"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../../dist/valtimo/authority",
+  "lib": {
+    "entryFile": "src/public_api.ts",
+    "umdModuleIds": {
+      "@valtimo/components": "components",
+      "@valtimo/security": "security",
+      "@valtimo/config": "config",
+      "@ngx-translate/core": "core$1",
+      "@valtimo/contract": "contract"
+    }
+  }
+}

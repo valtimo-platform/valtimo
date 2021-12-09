@@ -1,0 +1,63 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<form [formGroup]="customForm"
+      (ngSubmit)="onSubmit()">
+  <div class="form-group row">
+    <label class="col-12 col-sm-3 col-form-label text-sm-right" for="inputText">Input Text</label>
+    <div class="col-12 col-sm-8 col-lg-6">
+      <input class="form-control" id="inputText" formControlName="inputText" type="text">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label class="col-12 col-sm-3 col-form-label text-sm-right" for="inputPassword">Input Password</label>
+    <div class="col-12 col-sm-8 col-lg-6">
+      <input class="form-control" id="inputPassword" formControlName="inputPassword" type="password">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label class="col-12 col-sm-3 col-form-label text-sm-right" for="inputPlaceholder">Placeholder Input</label>
+    <div class="col-12 col-sm-8 col-lg-6">
+      <input class="form-control" id="inputPlaceholder" formControlName="inputPlaceholder" type="text" placeholder="Placeholder text">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label class="col-12 col-sm-3 col-form-label text-sm-right" for="inputDisabled">Disabled Input</label>
+    <div class="col-12 col-sm-8 col-lg-6">
+      <input class="form-control" id="inputDisabled" formControlName="inputDisabled" type="text" placeholder="Disabled input text">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label class="col-12 col-sm-3 col-form-label text-sm-right" for="inputReadonly">Readonly Input</label>
+    <div class="col-12 col-sm-8 col-lg-6">
+      <input class="form-control" id="inputReadonly" formControlName="inputReadonly" type="text" readonly>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label class="col-12 col-sm-3 col-form-label text-sm-right" for="inputTextarea">Textarea</label>
+    <div class="col-12 col-sm-8 col-lg-6">
+      <textarea class="form-control" id="inputTextarea" formControlName="inputTextarea"></textarea>
+    </div>
+  </div>
+  <div class="row pt-3 mt-1">
+    <div class="col-sm-12">
+      <p class="text-right">
+        <button class="btn btn-space btn-secondary" type="button" (click)="reset()">Reset</button>
+        <button class="btn btn-space btn-primary" type="submit">Submit</button>
+      </p>
+    </div>
+  </div>
+</form>

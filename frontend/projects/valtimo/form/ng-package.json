@@ -1,0 +1,12 @@
+{
+  "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../../dist/valtimo/form",
+  "lib": {
+    "entryFile": "src/public_api.ts",
+    "umdModuleIds": {
+      "@valtimo/config": "config",
+      "@valtimo/contract": "contract",
+      "@valtimo/components": "components"
+    }
+  }
+}

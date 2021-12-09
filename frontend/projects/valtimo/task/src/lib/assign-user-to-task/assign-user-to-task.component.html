@@ -1,0 +1,37 @@
+<ng-container
+  *ngIf="{
+    candidateUsers: candidateUsersForTask$ | async,
+    disabled: disabled$ | async,
+    emailOnServer: assignedEmailOnServer$ | async
+  } as obs"
+>
+  <div class="container-fluid">
+    <div class="row mt-2 mb-2">
+      <div class="col-12 pl-0 d-flex flex-row align-items-center">
+        <ng-container *ngIf="obs.candidateUsers; else loading">
+          <valtimo-searchable-dropdown-select
+            [style]="'underlinedText'"
+            [items]="mapUsersForDropdown(obs.candidateUsers)"
+            [buttonText]="'assignTask.header' | translate"
+            [searchText]="'interface.typeToSearch' | translate"
+            [noResultsText]="'interface.noSearchResults' | translate"
+            [disabled]="obs.disabled"
+            [selectedText]="'assignTask.assignedTo' | translate"
+            [selectedTextValue]="assignedUserFullName$ | async"
+            [clearSelectionButtonTitle]="'assignTask.remove' | translate"
+            [hasSelection]="userEmailToAssign === obs.emailOnServer && obs.emailOnServer !== null"
+            [width]="250"
+            (itemSelected)="assignTask($event)"
+            (clearSelection)="unassignTask()"
+          >
+          </valtimo-searchable-dropdown-select>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #loading>
+  <h5><b>{{'assignTask.fetchingUsers' | translate}}</b></h5>
+</ng-template>
+

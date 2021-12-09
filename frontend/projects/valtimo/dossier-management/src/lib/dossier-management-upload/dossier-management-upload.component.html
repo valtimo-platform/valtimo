@@ -1,0 +1,24 @@
+<valtimo-modal #uploadDefinitionModal [title]="'Upload document definition' | translate" showFooter="true">
+  <div class="mt-2" body>
+    <valtimo-dropzone
+      [clear$]="clear$"
+      (fileSelected)="setFile($event)"
+      [disabled]="disabled$ | async"
+      [subtitle]="'dropzone.jsonDocDef' | translate"
+      [externalError$]="error$"
+    ></valtimo-dropzone>
+  </div>
+  <div footer>
+    <ng-container *ngIf="(jsonString$ | async) && !(error$ | async); else pleaseSelect">
+      <button [disabled]="disabled$ | async" class="btn btn-primary" (click)="uploadDefinition()">
+        {{ 'Upload' | translate }}
+      </button>
+    </ng-container>
+  </div>
+</valtimo-modal>
+
+<ng-template #pleaseSelect>
+  <button class="btn btn-primary" [disabled]="true">
+    {{ 'Select a document definition' | translate }}
+  </button>
+</ng-template>

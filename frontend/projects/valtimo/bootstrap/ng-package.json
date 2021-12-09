@@ -1,0 +1,16 @@
+{
+  "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../../dist/valtimo/bootstrap",
+  "lib": {
+    "entryFile": "src/public-api.ts",
+    "umdModuleIds": {
+      "ngx-logger": "ngxLogger",
+      "keycloak-angular": "keycloakAngular",
+      "@valtimo/keycloak": "keycloak",
+      "@valtimo/components": "components",
+      "@ngx-translate/core": "core$1",
+      "@valtimo/account": "account",
+      "@valtimo/config": "config"
+    }
+  }
+}

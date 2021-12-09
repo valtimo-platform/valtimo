@@ -1,0 +1,44 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<valtimo-modal
+        #documentDefinitionRemoveModal
+        elementId="documentDefinitionRemoveModal"
+        [title]="documentDefinition ? documentDefinition.schema.title : 'Document definition'"
+        subtitle="{{ 'Remove document definition' | translate }}"
+        showFooter="true"
+>
+  <div body *ngIf="documentDefinition">
+
+    <div class="alert alert-contrast alert-danger mt-2" role="alert">
+      <div class="icon"><span class="mdi mdi-alert-triangle"></span></div>
+      <div class="message" [innerHTML]="'remove-document-definition-confirmation' | translate">
+      </div>
+    </div>
+    <div *ngIf="errors.length > 0" class="alert alert-danger pt-5 pb-5 mb-2">
+      <ol>
+        <li *ngFor="let error of errors">
+          {{error}}
+        </li>
+      </ol>
+    </div>
+  </div>
+  <div footer>
+    <button (click)="removeDocumentDefinition()" class="btn btn-primary" data-dismiss="modal">
+      {{ 'remove-document-definition-confirmation-button' | translate }}
+    </button>
+  </div>
+</valtimo-modal>

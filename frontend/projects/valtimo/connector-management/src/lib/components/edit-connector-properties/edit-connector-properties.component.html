@@ -1,0 +1,95 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="edit-fields" *ngIf="{editFields: editFields$ | async, disabled: disabled$ | async} as obs">
+  <ng-container *ngTemplateOutlet="nameInput;context:{disabled: obs.disabled}"></ng-container>
+  <ng-container *ngFor="let editField of obs.editFields">
+    <ng-container *ngIf="editField.editType === 'string' || editField.editType === 'number'">
+      <ng-container *ngTemplateOutlet="singleInput;context:{editField: editField, disabled: obs.disabled}"></ng-container>
+    </ng-container>
+    <ng-container *ngIf="editField.editType === 'string[]' || editField.editType === 'number[]'">
+      <valtimo-multi-value-connector-property
+        [editField]="editField"
+        (valuesSet)="multiFieldValuesSet($event)"
+        [disabled]="obs.disabled"
+        [defaultValue]="withDefaults && editField.defaultValue"
+      >
+      </valtimo-multi-value-connector-property>
+    </ng-container>
+  </ng-container>
+  <ng-container *ngTemplateOutlet="buttons;context:{disabled: obs.disabled}"></ng-container>
+</div>
+
+<ng-template #nameInput let-disabled="disabled">
+  <div class="form-group row">
+    <label class="col-3 col-form-label text-sm-right">
+      {{'connectorManagement.inputLabels.connectorName' | translate}}
+    </label>
+    <div class="col-7">
+      <input
+        class="form-control"
+        type="text"
+        (input)="onNameValueChange($event.target.value)"
+        [disabled]="disabled"
+        [value]="(withDefaults && defaultName) ? defaultName : ''"
+      >
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #singleInput let-editField="editField" let-disabled="disabled">
+  <div class="form-group row">
+    <label class="col-3 col-form-label text-sm-right">
+      {{'connectorManagement.inputLabels.' + editField.key | translate}}
+    </label>
+    <div class="col-7">
+      <input
+        *ngIf="editField.editType === 'string'"
+        class="form-control"
+        type="text"
+        (input)="onSingleValueChange($event.target.value, editField)"
+        [disabled]="disabled"
+        [value]="withDefaults ? editField.defaultValue : ''"
+      >
+      <input
+        *ngIf="editField.editType === 'number'"
+        class="form-control"
+        type="number"
+        step="1"
+        min="0"
+        oninput="validity.valid||(value='');"
+        (input)="onSingleValueChange($event.target.value, editField)"
+        [disabled]="disabled"
+        [value]="withDefaults ? editField.defaultValue : ''"
+      >
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #buttons let-disabled="disabled">
+  <div class="border-top mt-3 pt-6">
+    <div class="button-container">
+      <button class="btn btn-primary" [disabled]="disabled || (saveButtonDisabled$ | async)" (click)="onSave()">
+        <i class="icon mdi mdi-save mr-1"></i>
+        {{'connectorManagement.save' | translate}}
+      </button>
+      <button *ngIf="showDeleteButton" class="btn btn-danger btn-space" (click)="onDelete()" [disabled]="disabled">
+        <i class="icon mdi mdi-delete mr-1"></i>
+        {{'connectorManagement.remove' | translate}}
+      </button>
+    </div>
+  </div>
+</ng-template>

@@ -1,0 +1,220 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
+    "sourceMap": true,
+    "declaration": false,
+    "module": "es2020",
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es5",
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "lib": [
+      "es2018",
+      "dom"
+    ],
+    "paths": {
+      "@valtimo/layout": [
+        "dist/valtimo/layout"
+      ],
+      "@valtimo/layout/*": [
+        "dist/valtimo/layout/*"
+      ],
+      "@valtimo/auth0": [
+        "dist/valtimo/auth0"
+      ],
+      "@valtimo/auth0/*": [
+        "dist/valtimo/auth0/*"
+      ],
+      "@valtimo/components": [
+        "dist/valtimo/components"
+      ],
+      "@valtimo/components/*": [
+        "dist/valtimo/components/*"
+      ],
+      "@valtimo/task": [
+        "dist/valtimo/task"
+      ],
+      "@valtimo/task/*": [
+        "dist/valtimo/task/*"
+      ],
+      "@valtimo/security": [
+        "dist/valtimo/security"
+      ],
+      "@valtimo/security/*": [
+        "dist/valtimo/security/*"
+      ],
+      "@valtimo/dossier": [
+        "dist/valtimo/dossier"
+      ],
+      "@valtimo/dossier/*": [
+        "dist/valtimo/dossier/*"
+      ],
+      "@valtimo/choicefield": [
+        "dist/valtimo/choicefield"
+      ],
+      "@valtimo/choicefield/*": [
+        "dist/valtimo/choicefield/*"
+      ],
+      "@valtimo/process": [
+        "dist/valtimo/process"
+      ],
+      "@valtimo/process/*": [
+        "dist/valtimo/process/*"
+      ],
+      "@valtimo/view-configurator": [
+        "dist/valtimo/view-configurator"
+      ],
+      "@valtimo/view-configurator/*": [
+        "dist/valtimo/view-configurator/*"
+      ],
+      "@valtimo/context": [
+        "dist/valtimo/context"
+      ],
+      "@valtimo/context/*": [
+        "dist/valtimo/context/*"
+      ],
+      "@valtimo/dashboard": [
+        "dist/valtimo/dashboard"
+      ],
+      "@valtimo/dashboard/*": [
+        "dist/valtimo/dashboard/*"
+      ],
+      "@valtimo/document": [
+        "dist/valtimo/document"
+      ],
+      "@valtimo/document/*": [
+        "dist/valtimo/document/*"
+      ],
+      "@valtimo/account": [
+        "dist/valtimo/account"
+      ],
+      "@valtimo/account/*": [
+        "dist/valtimo/account/*"
+      ],
+      "@valtimo/user-management": [
+        "dist/valtimo/user-management"
+      ],
+      "@valtimo/user-management/*": [
+        "dist/valtimo/user-management/*"
+      ],
+      "@valtimo/authority": [
+        "dist/valtimo/authority"
+      ],
+      "@valtimo/authority/*": [
+        "dist/valtimo/authority/*"
+      ],
+      "@valtimo/choice-field": [
+        "dist/valtimo/choice-field"
+      ],
+      "@valtimo/choice-field/*": [
+        "dist/valtimo/choice-field/*"
+      ],
+      "@valtimo/form": [
+        "dist/valtimo/form"
+      ],
+      "@valtimo/form/*": [
+        "dist/valtimo/form/*"
+      ],
+      "@valtimo/management": [
+        "dist/valtimo/management"
+      ],
+      "@valtimo/management/*": [
+        "dist/valtimo/management/*"
+      ],
+      "@valtimo/swagger": [
+        "dist/valtimo/swagger"
+      ],
+      "@valtimo/swagger/*": [
+        "dist/valtimo/swagger/*"
+      ],
+      "@valtimo/analyse": [
+        "dist/valtimo/analyse"
+      ],
+      "@valtimo/analyse/*": [
+        "dist/valtimo/analyse/*"
+      ],
+      "@valtimo/connector-management": [
+        "dist/valtimo/connector-management"
+      ],
+      "@valtimo/connector-management/*": [
+        "dist/valtimo/connector-management/*"
+      ],
+      "@valtimo/process-management": [
+        "dist/valtimo/process-management"
+      ],
+      "@valtimo/process-management/*": [
+        "dist/valtimo/process-management/*"
+      ],
+      "@valtimo/decision": [
+        "dist/valtimo/decision"
+      ],
+      "@valtimo/decision/*": [
+        "dist/valtimo/decision/*"
+      ],
+      "@valtimo/milestone": [
+        "dist/valtimo/milestone"
+      ],
+      "@valtimo/milestone/*": [
+        "dist/valtimo/milestone/*"
+      ],
+      "@valtimo/form-management": [
+        "dist/valtimo/form-management"
+      ],
+      "@valtimo/form-management/*": [
+        "dist/valtimo/form-management/*"
+      ],
+      "@valtimo/form-link": [
+        "dist/valtimo/form-link"
+      ],
+      "@valtimo/form-link/*": [
+        "dist/valtimo/form-link/*"
+      ],
+      "@valtimo/migration": [
+        "dist/valtimo/migration"
+      ],
+      "@valtimo/migration/*": [
+        "dist/valtimo/migration/*"
+      ],
+      "@valtimo/dossier-management": [
+        "dist/valtimo/dossier-management"
+      ],
+      "@valtimo/dossier-management/*": [
+        "dist/valtimo/dossier-management/*"
+      ],
+      "@valtimo/keycloak": [
+        "dist/valtimo/keycloak"
+      ],
+      "@valtimo/keycloak/*": [
+        "dist/valtimo/keycloak/*"
+      ],
+      "@valtimo/bootstrap": [
+        "dist/valtimo/bootstrap/valtimo-bootstrap",
+        "dist/valtimo/bootstrap"
+      ],
+      "@valtimo/contract": [
+        "dist/valtimo/contract/valtimo-contract",
+        "dist/valtimo/contract"
+      ],
+      "@valtimo/config": [
+        "dist/valtimo/config/valtimo-config",
+        "dist/valtimo/config"
+      ],
+      "@valtimo/open-zaak": [
+        "dist/valtimo/open-zaak/valtimo-openzaak",
+        "dist/valtimo/open-zaak"
+      ],
+      "@valtimo/resource": [
+        "dist/valtimo/resource"
+      ],
+      "@valtimo/resource/*": [
+        "dist/valtimo/resource/*"
+      ]
+    }
+  }
+}

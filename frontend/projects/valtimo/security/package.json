@@ -1,0 +1,15 @@
+{
+  "name": "@valtimo/security",
+  "version": "4.15.2",
+  "peerDependencies": {
+    "@angular/common": "^10.0.11",
+    "@angular/core": "^10.0.11"
+  },
+  "publishConfig": {
+    "registry": "http://repo.ritense.com/repository/npm-ritense-private/"
+  },
+  "dependencies": {
+    "ngx-toastr": "^13.0.0",
+    "tslib": "^2.0.0"
+  }
+}

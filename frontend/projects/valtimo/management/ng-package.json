@@ -1,0 +1,18 @@
+{
+  "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../../dist/valtimo/management",
+  "lib": {
+    "entryFile": "src/public_api.ts",
+    "umdModuleIds": {
+      "@valtimo/context": "context",
+      "@valtimo/authority": "authority",
+      "@valtimo/process": "process",
+      "@valtimo/components": "components",
+      "@valtimo/security": "security",
+      "@ng-bootstrap/ng-bootstrap": "ngBootstrap",
+      "@ngx-translate/core": "core$1",
+      "@valtimo/contract": "contract"
+    }
+  },
+  "whitelistedNonPeerDependencies": ["."]
+}

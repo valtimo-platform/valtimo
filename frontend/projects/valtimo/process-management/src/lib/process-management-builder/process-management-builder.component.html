@@ -1,0 +1,74 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="mb-5" [ngClass]="{'main-content pt-0': !layoutService.isFullscreen}">
+  <div [ngClass]="{'container-fluid' : !layoutService.isFullscreen}">
+    <div class="text-right">
+      <div class="btn-group mt-m3px mb-3" *ngIf="(selectedVersion !== null || processKey === null) && !layoutService.isFullscreen">
+        <button class='btn btn-primary btn-space' (click)="deploy()"><i class="fa fa-upload"></i> &nbsp;Deploy</button>
+        <button class='btn btn-secondary btn-space' (click)="download()" [ngClass]="{'mr-0': selectedVersion !== null}"><i
+                class="fa fa-save"></i> &nbsp;Download
+        </button>
+        <button *ngIf="selectedVersion === null" class='btn btn-danger btn-space mr-0' (click)="reset()"><i
+                class="fa fa-trash"></i> &nbsp;Clear
+        </button>
+      </div>
+    </div>
+
+    <div class="modeler pl-3 pr-3 mb-3" [ngClass]="{'mt-4' : !layoutService.isFullscreen}">
+      <div class="row pt-4 pb-3 bg-light versions" *ngIf="processDefinitionVersions"
+           [ngClass]="{'border-bottom-0': selectedVersion !== null}">
+        <div class="col-md-2" *ngIf="processDefinitionVersions.length > 0">
+          <h2 class="process-title">
+            {{processDefinitionVersions[0].name}}
+          </h2>
+        </div>
+        <div class="col-md-1 offset-md-6">
+          <label for="processVersion"><strong>Version</strong></label>
+          <select id="processVersion" class="form-control w-100" [(ngModel)]="selectedVersion"
+                  (change)="loadProcessBpmn()" [compareWith]="compareProcessDefinitions">
+            <option [ngValue]="null" disabled selected>Version</option>
+            <option *ngFor="let processDefinition of processDefinitionVersions"
+                    [ngValue]="processDefinition">{{processDefinition.version}}</option>
+          </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end"
+             *ngIf="(selectedVersion !== null || processKey === null) && layoutService.isFullscreen">
+          <div class="btn-group">
+            <button class='btn btn-primary btn-space' (click)="deploy()"><i class="fa fa-upload"></i> &nbsp;Deploy
+            </button>
+            <button class='btn btn-secondary btn-space' (click)="download()"><i
+                    class="fa fa-save"></i> &nbsp;Download
+            </button>
+            <button *ngIf="!selectedVersion" class='btn btn-danger btn-space' (click)="reset()"><i
+                    class="fa fa-trash"></i> &nbsp;Clear
+            </button>
+          </div>
+        </div>
+        <div *ngIf="selectedVersion" class="col-md-1 text-right fullscreen-toggle"
+             [ngClass]="{'offset-md-2' : !layoutService.isFullscreen}">
+          <i class="fas"
+             [ngClass]="{'fa-expand-arrows-alt' : !layoutService.isFullscreen, 'fa-compress-arrows-alt' : layoutService.isFullscreen}"
+             (click)="layoutService.toggleFullscreen()"></i>
+        </div>
+      </div>
+      <div [hidden]="!selectedVersion && processKey" class="row bg-white diagram mb-3">
+        <div id="canvas" class="col-9"></div>
+        <div id="properties" class="col-3 pr-0"></div>
+      </div>
+    </div>
+  </div>
+</div>

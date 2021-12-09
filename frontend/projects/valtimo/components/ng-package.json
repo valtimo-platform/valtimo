@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../../dist/valtimo/components",
+  "lib": {
+    "entryFile": "src/public_api.ts",
+    "umdModuleIds": {
+      "moment": "moment",
+      "@valtimo/choicefield": "choicefield",
+      "@valtimo/auth0": "auth0",
+      "@valtimo/context": "context",
+      "@valtimo/document": "document",
+      "@valtimo/config": "config",
+      "@valtimo/contract": "contract",
+      "@valtimo/security": "security",
+      "ngx-spinner": "ngxSpinner",
+      "@ngx-translate/core": "core$1",
+      "lodash": "lodash",
+      "@ngx-translate/http-loader": "httpLoader",
+      "@ng-bootstrap/ng-bootstrap": "ngBootstrap",
+      "bpmn-js/dist/bpmn-navigated-viewer.production.min.js": "BpmnJS",
+      "@valtimo/s3": "s3",
+      "angular-formio": "angularFormio",
+      "heatmap.js-fixed": "heatmap_jsfixed",
+      "ngx-logger": "ngxLogger"
+    }
+  },
+  "whitelistedNonPeerDependencies": ["."]
+}

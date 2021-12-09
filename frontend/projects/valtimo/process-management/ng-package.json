@@ -1,0 +1,25 @@
+{
+  "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../../dist/valtimo/process-management",
+  "lib": {
+    "entryFile": "src/public-api.ts",
+    "umdModuleIds": {
+      "@valtimo/security": "security",
+      "@valtimo/process": "process",
+      "@valtimo/components": "components",
+      "@valtimo/layout": "layout",
+      "@valtimo/config": "config",
+      "@valtimo/contract": "contract",
+      "@ngx-translate/core": "cpre$1",
+      "bpmn-js/lib/Modeler": "Modeler",
+      "bpmn-js-properties-panel": "PropertiesPanelModule",
+      "bpmn-js-properties-panel/lib/provider/camunda": "PropertiesProviderModule",
+      "camunda-bpmn-moddle/lib": "CamundaExtensionModule",
+      "camunda-bpmn-moddle/resources/camunda.json": "CamundaModdleDescriptor"
+    }
+  },
+  "whitelistedNonPeerDependencies": [
+    "bpmn-js-properties-panel",
+    "camunda-bpmn-moddle"
+  ]
+}

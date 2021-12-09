@@ -1,0 +1,152 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="col-12 px-0 mb-5">
+      <valtimo-widget *ngIf="user">
+        <div>
+          <div class="card-body bg-light">
+            <div class="row py-5">
+              <div class="col-12">
+                <div class="row mb-3">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>Name</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6">{{ user.fullName }}</div>
+                </div>
+
+                <div class="row mb-3">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>Email</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6">{{ user.email }}</div>
+                </div>
+
+                <div class="row mb-3">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>Authorities</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6">
+                    <span *ngIf="!user.roles.length">Not Authorized</span>
+                    <span class="badge badge-pill badge-success mb-1 mr-1"
+                          *ngFor="let role of user.roles">{{ role }}</span>
+                  </div>
+                </div>
+
+                <div class="row mb-3">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>Email verified</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6">
+                    {{ user.verified }}
+                    <span *ngIf="user.emailVerified === false">
+                      <i class="mdi mdi-arrow-right mx-1"></i> <a href="javascript:void(0)" (click)="resendVerificationEmail()">Resend verification email?</a>
+                    </span>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-12 col-sm-3 text-sm-right"><strong>Status</strong></div>
+                  <div class="col-12 col-sm-8 col-lg-6">
+                    {{ user.status }}
+                    <span *ngIf="user.activated === false">
+                      <i class="mdi mdi-arrow-right mx-1"></i> <a href="javascript:void(0)" (click)="activate()">Activate account?</a>
+                    </span>
+                    <span *ngIf="user.activated === true">
+                      <i class="mdi mdi-arrow-right mx-1"></i> <a href="javascript:void(0)" (click)="deactivate()">Deactivate account?</a>
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-5">
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+              <div class="form-group row">
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="firstName">First name</label>
+                <div class="col-12 col-sm-8 col-lg-6">
+                  <input valtimoFieldAutoFocus type="text" id="firstName" formControlName="firstName" class="form-control" placeholder="User first name"
+                         [ngClass]="{'is-valid': formControls.firstName.touched && formControls.firstName.valid, 'is-invalid': formControls.firstName.touched && formControls.firstName.errors}"
+                         required />
+                  <div *ngIf="formControls.firstName.touched && formControls.firstName.errors" class="invalid-feedback">
+                    <div *ngIf="formControls.firstName.errors.required">First name is required</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group row">
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="lastName">Last name</label>
+                <div class="col-12 col-sm-8 col-lg-6">
+                  <input type="text" id="lastName" formControlName="lastName" class="form-control" placeholder="User last name"
+                         [ngClass]="{'is-valid': formControls.lastName.touched && formControls.lastName.valid, 'is-invalid': formControls.lastName.touched && formControls.lastName.errors}"
+                         required/>
+                  <div *ngIf="formControls.lastName.touched && formControls.lastName.errors" class="invalid-feedback">
+                    <div *ngIf="formControls.lastName.errors.required">Last name is required</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group row">
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="langKey">Language</label>
+                <div class="col-12 col-sm-8 col-lg-6">
+                  <select id="langKey" formControlName="langKey" class="form-control"
+                          [ngClass]="{'is-valid': formControls.langKey.touched && formControls.langKey.valid, 'is-invalid': formControls.langKey.touched && formControls.langKey.errors}"
+                          required>
+                    <option value="nl">Nederlands</option>
+                    <option value="en">English</option>
+                  </select>
+                  <div *ngIf="formControls.langKey.touched && formControls.langKey.errors" class="invalid-feedback">
+                    <div *ngIf="formControls.langKey.errors.required">Language is required</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group row">
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="roles">Authorities</label>
+                <div class="col-12 col-sm-8 col-lg-6">
+                  <div [ngClass]="{'is-valid': !formControls.roles.errors, 'is-invalid': formControls.roles.errors}">
+                    <ul id="roles" class="list-group list-group-flush">
+                      <li *ngFor="let authority of authorities; let i = index"
+                          class="list-group-item">
+                        <label class="mb-0 click-able d-block" (click)="toggleRole(authority.name)">
+                          <i class="icon mdi mdi-info-outline click-able float-right mr-0"
+                             *ngIf="authority.name === getRoleUser()"
+                             title="This authority is required for core functionality and consequently will be selected at all times"></i>
+                          <i class="icon mdi" [ngClass]="validateRole(authority.name) ? 'mdi-check-square':'mdi-square-o'"></i>
+                          {{ authority.name }}
+                        </label>
+                      </li>
+                    </ul>
+                  </div>
+                  <div *ngIf="formControls.roles.errors"
+                       [ngClass]="{'invalid-feedback d-block mt-2': formControls.roles.errors}">
+                    <div *ngIf="formControls.roles.errors.required">Authorities is required, minimum one authority selected</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row pt-3 mt-1">
+                <div class="col-12 col-sm-6 text-left">
+                  <a [routerLink]="'/users'" class="btn btn-space btn-default">Back</a>
+                  <button class="btn btn-space btn-danger" type="button" (click)="delete()">Delete</button>
+                </div>
+                <div class="col-12 col-sm-6 text-right">
+                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()">Reset</button>
+                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">Submit</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </valtimo-widget>
+    </div>
+  </div>
+</div>

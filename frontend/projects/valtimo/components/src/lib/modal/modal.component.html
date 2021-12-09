@@ -1,0 +1,43 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="modal fade custom-width" [id]="elementId" role="dialog" aria-modal="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header modal-header-colored colored-header-grey">
+        <div class="modal-title">
+          <h4 class="title-text mb-2">{{ title }}</h4>
+          <h5 class="subtitle-text">{{ subtitle }}</h5>
+          <ng-container *ngIf="templateBelowSubtitle">
+            <ng-container *ngTemplateOutlet="templateBelowSubtitle"></ng-container>
+          </ng-container>
+        </div>
+        <div class="text-right">
+          <img src="assets/modal/header-image.png" class="modal-header-image" />
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <ng-content select="[body]"></ng-content>
+      </div>
+      <div class="modal-footer" *ngIf="showFooter">
+        <ng-content select="[footer]"></ng-content>
+      </div>
+    </div>
+  </div>
+</div>

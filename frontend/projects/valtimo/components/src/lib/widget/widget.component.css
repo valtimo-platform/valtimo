@@ -1,0 +1,75 @@
+/*
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.card-contrast .card-header {
+  padding:20px !important;
+}
+
+.card-subtitle {
+  margin-bottom:0;
+}
+
+.card-full,
+.card-full .tools .icon,
+.card-full .card-subtitle {
+  color: #6b6b6b !important;
+}
+
+.card-full-warning,
+.card-full-warning .tools .icon,
+.card-full-warning .card-subtitle {
+  color: #343a40 !important;
+
+}
+
+.card-full-info,
+.card-full-danger,
+.card-full-success,
+.card-full-primary,
+.card-full-dark,
+.card-full-info .tools .icon,
+.card-full-danger .tools .icon,
+.card-full-success .tools .icon,
+.card-full-primary .tools .icon,
+.card-full-dark .tools .icon,
+.card-full-info .card-subtitle,
+.card-full-danger .card-subtitle,
+.card-full-success .card-subtitle,
+.card-full-primary .card-subtitle,
+.card-full-dark .card-subtitle {
+  color: #ffffff !important;
+}
+
+.card-contrast .card-body {
+  padding-top:15px;
+}
+
+.card-body {
+  padding:15px 20px;
+}
+
+.pie-label {
+  font-size: 16px !important;
+}
+
+.widget.widget-tile svg.ngx-charts {
+  margin-left:-1.5rem !important;
+}
+
+svg.ngx-charts {
+  margin: 0;
+  padding: 0;
+}

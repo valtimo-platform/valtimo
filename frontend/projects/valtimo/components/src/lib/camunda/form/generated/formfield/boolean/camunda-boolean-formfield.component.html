@@ -1,0 +1,45 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="form-group row" *ngIf="formGroup" [formGroup]="formGroup">
+  <label class="col-12 col-sm-3 col-form-label text-sm-right">
+    {{ formField.label }}
+  </label>
+  <div class="col-12 col-sm-8 col-lg-6 form-check mt-1">
+    <label for="yes_{{ formField.id }}" class="custom-control custom-radio custom-control-inline">
+      <input
+        class="custom-control-input"
+        id="yes_{{ formField.id }}"
+        type="radio"
+        [value]="true"
+        [formControlName]="formField.id"/>
+      <span class="custom-control-label custom-control-color">Yes</span>
+    </label>
+    <label for="no_{{ formField.id }}" class="custom-control custom-radio custom-control-inline">
+      <input
+        class="custom-control-input"
+        id="no_{{ formField.id }}"
+        type="radio"
+        [value]="false"
+        [formControlName]="formField.id"/>
+      <span class="custom-control-label custom-control-color">No</span>
+    </label>
+    <valtimo-camunda-formfield-validation
+      [formGroup]="formGroup"
+      [formField]="formField">
+    </valtimo-camunda-formfield-validation>
+  </div>
+</div>

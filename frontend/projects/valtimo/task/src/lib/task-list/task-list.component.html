@@ -1,0 +1,51 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="main-content">
+  <div class="container-fluid">
+    <valtimo-widget>
+      <valtimo-list
+        [items]="tasks[currentTaskType].tasks"
+        [fields]="tasks[currentTaskType].fields"
+        [pagination]="tasks[currentTaskType].pagination"
+        [viewMode]="true"
+        (paginationClicked)="paginationClicked($event, currentTaskType)"
+        (paginationSet)="paginationSet()"
+        paginationIdentifier="taskList"
+        [isSearchable]="true"
+        [header]="true"
+        (rowClicked)="rowOpenTaskClick($event)"
+      >
+        <div header>
+          <h3 class="list-header-title">{{ listTitle }}</h3>
+          <h5 class="list-header-description">{{ listDescription }}</h5>
+        </div>
+        <div tabs>
+          <ngb-tabset [destroyOnHide]="false" (tabChange)="tabChange($event)">
+            <ngb-tab id="ngb-tab-0" [title]="'task-list.mine.title' | translate"> </ngb-tab>
+            <ngb-tab id="ngb-tab-1" [title]="'task-list.open.title' | translate"> </ngb-tab>
+            <ngb-tab id="ngb-tab-2" [title]="'task-list.all.title' | translate"> </ngb-tab>
+          </ngb-tabset>
+        </div>
+      </valtimo-list>
+    </valtimo-widget>
+    <valtimo-task-detail-modal
+      #taskDetail
+      (formSubmit)="getTasks(currentTaskType)"
+      (assignmentOfTaskChanged)="getTasks(currentTaskType)"
+    ></valtimo-task-detail-modal>
+  </div>
+</div>

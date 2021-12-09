@@ -1,0 +1,44 @@
+<h2 class="mb-4 mt-6">{{'connectorManagement.extension.title' | translate}}</h2>
+
+<ng-container *ngIf="{
+    syncConfig: objectApiSyncConfig$ | async,
+    loading: loading$ | async,
+    disabled: disabled$ | async
+  } as obs"
+>
+  <ng-container *ngIf="obs.loading === false; else loading">
+    <ng-container *ngIf="obs.syncConfig; else addSync">
+      <div class="card card-border">
+        <div class="card-body">
+          <h4 class="connector-name mr-2" [ngClass]="{'text-success': obs.syncConfig.enabled, 'text-warning': !obs.syncConfig.enabled}">
+            {{obs.syncConfig.title}}
+          </h4>
+          <div class="controls">
+            <div class="switch-button switch-button-success">
+              <input type="checkbox" [checked]="obs.syncConfig.enabled" [disabled]="obs.disabled" name="sync" id="sync" (click)="toggleSync(obs.syncConfig)">
+              <span><label for="sync"></label></span>
+            </div>
+            <button class="btn btn-danger ml-3" [disabled]="obs.disabled" (click)="deleteSync(obs.syncConfig.id)">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+</ng-container>
+
+<valtimo-connector-link-extension-modal></valtimo-connector-link-extension-modal>
+
+<ng-template #loading>
+  <valtimo-spinner></valtimo-spinner>
+</ng-template>
+
+<ng-template #addSync>
+  <div class="text-right mt-5">
+    <button class="btn btn-primary" (click)="openModal()" [disabled]="disabled$ | async">
+      <i class="icon mdi mdi-plus"></i> &nbsp;
+      {{'connectorManagement.extension.buttonText' | translate}}
+    </button>
+  </div>
+</ng-template>

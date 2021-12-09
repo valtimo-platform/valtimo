@@ -1,0 +1,56 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<valtimo-modal
+  #taskDetailModal
+  elementId="taskDetailModal"
+  [title]="page?.title"
+  [subtitle]="page?.subtitle"
+  [templateBelowSubtitle]="assignUserToTask"
+>
+  <div body *ngIf="formDefinition">
+    <valtimo-form-io
+      #form
+      [form]="formDefinition"
+      (submit)="onSubmit($event)"
+      [options]="formioOptions"
+    ></valtimo-form-io>
+  </div>
+  <div body *ngIf="!formDefinition && !errorMessage">
+    <div class="bg-warning text-black mb-0 p-3 text-center" [translate]="'formManagement.noFormDefinitionFound'"></div>
+  </div>
+  <div body *ngIf="errorMessage">
+    <div class="bg-danger text-black mb-0 p-3 text-center">
+      {{ errorMessage }}
+    </div>
+  </div>
+  <div footer>
+    <div class="mb-0 p-3 text-center" *ngIf="!formDefinition">
+      <button class="btn btn-secondary btn-space" type="button" (click)="gotoFormLinkScreen()" id="form-link-button">
+        {{ 'formManagement.gotoFormLinksButton' | translate }}
+      </button>
+    </div>
+  </div>
+</valtimo-modal>
+
+<ng-template #assignUserToTask>
+  <valtimo-assign-user-to-task
+    *ngIf="task && assignmentOfTaskChanged"
+    [taskId]="task.id"
+    [assigneeEmail]="task.assignee"
+    (assignmentOfTaskChanged)="assignmentOfTaskChanged.emit()"
+  ></valtimo-assign-user-to-task>
+</ng-template>

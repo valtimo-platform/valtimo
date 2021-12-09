@@ -1,0 +1,59 @@
+<ng-container *ngIf="buttonText && items">
+  <ng-container [ngTemplateOutlet]="(open$ | async) ? opened : closed"> </ng-container>
+</ng-container>
+
+<ng-template #closed>
+  <ng-container *ngIf="style === 'button' || !style">
+    <button class="btn btn-primary btn-sm dropdown-size" (click)="openDropdown()" [style.width.px]="width">
+      {{ buttonText }}
+    </button>
+  </ng-container>
+  <ng-container *ngIf="style === 'underlinedText'">
+    <h5 class="underline-button" (click)="openDropdown()" [style.width.px]="width">
+      <b>
+        {{ buttonText }}
+      </b>
+    </h5>
+  </ng-container>
+</ng-template>
+
+<ng-template #opened>
+  <div class="dropdown-container" [style.width.px]="width">
+    <div class="dropdown-size search" [style.width.px]="width">
+      <input #search [ngClass]="{ disabled: disabled }" [placeholder]="searchText" [formControl]="searchTerm" />
+      {{ search.focus() }}
+    </div>
+    <div class="dropdown-list" (mouseenter)="mouseEnterList()" (mouseleave)="mouseLeaveList()">
+      <ng-container *ngIf="filteredItems$ | async as filteredItems">
+        <ng-container *ngIf="filteredItems.length > 0 && focusedItemId$ | async as focusedItemId; else noResults">
+          <button
+            #button
+            *ngFor="let item of filteredItems"
+            [ngClass]="{ focus: focusedItemId === item.id, disabled: disabled }"
+            class="dropdown-button dropdown-size"
+            (click)="submit(item.id)"
+            (mouseenter)="hoverOverButton(item.id)"
+            (mouseleave)="resetFocus()"
+            [style.width.px]="width"
+          >
+            <span class="dropdown-button-text">
+              {{ item.text }}
+            </span>
+          </button>
+        </ng-container>
+      </ng-container>
+    </div>
+  </div>
+  <ng-container [ngTemplateOutlet]="space"> </ng-container>
+</ng-template>
+
+<ng-template #noResults>
+  <div class="dropdown-button dropdown-size disabled" [style.width.px]="width">
+    <span class="dropdown-button-text">{{ noResultsText }}</span>
+  </div>
+</ng-template>
+
+<ng-template #space>
+  <div *ngIf="style === 'button' || !style" class="dropdown-size" [style.width.px]="width"></div>
+  <h5 *ngIf="style === 'underlinedText'" class="underline-button"><b>-</b></h5>
+</ng-template>

@@ -1,0 +1,53 @@
+.progress-bar-container {
+  padding: 15px 20px;
+}
+
+::ng-deep .formio-component-valtimo-file {
+  .formio-button-add-another, .btn-secondary {
+    display: none;
+  }
+
+  td {
+    padding: 0 !important;
+    border: none;
+  }
+
+  .table {
+    border-collapse: collapse;
+    border: none;
+    margin: 10px 0;
+  }
+}
+
+.dropzone-container {
+  margin-bottom: 12px;
+}
+
+.file-preview {
+  margin-top: -1px;
+  display: flex;
+  border: 1px solid #dee2e6;
+
+  div {
+    padding: 12px 10px;
+  }
+
+  .file-preview-name {
+    width: 65%;
+  }
+
+  .file-preview-size {
+    width: 35%;
+  }
+
+  .icon {
+    color: #a1a1a1;
+    font-size: 1.3846rem;
+    line-height: 18px;
+    cursor: pointer;
+
+    &:hover {
+      color: gray;
+    }
+  }
+}

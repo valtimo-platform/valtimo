@@ -1,0 +1,48 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="col-12 px-0 mb-5">
+      <valtimo-widget [title]="page?.title" [subtitle]="page?.subtitle" [divider]="true">
+        <div class="card-body">
+
+          <!--view with custom definitions-->
+          <div *ngIf="this.customDefinitions">
+            <div class="mb-4" *ngFor="let definition of this.customDefinitions | keyvalue: returnZero">
+            </div>
+            <div class="row pt-3 mt-1">
+              <div class="col-sm-12">
+                <div class="text-right">
+                  <button class="btn btn-space btn-default float-left" type="button" (click)="back()" id="back-button">Back</button>
+                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()" id="reset-button">Reset</button>
+                  <button class="btn btn-space btn-primary" type="button" (click)="save()" id="save-button">Save</button>
+                  <button class="btn btn-space btn-primary" type="submit" (click)="submit({})" id="submit-button">Submit</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <valtimo-camunda-form *ngIf="task?.formFields && !this.customDefinitions"
+                                (submitted)="submit($event)"
+                                [formFields]="task.formFields"
+                                [componentName]="task.formLocation"></valtimo-camunda-form>
+
+        </div>
+      </valtimo-widget>
+    </div>
+  </div>
+</div>

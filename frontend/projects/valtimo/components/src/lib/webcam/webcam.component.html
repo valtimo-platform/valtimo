@@ -1,0 +1,33 @@
+<div (click)="close(false)" *ngIf="{picture: picture$ | async, stream: stream$ | async} as obs"
+     [ngClass]="{showing: showing$ | async}"
+     class="webcam-overlay">
+  <div (click)="false; $event.stopPropagation();" class="inner-container">
+    <div class="webcam-container modal-content">
+      <div class="video-container">
+        <video autoplay="true" id="videoElement"></video>
+        <canvas id="canvas"></canvas>
+        <img *ngIf="obs.picture?.uri" [src]="obs.picture?.uri"/>
+      </div>
+      <div class="button-container">
+        <div class="picture-btn">
+          <button (click)="captureImage()" [disabled]="obs.picture?.file || !obs.stream" class="btn btn-primary btn-lg">
+            <i
+                    class="fa fa-camera"></i>{{'webcam.takePicture' | translate}}
+          </button>
+        </div>
+        <div class="new-btn">
+          <button (click)="clearImage()" [disabled]="!obs.picture?.file" class="btn btn-primary"><i
+                  class="fa fa-undo"></i>{{'webcam.redo' | translate}}
+          </button>
+        </div>
+        <div class="save-btn">
+          <button (click)="close()" [disabled]="!obs.picture?.file" class="btn btn-primary"><i
+                  class="fa fa-save"></i>{{'webcam.save' | translate}}</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-header">
+      <button (click)="close(false)" aria-label="Close" class="close"><span>×</span></button>
+    </div>
+  </div>
+</div>

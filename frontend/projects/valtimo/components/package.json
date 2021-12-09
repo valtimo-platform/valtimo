@@ -1,0 +1,29 @@
+{
+  "name": "@valtimo/components",
+  "version": "4.15.2",
+  "peerDependencies": {
+    "@angular/common": "^10.0.11",
+    "@angular/core": "^10.0.11",
+    "@angular/elements": "^10.0.11"
+  },
+  "publishConfig": {
+    "registry": "http://repo.ritense.com/repository/npm-ritense-private/"
+  },
+  "dependencies": {
+    "@foxythemes/bootstrap-datetime-picker-bs4": "^2.3.4",
+    "bpmn-js": "^6.4.2",
+    "jquery": "3.4.1",
+    "moment": "2.24.0",
+    "heatmap.js-fixed": "^2.0.2",
+    "@ngx-translate/core": "^13.0.0",
+    "@ngx-translate/http-loader": "6.0.0",
+    "@ng-bootstrap/ng-bootstrap": "^7.0.0",
+    "ngx-toastr": "^13.0.0",
+    "angular-formio": "^4.11.5",
+    "ngx-spinner": "^10.0.1",
+    "tslib": "^2.0.0"
+  },
+  "devDependencies": {
+    "karma-moment": "^0.1.0"
+  }
+}
