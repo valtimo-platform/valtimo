@@ -6,9 +6,6 @@
     "@angular/common": "^10.0.11",
     "@angular/core": "^10.0.11"
   },
-  "publishConfig": {
-    "registry": "http://repo.ritense.com/repository/npm-ritense-private/"
-  },
   "dependencies": {
     "@foxythemes/material-design-iconic-font": "^2.2.1",
     "@foxythemes/gritter": "^1.7.4",
