@@ -7,9 +7,6 @@
     "@angular/core": "^10.0.11",
     "@angular/elements": "^10.0.11"
   },
-  "publishConfig": {
-    "registry": "http://repo.ritense.com/repository/npm-ritense-private/"
-  },
   "dependencies": {
     "@foxythemes/bootstrap-datetime-picker-bs4": "^2.3.4",
     "bpmn-js": "^6.4.2",

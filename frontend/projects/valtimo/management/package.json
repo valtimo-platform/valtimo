@@ -7,9 +7,6 @@
     "@angular/core": "^10.0.11",
     "@angular/elements": "^10.0.11"
   },
-  "publishConfig": {
-    "registry": "http://repo.ritense.com/repository/npm-ritense-private/"
-  },
   "dependencies": {
     "jquery": "3.4.1",
     "moment": "2.24.0",

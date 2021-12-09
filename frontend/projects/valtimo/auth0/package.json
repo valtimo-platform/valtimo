@@ -6,9 +6,6 @@
     "@angular/common": "^10.0.11",
     "@angular/core": "^10.0.11"
   },
-  "publishConfig": {
-    "registry": "http://repo.ritense.com/repository/npm-ritense-private/"
-  },
   "dependencies": {
     "auth0-js": "^9.13.4",
     "@auth0/angular-jwt": "^5.0.1",
