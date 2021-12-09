@@ -1,12 +1,10 @@
 {
   "name": "@valtimo/layout",
+  "license": "EUPL-1.2",
   "version": "4.15.2",
   "peerDependencies": {
     "@angular/common": "^10.0.11",
     "@angular/core": "^10.0.11"
-  },
-  "publishConfig": {
-    "registry": "http://repo.ritense.com/repository/npm-ritense-private/"
   },
   "dependencies": {
     "@foxythemes/material-design-iconic-font": "^2.2.1",

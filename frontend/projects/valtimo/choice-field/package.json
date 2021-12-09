@@ -1,9 +1,7 @@
 {
   "name": "@valtimo/choice-field",
+  "license": "EUPL-1.2",
   "version": "4.15.2",
-  "publishConfig": {
-    "registry": "http://repo.ritense.com/repository/npm-ritense-private/"
-  },
   "peerDependencies": {
     "@angular/common": "^10.0.11",
     "@angular/core": "^10.0.11"
