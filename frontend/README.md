@@ -1,10 +1,13 @@
 # valtimo-frontend-libraries
 
-##Prerequisites:
+This project contains a collection of front end libraries that can be used in Angular implementation. These can be found under /projects/valtimo.
+To test the libraries, there's a reference implementation under /src/app.
 
-Install nvm see https://github.com/nvm-sh/nvm
+## Prerequisites:
 
-Edit your .zshrc or .bashrc file.
+Install NVM, see https://github.com/nvm-sh/nvm
+
+Edit your .zshrc or .bashrc file to load NVM in your shell.
 
 ```
 export PATH="$HOME/.jenv/bin:$PATH"
@@ -16,13 +19,11 @@ if [ -f ".nvmrc" ]; then
   nvm use
 fi
 ```
+
 If not present, add a .bash_profile file
 ```
 source ~/.bashrc
 ```
-
-This project contains a collection of front end libraries that can be used in Angular implementation. These can be found under /projects/valtimo.
-To test the libraries, there's a reference implementation under /src/app.
 
 ## Development server
 
