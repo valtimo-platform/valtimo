@@ -109,10 +109,12 @@
 <ng-template #connectedServiceTaskTiles>
   <div *ngFor="let connectedZaakTypeLink of connectedZaakTypeLinks">
     <ng-container *ngFor="let serviceTaskHandler of connectedZaakTypeLink.serviceTaskHandlers">
-      <div *ngIf="selectedElement.id === serviceTaskHandler['serviceTaskId']"
+      <div *ngIf="processDefinitionKey === serviceTaskHandler['processDefinitionKey']
+       && selectedElement.id === serviceTaskHandler['serviceTaskId']"
            class="card mt-1 mb-4 bg-light shadow-sm">
         <div class="card-body">
           <h5 class="card-title text-capitalize pt-2 mb-1">{{ connectedZaakTypeLink.documentDefinitionName}}</h5>
+          <h6 class="card-subtitle mb-2 text-muted">{{ serviceTaskHandler['processDefinitionKey'] }}</h6>
           <h6 class="card-subtitle mb-2 text-muted">{{ serviceTaskHandler['serviceTaskId'] }}</h6>
           <p class="card-text">
             <strong>{{ 'serviceTaskManagement.serviceTaskHandler.operation' | translate }}
@@ -126,7 +128,7 @@
               {{ selectedZaakResult.omschrijving }}
                           </span>
           </p>
-          <button (click)="deleteServiceTaskFromHandler(connectedZaakTypeLink.documentDefinitionName, serviceTaskHandler['serviceTaskId'])"
+          <button (click)="deleteServiceTaskFromHandler(connectedZaakTypeLink.documentDefinitionName, serviceTaskHandler['processDefinitionKey'], serviceTaskHandler['serviceTaskId'])"
                   type="button" class="btn btn-danger mr-2">{{ 'serviceTaskManagement.delete' | translate }}
           </button>
           <button (click)="editConnectedZaakTypeLink(connectedZaakTypeLink, serviceTaskHandler)" type="button"
