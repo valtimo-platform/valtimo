@@ -418,8 +418,10 @@ var App = (function () {
     /*Toggle sidebar on small devices*/
       lsToggle.on('click',function( e ){
         var spacer = $(this).next('.left-sidebar-spacer'), toggleBtn = $(this);
-
+        var toggleSpacerMenu = $(".left-sidebar-spacer");
         toggleBtn.toggleClass('open');
+        toggleSpacerMenu.toggleClass('open');
+
         spacer.slideToggle(config.leftSidebarToggleSpeed, function(){
           $(this).removeAttr('style').toggleClass('open');
         });
