@@ -124,8 +124,8 @@ export class OpenZaakService {
     return this.http.put<any>(`${this.valtimoApiConfig.endpointUri}openzaak/link/${id}/service-handler`, request);
   }
 
-  deleteServiceTaskHandler(id: string, serviceTaskId: string): Observable<any> {
-    return this.http.delete<any>(`${this.valtimoApiConfig.endpointUri}openzaak/link/${id}/service-handler/${serviceTaskId}`);
+  deleteServiceTaskHandler(id: string, processDefinitionKey: string, serviceTaskId: string): Observable<any> {
+    return this.http.delete<any>(`${this.valtimoApiConfig.endpointUri}openzaak/link/${id}/service-handler/${processDefinitionKey}/${serviceTaskId}`);
   }
 
   upload(file: File, documentDefinitionName: string): Observable<OpenZaakResource> {

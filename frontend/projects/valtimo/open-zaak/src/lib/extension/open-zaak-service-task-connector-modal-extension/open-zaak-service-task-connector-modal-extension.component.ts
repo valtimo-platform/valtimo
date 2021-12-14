@@ -55,8 +55,8 @@ export class OpenZaakServiceTaskConnectorModalExtensionComponent implements OnIn
   public resultTypes: ZaakResultType[];
   public displayForm: boolean;
   public isEditMode: boolean;
+  public processDefinitionKey: string | null;
 
-  private processDefinitionKey: string | null;
   @ViewChild('openZaakServiceTaskConnectorModal') modal: ModalComponent;
 
   constructor(
@@ -100,11 +100,13 @@ export class OpenZaakServiceTaskConnectorModalExtensionComponent implements OnIn
   public loadExistingServiceTaskHandlers() {
     this.connectedZaakTypeLinks.forEach((connectedZaakTypeLink: ZaakTypeLink) => {
       const foundServiceTaskHandler = connectedZaakTypeLink.serviceTaskHandlers.find(serviceTaskHandler =>
-        serviceTaskHandler.serviceTaskId === this.selectedElement.id);
+          serviceTaskHandler.processDefinitionKey === this.processDefinitionKey
+          && serviceTaskHandler.serviceTaskId === this.selectedElement.id);
       if (foundServiceTaskHandler != null) {
         this.connectedServiceTasks.push(foundServiceTaskHandler);
         const existingServiceTaskHandlers = this.connectedZaakTypeLinks.filter(zaakTypeLink => {
-          return zaakTypeLink.serviceTaskHandlers.some(serviceHandler => serviceHandler.serviceTaskId === this.selectedElement.id);
+          return zaakTypeLink.serviceTaskHandlers.some(serviceHandler => serviceHandler.processDefinitionKey === this.processDefinitionKey
+              && serviceHandler.serviceTaskId === this.selectedElement.id);
         });
         this.filteredConnectedZaakTypeLinks = this.connectedZaakTypeLinks.filter(serviceTaskHandler =>
           !existingServiceTaskHandlers.includes(serviceTaskHandler));
@@ -207,7 +209,8 @@ export class OpenZaakServiceTaskConnectorModalExtensionComponent implements OnIn
 
     const existingServiceTaskHandlers = this.connectedZaakTypeLinks.filter(connectedZaakTypeLink => {
       if (zaakTypeLink.documentDefinitionName !== connectedZaakTypeLink.documentDefinitionName) {
-        return connectedZaakTypeLink.serviceTaskHandlers.some(serviceHandler => serviceHandler.serviceTaskId === this.selectedElement.id);
+        return connectedZaakTypeLink.serviceTaskHandlers.some(serviceHandler =>
+            serviceHandler.processDefinitionKey === this.processDefinitionKey && serviceHandler.serviceTaskId === this.selectedElement.id);
       }
     });
 
@@ -246,7 +249,7 @@ export class OpenZaakServiceTaskConnectorModalExtensionComponent implements OnIn
   private modifyServieTaskHandler(zaakType: ZaakType, parameter: string) {
     if (this.previousSelectedZaak != null && this.previousSelectedZaak.zaakType !== zaakType) {
       this.openZaakService.deleteServiceTaskHandler(this.previousSelectedZaak.zaakTypeLink.id,
-        this.selectedServiceTaskHandler.serviceTaskId).subscribe();
+          this.selectedServiceTaskHandler.processDefinitionKey, this.selectedServiceTaskHandler.serviceTaskId).subscribe();
     }
     this.openZaakService.modifyServiceTaskHandler(this.selectedZaakTypeLink.id,
       this.createServiceTaskHandlerRequest(parameter)).subscribe(() => {
@@ -256,25 +259,27 @@ export class OpenZaakServiceTaskConnectorModalExtensionComponent implements OnIn
     });
   }
 
-  public deleteServiceTaskFromHandler(documentDefinitionName: string, serviceTaskId: string) {
+  public deleteServiceTaskFromHandler(documentDefinitionName: string, processDefinitionKey: string, serviceTaskId: string) {
     this.connectedZaakTypeLinks.map((connectedZaakTypeLink, i) => {
       if (connectedZaakTypeLink.documentDefinitionName === documentDefinitionName) {
         this.connectedZaakTypeLinks[i].serviceTaskHandlers = connectedZaakTypeLink.serviceTaskHandlers.filter(
           serviceTaskHandler => {
-            if (serviceTaskHandler.serviceTaskId === serviceTaskId) {
-              this.openZaakService.deleteServiceTaskHandler(connectedZaakTypeLink.id, serviceTaskHandler.serviceTaskId).subscribe(() => {
+            if (serviceTaskHandler.processDefinitionKey === processDefinitionKey && serviceTaskHandler.serviceTaskId === serviceTaskId) {
+              this.openZaakService.deleteServiceTaskHandler(connectedZaakTypeLink.id, serviceTaskHandler.processDefinitionKey,
+                  serviceTaskHandler.serviceTaskId).subscribe(() => {
                 this.alertService.success('Service task unlinked');
               }, () => {
                 this.alertService.error('Failed to unlink Service task');
               });
             }
-            return serviceTaskHandler.serviceTaskId !== serviceTaskId;
+            return serviceTaskHandler.processDefinitionKey !== processDefinitionKey && serviceTaskHandler.serviceTaskId !== serviceTaskId;
           }
         );
         this.filteredConnectedZaakTypeLinks = this.filteredConnectedZaakTypeLinks.concat(
           this.connectedZaakTypeLinks.filter(zaakTypeLink => zaakTypeLink.zaakTypeUrl === this.connectedZaakTypeLinks[i].zaakTypeUrl));
         const zaakTypeLinksWithConnectedServiceTask = this.connectedZaakTypeLinks.filter(
-          zaakTypeLink => zaakTypeLink.serviceTaskHandlers.some(item => item.serviceTaskId === serviceTaskId));
+          zaakTypeLink => zaakTypeLink.serviceTaskHandlers.some(item => item.processDefinitionKey === processDefinitionKey &&
+              item.serviceTaskId === serviceTaskId));
 
         if (zaakTypeLinksWithConnectedServiceTask.length === 0) {
           this.connectedServiceTasks = [];
@@ -287,6 +292,7 @@ export class OpenZaakServiceTaskConnectorModalExtensionComponent implements OnIn
 
   private createServiceTaskHandlerRequest(parameter: string) {
     return {
+      processDefinitionKey: this.processDefinitionKey,
       serviceTaskId: this.selectedElement.id,
       operation: this.selectedZaakOperation,
       parameter
