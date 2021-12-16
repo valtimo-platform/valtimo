@@ -109,7 +109,8 @@
       "title": "Taal",
       "options": {
         "nl": "Nederlands",
-        "en": "English"
+        "en": "Engelish",
+        "de": "Deutsch"
       }
     },
     "notification": {

@@ -1,0 +1,508 @@
+{
+  "events": {
+    "TaskCompletedEvent": "Aufgabe abgeschlossen <i class=\"mdi mdi-arrow-right\"></i> {{taskName}}",
+    "TaskAssignedEvent": "Aufgabe zugeordnet <i class=\"mdi mdi-arrow-right\"></i> {{taskName}}",
+    "JsonSchemaDocumentCreatedEvent": "Case erstellt",
+    "JsonSchemaDocumentModifiedEvent": "Case angepasst",
+    "ProcessStartedEvent": "Prozess gestartet",
+    "ProcessEndedEvent": "Prozess abgeschlossen",
+    "DossierDocumentGeneratedEvent": "Case-Dokument erstellt",
+    "DocumentRelatedFileAddedEvent": "Datei hinzugefügt",
+    "DocumentRelatedFileRemovedEvent": "Datei entfernt"
+  },
+  "dossier": {
+    "title": {
+      "single": "Case",
+      "plural": "Cases"
+    },
+    "tabs": {
+      "summary": "Übersicht",
+      "progress": "Fortschritt",
+      "audit": "Audit",
+      "maps": "Karten",
+      "documents": "Dokumente",
+      "custom-dossier": "Kunden-Dossier",
+      "custom-maps": "Kunden-Karten"
+    },
+    "forms": {
+      "globalSearchPlaceHolder": "Alles",
+      "referenceNumberPlaceHolder": "Referenz-Nummer"
+    }
+  },
+  "document": {
+    "title": {
+      "single": "Dokument",
+      "plural": "Dokumente"
+    },
+    "id": "Referenz-ID",
+    "createdBy": "Erstellt von",
+    "createdOn": "Erstellt am",
+    "sequence": "Abfolge"
+  },
+  "summary": {
+    "userTasksDoneState": "Alles erledigt!",
+    "taskLocked": "Kein Zugriff zu dieser Aufgabe!"
+  },
+  "dashboard": {
+    "openTasks": {
+      "title": "Alle Aufgaben"
+    },
+    "openTask": {
+      "title": "Offene Aufgaben"
+    },
+    "activeProcess": {
+      "title": "Aktiver Prozess"
+    },
+    "activeProcesses": {
+      "title": "Aktive Prozesse"
+    },
+    "tasksCompleted": {
+      "title": "Aufgaben abgeschlossen"
+    },
+    "taskCompleted": {
+      "title": "Aufgabe abgeschlossen"
+    },
+    "statistics": {
+      "title": "Statistik"
+    },
+    "processes": {
+      "title": "Prozesse"
+    },
+    "process": {
+      "title": "Prozess",
+      "details": "Prozess-Details"
+    },
+    "startProcess": {
+      "title": "Start"
+    },
+    "version": {
+      "title": "Version"
+    },
+    "processingLeadTime": {
+      "title": "Bearbeitungsdauer",
+      "description": "Durchschnitt über die letzten 30 Tage"
+    },
+    "tasks": {
+      "title": "Aufgaben"
+    },
+    "task": {
+      "title": "Aufgabe"
+    }
+  },
+  "account": {
+    "title": "Account",
+    "links": {
+      "profile": "Profile",
+      "password": "Passwort",
+      "help": "Hilfe",
+      "forum": "Forum",
+      "feedback": "Feedback",
+      "signOut": "Abmeldung"
+    }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "context": {
+      "title": "Kontext"
+    },
+    "language": {
+      "title": "Sprache",
+      "options": {
+        "nl": "Nederlands",
+        "en": "Engelish",
+        "de": "Deutsch"
+      }
+    },
+    "notification": {
+      "title": "Benachrichtigungen",
+      "frequency": {
+        "title": "Benachrichtigungs-Frequenz"
+      },
+      "taskNotifications": "Aufgaben-Benachrichtigungen",
+      "taskNotificationsIntro": "Erhalte eine E-Mail, sobald Aufgabe zugeordnet wird",
+      "emailNotifications": "Tägliche Aufgabe-Übersicht",
+      "emailNotificationsIntro": "Persönliche Aufgaben-Übersicht",
+      "emailNotificationOnMonday": "Montag",
+      "emailNotificationOnTuesday": "Dienstag",
+      "emailNotificationOnWednesday": "Mittwoch",
+      "emailNotificationOnThursday": "Donnerstag",
+      "emailNotificationOnFriday": "Freitag",
+      "emailNotificationOnSaturday": "Samstag",
+      "emailNotificationOnSunday": "Sonntag"
+    },
+    "version": {
+      "title": "Versions-Information"
+    }
+  },
+  "decisions": {
+    "upload": {
+      "description": "Wähle eine .dmn Datei für den Upload"
+    }
+  },
+  "message": {
+    "empty": "Kein Ergebnis gefunden"
+  },
+  "cta": {
+    "close": "Schließen",
+    "moreDetails": "Mehr Details"
+  },
+  "formManagement": {
+    "noFormDefinitionFoundAdmin": "Es ist keine Formular verknüpft. Die Verknüpfung erfolgt im Admin Menü > Prozess-Verknüpfungen.",
+    "noFormDefinitionFoundUser": "Es ist keine Formular verknüpft. Nur Admin-User können die Verknüpfung vornehmen.",
+    "gotoFormLinksButton": "Jetzt konfigurieren"
+  },
+  "serviceTaskManagement": {
+    "subtitle": "Verknüpfe {{selectedElement}} mit Open Zaak",
+    "context": "Wähle bestehenden Open Zaak Anwender oder erstelle einen neuen.",
+    "noZaakTypeLinkFound": "Es ist kein Zaak-Typ mit dem Service-Task verknüpft. Die Verknüpfung erfolgt im Admin Menü > Cases.",
+    "serviceTaskHandler": {
+      "operation": "Tätigkeit:",
+      "status": "Status:",
+      "result": "Ergebnis:"
+    },
+    "delete": "Löschen",
+    "edit": "Editieren",
+    "back": "Zurück",
+    "save": "Speichern",
+    "addMore": "+1 ergänzen",
+    "gotoDossierManagementButton": "Jetzt konfigurieren",
+    "selectDocumentDefinitionName": "Case-Definition auswählen",
+    "selectedZaakType": "Zaak-Typ auswählen",
+    "selectZaakOperation": "Zaak-Aktion auswählen",
+    "selectZaakStatus": "Zaak-Status auswählen",
+    "noZaakStatusConfigured": "Kein Zaak-Status verfügbar. Gehe zu Open Zaak, um einen Zaak-Status zu erstellen",
+    "selectZaakResult": "Select a zaak result",
+    "noZaakResultConfigured": "No zaak result available go to Open Zaak to create a zaak result"
+  },
+  "task-list": {
+    "mine": {
+      "title": "Meine Aufgaben",
+      "description": "Überblick alle zugeordneten Aufgaben"
+    },
+    "open": {
+      "title": "Nicht zugeordnete Aufgaben",
+      "description": "Überblick alle nicht zugeordneten Aufgaben"
+    },
+    "all": {
+      "title": "Alle Aufgaben",
+      "description": "Überblick alle Aufgaben"
+    }
+  },
+  "Task": "Aufgabe",
+  "Tasks": "Aufgaben",
+  "Analysis": "Analyse",
+  "Contexts": "Kontexte",
+  "Overview of all Contexts": "Überblick alle Kontexte",
+  "Create new Context": "Neuen Kontext erstellen",
+  "Entitlements": "Berechtigungen",
+  "Overview of all Entitlements": "Überblick alle Berechtigungen",
+  "Create new Entitlement": "Neue Berechtigung erstellen",
+  "Entitlement details": "Berechtigungs-Details",
+  "Users": "User",
+  "Overview of all Users": "Überblick alle User",
+  "Create new User": "Neuen User erstellen",
+  "User details": "User-Details",
+  "Choice fields": "Auswahlfelder",
+  "Overview of all Choice fields": "Überblick alle Auswahlfelder",
+  "Create new Choice field": "Neues Auswahlfeld erstellen",
+  "Choice field details": "Auswahlfeld-Details",
+  "Choice field values": "Auswahlfeld-Werte",
+  "Overview of all Choice field values": "Überblick alle Auswahlfeld-Werte",
+  "Create new Choice field value": "Neuen Auswahlfeld-Wert erstellen",
+  "Choice field value details": "Auswahlfeld Werte-Details",
+  "Process": "Prozess",
+  "Processes": "Prozesse",
+  "Overview of all Processes": "Überblick alle Prozesse",
+  "Create new Process": "Neuen Prozess erstellen",
+  "Process details": "Prozess-Details",
+  "Decision tables": "Entscheidungs-Tabelle",
+  "Overview of all Decision tables": "Überblick alle Entscheidungs-Tabellen",
+  "Create new Milestone": "Neuen Meilenstein erstellen",
+  "Create new Milestone Set": "Neues Meilenstein-Set erstellen",
+  "Forms": "Formulare",
+  "Overview of all Forms": "Überblick alle Formulare",
+  "Create new Form": "Neues Formular erstellen",
+  "Form Builder": "Formular-Builder",
+  "Form links": "Prozess-Verknüpfungen",
+  "uploadFormDefinition": "Formular-Definition hochladen",
+  "Process migration": "Prozess-Migration",
+  "Process migration warning": "<b>Warnung:</b> Wenn ein Prozess migriert wird, werden die User-Gruppen der laufenden Instanzen nicht geupdatet. Dies kann bei Bedarf in der Datenbank erfolgen. (Zum Beispiel, wenn eine spezifische User-Aufgabe für ROLE_USER offen ist und die User-Gruppe für die User-Aufgabe wird im Prozess auf ROLE_ADMIN angepasst, wird diese Aufgabe nachwievor für ROLE_USER verfügbar sein. Nur neu gestartete Prozesse werden die neue User-Gruppe berücksichtigen.)",
+  "Dossier": "Case",
+  "Dossiers": "Cases",
+  "document definition": "Case-Definition",
+  "Upload document definition": "Upload Case-Definition",
+  "Remove document definition": "Case-Definition löschen",
+  "remove-document-definition-confirmation": "Warnung: <br/><br/> Diese Case-Definition und alle verbundenen Cases werden gelöscht. Für verknüpfte Prozesse wird die Verknüpfung aufgehoben.<br/> Das Entfernen einer Case-Definition kann nicht rückgängig gemacht werden.",
+  "remove-document-definition-confirmation-button": "Löschen",
+  "remove-document-definition-success": "Case-Definition gelöscht",
+  "Download document definition": "Download Case-Definition",
+  "Select a document definition": "Datei für Upload auswählen",
+  "Overview of all Dossiers": "Überblick alle Cases",
+  "Start Dossier": "Neuen Case erstellen",
+  "Dossier details": "Case-Details",
+  "Related documents": "Verknüpfte Documente",
+  "Overview of all documents in this dossier": "Überblick alle Dokumente für diesen Case",
+  "Basics": "Basics",
+  "A&E": "A&E",
+  "Other": "Andere",
+  "Download": "Download",
+  "Upload": "Upload",
+  "Select process definition for document definition": "Prozess-Definition für Dokument-Definition auswählen",
+  "Select options for the selected process": "Optionen für gewählten Prozess auswählen",
+  "Save": "Speichern",
+  "Startable by user": "Startbar durch User",
+  "Startable by user tooltip": "Wenn diese Option ausgewählt wird, wird die gewählte Prozess-Definition als Option im Subprozess-Menü angezeigt. Das Subprozess-Menü wird an der rechten Seite oben auf der Case-Übersicht angezeigt.",
+  "openZaak": {
+    "links": "OpenZaak Links",
+    "error": {
+      "configNotFound": "OpenZaak-Konfiguration nicht gefunden, gehe zu Admin > Open Zaak"
+    }
+  },
+  "interface": {
+    "mainMenu": "Hauptmenü",
+    "toggleMenu": "Menü",
+    "typeToSearch": "Hier tippen zum Suchen",
+    "noSearchResults": "Keine Ergebnisse",
+    "loading": "Lädt..."
+  },
+  "assignTask": {
+    "assignedTo": "User-Zuordnung: ",
+    "header": "Aufgabe einen User zuordnen",
+    "placeholder": "User auswählen",
+    "remove": "Entfernen",
+    "save": "Speichern",
+    "fetchingUsers": "User abrufen..."
+  },
+  "dropzone": {
+    "drop": "Datei auswählen oder hier über drag-and-drop ablegen",
+    "maxFileSize": "Maximale Datei-Größe: ",
+    "jsonDocDef": "Die Case-Definition muss im JSON-Format sein",
+    "formJsonDocDef": "Die Formular-Definition muss im JSON-Format sein",
+    "error": {
+      "tooBig": "Die Detai ist zu groß",
+      "wrongType": "Der Dokumenten-Typ wird nicht unterstützt",
+      "generic": "Etwas ist schief gelaufen. Bitte erneut versuchen.",
+      "invalidDocDef": "Die Case-Definition konnte nicht hochgeladen werden. Bitte erneut versuchen.",
+      "invalidFormDef": "Die Formular-Definition ist ungültig. Bitte erneut versuchen."
+    }
+  },
+  "fieldLabels": {
+    "referenceNumber": "Referenz-Nummer",
+    "createdBy": "Erstellt von",
+    "createdOn": "Erstellt am",
+    "lastModified": "Letzte Änderung",
+    "files": "Dateien",
+    "firstName": "Vorname"
+  },
+  "list": {
+    "currentPage": "Seite {{current}} von {{total}}",
+    "show": "Zeigen",
+    "entries": "Einträge",
+    "noMatchingItems": "Keine passenden Items gefunden ",
+    "noFieldDefinitions": "Keine Feld-Definitionen hinterlegt",
+    "noResults": "Keine Ergebnisse gefunden",
+    "showingResults": "Zeigt {{number}} von {{total}} Ergebnissen",
+    "showingResult": "Zeigt {{number}} Ergebnisse"
+  },
+  "webcam": {
+    "takePicture": "Foto machen",
+    "save": "Speichern",
+    "redo": "Wiederherstellen"
+  },
+  "Connectors": "Connectors",
+  "connectorManagement": {
+    "title": "Connectors",
+    "subtitle": "Überblick alle Connectors",
+    "add": "Neuen Connector erstellen",
+    "addHeader": "Womit soll verbunden werden?",
+    "noConnectorsAvailable": "Es sind keine Anschlüsse vorhanden.",
+    "modify": "Connector anpassen",
+    "modifyWith": "Hiermit Connector anpassen",
+    "configure": "Connector anpassen",
+    "configureButton": "Konfigurieren",
+    "configureWith": "Konfigurieren",
+    "save": "Connector speichern",
+    "remove": "Connector entfernen",
+    "addValue": "Wert ergänzen",
+    "removeValue": "Wert entfernen",
+    "goBack": "Zurück",
+    "labels": {
+      "name": "Name",
+      "typeName": "Connector"
+    },
+    "inputLabels": {
+      "connectorName": "Name Connector",
+      "name": "Name",
+      "numberLimit": "Zahlen-Limit",
+      "clients": "Clients",
+      "links": "Links",
+      "key": "Key",
+      "amountOfCallsAllowed": "Erlaubte Anzahl Calls",
+      "url": "URL",
+      "token": "Token",
+      "objectsApi.url": "Objects API URL",
+      "objectsApi.token": "Objects API Token",
+      "objectsTypeApi.url": "Objecttypes API URL",
+      "objectsTypeApi.token": "Objecttypes API Token",
+      "objectType.name": "Object type name",
+      "objectType.title": "Object type title",
+      "objectType.typeVersion": "Object type version",
+      "objectType.url": "Object type URL"
+    },
+    "messages": {
+      "addSuccess": "Connection erfolgreich hinzugefügt.",
+      "modifySuccess": "Connection erfolgreich angepasst.",
+      "deleteSuccess": "Connection erfolgreich gelöscht."
+    },
+    "extension": {
+      "title": "Case detail Objects API synchronisation",
+      "buttonText": "Add Objects API synchronisation",
+      "clickToSync": "Click on a Object definition from the list below to sync the case with.",
+      "addSyncSuccess": "Synchronisation between the Object definition and the case is now enabled.",
+      "disableSyncSuccess": "Synchronisation between the Object definition and the case is now disabled.",
+      "deleteSyncSuccess": "Synchronisation has been successfully deleted.",
+      "addSyncError": "Something went wrong with synchronizing your Object definition and the case.",
+      "pagination": "Sync {{currentIndex}} of {{total}}",
+      "enableSync": "Enable sync",
+      "disableSync": "Disable sync",
+      "deleteSync": "Delete",
+      "noConnectors": "No Object definitions could be found. Please add at least one under Admin -> Connections."
+    }
+  },
+  "formLink": {
+    "title": "Welche der drei Optionen soll genutzt werden, um ein Formular zu verknüpfen:",
+    "subtitle": "Connect {{type}} to a form",
+    "formDefinition": "Form definition",
+    "angularState": "Angular state",
+    "redirect": "Redirect to a page within the application",
+    "externalUrl": "External URL",
+    "newWindow": "Will open URL in a new window",
+    "header": "Choose form definition",
+    "linkTo": "Link available form definition to ",
+    "linkedDefinition": "Selected form definition: ",
+    "deselect": "Abwählen",
+    "clear": "Verknüpfung löschen",
+    "save": "Form-Verknüpfung speichern",
+    "infoPredefined": "Choose from predefined form definitions",
+    "infoUrl": "Enter a URL pointing to a location in the Console. Example format: '/form-links'",
+    "infoExternal": "Enter a URL pointing to an external location. Example format: 'http://www.domain.com/form1'",
+    "alertRelink": "Form relinked",
+    "alertRelinkError": "Failed to relink form",
+    "alertLink": "Form linked",
+    "alertLinkError": "Failed to link form",
+    "alertUnlink": "Form unlinked",
+    "alertUnlinkError": "Failed to unlink form"
+  },
+  "connectorForm": {
+    "productaanvraag": {
+      "step1": {
+        "title": "2. Objects API",
+        "tip": "Enter the data needed to connect with the Objects API where the product requests are saved.",
+        "objectsApi": {
+          "panelTitle": "Objects API",
+          "url": {
+            "label": "URL",
+            "tooltip": "i.e. http://api.example.org"
+          },
+          "token": {
+            "label": "Token",
+            "tooltip": "i.e. 1234"
+          }
+        },
+        "objectTypesApi": {
+          "panelTitle": "Object types API",
+          "url": {
+            "label": "URL",
+            "tooltip": "i.e. http://api.example.org"
+          },
+          "token": {
+            "label": "Token",
+            "tooltip": "i.e. 1234"
+          }
+        }
+      },
+      "step2": {
+        "title": "3. Object type",
+        "tip": "Enter the data of the object type of the product requests.",
+        "objectType": {
+          "panelTitle": "Object type",
+          "name": {
+            "label": "Name",
+            "tooltip": "i.e. productRequest"
+          },
+          "title": {
+            "label": "Title",
+            "tooltip": "i.e. Product request"
+          },
+          "url": {
+            "label": "URL",
+            "tooltip": "i.e. http://api.example.org/api/v1/objecttypes/xxxx-xxxx-xxxx-xxxx-xxxx"
+          },
+          "typeVersion": {
+            "label": "Version",
+            "tooltip": "i.e. 1"
+          }
+        }
+      },
+      "step3": {
+        "title": "4. Open Notifications",
+        "tip": "Enter the data needed to connect to Open Notifications.",
+        "openNotifications": {
+          "panelTitle": "Open Notifications",
+          "baseUrl": {
+            "label": "URL",
+            "tooltip": "i.e. http://api.example.org"
+          },
+          "clientId": {
+            "label": "Client ID",
+            "tooltip": "i.e. my-client"
+          },
+          "secret": {
+            "label": "Secret",
+            "tooltip": "i.e. xxxx-xxxx-xxxx-xxxx-xxxx"
+          },
+          "callbackBaseUrl": {
+            "label": "Callback URL",
+            "tooltip": "i.e. http://api.example.org"
+          }
+        }
+      },
+      "step4": {
+        "title": "5. Request",
+        "tip": "Enter the data needed for processing product requests.",
+        "applicant": {
+          "panelTitle": "Applicant role type",
+          "tip": "Enter the URL which points to the role type in OpenZaak that is attributed to the user who starts the product request.",
+          "roleTypeUrl": {
+            "label": "URL to role type",
+            "tooltip": "http://api.example.org/catalogi/api/v1/roltypen/xxxx-xxxx-xxxx-xxxx-xxxx"
+          }
+        }
+      },
+      "step0": {
+        "title": "1. Types",
+        "tip": "Enter the case type and the process type which are started for a certain type of product request.",
+        "typeMapping": {
+          "panelTitle": "Types",
+          "productAanvraagType": {
+            "label": "Type of product request",
+            "tooltip": "i.e. test-product-request"
+          },
+          "caseDefinitionKey": {
+            "label": "Case definition",
+            "placeholder": "Choose a case definition from the list"
+          },
+          "processDefinitionKey": {
+            "label": "Process definition",
+            "placeholder": "Choose a process definition from the list"
+          }
+        }
+      },
+      "step5": {
+        "title": "6. Name",
+        "tip": "Enter the name of the connection.",
+        "name": "Connection name"
+      }
+    }
+  }
+}
