@@ -21,6 +21,9 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {AlertModule, FieldAutoFocusModule, ListModule, UploaderModule, WidgetModule} from '@valtimo/components';
 import {ProfileComponent} from './profile/profile.component';
 import {PasswordComponent} from './password/password.component';
+import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
+import {HttpLoaderFactory} from '@valtimo/contract';
+import {HttpClient} from '@angular/common/http';
 
 @NgModule({
   declarations: [ProfileComponent, PasswordComponent],
@@ -31,6 +34,13 @@ import {PasswordComponent} from './password/password.component';
     ListModule,
     FieldAutoFocusModule,
     FormsModule,
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory,
+        deps: [HttpClient]
+      }
+    }),
     ReactiveFormsModule,
     UploaderModule,
     AlertModule

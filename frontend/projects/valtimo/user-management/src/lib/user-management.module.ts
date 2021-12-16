@@ -22,7 +22,9 @@ import {UserListComponent} from './user-list/user-list.component';
 import {UserDetailComponent} from './user-detail/user-detail.component';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {UserCreateComponent} from './user-create/user-create.component';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
+import {HttpLoaderFactory} from '@valtimo/contract';
+import {HttpClient} from '@angular/common/http';
 
 @NgModule({
   declarations: [UserListComponent, UserDetailComponent, UserCreateComponent],
@@ -36,7 +38,13 @@ import {TranslateModule} from '@ngx-translate/core';
     FormsModule,
     ReactiveFormsModule,
     AlertModule,
-    TranslateModule
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory,
+        deps: [HttpClient]
+      }
+    }),
   ],
   exports: []
 })
