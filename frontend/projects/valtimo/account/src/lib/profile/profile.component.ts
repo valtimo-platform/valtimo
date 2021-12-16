@@ -18,6 +18,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {AlertService} from '@valtimo/components';
 import * as momentImported from 'moment';
+import {TranslateService} from '@ngx-translate/core';
 
 const moment = momentImported;
 moment.locale(localStorage.getItem('langKey'));
@@ -35,7 +36,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   constructor(
     private formBuilder: FormBuilder,
-    private alertService: AlertService
+    private alertService: AlertService,
+    public translate: TranslateService
     // private userProviderService: UserProviderService
   ) { }
 
