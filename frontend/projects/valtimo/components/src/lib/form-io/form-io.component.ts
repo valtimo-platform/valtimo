@@ -36,7 +36,6 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   @Input() options: ValtimoFormioOptions;
   @Input() submission?: object | {} = {};
   @Input() formRefresh$!: Subject<FormioRefreshValue>;
-  @Input() useFormRefresh = false;
   @Output() submit: EventEmitter<any> = new EventEmitter();
   @Output() change: EventEmitter<any> = new EventEmitter();
   refreshForm: EventEmitter<FormioRefreshValue> = new EventEmitter();
