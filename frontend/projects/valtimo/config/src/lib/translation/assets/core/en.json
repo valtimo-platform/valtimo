@@ -253,7 +253,7 @@
   "Startable by user": "Startable by user",
   "Startable by user tooltip": "When this option is selected, the selected process definition will be displayed as an option in the subprocess menu. The subprocess menu is displayed on the detail page of the case, below the start button at the top right corner.",
   "openZaak": {
-    "links": "OpenZaak links",
+    "links": "Connected zaak type",
     "error": {
       "configNotFound": "OpenZaak configuration not found, go to Admin > Open Zaak"
     }
@@ -355,8 +355,8 @@
       "deleteSuccess": "Connection has been deleted successfully."
     },
     "extension": {
-      "title": "Case detail Objects API synchronisation",
-      "buttonText": "Add Objects API synchronisation",
+      "title": "Case detail synchronisation",
+      "buttonText": "Configure case detail synchronisation",
       "clickToSync": "Click on a Object definition from the list below to sync the case with.",
       "addSyncSuccess": "Synchronisation between the Object definition and the case is now enabled.",
       "disableSyncSuccess": "Synchronisation between the Object definition and the case is now disabled.",

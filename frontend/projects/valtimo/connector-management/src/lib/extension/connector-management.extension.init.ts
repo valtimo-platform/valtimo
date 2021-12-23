@@ -36,7 +36,7 @@ export function connectorLinkExtensionInitializer(
           new BasicExtensionPoint(
             'dossier-management',
             'dossier',
-            'connector-link',
+            'right-panel',
             ConnectorLinkExtensionComponent
           )
         );

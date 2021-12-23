@@ -37,7 +37,7 @@ export function openZaakExtensionInitializer(
           new BasicExtensionPoint(
             'dossier-management',
             'dossier',
-            'openzaak-zaaktype-link',
+            'right-panel',
             OpenZaakTypeLinkExtensionComponent
           )
         );

@@ -14,3 +14,14 @@
  * limitations under the License.
  */
 
+.card-header, .setting-row{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+}

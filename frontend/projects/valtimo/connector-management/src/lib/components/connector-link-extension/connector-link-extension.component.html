@@ -8,19 +8,26 @@
 >
   <ng-container *ngIf="obs.loading === false; else loading">
     <ng-container *ngIf="obs.syncConfig; else addSync">
-      <div class="card card-border">
-        <div class="card-body">
-          <h4 class="connector-name mr-2" [ngClass]="{'text-success': obs.syncConfig.enabled, 'text-warning': !obs.syncConfig.enabled}">
+      <div class="card card-border card-contrast">
+        <div class="card-header card-header-contrast card-header-featured">
+          <div>
             {{obs.syncConfig.title}}
-          </h4>
+          </div>
           <div class="controls">
-            <div class="switch-button switch-button-success">
-              <input type="checkbox" [checked]="obs.syncConfig.enabled" [disabled]="obs.disabled" name="sync" id="sync" (click)="toggleSync(obs.syncConfig)">
-              <span><label for="sync"></label></span>
-            </div>
             <button class="btn btn-danger ml-3" [disabled]="obs.disabled" (click)="deleteSync(obs.syncConfig.id)">
               <i class="fa fa-trash"></i>
             </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="setting-row">
+            Automatisch zaakdetails synchroniseren
+            <div class="controls">
+              <div class="switch-button switch-button-success">
+                <input type="checkbox" [checked]="obs.syncConfig.enabled" [disabled]="obs.disabled" name="sync" id="sync" (click)="toggleSync(obs.syncConfig)">
+                <span><label for="sync"></label></span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

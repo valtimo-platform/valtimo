@@ -18,27 +18,52 @@
   <div><h2>{{ 'openZaak.links' | translate }}</h2></div>
 </div>
 
-<div *ngIf="!(loading$ | async); else loading" class="mb-8">
-  <ng-container *ngIf="!(noConfigAvailable$ | async); else noConfigAvailable">
-    <div *ngIf="selectedZaakType" class="input-group mt-2 mb-3 align-items-center">
-      <input
-        class="form-control"
-        [value]="selectedZaakType.omschrijving"
-        type="text"
-        disabled
-      />
-      <button class="btn btn-danger ml-2 mb-0" (click)="removeZaakTypeLink()">
-        <i class="fa fa-trash"></i>
-      </button>
-    </div>
-    <div class="text-right mt-5">
-      <button class="btn btn-primary" (click)="openModal()" [disabled]="selectedZaakType">
-        <i class="icon mdi mdi-plus"></i> &nbsp;
-        Link zaak type
-      </button>
-    </div>
+<ng-container *ngIf="{
+    noConfigAvailable: noConfigAvailable$ | async,
+    loading: loading$ | async
+  } as obs"
+>
+  <ng-container *ngIf="obs.loading === false; else loading">
+    <ng-container *ngIf="!obs.noConfigAvailable; else noConfigAvailable">
+      <ng-container *ngIf="zaakTypeLink; else addSync">
+        <div class="card card-border card-contrast">
+          <div class="card-header card-header-contrast card-header-featured">
+            <div>
+              {{selectedZaakType.omschrijving}}
+            </div>
+            <div class="controls">
+              <button class="btn btn-danger ml-3" (click)="removeZaakTypeLink()">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="setting-row">
+              Automatisch aanmaken voor elk dossier
+              <div class="controls">
+                <div class="switch-button switch-button-success">
+                  <input type="checkbox" [checked]="zaakTypeLink.createWithDossier"
+                         name="createWithDossier" id="createWithDossier"
+                         (change)="zaakTypeLink.createWithDossier = !zaakTypeLink.createWithDossier; updateConfig()">
+                  <span><label for="createWithDossier"></label></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
   </ng-container>
-</div>
+</ng-container>
+
+<ng-template #addSync>
+  <div class="text-right mt-5">
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="icon mdi mdi-plus"></i> &nbsp;
+      Link zaak type
+    </button>
+  </div>
+</ng-template>
 
 <valtimo-modal
   #openZaakTypeLinkModal

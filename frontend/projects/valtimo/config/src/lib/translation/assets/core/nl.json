@@ -253,7 +253,7 @@
   "Startable by user": "Kan gestart worden door gebruiker",
   "Startable by user tooltip": "Wanneer deze optie is geselecteerd, zal de geselecteerde procesdefinitie worden weergegeven als optie in het subprocess-menu. Het subprocess-menu wordt weergegeven op de detailpagina van het dossier, onder de startknop rechts bovenin.",
   "openZaak": {
-    "links": "OpenZaak-koppelingen",
+    "links": "Gekoppeld zaak type",
     "error": {
       "configNotFound": "OpenZaak configuratie niet gevonden, ga naar Admin > Open Zaak"
     }
@@ -355,8 +355,8 @@
       "deleteSuccess": "Connectie is succesvol verwijderd."
     },
     "extension": {
-      "title": "Zaakdetail Objects API synchronisatie",
-      "buttonText": "Objects API-synchronisatie toevoegen",
+      "title": "Zaakdetail synchronisatie",
+      "buttonText": "Zaakdetail synchronisatie instellen",
       "clickToSync": "Klik op een Object-definitie uit de onderstaande lijst om het dossier mee te synchroniseren.",
       "addSyncSuccess": "Synchronisatie tussen de Object-definitie en het dossier staat nu aan.",
       "disableSyncSuccess": "Synchronisatie tussen de Object-definitie en het dossier staat nu uit.",
