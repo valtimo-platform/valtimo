@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
-export enum DefaultTabs {
-  summary = 'summary', progress = 'progress', audit = 'audit', documents = 'documents', contactMoments = 'contact-moments'
+import {NgModule} from '@angular/core';
+
+@NgModule()
+export class ContactMomentModule {
+
 }

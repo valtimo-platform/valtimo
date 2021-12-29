@@ -38,6 +38,7 @@ import {ChoicefieldModule} from '@valtimo/choicefield';
 import {
   DefaultTabs,
   DossierDetailTabAuditComponent,
+  DossierDetailTabContactMomentsComponent,
   DossierDetailTabDocumentsComponent,
   DossierDetailTabProgressComponent,
   DossierDetailTabSummaryComponent,
@@ -51,6 +52,7 @@ import {StartProcessCustomFormComponent} from './start-process-custom-form/start
 import {ContextModule} from '@valtimo/context';
 import {DashboardModule} from '@valtimo/dashboard';
 import {DocumentModule} from '@valtimo/document';
+import {ContactMomentModule} from '@valtimo/contact-moment';
 import {AccountModule} from '@valtimo/account';
 import {UserManagementModule} from '@valtimo/user-management';
 import {AuthorityModule} from '@valtimo/authority';
@@ -84,6 +86,7 @@ export function tabsFactory() {
     [DefaultTabs.progress, DossierDetailTabProgressComponent],
     [DefaultTabs.audit, DossierDetailTabAuditComponent],
     [DefaultTabs.documents, DossierDetailTabDocumentsComponent],
+    [DefaultTabs.contactMoments, DossierDetailTabContactMomentsComponent],
     ['custom-maps', CustomMapsTabComponent],
     ['custom-dossier', CustomDossierTabComponent]
   ]);
@@ -116,13 +119,14 @@ export function tabsFactory() {
     TaskModule,
     ChoicefieldModule,
     DossierModule.forRoot(
-      tabsFactory
+        tabsFactory
     ),
     ProcessModule,
     ViewConfiguratorModule,
     BpmnJsDiagramModule,
     FormsModule,
     ReactiveFormsModule,
+    ContactMomentModule,
     ContextModule,
     DashboardModule,
     DocumentModule,

@@ -4,6 +4,7 @@
   "lib": {
     "entryFile": "src/public_api.ts",
     "umdModuleIds": {
+      "@valtimo/contact-moment": "contactMoment",
       "@valtimo/document": "document",
       "@valtimo/process": "process",
       "@valtimo/task": "task",

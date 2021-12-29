@@ -11,6 +11,7 @@
       "ngx-logger": "ngxLogger",
       "@valtimo/form": "form",
       "ngx-toastr": "ngxToastr",
+      "@valtimo/contact-moment": "contact-moment",
       "@valtimo/document": "document",
       "@valtimo/components": "components",
       "@ngx-translate/core": "core$1",
