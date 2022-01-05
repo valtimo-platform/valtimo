@@ -348,7 +348,11 @@
       "objectType.name": "Objecttype naam",
       "objectType.title": "Objecttype titel",
       "objectType.typeVersion": "Objecttype versie",
-      "objectType.url": "Objecttype URL"
+      "objectType.url": "Objecttype URL",
+      "openZaakConfig.url": "OpenZaak URL",
+      "openZaakConfig.clientId": "Client ID",
+      "openZaakConfig.secret": "Secret",
+      "openZaakConfig.rsin": "Rsin"
     },
     "messages": {
       "addSuccess": "Connectie is succesvol toegevoegd.",

@@ -18,15 +18,12 @@ import {NgModule} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {ModalModule, WidgetModule, SpinnerModule} from '@valtimo/components';
-import {OpenZaakComponent} from './open-zaak.component';
-import {OpenZaakRoutingModule} from './open-zaak-routing.module';
 import {CommonModule} from '@angular/common';
 import {OpenZaakTypeLinkExtensionComponent} from './extension/open-zaak-type-link-extension.component';
 import {OpenZaakServiceTaskConnectorModalExtensionComponent} from './extension/open-zaak-service-task-connector-modal-extension/open-zaak-service-task-connector-modal-extension.component';
 
 @NgModule({
   declarations: [
-    OpenZaakComponent,
     OpenZaakTypeLinkExtensionComponent,
     OpenZaakServiceTaskConnectorModalExtensionComponent
   ],
@@ -34,7 +31,6 @@ import {OpenZaakServiceTaskConnectorModalExtensionComponent} from './extension/o
     FormsModule,
     TranslateModule,
     ModalModule,
-    OpenZaakRoutingModule,
     ReactiveFormsModule,
     WidgetModule,
     CommonModule,

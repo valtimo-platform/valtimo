@@ -348,7 +348,11 @@
       "objectType.name": "Object type name",
       "objectType.title": "Object type title",
       "objectType.typeVersion": "Object type version",
-      "objectType.url": "Object type URL"
+      "objectType.url": "Object type URL",
+      "openZaakConfig.url": "OpenZaak URL",
+      "openZaakConfig.clientId": "Client ID",
+      "openZaakConfig.secret": "Secret",
+      "openZaakConfig.rsin": "Rsin"
     },
     "messages": {
       "addSuccess": "Connection has been added successfully.",
