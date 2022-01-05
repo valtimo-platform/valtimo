@@ -482,20 +482,20 @@
       },
       "step0": {
         "title": "1. Types",
-        "tip": "Enter the case type and the process type which are started for a certain type of product request.",
+        "tip": "Enter the case types and the process types which are started for each type of product request.",
         "typeMapping": {
           "panelTitle": "Types",
           "productAanvraagType": {
-            "label": "Type of product request",
+            "label": "Type of request",
             "tooltip": "i.e. test-product-request"
           },
           "caseDefinitionKey": {
             "label": "Case definition",
-            "placeholder": "Choose a case definition from the list"
+            "placeholder": "choose definition"
           },
           "processDefinitionKey": {
             "label": "Process definition",
-            "placeholder": "Choose a process definition from the list"
+            "placeholder": "choose definition"
           }
         }
       },

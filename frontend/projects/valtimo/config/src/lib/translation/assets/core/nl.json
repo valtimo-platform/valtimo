@@ -482,20 +482,20 @@
       },
       "step0": {
         "title": "1. Types",
-        "tip": "Voer hier in welk dossier en proces type er gestart moeten worden voor een type productaanvraag.",
+        "tip": "Voer hier in welk dossier- en procestypes er gestart moeten worden voor elk type productaanvraag.",
         "typeMapping": {
           "panelTitle": "Types",
           "productAanvraagType": {
-            "label": "Type productaanvraag",
+            "label": "Type aanvraag",
             "tooltip": "bv. test-product-aanvraag"
           },
           "caseDefinitionKey": {
             "label": "Dossierdefinitie",
-            "placeholder": "Kies een dossierdefinitie uit de lijst"
+            "placeholder": "kies definitie"
           },
           "processDefinitionKey": {
             "label": "Procesdefinitie",
-            "placeholder": "Kies een procesdefinitie uit de lijst"
+            "placeholder": "kies definitie"
           }
         }
       },

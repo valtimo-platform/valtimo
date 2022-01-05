@@ -25,6 +25,15 @@
       flex-direction: row;
       justify-content: flex-end;
     }
+
+    .col-sm-2 {
+      flex: 0 0 25%;
+      max-width: 25%;
+    }
+
+    .edit-grid-component > label {
+      display: none;
+    }
   }
 
   &.has-delete {

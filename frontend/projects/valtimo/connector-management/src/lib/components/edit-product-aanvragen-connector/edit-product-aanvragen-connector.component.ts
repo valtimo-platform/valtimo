@@ -16,16 +16,16 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {editProductAanvragenConnectorForm} from './edit-product-aanvragen-connector.form';
-import {FormTranslationService, FormMappingService} from '@valtimo/form';
+import {FormMappingService, FormTranslationService} from '@valtimo/form';
 import {DocumentService} from '@valtimo/document';
 import {ExtendedComponentSchema} from 'formiojs';
 import {BehaviorSubject, combineLatest, Subject, Subscription} from 'rxjs';
-import {DocumentDefinitions, ProcessDocumentDefinition, ConnectorProperties} from '@valtimo/contract';
+import {ConnectorProperties, DocumentDefinition, DocumentDefinitions, ProcessDocumentDefinition} from '@valtimo/contract';
 import {FormioForm, FormioRefreshValue} from 'angular-formio';
 import {FormioOptions} from 'angular-formio/formio.common';
 import {cloneDeep} from 'lodash';
 import {TranslateService} from '@ngx-translate/core';
-import {map} from 'rxjs/operators';
+import {map, switchMap, tap} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-edit-product-aanvragen-connector',
@@ -45,9 +45,8 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
   translatedFormDefinition$ = this.formDefinition$.pipe(
     map((definition) => this.formTranslationService.translateForm(definition))
   );
-  caseDefinitionId$ = new BehaviorSubject<string>('');
-  documentDefinitions: DocumentDefinitions;
-  processDocumentDefinitions: ProcessDocumentDefinition[];
+  caseDefinitionOptions: Array<{label: string, value: string}> = [];
+  processDocumentDefinitionOptions: {[caseDefinitionId: string]: Array<string>} = {};
 
   readonly options: FormioOptions = {
     disableAlerts: true
@@ -65,30 +64,15 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
   }
 
   ngOnInit(): void {
+    window['productRequestDefinitions'] = {};
     this.openFormDefinitionSubscription();
     this.formDefinition$.next(editProductAanvragenConnectorForm);
-    this.loadDocumentDefinitions();
+    this.loadDefinitions();
   }
 
   ngOnDestroy(): void {
     this.formDefinitionSubscription?.unsubscribe();
     this.translateSubscription?.unsubscribe();
-  }
-
-  onChange(object: any): void {
-    const caseDefinitionKeyValue = object?.data?.caseDefinitionKey;
-    const currentCaseDefinitionId = this.caseDefinitionId$.getValue();
-
-    if (caseDefinitionKeyValue && caseDefinitionKeyValue !== currentCaseDefinitionId) {
-      this.documentService.findProcessDocumentDefinitions(caseDefinitionKeyValue).subscribe((processDocumentDefinitions) => {
-        this.processDocumentDefinitions = processDocumentDefinitions;
-        const definitionWithProcessDefinitionKeyValues =
-          this.formMappingService.mapComponents(this.formDefinition$.getValue(), this.mapProcessDefinitionKeyComponent);
-
-        this.formDefinition$.next(definitionWithProcessDefinitionKeyValues);
-        this.caseDefinitionId$.next(caseDefinitionKeyValue);
-      });
-    }
   }
 
   onSubmit(event: any): void {
@@ -112,13 +96,7 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
 
     properties.aanvragerRolTypeUrl = submission.applicantRoleTypeUrl;
 
-    properties.typeMapping = [
-      {
-        productAanvraagType: submission.productAanvraagType,
-        caseDefinitionKey: submission.caseDefinitionKey,
-        processDefinitionKey: submission.processDefinitionKey
-      }
-    ];
+    properties.typeMapping = submission.productAanvraagTypes;
 
     this.propertiesSave.emit({properties, name: submission.connectorName});
   }
@@ -156,9 +134,7 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
 
     submission.applicantRoleTypeUrl = properties.aanvragerRolTypeUrl;
 
-    submission.productAanvraagType = properties.typeMapping[0].productAanvraagType;
-    submission.caseDefinitionKey = properties.typeMapping[0].caseDefinitionKey;
-    submission.processDefinitionKey = properties.typeMapping[0].processDefinitionKey;
+    submission.productAanvraagTypes = properties.typeMapping;
 
     submission.connectorName = this.defaultName;
 
@@ -167,27 +143,7 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
 
   private mapCaseDefinitionKeyComponent = (component: ExtendedComponentSchema): ExtendedComponentSchema => {
     if (component.key === 'caseDefinitionKey') {
-      const definitionOptions = this.documentDefinitions?.content.map(
-        (definition) => ({label: definition.id.name, value: definition.id.name})
-      );
-
-      return {...component, disabled: false, data: {values: definitionOptions}};
-    }
-
-    return component;
-  }
-
-  private mapProcessDefinitionKeyComponent = (component: ExtendedComponentSchema): ExtendedComponentSchema => {
-    if (component.key === 'processDefinitionKey') {
-      const processOptions = this.processDocumentDefinitions.map(
-        (definition) => ({label: definition.processName, value: definition.id.processDefinitionKey})
-      );
-
-      if (this.processDocumentDefinitions?.length > 0) {
-        return {...component, disabled: false, data: {values: processOptions}};
-      } else {
-        return {...component, disabled: true, data: {values: []}};
-      }
+      return {...component, disabled: false, data: {values: this.caseDefinitionOptions}};
     }
 
     return component;
@@ -197,17 +153,36 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
     this.formRefresh$.next(refreshValue);
   }
 
-  private loadDocumentDefinitions(): void {
-    this.documentService.getAllDefinitions().subscribe((definitions) => {
-      this.documentDefinitions = definitions;
-      const definitionWithCaseDefinitionKeyValues =
-        this.formMappingService.mapComponents(this.formDefinition$.getValue(), this.mapCaseDefinitionKeyComponent);
+  private loadDefinitions(): void {
+    let documentDefinitions: Array<DocumentDefinition>;
 
-      this.formDefinition$.next(definitionWithCaseDefinitionKeyValues);
+    this.documentService.getAllDefinitions().pipe(
+      tap((resDocumentDefinitions) => documentDefinitions = resDocumentDefinitions.content),
+      switchMap((resDocumentDefinitions) =>
+        combineLatest(resDocumentDefinitions.content.map((definition) =>
+          this.documentService.findProcessDocumentDefinitions(definition.id.name)))
+      ),
+      tap((res) => {
+        this.caseDefinitionOptions = documentDefinitions.map((documentDefinition) => {
+          return {label: documentDefinition.id.name, value: documentDefinition.id.name};
+        });
 
-      if (this.properties?.aanvragerRolTypeUrl) {
-        this.prefillForm();
-      }
-    });
+        documentDefinitions.forEach((documentDefinition, index) => {
+          this.processDocumentDefinitionOptions[documentDefinition.id.name] = res[index].map((processDocumentDefinition) =>
+            processDocumentDefinition.id.processDefinitionKey);
+        });
+
+        window['productRequestDefinitions'] = this.processDocumentDefinitionOptions;
+
+        const definitionWithCaseDefinitionOptions =
+          this.formMappingService.mapComponents(this.formDefinition$.getValue(), this.mapCaseDefinitionKeyComponent);
+
+        this.formDefinition$.next(definitionWithCaseDefinitionOptions);
+
+        if (this.properties?.aanvragerRolTypeUrl) {
+          this.prefillForm();
+        }
+      })
+    ).subscribe();
   }
 }
