@@ -35,7 +35,8 @@ import {
   ProcessDocumentDefinitionRequest,
   ProcessDocumentInstance,
   DocumentDefinitionCreateRequest,
-  UndeployDocumentDefinitionResult
+  UndeployDocumentDefinitionResult,
+  DocumentSendMessageRequest
 } from '@valtimo/contract';
 import {DocumentSearchRequest} from './document-search-request';
 import {ConfigService} from '@valtimo/config';
@@ -160,4 +161,7 @@ export class DocumentService {
     return this.http.delete<UndeployDocumentDefinitionResult>(`${this.valtimoEndpointUri}document-definition/${name}`);
   }
 
+  sendMessage(documentId: string, request: DocumentSendMessageRequest): Observable<any> {
+    return this.http.post(`${this.valtimoEndpointUri}document/${documentId}/message`, request);
+  }
 }

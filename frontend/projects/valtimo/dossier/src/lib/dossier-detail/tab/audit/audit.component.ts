@@ -37,7 +37,7 @@ export class DossierDetailTabAuditComponent implements OnInit {
   public timelineItems: TimelineItem[];
   private readonly documentId: string;
   public pagination: any;
-  private defaultAuditPage: number = 0;
+  private defaultAuditPage = 0;
   private currentAuditPage: number;
 
   constructor(
@@ -86,7 +86,7 @@ export class DossierDetailTabAuditComponent implements OnInit {
 
   public onChangePagination(page) {
     this.paginationClicked.emit(page);
-    this.currentAuditPage = page-1;
+    this.currentAuditPage = page - 1;
     this.loadAuditPage(this.currentAuditPage);
   }
 }

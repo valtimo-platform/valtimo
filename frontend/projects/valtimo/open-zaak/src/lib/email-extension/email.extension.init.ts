@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Dimpact.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,9 @@ import {NGXLogger} from 'ngx-logger';
 import {ConfigService} from '@valtimo/config';
 import {BasicExtensionPoint, Extension} from '@valtimo/contract';
 import {Injector} from '@angular/core';
-import {OpenZaakTypeLinkExtensionComponent} from './extension/open-zaak-type-link-extension.component';
-import {OpenZaakServiceTaskConnectorModalExtensionComponent} from './extension/open-zaak-service-task-connector-modal-extension/open-zaak-service-task-connector-modal-extension.component';
+import {EmailExtensionComponent} from './email-extension.component';
 
-export function openZaakExtensionInitializer(
+export function emailExtensionInitializer(
   injector: Injector
 ): () => Promise<any> {
 
@@ -31,35 +30,23 @@ export function openZaakExtensionInitializer(
   return (): Promise<any> => {
     return new Promise((resolve, reject) => {
       try {
-        logger.debug('openzaak extension initializer before init');
+        logger.debug('email extension initializer before init');
         const extension = new Extension(
-          'OpenZaakTypeLink',
+          'EmailExtension',
           new BasicExtensionPoint(
-            'dossier-management',
             'dossier',
-            'right-panel',
-            OpenZaakTypeLinkExtensionComponent
-          )
-        );
-        const extensionServiceTask = new Extension(
-          'OpenZaakServiceTaskConnectorModal',
-          new BasicExtensionPoint(
-            'form-links',
-            'form-links',
-            'openzaak-service-task-connector-modal',
-            OpenZaakServiceTaskConnectorModalExtensionComponent
+            'dossier-detail',
+            'card-header',
+            EmailExtensionComponent
           )
         );
         configService.addExtension(extension);
-        configService.addExtension(extensionServiceTask);
-        logger.debug('openzaak extension initializer after init');
+        logger.debug('email extension initializer after init');
         resolve();
       } catch (error) {
-        logger.debug('openzaak extension initializer error', error);
+        logger.debug('email extension initializer error', error);
         reject(error);
       }
     });
   };
 }
-
-

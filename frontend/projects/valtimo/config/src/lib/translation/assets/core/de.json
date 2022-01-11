@@ -28,6 +28,14 @@
     "forms": {
       "globalSearchPlaceHolder": "Alles",
       "referenceNumberPlaceHolder": "Referenz-Nummer"
+    },
+    "sendEmailExtension": {
+      "buttonText": "E-Mail senden",
+      "title": "Eine E-Mail senden",
+      "subject": "Betreffzeile",
+      "body": "Nachricht",
+      "sendButtonText": "Senden",
+      "sendSuccess": "Ihre Nachricht wurde erfolgreich gesendet."
     }
   },
   "document": {
@@ -348,7 +356,14 @@
       "objectType.name": "Object type name",
       "objectType.title": "Object type title",
       "objectType.typeVersion": "Object type version",
-      "objectType.url": "Object type URL"
+      "objectType.url": "Object type URL",
+      "openZaakConfig.url": "OpenZaak URL",
+      "openZaakConfig.clientId": "Client ID",
+      "openZaakConfig.secret": "Secret",
+      "openZaakConfig.rsin": "Rsin",
+      "clientId": "Client ID",
+      "secret": "Secret",
+      "rsin": "RSIN"
     },
     "messages": {
       "addSuccess": "Connection erfolgreich hinzugefügt.",

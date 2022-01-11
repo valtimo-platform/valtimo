@@ -28,6 +28,14 @@
     "forms": {
       "globalSearchPlaceHolder": "Alles",
       "referenceNumberPlaceHolder": "Referentienummer"
+    },
+    "sendEmailExtension": {
+      "buttonText": "Verstuur e-mail",
+      "title": "Een e-mail versturen",
+      "subject": "Onderwerp",
+      "body": "Inhoud",
+      "sendButtonText": "Versturen",
+      "sendSuccess": "Uw bericht is succesvol verzonden."
     }
   },
   "document": {
@@ -352,7 +360,10 @@
       "openZaakConfig.url": "OpenZaak URL",
       "openZaakConfig.clientId": "Client ID",
       "openZaakConfig.secret": "Secret",
-      "openZaakConfig.rsin": "Rsin"
+      "openZaakConfig.rsin": "Rsin",
+      "clientId": "Client ID",
+      "secret": "Secret",
+      "rsin": "RSIN"
     },
     "messages": {
       "addSuccess": "Connectie is succesvol toegevoegd.",

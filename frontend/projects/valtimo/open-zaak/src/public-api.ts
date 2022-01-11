@@ -19,6 +19,7 @@
  */
 
 export * from './lib/open-zaak.module';
-export * from './lib/open-zaak.extension.init';
-export * from './lib/extension/open-zaak-type-link-extension.component';
-
+export * from './lib/open-zaak-extension/open-zaak.extension.init';
+export * from './lib/open-zaak-extension/open-zaak-type-link-extension.component';
+export * from './lib/email-extension/email.extension.init';
+export * from './lib/email-extension/email-extension.component';

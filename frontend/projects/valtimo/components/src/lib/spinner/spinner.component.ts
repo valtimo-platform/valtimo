@@ -29,4 +29,5 @@ export class SpinnerComponent {
   @Input() color = 'currentColor';
   @Input() bdColor = 'rgba(0,0,0,0)';
   @Input() fullScreen = false;
+  @Input() noMarginTop = false;
 }

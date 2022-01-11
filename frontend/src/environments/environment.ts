@@ -20,7 +20,7 @@
 import {NgxLoggerLevel} from 'ngx-logger';
 import {ROLE_ADMIN, ROLE_DEVELOPER, ROLE_USER, UploadProvider, ValtimoConfig} from '@valtimo/contract';
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
-import {openZaakExtensionInitializer} from '@valtimo/open-zaak';
+import {openZaakExtensionInitializer, emailExtensionInitializer} from '@valtimo/open-zaak';
 import {connectorLinkExtensionInitializer} from '@valtimo/connector-management';
 
 const defaultDefinitionColumns = [
@@ -51,7 +51,7 @@ const defaultDefinitionColumns = [
 
 export const environment: ValtimoConfig = {
   production: false,
-  initializers: [openZaakExtensionInitializer, connectorLinkExtensionInitializer],
+  initializers: [openZaakExtensionInitializer, emailExtensionInitializer, connectorLinkExtensionInitializer],
   authentication: authenticationKeycloak,
   menu: {
     menuItems: [
