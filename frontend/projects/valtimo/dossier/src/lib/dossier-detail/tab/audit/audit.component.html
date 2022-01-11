@@ -25,3 +25,29 @@
   type="square-jelly-box"
 >
 </valtimo-spinner>
+<div
+        class="pagination-holder audit-pagination bg-light px-4 pt-4 pb-2 overflow-auto row mr-0 ml-0"
+        *ngIf="pagination && pagination.totalElements > pagination.size"
+>
+  <div class="float-left page-count col-4">
+    <strong>{{ 'list.currentPage' | translate: {current: pagination.number, total: pagination.totalPages} }}</strong>
+    <br />
+    {{
+    pagination.totalElements === 1
+            ? ('list.showingResult' | translate: {number: pagination.content.length})
+            : ('list.showingResults'
+                    | translate: {number: pagination.content.length, total: pagination.totalElements})
+    }}
+  </div>
+  <div class="col-8">
+    <ngb-pagination
+            *ngIf="pagination.totalElements > pagination.size"
+            class="float-right"
+            [collectionSize]="pagination.totalElements"
+            [(page)]="pagination.number"
+            [pageSize]="pagination.size"
+            [maxSize]="pagination.size"
+            [rotate]="true"
+            (pageChange)="onChangePagination(pagination.number)"></ngb-pagination>
+  </div>
+</div>

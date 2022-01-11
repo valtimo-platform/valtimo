@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, OnInit} from '@angular/core';
+import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import {AuditEvent, TimelineItem, TimelineItemImpl} from '@valtimo/contract';
 import * as moment_ from 'moment';
 import {ActivatedRoute} from '@angular/router';
@@ -32,8 +32,13 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
 })
 export class DossierDetailTabAuditComponent implements OnInit {
 
+  @Output() paginationClicked: EventEmitter<any> = new EventEmitter();
+
   public timelineItems: TimelineItem[];
   private readonly documentId: string;
+  public pagination: any;
+  private defaultAuditPage: number = 0;
+  private currentAuditPage: number;
 
   constructor(
     private route: ActivatedRoute,
@@ -52,7 +57,11 @@ export class DossierDetailTabAuditComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.documentService.getAuditLog(this.documentId).subscribe(page => {
+    this.loadAuditPage(this.defaultAuditPage);
+  }
+
+  public loadAuditPage(pageNumber: number) {
+    this.documentService.getAuditLog(this.documentId, pageNumber).subscribe(page => {
       const timelineItems = [];
       page.content.forEach(auditRecord => {
         const occurredOn = moment(auditRecord.metaData.occurredOn);
@@ -70,7 +79,14 @@ export class DossierDetailTabAuditComponent implements OnInit {
       });
       this.timelineItems = timelineItems;
       this.spinnerService.hide('auditSpinner');
+      this.pagination = page;
+      this.pagination.number += 1;
     });
   }
 
+  public onChangePagination(page) {
+    this.paginationClicked.emit(page);
+    this.currentAuditPage = page-1;
+    this.loadAuditPage(this.currentAuditPage);
+  }
 }

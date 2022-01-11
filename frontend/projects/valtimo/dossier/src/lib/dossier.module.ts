@@ -52,6 +52,7 @@ import {HttpClient} from '@angular/common/http';
 import {TabService} from './tab.service';
 import {TaskModule} from '@valtimo/task';
 import {DossierSupportingProcessStartModalComponent} from './dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
+import {NgbPaginationModule} from '@ng-bootstrap/ng-bootstrap';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -96,7 +97,8 @@ export type TabsFactory = () => Map<string, object>;
     ModalModule,
     NgbTooltipModule,
     UploaderModule,
-    DropzoneModule
+    DropzoneModule,
+    NgbPaginationModule
   ],
   exports: [
     DossierListComponent,
