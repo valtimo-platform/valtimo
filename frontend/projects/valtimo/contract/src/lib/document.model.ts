@@ -244,3 +244,8 @@ export interface UndeployDocumentDefinitionResult {
   documentDefinitionName: string;
   errors: string[];
 }
+
+export interface DocumentSendMessageRequest {
+  subject: string;
+  bodyText: string;
+}

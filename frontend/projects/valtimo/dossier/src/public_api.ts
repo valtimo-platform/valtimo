@@ -24,6 +24,7 @@ export * from './lib/dossier-detail/tab/summary/summary.component';
 export * from './lib/dossier-detail/tab/progress/progress.component';
 export * from './lib/dossier-detail/tab/audit/audit.component';
 export * from './lib/dossier-detail/tab/documents/documents.component';
+export * from './lib/dossier-detail/tab/contact-moments/contact-moments.component';
 export * from './lib/dossier.config';
 export * from './lib/dossier.service';
 export * from './lib/dossier.module';

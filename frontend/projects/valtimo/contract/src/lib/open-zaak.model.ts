@@ -22,30 +22,6 @@ export class OpenZaakConfig {
   rsin: string;
 }
 
-export class CreateOpenZaakConfigRequest {
-  url: string;
-  clientId: string;
-  secret: string;
-  rsin: string;
-}
-
-export class ModifyOpenZaakConfigRequest {
-  url: string;
-  clientId: string;
-  secret: string;
-  rsin: string;
-}
-
-export interface CreateOpenZaakConfigResult {
-  openZaakConfig: OpenZaakConfig;
-  errors: string[];
-}
-
-export interface ModifyOpenZaakConfigResult {
-  openZaakConfig: OpenZaakConfig;
-  errors: string[];
-}
-
 export interface ZaakType {
   url: string;
   omschrijving: string;
@@ -70,6 +46,7 @@ export interface ZaakTypeLink {
   zaakTypeUrl: string;
   zaakInstanceLinks: ZaakInstanceLink[];
   serviceTaskHandlers: ServiceTaskHandlerRequest[];
+  createWithDossier: boolean;
 }
 
 export interface ZaakTypeRequest {
@@ -79,6 +56,7 @@ export interface ZaakTypeRequest {
 export interface CreateZaakTypeLinkRequest {
   documentDefinitionName: string;
   zaakTypeUrl: string;
+  createWithDossier: boolean;
 }
 
 export interface CreateInformatieObjectTypeLinkRequest {

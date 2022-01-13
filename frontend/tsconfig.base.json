@@ -115,6 +115,12 @@
       "@valtimo/choice-field/*": [
         "dist/valtimo/choice-field/*"
       ],
+      "@valtimo/contact-moment": [
+        "dist/valtimo/contact-moment"
+      ],
+      "@valtimo/contact-moment/*": [
+        "dist/valtimo/contact-moment/*"
+      ],
       "@valtimo/form": [
         "dist/valtimo/form"
       ],

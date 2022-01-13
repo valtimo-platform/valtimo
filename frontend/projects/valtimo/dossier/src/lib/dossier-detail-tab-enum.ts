@@ -15,5 +15,5 @@
  */
 
 export enum DefaultTabs {
-  summary = 'summary', progress = 'progress', audit = 'audit', documents = 'documents'
+  summary = 'summary', progress = 'progress', audit = 'audit', documents = 'documents', contactMoments = 'contact-moments'
 }

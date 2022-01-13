@@ -20,6 +20,7 @@ import {Router} from '@angular/router';
 import {UserManagementService} from '../user-management.service';
 import {AlertService} from '@valtimo/components';
 import {ROLE_USER} from '@valtimo/contract';
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   selector: 'valtimo-user-create',
@@ -35,7 +36,8 @@ export class UserCreateComponent implements OnInit {
     private router: Router,
     private service: UserManagementService,
     private formBuilder: FormBuilder,
-    private alertService: AlertService
+    private alertService: AlertService,
+    public translate: TranslateService
   ) {
   }
 

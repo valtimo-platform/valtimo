@@ -20,13 +20,9 @@ import {ConfigService} from '@valtimo/config';
 import {Observable} from 'rxjs';
 import {
   CreateInformatieObjectTypeLinkRequest,
-  CreateOpenZaakConfigRequest,
-  CreateOpenZaakConfigResult,
   CreateZaakTypeLinkRequest,
   InformatieObjectType,
   InformatieObjectTypeLink,
-  ModifyOpenZaakConfigRequest,
-  ModifyOpenZaakConfigResult,
   OpenZaakConfig,
   OpenZaakResource,
   ResourceDto,
@@ -58,18 +54,6 @@ export class OpenZaakService {
 
   getResource(resourceId: string): Observable<ResourceDto> {
     return this.http.get<ResourceDto>(`${this.valtimoApiConfig.endpointUri}resource/${resourceId}`);
-  }
-
-  createOpenZaakConfig(request: CreateOpenZaakConfigRequest): Observable<CreateOpenZaakConfigResult> {
-    return this.http.post<CreateOpenZaakConfigResult>(`${this.valtimoApiConfig.endpointUri}openzaak/config`, request);
-  }
-
-  modifyOpenZaakConfig(request: ModifyOpenZaakConfigRequest): Observable<ModifyOpenZaakConfigResult> {
-    return this.http.put<ModifyOpenZaakConfigResult>(`${this.valtimoApiConfig.endpointUri}openzaak/config`, request);
-  }
-
-  deleteOpenZaakConfig(): Observable<any> {
-    return this.http.delete<any>(`${this.valtimoApiConfig.endpointUri}openzaak/config`);
   }
 
   getZaakTypes(): Observable<ZaakType[]> {

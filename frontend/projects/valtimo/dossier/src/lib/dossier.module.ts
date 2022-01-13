@@ -41,6 +41,7 @@ import {DossierUpdateComponent} from './dossier-update/dossier-update.component'
 import {DossierDetailTabProgressComponent} from './dossier-detail/tab/progress/progress.component';
 import {ProcessModule} from '@valtimo/process';
 import {DossierDetailTabAuditComponent} from './dossier-detail/tab/audit/audit.component';
+import {DossierDetailTabContactMomentsComponent} from './dossier-detail/tab/contact-moments/contact-moments.component';
 import {DossierDetailTabDocumentsComponent} from './dossier-detail/tab/documents/documents.component';
 import {NgbButtonsModule, NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {DossierProcessStartModalComponent} from './dossier-process-start-modal/dossier-process-start-modal.component';
@@ -51,6 +52,8 @@ import {HttpClient} from '@angular/common/http';
 import {TabService} from './tab.service';
 import {TaskModule} from '@valtimo/task';
 import {DossierSupportingProcessStartModalComponent} from './dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
+import {NgbPaginationModule} from '@ng-bootstrap/ng-bootstrap';
+import {ConfigModule} from '@valtimo/config';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -62,6 +65,7 @@ export type TabsFactory = () => Map<string, object>;
     DossierDetailTabProgressComponent,
     DossierDetailTabAuditComponent,
     DossierDetailTabDocumentsComponent,
+    DossierDetailTabContactMomentsComponent,
     DossierUpdateComponent,
     DossierProcessStartModalComponent,
     DossierSupportingProcessStartModalComponent
@@ -94,7 +98,9 @@ export type TabsFactory = () => Map<string, object>;
     ModalModule,
     NgbTooltipModule,
     UploaderModule,
-    DropzoneModule
+    DropzoneModule,
+    NgbPaginationModule,
+    ConfigModule
   ],
   exports: [
     DossierListComponent,
@@ -104,7 +110,8 @@ export type TabsFactory = () => Map<string, object>;
     DossierDetailTabSummaryComponent,
     DossierDetailTabProgressComponent,
     DossierDetailTabAuditComponent,
-    DossierDetailTabDocumentsComponent
+    DossierDetailTabDocumentsComponent,
+    DossierDetailTabContactMomentsComponent
   ]
 })
 export class DossierModule {

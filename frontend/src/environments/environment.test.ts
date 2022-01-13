@@ -18,6 +18,7 @@ import {NgxLoggerLevel} from 'ngx-logger';
 import {ROLE_ADMIN, ROLE_DEVELOPER, ROLE_USER, ValtimoConfig} from '@valtimo/contract';
 import {authenticationAuth0} from './auth/auth0-config.test';
 import {openZaakExtensionInitializer} from '@valtimo/open-zaak';
+import {UploadProvider} from '../../projects/valtimo/contract/src/lib/config';
 
 const defaultDefinitionColumns = [
   {
@@ -99,6 +100,10 @@ export const environment: ValtimoConfig = {
   logger: {
     level: NgxLoggerLevel.TRACE
   },
+  openZaak: {
+    catalogus: '8225508a-6840-413e-acc9-6422af120db1'
+  },
+  uploadProvider: UploadProvider.OPEN_ZAAK,
   definitions: {
     dossiers: []
   },

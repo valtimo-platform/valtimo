@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Dimpact.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,27 +15,8 @@
  */
 
 import {NgModule} from '@angular/core';
-import {RouterModule, Routes} from '@angular/router';
-import {AuthGuardService} from '@valtimo/security';
-import {ROLE_ADMIN} from '@valtimo/contract';
-import {OpenZaakComponent} from './open-zaak.component';
 
-const routes: Routes = [
-  {
-    path: 'open-zaak',
-    component: OpenZaakComponent,
-    canActivate: [AuthGuardService],
-    data: {title: 'OpenZaak', roles: [ROLE_ADMIN]}
-  }
-];
-@NgModule({
-  imports: [
-    RouterModule.forChild(routes)
-  ],
-  exports: [
-    RouterModule
-  ],
-  declarations: []
-})
-export class OpenZaakRoutingModule {
+@NgModule()
+export class ContactMomentModule {
+
 }

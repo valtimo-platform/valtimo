@@ -21,12 +21,21 @@
       "audit": "Audit",
       "maps": "Maps",
       "documents": "Documents",
+      "contact-moments": "Contact moments",
       "custom-dossier": "Custom dossier",
       "custom-maps": "Custom maps"
     },
     "forms": {
       "globalSearchPlaceHolder": "Everything",
       "referenceNumberPlaceHolder": "Reference number"
+    },
+    "sendEmailExtension": {
+      "buttonText": "Send e-mail",
+      "title": "Send an e-mail",
+      "subject": "Subject",
+      "body": "Body",
+      "sendButtonText": "Send",
+      "sendSuccess": "Your message has been sent successfully."
     }
   },
   "document": {
@@ -109,7 +118,8 @@
       "title": "Language",
       "options": {
         "nl": "Nederlands",
-        "en": "English"
+        "en": "English",
+        "de": "Deutsch"
       }
     },
     "notification": {
@@ -252,7 +262,7 @@
   "Startable by user": "Startable by user",
   "Startable by user tooltip": "When this option is selected, the selected process definition will be displayed as an option in the subprocess menu. The subprocess menu is displayed on the detail page of the case, below the start button at the top right corner.",
   "openZaak": {
-    "links": "OpenZaak links",
+    "links": "Connected zaak type",
     "error": {
       "configNotFound": "OpenZaak configuration not found, go to Admin > Open Zaak"
     }
@@ -346,7 +356,14 @@
       "objectType.name": "Object type name",
       "objectType.title": "Object type title",
       "objectType.typeVersion": "Object type version",
-      "objectType.url": "Object type URL"
+      "objectType.url": "Object type URL",
+      "openZaakConfig.url": "OpenZaak URL",
+      "openZaakConfig.clientId": "Client ID",
+      "openZaakConfig.secret": "Secret",
+      "openZaakConfig.rsin": "Rsin",
+      "clientId": "Client ID",
+      "secret": "Secret",
+      "rsin": "RSIN"
     },
     "messages": {
       "addSuccess": "Connection has been added successfully.",
@@ -354,8 +371,8 @@
       "deleteSuccess": "Connection has been deleted successfully."
     },
     "extension": {
-      "title": "Case detail Objects API synchronisation",
-      "buttonText": "Add Objects API synchronisation",
+      "title": "Case detail synchronisation",
+      "buttonText": "Configure case detail synchronisation",
       "clickToSync": "Click on a Object definition from the list below to sync the case with.",
       "addSyncSuccess": "Synchronisation between the Object definition and the case is now enabled.",
       "disableSyncSuccess": "Synchronisation between the Object definition and the case is now disabled.",
@@ -480,20 +497,20 @@
       },
       "step0": {
         "title": "1. Types",
-        "tip": "Enter the case type and the process type which are started for a certain type of product request.",
+        "tip": "Enter the case types and the process types which are started for each type of product request.",
         "typeMapping": {
           "panelTitle": "Types",
           "productAanvraagType": {
-            "label": "Type of product request",
+            "label": "Type of request",
             "tooltip": "i.e. test-product-request"
           },
           "caseDefinitionKey": {
             "label": "Case definition",
-            "placeholder": "Choose a case definition from the list"
+            "placeholder": "choose definition"
           },
           "processDefinitionKey": {
             "label": "Process definition",
-            "placeholder": "Choose a process definition from the list"
+            "placeholder": "choose definition"
           }
         }
       },

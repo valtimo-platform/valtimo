@@ -18,23 +18,21 @@ import {NgModule} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {ModalModule, WidgetModule, SpinnerModule} from '@valtimo/components';
-import {OpenZaakComponent} from './open-zaak.component';
-import {OpenZaakRoutingModule} from './open-zaak-routing.module';
 import {CommonModule} from '@angular/common';
-import {OpenZaakTypeLinkExtensionComponent} from './extension/open-zaak-type-link-extension.component';
-import {OpenZaakServiceTaskConnectorModalExtensionComponent} from './extension/open-zaak-service-task-connector-modal-extension/open-zaak-service-task-connector-modal-extension.component';
+import {OpenZaakTypeLinkExtensionComponent} from './open-zaak-extension/open-zaak-type-link-extension.component';
+import {OpenZaakServiceTaskConnectorModalExtensionComponent} from './open-zaak-extension/open-zaak-service-task-connector-modal-extension/open-zaak-service-task-connector-modal-extension.component';
+import {EmailExtensionComponent} from './email-extension/email-extension.component';
 
 @NgModule({
   declarations: [
-    OpenZaakComponent,
     OpenZaakTypeLinkExtensionComponent,
-    OpenZaakServiceTaskConnectorModalExtensionComponent
+    OpenZaakServiceTaskConnectorModalExtensionComponent,
+    EmailExtensionComponent
   ],
   imports: [
     FormsModule,
     TranslateModule,
     ModalModule,
-    OpenZaakRoutingModule,
     ReactiveFormsModule,
     WidgetModule,
     CommonModule,
@@ -43,7 +41,8 @@ import {OpenZaakServiceTaskConnectorModalExtensionComponent} from './extension/o
   exports: [],
   entryComponents: [
     OpenZaakTypeLinkExtensionComponent,
-    OpenZaakServiceTaskConnectorModalExtensionComponent
+    OpenZaakServiceTaskConnectorModalExtensionComponent,
+    EmailExtensionComponent
   ]
 })
 export class OpenZaakModule {

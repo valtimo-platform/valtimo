@@ -25,7 +25,7 @@ export function accountInitializer(
     return new Promise((resolve, reject) => {
       try {
         logger.debug('Account initializer');
-        translate.addLangs(['en', 'nl']);
+        translate.addLangs(['en', 'nl', 'de']);
         let langKey = localStorage.getItem('langKey');
         if (langKey === null) {
           langKey = 'nl';

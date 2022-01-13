@@ -18,9 +18,9 @@
 // `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 import {NgxLoggerLevel} from 'ngx-logger';
-import {ROLE_ADMIN, ROLE_DEVELOPER, ROLE_USER, ValtimoConfig, UploadProvider} from '@valtimo/contract';
+import {ROLE_ADMIN, ROLE_DEVELOPER, ROLE_USER, UploadProvider, ValtimoConfig} from '@valtimo/contract';
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
-import {openZaakExtensionInitializer} from '@valtimo/open-zaak';
+import {openZaakExtensionInitializer, emailExtensionInitializer} from '@valtimo/open-zaak';
 import {connectorLinkExtensionInitializer} from '@valtimo/connector-management';
 
 const defaultDefinitionColumns = [
@@ -51,7 +51,7 @@ const defaultDefinitionColumns = [
 
 export const environment: ValtimoConfig = {
   production: false,
-  initializers: [openZaakExtensionInitializer, connectorLinkExtensionInitializer],
+  initializers: [openZaakExtensionInitializer, emailExtensionInitializer, connectorLinkExtensionInitializer],
   authentication: authenticationKeycloak,
   menu: {
     menuItems: [
@@ -72,14 +72,13 @@ export const environment: ValtimoConfig = {
           {link: ['/dossier-management'], title: 'Dossiers', sequence: 5},
           {link: ['/connectors'], title: 'Connectors', sequence: 6},
           {link: ['/form-links'], title: 'Form links', sequence: 7},
-          {link: ['/open-zaak'], title: 'Open Zaak', sequence: 8},
-          {title: 'A&E', textClass: 'text-dark font-weight-bold c-default', sequence: 9},
-          {link: ['/contexts'], title: 'Contexts', sequence: 10},
-          {link: ['/users'], title: 'Users', sequence: 11},
-          {link: ['/entitlements'], title: 'Entitlements', sequence: 12},
-          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 13},
-          {link: ['/process-migration'], title: 'Process migration', sequence: 14},
-          {link: ['/choice-fields'], title: 'Choice fields', sequence: 15}
+          {title: 'A&E', textClass: 'text-dark font-weight-bold c-default', sequence: 8},
+          {link: ['/contexts'], title: 'Contexts', sequence: 9},
+          {link: ['/users'], title: 'Users', sequence: 10},
+          {link: ['/entitlements'], title: 'Entitlements', sequence: 11},
+          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 12},
+          {link: ['/process-migration'], title: 'Process migration', sequence: 13},
+          {link: ['/choice-fields'], title: 'Choice fields', sequence: 14}
         ]
       },
       {

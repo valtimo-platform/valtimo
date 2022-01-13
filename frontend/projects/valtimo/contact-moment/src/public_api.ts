@@ -1,5 +1,5 @@
-/*!
- * Copyright 2020 Dimpact.
+/*
+ * Copyright 2015-2021 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,3 +14,9 @@
  * limitations under the License.
  */
 
+/*
+ * Public API Surface of contact-moment
+ */
+export * from './lib/contact-moment.model';
+export * from './lib/contact-moment.module';
+export * from './lib/contact-moment.service';

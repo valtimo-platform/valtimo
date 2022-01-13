@@ -15,7 +15,7 @@
   -->
 
 <ng-container *ngIf="useBootstrapSpinner; else ngxSpinner">
-  <div class="spinner-container">
+  <div class="spinner-container" [ngClass]="{'no-margin-top': noMarginTop}">
     <div class="spinner-border text-primary" role="status">
       <span class="sr-only">{{ "interface.loading" | translate }}</span>
     </div>

@@ -14,3 +14,7 @@
  * limitations under the License.
  */
 
+.audit-pagination {
+  margin: 0 -1.923rem -1.923rem -1.923rem !important;
+  border-top: 1px solid #dee2e6;
+}

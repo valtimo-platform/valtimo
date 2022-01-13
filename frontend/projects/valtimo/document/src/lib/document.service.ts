@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {
   AuditRecord,
@@ -35,7 +35,8 @@ import {
   ProcessDocumentDefinitionRequest,
   ProcessDocumentInstance,
   DocumentDefinitionCreateRequest,
-  UndeployDocumentDefinitionResult
+  UndeployDocumentDefinitionResult,
+  DocumentSendMessageRequest
 } from '@valtimo/contract';
 import {DocumentSearchRequest} from './document-search-request';
 import {ConfigService} from '@valtimo/config';
@@ -135,8 +136,12 @@ export class DocumentService {
     return this.http.delete(`${this.valtimoEndpointUri}process-document/definition`, options);
   }
 
-  getAuditLog(documentId: string): Observable<Page<AuditRecord>> {
-    return this.http.get<Page<AuditRecord>>(`${this.valtimoEndpointUri}process-document/instance/document/${documentId}/audit`);
+  getAuditLog(documentId: string, page: number = 0): Observable<Page<AuditRecord>> {
+    let params = new HttpParams();
+    params = params.set('page', page.toString());
+    return this.http.get<Page<AuditRecord>>(`${this.valtimoEndpointUri}process-document/instance/document/${documentId}/audit`,
+      {params}
+    );
   }
 
   assignResource(documentId: string, resourceId: string): Observable<void> {
@@ -156,4 +161,7 @@ export class DocumentService {
     return this.http.delete<UndeployDocumentDefinitionResult>(`${this.valtimoEndpointUri}document-definition/${name}`);
   }
 
+  sendMessage(documentId: string, request: DocumentSendMessageRequest): Observable<any> {
+    return this.http.post(`${this.valtimoEndpointUri}document/${documentId}/message`, request);
+  }
 }

@@ -15,7 +15,7 @@
  */
 
 import {Component, ViewChild} from '@angular/core';
-import {CreateZaakTypeLinkRequest, ZaakType, InformatieObjectType, CreateInformatieObjectTypeLinkRequest} from '@valtimo/contract';
+import {CreateZaakTypeLinkRequest, ZaakType, InformatieObjectType, CreateInformatieObjectTypeLinkRequest, ZaakTypeLink} from '@valtimo/contract';
 import {ActivatedRoute, Router} from '@angular/router';
 import {FormBuilder} from '@angular/forms';
 import {OpenZaakService} from '@valtimo/resource';
@@ -33,10 +33,10 @@ import {BehaviorSubject} from 'rxjs';
 export class OpenZaakTypeLinkExtensionComponent {
 
   public zaakTypes: ZaakType[];
+  public zaakTypeLink: ZaakTypeLink;
   public selectedZaakType: ZaakType;
   public informatieObjectTypes: InformatieObjectType[];
   public selectedInformatieObjectTypeUrl: string = null;
-  public selectedZaakTypeUrl: string = null;
   private readonly documentDefinitionName: string;
 
   readonly loading$ = new BehaviorSubject<boolean>(true);
@@ -63,22 +63,22 @@ export class OpenZaakTypeLinkExtensionComponent {
       if (config !== null) {
         this.openZaakService.getZaakTypeLink(this.documentDefinitionName).subscribe(zaakTypeLink => {
           if (zaakTypeLink !== null) {
-            this.selectedZaakTypeUrl = zaakTypeLink.zaakTypeUrl;
+            this.zaakTypeLink = zaakTypeLink;
           }
           this.loadZaakTypes();
         });
       } else {
-        this.loading$.next(false);
         this.noConfigAvailable$.next(true);
       }
+      this.loading$.next(false);
     });
   }
 
   loadZaakTypes() {
     return this.openZaakService.getZaakTypes().subscribe((zaakTypes: ZaakType[]) => {
       this.zaakTypes = zaakTypes;
-      if (this.selectedZaakTypeUrl !== null) {
-        this.selectedZaakType = this.zaakTypes.find(zaakType => zaakType.url === this.selectedZaakTypeUrl);
+      if (this.zaakTypeLink !== null) {
+        this.selectedZaakType = this.zaakTypes.find(zaakType => zaakType.url === this.zaakTypeLink.zaakTypeUrl);
       }
       this.loading$.next(false);
     });
@@ -90,16 +90,27 @@ export class OpenZaakTypeLinkExtensionComponent {
     });
   }
 
+  updateConfig(): void {
+    const request: CreateZaakTypeLinkRequest = {
+      documentDefinitionName: this.zaakTypeLink.documentDefinitionName,
+      zaakTypeUrl: this.zaakTypeLink.zaakTypeUrl,
+      createWithDossier: this.zaakTypeLink.createWithDossier
+    };
+    this.openZaakService.createZaakTypeLink(request).subscribe(() => {
+      this.toasterService.success('Successfully updated linked zaaktype');
+    }, err => {
+      this.toasterService.error('Failed to update linked zaaktype');
+    });
+  }
+
   openModal() {
     this.openZaakService.getOpenZaakConfig().subscribe(config => {
         if (config === null) {
           this.alertService.error(this.translateService.instant('openZaak.error.configNotFound'));
-          this.logger.error('not found config test');
         } else {
           this.loadInformatieObjectTypeUrls();
           this.openZaakService.getInformatieObjectTypeLink(this.documentDefinitionName).subscribe(informatieObjectTypeLink => {
               if (informatieObjectTypeLink !== null) {
-                this.logger.info('found informatieObjectTypeLink');
                 this.selectedInformatieObjectTypeUrl = informatieObjectTypeLink.informatieObjectType;
               }
             }
@@ -117,6 +128,7 @@ export class OpenZaakTypeLinkExtensionComponent {
       }
       this.toasterService.success('Successfully de-linked zaaktype');
       this.selectedZaakType = null;
+      this.zaakTypeLink = null;
     }, () => {
       this.toasterService.error('Failed to de-link zaaktype');
     });
@@ -125,14 +137,16 @@ export class OpenZaakTypeLinkExtensionComponent {
   submit() {
     const request: CreateZaakTypeLinkRequest = {
       documentDefinitionName: this.documentDefinitionName,
-      zaakTypeUrl: this.selectedZaakType.url
+      zaakTypeUrl: this.selectedZaakType.url,
+      createWithDossier: false
     };
     const requestInformatieObjectTypeLink: CreateInformatieObjectTypeLinkRequest = {
       documentDefinitionName: this.documentDefinitionName,
       zaakType: this.selectedZaakType.url,
       informatieObjectType: this.selectedInformatieObjectTypeUrl
     };
-    this.openZaakService.createZaakTypeLink(request).subscribe(() => {
+    this.openZaakService.createZaakTypeLink(request).subscribe(linkResult => {
+      this.zaakTypeLink = linkResult.zaakTypeLink;
       if (requestInformatieObjectTypeLink.informatieObjectType !== null) {
         this.openZaakService.createInformatieObjectTypeLink(requestInformatieObjectTypeLink).subscribe(() => {
           this.toasterService.success('Successfully linked object informatie type to dossier');

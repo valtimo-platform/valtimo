@@ -21,12 +21,21 @@
       "audit": "Log",
       "maps": "Kaarten",
       "documents": "Documenten",
+      "contact-moments": "Contactmomenten",
       "custom-dossier": "Custom dossier",
       "custom-maps": "Custom maps"
     },
     "forms": {
       "globalSearchPlaceHolder": "Alles",
       "referenceNumberPlaceHolder": "Referentienummer"
+    },
+    "sendEmailExtension": {
+      "buttonText": "Verstuur e-mail",
+      "title": "Een e-mail versturen",
+      "subject": "Onderwerp",
+      "body": "Inhoud",
+      "sendButtonText": "Versturen",
+      "sendSuccess": "Uw bericht is succesvol verzonden."
     }
   },
   "document": {
@@ -109,7 +118,8 @@
       "title": "Taal",
       "options": {
         "nl": "Nederlands",
-        "en": "English"
+        "en": "English",
+        "de": "Deutsch"
       }
     },
     "notification": {
@@ -252,7 +262,7 @@
   "Startable by user": "Kan gestart worden door gebruiker",
   "Startable by user tooltip": "Wanneer deze optie is geselecteerd, zal de geselecteerde procesdefinitie worden weergegeven als optie in het subprocess-menu. Het subprocess-menu wordt weergegeven op de detailpagina van het dossier, onder de startknop rechts bovenin.",
   "openZaak": {
-    "links": "OpenZaak-koppelingen",
+    "links": "Gekoppeld zaak type",
     "error": {
       "configNotFound": "OpenZaak configuratie niet gevonden, ga naar Admin > Open Zaak"
     }
@@ -346,7 +356,14 @@
       "objectType.name": "Objecttype naam",
       "objectType.title": "Objecttype titel",
       "objectType.typeVersion": "Objecttype versie",
-      "objectType.url": "Objecttype URL"
+      "objectType.url": "Objecttype URL",
+      "openZaakConfig.url": "OpenZaak URL",
+      "openZaakConfig.clientId": "Client ID",
+      "openZaakConfig.secret": "Secret",
+      "openZaakConfig.rsin": "Rsin",
+      "clientId": "Client ID",
+      "secret": "Secret",
+      "rsin": "RSIN"
     },
     "messages": {
       "addSuccess": "Connectie is succesvol toegevoegd.",
@@ -354,8 +371,8 @@
       "deleteSuccess": "Connectie is succesvol verwijderd."
     },
     "extension": {
-      "title": "Zaakdetail Objects API synchronisatie",
-      "buttonText": "Objects API-synchronisatie toevoegen",
+      "title": "Zaakdetail synchronisatie",
+      "buttonText": "Zaakdetail synchronisatie instellen",
       "clickToSync": "Klik op een Object-definitie uit de onderstaande lijst om het dossier mee te synchroniseren.",
       "addSyncSuccess": "Synchronisatie tussen de Object-definitie en het dossier staat nu aan.",
       "disableSyncSuccess": "Synchronisatie tussen de Object-definitie en het dossier staat nu uit.",
@@ -480,20 +497,20 @@
       },
       "step0": {
         "title": "1. Types",
-        "tip": "Voer hier in welk dossier en proces type er gestart moeten worden voor een type productaanvraag.",
+        "tip": "Voer hier in welk dossier- en procestypes er gestart moeten worden voor elk type productaanvraag.",
         "typeMapping": {
           "panelTitle": "Types",
           "productAanvraagType": {
-            "label": "Type productaanvraag",
+            "label": "Type aanvraag",
             "tooltip": "bv. test-product-aanvraag"
           },
           "caseDefinitionKey": {
             "label": "Dossierdefinitie",
-            "placeholder": "Kies een dossierdefinitie uit de lijst"
+            "placeholder": "kies definitie"
           },
           "processDefinitionKey": {
             "label": "Procesdefinitie",
-            "placeholder": "Kies een procesdefinitie uit de lijst"
+            "placeholder": "kies definitie"
           }
         }
       },
