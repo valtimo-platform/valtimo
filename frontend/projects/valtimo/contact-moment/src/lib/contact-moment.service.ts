@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
-import {Contactmoment} from './contact-moment.model';
+import {Contactmoment, CreateContactMomentRequest} from '@valtimo/contract';
 
 @Injectable({
   providedIn: 'root'
@@ -34,4 +34,7 @@ export class ContactMomentService {
     return this.http.get<Contactmoment[]>(`${this.valtimoEndpointUri}contactmoment`);
   }
 
+  saveContactMoment(contactMomentRequest: CreateContactMomentRequest): Observable<Contactmoment> {
+    return this.http.post(`${this.valtimoEndpointUri}contactmoment`, contactMomentRequest);
+  }
 }

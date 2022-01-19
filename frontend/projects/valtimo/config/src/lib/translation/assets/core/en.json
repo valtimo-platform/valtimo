@@ -36,6 +36,13 @@
       "body": "Body",
       "sendButtonText": "Send",
       "sendSuccess": "Your message has been sent successfully."
+    },
+    "contactMoments": {
+      "makeNoteButton": "Make note",
+      "popupTitle": "Make a note",
+      "noteText": "Note",
+      "saveButtonText": "Save note",
+      "saveSuccess": "Your note has been saved successfully."
     }
   },
   "document": {

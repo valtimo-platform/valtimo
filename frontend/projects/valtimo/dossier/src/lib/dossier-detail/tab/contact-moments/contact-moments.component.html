@@ -14,7 +14,71 @@
   ~ limitations under the License.
   -->
 
-<div *ngIf="contactMoments">
-  <valtimo-timeline [items]="contactMoments"></valtimo-timeline>
+<div class="contact-moments-container">
+  <ng-container *ngTemplateOutlet="buttons"></ng-container>
+  <ng-container *ngTemplateOutlet="moments"></ng-container>
 </div>
 
+<valtimo-modal
+    #contactMomentsNoteModal
+    [title]="'dossier.contactMoments.popupTitle' | translate"
+    [showFooter]="true"
+    [elementId]="'contact-moments-modal'"
+>
+  <div class="mt-2" body>
+    <ng-container *ngTemplateOutlet="body"></ng-container>
+  </div>
+  <div footer>
+    <ng-container *ngTemplateOutlet="footer"></ng-container>
+  </div>
+</valtimo-modal>
+
+<ng-template #body>
+  <form>
+    <div class="form-group row">
+      <label class="col-12 col-sm-3 col-form-label text-sm-right" for="body">
+        {{ 'dossier.contactMoments.noteText' | translate }}
+      </label>
+      <div class="col-12 col-sm-8 col-lg-6">
+        <textarea
+          [disabled]="disabled$ | async"
+          class="form-control"
+          id="body"
+          name="body"
+          [ngModel]="text$ | async"
+          (ngModelChange)="textChange($event)"
+        ></textarea>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #footer>
+  <button
+    *ngIf="(disabled$ | async) === false; else loading"
+    class="btn btn-primary"
+    [disabled]="(valid$ | async) === false || (disabled$ | async)"
+    (click)="saveNote()"
+  >
+    {{ "dossier.contactMoments.saveButtonText" | translate }}
+  </button>
+</ng-template>
+
+<ng-template #loading>
+  <valtimo-spinner [noMarginTop]="true"></valtimo-spinner>
+</ng-template>
+
+<ng-template #buttons>
+  <div class="btn-group mt-m3px mb-3 button-container">
+    <button class="btn btn-primary btn-space" (click)="buttonClick()">
+      <i class="icon mdi mdi-calendar-note"></i>
+      &nbsp;{{ "dossier.contactMoments.makeNoteButton" | translate }}
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #moments>
+  <div *ngIf="contactMoments$ | async as contactMoments; else loading">
+    <valtimo-timeline [items]="contactMoments"></valtimo-timeline>
+  </div>
+</ng-template>

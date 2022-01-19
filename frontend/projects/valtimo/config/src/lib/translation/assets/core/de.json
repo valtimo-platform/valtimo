@@ -36,6 +36,13 @@
       "body": "Nachricht",
       "sendButtonText": "Senden",
       "sendSuccess": "Ihre Nachricht wurde erfolgreich gesendet."
+    },
+    "contactMoments": {
+      "makeNoteButton": "Notizen machen",
+      "popupTitle": "Eine Notiz machen",
+      "noteText": "Notiz",
+      "saveButtonText": "Notiz speichern",
+      "saveSuccess": "Ihre Notiz wurde erfolgreich gespeichert."
     }
   },
   "document": {

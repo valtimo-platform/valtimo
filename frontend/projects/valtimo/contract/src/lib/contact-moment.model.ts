@@ -24,3 +24,8 @@ export interface Contactmoment {
 export interface MedewerkerIdentificatie {
   achternaam?: string;
 }
+
+export interface CreateContactMomentRequest {
+  kanaal: string;
+  tekst: string;
+}

@@ -59,3 +59,4 @@ export * from './lib/upload.model';
 export * from './lib/connector.model';
 export * from './lib/pagination.model';
 export * from './lib/object-sync';
+export * from './lib/contact-moment.model';
