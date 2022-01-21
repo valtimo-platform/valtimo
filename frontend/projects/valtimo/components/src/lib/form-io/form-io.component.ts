@@ -21,10 +21,11 @@ import {Formio, FormioComponent as FormIoSourceComponent, FormioForm} from 'angu
 import {FormioRefreshValue} from 'angular-formio/formio.common';
 import jwt_decode from 'jwt-decode';
 import {NGXLogger} from 'ngx-logger';
-import {from, Subject, Subscription, timer} from 'rxjs';
+import {BehaviorSubject, from, Subject, Subscription, timer} from 'rxjs';
 import {switchMap, take} from 'rxjs/operators';
 import {FormIoStateService} from './services/form-io-state.service';
 import {ActivatedRoute} from '@angular/router';
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   selector: 'valtimo-form-io',
@@ -40,17 +41,20 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   @Output() change: EventEmitter<any> = new EventEmitter();
   refreshForm: EventEmitter<FormioRefreshValue> = new EventEmitter();
   formDefinition: FormioForm;
-  language: string;
   public errors: string[] = [];
 
   private tokenRefreshTimerSubscription: Subscription;
   private formRefreshSubscription: Subscription;
 
+  readonly currentLanguage$ = new BehaviorSubject<string>(this.translateService.currentLang);
+  private languageSubscription!: Subscription;
+
   constructor(
     private userProviderService: UserProviderService,
     private logger: NGXLogger,
     private readonly stateService: FormIoStateService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly translateService: TranslateService
   ) {
   }
 
@@ -58,7 +62,6 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     const documentDefinitionName = this.route.snapshot.paramMap.get('documentDefinitionName');
     const formDefinition = this.form;
 
-    this.loadUserLanguageSetting();
     this.formDefinition = formDefinition;
     this.errors = [];
 
@@ -71,12 +74,12 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     this.subscribeFormRefresh();
+    this.openLanguageSubscription();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     const currentForm = changes.form.currentValue;
     this.formDefinition = currentForm;
-    this.loadUserLanguageSetting();
     this.reloadForm();
 
     if (this.formHasLegacyUpload(currentForm)) {
@@ -92,13 +95,8 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   ngOnDestroy(): void {
     this.unsubscribeFormRefresh();
 
-    if (this.tokenRefreshTimerSubscription) {
-      this.tokenRefreshTimerSubscription.unsubscribe();
-    }
-  }
-
-  loadUserLanguageSetting(): void {
-    this.language = localStorage.getItem('langKey') || '';
+    this.tokenRefreshTimerSubscription?.unsubscribe();
+    this.languageSubscription?.unsubscribe();
   }
 
   reloadForm() {
@@ -180,5 +178,11 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     if (this.formRefreshSubscription) {
       this.formRefreshSubscription.unsubscribe();
     }
+  }
+
+  private openLanguageSubscription(): void {
+    this.languageSubscription = this.translateService.stream('key').subscribe(() => {
+      this.currentLanguage$.next(this.translateService.currentLang);
+    });
   }
 }

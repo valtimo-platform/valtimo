@@ -22,14 +22,14 @@
       </li>
     </ol>
   </div>
-  <formio [submission]="submission"
-          [form]="formDefinition"
-          [refresh]="refreshForm"
-          [options]="options"
-          [language]="language"
-          (submit)="onSubmit($event)"
-          (ready)="formReady($event)"
-          (change)="onChange($event)"
-  >
-  </formio>
+  <formio
+    [submission]="submission"
+    [form]="formDefinition"
+    [refresh]="refreshForm"
+    [options]="options"
+    [language]="currentLanguage$ | async"
+    (submit)="onSubmit($event)"
+    (ready)="formReady($event)"
+    (change)="onChange($event)"
+  ></formio>
 </div>
