@@ -25,9 +25,9 @@ const keycloakAuthenticationProviders: AuthProviders = {
 };
 
 const keycloakConfigDev: KeycloakConfig = {
-  url: '',
-  realm: '',
-  clientId: ''
+  url: 'http://localhost:8082/auth/',
+  realm: 'valtimo',
+  clientId: 'valtimo-console'
 };
 
 const keycloakOnLoad: KeycloakOnLoad = 'login-required';
@@ -37,7 +37,7 @@ const keycloakInitOptions: any = {
   onLoad: keycloakOnLoad,
   checkLoginIframe: false,
   flow: 'standard',
-  redirectUri: ''
+  redirectUri: 'http://localhost:4200/keycloak/callback'
 };
 
 const valtimoKeycloakOptions: ValtimoKeycloakOptions = {
@@ -50,7 +50,7 @@ const valtimoKeycloakOptions: ValtimoKeycloakOptions = {
       '.*?\.amazonaws.com/'
     ]
   },
-  logoutRedirectUri: ''
+  logoutRedirectUri: 'http://localhost:4200'
 };
 
 export const authenticationKeycloak: Auth = {
