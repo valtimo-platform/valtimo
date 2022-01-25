@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
-import { SearchableDropdownSelectComponent } from './searchable-dropdown-select.component';
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+import {ReactiveFormsModule} from '@angular/forms';
+import {SearchableDropdownSelectComponent} from './searchable-dropdown-select.component';
 import {SearchableDropdownModule} from '../searchable-dropdown/searchable-dropdown.module';
 
 @NgModule({
   declarations: [SearchableDropdownSelectComponent],
   imports: [CommonModule, ReactiveFormsModule, SearchableDropdownModule],
-  exports: [SearchableDropdownSelectComponent]
+  exports: [SearchableDropdownSelectComponent],
 })
 export class SearchableDropdownSelectModule {}

@@ -25,10 +25,9 @@
       data-min-view="2"
       id="{{ formField.id }}"
       autocomplete="off"
-      [formControlName]="formField.id"/>
-    <valtimo-camunda-formfield-validation
-      [formGroup]="formGroup"
-      [formField]="formField">
+      [formControlName]="formField.id"
+    />
+    <valtimo-camunda-formfield-validation [formGroup]="formGroup" [formField]="formField">
     </valtimo-camunda-formfield-validation>
   </div>
 </div>

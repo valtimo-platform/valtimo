@@ -26,5 +26,5 @@ export const DEFAULT_TABS = new Map<string, object>([
   [DefaultTabs.summary, DossierDetailTabSummaryComponent],
   [DefaultTabs.progress, DossierDetailTabProgressComponent],
   [DefaultTabs.audit, DossierDetailTabAuditComponent],
-  [DefaultTabs.documents, DossierDetailTabDocumentsComponent]
+  [DefaultTabs.documents, DossierDetailTabDocumentsComponent],
 ]);

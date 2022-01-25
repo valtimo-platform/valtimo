@@ -121,6 +121,9 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
+    "tslint-check": "tslint-config-prettier-check ./tslint.json",
+    "prettier:check": "prettier --check .",
+    "prettier:write": "prettier --write .",
     "build-layout-clean-lib": "npx rimraf projects/valtimo/layout/src/beagle/src/assets/lib",
     "build-layout-dep-copy": "node node_modules/@foxythemes/depcopy-cli/lib/dep-copy-cli.js",
     "build-layout-build-lib": "ng build @valtimo/layout",
@@ -283,6 +286,8 @@
     "@valtimo/user-management": "file:dist/valtimo/user-management",
     "@valtimo/view-configurator": "file:dist/valtimo/view-configurator",
     "ng-packagr": "^10.0.0",
+    "prettier": "^2.5.1",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "~3.9.5"
   }
 }

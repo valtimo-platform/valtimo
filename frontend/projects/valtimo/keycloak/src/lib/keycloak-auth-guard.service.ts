@@ -20,11 +20,14 @@ import {ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot} from '
 import {NGXLogger} from 'ngx-logger';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class KeycloakAuthGuardService extends KeycloakAuthGuard implements CanActivate {
-
-  constructor(protected router: Router, protected keycloakAngular: KeycloakService, private logger: NGXLogger) {
+  constructor(
+    protected router: Router,
+    protected keycloakAngular: KeycloakService,
+    private logger: NGXLogger
+  ) {
     super(router, keycloakAngular);
     this.logger.debug('KeycloakAuthGuardService: ctor');
   }
@@ -34,7 +37,9 @@ export class KeycloakAuthGuardService extends KeycloakAuthGuard implements CanAc
     return new Promise((resolve, reject) => {
       this.logger.debug('KeycloakAuthGuardService: isAccessAllowed checking access');
       if (!this.authenticated) {
-        this.keycloakAngular.login().catch(e => `KeycloakAuthGuardService error: ${this.logger.error(e)}`);
+        this.keycloakAngular
+          .login()
+          .catch(e => `KeycloakAuthGuardService error: ${this.logger.error(e)}`);
         return reject(false);
       }
 

@@ -26,7 +26,7 @@ import {AuthorityService} from '@valtimo/authority';
 @Component({
   selector: 'valtimo-context-edit',
   templateUrl: './context-edit.component.html',
-  styleUrls: ['./context-edit.component.css']
+  styleUrls: ['./context-edit.component.css'],
 })
 export class ContextEditComponent implements OnInit {
   public id: number | 0;
@@ -63,7 +63,7 @@ export class ContextEditComponent implements OnInit {
   }
 
   private loadAuthorities() {
-    this.authorityService.query().subscribe((results: { body: any[]; }) => {
+    this.authorityService.query().subscribe((results: {body: any[]}) => {
       if (results.body) {
         this.authorities = results.body;
       }
@@ -94,7 +94,7 @@ export class ContextEditComponent implements OnInit {
       name: new FormControl('', Validators.required),
       menuItems: new FormControl([]),
       processes: new FormControl([]),
-      roles: new FormControl([])
+      roles: new FormControl([]),
     });
   }
 
@@ -114,21 +114,20 @@ export class ContextEditComponent implements OnInit {
       {
         label: 'Cancel',
         class: 'btn btn-default',
-        value: false
+        value: false,
       },
       {
         label: 'Delete',
         class: 'btn btn-primary',
-        value: true
-      }
+        value: true,
+      },
     ];
     this.alertService.notification(mssg, confirmations);
-    this.alertService.getAlertConfirmChangeEmitter()
-      .subscribe((alert: { confirm: boolean; }) => {
-        if (alert.confirm) {
-          this.deleteConfirmed();
-        }
-      });
+    this.alertService.getAlertConfirmChangeEmitter().subscribe((alert: {confirm: boolean}) => {
+      if (alert.confirm) {
+        this.deleteConfirmed();
+      }
+    });
   }
 
   private deleteConfirmed() {
@@ -147,21 +146,27 @@ export class ContextEditComponent implements OnInit {
 
   private onUpdate() {
     if (this.form) {
-      this.contextService.update(this.form.value).subscribe(() => {
-        this.router.navigate([`/contexts`]);
-      }, error => {
-        this.alertService.error(error.statusText);
-      });
+      this.contextService.update(this.form.value).subscribe(
+        () => {
+          this.router.navigate([`/contexts`]);
+        },
+        error => {
+          this.alertService.error(error.statusText);
+        }
+      );
     }
   }
 
   private onCreate() {
     if (this.form) {
-      this.contextService.create(this.form.value).subscribe(() => {
-        this.router.navigate([`/contexts`]);
-      }, error => {
-        this.alertService.error(error.statusText);
-      });
+      this.contextService.create(this.form.value).subscribe(
+        () => {
+          this.router.navigate([`/contexts`]);
+        },
+        error => {
+          this.alertService.error(error.statusText);
+        }
+      );
     }
   }
 
@@ -193,12 +198,19 @@ export class ContextEditComponent implements OnInit {
   public setContextProcess(processDefinitionKey: string, visibleInMenu: any) {
     if (this.form) {
       const contextProcessesArray = this.form.controls.processes.value;
-      const indexContextProcesses = this.form.controls.processes.value
-        .findIndex(process => process.processDefinitionKey === processDefinitionKey);
+      const indexContextProcesses = this.form.controls.processes.value.findIndex(
+        process => process.processDefinitionKey === processDefinitionKey
+      );
       if (indexContextProcesses === -1 && visibleInMenu !== null) {
-        contextProcessesArray.push({processDefinitionKey: processDefinitionKey, visibleInMenu: visibleInMenu});
+        contextProcessesArray.push({
+          processDefinitionKey: processDefinitionKey,
+          visibleInMenu: visibleInMenu,
+        });
       } else if (indexContextProcesses !== -1 && visibleInMenu !== null) {
-        contextProcessesArray[indexContextProcesses] = {processDefinitionKey: processDefinitionKey, visibleInMenu: visibleInMenu};
+        contextProcessesArray[indexContextProcesses] = {
+          processDefinitionKey: processDefinitionKey,
+          visibleInMenu: visibleInMenu,
+        };
       } else if (indexContextProcesses !== -1 && visibleInMenu === null) {
         contextProcessesArray.splice(indexContextProcesses, 1);
       }
@@ -220,7 +232,7 @@ export class ContextEditComponent implements OnInit {
   public resetMenuItem() {
     this.menuItemForm = {
       name: '',
-      url: ''
+      url: '',
     };
   }
 
@@ -232,9 +244,9 @@ export class ContextEditComponent implements OnInit {
   }
 
   public deleteMenuItem(menuItemToDelete: any) {
-    const indexContextMenuItem = this.form.controls.menuItems.value
-      .findIndex(menuItem => menuItem.name === menuItemToDelete.name
-        && menuItem.url === menuItemToDelete.url);
+    const indexContextMenuItem = this.form.controls.menuItems.value.findIndex(
+      menuItem => menuItem.name === menuItemToDelete.name && menuItem.url === menuItemToDelete.url
+    );
     this.form.controls.menuItems.value.splice(indexContextMenuItem, 1);
   }
 }

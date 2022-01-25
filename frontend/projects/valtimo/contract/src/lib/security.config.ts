@@ -33,7 +33,13 @@ export class ValtimoUserIdentity implements UserIdentity {
   private readonly _roles: string[];
   private readonly _username?: string;
 
-  constructor(email: string, firstName: string, lastName: string, roles: Array<string>, username?: string) {
+  constructor(
+    email: string,
+    firstName: string,
+    lastName: string,
+    roles: Array<string>,
+    username?: string
+  ) {
     this._email = email;
     this._firstName = firstName;
     this._lastName = lastName;
@@ -75,7 +81,9 @@ export interface UserService {
 export interface EmailNotificationService {
   getEmailNotificationSettings(): Observable<EmailNotificationSettings>;
 
-  updateEmailNotificationSettings(settings: EmailNotificationSettings): Observable<EmailNotificationSettings>;
+  updateEmailNotificationSettings(
+    settings: EmailNotificationSettings
+  ): Observable<EmailNotificationSettings>;
 }
 
 export interface AuthProviders {

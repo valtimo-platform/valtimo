@@ -20,10 +20,7 @@ import {Injector} from '@angular/core';
 import {NGXLogger} from 'ngx-logger';
 import {KeycloakUserService} from './keycloak-user.service';
 
-export function keycloakInitializer(
-  injector: Injector
-): () => Promise<any> {
-
+export function keycloakInitializer(injector: Injector): () => Promise<any> {
   const keycloakService = injector.get<KeycloakService>(KeycloakService);
   const keycloakUserService = injector.get<KeycloakUserService>(KeycloakUserService);
   const optionsService = injector.get<KeycloakOptionsService>(KeycloakOptionsService); // TODO possible removal of abstraction

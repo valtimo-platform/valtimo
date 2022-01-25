@@ -20,10 +20,8 @@ import {TimelineItem} from '@valtimo/contract';
 @Component({
   selector: 'valtimo-timeline',
   templateUrl: './timeline.component.html',
-  styleUrls: ['./timeline.component.css']
+  styleUrls: ['./timeline.component.css'],
 })
 export class TimelineComponent {
-
   @Input() items: Array<TimelineItem>;
-
 }

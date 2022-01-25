@@ -19,18 +19,13 @@
     {{ formField.label }}
   </label>
   <div class="col-12 col-sm-8 col-lg-6">
-    <select
-      class="form-control"
-      id="{{ formField.id }}"
-      [formControlName]="formField.id">
+    <select class="form-control" id="{{ formField.id }}" [formControlName]="formField.id">
       <option selected="selected" value=""></option>
       <option *ngFor="let key of valueKeys" [value]="key" id="option_{{ key }}">
         {{ formField.type.values[key] }}
       </option>
     </select>
-    <valtimo-camunda-formfield-validation
-      [formGroup]="formGroup"
-      [formField]="formField">
+    <valtimo-camunda-formfield-validation [formGroup]="formGroup" [formField]="formField">
     </valtimo-camunda-formfield-validation>
   </div>
 </div>

@@ -15,24 +15,29 @@
  */
 
 import {Auth, AuthProviders, ValtimoAuth0Options} from '@valtimo/contract';
-import {Auth0AuthGuardService, auth0Initializer, Auth0Module, Auth0UserService} from '@valtimo/auth0';
+import {
+  Auth0AuthGuardService,
+  auth0Initializer,
+  Auth0Module,
+  Auth0UserService,
+} from '@valtimo/auth0';
 
 export const valtimoAuth0Options: ValtimoAuth0Options = {
   clientId: '',
   domain: '',
   redirectUri: '',
   responseType: 'token id_token',
-  scope: 'openid profile'
+  scope: 'openid profile',
 };
 
 export const auth0AuthenticationProviders: AuthProviders = {
   guardServiceProvider: Auth0AuthGuardService,
-  userServiceProvider: Auth0UserService
+  userServiceProvider: Auth0UserService,
 };
 
 export const authenticationAuth0: Auth = {
   module: Auth0Module.forRoot(['']),
   initializer: auth0Initializer,
   authProviders: auth0AuthenticationProviders,
-  options: valtimoAuth0Options
+  options: valtimoAuth0Options,
 };

@@ -23,11 +23,7 @@ import {S3Service} from './s3.service';
 
 @Injectable()
 export class S3UploadService implements UploadService {
-
-  constructor(
-    private readonly s3Service: S3Service
-  ) {
-  }
+  constructor(private readonly s3Service: S3Service) {}
 
   uploadFile(file: File): Observable<ResourceFile> {
     let resourceUrl: URL;
@@ -37,14 +33,14 @@ export class S3UploadService implements UploadService {
     const renamedFile = new File([file], fileNameWithUUID, {type: file.type});
 
     return this.s3Service.getPreSignedUrl(renamedFile.name).pipe(
-      map((url) => new URL(url)),
-      tap((url) => resourceUrl = url),
-      switchMap((url) => this.s3Service.upload(url, renamedFile)),
+      map(url => new URL(url)),
+      tap(url => (resourceUrl = url)),
+      switchMap(url => this.s3Service.upload(url, renamedFile)),
       map(() => new S3Resource(file, resourceUrl)),
-      switchMap((s3Resource) => this.s3Service.registerResource(s3Resource)),
-      switchMap((s3Resource) => this.s3Service.get(s3Resource.id)),
-      map((result) => ({...result, originalName: file.name})),
-      map((result) => this.getResourceFile(result))
+      switchMap(s3Resource => this.s3Service.registerResource(s3Resource)),
+      switchMap(s3Resource => this.s3Service.get(s3Resource.id)),
+      map(result => ({...result, originalName: file.name})),
+      map(result => this.getResourceFile(result))
     );
   }
 
@@ -66,8 +62,8 @@ export class S3UploadService implements UploadService {
         createdOn: result.resource.createdOn as any as string,
         name: result.originalName,
         sizeInBytes: result.resource.sizeInBytes,
-        resourceId: result.resource.id.split('ResourceId(id=')[1].slice(0, -1)
-      }
+        resourceId: result.resource.id.split('ResourceId(id=')[1].slice(0, -1),
+      },
     };
   }
 }

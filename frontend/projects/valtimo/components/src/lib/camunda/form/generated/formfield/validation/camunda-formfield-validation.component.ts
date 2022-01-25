@@ -20,20 +20,17 @@ import {FormField} from '../formfield.model';
 
 @Component({
   selector: 'valtimo-camunda-formfield-validation',
-  templateUrl: './camunda-formfield-validation.component.html'
+  templateUrl: './camunda-formfield-validation.component.html',
 })
 export class CamundaFormfieldValidationComponent implements OnInit {
-
   @Input() public formGroup: FormGroup;
   @Input() public formField: FormField;
 
   formControl: any;
 
-  constructor() {
-  }
+  constructor() {}
 
   ngOnInit(): void {
     this.formControl = this.formGroup.get(this.formField.id);
   }
-
 }

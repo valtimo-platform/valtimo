@@ -19,17 +19,16 @@ import {ConfigService} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DownloadService {
-
-  constructor(
-    private http: HttpClient,
-    private configService: ConfigService
-  ) { }
+  constructor(private http: HttpClient, private configService: ConfigService) {}
 
   downloadFile(url: string, name: string) {
-    if (url.startsWith(this.configService.config.valtimoApi.endpointUri) || url.startsWith(window.location.origin)) {
+    if (
+      url.startsWith(this.configService.config.valtimoApi.endpointUri) ||
+      url.startsWith(window.location.origin)
+    ) {
       // if download url is on backend use angular to get the content so access token is used
       this.http.get(url, {responseType: 'blob'}).subscribe(content => {
         const downloadUrl = window.URL.createObjectURL(content);

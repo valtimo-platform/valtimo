@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import {Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import {ProcessService} from '@valtimo/process';
 import {Heatpoint, ProcessDefinition} from '@valtimo/contract';
 
@@ -24,10 +32,9 @@ import * as heatmap from 'heatmap.js-fixed/build/heatmap.js';
 @Component({
   selector: 'valtimo-analyse-process-diagram',
   templateUrl: './analyse-process-diagram.component.html',
-  styleUrls: ['./analyse-process-diagram.component.scss']
+  styleUrls: ['./analyse-process-diagram.component.scss'],
 })
 export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
-
   private bpmnJS: BpmnJS;
   private heatMapInstance: any;
 
@@ -43,26 +50,25 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
   public enumHeatmapOptions: string[] = ['count', 'duration'];
   public heatmapOption: string;
   public version: number;
-  public heatPoints: { data: Heatpoint[] };
+  public heatPoints: {data: Heatpoint[]};
   public min: number;
   public max: number;
   public inputData: any[];
   public valueKey: string;
   private initialized = false;
 
-  constructor(
-    private processService: ProcessService,
-  ) {
-  }
+  constructor(private processService: ProcessService) {}
 
   ngOnInit() {
-    this.processService.getProcessDefinitions().subscribe((processDefinitions: ProcessDefinition[]) => {
-      this.processDefinitions = processDefinitions;
-      if (!this.processDefinitionKey && processDefinitions.length !== 0) {
-        this.processDefinitionKey = processDefinitions[0].key;
-        this.loadProcessDefinitionFromKey(this.processDefinitionKey);
-      }
-    });
+    this.processService
+      .getProcessDefinitions()
+      .subscribe((processDefinitions: ProcessDefinition[]) => {
+        this.processDefinitions = processDefinitions;
+        if (!this.processDefinitionKey && processDefinitions.length !== 0) {
+          this.processDefinitionKey = processDefinitions[0].key;
+          this.loadProcessDefinitionFromKey(this.processDefinitionKey);
+        }
+      });
     this.createBpmnViewerInstance();
   }
 
@@ -75,7 +81,10 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
         if (this.processDiagram.historicActivityInstances) {
           this.processDiagram.historicActivityInstances.forEach((instance: any) => {
             if (instance.activityType !== 'multiInstanceBody') {
-              canvas.addMarker(instance.activityId, instance.endTime ? 'highlight-overlay-past' : 'highlight-overlay-current');
+              canvas.addMarker(
+                instance.activityId,
+                instance.endTime ? 'highlight-overlay-past' : 'highlight-overlay-current'
+              );
             }
           });
         }
@@ -113,17 +122,21 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
   }
 
   public loadProcessDefinition(processDefinitionKey: string): void {
-    this.processService.getProcessDefinition(processDefinitionKey).subscribe((processDefinition: ProcessDefinition) => {
-      this.heatmapOption = this.enumHeatmapOptions[0];
-      this.version = processDefinition.version;
-      this.loadProcessDefinitionXml(processDefinition.id);
-    });
+    this.processService
+      .getProcessDefinition(processDefinitionKey)
+      .subscribe((processDefinition: ProcessDefinition) => {
+        this.heatmapOption = this.enumHeatmapOptions[0];
+        this.version = processDefinition.version;
+        this.loadProcessDefinitionXml(processDefinition.id);
+      });
   }
 
   public loadProcessDefinitionVersions(processDefinitionKey: string): void {
-    this.processService.getProcessDefinitionVersions(processDefinitionKey).subscribe((processDefinitionVersions: ProcessDefinition[]) => {
-      this.processDefinitionVersions = processDefinitionVersions;
-    });
+    this.processService
+      .getProcessDefinitionVersions(processDefinitionKey)
+      .subscribe((processDefinitionVersions: ProcessDefinition[]) => {
+        this.processDefinitionVersions = processDefinitionVersions;
+      });
   }
 
   public loadProcessDefinitionFromKey(processDefinitionKey: string): void {
@@ -148,19 +161,18 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
       this.max = 0;
 
       Object.keys(this.inputData).forEach(key => {
-        const diagramContainer = this.el.nativeElement.querySelector('svg')
-            .getBoundingClientRect(),
-          diagramElm = this.el.nativeElement.querySelector(`g[data-element-id=${key}]`)
+        const diagramContainer = this.el.nativeElement.querySelector('svg').getBoundingClientRect(),
+          diagramElm = this.el.nativeElement
+            .querySelector(`g[data-element-id=${key}]`)
             .getBoundingClientRect();
         this.setMax(key);
         this.heatPoints.data.push({
           x: Math.round(diagramElm.x - diagramContainer.x + diagramElm.width / 2),
           y: Math.round(diagramElm.y - diagramContainer.y + diagramElm.height / 2),
           value: this.inputData[key][this.valueKey],
-          radius: diagramElm.width / 2
+          radius: diagramElm.width / 2,
         });
         this.addCounterActiveOverlays(key, this.inputData);
-
       });
       this.clearHeatmap();
       if (this.showHeatmap) {
@@ -189,16 +201,16 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
       this.max = 0;
 
       Object.keys(this.inputData).forEach(key => {
-        const diagramContainer = this.el.nativeElement.querySelector('svg')
-            .getBoundingClientRect(),
-          diagramElm = this.el.nativeElement.querySelector(`g[data-element-id=${key}]`)
+        const diagramContainer = this.el.nativeElement.querySelector('svg').getBoundingClientRect(),
+          diagramElm = this.el.nativeElement
+            .querySelector(`g[data-element-id=${key}]`)
             .getBoundingClientRect();
         this.setMax(key);
         this.heatPoints.data.push({
           x: Math.round(diagramElm.x - diagramContainer.x + diagramElm.width / 2),
           y: Math.round(diagramElm.y - diagramContainer.y + diagramElm.height / 2),
           value: this.inputData[key][this.valueKey],
-          radius: diagramElm.width / 2
+          radius: diagramElm.width / 2,
         });
         this.addCounterActiveOverlays(key, this.inputData);
       });
@@ -233,10 +245,10 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
     if (!this.heatMapInstance) {
       this.heatMapInstance = heatmap.create({
         radius: 54,
-        blur: .70,
-        maxOpacity: .4,
+        blur: 0.7,
+        maxOpacity: 0.4,
         minOpacity: 0,
-        container: this.el.nativeElement
+        container: this.el.nativeElement,
       });
       const heatmapCanvas = this.el.nativeElement.querySelector('canvas[class=heatmap-canvas]');
       heatmapCanvas.style.zIndex = 1;
@@ -244,7 +256,7 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
     this.heatMapInstance.setData({
       min: this.min,
       max: this.max,
-      data: this.heatPoints.data
+      data: this.heatPoints.data,
     });
   }
 
@@ -255,7 +267,9 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
   }
 
   public loadHeatmapData(): void {
-    this.processDefinition = this.processDefinitionVersions.find(definition => definition.version === this.version);
+    this.processDefinition = this.processDefinitionVersions.find(
+      definition => definition.version === this.version
+    );
 
     if (this.heatmapOption === 'count') {
       this.loadProcessDefinitionHeatmapCount(this.processDefinition);
@@ -278,14 +292,13 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
     overlays.add(key, {
       position: {
         bottom: 13,
-        left: -12
+        left: -12,
       },
       show: {
         minZoom: 0,
-        maxZoom: 5.0
+        maxZoom: 5.0,
       },
-      html: `<span class="badge badge-pill badge-primary">${inputData[key].count}</span>`
+      html: `<span class="badge badge-pill badge-primary">${inputData[key].count}</span>`,
     });
   }
-
 }

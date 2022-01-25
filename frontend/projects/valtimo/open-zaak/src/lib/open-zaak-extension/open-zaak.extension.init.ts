@@ -21,10 +21,7 @@ import {Injector} from '@angular/core';
 import {OpenZaakTypeLinkExtensionComponent} from './open-zaak-type-link-extension.component';
 import {OpenZaakServiceTaskConnectorModalExtensionComponent} from './open-zaak-service-task-connector-modal-extension/open-zaak-service-task-connector-modal-extension.component';
 
-export function openZaakExtensionInitializer(
-  injector: Injector
-): () => Promise<any> {
-
+export function openZaakExtensionInitializer(injector: Injector): () => Promise<any> {
   const configService = injector.get<ConfigService>(ConfigService);
   const logger = injector.get<NGXLogger>(NGXLogger);
 
@@ -61,5 +58,3 @@ export function openZaakExtensionInitializer(
     });
   };
 }
-
-

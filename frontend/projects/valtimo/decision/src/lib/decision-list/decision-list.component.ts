@@ -22,10 +22,9 @@ import {Router} from '@angular/router';
 @Component({
   selector: 'valtimo-decision-list',
   templateUrl: './decision-list.component.html',
-  styleUrls: ['./decision-list.component.scss']
+  styleUrls: ['./decision-list.component.scss'],
 })
 export class DecisionListComponent implements OnInit {
-
   public decisions: Decision[];
   public fields = [
     {key: 'key', label: 'Key'},
@@ -33,11 +32,7 @@ export class DecisionListComponent implements OnInit {
     {key: 'version', label: 'Version'},
   ];
 
-  constructor(
-    private decisionService: DecisionService,
-    private router: Router
-  ) {
-  }
+  constructor(private decisionService: DecisionService, private router: Router) {}
 
   ngOnInit() {
     this.loadDecisions();
@@ -52,5 +47,4 @@ export class DecisionListComponent implements OnInit {
   viewDecisionTable(decision: Decision) {
     this.router.navigate(['/decision-tables', decision.id]);
   }
-
 }

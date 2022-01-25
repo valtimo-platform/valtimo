@@ -32,14 +32,18 @@ export class ExtensionLoader {
   }
 
   loadExtensionPoint(viewContainerRef: ViewContainerRef, extensionPoint: ExtensionPoint) {
-    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(extensionPoint.component);
+    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(
+      extensionPoint.component
+    );
     this.componentRef = viewContainerRef.createComponent(componentFactory);
   }
 
   loadAndClearExtensionPoint(viewContainerRef: ViewContainerRef, extensionPoint: ExtensionPoint) {
-    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(extensionPoint.component);
+    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(
+      extensionPoint.component
+    );
     viewContainerRef.clear();
-    return this.componentRef = viewContainerRef.createComponent(componentFactory);
+    return (this.componentRef = viewContainerRef.createComponent(componentFactory));
   }
 }
 
@@ -55,7 +59,6 @@ export class Extension {
   get extensionPoint(): BasicExtensionPoint {
     return this._extensionPoint;
   }
-
 }
 
 export class BasicExtensionPoint implements ExtensionPoint {
@@ -90,7 +93,4 @@ export class BasicExtensionPoint implements ExtensionPoint {
   get component(): any {
     return this._component;
   }
-
 }
-
-

@@ -17,12 +17,17 @@
 import {Injectable, Injector} from '@angular/core';
 import {Observable, ReplaySubject} from 'rxjs';
 import {NGXLogger} from 'ngx-logger';
-import {EmailNotificationService, EmailNotificationSettings, UserIdentity, UserService} from '@valtimo/contract';
+import {
+  EmailNotificationService,
+  EmailNotificationSettings,
+  UserIdentity,
+  UserService,
+} from '@valtimo/contract';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserProviderService implements UserService, EmailNotificationService {
   private readonly userService: UserService;
@@ -37,7 +42,9 @@ export class UserProviderService implements UserService, EmailNotificationServic
     private logger: NGXLogger
   ) {
     this.valtimoApiConfig = configService.config.valtimoApi;
-    this.userService = injector.get<any>(configService.config.authentication.authProviders.userServiceProvider);
+    this.userService = injector.get<any>(
+      configService.config.authentication.authProviders.userServiceProvider
+    );
     this.logger.debug('Loading UserProviderService service', this.userService);
   }
 
@@ -67,10 +74,14 @@ export class UserProviderService implements UserService, EmailNotificationServic
 
   public getEmailNotificationSettings(): Observable<EmailNotificationSettings> {
     this.logger.debug('getEmailNotificationSettings');
-    return this.http.get<EmailNotificationSettings>(`${this.valtimoApiConfig.endpointUri}email-notification-settings`);
+    return this.http.get<EmailNotificationSettings>(
+      `${this.valtimoApiConfig.endpointUri}email-notification-settings`
+    );
   }
 
-  public updateEmailNotificationSettings(settings: EmailNotificationSettings): Observable<EmailNotificationSettings> {
+  public updateEmailNotificationSettings(
+    settings: EmailNotificationSettings
+  ): Observable<EmailNotificationSettings> {
     this.logger.debug('updateEmailNotificationSettings', settings);
     return this.http.put<EmailNotificationSettings>(
       `${this.valtimoApiConfig.endpointUri}email-notification-settings`,

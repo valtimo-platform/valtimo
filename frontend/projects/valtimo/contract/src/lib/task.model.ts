@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 import {User} from './user-management.model';
 
 export interface Task {

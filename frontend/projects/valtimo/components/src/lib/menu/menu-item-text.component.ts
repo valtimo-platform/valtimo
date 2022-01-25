@@ -20,17 +20,17 @@ import {MenuItem} from '@valtimo/contract';
 @Component({
   selector: 'valtimo-menu-item-text',
   template: `
-    <i class="{{ menuItem.iconClass }}"
-       container="body"
-       placement="right"
-       ngbTooltip="{{ menuItem.title | translate }}"
-       autoClose="true">
+    <i
+      class="{{ menuItem.iconClass }}"
+      container="body"
+      placement="right"
+      ngbTooltip="{{ menuItem.title | translate }}"
+      autoClose="true"
+    >
     </i>
     <span>{{ menuItem.title | translate }}</span>
   `,
 })
 export class MenuItemTextComponent {
-
   @Input() menuItem: MenuItem;
-
 }

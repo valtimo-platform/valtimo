@@ -15,7 +15,14 @@
  */
 
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
-import {FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import {FormField} from '../formfield.model';
 import {Component, Input} from '@angular/core';
 import {CamundaEnumFormfieldComponent} from './camunda-enum-formfield.component';
@@ -26,8 +33,8 @@ describe('CamundaEnumFormfieldComponent', () => {
 
   let formGroup: FormGroup;
   const enumValues = {
-    'id1': 'value1',
-    'id2': 'value2'
+    id1: 'value1',
+    id2: 'value2',
   };
 
   @Component({selector: 'valtimo-camunda-formfield-validation', template: ''})
@@ -39,9 +46,8 @@ describe('CamundaEnumFormfieldComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [CamundaFormFieldValidationComponent, CamundaEnumFormfieldComponent],
-      imports: [ReactiveFormsModule, FormsModule]
-    })
-      .compileComponents();
+      imports: [ReactiveFormsModule, FormsModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -60,7 +66,7 @@ describe('CamundaEnumFormfieldComponent', () => {
       properties: {},
       type: {
         values: enumValues,
-        name: 'enum'
+        name: 'enum',
       },
       validationConstraints: validationConstraints,
     };
@@ -73,7 +79,8 @@ describe('CamundaEnumFormfieldComponent', () => {
   it('should create enum formfield', () => {
     const formField = getFormField([]);
     formGroup = new FormBuilder().group({});
-    formGroup.addControl(formField.id,
+    formGroup.addControl(
+      formField.id,
       new FormControl(formField.defaultValue, Validators.required)
     );
     component.formField = formField;

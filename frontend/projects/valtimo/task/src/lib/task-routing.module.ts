@@ -26,17 +26,13 @@ const routes: Routes = [
     path: 'tasks',
     component: TaskListComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Tasks', roles: [ROLE_USER]}
-  }
+    data: {title: 'Tasks', roles: [ROLE_USER]},
+  },
 ];
 
 @NgModule({
   declarations: [],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-  ],
-  exports: [RouterModule]
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class TaskRoutingModule {
-}
+export class TaskRoutingModule {}

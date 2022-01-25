@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { PageHeaderComponent } from './page-header.component';
-import { PageTitleModule } from '../page-title/page-title.module';
-import { BreadcrumbNavigationModule } from '../breadcrumb-navigation/breadcrumb-navigation.module';
-
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {PageHeaderComponent} from './page-header.component';
+import {PageTitleModule} from '../page-title/page-title.module';
+import {BreadcrumbNavigationModule} from '../breadcrumb-navigation/breadcrumb-navigation.module';
 
 @NgModule({
   declarations: [PageHeaderComponent],
-  imports: [
-    CommonModule,
-    PageTitleModule,
-    BreadcrumbNavigationModule
-  ],
-  exports: [PageHeaderComponent]
+  imports: [CommonModule, PageTitleModule, BreadcrumbNavigationModule],
+  exports: [PageHeaderComponent],
 })
-export class PageHeaderModule { }
+export class PageHeaderModule {}

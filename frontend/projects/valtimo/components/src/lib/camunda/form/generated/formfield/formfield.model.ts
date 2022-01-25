@@ -21,12 +21,12 @@ export interface FormField {
   type?: Type;
   defaultValue?: string;
   value: object;
-  validationConstraints?: { name: string, configuration: string }[];
+  validationConstraints?: {name: string; configuration: string}[];
   properties: object;
   typeName: string;
 }
 
 export interface Type {
-  values?: { [s: string]: string; };
+  values?: {[s: string]: string};
   name;
 }

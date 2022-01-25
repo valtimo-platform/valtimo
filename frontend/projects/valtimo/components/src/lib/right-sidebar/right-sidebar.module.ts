@@ -35,12 +35,11 @@ import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
       loader: {
         provide: TranslateLoader,
         useFactory: HttpLoaderFactory,
-        deps: [HttpClient]
-      }
+        deps: [HttpClient],
+      },
     }),
-    NgbTooltipModule
+    NgbTooltipModule,
   ],
-  exports: [RightSidebarComponent]
+  exports: [RightSidebarComponent],
 })
-export class RightSidebarModule {
-}
+export class RightSidebarModule {}

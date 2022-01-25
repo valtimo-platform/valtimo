@@ -14,36 +14,66 @@
   ~ limitations under the License.
   -->
 
-<form [formGroup]="customForm"
-      (ngSubmit)="onSubmit()">
+<form [formGroup]="customForm" (ngSubmit)="onSubmit()">
   <div class="form-group row">
     <label class="col-12 col-sm-3 col-form-label text-sm-right" for="inputText">Input Text</label>
     <div class="col-12 col-sm-8 col-lg-6">
-      <input class="form-control" id="inputText" formControlName="inputText" type="text">
+      <input class="form-control" id="inputText" formControlName="inputText" type="text" />
     </div>
   </div>
   <div class="form-group row">
-    <label class="col-12 col-sm-3 col-form-label text-sm-right" for="inputPassword">Input Password</label>
+    <label class="col-12 col-sm-3 col-form-label text-sm-right" for="inputPassword"
+      >Input Password</label
+    >
     <div class="col-12 col-sm-8 col-lg-6">
-      <input class="form-control" id="inputPassword" formControlName="inputPassword" type="password">
+      <input
+        class="form-control"
+        id="inputPassword"
+        formControlName="inputPassword"
+        type="password"
+      />
     </div>
   </div>
   <div class="form-group row">
-    <label class="col-12 col-sm-3 col-form-label text-sm-right" for="inputPlaceholder">Placeholder Input</label>
+    <label class="col-12 col-sm-3 col-form-label text-sm-right" for="inputPlaceholder"
+      >Placeholder Input</label
+    >
     <div class="col-12 col-sm-8 col-lg-6">
-      <input class="form-control" id="inputPlaceholder" formControlName="inputPlaceholder" type="text" placeholder="Placeholder text">
+      <input
+        class="form-control"
+        id="inputPlaceholder"
+        formControlName="inputPlaceholder"
+        type="text"
+        placeholder="Placeholder text"
+      />
     </div>
   </div>
   <div class="form-group row">
-    <label class="col-12 col-sm-3 col-form-label text-sm-right" for="inputDisabled">Disabled Input</label>
+    <label class="col-12 col-sm-3 col-form-label text-sm-right" for="inputDisabled"
+      >Disabled Input</label
+    >
     <div class="col-12 col-sm-8 col-lg-6">
-      <input class="form-control" id="inputDisabled" formControlName="inputDisabled" type="text" placeholder="Disabled input text">
+      <input
+        class="form-control"
+        id="inputDisabled"
+        formControlName="inputDisabled"
+        type="text"
+        placeholder="Disabled input text"
+      />
     </div>
   </div>
   <div class="form-group row">
-    <label class="col-12 col-sm-3 col-form-label text-sm-right" for="inputReadonly">Readonly Input</label>
+    <label class="col-12 col-sm-3 col-form-label text-sm-right" for="inputReadonly"
+      >Readonly Input</label
+    >
     <div class="col-12 col-sm-8 col-lg-6">
-      <input class="form-control" id="inputReadonly" formControlName="inputReadonly" type="text" readonly>
+      <input
+        class="form-control"
+        id="inputReadonly"
+        formControlName="inputReadonly"
+        type="text"
+        readonly
+      />
     </div>
   </div>
   <div class="form-group row">

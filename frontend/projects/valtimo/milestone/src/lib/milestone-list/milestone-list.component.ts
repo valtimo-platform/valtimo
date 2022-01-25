@@ -23,10 +23,9 @@ import {combineLatest} from 'rxjs';
 @Component({
   selector: 'valtimo-milestone-list',
   templateUrl: './milestone-list.component.html',
-  styleUrls: ['./milestone-list.component.scss']
+  styleUrls: ['./milestone-list.component.scss'],
 })
 export class MilestoneListComponent implements OnInit {
-
   public milestones: Array<Array<string | MilestoneSet | Array<Milestone>>> = [];
   public milestoneFields = [
     {key: 'id', label: 'ID'},
@@ -37,11 +36,7 @@ export class MilestoneListComponent implements OnInit {
     {key: 'color', label: 'Color'},
   ];
 
-  constructor(
-    private milestoneService: MilestoneService,
-    private router: Router
-  ) {
-  }
+  constructor(private milestoneService: MilestoneService, private router: Router) {}
 
   editMilestoneSet(milestoneSetId: number) {
     this.router.navigate(['milestones/sets/set', milestoneSetId]);
@@ -52,11 +47,18 @@ export class MilestoneListComponent implements OnInit {
   }
 
   ngOnInit() {
-    combineLatest([this.milestoneService.getMilestones(), this.milestoneService.getMilestoneSets()])
-      .subscribe(([milestones, milestoneSets]) => this.handleMilestoneResult(milestones, milestoneSets));
+    combineLatest([
+      this.milestoneService.getMilestones(),
+      this.milestoneService.getMilestoneSets(),
+    ]).subscribe(([milestones, milestoneSets]) =>
+      this.handleMilestoneResult(milestones, milestoneSets)
+    );
   }
 
-  private handleMilestoneResult(milestones: Array<Milestone>, milestoneSets: Array<MilestoneSet>): void {
+  private handleMilestoneResult(
+    milestones: Array<Milestone>,
+    milestoneSets: Array<MilestoneSet>
+  ): void {
     const milestoneSetsMap = this.getMilestoneSetsMap(milestones, milestoneSets);
 
     this.setMilestones(milestoneSetsMap);
@@ -69,7 +71,10 @@ export class MilestoneListComponent implements OnInit {
     });
   }
 
-  private getMilestoneSetsMap(milestones: Array<Milestone>, milestoneSets: Array<MilestoneSet>): Map<string, Milestone[]> {
+  private getMilestoneSetsMap(
+    milestones: Array<Milestone>,
+    milestoneSets: Array<MilestoneSet>
+  ): Map<string, Milestone[]> {
     const mapWithSets = this.addMilestoneSetsToMap(milestoneSets, this.getEmptyMap());
 
     return this.addMilestonesToMap(milestones, mapWithSets);
@@ -79,16 +84,22 @@ export class MilestoneListComponent implements OnInit {
     return new Map<string, Milestone[]>();
   }
 
-  private addMilestoneSetsToMap(milestoneSets: Array<MilestoneSet>, map: Map<string, Milestone[]>): Map<string, Milestone[]> {
-    milestoneSets.forEach((milestoneSet) => {
+  private addMilestoneSetsToMap(
+    milestoneSets: Array<MilestoneSet>,
+    map: Map<string, Milestone[]>
+  ): Map<string, Milestone[]> {
+    milestoneSets.forEach(milestoneSet => {
       map.set(JSON.stringify(milestoneSet), []);
     });
 
     return map;
   }
 
-  private addMilestonesToMap(milestones: Array<Milestone>, map: Map<string, Milestone[]>): Map<string, Milestone[]> {
-    milestones.forEach((milestone) => {
+  private addMilestonesToMap(
+    milestones: Array<Milestone>,
+    map: Map<string, Milestone[]>
+  ): Map<string, Milestone[]> {
+    milestones.forEach(milestone => {
       const milestoneSetString = JSON.stringify(milestone.milestoneSet);
       const arr = map.get(milestoneSetString);
       arr.push(milestone);

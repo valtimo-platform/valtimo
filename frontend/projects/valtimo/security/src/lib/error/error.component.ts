@@ -21,23 +21,19 @@ import {Error} from './error';
 @Component({
   selector: 'valtimo-error',
   templateUrl: './error.component.html',
-  styleUrls: ['./error.component.css']
+  styleUrls: ['./error.component.css'],
 })
 export class ErrorComponent implements OnInit {
   public err: Error;
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-  ) {
-  }
+  constructor(private activatedRoute: ActivatedRoute) {}
 
   ngOnInit() {
     if (this.activatedRoute.snapshot.data) {
       this.err = {
         title: this.activatedRoute.snapshot.data.title,
-        error: this.activatedRoute.snapshot.data.error
+        error: this.activatedRoute.snapshot.data.error,
       };
     }
   }
-
 }

@@ -21,20 +21,20 @@ import {Context, ContextProcess, UserContextActiveProcess} from '@valtimo/contra
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ContextService {
   private valtimoApiConfig: any;
 
-  constructor(
-    private http: HttpClient,
-    configService: ConfigService
-  ) {
+  constructor(private http: HttpClient, configService: ConfigService) {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 
   public query(params?: any): Observable<HttpResponse<Context[]>> {
-    return this.http.get<Context[]>(`${this.valtimoApiConfig.endpointUri}contexts`, {observe: 'response', params: params});
+    return this.http.get<Context[]>(`${this.valtimoApiConfig.endpointUri}contexts`, {
+      observe: 'response',
+      params: params,
+    });
   }
 
   public get(contextId: number): Observable<Context> {
@@ -62,15 +62,20 @@ export class ContextService {
   }
 
   public getUserContextProceses(): Observable<ContextProcess[]> {
-    return this.http.get<ContextProcess[]>(`${this.valtimoApiConfig.endpointUri}user/context/processes`);
+    return this.http.get<ContextProcess[]>(
+      `${this.valtimoApiConfig.endpointUri}user/context/processes`
+    );
   }
 
   public getUserContextProcessesActive(): Observable<UserContextActiveProcess[]> {
-    return this.http.get<UserContextActiveProcess[]>(`${this.valtimoApiConfig.endpointUri}context/process/user/active`);
+    return this.http.get<UserContextActiveProcess[]>(
+      `${this.valtimoApiConfig.endpointUri}context/process/user/active`
+    );
   }
 
   public setUserContext(contextId: number) {
-    return this.http.post(`${this.valtimoApiConfig.endpointUri}user/context`, {contextId: contextId});
+    return this.http.post(`${this.valtimoApiConfig.endpointUri}user/context`, {
+      contextId: contextId,
+    });
   }
-
 }

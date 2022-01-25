@@ -15,21 +15,21 @@
  */
 
 .accordion .card-header {
-
   button {
     padding: 0.7rem 1.692rem;
   }
 
-  button, button > * {
+  button,
+  button > * {
     font-size: 1rem;
   }
 
-  button[aria-expanded="true"] .icon-not-selected {
+  button[aria-expanded='true'] .icon-not-selected {
     transform: none;
     display: none;
   }
 
-  button[aria-expanded="false"] .icon-selected {
+  button[aria-expanded='false'] .icon-selected {
     transform: none;
     display: none;
   }

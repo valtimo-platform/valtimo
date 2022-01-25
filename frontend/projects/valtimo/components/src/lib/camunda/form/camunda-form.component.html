@@ -15,9 +15,11 @@
   -->
 
 <ng-container *ngIf="!componentName && submitted">
-  <valtimo-camunda-generated-form *ngIf="formFields"
-                                  [formFields]="formFields"
-                                  (submitted)="onSubmitted($event)">
+  <valtimo-camunda-generated-form
+    *ngIf="formFields"
+    [formFields]="formFields"
+    (submitted)="onSubmitted($event)"
+  >
   </valtimo-camunda-generated-form>
 </ng-container>
 <ng-container *ngIf="componentName">

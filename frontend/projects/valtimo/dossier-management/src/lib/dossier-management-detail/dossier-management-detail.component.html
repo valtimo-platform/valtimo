@@ -22,8 +22,11 @@
         {{ 'Download document definition' | translate }}
       </button>
       <a id="downloadAnchorElement" style="display: none"></a>
-      <button *ngIf="!this.documentDefinition.readOnly" class="btn btn-secondary btn-space mr-0"
-              (click)="openDossierRemoveModal()">
+      <button
+        *ngIf="!this.documentDefinition.readOnly"
+        class="btn btn-secondary btn-space mr-0"
+        (click)="openDossierRemoveModal()"
+      >
         <i class="icon mdi mdi-delete"></i>&nbsp;
         {{ 'Remove document definition' | translate }}
       </button>
@@ -31,7 +34,8 @@
     <div class="clearfix"></div>
     <valtimo-widget *ngIf="documentDefinition">
       <div class="bg-light dossier-header">
-        <h3 class="dossier-title">{{ documentDefinition.schema.title }}
+        <h3 class="dossier-title">
+          {{ documentDefinition.schema.title }}
           <div *ngIf="documentDefinition.readOnly" class="pull-right">
             <span class="badge badge-pill badge-info increase-size">Read-only</span>
           </div>
@@ -47,40 +51,54 @@
       </div>
       <div class="row bg-white mb-5 pb-4 pl-2 pr-2">
         <div class="col-5 bg-red">
-          <textarea class="w-100 dossier-schema" rows="25" disabled>{{ documentDefinition | json }}
+          <textarea class="w-100 dossier-schema" rows="25" disabled
+            >{{ documentDefinition | json }}
           </textarea>
         </div>
         <div class="col-5 offset-2 bg-blue">
-          <div class="input-group mb-5"
-               *ngFor="let processDocumentDefinition of processDocumentDefinitions">
+          <div
+            class="input-group mb-5"
+            *ngFor="let processDocumentDefinition of processDocumentDefinitions"
+          >
             <div class="input-group-prepend w-75">
-              <button class="btn btn-danger" (click)="deleteProcessDocumentDefinition(processDocumentDefinition)"
-                      data-toggle="tooltip" data-placement="left" title="Delete this connected process">
+              <button
+                class="btn btn-danger"
+                (click)="deleteProcessDocumentDefinition(processDocumentDefinition)"
+                data-toggle="tooltip"
+                data-placement="left"
+                title="Delete this connected process"
+              >
                 <i class="fa fa-trash"></i>
               </button>
-              <input class="form-control"
-                     [value]="processDocumentDefinition.processName ? processDocumentDefinition.processName
-                    : '' + ' (' + processDocumentDefinition.id.processDefinitionKey + ')'"
-                     type="text"
-                     disabled
+              <input
+                class="form-control"
+                [value]="
+                  processDocumentDefinition.processName
+                    ? processDocumentDefinition.processName
+                    : '' + ' (' + processDocumentDefinition.id.processDefinitionKey + ')'
+                "
+                type="text"
+                disabled
               />
             </div>
             <div class="row mb-2 mt-2">
               <label class="custom-control custom-checkbox custom-control-inline pl-6 mr-5">
                 <input
-                        class="custom-control-input"
-                        type="checkbox"
-                        [checked]="processDocumentDefinition.canInitializeDocument"
-                        disabled
+                  class="custom-control-input"
+                  type="checkbox"
+                  [checked]="processDocumentDefinition.canInitializeDocument"
+                  disabled
                 /><span class="custom-control-label custom-control-color">Init document?</span>
               </label>
               <label class="custom-control custom-checkbox custom-control-inline pl-6">
                 <input
-                        class="custom-control-input"
-                        type="checkbox"
-                        [checked]="processDocumentDefinition.startableByUser"
-                        disabled
-                /><span class="custom-control-label custom-control-color">{{ 'Startable by user' | translate }}?</span>
+                  class="custom-control-input"
+                  type="checkbox"
+                  [checked]="processDocumentDefinition.startableByUser"
+                  disabled
+                /><span class="custom-control-label custom-control-color"
+                  >{{ 'Startable by user' | translate }}?</span
+                >
               </label>
             </div>
           </div>
@@ -90,19 +108,20 @@
             </button>
           </div>
           <valtimo-extension
-                  module="dossier-management"
-                  page="dossier"
-                  section="right-panel"
+            module="dossier-management"
+            page="dossier"
+            section="right-panel"
           ></valtimo-extension>
         </div>
       </div>
     </valtimo-widget>
 
     <valtimo-dossier-management-connect-modal
-            #dossierConnectModal
-            (reloadProcessDocumentDefinitions)="loadProcessDocumentDefinitions()"
+      #dossierConnectModal
+      (reloadProcessDocumentDefinitions)="loadProcessDocumentDefinitions()"
     ></valtimo-dossier-management-connect-modal>
-    <valtimo-dossier-management-remove-modal #dossierRemoveModal></valtimo-dossier-management-remove-modal>
+    <valtimo-dossier-management-remove-modal
+      #dossierRemoveModal
+    ></valtimo-dossier-management-remove-modal>
   </div>
-
 </div>

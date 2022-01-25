@@ -19,13 +19,10 @@ import {Component, OnInit} from '@angular/core';
 @Component({
   selector: 'valtimo-layout-public',
   templateUrl: './layout-public.component.html',
-  styleUrls: ['./layout-public.component.scss']
+  styleUrls: ['./layout-public.component.scss'],
 })
 export class LayoutPublicComponent implements OnInit {
+  constructor() {}
 
-  constructor() { }
-
-  ngOnInit() {
-  }
-
+  ngOnInit() {}
 }

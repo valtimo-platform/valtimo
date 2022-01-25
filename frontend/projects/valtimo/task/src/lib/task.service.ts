@@ -24,10 +24,7 @@ import {ConfigService} from '@valtimo/config';
 export class TaskService {
   private valtimoEndpointUri: string;
 
-  constructor(
-    private http: HttpClient,
-    configService: ConfigService
-  ) {
+  constructor(private http: HttpClient, configService: ConfigService) {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
@@ -48,24 +45,17 @@ export class TaskService {
   }
 
   assignTask(id: string, assigneeRequest: AssigneeRequest): Observable<any> {
-    return this.http.post(this.valtimoEndpointUri + 'task/' + id + '/assign',
-      assigneeRequest
-    );
+    return this.http.post(this.valtimoEndpointUri + 'task/' + id + '/assign', assigneeRequest);
   }
 
   unassignTask(id: string): Observable<any> {
-    return this.http.post(this.valtimoEndpointUri + 'task/' + id + '/unassign',
-      null
-    );
+    return this.http.post(this.valtimoEndpointUri + 'task/' + id + '/unassign', null);
   }
 
   completeTask(id: string, variables: Map<string, any>): Observable<any> {
-    return this.http.post(
-      this.valtimoEndpointUri + 'task/' + id + '/complete',
-      {
-        variables: variables,
-        filesToDelete: []
-      });
+    return this.http.post(this.valtimoEndpointUri + 'task/' + id + '/complete', {
+      variables: variables,
+      filesToDelete: [],
+    });
   }
-
 }

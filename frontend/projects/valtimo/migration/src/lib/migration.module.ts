@@ -23,7 +23,6 @@ import {MigrationProcessDiagramComponent} from './migration-process-diagram/migr
 import {WidgetModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 
-
 @NgModule({
   declarations: [MigrationComponent, MigrationProcessDiagramComponent],
   imports: [
@@ -32,9 +31,8 @@ import {TranslateModule} from '@ngx-translate/core';
     ReactiveFormsModule,
     WidgetModule,
     FormsModule,
-    TranslateModule
+    TranslateModule,
   ],
-  exports: [MigrationComponent]
+  exports: [MigrationComponent],
 })
-export class MigrationModule {
-}
+export class MigrationModule {}

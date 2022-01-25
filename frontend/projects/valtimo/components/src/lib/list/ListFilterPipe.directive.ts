@@ -17,10 +17,9 @@
 import {Pipe, PipeTransform} from '@angular/core';
 
 @Pipe({
-  name: 'listFilter'
+  name: 'listFilter',
 })
 export class ListFilterPipe implements PipeTransform {
-
   transform(list: any[], filterText: string): any {
     list = list || [];
     if (!filterText) {
@@ -28,12 +27,8 @@ export class ListFilterPipe implements PipeTransform {
     }
     return list.filter(item =>
       Object.keys(item).some(
-        k =>
-          item[k] != null &&
-          item[k]
-            .toString()
-            .toLowerCase()
-            .includes(filterText.toLowerCase())));
+        k => item[k] != null && item[k].toString().toLowerCase().includes(filterText.toLowerCase())
+      )
+    );
   }
-
 }

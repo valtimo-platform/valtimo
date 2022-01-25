@@ -107,7 +107,6 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
   translateTabName(tab: TabImpl): string {
     return this._translateService.instant('dossier.tabs.' + tab.name);
   }
-
 }
 
 export interface Tab {
@@ -157,5 +156,4 @@ export class TabImpl implements Tab {
   isActive(): boolean {
     return this._active;
   }
-
 }

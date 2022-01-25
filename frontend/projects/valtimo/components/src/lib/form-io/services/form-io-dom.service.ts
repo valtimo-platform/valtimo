@@ -4,17 +4,13 @@ import {take} from 'rxjs/operators';
 
 @Injectable()
 export class FormIoDomService {
-
-  constructor(
-    private readonly stateService: FormIoStateService
-  ) {
-  }
+  constructor(private readonly stateService: FormIoStateService) {}
 
   toggleSubmitButton(disabled: boolean): void {
-    this.stateService.currentForm$.pipe(take(1)).subscribe((form) => {
-      const button = (form.formioElement.nativeElement
+    this.stateService.currentForm$.pipe(take(1)).subscribe(form => {
+      const button = form.formioElement.nativeElement
         .getElementsByClassName('formio-component-submit')[0]
-        .getElementsByClassName('btn-primary')[0] as HTMLInputElement);
+        .getElementsByClassName('btn-primary')[0] as HTMLInputElement;
 
       button.disabled = disabled;
     });

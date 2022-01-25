@@ -19,7 +19,6 @@ import {HttpClientTestingModule, HttpTestingController} from '@angular/common/ht
 import {ProcessService} from './process.service';
 
 describe('ProcessService', () => {
-
   let mockConfig;
   let httpTestingController: HttpTestingController;
   let service: ProcessService;
@@ -29,7 +28,7 @@ describe('ProcessService', () => {
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [ProcessService]
+      providers: [ProcessService],
     });
 
     httpTestingController = TestBed.inject(HttpTestingController);
@@ -43,12 +42,14 @@ describe('ProcessService', () => {
   describe('getProcessDefinition', () => {
     it('should call request method get with the correct url', () => {
       service.getProcessDefinition('some-key-mock').subscribe();
-      const req = httpTestingController.expectOne(mockConfig.endpointUri + 'process/definition/some-key-mock');
+      const req = httpTestingController.expectOne(
+        mockConfig.endpointUri + 'process/definition/some-key-mock'
+      );
       expect(req.request.method).toBe('GET');
       req.flush({
         id: 'some-id-mock',
         key: 'some-key-mock',
-        name: 'ProcessDefinitionTestName'
+        name: 'ProcessDefinitionTestName',
       });
       httpTestingController.verify();
     });
@@ -57,7 +58,9 @@ describe('ProcessService', () => {
   describe('getProcessDefinitionStartFormData', () => {
     it('should call request method get with the correct url', () => {
       service.getProcessDefinitionStartFormData('some-key-mock').subscribe();
-      const req = httpTestingController.expectOne(mockConfig.endpointUri + 'process/definition/some-key-mock/start-form');
+      const req = httpTestingController.expectOne(
+        mockConfig.endpointUri + 'process/definition/some-key-mock/start-form'
+      );
       expect(req.request.method).toBe('GET');
       req.flush({
         id: 'some-id-mock',
@@ -73,7 +76,9 @@ describe('ProcessService', () => {
   describe('startProcesInstance', () => {
     it('should call request method post with the correct url', () => {
       service.startProcesInstance('some-key-mock', 'businessKey', null).subscribe();
-      const req = httpTestingController.expectOne(mockConfig.endpointUri + 'process/definition/some-key-mock/businessKey/start');
+      const req = httpTestingController.expectOne(
+        mockConfig.endpointUri + 'process/definition/some-key-mock/businessKey/start'
+      );
       expect(req.request.method).toBe('POST');
       req.flush({
         businessKey: 'businessKey',

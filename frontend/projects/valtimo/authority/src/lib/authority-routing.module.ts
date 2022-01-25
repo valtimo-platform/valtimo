@@ -28,28 +28,24 @@ const routes: Routes = [
     path: 'entitlements',
     component: AuthorityListComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Entitlements', roles: [ROLE_ADMIN]}
+    data: {title: 'Entitlements', roles: [ROLE_ADMIN]},
   },
   {
     path: 'entitlements/create',
     component: AuthorityCreateComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Create new Entitlement', roles: [ROLE_ADMIN]}
+    data: {title: 'Create new Entitlement', roles: [ROLE_ADMIN]},
   },
   {
     path: 'entitlements/entitlement/:name',
     component: AuthorityDetailComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Entitlement details', roles: [ROLE_ADMIN]}
-  }
+    data: {title: 'Entitlement details', roles: [ROLE_ADMIN]},
+  },
 ];
 
 @NgModule({
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-  ],
-  exports: [RouterModule]
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class AuthorityRoutingModule {
-}
+export class AuthorityRoutingModule {}

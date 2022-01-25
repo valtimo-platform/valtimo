@@ -23,26 +23,25 @@ declare var App: any;
 
 @Component({
   selector: 'valtimo-layout',
-  templateUrl: './layout.component.html'
+  templateUrl: './layout.component.html',
 })
 export class LayoutComponent implements OnInit, OnDestroy {
-
   public layoutType: string | null = null;
   private routerSub = Subscription.EMPTY;
   private defaultLayout = 'internal';
 
-  constructor(private router: Router, private route: ActivatedRoute) {
-  }
+  constructor(private router: Router, private route: ActivatedRoute) {}
 
   ngOnInit() {
-    this.routerSub = this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
-      const layout = this.route.snapshot.firstChild.data.layout;
-      this.layoutType = layout ? layout : this.defaultLayout;
-    });
+    this.routerSub = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        const layout = this.route.snapshot.firstChild.data.layout;
+        this.layoutType = layout ? layout : this.defaultLayout;
+      });
   }
 
   ngOnDestroy() {
     this.routerSub.unsubscribe();
   }
-
 }

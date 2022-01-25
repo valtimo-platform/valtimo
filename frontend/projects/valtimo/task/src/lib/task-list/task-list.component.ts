@@ -31,14 +31,14 @@ moment.locale(localStorage.getItem('langKey') || '');
   selector: 'valtimo-task-list',
   templateUrl: './task-list.component.html',
   styleUrls: ['./task-list.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class TaskListComponent implements OnDestroy {
   @ViewChild('taskDetail') taskDetail: TaskDetailModalComponent;
   public tasks = {
     mine: new TaskList(),
     open: new TaskList(),
-    all: new TaskList()
+    all: new TaskList(),
   };
   public currentTaskType = 'mine';
   public listTitle: string | null = null;
@@ -55,13 +55,13 @@ export class TaskListComponent implements OnDestroy {
     private router: Router,
     private logger: NGXLogger,
     private translateService: TranslateService
-  ) {
-  }
+  ) {}
 
   paginationSet() {
-    this.tasks.mine.pagination.size = this.tasks.all.pagination.size = this.tasks.open.pagination.size = this.tasks[
-      this.currentTaskType
-      ].pagination.size;
+    this.tasks.mine.pagination.size =
+      this.tasks.all.pagination.size =
+      this.tasks.open.pagination.size =
+        this.tasks[this.currentTaskType].pagination.size;
     this.getTasks(this.currentTaskType);
   }
 
@@ -95,7 +95,7 @@ export class TaskListComponent implements OnDestroy {
 
     this.translationSubscription = combineLatest([
       this.translateService.stream(`task-list.${type}.title`),
-      this.translateService.stream(`task-list.${type}.description`)
+      this.translateService.stream(`task-list.${type}.description`),
     ]).subscribe(([title, description]) => {
       this.listTitle = title;
       this.listDescription = description;
@@ -103,11 +103,19 @@ export class TaskListComponent implements OnDestroy {
 
     switch (type) {
       case 'mine':
-        params = {page: this.tasks.mine.page, size: this.tasks.mine.pagination.size, filter: 'mine'};
+        params = {
+          page: this.tasks.mine.page,
+          size: this.tasks.mine.pagination.size,
+          filter: 'mine',
+        };
         this.currentTaskType = 'mine';
         break;
       case 'open':
-        params = {page: this.tasks.open.page, size: this.tasks.open.pagination.size, filter: 'open'};
+        params = {
+          page: this.tasks.open.page,
+          size: this.tasks.open.pagination.size,
+          filter: 'open',
+        };
         this.currentTaskType = 'open';
         break;
       case 'all':
@@ -130,20 +138,20 @@ export class TaskListComponent implements OnDestroy {
       this.tasks[type].fields = [
         {
           key: 'created',
-          label: 'Created on'
+          label: 'Created on',
         },
         {
           key: 'name',
-          label: 'Name'
+          label: 'Name',
         },
         {
           key: 'valtimoAssignee.fullName',
-          label: 'Assignee'
+          label: 'Assignee',
         },
         {
           key: 'due',
-          label: 'Due date'
-        }
+          label: 'Due date',
+        },
       ];
     });
   }
@@ -159,5 +167,4 @@ export class TaskListComponent implements OnDestroy {
   ngOnDestroy(): void {
     this.translationSubscription.unsubscribe();
   }
-
 }

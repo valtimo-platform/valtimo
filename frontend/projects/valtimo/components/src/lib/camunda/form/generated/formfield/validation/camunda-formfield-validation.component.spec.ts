@@ -16,7 +16,14 @@
 
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {CamundaFormfieldValidationComponent} from './camunda-formfield-validation.component';
-import {FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import {FormField} from '../formfield.model';
 import {maxDate, minDate} from './date.validators';
 import * as momentImported from 'moment';
@@ -33,7 +40,7 @@ describe('CamundaFormfieldValidationComponent', () => {
     typeName: 'string',
     label: 'My label',
     value: {},
-    properties: {}
+    properties: {},
   };
 
   let formBuilder: FormBuilder;
@@ -46,8 +53,7 @@ describe('CamundaFormfieldValidationComponent', () => {
     TestBed.configureTestingModule({
       imports: [ReactiveFormsModule, FormsModule],
       declarations: [CamundaFormfieldValidationComponent],
-    })
-      .compileComponents();
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -62,9 +68,7 @@ describe('CamundaFormfieldValidationComponent', () => {
   });
 
   it('should show required error', () => {
-    formGroup.addControl(formfieldId,
-      new FormControl(null, Validators.required)
-    );
+    formGroup.addControl(formfieldId, new FormControl(null, Validators.required));
     component.formField = formField;
     component.formGroup = formGroup;
     component.ngOnInit();
@@ -82,9 +86,7 @@ describe('CamundaFormfieldValidationComponent', () => {
 
   it('should show minlength error', () => {
     const minLength = 5;
-    formGroup.addControl(formfieldId,
-      new FormControl(null, Validators.minLength(minLength))
-    );
+    formGroup.addControl(formfieldId, new FormControl(null, Validators.minLength(minLength)));
     component.formField = formField;
     component.formGroup = formGroup;
     component.ngOnInit();
@@ -97,14 +99,14 @@ describe('CamundaFormfieldValidationComponent', () => {
 
     const el = fixture.debugElement.nativeElement;
     expect(el.querySelectorAll('li').length).toEqual(1);
-    expect(el.querySelector('li').innerText.trim()).toEqual('This field should be more than ' + minLength + ' characters.');
+    expect(el.querySelector('li').innerText.trim()).toEqual(
+      'This field should be more than ' + minLength + ' characters.'
+    );
   });
 
   it('should show maxlength error', () => {
     const maxLength = 5;
-    formGroup.addControl(formfieldId,
-      new FormControl(null, Validators.maxLength(maxLength))
-    );
+    formGroup.addControl(formfieldId, new FormControl(null, Validators.maxLength(maxLength)));
     component.formField = formField;
     component.formGroup = formGroup;
     component.ngOnInit();
@@ -117,14 +119,14 @@ describe('CamundaFormfieldValidationComponent', () => {
 
     const el = fixture.debugElement.nativeElement;
     expect(el.querySelectorAll('li').length).toEqual(1);
-    expect(el.querySelector('li').innerText.trim()).toEqual('This field cannot be more than ' + maxLength + ' characters.');
+    expect(el.querySelector('li').innerText.trim()).toEqual(
+      'This field cannot be more than ' + maxLength + ' characters.'
+    );
   });
 
   it('should show maxlength error', () => {
     const maxLength = 5;
-    formGroup.addControl(formfieldId,
-      new FormControl(null, Validators.maxLength(maxLength))
-    );
+    formGroup.addControl(formfieldId, new FormControl(null, Validators.maxLength(maxLength)));
     component.formField = formField;
     component.formGroup = formGroup;
     component.ngOnInit();
@@ -137,14 +139,14 @@ describe('CamundaFormfieldValidationComponent', () => {
 
     const el = fixture.debugElement.nativeElement;
     expect(el.querySelectorAll('li').length).toEqual(1);
-    expect(el.querySelector('li').innerText.trim()).toEqual('This field cannot be more than ' + maxLength + ' characters.');
+    expect(el.querySelector('li').innerText.trim()).toEqual(
+      'This field cannot be more than ' + maxLength + ' characters.'
+    );
   });
 
   it('should show min error', () => {
     const min = 5;
-    formGroup.addControl(formfieldId,
-      new FormControl(null, Validators.min(min))
-    );
+    formGroup.addControl(formfieldId, new FormControl(null, Validators.min(min)));
     component.formField = formField;
     component.formGroup = formGroup;
     component.ngOnInit();
@@ -157,14 +159,14 @@ describe('CamundaFormfieldValidationComponent', () => {
 
     const el = fixture.debugElement.nativeElement;
     expect(el.querySelectorAll('li').length).toEqual(1);
-    expect(el.querySelector('li').innerText.trim()).toEqual('This field should be more than ' + min + '.');
+    expect(el.querySelector('li').innerText.trim()).toEqual(
+      'This field should be more than ' + min + '.'
+    );
   });
 
   it('should show max error', () => {
     const max = 5;
-    formGroup.addControl(formfieldId,
-      new FormControl(null, Validators.max(max))
-    );
+    formGroup.addControl(formfieldId, new FormControl(null, Validators.max(max)));
     component.formField = formField;
     component.formGroup = formGroup;
     component.ngOnInit();
@@ -177,12 +179,15 @@ describe('CamundaFormfieldValidationComponent', () => {
 
     const el = fixture.debugElement.nativeElement;
     expect(el.querySelectorAll('li').length).toEqual(1);
-    expect(el.querySelector('li').innerText.trim()).toEqual('This field should be less or equal to ' + max + '.');
+    expect(el.querySelector('li').innerText.trim()).toEqual(
+      'This field should be less or equal to ' + max + '.'
+    );
   });
 
   it('should show minDate error', () => {
     const minimumDate = moment.utc('01-01-2019', 'DD-MM-YYYY', true);
-    formGroup.addControl(formfieldId,
+    formGroup.addControl(
+      formfieldId,
       new FormControl(null, minDate(minimumDate.format('DD-MM-YYYY')))
     );
     component.formField = formField;
@@ -199,13 +204,15 @@ describe('CamundaFormfieldValidationComponent', () => {
 
     const el = fixture.debugElement.nativeElement;
     expect(el.querySelectorAll('li').length).toEqual(1);
-    expect(el.querySelector('li').innerText.trim())
-      .toEqual('This field should be more than ' + minimumDate.format('DD-MM-YYYY') + '.');
+    expect(el.querySelector('li').innerText.trim()).toEqual(
+      'This field should be more than ' + minimumDate.format('DD-MM-YYYY') + '.'
+    );
   });
 
   it('should show maxDate error', () => {
     const maximumDate = moment.utc('01-01-2019', 'DD-MM-YYYY', true);
-    formGroup.addControl(formfieldId,
+    formGroup.addControl(
+      formfieldId,
       new FormControl(null, maxDate(maximumDate.format('DD-MM-YYYY')))
     );
     component.formField = formField;
@@ -222,8 +229,8 @@ describe('CamundaFormfieldValidationComponent', () => {
 
     const el = fixture.debugElement.nativeElement;
     expect(el.querySelectorAll('li').length).toEqual(1);
-    expect(el.querySelector('li').innerText.trim())
-      .toEqual('This field should be less or equal to ' + maximumDate.format('DD-MM-YYYY') + '.');
+    expect(el.querySelector('li').innerText.trim()).toEqual(
+      'This field should be less or equal to ' + maximumDate.format('DD-MM-YYYY') + '.'
+    );
   });
-
 });

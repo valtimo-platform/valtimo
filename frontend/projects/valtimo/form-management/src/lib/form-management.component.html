@@ -18,7 +18,11 @@
   <div class="container-fluid">
     <div class="text-right">
       <div class="btn-group mt-m3px mb-3">
-        <button [routerLink]="'create'" [queryParams]="{'upload': 'true'}" class="btn btn-secondary btn-space">
+        <button
+          [routerLink]="'create'"
+          [queryParams]="{upload: 'true'}"
+          class="btn btn-secondary btn-space"
+        >
           <i class="icon mdi mdi-upload"></i>&nbsp;
           {{ 'Upload' | translate }}
         </button>

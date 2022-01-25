@@ -23,7 +23,9 @@
   ></valtimo-left-sidebar>
   <div
     [ngClass]="{'be-content': !layoutService.isFullscreen}"
-    [style.marginLeft.px]="(menuOpen$ | async) && !layoutService.isFullscreen ? (menuWidth$ | async) : null"
+    [style.marginLeft.px]="
+      (menuOpen$ | async) && !layoutService.isFullscreen ? (menuWidth$ | async) : null
+    "
   >
     <valtimo-alert></valtimo-alert>
     <valtimo-page-header [hidden]="layoutService.isFullscreen"></valtimo-page-header>

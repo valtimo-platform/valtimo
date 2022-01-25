@@ -44,7 +44,7 @@ import {EditConnectorFormComponent} from './components/edit-connector-form/edit-
     ConnectorLinkExtensionComponent,
     ConnectorLinkExtensionModalComponent,
     EditProductAanvragenConnectorComponent,
-    EditConnectorFormComponent
+    EditConnectorFormComponent,
   ],
   imports: [
     CommonModule,
@@ -54,7 +54,7 @@ import {EditConnectorFormComponent} from './components/edit-connector-form/edit-
     ListModule,
     SpinnerModule,
     ModalModule,
-    FormIoModule
+    FormIoModule,
   ],
   exports: [
     ConnectorManagementComponent,
@@ -65,11 +65,8 @@ import {EditConnectorFormComponent} from './components/edit-connector-form/edit-
     MultiValueConnectorPropertyComponent,
     ConnectorLinkExtensionComponent,
     ConnectorLinkExtensionModalComponent,
-    EditProductAanvragenConnectorComponent
+    EditProductAanvragenConnectorComponent,
   ],
-  entryComponents: [
-    ConnectorLinkExtensionComponent,
-  ]
+  entryComponents: [ConnectorLinkExtensionComponent],
 })
-export class ConnectorManagementModule {
-}
+export class ConnectorManagementModule {}

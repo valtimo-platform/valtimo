@@ -21,7 +21,10 @@ import {Injector} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
 import {menuInitializer} from '@valtimo/components';
 
-export function initialize(initializers: (() => Function)[], logger: NGXLogger): () => Promise<any> {
+export function initialize(
+  initializers: (() => Function)[],
+  logger: NGXLogger
+): () => Promise<any> {
   return (): Promise<any> => {
     return new Promise(async (resolve, reject) => {
       logger.debug('Initializing application');

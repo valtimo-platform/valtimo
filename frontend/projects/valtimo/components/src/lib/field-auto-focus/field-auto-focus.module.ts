@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FieldAutoFocusDirective } from './field-auto-focus.directive';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FieldAutoFocusDirective} from './field-auto-focus.directive';
 
 @NgModule({
   declarations: [FieldAutoFocusDirective],
-  exports: [
-    FieldAutoFocusDirective
-  ],
-  imports: [
-    CommonModule
-  ]
+  exports: [FieldAutoFocusDirective],
+  imports: [CommonModule],
 })
-export class FieldAutoFocusModule { }
+export class FieldAutoFocusModule {}

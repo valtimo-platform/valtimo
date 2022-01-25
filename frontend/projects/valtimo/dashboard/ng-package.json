@@ -16,7 +16,5 @@
       "@valtimo/contract": "contract"
     }
   },
-  "whitelistedNonPeerDependencies": [
-    "."
-  ]
+  "whitelistedNonPeerDependencies": ["."]
 }

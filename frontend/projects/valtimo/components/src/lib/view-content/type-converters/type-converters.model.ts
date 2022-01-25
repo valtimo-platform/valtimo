@@ -35,7 +35,7 @@ export const TYPE_CONVERTERS: Array<TypeConverter> = [
   dateTypeConverter,
   enumTypeConverter,
   stringReplaceUnderscoreTypeConverter,
-  relatedFilesTypeConverter
+  relatedFilesTypeConverter,
 ];
 
 export interface TypeConverter {

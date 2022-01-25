@@ -22,14 +22,7 @@ import {TranslateModule} from '@ngx-translate/core';
 
 @NgModule({
   declarations: [SpinnerComponent],
-  exports: [
-    SpinnerComponent
-  ],
-    imports: [
-        CommonModule,
-        NgxSpinnerModule,
-        TranslateModule
-    ]
+  exports: [SpinnerComponent],
+  imports: [CommonModule, NgxSpinnerModule, TranslateModule],
 })
-export class SpinnerModule {
-}
+export class SpinnerModule {}

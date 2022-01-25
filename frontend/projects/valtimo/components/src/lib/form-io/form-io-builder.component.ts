@@ -19,21 +19,17 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 @Component({
   selector: 'valtimo-form-io-builder',
   templateUrl: './form-io-builder.component.html',
-  styleUrls: ['./form-io-builder.component.css']
+  styleUrls: ['./form-io-builder.component.css'],
 })
 export class FormioBuilderComponent implements OnInit {
-
   @Input() form: any;
   @Output() change: EventEmitter<any> = new EventEmitter();
 
-  constructor() {
-  }
+  constructor() {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   onChange(event) {
     this.change.emit(event);
   }
-
 }

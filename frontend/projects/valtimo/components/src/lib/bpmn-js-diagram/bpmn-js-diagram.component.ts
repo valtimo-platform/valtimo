@@ -23,7 +23,7 @@ import {
   Output,
   ViewChild,
   EventEmitter,
-  OnInit
+  OnInit,
 } from '@angular/core';
 import * as BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
 import * as heatmap from 'heatmap.js-fixed/build/heatmap.js';
@@ -31,15 +31,13 @@ import * as heatmap from 'heatmap.js-fixed/build/heatmap.js';
 @Component({
   selector: 'valtimo-bpmn-js-diagram',
   templateUrl: './bpmn-js-diagram.component.html',
-  styleUrls: ['./bpmn-js-diagram.component.css']
+  styleUrls: ['./bpmn-js-diagram.component.css'],
 })
-
 export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestroy {
-
   private bpmnJS: BpmnJS;
   private heatMapInstance: any;
 
-  @ViewChild('ref', { static: true }) public el: ElementRef;
+  @ViewChild('ref', {static: true}) public el: ElementRef;
   @Output() public importDone: EventEmitter<any> = new EventEmitter();
   @Input() public bpmn20Xml: any;
   @Input() public heatmapDuration?: any;
@@ -51,18 +49,21 @@ export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestr
   public min: number;
   public max: number;
 
-  constructor() { }
+  constructor() {}
 
   ngOnInit(): void {
     this.bpmnJS = new BpmnJS();
     this.bpmnJS.on('import.done', ({error}) => {
       if (!error) {
-        const canvas = this.bpmnJS.get('canvas')
-          , eventBus = this.bpmnJS.get('eventBus');
+        const canvas = this.bpmnJS.get('canvas'),
+          eventBus = this.bpmnJS.get('eventBus');
 
         if (this.historicActivityInstances) {
           this.historicActivityInstances.forEach(instance => {
-            canvas.addMarker(instance.activityId, instance.endTime ? 'highlight-overlay-past' : 'highlight-overlay-current');
+            canvas.addMarker(
+              instance.activityId,
+              instance.endTime ? 'highlight-overlay-past' : 'highlight-overlay-current'
+            );
           });
         }
 
@@ -94,8 +95,7 @@ export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestr
   }
 
   getHeatmapData() {
-    let inputData: any
-      , valueKey: any;
+    let inputData: any, valueKey: any;
 
     this.heatPoints = {data: []};
     this.min = 0;
@@ -111,16 +111,16 @@ export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestr
 
     if (inputData) {
       Object.keys(inputData).forEach(key => {
-        const diagramContainer = this.el.nativeElement.querySelector('svg')
-            .getBoundingClientRect(),
-          diagramElm = this.el.nativeElement.querySelector(`g[data-element-id=${key}]`)
+        const diagramContainer = this.el.nativeElement.querySelector('svg').getBoundingClientRect(),
+          diagramElm = this.el.nativeElement
+            .querySelector(`g[data-element-id=${key}]`)
             .getBoundingClientRect();
         this.setMax(key);
         this.heatPoints.data.push({
           x: Math.round(diagramElm.x - diagramContainer.x + diagramElm.width / 2),
           y: Math.round(diagramElm.y - diagramContainer.y + diagramElm.height / 2),
           value: inputData[key][valueKey],
-          radius: diagramElm.width / 2
+          radius: diagramElm.width / 2,
         });
         if (inputData[key].count > 0) {
           this.addCounterActiveOverlays(key, inputData);
@@ -137,7 +137,10 @@ export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestr
     if (this.heatmapDuration) {
       this.max = Math.max(this.heatmapDuration[key].averageDurationInMilliseconds, this.max);
     } else if (this.heatmapCount) {
-      this.max = Math.max(this.heatmapCount[key].totalCount + this.heatmapCount[key].count, this.max);
+      this.max = Math.max(
+        this.heatmapCount[key].totalCount + this.heatmapCount[key].count,
+        this.max
+      );
     }
   }
 
@@ -146,28 +149,28 @@ export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestr
     overlays.add(key, {
       position: {
         bottom: -10,
-        left: 0
+        left: 0,
       },
       show: {
         minZoom: 0,
-        maxZoom: 5.0
+        maxZoom: 5.0,
       },
-      html: `<span class="badge badge-pill badge-primary">${inputData[key].count}</span>`
+      html: `<span class="badge badge-pill badge-primary">${inputData[key].count}</span>`,
     });
   }
 
   showHeatmap() {
     this.heatMapInstance = heatmap.create({
       radius: 54,
-      blur: .70,
-      maxOpacity: .4,
+      blur: 0.7,
+      maxOpacity: 0.4,
       minOpacity: 0,
-      container: this.el.nativeElement
+      container: this.el.nativeElement,
     });
     this.heatMapInstance.setData({
       min: this.min,
       max: this.max,
-      data: this.heatPoints.data
+      data: this.heatPoints.data,
     });
   }
 
@@ -187,5 +190,4 @@ export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestr
   ngOnDestroy(): void {
     this.bpmnJS.destroy();
   }
-
 }

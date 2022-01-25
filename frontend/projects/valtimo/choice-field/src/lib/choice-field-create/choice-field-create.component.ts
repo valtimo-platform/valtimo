@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { ChoiceFieldService } from '../choice-field.service';
-import { AlertService } from '@valtimo/components';
+import {Component, OnInit} from '@angular/core';
+import {Router} from '@angular/router';
+import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {ChoiceFieldService} from '../choice-field.service';
+import {AlertService} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-choice-field-create',
   templateUrl: './choice-field-create.component.html',
-  styleUrls: ['./choice-field-create.component.css']
+  styleUrls: ['./choice-field-create.component.css'],
 })
 export class ChoiceFieldCreateComponent implements OnInit {
-
   public form: FormGroup;
 
   constructor(
@@ -34,7 +33,7 @@ export class ChoiceFieldCreateComponent implements OnInit {
     private formBuilder: FormBuilder,
     private service: ChoiceFieldService,
     private alertService: AlertService
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.reset();
@@ -47,7 +46,7 @@ export class ChoiceFieldCreateComponent implements OnInit {
   private createFormGroup() {
     return this.formBuilder.group({
       keyName: new FormControl('', Validators.required),
-      title: new FormControl('', Validators.required)
+      title: new FormControl('', Validators.required),
     });
   }
 
@@ -61,5 +60,4 @@ export class ChoiceFieldCreateComponent implements OnInit {
   public reset() {
     this.form = this.createFormGroup();
   }
-
 }

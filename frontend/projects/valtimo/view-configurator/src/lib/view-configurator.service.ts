@@ -20,15 +20,12 @@ import {Observable} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ViewConfiguratorService {
   private valtimoEndpointUri: any;
 
-  constructor(
-    private http: HttpClient,
-    private configService: ConfigService
-  ) {
+  constructor(private http: HttpClient, private configService: ConfigService) {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 

@@ -16,23 +16,38 @@
 
 <form [formGroup]="formGroup" (ngSubmit)="handleSubmit($event)">
   <ng-container
-          *ngFor="let formField of formFields"
-          valtimoCamundaFormfieldGenerator
-          [formGroup]="formGroup"
-          [formField]="formField">
+    *ngFor="let formField of formFields"
+    valtimoCamundaFormfieldGenerator
+    [formGroup]="formGroup"
+    [formField]="formField"
+  >
     <ng-content></ng-content>
   </ng-container>
   <div class="row pt-3 mt-1">
     <div class="col-sm-12">
       <div class="text-right">
-        <button class="btn btn-space btn-default float-left" type="button" (click)="back()" id="back-button">
+        <button
+          class="btn btn-space btn-default float-left"
+          type="button"
+          (click)="back()"
+          id="back-button"
+        >
           Back
         </button>
-        <button class="btn btn-space btn-secondary" type="button" (click)="reset()" id="reset-button">Reset</button>
-        <button class="btn btn-space btn-primary"
-                [disabled]="!formGroup.disabled && !formGroup.valid"
-                type="submit"
-                id="submit-button">
+        <button
+          class="btn btn-space btn-secondary"
+          type="button"
+          (click)="reset()"
+          id="reset-button"
+        >
+          Reset
+        </button>
+        <button
+          class="btn btn-space btn-primary"
+          [disabled]="!formGroup.disabled && !formGroup.valid"
+          type="submit"
+          id="submit-button"
+        >
           Submit
         </button>
       </div>

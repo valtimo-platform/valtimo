@@ -33,7 +33,7 @@ import {
   TimelineModule,
   UploaderModule,
   WidgetModule,
-  DropzoneModule
+  DropzoneModule,
 } from '@valtimo/components';
 import {DossierDetailComponent} from './dossier-detail/dossier-detail.component';
 import {DossierDetailTabSummaryComponent} from './dossier-detail/tab/summary/summary.component';
@@ -68,7 +68,7 @@ export type TabsFactory = () => Map<string, object>;
     DossierDetailTabContactMomentsComponent,
     DossierUpdateComponent,
     DossierProcessStartModalComponent,
-    DossierSupportingProcessStartModalComponent
+    DossierSupportingProcessStartModalComponent,
   ],
   imports: [
     CommonModule,
@@ -91,8 +91,8 @@ export type TabsFactory = () => Map<string, object>;
       loader: {
         provide: TranslateLoader,
         useFactory: HttpLoaderFactory,
-        deps: [HttpClient]
-      }
+        deps: [HttpClient],
+      },
     }),
     TaskModule,
     ModalModule,
@@ -100,19 +100,16 @@ export type TabsFactory = () => Map<string, object>;
     UploaderModule,
     DropzoneModule,
     NgbPaginationModule,
-    ConfigModule
+    ConfigModule,
   ],
-  exports: [
-    DossierListComponent,
-    DossierDetailComponent
-  ],
+  exports: [DossierListComponent, DossierDetailComponent],
   entryComponents: [
     DossierDetailTabSummaryComponent,
     DossierDetailTabProgressComponent,
     DossierDetailTabAuditComponent,
     DossierDetailTabDocumentsComponent,
-    DossierDetailTabContactMomentsComponent
-  ]
+    DossierDetailTabContactMomentsComponent,
+  ],
 })
 export class DossierModule {
   static forRoot(tabsFactory: TabsFactory): ModuleWithProviders<DossierModule> {
@@ -123,14 +120,14 @@ export class DossierModule {
         TabService,
         {
           provide: TAB_MAP,
-          useFactory: tabsFactory
+          useFactory: tabsFactory,
         },
         {
           provide: ANALYZE_FOR_ENTRY_COMPONENTS,
           useValue: Array.from(tabsFactory().values()),
-          multi: true
-        }
-      ]
+          multi: true,
+        },
+      ],
     };
   }
 }

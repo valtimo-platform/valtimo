@@ -17,7 +17,7 @@
 import {Directive, EventEmitter, HostListener, Output} from '@angular/core';
 
 @Directive({
-  selector: '[valtimoUploaderDragDrop]'
+  selector: '[valtimoUploaderDragDrop]',
 })
 export class UploaderDragDropDirective {
   @Output() fileDropped = new EventEmitter<any>();
@@ -42,5 +42,4 @@ export class UploaderDragDropDirective {
       this.fileDropped.emit(files);
     }
   }
-
 }

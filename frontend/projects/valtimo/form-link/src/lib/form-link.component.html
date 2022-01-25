@@ -16,7 +16,9 @@
 
 <div class="main-content">
   <div class="container-fluid">
-    <valtimo-form-link-process-diagram (bpmnElementModalOpen)="openModal($event)"></valtimo-form-link-process-diagram>
+    <valtimo-form-link-process-diagram
+      (bpmnElementModalOpen)="openModal($event)"
+    ></valtimo-form-link-process-diagram>
     <valtimo-form-link-modal #formLinkModal></valtimo-form-link-modal>
     <ng-template #extension></ng-template>
   </div>

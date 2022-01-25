@@ -21,10 +21,9 @@ import {KeycloakOptionsService} from './keycloak-options.service';
 
 @Component({
   selector: 'valtimo-keycloak-callback',
-  template: ''
+  template: '',
 })
 export class CallbackComponent {
-
   constructor(
     private router: Router,
     private keycloakOptionsService: KeycloakOptionsService,
@@ -41,5 +40,4 @@ export class CallbackComponent {
     logger.debug('keycloak callback redirect =', redirectTo);
     this.router.navigate([redirectTo]);
   }
-
 }

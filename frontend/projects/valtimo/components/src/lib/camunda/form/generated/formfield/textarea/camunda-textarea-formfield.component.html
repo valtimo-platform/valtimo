@@ -19,14 +19,13 @@
     {{ formField.label }}
   </label>
   <div class="col-12 col-sm-8 col-lg-6">
-    <textarea id="{{ formField.id }}"
-              class="form-control"
-              [attr.placeholder]="formField.defaultValue"
-              [formControlName]="formField.id"></textarea>
-    <valtimo-camunda-formfield-validation
-      [formGroup]="formGroup"
-      [formField]="formField">
+    <textarea
+      id="{{ formField.id }}"
+      class="form-control"
+      [attr.placeholder]="formField.defaultValue"
+      [formControlName]="formField.id"
+    ></textarea>
+    <valtimo-camunda-formfield-validation [formGroup]="formGroup" [formField]="formField">
     </valtimo-camunda-formfield-validation>
   </div>
 </div>
-

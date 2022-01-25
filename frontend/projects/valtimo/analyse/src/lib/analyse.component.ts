@@ -19,13 +19,10 @@ import {Component, OnInit} from '@angular/core';
 @Component({
   selector: 'valtimo-analyse',
   templateUrl: './analyse.component.html',
-  styleUrls: ['./analyse.component.scss']
+  styleUrls: ['./analyse.component.scss'],
 })
 export class AnalyseComponent implements OnInit {
+  constructor() {}
 
-  constructor() { }
-
-  ngOnInit() {
-  }
-
+  ngOnInit() {}
 }

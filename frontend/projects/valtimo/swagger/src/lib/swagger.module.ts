@@ -21,12 +21,7 @@ import {SwaggerRoutingModule} from './swagger-routing.module';
 
 @NgModule({
   declarations: [SwaggerComponent],
-  imports: [
-    CommonModule,
-    SwaggerRoutingModule
-  ],
-  exports: [SwaggerComponent]
+  imports: [CommonModule, SwaggerRoutingModule],
+  exports: [SwaggerComponent],
 })
-export class SwaggerModule {
-
-}
+export class SwaggerModule {}

@@ -26,17 +26,13 @@ const routes: Routes = [
     path: 'analysis',
     component: AnalyseComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Analysis', roles: [ROLE_USER]}
-  }
+    data: {title: 'Analysis', roles: [ROLE_USER]},
+  },
 ];
 
 @NgModule({
   declarations: [],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-  ],
-  exports: [RouterModule]
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class AnalyseRoutingModule {
-}
+export class AnalyseRoutingModule {}

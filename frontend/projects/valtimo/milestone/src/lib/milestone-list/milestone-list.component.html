@@ -16,8 +16,14 @@
 
 <div *ngFor="let milestoneGroup of milestones" class="mb-4">
   <valtimo-widget>
-    <h4 (click)="editMilestoneSet(milestoneGroup[0].id)" class="milestone-title">{{milestoneGroup[0].title}} ({{milestoneGroup[0].id}})</h4>
-    <valtimo-list [items]="milestoneGroup[1]" [fields]="milestoneFields" (rowClicked)="editMilestone($event)">
+    <h4 (click)="editMilestoneSet(milestoneGroup[0].id)" class="milestone-title">
+      {{ milestoneGroup[0].title }} ({{ milestoneGroup[0].id }})
+    </h4>
+    <valtimo-list
+      [items]="milestoneGroup[1]"
+      [fields]="milestoneFields"
+      (rowClicked)="editMilestone($event)"
+    >
     </valtimo-list>
   </valtimo-widget>
 </div>

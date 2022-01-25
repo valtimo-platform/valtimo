@@ -29,7 +29,7 @@ import {ObjectApiSyncService} from '../../services/object-api-sync/object-api-sy
 @Component({
   selector: 'valtimo-connector-link-extension-modal',
   templateUrl: './connector-link-extension-modal.component.html',
-  styleUrls: ['./connector-link-extension-modal.component.scss']
+  styleUrls: ['./connector-link-extension-modal.component.scss'],
 })
 export class ConnectorLinkExtensionModalComponent implements AfterViewInit, OnDestroy {
   @ViewChild('modal') modal: ModalComponent;
@@ -38,7 +38,7 @@ export class ConnectorLinkExtensionModalComponent implements AfterViewInit, OnDe
 
   readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  readonly fields$ = new BehaviorSubject<Array< {key: string; label: string }>>([]);
+  readonly fields$ = new BehaviorSubject<Array<{key: string; label: string}>>([]);
 
   readonly currentPageAndSize$ = new BehaviorSubject<Partial<Pagination>>({
     page: 0,
@@ -47,38 +47,43 @@ export class ConnectorLinkExtensionModalComponent implements AfterViewInit, OnDe
 
   readonly pageSizes$ = new BehaviorSubject<Partial<Pagination>>({
     collectionSize: 0,
-    maxPaginationItemSize: 5
+    maxPaginationItemSize: 5,
   });
 
-  readonly pagination$: Observable<Pagination> = combineLatest([this.currentPageAndSize$, this.pageSizes$])
-    .pipe(map(([currentPage, sizes]) => ({...currentPage, ...sizes, page: currentPage.page + 1} as Pagination)));
+  readonly pagination$: Observable<Pagination> = combineLatest([
+    this.currentPageAndSize$,
+    this.pageSizes$,
+  ]).pipe(
+    map(
+      ([currentPage, sizes]) =>
+        ({...currentPage, ...sizes, page: currentPage.page + 1} as Pagination)
+    )
+  );
 
-  readonly connectorInstances$: Observable<Array<ConnectorInstance>> =
-    combineLatest([
-      this.currentPageAndSize$,
-      this.connectorManagementService.getConnectorTypes(),
-      this.translateService.stream('key'),
-      this.stateService.refresh$
-    ])
-      .pipe(
-        tap(() => this.setFields()),
-        switchMap(([currentPage, types]) =>
-          this.connectorManagementService.getConnectorInstancesByType(
-            types.find((type) => type.name.toLowerCase().includes('objectsapi')).id,
-            {page: currentPage.page, size: currentPage.size}
-          )
-        ),
-        tap((instanceRes) => {
-          this.pageSizes$.pipe(take(1)).subscribe((sizes) => {
-            this.pageSizes$.next({...sizes, collectionSize: instanceRes.totalElements});
-          });
-        }),
-        map((res) => res.content),
-        tap(() => this.loading$.next(false))
-      );
+  readonly connectorInstances$: Observable<Array<ConnectorInstance>> = combineLatest([
+    this.currentPageAndSize$,
+    this.connectorManagementService.getConnectorTypes(),
+    this.translateService.stream('key'),
+    this.stateService.refresh$,
+  ]).pipe(
+    tap(() => this.setFields()),
+    switchMap(([currentPage, types]) =>
+      this.connectorManagementService.getConnectorInstancesByType(
+        types.find(type => type.name.toLowerCase().includes('objectsapi')).id,
+        {page: currentPage.page, size: currentPage.size}
+      )
+    ),
+    tap(instanceRes => {
+      this.pageSizes$.pipe(take(1)).subscribe(sizes => {
+        this.pageSizes$.next({...sizes, collectionSize: instanceRes.totalElements});
+      });
+    }),
+    map(res => res.content),
+    tap(() => this.loading$.next(false))
+  );
 
   readonly noObjectsApiConnectors$ = this.connectorInstances$.pipe(
-    map((instances) => !instances || instances.length === 0)
+    map(instances => !instances || instances.length === 0)
   );
 
   readonly disabled$!: Observable<boolean>;
@@ -89,13 +94,13 @@ export class ConnectorLinkExtensionModalComponent implements AfterViewInit, OnDe
     private readonly stateService: ConnectorManagementStateService,
     private readonly objectApiSyncService: ObjectApiSyncService,
     private readonly route: ActivatedRoute,
-    private readonly alertService: AlertService,
+    private readonly alertService: AlertService
   ) {
     this.disabled$ = this.stateService.inputDisabled$;
   }
 
   ngAfterViewInit(): void {
-    this.showSubscription = this.stateService.showExtensionModal$.subscribe((show) => {
+    this.showSubscription = this.stateService.showExtensionModal$.subscribe(show => {
       if (show) {
         this.show();
       } else {
@@ -109,14 +114,14 @@ export class ConnectorLinkExtensionModalComponent implements AfterViewInit, OnDe
   }
 
   paginationClicked(newPageNumber): void {
-    this.currentPageAndSize$.pipe(take(1)).subscribe((currentPage) => {
+    this.currentPageAndSize$.pipe(take(1)).subscribe(currentPage => {
       this.currentPageAndSize$.next({...currentPage, page: newPageNumber - 1});
     });
   }
 
   paginationSet(newPageSize): void {
     if (newPageSize) {
-      this.currentPageAndSize$.pipe(take(1)).subscribe((currentPage) => {
+      this.currentPageAndSize$.pipe(take(1)).subscribe(currentPage => {
         this.currentPageAndSize$.next({...currentPage, size: newPageSize});
       });
     }
@@ -132,10 +137,13 @@ export class ConnectorLinkExtensionModalComponent implements AfterViewInit, OnDe
 
     this.stateService.disableInput();
 
-    this.objectApiSyncService.createObjectSyncConfig({connectorInstanceId, enabled, documentDefinitionName, objectTypeId})
+    this.objectApiSyncService
+      .createObjectSyncConfig({connectorInstanceId, enabled, documentDefinitionName, objectTypeId})
       .subscribe(
-        (res) => {
-          this.alertService.success(this.translateService.instant('connectorManagement.extension.addSyncSuccess'));
+        res => {
+          this.alertService.success(
+            this.translateService.instant('connectorManagement.extension.addSyncSuccess')
+          );
           this.stateService.hideExtensionModal();
           this.stateService.enableInput();
           this.stateService.refresh();
@@ -148,9 +156,10 @@ export class ConnectorLinkExtensionModalComponent implements AfterViewInit, OnDe
   }
 
   private setFields(): void {
-    const getTranslatedLabel = (key: string) => this.translateService.instant(`connectorManagement.labels.${key}`);
+    const getTranslatedLabel = (key: string) =>
+      this.translateService.instant(`connectorManagement.labels.${key}`);
     const keys: Array<string> = ['name'];
-    this.fields$.next(keys.map((key) => ({label: getTranslatedLabel(key), key})));
+    this.fields$.next(keys.map(key => ({label: getTranslatedLabel(key), key})));
   }
 
   private show(): void {

@@ -14,15 +14,20 @@
   ~ limitations under the License.
   -->
 
-<div class="upload-file-container p-5" (click)="fileInput.click()" valtimoUploaderDragDrop
-     (fileDropped)="onFileFieldChange($event)">
+<div
+  class="upload-file-container p-5"
+  (click)="fileInput.click()"
+  valtimoUploaderDragDrop
+  (fileDropped)="onFileFieldChange($event)"
+>
   <span class="align-middle"><i class="fa fa-cloud-upload fa-4x"></i></span>
-  <input hidden type="file" #fileInput (change)="onFileFieldChange($event.target.files)" multiple/>
+  <input hidden type="file" #fileInput (change)="onFileFieldChange($event.target.files)" multiple />
 </div>
 <div *ngIf="showFileList">
   <div class="files-list px-3 py-2" *ngFor="let resource of resources">
     <p class="m-0">
-      <strong>{{ resource.name }}</strong><br/>
+      <strong>{{ resource.name }}</strong
+      ><br />
       {{ resource.sizeInBytes | filesize }}
     </p>
     <button class="delete-file" (click)="deleteResource(resource)">
@@ -30,4 +35,3 @@
     </button>
   </div>
 </div>
-

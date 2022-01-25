@@ -30,7 +30,7 @@ moment.locale(localStorage.getItem('langKey') || '');
 @Component({
   selector: 'valtimo-dossier-detail-tab-contact-moments',
   templateUrl: './contact-moments.component.html',
-  styleUrls: ['./contact-moments.component.scss']
+  styleUrls: ['./contact-moments.component.scss'],
 })
 export class DossierDetailTabContactMomentsComponent {
   @ViewChild('contactMomentsNoteModal') modal: ModalComponent;
@@ -38,17 +38,19 @@ export class DossierDetailTabContactMomentsComponent {
   readonly refetchContactMoments$ = new BehaviorSubject('');
   readonly contactMoments$: Observable<Array<TimelineItem>> = this.refetchContactMoments$.pipe(
     switchMap(() => this.contactMomentService.getContactMoments()),
-    map((contactMoments) => contactMoments.map(contactMoment => {
-      const registratieDatum = moment(contactMoment.registratiedatum);
-      return new TimelineItemImpl(
-        registratieDatum.format('DD MMM YYYY'),
-        registratieDatum.format('HH:mm'),
-        contactMoment.medewerkerIdentificatie.achternaam,
-        contactMoment.kanaal,
-        contactMoment.tekst,
-        null
-      );
-    }))
+    map(contactMoments =>
+      contactMoments.map(contactMoment => {
+        const registratieDatum = moment(contactMoment.registratiedatum);
+        return new TimelineItemImpl(
+          registratieDatum.format('DD MMM YYYY'),
+          registratieDatum.format('HH:mm'),
+          contactMoment.medewerkerIdentificatie.achternaam,
+          contactMoment.kanaal,
+          contactMoment.tekst,
+          null
+        );
+      })
+    )
   );
 
   readonly text$ = new BehaviorSubject<string>('');
@@ -63,7 +65,7 @@ export class DossierDetailTabContactMomentsComponent {
     private readonly contactMomentService: ContactMomentService,
     private readonly alertService: AlertService,
     private readonly translateService: TranslateService
-  ) { }
+  ) {}
 
   textChange(text: string): void {
     this.text$.next(text);
@@ -79,7 +81,9 @@ export class DossierDetailTabContactMomentsComponent {
     this.requestData$.pipe(take(1)).subscribe(([text, channel]) => {
       this.contactMomentService.saveContactMoment({kanaal: channel, tekst: text}).subscribe(
         () => {
-          this.alertService.success(this.translateService.instant('dossier.contactMoments.saveSuccess'));
+          this.alertService.success(
+            this.translateService.instant('dossier.contactMoments.saveSuccess')
+          );
           this.enable();
           this.clear();
           this.modal.hide();
@@ -107,5 +111,4 @@ export class DossierDetailTabContactMomentsComponent {
   private refetchContactMoments(): void {
     this.refetchContactMoments$.next('');
   }
-
 }

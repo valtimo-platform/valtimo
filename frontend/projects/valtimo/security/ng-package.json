@@ -10,7 +10,5 @@
       "ngx-logger": "ngxLogger"
     }
   },
-  "whitelistedNonPeerDependencies": [
-    "."
-  ]
+  "whitelistedNonPeerDependencies": ["."]
 }

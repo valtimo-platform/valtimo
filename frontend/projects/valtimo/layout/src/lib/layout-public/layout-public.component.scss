@@ -15,7 +15,7 @@
  */
 
 body {
-  background-color: #EEEEEE;
+  background-color: #eeeeee;
 }
 
 .public-page-content {
@@ -29,23 +29,21 @@ body {
     display: block;
     margin: 30px auto;
   }
-
-
 }
 
-@media(min-width: 768px) {
+@media (min-width: 768px) {
   .public-page-content {
     width: 50%;
   }
 }
 
-@media(max-width: 767px) and (min-width: 576px) {
+@media (max-width: 767px) and (min-width: 576px) {
   .public-page-content {
     width: 75%;
   }
 }
 
-@media(max-width: 575px) {
+@media (max-width: 575px) {
   .public-page-content {
     width: 95%;
     .logo {

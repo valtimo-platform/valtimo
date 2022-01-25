@@ -39,7 +39,6 @@ export interface ResourceFile {
   };
 }
 
-
 export interface UploadService {
   uploadFile(file: File, documentDefinitionName?: string): Observable<ResourceFile>;
   getResource(resourceId: string): Observable<ResourceDto>;

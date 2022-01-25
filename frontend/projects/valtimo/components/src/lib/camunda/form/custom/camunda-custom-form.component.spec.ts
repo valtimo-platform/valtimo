@@ -24,9 +24,8 @@ describe('CamundaCustomFormComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ CamundaCustomFormComponent ]
-    })
-    .compileComponents();
+      declarations: [CamundaCustomFormComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

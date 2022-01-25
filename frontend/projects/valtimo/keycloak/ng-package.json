@@ -11,7 +11,5 @@
       "@valtimo/config": "config"
     }
   },
-  "whitelistedNonPeerDependencies": [
-    "."
-  ]
+  "whitelistedNonPeerDependencies": ["."]
 }

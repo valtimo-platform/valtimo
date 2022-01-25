@@ -26,7 +26,7 @@ import {BehaviorSubject} from 'rxjs';
 @Component({
   selector: 'valtimo-dossier-detail-tab-documents',
   templateUrl: './documents.component.html',
-  styleUrls: ['./documents.component.css']
+  styleUrls: ['./documents.component.css'],
 })
 export class DossierDetailTabDocumentsComponent implements OnInit {
   public readonly documentId: string;
@@ -36,19 +36,19 @@ export class DossierDetailTabDocumentsComponent implements OnInit {
     {key: 'fileName', label: 'File name'},
     {key: 'sizeInBytes', label: 'Size in bytes'},
     {key: 'createdOn', label: 'Created on', viewType: 'date'},
-    {key: 'createdBy', label: 'Created by'}
+    {key: 'createdBy', label: 'Created by'},
   ];
   public actions = [
     {
       columnName: '',
       iconClass: 'fas fa-external-link-alt',
-      callback: this.downloadDocument.bind(this)
+      callback: this.downloadDocument.bind(this),
     },
     {
       columnName: '',
       iconClass: 'fas fa-trash-alt',
-      callback: this.removeRelatedFile.bind(this)
-    }
+      callback: this.removeRelatedFile.bind(this),
+    },
   ];
 
   readonly uploading$ = new BehaviorSubject<boolean>(false);
@@ -58,7 +58,7 @@ export class DossierDetailTabDocumentsComponent implements OnInit {
     private readonly documentService: DocumentService,
     private readonly toastrService: ToastrService,
     private readonly uploadProviderService: UploadProviderService,
-    private readonly downloadService: DownloadService,
+    private readonly downloadService: DownloadService
   ) {
     const snapshot = this.route.snapshot.paramMap;
     this.documentId = snapshot.get('documentId') || '';
@@ -72,16 +72,24 @@ export class DossierDetailTabDocumentsComponent implements OnInit {
   fileSelected(file: File): void {
     this.uploading$.next(true);
 
-    this.uploadProviderService.uploadFile(file, this.documentDefinitionName).pipe(
-      switchMap((resourceFile) => this.documentService.assignResource(this.documentId, resourceFile.data.resourceId))
-    ).subscribe(() => {
-      this.toastrService.success('Successfully uploaded document to dossier');
-      this.loadDocuments();
-      this.uploading$.next(false);
-    }, () => {
-      this.toastrService.error('Failed to upload document to dossier');
-      this.uploading$.next(false);
-    });
+    this.uploadProviderService
+      .uploadFile(file, this.documentDefinitionName)
+      .pipe(
+        switchMap(resourceFile =>
+          this.documentService.assignResource(this.documentId, resourceFile.data.resourceId)
+        )
+      )
+      .subscribe(
+        () => {
+          this.toastrService.success('Successfully uploaded document to dossier');
+          this.loadDocuments();
+          this.uploading$.next(false);
+        },
+        () => {
+          this.toastrService.error('Failed to upload document to dossier');
+          this.uploading$.next(false);
+        }
+      );
   }
 
   loadDocuments(): void {
@@ -91,17 +99,22 @@ export class DossierDetailTabDocumentsComponent implements OnInit {
   }
 
   downloadDocument(relatedFile: RelatedFile): void {
-    this.uploadProviderService.getResource(relatedFile.fileId).subscribe((resource: ResourceDto) => {
-      this.downloadService.downloadFile(resource.url, resource.resource.name);
-    });
+    this.uploadProviderService
+      .getResource(relatedFile.fileId)
+      .subscribe((resource: ResourceDto) => {
+        this.downloadService.downloadFile(resource.url, resource.resource.name);
+      });
   }
 
   removeRelatedFile(relatedFile: RelatedFile): void {
-    this.documentService.removeResource(this.documentId, relatedFile.fileId).subscribe(() => {
-      this.toastrService.success('Successfully removed document from dossier');
-      this.loadDocuments();
-    }, () => {
-      this.toastrService.error('Failed to remove document from dossier');
-    });
+    this.documentService.removeResource(this.documentId, relatedFile.fileId).subscribe(
+      () => {
+        this.toastrService.success('Successfully removed document from dossier');
+        this.loadDocuments();
+      },
+      () => {
+        this.toastrService.error('Failed to remove document from dossier');
+      }
+    );
   }
 }

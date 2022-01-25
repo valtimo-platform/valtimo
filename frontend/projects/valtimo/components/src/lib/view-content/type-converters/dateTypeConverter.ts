@@ -22,7 +22,6 @@ const moment = momentImported;
 moment.locale(localStorage.getItem('langKey'));
 
 export class DateTypeConverter implements TypeConverter {
-
   getTypeString(): string {
     return 'date';
   }

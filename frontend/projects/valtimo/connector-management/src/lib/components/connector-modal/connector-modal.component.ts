@@ -23,7 +23,7 @@ import {ConnectorManagementStateService} from '../../services/connector-manageme
 @Component({
   selector: 'valtimo-connector-modal',
   templateUrl: './connector-modal.component.html',
-  styleUrls: ['./connector-modal.component.scss']
+  styleUrls: ['./connector-modal.component.scss'],
 })
 export class ConnectorModalComponent implements AfterViewInit, OnDestroy {
   @ViewChild('modal') modal: ModalComponent;
@@ -32,13 +32,10 @@ export class ConnectorModalComponent implements AfterViewInit, OnDestroy {
 
   showSubscription!: Subscription;
 
-  constructor(
-    private readonly stateService: ConnectorManagementStateService
-  ) {
-  }
+  constructor(private readonly stateService: ConnectorManagementStateService) {}
 
   ngAfterViewInit(): void {
-    this.showSubscription = this.stateService.showModal$.subscribe((show) => {
+    this.showSubscription = this.stateService.showModal$.subscribe(show => {
       if (show) {
         this.show();
       } else {

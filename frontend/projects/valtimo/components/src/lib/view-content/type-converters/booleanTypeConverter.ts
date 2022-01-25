@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { TypeConverter } from './type-converters.model';
+import {TypeConverter} from './type-converters.model';
 
 export class BooleanTypeConverter implements TypeConverter {
-
   getTypeString(): string {
     return 'boolean';
   }
@@ -26,7 +25,7 @@ export class BooleanTypeConverter implements TypeConverter {
     if (!definition.enum) {
       return value ? 'Yes' : 'No';
     } else {
-      return value ? (definition.enum[0] || 'Yes') : (definition.enum[1] || 'No');
+      return value ? definition.enum[0] || 'Yes' : definition.enum[1] || 'No';
     }
   }
 }

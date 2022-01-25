@@ -1,26 +1,26 @@
 <valtimo-dropzone
-        (fileSelected)="fileSelected($event)"
-        [acceptedFiles]="null"
-        [disabled]="disabled"
-        [hideFilePreview]="true"
-        [hideTitle]="hideTitle"
-        [maxFileSize]="maxFileSize"
-        [showMaxFileSize]="!hideMaxFileSize"
-        [subtitle]="subtitle"
-        [title]="title"
-        [camera]="camera"
-        [uploading]="uploading$ | async"
+  (fileSelected)="fileSelected($event)"
+  [acceptedFiles]="null"
+  [disabled]="disabled"
+  [hideFilePreview]="true"
+  [hideTitle]="hideTitle"
+  [maxFileSize]="maxFileSize"
+  [showMaxFileSize]="!hideMaxFileSize"
+  [subtitle]="subtitle"
+  [title]="title"
+  [camera]="camera"
+  [uploading]="uploading$ | async"
 ></valtimo-dropzone>
 
 <div class="file-preview" *ngFor="let resource of _value">
   <div class="file-preview-name">
     <a href="#" (click)="downloadFile(resource)">
-      {{resource.originalName}}
+      {{ resource.originalName }}
     </a>
   </div>
   <div class="file-preview-size">
     <span>
-      {{resource.size | filesize}}
+      {{ resource.size | filesize }}
     </span>
   </div>
   <div class="file-preview-delete" *ngIf="!disabled">

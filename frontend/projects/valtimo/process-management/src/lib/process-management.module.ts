@@ -30,7 +30,7 @@ import {TranslateModule} from '@ngx-translate/core';
     ProcessManagementComponent,
     ProcessManagementBuilderComponent,
     ProcessManagementListComponent,
-    ProcessManagementUploadComponent
+    ProcessManagementUploadComponent,
   ],
   imports: [
     CommonModule,
@@ -38,10 +38,8 @@ import {TranslateModule} from '@ngx-translate/core';
     WidgetModule,
     ListModule,
     FormsModule,
-    TranslateModule
+    TranslateModule,
   ],
-  exports: [ProcessManagementComponent]
+  exports: [ProcessManagementComponent],
 })
-export class ProcessManagementModule {
-
-}
+export class ProcessManagementModule {}

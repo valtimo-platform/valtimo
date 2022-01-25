@@ -22,31 +22,28 @@ import {Subscription} from 'rxjs';
 @Component({
   selector: 'valtimo-breadcrumb-navigation',
   templateUrl: './breadcrumb-navigation.component.html',
-  styleUrls: ['./breadcrumb-navigation.component.css']
+  styleUrls: ['./breadcrumb-navigation.component.css'],
 })
 export class BreadcrumbNavigationComponent implements OnInit, OnDestroy {
-
   public breadcrumbs: Array<any> = [];
   public appTitle = 'Valtimo';
   private routerSub = Subscription.EMPTY;
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute
-  ) {
-  }
+  constructor(private router: Router, private route: ActivatedRoute) {}
 
   ngOnInit() {
     this.setBreadcrumbs(this.route);
     this.routerSub = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .pipe(map(() => this.route))
-      .pipe(map((route) => {
-        while (route.firstChild) {
-          route = route.firstChild;
-        }
-        return route;
-      }))
+      .pipe(
+        map(route => {
+          while (route.firstChild) {
+            route = route.firstChild;
+          }
+          return route;
+        })
+      )
       .pipe(filter(route => route.outlet === PRIMARY_OUTLET))
       .subscribe(route => {
         this.setBreadcrumbs(route);
@@ -63,7 +60,7 @@ export class BreadcrumbNavigationComponent implements OnInit, OnDestroy {
         url: snapshot.url.join('/'),
         path: snapshot.routeConfig.path,
         label: snapshot.data['title'],
-        params: snapshot.params
+        params: snapshot.params,
       };
       this.generateBreadcrumbs(activeRoute);
     }
@@ -72,15 +69,16 @@ export class BreadcrumbNavigationComponent implements OnInit, OnDestroy {
   private generateBreadcrumbs(activeBreadcrumb: any) {
     this.breadcrumbs = [];
     this.router.config.map(routerConfig => {
-      if (activeBreadcrumb.path.indexOf(routerConfig.path + '/') === 0
-        && activeBreadcrumb.path !== routerConfig.path
-        && routerConfig.path !== ''
+      if (
+        activeBreadcrumb.path.indexOf(routerConfig.path + '/') === 0 &&
+        activeBreadcrumb.path !== routerConfig.path &&
+        routerConfig.path !== ''
       ) {
         const parentRoute = {
           url: routerConfig.path.replace(/:(.+?)\b/g, (_, p1) => activeBreadcrumb.params[p1]),
           path: routerConfig.path,
           label: routerConfig.data['title'],
-          params: activeBreadcrumb.params
+          params: activeBreadcrumb.params,
         };
         const exist = this.breadcrumbs.findIndex(item => item.url === parentRoute.url);
         if (exist === -1) {
@@ -93,5 +91,4 @@ export class BreadcrumbNavigationComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.routerSub.unsubscribe();
   }
-
 }

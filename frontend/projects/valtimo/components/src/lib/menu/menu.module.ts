@@ -25,15 +25,8 @@ import {SubmenuItemTextComponent} from './submenu-item-text.component';
 
 @NgModule({
   declarations: [MenuComponent, MenuItemTextComponent, SubmenuItemTextComponent],
-  imports: [
-    CommonModule,
-    RouterModule,
-    NgbTooltipModule,
-    TranslateModule
-  ],
+  imports: [CommonModule, RouterModule, NgbTooltipModule, TranslateModule],
   exports: [MenuComponent],
-  providers: []
+  providers: [],
 })
-export class MenuModule {
-
-}
+export class MenuModule {}

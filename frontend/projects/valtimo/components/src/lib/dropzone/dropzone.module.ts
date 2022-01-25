@@ -25,7 +25,6 @@ import {WebcamModule} from '../webcam/webcam.module';
 @NgModule({
   declarations: [DropzoneComponent],
   imports: [CommonModule, TranslateModule, FileSizeModule, ProgressBarModule, WebcamModule],
-  exports: [DropzoneComponent]
+  exports: [DropzoneComponent],
 })
-export class DropzoneModule {
-}
+export class DropzoneModule {}

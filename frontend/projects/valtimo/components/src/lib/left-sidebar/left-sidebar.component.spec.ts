@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { LeftSidebarComponent } from './left-sidebar.component';
-import { Component } from '@angular/core';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {LeftSidebarComponent} from './left-sidebar.component';
+import {Component} from '@angular/core';
 
 @Component({
   selector: 'valtimo-page-title',
-  template: 'valtimo page title mock'
+  template: 'valtimo page title mock',
 })
 export class MockValtimoPageTitleComponent {}
 
 @Component({
   selector: 'valtimo-menu',
-  template: 'valtimo menu mock'
+  template: 'valtimo menu mock',
 })
 export class MockValtimoMenuComponent {}
 
@@ -36,12 +36,8 @@ describe('LeftSidebarComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [
-        MockValtimoPageTitleComponent,
-        MockValtimoMenuComponent,
-        LeftSidebarComponent ]
-    })
-    .compileComponents();
+      declarations: [MockValtimoPageTitleComponent, MockValtimoMenuComponent, LeftSidebarComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -54,4 +50,3 @@ describe('LeftSidebarComponent', () => {
     expect(component).toBeTruthy();
   });
 });
-

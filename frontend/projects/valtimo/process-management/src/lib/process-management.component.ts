@@ -20,17 +20,12 @@ import {ProcessManagementListComponent} from './process-management-list/process-
 @Component({
   selector: 'valtimo-process-management',
   templateUrl: './process-management.component.html',
-  styleUrls: ['./process-management.component.scss']
+  styleUrls: ['./process-management.component.scss'],
 })
 export class ProcessManagementComponent implements OnInit {
-
   @ViewChild('processManagementList') processManagementList: ProcessManagementListComponent;
 
-  constructor() {
-  }
+  constructor() {}
 
-  ngOnInit() {
-  }
-
-
+  ngOnInit() {}
 }

@@ -59,45 +59,95 @@
               <div class="form-group row">
                 <label class="col-12 col-sm-3 col-form-label text-sm-right" for="name">Key</label>
                 <div class="col-12 col-sm-8 col-lg-6">
-                  <input valtimoFieldAutoFocus type="text" id="name" formControlName="name" class="form-control" placeholder="Choice field value key"
-                         [ngClass]="{'is-valid': formControls.name.touched && formControls.name.valid, 'is-invalid': formControls.name.touched && formControls.name.errors}"
-                         required/>
-                  <div *ngIf="formControls.name.touched && formControls.name.errors" class="invalid-feedback">
-                    <div *ngIf="formControls.name.errors.required">Choice field value key is required</div>
+                  <input
+                    valtimoFieldAutoFocus
+                    type="text"
+                    id="name"
+                    formControlName="name"
+                    class="form-control"
+                    placeholder="Choice field value key"
+                    [ngClass]="{
+                      'is-valid': formControls.name.touched && formControls.name.valid,
+                      'is-invalid': formControls.name.touched && formControls.name.errors
+                    }"
+                    required
+                  />
+                  <div
+                    *ngIf="formControls.name.touched && formControls.name.errors"
+                    class="invalid-feedback"
+                  >
+                    <div *ngIf="formControls.name.errors.required">
+                      Choice field value key is required
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div class="form-group row">
-                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="value">Value</label>
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="value"
+                  >Value</label
+                >
                 <div class="col-12 col-sm-8 col-lg-6">
-                  <input type="text" id="value" formControlName="value" class="form-control" placeholder="Choice field value"
-                         [ngClass]="{'is-valid': formControls.value.touched && formControls.value.valid, 'is-invalid': formControls.value.touched && formControls.value.errors}"
-                         required/>
-                  <div *ngIf="formControls.value.touched && formControls.value.errors" class="invalid-feedback">
-                    <div *ngIf="formControls.value.errors.required">Choice field value is required</div>
+                  <input
+                    type="text"
+                    id="value"
+                    formControlName="value"
+                    class="form-control"
+                    placeholder="Choice field value"
+                    [ngClass]="{
+                      'is-valid': formControls.value.touched && formControls.value.valid,
+                      'is-invalid': formControls.value.touched && formControls.value.errors
+                    }"
+                    required
+                  />
+                  <div
+                    *ngIf="formControls.value.touched && formControls.value.errors"
+                    class="invalid-feedback"
+                  >
+                    <div *ngIf="formControls.value.errors.required">
+                      Choice field value is required
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div class="form-group row">
-                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="sortOrder">Sequence</label>
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="sortOrder"
+                  >Sequence</label
+                >
                 <div class="col-12 col-sm-8 col-lg-6">
-                  <input type="number" id="sortOrder" formControlName="sortOrder" class="form-control" placeholder="Choice field value sequence"
-                         [ngClass]="{'is-valid': formControls.sortOrder.touched && formControls.sortOrder.valid, 'is-invalid': formControls.sortOrder.touched && formControls.sortOrder.errors}"
-                         required/>
-                  <div *ngIf="formControls.sortOrder.touched && formControls.sortOrder.errors" class="invalid-feedback">
-                    <div *ngIf="formControls.sortOrder.errors.required">Choice field value sequence is required</div>
+                  <input
+                    type="number"
+                    id="sortOrder"
+                    formControlName="sortOrder"
+                    class="form-control"
+                    placeholder="Choice field value sequence"
+                    [ngClass]="{
+                      'is-valid': formControls.sortOrder.touched && formControls.sortOrder.valid,
+                      'is-invalid': formControls.sortOrder.touched && formControls.sortOrder.errors
+                    }"
+                    required
+                  />
+                  <div
+                    *ngIf="formControls.sortOrder.touched && formControls.sortOrder.errors"
+                    class="invalid-feedback"
+                  >
+                    <div *ngIf="formControls.sortOrder.errors.required">
+                      Choice field value sequence is required
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div class="form-group row">
-                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="deprecated">Deprecated</label>
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="deprecated"
+                  >Deprecated</label
+                >
                 <div class="col-12 col-sm-8 col-lg-6">
                   <div class="switch-button switch-button-sm switch-button-success">
-                    <input type="checkbox" formControlName="deprecated" id="deprecated"><span>
-                        <label for="deprecated"></label></span>
+                    <input type="checkbox" formControlName="deprecated" id="deprecated" /><span>
+                      <label for="deprecated"></label
+                    ></span>
                   </div>
                 </div>
               </div>
@@ -107,8 +157,12 @@
                   <a [routerLink]="'../../'" class="btn btn-space btn-default">Back</a>
                 </div>
                 <div class="col-12 col-sm-6 text-right">
-                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()">Reset</button>
-                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">Submit</button>
+                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()">
+                    Reset
+                  </button>
+                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">
+                    Submit
+                  </button>
                 </div>
               </div>
             </form>

@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { LeftSidebarComponent } from './left-sidebar.component';
-import { PageTitleModule } from '../page-title/page-title.module';
-import { MenuModule } from '../menu/menu.module';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {LeftSidebarComponent} from './left-sidebar.component';
+import {PageTitleModule} from '../page-title/page-title.module';
+import {MenuModule} from '../menu/menu.module';
 
 @NgModule({
   declarations: [LeftSidebarComponent],
-  imports: [
-    CommonModule,
-    MenuModule,
-    PageTitleModule
-  ],
-  exports: [LeftSidebarComponent]
+  imports: [CommonModule, MenuModule, PageTitleModule],
+  exports: [LeftSidebarComponent],
 })
-export class LeftSidebarModule { }
+export class LeftSidebarModule {}

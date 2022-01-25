@@ -24,9 +24,15 @@ import {DownloadService} from './services/download.service';
 
 @NgModule({
   declarations: [],
-  imports: [
-  ],
+  imports: [],
   exports: [],
-  providers: [OpenZaakUploadService, S3UploadService, UploadProviderService, OpenZaakService, S3Service, DownloadService]
+  providers: [
+    OpenZaakUploadService,
+    S3UploadService,
+    UploadProviderService,
+    OpenZaakService,
+    S3Service,
+    DownloadService,
+  ],
 })
-export class ResourceModule { }
+export class ResourceModule {}

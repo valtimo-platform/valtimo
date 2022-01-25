@@ -4,7 +4,6 @@ import {FormioComponent} from 'angular-formio';
 
 @Injectable()
 export class FormIoStateService {
-
   private _documentDefinitionName$ = new BehaviorSubject<string>(undefined);
 
   private _currentForm$ = new BehaviorSubject<FormioComponent>(undefined);

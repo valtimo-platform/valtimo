@@ -17,6 +17,4 @@
 import {NgModule} from '@angular/core';
 
 @NgModule()
-export class DocumentModule {
-
-}
+export class DocumentModule {}

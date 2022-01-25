@@ -37,12 +37,27 @@
           <div class="p-5 bg-white">
             <form [formGroup]="form" (ngSubmit)="onSubmit()">
               <div class="form-group row">
-                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="title">Title</label>
+                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="title"
+                  >Title</label
+                >
                 <div class="col-12 col-sm-8 col-lg-6">
-                  <input valtimoFieldAutoFocus type="text" id="title" formControlName="title" class="form-control" placeholder="Choice field title"
-                         [ngClass]="{'is-valid': formControls.title.touched && formControls.title.valid, 'is-invalid': formControls.title.touched && formControls.title.errors}"
-                         required/>
-                  <div *ngIf="formControls.title.touched && formControls.title.errors" class="invalid-feedback">
+                  <input
+                    valtimoFieldAutoFocus
+                    type="text"
+                    id="title"
+                    formControlName="title"
+                    class="form-control"
+                    placeholder="Choice field title"
+                    [ngClass]="{
+                      'is-valid': formControls.title.touched && formControls.title.valid,
+                      'is-invalid': formControls.title.touched && formControls.title.errors
+                    }"
+                    required
+                  />
+                  <div
+                    *ngIf="formControls.title.touched && formControls.title.errors"
+                    class="invalid-feedback"
+                  >
                     <div *ngIf="formControls.title.errors.required">Title is required</div>
                   </div>
                 </div>
@@ -51,11 +66,17 @@
               <div class="row pt-3 mt-1">
                 <div class="col-12 col-sm-6 text-left">
                   <a [routerLink]="'/choice-fields'" class="btn btn-space btn-default">Back</a>
-                  <button class="btn btn-space btn-danger" type="button" (click)="delete()">Delete</button>
+                  <button class="btn btn-space btn-danger" type="button" (click)="delete()">
+                    Delete
+                  </button>
                 </div>
                 <div class="col-12 col-sm-6 text-right">
-                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()">Reset</button>
-                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">Submit</button>
+                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()">
+                    Reset
+                  </button>
+                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">
+                    Submit
+                  </button>
                 </div>
               </div>
             </form>

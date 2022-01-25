@@ -19,20 +19,19 @@ import {Component, OnInit} from '@angular/core';
 @Component({
   selector: 'app-form-io',
   templateUrl: './form-io.component.html',
-  styleUrls: ['./form-io.component.scss']
+  styleUrls: ['./form-io.component.scss'],
 })
 export class FormioComponent implements OnInit {
   public formBuilder: Object = {
-    components: []
+    components: [],
   };
   public formDefinition: any;
   public formData: any;
   public formioOptions = {
-    disableAlerts: true
+    disableAlerts: true,
   };
 
-  constructor() {
-  }
+  constructor() {}
 
   ngOnInit() {
     this.formDefinition = this.formBuilder;
@@ -45,5 +44,4 @@ export class FormioComponent implements OnInit {
   onSubmit(event) {
     this.formData = event;
   }
-
 }

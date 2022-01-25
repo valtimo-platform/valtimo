@@ -14,8 +14,14 @@
   ~ limitations under the License.
   -->
 
-<div class="modal fade" id="sessionExpiredModal" tabindex="-1" role="dialog" aria-labelledby="sessionExpiredModal"
-     aria-hidden="true">
+<div
+  class="modal fade"
+  id="sessionExpiredModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="sessionExpiredModal"
+  aria-hidden="true"
+>
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -25,7 +31,9 @@
         You have been logged out because your session has expired. Please log back in to continue.
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" (click)="auth0UserService.logout()">Back to login screen</button>
+        <button type="button" class="btn btn-primary" (click)="auth0UserService.logout()">
+          Back to login screen
+        </button>
       </div>
     </div>
   </div>

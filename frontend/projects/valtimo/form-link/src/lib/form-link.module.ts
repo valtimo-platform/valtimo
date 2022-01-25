@@ -32,9 +32,8 @@ import {TranslateModule} from '@ngx-translate/core';
     FormsModule,
     ModalModule,
     SearchableDropdownSelectModule,
-    TranslateModule
+    TranslateModule,
   ],
-  exports: [FormLinkComponent]
+  exports: [FormLinkComponent],
 })
-export class FormLinkModule {
-}
+export class FormLinkModule {}

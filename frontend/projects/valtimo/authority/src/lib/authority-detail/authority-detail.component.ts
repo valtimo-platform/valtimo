@@ -26,10 +26,9 @@ import {first} from 'rxjs/operators';
 @Component({
   selector: 'valtimo-authority-detail',
   templateUrl: './authority-detail.component.html',
-  styleUrls: ['./authority-detail.component.css']
+  styleUrls: ['./authority-detail.component.css'],
 })
 export class AuthorityDetailComponent implements OnInit, OnDestroy {
-
   public name: string;
   public authority: Authority;
   public form: FormGroup;
@@ -80,7 +79,7 @@ export class AuthorityDetailComponent implements OnInit, OnDestroy {
   private createFormGroup() {
     return this.formBuilder.group({
       name: new FormControl('', Validators.required),
-      hourlyRate: new FormControl('', Validators.required)
+      hourlyRate: new FormControl('', Validators.required),
     });
   }
 
@@ -99,16 +98,17 @@ export class AuthorityDetailComponent implements OnInit, OnDestroy {
       {
         label: 'Cancel',
         class: 'btn btn-default',
-        value: false
+        value: false,
       },
       {
         label: 'Delete',
         class: 'btn btn-primary',
-        value: true
-      }
+        value: true,
+      },
     ];
     this.alertService.notification(mssg, confirmations);
-    this.alertSub = this.alertService.getAlertConfirmChangeEmitter()
+    this.alertSub = this.alertService
+      .getAlertConfirmChangeEmitter()
       .pipe(first())
       .subscribe(alert => {
         if (alert.confirm === true) {
@@ -130,5 +130,4 @@ export class AuthorityDetailComponent implements OnInit, OnDestroy {
       this.alertService.success('Entitlement has been updated');
     });
   }
-
 }

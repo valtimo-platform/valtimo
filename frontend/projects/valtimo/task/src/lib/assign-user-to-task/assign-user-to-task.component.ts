@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import {DropdownItem, User} from '@valtimo/contract';
 import {BehaviorSubject, combineLatest} from 'rxjs';
 import {take, tap} from 'rxjs/operators';
@@ -23,7 +31,7 @@ import {TaskService} from '../task.service';
 @Component({
   selector: 'valtimo-assign-user-to-task',
   templateUrl: './assign-user-to-task.component.html',
-  styleUrls: ['./assign-user-to-task.component.scss']
+  styleUrls: ['./assign-user-to-task.component.scss'],
 })
 export class AssignUserToTaskComponent implements OnInit, OnChanges {
   @Input() taskId: string;
@@ -44,7 +52,9 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges {
       if (this.assigneeEmail) {
         this.assignedEmailOnServer$.next(this.assigneeEmail);
         this.userEmailToAssign = this.assigneeEmail;
-        this.assignedUserFullName$.next(this.getAssignedUserName(candidateUsers, this.assigneeEmail));
+        this.assignedUserFullName$.next(
+          this.getAssignedUserName(candidateUsers, this.assigneeEmail)
+        );
       }
       this.enable();
     });
@@ -66,7 +76,10 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges {
 
   assignTask(userEmail: string): void {
     this.disable();
-    combineLatest([this.candidateUsersForTask$, this.taskService.assignTask(this.taskId, {assignee: userEmail})])
+    combineLatest([
+      this.candidateUsersForTask$,
+      this.taskService.assignTask(this.taskId, {assignee: userEmail}),
+    ])
       .pipe(
         take(1),
         tap(([candidateUsers]) => {

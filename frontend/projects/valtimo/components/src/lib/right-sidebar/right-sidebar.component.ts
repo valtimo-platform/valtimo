@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { TranslateService } from '@ngx-translate/core';
-import { ContextService } from '@valtimo/context';
-import { UserIdentity, ValtimoVersion } from '@valtimo/contract';
-import { UserProviderService } from '@valtimo/security';
-import { NGXLogger } from 'ngx-logger';
-import { combineLatest } from 'rxjs';
-import { VersionService } from '../version/version.service';
+import {HttpClient} from '@angular/common/http';
+import {Component, OnInit} from '@angular/core';
+import {FormBuilder, FormControl, FormGroup} from '@angular/forms';
+import {TranslateService} from '@ngx-translate/core';
+import {ContextService} from '@valtimo/context';
+import {UserIdentity, ValtimoVersion} from '@valtimo/contract';
+import {UserProviderService} from '@valtimo/security';
+import {NGXLogger} from 'ngx-logger';
+import {combineLatest} from 'rxjs';
+import {VersionService} from '../version/version.service';
 
 @Component({
   selector: 'valtimo-right-sidebar',
   templateUrl: './right-sidebar.component.html',
-  styleUrls: ['./right-sidebar.component.css']
+  styleUrls: ['./right-sidebar.component.css'],
 })
 export class RightSidebarComponent implements OnInit {
-
   public userIdentity: UserIdentity;
   public frequencies: Array<any>;
   public settingsForm: FormGroup;
@@ -47,8 +46,7 @@ export class RightSidebarComponent implements OnInit {
     private contextService: ContextService,
     private http: HttpClient,
     private logger: NGXLogger
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
     this.frequencies = [
@@ -58,7 +56,7 @@ export class RightSidebarComponent implements OnInit {
       'emailNotificationOnThursday',
       'emailNotificationOnFriday',
       'emailNotificationOnSaturday',
-      'emailNotificationOnSunday'
+      'emailNotificationOnSunday',
     ];
     this.settingsForm = this.formBuilder.group({
       taskNotifications: new FormControl(false),
@@ -69,17 +67,19 @@ export class RightSidebarComponent implements OnInit {
       emailNotificationOnThursday: new FormControl(false),
       emailNotificationOnFriday: new FormControl(false),
       emailNotificationOnSaturday: new FormControl(false),
-      emailNotificationOnSunday: new FormControl(false)
+      emailNotificationOnSunday: new FormControl(false),
     });
     this.getUserSettings();
   }
 
   private loadContextSwitch() {
-    combineLatest([this.contextService.getUserContexts(), this.contextService.getUserContextActive()])
-      .subscribe(([userContexts, userContextActive]) => {
-        this.userContextActive = userContextActive;
-        this.userContexts = userContexts;
-      });
+    combineLatest([
+      this.contextService.getUserContexts(),
+      this.contextService.getUserContextActive(),
+    ]).subscribe(([userContexts, userContextActive]) => {
+      this.userContextActive = userContextActive;
+      this.userContexts = userContexts;
+    });
   }
 
   public setUserContext(contextId: number) {
@@ -92,13 +92,27 @@ export class RightSidebarComponent implements OnInit {
       if (results !== null) {
         this.settingsForm.controls.taskNotifications.setValue(results.taskNotifications);
         this.settingsForm.controls.emailNotifications.setValue(results.emailNotifications);
-        this.settingsForm.controls.emailNotificationOnMonday.setValue(results.emailNotificationOnMonday);
-        this.settingsForm.controls.emailNotificationOnTuesday.setValue(results.emailNotificationOnTuesday);
-        this.settingsForm.controls.emailNotificationOnWednesday.setValue(results.emailNotificationOnWednesday);
-        this.settingsForm.controls.emailNotificationOnThursday.setValue(results.emailNotificationOnThursday);
-        this.settingsForm.controls.emailNotificationOnFriday.setValue(results.emailNotificationOnFriday);
-        this.settingsForm.controls.emailNotificationOnSaturday.setValue(results.emailNotificationOnSaturday);
-        this.settingsForm.controls.emailNotificationOnSunday.setValue(results.emailNotificationOnSunday);
+        this.settingsForm.controls.emailNotificationOnMonday.setValue(
+          results.emailNotificationOnMonday
+        );
+        this.settingsForm.controls.emailNotificationOnTuesday.setValue(
+          results.emailNotificationOnTuesday
+        );
+        this.settingsForm.controls.emailNotificationOnWednesday.setValue(
+          results.emailNotificationOnWednesday
+        );
+        this.settingsForm.controls.emailNotificationOnThursday.setValue(
+          results.emailNotificationOnThursday
+        );
+        this.settingsForm.controls.emailNotificationOnFriday.setValue(
+          results.emailNotificationOnFriday
+        );
+        this.settingsForm.controls.emailNotificationOnSaturday.setValue(
+          results.emailNotificationOnSaturday
+        );
+        this.settingsForm.controls.emailNotificationOnSunday.setValue(
+          results.emailNotificationOnSunday
+        );
       } else {
         // default is true in the database, even if api returns no content
         this.settingsForm.controls.taskNotifications.setValue(true);
@@ -136,5 +150,4 @@ export class RightSidebarComponent implements OnInit {
   logout() {
     this.userProviderService.logout();
   }
-
 }

@@ -15,13 +15,18 @@
  */
 
 import {ComponentFactoryResolver, Inject, Injectable, ViewContainerRef} from '@angular/core';
-import {Extension, ExtensionLoader, ExtensionPoint, VALTIMO_CONFIG, ValtimoConfig} from '@valtimo/contract';
+import {
+  Extension,
+  ExtensionLoader,
+  ExtensionPoint,
+  VALTIMO_CONFIG,
+  ValtimoConfig,
+} from '@valtimo/contract';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ConfigService {
-
   private readonly extensionLoader: ExtensionLoader;
   private readonly extensions: Array<Extension> = [];
 
@@ -45,11 +50,15 @@ export class ConfigService {
   }
 
   getSupportedExtensionPoint(module: string, page: string, section: string) {
-    return this.extensions.find(extension => extension.extensionPoint.supports(module, page, section));
+    return this.extensions.find(extension =>
+      extension.extensionPoint.supports(module, page, section)
+    );
   }
 
   getSupportedExtensionPoints(module: string, page: string, section: string) {
-    return this.extensions.filter(extension => extension.extensionPoint.supports(module, page, section));
+    return this.extensions.filter(extension =>
+      extension.extensionPoint.supports(module, page, section)
+    );
   }
 
   loadExtensionPoint(viewContainerRef: ViewContainerRef, extensionPoint: ExtensionPoint) {
@@ -59,5 +68,4 @@ export class ConfigService {
   loadAndReturnExtensionPoint(viewContainerRef: ViewContainerRef, extensionPoint: ExtensionPoint) {
     return this.extensionLoader.loadAndClearExtensionPoint(viewContainerRef, extensionPoint);
   }
-
 }

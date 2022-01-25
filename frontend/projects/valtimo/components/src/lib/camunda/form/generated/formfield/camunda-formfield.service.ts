@@ -19,23 +19,25 @@ import {Validators} from '@angular/forms';
 import {maxDate, minDate} from './validation/date.validators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CamundaFormfieldService {
-
-  constructor() {
-  }
+  constructor() {}
 
   public isFormFieldDisabled(formField) {
     return formField.validationConstraints.filter(vc => vc.name === 'readonly').length > 0;
   }
 
   public getMinDate(formField) {
-    return formField.validationConstraints.filter(vc => vc.name === 'minDate' && vc.configuration)[0];
+    return formField.validationConstraints.filter(
+      vc => vc.name === 'minDate' && vc.configuration
+    )[0];
   }
 
   public getMaxDate(formField) {
-    return formField.validationConstraints.filter(vc => vc.name === 'maxDate' && vc.configuration)[0];
+    return formField.validationConstraints.filter(
+      vc => vc.name === 'maxDate' && vc.configuration
+    )[0];
   }
 
   public getValidatorTypes(formField) {
@@ -65,5 +67,4 @@ export class CamundaFormfieldService {
     });
     return validatorTypes;
   }
-
 }

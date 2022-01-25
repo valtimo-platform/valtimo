@@ -15,12 +15,12 @@
  */
 
 .be-scroller-settings {
-  padding-bottom:150px !important;
+  padding-bottom: 150px !important;
 }
 .version-holder {
   position: fixed;
-  bottom:0;
-  width:259px;
+  bottom: 0;
+  width: 259px;
   background-color: #f8f9fa;
 }
 .info-text {

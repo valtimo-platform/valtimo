@@ -19,10 +19,12 @@ import {HttpClientTestingModule} from '@angular/common/http/testing';
 import {ChoicefieldService} from './choicefield.service';
 
 describe('ChoicefieldService', () => {
-  beforeEach(() => TestBed.configureTestingModule({
-    providers: [ChoicefieldService],
-    imports: [HttpClientTestingModule]
-  }));
+  beforeEach(() =>
+    TestBed.configureTestingModule({
+      providers: [ChoicefieldService],
+      imports: [HttpClientTestingModule],
+    })
+  );
 
   it('should be created', () => {
     const service: ChoicefieldService = TestBed.inject(ChoicefieldService);

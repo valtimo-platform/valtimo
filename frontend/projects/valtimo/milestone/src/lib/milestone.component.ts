@@ -19,15 +19,10 @@ import {Component, OnInit} from '@angular/core';
 @Component({
   selector: 'valtimo-milestone',
   templateUrl: './milestone.component.html',
-  styleUrls: ['./milestone.component.scss']
+  styleUrls: ['./milestone.component.scss'],
 })
 export class MilestoneComponent implements OnInit {
+  constructor() {}
 
-  constructor() {
-  }
-
-  ngOnInit() {
-
-  }
-
+  ngOnInit() {}
 }

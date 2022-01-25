@@ -21,7 +21,7 @@ import {AlertService} from '@valtimo/components';
 @Component({
   selector: 'valtimo-process-management-upload',
   templateUrl: './process-management-upload.component.html',
-  styleUrls: ['./process-management-upload.component.scss']
+  styleUrls: ['./process-management-upload.component.scss'],
 })
 export class ProcessManagementUploadComponent implements OnInit {
   public bpmn: File | null = null;
@@ -31,26 +31,27 @@ export class ProcessManagementUploadComponent implements OnInit {
   constructor(
     private processManagementService: ProcessManagementService,
     private alertService: AlertService
-  ) { }
+  ) {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   onChange(files: FileList): void {
     this.bpmn = files.item(0);
   }
 
   uploadProcessBpmn() {
-    this.processManagementService.deployBpmn(this.bpmn).subscribe(() => {
-      this.bpmn = null;
-      this.bpmnFile.nativeElement.value = '';
-      this.alertService.success('Deployment successful');
-      this.reload.emit();
-    }, error => {
-      this.bpmn = null;
-      this.bpmnFile.nativeElement.value = '';
-      this.alertService.error(`Deployment failed. ${error}`);
-    });
+    this.processManagementService.deployBpmn(this.bpmn).subscribe(
+      () => {
+        this.bpmn = null;
+        this.bpmnFile.nativeElement.value = '';
+        this.alertService.success('Deployment successful');
+        this.reload.emit();
+      },
+      error => {
+        this.bpmn = null;
+        this.bpmnFile.nativeElement.value = '';
+        this.alertService.error(`Deployment failed. ${error}`);
+      }
+    );
   }
-
 }

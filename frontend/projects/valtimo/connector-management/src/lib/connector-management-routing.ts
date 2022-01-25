@@ -26,17 +26,13 @@ const routes: Routes = [
     path: 'connectors',
     component: ConnectorManagementComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Connectors', roles: [ROLE_ADMIN]}
+    data: {title: 'Connectors', roles: [ROLE_ADMIN]},
   },
 ];
 
 @NgModule({
   declarations: [],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-  ],
-  exports: [RouterModule]
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class ConnectorManagementRoutingModule {
-}
+export class ConnectorManagementRoutingModule {}

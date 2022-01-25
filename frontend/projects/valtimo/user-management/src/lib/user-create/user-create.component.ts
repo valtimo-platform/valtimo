@@ -25,10 +25,9 @@ import {TranslateService} from '@ngx-translate/core';
 @Component({
   selector: 'valtimo-user-create',
   templateUrl: './user-create.component.html',
-  styleUrls: ['./user-create.component.css']
+  styleUrls: ['./user-create.component.css'],
 })
 export class UserCreateComponent implements OnInit {
-
   public form: FormGroup;
   public authorities: Array<any>;
 
@@ -38,8 +37,7 @@ export class UserCreateComponent implements OnInit {
     private formBuilder: FormBuilder,
     private alertService: AlertService,
     public translate: TranslateService
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
     this.getAuthorities();
@@ -49,13 +47,15 @@ export class UserCreateComponent implements OnInit {
   private createFormGroup() {
     return this.formBuilder.group({
       email: new FormControl('', Validators.required),
-      password: new FormControl('', [Validators.required
-        , Validators.pattern('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[$@$!%*?&]).{4,}')
-        , Validators.maxLength(50)]),
+      password: new FormControl('', [
+        Validators.required,
+        Validators.pattern('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[$@$!%*?&]).{4,}'),
+        Validators.maxLength(50),
+      ]),
       firstName: new FormControl('', Validators.required),
       lastName: new FormControl('', Validators.required),
       langKey: new FormControl('', Validators.required),
-      roles: new FormControl('', Validators.required)
+      roles: new FormControl('', Validators.required),
     });
   }
 
@@ -103,5 +103,4 @@ export class UserCreateComponent implements OnInit {
   public getRoleUser(): string {
     return ROLE_USER;
   }
-
 }

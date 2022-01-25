@@ -20,9 +20,7 @@ import {WidgetComponent} from './widget.component';
 
 @NgModule({
   declarations: [WidgetComponent],
-  imports: [
-    CommonModule
-  ],
-  exports: [WidgetComponent]
+  imports: [CommonModule],
+  exports: [WidgetComponent],
 })
-export class WidgetModule { }
+export class WidgetModule {}

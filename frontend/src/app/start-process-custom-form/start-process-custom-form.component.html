@@ -14,12 +14,19 @@
   ~ limitations under the License.
   -->
 
-<form [formGroup]="startProcessCustomForm"
-      (ngSubmit)="onSubmit()">
+<form [formGroup]="startProcessCustomForm" (ngSubmit)="onSubmit()">
   <div class="form-group row">
-    <label class="col-12 col-sm-3 col-form-label text-sm-right" for="businessKey">Business key</label>
+    <label class="col-12 col-sm-3 col-form-label text-sm-right" for="businessKey"
+      >Business key</label
+    >
     <div class="col-12 col-sm-8 col-lg-6">
-      <input type="text" id="businessKey" formControlName="businessKey" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.businessKey.errors }" />
+      <input
+        type="text"
+        id="businessKey"
+        formControlName="businessKey"
+        class="form-control"
+        [ngClass]="{'is-invalid': submitted && f.businessKey.errors}"
+      />
       <div *ngIf="submitted && f.businessKey.errors" class="invalid-feedback">
         <div *ngIf="f.businessKey.errors.required">Business key is required</div>
       </div>
@@ -29,7 +36,13 @@
   <div class="form-group row">
     <label class="col-12 col-sm-3 col-form-label text-sm-right" for="inputTextarea">Textarea</label>
     <div class="col-12 col-sm-8 col-lg-6">
-      <textarea class="form-control" id="inputTextarea" required="true" formControlName="inputTextarea" [ngClass]="{ 'is-invalid': submitted && f.inputTextarea.errors }"></textarea>
+      <textarea
+        class="form-control"
+        id="inputTextarea"
+        required="true"
+        formControlName="inputTextarea"
+        [ngClass]="{'is-invalid': submitted && f.inputTextarea.errors}"
+      ></textarea>
       <div *ngIf="submitted && f.inputTextarea.errors" class="invalid-feedback">
         <div *ngIf="f.inputTextarea.errors.required">Textarea is required</div>
       </div>

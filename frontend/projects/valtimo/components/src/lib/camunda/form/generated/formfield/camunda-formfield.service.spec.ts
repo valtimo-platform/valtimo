@@ -46,10 +46,12 @@ describe('CamundaFormfieldService', () => {
   });
 
   it('should verify formfield is disabled', () => {
-    const validationConstraints = [{
-      name: 'readonly',
-      configuration: null
-    }];
+    const validationConstraints = [
+      {
+        name: 'readonly',
+        configuration: null,
+      },
+    ];
     const disabledFormField = formField(validationConstraints);
     const isFormFieldDisabled = service.isFormFieldDisabled(disabledFormField);
 
@@ -57,10 +59,12 @@ describe('CamundaFormfieldService', () => {
   });
 
   it('should verify formfield is not disabled', () => {
-    const validationConstraints = [{
-      name: 'some-thing-else',
-      configuration: null
-    }];
+    const validationConstraints = [
+      {
+        name: 'some-thing-else',
+        configuration: null,
+      },
+    ];
     const someFormField = formField(validationConstraints);
     const isFormFieldDisabled = service.isFormFieldDisabled(someFormField);
 
@@ -69,10 +73,12 @@ describe('CamundaFormfieldService', () => {
 
   it('should return minDate validation constraint', () => {
     const configuration = '01-01-2019';
-    const validationConstraints = [{
-      name: 'minDate',
-      configuration: configuration
-    }];
+    const validationConstraints = [
+      {
+        name: 'minDate',
+        configuration: configuration,
+      },
+    ];
     const minDateFormField = formField(validationConstraints);
     const minDateReturned = service.getMinDate(minDateFormField);
 
@@ -82,10 +88,12 @@ describe('CamundaFormfieldService', () => {
 
   it('should return maxDate validation constraint', () => {
     const configuration = '01-01-2019';
-    const validationConstraints = [{
-      name: 'maxDate',
-      configuration: configuration
-    }];
+    const validationConstraints = [
+      {
+        name: 'maxDate',
+        configuration: configuration,
+      },
+    ];
     const maxDateFormField = formField(validationConstraints);
     const maxDateReturned = service.getMaxDate(maxDateFormField);
 
@@ -94,10 +102,12 @@ describe('CamundaFormfieldService', () => {
   });
 
   it('should return required validator type', () => {
-    const validationConstraints = [{
-      name: 'required',
-      configuration: null
-    }];
+    const validationConstraints = [
+      {
+        name: 'required',
+        configuration: null,
+      },
+    ];
     const inputFormField = formField(validationConstraints);
     const validatorTypes = service.getValidatorTypes(inputFormField);
 
@@ -106,75 +116,98 @@ describe('CamundaFormfieldService', () => {
   });
 
   it('should return minlength validator type', () => {
-    const validationConstraints = [{
-      name: 'minlength',
-      configuration: 1
-    }];
+    const validationConstraints = [
+      {
+        name: 'minlength',
+        configuration: 1,
+      },
+    ];
     const inputFormField = formField(validationConstraints);
     const validatorTypes = service.getValidatorTypes(inputFormField);
 
     expect(validatorTypes.length).toEqual(1);
-    expect(validatorTypes[0].toString()).toEqual(Validators.minLength(validationConstraints[0].configuration).toString());
+    expect(validatorTypes[0].toString()).toEqual(
+      Validators.minLength(validationConstraints[0].configuration).toString()
+    );
   });
 
   it('should return maxlength validator type', () => {
-    const validationConstraints = [{
-      name: 'maxlength',
-      configuration: 1
-    }];
+    const validationConstraints = [
+      {
+        name: 'maxlength',
+        configuration: 1,
+      },
+    ];
     const inputFormField = formField(validationConstraints);
     const validatorTypes = service.getValidatorTypes(inputFormField);
 
     expect(validatorTypes.length).toEqual(1);
-    expect(validatorTypes[0].toString()).toEqual(Validators.maxLength(validationConstraints[0].configuration).toString());
+    expect(validatorTypes[0].toString()).toEqual(
+      Validators.maxLength(validationConstraints[0].configuration).toString()
+    );
   });
 
   it('should return min validator type', () => {
-    const validationConstraints = [{
-      name: 'min',
-      configuration: 1
-    }];
+    const validationConstraints = [
+      {
+        name: 'min',
+        configuration: 1,
+      },
+    ];
     const inputFormField = formField(validationConstraints);
     const validatorTypes = service.getValidatorTypes(inputFormField);
 
     expect(validatorTypes.length).toEqual(1);
-    expect(validatorTypes[0].toString()).toEqual(Validators.min(validationConstraints[0].configuration).toString());
+    expect(validatorTypes[0].toString()).toEqual(
+      Validators.min(validationConstraints[0].configuration).toString()
+    );
   });
 
   it('should return max validator type', () => {
-    const validationConstraints = [{
-      name: 'max',
-      configuration: 1
-    }];
+    const validationConstraints = [
+      {
+        name: 'max',
+        configuration: 1,
+      },
+    ];
     const inputFormField = formField(validationConstraints);
     const validatorTypes = service.getValidatorTypes(inputFormField);
 
     expect(validatorTypes.length).toEqual(1);
-    expect(validatorTypes[0].toString()).toEqual(Validators.max(validationConstraints[0].configuration).toString());
+    expect(validatorTypes[0].toString()).toEqual(
+      Validators.max(validationConstraints[0].configuration).toString()
+    );
   });
 
   it('should return minDate validator type', () => {
-    const validationConstraints = [{
-      name: 'minDate',
-      configuration: '01-01-2019'
-    }];
+    const validationConstraints = [
+      {
+        name: 'minDate',
+        configuration: '01-01-2019',
+      },
+    ];
     const inputFormField = formField(validationConstraints);
     const validatorTypes = service.getValidatorTypes(inputFormField);
 
     expect(validatorTypes.length).toEqual(1);
-    expect(validatorTypes[0].toString()).toEqual(minDate(validationConstraints[0].configuration).toString());
+    expect(validatorTypes[0].toString()).toEqual(
+      minDate(validationConstraints[0].configuration).toString()
+    );
   });
 
   it('should return maxDate validator type', () => {
-    const validationConstraints = [{
-      name: 'maxDate',
-      configuration: '01-01-2019'
-    }];
+    const validationConstraints = [
+      {
+        name: 'maxDate',
+        configuration: '01-01-2019',
+      },
+    ];
     const inputFormField = formField(validationConstraints);
     const validatorTypes = service.getValidatorTypes(inputFormField);
 
     expect(validatorTypes.length).toEqual(1);
-    expect(validatorTypes[0].toString()).toEqual(maxDate(validationConstraints[0].configuration).toString());
+    expect(validatorTypes[0].toString()).toEqual(
+      maxDate(validationConstraints[0].configuration).toString()
+    );
   });
-
 });

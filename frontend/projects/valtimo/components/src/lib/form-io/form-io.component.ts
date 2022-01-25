@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import {FormioSubmission, ValtimoFormioOptions} from '@valtimo/contract';
 import {UserProviderService} from '@valtimo/security';
 import {Formio, FormioComponent as FormIoSourceComponent, FormioForm} from 'angular-formio';
@@ -30,7 +39,7 @@ import {TranslateService} from '@ngx-translate/core';
 @Component({
   selector: 'valtimo-form-io',
   templateUrl: './form-io.component.html',
-  styleUrls: ['./form-io.component.css']
+  styleUrls: ['./form-io.component.css'],
 })
 export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   @Input() form: any;
@@ -55,8 +64,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     private readonly stateService: FormIoStateService,
     private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
     const documentDefinitionName = this.route.snapshot.paramMap.get('documentDefinitionName');
@@ -101,7 +109,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   reloadForm() {
     this.refreshForm.emit({
-      form: this.formDefinition
+      form: this.formDefinition,
     });
   }
 
@@ -166,7 +174,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   private subscribeFormRefresh(): void {
     if (this.formRefresh$) {
-      this.formRefreshSubscription = this.formRefresh$.subscribe((refreshValue) => {
+      this.formRefreshSubscription = this.formRefresh$.subscribe(refreshValue => {
         if (refreshValue) {
           this.refreshForm.emit(refreshValue);
         }

@@ -4,7 +4,11 @@
 
 <ng-template #closed>
   <ng-container *ngIf="style === 'button' || !style">
-    <button class="btn btn-primary btn-sm dropdown-size" (click)="openDropdown()" [style.width.px]="width">
+    <button
+      class="btn btn-primary btn-sm dropdown-size"
+      (click)="openDropdown()"
+      [style.width.px]="width"
+    >
       {{ buttonText }}
     </button>
   </ng-container>
@@ -20,16 +24,26 @@
 <ng-template #opened>
   <div class="dropdown-container" [style.width.px]="width">
     <div class="dropdown-size search" [style.width.px]="width">
-      <input #search [ngClass]="{ disabled: disabled }" [placeholder]="searchText" [formControl]="searchTerm" />
+      <input
+        #search
+        [ngClass]="{disabled: disabled}"
+        [placeholder]="searchText"
+        [formControl]="searchTerm"
+      />
       {{ search.focus() }}
     </div>
     <div class="dropdown-list" (mouseenter)="mouseEnterList()" (mouseleave)="mouseLeaveList()">
       <ng-container *ngIf="filteredItems$ | async as filteredItems">
-        <ng-container *ngIf="filteredItems.length > 0 && focusedItemId$ | async as focusedItemId; else noResults">
+        <ng-container
+          *ngIf="
+            filteredItems.length > 0 && focusedItemId$ | async as focusedItemId;
+            else noResults
+          "
+        >
           <button
             #button
             *ngFor="let item of filteredItems"
-            [ngClass]="{ focus: focusedItemId === item.id, disabled: disabled }"
+            [ngClass]="{focus: focusedItemId === item.id, disabled: disabled}"
             class="dropdown-button dropdown-size"
             (click)="submit(item.id)"
             (mouseenter)="hoverOverButton(item.id)"

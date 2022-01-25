@@ -19,14 +19,8 @@ import {CommonModule} from '@angular/common';
 import {CamundaCustomFormComponent} from './camunda-custom-form.component';
 
 @NgModule({
-  declarations: [
-    CamundaCustomFormComponent
-  ],
-  imports: [
-    CommonModule
-  ],
-  exports: [
-    CamundaCustomFormComponent
-  ]
+  declarations: [CamundaCustomFormComponent],
+  imports: [CommonModule],
+  exports: [CamundaCustomFormComponent],
 })
-export class CamundaCustomFormModule { }
+export class CamundaCustomFormModule {}

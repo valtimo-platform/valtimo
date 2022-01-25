@@ -14,8 +14,14 @@
   ~ limitations under the License.
   -->
 
-<div class="modal fade" id="uploadProcess" tabindex="-1" role="dialog" aria-labelledby="uploadProcessLabel"
-     aria-hidden="true">
+<div
+  class="modal fade"
+  id="uploadProcess"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="uploadProcessLabel"
+  aria-hidden="true"
+>
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -26,15 +32,24 @@
       </div>
       <div class="modal-body">
         <h5>BPMN Model</h5>
-        <input #bpmnFile type="file"
-               id="file"
-               accept=".bpmn"
-               (change)="onChange($event.target.files)">
+        <input
+          #bpmnFile
+          type="file"
+          id="file"
+          accept=".bpmn"
+          (change)="onChange($event.target.files)"
+        />
       </div>
       <div class="modal-footer">
         <div class="btn-group">
-          <button type="button" class="btn btn-primary btn-space" (click)="uploadProcessBpmn()" [disabled]="!bpmn"
-                  data-dismiss="modal">Upload
+          <button
+            type="button"
+            class="btn btn-primary btn-space"
+            (click)="uploadProcessBpmn()"
+            [disabled]="!bpmn"
+            data-dismiss="modal"
+          >
+            Upload
           </button>
         </div>
       </div>

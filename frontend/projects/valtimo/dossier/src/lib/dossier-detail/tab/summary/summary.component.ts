@@ -14,13 +14,26 @@
  * limitations under the License.
  */
 
-import {Component, ElementRef, OnInit, Renderer2, ViewChild, ViewEncapsulation} from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnInit,
+  Renderer2,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import {ProcessService} from '@valtimo/process';
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
 import {DocumentService} from '@valtimo/document';
 import {TaskDetailModalComponent, TaskService} from '@valtimo/task';
 import {FormService} from '@valtimo/form';
-import {Document, FormioOptionsImpl, ProcessDocumentInstance, ProcessInstanceTask, ValtimoFormioOptions} from '@valtimo/contract';
+import {
+  Document,
+  FormioOptionsImpl,
+  ProcessDocumentInstance,
+  ProcessInstanceTask,
+  ValtimoFormioOptions,
+} from '@valtimo/contract';
 
 import * as moment_ from 'moment';
 import {FormioForm} from 'angular-formio';
@@ -34,7 +47,7 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
   selector: 'valtimo-dossier-detail-tab-summary',
   templateUrl: './summary.component.html',
   styleUrls: ['./summary.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class DossierDetailTabSummaryComponent implements OnInit {
   public readonly documentDefinitionName: string;
@@ -89,12 +102,14 @@ export class DossierDetailTabSummaryComponent implements OnInit {
   }
 
   public loadProcessDocumentInstances(documentId: string) {
-    this.documentService.findProcessDocumentInstances(documentId).subscribe(processDocumentInstances => {
-      this.processDocumentInstances = processDocumentInstances;
-      this.processDocumentInstances.forEach(instance => {
-        this.loadProcessInstanceTasks(instance.id.processInstanceId);
+    this.documentService
+      .findProcessDocumentInstances(documentId)
+      .subscribe(processDocumentInstances => {
+        this.processDocumentInstances = processDocumentInstances;
+        this.processDocumentInstances.forEach(instance => {
+          this.loadProcessInstanceTasks(instance.id.processInstanceId);
+        });
       });
-    });
   }
 
   private loadProcessInstanceTasks(processInstanceId: string) {

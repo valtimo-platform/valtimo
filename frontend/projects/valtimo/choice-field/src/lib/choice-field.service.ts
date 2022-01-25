@@ -21,22 +21,20 @@ import {ChoiceField} from '@valtimo/contract';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ChoiceFieldService {
-
   private valtimoApiConfig: any;
 
-  constructor(
-    private http: HttpClient,
-    private configService: ConfigService
-  ) {
+  constructor(private http: HttpClient, private configService: ConfigService) {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 
   query(params?: any): Observable<any> {
-    return this.http.get<ChoiceField>(`${this.valtimoApiConfig.endpointUri}choice-fields`
-      , {observe: 'response', params: params});
+    return this.http.get<ChoiceField>(`${this.valtimoApiConfig.endpointUri}choice-fields`, {
+      observe: 'response',
+      params: params,
+    });
   }
 
   get(id: string): Observable<any> {
@@ -56,26 +54,33 @@ export class ChoiceFieldService {
   }
 
   queryValues(keyName: string, params?: any): Observable<any> {
-    return this.http.get<ChoiceField>(`${this.valtimoApiConfig.endpointUri}choice-field-values/${keyName}/values`
-      , {observe: 'response', params: params});
+    return this.http.get<ChoiceField>(
+      `${this.valtimoApiConfig.endpointUri}choice-field-values/${keyName}/values`,
+      {observe: 'response', params: params}
+    );
   }
 
   getValue(choiceFieldId: string): Observable<any> {
-    return this.http.get<ChoiceField>(`${this.valtimoApiConfig.endpointUri}choice-field-values/${choiceFieldId}`);
+    return this.http.get<ChoiceField>(
+      `${this.valtimoApiConfig.endpointUri}choice-field-values/${choiceFieldId}`
+    );
   }
 
   updateValue(choiceFieldValue: any, choiceFieldName: string): Observable<any> {
-    return this.http.put(`${this.valtimoApiConfig.endpointUri}choice-field-values`,
+    return this.http.put(
+      `${this.valtimoApiConfig.endpointUri}choice-field-values`,
       choiceFieldValue,
       {
-        params: {choice_field_name: choiceFieldName}
-      });
+        params: {choice_field_name: choiceFieldName},
+      }
+    );
   }
 
   createValue(choiceFieldValue: any, choiceFieldName: string): Observable<any> {
-    return this.http.post(`${this.valtimoApiConfig.endpointUri}choice-field-values`,
+    return this.http.post(
+      `${this.valtimoApiConfig.endpointUri}choice-field-values`,
       choiceFieldValue,
-      {params: {choice_field_name: choiceFieldName}});
+      {params: {choice_field_name: choiceFieldName}}
+    );
   }
-
 }

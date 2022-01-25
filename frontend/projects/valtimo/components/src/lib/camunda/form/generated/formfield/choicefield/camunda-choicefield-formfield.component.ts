@@ -21,21 +21,20 @@ import {ChoicefieldService} from '@valtimo/choicefield';
 
 @Component({
   selector: 'valtimo-camunda-choicefield-formfield',
-  templateUrl: './camunda-choicefield-formfield.component.html'
+  templateUrl: './camunda-choicefield-formfield.component.html',
 })
-
 export class CamundaChoicefieldFormfieldComponent implements OnInit {
-
   public formGroup: FormGroup;
   public formField: FormField;
   public choicefieldValues: Array<any> = [];
 
-  constructor(private choicefieldService: ChoicefieldService) { }
+  constructor(private choicefieldService: ChoicefieldService) {}
 
   ngOnInit(): void {
-      this.choicefieldService.getChoiceFieldValuesByName( this.formField.properties['choicefield'] ).subscribe(
-        data => {
-          this.choicefieldValues = data;
+    this.choicefieldService
+      .getChoiceFieldValuesByName(this.formField.properties['choicefield'])
+      .subscribe(data => {
+        this.choicefieldValues = data;
       });
   }
 }

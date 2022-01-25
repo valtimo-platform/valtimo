@@ -15,10 +15,13 @@
   -->
 
 <div class="input-group mt-4 mb-2 align-items-center">
-  <div><h2>{{ 'openZaak.links' | translate }}</h2></div>
+  <div>
+    <h2>{{ 'openZaak.links' | translate }}</h2>
+  </div>
 </div>
 
-<ng-container *ngIf="{
+<ng-container
+  *ngIf="{
     noConfigAvailable: noConfigAvailable$ | async,
     loading: loading$ | async
   } as obs"
@@ -29,7 +32,7 @@
         <div class="card card-border card-contrast">
           <div class="card-header card-header-contrast card-header-featured">
             <div>
-              {{selectedZaakType.omschrijving}}
+              {{ selectedZaakType.omschrijving }}
             </div>
             <div class="controls">
               <button class="btn btn-danger ml-3" (click)="removeZaakTypeLink()">
@@ -42,9 +45,16 @@
               Automatisch aanmaken voor elk dossier
               <div class="controls">
                 <div class="switch-button switch-button-success">
-                  <input type="checkbox" [checked]="zaakTypeLink.createWithDossier"
-                         name="createWithDossier" id="createWithDossier"
-                         (change)="zaakTypeLink.createWithDossier = !zaakTypeLink.createWithDossier; updateConfig()">
+                  <input
+                    type="checkbox"
+                    [checked]="zaakTypeLink.createWithDossier"
+                    name="createWithDossier"
+                    id="createWithDossier"
+                    (change)="
+                      zaakTypeLink.createWithDossier = !zaakTypeLink.createWithDossier;
+                      updateConfig()
+                    "
+                  />
                   <span><label for="createWithDossier"></label></span>
                 </div>
               </div>
@@ -59,8 +69,7 @@
 <ng-template #addSync>
   <div class="text-right mt-5">
     <button class="btn btn-primary" (click)="openModal()">
-      <i class="icon mdi mdi-plus"></i> &nbsp;
-      Link zaak type
+      <i class="icon mdi mdi-plus"></i> &nbsp; Link zaak type
     </button>
   </div>
 </ng-template>
@@ -73,22 +82,23 @@
   showFooter="true"
 >
   <div body>
-    <p>
-      Select zaak type for {{ 'Dossier' | translate }}
-    </p>
+    <p>Select zaak type for {{ 'Dossier' | translate }}</p>
     <div class="input-group mb-3 mr-3 align-items-center">
       <select class="form-control" [(ngModel)]="selectedZaakType">
         <option [ngValue]="null" selected>Select zaak type</option>
         <option *ngFor="let zaakType of zaakTypes" [ngValue]="zaakType">
-          {{zaakType.omschrijving}}
+          {{ zaakType.omschrijving }}
         </option>
       </select>
     </div>
     <div *ngIf="selectedZaakType" class="input-group mb-3 align-items-center">
       <select class="form-control" [(ngModel)]="selectedInformatieObjectTypeUrl">
         <option [ngValue]="null" selected>Select informatie object type</option>
-        <option *ngFor="let informatieObjectType of informatieObjectTypes" [ngValue]="informatieObjectType.url">
-          {{informatieObjectType.omschrijving}}
+        <option
+          *ngFor="let informatieObjectType of informatieObjectTypes"
+          [ngValue]="informatieObjectType.url"
+        >
+          {{ informatieObjectType.omschrijving }}
         </option>
       </select>
     </div>

@@ -25,9 +25,8 @@ describe('TopbarComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [TopbarComponent],
-      imports: [RouterTestingModule]
-    })
-      .compileComponents();
+      imports: [RouterTestingModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

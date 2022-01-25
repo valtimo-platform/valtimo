@@ -15,23 +15,24 @@
   -->
 
 <valtimo-modal
-        #documentDefinitionRemoveModal
-        elementId="documentDefinitionRemoveModal"
-        [title]="documentDefinition ? documentDefinition.schema.title : 'Document definition'"
-        subtitle="{{ 'Remove document definition' | translate }}"
-        showFooter="true"
+  #documentDefinitionRemoveModal
+  elementId="documentDefinitionRemoveModal"
+  [title]="documentDefinition ? documentDefinition.schema.title : 'Document definition'"
+  subtitle="{{ 'Remove document definition' | translate }}"
+  showFooter="true"
 >
   <div body *ngIf="documentDefinition">
-
     <div class="alert alert-contrast alert-danger mt-2" role="alert">
       <div class="icon"><span class="mdi mdi-alert-triangle"></span></div>
-      <div class="message" [innerHTML]="'remove-document-definition-confirmation' | translate">
-      </div>
+      <div
+        class="message"
+        [innerHTML]="'remove-document-definition-confirmation' | translate"
+      ></div>
     </div>
     <div *ngIf="errors.length > 0" class="alert alert-danger pt-5 pb-5 mb-2">
       <ol>
         <li *ngFor="let error of errors">
-          {{error}}
+          {{ error }}
         </li>
       </ol>
     </div>

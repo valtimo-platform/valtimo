@@ -22,11 +22,7 @@ import {FileSizeModule} from '../file-size/file-size.module';
 
 @NgModule({
   declarations: [UploaderComponent, UploaderDragDropDirective],
-  imports: [
-    CommonModule,
-    FileSizeModule
-  ],
-  exports: [UploaderComponent, UploaderDragDropDirective]
+  imports: [CommonModule, FileSizeModule],
+  exports: [UploaderComponent, UploaderDragDropDirective],
 })
-export class UploaderModule {
-}
+export class UploaderModule {}

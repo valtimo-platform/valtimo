@@ -19,7 +19,7 @@ import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {ConnectorInstance} from '@valtimo/contract';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ConnectorManagementStateService {
   private readonly _showModal$ = new BehaviorSubject<boolean>(false);

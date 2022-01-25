@@ -13,7 +13,5 @@
       "ngx-color-picker": "ngxColorPicker"
     }
   },
-  "whitelistedNonPeerDependencies": [
-    "ngx-color-picker"
-  ]
+  "whitelistedNonPeerDependencies": ["ngx-color-picker"]
 }

@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-import {Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 
 import * as BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
 import {NGXLogger} from 'ngx-logger';
@@ -22,10 +31,9 @@ import {NGXLogger} from 'ngx-logger';
 @Component({
   selector: 'valtimo-migration-process-diagram',
   templateUrl: './migration-process-diagram.component.html',
-  styleUrls: ['./migration-process-diagram.component.scss']
+  styleUrls: ['./migration-process-diagram.component.scss'],
 })
 export class MigrationProcessDiagramComponent implements OnInit, OnDestroy {
-
   private bpmnJS: BpmnJS;
   public flowNodeMap: any = null;
 
@@ -33,8 +41,7 @@ export class MigrationProcessDiagramComponent implements OnInit, OnDestroy {
   @Input() name: string;
   @Output() loaded = new EventEmitter();
 
-  constructor(private logger: NGXLogger) {
-  }
+  constructor(private logger: NGXLogger) {}
 
   ngOnInit() {
     this.bpmnJS = new BpmnJS();
@@ -42,7 +49,6 @@ export class MigrationProcessDiagramComponent implements OnInit, OnDestroy {
       if (!error) {
         const canvas = this.bpmnJS.get('canvas');
         canvas.zoom('fit-viewport', 'auto');
-
       }
     });
   }
@@ -59,7 +65,7 @@ export class MigrationProcessDiagramComponent implements OnInit, OnDestroy {
 
   public loadXml(xml: string): void {
     this.bpmnJS.attachTo(this.el.nativeElement);
-    this.bpmnJS.importXML(xml, (err) => {
+    this.bpmnJS.importXML(xml, err => {
       this.logger.debug(err);
       const processElements = this.bpmnJS.getDefinitions().rootElements.filter(function (element) {
         return element.isExecutable;

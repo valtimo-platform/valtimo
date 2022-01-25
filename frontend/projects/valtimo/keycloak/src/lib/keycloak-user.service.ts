@@ -22,7 +22,7 @@ import {UserIdentity, UserService, ValtimoUserIdentity} from '@valtimo/contract'
 import {KeycloakOptionsService} from './keycloak-options.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class KeycloakUserService implements UserService {
   private userIdentity: ReplaySubject<UserIdentity>;

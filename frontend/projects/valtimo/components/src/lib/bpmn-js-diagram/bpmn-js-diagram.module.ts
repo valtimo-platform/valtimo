@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { BpmnJsDiagramComponent } from './bpmn-js-diagram.component';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {BpmnJsDiagramComponent} from './bpmn-js-diagram.component';
 
 @NgModule({
   declarations: [BpmnJsDiagramComponent],
-  imports: [
-    CommonModule
-  ],
-  exports: [BpmnJsDiagramComponent]
+  imports: [CommonModule],
+  exports: [BpmnJsDiagramComponent],
 })
-
-export class BpmnJsDiagramModule { }
+export class BpmnJsDiagramModule {}

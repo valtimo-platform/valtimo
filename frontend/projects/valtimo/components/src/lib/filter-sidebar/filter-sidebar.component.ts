@@ -21,10 +21,9 @@ declare var $;
 @Component({
   selector: 'valtimo-filter-sidebar',
   templateUrl: './filter-sidebar.component.html',
-  styleUrls: ['./filter-sidebar.component.css']
+  styleUrls: ['./filter-sidebar.component.css'],
 })
 export class FilterSidebarComponent implements OnInit, OnDestroy {
-
   public filterSidebar: string;
 
   constructor() {
@@ -49,5 +48,4 @@ export class FilterSidebarComponent implements OnInit, OnDestroy {
     this.filterSidebar = beContent.hasClass('be-aside') ? 'show' : 'hide';
     localStorage.setItem('filterSidebar', this.filterSidebar);
   }
-
 }

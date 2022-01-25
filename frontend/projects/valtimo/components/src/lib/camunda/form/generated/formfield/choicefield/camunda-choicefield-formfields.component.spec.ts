@@ -16,7 +16,14 @@
 
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
-import {FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import {FormField} from '../formfield.model';
 import {Component, Input} from '@angular/core';
 import {CamundaChoicefieldFormfieldComponent} from './camunda-choicefield-formfield.component';
@@ -30,21 +37,24 @@ const mockChoiceFieldValueArray: ChoicefieldValue[] = [
     deprecated: false,
     sortOrder: 1,
     value: 'Test',
-    choiceField: {}
-  }, {
+    choiceField: {},
+  },
+  {
     id: 2,
     name: 'Test',
     deprecated: true,
     sortOrder: 1,
     value: 'Test',
-    choiceField: {}
-  }
+    choiceField: {},
+  },
 ];
 
 class MockChoicefieldService {
   getChoiceFields() {}
   getChoiceFieldByName(name: string) {}
-  getChoiceFieldValuesByName(name: string): Observable<ChoicefieldValue[]> { return of(mockChoiceFieldValueArray); }
+  getChoiceFieldValuesByName(name: string): Observable<ChoicefieldValue[]> {
+    return of(mockChoiceFieldValueArray);
+  }
   getChoiceFieldValueByNameAndValue(name: string, value: string) {}
   getChoiceFieldValueById(id: number) {}
 }
@@ -54,10 +64,10 @@ describe('CamundaChoicefieldFormfieldComponent', () => {
   let fixture: ComponentFixture<CamundaChoicefieldFormfieldComponent>;
   let formGroup: FormGroup;
 
-  const mockConfig = { endpointUri: '/api/' };
+  const mockConfig = {endpointUri: '/api/'};
   const enumValues = {
-    'id1': 'value1',
-    'id2': 'value2'
+    id1: 'value1',
+    id2: 'value2',
   };
 
   @Component({selector: 'valtimo-camunda-formfield-validation', template: ''})
@@ -70,7 +80,7 @@ describe('CamundaChoicefieldFormfieldComponent', () => {
     TestBed.configureTestingModule({
       declarations: [CamundaFormFieldValidationComponent, CamundaChoicefieldFormfieldComponent],
       imports: [ReactiveFormsModule, FormsModule, HttpClientTestingModule],
-      providers: [{provide: ChoicefieldService, useClass: MockChoicefieldService}]
+      providers: [{provide: ChoicefieldService, useClass: MockChoicefieldService}],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CamundaChoicefieldFormfieldComponent);
@@ -88,20 +98,21 @@ describe('CamundaChoicefieldFormfieldComponent', () => {
       properties: {},
       type: {
         values: enumValues,
-        name: 'ChoiceField'
+        name: 'ChoiceField',
       },
       validationConstraints: validationConstraints,
     };
   }
 
   it('should create', () => {
-    expect( component ).toBeTruthy();
+    expect(component).toBeTruthy();
   });
 
   it('should create choicefield formfield and exclude deprecated item', () => {
     const formField = getFormField([]);
     formGroup = new FormBuilder().group({});
-    formGroup.addControl(formField.id,
+    formGroup.addControl(
+      formField.id,
       new FormControl(formField.defaultValue, Validators.required)
     );
     component.formField = formField;

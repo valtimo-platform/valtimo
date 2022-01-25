@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { PageTitleComponent } from '../page-title/page-title.component';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {PageTitleComponent} from '../page-title/page-title.component';
 import {TranslateModule} from '@ngx-translate/core';
 
 @NgModule({
   declarations: [PageTitleComponent],
-    imports: [
-        CommonModule,
-        TranslateModule
-    ],
-  exports: [PageTitleComponent]
+  imports: [CommonModule, TranslateModule],
+  exports: [PageTitleComponent],
 })
 export class PageTitleModule {}

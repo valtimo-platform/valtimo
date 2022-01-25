@@ -20,12 +20,11 @@ import {CallbackComponent} from './callback.component';
 import {CommonModule} from '@angular/common';
 
 const routes: Routes = [
-  {path: 'callback', component: CallbackComponent, data: {title: 'Loading...'}}
+  {path: 'callback', component: CallbackComponent, data: {title: 'Loading...'}},
 ];
 
 @NgModule({
   imports: [CommonModule, RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class Auth0RoutingModule {
-}
+export class Auth0RoutingModule {}

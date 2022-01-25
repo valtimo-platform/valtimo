@@ -21,10 +21,9 @@ import {Observable} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthGuardService implements CanActivate {
-
   private readonly authGuardServiceProvider: CanActivate;
 
   constructor(
@@ -32,7 +31,9 @@ export class AuthGuardService implements CanActivate {
     private injector: Injector,
     protected logger: NGXLogger
   ) {
-    this.authGuardServiceProvider = injector.get<any>(configService.config.authentication.authProviders.guardServiceProvider);
+    this.authGuardServiceProvider = injector.get<any>(
+      configService.config.authentication.authProviders.guardServiceProvider
+    );
     this.logger.debug('Loading AuthGuardServiceProvider service', this.authGuardServiceProvider);
   }
 
@@ -43,5 +44,4 @@ export class AuthGuardService implements CanActivate {
     this.logger.debug('Delegating AuthGuard canActivate');
     return this.authGuardServiceProvider.canActivate(route, state);
   }
-
 }

@@ -15,10 +15,10 @@
  */
 
 export interface ExternalConnector {
-    reference: string;
-    url: string;
-    httpMethod: string;
-    body: string;
-    headers: {[key: string]: string};
-    mappedVariablesResponse: {[key: string]: string};
+  reference: string;
+  url: string;
+  httpMethod: string;
+  body: string;
+  headers: {[key: string]: string};
+  mappedVariablesResponse: {[key: string]: string};
 }

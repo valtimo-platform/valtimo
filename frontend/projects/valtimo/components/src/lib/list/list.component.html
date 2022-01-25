@@ -26,9 +26,19 @@
       </div>
 
       <div class="ml-auto row">
-        <input *ngIf="isSearchable" class="form-control col-sm-8" type="text" placeholder="Search..." #searchBox />
+        <input
+          *ngIf="isSearchable"
+          class="form-control col-sm-8"
+          type="text"
+          placeholder="Search..."
+          #searchBox
+        />
 
-        <div class="switch-view-holder btn-group col-sm-4 mt-1 mt-sm-0" role="group" *ngIf="viewMode">
+        <div
+          class="switch-view-holder btn-group col-sm-4 mt-1 mt-sm-0"
+          role="group"
+          *ngIf="viewMode"
+        >
           <button
             class="btn"
             [ngClass]="viewListAs === 'table' ? 'btn-primary' : 'btn-default'"
@@ -81,7 +91,11 @@
               {{ listItemField.value || '-' }}
             </td>
             <td class="align-top" *ngFor="let action of actions">
-              <i style="cursor: pointer" [ngClass]="action.iconClass" (click)="action.callback(item)"></i>
+              <i
+                style="cursor: pointer"
+                [ngClass]="action.iconClass"
+                (click)="action.callback(item)"
+              ></i>
             </td>
           </tr>
           <tr>
@@ -119,13 +133,19 @@
     *ngIf="pagination && items?.length > 0 && fields?.length > 0"
   >
     <div class="float-left page-count col-4">
-      <strong>{{ 'list.currentPage' | translate: {current: pagination.page, total: getTotalPageCount()} }}</strong>
+      <strong>{{
+        'list.currentPage' | translate: {current: pagination.page, total: getTotalPageCount()}
+      }}</strong>
       <br />
       {{
         pagination.collectionSize === 1
           ? ('list.showingResult' | translate: {number: (items | listFilter: searchModel).length})
           : ('list.showingResults'
-            | translate: {number: (items | listFilter: searchModel).length, total: pagination.collectionSize})
+            | translate
+              : {
+                  number: (items | listFilter: searchModel).length,
+                  total: pagination.collectionSize
+                })
       }}
     </div>
     <div class="col-4 text-center">
@@ -152,7 +172,9 @@
     </div>
   </div>
 
-  <div id="no-results" class="p-5" *ngIf="items?.length === 0">{{ 'list.noResults' | translate }}</div>
+  <div id="no-results" class="p-5" *ngIf="items?.length === 0">
+    {{ 'list.noResults' | translate }}
+  </div>
 
   <div id="no-field-definitions" class="p-5" *ngIf="items?.length > 0 && fields?.length === 0">
     {{ 'list.noFieldDefinitions' | translate }}

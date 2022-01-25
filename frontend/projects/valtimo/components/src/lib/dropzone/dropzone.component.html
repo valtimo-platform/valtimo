@@ -1,4 +1,4 @@
-<form #dropzone [ngClass]="{ disabled: disabled || uploading}" class="dropzone dz-clickable">
+<form #dropzone [ngClass]="{disabled: disabled || uploading}" class="dropzone dz-clickable">
   <div class="dz-message">
     <div class="icon"><span class="mdi mdi-cloud-upload"></span></div>
     <ng-container *ngTemplateOutlet="body"></ng-container>
@@ -7,7 +7,14 @@
     </ng-container>
     <div class="dropzone-mobile-trigger needsclick"></div>
   </div>
-  <button (click)="showCamera()" *ngIf="camera" type="button" class="btn btn-primary px-3 webcam-button"><i class="fa fa-camera" aria-hidden="true"></i></button>
+  <button
+    (click)="showCamera()"
+    *ngIf="camera"
+    type="button"
+    class="btn btn-primary px-3 webcam-button"
+  >
+    <i class="fa fa-camera" aria-hidden="true"></i>
+  </button>
   <ng-container *ngIf="showingCamera$ | async">
     <ng-container *ngTemplateOutlet="webcam"></ng-container>
   </ng-container>
@@ -16,15 +23,19 @@
 <ng-template #body>
   <h2 *ngIf="!hideTitle" class="mb-4 mt-2">{{ title || ('dropzone.drop' | translate) }}</h2>
   <span *ngIf="subtitle" class="note mb-3">{{ subtitle }}</span>
-  <span *ngIf=" showMaxFileSize" class="note mb-3 small-font"
-  >{{ 'dropzone.maxFileSize' | translate }}<b>{{ maxFileSize }}mb</b></span
+  <span *ngIf="showMaxFileSize" class="note mb-3 small-font"
+    >{{ 'dropzone.maxFileSize' | translate }}<b>{{ maxFileSize }}mb</b></span
   >
   <ng-container *ngTemplateOutlet="preview"></ng-container>
 </ng-template>
 
 <ng-template #preview>
   <ng-container
-          *ngIf="{ errorMessage: errorMessage$ | async, externalError: externalError$ | async, file: file$ | async } as obs"
+    *ngIf="{
+      errorMessage: errorMessage$ | async,
+      externalError: externalError$ | async,
+      file: file$ | async
+    } as obs"
   >
     <ng-container *ngIf="obs.externalError || obs.errorMessage">
       <div class="alert alert-danger mt-2 mb-0">
@@ -34,11 +45,11 @@
       </div>
     </ng-container>
 
-    <ng-container *ngIf="!hideFilePreview && (obs.file && !obs.externalError && !obs.errorMessage)">
+    <ng-container *ngIf="!hideFilePreview && obs.file && !obs.externalError && !obs.errorMessage">
       <div class="file">
         <i class="icon mdi mdi-file-text mr-2"></i>
         <span class="note">{{ obs.file.name }}</span>
-        <span class="note file-size">- {{  obs.file.size | filesize: 2}}</span>
+        <span class="note file-size">- {{ obs.file.size | filesize: 2 }}</span>
       </div>
     </ng-container>
   </ng-container>
@@ -53,4 +64,3 @@
 <ng-template #webcam>
   <valtimo-webcam (imageSaved)="webcamImageSaved($event)"></valtimo-webcam>
 </ng-template>
-

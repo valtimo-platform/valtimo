@@ -29,7 +29,7 @@ describe('FormService', () => {
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [FormService]
+      providers: [FormService],
     });
 
     httpTestingController = TestBed.inject(HttpTestingController);

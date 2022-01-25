@@ -21,17 +21,16 @@ import {take} from 'rxjs/operators';
 @Component({
   selector: 'valtimo-webcam',
   templateUrl: './webcam.component.html',
-  styleUrls: ['./webcam.component.scss']
+  styleUrls: ['./webcam.component.scss'],
 })
 export class WebcamComponent implements AfterViewInit {
-
   @Output() imageSaved = new EventEmitter<File>();
 
   readonly showing$ = new BehaviorSubject<boolean>(false);
 
   readonly stream$ = new BehaviorSubject<MediaStream>(undefined);
 
-  readonly picture$ = new BehaviorSubject<{ file: File; uri: string }>(undefined);
+  readonly picture$ = new BehaviorSubject<{file: File; uri: string}>(undefined);
 
   ngAfterViewInit(): void {
     const video = this.getVideoElement();
@@ -41,11 +40,10 @@ export class WebcamComponent implements AfterViewInit {
     });
 
     if (navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({video: true})
-        .then((stream) => {
-          video.srcObject = stream;
-          this.stream$.next(stream);
-        });
+      navigator.mediaDevices.getUserMedia({video: true}).then(stream => {
+        video.srcObject = stream;
+        this.stream$.next(stream);
+      });
     }
   }
 
@@ -78,7 +76,6 @@ export class WebcamComponent implements AfterViewInit {
       this.clearImage();
     }
 
-
     this.toggleFade();
     this.emitOnTimeOut();
 
@@ -86,9 +83,9 @@ export class WebcamComponent implements AfterViewInit {
   }
 
   private stopStream(): void {
-    this.stream$.pipe(take(1)).subscribe((mediaStream) => {
+    this.stream$.pipe(take(1)).subscribe(mediaStream => {
       if (mediaStream) {
-        mediaStream.getTracks().forEach((stream) => stream.stop());
+        mediaStream.getTracks().forEach(stream => stream.stop());
       }
     });
   }

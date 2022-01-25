@@ -21,16 +21,8 @@ import {CamundaCustomFormModule} from './custom/camunda-custom-form.module';
 import {CamundaGeneratedFormModule} from './generated/camunda-generated-form.module';
 
 @NgModule({
-  declarations: [
-    CamundaFormComponent
-  ],
-  imports: [
-    CommonModule,
-    CamundaGeneratedFormModule,
-    CamundaCustomFormModule
-  ],
-  exports: [
-    CamundaFormComponent
-  ]
+  declarations: [CamundaFormComponent],
+  imports: [CommonModule, CamundaGeneratedFormModule, CamundaCustomFormModule],
+  exports: [CamundaFormComponent],
 })
-export class CamundaFormModule { }
+export class CamundaFormModule {}

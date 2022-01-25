@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
 import {ModalComponent} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
@@ -24,7 +32,7 @@ import {take} from 'rxjs/operators';
 @Component({
   selector: 'valtimo-form-management-upload',
   templateUrl: './form-management-upload.component.html',
-  styleUrls: ['./form-management-upload.component.scss']
+  styleUrls: ['./form-management-upload.component.scss'],
 })
 export class FormManagementUploadComponent implements AfterViewInit, OnDestroy {
   @ViewChild('uploadFormDefinitionModal') modal: ModalComponent;
@@ -45,9 +53,8 @@ export class FormManagementUploadComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private readonly documentService: DocumentService,
-    private readonly translateService: TranslateService,
-  ) {
-  }
+    private readonly translateService: TranslateService
+  ) {}
 
   ngAfterViewInit(): void {
     this.openShowSubscription();
@@ -68,17 +75,13 @@ export class FormManagementUploadComponent implements AfterViewInit, OnDestroy {
   uploadDefinition(): void {
     this.disable();
 
-    this.jsonString$
-      .pipe(
-        take(1)
-      )
-      .subscribe((definition) => {
-        this.closeErrorSubscription();
-        this.clearError();
-        this.enable();
-        this.hideModal();
-        this.definitionUploaded.emit(definition);
-      });
+    this.jsonString$.pipe(take(1)).subscribe(definition => {
+      this.closeErrorSubscription();
+      this.clearError();
+      this.enable();
+      this.hideModal();
+      this.definitionUploaded.emit(definition);
+    });
   }
 
   private openErrorSubscription(errorCode: string): void {

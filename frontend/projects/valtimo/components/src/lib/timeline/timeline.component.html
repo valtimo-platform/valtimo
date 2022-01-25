@@ -15,9 +15,7 @@
   -->
 
 <div>
-  <div id="no-results" class="p-5" *ngIf="items?.length === 0">
-    No result found
-  </div>
+  <div id="no-results" class="p-5" *ngIf="items?.length === 0">No result found</div>
   <div class="pb-5" *ngIf="items?.length > 0">
     <ul class="timeline mb-0 py-5">
       <li class="timeline-item status-done" *ngFor="let item of items">
@@ -28,10 +26,12 @@
           <div class="timeline-header p-0">
             <span class="timeline-time">{{ item.time }}</span>
             <span class="timeline-author">{{ item.user }}</span>
-            <br/>
+            <br />
             <p class="timeline-activity">{{ item.activity }}</p>
             <div class="timeline-summary">
-              <p [innerHTML]="item.summaryTranslationKey | translate: item.summaryTranslationParams"></p>
+              <p
+                [innerHTML]="item.summaryTranslationKey | translate: item.summaryTranslationParams"
+              ></p>
             </div>
           </div>
         </div>

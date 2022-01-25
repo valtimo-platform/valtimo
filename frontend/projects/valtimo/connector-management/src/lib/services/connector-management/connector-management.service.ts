@@ -18,47 +18,67 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
 import {Observable} from 'rxjs';
-import {ConnectorInstance, ConnectorType, Page, ConnectorInstanceCreateRequest, ConnectorInstanceUpdateRequest} from '@valtimo/contract';
+import {
+  ConnectorInstance,
+  ConnectorType,
+  Page,
+  ConnectorInstanceCreateRequest,
+  ConnectorInstanceUpdateRequest,
+} from '@valtimo/contract';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ConnectorManagementService {
-
   private valtimoApiConfig: any;
 
-  constructor(
-    private http: HttpClient,
-    private configService: ConfigService
-  ) {
+  constructor(private http: HttpClient, private configService: ConfigService) {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 
   getConnectorInstances(params?: any): Observable<Page<ConnectorInstance>> {
-    return this.http.get<Page<ConnectorInstance>>(`${this.valtimoApiConfig.endpointUri}connector/instance`, {params});
+    return this.http.get<Page<ConnectorInstance>>(
+      `${this.valtimoApiConfig.endpointUri}connector/instance`,
+      {params}
+    );
   }
 
   getConnectorInstancesByType(typeId: string, params?: any): Observable<Page<ConnectorInstance>> {
-    return this.http.get<Page<ConnectorInstance>>(`${this.valtimoApiConfig.endpointUri}connector/instance/${typeId}`, {params});
+    return this.http.get<Page<ConnectorInstance>>(
+      `${this.valtimoApiConfig.endpointUri}connector/instance/${typeId}`,
+      {params}
+    );
   }
 
   getConnectorInstanceById(instanceId: string): Observable<ConnectorInstance> {
-    return this.http.get<ConnectorInstance>(`${this.valtimoApiConfig.endpointUri}connector/instance?instanceId=${instanceId}`);
+    return this.http.get<ConnectorInstance>(
+      `${this.valtimoApiConfig.endpointUri}connector/instance?instanceId=${instanceId}`
+    );
   }
 
   getConnectorTypes(): Observable<Array<ConnectorType>> {
-    return this.http.get<Array<ConnectorType>>(`${this.valtimoApiConfig.endpointUri}connector/type`);
+    return this.http.get<Array<ConnectorType>>(
+      `${this.valtimoApiConfig.endpointUri}connector/type`
+    );
   }
 
   createConnectorInstance(request: ConnectorInstanceCreateRequest): Observable<ConnectorInstance> {
-    return this.http.post<ConnectorInstance>(`${this.valtimoApiConfig.endpointUri}connector/instance`, request);
+    return this.http.post<ConnectorInstance>(
+      `${this.valtimoApiConfig.endpointUri}connector/instance`,
+      request
+    );
   }
 
   updateConnectorInstance(request: ConnectorInstanceUpdateRequest): Observable<ConnectorInstance> {
-    return this.http.put<ConnectorInstance>(`${this.valtimoApiConfig.endpointUri}connector/instance`, request);
+    return this.http.put<ConnectorInstance>(
+      `${this.valtimoApiConfig.endpointUri}connector/instance`,
+      request
+    );
   }
 
   deleteConnectorInstance(connectorInstanceId: string): Observable<ConnectorInstance> {
-    return this.http.delete<ConnectorInstance>(`${this.valtimoApiConfig.endpointUri}connector/instance/${connectorInstanceId}`);
+    return this.http.delete<ConnectorInstance>(
+      `${this.valtimoApiConfig.endpointUri}connector/instance/${connectorInstanceId}`
+    );
   }
 }

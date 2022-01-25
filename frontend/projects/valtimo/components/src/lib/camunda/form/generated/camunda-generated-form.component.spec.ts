@@ -23,23 +23,26 @@ import {Directive, Input} from '@angular/core';
 import {CamundaFormfieldService} from './formfield/camunda-formfield.service';
 
 describe('CamundaGeneratedFormComponent', () => {
-  const formFields: FormField[] = [{
-    businessKey: false,
-    defaultValue: 'formfield1',
-    id: 'formfield1',
-    typeName: 'string',
-    label: 'formfield1',
-    value: {},
-    properties: {}
-  }, {
-    businessKey: false,
-    defaultValue: 'formfield2',
-    id: 'formfield2',
-    typeName: 'string',
-    label: 'formfield2',
-    value: {},
-    properties: {}
-  }];
+  const formFields: FormField[] = [
+    {
+      businessKey: false,
+      defaultValue: 'formfield1',
+      id: 'formfield1',
+      typeName: 'string',
+      label: 'formfield1',
+      value: {},
+      properties: {},
+    },
+    {
+      businessKey: false,
+      defaultValue: 'formfield2',
+      id: 'formfield2',
+      typeName: 'string',
+      label: 'formfield2',
+      value: {},
+      properties: {},
+    },
+  ];
 
   let component: CamundaGeneratedFormComponent;
   let fixture: ComponentFixture<CamundaGeneratedFormComponent>;
@@ -50,7 +53,7 @@ describe('CamundaGeneratedFormComponent', () => {
     },
     getValidatorTypes: function () {
       return [];
-    }
+    },
   };
 
   @Directive({
@@ -63,20 +66,10 @@ describe('CamundaGeneratedFormComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [
-        ReactiveFormsModule,
-        FormsModule,
-        CommonModule
-      ],
-      declarations: [
-        CamundaGeneratedFormComponent,
-        CamundaFormfieldGeneratorDirective
-      ],
-      providers: [
-        {provide: CamundaFormfieldService, useValue: camundaFormfieldServicePartial}
-      ]
-    })
-      .compileComponents();
+      imports: [ReactiveFormsModule, FormsModule, CommonModule],
+      declarations: [CamundaGeneratedFormComponent, CamundaFormfieldGeneratorDirective],
+      providers: [{provide: CamundaFormfieldService, useValue: camundaFormfieldServicePartial}],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -99,6 +92,3 @@ describe('CamundaGeneratedFormComponent', () => {
     expect(el.querySelector('#reset-button')).toBeTruthy();
   });
 });
-
-
-

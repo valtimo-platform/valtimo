@@ -21,11 +21,7 @@ import {RouterModule} from '@angular/router';
 
 @NgModule({
   declarations: [TopbarComponent],
-  imports: [
-    CommonModule,
-    RouterModule
-  ],
-  exports: [TopbarComponent]
+  imports: [CommonModule, RouterModule],
+  exports: [TopbarComponent],
 })
-export class TopbarModule {
-}
+export class TopbarModule {}

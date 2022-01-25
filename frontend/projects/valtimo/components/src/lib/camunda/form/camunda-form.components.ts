@@ -19,19 +19,16 @@ import {FormField} from './generated/formfield/formfield.model';
 
 @Component({
   selector: 'valtimo-camunda-form',
-  templateUrl: './camunda-form.component.html'
+  templateUrl: './camunda-form.component.html',
 })
 export class CamundaFormComponent {
-
   @Input() componentName: string;
   @Input() formFields: FormField[];
   @Output() submitted?: EventEmitter<any> = new EventEmitter();
 
-  constructor() {
-  }
+  constructor() {}
 
   onSubmitted(event) {
     this.submitted.emit(event);
   }
-
 }

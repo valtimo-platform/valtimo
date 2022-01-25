@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FilterSidebarComponent } from './filter-sidebar.component';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FilterSidebarComponent} from './filter-sidebar.component';
 
 @NgModule({
   declarations: [FilterSidebarComponent],
-  imports: [
-    CommonModule
-  ],
-  exports: [FilterSidebarComponent]
+  imports: [CommonModule],
+  exports: [FilterSidebarComponent],
 })
-export class FilterSidebarModule { }
+export class FilterSidebarModule {}

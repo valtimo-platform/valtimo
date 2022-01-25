@@ -25,7 +25,8 @@
         id="yes_{{ formField.id }}"
         type="radio"
         [value]="true"
-        [formControlName]="formField.id"/>
+        [formControlName]="formField.id"
+      />
       <span class="custom-control-label custom-control-color">Yes</span>
     </label>
     <label for="no_{{ formField.id }}" class="custom-control custom-radio custom-control-inline">
@@ -34,12 +35,11 @@
         id="no_{{ formField.id }}"
         type="radio"
         [value]="false"
-        [formControlName]="formField.id"/>
+        [formControlName]="formField.id"
+      />
       <span class="custom-control-label custom-control-color">No</span>
     </label>
-    <valtimo-camunda-formfield-validation
-      [formGroup]="formGroup"
-      [formField]="formField">
+    <valtimo-camunda-formfield-validation [formGroup]="formGroup" [formField]="formField">
     </valtimo-camunda-formfield-validation>
   </div>
 </div>

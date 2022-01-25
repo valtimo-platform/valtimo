@@ -21,16 +21,12 @@ import {Decision, DecisionXml} from '@valtimo/contract';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DecisionService {
-
   private valtimoApiConfig: any;
 
-  constructor(
-    private configService: ConfigService,
-    private http: HttpClient
-  ) {
+  constructor(private configService: ConfigService, private http: HttpClient) {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 
@@ -40,12 +36,15 @@ export class DecisionService {
     formData.append('deployment-name', 'dmnTableDeploy');
     formData.append('deployment-source', 'process application');
     return this.http.post<any>(
-      `${this.valtimoApiConfig.endpointUri}camunda-rest/engine/default/deployment/create`, formData
+      `${this.valtimoApiConfig.endpointUri}camunda-rest/engine/default/deployment/create`,
+      formData
     );
   }
 
   getDecisions(): Observable<Decision[]> {
-    return this.http.get<Decision[]>(`${this.valtimoApiConfig.endpointUri}camunda-rest/engine/default/decision-definition`);
+    return this.http.get<Decision[]>(
+      `${this.valtimoApiConfig.endpointUri}camunda-rest/engine/default/decision-definition`
+    );
   }
 
   getDecisionXml(decisionId: string): Observable<DecisionXml> {
@@ -53,5 +52,4 @@ export class DecisionService {
       `${this.valtimoApiConfig.endpointUri}camunda-rest/engine/default/decision-definition/${decisionId}/xml`
     );
   }
-
 }

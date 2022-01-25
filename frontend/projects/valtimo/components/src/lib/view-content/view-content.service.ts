@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
-import { StringTypeConverter } from './type-converters/stringTypeConverter';
-import { TYPE_CONVERTERS, TypeConverter } from './type-converters/type-converters.model';
+import {Injectable} from '@angular/core';
+import {StringTypeConverter} from './type-converters/stringTypeConverter';
+import {TYPE_CONVERTERS, TypeConverter} from './type-converters/type-converters.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ViewContentService {
-
-  private converters: { [key: string]: TypeConverter } = {};
+  private converters: {[key: string]: TypeConverter} = {};
   private defaultConverter: TypeConverter;
 
   constructor() {
@@ -34,7 +33,7 @@ export class ViewContentService {
 
   public get(value: any, definition: any) {
     if (!definition.viewType) {
-      definition.viewType = typeof (value);
+      definition.viewType = typeof value;
     }
 
     if (typeof this.converters[definition.viewType] !== 'undefined') {

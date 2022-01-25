@@ -23,7 +23,7 @@ import {Router} from '@angular/router';
 @Component({
   selector: 'valtimo-milestone-set-create',
   templateUrl: './milestone-set-create.component.html',
-  styleUrls: ['./milestone-set-create.component.scss']
+  styleUrls: ['./milestone-set-create.component.scss'],
 })
 export class MilestoneSetCreateComponent implements OnInit {
   public form: FormGroup;
@@ -33,8 +33,7 @@ export class MilestoneSetCreateComponent implements OnInit {
     private formBuilder: FormBuilder,
     private router: Router,
     private alertService: AlertService
-  ) {
-  }
+  ) {}
 
   get formControls() {
     return this.form.controls;
@@ -42,13 +41,13 @@ export class MilestoneSetCreateComponent implements OnInit {
 
   ngOnInit() {
     this.form = this.formBuilder.group({
-      title: new FormControl('', Validators.required)
+      title: new FormControl('', Validators.required),
     });
   }
 
   reset() {
     this.form.setValue({
-      title: ''
+      title: '',
     });
   }
 
@@ -58,5 +57,4 @@ export class MilestoneSetCreateComponent implements OnInit {
       this.alertService.success('New Milestone set has been created');
     });
   }
-
 }

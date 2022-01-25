@@ -16,7 +16,14 @@
 
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {CamundaBooleanFormfieldComponent} from './camunda-boolean-formfield.component';
-import {FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import {FormField} from '../formfield.model';
 import {Component, Input} from '@angular/core';
 
@@ -35,9 +42,8 @@ describe('CamundaBooleanFormfieldComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [CamundaFormFieldValidationComponent, CamundaBooleanFormfieldComponent],
-      imports: [ReactiveFormsModule, FormsModule]
-    })
-      .compileComponents();
+      imports: [ReactiveFormsModule, FormsModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -66,7 +72,8 @@ describe('CamundaBooleanFormfieldComponent', () => {
   it('should create boolean formfield', () => {
     const formField = getFormField([]);
     formGroup = new FormBuilder().group({});
-    formGroup.addControl(formField.id,
+    formGroup.addControl(
+      formField.id,
       new FormControl(formField.defaultValue, Validators.required)
     );
 

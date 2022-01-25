@@ -26,6 +26,6 @@ import {ListFilterPipe} from './ListFilterPipe.directive';
 @NgModule({
   declarations: [ListComponent, ListFilterPipe],
   imports: [CommonModule, CardModule, NgbPaginationModule, FormsModule, TranslateModule],
-  exports: [ListComponent, ListFilterPipe]
+  exports: [ListComponent, ListFilterPipe],
 })
 export class ListModule {}

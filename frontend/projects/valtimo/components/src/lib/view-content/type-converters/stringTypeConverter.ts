@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { TypeConverter } from './type-converters.model';
+import {TypeConverter} from './type-converters.model';
 
 export class StringTypeConverter implements TypeConverter {
-
   getTypeString(): string {
     return 'string';
   }

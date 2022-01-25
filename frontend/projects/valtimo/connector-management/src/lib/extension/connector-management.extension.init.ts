@@ -20,10 +20,7 @@ import {BasicExtensionPoint, Extension} from '@valtimo/contract';
 import {Injector} from '@angular/core';
 import {ConnectorLinkExtensionComponent} from '../components/connector-link-extension/connector-link-extension.component';
 
-export function connectorLinkExtensionInitializer(
-  injector: Injector
-): () => Promise<any> {
-
+export function connectorLinkExtensionInitializer(injector: Injector): () => Promise<any> {
   const configService = injector.get<ConfigService>(ConfigService);
   const logger = injector.get<NGXLogger>(NGXLogger);
 
@@ -50,5 +47,3 @@ export function connectorLinkExtensionInitializer(
     });
   };
 }
-
-

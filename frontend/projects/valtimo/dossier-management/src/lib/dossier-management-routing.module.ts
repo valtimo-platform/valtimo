@@ -26,24 +26,19 @@ const routes: Routes = [
     path: 'dossier-management',
     component: DossierManagementListComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Dossiers', roles: [ROLE_ADMIN]}
+    data: {title: 'Dossiers', roles: [ROLE_ADMIN]},
   },
   {
     path: 'dossier-management/dossier/:name',
     component: DossierManagementDetailComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Dossier details', roles: [ROLE_ADMIN]}
-  }
+    data: {title: 'Dossier details', roles: [ROLE_ADMIN]},
+  },
 ];
 
 @NgModule({
-  imports: [
-    RouterModule.forRoot(routes)
-  ],
-  exports: [
-    RouterModule
-  ],
-  declarations: []
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule],
+  declarations: [],
 })
-export class DossierManagementRoutingModule {
-}
+export class DossierManagementRoutingModule {}

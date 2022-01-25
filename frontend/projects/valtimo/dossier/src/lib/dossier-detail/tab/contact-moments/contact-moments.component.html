@@ -20,10 +20,10 @@
 </div>
 
 <valtimo-modal
-    #contactMomentsNoteModal
-    [title]="'dossier.contactMoments.popupTitle' | translate"
-    [showFooter]="true"
-    [elementId]="'contact-moments-modal'"
+  #contactMomentsNoteModal
+  [title]="'dossier.contactMoments.popupTitle' | translate"
+  [showFooter]="true"
+  [elementId]="'contact-moments-modal'"
 >
   <div class="mt-2" body>
     <ng-container *ngTemplateOutlet="body"></ng-container>
@@ -60,7 +60,7 @@
     [disabled]="(valid$ | async) === false || (disabled$ | async)"
     (click)="saveNote()"
   >
-    {{ "dossier.contactMoments.saveButtonText" | translate }}
+    {{ 'dossier.contactMoments.saveButtonText' | translate }}
   </button>
 </ng-template>
 
@@ -72,7 +72,7 @@
   <div class="btn-group mt-m3px mb-3 button-container">
     <button class="btn btn-primary btn-space" (click)="buttonClick()">
       <i class="icon mdi mdi-calendar-note"></i>
-      &nbsp;{{ "dossier.contactMoments.makeNoteButton" | translate }}
+      &nbsp;{{ 'dossier.contactMoments.makeNoteButton' | translate }}
     </button>
   </div>
 </ng-template>

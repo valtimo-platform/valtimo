@@ -23,7 +23,7 @@ import {MenuService} from './menu.service';
 @Component({
   selector: 'valtimo-menu',
   templateUrl: './menu.component.html',
-  styleUrls: ['./menu.component.css']
+  styleUrls: ['./menu.component.css'],
 })
 export class MenuComponent implements OnInit, OnDestroy {
   public menuItems: MenuItem[];
@@ -35,12 +35,13 @@ export class MenuComponent implements OnInit, OnDestroy {
     private elRef: ElementRef,
     private renderer: Renderer2,
     private router: Router
-  ) {
-  }
+  ) {}
 
   ngOnInit(): void {
     this.openRouterSubscription();
-    this.menuItemSubscription = this.menuService.menuItems$.subscribe(value => this.menuItems = value);
+    this.menuItemSubscription = this.menuService.menuItems$.subscribe(
+      value => (this.menuItems = value)
+    );
   }
 
   ngOnDestroy(): void {
@@ -66,5 +67,4 @@ export class MenuComponent implements OnInit, OnDestroy {
       }
     }
   }
-
 }

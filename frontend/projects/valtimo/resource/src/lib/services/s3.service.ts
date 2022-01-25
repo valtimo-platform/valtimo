@@ -21,27 +21,26 @@ import {ConfigService} from '@valtimo/config';
 import {Resource, S3Resource, ResourceDto} from '@valtimo/contract';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class S3Service {
   private valtimoApiConfig: any;
 
-  constructor(
-    private http: HttpClient,
-    private configService: ConfigService
-  ) {
+  constructor(private http: HttpClient, private configService: ConfigService) {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 
   public getPreSignedUrl(fileName: string): Observable<string> {
     const headers = new HttpHeaders().set('Content-Type', 'text/plain; charset=utf-8');
     const options = {headers, responseType: 'text' as 'text'};
-    return this.http.get(`${this.valtimoApiConfig.endpointUri}resource/pre-signed-url/${fileName}`, options);
+    return this.http.get(
+      `${this.valtimoApiConfig.endpointUri}resource/pre-signed-url/${fileName}`,
+      options
+    );
   }
 
   public upload(url: URL, file: File): Observable<any> {
-    const headers = new HttpHeaders()
-      .set('Content-Type', file.type);
+    const headers = new HttpHeaders().set('Content-Type', file.type);
     return this.http.put(url.toString(), file, {headers: headers});
   }
 
@@ -51,12 +50,16 @@ export class S3Service {
 
   public get(resourceId: string): Observable<ResourceDto> {
     const headers = new HttpHeaders().set('Content-Type', 'application/json;charset=UTF-8');
-    return this.http.get<ResourceDto>(`${this.valtimoApiConfig.endpointUri}resource/${resourceId}`, {headers: headers});
+    return this.http.get<ResourceDto>(
+      `${this.valtimoApiConfig.endpointUri}resource/${resourceId}`,
+      {headers: headers}
+    );
   }
 
   public delete(resourceId: string): Observable<any> {
     const headers = new HttpHeaders().set('Content-Type', 'application/json;charset=UTF-8');
-    return this.http.delete(`${this.valtimoApiConfig.endpointUri}resource/${resourceId}`, {headers: headers});
+    return this.http.delete(`${this.valtimoApiConfig.endpointUri}resource/${resourceId}`, {
+      headers: headers,
+    });
   }
-
 }

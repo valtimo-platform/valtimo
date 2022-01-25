@@ -25,18 +25,13 @@ const routes: Routes = [
     path: 'form-links',
     component: FormLinkComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Form links', roles: [ROLE_ADMIN]}
+    data: {title: 'Form links', roles: [ROLE_ADMIN]},
   },
 ];
 
 @NgModule({
-  imports: [
-    RouterModule.forRoot(routes)
-  ],
-  exports: [
-    RouterModule
-  ],
-  declarations: []
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule],
+  declarations: [],
 })
-export class FormLinkRoutingModule {
-}
+export class FormLinkRoutingModule {}

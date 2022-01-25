@@ -25,13 +25,12 @@ import {ConnectorManagementStateService} from '../../services/connector-manageme
 @Component({
   selector: 'valtimo-connector-management',
   templateUrl: './connector-management.component.html',
-  styleUrls: ['./connector-management.component.scss']
+  styleUrls: ['./connector-management.component.scss'],
 })
 export class ConnectorManagementComponent implements OnDestroy {
-
   readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  readonly fields$ = new BehaviorSubject<Array< {key: string; label: string }>>([]);
+  readonly fields$ = new BehaviorSubject<Array<{key: string; label: string}>>([]);
 
   readonly currentPageAndSize$ = new BehaviorSubject<Partial<Pagination>>({
     page: 0,
@@ -40,32 +39,46 @@ export class ConnectorManagementComponent implements OnDestroy {
 
   readonly pageSizes$ = new BehaviorSubject<Partial<Pagination>>({
     collectionSize: 0,
-    maxPaginationItemSize: 5
+    maxPaginationItemSize: 5,
   });
 
-  readonly pagination$: Observable<Pagination> = combineLatest([this.currentPageAndSize$, this.pageSizes$])
-    .pipe(map(([currentPage, sizes]) => ({...currentPage, ...sizes, page: currentPage.page + 1} as Pagination)));
+  readonly pagination$: Observable<Pagination> = combineLatest([
+    this.currentPageAndSize$,
+    this.pageSizes$,
+  ]).pipe(
+    map(
+      ([currentPage, sizes]) =>
+        ({...currentPage, ...sizes, page: currentPage.page + 1} as Pagination)
+    )
+  );
 
-  readonly connectorInstances$: Observable<Array<ConnectorInstance>> =
-    combineLatest([this.currentPageAndSize$, this.translateService.stream('key'), this.stateService.refresh$])
-      .pipe(
-        tap(() => this.setFields()),
-        switchMap(([currentPage]) =>
-          combineLatest([
-            this.connectorManagementService.getConnectorInstances({page: currentPage.page, size: currentPage.size}),
-            this.connectorManagementService.getConnectorTypes()
-          ])
-        ),
-        tap(([instanceRes]) => {
-          this.pageSizes$.pipe(take(1)).subscribe((sizes) => {
-            this.pageSizes$.next({...sizes, collectionSize: instanceRes.totalElements});
-          });
+  readonly connectorInstances$: Observable<Array<ConnectorInstance>> = combineLatest([
+    this.currentPageAndSize$,
+    this.translateService.stream('key'),
+    this.stateService.refresh$,
+  ]).pipe(
+    tap(() => this.setFields()),
+    switchMap(([currentPage]) =>
+      combineLatest([
+        this.connectorManagementService.getConnectorInstances({
+          page: currentPage.page,
+          size: currentPage.size,
         }),
-        map(([instanceRes, typesRes]) => instanceRes.content.map((instance) => {
-          return {...instance, typeName: typesRes.find((type) => type.id === instance.type.id)?.name};
-        })),
-        tap(() => this.loading$.next(false))
-      );
+        this.connectorManagementService.getConnectorTypes(),
+      ])
+    ),
+    tap(([instanceRes]) => {
+      this.pageSizes$.pipe(take(1)).subscribe(sizes => {
+        this.pageSizes$.next({...sizes, collectionSize: instanceRes.totalElements});
+      });
+    }),
+    map(([instanceRes, typesRes]) =>
+      instanceRes.content.map(instance => {
+        return {...instance, typeName: typesRes.find(type => type.id === instance.type.id)?.name};
+      })
+    ),
+    tap(() => this.loading$.next(false))
+  );
 
   readonly modalType$ = new BehaviorSubject<ConnectorModal>('add');
 
@@ -73,22 +86,21 @@ export class ConnectorManagementComponent implements OnDestroy {
     private readonly connectorManagementService: ConnectorManagementService,
     private readonly translateService: TranslateService,
     private readonly stateService: ConnectorManagementStateService
-  ) {
-  }
+  ) {}
 
   ngOnDestroy(): void {
     this.stateService.hideModal();
   }
 
   paginationClicked(newPageNumber): void {
-    this.currentPageAndSize$.pipe(take(1)).subscribe((currentPage) => {
+    this.currentPageAndSize$.pipe(take(1)).subscribe(currentPage => {
       this.currentPageAndSize$.next({...currentPage, page: newPageNumber - 1});
     });
   }
 
   paginationSet(newPageSize): void {
     if (newPageSize) {
-      this.currentPageAndSize$.pipe(take(1)).subscribe((currentPage) => {
+      this.currentPageAndSize$.pipe(take(1)).subscribe(currentPage => {
         this.currentPageAndSize$.next({...currentPage, size: newPageSize});
       });
     }
@@ -106,8 +118,9 @@ export class ConnectorManagementComponent implements OnDestroy {
   }
 
   private setFields(): void {
-    const getTranslatedLabel = (key: string) => this.translateService.instant(`connectorManagement.labels.${key}`);
+    const getTranslatedLabel = (key: string) =>
+      this.translateService.instant(`connectorManagement.labels.${key}`);
     const keys: Array<string> = ['name', 'typeName'];
-    this.fields$.next(keys.map((key) => ({label: getTranslatedLabel(key), key})));
+    this.fields$.next(keys.map(key => ({label: getTranslatedLabel(key), key})));
   }
 }

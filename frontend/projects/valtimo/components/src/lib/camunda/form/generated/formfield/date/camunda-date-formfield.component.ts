@@ -26,18 +26,16 @@ declare var $;
 
 @Component({
   selector: 'valtimo-camunda-date-formfield',
-  templateUrl: './camunda-date-formfield.component.html'
+  templateUrl: './camunda-date-formfield.component.html',
 })
 export class CamundaDateFormfieldComponent implements OnInit, AfterViewInit {
-
   public formGroup: FormGroup;
   public formField: FormField;
 
   private INPUT_SELECTOR: string;
   private datePickerOptions: any = {};
 
-  constructor(private formFieldService: CamundaFormfieldService) {
-  }
+  constructor(private formFieldService: CamundaFormfieldService) {}
 
   ngOnInit(): void {
     this.INPUT_SELECTOR = '#' + this.formField.id;
@@ -46,9 +44,9 @@ export class CamundaDateFormfieldComponent implements OnInit, AfterViewInit {
       componentIcon: '.mdi.mdi-calendar',
       navIcons: {
         rightIcon: 'mdi mdi-chevron-right',
-        leftIcon: 'mdi mdi-chevron-left'
+        leftIcon: 'mdi mdi-chevron-left',
       },
-      format: 'dd-mm-yyyy'
+      format: 'dd-mm-yyyy',
     };
   }
 
@@ -67,11 +65,10 @@ export class CamundaDateFormfieldComponent implements OnInit, AfterViewInit {
     }
 
     $(this.INPUT_SELECTOR).datetimepicker(this.datePickerOptions);
-    $(this.INPUT_SELECTOR).on('changeDate', function(e) {
+    $(this.INPUT_SELECTOR).on('changeDate', function (e) {
       formGroup.patchValue({
-        [formField.id]: moment(e.date.valueOf()).format('DD/MM/YYYY')
+        [formField.id]: moment(e.date.valueOf()).format('DD/MM/YYYY'),
       });
     });
   }
-
 }

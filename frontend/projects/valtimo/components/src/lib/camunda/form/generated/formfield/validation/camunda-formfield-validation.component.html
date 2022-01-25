@@ -14,11 +14,11 @@
   ~ limitations under the License.
   -->
 
-<ul class="parsley-errors-list filled"
-    *ngIf="formControl.invalid && (formControl.dirty || formControl.touched)">
-  <li *ngIf="formControl.errors.required">
-    This field is required.
-  </li>
+<ul
+  class="parsley-errors-list filled"
+  *ngIf="formControl.invalid && (formControl.dirty || formControl.touched)"
+>
+  <li *ngIf="formControl.errors.required">This field is required.</li>
   <li *ngIf="formControl.errors.minlength">
     This field should be more than {{ formControl.errors.minlength.requiredLength }} characters.
   </li>

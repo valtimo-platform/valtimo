@@ -20,14 +20,11 @@ import {FormField} from '../formfield.model';
 
 @Component({
   selector: 'valtimo-camunda-textarea-formfield',
-  templateUrl: './camunda-textarea-formfield.component.html'
+  templateUrl: './camunda-textarea-formfield.component.html',
 })
 export class CamundaTextareaFormfieldComponent {
-
   public formGroup: FormGroup;
   public formField: FormField;
 
-  constructor() {
-  }
-
+  constructor() {}
 }

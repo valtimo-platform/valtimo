@@ -33,7 +33,7 @@ moment.locale(localStorage.getItem('langKey') || '');
 @Component({
   selector: 'valtimo-dossier-list',
   templateUrl: './dossier-list.component.html',
-  styleUrls: ['./dossier-list.component.css']
+  styleUrls: ['./dossier-list.component.css'],
 })
 export class DossierListComponent implements OnInit, OnDestroy {
   public documentDefinitionName = '';
@@ -50,7 +50,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
     page: 1,
     size: 10,
     maxPaginationItemSize: 5,
-    sort : undefined
+    sort: undefined,
   };
   public globalSearchFilter: string | undefined;
   public sequence: number | undefined;
@@ -99,7 +99,8 @@ export class DossierListComponent implements OnInit, OnDestroy {
 
   public doInit() {
     const documentDefinitionName = this.route.snapshot.paramMap.get('documentDefinitionName') || '';
-    const columns: Array<DefinitionColumn> = this.dossierService.getDefinitionColumns(documentDefinitionName);
+    const columns: Array<DefinitionColumn> =
+      this.dossierService.getDefinitionColumns(documentDefinitionName);
 
     this.documentDefinitionName = documentDefinitionName;
     this.initialSortState = this.dossierService.getInitialSortState(columns);
@@ -115,7 +116,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         key: column.propertyName,
         label: labels[index],
         sortable: column.sortable,
-        ...(column.viewType && {viewType: column.viewType})
+        ...(column.viewType && {viewType: column.viewType}),
       }));
     });
   }
@@ -160,8 +161,8 @@ export class DossierListComponent implements OnInit, OnDestroy {
         this.processDefinitionListFields = [
           {
             key: 'processName',
-            label: 'Proces'
-          }
+            label: 'Proces',
+          },
         ];
       });
   }
@@ -187,7 +188,9 @@ export class DossierListComponent implements OnInit, OnDestroy {
       this.sequence,
       this.createdBy,
       this.globalSearchFilter,
-      this.pagination.sort && this.pagination.sort.isSorting ? this.pagination.sort : this.initialSortState
+      this.pagination.sort && this.pagination.sort.isSorting
+        ? this.pagination.sort
+        : this.initialSortState
     );
   }
 
@@ -208,7 +211,9 @@ export class DossierListComponent implements OnInit, OnDestroy {
   }
 
   public rowClick(document: any) {
-    this.router.navigate([`/dossiers/${this.documentDefinitionName}/document/${document.id}/${DefaultTabs.summary}`]);
+    this.router.navigate([
+      `/dossiers/${this.documentDefinitionName}/document/${document.id}/${DefaultTabs.summary}`,
+    ]);
   }
 
   public startDossier() {

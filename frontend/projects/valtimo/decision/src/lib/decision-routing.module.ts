@@ -27,23 +27,19 @@ const routes: Routes = [
     path: 'decision-tables',
     component: DecisionComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Decision tables', roles: [ROLE_ADMIN]}
+    data: {title: 'Decision tables', roles: [ROLE_ADMIN]},
   },
   {
     path: 'decision-tables/:id',
     component: DecisionDisplayComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Decision tables', roles: [ROLE_ADMIN]}
-  }
+    data: {title: 'Decision tables', roles: [ROLE_ADMIN]},
+  },
 ];
 
 @NgModule({
   declarations: [],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes)
-  ],
-  exports: [RouterModule]
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class DecisionRoutingModule {
-}
+export class DecisionRoutingModule {}

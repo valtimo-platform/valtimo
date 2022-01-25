@@ -31,7 +31,14 @@ export class TimelineItemImpl implements TimelineItem {
   private readonly _summaryTranslationKey: string;
   private readonly _summaryTranslationParams: object;
 
-  constructor(date: string, time: string, user: string, activity: string, summaryTranslationKey: string, summaryTranslationParams: object) {
+  constructor(
+    date: string,
+    time: string,
+    user: string,
+    activity: string,
+    summaryTranslationKey: string,
+    summaryTranslationParams: object
+  ) {
     this._date = date;
     this._time = time;
     this._user = user;
@@ -63,5 +70,4 @@ export class TimelineItemImpl implements TimelineItem {
   get summaryTranslationParams(): object {
     return this._summaryTranslationParams;
   }
-
 }

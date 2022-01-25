@@ -26,10 +26,9 @@ import {Router} from '@angular/router';
 import {switchMap} from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class Auth0UserService implements UserService {
-
   public someId: string = now().toLocaleString();
   public sessionExpired = false;
   public userIdentity: ReplaySubject<UserIdentity>;
@@ -80,7 +79,7 @@ export class Auth0UserService implements UserService {
 
     this.auth0js.logout({
       client_id: this.configService.config.authentication.options.clientId,
-      returnTo: logoutUrl
+      returnTo: logoutUrl,
     });
   }
 
@@ -100,13 +99,11 @@ export class Auth0UserService implements UserService {
 
   private checkSessionPeriodically() {
     interval(this.POLLING_INTERVAL)
-      .pipe(
-        switchMap(() => this.checkSessionAlive())
-      ).subscribe((sessionAlive: boolean) => {
+      .pipe(switchMap(() => this.checkSessionAlive()))
+      .subscribe((sessionAlive: boolean) => {
         this.sessionExpired = !sessionAlive;
         this.logger.info(`session alive is ${sessionAlive}`);
-      }
-    );
+      });
   }
 
   private async checkSessionAlive() {
@@ -123,7 +120,7 @@ export class Auth0UserService implements UserService {
 
   public async handleAuthentication() {
     this.logger.debug('handleAuthentication');
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       this.auth0js.parseHash((error: any, authResult: any) => {
         this.logger.debug('Checking session: ', authResult, error);
         if (error) {
@@ -144,7 +141,7 @@ export class Auth0UserService implements UserService {
     });
   }
 
-  public refreshToken(options: { doLogout: boolean } = {doLogout: true}): Promise<any> {
+  public refreshToken(options: {doLogout: boolean} = {doLogout: true}): Promise<any> {
     return new Promise((resolve, reject) => {
       this.auth0js.checkSession({}, (err: any, authResult: any) => {
         if (authResult && authResult.idToken && authResult.idTokenPayload) {
@@ -190,11 +187,16 @@ export class Auth0UserService implements UserService {
   }
 
   updateProfile(profile: any): Observable<any> {
-    return this.http.post(`${this.configService.config.valtimoApi.endpointUri}account/profile`, profile);
+    return this.http.post(
+      `${this.configService.config.valtimoApi.endpointUri}account/profile`,
+      profile
+    );
   }
 
   changePassword(password: string): Observable<any> {
-    return this.http.post(`${this.configService.config.valtimoApi.endpointUri}account/change_password`, password);
+    return this.http.post(
+      `${this.configService.config.valtimoApi.endpointUri}account/change_password`,
+      password
+    );
   }
-
 }

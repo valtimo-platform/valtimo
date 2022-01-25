@@ -25,10 +25,9 @@ import {NGXLogger} from 'ngx-logger';
 @Component({
   selector: 'valtimo-page-title',
   templateUrl: './page-title.component.html',
-  styleUrls: ['./page-title.component.css']
+  styleUrls: ['./page-title.component.css'],
 })
 export class PageTitleComponent implements OnInit, OnDestroy {
-
   public title: string;
   public appTitle = 'Valtimo';
   private routerSub = Subscription.EMPTY;
@@ -39,8 +38,7 @@ export class PageTitleComponent implements OnInit, OnDestroy {
     private titleService: Title,
     private translateService: TranslateService,
     private logger: NGXLogger
-  ) {
-  }
+  ) {}
 
   private setTitle() {
     this.title = this.activatedRoute.snapshot.firstChild.data.title;
@@ -51,10 +49,9 @@ export class PageTitleComponent implements OnInit, OnDestroy {
     }
     if (this.title) {
       this.translateService.stream(this.title).subscribe((title: string) => {
-          this.logger.debug('PageTitle: setTitle translated async', title);
-          this.titleService.setTitle(this.appTitle + ' - ' + title);
-        }
-      );
+        this.logger.debug('PageTitle: setTitle translated async', title);
+        this.titleService.setTitle(this.appTitle + ' - ' + title);
+      });
     } else {
       this.logger.debug('PageTitle: setTitle default', this.appTitle);
       this.titleService.setTitle(this.appTitle);
@@ -65,7 +62,7 @@ export class PageTitleComponent implements OnInit, OnDestroy {
     this.setTitle();
     this.routerSub = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event) => {
+      .subscribe(event => {
         this.setTitle();
       });
   }
@@ -73,5 +70,4 @@ export class PageTitleComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.routerSub.unsubscribe();
   }
-
 }

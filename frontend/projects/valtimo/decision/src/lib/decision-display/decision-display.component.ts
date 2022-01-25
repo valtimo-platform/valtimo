@@ -24,23 +24,18 @@ import {ActivatedRoute} from '@angular/router';
   selector: 'valtimo-decision-display',
   templateUrl: './decision-display.component.html',
   styleUrls: ['./decision-display.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class DecisionDisplayComponent implements OnInit {
-
   public viewer: DmnViewer;
   private decisionId: string;
   public decisionXml: string;
 
-  constructor(
-    private decisionService: DecisionService,
-    private route: ActivatedRoute
-  ) {
-  }
+  constructor(private decisionService: DecisionService, private route: ActivatedRoute) {}
 
   ngOnInit() {
     this.viewer = new DmnViewer({
-      container: '#canvas'
+      container: '#canvas',
     });
     this.decisionId = this.route.snapshot.paramMap.get('id');
     this.loadDecisionXml();
@@ -62,5 +57,4 @@ export class DecisionDisplayComponent implements OnInit {
     window.URL.revokeObjectURL(link.href);
     link.remove();
   }
-
 }

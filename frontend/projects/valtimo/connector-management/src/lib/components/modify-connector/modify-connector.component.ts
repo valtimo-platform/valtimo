@@ -26,7 +26,7 @@ import {ConnectorManagementStateService} from '../../services/connector-manageme
 @Component({
   selector: 'valtimo-modify-connector',
   templateUrl: './modify-connector.component.html',
-  styleUrls: ['./modify-connector.component.scss']
+  styleUrls: ['./modify-connector.component.scss'],
 })
 export class ModifyConnectorComponent {
   instance$!: Observable<ConnectorInstance>;
@@ -40,32 +40,38 @@ export class ModifyConnectorComponent {
     this.instance$ = this.stateService.selectedInstance$;
   }
 
-  onSave(event: {properties: ConnectorProperties, name: string}): void {
-    this.instance$.pipe(take(1)).subscribe((instance) => {
-      this.connectorManagementService.updateConnectorInstance({
-        name: event.name,
-        typeId: instance.type.id,
-        id: instance.id,
-        connectorProperties: event.properties
-      }).subscribe(
-        () => {
-          this.alertService.success(this.translateService.instant('connectorManagement.messages.modifySuccess'));
-          this.stateService.hideModal();
-          this.stateService.enableInput();
-          this.stateService.refresh();
-        },
-        () => {
-          this.stateService.enableInput();
-        }
-      );
+  onSave(event: {properties: ConnectorProperties; name: string}): void {
+    this.instance$.pipe(take(1)).subscribe(instance => {
+      this.connectorManagementService
+        .updateConnectorInstance({
+          name: event.name,
+          typeId: instance.type.id,
+          id: instance.id,
+          connectorProperties: event.properties,
+        })
+        .subscribe(
+          () => {
+            this.alertService.success(
+              this.translateService.instant('connectorManagement.messages.modifySuccess')
+            );
+            this.stateService.hideModal();
+            this.stateService.enableInput();
+            this.stateService.refresh();
+          },
+          () => {
+            this.stateService.enableInput();
+          }
+        );
     });
   }
 
   onDelete(): void {
-    this.instance$.pipe(take(1)).subscribe((instance) => {
+    this.instance$.pipe(take(1)).subscribe(instance => {
       this.connectorManagementService.deleteConnectorInstance(instance.id).subscribe(
         () => {
-          this.alertService.success(this.translateService.instant('connectorManagement.messages.deleteSuccess'));
+          this.alertService.success(
+            this.translateService.instant('connectorManagement.messages.deleteSuccess')
+          );
           this.stateService.hideModal();
           this.stateService.enableInput();
           this.stateService.refresh();

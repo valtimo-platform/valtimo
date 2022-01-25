@@ -20,12 +20,10 @@ import {Observable} from 'rxjs';
 import {ValtimoVersion} from '@valtimo/contract';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class VersionService {
-  constructor(
-    private http: HttpClient
-  ) { }
+  constructor(private http: HttpClient) {}
 
   public getVersion(): Observable<ValtimoVersion> {
     // TODO: this hardcoded string should be taken care of with the introduction of a config service

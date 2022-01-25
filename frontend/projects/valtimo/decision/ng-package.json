@@ -12,7 +12,5 @@
       "dmn-js": "DmnViewer"
     }
   },
-  "whitelistedNonPeerDependencies": [
-    "dmn-js"
-  ]
+  "whitelistedNonPeerDependencies": ["dmn-js"]
 }

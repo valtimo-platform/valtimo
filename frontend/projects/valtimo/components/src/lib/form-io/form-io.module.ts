@@ -39,16 +39,14 @@ import {RouterModule} from '@angular/router';
     DocumentModule,
     FileSizeModule,
     ResourceModule,
-    RouterModule
+    RouterModule,
   ],
   declarations: [FormioComponent, FormioBuilderComponent, FormIoUploaderComponent],
   exports: [FormioComponent, FormioBuilderComponent, FormIoUploaderComponent],
   providers: [
     FormIoStateService,
     FormIoDomService,
-    {provide: FormioAppConfig, useValue: AppConfig}
+    {provide: FormioAppConfig, useValue: AppConfig},
   ],
 })
-
-export class FormIoModule {
-}
+export class FormIoModule {}

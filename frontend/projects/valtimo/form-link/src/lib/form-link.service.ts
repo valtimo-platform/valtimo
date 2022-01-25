@@ -17,39 +17,46 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {CreateFormAssociationRequest, FormAssociation, FormSubmissionResult, ModifyFormAssociationRequest} from '@valtimo/contract';
+import {
+  CreateFormAssociationRequest,
+  FormAssociation,
+  FormSubmissionResult,
+  ModifyFormAssociationRequest,
+} from '@valtimo/contract';
 import {InterceptorSkipHeader} from '@valtimo/security';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FormLinkService {
-
   private valtimoApiConfig: any;
 
-  constructor(
-    private http: HttpClient,
-    private configService: ConfigService
-  ) {
+  constructor(private http: HttpClient, private configService: ConfigService) {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 
-  getFormLinkByAssociation(processDefinitionKey: string, formLinkId: string): Observable<FormAssociation> {
-    return this.http.get<FormAssociation>(`${this.valtimoApiConfig.endpointUri}form-association-management`, {
-      params: {
-        processDefinitionKey,
-        formLinkId
+  getFormLinkByAssociation(
+    processDefinitionKey: string,
+    formLinkId: string
+  ): Observable<FormAssociation> {
+    return this.http.get<FormAssociation>(
+      `${this.valtimoApiConfig.endpointUri}form-association-management`,
+      {
+        params: {
+          processDefinitionKey,
+          formLinkId,
+        },
       }
-    });
+    );
   }
 
   getStartEventFormDefinitionByProcessDefinitionKey(processDefinitionKey: string): Observable<any> {
     return this.http.get(`${this.valtimoApiConfig.endpointUri}form-association/form-definition`, {
       headers: InterceptorSkipHeader.set('Content-Type', 'application/json'),
       params: {
-        processDefinitionKey
-      }
+        processDefinitionKey,
+      },
     });
   }
 
@@ -57,8 +64,8 @@ export class FormLinkService {
     return this.http.get<FormAssociation>(`${this.valtimoApiConfig.endpointUri}form-association`, {
       params: {
         processDefinitionKey,
-        formLinkId
-      }
+        formLinkId,
+      },
     });
   }
 
@@ -68,7 +75,6 @@ export class FormLinkService {
     formLinkId: string,
     taskInstanceId?: string
   ): Observable<any> {
-
     let params = new HttpParams()
       .set('processDefinitionKey', processDefinitionKey)
       .set('documentId', documentId)
@@ -80,16 +86,26 @@ export class FormLinkService {
 
     return this.http.get(`${this.valtimoApiConfig.endpointUri}form-association/form-definition`, {
       headers: InterceptorSkipHeader.set('Content-Type', 'application/json'),
-      params: params
+      params: params,
     });
   }
 
-  createFormAssociation(createFormAssociationRequest: CreateFormAssociationRequest): Observable<FormAssociation> {
-    return this.http.post<FormAssociation>(`${this.valtimoApiConfig.endpointUri}form-association-management`, createFormAssociationRequest);
+  createFormAssociation(
+    createFormAssociationRequest: CreateFormAssociationRequest
+  ): Observable<FormAssociation> {
+    return this.http.post<FormAssociation>(
+      `${this.valtimoApiConfig.endpointUri}form-association-management`,
+      createFormAssociationRequest
+    );
   }
 
-  modifyFormAssociation(modifyFormAssociationRequest: ModifyFormAssociationRequest): Observable<FormAssociation> {
-    return this.http.put<FormAssociation>(`${this.valtimoApiConfig.endpointUri}form-association-management`, modifyFormAssociationRequest);
+  modifyFormAssociation(
+    modifyFormAssociationRequest: ModifyFormAssociationRequest
+  ): Observable<FormAssociation> {
+    return this.http.put<FormAssociation>(
+      `${this.valtimoApiConfig.endpointUri}form-association-management`,
+      modifyFormAssociationRequest
+    );
   }
 
   deleteFormAssociation(processDefinitionKey: string, formAssociationId: string): Observable<any> {
@@ -105,7 +121,6 @@ export class FormLinkService {
     documentId?: string,
     taskInstanceId?: string
   ): Observable<FormSubmissionResult> {
-
     let params = new HttpParams()
       .set('processDefinitionKey', processDefinitionKey)
       .set('formLinkId', formLinkId);
@@ -119,7 +134,7 @@ export class FormLinkService {
 
     const httpOptions = {
       headers: new HttpHeaders().set('Content-Type', 'application/json'),
-      params: params
+      params: params,
     };
     return this.http.post<FormSubmissionResult>(
       `${this.valtimoApiConfig.endpointUri}form-association/form-definition/submission`,
@@ -127,5 +142,4 @@ export class FormLinkService {
       httpOptions
     );
   }
-
 }

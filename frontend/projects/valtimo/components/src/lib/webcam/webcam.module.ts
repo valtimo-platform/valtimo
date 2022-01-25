@@ -21,11 +21,7 @@ import {TranslateModule} from '@ngx-translate/core';
 
 @NgModule({
   declarations: [WebcamComponent],
-  imports: [
-    CommonModule,
-    TranslateModule
-  ],
-  exports: [WebcamComponent]
+  imports: [CommonModule, TranslateModule],
+  exports: [WebcamComponent],
 })
-export class WebcamModule {
-}
+export class WebcamModule {}

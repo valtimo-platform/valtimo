@@ -19,7 +19,7 @@ import {FormioForm} from 'angular-formio';
 import {ExtendedComponentSchema} from 'formiojs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FormMappingService {
   mapComponents(
@@ -33,7 +33,9 @@ export class FormMappingService {
       if (innerComponents && innerComponents.length > 0) {
         return {
           ...mappedComponent,
-          components: innerComponents.map((innerComponent: ExtendedComponentSchema) => recursiveMappingFunction(innerComponent))
+          components: innerComponents.map((innerComponent: ExtendedComponentSchema) =>
+            recursiveMappingFunction(innerComponent)
+          ),
         };
       }
 
@@ -43,8 +45,9 @@ export class FormMappingService {
     return {
       ...form,
       // @ts-ignore
-      ...(form?.components?.length > 0 && {components: form?.components?.map((component) =>
-          recursiveMappingFunction(component))} )
+      ...(form?.components?.length > 0 && {
+        components: form?.components?.map(component => recursiveMappingFunction(component)),
+      }),
     };
   }
 }

@@ -15,7 +15,14 @@
  */
 
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
-import {FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import {FormField} from '../formfield.model';
 import {Component, Input} from '@angular/core';
 import {CamundaTextareaFormfieldComponent} from './camunda-textarea-formfield.component';
@@ -35,9 +42,8 @@ describe('CamundaTextareaFormfieldComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [CamundaFormFieldValidationComponent, CamundaTextareaFormfieldComponent],
-      imports: [ReactiveFormsModule, FormsModule]
-    })
-      .compileComponents();
+      imports: [ReactiveFormsModule, FormsModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -66,7 +72,8 @@ describe('CamundaTextareaFormfieldComponent', () => {
   it('should create textarea formfield', () => {
     const formField = getFormField([]);
     formGroup = new FormBuilder().group({});
-    formGroup.addControl(formField.id,
+    formGroup.addControl(
+      formField.id,
       new FormControl(formField.defaultValue, Validators.required)
     );
 

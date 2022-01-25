@@ -18,10 +18,7 @@ import {Injector} from '@angular/core';
 import {NGXLogger} from 'ngx-logger';
 import {MenuService} from './menu.service';
 
-export function menuInitializer(
-  injector: Injector,
-  logger: NGXLogger
-): () => Promise<any> {
+export function menuInitializer(injector: Injector, logger: NGXLogger): () => Promise<any> {
   const menuService = injector.get<MenuService>(MenuService);
   return (): Promise<any> => {
     return new Promise((resolve, reject) => {

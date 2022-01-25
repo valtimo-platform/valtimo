@@ -25,17 +25,19 @@
       </div>
     </div>
     <valtimo-widget>
-      <valtimo-list [items]="users"
-                    [fields]="fields"
-                    (rowClicked)="rowClick($event)"
-                    [pagination]="pagination"
-                    [viewMode]="true"
-                    [isSearchable]="true"
-                    (search)="searchTermEntered($event)"
-                    paginationIdentifier="userList"
-                    (paginationSet)="paginationSet()"
-                    (paginationClicked)="paginationClicked($event)"
-                    [header]="true">
+      <valtimo-list
+        [items]="users"
+        [fields]="fields"
+        (rowClicked)="rowClick($event)"
+        [pagination]="pagination"
+        [viewMode]="true"
+        [isSearchable]="true"
+        (search)="searchTermEntered($event)"
+        paginationIdentifier="userList"
+        (paginationSet)="paginationSet()"
+        (paginationClicked)="paginationClicked($event)"
+        [header]="true"
+      >
         <div header>
           <h3 class="list-header-title">{{ 'Users' | translate }}</h3>
           <h5 class="list-header-description">{{ 'Overview of all Users' | translate }}</h5>

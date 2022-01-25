@@ -27,29 +27,25 @@ const routes: Routes = [
     path: 'processes',
     component: ProcessManagementComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Processes', roles: [ROLE_ADMIN]}
+    data: {title: 'Processes', roles: [ROLE_ADMIN]},
   },
   {
     path: 'processes/create',
     component: ProcessManagementBuilderComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Create new Process', roles: [ROLE_ADMIN]}
+    data: {title: 'Create new Process', roles: [ROLE_ADMIN]},
   },
   {
     path: 'processes/process/:key',
     component: ProcessManagementBuilderComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Process details', roles: [ROLE_ADMIN]}
+    data: {title: 'Process details', roles: [ROLE_ADMIN]},
   },
 ];
 
 @NgModule({
   declarations: [],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-  ],
-  exports: [RouterModule]
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class ProcessManagementRoutingModule {
-}
+export class ProcessManagementRoutingModule {}

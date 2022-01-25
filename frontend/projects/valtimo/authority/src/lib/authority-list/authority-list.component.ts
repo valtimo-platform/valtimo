@@ -22,38 +22,35 @@ import {Router} from '@angular/router';
 @Component({
   selector: 'valtimo-authority-list',
   templateUrl: './authority-list.component.html',
-  styleUrls: ['./authority-list.component.css']
+  styleUrls: ['./authority-list.component.css'],
 })
 export class AuthorityListComponent implements OnInit {
-
   public authorities: Array<Authority> = [];
   public pagination = {
     collectionSize: 0,
     page: 1,
     size: 10,
-    maxPaginationItemSize: 5
+    maxPaginationItemSize: 5,
   };
   public pageParam = 0;
-  public fields: Array<any> = [{
+  public fields: Array<any> = [
+    {
       key: 'name',
-      label: 'Name'
-    }
-    , {
+      label: 'Name',
+    },
+    {
       key: 'systemAuthorityDisplayString',
-      label: 'System authority'
-    }
-    , {
+      label: 'System authority',
+    },
+    {
       key: 'hourlyRateDisplayString',
-      label: 'Hourly rate'
-    }];
+      label: 'Hourly rate',
+    },
+  ];
 
-  constructor(
-    private router: Router,
-    private service: AuthorityService
-  ) { }
+  constructor(private router: Router, private service: AuthorityService) {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   paginationSet() {
     this.initData();
@@ -78,5 +75,4 @@ export class AuthorityListComponent implements OnInit {
     this.pageParam = page - 1;
     this.initData();
   }
-
 }

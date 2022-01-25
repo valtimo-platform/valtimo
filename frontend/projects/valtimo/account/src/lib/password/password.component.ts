@@ -25,19 +25,14 @@ moment.locale(localStorage.getItem('langKey'));
 @Component({
   selector: 'valtimo-password',
   templateUrl: './password.component.html',
-  styleUrls: ['./password.component.css']
+  styleUrls: ['./password.component.css'],
 })
 export class PasswordComponent implements OnInit, OnDestroy {
-
   public profile: any;
   public errorMsg: string;
   public form: FormGroup;
 
-  constructor(
-    private formBuilder: FormBuilder,
-    private alertService: AlertService
-  ) {
-  }
+  constructor(private formBuilder: FormBuilder, private alertService: AlertService) {}
 
   ngOnInit() {
     this.reset();
@@ -52,7 +47,7 @@ export class PasswordComponent implements OnInit, OnDestroy {
   }
 
   private initData() {
-   /* this.userService.getUserIdentity().subscribe(value => {
+    /* this.userService.getUserIdentity().subscribe(value => {
       this.profile = value;
       this.setValues();
     });*/
@@ -64,22 +59,29 @@ export class PasswordComponent implements OnInit, OnDestroy {
       this.profile.humanize_dates = {
         created_at: moment(this.profile.created_at).fromNow(),
         updated_at: moment(this.profile.updated_at).fromNow(),
-        last_password_reset: moment(this.profile.last_password_reset).fromNow()
+        last_password_reset: moment(this.profile.last_password_reset).fromNow(),
       };
     }
   }
 
   private createFormGroup() {
-    return this.formBuilder.group({
-      password: new FormControl('', [Validators.required
-        , Validators.pattern('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[$@$!%*?&]).{4,}')
-        , Validators.maxLength(50)]),
-      confirmPassword: new FormControl('', [Validators.required
-        , Validators.minLength(4)
-        , Validators.maxLength(50)])
-    }, {
-      validator: this.mustMatch('password', 'confirmPassword')
-    });
+    return this.formBuilder.group(
+      {
+        password: new FormControl('', [
+          Validators.required,
+          Validators.pattern('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[$@$!%*?&]).{4,}'),
+          Validators.maxLength(50),
+        ]),
+        confirmPassword: new FormControl('', [
+          Validators.required,
+          Validators.minLength(4),
+          Validators.maxLength(50),
+        ]),
+      },
+      {
+        validator: this.mustMatch('password', 'confirmPassword'),
+      }
+    );
   }
 
   public mustMatch(controlName: string, matchingControlName: string) {
@@ -98,7 +100,7 @@ export class PasswordComponent implements OnInit, OnDestroy {
   }
 
   public onSubmit() {
-   /* this.userService.changePassword(this.form.value.password).subscribe(() => {
+    /* this.userService.changePassword(this.form.value.password).subscribe(() => {
       this.alertService.success('Password has been changed');
     }, result => {
       this.errorMsg = result.error.detail.split(': ', 2)[1];
@@ -110,5 +112,4 @@ export class PasswordComponent implements OnInit, OnDestroy {
     this.form = this.createFormGroup();
     this.initData();
   }
-
 }

@@ -37,5 +37,5 @@ export enum AlertType {
   Info,
   Warning,
   Notification,
-  ModalNotification
+  ModalNotification,
 }

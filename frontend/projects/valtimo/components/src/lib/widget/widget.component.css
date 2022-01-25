@@ -15,11 +15,11 @@
  */
 
 .card-contrast .card-header {
-  padding:20px !important;
+  padding: 20px !important;
 }
 
 .card-subtitle {
-  margin-bottom:0;
+  margin-bottom: 0;
 }
 
 .card-full,
@@ -32,7 +32,6 @@
 .card-full-warning .tools .icon,
 .card-full-warning .card-subtitle {
   color: #343a40 !important;
-
 }
 
 .card-full-info,
@@ -54,11 +53,11 @@
 }
 
 .card-contrast .card-body {
-  padding-top:15px;
+  padding-top: 15px;
 }
 
 .card-body {
-  padding:15px 20px;
+  padding: 15px 20px;
 }
 
 .pie-label {
@@ -66,7 +65,7 @@
 }
 
 .widget.widget-tile svg.ngx-charts {
-  margin-left:-1.5rem !important;
+  margin-left: -1.5rem !important;
 }
 
 svg.ngx-charts {

@@ -46,10 +46,7 @@ export class S3Resource implements Resource {
   extension?: string = null;
   createdOn?: Date = null;
 
-  constructor(
-    file: File,
-    preSignedUrl: URL
-  ) {
+  constructor(file: File, preSignedUrl: URL) {
     this.key = decodeURIComponent(preSignedUrl.pathname.substring(1));
     this.name = file.name;
     this.sizeInBytes = file.size;

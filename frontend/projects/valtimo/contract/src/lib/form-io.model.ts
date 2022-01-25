@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
-import {AlertsOptions, ErrorsOptions, FormioBeforeSubmit, FormioHookOptions, FormioOptions} from 'angular-formio/formio.common';
+import {
+  AlertsOptions,
+  ErrorsOptions,
+  FormioBeforeSubmit,
+  FormioHookOptions,
+  FormioOptions,
+} from 'angular-formio/formio.common';
 
 export interface FormioSubmission {
   data: {
-    submit: boolean
+    submit: boolean;
   };
   metadata: object;
   state: string;
@@ -45,8 +51,7 @@ export class FormioOptionsImpl implements ValtimoFormioOptions {
   fileService?: object;
   hooks?: FormioHookOptions;
 
-  constructor() {
-  }
+  constructor() {}
 
   setAlertMessage(submitMessage: string) {
     this.alerts = new AlertsOptionsImpl(submitMessage);
@@ -55,5 +60,4 @@ export class FormioOptionsImpl implements ValtimoFormioOptions {
   setHooks(beforeSubmit: FormioBeforeSubmit) {
     this.hooks = {beforeSubmit: beforeSubmit};
   }
-
 }

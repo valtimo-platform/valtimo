@@ -25,25 +25,22 @@ const routes: Routes = [
     path: 'form-io',
     component: FormioComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Valtimo - Form.io V.3.27.1'}
+    data: {title: 'Valtimo - Form.io V.3.27.1'},
   },
   {
     path: 'upload-showcase',
     component: UploadShowcaseComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Upload - Showcase'}
-  }
+    data: {title: 'Upload - Showcase'},
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
 export class AppRoutingModule {
-
-  constructor(
-    private router: Router,
-  ) {
+  constructor(private router: Router) {
     this.router.errorHandler = (error: any) => {
       this.router.navigate(['']);
     };

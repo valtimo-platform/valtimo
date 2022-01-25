@@ -19,15 +19,13 @@ import {TabImpl} from '@valtimo/contract';
 import {DEFAULT_TABS, TAB_MAP} from './dossier.config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TabService {
   private readonly tabMap: Map<string, object>;
   private readonly tabs: TabImpl[] = [];
 
-  constructor(
-    @Inject(TAB_MAP) tabMap: Map<string, object> = DEFAULT_TABS
-  ) {
+  constructor(@Inject(TAB_MAP) tabMap: Map<string, object> = DEFAULT_TABS) {
     this.tabMap = tabMap;
     let i = 0;
     this.tabMap.forEach((component, name, map) => {
@@ -39,5 +37,4 @@ export class TabService {
   public getTabs(): TabImpl[] {
     return this.tabs;
   }
-
 }

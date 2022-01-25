@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import {Component, ComponentFactoryResolver, OnInit, ViewChild, ViewContainerRef} from '@angular/core';
+import {
+  Component,
+  ComponentFactoryResolver,
+  OnInit,
+  ViewChild,
+  ViewContainerRef,
+} from '@angular/core';
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
 import {DocumentService} from '@valtimo/document';
 import {Document, ProcessDocumentDefinition, TabLoaderImpl} from '@valtimo/contract';
@@ -27,11 +33,11 @@ import {DossierSupportingProcessStartModalComponent} from '../dossier-supporting
 @Component({
   selector: 'valtimo-dossier-detail',
   templateUrl: './dossier-detail.component.html',
-  styleUrls: ['./dossier-detail.component.css']
+  styleUrls: ['./dossier-detail.component.css'],
 })
 export class DossierDetailComponent implements OnInit {
-
-  @ViewChild('tabContainer', {read: ViewContainerRef, static: true}) viewContainerRef: ViewContainerRef;
+  @ViewChild('tabContainer', {read: ViewContainerRef, static: true})
+  viewContainerRef: ViewContainerRef;
 
   public documentDefinitionName: string;
   public documentDefinitionNameTitle: string;
@@ -42,7 +48,8 @@ export class DossierDetailComponent implements OnInit {
   public processDefinitionListFields: Array<any> = [];
   public processDocumentDefinitions: ProcessDocumentDefinition[] = [];
   private initialTabName: string;
-  @ViewChild('supportingProcessStartModal') supportingProcessStart: DossierSupportingProcessStartModalComponent;
+  @ViewChild('supportingProcessStartModal')
+  supportingProcessStart: DossierSupportingProcessStartModalComponent;
 
   constructor(
     private componentFactoryResolver: ComponentFactoryResolver,
@@ -68,23 +75,30 @@ export class DossierDetailComponent implements OnInit {
       this.router,
       this.location
     );
-    this.documentService.getDocumentDefinition(this.documentDefinitionName).subscribe(definition => {
-      this.documentDefinitionNameTitle = definition.schema.title;
-    });
+    this.documentService
+      .getDocumentDefinition(this.documentDefinitionName)
+      .subscribe(definition => {
+        this.documentDefinitionNameTitle = definition.schema.title;
+      });
     this.initialTabName = this.snapshot.get('tab');
     this.tabLoader.initial(this.initialTabName);
     this.getAllAssociatedProcessDefinitions();
   }
 
   public getAllAssociatedProcessDefinitions() {
-    this.documentService.findProcessDocumentDefinitions(this.documentDefinitionName).subscribe(processDocumentDefinitions => {
-      this.processDocumentDefinitions = processDocumentDefinitions
-        .filter(processDocumentDefinition => processDocumentDefinition.startableByUser);
-      this.processDefinitionListFields = [{
-        key: 'processName',
-        label: 'Proces'
-      }];
-    });
+    this.documentService
+      .findProcessDocumentDefinitions(this.documentDefinitionName)
+      .subscribe(processDocumentDefinitions => {
+        this.processDocumentDefinitions = processDocumentDefinitions.filter(
+          processDocumentDefinition => processDocumentDefinition.startableByUser
+        );
+        this.processDefinitionListFields = [
+          {
+            key: 'processName',
+            label: 'Proces',
+          },
+        ];
+      });
   }
 
   startProcess(processDocumentDefinition: ProcessDocumentDefinition) {

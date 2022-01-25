@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { AfterViewInit, Component, Input, TemplateRef } from '@angular/core';
+import {AfterViewInit, Component, Input, TemplateRef} from '@angular/core';
 
 declare var $;
 
 @Component({
   selector: 'valtimo-modal',
   templateUrl: './modal.component.html',
-  styleUrls: ['./modal.component.scss']
+  styleUrls: ['./modal.component.scss'],
 })
 export class ModalComponent implements AfterViewInit {
   @Input() elementId: string;
@@ -33,7 +33,7 @@ export class ModalComponent implements AfterViewInit {
   constructor() {}
 
   ngAfterViewInit() {
-    $(`#${this.elementId}`).modal({ show: false });
+    $(`#${this.elementId}`).modal({show: false});
   }
 
   show() {

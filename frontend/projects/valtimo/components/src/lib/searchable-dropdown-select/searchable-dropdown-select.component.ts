@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {DropdownButtonStyle, DropdownItem} from '@valtimo/contract';
 
 @Component({
   selector: 'valtimo-searchable-dropdown-select',
   templateUrl: './searchable-dropdown-select.component.html',
-  styleUrls: ['./searchable-dropdown-select.component.scss']
+  styleUrls: ['./searchable-dropdown-select.component.scss'],
 })
 export class SearchableDropdownSelectComponent {
   @Input() style: DropdownButtonStyle;

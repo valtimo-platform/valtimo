@@ -4,7 +4,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.65);
+  background-color: rgba(0, 0, 0, 0.65);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,13 +34,16 @@
   }
 }
 
-.picture-btn, .new-btn, .save-btn {
+.picture-btn,
+.new-btn,
+.save-btn {
   position: absolute;
   display: flex;
   justify-content: center;
 }
 
-.new-btn, .save-btn {
+.new-btn,
+.save-btn {
   width: calc(50% - 65px);
 }
 
@@ -78,7 +81,8 @@
   height: 495px;
   overflow: hidden;
 
-  video, img {
+  video,
+  img {
     width: 660px;
     height: 495px;
     position: absolute;
@@ -90,6 +94,5 @@
 }
 
 #canvas {
-  display: none
+  display: none;
 }
-

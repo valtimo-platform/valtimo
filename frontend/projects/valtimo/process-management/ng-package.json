@@ -18,8 +18,5 @@
       "camunda-bpmn-moddle/resources/camunda.json": "CamundaModdleDescriptor"
     }
   },
-  "whitelistedNonPeerDependencies": [
-    "bpmn-js-properties-panel",
-    "camunda-bpmn-moddle"
-  ]
+  "whitelistedNonPeerDependencies": ["bpmn-js-properties-panel", "camunda-bpmn-moddle"]
 }

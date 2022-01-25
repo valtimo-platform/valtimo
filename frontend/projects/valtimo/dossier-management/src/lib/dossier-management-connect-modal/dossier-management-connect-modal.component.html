@@ -15,22 +15,26 @@
   -->
 
 <valtimo-modal
-        #dossierConnectModal
-        elementId="dossierConnectModal"
-        [title]="documentDefinition ? documentDefinition.schema.title : 'Document definition'"
-        subtitle="Connect document definition to process definition"
-        showFooter="true"
+  #dossierConnectModal
+  elementId="dossierConnectModal"
+  [title]="documentDefinition ? documentDefinition.schema.title : 'Document definition'"
+  subtitle="Connect document definition to process definition"
+  showFooter="true"
 >
   <div body *ngIf="documentDefinition">
     <p>
-      {{ 'Select process definition for document definition' | translate }} <strong>{{documentDefinition.id.name}} *</strong>
+      {{ 'Select process definition for document definition' | translate }}
+      <strong>{{ documentDefinition.id.name }} *</strong>
     </p>
     <div class="input-group mb-3 align-items-center">
       <select class="form-control" [(ngModel)]="newDocumentProcessDefinition">
         <option [ngValue]="null">Select process definition</option>
-        <option *ngFor="let processDefinition of processDefinitions"
-                [disabled]="processDocumentDefinitionExists[processDefinition.key]"
-                [ngValue]="processDefinition">{{processDefinition.name}} ({{processDefinition.key}})
+        <option
+          *ngFor="let processDefinition of processDefinitions"
+          [disabled]="processDocumentDefinitionExists[processDefinition.key]"
+          [ngValue]="processDefinition"
+        >
+          {{ processDefinition.name }} ({{ processDefinition.key }})
         </option>
       </select>
     </div>
@@ -39,19 +43,35 @@
     </p>
     <div class="input-group mb-3 align-items-center">
       <label class="custom-control custom-checkbox custom-control-inline pl-6 mb-0">
-        <input class="custom-control-input" type="checkbox" [(ngModel)]="newDocumentProcessDefinitionInit"><span
-              class="custom-control-label custom-control-color">Init document?</span>
+        <input
+          class="custom-control-input"
+          type="checkbox"
+          [(ngModel)]="newDocumentProcessDefinitionInit"
+        /><span class="custom-control-label custom-control-color">Init document?</span>
       </label>
-      <label class="custom-control custom-checkbox custom-control-inline ml-2 pl-6 mb-0" placement="right"
-             ngbTooltip="{{ 'Startable by user tooltip' | translate }}">
-        <input class="custom-control-input" type="checkbox" [(ngModel)]="newDocumentProcessDefinitionStartableByUser"><span
-              class="custom-control-label custom-control-color">{{ 'Startable by user' | translate }}?</span>
+      <label
+        class="custom-control custom-checkbox custom-control-inline ml-2 pl-6 mb-0"
+        placement="right"
+        ngbTooltip="{{ 'Startable by user tooltip' | translate }}"
+      >
+        <input
+          class="custom-control-input"
+          type="checkbox"
+          [(ngModel)]="newDocumentProcessDefinitionStartableByUser"
+        /><span class="custom-control-label custom-control-color"
+          >{{ 'Startable by user' | translate }}?</span
+        >
       </label>
     </div>
   </div>
   <div footer>
-    <button (click)="submit()" class="btn btn-primary" data-dismiss="modal"
-            [disabled]="!newDocumentProcessDefinition"> {{ 'Save' | translate }}
+    <button
+      (click)="submit()"
+      class="btn btn-primary"
+      data-dismiss="modal"
+      [disabled]="!newDocumentProcessDefinition"
+    >
+      {{ 'Save' | translate }}
     </button>
   </div>
 </valtimo-modal>

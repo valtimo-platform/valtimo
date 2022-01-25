@@ -27,10 +27,9 @@ import {FormioForm} from 'angular-formio';
   selector: 'valtimo-form-management-edit',
   templateUrl: './form-management-edit.component.html',
   styleUrls: ['./form-management-edit.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class FormManagementEditComponent implements OnInit, OnDestroy {
-
   readonly showModal$ = new BehaviorSubject<boolean>(false);
   readonly reloading$ = new BehaviorSubject<boolean>(false);
   public modifiedFormDefinition: FormioForm = null;
@@ -43,8 +42,7 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
     private alertService: AlertService,
     private route: ActivatedRoute,
     private router: Router
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
     this.loadFormDefinition();
@@ -57,28 +55,36 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
 
   loadFormDefinition() {
     this.formDefinitionId = this.route.snapshot.paramMap.get('id');
-    this.formManagementService.getFormDefinition(this.formDefinitionId).subscribe(formDefinition => {
-      this.formDefinition = formDefinition;
-    }, () => {
-      this.alertService.error('Error retrieving Form Definition');
-    });
+    this.formManagementService.getFormDefinition(this.formDefinitionId).subscribe(
+      formDefinition => {
+        this.formDefinition = formDefinition;
+      },
+      () => {
+        this.alertService.error('Error retrieving Form Definition');
+      }
+    );
   }
 
   modifyFormDefinition() {
     const form = JSON.stringify(
-      this.modifiedFormDefinition != null ? this.modifiedFormDefinition : this.formDefinition.formDefinition
+      this.modifiedFormDefinition != null
+        ? this.modifiedFormDefinition
+        : this.formDefinition.formDefinition
     );
     const request: ModifyFormDefinitionRequest = {
       id: this.formDefinition.id,
       name: this.formDefinition.name,
-      formDefinition: form
+      formDefinition: form,
     };
-    this.formManagementService.modifyFormDefinition(request).subscribe(() => {
-      this.router.navigate(['/form-management']);
-      this.alertService.success('Form deployed');
-    }, err => {
-      this.alertService.error('Error deploying Form');
-    });
+    this.formManagementService.modifyFormDefinition(request).subscribe(
+      () => {
+        this.router.navigate(['/form-management']);
+        this.alertService.success('Form deployed');
+      },
+      err => {
+        this.alertService.error('Error deploying Form');
+      }
+    );
   }
 
   public formBuilderChanged(event) {
@@ -94,16 +100,17 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
       {
         label: 'Cancel',
         class: 'btn btn-default',
-        value: false
+        value: false,
       },
       {
         label: 'Delete',
         class: 'btn btn-primary',
-        value: true
-      }
+        value: true,
+      },
     ];
     this.alertService.notification(mssg, confirmations);
-    this.alertSub = this.alertService.getAlertConfirmChangeEmitter()
+    this.alertSub = this.alertService
+      .getAlertConfirmChangeEmitter()
       .pipe(first())
       .subscribe(alert => {
         if (alert.confirm === true) {
@@ -113,12 +120,15 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
   }
 
   deleteFormDefinition() {
-    this.formManagementService.deleteFormDefinition(this.formDefinition.id).subscribe(() => {
-      this.router.navigate(['/form-management']);
-      this.alertService.success('Form deleted');
-    }, err => {
-      this.alertService.error('Error deleting Form');
-    });
+    this.formManagementService.deleteFormDefinition(this.formDefinition.id).subscribe(
+      () => {
+        this.router.navigate(['/form-management']);
+        this.alertService.success('Form deleted');
+      },
+      err => {
+        this.alertService.error('Error deleting Form');
+      }
+    );
   }
 
   downloadFormDefinition() {
@@ -150,11 +160,10 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
   }
 
   private checkToOpenUploadModal(): void {
-    this.route.queryParams.pipe(take(1))
-      .subscribe((params) => {
-        if (params?.upload === 'true') {
-          this.showModal();
-        }
-      });
+    this.route.queryParams.pipe(take(1)).subscribe(params => {
+      if (params?.upload === 'true') {
+        this.showModal();
+      }
+    });
   }
 }

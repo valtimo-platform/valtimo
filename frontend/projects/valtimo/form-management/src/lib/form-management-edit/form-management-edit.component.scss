@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-.formbuilder .btn.formcomponent.drag-copy, .btn.formcomponent.gu-mirror {
+.formbuilder .btn.formcomponent.drag-copy,
+.btn.formcomponent.gu-mirror {
   font-weight: normal;
   background-color: silver;
   border-color: silver;
   color: white;
 }
 
-.formbuilder .btn.formcomponent.drag-copy, .btn.formcomponent.gu-mirror {
-  &:hover, &:active {
+.formbuilder .btn.formcomponent.drag-copy,
+.btn.formcomponent.gu-mirror {
+  &:hover,
+  &:active {
     box-shadow: none;
   }
 
@@ -59,11 +62,12 @@
   margin-left: 0 !important;
 
   .form-builder-panel .builder-group-button {
-    &[aria-expanded="false"], &[aria-expanded=""] {
+    &[aria-expanded='false'],
+    &[aria-expanded=''] {
       color: #a9a9a9;
     }
 
-    &[aria-expanded="true"] {
+    &[aria-expanded='true'] {
       color: black;
     }
   }

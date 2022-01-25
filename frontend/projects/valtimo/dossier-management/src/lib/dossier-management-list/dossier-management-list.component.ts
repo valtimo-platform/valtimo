@@ -27,7 +27,7 @@ moment.locale(localStorage.getItem('langKey') || '');
 @Component({
   selector: 'valtimo-dossier-management-list',
   templateUrl: './dossier-management-list.component.html',
-  styleUrls: ['./dossier-management-list.component.scss']
+  styleUrls: ['./dossier-management-list.component.scss'],
 })
 export class DossierManagementListComponent {
   public dossiers: DocumentDefinition[] = [];
@@ -35,23 +35,18 @@ export class DossierManagementListComponent {
     collectionSize: 0,
     page: 1,
     size: 10,
-    maxPaginationItemSize: 5
+    maxPaginationItemSize: 5,
   };
   public pageParam = 0;
   public dossierFields = [
     {key: 'schema.title', label: 'Title'},
     {key: 'createdOn', label: 'Created On'},
-    {key: 'readOnly', label: 'Read-only'}
+    {key: 'readOnly', label: 'Read-only'},
   ];
 
   readonly showModal$ = new BehaviorSubject<boolean>(false);
 
-  constructor(
-    private documentService: DocumentService,
-    private router: Router
-  ) {
-
-  }
+  constructor(private documentService: DocumentService, private router: Router) {}
 
   public paginationClicked(page) {
     this.pageParam = page - 1;
@@ -81,5 +76,4 @@ export class DossierManagementListComponent {
   showModal() {
     this.showModal$.next(true);
   }
-
 }

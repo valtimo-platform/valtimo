@@ -27,30 +27,25 @@ const routes: Routes = [
     path: 'form-management',
     component: FormManagementComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Form management', roles: [ROLE_ADMIN]}
+    data: {title: 'Form management', roles: [ROLE_ADMIN]},
   },
   {
     path: 'form-management/create',
     component: FormManagementCreateComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Create new Form', roles: [ROLE_ADMIN]}
+    data: {title: 'Create new Form', roles: [ROLE_ADMIN]},
   },
   {
     path: 'form-management/edit/:id',
     component: FormManagementEditComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Form Builder', roles: [ROLE_ADMIN]}
-  }
+    data: {title: 'Form Builder', roles: [ROLE_ADMIN]},
+  },
 ];
 
 @NgModule({
-  imports: [
-    RouterModule.forChild(routes)
-  ],
-  exports: [
-    RouterModule
-  ],
-  declarations: []
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
+  declarations: [],
 })
-export class FormManagementRoutingModule {
-}
+export class FormManagementRoutingModule {}

@@ -29,15 +29,14 @@ import {INITIALIZERS} from '@valtimo/contract';
       provide: APP_INITIALIZER,
       useFactory: initialize,
       multi: true,
-      deps: [INITIALIZERS, NGXLogger]
+      deps: [INITIALIZERS, NGXLogger],
     },
     {
       provide: INITIALIZERS,
       useFactory: initializerFactory,
-      deps: [ConfigService, Injector, NGXLogger, TranslateService]
-    }
+      deps: [ConfigService, Injector, NGXLogger, TranslateService],
+    },
   ],
-  exports: []
+  exports: [],
 })
-export class BootstrapModule {
-}
+export class BootstrapModule {}

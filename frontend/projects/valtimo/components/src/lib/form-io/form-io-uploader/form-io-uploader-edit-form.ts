@@ -20,7 +20,7 @@ export const formIoUploaderEditForm = () => ({
       tooltip: 'The name of this field in the API endpoint.',
       validate: {
         required: true,
-      }
+      },
     },
     {
       type: 'textfield',
@@ -84,6 +84,6 @@ export const formIoUploaderEditForm = () => ({
       validate: {
         required: false,
       },
-    }
+    },
   ],
 });

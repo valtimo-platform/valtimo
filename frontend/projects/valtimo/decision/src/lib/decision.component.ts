@@ -21,7 +21,7 @@ import {DecisionListComponent} from './decision-list/decision-list.component';
 @Component({
   selector: 'valtimo-decision',
   templateUrl: './decision.component.html',
-  styleUrls: ['./decision.component.scss']
+  styleUrls: ['./decision.component.scss'],
 })
 export class DecisionComponent {
   @ViewChild('decisionDeploy') deploy: DecisionDeployComponent;

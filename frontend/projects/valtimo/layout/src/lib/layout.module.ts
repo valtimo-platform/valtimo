@@ -16,7 +16,14 @@
 
 import {NgModule} from '@angular/core';
 import {LayoutComponent} from './layout.component';
-import {AlertModule, LeftSidebarModule, MenuRoutingModule, PageHeaderModule, RightSidebarModule, TopbarModule} from '@valtimo/components';
+import {
+  AlertModule,
+  LeftSidebarModule,
+  MenuRoutingModule,
+  PageHeaderModule,
+  RightSidebarModule,
+  TopbarModule,
+} from '@valtimo/components';
 import {RouterModule} from '@angular/router';
 import {LayoutPublicComponent} from './layout-public/layout-public.component';
 import {LayoutInternalComponent} from './layout-internal/layout-internal.component';
@@ -32,9 +39,8 @@ import {CommonModule} from '@angular/common';
     RightSidebarModule,
     PageHeaderModule,
     AlertModule,
-    CommonModule
+    CommonModule,
   ],
-  exports: [LayoutComponent]
+  exports: [LayoutComponent],
 })
-export class LayoutModule {
-}
+export class LayoutModule {}

@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { BreadcrumbNavigationComponent } from '../breadcrumb-navigation/breadcrumb-navigation.component';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {RouterModule} from '@angular/router';
+import {BreadcrumbNavigationComponent} from '../breadcrumb-navigation/breadcrumb-navigation.component';
 import {TranslateModule} from '@ngx-translate/core';
 
 @NgModule({
   declarations: [BreadcrumbNavigationComponent],
-  imports: [
-    CommonModule,
-    RouterModule,
-    TranslateModule
-  ],
-  exports: [BreadcrumbNavigationComponent]
+  imports: [CommonModule, RouterModule, TranslateModule],
+  exports: [BreadcrumbNavigationComponent],
 })
-export class BreadcrumbNavigationModule { }
+export class BreadcrumbNavigationModule {}

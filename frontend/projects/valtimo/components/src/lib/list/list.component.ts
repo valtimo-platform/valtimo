@@ -24,7 +24,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 import {SortState, Direction} from '@valtimo/contract';
 import {NGXLogger} from 'ngx-logger';
@@ -35,7 +35,7 @@ import {ViewContentService} from '../view-content/view-content.service';
 @Component({
   selector: 'valtimo-list',
   templateUrl: './list.component.html',
-  styleUrls: ['./list.component.scss']
+  styleUrls: ['./list.component.scss'],
 })
 export class ListComponent implements OnChanges, OnInit, AfterViewInit {
   private static PAGINATION_SIZE = 'PaginationSize';
@@ -63,7 +63,7 @@ export class ListComponent implements OnChanges, OnInit, AfterViewInit {
 
   readonly sort$ = new BehaviorSubject<SortState>({
     state: {name: '', direction: 'DESC'},
-    isSorting: false
+    isSorting: false,
   });
 
   constructor(private viewContentService: ViewContentService, private logger: NGXLogger) {
@@ -71,7 +71,9 @@ export class ListComponent implements OnChanges, OnInit, AfterViewInit {
   }
 
   loadPaginationSize() {
-    const entries = localStorage.getItem(`${this.paginationIdentifier}${ListComponent.PAGINATION_SIZE}`);
+    const entries = localStorage.getItem(
+      `${this.paginationIdentifier}${ListComponent.PAGINATION_SIZE}`
+    );
     if (entries !== null) {
       this.pagination.size = +entries;
       this.paginationSet.emit(+entries);
@@ -85,7 +87,10 @@ export class ListComponent implements OnChanges, OnInit, AfterViewInit {
   }
 
   setPaginationSize(numberOfEntries: string) {
-    localStorage.setItem(`${this.paginationIdentifier}${ListComponent.PAGINATION_SIZE}`, numberOfEntries);
+    localStorage.setItem(
+      `${this.paginationIdentifier}${ListComponent.PAGINATION_SIZE}`,
+      numberOfEntries
+    );
     this.pagination.size = numberOfEntries;
     this.logger.debug('Pagination set in local storage for this list: ', numberOfEntries);
     this.paginationSet.emit(numberOfEntries);
@@ -129,7 +134,7 @@ export class ListComponent implements OnChanges, OnInit, AfterViewInit {
         item.listItemFields = this.fields.map(field => ({
           key: field.key,
           label: field.label,
-          value: this.resolveObject(field, item)
+          value: this.resolveObject(field, item),
         }));
       });
     }
@@ -142,7 +147,9 @@ export class ListComponent implements OnChanges, OnInit, AfterViewInit {
   public resolveObject(definition: any, obj: any) {
     const definitionKey = definition.key;
     const customPropString = '$.';
-    const key = definitionKey.includes(customPropString) ? definitionKey.split(customPropString)[1] : definitionKey;
+    const key = definitionKey.includes(customPropString)
+      ? definitionKey.split(customPropString)[1]
+      : definitionKey;
     const resolvedObjValue = key.split('.').reduce(function (prev, curr) {
       return prev ? prev[curr] : null;
     }, obj || self);

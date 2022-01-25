@@ -27,28 +27,42 @@
               section="card-header"
             ></valtimo-extension>
             <div class="dropdown">
-              <button class="btn btn-primary dropdown-toggle" type="button"
-                      id="startProcessDropdown" placement="bottom"
-                      [ngbTooltip]="processDocumentDefinitions.length === 0 ? 'No action' : null"
-                      [disabled]="processDocumentDefinitions.length === 0"
-                      data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <button
+                class="btn btn-primary dropdown-toggle"
+                type="button"
+                id="startProcessDropdown"
+                placement="bottom"
+                [ngbTooltip]="processDocumentDefinitions.length === 0 ? 'No action' : null"
+                [disabled]="processDocumentDefinitions.length === 0"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
                 <span>Start</span>
                 <i class="pl-2 fas fa-caret-down"></i>
               </button>
               <div class="dropdown-menu dropdown-menu-right" aria-labelledby="startProcessDropdown">
-                <button *ngFor="let processDocumentDefinition of processDocumentDefinitions" class="dropdown-item p"
-                        href="#"
-                        (click)="startProcess(processDocumentDefinition)">{{processDocumentDefinition.processName}}</button>
+                <button
+                  *ngFor="let processDocumentDefinition of processDocumentDefinitions"
+                  class="dropdown-item p"
+                  href="#"
+                  (click)="startProcess(processDocumentDefinition)"
+                >
+                  {{ processDocumentDefinition.processName }}
+                </button>
               </div>
             </div>
           </div>
         </div>
         <ul class="nav nav-tabs">
           <li class="nav-item" *ngFor="let tab of tabLoader.tabs">
-            <a id="{{ tab.name }}-tab" class="nav-link clickable"
-               [ngClass]="{'active' : tab.isActive()}"
-               data-toggle="tab"
-               (click)="tabLoader.load(tab)">
+            <a
+              id="{{ tab.name }}-tab"
+              class="nav-link clickable"
+              [ngClass]="{active: tab.isActive()}"
+              data-toggle="tab"
+              (click)="tabLoader.load(tab)"
+            >
               {{ tabLoader.translateTabName(tab) }}
             </a>
           </li>
@@ -59,7 +73,9 @@
         </div>
       </valtimo-widget>
     </div>
-    <valtimo-dossier-supporting-process-start-modal (formSubmit)="tabLoader.refreshView()"
-            #supportingProcessStartModal></valtimo-dossier-supporting-process-start-modal>
+    <valtimo-dossier-supporting-process-start-modal
+      (formSubmit)="tabLoader.refreshView()"
+      #supportingProcessStartModal
+    ></valtimo-dossier-supporting-process-start-modal>
   </div>
 </div>

@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-import { AfterContentInit, Directive, ElementRef } from '@angular/core';
+import {AfterContentInit, Directive, ElementRef} from '@angular/core';
 
 @Directive({
-  selector: '[valtimoFieldAutoFocus]'
+  selector: '[valtimoFieldAutoFocus]',
 })
 export class FieldAutoFocusDirective implements AfterContentInit {
-
-  constructor(private el: ElementRef) { }
+  constructor(private el: ElementRef) {}
 
   public ngAfterContentInit() {
     setTimeout(() => {
       this.el.nativeElement.focus();
     }, 300);
   }
-
 }

@@ -124,7 +124,7 @@ export interface BrondatumArchiefprocedure {
 
 export enum Archiefnominatie {
   blijvend_bewaren = 'blijven_bewaren',
-  vernietigen = 'vernietigen'
+  vernietigen = 'vernietigen',
 }
 
 export enum Afleidingswijze {
@@ -136,7 +136,7 @@ export enum Afleidingswijze {
   ingangsdatum_besluit = 'ingangsdatum_besluit',
   termijn = 'termijn',
   vervaldatum_besluit = 'vervaldatum_besluit',
-  zaakobject = 'zaakobject'
+  zaakobject = 'zaakobject',
 }
 
 export enum Objecttype {
@@ -170,11 +170,11 @@ export enum Objecttype {
   woz_object = 'woz_object',
   woz_waarde = 'woz_waarde',
   zakelijk_recht = 'zakelijk_recht',
-  overige = 'overige'
+  overige = 'overige',
 }
 
 export enum Operation {
   CREATE_ZAAK = 'CREATE_ZAAK',
   SET_RESULTAAT = 'SET_RESULTAAT',
-  SET_STATUS = 'SET_STATUS'
+  SET_STATUS = 'SET_STATUS',
 }

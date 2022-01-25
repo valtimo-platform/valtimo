@@ -28,7 +28,7 @@ describe('ContextService', () => {
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [ContextService]
+      providers: [ContextService],
     });
 
     httpTestingController = TestBed.inject(HttpTestingController);
@@ -42,7 +42,9 @@ describe('ContextService', () => {
   describe('getUserContextProceses', () => {
     it('should call request method get with the correct url', () => {
       service.getUserContextProceses().subscribe();
-      const req = httpTestingController.expectOne(mockConfig.endpointUri + 'user/context/processes');
+      const req = httpTestingController.expectOne(
+        mockConfig.endpointUri + 'user/context/processes'
+      );
       expect(req.request.method).toBe('GET');
       httpTestingController.verify();
     });
@@ -51,10 +53,11 @@ describe('ContextService', () => {
   describe('getUserContextProcessesActive', () => {
     it('should call request method get with the correct url', () => {
       service.getUserContextProcessesActive().subscribe();
-      const req = httpTestingController.expectOne(mockConfig.endpointUri + 'context/process/user/active');
+      const req = httpTestingController.expectOne(
+        mockConfig.endpointUri + 'context/process/user/active'
+      );
       expect(req.request.method).toBe('GET');
       httpTestingController.verify();
     });
   });
-
 });

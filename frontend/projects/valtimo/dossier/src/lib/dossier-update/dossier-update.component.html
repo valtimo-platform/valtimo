@@ -19,28 +19,58 @@
     <div class="col-12 px-0 mb-5">
       <valtimo-widget [title]="page?.title" [subtitle]="page?.subtitle" [divider]="true">
         <div class="card-body">
-
           <!--view with custom definitions-->
           <div *ngIf="this.customDefinitions">
-            <div class="mb-4" *ngFor="let definition of this.customDefinitions | keyvalue: returnZero">
-            </div>
+            <div
+              class="mb-4"
+              *ngFor="let definition of this.customDefinitions | keyvalue: returnZero"
+            ></div>
             <div class="row pt-3 mt-1">
               <div class="col-sm-12">
                 <div class="text-right">
-                  <button class="btn btn-space btn-default float-left" type="button" (click)="back()" id="back-button">Back</button>
-                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()" id="reset-button">Reset</button>
-                  <button class="btn btn-space btn-primary" type="button" (click)="save()" id="save-button">Save</button>
-                  <button class="btn btn-space btn-primary" type="submit" (click)="submit({})" id="submit-button">Submit</button>
+                  <button
+                    class="btn btn-space btn-default float-left"
+                    type="button"
+                    (click)="back()"
+                    id="back-button"
+                  >
+                    Back
+                  </button>
+                  <button
+                    class="btn btn-space btn-secondary"
+                    type="button"
+                    (click)="reset()"
+                    id="reset-button"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    class="btn btn-space btn-primary"
+                    type="button"
+                    (click)="save()"
+                    id="save-button"
+                  >
+                    Save
+                  </button>
+                  <button
+                    class="btn btn-space btn-primary"
+                    type="submit"
+                    (click)="submit({})"
+                    id="submit-button"
+                  >
+                    Submit
+                  </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <valtimo-camunda-form *ngIf="task?.formFields && !this.customDefinitions"
-                                (submitted)="submit($event)"
-                                [formFields]="task.formFields"
-                                [componentName]="task.formLocation"></valtimo-camunda-form>
-
+          <valtimo-camunda-form
+            *ngIf="task?.formFields && !this.customDefinitions"
+            (submitted)="submit($event)"
+            [formFields]="task.formFields"
+            [componentName]="task.formLocation"
+          ></valtimo-camunda-form>
         </div>
       </valtimo-widget>
     </div>

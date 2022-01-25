@@ -20,17 +20,15 @@ import {FormField} from '../formfield.model';
 
 @Component({
   selector: 'valtimo-camunda-enum-formfield',
-  templateUrl: './camunda-enum-formfield.component.html'
+  templateUrl: './camunda-enum-formfield.component.html',
 })
 export class CamundaEnumFormfieldComponent implements OnInit {
-
   public formGroup: FormGroup;
   public formField: FormField;
 
   public valueKeys;
 
-  constructor() {
-  }
+  constructor() {}
 
   ngOnInit(): void {
     this.valueKeys = Object.keys(this.formField.type.values);

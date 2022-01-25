@@ -20,9 +20,7 @@ import {FileSizePipe} from './file-size.pipe';
 
 @NgModule({
   declarations: [FileSizePipe],
-  imports: [
-    CommonModule
-  ],
-  exports: [FileSizePipe]
+  imports: [CommonModule],
+  exports: [FileSizePipe],
 })
-export class FileSizeModule { }
+export class FileSizeModule {}

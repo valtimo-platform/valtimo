@@ -20,7 +20,12 @@ import {FormMappingService, FormTranslationService} from '@valtimo/form';
 import {DocumentService} from '@valtimo/document';
 import {ExtendedComponentSchema} from 'formiojs';
 import {BehaviorSubject, combineLatest, Subject, Subscription} from 'rxjs';
-import {ConnectorProperties, DocumentDefinition, DocumentDefinitions, ProcessDocumentDefinition} from '@valtimo/contract';
+import {
+  ConnectorProperties,
+  DocumentDefinition,
+  DocumentDefinitions,
+  ProcessDocumentDefinition,
+} from '@valtimo/contract';
 import {FormioForm, FormioRefreshValue} from 'angular-formio';
 import {FormioOptions} from 'angular-formio/formio.common';
 import {cloneDeep} from 'lodash';
@@ -30,26 +35,26 @@ import {map, switchMap, tap} from 'rxjs/operators';
 @Component({
   selector: 'valtimo-edit-product-aanvragen-connector',
   templateUrl: './edit-product-aanvragen-connector.component.html',
-  styleUrls: ['./edit-product-aanvragen-connector.component.scss']
+  styleUrls: ['./edit-product-aanvragen-connector.component.scss'],
 })
 export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy {
   @Input() properties: ConnectorProperties;
   @Input() defaultName!: string;
   @Input() showDeleteButton = false;
 
-  @Output() propertiesSave = new EventEmitter<{properties: ConnectorProperties, name: string}>();
+  @Output() propertiesSave = new EventEmitter<{properties: ConnectorProperties; name: string}>();
   @Output() connectorDelete = new EventEmitter<any>();
 
   formRefresh$ = new Subject<FormioRefreshValue>();
   formDefinition$ = new BehaviorSubject<FormioForm>(undefined);
   translatedFormDefinition$ = this.formDefinition$.pipe(
-    map((definition) => this.formTranslationService.translateForm(definition))
+    map(definition => this.formTranslationService.translateForm(definition))
   );
-  caseDefinitionOptions: Array<{label: string, value: string}> = [];
+  caseDefinitionOptions: Array<{label: string; value: string}> = [];
   processDocumentDefinitionOptions: {[caseDefinitionId: string]: Array<string>} = {};
 
   readonly options: FormioOptions = {
-    disableAlerts: true
+    disableAlerts: true,
   };
 
   private formDefinitionSubscription!: Subscription;
@@ -60,8 +65,7 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
     private readonly formMappingService: FormMappingService,
     private readonly documentService: DocumentService,
     private readonly translateService: TranslateService
-  ) {
-  }
+  ) {}
 
   ngOnInit(): void {
     window['productRequestDefinitions'] = {};
@@ -92,7 +96,8 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
     properties.openNotificatieProperties.baseUrl = submission.openNotificationsBaseUrl;
     properties.openNotificatieProperties.clientId = submission.openNotificationsClientId;
     properties.openNotificatieProperties.secret = submission.openNotificationsSecret;
-    properties.openNotificatieProperties.callbackBaseUrl = submission.openNotificationsCallbackBaseUrl;
+    properties.openNotificatieProperties.callbackBaseUrl =
+      submission.openNotificationsCallbackBaseUrl;
 
     properties.aanvragerRolTypeUrl = submission.applicantRoleTypeUrl;
 
@@ -106,11 +111,13 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
   }
 
   private openFormDefinitionSubscription(): void {
-    this.formDefinitionSubscription = combineLatest([this.formDefinition$, this.translateService.stream('key')])
-      .subscribe(([form]) => {
-        const translatedForm = this.formTranslationService.translateForm(form);
-        this.refreshForm({form: translatedForm});
-      });
+    this.formDefinitionSubscription = combineLatest([
+      this.formDefinition$,
+      this.translateService.stream('key'),
+    ]).subscribe(([form]) => {
+      const translatedForm = this.formTranslationService.translateForm(form);
+      this.refreshForm({form: translatedForm});
+    });
   }
 
   private prefillForm(): void {
@@ -130,7 +137,8 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
     submission.openNotificationsBaseUrl = properties.openNotificatieProperties.baseUrl;
     submission.openNotificationsClientId = properties.openNotificatieProperties.clientId;
     submission.openNotificationsSecret = properties.openNotificatieProperties.secret;
-    submission.openNotificationsCallbackBaseUrl = properties.openNotificatieProperties.callbackBaseUrl;
+    submission.openNotificationsCallbackBaseUrl =
+      properties.openNotificatieProperties.callbackBaseUrl;
 
     submission.applicantRoleTypeUrl = properties.aanvragerRolTypeUrl;
 
@@ -141,13 +149,15 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
     this.refreshForm({submission: {data: submission}});
   }
 
-  private mapCaseDefinitionKeyComponent = (component: ExtendedComponentSchema): ExtendedComponentSchema => {
+  private mapCaseDefinitionKeyComponent = (
+    component: ExtendedComponentSchema
+  ): ExtendedComponentSchema => {
     if (component.key === 'caseDefinitionKey') {
       return {...component, disabled: false, data: {values: this.caseDefinitionOptions}};
     }
 
     return component;
-  }
+  };
 
   private refreshForm(refreshValue: FormioRefreshValue): void {
     this.formRefresh$.next(refreshValue);
@@ -156,33 +166,42 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
   private loadDefinitions(): void {
     let documentDefinitions: Array<DocumentDefinition>;
 
-    this.documentService.getAllDefinitions().pipe(
-      tap((resDocumentDefinitions) => documentDefinitions = resDocumentDefinitions.content),
-      switchMap((resDocumentDefinitions) =>
-        combineLatest(resDocumentDefinitions.content.map((definition) =>
-          this.documentService.findProcessDocumentDefinitions(definition.id.name)))
-      ),
-      tap((res) => {
-        this.caseDefinitionOptions = documentDefinitions.map((documentDefinition) => {
-          return {label: documentDefinition.id.name, value: documentDefinition.id.name};
-        });
+    this.documentService
+      .getAllDefinitions()
+      .pipe(
+        tap(resDocumentDefinitions => (documentDefinitions = resDocumentDefinitions.content)),
+        switchMap(resDocumentDefinitions =>
+          combineLatest(
+            resDocumentDefinitions.content.map(definition =>
+              this.documentService.findProcessDocumentDefinitions(definition.id.name)
+            )
+          )
+        ),
+        tap(res => {
+          this.caseDefinitionOptions = documentDefinitions.map(documentDefinition => {
+            return {label: documentDefinition.id.name, value: documentDefinition.id.name};
+          });
 
-        documentDefinitions.forEach((documentDefinition, index) => {
-          this.processDocumentDefinitionOptions[documentDefinition.id.name] = res[index].map((processDocumentDefinition) =>
-            processDocumentDefinition.id.processDefinitionKey);
-        });
+          documentDefinitions.forEach((documentDefinition, index) => {
+            this.processDocumentDefinitionOptions[documentDefinition.id.name] = res[index].map(
+              processDocumentDefinition => processDocumentDefinition.id.processDefinitionKey
+            );
+          });
 
-        window['productRequestDefinitions'] = this.processDocumentDefinitionOptions;
+          window['productRequestDefinitions'] = this.processDocumentDefinitionOptions;
 
-        const definitionWithCaseDefinitionOptions =
-          this.formMappingService.mapComponents(this.formDefinition$.getValue(), this.mapCaseDefinitionKeyComponent);
+          const definitionWithCaseDefinitionOptions = this.formMappingService.mapComponents(
+            this.formDefinition$.getValue(),
+            this.mapCaseDefinitionKeyComponent
+          );
 
-        this.formDefinition$.next(definitionWithCaseDefinitionOptions);
+          this.formDefinition$.next(definitionWithCaseDefinitionOptions);
 
-        if (this.properties?.aanvragerRolTypeUrl) {
-          this.prefillForm();
-        }
-      })
-    ).subscribe();
+          if (this.properties?.aanvragerRolTypeUrl) {
+            this.prefillForm();
+          }
+        })
+      )
+      .subscribe();
   }
 }

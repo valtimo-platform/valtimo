@@ -50,5 +50,5 @@ export {
   ConnectorPropertyEditType,
   ConnectorInstanceCreateRequest,
   ConnectorInstanceUpdateRequest,
-  ConnectorPropertyValueType
+  ConnectorPropertyValueType,
 };

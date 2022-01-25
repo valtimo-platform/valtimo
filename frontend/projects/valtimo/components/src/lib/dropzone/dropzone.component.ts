@@ -23,7 +23,7 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
 import * as Dropzone from 'dropzone';
@@ -33,7 +33,7 @@ import {map} from 'rxjs/operators';
 @Component({
   selector: 'valtimo-dropzone',
   templateUrl: './dropzone.component.html',
-  styleUrls: ['./dropzone.component.scss']
+  styleUrls: ['./dropzone.component.scss'],
 })
 export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('dropzone') dropzoneRef: ElementRef<any>;
@@ -65,14 +65,14 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private readonly errorMessagesStrings: {[key: string]: string} = {
     tooBig: 'too big',
-    wrongType: 'this type'
+    wrongType: 'this type',
   };
 
   readonly errorMessage$: Observable<string> = combineLatest([
     this.error$,
     this.translateService.stream('dropzone.error.generic'),
     this.translateService.stream('dropzone.error.tooBig'),
-    this.translateService.stream('dropzone.error.wrongType')
+    this.translateService.stream('dropzone.error.wrongType'),
   ]).pipe(
     map(([dropzoneError, generic, tooBig, wrongType]) => {
       const strings = this.errorMessagesStrings;
@@ -108,7 +108,6 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
     this.clearSubscription.unsubscribe();
   }
 
-
   showCamera(): void {
     this.showingCamera$.next(true);
   }
@@ -133,7 +132,7 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
       accept: file => {
         this.dropzone.removeAllFiles();
         this.setFile(file);
-      }
+      },
     });
 
     this.setDropzoneEvents();

@@ -20,13 +20,11 @@ import {FormField} from '../formfield.model';
 
 @Component({
   selector: 'valtimo-camunda-long-formfield',
-  templateUrl: './camunda-long-formfield.component.html'
+  templateUrl: './camunda-long-formfield.component.html',
 })
 export class CamundaLongFormfieldComponent {
-
   public formGroup: FormGroup;
   public formField: FormField;
 
-  constructor() {
-  }
+  constructor() {}
 }

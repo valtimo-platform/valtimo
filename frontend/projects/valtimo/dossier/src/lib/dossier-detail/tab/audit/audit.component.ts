@@ -28,10 +28,9 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
 @Component({
   selector: 'valtimo-dossier-detail-tab-audit',
   templateUrl: './audit.component.html',
-  styleUrls: ['./audit.component.css']
+  styleUrls: ['./audit.component.css'],
 })
 export class DossierDetailTabAuditComponent implements OnInit {
-
   @Output() paginationClicked: EventEmitter<any> = new EventEmitter();
 
   public timelineItems: TimelineItem[];

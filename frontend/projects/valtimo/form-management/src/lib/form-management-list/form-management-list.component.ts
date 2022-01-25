@@ -22,20 +22,19 @@ import {Router} from '@angular/router';
 @Component({
   selector: 'valtimo-form-management-list',
   templateUrl: './form-management-list.component.html',
-  styleUrls: ['./form-management-list.component.scss']
+  styleUrls: ['./form-management-list.component.scss'],
 })
 export class FormManagementListComponent implements OnInit {
-
   public formDefinitions: FormDefinition[] = [];
   public formDefinitionFields: any[] = [
     {key: 'name', label: 'Name'},
-    {key: 'readOnly', label: 'Read-only'}
+    {key: 'readOnly', label: 'Read-only'},
   ];
   public pagination = {
     collectionSize: 0,
     page: 1,
     size: 10,
-    maxPaginationItemSize: 5
+    maxPaginationItemSize: 5,
   };
   public pageParam = 0;
 
@@ -44,14 +43,9 @@ export class FormManagementListComponent implements OnInit {
     this.loadFormDefinitions();
   }
 
-  constructor(
-    private formManagementService: FormManagementService,
-    private router: Router
-  ) {
-  }
+  constructor(private formManagementService: FormManagementService, private router: Router) {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   paginationSet() {
     this.loadFormDefinitions();
@@ -62,7 +56,7 @@ export class FormManagementListComponent implements OnInit {
     if (searchTerm) {
       params['searchTerm'] = searchTerm;
     }
-    this.formManagementService.queryFormDefinitions(params).subscribe((results) => {
+    this.formManagementService.queryFormDefinitions(params).subscribe(results => {
       this.pagination.collectionSize = results.body.totalElements;
       this.formDefinitions = results.body.content;
     });
@@ -75,5 +69,4 @@ export class FormManagementListComponent implements OnInit {
   searchTermEntered(searchTerm: string) {
     this.loadFormDefinitions(searchTerm);
   }
-
 }

@@ -24,10 +24,9 @@ import {MilestoneSet} from '@valtimo/contract';
 @Component({
   selector: 'valtimo-milestone-set-edit',
   templateUrl: './milestone-set-edit.component.html',
-  styleUrls: ['./milestone-set-edit.component.scss']
+  styleUrls: ['./milestone-set-edit.component.scss'],
 })
 export class MilestoneSetEditComponent implements OnInit {
-
   public form: FormGroup;
 
   constructor(
@@ -36,8 +35,7 @@ export class MilestoneSetEditComponent implements OnInit {
     private router: Router,
     private alertService: AlertService,
     private route: ActivatedRoute
-  ) {
-  }
+  ) {}
 
   get formControls() {
     return this.form.controls;
@@ -46,7 +44,7 @@ export class MilestoneSetEditComponent implements OnInit {
   ngOnInit() {
     this.form = this.formBuilder.group({
       id: new FormControl({value: '', disabled: true}, Validators.required),
-      title: new FormControl({}, Validators.required)
+      title: new FormControl({}, Validators.required),
     });
     this.getMilestoneSet();
   }
@@ -57,12 +55,14 @@ export class MilestoneSetEditComponent implements OnInit {
 
   getMilestoneSet() {
     const milestoneSetId = this.route.snapshot.paramMap.get('id');
-    this.milestoneService.getMilestoneSet(+milestoneSetId).subscribe((milestoneSet: MilestoneSet) => {
-      this.form.setValue({
-        id: milestoneSet.id,
-        title: milestoneSet.title
+    this.milestoneService
+      .getMilestoneSet(+milestoneSetId)
+      .subscribe((milestoneSet: MilestoneSet) => {
+        this.form.setValue({
+          id: milestoneSet.id,
+          title: milestoneSet.title,
+        });
       });
-    });
   }
 
   delete() {
@@ -71,13 +71,18 @@ export class MilestoneSetEditComponent implements OnInit {
   }
 
   deleteMilestoneSet() {
-    this.milestoneService.deleteMilestoneSet(this.form.getRawValue().id).subscribe(() => {
-      this.router.navigate(['/milestones']);
-      this.alertService.success('Milestone set has been deleted');
-    }, (err) => {
-      this.router.navigate(['/milestones']);
-      this.alertService.error('Could not delete Milestone set. Make sure this Milestone set does not contain any milestones.');
-    });
+    this.milestoneService.deleteMilestoneSet(this.form.getRawValue().id).subscribe(
+      () => {
+        this.router.navigate(['/milestones']);
+        this.alertService.success('Milestone set has been deleted');
+      },
+      err => {
+        this.router.navigate(['/milestones']);
+        this.alertService.error(
+          'Could not delete Milestone set. Make sure this Milestone set does not contain any milestones.'
+        );
+      }
+    );
   }
 
   updateMilestoneSet() {
@@ -86,5 +91,4 @@ export class MilestoneSetEditComponent implements OnInit {
       this.alertService.success('Milestone set has been updated');
     });
   }
-
 }

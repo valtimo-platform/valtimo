@@ -23,13 +23,12 @@ const routes: Routes = [
   {
     path: 'keycloak/callback',
     component: CallbackComponent,
-    data: {title: 'Loading...'}
-  }
+    data: {title: 'Loading...'},
+  },
 ];
 
 @NgModule({
   imports: [CommonModule, RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class KeycloakRoutingModule {
-}
+export class KeycloakRoutingModule {}

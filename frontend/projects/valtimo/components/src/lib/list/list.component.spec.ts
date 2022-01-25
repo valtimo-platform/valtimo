@@ -23,16 +23,17 @@ describe('ListComponent', () => {
   let fixture: ComponentFixture<ListComponent>;
 
   const itemTitle = 'Item title';
-  const itemFields = [{
-    key: 'title',
-    label: 'Title'
-  }];
+  const itemFields = [
+    {
+      key: 'title',
+      label: 'Title',
+    },
+  ];
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ListComponent ]
-    })
-    .compileComponents();
+      declarations: [ListComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -57,9 +58,11 @@ describe('ListComponent', () => {
   });
 
   it('should create #no-field-definitions when no field definitions available', () => {
-    component.items = [{
-      title: itemTitle
-    }];
+    component.items = [
+      {
+        title: itemTitle,
+      },
+    ];
     component.fields = [];
     fixture.detectChanges();
 
@@ -70,10 +73,11 @@ describe('ListComponent', () => {
   });
 
   it('should create table results when results available', () => {
-
-    component.items = [{
-      title: itemTitle
-    }];
+    component.items = [
+      {
+        title: itemTitle,
+      },
+    ];
     component.fields = itemFields;
     fixture.detectChanges();
 
@@ -84,5 +88,4 @@ describe('ListComponent', () => {
     expect(el.querySelectorAll('thead tr th')[0].innerText).toEqual(itemFields[0].label);
     expect(el.querySelectorAll('tbody tr td')[0].innerText).toEqual(itemTitle);
   });
-
 });

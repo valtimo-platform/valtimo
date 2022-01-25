@@ -29,21 +29,17 @@ import {
   ServiceTaskHandlerRequest,
   ZaakType,
   ZaakTypeLink,
-  ZaakTypeRequest
+  ZaakTypeRequest,
 } from '@valtimo/contract';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OpenZaakService {
-
   private valtimoApiConfig: any;
   private catalogus: string;
 
-  constructor(
-    private http: HttpClient,
-    private configService: ConfigService
-  ) {
+  constructor(private http: HttpClient, private configService: ConfigService) {
     this.valtimoApiConfig = configService.config.valtimoApi;
     this.catalogus = configService.config.openZaak.catalogus;
   }
@@ -61,7 +57,9 @@ export class OpenZaakService {
   }
 
   getInformatieObjectTypes(): Observable<InformatieObjectType[]> {
-    return this.http.get<InformatieObjectType[]>(`${this.valtimoApiConfig.endpointUri}openzaak/informatie-object-typen/${this.catalogus}`);
+    return this.http.get<InformatieObjectType[]>(
+      `${this.valtimoApiConfig.endpointUri}openzaak/informatie-object-typen/${this.catalogus}`
+    );
   }
 
   getZaakTypeLink(id: string): Observable<ZaakTypeLink> {
@@ -69,7 +67,9 @@ export class OpenZaakService {
   }
 
   getInformatieObjectTypeLink(id: string): Observable<InformatieObjectTypeLink> {
-    return this.http.get<InformatieObjectTypeLink>(`${this.valtimoApiConfig.endpointUri}openzaak/informatie-object-type-link/${id}`);
+    return this.http.get<InformatieObjectTypeLink>(
+      `${this.valtimoApiConfig.endpointUri}openzaak/informatie-object-type-link/${id}`
+    );
   }
 
   createZaakTypeLink(request: CreateZaakTypeLinkRequest): Observable<any> {
@@ -77,7 +77,10 @@ export class OpenZaakService {
   }
 
   createInformatieObjectTypeLink(request: CreateInformatieObjectTypeLinkRequest): Observable<any> {
-    return this.http.post<any>(`${this.valtimoApiConfig.endpointUri}openzaak/informatie-object-type-link`, request);
+    return this.http.post<any>(
+      `${this.valtimoApiConfig.endpointUri}openzaak/informatie-object-type-link`,
+      request
+    );
   }
 
   deleteZaakTypeLink(id: string): Observable<any> {
@@ -85,11 +88,15 @@ export class OpenZaakService {
   }
 
   deleteInformatieObjectTypeLink(id: string): Observable<any> {
-    return this.http.delete<any>(`${this.valtimoApiConfig.endpointUri}openzaak/informatie-object-type-link/${id}`);
+    return this.http.delete<any>(
+      `${this.valtimoApiConfig.endpointUri}openzaak/informatie-object-type-link/${id}`
+    );
   }
 
   getZaakTypeLinkListByProcess(processDefinitionKey: string): Observable<any> {
-    return this.http.get(`${this.valtimoApiConfig.endpointUri}openzaak/link/process/${processDefinitionKey}`);
+    return this.http.get(
+      `${this.valtimoApiConfig.endpointUri}openzaak/link/process/${processDefinitionKey}`
+    );
   }
 
   getStatusTypes(zaakTypeRequest: ZaakTypeRequest): Observable<any> {
@@ -97,19 +104,34 @@ export class OpenZaakService {
   }
 
   getStatusResults(zaakTypeRequest): Observable<any> {
-    return this.http.post(`${this.valtimoApiConfig.endpointUri}openzaak/resultaat`, zaakTypeRequest);
+    return this.http.post(
+      `${this.valtimoApiConfig.endpointUri}openzaak/resultaat`,
+      zaakTypeRequest
+    );
   }
 
   createServiceTaskHandler(id: string, request: ServiceTaskHandlerRequest): Observable<any> {
-    return this.http.post<any>(`${this.valtimoApiConfig.endpointUri}openzaak/link/${id}/service-handler`, request);
+    return this.http.post<any>(
+      `${this.valtimoApiConfig.endpointUri}openzaak/link/${id}/service-handler`,
+      request
+    );
   }
 
   modifyServiceTaskHandler(id: string, request: ServiceTaskHandlerRequest): Observable<any> {
-    return this.http.put<any>(`${this.valtimoApiConfig.endpointUri}openzaak/link/${id}/service-handler`, request);
+    return this.http.put<any>(
+      `${this.valtimoApiConfig.endpointUri}openzaak/link/${id}/service-handler`,
+      request
+    );
   }
 
-  deleteServiceTaskHandler(id: string, processDefinitionKey: string, serviceTaskId: string): Observable<any> {
-    return this.http.delete<any>(`${this.valtimoApiConfig.endpointUri}openzaak/link/${id}/service-handler/${processDefinitionKey}/${serviceTaskId}`);
+  deleteServiceTaskHandler(
+    id: string,
+    processDefinitionKey: string,
+    serviceTaskId: string
+  ): Observable<any> {
+    return this.http.delete<any>(
+      `${this.valtimoApiConfig.endpointUri}openzaak/link/${id}/service-handler/${processDefinitionKey}/${serviceTaskId}`
+    );
   }
 
   upload(file: File, documentDefinitionName: string): Observable<OpenZaakResource> {
@@ -117,10 +139,13 @@ export class OpenZaakService {
     formData.append('file', file);
     formData.append('documentDefinitionName', documentDefinitionName);
 
-    return this.http.post<OpenZaakResource>(`${this.valtimoApiConfig.endpointUri}resource/upload-open-zaak`, formData, {
-      reportProgress: true,
-      responseType: 'json'
-    });
+    return this.http.post<OpenZaakResource>(
+      `${this.valtimoApiConfig.endpointUri}resource/upload-open-zaak`,
+      formData,
+      {
+        reportProgress: true,
+        responseType: 'json',
+      }
+    );
   }
-
 }

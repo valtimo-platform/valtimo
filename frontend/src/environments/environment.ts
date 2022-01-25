@@ -18,7 +18,13 @@
 // `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 import {NgxLoggerLevel} from 'ngx-logger';
-import {ROLE_ADMIN, ROLE_DEVELOPER, ROLE_USER, UploadProvider, ValtimoConfig} from '@valtimo/contract';
+import {
+  ROLE_ADMIN,
+  ROLE_DEVELOPER,
+  ROLE_USER,
+  UploadProvider,
+  ValtimoConfig,
+} from '@valtimo/contract';
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
 import {openZaakExtensionInitializer, emailExtensionInitializer} from '@valtimo/open-zaak';
 import {connectorLinkExtensionInitializer} from '@valtimo/connector-management';
@@ -27,38 +33,66 @@ const defaultDefinitionColumns = [
   {
     propertyName: 'sequence',
     translationKey: 'referenceNumber',
-    sortable: true
+    sortable: true,
   },
   {
     propertyName: 'createdBy',
     translationKey: 'createdBy',
-    sortable: true
+    sortable: true,
   },
   {
     propertyName: 'createdOn',
     translationKey: 'createdOn',
     sortable: true,
     viewType: 'date',
-    default: true
+    default: true,
   },
   {
     propertyName: 'modifiedOn',
     translationKey: 'lastModified',
     sortable: true,
-    viewType: 'date'
-  }
+    viewType: 'date',
+  },
 ];
 
 export const environment: ValtimoConfig = {
   production: false,
-  initializers: [openZaakExtensionInitializer, emailExtensionInitializer, connectorLinkExtensionInitializer],
+  initializers: [
+    openZaakExtensionInitializer,
+    emailExtensionInitializer,
+    connectorLinkExtensionInitializer,
+  ],
   authentication: authenticationKeycloak,
   menu: {
     menuItems: [
-      {roles: [ROLE_USER], link: ['/'], title: 'Dashboard', iconClass: 'icon mdi mdi-view-dashboard', sequence: 0},
-      {roles: [ROLE_USER], title: 'Dossiers', iconClass: 'icon mdi mdi-layers', sequence: 1, children: []},
-      {roles: [ROLE_USER], link: ['/tasks'], title: 'Tasks', iconClass: 'icon mdi mdi-check-all', sequence: 2},
-      {roles: [ROLE_USER], link: ['/analysis'], title: 'Analysis', iconClass: 'icon mdi mdi-chart', sequence: 3},
+      {
+        roles: [ROLE_USER],
+        link: ['/'],
+        title: 'Dashboard',
+        iconClass: 'icon mdi mdi-view-dashboard',
+        sequence: 0,
+      },
+      {
+        roles: [ROLE_USER],
+        title: 'Dossiers',
+        iconClass: 'icon mdi mdi-layers',
+        sequence: 1,
+        children: [],
+      },
+      {
+        roles: [ROLE_USER],
+        link: ['/tasks'],
+        title: 'Tasks',
+        iconClass: 'icon mdi mdi-check-all',
+        sequence: 2,
+      },
+      {
+        roles: [ROLE_USER],
+        link: ['/analysis'],
+        title: 'Analysis',
+        iconClass: 'icon mdi mdi-chart',
+        sequence: 3,
+      },
       {
         roles: [ROLE_ADMIN],
         title: 'Admin',
@@ -78,36 +112,38 @@ export const environment: ValtimoConfig = {
           {link: ['/entitlements'], title: 'Entitlements', sequence: 11},
           {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 12},
           {link: ['/process-migration'], title: 'Process migration', sequence: 13},
-          {link: ['/choice-fields'], title: 'Choice fields', sequence: 14}
-        ]
+          {link: ['/choice-fields'], title: 'Choice fields', sequence: 14},
+        ],
       },
       {
         roles: [ROLE_DEVELOPER],
         title: 'Development',
         iconClass: 'icon mdi mdi-code',
         sequence: 6,
-        children: [{link: ['/swagger'], title: 'Swagger', iconClass: 'icon mdi mdi-dot-circle', sequence: 1}]
-      }
-    ]
+        children: [
+          {link: ['/swagger'], title: 'Swagger', iconClass: 'icon mdi mdi-dot-circle', sequence: 1},
+        ],
+      },
+    ],
   },
   whitelistedDomains: ['localhost:4200'],
   mockApi: {
-    endpointUri: '/mock-api/'
+    endpointUri: '/mock-api/',
   },
   valtimoApi: {
-    endpointUri: '/api/'
+    endpointUri: '/api/',
   },
   swagger: {
-    endpointUri: '/v2/api-docs'
+    endpointUri: '/v2/api-docs',
   },
   logger: {
-    level: NgxLoggerLevel.TRACE
+    level: NgxLoggerLevel.TRACE,
   },
   definitions: {
-    dossiers: []
+    dossiers: [],
   },
   openZaak: {
-    catalogus: '8225508a-6840-413e-acc9-6422af120db1'
+    catalogus: '8225508a-6840-413e-acc9-6422af120db1',
   },
   uploadProvider: UploadProvider.OPEN_ZAAK,
   defaultDefinitionTable: defaultDefinitionColumns,
@@ -115,9 +151,14 @@ export const environment: ValtimoConfig = {
     leningen: [
       ...defaultDefinitionColumns,
       {propertyName: '$.voornaam', translationKey: 'firstName', sortable: false},
-      {propertyName: 'relatedFiles', translationKey: 'files', sortable: true, viewType: 'relatedFiles'}
-    ]
-  }
+      {
+        propertyName: 'relatedFiles',
+        translationKey: 'files',
+        sortable: true,
+        viewType: 'relatedFiles',
+      },
+    ],
+  },
 };
 
 /*

@@ -19,22 +19,19 @@
     {{ formField.label }}
   </label>
   <div class="col-12 col-sm-8 col-lg-6">
-    <select
-      class="form-control"
-      id="{{ formField.id }}"
-      [formControlName]="formField.id">
+    <select class="form-control" id="{{ formField.id }}" [formControlName]="formField.id">
       <option selected="selected" value=""></option>
       <ng-container *ngFor="let choicefieldValue of choicefieldValues">
-        <option *ngIf="!choicefieldValue.deprecated"
-                [value]="choicefieldValue.value"
-                id="option_{{ choicefieldValue.value }}">
+        <option
+          *ngIf="!choicefieldValue.deprecated"
+          [value]="choicefieldValue.value"
+          id="option_{{ choicefieldValue.value }}"
+        >
           {{ choicefieldValue.name }}
         </option>
       </ng-container>
     </select>
-    <valtimo-camunda-formfield-validation
-      [formGroup]="formGroup"
-      [formField]="formField">
+    <valtimo-camunda-formfield-validation [formGroup]="formGroup" [formField]="formField">
     </valtimo-camunda-formfield-validation>
   </div>
 </div>

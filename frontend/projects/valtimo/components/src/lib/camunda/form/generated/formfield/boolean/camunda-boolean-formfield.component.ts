@@ -20,13 +20,11 @@ import {FormField} from '../formfield.model';
 
 @Component({
   selector: 'valtimo-camunda-boolean-formfield',
-  templateUrl: './camunda-boolean-formfield.component.html'
+  templateUrl: './camunda-boolean-formfield.component.html',
 })
 export class CamundaBooleanFormfieldComponent {
-
   public formGroup: FormGroup;
   public formField: FormField;
 
-  constructor() {
-  }
+  constructor() {}
 }

@@ -19,8 +19,5 @@
       "@valtimo/form-link": "formLink"
     }
   },
-  "whitelistedNonPeerDependencies": [
-    "."
-  ]
+  "whitelistedNonPeerDependencies": ["."]
 }
-

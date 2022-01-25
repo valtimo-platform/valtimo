@@ -15,10 +15,10 @@
  */
 
 import {Component, OnInit, ViewChild} from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
-import { ContextService } from '@valtimo/context';
+import {TranslateService} from '@ngx-translate/core';
+import {ContextService} from '@valtimo/context';
 import {ActivatedRoute, Router} from '@angular/router';
-import { TaskDetailModalComponent, TaskService } from '@valtimo/task';
+import {TaskDetailModalComponent, TaskService} from '@valtimo/task';
 import * as moment_ from 'moment';
 import {take} from 'rxjs/operators';
 import {Task} from '@valtimo/contract';
@@ -32,7 +32,7 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
 @Component({
   selector: 'valtimo-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
+  styleUrls: ['./dashboard.component.css'],
 })
 export class DashboardComponent implements OnInit {
   public processDefinitions: Array<any>;
@@ -40,16 +40,16 @@ export class DashboardComponent implements OnInit {
   public openTaskFields = [
     {
       key: 'created',
-      label: 'Created'
+      label: 'Created',
     },
     {
       key: 'name',
-      label: 'Name'
+      label: 'Name',
     },
     {
       key: 'valtimoAssignee.fullName',
-      label: 'Assignee'
-    }
+      label: 'Assignee',
+    },
   ];
   @ViewChild('taskDetail') taskDetail: TaskDetailModalComponent;
 
@@ -60,18 +60,17 @@ export class DashboardComponent implements OnInit {
     private contextService: ContextService,
     private taskService: TaskService,
     private readonly route: ActivatedRoute,
-    public translate: TranslateService,
-  ) {
-  }
+    public translate: TranslateService
+  ) {}
 
   ngOnInit() {
     this.getOpenTasks();
   }
 
   public getOpenTasks() {
-    this.taskService.getTasks().subscribe((response) => {
+    this.taskService.getTasks().subscribe(response => {
       this.openTasks = response;
-      this.openTasks.map((task) => {
+      this.openTasks.map(task => {
         task.created = moment(task.created).format('DD MMM YYYY HH:mm');
       });
       this.checkRouteForTaskId(response);
@@ -86,14 +85,13 @@ export class DashboardComponent implements OnInit {
   }
 
   private checkRouteForTaskId(tasks: Array<Task>): void {
-    this.route.queryParams.pipe(take(1))
-      .subscribe((params) => {
-        const taskId = params?.taskId;
-        const findTaskFromId = tasks.find((task) => task.id === taskId);
+    this.route.queryParams.pipe(take(1)).subscribe(params => {
+      const taskId = params?.taskId;
+      const findTaskFromId = tasks.find(task => task.id === taskId);
 
-        if (findTaskFromId) {
-          this.rowOpenTaskClick(findTaskFromId);
-        }
+      if (findTaskFromId) {
+        this.rowOpenTaskClick(findTaskFromId);
+      }
     });
   }
 }

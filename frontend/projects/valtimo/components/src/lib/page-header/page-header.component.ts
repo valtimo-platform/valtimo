@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 
 @Component({
   selector: 'valtimo-page-header',
   templateUrl: './page-header.component.html',
-  styleUrls: ['./page-header.component.css']
+  styleUrls: ['./page-header.component.css'],
 })
 export class PageHeaderComponent implements OnInit {
+  constructor() {}
 
-  constructor () { }
-
-  ngOnInit () { }
-
+  ngOnInit() {}
 }

@@ -26,17 +26,13 @@ const routes: Routes = [
     path: '',
     component: DashboardComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Dashboard', roles: [ROLE_USER]}
-  }
+    data: {title: 'Dashboard', roles: [ROLE_USER]},
+  },
 ];
 
 @NgModule({
   declarations: [],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes)
-  ],
-  exports: [RouterModule]
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class DashboardRoutingModule {
-}
+export class DashboardRoutingModule {}

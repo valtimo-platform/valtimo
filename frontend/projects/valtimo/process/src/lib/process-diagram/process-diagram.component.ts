@@ -24,7 +24,7 @@ import {
   OnInit,
   Output,
   ViewChild,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from '@angular/core';
 import {ProcessService} from '../process.service';
 
@@ -35,14 +35,13 @@ import * as heatmap from 'heatmap.js-fixed/build/heatmap.js';
   selector: 'valtimo-process-diagram',
   templateUrl: './process-diagram.component.html',
   styleUrls: ['./process-diagram.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
-
   private bpmnJS: BpmnJS;
   private heatMapInstance: any;
 
-  @ViewChild('ref', { static: true }) public el: ElementRef;
+  @ViewChild('ref', {static: true}) public el: ElementRef;
   @Output() public importDone: EventEmitter<any> = new EventEmitter();
   @Input() public processDefinitionKey?: string;
   @Input() public processInstanceId?: string;
@@ -63,9 +62,7 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
   public inputData: any;
   public valueKey: any;
 
-  constructor(
-    private processService: ProcessService,
-  ) { }
+  constructor(private processService: ProcessService) {}
 
   ngOnInit() {
     if (this.processDefinitionKey) {
@@ -77,13 +74,16 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
     this.bpmnJS = new BpmnJS();
     this.bpmnJS.on('import.done', ({error}) => {
       if (!error) {
-        const canvas = this.bpmnJS.get('canvas')
-          , eventBus = this.bpmnJS.get('eventBus');
+        const canvas = this.bpmnJS.get('canvas'),
+          eventBus = this.bpmnJS.get('eventBus');
         if (this.processDiagram.historicActivityInstances) {
           this.processDiagram.historicActivityInstances.forEach(instance => {
             // exclude multiInstanceBody
             if (instance.activityType !== 'multiInstanceBody') {
-              canvas.addMarker(instance.activityId, instance.endTime ? 'highlight-overlay-past' : 'highlight-overlay-current');
+              canvas.addMarker(
+                instance.activityId,
+                instance.endTime ? 'highlight-overlay-past' : 'highlight-overlay-current'
+              );
             }
           });
         }
@@ -138,8 +138,8 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   public loadProcessDefinitionFromKey(processDefinitionKey) {
-      this.loadProcessDefinitionVersions(processDefinitionKey);
-      this.loadProcessDefinition(processDefinitionKey);
+    this.loadProcessDefinitionVersions(processDefinitionKey);
+    this.loadProcessDefinition(processDefinitionKey);
   }
 
   public loadProcessDefinitionXml(processDefinitionId) {
@@ -167,21 +167,20 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
       this.max = 0;
 
       Object.keys(this.inputData).forEach(key => {
-        const diagramContainer = this.el.nativeElement.querySelector('svg')
-            .getBoundingClientRect(),
-          diagramElm = this.el.nativeElement.querySelector(`g[data-element-id=${key}]`)
+        const diagramContainer = this.el.nativeElement.querySelector('svg').getBoundingClientRect(),
+          diagramElm = this.el.nativeElement
+            .querySelector(`g[data-element-id=${key}]`)
             .getBoundingClientRect();
         this.setMax(key);
         this.heatPoints.data.push({
           x: Math.round(diagramElm.x - diagramContainer.x + diagramElm.width / 2),
           y: Math.round(diagramElm.y - diagramContainer.y + diagramElm.height / 2),
           value: this.inputData[key][this.valueKey],
-          radius: diagramElm.width / 2
+          radius: diagramElm.width / 2,
         });
         this.addCounterActiveOverlays(key, this.inputData);
-
       });
-        this.clearHeatmap();
+      this.clearHeatmap();
       if (this.showHeatmap) {
         this.loadHeatmap();
       }
@@ -208,20 +207,20 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
       this.max = 0;
 
       Object.keys(this.inputData).forEach(key => {
-        const diagramContainer = this.el.nativeElement.querySelector('svg')
-            .getBoundingClientRect(),
-          diagramElm = this.el.nativeElement.querySelector(`g[data-element-id=${key}]`)
+        const diagramContainer = this.el.nativeElement.querySelector('svg').getBoundingClientRect(),
+          diagramElm = this.el.nativeElement
+            .querySelector(`g[data-element-id=${key}]`)
             .getBoundingClientRect();
         this.setMax(key);
         this.heatPoints.data.push({
           x: Math.round(diagramElm.x - diagramContainer.x + diagramElm.width / 2),
           y: Math.round(diagramElm.y - diagramContainer.y + diagramElm.height / 2),
           value: this.inputData[key][this.valueKey],
-          radius: diagramElm.width / 2
+          radius: diagramElm.width / 2,
         });
         this.addCounterActiveOverlays(key, this.inputData);
       });
-        this.clearHeatmap();
+      this.clearHeatmap();
       if (this.showHeatmap) {
         this.loadHeatmap();
       }
@@ -252,16 +251,16 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
     if (!this.heatMapInstance) {
       this.heatMapInstance = heatmap.create({
         radius: 54,
-        blur: .70,
-        maxOpacity: .4,
+        blur: 0.7,
+        maxOpacity: 0.4,
         minOpacity: 0,
-        container: this.el.nativeElement
+        container: this.el.nativeElement,
       });
     }
     this.heatMapInstance.setData({
       min: this.min,
       max: this.max,
-      data: this.heatPoints.data
+      data: this.heatPoints.data,
     });
   }
 
@@ -272,7 +271,9 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   public loadHeatmapData() {
-    this.processDefinition = this.processDefinitionVersions.find(definition => definition.version === this.version);
+    this.processDefinition = this.processDefinitionVersions.find(
+      definition => definition.version === this.version
+    );
 
     if (this.heatmapOption === 'count') {
       this.loadProcessDefinitionHeatmapCount(this.processDefinition);
@@ -286,7 +287,10 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
     if (this.heatmapDuration) {
       this.max = Math.max(this.heatmapDuration[key].averageDurationInMilliseconds, this.max);
     } else if (this.heatmapCount) {
-      this.max = Math.max(this.heatmapCount[key].totalCount + this.heatmapCount[key].count, this.max);
+      this.max = Math.max(
+        this.heatmapCount[key].totalCount + this.heatmapCount[key].count,
+        this.max
+      );
     }
   }
 
@@ -295,14 +299,13 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
     overlays.add(key, {
       position: {
         bottom: 13,
-        left: -12
+        left: -12,
       },
       show: {
         minZoom: 0,
-        maxZoom: 5.0
+        maxZoom: 5.0,
       },
-      html: `<span class="badge badge-pill badge-primary">${inputData[key].count}</span>`
+      html: `<span class="badge badge-pill badge-primary">${inputData[key].count}</span>`,
     });
   }
-
 }

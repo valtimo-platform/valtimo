@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import {ComponentFactoryResolver, ComponentRef, Directive, Input, OnInit, ViewContainerRef} from '@angular/core';
+import {
+  ComponentFactoryResolver,
+  ComponentRef,
+  Directive,
+  Input,
+  OnInit,
+  ViewContainerRef,
+} from '@angular/core';
 import {FormGroup} from '@angular/forms';
 import {FormField} from './formfield.model';
 import {CamundaStringFormfieldComponent} from './string/camunda-string-formfield.component';
@@ -26,7 +33,7 @@ import {CamundaTextareaFormfieldComponent} from './textarea/camunda-textarea-for
 import {CamundaChoicefieldFormfieldComponent} from './choicefield/camunda-choicefield-formfield.component';
 
 @Directive({
-  selector: '[valtimoCamundaFormfieldGenerator]'
+  selector: '[valtimoCamundaFormfieldGenerator]',
 })
 export class CamundaFormfieldGeneratorDirective implements OnInit {
   @Input() formField: FormField;
@@ -40,7 +47,7 @@ export class CamundaFormfieldGeneratorDirective implements OnInit {
     long: CamundaLongFormfieldComponent,
     enum: CamundaEnumFormfieldComponent,
     textarea: CamundaTextareaFormfieldComponent,
-    choicefield: CamundaChoicefieldFormfieldComponent
+    choicefield: CamundaChoicefieldFormfieldComponent,
   };
 
   private component: ComponentRef<any>;
@@ -48,24 +55,17 @@ export class CamundaFormfieldGeneratorDirective implements OnInit {
   constructor(
     private viewContainerRef: ViewContainerRef,
     private componentFactoryResolver: ComponentFactoryResolver
-  ) {
-
-  }
+  ) {}
 
   ngOnInit(): void {
     const typeName = this.formField.typeName.toLowerCase();
-    if ( !this.COMPONENTS[typeName] ) {
-      throw new Error(
-        'Could not find component for formfield type: ' + typeName
-      );
+    if (!this.COMPONENTS[typeName]) {
+      throw new Error('Could not find component for formfield type: ' + typeName);
     }
-    const component = this.COMPONENTS[ typeName ];
+    const component = this.COMPONENTS[typeName];
     const factory = this.componentFactoryResolver.resolveComponentFactory(component);
     this.component = this.viewContainerRef.createComponent(factory);
     this.component.instance.formGroup = this.formGroup;
     this.component.instance.formField = this.formField;
   }
-
-
 }
-

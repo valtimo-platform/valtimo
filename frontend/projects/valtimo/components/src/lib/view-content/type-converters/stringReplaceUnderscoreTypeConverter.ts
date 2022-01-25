@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { TypeConverter } from './type-converters.model';
+import {TypeConverter} from './type-converters.model';
 
 export class StringReplaceUnderscoreTypeConverter implements TypeConverter {
-
   public regExpStringRemoveUnderscore = /_/g;
 
   getTypeString(): string {

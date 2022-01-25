@@ -21,7 +21,7 @@ import {ConfigService} from '@valtimo/config';
 import {Contactmoment, CreateContactMomentRequest} from '@valtimo/contract';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ContactMomentService {
   private valtimoEndpointUri: string;

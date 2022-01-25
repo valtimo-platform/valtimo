@@ -17,9 +17,9 @@
 export interface Auth0User {
   email: string;
   user_metadata: {
-    firstname: string,
-    langKey: string,
-    lastname: string
+    firstname: string;
+    langKey: string;
+    lastname: string;
   };
   name: string;
 }

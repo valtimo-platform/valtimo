@@ -21,8 +21,6 @@ import {FormIoModule} from '@valtimo/components';
 
 @NgModule({
   imports: [CommonModule, FormRoutingModule, FormIoModule],
-  exports: []
+  exports: [],
 })
-export class FormModule {
-
-}
+export class FormModule {}

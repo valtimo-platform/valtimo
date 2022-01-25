@@ -26,10 +26,9 @@ import {first} from 'rxjs/operators';
 @Component({
   selector: 'valtimo-choice-field-detail',
   templateUrl: './choice-field-detail.component.html',
-  styleUrls: ['./choice-field-detail.component.css']
+  styleUrls: ['./choice-field-detail.component.css'],
 })
 export class ChoiceFieldDetailComponent implements OnInit, OnDestroy {
-
   public id: string;
   public form: FormGroup;
   public choiceField: ChoiceField;
@@ -78,7 +77,7 @@ export class ChoiceFieldDetailComponent implements OnInit, OnDestroy {
     return this.formBuilder.group({
       id: new FormControl('', Validators.required),
       keyName: new FormControl('', Validators.required),
-      title: new FormControl('', Validators.required)
+      title: new FormControl('', Validators.required),
     });
   }
 
@@ -97,16 +96,17 @@ export class ChoiceFieldDetailComponent implements OnInit, OnDestroy {
       {
         label: 'Cancel',
         class: 'btn btn-default',
-        value: false
+        value: false,
       },
       {
         label: 'Delete',
         class: 'btn btn-primary',
-        value: true
-      }
+        value: true,
+      },
     ];
     this.alertService.notification(mssg, confirmations);
-    this.alertSub = this.alertService.getAlertConfirmChangeEmitter()
+    this.alertSub = this.alertService
+      .getAlertConfirmChangeEmitter()
       .pipe(first())
       .subscribe(alert => {
         if (alert.confirm === true) {
@@ -128,5 +128,4 @@ export class ChoiceFieldDetailComponent implements OnInit, OnDestroy {
       this.alertService.success('Choice field details have been updated');
     });
   }
-
 }

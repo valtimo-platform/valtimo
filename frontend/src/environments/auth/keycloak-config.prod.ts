@@ -15,18 +15,23 @@
  */
 
 import {Auth, AuthProviders, ValtimoKeycloakOptions} from '@valtimo/contract';
-import {KeycloakAuthGuardService, keycloakInitializer, KeycloakModule, KeycloakUserService} from '@valtimo/keycloak';
+import {
+  KeycloakAuthGuardService,
+  keycloakInitializer,
+  KeycloakModule,
+  KeycloakUserService,
+} from '@valtimo/keycloak';
 import {KeycloakConfig, KeycloakOnLoad} from 'keycloak-js';
 
 const keycloakAuthenticationProviders: AuthProviders = {
   guardServiceProvider: KeycloakAuthGuardService,
-  userServiceProvider: KeycloakUserService
+  userServiceProvider: KeycloakUserService,
 };
 
 const keycloakConfigDev: KeycloakConfig = {
   url: '',
   realm: '',
-  clientId: ''
+  clientId: '',
 };
 
 const keycloakOnLoad: KeycloakOnLoad = 'login-required';
@@ -36,7 +41,7 @@ const keycloakInitOptions: any = {
   onLoad: keycloakOnLoad,
   checkLoginIframe: false,
   flow: 'standard',
-  redirectUri: ''
+  redirectUri: '',
 };
 
 const valtimoKeycloakOptions: ValtimoKeycloakOptions = {
@@ -44,17 +49,14 @@ const valtimoKeycloakOptions: ValtimoKeycloakOptions = {
     config: keycloakConfigDev,
     initOptions: keycloakInitOptions,
     enableBearerInterceptor: true,
-    bearerExcludedUrls: [
-      '/assets',
-      '.*?\.amazonaws.com/'
-    ]
+    bearerExcludedUrls: ['/assets', '.*?.amazonaws.com/'],
   },
-  logoutRedirectUri: ''
+  logoutRedirectUri: '',
 };
 
 const authenticationKeycloak: Auth = {
   module: KeycloakModule,
   initializer: keycloakInitializer,
   authProviders: keycloakAuthenticationProviders,
-  options: valtimoKeycloakOptions
+  options: valtimoKeycloakOptions,
 };

@@ -16,7 +16,12 @@
 
 import {Component, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
 import {DocumentService} from '@valtimo/document';
-import {ProcessDocumentDefinitionRequest, ProcessDocumentDefinition, DocumentDefinition, ProcessDefinition} from '@valtimo/contract';
+import {
+  ProcessDocumentDefinitionRequest,
+  ProcessDocumentDefinition,
+  DocumentDefinition,
+  ProcessDefinition,
+} from '@valtimo/contract';
 import {ProcessService} from '@valtimo/process';
 import {ToastrService} from 'ngx-toastr';
 import {ModalComponent} from '@valtimo/components';
@@ -24,7 +29,7 @@ import {ModalComponent} from '@valtimo/components';
 @Component({
   selector: 'valtimo-dossier-management-connect-modal',
   templateUrl: './dossier-management-connect-modal.component.html',
-  styleUrls: ['./dossier-management-connect-modal.component.scss']
+  styleUrls: ['./dossier-management-connect-modal.component.scss'],
 })
 export class DossierManagementConnectModalComponent implements OnInit {
   public documentDefinition: DocumentDefinition | null = null;
@@ -40,23 +45,29 @@ export class DossierManagementConnectModalComponent implements OnInit {
     private processService: ProcessService,
     private documentService: DocumentService,
     private toasterService: ToastrService
-  ) {
-  }
+  ) {}
 
   loadProcessDocumentDefinitions() {
     this.processDocumentDefinitionExists = {};
-    this.documentService.findProcessDocumentDefinitions(this.documentDefinition.id.name).subscribe(
-      (processDocumentDefinitions: ProcessDocumentDefinition[]) => {
-        processDocumentDefinitions.forEach((processDocumentDefinition: ProcessDocumentDefinition) => {
-          this.processDocumentDefinitionExists[processDocumentDefinition.id.processDefinitionKey] = true;
-        });
+    this.documentService
+      .findProcessDocumentDefinitions(this.documentDefinition.id.name)
+      .subscribe((processDocumentDefinitions: ProcessDocumentDefinition[]) => {
+        processDocumentDefinitions.forEach(
+          (processDocumentDefinition: ProcessDocumentDefinition) => {
+            this.processDocumentDefinitionExists[
+              processDocumentDefinition.id.processDefinitionKey
+            ] = true;
+          }
+        );
       });
   }
 
   loadProcessDefinitions() {
-    this.processService.getProcessDefinitions().subscribe((processDefinitions: ProcessDefinition[]) => {
-      this.processDefinitions = processDefinitions;
-    });
+    this.processService
+      .getProcessDefinitions()
+      .subscribe((processDefinitions: ProcessDefinition[]) => {
+        this.processDefinitions = processDefinitions;
+      });
   }
 
   ngOnInit() {
@@ -77,13 +88,16 @@ export class DossierManagementConnectModalComponent implements OnInit {
       canInitializeDocument: this.newDocumentProcessDefinitionInit,
       startableByUser: this.newDocumentProcessDefinitionStartableByUser,
       documentDefinitionName: this.documentDefinition.id.name,
-      processDefinitionKey: this.newDocumentProcessDefinition.key
+      processDefinitionKey: this.newDocumentProcessDefinition.key,
     };
-    this.documentService.createProcessDocumentDefinition(request).subscribe(() => {
-      this.toasterService.success('Successfully added new process document definition');
-      this.reloadProcessDocumentDefinitions.emit();
-    }, err => {
-      this.toasterService.error('Failed to add new process document definition');
-    });
+    this.documentService.createProcessDocumentDefinition(request).subscribe(
+      () => {
+        this.toasterService.success('Successfully added new process document definition');
+        this.reloadProcessDocumentDefinitions.emit();
+      },
+      err => {
+        this.toasterService.error('Failed to add new process document definition');
+      }
+    );
   }
 }

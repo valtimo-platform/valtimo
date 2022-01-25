@@ -14,7 +14,17 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
 import {BehaviorSubject, combineLatest, fromEvent, Subscription} from 'rxjs';
 import {debounceTime, map, take} from 'rxjs/operators';
@@ -22,7 +32,7 @@ import {debounceTime, map, take} from 'rxjs/operators';
 @Component({
   selector: 'valtimo-left-sidebar',
   templateUrl: './left-sidebar.component.html',
-  styleUrls: ['./left-sidebar.component.css']
+  styleUrls: ['./left-sidebar.component.css'],
 })
 export class LeftSidebarComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('toggleButton') toggleButtonRef: ElementRef;
@@ -49,7 +59,9 @@ export class LeftSidebarComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly maxMenuWidth = 330;
   private readonly minMenuWidth = 120;
 
-  private readonly mouseX$ = fromEvent(document.body, 'mousemove').pipe(map((e: MouseEvent) => e.pageX));
+  private readonly mouseX$ = fromEvent(document.body, 'mousemove').pipe(
+    map((e: MouseEvent) => e.pageX)
+  );
 
   constructor(private translateService: TranslateService, private readonly elementRef: ElementRef) {
     this.bodyStyle = elementRef.nativeElement.ownerDocument.body.style;

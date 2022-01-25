@@ -22,7 +22,7 @@ moment.locale(localStorage.getItem('langKey'));
 const DATE_FORMAT = 'DD-MM-YYYY';
 
 export function minDate(minDateIn: string): ValidatorFn {
-  return (control: AbstractControl): { [key: string]: any } | null => {
+  return (control: AbstractControl): {[key: string]: any} | null => {
     if (!control.value) {
       return null;
     }
@@ -33,8 +33,8 @@ export function minDate(minDateIn: string): ValidatorFn {
       return {
         minDate: {
           minDate: momentMinDate.format(DATE_FORMAT),
-          actual: controlDate.format(DATE_FORMAT)
-        }
+          actual: controlDate.format(DATE_FORMAT),
+        },
       };
     } else {
       return null;
@@ -43,7 +43,7 @@ export function minDate(minDateIn: string): ValidatorFn {
 }
 
 export function maxDate(maxDateIn: string): ValidatorFn {
-  return (control: AbstractControl): { [key: string]: any } | null => {
+  return (control: AbstractControl): {[key: string]: any} | null => {
     if (!control.value) {
       return null;
     }
@@ -54,8 +54,8 @@ export function maxDate(maxDateIn: string): ValidatorFn {
       return {
         maxDate: {
           maxDate: momentMaxDate.format(DATE_FORMAT),
-          actual: controlDate.format(DATE_FORMAT)
-        }
+          actual: controlDate.format(DATE_FORMAT),
+        },
       };
     } else {
       return null;

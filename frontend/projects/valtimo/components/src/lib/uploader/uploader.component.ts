@@ -21,22 +21,17 @@ import {S3Resource} from '@valtimo/contract';
 @Component({
   selector: 'valtimo-uploader',
   templateUrl: './uploader.component.html',
-  styleUrls: ['./uploader.component.css']
+  styleUrls: ['./uploader.component.css'],
 })
 export class UploaderComponent implements OnInit {
-
   public resources: any = [];
   @Output() resourcesChanged: EventEmitter<any> = new EventEmitter();
   @Output() resourceRegistered: EventEmitter<S3Resource> = new EventEmitter();
   @Input() showFileList = true;
 
-  constructor(
-    private s3Service: S3Service
-  ) {
-  }
+  constructor(private s3Service: S3Service) {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   onFileFieldChange(files) {
     for (const file of files) {
@@ -65,5 +60,4 @@ export class UploaderComponent implements OnInit {
       this.resourcesChanged.emit(this.resources);
     });
   }
-
 }

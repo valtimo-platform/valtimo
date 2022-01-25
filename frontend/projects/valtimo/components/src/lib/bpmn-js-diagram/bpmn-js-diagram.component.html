@@ -16,19 +16,35 @@
 
 <div class="p-4" *ngIf="heatmapDuration || heatmapCount">
   <div class="switch-button switch-button-sm switch-button-success">
-    <input type="checkbox" id="toggleHeatmap" [checked]="heatmapMode" (click)="toggleHeatmap()"><span>
-    <label for="toggleHeatmap"></label></span>
+    <input
+      type="checkbox"
+      id="toggleHeatmap"
+      [checked]="heatmapMode"
+      (click)="toggleHeatmap()"
+    /><span> <label for="toggleHeatmap"></label></span>
   </div>
 </div>
 
 <div #ref class="diagram-container"></div>
 
 <div *ngIf="historicActivityInstances" class="p-4 text-center legenda-holder">
-  <span><div class="legenda highlight-overlay-past"></div> Executed tasks</span>
-  <span class="ml-3"><div class="legenda highlight-overlay-current"></div> Current tasks</span>
+  <span
+    ><div class="legenda highlight-overlay-past"></div>
+    Executed tasks</span
+  >
+  <span class="ml-3"
+    ><div class="legenda highlight-overlay-current"></div>
+    Current tasks</span
+  >
 </div>
 
 <div *ngIf="heatmapDuration || heatmapCount" class="p-4 text-center legenda-holder">
-  <span><span class="badge badge-pill badge-primary">N</span>&nbsp;&nbsp;Amount of currently active instances of this task.</span>
-  <span>&nbsp;&nbsp;|&nbsp;&nbsp;Red/yellow/green orbs: The amount of times the task is executed in comparison to the other tasks.</span>
+  <span
+    ><span class="badge badge-pill badge-primary">N</span>&nbsp;&nbsp;Amount of currently active
+    instances of this task.</span
+  >
+  <span
+    >&nbsp;&nbsp;|&nbsp;&nbsp;Red/yellow/green orbs: The amount of times the task is executed in
+    comparison to the other tasks.</span
+  >
 </div>

@@ -14,14 +14,17 @@
   ~ limitations under the License.
   -->
 
-<div class="main-content pt-0" *ngIf="{
+<div
+  class="main-content pt-0"
+  *ngIf="{
     connectorInstances: connectorInstances$ | async,
     fields: fields$ | async,
     pagination: pagination$ | async,
     loading: loading$ | async
-  } as obs">
+  } as obs"
+>
   <div class="container-fluid">
-    <ng-container *ngTemplateOutlet="buttons;context:{loading: obs.loading}"></ng-container>
+    <ng-container *ngTemplateOutlet="buttons; context: {loading: obs.loading}"></ng-container>
     <valtimo-widget *ngIf="obs.loading === false; else loading">
       <valtimo-list
         [items]="obs.connectorInstances"
@@ -44,8 +47,7 @@
   </div>
 </div>
 
-<valtimo-connector-modal [modalType]="modalType$ | async">
-</valtimo-connector-modal>
+<valtimo-connector-modal [modalType]="modalType$ | async"> </valtimo-connector-modal>
 
 <ng-template #buttons let-loading="loading">
   <div class="btn-group mt-m3px mb-3 float-right">
@@ -60,4 +62,3 @@
 <ng-template #loading>
   <valtimo-spinner></valtimo-spinner>
 </ng-template>
-

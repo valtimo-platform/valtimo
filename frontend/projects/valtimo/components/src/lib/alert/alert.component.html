@@ -14,24 +14,31 @@
   ~ limitations under the License.
   -->
 
-<div *ngFor="let alert of alerts" class="{{cssClass(alert)}} rounded-0 m-0 alert-dismissable">
-
+<div *ngFor="let alert of alerts" class="{{ cssClass(alert) }} rounded-0 m-0 alert-dismissable">
   <div *ngIf="inModal(alert)">
     <!-- Modal -->
     <div class="modal fade" id="modalNotification" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-body p-0">
-            <button class="close" type="button" (click)="removeAlert(alert)"><span class="mdi mdi-close" aria-hidden="true"></span></button>
-            <div class="icon"><span class="{{ alert.iconClass || cssIconClass(alert) }}"></span></div>
+            <button class="close" type="button" (click)="removeAlert(alert)">
+              <span class="mdi mdi-close" aria-hidden="true"></span>
+            </button>
+            <div class="icon">
+              <span class="{{ alert.iconClass || cssIconClass(alert) }}"></span>
+            </div>
             <div class="message">
               <div [innerHTML]="alert.message"></div>
             </div>
           </div>
           <div class="modal-footer pt-0" *ngIf="alert.confirmations?.length">
-              <button class="{{ confirmation.class }} mr-2"
-                      *ngFor="let confirmation of alert.confirmations"
-                      (click)="alertConfirm(alert, confirmation.value)">{{ confirmation.label }}</button>
+            <button
+              class="{{ confirmation.class }} mr-2"
+              *ngFor="let confirmation of alert.confirmations"
+              (click)="alertConfirm(alert, confirmation.value)"
+            >
+              {{ confirmation.label }}
+            </button>
           </div>
         </div>
       </div>
@@ -43,11 +50,17 @@
     <div class="message">
       <div [innerHTML]="alert.message"></div>
       <div class="mt-3" *ngIf="alert.confirmations?.length">
-        <button class="{{ confirmation.class }} mr-2"
-                *ngFor="let confirmation of alert.confirmations"
-                (click)="alertConfirm(alert, confirmation.value)">{{ confirmation.label }}</button>
+        <button
+          class="{{ confirmation.class }} mr-2"
+          *ngFor="let confirmation of alert.confirmations"
+          (click)="alertConfirm(alert, confirmation.value)"
+        >
+          {{ confirmation.label }}
+        </button>
       </div>
     </div>
-    <button class="close" type="button" (click)="removeAlert(alert)"><span class="mdi mdi-close" aria-hidden="true"></span></button>
+    <button class="close" type="button" (click)="removeAlert(alert)">
+      <span class="mdi mdi-close" aria-hidden="true"></span>
+    </button>
   </div>
 </div>

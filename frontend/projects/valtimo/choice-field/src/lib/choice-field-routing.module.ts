@@ -30,55 +30,51 @@ const routes: Routes = [
     path: 'choice-fields',
     data: {
       title: 'Choice fields',
-      roles: [ROLE_ADMIN]
+      roles: [ROLE_ADMIN],
     },
     component: ChoiceFieldListComponent,
-    canActivate: [AuthGuardService]
+    canActivate: [AuthGuardService],
   },
   {
     path: 'choice-fields/field/:id',
     data: {
       title: 'Choice field details',
-      roles: [ROLE_ADMIN]
+      roles: [ROLE_ADMIN],
     },
     component: ChoiceFieldDetailComponent,
-    canActivate: [AuthGuardService]
+    canActivate: [AuthGuardService],
   },
   {
     path: 'choice-fields/create',
     data: {
       title: 'Create new Choice field',
-      roles: [ROLE_ADMIN]
+      roles: [ROLE_ADMIN],
     },
     component: ChoiceFieldCreateComponent,
-    canActivate: [AuthGuardService]
+    canActivate: [AuthGuardService],
   },
   {
     path: 'choice-fields/field/:id/create-value',
     data: {
       title: 'Create new Choice field value',
-      roles: [ROLE_ADMIN]
+      roles: [ROLE_ADMIN],
     },
     component: ChoiceFieldValueCreateComponent,
-    canActivate: [AuthGuardService]
+    canActivate: [AuthGuardService],
   },
   {
     path: 'choice-fields/field/:id/value/:valueId',
     data: {
       title: 'Choice field value details',
-      roles: [ROLE_ADMIN]
+      roles: [ROLE_ADMIN],
     },
     component: ChoiceFieldValueDetailComponent,
-    canActivate: [AuthGuardService]
-  }
+    canActivate: [AuthGuardService],
+  },
 ];
 
 @NgModule({
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-  ],
-  exports: [RouterModule]
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class ChoiceFieldRoutingModule {
-}
+export class ChoiceFieldRoutingModule {}

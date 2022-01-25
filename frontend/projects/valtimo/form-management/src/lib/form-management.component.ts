@@ -19,13 +19,10 @@ import {Component, OnInit} from '@angular/core';
 @Component({
   selector: 'valtimo-form-management',
   templateUrl: './form-management.component.html',
-  styleUrls: ['./form-management.component.scss']
+  styleUrls: ['./form-management.component.scss'],
 })
 export class FormManagementComponent implements OnInit {
+  constructor() {}
 
-  constructor() {
-  }
-
-  ngOnInit() {
-  }
+  ngOnInit() {}
 }

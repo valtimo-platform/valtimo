@@ -23,23 +23,17 @@ declare var $;
 @Component({
   selector: 'valtimo-session-expired-popup',
   templateUrl: './session-expired-popup.component.html',
-  styleUrls: ['./session-expired-popup.component.scss']
+  styleUrls: ['./session-expired-popup.component.scss'],
 })
 export class SessionExpiredPopupComponent implements OnInit {
-
-  constructor(
-    private logger: NGXLogger,
-    public auth0UserService: Auth0UserService
-  ) {
-  }
+  constructor(private logger: NGXLogger, public auth0UserService: Auth0UserService) {}
 
   ngOnInit() {
     this.logger.info('session expired');
     $('#sessionExpiredModal').modal({
       show: true,
       backdrop: 'static',
-      keyboard: false
+      keyboard: false,
     });
   }
 }
-

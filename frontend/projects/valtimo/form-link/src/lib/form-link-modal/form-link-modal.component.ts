@@ -23,7 +23,7 @@ import {
   DropdownItem,
   FormAssociation,
   FormDefinition,
-  ModifyFormAssociationRequest
+  ModifyFormAssociationRequest,
 } from '@valtimo/contract';
 import {FormLinkService} from '../form-link.service';
 import {AlertService, ModalComponent, SearchableDropdownComponent} from '@valtimo/components';
@@ -35,10 +35,9 @@ declare var $;
 @Component({
   selector: 'valtimo-form-link-modal',
   templateUrl: './form-link-modal.component.html',
-  styleUrls: ['./form-link-modal.component.scss']
+  styleUrls: ['./form-link-modal.component.scss'],
 })
 export class FormLinkModalComponent implements OnInit {
-
   public modalOptions: NgbModalOptions;
   public formDefinitions: FormDefinition[] = [];
   public selectedElement: BpmnElement | null = null;
@@ -143,63 +142,74 @@ export class FormLinkModalComponent implements OnInit {
     this.enteredAngularState = null;
     this.enteredCustomUrl = null;
     this.associationType = null;
-    this.formLinkService.getFormLinkByAssociation(this.processDefinitionKey, element.id).subscribe((formLink: FormAssociation) => {
-      this.previousFormLink = formLink;
-      const collapseFormDefinition = $('#collapseFormDefinition');
-      const collapseCustomUrl = $('#collapseCustomUrl');
-      const collapseAngularState = $('#collapseAngularState');
-      if (!this.isListenersAdded) {
-        this.addCollapseListeners(collapseFormDefinition, collapseAngularState, collapseCustomUrl);
-        this.isListenersAdded = true;
-      }
-      if (formLink !== null) {
-        const className = formLink.formLink.className.split('.');
-        const linkType = className[className.length - 1];
-        switch (linkType) {
-          case 'BpmnElementFormIdLink':
-            const foundFormDefinition = this.formDefinitions.find(formDefinition => formDefinition.id === formLink.formLink.formId);
-            if (foundFormDefinition !== undefined) {
-              this.selectedFormDefinition = foundFormDefinition;
-            }
-            collapseFormDefinition.collapse('show');
-            break;
-          case 'BpmnElementUrlLink':
-            this.enteredCustomUrl = formLink.formLink.url;
-            collapseCustomUrl.collapse('show');
-            break;
-          case 'BpmnElementAngularStateUrlLink':
-            this.enteredAngularState = formLink.formLink.url;
-            collapseAngularState.collapse('show');
-            break;
-          default:
-            this.logger.fatal('Unsupported class name');
+    this.formLinkService
+      .getFormLinkByAssociation(this.processDefinitionKey, element.id)
+      .subscribe((formLink: FormAssociation) => {
+        this.previousFormLink = formLink;
+        const collapseFormDefinition = $('#collapseFormDefinition');
+        const collapseCustomUrl = $('#collapseCustomUrl');
+        const collapseAngularState = $('#collapseAngularState');
+        if (!this.isListenersAdded) {
+          this.addCollapseListeners(
+            collapseFormDefinition,
+            collapseAngularState,
+            collapseCustomUrl
+          );
+          this.isListenersAdded = true;
         }
-      } else {
-        collapseFormDefinition.collapse('hide');
-        collapseCustomUrl.collapse('hide');
-        collapseAngularState.collapse('hide');
-      }
-      this.modal.show();
-    });
+        if (formLink !== null) {
+          const className = formLink.formLink.className.split('.');
+          const linkType = className[className.length - 1];
+          switch (linkType) {
+            case 'BpmnElementFormIdLink':
+              const foundFormDefinition = this.formDefinitions.find(
+                formDefinition => formDefinition.id === formLink.formLink.formId
+              );
+              if (foundFormDefinition !== undefined) {
+                this.selectedFormDefinition = foundFormDefinition;
+              }
+              collapseFormDefinition.collapse('show');
+              break;
+            case 'BpmnElementUrlLink':
+              this.enteredCustomUrl = formLink.formLink.url;
+              collapseCustomUrl.collapse('show');
+              break;
+            case 'BpmnElementAngularStateUrlLink':
+              this.enteredAngularState = formLink.formLink.url;
+              collapseAngularState.collapse('show');
+              break;
+            default:
+              this.logger.fatal('Unsupported class name');
+          }
+        } else {
+          collapseFormDefinition.collapse('hide');
+          collapseCustomUrl.collapse('hide');
+          collapseAngularState.collapse('hide');
+        }
+        this.modal.show();
+      });
   }
 
   submit(associationType: string) {
     const currentAssociation = {
       selected: undefined,
-      different: undefined
+      different: undefined,
     };
     switch (associationType) {
       case 'form-definition':
         currentAssociation.selected = this.selectedFormDefinition;
-        currentAssociation.different = () => this.previousFormLink.formLink.formId !== this.selectedFormDefinition.id;
+        currentAssociation.different = () =>
+          this.previousFormLink.formLink.formId !== this.selectedFormDefinition.id;
         break;
       case 'custom-url':
         currentAssociation.selected = this.enteredCustomUrl;
-        currentAssociation.different = () => this.previousFormLink.formLink.url !== this.enteredCustomUrl;
+        currentAssociation.different = () =>
+          this.previousFormLink.formLink.url !== this.enteredCustomUrl;
         break;
       case 'angular-state':
         currentAssociation.selected = this.enteredAngularState;
-        currentAssociation.different = () => this.previousFormLink.formLink.url !== this.enteredAngularState;
+        currentAssociation.different = () =>
+          this.previousFormLink.formLink.url !== this.enteredAngularState;
         break;
     }
     if (this.previousFormLink === null) {
@@ -217,8 +227,8 @@ export class FormLinkModalComponent implements OnInit {
       processDefinitionKey: this.processDefinitionKey,
       formLinkRequest: {
         type: FormLinkModalComponent.convertElementType(this.selectedElement.type),
-        id: this.selectedElement.id
-      }
+        id: this.selectedElement.id,
+      },
     };
     switch (associationType) {
       case 'form-definition':
@@ -234,11 +244,14 @@ export class FormLinkModalComponent implements OnInit {
         this.logger.fatal('Unknown association type');
     }
 
-    this.formLinkService.modifyFormAssociation(modifyFormAssociationRequest).subscribe(() => {
-      this.alertService.success(this.translateService.instant('formLink.alertRelink'));
-    }, err => {
-      this.alertService.error(this.translateService.instant('formLink.alertRelinkError'));
-    });
+    this.formLinkService.modifyFormAssociation(modifyFormAssociationRequest).subscribe(
+      () => {
+        this.alertService.success(this.translateService.instant('formLink.alertRelink'));
+      },
+      err => {
+        this.alertService.error(this.translateService.instant('formLink.alertRelinkError'));
+      }
+    );
   }
 
   private createFormAssociation(associationType: string) {
@@ -246,8 +259,8 @@ export class FormLinkModalComponent implements OnInit {
       processDefinitionKey: this.processDefinitionKey,
       formLinkRequest: {
         type: FormLinkModalComponent.convertElementType(this.selectedElement.type),
-        id: this.selectedElement.id
-      }
+        id: this.selectedElement.id,
+      },
     };
     switch (associationType) {
       case 'form-definition':
@@ -262,19 +275,27 @@ export class FormLinkModalComponent implements OnInit {
       default:
         this.logger.fatal('Unknown association type');
     }
-    this.formLinkService.createFormAssociation(createFormAssociationRequest).subscribe(() => {
-      this.alertService.success(this.translateService.instant('formLink.alertLink'));
-    }, err => {
-      this.alertService.error(this.translateService.instant('formLink.alertLinkError'));
-    });
+    this.formLinkService.createFormAssociation(createFormAssociationRequest).subscribe(
+      () => {
+        this.alertService.success(this.translateService.instant('formLink.alertLink'));
+      },
+      err => {
+        this.alertService.error(this.translateService.instant('formLink.alertLinkError'));
+      }
+    );
   }
 
   public deleteFormAssociation() {
-    this.formLinkService.deleteFormAssociation(this.processDefinitionKey, this.previousFormLink.id).subscribe(() => {
-      this.alertService.success(this.translateService.instant('formLink.alertUnlink'));
-    }, err => {
-      this.alertService.error(this.translateService.instant('formLink.alertUnlinkError'));
-    });
+    this.formLinkService
+      .deleteFormAssociation(this.processDefinitionKey, this.previousFormLink.id)
+      .subscribe(
+        () => {
+          this.alertService.success(this.translateService.instant('formLink.alertUnlink'));
+        },
+        err => {
+          this.alertService.error(this.translateService.instant('formLink.alertUnlinkError'));
+        }
+      );
   }
 
   /**
@@ -291,8 +312,9 @@ export class FormLinkModalComponent implements OnInit {
   }
 
   onFormDefinitionSelected(formDefinitionId: string) {
-    this.selectedFormDefinition = this.formDefinitions
-      .find(formDefinition => formDefinition.id === formDefinitionId);
+    this.selectedFormDefinition = this.formDefinitions.find(
+      formDefinition => formDefinition.id === formDefinitionId
+    );
   }
 
   clearSelectedFormDefinition(): void {

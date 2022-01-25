@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
-import { BreadcrumbNavigationComponent } from './breadcrumb-navigation.component';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {RouterTestingModule} from '@angular/router/testing';
+import {BreadcrumbNavigationComponent} from './breadcrumb-navigation.component';
 
 describe('BreadcrumbNavigationComponent', () => {
   let component: BreadcrumbNavigationComponent;
@@ -24,10 +24,9 @@ describe('BreadcrumbNavigationComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ RouterTestingModule ],
-      declarations: [ BreadcrumbNavigationComponent ]
-    })
-    .compileComponents();
+      imports: [RouterTestingModule],
+      declarations: [BreadcrumbNavigationComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

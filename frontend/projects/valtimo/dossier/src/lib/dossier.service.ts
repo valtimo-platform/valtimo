@@ -19,7 +19,7 @@ import {ConfigService} from '@valtimo/config';
 import {DefinitionColumn, SortState} from '@valtimo/contract';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DossierService {
   private readonly definitions: any;
@@ -42,8 +42,10 @@ export class DossierService {
     const defaultColumn = columns.find(column => column.default);
     return {
       isSorting: false,
-      state: {name: defaultColumn ? defaultColumn.propertyName : columns[0].propertyName, direction: 'DESC'}
+      state: {
+        name: defaultColumn ? defaultColumn.propertyName : columns[0].propertyName,
+        direction: 'DESC',
+      },
     };
   }
-
 }

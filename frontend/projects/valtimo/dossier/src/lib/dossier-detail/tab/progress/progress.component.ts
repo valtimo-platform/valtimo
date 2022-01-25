@@ -22,30 +22,28 @@ import {ProcessDocumentInstance} from '@valtimo/contract';
 @Component({
   selector: 'valtimo-dossier-detail-tab-progress',
   templateUrl: './progress.component.html',
-  styleUrls: ['./progress.component.css']
+  styleUrls: ['./progress.component.css'],
 })
 export class DossierDetailTabProgressComponent implements OnInit {
   public processDocumentInstances: ProcessDocumentInstance[];
   public selectedProcessInstanceId: string;
   public readonly documentId: string;
 
-  constructor(
-    private route: ActivatedRoute,
-    private documentService: DocumentService,
-  ) {
+  constructor(private route: ActivatedRoute, private documentService: DocumentService) {
     const snapshot = this.route.snapshot.paramMap;
     this.documentId = snapshot.get('documentId') || '';
   }
 
   ngOnInit() {
-    this.documentService.findProcessDocumentInstances(this.documentId).subscribe(processDocumentInstances => {
-      this.processDocumentInstances = processDocumentInstances;
-      this.selectedProcessInstanceId = processDocumentInstances[0].id.processInstanceId;
-    });
+    this.documentService
+      .findProcessDocumentInstances(this.documentId)
+      .subscribe(processDocumentInstances => {
+        this.processDocumentInstances = processDocumentInstances;
+        this.selectedProcessInstanceId = processDocumentInstances[0].id.processInstanceId;
+      });
   }
 
   public loadProcessInstance(processInstanceId: string) {
     this.selectedProcessInstanceId = processInstanceId;
   }
-
 }

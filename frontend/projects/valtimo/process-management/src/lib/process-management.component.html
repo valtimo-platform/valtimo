@@ -18,18 +18,23 @@
   <div class="container-fluid">
     <div class="text-right">
       <div class="btn-group mt-m3px mb-3">
-        <button class="btn btn-primary btn-space" [routerLink]="'create'"><i class="icon mdi mdi-plus"></i>&nbsp;
+        <button class="btn btn-primary btn-space" [routerLink]="'create'">
+          <i class="icon mdi mdi-plus"></i>&nbsp;
           {{ 'Create new Process' | translate }}
         </button>
-        <button class="btn btn-secondary btn-space mr-0" data-toggle="modal" data-target="#uploadProcess">
+        <button
+          class="btn btn-secondary btn-space mr-0"
+          data-toggle="modal"
+          data-target="#uploadProcess"
+        >
           <i class="icon mdi mdi-upload"></i>&nbsp;
           {{ 'Upload process' | translate }}
         </button>
       </div>
     </div>
     <valtimo-process-management-upload
-            (reload)="processManagementList.loadProcessDefinitions()"></valtimo-process-management-upload>
+      (reload)="processManagementList.loadProcessDefinitions()"
+    ></valtimo-process-management-upload>
     <valtimo-process-management-list #processManagementList></valtimo-process-management-list>
   </div>
 </div>
-

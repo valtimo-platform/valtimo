@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
 
 @NgModule({
-  imports: [
-    CommonModule
-  ]
+  imports: [CommonModule],
 })
-export class ViewContentModule {
-}
+export class ViewContentModule {}

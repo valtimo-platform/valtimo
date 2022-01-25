@@ -20,10 +20,7 @@ import {BasicExtensionPoint, Extension} from '@valtimo/contract';
 import {Injector} from '@angular/core';
 import {EmailExtensionComponent} from './email-extension.component';
 
-export function emailExtensionInitializer(
-  injector: Injector
-): () => Promise<any> {
-
+export function emailExtensionInitializer(injector: Injector): () => Promise<any> {
   const configService = injector.get<ConfigService>(ConfigService);
   const logger = injector.get<NGXLogger>(NGXLogger);
 

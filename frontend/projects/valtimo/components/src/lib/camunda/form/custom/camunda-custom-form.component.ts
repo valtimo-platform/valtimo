@@ -14,20 +14,26 @@
  * limitations under the License.
  */
 
-import {Component, ComponentFactoryResolver, Input, OnInit, Type, ViewChild, ViewContainerRef} from '@angular/core';
+import {
+  Component,
+  ComponentFactoryResolver,
+  Input,
+  OnInit,
+  Type,
+  ViewChild,
+  ViewContainerRef,
+} from '@angular/core';
 
 @Component({
   selector: 'valtimo-custom-form',
   templateUrl: './camunda-custom-form.component.html',
-  styleUrls: ['./camunda-custom-form.component.css']
+  styleUrls: ['./camunda-custom-form.component.css'],
 })
 export class CamundaCustomFormComponent implements OnInit {
-
   @Input() componentName: string;
   @ViewChild('customFormContainer', {read: ViewContainerRef, static: true}) viewContainerRef;
 
-  constructor(private resolver: ComponentFactoryResolver) {
-  }
+  constructor(private resolver: ComponentFactoryResolver) {}
 
   ngOnInit() {
     const factories = Array.from(this.resolver['_factories'].keys());
@@ -35,5 +41,4 @@ export class CamundaCustomFormComponent implements OnInit {
     const cmpFactory = this.resolver.resolveComponentFactory(factoryClass);
     this.viewContainerRef.createComponent(cmpFactory);
   }
-
 }

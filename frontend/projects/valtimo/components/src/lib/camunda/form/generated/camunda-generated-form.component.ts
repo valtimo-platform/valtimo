@@ -22,10 +22,9 @@ import {Location} from '@angular/common';
 
 @Component({
   selector: 'valtimo-camunda-generated-form',
-  templateUrl: './camunda-generated-form.component.html'
+  templateUrl: './camunda-generated-form.component.html',
 })
 export class CamundaGeneratedFormComponent implements OnInit {
-
   @Output() submitted: EventEmitter<any> = new EventEmitter<any>();
   @Input() formFields: FormField[] = [];
   public formGroup: FormGroup;
@@ -34,8 +33,7 @@ export class CamundaGeneratedFormComponent implements OnInit {
     private formBuilder: FormBuilder,
     private camundaFormFieldService: CamundaFormfieldService,
     private location: Location
-  ) {
-  }
+  ) {}
 
   ngOnInit(): void {
     this.formGroup = this.createFormGroup();
@@ -44,10 +42,13 @@ export class CamundaGeneratedFormComponent implements OnInit {
   private createFormGroup() {
     const group = this.formBuilder.group({});
     this.formFields.forEach(formField => {
-      const control = new FormControl({
-        value: formField.defaultValue,
-        disabled: this.camundaFormFieldService.isFormFieldDisabled(formField)
-      }, this.camundaFormFieldService.getValidatorTypes(formField));
+      const control = new FormControl(
+        {
+          value: formField.defaultValue,
+          disabled: this.camundaFormFieldService.isFormFieldDisabled(formField),
+        },
+        this.camundaFormFieldService.getValidatorTypes(formField)
+      );
       group.addControl(formField.id, control);
     });
     return group;
@@ -66,5 +67,4 @@ export class CamundaGeneratedFormComponent implements OnInit {
     event.stopPropagation();
     this.submitted.emit(this.formGroup.value);
   }
-
 }

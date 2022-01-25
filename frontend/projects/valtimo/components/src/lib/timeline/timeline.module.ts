@@ -21,11 +21,7 @@ import {TranslateModule} from '@ngx-translate/core';
 
 @NgModule({
   declarations: [TimelineComponent],
-  imports: [
-    CommonModule,
-    TranslateModule,
-  ],
-  exports: [TimelineComponent]
+  imports: [CommonModule, TranslateModule],
+  exports: [TimelineComponent],
 })
-export class TimelineModule {
-}
+export class TimelineModule {}

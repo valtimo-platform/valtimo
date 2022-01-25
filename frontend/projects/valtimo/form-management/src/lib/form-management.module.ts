@@ -17,7 +17,13 @@
 import {NgModule} from '@angular/core';
 import {FormManagementComponent} from './form-management.component';
 import {FormManagementRoutingModule} from './form-management-routing.module';
-import {DropzoneModule, FormIoModule, ListModule, ModalModule, WidgetModule} from '@valtimo/components';
+import {
+  DropzoneModule,
+  FormIoModule,
+  ListModule,
+  ModalModule,
+  WidgetModule,
+} from '@valtimo/components';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {FormManagementCreateComponent} from './form-management-create/form-management-create.component';
@@ -33,7 +39,7 @@ import {FormManagementUploadComponent} from './form-management-upload/form-manag
     FormManagementCreateComponent,
     FormManagementListComponent,
     FormManagementEditComponent,
-    FormManagementUploadComponent
+    FormManagementUploadComponent,
   ],
   imports: [
     FormManagementRoutingModule,
@@ -46,10 +52,8 @@ import {FormManagementUploadComponent} from './form-management-upload/form-manag
     TranslateModule,
     NgbTooltipModule,
     DropzoneModule,
-    ModalModule
+    ModalModule,
   ],
-  exports: [FormManagementComponent]
+  exports: [FormManagementComponent],
 })
-export class FormManagementModule {
-
-}
+export class FormManagementModule {}

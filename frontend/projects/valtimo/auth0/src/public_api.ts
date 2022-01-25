@@ -25,4 +25,3 @@ export * from './lib/callback.component';
 export * from './lib/auth0-routing.module';
 export * from './lib/session-expired-popup/session-expired-popup.component';
 export * from './lib/auth0-auth-guard.service';
-

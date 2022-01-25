@@ -32,7 +32,7 @@ import {
   MenuModule,
   registerFormioUploadComponent,
   UploaderModule,
-  WidgetModule
+  WidgetModule,
 } from '@valtimo/components';
 import {ChoicefieldModule} from '@valtimo/choicefield';
 import {
@@ -42,7 +42,7 @@ import {
   DossierDetailTabDocumentsComponent,
   DossierDetailTabProgressComponent,
   DossierDetailTabSummaryComponent,
-  DossierModule
+  DossierModule,
 } from '@valtimo/dossier';
 import {ProcessModule} from '@valtimo/process';
 import {ViewConfiguratorModule} from '@valtimo/view-configurator';
@@ -88,7 +88,7 @@ export function tabsFactory() {
     [DefaultTabs.documents, DossierDetailTabDocumentsComponent],
     [DefaultTabs.contactMoments, DossierDetailTabContactMomentsComponent],
     ['custom-maps', CustomMapsTabComponent],
-    ['custom-dossier', CustomDossierTabComponent]
+    ['custom-dossier', CustomDossierTabComponent],
   ]);
 }
 
@@ -100,7 +100,7 @@ export function tabsFactory() {
     FormioComponent,
     UploadShowcaseComponent,
     CustomDossierTabComponent,
-    CustomMapsTabComponent
+    CustomMapsTabComponent,
   ],
   imports: [
     HttpClientModule,
@@ -118,9 +118,7 @@ export function tabsFactory() {
     MenuModule,
     TaskModule,
     ChoicefieldModule,
-    DossierModule.forRoot(
-        tabsFactory
-    ),
+    DossierModule.forRoot(tabsFactory),
     ProcessModule,
     ViewConfiguratorModule,
     BpmnJsDiagramModule,
@@ -155,15 +153,17 @@ export function tabsFactory() {
       loader: {
         provide: TranslateLoader,
         useFactory: MultiTranslateHttpLoaderFactory,
-        deps: [HttpClient, ConfigService]
-      }
-    })
+        deps: [HttpClient, ConfigService],
+      },
+    }),
   ],
-  providers: [
-    FormioComponent,
+  providers: [FormioComponent],
+  entryComponents: [
+    CustomFormExampleComponent,
+    StartProcessCustomFormComponent,
+    FormIoUploaderComponent,
   ],
-  entryComponents: [CustomFormExampleComponent, StartProcessCustomFormComponent, FormIoUploaderComponent],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
 export class AppModule {
   constructor(injector: Injector) {

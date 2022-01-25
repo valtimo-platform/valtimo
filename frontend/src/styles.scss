@@ -16,18 +16,20 @@
 
 /* You can add global styles to this file, and also import other style files */
 
-body, html {
+body,
+html {
   height: 100%;
 }
 
 .valtimo-bg {
-  background-image: url("https://gallery.mailchimp.com/9e60ca3ed8fa0548ce96026cc/images/48c3affd-676a-41d5-9350-83bb5a7f4058.png");
+  background-image: url('https://gallery.mailchimp.com/9e60ca3ed8fa0548ce96026cc/images/48c3affd-676a-41d5-9350-83bb5a7f4058.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
 }
 
-.form-io-holder, .preview-panel {
+.form-io-holder,
+.preview-panel {
   .formcomponents {
     padding: 0 1em 0 0 !important;
   }
@@ -42,15 +44,15 @@ body, html {
       background-color: #002d5c;
       margin: 0;
       button {
-        padding: .25em .5em;
+        padding: 0.25em 0.5em;
         font-size: 1.2em !important;
-        color: #FFF !important;
+        color: #fff !important;
       }
     }
     .panel-body {
-      padding: .25em 0 0 0 !important;
+      padding: 0.25em 0 0 0 !important;
       .btn {
-        margin: .25em 0 !important;
+        margin: 0.25em 0 !important;
         border-radius: 0 !important;
         font-size: 1em !important;
       }
@@ -59,17 +61,17 @@ body, html {
 
   .accordion .card-header button[aria-expanded='true'] {
     background-color: #002d5c;
-    color: #FFF !important;
+    color: #fff !important;
   }
 
   .alert {
     padding: 1rem !important;
     p {
-      margin:0 !important;
+      margin: 0 !important;
     }
   }
 }
 
 .formio-dialog-content {
-  overflow-y : auto !important
+  overflow-y: auto !important;
 }

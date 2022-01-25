@@ -21,15 +21,11 @@ import {MenuItem} from '@valtimo/contract';
   selector: 'valtimo-submenu-item-text',
   template: `
     <span [ngClass]="submenuItem.textClass">
-    {{ submenuItem.title | translate }}
+      {{ submenuItem.title | translate }}
       <ng-container *ngIf="!submenuItem.link">&gt;</ng-container>
     </span>
   `,
 })
 export class SubmenuItemTextComponent {
-
   @Input() submenuItem: MenuItem;
-
 }
-
-

@@ -22,40 +22,37 @@ import {Router} from '@angular/router';
 @Component({
   selector: 'valtimo-user-list',
   templateUrl: './user-list.component.html',
-  styleUrls: ['./user-list.component.css']
+  styleUrls: ['./user-list.component.css'],
 })
 export class UserListComponent {
-
   public users: Array<User> = [];
   public pagination = {
     collectionSize: 0,
     page: 1,
     size: 10,
-    maxPaginationItemSize: 5
+    maxPaginationItemSize: 5,
   };
-  public fields: Array<any> = [{
-    key: 'fullName',
-    label: 'Name'
-  }
-    , {
+  public fields: Array<any> = [
+    {
+      key: 'fullName',
+      label: 'Name',
+    },
+    {
       key: 'email',
-      label: 'Email'
-    }
-    , {
+      label: 'Email',
+    },
+    {
       key: 'verified',
-      label: 'Email verified'
-    }
-    , {
+      label: 'Email verified',
+    },
+    {
       key: 'status',
-      label: 'Status'
-    }];
+      label: 'Status',
+    },
+  ];
   private searchTerm = '';
 
-  constructor(
-    private router: Router,
-    private service: UserManagementService
-  ) {
-  }
+  constructor(private router: Router, private service: UserManagementService) {}
 
   paginationSet() {
     this.pagination.page = 1;
@@ -90,5 +87,4 @@ export class UserListComponent {
   public paginationClicked(page) {
     this.initData();
   }
-
 }

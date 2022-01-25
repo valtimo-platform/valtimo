@@ -23,7 +23,7 @@ declare var App;
 @Component({
   selector: 'valtimo-layout-internal',
   templateUrl: './layout-internal.component.html',
-  styleUrls: ['./layout-internal.component.scss']
+  styleUrls: ['./layout-internal.component.scss'],
 })
 export class LayoutInternalComponent implements AfterViewInit {
   @ViewChild('wrapper') wrapperRef: ElementRef;
@@ -46,7 +46,7 @@ export class LayoutInternalComponent implements AfterViewInit {
       attributes: true,
       attributeFilter: ['class'],
       childList: false,
-      characterData: false
+      characterData: false,
     });
   }
 

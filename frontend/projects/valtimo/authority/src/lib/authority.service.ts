@@ -21,20 +21,20 @@ import {Observable} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthorityService {
   private valtimoApiConfig: any;
 
-  constructor(
-    private http: HttpClient,
-    private configService: ConfigService
-  ) {
+  constructor(private http: HttpClient, private configService: ConfigService) {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 
   query(params?: any): Observable<any> {
-    return this.http.get<Authority>(`${this.valtimoApiConfig.endpointUri}authorities`, {observe: 'response', params: params});
+    return this.http.get<Authority>(`${this.valtimoApiConfig.endpointUri}authorities`, {
+      observe: 'response',
+      params: params,
+    });
   }
 
   get(name: string): Observable<any> {
