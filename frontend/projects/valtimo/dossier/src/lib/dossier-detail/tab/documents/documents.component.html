@@ -28,7 +28,7 @@
 <valtimo-widget>
   <valtimo-list
     [fields]="fields"
-    [items]="relatedFiles"
+    [items]="relatedFiles$ | async"
     [header]="true"
     [isSearchable]="true"
     [viewMode]="true"

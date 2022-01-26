@@ -318,7 +318,8 @@
     "noFieldDefinitions": "Geen velddefinities gedefinieerd",
     "noResults": "Geen resultaten",
     "showingResults": "{{number}} van {{total}} resultaten zichtbaar",
-    "showingResult": "{{number}} resultaat zichtbaar"
+    "showingResult": "{{number}} resultaat zichtbaar",
+    "automaticallyGenerated": "Automatisch gegenereerd"
   },
   "webcam": {
     "takePicture": "Foto maken",

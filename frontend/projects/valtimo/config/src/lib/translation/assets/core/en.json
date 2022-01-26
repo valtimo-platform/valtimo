@@ -318,7 +318,8 @@
     "noFieldDefinitions": "No fields definitions defined",
     "noResults": "No result found",
     "showingResults": "Showing {{number}} of {{total}} results",
-    "showingResult": "Showing {{number}} result"
+    "showingResult": "Showing {{number}} result",
+    "automaticallyGenerated": "Automatically generated"
   },
   "webcam": {
     "takePicture": "Take picture",

@@ -17,11 +17,12 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentService} from '@valtimo/document';
-import {Document, RelatedFile, ResourceDto} from '@valtimo/contract';
+import {RelatedFile, ResourceDto} from '@valtimo/contract';
 import {ToastrService} from 'ngx-toastr';
 import {DownloadService, UploadProviderService} from '@valtimo/resource';
-import {switchMap} from 'rxjs/operators';
-import {BehaviorSubject} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   selector: 'valtimo-dossier-detail-tab-documents',
@@ -31,7 +32,21 @@ import {BehaviorSubject} from 'rxjs';
 export class DossierDetailTabDocumentsComponent implements OnInit {
   public readonly documentId: string;
   public readonly documentDefinitionName: string;
-  public relatedFiles: RelatedFile[] = [];
+  private readonly refetch$ = new BehaviorSubject<null>(null);
+  public relatedFiles$: Observable<Array<RelatedFile>> = this.refetch$.pipe(
+    switchMap(() =>
+      combineLatest([this.documentService.getDocument(this.documentId), this.translateService.stream('key')])
+    ),
+    map(([document]) => {
+      const relatedFiles = document?.relatedFiles || [];
+      const translatedFiles = relatedFiles.map(file => {
+        return {...file, createdBy: file.createdBy || this.translateService.instant('list.automaticallyGenerated')};
+      });
+
+      return translatedFiles || [];
+    })
+  );
+
   public fields = [
     {key: 'fileName', label: 'File name'},
     {key: 'sizeInBytes', label: 'Size in bytes'},
@@ -58,7 +73,8 @@ export class DossierDetailTabDocumentsComponent implements OnInit {
     private readonly documentService: DocumentService,
     private readonly toastrService: ToastrService,
     private readonly uploadProviderService: UploadProviderService,
-    private readonly downloadService: DownloadService
+    private readonly downloadService: DownloadService,
+    private readonly translateService: TranslateService
   ) {
     const snapshot = this.route.snapshot.paramMap;
     this.documentId = snapshot.get('documentId') || '';
@@ -66,7 +82,7 @@ export class DossierDetailTabDocumentsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadDocuments();
+    this.refetchDocuments();
   }
 
   fileSelected(file: File): void {
@@ -82,7 +98,7 @@ export class DossierDetailTabDocumentsComponent implements OnInit {
       .subscribe(
         () => {
           this.toastrService.success('Successfully uploaded document to dossier');
-          this.loadDocuments();
+          this.refetchDocuments();
           this.uploading$.next(false);
         },
         () => {
@@ -90,12 +106,6 @@ export class DossierDetailTabDocumentsComponent implements OnInit {
           this.uploading$.next(false);
         }
       );
-  }
-
-  loadDocuments(): void {
-    this.documentService.getDocument(this.documentId).subscribe((document: Document) => {
-      this.relatedFiles = document.relatedFiles;
-    });
   }
 
   downloadDocument(relatedFile: RelatedFile): void {
@@ -110,11 +120,16 @@ export class DossierDetailTabDocumentsComponent implements OnInit {
     this.documentService.removeResource(this.documentId, relatedFile.fileId).subscribe(
       () => {
         this.toastrService.success('Successfully removed document from dossier');
-        this.loadDocuments();
+        this.refetchDocuments();
       },
       () => {
         this.toastrService.error('Failed to remove document from dossier');
       }
     );
+
+  }
+
+  private refetchDocuments(): void {
+    this.refetch$.next(null);
   }
 }
