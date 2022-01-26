@@ -52,6 +52,7 @@ export interface ValtimoConfig {
     catalogus: string;
   };
   uploadProvider: UploadProvider;
+  caseFileSizeUploadLimitMB?: number;
   defaultDefinitionTable: Array<DefinitionColumn>;
   customDefinitionTables: {
     [definitionNameId: string]: Array<DefinitionColumn>;

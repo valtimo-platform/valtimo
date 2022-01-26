@@ -130,6 +130,7 @@ export const environment: ValtimoConfig = {
     catalogus: '8225508a-6840-413e-acc9-6422af120db1',
   },
   uploadProvider: UploadProvider.OPEN_ZAAK,
+  caseFileSizeUploadLimitMB: 10,
   definitions: {
     dossiers: [],
   },

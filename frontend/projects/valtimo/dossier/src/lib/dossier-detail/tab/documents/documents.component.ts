@@ -23,6 +23,7 @@ import {DownloadService, UploadProviderService} from '@valtimo/resource';
 import {map, switchMap} from 'rxjs/operators';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
+import {ConfigService} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-dossier-detail-tab-documents',
@@ -32,6 +33,7 @@ import {TranslateService} from '@ngx-translate/core';
 export class DossierDetailTabDocumentsComponent implements OnInit {
   public readonly documentId: string;
   public readonly documentDefinitionName: string;
+  public readonly maxFileSize: number = this.configService?.config?.caseFileSizeUploadLimitMB || 5;
   private readonly refetch$ = new BehaviorSubject<null>(null);
   public relatedFiles$: Observable<Array<RelatedFile>> = this.refetch$.pipe(
     switchMap(() =>
@@ -74,7 +76,8 @@ export class DossierDetailTabDocumentsComponent implements OnInit {
     private readonly toastrService: ToastrService,
     private readonly uploadProviderService: UploadProviderService,
     private readonly downloadService: DownloadService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly configService: ConfigService
   ) {
     const snapshot = this.route.snapshot.paramMap;
     this.documentId = snapshot.get('documentId') || '';
