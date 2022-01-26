@@ -396,7 +396,7 @@
     "title": "Welche der drei Optionen soll genutzt werden, um ein Formular zu verknüpfen:",
     "subtitle": "Connect {{type}} to a form",
     "formDefinition": "Form definition",
-    "angularState": "Angular state",
+    "angularState": "Internal route",
     "redirect": "Redirect to a page within the application",
     "externalUrl": "External URL",
     "newWindow": "Will open URL in a new window",

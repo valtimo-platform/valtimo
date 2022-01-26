@@ -31,6 +31,7 @@ import {
   ValtimoFormioOptions,
 } from '@valtimo/contract';
 import {noop} from 'rxjs';
+import {take} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-dossier-supporting-process-start-modal',
@@ -91,7 +92,13 @@ export class DossierSupportingProcessStartModalComponent {
               window.open(url, '_blank');
               break;
             case 'BpmnElementAngularStateUrlLink':
-              this.router.navigate([formDefinition.formAssociation.formLink.url]);
+              this.route.params.pipe(take(1)).subscribe(params => {
+                const documentId = params?.documentId;
+
+                this.router.navigate([formDefinition.formAssociation.formLink.url], {
+                  state: {...(documentId && {documentId})},
+                });
+              });
               break;
             default:
               this.logger.fatal('Unsupported class name');

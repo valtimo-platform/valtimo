@@ -396,7 +396,7 @@
     "title": "Kies een van de drie onderstaande manieren om een formulier in te stellen voor dit element:",
     "subtitle": "Koppel {{type}} aan een formulier",
     "formDefinition": "Formulierdefinitie",
-    "angularState": "Angular state",
+    "angularState": "Interne route",
     "redirect": "Doorverwijzen naar een pagina binnen de applicatie",
     "externalUrl": "Externe URL",
     "newWindow": "De URL wordt geopend in een nieuw venster",
