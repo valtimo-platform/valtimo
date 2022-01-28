@@ -37,8 +37,27 @@ export class ConfigService {
     this.extensionLoader = new ExtensionLoader(componentFactoryResolver);
   }
 
-  get config() {
-    return this.valtimoConfig;
+  get config(): ValtimoConfig {
+    const config = this.valtimoConfig;
+
+    return {
+      ...config,
+      whitelistedDomains: config.whitelistedDomains.map(domain =>
+        this.formatUrlTrailingSlash(domain, false)
+      ),
+      mockApi: {
+        ...config.mockApi,
+        endpointUri: this.formatUrlTrailingSlash(config.mockApi.endpointUri, true),
+      },
+      swagger: {
+        ...config.swagger,
+        endpointUri: this.formatUrlTrailingSlash(config.swagger.endpointUri, false),
+      },
+      valtimoApi: {
+        ...config.valtimoApi,
+        endpointUri: this.formatUrlTrailingSlash(config.valtimoApi.endpointUri, true),
+      },
+    };
   }
 
   get initializers() {
@@ -67,5 +86,18 @@ export class ConfigService {
 
   loadAndReturnExtensionPoint(viewContainerRef: ViewContainerRef, extensionPoint: ExtensionPoint) {
     return this.extensionLoader.loadAndClearExtensionPoint(viewContainerRef, extensionPoint);
+  }
+
+  private formatUrlTrailingSlash(url: string, returnWithTrailingSlash: boolean): string {
+    const urlLastCharacter = url[url.length - 1];
+    const urlLastCharacterIsSlash = urlLastCharacter === '/';
+
+    if (!returnWithTrailingSlash && urlLastCharacterIsSlash) {
+      return url.slice(0, -1);
+    } else if (returnWithTrailingSlash && !urlLastCharacterIsSlash) {
+      return `${url}/`;
+    }
+
+    return url;
   }
 }
