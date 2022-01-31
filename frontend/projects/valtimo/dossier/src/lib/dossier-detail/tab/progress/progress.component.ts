@@ -17,7 +17,7 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentService} from '@valtimo/document';
-import {ProcessDocumentInstance} from '@valtimo/contract';
+import {ProcessDocumentInstance} from '@valtimo/document';
 
 @Component({
   selector: 'valtimo-dossier-detail-tab-progress',

@@ -23,7 +23,7 @@ import {
   ProcessInstance,
   ProcessInstanceTask,
   ProcessStart,
-} from '@valtimo/contract';
+} from './models';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({

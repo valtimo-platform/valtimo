@@ -21,10 +21,10 @@ import {Observable} from 'rxjs';
 import {
   ConnectorInstance,
   ConnectorType,
-  Page,
   ConnectorInstanceCreateRequest,
   ConnectorInstanceUpdateRequest,
-} from '@valtimo/contract';
+} from '../../models';
+import {Page} from '@valtimo/document';
 
 @Injectable({
   providedIn: 'root',

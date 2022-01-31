@@ -17,7 +17,7 @@
 import {Component, OnInit, ViewEncapsulation} from '@angular/core';
 import {DecisionService} from '../decision.service';
 import DmnViewer from 'dmn-js';
-import {DecisionXml} from '@valtimo/contract';
+import {DecisionXml} from '../models';
 import {ActivatedRoute} from '@angular/router';
 
 @Component({

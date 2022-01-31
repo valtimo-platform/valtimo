@@ -16,8 +16,8 @@
 
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {DocumentService} from '@valtimo/document';
-import {RelatedFile, ResourceDto} from '@valtimo/contract';
+import {DocumentService, RelatedFile} from '@valtimo/document';
+import {ResourceDto} from '@valtimo/resource';
 import {ToastrService} from 'ngx-toastr';
 import {DownloadService, UploadProviderService} from '@valtimo/resource';
 import {map, switchMap} from 'rxjs/operators';
@@ -37,12 +37,18 @@ export class DossierDetailTabDocumentsComponent implements OnInit {
   private readonly refetch$ = new BehaviorSubject<null>(null);
   public relatedFiles$: Observable<Array<RelatedFile>> = this.refetch$.pipe(
     switchMap(() =>
-      combineLatest([this.documentService.getDocument(this.documentId), this.translateService.stream('key')])
+      combineLatest([
+        this.documentService.getDocument(this.documentId),
+        this.translateService.stream('key'),
+      ])
     ),
     map(([document]) => {
       const relatedFiles = document?.relatedFiles || [];
       const translatedFiles = relatedFiles.map(file => {
-        return {...file, createdBy: file.createdBy || this.translateService.instant('list.automaticallyGenerated')};
+        return {
+          ...file,
+          createdBy: file.createdBy || this.translateService.instant('list.automaticallyGenerated'),
+        };
       });
 
       return translatedFiles || [];
@@ -129,7 +135,6 @@ export class DossierDetailTabDocumentsComponent implements OnInit {
         this.toastrService.error('Failed to remove document from dossier');
       }
     );
-
   }
 
   private refetchDocuments(): void {

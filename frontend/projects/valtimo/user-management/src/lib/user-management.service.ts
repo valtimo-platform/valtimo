@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import {User} from '@valtimo/contract';
+import {User} from '@valtimo/config';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({

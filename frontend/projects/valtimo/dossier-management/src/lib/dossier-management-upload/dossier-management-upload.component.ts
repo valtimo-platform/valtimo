@@ -25,8 +25,7 @@ import {
 } from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
 import {MenuService, ModalComponent} from '@valtimo/components';
-import {DocumentDefinitionCreateRequest} from '@valtimo/contract';
-import {DocumentService} from '@valtimo/document';
+import {DocumentService, DocumentDefinitionCreateRequest} from '@valtimo/document';
 import {BehaviorSubject, Observable, Subject, Subscription} from 'rxjs';
 import {switchMap, take, tap} from 'rxjs/operators';
 

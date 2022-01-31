@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {interval, Observable, ReplaySubject} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {NGXLogger} from 'ngx-logger';
-import {UserIdentity, UserService, ValtimoUserIdentity} from '@valtimo/contract';
+import {UserIdentity, UserService, ValtimoUserIdentity} from '@valtimo/config';
 import {ConfigService} from '@valtimo/config';
 import {JwtAuthService} from './jwt-auth.service';
 import {now} from 'moment';

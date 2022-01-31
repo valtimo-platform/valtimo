@@ -17,15 +17,15 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {editProductAanvragenConnectorForm} from './edit-product-aanvragen-connector.form';
 import {FormMappingService, FormTranslationService} from '@valtimo/form';
-import {DocumentService} from '@valtimo/document';
-import {ExtendedComponentSchema} from 'formiojs';
-import {BehaviorSubject, combineLatest, Subject, Subscription} from 'rxjs';
 import {
-  ConnectorProperties,
+  DocumentService,
   DocumentDefinition,
   DocumentDefinitions,
   ProcessDocumentDefinition,
-} from '@valtimo/contract';
+} from '@valtimo/document';
+import {ExtendedComponentSchema} from 'formiojs';
+import {BehaviorSubject, combineLatest, Subject, Subscription} from 'rxjs';
+import {ConnectorProperties} from '../../models';
 import {FormioForm, FormioRefreshValue} from 'angular-formio';
 import {FormioOptions} from 'angular-formio/formio.common';
 import {cloneDeep} from 'lodash';

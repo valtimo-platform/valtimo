@@ -17,8 +17,8 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {AssigneeRequest, Task, User} from '@valtimo/contract';
-import {ConfigService} from '@valtimo/config';
+import {AssigneeRequest, Task} from './models';
+import {ConfigService, User} from '@valtimo/config';
 
 @Injectable({providedIn: 'root'})
 export class TaskService {

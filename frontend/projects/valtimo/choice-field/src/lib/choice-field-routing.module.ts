@@ -23,7 +23,7 @@ import {ChoiceFieldDetailComponent} from './choice-field-detail/choice-field-det
 import {ChoiceFieldCreateComponent} from './choice-field-create/choice-field-create.component';
 import {ChoiceFieldValueCreateComponent} from './choice-field-value-create/choice-field-value-create.component';
 import {ChoiceFieldValueDetailComponent} from './choice-field-value-detail/choice-field-value-detail.component';
-import {ROLE_ADMIN} from '@valtimo/contract';
+import {ROLE_ADMIN} from '@valtimo/config';
 
 const routes: Routes = [
   {

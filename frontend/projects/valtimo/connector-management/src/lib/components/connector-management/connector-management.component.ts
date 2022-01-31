@@ -16,11 +16,12 @@
 
 import {Component, OnDestroy} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
-import {ConnectorInstance, Pagination, ConnectorModal} from '@valtimo/contract';
+import {ConnectorInstance, ConnectorModal} from '../../models';
 import {map, switchMap, take, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {ConnectorManagementService} from '../../services/connector-management/connector-management.service';
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
+import {Pagination} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-connector-management',

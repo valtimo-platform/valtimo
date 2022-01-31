@@ -19,7 +19,7 @@ import {
   ConnectorProperties,
   ConnectorPropertyEditField,
   ConnectorPropertyValueType,
-} from '@valtimo/contract';
+} from '../../models';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {set, get, cloneDeep} from 'lodash';

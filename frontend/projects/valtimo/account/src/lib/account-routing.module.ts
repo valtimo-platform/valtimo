@@ -20,7 +20,7 @@ import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {ProfileComponent} from './profile/profile.component';
 import {PasswordComponent} from './password/password.component';
-import {ROLE_USER} from '@valtimo/contract';
+import {ROLE_USER} from '@valtimo/config';
 
 const routes: Routes = [
   {

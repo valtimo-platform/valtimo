@@ -15,7 +15,7 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {FormDefinition} from '@valtimo/contract';
+import {FormDefinition} from '../models';
 import {FormManagementService} from '../form-management.service';
 import {Router} from '@angular/router';
 

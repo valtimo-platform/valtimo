@@ -20,3 +20,4 @@
 
 export * from './lib/analyse.module';
 export * from './lib/analyse.component';
+export * from './lib/models';

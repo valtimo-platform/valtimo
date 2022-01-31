@@ -15,8 +15,7 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {ProcessService} from '@valtimo/process';
-import {ProcessDefinition} from '@valtimo/contract';
+import {ProcessService, ProcessDefinition} from '@valtimo/process';
 import {Router} from '@angular/router';
 
 @Component({

@@ -29,7 +29,7 @@ import {UserDetailComponent} from './user-detail/user-detail.component';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {UserCreateComponent} from './user-create/user-create.component';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
-import {HttpLoaderFactory} from '@valtimo/contract';
+import {HttpLoaderFactory} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
 
 @NgModule({

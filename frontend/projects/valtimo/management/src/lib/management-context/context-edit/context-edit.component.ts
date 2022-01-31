@@ -15,13 +15,12 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {ContextService} from '@valtimo/context';
-import {Context, Authority, ProcessDefinition} from '@valtimo/contract';
+import {ContextService, Context} from '@valtimo/context';
 import {ActivatedRoute, Router} from '@angular/router';
 import {AlertService} from '@valtimo/components';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
-import {ProcessService} from '@valtimo/process';
-import {AuthorityService} from '@valtimo/authority';
+import {ProcessService, ProcessDefinition} from '@valtimo/process';
+import {AuthorityService, Authority} from '@valtimo/authority';
 
 @Component({
   selector: 'valtimo-context-edit',

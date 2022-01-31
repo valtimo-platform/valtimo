@@ -19,7 +19,7 @@ import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MilestoneService} from '../milestone.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {AlertService} from '@valtimo/components';
-import {MilestoneSet} from '@valtimo/contract';
+import {MilestoneSet} from '../models';
 
 @Component({
   selector: 'valtimo-milestone-set-edit',

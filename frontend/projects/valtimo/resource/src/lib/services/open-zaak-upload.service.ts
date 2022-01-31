@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
 import {Observable} from 'rxjs';
-import {OpenZaakResource, ResourceFile, UploadService, ResourceDto} from '@valtimo/contract';
+import {OpenZaakResource, ResourceFile, UploadService, ResourceDto} from '../models';
 import {OpenZaakService} from './open-zaak.service';
 import {map} from 'rxjs/operators';
 

@@ -21,7 +21,7 @@ import {
   InformatieObjectType,
   CreateInformatieObjectTypeLinkRequest,
   ZaakTypeLink,
-} from '@valtimo/contract';
+} from '@valtimo/resource';
 import {ActivatedRoute, Router} from '@angular/router';
 import {FormBuilder} from '@angular/forms';
 import {OpenZaakService} from '@valtimo/resource';

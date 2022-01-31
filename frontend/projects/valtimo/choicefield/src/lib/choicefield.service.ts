@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {ChoicefieldValue} from '@valtimo/contract';
+import {ChoicefieldValue} from './models';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({providedIn: 'root'})

@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {Decision, DecisionXml} from '@valtimo/contract';
+import {Decision, DecisionXml} from './models';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({

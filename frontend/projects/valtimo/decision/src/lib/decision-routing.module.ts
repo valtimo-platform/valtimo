@@ -20,7 +20,7 @@ import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {DecisionComponent} from './decision.component';
 import {DecisionDisplayComponent} from './decision-display/decision-display.component';
-import {ROLE_ADMIN} from '@valtimo/contract';
+import {ROLE_ADMIN} from '@valtimo/config';
 
 const routes: Routes = [
   {

@@ -19,7 +19,7 @@ import {RouterModule, Routes} from '@angular/router';
 import {AuthGuardService} from '@valtimo/security';
 import {DossierManagementDetailComponent} from './dossier-management-detail/dossier-management-detail.component';
 import {DossierManagementListComponent} from './dossier-management-list/dossier-management-list.component';
-import {ROLE_ADMIN} from '@valtimo/contract';
+import {ROLE_ADMIN} from '@valtimo/config';
 
 const routes: Routes = [
   {

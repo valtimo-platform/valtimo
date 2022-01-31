@@ -15,7 +15,7 @@
  */
 
 import {Inject, Injectable} from '@angular/core';
-import {TabImpl} from '@valtimo/contract';
+import {TabImpl} from './models';
 import {DEFAULT_TABS, TAB_MAP} from './dossier.config';
 
 @Injectable({

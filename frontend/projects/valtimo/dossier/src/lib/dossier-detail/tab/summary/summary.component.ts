@@ -22,18 +22,12 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import {ProcessService} from '@valtimo/process';
+import {ProcessService, ProcessInstanceTask} from '@valtimo/process';
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
-import {DocumentService} from '@valtimo/document';
+import {DocumentService, Document, ProcessDocumentInstance} from '@valtimo/document';
 import {TaskDetailModalComponent, TaskService} from '@valtimo/task';
 import {FormService} from '@valtimo/form';
-import {
-  Document,
-  FormioOptionsImpl,
-  ProcessDocumentInstance,
-  ProcessInstanceTask,
-  ValtimoFormioOptions,
-} from '@valtimo/contract';
+import {FormioOptionsImpl, ValtimoFormioOptions} from '@valtimo/components';
 
 import * as moment_ from 'moment';
 import {FormioForm} from 'angular-formio';

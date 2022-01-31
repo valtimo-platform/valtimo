@@ -20,7 +20,7 @@ import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {ProcessManagementComponent} from './process-management.component';
 import {ProcessManagementBuilderComponent} from './process-management-builder/process-management-builder.component';
-import {ROLE_ADMIN} from '@valtimo/contract';
+import {ROLE_ADMIN} from '@valtimo/config';
 
 const routes: Routes = [
   {

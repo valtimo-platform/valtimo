@@ -15,8 +15,11 @@
  */
 
 import {Component, ViewChild} from '@angular/core';
-import {DocumentService} from '@valtimo/document';
-import {DocumentDefinition, UndeployDocumentDefinitionResult} from '@valtimo/contract';
+import {
+  DocumentService,
+  DocumentDefinition,
+  UndeployDocumentDefinitionResult,
+} from '@valtimo/document';
 import {MenuService, ModalComponent} from '@valtimo/components';
 import {ToastrService} from 'ngx-toastr';
 import {Router} from '@angular/router';

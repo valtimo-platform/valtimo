@@ -15,8 +15,7 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {ContextService} from '@valtimo/context';
-import {Context} from '@valtimo/contract';
+import {ContextService, Context} from '@valtimo/context';
 import {Router} from '@angular/router';
 
 @Component({

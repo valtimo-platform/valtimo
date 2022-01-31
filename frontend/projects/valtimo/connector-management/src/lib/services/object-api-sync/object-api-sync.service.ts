@@ -22,7 +22,7 @@ import {
   CreateObjectSyncConfigRequest,
   CreateObjectSyncConfigResult,
   ObjectSyncConfig,
-} from '@valtimo/contract';
+} from '../../models';
 
 @Injectable({
   providedIn: 'root',

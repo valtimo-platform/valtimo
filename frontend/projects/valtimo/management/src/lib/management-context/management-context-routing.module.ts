@@ -20,7 +20,7 @@ import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {ContextListComponent} from './context-list/context-list.component';
 import {ContextEditComponent} from './context-edit/context-edit.component';
-import {ROLE_ADMIN} from '@valtimo/contract';
+import {ROLE_ADMIN} from '@valtimo/config';
 
 const routes: Routes = [
   {

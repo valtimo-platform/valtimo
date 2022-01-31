@@ -15,7 +15,7 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {Authority} from '@valtimo/contract';
+import {Authority} from '../models';
 import {AuthorityService} from '../authority.service';
 import {Router} from '@angular/router';
 

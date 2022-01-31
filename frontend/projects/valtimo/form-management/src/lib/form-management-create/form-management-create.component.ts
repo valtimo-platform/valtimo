@@ -19,7 +19,7 @@ import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {AlertService} from '@valtimo/components';
 import {FormManagementService} from '../form-management.service';
-import {CreateFormDefinitionRequest} from '@valtimo/contract';
+import {CreateFormDefinitionRequest} from '../models';
 import {combineLatest} from 'rxjs';
 import {take} from 'rxjs/operators';
 

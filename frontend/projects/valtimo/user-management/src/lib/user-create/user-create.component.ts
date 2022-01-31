@@ -19,7 +19,7 @@ import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 import {UserManagementService} from '../user-management.service';
 import {AlertService} from '@valtimo/components';
-import {ROLE_USER} from '@valtimo/contract';
+import {ROLE_USER} from '@valtimo/config';
 import {TranslateService} from '@ngx-translate/core';
 
 @Component({

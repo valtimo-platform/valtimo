@@ -15,8 +15,7 @@
  */
 
 import {Component} from '@angular/core';
-import {DocumentService} from '@valtimo/document';
-import {DocumentDefinition, Page} from '@valtimo/contract';
+import {DocumentService, DocumentDefinition, Page} from '@valtimo/document';
 import {Router} from '@angular/router';
 import * as moment_ from 'moment';
 import {BehaviorSubject} from 'rxjs';

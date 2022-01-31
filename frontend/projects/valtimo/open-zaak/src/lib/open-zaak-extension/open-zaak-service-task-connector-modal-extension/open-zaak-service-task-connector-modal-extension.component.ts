@@ -18,7 +18,6 @@ import {Component, OnInit, ViewChild} from '@angular/core';
 import {NgbModal, NgbModalOptions} from '@ng-bootstrap/ng-bootstrap';
 import {FormManagementService} from '@valtimo/form-management';
 import {
-  BpmnElement,
   Operation,
   ZaakOperation,
   ServiceTaskHandlerRequest,
@@ -27,11 +26,12 @@ import {
   ZaakType,
   ZaakTypeLink,
   PreviousSelectedZaak,
-} from '@valtimo/contract';
+} from '@valtimo/resource';
 import {AlertService, ModalComponent} from '@valtimo/components';
 import {OpenZaakService} from '@valtimo/resource';
 import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
+import {BpmnElement} from '@valtimo/form-link';
 
 @Component({
   selector: 'valtimo-open-zaak-service-task-connector-modal-extension',

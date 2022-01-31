@@ -17,7 +17,7 @@
 import {Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
 import {FormManagementService} from '../form-management.service';
 import {AlertService} from '@valtimo/components';
-import {FormDefinition, ModifyFormDefinitionRequest} from '@valtimo/contract';
+import {FormDefinition, ModifyFormDefinitionRequest} from '../models';
 import {ActivatedRoute, Router} from '@angular/router';
 import {first, take} from 'rxjs/operators';
 import {BehaviorSubject, Subscription} from 'rxjs';

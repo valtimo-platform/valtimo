@@ -18,7 +18,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ChoiceFieldService} from '../choice-field.service';
-import {ChoiceField} from '@valtimo/contract';
+import {ChoiceField} from '../models';
 import {AlertService} from '@valtimo/components';
 import {Subscription} from 'rxjs';
 import {first} from 'rxjs/operators';

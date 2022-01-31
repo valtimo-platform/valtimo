@@ -37,7 +37,7 @@ import {
   DocumentDefinitionCreateRequest,
   UndeployDocumentDefinitionResult,
   DocumentSendMessageRequest,
-} from '@valtimo/contract';
+} from './models';
 import {DocumentSearchRequest} from './document-search-request';
 import {ConfigService} from '@valtimo/config';
 

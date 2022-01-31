@@ -22,7 +22,7 @@ import {
   EmailNotificationSettings,
   UserIdentity,
   UserService,
-} from '@valtimo/contract';
+} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
 

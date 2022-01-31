@@ -15,8 +15,8 @@
  */
 
 import {Injectable} from '@angular/core';
-import {ConfigService} from '@valtimo/config';
-import {DefinitionColumn, SortState} from '@valtimo/contract';
+import {ConfigService, DefinitionColumn} from '@valtimo/config';
+import {SortState} from '@valtimo/document';
 
 @Injectable({
   providedIn: 'root',

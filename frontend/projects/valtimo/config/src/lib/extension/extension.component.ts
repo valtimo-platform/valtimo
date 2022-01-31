@@ -16,7 +16,7 @@
 
 import {Component, Input, OnInit, ViewChild, ViewContainerRef} from '@angular/core';
 import {ConfigService} from '../config.service';
-import {Extension, ExtensionLoader, ExtensionPoint} from '@valtimo/contract';
+import {Extension, ExtensionLoader, ExtensionPoint} from '../models';
 
 @Component({
   selector: 'valtimo-extension',

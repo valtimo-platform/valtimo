@@ -17,13 +17,13 @@
 import {Component, EventEmitter, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {FormioComponent, ModalComponent} from '@valtimo/components';
-import {FormAssociation, FormioSubmission, FormSubmissionResult, Task} from '@valtimo/contract';
-import {FormLinkService} from '@valtimo/form-link';
+import {Task} from '../models';
+import {FormioSubmission, ValtimoFormioOptions, FormioOptionsImpl} from '@valtimo/components';
+import {FormSubmissionResult, FormAssociation, FormLinkService} from '@valtimo/form-link';
 import {FormioForm} from 'angular-formio';
 import * as momentImported from 'moment';
 import {NGXLogger} from 'ngx-logger';
 import {ToastrService} from 'ngx-toastr';
-import {FormioOptionsImpl, ValtimoFormioOptions} from '@valtimo/contract';
 import {take} from 'rxjs/operators';
 
 const moment = momentImported;

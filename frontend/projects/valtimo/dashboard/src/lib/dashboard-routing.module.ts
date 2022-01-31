@@ -19,7 +19,7 @@ import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {DashboardComponent} from './dashboard.component';
-import {ROLE_USER} from '@valtimo/contract';
+import {ROLE_USER} from '@valtimo/config';
 
 const routes: Routes = [
   {

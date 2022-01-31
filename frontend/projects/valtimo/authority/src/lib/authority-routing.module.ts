@@ -21,7 +21,7 @@ import {AuthGuardService} from '@valtimo/security';
 import {AuthorityListComponent} from './authority-list/authority-list.component';
 import {AuthorityCreateComponent} from './authority-create/authority-create.component';
 import {AuthorityDetailComponent} from './authority-detail/authority-detail.component';
-import {ROLE_ADMIN} from '@valtimo/contract';
+import {ROLE_ADMIN} from '@valtimo/config';
 
 const routes: Routes = [
   {

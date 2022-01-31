@@ -20,7 +20,7 @@ import {catchError, map, switchMap, take, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {ActivatedRoute} from '@angular/router';
 import {AlertService} from '@valtimo/components';
-import {ConnectorInstance, ObjectSyncConfig} from '@valtimo/contract';
+import {ConnectorInstance, ObjectSyncConfig} from '../../models';
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
 import {ObjectApiSyncService} from '../../services/object-api-sync/object-api-sync.service';
 import {ConnectorManagementService} from '../../services/connector-management/connector-management.service';

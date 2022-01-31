@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {ReplaySubject} from 'rxjs';
 import {NGXLogger} from 'ngx-logger';
 import {KeycloakService} from 'keycloak-angular';
-import {UserIdentity, UserService, ValtimoUserIdentity} from '@valtimo/contract';
+import {UserIdentity, UserService, ValtimoUserIdentity} from '@valtimo/config';
 import {KeycloakOptionsService} from './keycloak-options.service';
 
 @Injectable({

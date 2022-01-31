@@ -16,20 +16,19 @@
 
 import {Component, EventEmitter, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import {FormioBeforeSubmit, FormioForm} from 'angular-formio';
-import {FormioComponent, ModalComponent} from '@valtimo/components';
-import {ActivatedRoute, Router} from '@angular/router';
-import {ProcessService} from '@valtimo/process';
-import {DocumentService} from '@valtimo/document';
-import {FormLinkService} from '@valtimo/form-link';
-import {NGXLogger} from 'ngx-logger';
 import {
-  FormAssociation,
+  FormioComponent,
+  ModalComponent,
   FormioOptionsImpl,
   FormioSubmission,
-  FormSubmissionResult,
-  ProcessDocumentDefinition,
   ValtimoFormioOptions,
-} from '@valtimo/contract';
+} from '@valtimo/components';
+import {ActivatedRoute, Router} from '@angular/router';
+import {ProcessService} from '@valtimo/process';
+import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
+import {FormLinkService} from '@valtimo/form-link';
+import {NGXLogger} from 'ngx-logger';
+import {FormAssociation, FormSubmissionResult} from '@valtimo/form-link';
 import {noop} from 'rxjs';
 import {take} from 'rxjs/operators';
 

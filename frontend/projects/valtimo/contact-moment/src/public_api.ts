@@ -17,5 +17,7 @@
 /*
  * Public API Surface of contact-moment
  */
+
+export * from './lib/models';
 export * from './lib/contact-moment.module';
 export * from './lib/contact-moment.service';

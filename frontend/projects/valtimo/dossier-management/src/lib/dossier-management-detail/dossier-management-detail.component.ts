@@ -15,8 +15,7 @@
  */
 
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {DocumentService} from '@valtimo/document';
-import {DocumentDefinition, ProcessDocumentDefinition} from '@valtimo/contract';
+import {DocumentService, DocumentDefinition, ProcessDocumentDefinition} from '@valtimo/document';
 import {ActivatedRoute} from '@angular/router';
 import {DossierManagementConnectModalComponent} from '../dossier-management-connect-modal/dossier-management-connect-modal.component';
 import {AlertService} from '@valtimo/components';

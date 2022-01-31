@@ -15,7 +15,7 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {ROLE_DEVELOPER, ROLE_USER, User} from '@valtimo/contract';
+import {ROLE_DEVELOPER, ROLE_USER, User} from '@valtimo/config';
 import {UserManagementService} from '../user-management.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';

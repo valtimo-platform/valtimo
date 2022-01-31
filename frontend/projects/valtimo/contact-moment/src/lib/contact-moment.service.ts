@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
-import {Contactmoment, CreateContactMomentRequest} from '@valtimo/contract';
+import {Contactmoment, CreateContactMomentRequest} from './models';
 
 @Injectable({
   providedIn: 'root',

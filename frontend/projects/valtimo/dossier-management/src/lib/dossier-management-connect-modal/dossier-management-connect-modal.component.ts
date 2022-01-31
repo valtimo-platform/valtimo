@@ -15,14 +15,13 @@
  */
 
 import {Component, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
-import {DocumentService} from '@valtimo/document';
 import {
+  DocumentService,
   ProcessDocumentDefinitionRequest,
   ProcessDocumentDefinition,
   DocumentDefinition,
-  ProcessDefinition,
-} from '@valtimo/contract';
-import {ProcessService} from '@valtimo/process';
+} from '@valtimo/document';
+import {ProcessService, ProcessDefinition} from '@valtimo/process';
 import {ToastrService} from 'ngx-toastr';
 import {ModalComponent} from '@valtimo/components';
 

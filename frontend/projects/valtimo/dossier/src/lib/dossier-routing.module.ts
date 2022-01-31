@@ -21,7 +21,7 @@ import {AuthGuardService} from '@valtimo/security';
 import {DossierListComponent} from './dossier-list/dossier-list.component';
 import {DossierDetailComponent} from './dossier-detail/dossier-detail.component';
 import {DossierUpdateComponent} from './dossier-update/dossier-update.component';
-import {ROLE_USER} from '@valtimo/contract';
+import {ROLE_USER} from '@valtimo/config';
 
 const routes: Routes = [
   {

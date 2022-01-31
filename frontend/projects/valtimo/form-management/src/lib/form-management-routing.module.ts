@@ -20,7 +20,7 @@ import {FormManagementComponent} from './form-management.component';
 import {AuthGuardService} from '@valtimo/security';
 import {FormManagementCreateComponent} from './form-management-create/form-management-create.component';
 import {FormManagementEditComponent} from './form-management-edit/form-management-edit.component';
-import {ROLE_ADMIN} from '@valtimo/contract';
+import {ROLE_ADMIN} from '@valtimo/config';
 
 const routes: Routes = [
   {

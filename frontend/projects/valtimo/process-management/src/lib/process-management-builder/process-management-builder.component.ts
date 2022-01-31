@@ -16,8 +16,7 @@
 
 import {Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {ProcessService} from '@valtimo/process';
-import {ProcessDefinition} from '@valtimo/contract';
+import {ProcessService, ProcessDefinition} from '@valtimo/process';
 import {AlertService} from '@valtimo/components';
 import {ActivatedRoute, Router} from '@angular/router';
 import {forkJoin, Observable} from 'rxjs';

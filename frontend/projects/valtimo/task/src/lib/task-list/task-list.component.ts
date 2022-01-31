@@ -18,7 +18,7 @@ import {Component, OnDestroy, ViewChild, ViewEncapsulation} from '@angular/core'
 import {Router} from '@angular/router';
 import {TaskService} from '../task.service';
 import * as moment_ from 'moment';
-import {Task, TaskList} from '@valtimo/contract';
+import {Task, TaskList} from '../models';
 import {NGXLogger} from 'ngx-logger';
 import {TaskDetailModalComponent} from '../task-detail-modal/task-detail-modal.component';
 import {TranslateService} from '@ngx-translate/core';

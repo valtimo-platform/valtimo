@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpResponse} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {Context, ContextProcess, UserContextActiveProcess} from '@valtimo/contract';
+import {Context, ContextProcess, UserContextActiveProcess} from './models';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({

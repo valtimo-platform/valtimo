@@ -21,7 +21,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {TaskDetailModalComponent, TaskService} from '@valtimo/task';
 import * as moment_ from 'moment';
 import {take} from 'rxjs/operators';
-import {Task} from '@valtimo/contract';
+import {Task} from '@valtimo/task';
 import {BehaviorSubject} from 'rxjs';
 import {NgxSpinnerService} from 'ngx-spinner';
 

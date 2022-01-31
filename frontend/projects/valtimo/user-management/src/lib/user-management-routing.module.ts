@@ -21,7 +21,7 @@ import {AuthGuardService} from '@valtimo/security';
 import {UserListComponent} from './user-list/user-list.component';
 import {UserDetailComponent} from './user-detail/user-detail.component';
 import {UserCreateComponent} from './user-create/user-create.component';
-import {ROLE_ADMIN} from '@valtimo/contract';
+import {ROLE_ADMIN} from '@valtimo/config';
 
 const routes: Routes = [
   {

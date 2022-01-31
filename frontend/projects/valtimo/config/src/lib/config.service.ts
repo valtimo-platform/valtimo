@@ -15,13 +15,7 @@
  */
 
 import {ComponentFactoryResolver, Inject, Injectable, ViewContainerRef} from '@angular/core';
-import {
-  Extension,
-  ExtensionLoader,
-  ExtensionPoint,
-  VALTIMO_CONFIG,
-  ValtimoConfig,
-} from '@valtimo/contract';
+import {Extension, ExtensionLoader, ExtensionPoint, VALTIMO_CONFIG, ValtimoConfig} from './models';
 
 @Injectable({
   providedIn: 'root',

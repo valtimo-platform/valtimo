@@ -28,7 +28,7 @@ import {
 import {ProfileComponent} from './profile/profile.component';
 import {PasswordComponent} from './password/password.component';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
-import {HttpLoaderFactory} from '@valtimo/contract';
+import {HttpLoaderFactory} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
 
 @NgModule({

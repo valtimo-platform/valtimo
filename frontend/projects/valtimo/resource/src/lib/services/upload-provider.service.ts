@@ -16,8 +16,8 @@
 
 import {Injectable, Injector} from '@angular/core';
 import {NGXLogger} from 'ngx-logger';
-import {ResourceFile, UploadProvider, UploadService, ResourceDto} from '@valtimo/contract';
-import {ConfigService} from '@valtimo/config';
+import {ResourceFile, UploadService, ResourceDto} from '../models';
+import {ConfigService, UploadProvider} from '@valtimo/config';
 import {Observable} from 'rxjs';
 import {OpenZaakUploadService} from './open-zaak-upload.service';
 import {S3UploadService} from './s3-upload.service';

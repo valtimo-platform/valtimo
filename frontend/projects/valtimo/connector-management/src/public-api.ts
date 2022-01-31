@@ -18,6 +18,7 @@
  * Public API Surface of process-management
  */
 
+export * from './lib/models';
 export * from './lib/connector-management.module';
 export * from './lib/components/connector-link-extension-modal/connector-link-extension-modal.component';
 export * from './lib/components/connector-link-extension/connector-link-extension.component';

@@ -23,9 +23,8 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {ProcessService} from '@valtimo/process';
-import {Heatpoint, ProcessDefinition} from '@valtimo/contract';
-
+import {ProcessService, ProcessDefinition} from '@valtimo/process';
+import {Heatpoint} from '../models';
 import * as BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
 import * as heatmap from 'heatmap.js-fixed/build/heatmap.js';
 

@@ -16,7 +16,7 @@
 
 import {Component, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
-import {ChoiceField} from '@valtimo/contract';
+import {ChoiceField} from '../models';
 import {ChoiceFieldService} from '../choice-field.service';
 
 @Component({

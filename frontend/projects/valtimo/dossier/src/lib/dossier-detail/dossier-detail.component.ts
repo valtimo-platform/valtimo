@@ -22,8 +22,8 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
-import {DocumentService} from '@valtimo/document';
-import {Document, ProcessDocumentDefinition, TabLoaderImpl} from '@valtimo/contract';
+import {DocumentService, Document, ProcessDocumentDefinition} from '@valtimo/document';
+import {TabLoaderImpl} from '../models';
 import {TranslateService} from '@ngx-translate/core';
 import {Location} from '@angular/common';
 import {TabService} from '../tab.service';

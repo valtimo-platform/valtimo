@@ -16,7 +16,8 @@
 
 import {Component} from '@angular/core';
 import {UserManagementService} from '../user-management.service';
-import {User, Page} from '@valtimo/contract';
+import {User} from '@valtimo/config';
+import {Page} from '@valtimo/document';
 import {Router} from '@angular/router';
 
 @Component({

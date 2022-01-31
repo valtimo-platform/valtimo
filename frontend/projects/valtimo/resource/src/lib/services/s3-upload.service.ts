@@ -16,7 +16,7 @@
 
 import {Observable} from 'rxjs';
 import {map, switchMap, tap} from 'rxjs/operators';
-import {ResourceDto, ResourceFile, S3Resource, UploadService} from '@valtimo/contract';
+import {ResourceDto, ResourceFile, S3Resource, UploadService} from '../models';
 import {Injectable} from '@angular/core';
 import {v4 as uuidv4} from 'uuid';
 import {S3Service} from './s3.service';

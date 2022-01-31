@@ -16,7 +16,7 @@
 
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
-import {ChoiceField, ChoiceFieldValue} from '@valtimo/contract';
+import {ChoiceField, ChoiceFieldValue} from '../models';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ChoiceFieldService} from '../choice-field.service';
 import {AlertService} from '@valtimo/components';

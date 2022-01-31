@@ -16,11 +16,11 @@
 
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
-import {Milestone, MilestoneSet, ProcessDefinition} from '@valtimo/contract';
+import {Milestone, MilestoneSet} from '../models';
 import {MilestoneService} from '../milestone.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {AlertService} from '@valtimo/components';
-import {ProcessService} from '@valtimo/process';
+import {ProcessService, ProcessDefinition} from '@valtimo/process';
 import {switchMap} from 'rxjs/operators';
 
 @Component({

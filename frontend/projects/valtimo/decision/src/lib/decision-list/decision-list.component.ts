@@ -15,7 +15,7 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {Decision} from '@valtimo/contract';
+import {Decision} from '../models';
 import {DecisionService} from '../decision.service';
 import {Router} from '@angular/router';
 

@@ -16,17 +16,20 @@
 
 import {Component, NgZone, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {NgbModal, NgbModalOptions} from '@ng-bootstrap/ng-bootstrap';
-import {FormManagementService} from '@valtimo/form-management';
+import {FormManagementService, FormDefinition} from '@valtimo/form-management';
 import {
   BpmnElement,
   CreateFormAssociationRequest,
-  DropdownItem,
   FormAssociation,
-  FormDefinition,
   ModifyFormAssociationRequest,
-} from '@valtimo/contract';
+} from '../models';
 import {FormLinkService} from '../form-link.service';
-import {AlertService, ModalComponent, SearchableDropdownComponent} from '@valtimo/components';
+import {
+  AlertService,
+  ModalComponent,
+  SearchableDropdownComponent,
+  DropdownItem,
+} from '@valtimo/components';
 import {NGXLogger} from 'ngx-logger';
 import {TranslateService} from '@ngx-translate/core';
 

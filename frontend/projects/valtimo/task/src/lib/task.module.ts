@@ -31,7 +31,7 @@ import {
   WidgetModule,
   SearchableDropdownSelectModule,
 } from '@valtimo/components';
-import {HttpLoaderFactory} from '@valtimo/contract';
+import {HttpLoaderFactory} from '@valtimo/config';
 import {ToastrModule} from 'ngx-toastr';
 import {TaskDetailModalComponent} from './task-detail-modal/task-detail-modal.component';
 import {TaskListComponent} from './task-list/task-list.component';

@@ -17,9 +17,8 @@
 import {Component, ViewChild} from '@angular/core';
 import {ContactMomentService} from '@valtimo/contact-moment';
 import * as moment_ from 'moment';
-import {TimelineItem, TimelineItemImpl} from '@valtimo/contract';
 import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
-import {ModalComponent} from '@valtimo/components';
+import {ModalComponent, TimelineItem, TimelineItemImpl} from '@valtimo/components';
 import {map, switchMap, take} from 'rxjs/operators';
 import {AlertService} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';

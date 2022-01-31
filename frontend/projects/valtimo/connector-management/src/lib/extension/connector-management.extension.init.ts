@@ -16,7 +16,7 @@
 
 import {NGXLogger} from 'ngx-logger';
 import {ConfigService} from '@valtimo/config';
-import {BasicExtensionPoint, Extension} from '@valtimo/contract';
+import {BasicExtensionPoint, Extension} from '@valtimo/config';
 import {Injector} from '@angular/core';
 import {ConnectorLinkExtensionComponent} from '../components/connector-link-extension/connector-link-extension.component';
 

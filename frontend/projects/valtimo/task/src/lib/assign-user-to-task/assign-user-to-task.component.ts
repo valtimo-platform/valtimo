@@ -23,10 +23,11 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import {DropdownItem, User} from '@valtimo/contract';
+import {DropdownItem} from '@valtimo/components';
 import {BehaviorSubject, combineLatest} from 'rxjs';
 import {take, tap} from 'rxjs/operators';
 import {TaskService} from '../task.service';
+import {User} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-assign-user-to-task',

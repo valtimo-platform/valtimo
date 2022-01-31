@@ -19,8 +19,8 @@ import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MilestoneService} from '../milestone.service';
 import {Router} from '@angular/router';
 import {AlertService} from '@valtimo/components';
-import {Milestone, MilestoneSet, ProcessDefinition} from '@valtimo/contract';
-import {ProcessService} from '@valtimo/process';
+import {Milestone, MilestoneSet} from '../models';
+import {ProcessService, ProcessDefinition} from '@valtimo/process';
 
 @Component({
   selector: 'valtimo-milestone-create',

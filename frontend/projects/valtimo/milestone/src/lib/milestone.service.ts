@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {Milestone, MilestoneSet} from '@valtimo/contract';
+import {Milestone, MilestoneSet} from './models';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({

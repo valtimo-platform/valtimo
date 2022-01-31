@@ -18,5 +18,6 @@
  * Public API Surface of choicefield
  */
 
+export * from './lib/models';
 export * from './lib/choicefield.service';
 export * from './lib/choicefield.module';

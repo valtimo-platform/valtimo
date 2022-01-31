@@ -17,8 +17,14 @@
 import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {DefinitionColumn, ProcessDocumentDefinition, SortState} from '@valtimo/contract';
-import {DocumentSearchRequest, DocumentSearchRequestImpl, DocumentService} from '@valtimo/document';
+import {DefinitionColumn} from '@valtimo/config';
+import {
+  DocumentSearchRequest,
+  DocumentSearchRequestImpl,
+  DocumentService,
+  SortState,
+  ProcessDocumentDefinition,
+} from '@valtimo/document';
 import * as momentImported from 'moment';
 import {combineLatest, Subscription} from 'rxjs';
 import {DefaultTabs} from '../dossier-detail-tab-enum';

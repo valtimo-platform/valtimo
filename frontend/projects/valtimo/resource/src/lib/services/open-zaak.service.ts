@@ -30,7 +30,7 @@ import {
   ZaakType,
   ZaakTypeLink,
   ZaakTypeRequest,
-} from '@valtimo/contract';
+} from '../models';
 
 @Injectable({
   providedIn: 'root',

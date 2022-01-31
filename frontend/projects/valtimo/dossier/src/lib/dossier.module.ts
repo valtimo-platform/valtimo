@@ -20,7 +20,7 @@ import {DossierRoutingModule} from './dossier-routing.module';
 import {DossierListComponent} from './dossier-list/dossier-list.component';
 import {DossierService} from './dossier.service';
 import {TAB_MAP} from './dossier.config';
-import {HttpLoaderFactory} from '@valtimo/contract';
+import {HttpLoaderFactory} from '@valtimo/config';
 import {
   BpmnJsDiagramModule,
   CamundaFormModule,

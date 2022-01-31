@@ -16,7 +16,7 @@
 
 import {Component, ViewChild, ViewContainerRef} from '@angular/core';
 import {FormLinkModalComponent} from './form-link-modal/form-link-modal.component';
-import {BpmnElement} from '@valtimo/contract';
+import {BpmnElement} from './models';
 import {ConfigService} from '@valtimo/config';
 import {ModalComponent} from '@valtimo/components';
 

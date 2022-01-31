@@ -15,8 +15,7 @@
  */
 
 import {NGXLogger} from 'ngx-logger';
-import {ConfigService} from '@valtimo/config';
-import {BasicExtensionPoint, Extension} from '@valtimo/contract';
+import {ConfigService, BasicExtensionPoint, Extension} from '@valtimo/config';
 import {Injector} from '@angular/core';
 import {EmailExtensionComponent} from './email-extension.component';
 

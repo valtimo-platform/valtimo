@@ -16,7 +16,7 @@
 
 import {Component, OnInit} from '@angular/core';
 import {MilestoneService} from '../milestone.service';
-import {Milestone, MilestoneSet} from '@valtimo/contract';
+import {Milestone, MilestoneSet} from '../models';
 import {Router} from '@angular/router';
 import {combineLatest} from 'rxjs';
 

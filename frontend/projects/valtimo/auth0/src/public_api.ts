@@ -17,6 +17,8 @@
 /*
  * Public API Surface of auth0
  */
+
+export * from './lib/models';
 export * from './lib/auth0.init';
 export * from './lib/auth0.module';
 export * from './lib/jwt-auth.service';

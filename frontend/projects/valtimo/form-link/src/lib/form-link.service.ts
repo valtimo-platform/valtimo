@@ -22,7 +22,7 @@ import {
   FormAssociation,
   FormSubmissionResult,
   ModifyFormAssociationRequest,
-} from '@valtimo/contract';
+} from './models';
 import {InterceptorSkipHeader} from '@valtimo/security';
 import {ConfigService} from '@valtimo/config';
 

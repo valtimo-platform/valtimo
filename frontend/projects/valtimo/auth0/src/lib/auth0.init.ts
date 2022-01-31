@@ -18,7 +18,7 @@ import {Injector} from '@angular/core';
 import {NGXLogger} from 'ngx-logger';
 import * as auth0js from 'auth0-js';
 import {ConfigService} from '@valtimo/config';
-import {ValtimoAuth0Options} from '@valtimo/contract';
+import {ValtimoAuth0Options} from './models';
 import {Auth0UserService} from './auth0-user.service';
 
 export function auth0Initializer(injector: Injector): () => Promise<any> {

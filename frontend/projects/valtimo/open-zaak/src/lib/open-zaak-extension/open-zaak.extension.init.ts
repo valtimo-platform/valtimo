@@ -15,8 +15,7 @@
  */
 
 import {NGXLogger} from 'ngx-logger';
-import {ConfigService} from '@valtimo/config';
-import {BasicExtensionPoint, Extension} from '@valtimo/contract';
+import {ConfigService, BasicExtensionPoint, Extension} from '@valtimo/config';
 import {Injector} from '@angular/core';
 import {OpenZaakTypeLinkExtensionComponent} from './open-zaak-type-link-extension.component';
 import {OpenZaakServiceTaskConnectorModalExtensionComponent} from './open-zaak-service-task-connector-modal-extension/open-zaak-service-task-connector-modal-extension.component';

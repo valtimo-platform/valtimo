@@ -15,8 +15,7 @@
  */
 
 import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
-import {ProcessService} from '@valtimo/process';
-import {ProcessDefinition} from '@valtimo/contract';
+import {ProcessService, ProcessDefinition} from '@valtimo/process';
 import {MigrationProcessDiagramComponent} from './migration-process-diagram/migration-process-diagram.component';
 import {NGXLogger} from 'ngx-logger';
 import {AlertService} from '@valtimo/components';

@@ -15,18 +15,17 @@
  */
 
 import {Component, OnInit, ViewChild, ViewEncapsulation} from '@angular/core';
-import {DocumentService} from '@valtimo/document';
-import {
-  FormAssociation,
-  FormioOptionsImpl,
-  FormioSubmission,
-  FormSubmissionResult,
-  ProcessDocumentDefinition,
-  ValtimoFormioOptions,
-} from '@valtimo/contract';
+import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
+import {FormAssociation, FormSubmissionResult} from '@valtimo/form-link';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ProcessService} from '@valtimo/process';
-import {FormioComponent, ModalComponent} from '@valtimo/components';
+import {
+  FormioComponent,
+  ModalComponent,
+  FormioOptionsImpl,
+  FormioSubmission,
+  ValtimoFormioOptions,
+} from '@valtimo/components';
 import {FormioBeforeSubmit} from 'angular-formio/formio.common';
 import {FormioForm} from 'angular-formio';
 import {FormLinkService} from '@valtimo/form-link';

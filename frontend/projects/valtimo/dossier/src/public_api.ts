@@ -18,6 +18,7 @@
  * Public API Surface of dossier
  */
 
+export * from './lib/models';
 export * from './lib/dossier-list/dossier-list.component';
 export * from './lib/dossier-detail/dossier-detail.component';
 export * from './lib/dossier-detail/tab/summary/summary.component';

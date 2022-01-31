@@ -23,7 +23,7 @@ import {MilestoneSetCreateComponent} from './milestone-set-create/milestone-set-
 import {MilestoneCreateComponent} from './milestone-create/milestone-create.component';
 import {MilestoneSetEditComponent} from './milestone-set-edit/milestone-set-edit.component';
 import {MilestoneEditComponent} from './milestone-edit/milestone-edit.component';
-import {ROLE_ADMIN} from '@valtimo/contract';
+import {ROLE_ADMIN} from '@valtimo/config';
 
 const routes: Routes = [
   {
