@@ -704,6 +704,46 @@
         }
       }
     },
+    "@valtimo/contact-moment": {
+      "root": "projects/valtimo/contact-moment",
+      "sourceRoot": "projects/valtimo/contact-moment/src",
+      "projectType": "library",
+      "prefix": "valtimo",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "projects/valtimo/contact-moment/tsconfig.lib.json",
+            "project": "projects/valtimo/contact-moment/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/contact-moment/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/valtimo/contact-moment/src/test.ts",
+            "tsConfig": "projects/valtimo/contact-moment/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/contact-moment/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/valtimo/contact-moment/tsconfig.lib.json",
+              "projects/valtimo/contact-moment/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    },
     "@valtimo/account": {
       "root": "projects/valtimo/account",
       "sourceRoot": "projects/valtimo/account/src",
