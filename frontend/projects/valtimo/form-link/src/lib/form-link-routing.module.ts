@@ -18,25 +18,20 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {AuthGuardService} from '@valtimo/security';
 import {FormLinkComponent} from './form-link.component';
-import {ROLE_ADMIN} from '@valtimo/contract';
+import {ROLE_ADMIN} from '@valtimo/config';
 
 const routes: Routes = [
   {
     path: 'form-links',
     component: FormLinkComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Form links', roles: [ROLE_ADMIN]}
+    data: {title: 'Form links', roles: [ROLE_ADMIN]},
   },
 ];
 
 @NgModule({
-  imports: [
-    RouterModule.forRoot(routes)
-  ],
-  exports: [
-    RouterModule
-  ],
-  declarations: []
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule],
+  declarations: [],
 })
-export class FormLinkRoutingModule {
-}
+export class FormLinkRoutingModule {}

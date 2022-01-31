@@ -20,76 +20,116 @@
       <div class="col-12">
         <div class="alert alert-warning pl-2 plr-2" role="alert">
           <div class="icon"><span class="mdi mdi-alert-triangle"></span></div>
-          <div class="message" [innerHTML]="'Process migration warning' | translate">
-          </div>
+          <div class="message" [innerHTML]="'Process migration warning' | translate"></div>
         </div>
       </div>
     </div>
     <div class="row mb-5">
       <div class="col-4">
         <label for="sourceDef">Source Definition</label>
-        <select class="form-control" id="sourceDef"
-                [ngModel]="fields.source.definition" (ngModelChange)="loadProcessDefinitionVersions($event, 'source')">
+        <select
+          class="form-control"
+          id="sourceDef"
+          [ngModel]="fields.source.definition"
+          (ngModelChange)="loadProcessDefinitionVersions($event, 'source')"
+        >
           <option [ngValue]="null" selected>- Source Definition -</option>
-          <option *ngFor="let processDef of processDefinitions" [ngValue]="processDef.key">{{processDef.name}}</option>
+          <option *ngFor="let processDef of processDefinitions" [ngValue]="processDef.key">
+            {{ processDef.name }}
+          </option>
         </select>
       </div>
       <div class="col-2">
         <label for="sourceVer">Source Version</label>
-        <select class="form-control" id="sourceVer" [ngModel]="fields.source.version"
-                (ngModelChange)="loadProcess($event, 'source')">
+        <select
+          class="form-control"
+          id="sourceVer"
+          [ngModel]="fields.source.version"
+          (ngModelChange)="loadProcess($event, 'source')"
+        >
           <option [ngValue]="null" selected>- Source Version -</option>
-          <option *ngFor="let processVer of selectedVersions.source"
-                  [ngValue]="processVer.id">{{processVer.version}}</option>
+          <option *ngFor="let processVer of selectedVersions.source" [ngValue]="processVer.id">
+            {{ processVer.version }}
+          </option>
         </select>
       </div>
       <div class="col-4">
         <label for="targetDef">Target Definition</label>
-        <select class="form-control" id="targetDef" [ngModel]="fields.target.definition"
-                (ngModelChange)="loadProcessDefinitionVersions($event, 'target')">
+        <select
+          class="form-control"
+          id="targetDef"
+          [ngModel]="fields.target.definition"
+          (ngModelChange)="loadProcessDefinitionVersions($event, 'target')"
+        >
           <option [ngValue]="null" selected>- Target Definition -</option>
-          <option *ngFor="let processDef of processDefinitions" [ngValue]="processDef.key">{{processDef.name}}</option>
+          <option *ngFor="let processDef of processDefinitions" [ngValue]="processDef.key">
+            {{ processDef.name }}
+          </option>
         </select>
       </div>
       <div class="col-2">
         <label for="targetVer">Target Version</label>
-        <select class="form-control" id="targetVer" [ngModel]="fields.target.version"
-                (ngModelChange)="loadProcess($event, 'target')">
+        <select
+          class="form-control"
+          id="targetVer"
+          [ngModel]="fields.target.version"
+          (ngModelChange)="loadProcess($event, 'target')"
+        >
           <option [ngValue]="null" selected>- Target Version -</option>
-          <option *ngFor="let processVer of selectedVersions.target"
-                  [ngValue]="processVer.id">{{processVer.version}}</option>
+          <option *ngFor="let processVer of selectedVersions.target" [ngValue]="processVer.id">
+            {{ processVer.version }}
+          </option>
         </select>
       </div>
     </div>
 
     <div class="row mb-5">
       <div class="col-6">
-        <valtimo-migration-process-diagram name="source" (loaded)="diagramLoaded($event)"
-                                           #sourceDiagram></valtimo-migration-process-diagram>
+        <valtimo-migration-process-diagram
+          name="source"
+          (loaded)="diagramLoaded($event)"
+          #sourceDiagram
+        ></valtimo-migration-process-diagram>
       </div>
       <div class="col-6">
-        <valtimo-migration-process-diagram name="target" (loaded)="diagramLoaded($event)"
-                                           #targetDiagram></valtimo-migration-process-diagram>
+        <valtimo-migration-process-diagram
+          name="target"
+          (loaded)="diagramLoaded($event)"
+          #targetDiagram
+        ></valtimo-migration-process-diagram>
       </div>
     </div>
     <table class="table table-striped mb-5" *ngIf="selectedId.source && selectedId.target">
       <tr *ngFor="let node of uniqueFlowNodeMap">
-        <td>{{node.name ? node.name : node.id}}</td>
+        <td>{{ node.name ? node.name : node.id }}</td>
         <td>
-          <select class="form-control" (change)="taskMapping[node.id]=$event.target.value">
+          <select class="form-control" (change)="taskMapping[node.id] = $event.target.value">
             <option [value]="null" disabled selected>- Choose Target -</option>
-            <option *ngFor="let targetFlowNode of getFilteredTargetFlowNodeMap(node.$type)"
-                    [value]="targetFlowNode.id">{{targetFlowNode.name ? targetFlowNode.name : targetFlowNode.id}}</option>
+            <option
+              *ngFor="let targetFlowNode of getFilteredTargetFlowNodeMap(node.$type)"
+              [value]="targetFlowNode.id"
+            >
+              {{ targetFlowNode.name ? targetFlowNode.name : targetFlowNode.id }}
+            </option>
           </select>
         </td>
       </tr>
     </table>
-    <hr>
+    <hr />
     <div class="btn-group mb-5">
-      <button [disabled]="(uniqueFlowNodeMap.length !== taskMappingLength && uniqueFlowNodeMap.length > 0) || !loaded.source || !loaded.target"
-              (click)="migrateProcess()"
-              class="btn btn-primary">Migrate <span *ngIf="processCount !== null"
-                                                    class="badge badge-pill badge-secondary">{{processCount}}</span>
+      <button
+        [disabled]="
+          (uniqueFlowNodeMap.length !== taskMappingLength && uniqueFlowNodeMap.length > 0) ||
+          !loaded.source ||
+          !loaded.target
+        "
+        (click)="migrateProcess()"
+        class="btn btn-primary"
+      >
+        Migrate
+        <span *ngIf="processCount !== null" class="badge badge-pill badge-secondary">{{
+          processCount
+        }}</span>
       </button>
     </div>
   </div>

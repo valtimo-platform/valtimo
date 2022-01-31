@@ -27,7 +27,7 @@ import {EmailExtensionComponent} from './email-extension/email-extension.compone
   declarations: [
     OpenZaakTypeLinkExtensionComponent,
     OpenZaakServiceTaskConnectorModalExtensionComponent,
-    EmailExtensionComponent
+    EmailExtensionComponent,
   ],
   imports: [
     FormsModule,
@@ -36,14 +36,13 @@ import {EmailExtensionComponent} from './email-extension/email-extension.compone
     ReactiveFormsModule,
     WidgetModule,
     CommonModule,
-    SpinnerModule
+    SpinnerModule,
   ],
   exports: [],
   entryComponents: [
     OpenZaakTypeLinkExtensionComponent,
     OpenZaakServiceTaskConnectorModalExtensionComponent,
-    EmailExtensionComponent
-  ]
+    EmailExtensionComponent,
+  ],
 })
-export class OpenZaakModule {
-}
+export class OpenZaakModule {}

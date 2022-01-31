@@ -21,35 +21,31 @@ import {AuthGuardService} from '@valtimo/security';
 import {UserListComponent} from './user-list/user-list.component';
 import {UserDetailComponent} from './user-detail/user-detail.component';
 import {UserCreateComponent} from './user-create/user-create.component';
-import {ROLE_ADMIN} from '@valtimo/contract';
+import {ROLE_ADMIN} from '@valtimo/config';
 
 const routes: Routes = [
   {
     path: 'users',
     component: UserListComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Users', roles: [ROLE_ADMIN]}
+    data: {title: 'Users', roles: [ROLE_ADMIN]},
   },
   {
     path: 'users/create',
     component: UserCreateComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Create new User', roles: [ROLE_ADMIN]}
+    data: {title: 'Create new User', roles: [ROLE_ADMIN]},
   },
   {
     path: 'users/user/:id',
     component: UserDetailComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'User details', roles: [ROLE_ADMIN]}
-  }
+    data: {title: 'User details', roles: [ROLE_ADMIN]},
+  },
 ];
 
 @NgModule({
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-  ],
-  exports: [RouterModule]
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class UserManagementRoutingModule {
-}
+export class UserManagementRoutingModule {}

@@ -30,20 +30,24 @@ import {ColorPickerModule} from 'ngx-color-picker';
 import {TranslateModule} from '@ngx-translate/core';
 
 @NgModule({
-  declarations: [MilestoneComponent, MilestoneSetCreateComponent, MilestoneListComponent,
-    MilestoneCreateComponent, MilestoneEditComponent, MilestoneSetEditComponent],
-    imports: [
-        RouterModule,
-        MilestoneRoutingModule,
-        CommonModule,
-        ListModule,
-        WidgetModule,
-        ReactiveFormsModule,
-        ColorPickerModule,
-        TranslateModule
-    ],
-  exports: [MilestoneComponent]
+  declarations: [
+    MilestoneComponent,
+    MilestoneSetCreateComponent,
+    MilestoneListComponent,
+    MilestoneCreateComponent,
+    MilestoneEditComponent,
+    MilestoneSetEditComponent,
+  ],
+  imports: [
+    RouterModule,
+    MilestoneRoutingModule,
+    CommonModule,
+    ListModule,
+    WidgetModule,
+    ReactiveFormsModule,
+    ColorPickerModule,
+    TranslateModule,
+  ],
+  exports: [MilestoneComponent],
 })
-export class MilestoneModule {
-
-}
+export class MilestoneModule {}

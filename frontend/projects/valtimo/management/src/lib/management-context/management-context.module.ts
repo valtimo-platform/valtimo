@@ -20,7 +20,13 @@ import {ContextListComponent} from './context-list/context-list.component';
 import {ContextEditComponent} from './context-edit/context-edit.component';
 import {ManagementContextRoutingModule} from './management-context-routing.module';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {ListModule, WidgetModule, FieldAutoFocusModule, FilterSidebarModule, AlertModule} from '@valtimo/components';
+import {
+  ListModule,
+  WidgetModule,
+  FieldAutoFocusModule,
+  FilterSidebarModule,
+  AlertModule,
+} from '@valtimo/components';
 import {NgbButtonsModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateModule} from '@ngx-translate/core';
 
@@ -36,10 +42,9 @@ import {TranslateModule} from '@ngx-translate/core';
     ReactiveFormsModule,
     AlertModule,
     NgbButtonsModule,
-    TranslateModule
+    TranslateModule,
   ],
   declarations: [ContextListComponent, ContextEditComponent],
-  exports: []
+  exports: [],
 })
-export class ManagementContextModule {
-}
+export class ManagementContextModule {}

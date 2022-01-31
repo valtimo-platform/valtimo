@@ -17,13 +17,19 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {UserManagementRoutingModule} from './user-management-routing.module';
-import {AlertModule, FieldAutoFocusModule, FilterSidebarModule, ListModule, WidgetModule} from '@valtimo/components';
+import {
+  AlertModule,
+  FieldAutoFocusModule,
+  FilterSidebarModule,
+  ListModule,
+  WidgetModule,
+} from '@valtimo/components';
 import {UserListComponent} from './user-list/user-list.component';
 import {UserDetailComponent} from './user-detail/user-detail.component';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {UserCreateComponent} from './user-create/user-create.component';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
-import {HttpLoaderFactory} from '@valtimo/contract';
+import {HttpLoaderFactory} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
 
 @NgModule({
@@ -42,12 +48,10 @@ import {HttpClient} from '@angular/common/http';
       loader: {
         provide: TranslateLoader,
         useFactory: HttpLoaderFactory,
-        deps: [HttpClient]
-      }
+        deps: [HttpClient],
+      },
     }),
   ],
-  exports: []
+  exports: [],
 })
-export class UserManagementModule {
-
-}
+export class UserManagementModule {}

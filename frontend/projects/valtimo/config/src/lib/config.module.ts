@@ -16,13 +16,13 @@
 
 import {ModuleWithProviders, NgModule} from '@angular/core';
 import {ConfigService} from './config.service';
-import {VALTIMO_CONFIG, ValtimoConfig} from '@valtimo/contract';
+import {VALTIMO_CONFIG, ValtimoConfig} from './models';
 import {ExtensionComponent} from './extension/extension.component';
 
 @NgModule({
   declarations: [ExtensionComponent],
   imports: [],
-  exports: [ExtensionComponent]
+  exports: [ExtensionComponent],
 })
 export class ConfigModule {
   static forRoot(config: ValtimoConfig): ModuleWithProviders<ConfigModule> {
@@ -32,9 +32,9 @@ export class ConfigModule {
         ConfigService,
         {
           provide: VALTIMO_CONFIG,
-          useValue: config
-        }
-      ]
+          useValue: config,
+        },
+      ],
     };
   }
 }

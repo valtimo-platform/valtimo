@@ -15,13 +15,12 @@
  */
 
 import {ComponentFactoryResolver, Inject, Injectable, ViewContainerRef} from '@angular/core';
-import {Extension, ExtensionLoader, ExtensionPoint, VALTIMO_CONFIG, ValtimoConfig} from '@valtimo/contract';
+import {Extension, ExtensionLoader, ExtensionPoint, VALTIMO_CONFIG, ValtimoConfig} from './models';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ConfigService {
-
   private readonly extensionLoader: ExtensionLoader;
   private readonly extensions: Array<Extension> = [];
 
@@ -32,8 +31,27 @@ export class ConfigService {
     this.extensionLoader = new ExtensionLoader(componentFactoryResolver);
   }
 
-  get config() {
-    return this.valtimoConfig;
+  get config(): ValtimoConfig {
+    const config = this.valtimoConfig;
+
+    return {
+      ...config,
+      whitelistedDomains: config.whitelistedDomains.map(domain =>
+        this.formatUrlTrailingSlash(domain, false)
+      ),
+      mockApi: {
+        ...config.mockApi,
+        endpointUri: this.formatUrlTrailingSlash(config.mockApi.endpointUri, true),
+      },
+      swagger: {
+        ...config.swagger,
+        endpointUri: this.formatUrlTrailingSlash(config.swagger.endpointUri, false),
+      },
+      valtimoApi: {
+        ...config.valtimoApi,
+        endpointUri: this.formatUrlTrailingSlash(config.valtimoApi.endpointUri, true),
+      },
+    };
   }
 
   get initializers() {
@@ -45,11 +63,15 @@ export class ConfigService {
   }
 
   getSupportedExtensionPoint(module: string, page: string, section: string) {
-    return this.extensions.find(extension => extension.extensionPoint.supports(module, page, section));
+    return this.extensions.find(extension =>
+      extension.extensionPoint.supports(module, page, section)
+    );
   }
 
   getSupportedExtensionPoints(module: string, page: string, section: string) {
-    return this.extensions.filter(extension => extension.extensionPoint.supports(module, page, section));
+    return this.extensions.filter(extension =>
+      extension.extensionPoint.supports(module, page, section)
+    );
   }
 
   loadExtensionPoint(viewContainerRef: ViewContainerRef, extensionPoint: ExtensionPoint) {
@@ -60,4 +82,16 @@ export class ConfigService {
     return this.extensionLoader.loadAndClearExtensionPoint(viewContainerRef, extensionPoint);
   }
 
+  private formatUrlTrailingSlash(url: string, returnWithTrailingSlash: boolean): string {
+    const urlLastCharacter = url[url.length - 1];
+    const urlLastCharacterIsSlash = urlLastCharacter === '/';
+
+    if (!returnWithTrailingSlash && urlLastCharacterIsSlash) {
+      return url.slice(0, -1);
+    } else if (returnWithTrailingSlash && !urlLastCharacterIsSlash) {
+      return `${url}/`;
+    }
+
+    return url;
+  }
 }

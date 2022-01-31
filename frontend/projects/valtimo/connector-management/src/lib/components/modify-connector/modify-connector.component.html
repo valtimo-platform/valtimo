@@ -16,7 +16,7 @@
 
 <ng-container *ngIf="instance$ | async as instance">
   <p class="lead text-center mb-3 pb-3 border-bottom">
-    {{('connectorManagement.modifyWith' | translate) + ' ' + instance.type.name}}
+    {{ ('connectorManagement.modifyWith' | translate) + ' ' + instance.type.name }}
   </p>
   <valtimo-edit-connector-form
     [properties]="instance.properties"

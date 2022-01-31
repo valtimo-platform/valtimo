@@ -19,16 +19,15 @@ import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MilestoneService} from '../milestone.service';
 import {Router} from '@angular/router';
 import {AlertService} from '@valtimo/components';
-import {Milestone, MilestoneSet, ProcessDefinition} from '@valtimo/contract';
-import {ProcessService} from '@valtimo/process';
+import {Milestone, MilestoneSet} from '../models';
+import {ProcessService, ProcessDefinition} from '@valtimo/process';
 
 @Component({
   selector: 'valtimo-milestone-create',
   templateUrl: './milestone-create.component.html',
-  styleUrls: ['./milestone-create.component.scss']
+  styleUrls: ['./milestone-create.component.scss'],
 })
 export class MilestoneCreateComponent implements OnInit {
-
   public form: FormGroup;
   public milestoneSets: MilestoneSet[] = [];
   public processDefinitions: ProcessDefinition[] = [];
@@ -40,8 +39,7 @@ export class MilestoneCreateComponent implements OnInit {
     private router: Router,
     private alertService: AlertService,
     private processService: ProcessService
-  ) {
-  }
+  ) {}
 
   get formControls() {
     return this.form.controls;
@@ -53,8 +51,14 @@ export class MilestoneCreateComponent implements OnInit {
       title: new FormControl('', Validators.required),
       processDefinitionKey: new FormControl('', Validators.required),
       taskDefinitionKey: new FormControl('', Validators.required),
-      plannedIntervalInDays: new FormControl('', [Validators.required, Validators.pattern('^[0-9]*$')]),
-      color: new FormControl('', [Validators.required, Validators.pattern('^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')])
+      plannedIntervalInDays: new FormControl('', [
+        Validators.required,
+        Validators.pattern('^[0-9]*$'),
+      ]),
+      color: new FormControl('', [
+        Validators.required,
+        Validators.pattern('^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'),
+      ]),
     });
     this.getMilestoneSets();
     this.getMilestones();
@@ -67,7 +71,7 @@ export class MilestoneCreateComponent implements OnInit {
       processDefinitionKey: '',
       taskDefinitionKey: '',
       plannedIntervalInDays: '',
-      color: ''
+      color: '',
     });
   }
 
@@ -78,9 +82,11 @@ export class MilestoneCreateComponent implements OnInit {
   }
 
   getMilestones() {
-    this.processService.getProcessDefinitions().subscribe((processDefinitions: ProcessDefinition[]) => {
-      this.processDefinitions = processDefinitions;
-    });
+    this.processService
+      .getProcessDefinitions()
+      .subscribe((processDefinitions: ProcessDefinition[]) => {
+        this.processDefinitions = processDefinitions;
+      });
   }
 
   getFlownodes(processDefinitionId: string) {
@@ -96,11 +102,14 @@ export class MilestoneCreateComponent implements OnInit {
     const milestone: Milestone = this.form.value;
     milestone.processDefinitionKey = milestone.processDefinitionKey['key'];
     milestone.id = null;
-    this.milestoneService.createMilestone(milestone).subscribe(() => {
-      this.router.navigate(['/milestones']);
-      this.alertService.success('New Milestone has been created');
-    }, (err) => {
-      this.alertService.error('Error creating new milestone');
-    });
+    this.milestoneService.createMilestone(milestone).subscribe(
+      () => {
+        this.router.navigate(['/milestones']);
+        this.alertService.success('New Milestone has been created');
+      },
+      err => {
+        this.alertService.error('Error creating new milestone');
+      }
+    );
   }
 }

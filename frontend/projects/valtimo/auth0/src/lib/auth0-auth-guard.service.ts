@@ -21,10 +21,9 @@ import {Auth0UserService} from './auth0-user.service';
 import {first} from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class Auth0AuthGuardService implements CanActivate {
-
   constructor(
     protected router: Router,
     protected auth0UserService: Auth0UserService,

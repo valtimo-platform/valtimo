@@ -21,35 +21,31 @@ import {AuthGuardService} from '@valtimo/security';
 import {AuthorityListComponent} from './authority-list/authority-list.component';
 import {AuthorityCreateComponent} from './authority-create/authority-create.component';
 import {AuthorityDetailComponent} from './authority-detail/authority-detail.component';
-import {ROLE_ADMIN} from '@valtimo/contract';
+import {ROLE_ADMIN} from '@valtimo/config';
 
 const routes: Routes = [
   {
     path: 'entitlements',
     component: AuthorityListComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Entitlements', roles: [ROLE_ADMIN]}
+    data: {title: 'Entitlements', roles: [ROLE_ADMIN]},
   },
   {
     path: 'entitlements/create',
     component: AuthorityCreateComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Create new Entitlement', roles: [ROLE_ADMIN]}
+    data: {title: 'Create new Entitlement', roles: [ROLE_ADMIN]},
   },
   {
     path: 'entitlements/entitlement/:name',
     component: AuthorityDetailComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Entitlement details', roles: [ROLE_ADMIN]}
-  }
+    data: {title: 'Entitlement details', roles: [ROLE_ADMIN]},
+  },
 ];
 
 @NgModule({
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-  ],
-  exports: [RouterModule]
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class AuthorityRoutingModule {
-}
+export class AuthorityRoutingModule {}

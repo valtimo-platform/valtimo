@@ -20,21 +20,17 @@ import {ActivatedRoute, Router} from '@angular/router';
 @Component({
   selector: 'app-custom-dossier-tab',
   templateUrl: './custom-dossier-tab.component.html',
-  styleUrls: ['./custom-dossier-tab.component.scss']
+  styleUrls: ['./custom-dossier-tab.component.scss'],
 })
 export class CustomDossierTabComponent implements OnInit {
   private documentDefinitionName: string;
   private documentId: string;
 
-  constructor(
-    private route: ActivatedRoute,
-  ) {
+  constructor(private route: ActivatedRoute) {
     const snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = snapshot.get('documentDefinitionName') || '';
     this.documentId = snapshot.get('documentId') || '';
   }
 
-  ngOnInit() {
-  }
-
+  ngOnInit() {}
 }

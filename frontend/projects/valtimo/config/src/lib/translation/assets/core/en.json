@@ -36,6 +36,13 @@
       "body": "Body",
       "sendButtonText": "Send",
       "sendSuccess": "Your message has been sent successfully."
+    },
+    "contactMoments": {
+      "makeNoteButton": "Make note",
+      "popupTitle": "Make a note",
+      "noteText": "Note",
+      "saveButtonText": "Save note",
+      "saveSuccess": "Your note has been saved successfully."
     }
   },
   "document": {
@@ -311,7 +318,8 @@
     "noFieldDefinitions": "No fields definitions defined",
     "noResults": "No result found",
     "showingResults": "Showing {{number}} of {{total}} results",
-    "showingResult": "Showing {{number}} result"
+    "showingResult": "Showing {{number}} result",
+    "automaticallyGenerated": "Automatically generated"
   },
   "webcam": {
     "takePicture": "Take picture",
@@ -389,7 +397,7 @@
     "title": "Choose one of the three ways below to specify a form for this element:",
     "subtitle": "Connect {{type}} to a form",
     "formDefinition": "Form definition",
-    "angularState": "Angular state",
+    "angularState": "Internal route",
     "redirect": "Redirect to a page within the application",
     "externalUrl": "External URL",
     "newWindow": "Will open URL in a new window",

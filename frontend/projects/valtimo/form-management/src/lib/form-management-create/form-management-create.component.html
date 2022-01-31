@@ -23,12 +23,22 @@
             <div class="form-group row">
               <label class="col-12 col-sm-3 col-form-label text-sm-right" for="name">Name</label>
               <div class="col-12 col-sm-8 col-lg-6">
-                <input type="text" id="name" formControlName="name"
-                       class="form-control" placeholder="Form definition name"
-                       [ngClass]="{'is-valid': formControls.name.touched && formControls.name.valid, 'is-invalid': formControls.name.touched && formControls.name.errors}"
-                       required/>
-                <div *ngIf="formControls.name.touched && formControls.name.errors"
-                     class="invalid-feedback">
+                <input
+                  type="text"
+                  id="name"
+                  formControlName="name"
+                  class="form-control"
+                  placeholder="Form definition name"
+                  [ngClass]="{
+                    'is-valid': formControls.name.touched && formControls.name.valid,
+                    'is-invalid': formControls.name.touched && formControls.name.errors
+                  }"
+                  required
+                />
+                <div
+                  *ngIf="formControls.name.touched && formControls.name.errors"
+                  class="invalid-feedback"
+                >
                   <div *ngIf="formControls.name.errors.required">Name is required</div>
                 </div>
               </div>
@@ -38,7 +48,8 @@
                 <a [routerLink]="'/forms'" class="btn btn-space btn-default">Back</a>
               </div>
               <div class="col-12 col-sm-6 text-right">
-                <button class="btn btn-space btn-secondary" type="button" (click)="reset()">Reset
+                <button class="btn btn-space btn-secondary" type="button" (click)="reset()">
+                  Reset
                 </button>
                 <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">
                   Submit

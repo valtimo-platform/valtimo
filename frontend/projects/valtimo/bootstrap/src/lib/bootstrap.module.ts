@@ -19,7 +19,7 @@ import {NGXLogger} from 'ngx-logger';
 import {initialize, initializerFactory} from './init';
 import {ConfigService} from '@valtimo/config';
 import {TranslateService} from '@ngx-translate/core';
-import {INITIALIZERS} from '@valtimo/contract';
+import {INITIALIZERS} from '@valtimo/config';
 
 @NgModule({
   declarations: [],
@@ -29,15 +29,14 @@ import {INITIALIZERS} from '@valtimo/contract';
       provide: APP_INITIALIZER,
       useFactory: initialize,
       multi: true,
-      deps: [INITIALIZERS, NGXLogger]
+      deps: [INITIALIZERS, NGXLogger],
     },
     {
       provide: INITIALIZERS,
       useFactory: initializerFactory,
-      deps: [ConfigService, Injector, NGXLogger, TranslateService]
-    }
+      deps: [ConfigService, Injector, NGXLogger, TranslateService],
+    },
   ],
-  exports: []
+  exports: [],
 })
-export class BootstrapModule {
-}
+export class BootstrapModule {}

@@ -19,23 +19,19 @@ import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {SwaggerComponent} from './swagger.component';
-import {ROLE_USER} from '@valtimo/contract';
+import {ROLE_USER} from '@valtimo/config';
 
 const routes: Routes = [
   {
     path: 'swagger',
     component: SwaggerComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Swagger', roles: [ROLE_USER]}
-  }
+    data: {title: 'Swagger', roles: [ROLE_USER]},
+  },
 ];
 
 @NgModule({
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-  ],
-  exports: [RouterModule]
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class SwaggerRoutingModule {
-}
+export class SwaggerRoutingModule {}

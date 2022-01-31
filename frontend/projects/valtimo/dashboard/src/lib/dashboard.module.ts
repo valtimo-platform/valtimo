@@ -20,7 +20,13 @@ import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {TranslateHttpLoader} from '@ngx-translate/http-loader';
 import {DashboardComponent} from './dashboard.component';
 import {DashboardRoutingModule} from './dashboard-routing.module';
-import {AlertModule, BpmnJsDiagramModule, ListModule, SpinnerModule, WidgetModule} from '@valtimo/components';
+import {
+  AlertModule,
+  BpmnJsDiagramModule,
+  ListModule,
+  SpinnerModule,
+  WidgetModule,
+} from '@valtimo/components';
 import {HttpClient} from '@angular/common/http';
 import {TaskModule} from '@valtimo/task';
 
@@ -31,24 +37,23 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
 
 @NgModule({
   declarations: [DashboardComponent],
-    imports: [
-        CommonModule,
-        DashboardRoutingModule,
-        WidgetModule,
-        ListModule,
-        BpmnJsDiagramModule,
-        TranslateModule.forRoot({
-            loader: {
-                provide: TranslateLoader,
-                useFactory: HttpLoaderFactory,
-                deps: [HttpClient]
-            }
-        }),
-        AlertModule,
-        TaskModule,
-        SpinnerModule
-    ],
-  exports: [DashboardComponent]
+  imports: [
+    CommonModule,
+    DashboardRoutingModule,
+    WidgetModule,
+    ListModule,
+    BpmnJsDiagramModule,
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory,
+        deps: [HttpClient],
+      },
+    }),
+    AlertModule,
+    TaskModule,
+    SpinnerModule,
+  ],
+  exports: [DashboardComponent],
 })
-export class DashboardModule {
-}
+export class DashboardModule {}

@@ -17,5 +17,4 @@
 import {NgModule} from '@angular/core';
 
 @NgModule()
-export class ManagementModule {
-}
+export class ManagementModule {}

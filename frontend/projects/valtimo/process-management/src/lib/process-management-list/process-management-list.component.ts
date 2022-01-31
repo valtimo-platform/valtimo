@@ -15,28 +15,22 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {ProcessService} from '@valtimo/process';
-import {ProcessDefinition} from '@valtimo/contract';
+import {ProcessService, ProcessDefinition} from '@valtimo/process';
 import {Router} from '@angular/router';
 
 @Component({
   selector: 'valtimo-process-management-list',
   templateUrl: './process-management-list.component.html',
-  styleUrls: ['./process-management-list.component.scss']
+  styleUrls: ['./process-management-list.component.scss'],
 })
 export class ProcessManagementListComponent implements OnInit {
-
   public processDefinitions: ProcessDefinition[] = [];
   public fields = [
     {key: 'key', label: 'Key'},
     {key: 'name', label: 'Name'},
   ];
 
-  constructor(
-    private processService: ProcessService,
-    private router: Router
-  ) {
-  }
+  constructor(private processService: ProcessService, private router: Router) {}
 
   ngOnInit() {
     this.loadProcessDefinitions();
@@ -51,5 +45,4 @@ export class ProcessManagementListComponent implements OnInit {
   editProcessDefinition(processDefinition: ProcessDefinition) {
     this.router.navigate(['/processes/process', processDefinition.key]);
   }
-
 }

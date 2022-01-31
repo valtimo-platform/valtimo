@@ -1,0 +1,32 @@
+<valtimo-searchable-dropdown
+  *ngIf="!hasSelection; else selection"
+  [style]="style"
+  [items]="items"
+  [buttonText]="buttonText"
+  [searchText]="searchText"
+  [noResultsText]="noResultsText"
+  [disabled]="disabled"
+  [width]="width"
+  (itemSelected)="onSelect($event)"
+>
+</valtimo-searchable-dropdown>
+
+<ng-template #selection>
+  <div
+    class="d-flex flex-row align-items-center"
+    [style.height.px]="style === 'button' ? 34 : null"
+  >
+    <h5 class="selected-text">
+      {{ selectedText }} <b>{{ selectedTextValue }}</b>
+    </h5>
+    <button
+      type="button"
+      class="close p-0 m-0 ml-2 d-flex text-danger"
+      aria-label="Close"
+      (click)="onClearSelection()"
+      [title]="clearSelectionButtonTitle"
+    >
+      <i class="clear-icon fa fa-times text-danger"></i>
+    </button>
+  </div>
+</ng-template>

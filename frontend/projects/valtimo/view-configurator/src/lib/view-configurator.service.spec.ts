@@ -19,7 +19,6 @@ import {HttpClientTestingModule, HttpTestingController} from '@angular/common/ht
 import {ViewConfiguratorService} from './view-configurator.service';
 
 describe('ViewConfiguratorService', () => {
-
   let mockConfig;
   let httpTestingController: HttpTestingController;
   let service: ViewConfiguratorService;
@@ -29,7 +28,7 @@ describe('ViewConfiguratorService', () => {
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [ViewConfiguratorService]
+      providers: [ViewConfiguratorService],
     });
 
     httpTestingController = TestBed.inject(HttpTestingController);
@@ -43,10 +42,12 @@ describe('ViewConfiguratorService', () => {
   describe('getViewConfig', () => {
     it('should call request method get with the correct url', () => {
       service.getViewConfig('some-processDefinitionId').subscribe();
-      const req = httpTestingController.expectOne(mockConfig.endpointUri + 'viewconfig/some-processDefinitionId');
+      const req = httpTestingController.expectOne(
+        mockConfig.endpointUri + 'viewconfig/some-processDefinitionId'
+      );
       expect(req.request.method).toBe('GET');
       req.flush({
-        processDefinitionId: 'some-processDefinitionId'
+        processDefinitionId: 'some-processDefinitionId',
       });
       httpTestingController.verify();
     });

@@ -12,7 +12,5 @@
       "swagger-ui": "SwaggerUI"
     }
   },
-  "whitelistedNonPeerDependencies": [
-    "swagger-ui"
-  ]
+  "whitelistedNonPeerDependencies": ["swagger-ui"]
 }

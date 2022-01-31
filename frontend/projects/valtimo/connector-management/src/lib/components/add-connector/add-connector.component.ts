@@ -16,7 +16,7 @@
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
-import {ConnectorProperties, ConnectorType} from '@valtimo/contract';
+import {ConnectorProperties, ConnectorType} from '../../models';
 import {take} from 'rxjs/operators';
 import {AlertService} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
@@ -26,11 +26,11 @@ import {ConnectorManagementStateService} from '../../services/connector-manageme
 @Component({
   selector: 'valtimo-add-connector',
   templateUrl: './add-connector.component.html',
-  styleUrls: ['./add-connector.component.scss']
+  styleUrls: ['./add-connector.component.scss'],
 })
 export class AddConnectorComponent implements OnInit, OnDestroy {
-
-  readonly connectorTypes$: Observable<Array<ConnectorType>> = this.connectorManagementService.getConnectorTypes();
+  readonly connectorTypes$: Observable<Array<ConnectorType>> =
+    this.connectorManagementService.getConnectorTypes();
 
   readonly selectedConnector$ = new BehaviorSubject<ConnectorType>(undefined);
 
@@ -48,10 +48,12 @@ export class AddConnectorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.refreshSubscription = combineLatest([this.stateService.showModal$, this.stateService.refresh$])
-      .subscribe(() => {
-        this.goBack();
-      });
+    this.refreshSubscription = combineLatest([
+      this.stateService.showModal$,
+      this.stateService.refresh$,
+    ]).subscribe(() => {
+      this.goBack();
+    });
   }
 
   ngOnDestroy(): void {
@@ -66,23 +68,27 @@ export class AddConnectorComponent implements OnInit, OnDestroy {
     this.selectedConnector$.next(undefined);
   }
 
-  onSave(event: {properties: ConnectorProperties, name: string}): void {
-    this.selectedConnector$.pipe(take(1)).subscribe((selectedConnectorType) => {
-      this.connectorManagementService.createConnectorInstance({
-        name: event.name,
-        typeId: selectedConnectorType.id,
-        connectorProperties: event.properties
-      }).subscribe(
-        () => {
-          this.alertService.success(this.translateService.instant('connectorManagement.messages.addSuccess'));
-          this.stateService.hideModal();
-          this.stateService.enableInput();
-          this.stateService.refresh();
-        },
-        () => {
-          this.stateService.enableInput();
-        }
-      );
+  onSave(event: {properties: ConnectorProperties; name: string}): void {
+    this.selectedConnector$.pipe(take(1)).subscribe(selectedConnectorType => {
+      this.connectorManagementService
+        .createConnectorInstance({
+          name: event.name,
+          typeId: selectedConnectorType.id,
+          connectorProperties: event.properties,
+        })
+        .subscribe(
+          () => {
+            this.alertService.success(
+              this.translateService.instant('connectorManagement.messages.addSuccess')
+            );
+            this.stateService.hideModal();
+            this.stateService.enableInput();
+            this.stateService.refresh();
+          },
+          () => {
+            this.stateService.enableInput();
+          }
+        );
     });
   }
 }

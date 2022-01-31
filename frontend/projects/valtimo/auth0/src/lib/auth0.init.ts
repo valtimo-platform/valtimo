@@ -18,13 +18,10 @@ import {Injector} from '@angular/core';
 import {NGXLogger} from 'ngx-logger';
 import * as auth0js from 'auth0-js';
 import {ConfigService} from '@valtimo/config';
-import {ValtimoAuth0Options} from '@valtimo/contract';
+import {ValtimoAuth0Options} from './models';
 import {Auth0UserService} from './auth0-user.service';
 
-export function auth0Initializer(
-  injector: Injector
-): () => Promise<any> {
-
+export function auth0Initializer(injector: Injector): () => Promise<any> {
   const configService = injector.get<ConfigService>(ConfigService);
   const auth0UserService = injector.get<Auth0UserService>(Auth0UserService);
   const logger = injector.get<NGXLogger>(NGXLogger);
@@ -40,7 +37,7 @@ export function auth0Initializer(
         domain: valtimoAuth0Options.domain,
         responseType: valtimoAuth0Options.responseType,
         redirectUri: valtimoAuth0Options.redirectUri,
-        scope: valtimoAuth0Options.scope
+        scope: valtimoAuth0Options.scope,
       });
       auth0UserService.setAuth0JsInstance(auth0jsInstance);
       const currentUrl = window.location.href.split('#')[0];

@@ -17,19 +17,16 @@
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import {User} from '@valtimo/contract';
+import {User} from '@valtimo/config';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserManagementService {
   private valtimoApiConfig: any;
 
-  constructor(
-    private http: HttpClient,
-    private configService: ConfigService
-  ) {
+  constructor(private http: HttpClient, private configService: ConfigService) {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 
@@ -54,7 +51,10 @@ export class UserManagementService {
   }
 
   resendVerificationEmail(id: string) {
-    return this.http.post(`${this.valtimoApiConfig.endpointUri}users/send-verification-email/${id}`, {});
+    return this.http.post(
+      `${this.valtimoApiConfig.endpointUri}users/send-verification-email/${id}`,
+      {}
+    );
   }
 
   activate(id: string) {
@@ -66,6 +66,9 @@ export class UserManagementService {
   }
 
   getAuthorities(params?: any): Observable<any> {
-    return this.http.get<any>(`${this.valtimoApiConfig.endpointUri}authorities`, {observe: 'response', params: params});
+    return this.http.get<any>(`${this.valtimoApiConfig.endpointUri}authorities`, {
+      observe: 'response',
+      params: params,
+    });
   }
 }

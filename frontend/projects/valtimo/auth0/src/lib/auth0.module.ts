@@ -27,11 +27,8 @@ export function jwtTokenGetter() {
 
 @NgModule({
   declarations: [CallbackComponent, SessionExpiredPopupComponent],
-  imports: [
-    Auth0RoutingModule,
-    JwtModule
-  ],
-  exports: [CallbackComponent, SessionExpiredPopupComponent]
+  imports: [Auth0RoutingModule, JwtModule],
+  exports: [CallbackComponent, SessionExpiredPopupComponent],
 })
 export class Auth0Module {
   static forRoot(allowedDomains: string[]): ModuleWithProviders<Auth0Module> {
@@ -41,10 +38,10 @@ export class Auth0Module {
         JwtModule.forRoot({
           config: {
             tokenGetter: jwtTokenGetter,
-            allowedDomains: allowedDomains
-          }
+            allowedDomains: allowedDomains,
+          },
         }).providers,
-      ]
+      ],
     };
   }
 }

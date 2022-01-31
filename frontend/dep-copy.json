@@ -2,14 +2,14 @@
   "options": {
     "destPrefix": "projects/valtimo/layout/src/beagle/src/assets/lib/"
   },
-  "beagle-resources":{
-    "files":{
-      "jquery.gritter/images" : "beagle-resources/jquery.gritter/images/*"
+  "beagle-resources": {
+    "files": {
+      "jquery.gritter/images": "beagle-resources/jquery.gritter/images/*"
     }
   },
-  "roboto-fontface":{
-    "files":{
-      "roboto" : "roboto-fontface/fonts/*"
+  "roboto-fontface": {
+    "files": {
+      "roboto": "roboto-fontface/fonts/*"
     }
   }
 }

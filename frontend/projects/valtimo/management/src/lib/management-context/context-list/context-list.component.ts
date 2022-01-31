@@ -15,14 +15,13 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {ContextService} from '@valtimo/context';
-import {Context} from '@valtimo/contract';
+import {ContextService, Context} from '@valtimo/context';
 import {Router} from '@angular/router';
 
 @Component({
   selector: 'valtimo-context-list',
   templateUrl: './context-list.component.html',
-  styleUrls: ['./context-list.component.css']
+  styleUrls: ['./context-list.component.css'],
 })
 export class ContextListComponent implements OnInit {
   public collection: Array<Context> = [];
@@ -30,35 +29,29 @@ export class ContextListComponent implements OnInit {
     collectionSize: 0,
     page: 1,
     size: 10,
-    maxPaginationItemSize: 5
+    maxPaginationItemSize: 5,
   };
   public pageParam = 0;
   public fields: Array<any> = [
     {key: 'id', label: 'ID'},
-    {key: 'name', label: 'Name'}
+    {key: 'name', label: 'Name'},
   ];
 
-  constructor(
-    private router: Router,
-    private service: ContextService
-  ) {
-  }
+  constructor(private router: Router, private service: ContextService) {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   paginationSet() {
     this.initData();
   }
 
   private initData() {
-    this.service.query({page: this.pageParam, size: this.pagination.size})
-      .subscribe(results => {
-        this.pagination.collectionSize = results.headers.get('x-total-count');
-        if (results.body) {
-          this.collection = results.body;
-        }
-      });
+    this.service.query({page: this.pageParam, size: this.pagination.size}).subscribe(results => {
+      this.pagination.collectionSize = results.headers.get('x-total-count');
+      if (results.body) {
+        this.collection = results.body;
+      }
+    });
   }
 
   public rowClick(data: any) {
@@ -69,5 +62,4 @@ export class ContextListComponent implements OnInit {
     this.pageParam = page - 1;
     this.initData();
   }
-
 }

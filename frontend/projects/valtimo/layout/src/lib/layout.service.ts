@@ -17,13 +17,12 @@
 import {Injectable} from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LayoutService {
   private fullscreen = false;
 
-  constructor() {
-  }
+  constructor() {}
 
   public get isFullscreen() {
     return this.fullscreen;
@@ -32,6 +31,4 @@ export class LayoutService {
   public toggleFullscreen() {
     this.fullscreen = !this.fullscreen;
   }
-
-
 }

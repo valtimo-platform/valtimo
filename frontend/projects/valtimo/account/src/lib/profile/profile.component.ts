@@ -26,10 +26,9 @@ moment.locale(localStorage.getItem('langKey'));
 @Component({
   selector: 'valtimo-profile',
   templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.css']
+  styleUrls: ['./profile.component.css'],
 })
 export class ProfileComponent implements OnInit, OnDestroy {
-
   public profile: any;
   public form: FormGroup;
   public resourceIds: Array<any> = [];
@@ -38,8 +37,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private formBuilder: FormBuilder,
     private alertService: AlertService,
     public translate: TranslateService
-    // private userProviderService: UserProviderService
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.reset();
@@ -54,7 +52,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   private initData() {
- /*   this.userProviderService.getUserIdentity().subscribe(value => {
+    /*   this.userProviderService.getUserIdentity().subscribe(value => {
       this.profile = value;
       this.setValues();
     });*/
@@ -66,7 +64,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       this.profile.humanize_dates = {
         created_at: moment(this.profile.created_at).fromNow(),
         updated_at: moment(this.profile.updated_at).fromNow(),
-        last_password_reset: moment(this.profile.last_password_reset).fromNow()
+        last_password_reset: moment(this.profile.last_password_reset).fromNow(),
       };
       // set form values
       this.form.controls.firstName.setValue(this.profile.user_metadata.firstname);
@@ -79,7 +77,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return this.formBuilder.group({
       firstName: new FormControl('', Validators.required),
       lastName: new FormControl('', Validators.required),
-      langKey: new FormControl('', Validators.required)
+      langKey: new FormControl('', Validators.required),
     });
   }
 
@@ -90,7 +88,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   public onSubmit() {
     this.form.value.email = this.profile.email;
     // TODO Updating profile ?? allowed when using keycloak
-   /* this.userService.updateProfile(this.form.value).subscribe(() => {
+    /* this.userService.updateProfile(this.form.value).subscribe(() => {
       this.alertService.success('Profile has been updated');
     });*/
   }
@@ -99,5 +97,4 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.form = this.createFormGroup();
     this.initData();
   }
-
 }

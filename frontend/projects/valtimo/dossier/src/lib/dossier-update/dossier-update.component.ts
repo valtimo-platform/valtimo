@@ -29,10 +29,9 @@ moment.locale(localStorage.getItem('langKey') || '');
 @Component({
   selector: 'valtimo-dossier-update',
   templateUrl: './dossier-update.component.html',
-  styleUrls: ['./dossier-update.component.css']
+  styleUrls: ['./dossier-update.component.css'],
 })
 export class DossierUpdateComponent implements OnInit {
-
   public task: any;
   public taskId: string;
   public schema: any;
@@ -55,7 +54,9 @@ export class DossierUpdateComponent implements OnInit {
     this.documentDefinitionName = snapshot.get('documentDefinitionName') || '';
     this.documentId = snapshot.get('documentId') || '';
     this.taskId = snapshot.get('taskId') || '';
-    this.implementationDefinitions = dossierService.getImplementationEnvironmentDefinitions(this.documentDefinitionName);
+    this.implementationDefinitions = dossierService.getImplementationEnvironmentDefinitions(
+      this.documentDefinitionName
+    );
     this.loadDocumentDefinition(this.documentDefinitionName);
     this.loadDocument(this.documentId);
   }
@@ -85,7 +86,7 @@ export class DossierUpdateComponent implements OnInit {
       this.task.task.created = moment(this.task.task.created).format('DD MMM YYYY HH:mm');
       this.page = {
         title: this.task.task.name,
-        subtitle: `Created ${moment(this.task.task.created).fromNow()}`
+        subtitle: `Created ${moment(this.task.task.created).fromNow()}`,
       };
     });
   }
@@ -102,7 +103,7 @@ export class DossierUpdateComponent implements OnInit {
     const document = {
       documentId: this.document.id,
       content: this.document.content,
-      versionBasedOn: this.document.version
+      versionBasedOn: this.document.version,
     };
     this.documentService.modifyDocument(document).subscribe(result => {
       this.document = result.document;
@@ -118,9 +119,9 @@ export class DossierUpdateComponent implements OnInit {
       request: {
         documentId: this.document.id,
         content: mergedData,
-        versionBasedOn: this.document.version
+        versionBasedOn: this.document.version,
       },
-      taskId: this.task.task.id
+      taskId: this.task.task.id,
     };
 
     this.documentService.modifyDocumentAndCompleteTask(documentData).subscribe(result => {
@@ -132,5 +133,4 @@ export class DossierUpdateComponent implements OnInit {
   public returnZero() {
     return 0;
   }
-
 }

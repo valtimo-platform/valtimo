@@ -36,6 +36,13 @@
       "body": "Nachricht",
       "sendButtonText": "Senden",
       "sendSuccess": "Ihre Nachricht wurde erfolgreich gesendet."
+    },
+    "contactMoments": {
+      "makeNoteButton": "Notizen machen",
+      "popupTitle": "Eine Notiz machen",
+      "noteText": "Notiz",
+      "saveButtonText": "Notiz speichern",
+      "saveSuccess": "Ihre Notiz wurde erfolgreich gespeichert."
     }
   },
   "document": {
@@ -311,7 +318,8 @@
     "noFieldDefinitions": "Keine Feld-Definitionen hinterlegt",
     "noResults": "Keine Ergebnisse gefunden",
     "showingResults": "Zeigt {{number}} von {{total}} Ergebnissen",
-    "showingResult": "Zeigt {{number}} Ergebnisse"
+    "showingResult": "Zeigt {{number}} Ergebnisse",
+    "automaticallyGenerated": "Automatisch erzeugt"
   },
   "webcam": {
     "takePicture": "Foto machen",
@@ -389,7 +397,7 @@
     "title": "Welche der drei Optionen soll genutzt werden, um ein Formular zu verknüpfen:",
     "subtitle": "Connect {{type}} to a form",
     "formDefinition": "Form definition",
-    "angularState": "Angular state",
+    "angularState": "Internal route",
     "redirect": "Redirect to a page within the application",
     "externalUrl": "External URL",
     "newWindow": "Will open URL in a new window",

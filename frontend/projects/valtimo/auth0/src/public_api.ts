@@ -17,6 +17,8 @@
 /*
  * Public API Surface of auth0
  */
+
+export * from './lib/models';
 export * from './lib/auth0.init';
 export * from './lib/auth0.module';
 export * from './lib/jwt-auth.service';
@@ -25,4 +27,3 @@ export * from './lib/callback.component';
 export * from './lib/auth0-routing.module';
 export * from './lib/session-expired-popup/session-expired-popup.component';
 export * from './lib/auth0-auth-guard.service';
-

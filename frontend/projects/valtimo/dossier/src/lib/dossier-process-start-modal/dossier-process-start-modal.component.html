@@ -16,23 +16,29 @@
 
 <valtimo-modal #processStartModal elementId="processStartModal" [title]="modalTitle">
   <div body *ngIf="formDefinition">
-    <valtimo-form-io #form [form]="formDefinition"
-                     [options]="options"
-                     (submit)="onSubmit($event)">
+    <valtimo-form-io #form [form]="formDefinition" [options]="options" (submit)="onSubmit($event)">
     </valtimo-form-io>
   </div>
   <div body *ngIf="!formDefinition && isAdmin">
-    <div class="bg-warning text-black mb-0 p-3 text-center" [translate]="'formManagement.noFormDefinitionFoundAdmin'">
-    </div>
+    <div
+      class="bg-warning text-black mb-0 p-3 text-center"
+      [translate]="'formManagement.noFormDefinitionFoundAdmin'"
+    ></div>
     <div class="mb-0 mt-4 p-3 text-center">
-      <button class="btn btn-secondary btn-space" type="button"
-              (click)="gotoFormLinkScreen();"
-              id="form-link-button">{{'formManagement.gotoFormLinksButton' | translate}}
+      <button
+        class="btn btn-secondary btn-space"
+        type="button"
+        (click)="gotoFormLinkScreen()"
+        id="form-link-button"
+      >
+        {{ 'formManagement.gotoFormLinksButton' | translate }}
       </button>
     </div>
   </div>
   <div body *ngIf="!formDefinition && !isAdmin">
-    <div class="bg-warning text-black mb-0 p-3 text-center" [translate]="'formManagement.noFormDefinitionFoundUser'">
-    </div>
+    <div
+      class="bg-warning text-black mb-0 p-3 text-center"
+      [translate]="'formManagement.noFormDefinitionFoundUser'"
+    ></div>
   </div>
 </valtimo-modal>

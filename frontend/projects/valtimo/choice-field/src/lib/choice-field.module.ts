@@ -34,7 +34,7 @@ import {TranslateModule} from '@ngx-translate/core';
     ChoiceFieldCreateComponent,
     ChoiceFieldValueListComponent,
     ChoiceFieldValueCreateComponent,
-    ChoiceFieldValueDetailComponent
+    ChoiceFieldValueDetailComponent,
   ],
   imports: [
     CommonModule,
@@ -45,10 +45,8 @@ import {TranslateModule} from '@ngx-translate/core';
     ReactiveFormsModule,
     ChoiceFieldRoutingModule,
     AlertModule,
-    TranslateModule
+    TranslateModule,
   ],
-  exports: []
+  exports: [],
 })
-export class ChoiceFieldModule {
-
-}
+export class ChoiceFieldModule {}

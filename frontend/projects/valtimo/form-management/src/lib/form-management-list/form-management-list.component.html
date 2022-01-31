@@ -14,17 +14,18 @@
   ~ limitations under the License.
   -->
 
-<valtimo-list [items]="formDefinitions"
-              [fields]="formDefinitionFields"
-              [viewMode]="true"
-              [isSearchable]="true"
-              [pagination]="pagination"
-              paginationIdentifier="formManagementList"
-              (paginationClicked)="paginationClicked($event)"
-              (paginationSet)="paginationSet()"
-              (rowClicked)="editFormDefinition($event)"
-              [header]="true"
-              (search)="searchTermEntered($event)"
+<valtimo-list
+  [items]="formDefinitions"
+  [fields]="formDefinitionFields"
+  [viewMode]="true"
+  [isSearchable]="true"
+  [pagination]="pagination"
+  paginationIdentifier="formManagementList"
+  (paginationClicked)="paginationClicked($event)"
+  (paginationSet)="paginationSet()"
+  (rowClicked)="editFormDefinition($event)"
+  [header]="true"
+  (search)="searchTermEntered($event)"
 >
   <div header>
     <h3 class="list-header-title">{{ 'Forms' | translate }}</h3>

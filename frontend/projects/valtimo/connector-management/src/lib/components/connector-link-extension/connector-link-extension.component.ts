@@ -20,7 +20,7 @@ import {catchError, map, switchMap, take, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {ActivatedRoute} from '@angular/router';
 import {AlertService} from '@valtimo/components';
-import {ConnectorInstance, ObjectSyncConfig} from '@valtimo/contract';
+import {ConnectorInstance, ObjectSyncConfig} from '../../models';
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
 import {ObjectApiSyncService} from '../../services/object-api-sync/object-api-sync.service';
 import {ConnectorManagementService} from '../../services/connector-management/connector-management.service';
@@ -28,32 +28,40 @@ import {ConnectorManagementService} from '../../services/connector-management/co
 @Component({
   selector: 'valtimo-connector-link-extension',
   templateUrl: './connector-link-extension.component.html',
-  styleUrls: ['./connector-link-extension.component.scss']
+  styleUrls: ['./connector-link-extension.component.scss'],
 })
 export class ConnectorLinkExtensionComponent implements OnDestroy {
   readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  readonly objectApiSyncConfig$: Observable<ObjectSyncConfig | null> =
-    combineLatest([this.route.params, this.translateService.stream('key'), this.stateService.refresh$]).pipe(
-      switchMap(([params]) => this.objectApiSyncService.getObjectSyncConfigs(params.name)),
-      switchMap((configs) =>
-        combineLatest([of(configs),
-          ...configs.map((config) =>
-            this.connectorManagementService.getConnectorInstanceById(config.connectorInstanceId).pipe(catchError(() => of(''))))
-        ])
-      ),
-      map((results) => {
-        const [, ...instances] = results.filter((result) => result) as Array<ConnectorInstance>;
-        return (results[0] as Array<ObjectSyncConfig>)
-          .map((syncConfig) => ({
-            ...syncConfig,
-            title: instances.find((instance) => instance.id === syncConfig.connectorInstanceId)?.name || 'Objects API'
-          }));
-      }),
-      map((results) => Array.isArray(results) && results.length > 0 ? results[0] : null),
-      tap(() => {
-        this.loading$.next(false);
-      })
+  readonly objectApiSyncConfig$: Observable<ObjectSyncConfig | null> = combineLatest([
+    this.route.params,
+    this.translateService.stream('key'),
+    this.stateService.refresh$,
+  ]).pipe(
+    switchMap(([params]) => this.objectApiSyncService.getObjectSyncConfigs(params.name)),
+    switchMap(configs =>
+      combineLatest([
+        of(configs),
+        ...configs.map(config =>
+          this.connectorManagementService
+            .getConnectorInstanceById(config.connectorInstanceId)
+            .pipe(catchError(() => of('')))
+        ),
+      ])
+    ),
+    map(results => {
+      const [, ...instances] = results.filter(result => result) as Array<ConnectorInstance>;
+      return (results[0] as Array<ObjectSyncConfig>).map(syncConfig => ({
+        ...syncConfig,
+        title:
+          instances.find(instance => instance.id === syncConfig.connectorInstanceId)?.name ||
+          'Objects API',
+      }));
+    }),
+    map(results => (Array.isArray(results) && results.length > 0 ? results[0] : null)),
+    tap(() => {
+      this.loading$.next(false);
+    })
   );
 
   readonly disabled$!: Observable<boolean>;
@@ -64,7 +72,7 @@ export class ConnectorLinkExtensionComponent implements OnDestroy {
     private readonly translateService: TranslateService,
     private readonly route: ActivatedRoute,
     private readonly alertService: AlertService,
-    private readonly connectorManagementService: ConnectorManagementService,
+    private readonly connectorManagementService: ConnectorManagementService
   ) {
     this.disabled$ = this.stateService.inputDisabled$;
   }
@@ -80,20 +88,26 @@ export class ConnectorLinkExtensionComponent implements OnDestroy {
   toggleSync(config: ObjectSyncConfig): void {
     this.stateService.disableInput();
 
-    this.objectApiSyncService.modifyObjectSyncConfig({...config, enabled: !config.enabled}).subscribe(
-      () => {
-        if (!config.enabled) {
-          this.alertService.success(this.translateService.instant('connectorManagement.extension.addSyncSuccess'));
-        } else {
-          this.alertService.success(this.translateService.instant('connectorManagement.extension.disableSyncSuccess'));
+    this.objectApiSyncService
+      .modifyObjectSyncConfig({...config, enabled: !config.enabled})
+      .subscribe(
+        () => {
+          if (!config.enabled) {
+            this.alertService.success(
+              this.translateService.instant('connectorManagement.extension.addSyncSuccess')
+            );
+          } else {
+            this.alertService.success(
+              this.translateService.instant('connectorManagement.extension.disableSyncSuccess')
+            );
+          }
+          this.stateService.enableInput();
+          this.stateService.refresh();
+        },
+        () => {
+          this.stateService.enableInput();
         }
-        this.stateService.enableInput();
-        this.stateService.refresh();
-      },
-      () => {
-        this.stateService.enableInput();
-      }
-    );
+      );
   }
 
   deleteSync(configId: string): void {
@@ -101,7 +115,9 @@ export class ConnectorLinkExtensionComponent implements OnDestroy {
 
     this.objectApiSyncService.deleteObjectSyncConfig(configId).subscribe(
       () => {
-        this.alertService.success(this.translateService.instant('connectorManagement.extension.deleteSyncSuccess'));
+        this.alertService.success(
+          this.translateService.instant('connectorManagement.extension.deleteSyncSuccess')
+        );
         this.stateService.enableInput();
         this.stateService.refresh();
       },

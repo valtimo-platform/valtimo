@@ -19,17 +19,16 @@ import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {AlertService} from '@valtimo/components';
 import {FormManagementService} from '../form-management.service';
-import {CreateFormDefinitionRequest} from '@valtimo/contract';
+import {CreateFormDefinitionRequest} from '../models';
 import {combineLatest} from 'rxjs';
 import {take} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-form-management-create',
   templateUrl: './form-management-create.component.html',
-  styleUrls: ['./form-management-create.component.scss']
+  styleUrls: ['./form-management-create.component.scss'],
 })
 export class FormManagementCreateComponent implements OnInit {
-
   public form: FormGroup;
 
   constructor(
@@ -38,8 +37,7 @@ export class FormManagementCreateComponent implements OnInit {
     private router: Router,
     private alertService: AlertService,
     private route: ActivatedRoute
-  ) {
-  }
+  ) {}
 
   get formControls() {
     return this.form.controls;
@@ -47,38 +45,45 @@ export class FormManagementCreateComponent implements OnInit {
 
   ngOnInit() {
     this.form = this.formBuilder.group({
-      name: new FormControl('', Validators.required)
+      name: new FormControl('', Validators.required),
     });
   }
 
   reset() {
     this.form.setValue({
-      name: ''
+      name: '',
     });
   }
 
   createFormDefinition() {
     const emptyForm = {
       display: 'form',
-      components: []
+      components: [],
     };
     const request: CreateFormDefinitionRequest = {
       name: this.form.value.name,
-      formDefinition: JSON.stringify(emptyForm)
+      formDefinition: JSON.stringify(emptyForm),
     };
-    combineLatest([this.formManagementService.createFormDefinition(request), this.route.queryParams])
+    combineLatest([
+      this.formManagementService.createFormDefinition(request),
+      this.route.queryParams,
+    ])
       .pipe(take(1))
-      .subscribe(([formDefinition, params]) => {
-      this.alertService.success('Created new Form');
+      .subscribe(
+        ([formDefinition, params]) => {
+          this.alertService.success('Created new Form');
 
-        if (params?.upload === 'true') {
-          this.router.navigate(['/form-management/edit', formDefinition.id], {queryParams: {upload: 'true'}});
-        } else {
-          this.router.navigate(['/form-management/edit', formDefinition.id]);
+          if (params?.upload === 'true') {
+            this.router.navigate(['/form-management/edit', formDefinition.id], {
+              queryParams: {upload: 'true'},
+            });
+          } else {
+            this.router.navigate(['/form-management/edit', formDefinition.id]);
+          }
+        },
+        err => {
+          this.alertService.error('Error creating new Form');
         }
-    }, err => {
-      this.alertService.error('Error creating new Form');
-    });
+      );
   }
-
 }

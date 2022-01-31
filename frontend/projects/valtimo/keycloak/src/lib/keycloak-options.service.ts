@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-import {ValtimoKeycloakOptions} from '@valtimo/contract';
+import {ValtimoKeycloakOptions} from './models';
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class KeycloakOptionsService {
-
   private readonly valtimoKeycloakOptions: ValtimoKeycloakOptions;
 
-  constructor(
-    private configService: ConfigService
-  ) {
+  constructor(private configService: ConfigService) {
     this.valtimoKeycloakOptions = configService.config.authentication.options;
   }
 
@@ -38,5 +35,4 @@ export class KeycloakOptionsService {
   get logoutRedirectUri() {
     return this.valtimoKeycloakOptions.logoutRedirectUri;
   }
-
 }

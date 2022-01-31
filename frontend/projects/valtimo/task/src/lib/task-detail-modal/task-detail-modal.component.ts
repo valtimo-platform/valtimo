@@ -15,15 +15,16 @@
  */
 
 import {Component, EventEmitter, Output, ViewChild, ViewEncapsulation} from '@angular/core';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {FormioComponent, ModalComponent} from '@valtimo/components';
-import {FormAssociation, FormioSubmission, FormSubmissionResult, Task} from '@valtimo/contract';
-import {FormLinkService} from '@valtimo/form-link';
+import {Task} from '../models';
+import {FormioSubmission, ValtimoFormioOptions, FormioOptionsImpl} from '@valtimo/components';
+import {FormSubmissionResult, FormAssociation, FormLinkService} from '@valtimo/form-link';
 import {FormioForm} from 'angular-formio';
 import * as momentImported from 'moment';
 import {NGXLogger} from 'ngx-logger';
 import {ToastrService} from 'ngx-toastr';
-import {FormioOptionsImpl, ValtimoFormioOptions} from '@valtimo/contract';
+import {take} from 'rxjs/operators';
 
 const moment = momentImported;
 moment.locale(localStorage.getItem('langKey') || '');
@@ -32,7 +33,7 @@ moment.locale(localStorage.getItem('langKey') || '');
   selector: 'valtimo-task-detail-modal',
   templateUrl: './task-detail-modal.component.html',
   styleUrls: ['./task-detail-modal.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class TaskDetailModalComponent {
   public task: Task | null = null;
@@ -47,10 +48,13 @@ export class TaskDetailModalComponent {
   private formAssociation: FormAssociation;
   public errorMessage: String = null;
 
-  constructor(private toastr: ToastrService,
-              private formLinkService: FormLinkService,
-              private router: Router,
-              private logger: NGXLogger) {
+  constructor(
+    private readonly toastr: ToastrService,
+    private readonly formLinkService: FormLinkService,
+    private readonly router: Router,
+    private readonly logger: NGXLogger,
+    private readonly route: ActivatedRoute
+  ) {
     this.formioOptions = new FormioOptionsImpl();
     this.formioOptions.disableAlerts = true;
   }
@@ -65,7 +69,7 @@ export class TaskDetailModalComponent {
     this.task = task;
     this.page = {
       title: task.name,
-      subtitle: `Created ${moment(task.created).fromNow()}`
+      subtitle: `Created ${moment(task.created).fromNow()}`,
     };
     this.formLinkService
       .getPreFilledFormDefinitionByFormLinkId(
@@ -75,7 +79,7 @@ export class TaskDetailModalComponent {
         task.id // taskInstanceId
       )
       .subscribe(
-        (formDefinition) => {
+        formDefinition => {
           this.formAssociation = formDefinition.formAssociation;
           const className = this.formAssociation.formLink.className.split('.');
           const linkType = className[className.length - 1];
@@ -85,17 +89,29 @@ export class TaskDetailModalComponent {
               this.modal.show();
               break;
             case 'BpmnElementUrlLink':
-              const url = this.router.serializeUrl(this.router.createUrlTree([formDefinition.formAssociation.formLink.url]));
+              const url = this.router.serializeUrl(
+                this.router.createUrlTree([formDefinition.formAssociation.formLink.url])
+              );
               window.open(url, '_blank');
               break;
             case 'BpmnElementAngularStateUrlLink':
-              this.router.navigate([formDefinition.formAssociation.formLink.url]);
+              this.route.params.pipe(take(1)).subscribe(params => {
+                const taskId = task?.id;
+                const documentId = params?.documentId;
+
+                this.router.navigate([formDefinition.formAssociation.formLink.url], {
+                  state: {
+                    ...(taskId && {taskId}),
+                    ...(documentId && {documentId}),
+                  },
+                });
+              });
               break;
             default:
               this.logger.fatal('Unsupported class name');
           }
         },
-        (errors) => {
+        errors => {
           if (errors?.error?.detail) {
             this.errorMessage = errors.error.detail;
           }
@@ -111,7 +127,13 @@ export class TaskDetailModalComponent {
 
   public onSubmit(submission: FormioSubmission) {
     this.formLinkService
-      .onSubmit(this.task.processDefinitionKey, this.formAssociation.formLink.id, submission.data, this.task.businessKey, this.task.id)
+      .onSubmit(
+        this.task.processDefinitionKey,
+        this.formAssociation.formLink.id,
+        submission.data,
+        this.task.businessKey,
+        this.task.id
+      )
       .subscribe(
         (formSubmissionResult: FormSubmissionResult) => {
           this.toastr.success(this.task.name + ' has successfully been completed');
@@ -119,7 +141,7 @@ export class TaskDetailModalComponent {
           this.task = null;
           this.formSubmit.emit();
         },
-        (errors) => {
+        errors => {
           this.form.showErrors(errors);
         }
       );

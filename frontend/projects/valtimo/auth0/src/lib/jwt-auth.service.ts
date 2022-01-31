@@ -19,18 +19,14 @@ import {NGXLogger} from 'ngx-logger';
 import {JwtHelperService} from '@auth0/angular-jwt';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class JwtAuthService {
-
   public static readonly TOKEN = 'token';
 
   private expiresAt: Date;
 
-  constructor(
-    private logger: NGXLogger,
-    private jwtHelperService: JwtHelperService
-  ) {
+  constructor(private logger: NGXLogger, private jwtHelperService: JwtHelperService) {
     this.expiresAt = this.getTokenExpirationDate();
   }
 
@@ -63,5 +59,4 @@ export class JwtAuthService {
   isTokenPresent(): boolean {
     return this.getToken() !== null && this.getToken().length > 0;
   }
-
 }

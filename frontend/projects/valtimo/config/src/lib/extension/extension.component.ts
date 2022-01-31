@@ -16,30 +16,30 @@
 
 import {Component, Input, OnInit, ViewChild, ViewContainerRef} from '@angular/core';
 import {ConfigService} from '../config.service';
-import {Extension, ExtensionLoader, ExtensionPoint} from '@valtimo/contract';
+import {Extension, ExtensionLoader, ExtensionPoint} from '../models';
 
 @Component({
   selector: 'valtimo-extension',
   templateUrl: './extension.component.html',
-  styleUrls: ['./extension.component.css']
+  styleUrls: ['./extension.component.css'],
 })
 export class ExtensionComponent implements OnInit {
-
   public extensionLoader: ExtensionLoader = null;
   public selectedExtensionPoint: ExtensionPoint;
   public supportedExtensions: Array<Extension>;
   @Input() public module: string;
   @Input() public page: string;
   @Input() public section: string;
-  @ViewChild('injectExtension', {read: ViewContainerRef, static: true}) viewContainerRef: ViewContainerRef;
+  @ViewChild('injectExtension', {read: ViewContainerRef, static: true})
+  viewContainerRef: ViewContainerRef;
 
-  constructor(private configService: ConfigService) {
-  }
+  constructor(private configService: ConfigService) {}
 
   ngOnInit() {
-    this.configService.getSupportedExtensionPoints(this.module, this.page, this.section).forEach(extension => {
-      this.configService.loadExtensionPoint(this.viewContainerRef, extension.extensionPoint);
-    });
+    this.configService
+      .getSupportedExtensionPoints(this.module, this.page, this.section)
+      .forEach(extension => {
+        this.configService.loadExtensionPoint(this.viewContainerRef, extension.extensionPoint);
+      });
   }
-
 }

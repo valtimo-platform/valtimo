@@ -16,8 +16,7 @@
 
 import {Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {ProcessService} from '@valtimo/process';
-import {ProcessDefinition} from '@valtimo/contract';
+import {ProcessService, ProcessDefinition} from '@valtimo/process';
 import {AlertService} from '@valtimo/components';
 import {ActivatedRoute, Router} from '@angular/router';
 import {forkJoin, Observable} from 'rxjs';
@@ -32,17 +31,14 @@ import CamundaModdleDescriptor from 'camunda-bpmn-moddle/resources/camunda.json'
   selector: 'valtimo-process-management-builder',
   templateUrl: './process-management-builder.component.html',
   styleUrls: ['./process-management-builder.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class ProcessManagementBuilderComponent implements OnInit, OnDestroy {
-
   public bpmnModeler;
   public processDefinitionVersions: ProcessDefinition[] | null = null;
   public selectedVersion: ProcessDefinition | null = null;
   public processKey: string | null = null;
-  private elementTemplateFiles: string[] = [
-    'mailSendTask'
-  ];
+  private elementTemplateFiles: string[] = ['mailSendTask'];
 
   constructor(
     private http: HttpClient,
@@ -51,8 +47,7 @@ export class ProcessManagementBuilderComponent implements OnInit, OnDestroy {
     private alertService: AlertService,
     private route: ActivatedRoute,
     private router: Router
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
     this.init();
@@ -67,15 +62,15 @@ export class ProcessManagementBuilderComponent implements OnInit, OnDestroy {
         additionalModules: [
           PropertiesPanelModule,
           PropertiesProviderModule,
-          CamundaExtensionModule
+          CamundaExtensionModule,
         ],
         propertiesPanel: {
-          parent: '#properties'
+          parent: '#properties',
         },
         moddleExtensions: {
-          camunda: CamundaModdleDescriptor
+          camunda: CamundaModdleDescriptor,
         },
-        elementTemplates: elementTemplates
+        elementTemplates: elementTemplates,
       });
       if (this.processKey) {
         this.loadProcessVersions(this.processKey);
@@ -88,7 +83,7 @@ export class ProcessManagementBuilderComponent implements OnInit, OnDestroy {
 
   deploy(): void {
     this.bpmnModeler.saveXML((err: any, xml: any) => {
-      this.processService.deployProcess(xml).subscribe((asd) => {
+      this.processService.deployProcess(xml).subscribe(asd => {
         if (this.processKey) {
           this.loadProcessVersions(this.processKey);
         } else {
@@ -119,22 +114,25 @@ export class ProcessManagementBuilderComponent implements OnInit, OnDestroy {
 
   loadEmptyBpmn() {
     const url = '/assets/bpmn/initial.bpmn';
-    this.http.get(url, {
-      headers: {observe: 'response'}, responseType: 'text'
-    }).subscribe(
-      (xml: any) => {
+    this.http
+      .get(url, {
+        headers: {observe: 'response'},
+        responseType: 'text',
+      })
+      .subscribe((xml: any) => {
         this.bpmnModeler.importXML(xml);
-      }
-    );
+      });
   }
 
   getElementTemplates(): Observable<any>[] {
     const templateObs = [];
     for (const file of this.elementTemplateFiles) {
-      templateObs.push(this.http.get(`/assets/bpmn/element-templates/${file}.json`, {
-        headers: {observe: 'response'},
-        responseType: 'json'
-      }));
+      templateObs.push(
+        this.http.get(`/assets/bpmn/element-templates/${file}.json`, {
+          headers: {observe: 'response'},
+          responseType: 'json',
+        })
+      );
     }
     return templateObs;
   }
@@ -147,10 +145,12 @@ export class ProcessManagementBuilderComponent implements OnInit, OnDestroy {
   }
 
   loadProcessVersions(processDefinitionKey: string) {
-    this.processService.getProcessDefinitionVersions(processDefinitionKey).subscribe((processDefinitionVersions: ProcessDefinition[]) => {
-      this.processDefinitionVersions = processDefinitionVersions;
-      this.setLatestVersion();
-    });
+    this.processService
+      .getProcessDefinitionVersions(processDefinitionKey)
+      .subscribe((processDefinitionVersions: ProcessDefinition[]) => {
+        this.processDefinitionVersions = processDefinitionVersions;
+        this.setLatestVersion();
+      });
   }
 
   compareProcessDefinitions(pd1: ProcessDefinition, pd2: ProcessDefinition) {
@@ -172,5 +172,4 @@ export class ProcessManagementBuilderComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.bpmnModeler.destroy();
   }
-
 }

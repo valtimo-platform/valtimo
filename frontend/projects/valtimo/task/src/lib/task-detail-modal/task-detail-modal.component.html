@@ -30,7 +30,10 @@
     ></valtimo-form-io>
   </div>
   <div body *ngIf="!formDefinition && !errorMessage">
-    <div class="bg-warning text-black mb-0 p-3 text-center" [translate]="'formManagement.noFormDefinitionFound'"></div>
+    <div
+      class="bg-warning text-black mb-0 p-3 text-center"
+      [translate]="'formManagement.noFormDefinitionFound'"
+    ></div>
   </div>
   <div body *ngIf="errorMessage">
     <div class="bg-danger text-black mb-0 p-3 text-center">
@@ -39,7 +42,12 @@
   </div>
   <div footer>
     <div class="mb-0 p-3 text-center" *ngIf="!formDefinition">
-      <button class="btn btn-secondary btn-space" type="button" (click)="gotoFormLinkScreen()" id="form-link-button">
+      <button
+        class="btn btn-secondary btn-space"
+        type="button"
+        (click)="gotoFormLinkScreen()"
+        id="form-link-button"
+      >
         {{ 'formManagement.gotoFormLinksButton' | translate }}
       </button>
     </div>

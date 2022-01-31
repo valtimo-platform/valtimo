@@ -16,20 +16,19 @@
 
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
-import {Milestone, MilestoneSet, ProcessDefinition} from '@valtimo/contract';
+import {Milestone, MilestoneSet} from '../models';
 import {MilestoneService} from '../milestone.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {AlertService} from '@valtimo/components';
-import {ProcessService} from '@valtimo/process';
+import {ProcessService, ProcessDefinition} from '@valtimo/process';
 import {switchMap} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-milestone-edit',
   templateUrl: './milestone-edit.component.html',
-  styleUrls: ['./milestone-edit.component.scss']
+  styleUrls: ['./milestone-edit.component.scss'],
 })
 export class MilestoneEditComponent implements OnInit {
-
   public form: FormGroup;
   public milestoneSets: MilestoneSet[] = [];
   public processDefinitions: ProcessDefinition[] = [];
@@ -42,8 +41,7 @@ export class MilestoneEditComponent implements OnInit {
     private alertService: AlertService,
     private processService: ProcessService,
     private route: ActivatedRoute
-  ) {
-  }
+  ) {}
 
   get formControls() {
     return this.form.controls;
@@ -56,8 +54,14 @@ export class MilestoneEditComponent implements OnInit {
       title: new FormControl('', Validators.required),
       processDefinitionKey: new FormControl('', Validators.required),
       taskDefinitionKey: new FormControl('', Validators.required),
-      plannedIntervalInDays: new FormControl('', [Validators.required, Validators.pattern('^[0-9]*$')]),
-      color: new FormControl('', [Validators.required, Validators.pattern('^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')])
+      plannedIntervalInDays: new FormControl('', [
+        Validators.required,
+        Validators.pattern('^[0-9]*$'),
+      ]),
+      color: new FormControl('', [
+        Validators.required,
+        Validators.pattern('^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'),
+      ]),
     });
     this.getMilestone();
     this.getMilestoneSets();
@@ -71,32 +75,38 @@ export class MilestoneEditComponent implements OnInit {
       processDefinitionKey: '',
       taskDefinitionKey: '',
       plannedIntervalInDays: '',
-      color: ''
+      color: '',
     });
   }
 
   getMilestone() {
     const milestoneId = this.route.snapshot.paramMap.get('id');
-    this.milestoneService.getMilestone(+milestoneId)
-      .pipe(switchMap((milestone: Milestone) => {
-        this.form.patchValue({
-          id: milestone.id,
-          milestoneSet: milestone.milestoneSet.id,
-          title: milestone.title,
-          plannedIntervalInDays: milestone.plannedIntervalInDays,
-          color: milestone.color,
-          taskDefinitionKey: milestone.taskDefinitionKey,
-        });
-        return this.processService.getProcessDefinition(milestone.processDefinitionKey);
-      }))
+    this.milestoneService
+      .getMilestone(+milestoneId)
+      .pipe(
+        switchMap((milestone: Milestone) => {
+          this.form.patchValue({
+            id: milestone.id,
+            milestoneSet: milestone.milestoneSet.id,
+            title: milestone.title,
+            plannedIntervalInDays: milestone.plannedIntervalInDays,
+            color: milestone.color,
+            taskDefinitionKey: milestone.taskDefinitionKey,
+          });
+          return this.processService.getProcessDefinition(milestone.processDefinitionKey);
+        })
+      )
       .subscribe((processDefinition: ProcessDefinition) => {
         this.form.patchValue({
-          processDefinitionKey: processDefinition
+          processDefinitionKey: processDefinition,
         });
       });
   }
 
-  compareProcessDefinitions(processDefinition1: ProcessDefinition, processDefinition2: ProcessDefinition) {
+  compareProcessDefinitions(
+    processDefinition1: ProcessDefinition,
+    processDefinition2: ProcessDefinition
+  ) {
     return processDefinition1.id === processDefinition2.id;
   }
 
@@ -107,9 +117,11 @@ export class MilestoneEditComponent implements OnInit {
   }
 
   getProcessDefinitions() {
-    this.processService.getProcessDefinitions().subscribe((processDefinitions: ProcessDefinition[]) => {
-      this.processDefinitions = processDefinitions;
-    });
+    this.processService
+      .getProcessDefinitions()
+      .subscribe((processDefinitions: ProcessDefinition[]) => {
+        this.processDefinitions = processDefinitions;
+      });
   }
 
   getFlownodes(processDefinitionId: string) {
@@ -126,23 +138,29 @@ export class MilestoneEditComponent implements OnInit {
   }
 
   deleteMilestone() {
-    this.milestoneService.deleteMilestone(this.form.getRawValue().id).subscribe(() => {
-      this.router.navigate(['/milestones']);
-      this.alertService.success('Milestone has been deleted');
-    }, (err) => {
-      this.router.navigate(['/milestones']);
-      this.alertService.error('Could not delete Milestone');
-    });
+    this.milestoneService.deleteMilestone(this.form.getRawValue().id).subscribe(
+      () => {
+        this.router.navigate(['/milestones']);
+        this.alertService.success('Milestone has been deleted');
+      },
+      err => {
+        this.router.navigate(['/milestones']);
+        this.alertService.error('Could not delete Milestone');
+      }
+    );
   }
 
   updateMilestone() {
     const milestone: Milestone = this.form.getRawValue();
     milestone.processDefinitionKey = milestone.processDefinitionKey['key'];
-    this.milestoneService.updateMilestone(milestone).subscribe(() => {
-      this.router.navigate(['/milestones']);
-      this.alertService.success('Milestone has been updated');
-    }, (err) => {
-      this.alertService.error('Error updating milestone');
-    });
+    this.milestoneService.updateMilestone(milestone).subscribe(
+      () => {
+        this.router.navigate(['/milestones']);
+        this.alertService.success('Milestone has been updated');
+      },
+      err => {
+        this.alertService.error('Error updating milestone');
+      }
+    );
   }
 }

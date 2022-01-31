@@ -15,7 +15,7 @@
  */
 
 import {HttpParams} from '@angular/common/http';
-import {SortState} from '@valtimo/contract';
+import {SortState} from './models';
 
 export interface DocumentSearchRequest {
   definitionName: string;

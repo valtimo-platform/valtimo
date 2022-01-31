@@ -1,31 +1,37 @@
-<valtimo-modal #modal [title]="'connectorManagement.extension.buttonText'| translate">
-  <div class="mt-2" body *ngIf="{
-    connectorInstances: connectorInstances$ | async,
-    fields: fields$ | async,
-    pagination: pagination$ | async,
-    loading: loading$ | async,
-    disabled: disabled$ | async,
-    noConnectors: noObjectsApiConnectors$ | async
-  } as obs">
-    <div *ngIf="obs.loading === false; else loading" [ngClass]="{disabled: obs.disabled }">
+<valtimo-modal #modal [title]="'connectorManagement.extension.buttonText' | translate">
+  <div
+    class="mt-2"
+    body
+    *ngIf="{
+      connectorInstances: connectorInstances$ | async,
+      fields: fields$ | async,
+      pagination: pagination$ | async,
+      loading: loading$ | async,
+      disabled: disabled$ | async,
+      noConnectors: noObjectsApiConnectors$ | async
+    } as obs"
+  >
+    <div *ngIf="obs.loading === false; else loading" [ngClass]="{disabled: obs.disabled}">
       <ng-container *ngIf="!obs.noConnectors; else noConnectors">
-        <p class="lead">{{'connectorManagement.extension.clickToSync' | translate}}</p>
+        <p class="lead">{{ 'connectorManagement.extension.clickToSync' | translate }}</p>
         <valtimo-widget>
           <valtimo-list
-                  [items]="obs.connectorInstances"
-                  [fields]="obs.fields"
-                  [header]="false"
-                  [viewMode]="false"
-                  [isSearchable]="false"
-                  [pagination]="obs.pagination"
-                  paginationIdentifier="connectorManagementList"
-                  (paginationClicked)="paginationClicked($event)"
-                  (paginationSet)="paginationSet($event)"
-                  (rowClicked)="rowClicked($event)"
+            [items]="obs.connectorInstances"
+            [fields]="obs.fields"
+            [header]="false"
+            [viewMode]="false"
+            [isSearchable]="false"
+            [pagination]="obs.pagination"
+            paginationIdentifier="connectorManagementList"
+            (paginationClicked)="paginationClicked($event)"
+            (paginationSet)="paginationSet($event)"
+            (rowClicked)="rowClicked($event)"
           >
             <div header>
               <h3 class="list-header-title">{{ 'connectorManagement.title' | translate }}</h3>
-              <h5 class="list-header-description">{{ 'connectorManagement.subtitle' | translate }}</h5>
+              <h5 class="list-header-description">
+                {{ 'connectorManagement.subtitle' | translate }}
+              </h5>
             </div>
           </valtimo-list>
         </valtimo-widget>
@@ -34,11 +40,10 @@
   </div>
 </valtimo-modal>
 
-
 <ng-template #loading>
   <valtimo-spinner></valtimo-spinner>
 </ng-template>
 
 <ng-template #noConnectors>
-  <p class="lead">{{'connectorManagement.extension.noConnectors' | translate}}</p>
+  <p class="lead">{{ 'connectorManagement.extension.noConnectors' | translate }}</p>
 </ng-template>

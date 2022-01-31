@@ -24,12 +24,7 @@ import {AnalyseProcessDiagramComponent} from './analyse-process-diagram/analyse-
 
 @NgModule({
   declarations: [AnalyseComponent, AnalyseProcessDiagramComponent],
-  imports: [
-    CommonModule,
-    AnalyseRoutingModule,
-    ProcessModule,
-    WidgetModule
-  ],
-  exports: [AnalyseComponent]
+  imports: [CommonModule, AnalyseRoutingModule, ProcessModule, WidgetModule],
+  exports: [AnalyseComponent],
 })
-export class AnalyseModule { }
+export class AnalyseModule {}

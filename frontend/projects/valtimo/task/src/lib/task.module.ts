@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import {CommonModule} from '@angular/common';
+import {HttpClient} from '@angular/common/http';
+import {NgModule} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
+import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {
   CamundaFormModule,
   FormIoModule,
@@ -29,14 +29,14 @@ import {
   PageHeaderModule,
   SpinnerModule,
   WidgetModule,
-  SearchableDropdownSelectModule
+  SearchableDropdownSelectModule,
 } from '@valtimo/components';
-import { HttpLoaderFactory } from '@valtimo/contract';
-import { ToastrModule } from 'ngx-toastr';
-import { TaskDetailModalComponent } from './task-detail-modal/task-detail-modal.component';
-import { TaskListComponent } from './task-list/task-list.component';
-import { TaskRoutingModule } from './task-routing.module';
-import { AssignUserToTaskComponent } from './assign-user-to-task/assign-user-to-task.component';
+import {HttpLoaderFactory} from '@valtimo/config';
+import {ToastrModule} from 'ngx-toastr';
+import {TaskDetailModalComponent} from './task-detail-modal/task-detail-modal.component';
+import {TaskListComponent} from './task-list/task-list.component';
+import {TaskRoutingModule} from './task-routing.module';
+import {AssignUserToTaskComponent} from './assign-user-to-task/assign-user-to-task.component';
 
 @NgModule({
   declarations: [TaskListComponent, TaskDetailModalComponent, AssignUserToTaskComponent],
@@ -53,19 +53,19 @@ import { AssignUserToTaskComponent } from './assign-user-to-task/assign-user-to-
     FormsModule,
     ToastrModule.forRoot({
       positionClass: 'toast-bottom-full-width',
-      preventDuplicates: true
+      preventDuplicates: true,
     }),
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
         useFactory: HttpLoaderFactory,
-        deps: [HttpClient]
-      }
+        deps: [HttpClient],
+      },
     }),
     NgbModule,
     FormIoModule,
-    ModalModule
+    ModalModule,
   ],
-  exports: [TaskListComponent, TaskDetailModalComponent, AssignUserToTaskComponent]
+  exports: [TaskListComponent, TaskDetailModalComponent, AssignUserToTaskComponent],
 })
 export class TaskModule {}

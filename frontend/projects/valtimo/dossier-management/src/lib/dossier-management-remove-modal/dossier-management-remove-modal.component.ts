@@ -15,8 +15,11 @@
  */
 
 import {Component, ViewChild} from '@angular/core';
-import {DocumentService} from '@valtimo/document';
-import {DocumentDefinition, UndeployDocumentDefinitionResult} from '@valtimo/contract';
+import {
+  DocumentService,
+  DocumentDefinition,
+  UndeployDocumentDefinitionResult,
+} from '@valtimo/document';
 import {MenuService, ModalComponent} from '@valtimo/components';
 import {ToastrService} from 'ngx-toastr';
 import {Router} from '@angular/router';
@@ -25,7 +28,7 @@ import {TranslateService} from '@ngx-translate/core';
 @Component({
   selector: 'valtimo-dossier-management-remove-modal',
   templateUrl: './dossier-management-remove-modal.component.html',
-  styleUrls: ['./dossier-management-remove-modal.component.scss']
+  styleUrls: ['./dossier-management-remove-modal.component.scss'],
 })
 export class DossierManagementRemoveModalComponent {
   public documentDefinition: DocumentDefinition | null = null;
@@ -38,8 +41,7 @@ export class DossierManagementRemoveModalComponent {
     private router: Router,
     private translateService: TranslateService,
     private menuService: MenuService
-  ) {
-  }
+  ) {}
 
   openModal(documentDefinition: DocumentDefinition) {
     this.documentDefinition = documentDefinition;
@@ -51,10 +53,13 @@ export class DossierManagementRemoveModalComponent {
       () => {
         this.menuService.reload();
         this.router.navigate(['/dossier-management']);
-        this.toasterService.success(this.translateService.instant('remove-document-definition-success'));
-      }, (result: UndeployDocumentDefinitionResult) => {
+        this.toasterService.success(
+          this.translateService.instant('remove-document-definition-success')
+        );
+      },
+      (result: UndeployDocumentDefinitionResult) => {
         this.errors = result.errors;
-      });
+      }
+    );
   }
-
 }

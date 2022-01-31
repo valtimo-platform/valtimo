@@ -16,15 +16,19 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {BpmnJsDiagramModule, CamundaFormModule, ListModule, TimelineModule, WidgetModule} from '@valtimo/components';
+import {
+  BpmnJsDiagramModule,
+  CamundaFormModule,
+  ListModule,
+  TimelineModule,
+  WidgetModule,
+} from '@valtimo/components';
 import {ToastrModule} from 'ngx-toastr';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {ProcessDiagramComponent} from './process-diagram/process-diagram.component';
 
 @NgModule({
-  declarations: [
-    ProcessDiagramComponent
-  ],
+  declarations: [ProcessDiagramComponent],
   imports: [
     CommonModule,
     ListModule,
@@ -35,14 +39,9 @@ import {ProcessDiagramComponent} from './process-diagram/process-diagram.compone
     BrowserAnimationsModule,
     ToastrModule.forRoot({
       positionClass: 'toast-bottom-full-width',
-      preventDuplicates: true
-    })
+      preventDuplicates: true,
+    }),
   ],
-  exports: [
-    ProcessDiagramComponent
-  ],
+  exports: [ProcessDiagramComponent],
 })
-
-export class ProcessModule {
-
-}
+export class ProcessModule {}

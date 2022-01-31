@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
-import { ProcessService } from '@valtimo/process';
+import {Component, OnInit} from '@angular/core';
+import {FormBuilder, FormGroup, FormControl, Validators} from '@angular/forms';
+import {ActivatedRoute, Router} from '@angular/router';
+import {ToastrService} from 'ngx-toastr';
+import {ProcessService} from '@valtimo/process';
 
 @Component({
   selector: 'app-start-process-custom-form',
   templateUrl: './start-process-custom-form.component.html',
-  styleUrls: ['./start-process-custom-form.component.scss']
+  styleUrls: ['./start-process-custom-form.component.scss'],
 })
 export class StartProcessCustomFormComponent implements OnInit {
   public processDefinition: any;
@@ -37,7 +37,7 @@ export class StartProcessCustomFormComponent implements OnInit {
     private route: ActivatedRoute,
     private formBuilder: FormBuilder,
     private toastr: ToastrService,
-    private router: Router,
+    private router: Router
   ) {
     this.key = this.route.snapshot.paramMap.get('key');
   }
@@ -47,7 +47,9 @@ export class StartProcessCustomFormComponent implements OnInit {
     this.startProcessCustomForm = this.createFormGroup();
   }
 
-  get f() { return this.startProcessCustomForm.controls; }
+  get f() {
+    return this.startProcessCustomForm.controls;
+  }
 
   private getProcessDefinition(key) {
     this.processService.getProcessDefinition(key).subscribe(response => {
@@ -59,7 +61,7 @@ export class StartProcessCustomFormComponent implements OnInit {
   private createFormGroup() {
     const group = this.formBuilder.group({
       businessKey: new FormControl('', Validators.required),
-      inputTextarea: new FormControl('', Validators.required)
+      inputTextarea: new FormControl('', Validators.required),
     });
     return group;
   }
@@ -76,13 +78,15 @@ export class StartProcessCustomFormComponent implements OnInit {
 
     const variables = Object.assign({}, data);
     if (variables[this.businessKeyFieldId]) {
-       delete variables[this.businessKeyFieldId];
+      delete variables[this.businessKeyFieldId];
     }
-    if ( this.key && businessKey ) {
-      this.processService.startProcesInstance(this.key, businessKey, variables).subscribe(response => {
-        this.toastr.success(this.processDefinition.name + ' has successfully been started');
-        this.router.navigate(['/dossiers/' + this.key]);
-      });
+    if (this.key && businessKey) {
+      this.processService
+        .startProcesInstance(this.key, businessKey, variables)
+        .subscribe(response => {
+          this.toastr.success(this.processDefinition.name + ' has successfully been started');
+          this.router.navigate(['/dossiers/' + this.key]);
+        });
     }
   }
 }

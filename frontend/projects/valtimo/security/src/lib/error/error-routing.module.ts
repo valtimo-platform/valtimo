@@ -25,17 +25,13 @@ const routes: Routes = [
   {path: '403', component: ErrorComponent, data: {title: 'Access Forbidden', error: 403}},
   {path: '404', component: ErrorComponent, data: {title: 'Not Found', error: 404}},
   {path: '500', component: ErrorComponent, data: {title: 'Internal Server Error', error: 500}},
-  {path: '503', component: ErrorComponent, data: {title: 'Service Unavailable', error: 503}}
+  {path: '503', component: ErrorComponent, data: {title: 'Service Unavailable', error: 503}},
 ];
 
 @NgModule({
   declarations: [],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes)
-  ],
+  imports: [CommonModule, RouterModule.forChild(routes)],
   exports: [RouterModule],
-  providers: [{provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true}]
+  providers: [{provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true}],
 })
-export class ErrorRoutingModule {
-}
+export class ErrorRoutingModule {}

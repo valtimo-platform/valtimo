@@ -17,20 +17,16 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {Milestone, MilestoneSet} from '@valtimo/contract';
+import {Milestone, MilestoneSet} from './models';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MilestoneService {
-
   private valtimoApiConfig: any;
 
-  constructor(
-    private configService: ConfigService,
-    private http: HttpClient
-  ) {
+  constructor(private configService: ConfigService, private http: HttpClient) {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 
@@ -39,7 +35,9 @@ export class MilestoneService {
   }
 
   getMilestone(milestoneId: number): Observable<Milestone> {
-    return this.http.get<Milestone>(`${this.valtimoApiConfig.endpointUri}milestones/${milestoneId}`);
+    return this.http.get<Milestone>(
+      `${this.valtimoApiConfig.endpointUri}milestones/${milestoneId}`
+    );
   }
 
   createMilestone(milestone: Milestone): Observable<Milestone> {
@@ -59,23 +57,34 @@ export class MilestoneService {
   }
 
   getMilestoneSet(milestoneSetId: number): Observable<MilestoneSet> {
-    return this.http.get<MilestoneSet>(`${this.valtimoApiConfig.endpointUri}milestone-sets/${milestoneSetId}`);
+    return this.http.get<MilestoneSet>(
+      `${this.valtimoApiConfig.endpointUri}milestone-sets/${milestoneSetId}`
+    );
   }
 
   createMilestoneSet(milestoneSet: MilestoneSet): Observable<MilestoneSet> {
-    return this.http.post<MilestoneSet>(`${this.valtimoApiConfig.endpointUri}milestone-sets`, milestoneSet);
+    return this.http.post<MilestoneSet>(
+      `${this.valtimoApiConfig.endpointUri}milestone-sets`,
+      milestoneSet
+    );
   }
 
   updateMilestoneSet(milestoneSet: MilestoneSet): Observable<MilestoneSet> {
-    return this.http.post<MilestoneSet>(`${this.valtimoApiConfig.endpointUri}milestone-sets`, milestoneSet);
+    return this.http.post<MilestoneSet>(
+      `${this.valtimoApiConfig.endpointUri}milestone-sets`,
+      milestoneSet
+    );
   }
 
   deleteMilestoneSet(milestoneSetId: number): Observable<void> {
-    return this.http.delete<void>(`${this.valtimoApiConfig.endpointUri}milestone-sets/${milestoneSetId}`);
+    return this.http.delete<void>(
+      `${this.valtimoApiConfig.endpointUri}milestone-sets/${milestoneSetId}`
+    );
   }
 
   getFlownodes(processDefinitionId: string) {
-    return this.http.get(`${this.valtimoApiConfig.endpointUri}milestones/${processDefinitionId}/flownodes`);
+    return this.http.get(
+      `${this.valtimoApiConfig.endpointUri}milestones/${processDefinitionId}/flownodes`
+    );
   }
-
 }

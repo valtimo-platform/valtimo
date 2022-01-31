@@ -21,35 +21,35 @@ import {AuthGuardService} from '@valtimo/security';
 import {DossierListComponent} from './dossier-list/dossier-list.component';
 import {DossierDetailComponent} from './dossier-detail/dossier-detail.component';
 import {DossierUpdateComponent} from './dossier-update/dossier-update.component';
-import {ROLE_USER} from '@valtimo/contract';
+import {ROLE_USER} from '@valtimo/config';
 
 const routes: Routes = [
   {
     path: 'dossiers/:documentDefinitionName',
     component: DossierListComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Dossiers', roles: [ROLE_USER]}
+    data: {title: 'Dossiers', roles: [ROLE_USER]},
   },
   {
     path: 'dossiers/:documentDefinitionName/document/:documentId/:tab',
     component: DossierDetailComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Dossiers', parentPath: 'dossiers/:documentDefinitionName', roles: [ROLE_USER]}
+    data: {title: 'Dossiers', parentPath: 'dossiers/:documentDefinitionName', roles: [ROLE_USER]},
   },
   {
     path: 'dossiers/:documentDefinitionName/document/:documentId/:tab/tasks/:taskId',
     component: DossierUpdateComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Task details', parentPath: 'dossiers/:documentDefinitionName/document/:documentId/:tab', roles: [ROLE_USER]}
-  }
+    data: {
+      title: 'Task details',
+      parentPath: 'dossiers/:documentDefinitionName/document/:documentId/:tab',
+      roles: [ROLE_USER],
+    },
+  },
 ];
 
 @NgModule({
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-  ],
-  exports: [RouterModule]
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class DossierRoutingModule {
-}
+export class DossierRoutingModule {}

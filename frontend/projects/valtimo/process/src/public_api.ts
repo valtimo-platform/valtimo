@@ -18,6 +18,7 @@
  * Public API Surface of process
  */
 
+export * from './lib/models';
 export * from './lib/process.service';
 export * from './lib/process.module';
 export * from './lib/process-diagram/process-diagram.component';

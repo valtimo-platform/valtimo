@@ -20,3 +20,4 @@
 
 export * from './lib/authority.service';
 export * from './lib/authority.module';
+export * from './lib/models';

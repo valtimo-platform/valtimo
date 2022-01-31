@@ -14,18 +14,25 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
 import {MenuService, ModalComponent} from '@valtimo/components';
-import {DocumentDefinitionCreateRequest} from '@valtimo/contract';
-import {DocumentService} from '@valtimo/document';
+import {DocumentService, DocumentDefinitionCreateRequest} from '@valtimo/document';
 import {BehaviorSubject, Observable, Subject, Subscription} from 'rxjs';
 import {switchMap, take, tap} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-dossier-management-upload',
   templateUrl: './dossier-management-upload.component.html',
-  styleUrls: ['./dossier-management-upload.component.scss']
+  styleUrls: ['./dossier-management-upload.component.scss'],
 })
 export class DossierManagementUploadComponent implements AfterViewInit, OnDestroy {
   @Input() show$: Observable<boolean>;
@@ -77,24 +84,26 @@ export class DossierManagementUploadComponent implements AfterViewInit, OnDestro
     this.jsonString$
       .pipe(
         switchMap(jsonString =>
-          this.documentService.createDocumentDefinition(new DocumentDefinitionCreateRequest(jsonString)).pipe(
-            tap(
-              // success
-              () => {
-                this.closeErrorSubscription();
-                this.clearError();
-                this.enable();
-                this.hideModal();
-                this.menuService.reload();
-                this.definitionUploaded.emit();
-              },
-              // error
-              () => {
-                this.openErrorSubscription('dropzone.error.invalidDocDef');
-                this.enable();
-              }
+          this.documentService
+            .createDocumentDefinition(new DocumentDefinitionCreateRequest(jsonString))
+            .pipe(
+              tap(
+                // success
+                () => {
+                  this.closeErrorSubscription();
+                  this.clearError();
+                  this.enable();
+                  this.hideModal();
+                  this.menuService.reload();
+                  this.definitionUploaded.emit();
+                },
+                // error
+                () => {
+                  this.openErrorSubscription('dropzone.error.invalidDocDef');
+                  this.enable();
+                }
+              )
             )
-          )
         ),
         take(1)
       )

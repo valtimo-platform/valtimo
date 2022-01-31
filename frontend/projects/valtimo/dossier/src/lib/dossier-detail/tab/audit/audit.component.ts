@@ -15,10 +15,10 @@
  */
 
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
-import {AuditEvent, TimelineItem, TimelineItemImpl} from '@valtimo/contract';
+import {TimelineItem, TimelineItemImpl} from '@valtimo/components';
 import * as moment_ from 'moment';
 import {ActivatedRoute} from '@angular/router';
-import {DocumentService} from '@valtimo/document';
+import {DocumentService, AuditEvent} from '@valtimo/document';
 import {NgxSpinnerService} from 'ngx-spinner';
 
 const moment = moment_;
@@ -28,10 +28,9 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
 @Component({
   selector: 'valtimo-dossier-detail-tab-audit',
   templateUrl: './audit.component.html',
-  styleUrls: ['./audit.component.css']
+  styleUrls: ['./audit.component.css'],
 })
 export class DossierDetailTabAuditComponent implements OnInit {
-
   @Output() paginationClicked: EventEmitter<any> = new EventEmitter();
 
   public timelineItems: TimelineItem[];

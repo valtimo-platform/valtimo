@@ -23,8 +23,6 @@ import {AuthGuardService} from './guard/auth-guard.service';
   declarations: [ErrorComponent],
   imports: [ErrorRoutingModule],
   exports: [ErrorComponent],
-  providers: [AuthGuardService]
+  providers: [AuthGuardService],
 })
-export class SecurityModule {
-
-}
+export class SecurityModule {}

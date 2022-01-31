@@ -1,0 +1,215 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<nav class="be-right-sidebar">
+  <div class="sb-content">
+    <div class="tab-navigation">
+      <ul class="nav nav-tabs nav-justified" role="tablist">
+        <li class="nav-item" role="presentation">
+          <a
+            class="nav-link active"
+            href="#account"
+            aria-controls="account"
+            role="tab"
+            data-toggle="tab"
+            translate="account.title"
+          ></a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a
+            class="nav-link"
+            (click)="loadUserSettingsTab()"
+            href="#settings"
+            aria-controls="settings"
+            role="tab"
+            data-toggle="tab"
+            translate="settings.title"
+          ></a>
+        </li>
+      </ul>
+    </div>
+    <div class="tab-panel">
+      <div class="tab-content">
+        <!-- account -->
+        <div class="tab-pane tab-account active" id="account" role="tabpanel">
+          <div class="p-3 be-scroller-settings" *ngIf="userIdentity">
+            <div class="content">
+              <div class="category-title border-0 m-0">
+                <div class="p-0 text-muted">
+                  <dl class="row mb-0">
+                    <dt class="col-sm-3">Email</dt>
+                    <dd class="col-sm-9 mb-0 text-bold">{{ userIdentity.email }}</dd>
+                    <ng-container *ngIf="userIdentity.username">
+                      <dt class="col-sm-3">Username</dt>
+                      <dd class="col-sm-9 mb-0 text-bold">{{ userIdentity.username }}</dd>
+                    </ng-container>
+                    <dt class="col-sm-3">Name</dt>
+                    <dd class="col-sm-9 mb-0 text-bold">
+                      {{ userIdentity.firstName + ' ' + userIdentity.lastName }}
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+              <!-- context switch -->
+              <ul class="settings-list" *ngIf="userContexts?.length > 1">
+                <li ngbTooltip="{{ 'settings.context.title' | translate }}">
+                  <select
+                    class="form-control"
+                    #contextSelect
+                    (change)="setUserContext(+contextSelect.value)"
+                  >
+                    <option
+                      *ngFor="let context of userContexts"
+                      [value]="context.id"
+                      [selected]="context.id === userContextActive.id"
+                    >
+                      {{ context.name }}
+                    </option>
+                  </select>
+                </li>
+              </ul>
+              <ul class="list-group list-group-flush m-0">
+                <li class="bg-transparent list-group-item px-0">
+                  <a
+                    href="https://docs.valtimo.nl"
+                    target="_blank"
+                    class="d-block"
+                    translate="account.links.help"
+                  ></a>
+                </li>
+                <li class="bg-transparent list-group-item px-0">
+                  <a
+                    href="https://www.valtimo.nl/feedback/"
+                    target="_blank"
+                    class="d-block"
+                    translate="account.links.feedback"
+                  ></a>
+                </li>
+                <li class="bg-transparent list-group-item px-0">
+                  <a
+                    href="https://forum.valtimo.nl"
+                    target="_blank"
+                    class="d-block"
+                    translate="account.links.forum"
+                  ></a>
+                </li>
+                <li class="bg-transparent list-group-item px-0">
+                  <a
+                    href="javascript:void(0)"
+                    class="d-block"
+                    (click)="logout()"
+                    translate="account.links.signOut"
+                  ></a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- settings -->
+        <div class="tab-pane tab-settings" id="settings" role="tabpanel">
+          <div class="p-3 be-scroller-settings">
+            <div class="content">
+              <span class="category-title" translate="settings.language.title"></span>
+              <ul class="settings-list">
+                <li>
+                  <select
+                    class="form-control"
+                    #langSelect
+                    (change)="updateUserLanguage(langSelect.value)"
+                  >
+                    <option
+                      *ngFor="let lang of translate.getLangs()"
+                      [value]="lang"
+                      [selected]="lang === translate.currentLang"
+                    >
+                      {{ 'settings.language.options.' + lang | translate }}
+                    </option>
+                  </select>
+                </li>
+              </ul>
+
+              <form [formGroup]="settingsForm">
+                <span class="category-title" translate="settings.notification.title"></span>
+                <ul class="settings-list m-0">
+                  <li>
+                    <div class="switch-button switch-button-sm switch-button-success">
+                      <input
+                        type="checkbox"
+                        formControlName="taskNotifications"
+                        id="taskNotifications"
+                        (ngModelChange)="onSettingsSubmit()"
+                      /><span> <label for="taskNotifications"></label></span>
+                    </div>
+                    <span class="name" translate="settings.notification.taskNotifications"></span>
+                    <div
+                      class="text-muted info-text"
+                      translate="settings.notification.taskNotificationsIntro"
+                    ></div>
+                  </li>
+
+                  <li>
+                    <div class="switch-button switch-button-sm switch-button-success">
+                      <input
+                        type="checkbox"
+                        formControlName="emailNotifications"
+                        id="emailNotifications"
+                        (ngModelChange)="onSettingsSubmit()"
+                      /><span> <label for="emailNotifications"></label></span>
+                    </div>
+                    <span class="name" translate="settings.notification.emailNotifications"></span>
+                    <div
+                      class="text-muted info-text"
+                      translate="settings.notification.emailNotificationsIntro"
+                    ></div>
+                  </li>
+                </ul>
+
+                <div *ngIf="settingsForm.value.emailNotifications">
+                  <ul class="settings-list">
+                    <li *ngFor="let frequency of frequencies">
+                      <div class="switch-button switch-button-sm switch-button-success">
+                        <input
+                          type="checkbox"
+                          formControlName="{{ frequency }}"
+                          id="{{ frequency }}"
+                          (ngModelChange)="onSettingsSubmit()"
+                        /><span> <label for="{{ frequency }}"></label></span>
+                      </div>
+                      <span class="name">{{
+                        'settings.notification.' + frequency | translate
+                      }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </form>
+
+              <div class="version-holder">
+                <span class="category-title" translate="settings.version.title"></span>
+                <ul class="settings-list">
+                  <li *ngIf="build">
+                    <div class="name">{{ build.title }}</div>
+                    <div class="text-muted">{{ build.version }}</div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>

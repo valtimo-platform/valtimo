@@ -17,36 +17,52 @@
 <div class="main-content pt-0">
   <div class="container-fluid" *ngIf="formDefinition">
     <div class="btn-group mt-m3px mb-3 float-right">
-      <button class='btn btn-primary btn-space' (click)="downloadFormDefinition()">
+      <button class="btn btn-primary btn-space" (click)="downloadFormDefinition()">
         <i class="fa fa-save"></i>
         {{ 'Download' | translate }}
       </button>
-      <button class="btn btn-secondary btn-space" (click)="showModal()" [disabled]="formDefinition.readOnly">
+      <button
+        class="btn btn-secondary btn-space"
+        (click)="showModal()"
+        [disabled]="formDefinition.readOnly"
+      >
         <i class="icon mdi mdi-upload"></i>&nbsp;
         {{ 'Upload' | translate }}
       </button>
-      <button class='btn btn-danger btn-space' (click)="delete()" [disabled]="formDefinition.readOnly">
+      <button
+        class="btn btn-danger btn-space"
+        (click)="delete()"
+        [disabled]="formDefinition.readOnly"
+      >
         <i class="fa fa-trash"></i>&nbsp;Delete
       </button>
-      <button class='btn btn-success btn-space' (click)="modifyFormDefinition()" [disabled]="formDefinition.readOnly">
+      <button
+        class="btn btn-success btn-space"
+        (click)="modifyFormDefinition()"
+        [disabled]="formDefinition.readOnly"
+      >
         <i class="fa fa-upload"></i>&nbsp;Deploy
       </button>
     </div>
     <div class="clearfix"></div>
     <div class="bg-light formbuilder-header overflow-auto">
-      <h3 class="formbuilder-title">{{formDefinition.name}}
+      <h3 class="formbuilder-title">
+        {{ formDefinition.name }}
         <div *ngIf="formDefinition.readOnly" class="pull-right">
           <span class="badge badge-pill badge-info increase-size">Read-only</span>
         </div>
       </h3>
     </div>
     <ng-container *ngIf="!(reloading$ | async)">
-      <valtimo-form-io-builder [form]="formDefinition.formDefinition" (change)="formBuilderChanged($event)"></valtimo-form-io-builder>
+      <valtimo-form-io-builder
+        [form]="formDefinition.formDefinition"
+        (change)="formBuilderChanged($event)"
+      ></valtimo-form-io-builder>
     </ng-container>
   </div>
 </div>
 
 <valtimo-form-management-upload
-        [show$]="showModal$"
-        (definitionUploaded)="setFormDefinition($event)"
+  [show$]="showModal$"
+  (definitionUploaded)="setFormDefinition($event)"
 ></valtimo-form-management-upload>

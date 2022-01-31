@@ -18,5 +18,6 @@
  * Public API Surface of decision
  */
 
+export * from './lib/models';
 export * from './lib/decision.module';
 export * from './lib/decision.component';

@@ -15,8 +15,7 @@
  */
 
 import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
-import {ProcessService} from '@valtimo/process';
-import {ProcessDefinition} from '@valtimo/contract';
+import {ProcessService, ProcessDefinition} from '@valtimo/process';
 import {MigrationProcessDiagramComponent} from './migration-process-diagram/migration-process-diagram.component';
 import {NGXLogger} from 'ngx-logger';
 import {AlertService} from '@valtimo/components';
@@ -24,32 +23,31 @@ import {AlertService} from '@valtimo/components';
 @Component({
   selector: 'valtimo-migration',
   templateUrl: './migration.component.html',
-  styleUrls: ['./migration.component.scss']
+  styleUrls: ['./migration.component.scss'],
 })
 export class MigrationComponent implements OnInit, AfterViewInit {
-
   public processDefinitions: ProcessDefinition[] = [];
   public selectedVersions = {
     source: [],
-    target: []
+    target: [],
   };
   public selectedId = {
     source: null,
-    target: null
+    target: null,
   };
   public loaded = {
     source: false,
-    target: false
+    target: false,
   };
   public fields = {
     source: {
       definition: null,
-      version: null
+      version: null,
     },
     target: {
       definition: null,
-      version: null
-    }
+      version: null,
+    },
   };
 
   public processCount: number | null = null;
@@ -61,8 +59,11 @@ export class MigrationComponent implements OnInit, AfterViewInit {
 
   public diagram: any = null;
 
-  constructor(private processService: ProcessService, private logger: NGXLogger, private alertService: AlertService) {
-  }
+  constructor(
+    private processService: ProcessService,
+    private logger: NGXLogger,
+    private alertService: AlertService
+  ) {}
 
   ngOnInit() {
     this.loadProcessDefinitions();
@@ -71,7 +72,7 @@ export class MigrationComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     this.diagram = {
       source: this.sourceDiagram,
-      target: this.targetDiagram
+      target: this.targetDiagram,
     };
   }
 
@@ -80,9 +81,11 @@ export class MigrationComponent implements OnInit, AfterViewInit {
   }
 
   loadProcessDefinitions() {
-    this.processService.getProcessDefinitions().subscribe((processDefinitions: ProcessDefinition[]) => {
-      this.processDefinitions = processDefinitions;
-    });
+    this.processService
+      .getProcessDefinitions()
+      .subscribe((processDefinitions: ProcessDefinition[]) => {
+        this.processDefinitions = processDefinitions;
+      });
   }
 
   loadProcessDefinitionVersions(key: string | null, type: string) {
@@ -90,9 +93,11 @@ export class MigrationComponent implements OnInit, AfterViewInit {
     this.selectedVersions[type] = [];
     this.clearProcess(type);
     if (key) {
-      this.processService.getProcessDefinitionVersions(key).subscribe((processDefinitionVersions: ProcessDefinition[]) => {
-        this.selectedVersions[type] = processDefinitionVersions;
-      });
+      this.processService
+        .getProcessDefinitionVersions(key)
+        .subscribe((processDefinitionVersions: ProcessDefinition[]) => {
+          this.selectedVersions[type] = processDefinitionVersions;
+        });
     }
   }
 
@@ -135,9 +140,14 @@ export class MigrationComponent implements OnInit, AfterViewInit {
     const targetFlowNodeMap = this.targetDiagram.flowNodeMap;
 
     if (sourceFlowNodeMap != null && targetFlowNodeMap != null) {
-      this.uniqueFlowNodeMap = sourceFlowNodeMap.filter(sourceFlowNode =>
-        !targetFlowNodeMap.some(targetFlowNode =>
-          sourceFlowNode.id === targetFlowNode.id && sourceFlowNode.$type === targetFlowNode.$type));
+      this.uniqueFlowNodeMap = sourceFlowNodeMap.filter(
+        sourceFlowNode =>
+          !targetFlowNodeMap.some(
+            targetFlowNode =>
+              sourceFlowNode.id === targetFlowNode.id &&
+              sourceFlowNode.$type === targetFlowNode.$type
+          )
+      );
     }
   }
 
@@ -157,24 +167,28 @@ export class MigrationComponent implements OnInit, AfterViewInit {
   }
 
   migrateProcess() {
-    this.processService.migrateProcess(this.selectedId.source, this.selectedId.target, this.taskMapping).subscribe((res) => {
-      this.alertService.success('Process successfully migrated!');
-      this.clearProcess('source');
-      this.clearProcess('target');
-      this.fields = {
-        source: {
-          definition: null,
-          version: null
+    this.processService
+      .migrateProcess(this.selectedId.source, this.selectedId.target, this.taskMapping)
+      .subscribe(
+        res => {
+          this.alertService.success('Process successfully migrated!');
+          this.clearProcess('source');
+          this.clearProcess('target');
+          this.fields = {
+            source: {
+              definition: null,
+              version: null,
+            },
+            target: {
+              definition: null,
+              version: null,
+            },
+          };
         },
-        target: {
-          definition: null,
-          version: null
+        err => {
+          this.alertService.error('Process migration failed!');
+          this.logger.debug(err);
         }
-      };
-    }, err => {
-      this.alertService.error('Process migration failed!');
-      this.logger.debug(err);
-    });
+      );
   }
-
 }

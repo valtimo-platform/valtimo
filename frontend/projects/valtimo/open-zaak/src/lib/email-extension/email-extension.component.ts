@@ -26,7 +26,7 @@ import {TranslateService} from '@ngx-translate/core';
 @Component({
   selector: 'valtimo-email-extension',
   templateUrl: './email-extension.component.html',
-  styleUrls: ['./email-extension.component.scss']
+  styleUrls: ['./email-extension.component.scss'],
 })
 export class EmailExtensionComponent implements OnInit {
   @ViewChild('modal') modal: ModalComponent;
@@ -34,7 +34,11 @@ export class EmailExtensionComponent implements OnInit {
   readonly documentId$ = new BehaviorSubject<string>('');
   readonly subject$ = new BehaviorSubject<string>('');
   readonly body$ = new BehaviorSubject<string>('');
-  readonly requestData$: Observable<Array<string>> = combineLatest([this.documentId$, this.subject$, this.body$]);
+  readonly requestData$: Observable<Array<string>> = combineLatest([
+    this.documentId$,
+    this.subject$,
+    this.body$,
+  ]);
   readonly valid$: Observable<boolean> = this.requestData$.pipe(
     map(([documentId, subject, body]) => !!(documentId && subject && body))
   );
@@ -45,7 +49,7 @@ export class EmailExtensionComponent implements OnInit {
     private readonly documentService: DocumentService,
     private readonly alertService: AlertService,
     private readonly translateService: TranslateService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.documentId$.next(this.route.snapshot.paramMap.get('documentId') || '');
@@ -69,7 +73,9 @@ export class EmailExtensionComponent implements OnInit {
     this.requestData$.pipe(take(1)).subscribe(([documentId, subject, bodyText]) => {
       this.documentService.sendMessage(documentId, {subject, bodyText}).subscribe(
         () => {
-          this.alertService.success(this.translateService.instant('dossier.sendEmailExtension.sendSuccess'));
+          this.alertService.success(
+            this.translateService.instant('dossier.sendEmailExtension.sendSuccess')
+          );
           this.enable();
           this.clear();
           this.modal.hide();

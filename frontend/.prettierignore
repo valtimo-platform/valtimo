@@ -1,0 +1,10 @@
+.git
+.gradle
+.idea
+dist
+e2e
+gradle
+node_modules
+valtimo-frontend-libraries-pipeline
+src/assets/bpmn
+projects/valtimo/layout/src/beagle

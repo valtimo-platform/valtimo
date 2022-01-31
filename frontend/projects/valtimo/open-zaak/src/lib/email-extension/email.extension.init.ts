@@ -15,15 +15,11 @@
  */
 
 import {NGXLogger} from 'ngx-logger';
-import {ConfigService} from '@valtimo/config';
-import {BasicExtensionPoint, Extension} from '@valtimo/contract';
+import {ConfigService, BasicExtensionPoint, Extension} from '@valtimo/config';
 import {Injector} from '@angular/core';
 import {EmailExtensionComponent} from './email-extension.component';
 
-export function emailExtensionInitializer(
-  injector: Injector
-): () => Promise<any> {
-
+export function emailExtensionInitializer(injector: Injector): () => Promise<any> {
   const configService = injector.get<ConfigService>(ConfigService);
   const logger = injector.get<NGXLogger>(NGXLogger);
 

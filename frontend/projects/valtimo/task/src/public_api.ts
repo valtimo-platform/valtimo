@@ -18,6 +18,7 @@
  * Public API Surface of task
  */
 
+export * from './lib/models';
 export * from './lib/task.service';
 export * from './lib/task.module';
 export * from './lib/task-detail-modal/task-detail-modal.component';

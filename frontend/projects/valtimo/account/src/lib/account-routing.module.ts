@@ -20,30 +20,26 @@ import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {ProfileComponent} from './profile/profile.component';
 import {PasswordComponent} from './password/password.component';
-import {ROLE_USER} from '@valtimo/contract';
+import {ROLE_USER} from '@valtimo/config';
 
 const routes: Routes = [
   {
     path: 'profile',
     component: ProfileComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Profile', roles: [ROLE_USER]}
+    data: {title: 'Profile', roles: [ROLE_USER]},
   },
   {
     path: 'password',
     component: PasswordComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Password', roles: [ROLE_USER]}
-  }
+    data: {title: 'Password', roles: [ROLE_USER]},
+  },
 ];
 
 @NgModule({
   declarations: [],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes)
-  ],
-  exports: [RouterModule]
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class AccountRoutingModule {
-}
+export class AccountRoutingModule {}

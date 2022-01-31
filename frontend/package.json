@@ -7,7 +7,6 @@
     "libs-build-all": "npm-run-all libs:build:*",
     "libs-test-all": "npm-run-all libs:test:*",
     "libs-lint-all": "npm-run-all libs:lint:*",
-    "libs:build:contract": "ng build @valtimo/contract",
     "libs:build:config": "npm-run-all --sequential build-config-*",
     "libs:build:resource": "ng build @valtimo/resource",
     "libs:build:view-configurator": "ng build @valtimo/view-configurator",
@@ -42,6 +41,7 @@
     "libs:build:dossier-management": "ng build @valtimo/dossier-management",
     "libs:build:bootstrap": "ng build @valtimo/bootstrap",
     "libs:build:open-zaak": "ng build @valtimo/open-zaak",
+    "libs:build:contract": "ng build @valtimo/contract",
     "libs:test:contract": "ng test @valtimo/contract",
     "libs:test:config": "ng test @valtimo/config",
     "libs:test:view-configurator": "ng test @valtimo/view-configurator",
@@ -121,6 +121,9 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
+    "tslint-check": "tslint-config-prettier-check ./tslint.json",
+    "prettier:check": "prettier --check .",
+    "prettier:write": "prettier --write .",
     "build-layout-clean-lib": "npx rimraf projects/valtimo/layout/src/beagle/src/assets/lib",
     "build-layout-dep-copy": "node node_modules/@foxythemes/depcopy-cli/lib/dep-copy-cli.js",
     "build-layout-build-lib": "ng build @valtimo/layout",
@@ -239,7 +242,8 @@
     "ts-node": "~7.0.0",
     "tslib": "^2.0.0",
     "tslint": "~6.1.0",
-    "typescript": "3.9.7",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "3.9.10",
     "uuid": "^3.4.0",
     "webpack-bundle-analyzer": "^3.8.0",
     "zone.js": "~0.10.2"
@@ -283,6 +287,7 @@
     "@valtimo/user-management": "file:dist/valtimo/user-management",
     "@valtimo/view-configurator": "file:dist/valtimo/view-configurator",
     "ng-packagr": "^10.0.0",
+    "prettier": "^2.5.1",
     "typescript": "~3.9.5"
   }
 }

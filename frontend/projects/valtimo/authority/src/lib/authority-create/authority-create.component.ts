@@ -23,10 +23,9 @@ import {AlertService} from '@valtimo/components';
 @Component({
   selector: 'valtimo-authority-create',
   templateUrl: './authority-create.component.html',
-  styleUrls: ['./authority-create.component.css']
+  styleUrls: ['./authority-create.component.css'],
 })
 export class AuthorityCreateComponent implements OnInit {
-
   public form: FormGroup;
 
   constructor(
@@ -34,7 +33,7 @@ export class AuthorityCreateComponent implements OnInit {
     private formBuilder: FormBuilder,
     private service: AuthorityService,
     private alertService: AlertService
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.reset();
@@ -47,7 +46,7 @@ export class AuthorityCreateComponent implements OnInit {
   private createFormGroup() {
     return this.formBuilder.group({
       name: new FormControl('', Validators.required),
-      hourlyRate: new FormControl('', Validators.required)
+      hourlyRate: new FormControl('', Validators.required),
     });
   }
 
@@ -61,5 +60,4 @@ export class AuthorityCreateComponent implements OnInit {
   public reset() {
     this.form = this.createFormGroup();
   }
-
 }

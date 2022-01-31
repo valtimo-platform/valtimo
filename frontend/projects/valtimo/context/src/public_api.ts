@@ -18,5 +18,6 @@
  * Public API Surface of context
  */
 
+export * from './lib/models';
 export * from './lib/context.service';
 export * from './lib/context.module';

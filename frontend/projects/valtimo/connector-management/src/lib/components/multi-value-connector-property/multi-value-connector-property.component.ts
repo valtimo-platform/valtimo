@@ -15,26 +15,26 @@
  */
 
 import {Component, Input, OnDestroy, OnInit, Output, EventEmitter} from '@angular/core';
-import {ConnectorPropertyEditField, ConnectorPropertyValueType} from '@valtimo/contract';
+import {ConnectorPropertyEditField, ConnectorPropertyValueType} from '../../models';
 import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-multi-value-connector-property',
   templateUrl: './multi-value-connector-property.component.html',
-  styleUrls: ['./multi-value-connector-property.component.scss']
+  styleUrls: ['./multi-value-connector-property.component.scss'],
 })
 export class MultiValueConnectorPropertyComponent implements OnInit, OnDestroy {
   @Input() editField: ConnectorPropertyEditField;
   @Input() disabled!: boolean;
   @Input() defaultValue!: ConnectorPropertyValueType;
 
-  @Output() valuesSet = new EventEmitter<{editFieldKey: string, values: Array<string | number>}>();
+  @Output() valuesSet = new EventEmitter<{editFieldKey: string; values: Array<string | number>}>();
 
   readonly amountOfValues$ = new BehaviorSubject<Array<null>>([null]);
 
   readonly removeButtonDisabled$ = this.amountOfValues$.pipe(
-    map((amountOfValues) => amountOfValues.length === 1)
+    map(amountOfValues => amountOfValues.length === 1)
   );
 
   readonly values$ = new BehaviorSubject<{[key: number]: number | string}>({});
@@ -42,7 +42,7 @@ export class MultiValueConnectorPropertyComponent implements OnInit, OnDestroy {
   readonly addButtonDisabled$ = combineLatest([this.values$, this.amountOfValues$]).pipe(
     map(([values, amountOfValues]) => {
       const objectValues = Object.values(values);
-      const validObjectValues = objectValues.filter((value) => value === 0 || value);
+      const validObjectValues = objectValues.filter(value => value === 0 || value);
 
       return amountOfValues.length !== validObjectValues.length;
     })
@@ -59,24 +59,32 @@ export class MultiValueConnectorPropertyComponent implements OnInit, OnDestroy {
     this.valuesSubscription?.unsubscribe();
   }
 
-  onValueChange(value: string | number, editField: ConnectorPropertyEditField, index: number): void {
-    this.values$.pipe(take(1)).subscribe((values) => {
+  onValueChange(
+    value: string | number,
+    editField: ConnectorPropertyEditField,
+    index: number
+  ): void {
+    this.values$.pipe(take(1)).subscribe(values => {
       this.values$.next({
         ...values,
-        [index]: editField.editType === 'string[]' ? (value as string).trim() : parseInt(value as string, 10)
+        [index]:
+          editField.editType === 'string[]'
+            ? (value as string).trim()
+            : parseInt(value as string, 10),
       });
     });
   }
 
   addRow(): void {
-    this.amountOfValues$.pipe(take(1)).subscribe((amountOfValues) => {
+    this.amountOfValues$.pipe(take(1)).subscribe(amountOfValues => {
       this.amountOfValues$.next([...amountOfValues, null]);
     });
   }
 
   removeRow(): void {
-    combineLatest([this.values$, this.amountOfValues$]).pipe(take(1)).subscribe(
-      ([values, amountOfValues]) => {
+    combineLatest([this.values$, this.amountOfValues$])
+      .pipe(take(1))
+      .subscribe(([values, amountOfValues]) => {
         const lastValueIndex = amountOfValues.length - 1;
         const valuesCopy = {...values};
 
@@ -84,22 +92,22 @@ export class MultiValueConnectorPropertyComponent implements OnInit, OnDestroy {
 
         this.values$.next(valuesCopy);
         this.amountOfValues$.next(amountOfValues.filter((curr, index) => index !== lastValueIndex));
-      }
-    );
+      });
   }
 
   private openValuesSubscription(): void {
-    this.valuesSubscription = this.values$.subscribe((values) => {
+    this.valuesSubscription = this.values$.subscribe(values => {
       this.valuesSet.emit({
         editFieldKey: this.editField.key,
-        values: Object.values(values).filter((value) => value === 0 || value)
+        values: Object.values(values).filter(value => value === 0 || value),
       });
     });
   }
 
   private setDefaults(): void {
     const defaultValue = this.defaultValue as Array<any>;
-    const validValues = Array.isArray(defaultValue) && defaultValue.filter((value) => value === 0 || value);
+    const validValues =
+      Array.isArray(defaultValue) && defaultValue.filter(value => value === 0 || value);
 
     if (validValues && validValues.length > 0) {
       const valuesObject = {};

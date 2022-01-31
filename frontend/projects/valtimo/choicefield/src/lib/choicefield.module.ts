@@ -17,6 +17,4 @@
 import {NgModule} from '@angular/core';
 
 @NgModule()
-export class ChoicefieldModule {
-
-}
+export class ChoicefieldModule {}

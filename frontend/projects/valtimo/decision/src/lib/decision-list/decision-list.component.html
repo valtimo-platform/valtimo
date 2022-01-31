@@ -15,8 +15,14 @@
   -->
 
 <valtimo-widget>
-  <valtimo-list [items]="decisions" [fields]="fields" (rowClicked)="viewDecisionTable($event)"
-                [header]="true" [viewMode]="true" [isSearchable]="true">
+  <valtimo-list
+    [items]="decisions"
+    [fields]="fields"
+    (rowClicked)="viewDecisionTable($event)"
+    [header]="true"
+    [viewMode]="true"
+    [isSearchable]="true"
+  >
     <div header>
       <h3 class="list-header-title">{{ 'Decision tables' | translate }}</h3>
       <h5 class="list-header-description">{{ 'Overview of all Decision tables' | translate }}</h5>

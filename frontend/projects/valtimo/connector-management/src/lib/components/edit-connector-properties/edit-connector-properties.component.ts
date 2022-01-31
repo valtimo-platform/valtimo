@@ -15,7 +15,11 @@
  */
 
 import {Component, EventEmitter, Input, OnChanges, OnInit, Output} from '@angular/core';
-import {ConnectorProperties, ConnectorPropertyEditField, ConnectorPropertyValueType} from '@valtimo/contract';
+import {
+  ConnectorProperties,
+  ConnectorPropertyEditField,
+  ConnectorPropertyValueType,
+} from '../../models';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {set, get, cloneDeep} from 'lodash';
@@ -24,7 +28,7 @@ import {ConnectorManagementStateService} from '../../services/connector-manageme
 @Component({
   selector: 'valtimo-edit-connector-properties',
   templateUrl: './edit-connector-properties.component.html',
-  styleUrls: ['./edit-connector-properties.component.scss']
+  styleUrls: ['./edit-connector-properties.component.scss'],
 })
 export class EditConnectorPropertiesComponent implements OnInit, OnChanges {
   @Input() properties: ConnectorProperties;
@@ -32,7 +36,7 @@ export class EditConnectorPropertiesComponent implements OnInit, OnChanges {
   @Input() showDeleteButton = false;
   @Input() defaultName!: string;
 
-  @Output() propertiesSave = new EventEmitter<{properties: ConnectorProperties, name: string}>();
+  @Output() propertiesSave = new EventEmitter<{properties: ConnectorProperties; name: string}>();
   @Output() connectorDelete = new EventEmitter<any>();
 
   readonly disabled$!: Observable<boolean>;
@@ -43,18 +47,22 @@ export class EditConnectorPropertiesComponent implements OnInit, OnChanges {
 
   readonly connectorName$ = new BehaviorSubject<string>('');
 
-  readonly saveButtonDisabled$ = combineLatest([this.editFields$, this.modifiedProperties$, this.connectorName$]).pipe(
+  readonly saveButtonDisabled$ = combineLatest([
+    this.editFields$,
+    this.modifiedProperties$,
+    this.connectorName$,
+  ]).pipe(
     map(([editFields, modifiedProperties, connectorName]) => {
-      const values = editFields.map((field) => get(modifiedProperties, field.key));
-      const validValues = values.filter((value) => Array.isArray(value) ? value.length > 0 : value === 0 || value);
+      const values = editFields.map(field => get(modifiedProperties, field.key));
+      const validValues = values.filter(value =>
+        Array.isArray(value) ? value.length > 0 : value === 0 || value
+      );
 
-      return (editFields.length !== validValues.length) || !connectorName;
+      return editFields.length !== validValues.length || !connectorName;
     })
   );
 
-  constructor(
-    private readonly stateService: ConnectorManagementStateService
-  ) {
+  constructor(private readonly stateService: ConnectorManagementStateService) {
     this.disabled$ = this.stateService.inputDisabled$;
   }
 
@@ -68,16 +76,20 @@ export class EditConnectorPropertiesComponent implements OnInit, OnChanges {
     this.setName();
   }
 
-  multiFieldValuesSet(event: { editFieldKey: string, values: Array<string> | Array<number> }): void {
-    this.modifiedProperties$.pipe(take(1)).subscribe((properties) => {
+  multiFieldValuesSet(event: {editFieldKey: string; values: Array<string> | Array<number>}): void {
+    this.modifiedProperties$.pipe(take(1)).subscribe(properties => {
       set(properties, event.editFieldKey, event.values);
       this.modifiedProperties$.next(properties);
     });
   }
 
   onSingleValueChange(value: any, editField: ConnectorPropertyEditField): void {
-    this.modifiedProperties$.pipe(take(1)).subscribe((properties) => {
-      set(properties, editField.key, editField.editType === 'string' ? value.trim() : parseInt(value, 10));
+    this.modifiedProperties$.pipe(take(1)).subscribe(properties => {
+      set(
+        properties,
+        editField.key,
+        editField.editType === 'string' ? value.trim() : parseInt(value, 10)
+      );
       this.modifiedProperties$.next(properties);
     });
   }
@@ -90,10 +102,10 @@ export class EditConnectorPropertiesComponent implements OnInit, OnChanges {
     this.stateService.disableInput();
 
     combineLatest([this.modifiedProperties$, this.connectorName$])
-      .pipe(take(1)).subscribe(([properties, name]) => {
-        this.propertiesSave.emit({properties, name });
-      }
-    );
+      .pipe(take(1))
+      .subscribe(([properties, name]) => {
+        this.propertiesSave.emit({properties, name});
+      });
   }
 
   onDelete(): void {
@@ -113,12 +125,8 @@ export class EditConnectorPropertiesComponent implements OnInit, OnChanges {
     const propertiesCopy = cloneDeep(this.properties);
 
     if (!this.withDefaults) {
-      editFields.forEach((editField) => {
-        set(
-          propertiesCopy,
-          editField.key,
-          undefined
-        );
+      editFields.forEach(editField => {
+        set(propertiesCopy, editField.key, undefined);
       });
     }
 
@@ -130,14 +138,15 @@ export class EditConnectorPropertiesComponent implements OnInit, OnChanges {
     const keysToFilter = ['className'];
 
     const handlePropertyLevel = (propertyLevel: ConnectorProperties, previousKeys: string) => {
-      const propertyLevelKeys = Object.keys(propertyLevel)
-        .filter((key) => !keysToFilter.includes(key));
+      const propertyLevelKeys = Object.keys(propertyLevel).filter(
+        key => !keysToFilter.includes(key)
+      );
 
-      propertyLevelKeys.forEach((key) => {
+      propertyLevelKeys.forEach(key => {
         const propertyValue = propertyLevel[key];
         const baseEditField = {
           key: previousKeys + key,
-          ...(this.withDefaults && {defaultValue: (propertyValue as ConnectorPropertyValueType)})
+          ...(this.withDefaults && {defaultValue: propertyValue as ConnectorPropertyValueType}),
         };
 
         if (typeof propertyValue === 'number') {

@@ -15,7 +15,7 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {ROLE_DEVELOPER, ROLE_USER, User} from '@valtimo/contract';
+import {ROLE_DEVELOPER, ROLE_USER, User} from '@valtimo/config';
 import {UserManagementService} from '../user-management.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
@@ -25,10 +25,9 @@ import {TranslateService} from '@ngx-translate/core';
 @Component({
   selector: 'valtimo-user-detail',
   templateUrl: './user-detail.component.html',
-  styleUrls: ['./user-detail.component.css']
+  styleUrls: ['./user-detail.component.css'],
 })
 export class UserDetailComponent implements OnInit {
-
   public id: string;
   public user: User;
   public form: FormGroup;
@@ -88,7 +87,7 @@ export class UserDetailComponent implements OnInit {
       langKey: new FormControl('', Validators.required),
       roles: new FormControl('', Validators.required),
       activated: new FormControl(''),
-      emailVerified: new FormControl('')
+      emailVerified: new FormControl(''),
     });
   }
 
@@ -128,21 +127,20 @@ export class UserDetailComponent implements OnInit {
       {
         label: 'Cancel',
         class: 'btn btn-default',
-        value: false
+        value: false,
       },
       {
         label: 'Activate',
         class: 'btn btn-primary',
-        value: true
-      }
+        value: true,
+      },
     ];
     this.alertService.notification(mssg, confirmations);
-    this.alertService.getAlertConfirmChangeEmitter()
-      .subscribe(alert => {
-        if (alert.confirm === true) {
-          this.activateConfirmed();
-        }
-      });
+    this.alertService.getAlertConfirmChangeEmitter().subscribe(alert => {
+      if (alert.confirm === true) {
+        this.activateConfirmed();
+      }
+    });
   }
 
   private activateConfirmed() {
@@ -159,21 +157,20 @@ export class UserDetailComponent implements OnInit {
       {
         label: 'Cancel',
         class: 'btn btn-default',
-        value: false
+        value: false,
       },
       {
         label: 'Deactivate',
         class: 'btn btn-primary',
-        value: true
-      }
+        value: true,
+      },
     ];
     this.alertService.notification(mssg, confirmations);
-    this.alertService.getAlertConfirmChangeEmitter()
-      .subscribe(alert => {
-        if (alert.confirm === true) {
-          this.deactivateConfirmed();
-        }
-      });
+    this.alertService.getAlertConfirmChangeEmitter().subscribe(alert => {
+      if (alert.confirm === true) {
+        this.deactivateConfirmed();
+      }
+    });
   }
 
   private deactivateConfirmed() {
@@ -190,21 +187,20 @@ export class UserDetailComponent implements OnInit {
       {
         label: 'Cancel',
         class: 'btn btn-default',
-        value: false
+        value: false,
       },
       {
         label: 'Resend verification email',
         class: 'btn btn-primary',
-        value: true
-      }
+        value: true,
+      },
     ];
     this.alertService.notification(mssg, confirmations);
-    this.alertService.getAlertConfirmChangeEmitter()
-      .subscribe(alert => {
-        if (alert.confirm === true) {
-          this.resendVerificationEmailConfirmed();
-        }
-      });
+    this.alertService.getAlertConfirmChangeEmitter().subscribe(alert => {
+      if (alert.confirm === true) {
+        this.resendVerificationEmailConfirmed();
+      }
+    });
   }
 
   private resendVerificationEmailConfirmed() {
@@ -221,21 +217,20 @@ export class UserDetailComponent implements OnInit {
       {
         label: 'Cancel',
         class: 'btn btn-default',
-        value: false
+        value: false,
       },
       {
         label: 'Delete',
         class: 'btn btn-primary',
-        value: true
-      }
+        value: true,
+      },
     ];
     this.alertService.notification(mssg, confirmations);
-    this.alertService.getAlertConfirmChangeEmitter()
-      .subscribe(alert => {
-        if (alert.confirm === true) {
-          this.deleteConfirmed();
-        }
-      });
+    this.alertService.getAlertConfirmChangeEmitter().subscribe(alert => {
+      if (alert.confirm === true) {
+        this.deleteConfirmed();
+      }
+    });
   }
 
   private deleteConfirmed() {
@@ -256,5 +251,4 @@ export class UserDetailComponent implements OnInit {
     this.form = this.createFormGroup();
     this.initData(this.id);
   }
-
 }

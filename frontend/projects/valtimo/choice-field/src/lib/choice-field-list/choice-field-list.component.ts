@@ -14,46 +14,43 @@
  * limitations under the License.
  */
 
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { ChoiceField } from '@valtimo/contract';
-import { ChoiceFieldService } from '../choice-field.service';
+import {Component, OnInit} from '@angular/core';
+import {Router} from '@angular/router';
+import {ChoiceField} from '../models';
+import {ChoiceFieldService} from '../choice-field.service';
 
 @Component({
   selector: 'valtimo-choice-field-list',
   templateUrl: './choice-field-list.component.html',
-  styleUrls: ['./choice-field-list.component.css']
+  styleUrls: ['./choice-field-list.component.css'],
 })
 export class ChoiceFieldListComponent implements OnInit {
-
   public choiceFields: Array<ChoiceField> = [];
   public pagination = {
     collectionSize: 0,
     page: 1,
     size: 10,
-    maxPaginationItemSize: 5
+    maxPaginationItemSize: 5,
   };
   public pageParam = 0;
-  public fields: Array<any> = [{
+  public fields: Array<any> = [
+    {
       key: 'id',
-      label: 'ID'
-    }
-    , {
+      label: 'ID',
+    },
+    {
       key: 'keyName',
-      label: 'Key'
-    }
-    , {
+      label: 'Key',
+    },
+    {
       key: 'title',
-      label: 'Title'
-    }];
+      label: 'Title',
+    },
+  ];
 
-  constructor(
-    private router: Router,
-    private service: ChoiceFieldService
-  ) { }
+  constructor(private router: Router, private service: ChoiceFieldService) {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   paginationSet() {
     this.initData();
@@ -74,5 +71,4 @@ export class ChoiceFieldListComponent implements OnInit {
     this.pageParam = page - 1;
     this.initData();
   }
-
 }

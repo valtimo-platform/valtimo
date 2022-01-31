@@ -21,12 +21,7 @@ import {KeycloakRoutingModule} from './keycloak-routing.module';
 
 @NgModule({
   declarations: [CallbackComponent],
-  imports: [
-    KeycloakRoutingModule,
-    KeycloakAngularModule
-  ],
-  exports: [CallbackComponent]
+  imports: [KeycloakRoutingModule, KeycloakAngularModule],
+  exports: [CallbackComponent],
 })
-export class KeycloakModule {
-
-}
+export class KeycloakModule {}

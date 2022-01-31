@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-import {Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
-import {ProcessService} from '@valtimo/process';
-import {ProcessDefinition} from '@valtimo/contract';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
+import {ProcessService, ProcessDefinition} from '@valtimo/process';
 
 import * as BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
 import {ActivatedRoute} from '@angular/router';
@@ -26,10 +33,9 @@ import {map} from 'rxjs/operators';
 @Component({
   selector: 'valtimo-form-link-process-diagram',
   templateUrl: './form-link-process-diagram.component.html',
-  styleUrls: ['./form-link-process-diagram.component.scss']
+  styleUrls: ['./form-link-process-diagram.component.scss'],
 })
 export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
-
   private bpmnJS: BpmnJS;
 
   @ViewChild('ref') public el: ElementRef;
@@ -44,38 +50,33 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
   public version: number;
   private callbacksAdded = false;
 
-  constructor(
-    private processService: ProcessService,
-    private route: ActivatedRoute
-  ) {
-  }
+  constructor(private processService: ProcessService, private route: ActivatedRoute) {}
 
   ngOnInit() {
-    combineLatest(
-      [
-        this.route.queryParams,
-        this.processService.getProcessDefinitions()
-      ]
-    ).pipe(map(([queryParams, processDefinitions]) => {
-      return {queryParams, processDefinitions};
-    })).subscribe(response => {
-      this.processDefinitions = response.processDefinitions;
-      if (response.queryParams.process) {
-        this.processDefinitionKey = response.queryParams.process;
-        this.loadProcessDefinitionFromKey(this.processDefinitionKey);
-        this.bpmnElementModalOpen.emit({
-          element: {
-            id: 'start-event',
-            type: 'bpmn:StartEvent'
-          },
-          processDefinitionKey: this.processDefinitionKey
-        });
-      }
-      if (!this.processDefinitionKey && response.processDefinitions.length !== 0) {
-        this.processDefinitionKey = response.processDefinitions[0].key;
-        this.loadProcessDefinitionFromKey(this.processDefinitionKey);
-      }
-    });
+    combineLatest([this.route.queryParams, this.processService.getProcessDefinitions()])
+      .pipe(
+        map(([queryParams, processDefinitions]) => {
+          return {queryParams, processDefinitions};
+        })
+      )
+      .subscribe(response => {
+        this.processDefinitions = response.processDefinitions;
+        if (response.queryParams.process) {
+          this.processDefinitionKey = response.queryParams.process;
+          this.loadProcessDefinitionFromKey(this.processDefinitionKey);
+          this.bpmnElementModalOpen.emit({
+            element: {
+              id: 'start-event',
+              type: 'bpmn:StartEvent',
+            },
+            processDefinitionKey: this.processDefinitionKey,
+          });
+        }
+        if (!this.processDefinitionKey && response.processDefinitions.length !== 0) {
+          this.processDefinitionKey = response.processDefinitions[0].key;
+          this.loadProcessDefinitionFromKey(this.processDefinitionKey);
+        }
+      });
     this.bpmnJS = new BpmnJS();
     this.bpmnJS.on('import.done', ({error}: any) => {
       if (!error) {
@@ -85,14 +86,17 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
 
         if (this.processDefinitionVersions && !this.callbacksAdded) {
           eventBus.on('element.click', e => {
-            if (e.element.businessObject.$type === 'bpmn:UserTask' || e.element.businessObject.$type === 'bpmn:StartEvent' ||
-              e.element.businessObject.$type === 'bpmn:ServiceTask') {
+            if (
+              e.element.businessObject.$type === 'bpmn:UserTask' ||
+              e.element.businessObject.$type === 'bpmn:StartEvent' ||
+              e.element.businessObject.$type === 'bpmn:ServiceTask'
+            ) {
               this.bpmnElementModalOpen.emit({
                 element: {
                   id: e.element.businessObject.id,
-                  type: e.element.businessObject.$type
+                  type: e.element.businessObject.$type,
                 },
-                processDefinitionKey: this.processDefinitionKey
+                processDefinitionKey: this.processDefinitionKey,
               });
             }
           });
@@ -110,16 +114,20 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
   }
 
   public loadProcessDefinition(processDefinitionKey: string): void {
-    this.processService.getProcessDefinition(processDefinitionKey).subscribe((processDefinition: ProcessDefinition) => {
-      this.version = processDefinition.version;
-      this.loadProcessDefinitionXml(processDefinition.id);
-    });
+    this.processService
+      .getProcessDefinition(processDefinitionKey)
+      .subscribe((processDefinition: ProcessDefinition) => {
+        this.version = processDefinition.version;
+        this.loadProcessDefinitionXml(processDefinition.id);
+      });
   }
 
   public loadProcessDefinitionVersions(processDefinitionKey: string): void {
-    this.processService.getProcessDefinitionVersions(processDefinitionKey).subscribe((processDefinitionVersions: ProcessDefinition[]) => {
-      this.processDefinitionVersions = processDefinitionVersions;
-    });
+    this.processService
+      .getProcessDefinitionVersions(processDefinitionKey)
+      .subscribe((processDefinitionVersions: ProcessDefinition[]) => {
+        this.processDefinitionVersions = processDefinitionVersions;
+      });
   }
 
   public loadProcessDefinitionFromKey(processDefinitionKey: string): void {
@@ -143,5 +151,4 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
   public setProcessDefinitionVersion(version: string): void {
     this.version = +version;
   }
-
 }

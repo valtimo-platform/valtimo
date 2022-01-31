@@ -21,10 +21,9 @@ import {Router} from '@angular/router';
 
 @Component({
   selector: 'valtimo-auth0-callback',
-  template: ''
+  template: '',
 })
 export class CallbackComponent {
-
   constructor(
     private auth0UserService: Auth0UserService,
     private logger: NGXLogger,
@@ -36,5 +35,4 @@ export class CallbackComponent {
     router.navigate([redirect]);
     logger.debug('redirecting done', redirect);
   }
-
 }

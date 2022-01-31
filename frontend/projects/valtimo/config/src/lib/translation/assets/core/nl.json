@@ -36,6 +36,13 @@
       "body": "Inhoud",
       "sendButtonText": "Versturen",
       "sendSuccess": "Uw bericht is succesvol verzonden."
+    },
+    "contactMoments": {
+      "makeNoteButton": "Aantekening maken",
+      "popupTitle": "Een aantekening maken",
+      "noteText": "Aantekening",
+      "saveButtonText": "Aantekening opslaan",
+      "saveSuccess": "Uw aantekening is succesvol opgeslagen."
     }
   },
   "document": {
@@ -311,7 +318,8 @@
     "noFieldDefinitions": "Geen velddefinities gedefinieerd",
     "noResults": "Geen resultaten",
     "showingResults": "{{number}} van {{total}} resultaten zichtbaar",
-    "showingResult": "{{number}} resultaat zichtbaar"
+    "showingResult": "{{number}} resultaat zichtbaar",
+    "automaticallyGenerated": "Automatisch gegenereerd"
   },
   "webcam": {
     "takePicture": "Foto maken",
@@ -389,7 +397,7 @@
     "title": "Kies een van de drie onderstaande manieren om een formulier in te stellen voor dit element:",
     "subtitle": "Koppel {{type}} aan een formulier",
     "formDefinition": "Formulierdefinitie",
-    "angularState": "Angular state",
+    "angularState": "Interne route",
     "redirect": "Doorverwijzen naar een pagina binnen de applicatie",
     "externalUrl": "Externe URL",
     "newWindow": "De URL wordt geopend in een nieuw venster",

@@ -15,29 +15,39 @@
   -->
 
 <valtimo-modal
-        #formLinkModal
-        elementId="formLinkModal"
-        [title]="selectedElement?.type + ' '  + selectedElement?.id"
-        [subtitle]="'formLink.subtitle' | translate: {type: selectedElement?.type}"
-        [showFooter]="true"
+  #formLinkModal
+  elementId="formLinkModal"
+  [title]="selectedElement?.type + ' ' + selectedElement?.id"
+  [subtitle]="'formLink.subtitle' | translate: {type: selectedElement?.type}"
+  [showFooter]="true"
 >
   <div body *ngIf="selectedElement">
-    <p>{{'formLink.title' | translate}}</p>
+    <p>{{ 'formLink.title' | translate }}</p>
     <div class="accordion mb-0" id="associationAccordion">
       <div class="card">
         <div class="card-header" id="headingFormDefinition">
-          <button class="btn collapsed" data-toggle="collapse" data-target="#collapseFormDefinition"
-                  aria-expanded="false"
-                  aria-controls="collapseFormDefinition">
+          <button
+            class="btn collapsed"
+            data-toggle="collapse"
+            data-target="#collapseFormDefinition"
+            aria-expanded="false"
+            aria-controls="collapseFormDefinition"
+          >
             <i class="icon icon-not-selected mdi mdi-circle-o"></i>
             <i class="icon icon-selected mdi mdi-dot-circle"></i>
-            {{'formLink.formDefinition' | translate}}
-            <i class="icon icon-info mdi mdi-info-outline click-able mr-0"
-               [title]="'formLink.infoPredefined' | translate"></i>
+            {{ 'formLink.formDefinition' | translate }}
+            <i
+              class="icon icon-info mdi mdi-info-outline click-able mr-0"
+              [title]="'formLink.infoPredefined' | translate"
+            ></i>
           </button>
         </div>
-        <div class="collapse" id="collapseFormDefinition" aria-labelledby="headingFormDefinition"
-             data-parent="#associationAccordion">
+        <div
+          class="collapse"
+          id="collapseFormDefinition"
+          aria-labelledby="headingFormDefinition"
+          data-parent="#associationAccordion"
+        >
           <div class="card-body">
             <div class="mt-2">
               <valtimo-searchable-dropdown-select
@@ -56,62 +66,104 @@
               >
               </valtimo-searchable-dropdown-select>
             </div>
-
           </div>
         </div>
       </div>
       <div class="card">
         <div class="card-header" id="headingAngularState">
-          <button class="btn collapsed" data-toggle="collapse" data-target="#collapseAngularState" aria-expanded="false"
-                  aria-controls="collapseAngularState">
+          <button
+            class="btn collapsed"
+            data-toggle="collapse"
+            data-target="#collapseAngularState"
+            aria-expanded="false"
+            aria-controls="collapseAngularState"
+          >
             <i class="icon icon-not-selected mdi mdi-circle-o"></i>
             <i class="icon icon-selected mdi mdi-dot-circle"></i>
-            {{'formLink.angularState' | translate}}
-            <i class="icon icon-info mdi mdi-info-outline click-able mr-0"
-               [title]="'formLink.infoUrl' | translate"></i>
+            {{ 'formLink.angularState' | translate }}
+            <i
+              class="icon icon-info mdi mdi-info-outline click-able mr-0"
+              [title]="'formLink.infoUrl' | translate"
+            ></i>
           </button>
         </div>
-        <div class="collapse" id="collapseAngularState" aria-labelledby="headingAngularState"
-             data-parent="#associationAccordion">
+        <div
+          class="collapse"
+          id="collapseAngularState"
+          aria-labelledby="headingAngularState"
+          data-parent="#associationAccordion"
+        >
           <div class="card-body">
-            <label for="angularStateInput">{{'formLink.redirect' | translate}}</label>
-            <input class="form-control" type="text" placeholder="/form-links" id="angularStateInput"
-                   [(ngModel)]="enteredAngularState">
+            <label for="angularStateInput">{{ 'formLink.redirect' | translate }}</label>
+            <input
+              class="form-control"
+              type="text"
+              placeholder="/form-links"
+              id="angularStateInput"
+              [(ngModel)]="enteredAngularState"
+            />
           </div>
         </div>
       </div>
       <div class="card">
         <div class="card-header" id="headingCustomUrl">
-          <button class="btn collapsed" data-toggle="collapse" data-target="#collapseCustomUrl" aria-expanded="false"
-                  aria-controls="collapseCustomUrl">
+          <button
+            class="btn collapsed"
+            data-toggle="collapse"
+            data-target="#collapseCustomUrl"
+            aria-expanded="false"
+            aria-controls="collapseCustomUrl"
+          >
             <i class="icon icon-not-selected mdi mdi-circle-o"></i>
             <i class="icon icon-selected mdi mdi-dot-circle"></i>
-            {{'formLink.externalUrl' | translate}}
-            <i class="icon icon-info mdi mdi-info-outline click-able mr-0"
-               [title]="'formLink.infoExternal' | translate"></i>
+            {{ 'formLink.externalUrl' | translate }}
+            <i
+              class="icon icon-info mdi mdi-info-outline click-able mr-0"
+              [title]="'formLink.infoExternal' | translate"
+            ></i>
           </button>
         </div>
-        <div class="collapse" id="collapseCustomUrl" aria-labelledby="headingCustomUrl"
-             data-parent="#associationAccordion">
+        <div
+          class="collapse"
+          id="collapseCustomUrl"
+          aria-labelledby="headingCustomUrl"
+          data-parent="#associationAccordion"
+        >
           <div class="card-body">
-            <label for="customUrlInput">{{'formLink.newWindow' | translate}}</label>
-            <input class="form-control" type="text" placeholder="https://www.example.com" id="customUrlInput"
-                   [(ngModel)]="enteredCustomUrl">
+            <label for="customUrlInput">{{ 'formLink.newWindow' | translate }}</label>
+            <input
+              class="form-control"
+              type="text"
+              placeholder="https://www.example.com"
+              id="customUrlInput"
+              [(ngModel)]="enteredCustomUrl"
+            />
           </div>
         </div>
       </div>
     </div>
   </div>
   <div footer class="w-100">
-    <button [disabled]="previousFormLink === null" (click)="deleteFormAssociation()"
-            class="btn btn-danger float-left" data-dismiss="modal">{{'formLink.clear' | translate}}
+    <button
+      [disabled]="previousFormLink === null"
+      (click)="deleteFormAssociation()"
+      class="btn btn-danger float-left"
+      data-dismiss="modal"
+    >
+      {{ 'formLink.clear' | translate }}
     </button>
-    <button [disabled]="selectedAssociationType === null ||
-            (selectedAssociationType === 'form-definition' && !selectedFormDefinition) ||
-            (selectedAssociationType === 'custom-url' && !enteredCustomUrl) ||
-            (selectedAssociationType === 'angular-state' && !enteredAngularState)"
-            (click)="submit(selectedAssociationType)"
-            class="btn btn-primary float-right" data-dismiss="modal">{{'formLink.save' | translate}}
+    <button
+      [disabled]="
+        selectedAssociationType === null ||
+        (selectedAssociationType === 'form-definition' && !selectedFormDefinition) ||
+        (selectedAssociationType === 'custom-url' && !enteredCustomUrl) ||
+        (selectedAssociationType === 'angular-state' && !enteredAngularState)
+      "
+      (click)="submit(selectedAssociationType)"
+      class="btn btn-primary float-right"
+      data-dismiss="modal"
+    >
+      {{ 'formLink.save' | translate }}
     </button>
   </div>
 </valtimo-modal>

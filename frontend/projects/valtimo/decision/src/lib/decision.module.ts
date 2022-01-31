@@ -26,7 +26,12 @@ import {ListModule, ModalModule, WidgetModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 
 @NgModule({
-  declarations: [DecisionComponent, DecisionDeployComponent, DecisionDisplayComponent, DecisionListComponent],
+  declarations: [
+    DecisionComponent,
+    DecisionDeployComponent,
+    DecisionDisplayComponent,
+    DecisionListComponent,
+  ],
   imports: [
     DecisionRoutingModule,
     WidgetModule,
@@ -34,10 +39,8 @@ import {TranslateModule} from '@ngx-translate/core';
     TranslateModule,
     ModalModule,
     CommonModule,
-    FormsModule
+    FormsModule,
   ],
-  exports: [DecisionComponent]
+  exports: [DecisionComponent],
 })
-export class DecisionModule {
-
-}
+export class DecisionModule {}

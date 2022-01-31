@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormControl } from '@angular/forms';
-import { TaskService } from '@valtimo/task';
-import { ActivatedRoute } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
-import { Location } from '@angular/common';
+import {Component, OnInit} from '@angular/core';
+import {FormBuilder, FormGroup, FormControl} from '@angular/forms';
+import {TaskService} from '@valtimo/task';
+import {ActivatedRoute} from '@angular/router';
+import {ToastrService} from 'ngx-toastr';
+import {Location} from '@angular/common';
 
 @Component({
   selector: 'app-custom-form-example',
   templateUrl: './custom-form-example.component.html',
-  styleUrls: ['./custom-form-example.component.scss']
+  styleUrls: ['./custom-form-example.component.scss'],
 })
 export class CustomFormExampleComponent implements OnInit {
   public customForm: FormGroup;
@@ -59,7 +59,7 @@ export class CustomFormExampleComponent implements OnInit {
       inputPlaceholder: new FormControl(''),
       inputDisabled: new FormControl({value: '', disabled: true}),
       inputReadonly: new FormControl('Readonly input text'),
-      inputTextarea: new FormControl('')
+      inputTextarea: new FormControl(''),
     });
     return group;
   }

@@ -15,12 +15,12 @@
  */
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {ConnectorProperties} from '@valtimo/contract';
+import {ConnectorProperties} from '../../models';
 
 @Component({
   selector: 'valtimo-edit-connector-form',
   templateUrl: './edit-connector-form.component.html',
-  styleUrls: ['./edit-connector-form.component.scss']
+  styleUrls: ['./edit-connector-form.component.scss'],
 })
 export class EditConnectorFormComponent {
   @Input() properties: ConnectorProperties;
@@ -29,7 +29,7 @@ export class EditConnectorFormComponent {
   @Input() defaultName!: string;
   @Input() connectorName: string;
 
-  @Output() propertiesSave = new EventEmitter<{properties: ConnectorProperties, name: string}>();
+  @Output() propertiesSave = new EventEmitter<{properties: ConnectorProperties; name: string}>();
   @Output() connectorDelete = new EventEmitter<any>();
 
   readonly productAanvragenName = 'ProductAanvragen';

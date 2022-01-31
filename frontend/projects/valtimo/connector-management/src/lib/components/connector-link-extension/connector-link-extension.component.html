@@ -1,6 +1,7 @@
-<h2 class="mb-4 mt-6">{{'connectorManagement.extension.title' | translate}}</h2>
+<h2 class="mb-4 mt-6">{{ 'connectorManagement.extension.title' | translate }}</h2>
 
-<ng-container *ngIf="{
+<ng-container
+  *ngIf="{
     syncConfig: objectApiSyncConfig$ | async,
     loading: loading$ | async,
     disabled: disabled$ | async
@@ -11,10 +12,14 @@
       <div class="card card-border card-contrast">
         <div class="card-header card-header-contrast card-header-featured">
           <div>
-            {{obs.syncConfig.title}}
+            {{ obs.syncConfig.title }}
           </div>
           <div class="controls">
-            <button class="btn btn-danger ml-3" [disabled]="obs.disabled" (click)="deleteSync(obs.syncConfig.id)">
+            <button
+              class="btn btn-danger ml-3"
+              [disabled]="obs.disabled"
+              (click)="deleteSync(obs.syncConfig.id)"
+            >
               <i class="fa fa-trash"></i>
             </button>
           </div>
@@ -24,7 +29,14 @@
             Automatisch zaakdetails synchroniseren
             <div class="controls">
               <div class="switch-button switch-button-success">
-                <input type="checkbox" [checked]="obs.syncConfig.enabled" [disabled]="obs.disabled" name="sync" id="sync" (click)="toggleSync(obs.syncConfig)">
+                <input
+                  type="checkbox"
+                  [checked]="obs.syncConfig.enabled"
+                  [disabled]="obs.disabled"
+                  name="sync"
+                  id="sync"
+                  (click)="toggleSync(obs.syncConfig)"
+                />
                 <span><label for="sync"></label></span>
               </div>
             </div>
@@ -45,7 +57,7 @@
   <div class="text-right mt-5">
     <button class="btn btn-primary" (click)="openModal()" [disabled]="disabled$ | async">
       <i class="icon mdi mdi-plus"></i> &nbsp;
-      {{'connectorManagement.extension.buttonText' | translate}}
+      {{ 'connectorManagement.extension.buttonText' | translate }}
     </button>
   </div>
 </ng-template>

@@ -18,121 +18,227 @@
   <div class="container-fluid">
     <div class="col-12 px-0 mb-5">
       <valtimo-widget>
-          <div class="bg-white p-5">
-            <form [formGroup]="form" (ngSubmit)="createMilestone()">
-              <div class="form-group row">
-                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="title">Milestone set</label>
-                <div class="col-12 col-sm-8 col-lg-6">
-                  <select type="text" id="milestoneSet" formControlName="milestoneSet"
-                         class="form-control"
-                         [ngClass]="{'is-valid': formControls.milestoneSet.touched && formControls.milestoneSet.valid, 'is-invalid': formControls.milestoneSet.touched && formControls.milestoneSet.errors}"
-                         required>
-                    <option value="" selected disabled>Choose a Milestone set</option>
-                    <option *ngFor="let milestoneSet of milestoneSets" [value]="milestoneSet.id">{{milestoneSet.title}} ({{milestoneSet.id}})</option>
-                  </select>
-                  <div *ngIf="formControls.milestoneSet.touched && formControls.milestoneSet.errors"
-                       class="invalid-feedback">
-                    <div *ngIf="formControls.milestoneSet.errors.required">Milestone set is required</div>
+        <div class="bg-white p-5">
+          <form [formGroup]="form" (ngSubmit)="createMilestone()">
+            <div class="form-group row">
+              <label class="col-12 col-sm-3 col-form-label text-sm-right" for="title"
+                >Milestone set</label
+              >
+              <div class="col-12 col-sm-8 col-lg-6">
+                <select
+                  type="text"
+                  id="milestoneSet"
+                  formControlName="milestoneSet"
+                  class="form-control"
+                  [ngClass]="{
+                    'is-valid':
+                      formControls.milestoneSet.touched && formControls.milestoneSet.valid,
+                    'is-invalid':
+                      formControls.milestoneSet.touched && formControls.milestoneSet.errors
+                  }"
+                  required
+                >
+                  <option value="" selected disabled>Choose a Milestone set</option>
+                  <option *ngFor="let milestoneSet of milestoneSets" [value]="milestoneSet.id">
+                    {{ milestoneSet.title }} ({{ milestoneSet.id }})
+                  </option>
+                </select>
+                <div
+                  *ngIf="formControls.milestoneSet.touched && formControls.milestoneSet.errors"
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="formControls.milestoneSet.errors.required">
+                    Milestone set is required
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div class="form-group row">
-                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="title">Title</label>
-                <div class="col-12 col-sm-8 col-lg-6">
-                  <input type="text" id="title" formControlName="title"
-                         class="form-control" placeholder="Milestone title"
-                         [ngClass]="{'is-valid': formControls.title.touched && formControls.title.valid, 'is-invalid': formControls.title.touched && formControls.title.errors}"
-                         required/>
-                  <div *ngIf="formControls.title.touched && formControls.title.errors"
-                       class="invalid-feedback">
-                    <div *ngIf="formControls.title.errors.required">Title is required</div>
+            <div class="form-group row">
+              <label class="col-12 col-sm-3 col-form-label text-sm-right" for="title">Title</label>
+              <div class="col-12 col-sm-8 col-lg-6">
+                <input
+                  type="text"
+                  id="title"
+                  formControlName="title"
+                  class="form-control"
+                  placeholder="Milestone title"
+                  [ngClass]="{
+                    'is-valid': formControls.title.touched && formControls.title.valid,
+                    'is-invalid': formControls.title.touched && formControls.title.errors
+                  }"
+                  required
+                />
+                <div
+                  *ngIf="formControls.title.touched && formControls.title.errors"
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="formControls.title.errors.required">Title is required</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <label class="col-12 col-sm-3 col-form-label text-sm-right" for="process"
+                >Process definition</label
+              >
+              <div class="col-12 col-sm-8 col-lg-6">
+                <select
+                  type="text"
+                  id="process"
+                  formControlName="processDefinitionKey"
+                  class="form-control"
+                  (ngModelChange)="getFlownodes($event.id)"
+                  [ngClass]="{
+                    'is-valid':
+                      formControls.processDefinitionKey.touched &&
+                      formControls.processDefinitionKey.valid,
+                    'is-invalid':
+                      formControls.processDefinitionKey.touched &&
+                      formControls.processDefinitionKey.errors
+                  }"
+                  required
+                >
+                  <option value="" selected disabled>Choose a process</option>
+                  <option
+                    *ngFor="let processDefinition of processDefinitions"
+                    [ngValue]="processDefinition"
+                  >
+                    {{ processDefinition.name }} ({{ processDefinition.key }})
+                  </option>
+                </select>
+                <div
+                  *ngIf="
+                    formControls.processDefinitionKey.touched &&
+                    formControls.processDefinitionKey.errors
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="formControls.processDefinitionKey.errors.required">
+                    Process is required
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div class="form-group row">
-                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="process">Process definition</label>
-                <div class="col-12 col-sm-8 col-lg-6">
-                  <select type="text" id="process" formControlName="processDefinitionKey"
-                          class="form-control" (ngModelChange)="getFlownodes($event.id)"
-                          [ngClass]="{'is-valid': formControls.processDefinitionKey.touched && formControls.processDefinitionKey.valid, 'is-invalid': formControls.processDefinitionKey.touched && formControls.processDefinitionKey.errors}"
-                          required>
-                    <option value="" selected disabled>Choose a process</option>
-                    <option *ngFor="let processDefinition of processDefinitions" [ngValue]="processDefinition">{{processDefinition.name}} ({{processDefinition.key}})</option>
-                  </select>
-                  <div *ngIf="formControls.processDefinitionKey.touched && formControls.processDefinitionKey.errors"
-                       class="invalid-feedback">
-                    <div *ngIf="formControls.processDefinitionKey.errors.required">Process is required</div>
+            <div class="form-group row">
+              <label class="col-12 col-sm-3 col-form-label text-sm-right" for="process">Task</label>
+              <div class="col-12 col-sm-8 col-lg-6">
+                <select
+                  type="text"
+                  id="task"
+                  formControlName="taskDefinitionKey"
+                  class="form-control"
+                  [ngClass]="{
+                    'is-valid':
+                      formControls.taskDefinitionKey.touched &&
+                      formControls.taskDefinitionKey.valid,
+                    'is-invalid':
+                      formControls.taskDefinitionKey.touched &&
+                      formControls.taskDefinitionKey.errors
+                  }"
+                  required
+                >
+                  <option value="" selected disabled>Choose a task</option>
+                  <option
+                    *ngFor="let taskDefinition of taskDefinitions | keyvalue"
+                    [value]="taskDefinition.key"
+                  >
+                    {{ taskDefinition.value }} ({{ taskDefinition.key }})
+                  </option>
+                </select>
+                <div
+                  *ngIf="
+                    formControls.taskDefinitionKey.touched && formControls.taskDefinitionKey.errors
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="formControls.taskDefinitionKey.errors.required">Task is required</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <label class="col-12 col-sm-3 col-form-label text-sm-right" for="interval"
+                >Interval (in days)</label
+              >
+              <div class="col-12 col-sm-8 col-lg-6">
+                <input
+                  type="text"
+                  id="interval"
+                  formControlName="plannedIntervalInDays"
+                  class="form-control"
+                  placeholder="Interval (in days)"
+                  [ngClass]="{
+                    'is-valid':
+                      formControls.plannedIntervalInDays.touched &&
+                      formControls.plannedIntervalInDays.valid,
+                    'is-invalid':
+                      formControls.plannedIntervalInDays.touched &&
+                      formControls.plannedIntervalInDays.errors
+                  }"
+                  required
+                />
+                <div
+                  *ngIf="
+                    formControls.plannedIntervalInDays.touched &&
+                    formControls.plannedIntervalInDays.errors
+                  "
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="formControls.plannedIntervalInDays.errors.required">
+                    Interval is required
+                  </div>
+                  <div *ngIf="formControls.plannedIntervalInDays.errors.pattern">
+                    Interval is not a valid number
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div class="form-group row">
-                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="process">Task</label>
-                <div class="col-12 col-sm-8 col-lg-6">
-                  <select type="text" id="task" formControlName="taskDefinitionKey"
-                          class="form-control"
-                          [ngClass]="{'is-valid': formControls.taskDefinitionKey.touched && formControls.taskDefinitionKey.valid, 'is-invalid': formControls.taskDefinitionKey.touched && formControls.taskDefinitionKey.errors}"
-                          required>
-                    <option value="" selected disabled>Choose a task</option>
-                    <option *ngFor="let taskDefinition of taskDefinitions |keyvalue" [value]="taskDefinition.key">{{taskDefinition.value}} ({{taskDefinition.key}})</option>
-                  </select>
-                  <div *ngIf="formControls.taskDefinitionKey.touched && formControls.taskDefinitionKey.errors"
-                       class="invalid-feedback">
-                    <div *ngIf="formControls.taskDefinitionKey.errors.required">Task is required</div>
-                  </div>
+            <div class="form-group row">
+              <label class="col-12 col-sm-3 col-form-label text-sm-right" for="color">Color</label>
+              <div class="col-12 col-sm-8 col-lg-6">
+                <input
+                  [colorPicker]="form.value.color"
+                  (colorPickerChange)="form.controls.color.setValue($event)"
+                  [style.background]="form.value.color"
+                  type="text"
+                  id="color"
+                  formControlName="color"
+                  class="form-control"
+                  placeholder="Color"
+                  [ngClass]="{
+                    'is-valid': formControls.color.touched && formControls.color.valid,
+                    'is-invalid': formControls.color.touched && formControls.color.errors
+                  }"
+                  required
+                />
+                <div
+                  *ngIf="formControls.color.touched && formControls.color.errors"
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="formControls.color.errors.required">Interval is required</div>
+                  <div *ngIf="formControls.color.errors.pattern">Color is not a valid hex code</div>
                 </div>
               </div>
+            </div>
 
-              <div class="form-group row">
-                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="interval">Interval (in days)</label>
-                <div class="col-12 col-sm-8 col-lg-6">
-                  <input type="text" id="interval" formControlName="plannedIntervalInDays"
-                         class="form-control" placeholder="Interval (in days)"
-                         [ngClass]="{'is-valid': formControls.plannedIntervalInDays.touched && formControls.plannedIntervalInDays.valid, 'is-invalid': formControls.plannedIntervalInDays.touched && formControls.plannedIntervalInDays.errors}"
-                         required/>
-                  <div *ngIf="formControls.plannedIntervalInDays.touched && formControls.plannedIntervalInDays.errors"
-                       class="invalid-feedback">
-                    <div *ngIf="formControls.plannedIntervalInDays.errors.required">Interval is required</div>
-                    <div *ngIf="formControls.plannedIntervalInDays.errors.pattern">Interval is not a valid number</div>
-                  </div>
-                </div>
+            <div class="row pt-3 mt-1">
+              <div class="col-12 col-sm-6 text-left">
+                <a [routerLink]="'/milestones'" class="btn btn-space btn-default">Back</a>
               </div>
-
-              <div class="form-group row">
-                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="color">Color</label>
-                <div class="col-12 col-sm-8 col-lg-6">
-
-                  <input [colorPicker]="form.value.color"
-                         (colorPickerChange)="form.controls.color.setValue($event)"
-                         [style.background]="form.value.color"
-                         type="text" id="color" formControlName="color"
-                         class="form-control" placeholder="Color"
-                         [ngClass]="{'is-valid': formControls.color.touched && formControls.color.valid, 'is-invalid': formControls.color.touched && formControls.color.errors}"
-                         required/>
-                  <div *ngIf="formControls.color.touched && formControls.color.errors"
-                       class="invalid-feedback">
-                    <div *ngIf="formControls.color.errors.required">Interval is required</div>
-                    <div *ngIf="formControls.color.errors.pattern">Color is not a valid hex code</div>
-                  </div>
-                </div>
+              <div class="col-12 col-sm-6 text-right">
+                <button class="btn btn-space btn-secondary" type="button" (click)="reset()">
+                  Reset
+                </button>
+                <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">
+                  Submit
+                </button>
               </div>
-
-              <div class="row pt-3 mt-1">
-                <div class="col-12 col-sm-6 text-left">
-                  <a [routerLink]="'/milestones'" class="btn btn-space btn-default">Back</a>
-                </div>
-                <div class="col-12 col-sm-6 text-right">
-                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()">Reset
-                  </button>
-                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">
-                    Submit
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
+            </div>
+          </form>
+        </div>
       </valtimo-widget>
     </div>
   </div>

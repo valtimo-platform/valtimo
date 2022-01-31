@@ -18,19 +18,19 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
 import {Observable} from 'rxjs';
-import {CreateObjectSyncConfigRequest, CreateObjectSyncConfigResult, ObjectSyncConfig} from '@valtimo/contract';
+import {
+  CreateObjectSyncConfigRequest,
+  CreateObjectSyncConfigResult,
+  ObjectSyncConfig,
+} from '../../models';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ObjectApiSyncService {
-
   private valtimoApiConfig: any;
 
-  constructor(
-    private http: HttpClient,
-    private configService: ConfigService
-  ) {
+  constructor(private http: HttpClient, private configService: ConfigService) {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 
@@ -41,15 +41,25 @@ export class ObjectApiSyncService {
     );
   }
 
-  createObjectSyncConfig(request: CreateObjectSyncConfigRequest): Observable<CreateObjectSyncConfigResult> {
-    return this.http.post<CreateObjectSyncConfigResult>(`${this.valtimoApiConfig.endpointUri}object/sync/config`, request);
+  createObjectSyncConfig(
+    request: CreateObjectSyncConfigRequest
+  ): Observable<CreateObjectSyncConfigResult> {
+    return this.http.post<CreateObjectSyncConfigResult>(
+      `${this.valtimoApiConfig.endpointUri}object/sync/config`,
+      request
+    );
   }
 
   modifyObjectSyncConfig(request: ObjectSyncConfig): Observable<CreateObjectSyncConfigResult> {
-    return this.http.put<CreateObjectSyncConfigResult>(`${this.valtimoApiConfig.endpointUri}object/sync/config`, request);
+    return this.http.put<CreateObjectSyncConfigResult>(
+      `${this.valtimoApiConfig.endpointUri}object/sync/config`,
+      request
+    );
   }
 
   deleteObjectSyncConfig(configId: string): Observable<any> {
-    return this.http.delete<any>(`${this.valtimoApiConfig.endpointUri}object/sync/config/${configId}`);
+    return this.http.delete<any>(
+      `${this.valtimoApiConfig.endpointUri}object/sync/config/${configId}`
+    );
   }
 }

@@ -18,6 +18,7 @@
  * Public API Surface of keycloak
  */
 
+export * from './lib/models';
 export * from './lib/keycloak.module';
 export * from './lib/keycloak-auth-guard.service';
 export * from './lib/keycloak-user.service';

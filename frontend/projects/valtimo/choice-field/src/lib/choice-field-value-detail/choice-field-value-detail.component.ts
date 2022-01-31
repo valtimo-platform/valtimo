@@ -16,7 +16,7 @@
 
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
-import {ChoiceField, ChoiceFieldValue} from '@valtimo/contract';
+import {ChoiceField, ChoiceFieldValue} from '../models';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ChoiceFieldService} from '../choice-field.service';
 import {AlertService} from '@valtimo/components';
@@ -24,10 +24,9 @@ import {AlertService} from '@valtimo/components';
 @Component({
   selector: 'valtimo-choice-field-value-detail',
   templateUrl: './choice-field-value-detail.component.html',
-  styleUrls: ['./choice-field-value-detail.component.css']
+  styleUrls: ['./choice-field-value-detail.component.css'],
 })
 export class ChoiceFieldValueDetailComponent implements OnInit {
-
   public choiceFieldValueId: string;
   public form: FormGroup;
   public choiceField: ChoiceField;
@@ -66,7 +65,7 @@ export class ChoiceFieldValueDetailComponent implements OnInit {
       name: new FormControl('', Validators.required),
       value: new FormControl('', Validators.required),
       sortOrder: new FormControl('', Validators.required),
-      deprecated: new FormControl('', Validators.required)
+      deprecated: new FormControl('', Validators.required),
     });
   }
 
@@ -92,5 +91,4 @@ export class ChoiceFieldValueDetailComponent implements OnInit {
       this.alertService.success('Choice field value details have been updated');
     });
   }
-
 }

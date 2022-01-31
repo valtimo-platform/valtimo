@@ -15,8 +15,7 @@
  */
 
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {DocumentService} from '@valtimo/document';
-import {DocumentDefinition, ProcessDocumentDefinition} from '@valtimo/contract';
+import {DocumentService, DocumentDefinition, ProcessDocumentDefinition} from '@valtimo/document';
 import {ActivatedRoute} from '@angular/router';
 import {DossierManagementConnectModalComponent} from '../dossier-management-connect-modal/dossier-management-connect-modal.component';
 import {AlertService} from '@valtimo/components';
@@ -25,7 +24,7 @@ import {DossierManagementRemoveModalComponent} from '../dossier-management-remov
 @Component({
   selector: 'valtimo-dossier-management-detail',
   templateUrl: './dossier-management-detail.component.html',
-  styleUrls: ['./dossier-management-detail.component.scss']
+  styleUrls: ['./dossier-management-detail.component.scss'],
 })
 export class DossierManagementDetailComponent implements OnInit {
   private documentDefinitionName: string | null = null;
@@ -78,7 +77,7 @@ export class DossierManagementDetailComponent implements OnInit {
         documentDefinitionName: processDocumentDefinition.id.documentDefinitionId.name,
         processDefinitionKey: processDocumentDefinition.id.processDefinitionKey,
         canInitializeDocument: processDocumentDefinition.canInitializeDocument,
-        startableByUser: processDocumentDefinition.startableByUser
+        startableByUser: processDocumentDefinition.startableByUser,
       })
       .subscribe(
         () => {
@@ -93,11 +92,15 @@ export class DossierManagementDetailComponent implements OnInit {
 
   downloadDefinition(): void {
     const definition = this.documentDefinition;
-    const dataString = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(definition.schema, null, 2));
+    const dataString =
+      'data:text/json;charset=utf-8,' +
+      encodeURIComponent(JSON.stringify(definition.schema, null, 2));
     const downloadAnchorElement = document.getElementById('downloadAnchorElement');
     downloadAnchorElement.setAttribute('href', dataString);
-    downloadAnchorElement.setAttribute('download', `${definition.id.name}-v${definition.id.version}.json`);
+    downloadAnchorElement.setAttribute(
+      'download',
+      `${definition.id.name}-v${definition.id.version}.json`
+    );
     downloadAnchorElement.click();
   }
-
 }

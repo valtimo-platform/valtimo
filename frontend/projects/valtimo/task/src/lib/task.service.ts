@@ -17,17 +17,14 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {AssigneeRequest, Task, User} from '@valtimo/contract';
-import {ConfigService} from '@valtimo/config';
+import {AssigneeRequest, Task} from './models';
+import {ConfigService, User} from '@valtimo/config';
 
 @Injectable({providedIn: 'root'})
 export class TaskService {
   private valtimoEndpointUri: string;
 
-  constructor(
-    private http: HttpClient,
-    configService: ConfigService
-  ) {
+  constructor(private http: HttpClient, configService: ConfigService) {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
@@ -48,24 +45,17 @@ export class TaskService {
   }
 
   assignTask(id: string, assigneeRequest: AssigneeRequest): Observable<any> {
-    return this.http.post(this.valtimoEndpointUri + 'task/' + id + '/assign',
-      assigneeRequest
-    );
+    return this.http.post(this.valtimoEndpointUri + 'task/' + id + '/assign', assigneeRequest);
   }
 
   unassignTask(id: string): Observable<any> {
-    return this.http.post(this.valtimoEndpointUri + 'task/' + id + '/unassign',
-      null
-    );
+    return this.http.post(this.valtimoEndpointUri + 'task/' + id + '/unassign', null);
   }
 
   completeTask(id: string, variables: Map<string, any>): Observable<any> {
-    return this.http.post(
-      this.valtimoEndpointUri + 'task/' + id + '/complete',
-      {
-        variables: variables,
-        filesToDelete: []
-      });
+    return this.http.post(this.valtimoEndpointUri + 'task/' + id + '/complete', {
+      variables: variables,
+      filesToDelete: [],
+    });
   }
-
 }

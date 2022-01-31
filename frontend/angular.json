@@ -170,26 +170,16 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.spec.json",
             "karmaConfig": "src/karma.conf.js",
-            "styles": [
-              "src/styles.scss"
-            ],
+            "styles": ["src/styles.scss"],
             "scripts": [],
-            "assets": [
-              "src/favicon.ico",
-              "src/assets"
-            ]
+            "assets": ["src/favicon.ico", "src/assets"]
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "tsConfig": [
-              "src/tsconfig.app.json",
-              "src/tsconfig.spec.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "tsConfig": ["src/tsconfig.app.json", "src/tsconfig.spec.json"],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -215,9 +205,7 @@
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": "e2e/tsconfig.e2e.json",
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -255,9 +243,7 @@
               "projects/valtimo/layout/tsconfig.lib.json",
               "projects/valtimo/layout/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -295,9 +281,7 @@
               "projects/valtimo/auth0/tsconfig.lib.json",
               "projects/valtimo/auth0/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -335,9 +319,7 @@
               "projects/valtimo/components/tsconfig.lib.json",
               "projects/valtimo/components/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -375,9 +357,7 @@
               "projects/valtimo/task/tsconfig.lib.json",
               "projects/valtimo/task/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -415,9 +395,7 @@
               "projects/valtimo/security/tsconfig.lib.json",
               "projects/valtimo/security/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -455,9 +433,7 @@
               "projects/valtimo/dossier/tsconfig.lib.json",
               "projects/valtimo/dossier/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -495,9 +471,7 @@
               "projects/valtimo/choicefield/tsconfig.lib.json",
               "projects/valtimo/choicefield/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -535,9 +509,7 @@
               "projects/valtimo/process/tsconfig.lib.json",
               "projects/valtimo/process/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -575,9 +547,7 @@
               "projects/valtimo/view-configurator/tsconfig.lib.json",
               "projects/valtimo/view-configurator/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -615,9 +585,7 @@
               "projects/valtimo/context/tsconfig.lib.json",
               "projects/valtimo/context/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -655,9 +623,7 @@
               "projects/valtimo/dashboard/tsconfig.lib.json",
               "projects/valtimo/dashboard/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -695,9 +661,45 @@
               "projects/valtimo/document/tsconfig.lib.json",
               "projects/valtimo/document/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
+          }
+        }
+      }
+    },
+    "@valtimo/contact-moment": {
+      "root": "projects/valtimo/contact-moment",
+      "sourceRoot": "projects/valtimo/contact-moment/src",
+      "projectType": "library",
+      "prefix": "valtimo",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "projects/valtimo/contact-moment/tsconfig.lib.json",
+            "project": "projects/valtimo/contact-moment/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/contact-moment/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/valtimo/contact-moment/src/test.ts",
+            "tsConfig": "projects/valtimo/contact-moment/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/contact-moment/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/valtimo/contact-moment/tsconfig.lib.json",
+              "projects/valtimo/contact-moment/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -775,9 +777,7 @@
               "projects/valtimo/account/tsconfig.lib.json",
               "projects/valtimo/account/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -815,9 +815,7 @@
               "projects/valtimo/user-management/tsconfig.lib.json",
               "projects/valtimo/user-management/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -855,9 +853,7 @@
               "projects/valtimo/authority/tsconfig.lib.json",
               "projects/valtimo/authority/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -895,9 +891,7 @@
               "projects/valtimo/choice-field/tsconfig.lib.json",
               "projects/valtimo/choice-field/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -935,9 +929,7 @@
               "projects/valtimo/form/tsconfig.lib.json",
               "projects/valtimo/form/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -975,9 +967,7 @@
               "projects/valtimo/management/tsconfig.lib.json",
               "projects/valtimo/management/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1015,9 +1005,7 @@
               "projects/valtimo/analyse/tsconfig.lib.json",
               "projects/valtimo/analyse/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1055,9 +1043,7 @@
               "projects/valtimo/swagger/tsconfig.lib.json",
               "projects/valtimo/swagger/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1095,9 +1081,7 @@
               "projects/valtimo/connector-management/tsconfig.lib.json",
               "projects/valtimo/connector-management/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1135,9 +1119,7 @@
               "projects/valtimo/process-management/tsconfig.lib.json",
               "projects/valtimo/process-management/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1175,9 +1157,7 @@
               "projects/valtimo/decision/tsconfig.lib.json",
               "projects/valtimo/decision/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1215,9 +1195,7 @@
               "projects/valtimo/milestone/tsconfig.lib.json",
               "projects/valtimo/milestone/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1255,9 +1233,7 @@
               "projects/valtimo/form-management/tsconfig.lib.json",
               "projects/valtimo/form-management/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1295,9 +1271,7 @@
               "projects/valtimo/form-link/tsconfig.lib.json",
               "projects/valtimo/form-link/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1335,9 +1309,7 @@
               "projects/valtimo/migration/tsconfig.lib.json",
               "projects/valtimo/migration/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1375,9 +1347,7 @@
               "projects/valtimo/dossier-management/tsconfig.lib.json",
               "projects/valtimo/dossier-management/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1415,9 +1385,7 @@
               "projects/valtimo/keycloak/tsconfig.lib.json",
               "projects/valtimo/keycloak/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1455,9 +1423,7 @@
               "projects/valtimo/bootstrap/tsconfig.lib.json",
               "projects/valtimo/bootstrap/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1495,9 +1461,7 @@
               "projects/valtimo/contract/tsconfig.lib.json",
               "projects/valtimo/contract/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1535,9 +1499,7 @@
               "projects/valtimo/config/tsconfig.lib.json",
               "projects/valtimo/config/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1575,9 +1537,7 @@
               "projects/valtimo/open-zaak/tsconfig.lib.json",
               "projects/valtimo/open-zaak/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1615,9 +1575,7 @@
               "projects/valtimo/resource/tsconfig.lib.json",
               "projects/valtimo/resource/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }

@@ -21,14 +21,13 @@ import {FormMappingService} from '../form-mapping/form-mapping.service';
 import {ExtendedComponentSchema} from 'formiojs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FormTranslationService {
   constructor(
     private readonly translateService: TranslateService,
     private readonly formMappingService: FormMappingService
-  ) {
-  }
+  ) {}
 
   translateForm(form: FormioForm): FormioForm {
     const translateFunction = (component: ExtendedComponentSchema): ExtendedComponentSchema => {

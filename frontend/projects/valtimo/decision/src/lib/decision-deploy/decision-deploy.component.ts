@@ -21,20 +21,16 @@ import {ModalComponent} from '@valtimo/components';
 @Component({
   selector: 'valtimo-decision-deploy',
   templateUrl: './decision-deploy.component.html',
-  styleUrls: ['./decision-deploy.component.scss']
+  styleUrls: ['./decision-deploy.component.scss'],
 })
 export class DecisionDeployComponent implements OnInit {
   public dmn: File | null = null;
   @Output() deploySuccessful = new EventEmitter();
   @ViewChild('decisionDeployModal') modal: ModalComponent;
 
-  constructor(
-    private decisionService: DecisionService
-  ) {
-  }
+  constructor(private decisionService: DecisionService) {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   onChange(files: FileList): void {
     this.dmn = files.item(0);
@@ -50,5 +46,4 @@ export class DecisionDeployComponent implements OnInit {
   openModal() {
     this.modal.show();
   }
-
 }

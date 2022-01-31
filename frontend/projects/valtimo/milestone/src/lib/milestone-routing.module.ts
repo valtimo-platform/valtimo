@@ -23,48 +23,44 @@ import {MilestoneSetCreateComponent} from './milestone-set-create/milestone-set-
 import {MilestoneCreateComponent} from './milestone-create/milestone-create.component';
 import {MilestoneSetEditComponent} from './milestone-set-edit/milestone-set-edit.component';
 import {MilestoneEditComponent} from './milestone-edit/milestone-edit.component';
-import {ROLE_ADMIN} from '@valtimo/contract';
+import {ROLE_ADMIN} from '@valtimo/config';
 
 const routes: Routes = [
   {
     path: 'milestones',
     component: MilestoneComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Milestones', roles: [ROLE_ADMIN]}
+    data: {title: 'Milestones', roles: [ROLE_ADMIN]},
   },
   {
     path: 'milestones/sets/create',
     component: MilestoneSetCreateComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Create new Milestone Set', roles: [ROLE_ADMIN]}
+    data: {title: 'Create new Milestone Set', roles: [ROLE_ADMIN]},
   },
   {
     path: 'milestones/create',
     component: MilestoneCreateComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Create new Milestone', roles: [ROLE_ADMIN]}
+    data: {title: 'Create new Milestone', roles: [ROLE_ADMIN]},
   },
   {
     path: 'milestones/sets/set/:id',
     component: MilestoneSetEditComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Milestone Set details', roles: [ROLE_ADMIN]}
+    data: {title: 'Milestone Set details', roles: [ROLE_ADMIN]},
   },
   {
     path: 'milestones/milestone/:id',
     component: MilestoneEditComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Milestone details', roles: [ROLE_ADMIN]}
+    data: {title: 'Milestone details', roles: [ROLE_ADMIN]},
   },
 ];
 
 @NgModule({
   declarations: [],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-  ],
-  exports: [RouterModule]
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class MilestoneRoutingModule {
-}
+export class MilestoneRoutingModule {}

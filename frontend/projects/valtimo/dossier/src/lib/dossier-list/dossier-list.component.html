@@ -44,7 +44,9 @@
           <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
               <div class="modal-header">
-                <h3 class="modal-title" id="startProcessLabel">{{ 'dashboard.startProcess.title' | translate }}</h3>
+                <h3 class="modal-title" id="startProcessLabel">
+                  {{ 'dashboard.startProcess.title' | translate }}
+                </h3>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
                 </button>
@@ -88,7 +90,9 @@
           <div header>
             <h3 class="list-header-title">
               {{ schema?.title }}
-              <sup class="ml-1 badge badge-pill badge-primary">{{ documents?.content.length || 0 }}</sup>
+              <sup class="ml-1 badge badge-pill badge-primary">{{
+                documents?.content.length || 0
+              }}</sup>
             </h3>
           </div>
         </valtimo-list>

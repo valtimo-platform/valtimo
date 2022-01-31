@@ -16,14 +16,19 @@
 
 <div class="full-height-tab-content" *ngIf="processDocumentInstances">
   <div class="col-3">
-    <label><strong>Process</strong></label><br/>
+    <label><strong>Process</strong></label
+    ><br />
     <select class="form-control" (change)="loadProcessInstance($event.target.value)">
-      <option *ngFor="let processDocumentInstance of processDocumentInstances"
-              [value]="processDocumentInstance.id.processInstanceId"
-              [selected]="selectedProcessInstanceId === processDocumentInstance.id.processInstanceId">
+      <option
+        *ngFor="let processDocumentInstance of processDocumentInstances"
+        [value]="processDocumentInstance.id.processInstanceId"
+        [selected]="selectedProcessInstanceId === processDocumentInstance.id.processInstanceId"
+      >
         {{ processDocumentInstance.processName }}
       </option>
     </select>
   </div>
-  <valtimo-process-diagram [processInstanceId]="selectedProcessInstanceId"></valtimo-process-diagram>
+  <valtimo-process-diagram
+    [processInstanceId]="selectedProcessInstanceId"
+  ></valtimo-process-diagram>
 </div>

@@ -18,27 +18,26 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
 import {Observable} from 'rxjs';
-import {OpenZaakResource, ResourceFile, UploadService, ResourceDto} from '@valtimo/contract';
+import {OpenZaakResource, ResourceFile, UploadService, ResourceDto} from '../models';
 import {OpenZaakService} from './open-zaak.service';
 import {map} from 'rxjs/operators';
 
 @Injectable()
 export class OpenZaakUploadService implements UploadService {
-
   private valtimoApiConfig: any;
 
   constructor(
     private readonly openZaakService: OpenZaakService,
     private http: HttpClient,
-    private configService: ConfigService,
+    private configService: ConfigService
   ) {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 
   uploadFile(file: File, documentDefinitionName: string): Observable<ResourceFile> {
-    return this.openZaakService.upload(new File([file], file.name, {type: file.type}), documentDefinitionName).pipe(
-      map(result => this.getResourceFile(result))
-    );
+    return this.openZaakService
+      .upload(new File([file], file.name, {type: file.type}), documentDefinitionName)
+      .pipe(map(result => this.getResourceFile(result)));
   }
 
   getResource(resourceId: string): Observable<ResourceDto> {
@@ -58,8 +57,8 @@ export class OpenZaakUploadService implements UploadService {
         name: result.name,
         sizeInBytes: result.sizeInBytes,
         resourceId: result.resourceId,
-        extension: result.extension
-      }
+        extension: result.extension,
+      },
     };
   }
 }

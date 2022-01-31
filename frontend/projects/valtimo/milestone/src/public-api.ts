@@ -18,6 +18,7 @@
  * Public API Surface of milestone
  */
 
+export * from './lib/models/';
 export * from './lib/milestone.service';
 export * from './lib/milestone.component';
 export * from './lib/milestone.module';

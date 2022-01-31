@@ -16,17 +16,16 @@
 
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup} from '@angular/forms';
-import {ChoiceField, ChoiceFieldValue} from '@valtimo/contract';
+import {ChoiceField, ChoiceFieldValue} from '../models';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ChoiceFieldService} from '../choice-field.service';
 
 @Component({
   selector: 'valtimo-choice-field-value-list',
   templateUrl: './choice-field-value-list.component.html',
-  styleUrls: ['./choice-field-value-list.component.css']
+  styleUrls: ['./choice-field-value-list.component.css'],
 })
 export class ChoiceFieldValueListComponent implements OnInit {
-
   public id: string;
   public form: FormGroup;
   public choiceField: ChoiceField;
@@ -35,29 +34,31 @@ export class ChoiceFieldValueListComponent implements OnInit {
     collectionSize: 0,
     page: 1,
     size: 10,
-    maxPaginationItemSize: 5
+    maxPaginationItemSize: 5,
   };
   public pageParam = 0;
-  public fields: Array<any> = [{
-    key: 'id',
-    label: 'ID'
-  }
-    , {
+  public fields: Array<any> = [
+    {
+      key: 'id',
+      label: 'ID',
+    },
+    {
       key: 'value',
-      label: 'Key'
-    }
-    , {
+      label: 'Key',
+    },
+    {
       key: 'name',
-      label: 'Title'
-    }
-    , {
+      label: 'Title',
+    },
+    {
       key: 'deprecatedDisplayString',
-      label: 'Deprecated'
-    }
-    , {
+      label: 'Deprecated',
+    },
+    {
       key: 'sortOrder',
-      label: 'Sequence'
-    }];
+      label: 'Sequence',
+    },
+  ];
 
   constructor(
     private router: Router,
@@ -80,13 +81,15 @@ export class ChoiceFieldValueListComponent implements OnInit {
   private initData(id) {
     this.service.get(id).subscribe(result => {
       this.choiceField = result;
-      this.service.queryValues(this.choiceField.keyName, {page: this.pageParam, size: this.pagination.size}).subscribe(values => {
-        this.pagination.collectionSize = values.headers.get('x-total-count');
-        this.choiceFieldValues = values.body;
-        this.choiceFieldValues.forEach(choiceFieldValue => {
-          choiceFieldValue.deprecatedDisplayString = choiceFieldValue.deprecated ? 'Yes' : 'No';
+      this.service
+        .queryValues(this.choiceField.keyName, {page: this.pageParam, size: this.pagination.size})
+        .subscribe(values => {
+          this.pagination.collectionSize = values.headers.get('x-total-count');
+          this.choiceFieldValues = values.body;
+          this.choiceFieldValues.forEach(choiceFieldValue => {
+            choiceFieldValue.deprecatedDisplayString = choiceFieldValue.deprecated ? 'Yes' : 'No';
+          });
         });
-      });
     });
   }
 
@@ -98,5 +101,4 @@ export class ChoiceFieldValueListComponent implements OnInit {
     this.pageParam = page - 1;
     this.initData(this.id);
   }
-
 }

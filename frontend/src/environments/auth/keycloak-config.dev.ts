@@ -14,20 +14,25 @@
  * limitations under the License.
  */
 
-import {KeycloakAuthGuardService, keycloakInitializer, KeycloakModule, KeycloakUserService} from '@valtimo/keycloak';
+import {
+  KeycloakAuthGuardService,
+  keycloakInitializer,
+  KeycloakModule,
+  KeycloakUserService,
+} from '@valtimo/keycloak';
 import {KeycloakConfig, KeycloakOnLoad} from 'keycloak-js';
 import {Injector} from '@angular/core';
 import {Auth, AuthProviders, ValtimoKeycloakOptions} from '@valtimo/contract';
 
 const keycloakAuthenticationProviders: AuthProviders = {
   guardServiceProvider: KeycloakAuthGuardService,
-  userServiceProvider: KeycloakUserService
+  userServiceProvider: KeycloakUserService,
 };
 
 const keycloakConfigDev: KeycloakConfig = {
-  url: '',
-  realm: '',
-  clientId: ''
+  url: 'http://localhost:8082/auth/',
+  realm: 'valtimo',
+  clientId: 'valtimo-console',
 };
 
 const keycloakOnLoad: KeycloakOnLoad = 'login-required';
@@ -37,7 +42,7 @@ const keycloakInitOptions: any = {
   onLoad: keycloakOnLoad,
   checkLoginIframe: false,
   flow: 'standard',
-  redirectUri: ''
+  redirectUri: 'http://localhost:4200/keycloak/callback',
 };
 
 const valtimoKeycloakOptions: ValtimoKeycloakOptions = {
@@ -45,17 +50,14 @@ const valtimoKeycloakOptions: ValtimoKeycloakOptions = {
     config: keycloakConfigDev,
     initOptions: keycloakInitOptions,
     enableBearerInterceptor: true,
-    bearerExcludedUrls: [
-      '/assets',
-      '.*?\.amazonaws.com/'
-    ]
+    bearerExcludedUrls: ['/assets', '.*?.amazonaws.com/'],
   },
-  logoutRedirectUri: ''
+  logoutRedirectUri: 'http://localhost:4200',
 };
 
 export const authenticationKeycloak: Auth = {
   module: KeycloakModule,
   initializer: keycloakInitializer,
   authProviders: keycloakAuthenticationProviders,
-  options: valtimoKeycloakOptions
+  options: valtimoKeycloakOptions,
 };

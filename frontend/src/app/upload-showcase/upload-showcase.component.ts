@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 
 @Component({
   selector: 'app-upload-showcase',
   templateUrl: './upload-showcase.component.html',
-  styleUrls: ['./upload-showcase.component.scss']
+  styleUrls: ['./upload-showcase.component.scss'],
 })
 export class UploadShowcaseComponent implements OnInit {
+  constructor() {}
 
-  constructor() { }
-
-  ngOnInit() {
-  }
-
+  ngOnInit() {}
 }

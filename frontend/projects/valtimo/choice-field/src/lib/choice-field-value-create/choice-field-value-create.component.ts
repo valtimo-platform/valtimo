@@ -16,7 +16,7 @@
 
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
-import {ChoiceField} from '@valtimo/contract';
+import {ChoiceField} from '../models';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ChoiceFieldService} from '../choice-field.service';
 import {AlertService} from '@valtimo/components';
@@ -24,10 +24,9 @@ import {AlertService} from '@valtimo/components';
 @Component({
   selector: 'valtimo-choice-field-value-create',
   templateUrl: './choice-field-value-create.component.html',
-  styleUrls: ['./choice-field-value-create.component.css']
+  styleUrls: ['./choice-field-value-create.component.css'],
 })
 export class ChoiceFieldValueCreateComponent implements OnInit {
-
   public choiceFieldId: string;
   public form: FormGroup;
   public choiceField: ChoiceField;
@@ -56,7 +55,7 @@ export class ChoiceFieldValueCreateComponent implements OnInit {
       name: new FormControl('', Validators.required),
       value: new FormControl('', Validators.required),
       sortOrder: new FormControl('', Validators.required),
-      deprecated: new FormControl('', Validators.required)
+      deprecated: new FormControl('', Validators.required),
     });
   }
 

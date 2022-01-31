@@ -16,10 +16,10 @@
 
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import {ConnectorInstance} from '@valtimo/contract';
+import {ConnectorInstance} from '../../models';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ConnectorManagementStateService {
   private readonly _showModal$ = new BehaviorSubject<boolean>(false);

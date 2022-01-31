@@ -21,24 +21,27 @@ import {FormioForm} from 'angular-formio';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FormService {
   private valtimoApiConfig: any;
 
-  constructor(
-    private configService: ConfigService,
-    private http: HttpClient
-  ) {
+  constructor(private configService: ConfigService, private http: HttpClient) {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 
   getFormDefinitionByName(formDefinitionName: string): Observable<FormioForm> {
-    return this.http.get<FormioForm>(`${this.valtimoApiConfig.endpointUri}form/${formDefinitionName}`);
+    return this.http.get<FormioForm>(
+      `${this.valtimoApiConfig.endpointUri}form/${formDefinitionName}`
+    );
   }
 
-  getFormDefinitionByNamePreFilled(formDefinitionName: string, documentId: string): Observable<FormioForm> {
-    return this.http.get<FormioForm>(`${this.valtimoApiConfig.endpointUri}form-association/form-definition/${formDefinitionName}?documentId=${documentId}`);
+  getFormDefinitionByNamePreFilled(
+    formDefinitionName: string,
+    documentId: string
+  ): Observable<FormioForm> {
+    return this.http.get<FormioForm>(
+      `${this.valtimoApiConfig.endpointUri}form-association/form-definition/${formDefinitionName}?documentId=${documentId}`
+    );
   }
-
 }

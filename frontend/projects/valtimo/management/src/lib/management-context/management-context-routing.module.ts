@@ -20,35 +20,31 @@ import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {ContextListComponent} from './context-list/context-list.component';
 import {ContextEditComponent} from './context-edit/context-edit.component';
-import {ROLE_ADMIN} from '@valtimo/contract';
+import {ROLE_ADMIN} from '@valtimo/config';
 
 const routes: Routes = [
   {
     path: 'contexts',
     component: ContextListComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Contexts', roles: [ROLE_ADMIN]}
+    data: {title: 'Contexts', roles: [ROLE_ADMIN]},
   },
   {
     path: 'contexts/create',
     component: ContextEditComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Create new Context', roles: [ROLE_ADMIN]}
+    data: {title: 'Create new Context', roles: [ROLE_ADMIN]},
   },
   {
     path: 'contexts/detail/:id',
     component: ContextEditComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Context details', roles: [ROLE_ADMIN]}
-  }
+    data: {title: 'Context details', roles: [ROLE_ADMIN]},
+  },
 ];
 
 @NgModule({
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-  ],
-  exports: [RouterModule]
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class ManagementContextRoutingModule {
-}
+export class ManagementContextRoutingModule {}

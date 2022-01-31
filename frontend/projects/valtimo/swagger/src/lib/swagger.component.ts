@@ -24,10 +24,9 @@ import {ConfigService} from '@valtimo/config';
   selector: 'valtimo-swagger',
   templateUrl: './swagger.component.html',
   styleUrls: ['./swagger.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class SwaggerComponent implements AfterViewInit {
-
   private valtimoSwaggerConfig: any;
 
   constructor(
@@ -46,15 +45,12 @@ export class SwaggerComponent implements AfterViewInit {
         url: this.valtimoSwaggerConfig.endpointUri,
         domNode: this.el.nativeElement.querySelector('.swagger-container'),
         deepLinking: true,
-        presets: [
-          SwaggerUI.presets.apis
-        ],
+        presets: [SwaggerUI.presets.apis],
         requestInterceptor(request) {
           request.headers.Authorization = `Bearer ${authToken}`;
           return request;
-        }
+        },
       });
     });
   }
-
 }

@@ -35,10 +35,8 @@ import {TranslateModule} from '@ngx-translate/core';
     FormsModule,
     ReactiveFormsModule,
     AlertModule,
-    TranslateModule
+    TranslateModule,
   ],
-  exports: []
+  exports: [],
 })
-export class AuthorityModule {
-
-}
+export class AuthorityModule {}

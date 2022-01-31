@@ -25,18 +25,22 @@
       </div>
     </div>
     <valtimo-widget>
-      <valtimo-list [items]="choiceFieldValues"
-                    [fields]="fields"
-                    [viewMode]="true"
-                    [isSearchable]="true"
-                    (rowClicked)="rowClick($event)"
-                    [pagination]="pagination"
-                    paginationIdentifier="choiceFieldValueList"
-                    (paginationClicked)="paginationClicked($event)"
-                    [header]="true">
+      <valtimo-list
+        [items]="choiceFieldValues"
+        [fields]="fields"
+        [viewMode]="true"
+        [isSearchable]="true"
+        (rowClicked)="rowClick($event)"
+        [pagination]="pagination"
+        paginationIdentifier="choiceFieldValueList"
+        (paginationClicked)="paginationClicked($event)"
+        [header]="true"
+      >
         <div header>
           <h3 class="list-header-title">{{ 'Choice field values' | translate }}</h3>
-          <h5 class="list-header-description">{{ 'Overview of all Choice field values' | translate }}</h5>
+          <h5 class="list-header-description">
+            {{ 'Overview of all Choice field values' | translate }}
+          </h5>
         </div>
       </valtimo-list>
     </valtimo-widget>

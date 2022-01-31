@@ -20,16 +20,12 @@ import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProcessManagementService {
-
   private valtimoApiConfig: any;
 
-  constructor(
-    private configService: ConfigService,
-    private http: HttpClient
-  ) {
+  constructor(private configService: ConfigService, private http: HttpClient) {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 
@@ -39,7 +35,8 @@ export class ProcessManagementService {
     formData.append('deployment-name', 'valtimoConsoleApp');
     formData.append('deployment-source', 'process application');
     return this.http.post<any>(
-      `${this.valtimoApiConfig.endpointUri}camunda-rest/engine/default/deployment/create`, formData
+      `${this.valtimoApiConfig.endpointUri}camunda-rest/engine/default/deployment/create`,
+      formData
     );
   }
 }

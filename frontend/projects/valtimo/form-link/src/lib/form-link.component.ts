@@ -16,7 +16,7 @@
 
 import {Component, ViewChild, ViewContainerRef} from '@angular/core';
 import {FormLinkModalComponent} from './form-link-modal/form-link-modal.component';
-import {BpmnElement} from '@valtimo/contract';
+import {BpmnElement} from './models';
 import {ConfigService} from '@valtimo/config';
 import {ModalComponent} from '@valtimo/components';
 
@@ -28,14 +28,14 @@ interface ModalParams {
 @Component({
   selector: 'valtimo-form-link',
   templateUrl: './form-link.component.html',
-  styleUrls: ['./form-link.component.scss']
+  styleUrls: ['./form-link.component.scss'],
 })
 export class FormLinkComponent {
   @ViewChild('formLinkModal') public formLinkModal: FormLinkModalComponent;
-  @ViewChild('extension', {read: ViewContainerRef, static: true}) viewContainerRef: ViewContainerRef;
+  @ViewChild('extension', {read: ViewContainerRef, static: true})
+  viewContainerRef: ViewContainerRef;
 
-  constructor(private configService: ConfigService) {
-  }
+  constructor(private configService: ConfigService) {}
 
   openModal(params: ModalParams) {
     const element = params.element;
@@ -47,11 +47,18 @@ export class FormLinkComponent {
     this.formLinkModal.ngOnInit();
   }
 
-  private getModal(params: ModalParams, element: BpmnElement, selector: string, section: string): void {
+  private getModal(
+    params: ModalParams,
+    element: BpmnElement,
+    selector: string,
+    section: string
+  ): void {
     if (element.type === 'bpmn:ServiceTask') {
       const extension = this.configService.getSupportedExtensionPoint(selector, selector, section);
-      const componentRef =
-        this.configService.loadAndReturnExtensionPoint(this.viewContainerRef, extension.extensionPoint) as unknown as ModalComponent;
+      const componentRef = this.configService.loadAndReturnExtensionPoint(
+        this.viewContainerRef,
+        extension.extensionPoint
+      ) as unknown as ModalComponent;
       const component = componentRef['instance'];
       if (component) {
         component.openModal(params);

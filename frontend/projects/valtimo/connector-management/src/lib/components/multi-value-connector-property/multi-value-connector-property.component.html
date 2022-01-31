@@ -19,14 +19,16 @@
   *ngIf="{amountOfValues: amountOfValues$ | async, values: values$ | async} as obs"
 >
   <label class="col-3 col-form-label text-sm-right">
-    {{'connectorManagement.inputLabels.' + editField.key | translate}}
+    {{ 'connectorManagement.inputLabels.' + editField.key | translate }}
   </label>
   <div class="col-7">
     <ng-container *ngFor="let value of obs.amountOfValues; let index = index">
-      <ng-container *ngTemplateOutlet="input;context:{index: index, disabled: disabled, values: obs.values}">
+      <ng-container
+        *ngTemplateOutlet="input; context: {index: index, disabled: disabled, values: obs.values}"
+      >
       </ng-container>
     </ng-container>
-    <ng-container *ngTemplateOutlet="buttons;context:{disabled: disabled}"></ng-container>
+    <ng-container *ngTemplateOutlet="buttons; context: {disabled: disabled}"></ng-container>
   </div>
 </div>
 
@@ -37,8 +39,8 @@
     type="text"
     (input)="onValueChange($event.target.value, editField, index)"
     [disabled]="disabled"
-    [value]="(defaultValue && values[index]) ? values[index] : ''"
-  >
+    [value]="defaultValue && values[index] ? values[index] : ''"
+  />
   <input
     *ngIf="editField.editType === 'number[]'"
     class="form-control mb-2"
@@ -48,19 +50,27 @@
     oninput="validity.valid||(value='');"
     (input)="onValueChange($event.target.value, editField, index)"
     [disabled]="disabled"
-    [value]="(defaultValue && values[index]) ? values[index] : ''"
-  >
+    [value]="defaultValue && values[index] ? values[index] : ''"
+  />
 </ng-template>
 
 <ng-template #buttons let-disabled="disabled">
   <div class="button-container mt-1">
-    <button class="btn btn-danger btn-space btn-sm" (click)="removeRow()" [disabled]="disabled || (removeButtonDisabled$ | async)">
+    <button
+      class="btn btn-danger btn-space btn-sm"
+      (click)="removeRow()"
+      [disabled]="disabled || (removeButtonDisabled$ | async)"
+    >
       <i class="icon mdi mdi-delete mr-1"></i>
-      {{'connectorManagement.removeValue' | translate}}
+      {{ 'connectorManagement.removeValue' | translate }}
     </button>
-    <button class="btn btn-secondary btn-space mr-0 btn-sm" (click)="addRow()" [disabled]="disabled || (addButtonDisabled$ | async)">
+    <button
+      class="btn btn-secondary btn-space mr-0 btn-sm"
+      (click)="addRow()"
+      [disabled]="disabled || (addButtonDisabled$ | async)"
+    >
       <i class="icon mdi mdi-plus mr-1"></i>
-      {{'connectorManagement.addValue' | translate}}
+      {{ 'connectorManagement.addValue' | translate }}
     </button>
   </div>
 </ng-template>

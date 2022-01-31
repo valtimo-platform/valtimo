@@ -14,3 +14,12 @@
  * limitations under the License.
  */
 
+.contact-moments-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.button-container {
+  display: inline;
+  align-self: flex-end;
+}
