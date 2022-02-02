@@ -8,7 +8,7 @@
     "@angular/elements": "^10.0.11"
   },
   "dependencies": {
-    "jquery": "3.4.1",
+    "jquery": "3.6.0",
     "moment": "2.24.0",
     "@ngx-translate/core": "^13.0.0",
     "@ngx-translate/http-loader": "6.0.0",

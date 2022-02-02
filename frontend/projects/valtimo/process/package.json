@@ -10,7 +10,7 @@
     "ngx-toastr": "^13.0.0",
     "moment": "2.24.0",
     "bpmn-js": "^6.4.2",
-    "jquery": "3.4.1",
+    "jquery": "3.6.0",
     "heatmap.js-fixed": "^2.0.2",
     "tslib": "^2.0.0"
   }

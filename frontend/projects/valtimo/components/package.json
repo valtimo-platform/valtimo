@@ -10,7 +10,7 @@
   "dependencies": {
     "@foxythemes/bootstrap-datetime-picker-bs4": "^2.3.4",
     "bpmn-js": "^6.4.2",
-    "jquery": "3.4.1",
+    "jquery": "3.6.0",
     "moment": "2.24.0",
     "heatmap.js-fixed": "^2.0.2",
     "@ngx-translate/core": "^13.0.0",
