@@ -18,16 +18,20 @@
   <div class="container-fluid">
     <div class="text-right">
       <div class="btn-group mt-m3px mb-3">
-        <button [routerLink]="'create'" class="btn btn-primary btn-space mr-0">
+        <button
+          [routerLink]="'create'"
+          class="btn btn-primary btn-space mr-0"
+          [disabled]="loading$ | async"
+        >
           <i class="icon mdi mdi-plus"></i> &nbsp;
           <span>{{ 'Create new Entitlement' | translate }}</span>
         </button>
       </div>
     </div>
-    <valtimo-widget>
+    <valtimo-widget *ngIf="!(loading$ | async); else loading">
       <valtimo-list
-        [items]="authorities"
-        [fields]="fields"
+        [items]="translatedAuthorities$ | async"
+        [fields]="fields$ | async"
         (rowClicked)="rowClick($event)"
         [pagination]="pagination"
         [viewMode]="true"
@@ -45,3 +49,7 @@
     </valtimo-widget>
   </div>
 </div>
+
+<ng-template #loading>
+  <valtimo-spinner></valtimo-spinner>
+</ng-template>

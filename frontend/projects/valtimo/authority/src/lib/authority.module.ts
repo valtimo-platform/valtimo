@@ -17,7 +17,13 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {AlertModule, FieldAutoFocusModule, ListModule, WidgetModule} from '@valtimo/components';
+import {
+  AlertModule,
+  FieldAutoFocusModule,
+  ListModule,
+  WidgetModule,
+  SpinnerModule,
+} from '@valtimo/components';
 import {AuthorityRoutingModule} from './authority-routing.module';
 import {AuthorityListComponent} from './authority-list/authority-list.component';
 import {AuthorityDetailComponent} from './authority-detail/authority-detail.component';
@@ -36,6 +42,7 @@ import {TranslateModule} from '@ngx-translate/core';
     ReactiveFormsModule,
     AlertModule,
     TranslateModule,
+    SpinnerModule,
   ],
   exports: [],
 })

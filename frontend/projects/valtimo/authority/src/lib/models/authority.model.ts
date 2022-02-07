@@ -18,6 +18,5 @@ export interface Authority {
   name: string;
   systemAuthority: boolean;
   hourlyRate: any;
-  hourlyRateDisplayString: string;
-  systemAuthorityDisplayString: string;
+  systemAuthorityDisplayString?: string;
 }
