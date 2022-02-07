@@ -266,8 +266,12 @@
   "Select process definition for document definition": "Select process definition for document definition",
   "Select options for the selected process": "Select options for the selected process",
   "Save": "Save",
-  "Startable by user": "Startable by user",
-  "Startable by user tooltip": "When this option is selected, the selected process definition will be displayed as an option in the subprocess menu. The subprocess menu is displayed on the detail page of the case, below the start button at the top right corner.",
+  "processCaseConnection": {
+    "processCreatesCase": "Process creates new case",
+    "processCreatesCaseTooltip": "When this option is selected, a new case is created when this process is started. For this to be possible, a start form must be linked to the first step in the process.",
+    "startableWithinCase": "Can be started within existing case",
+    "startableWithinCaseTooltip": "When this option is selected, this process definition will be available to start from within an existing case. This is done through the sub process menu on the detail page of the case."
+  },
   "openZaak": {
     "links": "Connected zaak type",
     "error": {

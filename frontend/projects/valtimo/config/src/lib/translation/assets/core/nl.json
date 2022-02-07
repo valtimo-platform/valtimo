@@ -266,8 +266,12 @@
   "Select process definition for document definition": "Selecteer een processdefinitie voor de documentdefinitie",
   "Select options for the selected process": "Kies opties voor het geselecteerde proces",
   "Save": "Opslaan",
-  "Startable by user": "Kan gestart worden door gebruiker",
-  "Startable by user tooltip": "Wanneer deze optie is geselecteerd, zal de geselecteerde procesdefinitie worden weergegeven als optie in het subprocess-menu. Het subprocess-menu wordt weergegeven op de detailpagina van het dossier, onder de startknop rechts bovenin.",
+  "processCaseConnection": {
+    "processCreatesCase": "Proces maakt nieuw dossier aan",
+    "processCreatesCaseTooltip": "Wanneer deze optie is geselecteerd wordt bij het starten van dit proces een nieuw dossier aangemaakt. Hiervoor moet er een startformulier gekoppeld zijn aan de eerste stap in het proces.",
+    "startableWithinCase": "Kan gestart worden binnen bestaand dossier",
+    "startableWithinCaseTooltip": "Wanneer deze optie is geselecteerd zal deze procesdefinitie beschikbaar zijn om te starten onder een bestaand dossier. Dit kan via het subproces-menu op de detailpagina van het dossier."
+  },
   "openZaak": {
     "links": "Gekoppeld zaak type",
     "error": {

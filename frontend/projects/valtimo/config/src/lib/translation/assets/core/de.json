@@ -266,8 +266,12 @@
   "Select process definition for document definition": "Prozess-Definition für Dokument-Definition auswählen",
   "Select options for the selected process": "Optionen für gewählten Prozess auswählen",
   "Save": "Speichern",
-  "Startable by user": "Startbar durch User",
-  "Startable by user tooltip": "Wenn diese Option ausgewählt wird, wird die gewählte Prozess-Definition als Option im Subprozess-Menü angezeigt. Das Subprozess-Menü wird an der rechten Seite oben auf der Case-Übersicht angezeigt.",
+  "processCaseConnection": {
+    "processCreatesCase": "Prozess erstellt neuen Case",
+    "processCreatesCaseTooltip": "Wenn diese Option ausgewählt ist, wird eine neue Case erstellt, wenn dieser Prozess gestartet wird. Dazu muss ein Startformular mit dem ersten Prozessschritt verknüpft werden.",
+    "startableWithinCase": "Kann im bestehenden Case gestartet werden",
+    "startableWithinCaseTooltip": "Wenn diese Option ausgewählt ist, steht diese Prozessdefinition zum Starten unter einer vorhandenen Case zur Verfügung. Dies kann über das Unterprozessmenü auf der Detailseite der Case erfolgen."
+  },
   "openZaak": {
     "links": "OpenZaak Links",
     "error": {

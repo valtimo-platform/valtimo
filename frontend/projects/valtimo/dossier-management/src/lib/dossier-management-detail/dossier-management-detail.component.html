@@ -82,23 +82,33 @@
               />
             </div>
             <div class="row mb-2 mt-2">
-              <label class="custom-control custom-checkbox custom-control-inline pl-6 mr-5">
+              <label
+                class="custom-control custom-checkbox custom-control-inline pl-6 mr-5"
+                placement="bottom"
+                ngbTooltip="{{ 'processCaseConnection.processCreatesCaseTooltip' | translate }}"
+              >
                 <input
                   class="custom-control-input"
                   type="checkbox"
                   [checked]="processDocumentDefinition.canInitializeDocument"
                   disabled
-                /><span class="custom-control-label custom-control-color">Init document?</span>
+                /><span class="custom-control-label custom-control-color">{{
+                  'processCaseConnection.processCreatesCase' | translate
+                }}</span>
               </label>
-              <label class="custom-control custom-checkbox custom-control-inline pl-6">
+              <label
+                class="custom-control custom-checkbox custom-control-inline pl-6"
+                placement="bottom"
+                ngbTooltip="{{ 'processCaseConnection.startableWithinCaseTooltip' | translate }}"
+              >
                 <input
                   class="custom-control-input"
                   type="checkbox"
                   [checked]="processDocumentDefinition.startableByUser"
                   disabled
-                /><span class="custom-control-label custom-control-color"
-                  >{{ 'Startable by user' | translate }}?</span
-                >
+                /><span class="custom-control-label custom-control-color">{{
+                  'processCaseConnection.startableWithinCase' | translate
+                }}</span>
               </label>
             </div>
           </div>
