@@ -371,7 +371,9 @@
       "openZaakConfig.rsin": "Rsin",
       "clientId": "Client ID",
       "secret": "Secret",
-      "rsin": "RSIN"
+      "rsin": "RSIN",
+      "username": "Username",
+      "password": "Password"
     },
     "messages": {
       "addSuccess": "Connection has been added successfully.",

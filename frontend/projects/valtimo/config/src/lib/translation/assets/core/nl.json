@@ -371,7 +371,9 @@
       "openZaakConfig.rsin": "Rsin",
       "clientId": "Client ID",
       "secret": "Secret",
-      "rsin": "RSIN"
+      "rsin": "RSIN",
+      "username": "Gebruikersnaam",
+      "password": "Wachtwoord"
     },
     "messages": {
       "addSuccess": "Connectie is succesvol toegevoegd.",
