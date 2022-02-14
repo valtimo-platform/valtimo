@@ -18,7 +18,7 @@
   <div class="container-fluid">
     <div *ngIf="documentDefinition" class="btn-group mt-m3px mb-3 float-right">
       <button class="btn btn-primary btn-space" (click)="downloadDefinition()">
-        <i class="icon mdi mdi-download"></i>&nbsp;
+        <i class="icon mdi mdi-download mr-1"></i>
         {{ 'Download document definition' | translate }}
       </button>
       <a id="downloadAnchorElement" style="display: none"></a>
@@ -27,7 +27,7 @@
         class="btn btn-secondary btn-space mr-0"
         (click)="openDossierRemoveModal()"
       >
-        <i class="icon mdi mdi-delete"></i>&nbsp;
+        <i class="icon mdi mdi-delete mr-1"></i>
         {{ 'Remove document definition' | translate }}
       </button>
     </div>
@@ -37,7 +37,9 @@
         <h3 class="dossier-title">
           {{ documentDefinition.schema.title }}
           <div *ngIf="documentDefinition.readOnly" class="pull-right">
-            <span class="badge badge-pill badge-info increase-size">Read-only</span>
+            <span class="badge badge-pill badge-info increase-size">{{
+              'dossierManagement.readonly' | translate
+            }}</span>
           </div>
         </h3>
       </div>
@@ -46,7 +48,7 @@
           <h2>{{ 'document definition' | translate }}</h2>
         </div>
         <div class="col-5 offset-2">
-          <h2>Connected processes</h2>
+          <h2>{{ 'dossierManagement.connectedProcesses' | translate }}</h2>
         </div>
       </div>
       <div class="row bg-white mb-5 pb-4 pl-2 pr-2">
@@ -68,7 +70,7 @@
                 data-placement="left"
                 title="Delete this connected process"
               >
-                <i class="fa fa-trash"></i>
+                <i class="icon mdi mdi-download mr-1"></i>
               </button>
               <input
                 class="form-control"
@@ -114,7 +116,8 @@
           </div>
           <div class="text-right mt-5 mb-5">
             <button class="btn btn-primary" (click)="openDossierConnectModal()">
-              <i class="icon mdi mdi-plus"></i> &nbsp; Connect process
+              <i class="icon mdi mdi-plus mr-1"></i
+              >{{ 'dossierManagement.connectProcess' | translate }}
             </button>
           </div>
           <valtimo-extension

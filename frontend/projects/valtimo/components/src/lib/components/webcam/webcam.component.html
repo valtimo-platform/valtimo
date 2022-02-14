@@ -18,17 +18,17 @@
             [disabled]="obs.picture?.file || !obs.stream"
             class="btn btn-primary btn-lg"
           >
-            <i class="fa fa-camera"></i>{{ 'webcam.takePicture' | translate }}
+            <i class="icon mdi mdi-camera mr-1"></i>{{ 'webcam.takePicture' | translate }}
           </button>
         </div>
         <div class="new-btn">
           <button (click)="clearImage()" [disabled]="!obs.picture?.file" class="btn btn-primary">
-            <i class="fa fa-undo"></i>{{ 'webcam.redo' | translate }}
+            <i class="icon mdi mdi-redo mr-1"></i>{{ 'webcam.redo' | translate }}
           </button>
         </div>
         <div class="save-btn">
           <button (click)="close()" [disabled]="!obs.picture?.file" class="btn btn-primary">
-            <i class="fa fa-save"></i>{{ 'webcam.save' | translate }}
+            <i class="icon mdi mdi-save mr-1"></i>{{ 'webcam.save' | translate }}
           </button>
         </div>
       </div>

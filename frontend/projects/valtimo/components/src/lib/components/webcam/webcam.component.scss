@@ -40,6 +40,16 @@
   position: absolute;
   display: flex;
   justify-content: center;
+
+  .icon {
+    background-color: unset;
+    border-radius: unset;
+    display: inline-block;
+    height: unset;
+    width: unset;
+    margin-bottom: 0;
+    padding: 0;
+  }
 }
 
 .new-btn,

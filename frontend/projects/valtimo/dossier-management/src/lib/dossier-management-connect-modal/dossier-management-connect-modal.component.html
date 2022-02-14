@@ -28,7 +28,7 @@
     </p>
     <div class="input-group mb-3 align-items-center">
       <select class="form-control" [(ngModel)]="newDocumentProcessDefinition">
-        <option [ngValue]="null">Select process definition</option>
+        <option [ngValue]="null">{{ 'dossierManagement.selectProcessDef' | translate }}</option>
         <option
           *ngFor="let processDefinition of processDefinitions"
           [disabled]="processDocumentDefinitionExists[processDefinition.key]"

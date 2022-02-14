@@ -64,12 +64,12 @@ export class DossierDetailTabDocumentsComponent implements OnInit {
   public actions = [
     {
       columnName: '',
-      iconClass: 'fas fa-external-link-alt',
+      iconClass: 'mdi mdi-open-in-new',
       callback: this.downloadDocument.bind(this),
     },
     {
       columnName: '',
-      iconClass: 'fas fa-trash-alt',
+      iconClass: 'mdi mdi-delete',
       callback: this.removeRelatedFile.bind(this),
     },
   ];

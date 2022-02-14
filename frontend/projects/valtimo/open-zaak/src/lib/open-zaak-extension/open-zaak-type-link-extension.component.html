@@ -36,13 +36,13 @@
             </div>
             <div class="controls">
               <button class="btn btn-danger ml-3" (click)="removeZaakTypeLink()">
-                <i class="fa fa-trash"></i>
+                <i class="icon mdi mdi-delete"></i>
               </button>
             </div>
           </div>
           <div class="card-body">
             <div class="setting-row">
-              Automatisch aanmaken voor elk dossier
+              {{ 'openZaak.autoCreateForCase' | translate }}
               <div class="controls">
                 <div class="switch-button switch-button-success">
                   <input
@@ -69,7 +69,7 @@
 <ng-template #addSync>
   <div class="text-right mt-5">
     <button class="btn btn-primary" (click)="openModal()">
-      <i class="icon mdi mdi-plus"></i> &nbsp; Link zaak type
+      <i class="icon mdi mdi-plus mr-1"></i>{{ 'openZaak.linkZaakType' | translate }}
     </button>
   </div>
 </ng-template>
@@ -82,10 +82,10 @@
   showFooter="true"
 >
   <div body>
-    <p>Select zaak type for {{ 'Dossier' | translate }}</p>
+    <p>{{ 'openZaak.selectZaakTypeForCase' | translate }}</p>
     <div class="input-group mb-3 mr-3 align-items-center">
       <select class="form-control" [(ngModel)]="selectedZaakType">
-        <option [ngValue]="null" selected>Select zaak type</option>
+        <option [ngValue]="null" selected>{{ 'openZaak.selectZaakType' | translate }}</option>
         <option *ngFor="let zaakType of zaakTypes" [ngValue]="zaakType">
           {{ zaakType.omschrijving }}
         </option>
@@ -93,7 +93,7 @@
     </div>
     <div *ngIf="selectedZaakType" class="input-group mb-3 align-items-center">
       <select class="form-control" [(ngModel)]="selectedInformatieObjectTypeUrl">
-        <option [ngValue]="null" selected>Select informatie object type</option>
+        <option [ngValue]="null" selected>{{ 'openZaak.selectInfoObjectType' | translate }}</option>
         <option
           *ngFor="let informatieObjectType of informatieObjectTypes"
           [ngValue]="informatieObjectType.url"
@@ -110,7 +110,8 @@
       data-dismiss="modal"
       [disabled]="!selectedZaakType"
     >
-      Save
+      <i class="icon mdi mdi-save"></i>
+      {{ 'openZaak.save' | translate }}
     </button>
   </div>
 </valtimo-modal>

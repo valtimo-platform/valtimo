@@ -21,7 +21,9 @@
         <div class="bg-white p-5">
           <form [formGroup]="form" (ngSubmit)="createFormDefinition()">
             <div class="form-group row">
-              <label class="col-12 col-sm-3 col-form-label text-sm-right" for="name">Name</label>
+              <label class="col-12 col-sm-3 col-form-label text-sm-right" for="name">{{
+                'formManagement.name' | translate
+              }}</label>
               <div class="col-12 col-sm-8 col-lg-6">
                 <input
                   type="text"
@@ -39,20 +41,24 @@
                   *ngIf="formControls.name.touched && formControls.name.errors"
                   class="invalid-feedback"
                 >
-                  <div *ngIf="formControls.name.errors.required">Name is required</div>
+                  <div *ngIf="formControls.name.errors.required">
+                    {{ 'formManagement.nameIsRequired' | translate }}
+                  </div>
                 </div>
               </div>
             </div>
             <div class="row pt-3 mt-1">
               <div class="col-12 col-sm-6 text-left">
-                <a [routerLink]="'/forms'" class="btn btn-space btn-default">Back</a>
+                <a [routerLink]="'/forms'" class="btn btn-space btn-default">{{
+                  'formManagement.back' | translate
+                }}</a>
               </div>
               <div class="col-12 col-sm-6 text-right">
                 <button class="btn btn-space btn-secondary" type="button" (click)="reset()">
-                  Reset
+                  {{ 'formManagement.reset' | translate }}
                 </button>
                 <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">
-                  Submit
+                  {{ 'formManagement.submit' | translate }}
                 </button>
               </div>
             </div>

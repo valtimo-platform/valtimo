@@ -19,7 +19,7 @@ import {Component} from '@angular/core';
 @Component({
   selector: 'valtimo-topbar',
   templateUrl: './topbar.component.html',
-  styleUrls: ['./topbar.component.css'],
+  styleUrls: ['./topbar.component.scss'],
 })
 export class TopbarComponent {
   constructor() {}

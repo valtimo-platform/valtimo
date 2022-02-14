@@ -20,7 +20,7 @@
   valtimoUploaderDragDrop
   (fileDropped)="onFileFieldChange($event)"
 >
-  <span class="align-middle"><i class="fa fa-cloud-upload fa-4x"></i></span>
+  <span class="align-middle"><i class="mdi mdi-cloud-upload"></i></span>
   <input hidden type="file" #fileInput (change)="onFileFieldChange($event.target.files)" multiple />
 </div>
 <div *ngIf="showFileList">
@@ -31,7 +31,7 @@
       {{ resource.sizeInBytes | filesize }}
     </p>
     <button class="delete-file" (click)="deleteResource(resource)">
-      <i class="fa fa-trash text-danger"></i>
+      <i class="icon mdi mdi-delete text-danger"></i>
     </button>
   </div>
 </div>

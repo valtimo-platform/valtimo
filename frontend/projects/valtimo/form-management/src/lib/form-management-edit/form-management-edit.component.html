@@ -18,7 +18,7 @@
   <div class="container-fluid" *ngIf="formDefinition">
     <div class="btn-group mt-m3px mb-3 float-right">
       <button class="btn btn-primary btn-space" (click)="downloadFormDefinition()">
-        <i class="fa fa-save"></i>
+        <i class="icon mdi mdi-download mr-1"></i>
         {{ 'Download' | translate }}
       </button>
       <button
@@ -26,7 +26,7 @@
         (click)="showModal()"
         [disabled]="formDefinition.readOnly"
       >
-        <i class="icon mdi mdi-upload"></i>&nbsp;
+        <i class="icon mdi mdi-upload mr-1"></i>
         {{ 'Upload' | translate }}
       </button>
       <button
@@ -34,14 +34,14 @@
         (click)="delete()"
         [disabled]="formDefinition.readOnly"
       >
-        <i class="fa fa-trash"></i>&nbsp;Delete
+        <i class="icon mdi mdi-delete mr-1"></i>{{ 'formManagement.delete' | translate }}
       </button>
       <button
         class="btn btn-success btn-space"
         (click)="modifyFormDefinition()"
         [disabled]="formDefinition.readOnly"
       >
-        <i class="fa fa-upload"></i>&nbsp;Deploy
+        <i class="icon mdi mdi-upload mr-1"></i>{{ 'formManagement.deploy' | translate }}
       </button>
     </div>
     <div class="clearfix"></div>
@@ -49,7 +49,9 @@
       <h3 class="formbuilder-title">
         {{ formDefinition.name }}
         <div *ngIf="formDefinition.readOnly" class="pull-right">
-          <span class="badge badge-pill badge-info increase-size">Read-only</span>
+          <span class="badge badge-pill badge-info increase-size">{{
+            'formManagement.readOnly' | translate
+          }}</span>
         </div>
       </h3>
     </div>

@@ -22,21 +22,21 @@
         *ngIf="(selectedVersion !== null || processKey === null) && !layoutService.isFullscreen"
       >
         <button class="btn btn-primary btn-space" (click)="deploy()">
-          <i class="fa fa-upload"></i> &nbsp;Deploy
+          <i class="icon mdi mdi-upload mr-1"></i>{{ 'processManagement.deploy' | translate }}
         </button>
         <button
           class="btn btn-secondary btn-space"
           (click)="download()"
           [ngClass]="{'mr-0': selectedVersion !== null}"
         >
-          <i class="fa fa-save"></i> &nbsp;Download
+          <i class="icon mdi mdi-download mr-1"></i>{{ 'processManagement.download' | translate }}
         </button>
         <button
           *ngIf="selectedVersion === null"
           class="btn btn-danger btn-space mr-0"
           (click)="reset()"
         >
-          <i class="fa fa-trash"></i> &nbsp;Clear
+          <i class="icon mdi mdi-delete mr-1"></i>{{ 'processManagement.clear' | translate }}
         </button>
       </div>
     </div>
@@ -76,13 +76,14 @@
         >
           <div class="btn-group">
             <button class="btn btn-primary btn-space" (click)="deploy()">
-              <i class="fa fa-upload"></i> &nbsp;Deploy
+              <i class="icon mdi mdi-upload mr-1"></i>{{ 'processManagement.deploy' | translate }}
             </button>
             <button class="btn btn-secondary btn-space" (click)="download()">
-              <i class="fa fa-save"></i> &nbsp;Download
+              <i class="icon mdi mdi-download mr-1"></i
+              >{{ 'processManagement.download' | translate }}
             </button>
             <button *ngIf="!selectedVersion" class="btn btn-danger btn-space" (click)="reset()">
-              <i class="fa fa-trash"></i> &nbsp;Clear
+              <i class="icon mdi mdi-delete mr-1"></i>{{ 'processManagement.clear' | translate }}
             </button>
           </div>
         </div>
