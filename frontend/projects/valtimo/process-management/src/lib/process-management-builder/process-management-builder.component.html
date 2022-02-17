@@ -21,15 +21,15 @@
         class="btn-group mt-m3px mb-3"
         *ngIf="(selectedVersion !== null || processKey === null) && !layoutService.isFullscreen"
       >
-        <button class="btn btn-primary btn-space" (click)="deploy()">
-          <i class="icon mdi mdi-upload mr-1"></i>{{ 'processManagement.deploy' | translate }}
+        <button class="btn btn-primary btn-space" (click)="download()">
+          <i class="icon mdi mdi-download mr-1"></i>{{ 'processManagement.download' | translate }}
         </button>
         <button
-          class="btn btn-secondary btn-space"
-          (click)="download()"
+          class="btn btn-success btn-space"
+          (click)="deploy()"
           [ngClass]="{'mr-0': selectedVersion !== null}"
         >
-          <i class="icon mdi mdi-download mr-1"></i>{{ 'processManagement.download' | translate }}
+          <i class="icon mdi mdi-upload mr-1"></i>{{ 'processManagement.deploy' | translate }}
         </button>
         <button
           *ngIf="selectedVersion === null"
