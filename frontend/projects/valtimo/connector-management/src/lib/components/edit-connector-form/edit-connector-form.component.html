@@ -15,7 +15,7 @@
   -->
 
 <valtimo-edit-connector-properties
-  *ngIf="connectorName !== productAanvragenName"
+  *ngIf="!customConnectorNames.includes(connectorName)"
   [properties]="properties"
   [withDefaults]="withDefaults"
   [defaultName]="defaultName"
@@ -34,3 +34,13 @@
   (connectorDelete)="connectorDelete.emit()"
 >
 </valtimo-edit-product-aanvragen-connector>
+
+<valtimo-edit-taak-connector
+  *ngIf="connectorName === taakName"
+  [defaultName]="defaultName"
+  [properties]="properties"
+  [showDeleteButton]="showDeleteButton"
+  (propertiesSave)="propertiesSave.emit($event)"
+  (connectorDelete)="connectorDelete.emit()"
+>
+</valtimo-edit-taak-connector>

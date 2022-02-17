@@ -465,6 +465,17 @@
     "alertUnlinkError": "Er ging iets mis bij het ontkoppelen van het formulier"
   },
   "connectorForm": {
+    "taak": {
+      "name": "Taak",
+      "objectsApiConnector": {
+        "label": "Objects API connector",
+        "placeholder": "objectsApiInstance"
+      },
+      "openNotificatieConnector": {
+        "label": "Open Notificatie Connector",
+        "placeholder": "openNotificatieInstance"
+      }
+    },
     "productaanvraag": {
       "step1": {
         "title": "2. Connector",

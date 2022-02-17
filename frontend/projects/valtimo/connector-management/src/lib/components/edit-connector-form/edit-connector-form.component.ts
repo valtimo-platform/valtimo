@@ -33,4 +33,6 @@ export class EditConnectorFormComponent {
   @Output() connectorDelete = new EventEmitter<any>();
 
   readonly productAanvragenName = 'ProductAanvragen';
+  readonly taakName = 'Taak';
+  readonly customConnectorNames = [this.productAanvragenName, this.taakName];
 }

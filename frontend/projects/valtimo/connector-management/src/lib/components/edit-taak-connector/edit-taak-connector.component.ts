@@ -1,0 +1,135 @@
+/*
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {editTaakConnectorForm} from './edit-taak-connector.form';
+import {FormMappingService, FormTranslationService} from '@valtimo/form';
+import {BehaviorSubject, combineLatest, Subject, Subscription} from 'rxjs';
+import {ConnectorProperties} from '../../models';
+import {FormioForm, FormioRefreshValue} from 'angular-formio';
+import {FormioOptions} from 'angular-formio/formio.common';
+import {cloneDeep} from 'lodash';
+import {TranslateService} from '@ngx-translate/core';
+import {map, tap} from 'rxjs/operators';
+import {ConnectorManagementService} from '../../services/connector-management/connector-management.service';
+
+@Component({
+  selector: 'valtimo-edit-taak-connector',
+  templateUrl: './edit-taak-connector.component.html',
+  styleUrls: ['./edit-taak-connector.component.scss'],
+})
+export class EditTaakConnectorComponent implements OnInit, OnDestroy {
+  @Input() properties: ConnectorProperties;
+  @Input() defaultName!: string;
+  @Input() showDeleteButton = false;
+
+  @Output() propertiesSave = new EventEmitter<{ properties: ConnectorProperties; name: string }>();
+  @Output() connectorDelete = new EventEmitter<any>();
+
+  formRefresh$ = new Subject<FormioRefreshValue>();
+  formDefinition$ = new BehaviorSubject<FormioForm>(undefined);
+  translatedFormDefinition$ = this.formDefinition$.pipe(
+    map(definition => this.formTranslationService.translateForm(definition))
+  );
+
+  readonly options: FormioOptions = {
+    disableAlerts: true,
+  };
+
+  private formDefinitionSubscription!: Subscription;
+  private translateSubscription!: Subscription;
+
+  constructor(
+    private readonly formTranslationService: FormTranslationService,
+    private readonly formMappingService: FormMappingService,
+    private readonly translateService: TranslateService,
+    private readonly connectorManagementService: ConnectorManagementService
+  ) {
+  }
+
+  ngOnInit(): void {
+    this.openFormDefinitionSubscription();
+    this.formDefinition$.next(editTaakConnectorForm);
+    this.loadConnectorNames();
+  }
+
+  ngOnDestroy(): void {
+    this.formDefinitionSubscription?.unsubscribe();
+    this.translateSubscription?.unsubscribe();
+  }
+
+  onSubmit(event: any): void {
+    const submission = event.data;
+    const properties = cloneDeep(this.properties);
+
+    properties.objectsApiConnectionName = submission.objectsApiConnectionName;
+    properties.openNotificatieConnectionName = submission.openNotificatieConnectionName;
+
+    this.propertiesSave.emit({properties, name: submission.connectorName});
+  }
+
+  onDelete(): void {
+    this.connectorDelete.emit();
+  }
+
+  private openFormDefinitionSubscription(): void {
+    this.formDefinitionSubscription = combineLatest([
+      this.formDefinition$,
+      this.translateService.stream('key'),
+    ]).subscribe(([form]) => {
+      const translatedForm = this.formTranslationService.translateForm(form);
+      this.refreshForm({form: translatedForm});
+    });
+  }
+
+  private prefillForm(): void {
+    const properties = cloneDeep(this.properties);
+    const submission: { [key: string]: string } = {};
+
+    submission.objectsApiConnectionName = properties.objectsApiConnectionName;
+    submission.openNotificatieConnectionName = properties.openNotificatieConnectionName;
+    submission.connectorName = this.defaultName;
+
+    this.refreshForm({submission: {data: submission}});
+  }
+
+  private refreshForm(refreshValue: FormioRefreshValue): void {
+    this.formRefresh$.next(refreshValue);
+  }
+
+  private loadConnectorNames(): void {
+    this.connectorManagementService.getConnectorTypes()
+      .pipe(
+        tap(res => {
+          res.forEach(connectorType => {
+            if (connectorType.name === 'ObjectsApi') {
+              this.loadConnectorNamesByType('objectApiConnectorNames', connectorType.id);
+            } else if (connectorType.name === 'OpenNotificatie') {
+              this.loadConnectorNamesByType('openNotificatieConnectorNames', connectorType.id);
+            }
+            this.prefillForm();
+          });
+        })
+      )
+      .subscribe();
+  }
+
+  private loadConnectorNamesByType(windowKey: string, connectorTypeId: string) {
+    this.connectorManagementService.getConnectorInstancesByType(connectorTypeId)
+      .pipe(map(res => window[windowKey] = res.content.map(connector => connector.name)))
+      .subscribe();
+  }
+}

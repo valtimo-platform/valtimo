@@ -465,6 +465,17 @@
     "alertUnlinkError": "Failed to unlink form"
   },
   "connectorForm": {
+    "taak": {
+      "name": "Taak",
+      "objectsApiConnector": {
+        "label": "Objects API connector",
+        "placeholder": "objectsApiInstance"
+      },
+      "openNotificatieConnector": {
+        "label": "Open Notificatie Connector",
+        "placeholder": "openNotificatieInstance"
+      }
+    },
     "productaanvraag": {
       "step1": {
         "title": "2. Connectors",
