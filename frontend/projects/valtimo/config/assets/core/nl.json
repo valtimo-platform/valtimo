@@ -467,79 +467,22 @@
   "connectorForm": {
     "productaanvraag": {
       "step1": {
-        "title": "2. Objects API",
-        "tip": "Voer hier de gegevens in voor de verbinding met de Objects API waar de productaanvragen opgeslagen worden.",
-        "objectsApi": {
-          "panelTitle": "Objects API",
-          "url": {
-            "label": "URL",
-            "tooltip": "bv. http://api.example.org"
+        "title": "2. Connector",
+        "tip": "Voer hier de gegevens in voor de verbinding met de Objects API en de OpenNotificaties API.",
+        "connectors": {
+          "panelTitle": "Connectors",
+          "objectsApiConnector": {
+            "label": "Objects API connector",
+            "placeholder": "objectsApiInstance"
           },
-          "token": {
-            "label": "Token",
-            "tooltip": "bv. 1234"
-          }
-        },
-        "objectTypesApi": {
-          "panelTitle": "Objecttypes API",
-          "url": {
-            "label": "URL",
-            "tooltip": "bv. http://api.example.org"
-          },
-          "token": {
-            "label": "Token",
-            "tooltip": "bv. 1234"
+          "openNotificatieConnector": {
+            "label": "Open Notificatie Connector",
+            "placeholder": "openNotificatieInstance"
           }
         }
       },
       "step2": {
-        "title": "3. Objecttype",
-        "tip": "Voer hier de gegevens in van het objecttype van de productaanvragen.",
-        "objectType": {
-          "panelTitle": "Objecttype",
-          "name": {
-            "label": "Naam",
-            "tooltip": "bv. productAanvraag"
-          },
-          "title": {
-            "label": "Titel",
-            "tooltip": "bv. Productaanvraag"
-          },
-          "url": {
-            "label": "URL",
-            "tooltip": "bv. http://api.example.org/api/v1/objecttypes/xxxx-xxxx-xxxx-xxxx-xxxx"
-          },
-          "typeVersion": {
-            "label": "Versie",
-            "tooltip": "bv. 1"
-          }
-        }
-      },
-      "step3": {
-        "title": "4. Open Notificaties",
-        "tip": "Voer hier de gegevens  in die nodig zijn om verbinding te maken met Open Notificaties.",
-        "openNotifications": {
-          "panelTitle": "Open Notificaties",
-          "baseUrl": {
-            "label": "URL",
-            "tooltip": "bv. http://api.example.org"
-          },
-          "clientId": {
-            "label": "Client ID",
-            "tooltip": "bv. my-client"
-          },
-          "secret": {
-            "label": "Secret",
-            "tooltip": "bv. xxxx-xxxx-xxxx-xxxx-xxxx"
-          },
-          "callbackBaseUrl": {
-            "label": "Callback URL",
-            "tooltip": "bv. http://api.example.org"
-          }
-        }
-      },
-      "step4": {
-        "title": "5. Aanvraag",
+        "title": "3. Aanvraag",
         "tip": "Voer hier de gegevens  in die nodig zijn bij de verwerking van een productaanvraag.",
         "applicant": {
           "panelTitle": "Aanvrager roltype",
@@ -569,8 +512,8 @@
           }
         }
       },
-      "step5": {
-        "title": "6. Naam",
+      "step3": {
+        "title": "4. Naam",
         "tip": "Voer hier de naam in van de connectie.",
         "name": "Naam van connectie"
       }

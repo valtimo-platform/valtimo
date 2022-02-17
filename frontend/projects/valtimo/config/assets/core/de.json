@@ -467,112 +467,55 @@
   "connectorForm": {
     "productaanvraag": {
       "step1": {
-        "title": "2. Objects API",
-        "tip": "Enter the data needed to connect with the Objects API where the product requests are saved.",
-        "objectsApi": {
-          "panelTitle": "Objects API",
-          "url": {
-            "label": "URL",
-            "tooltip": "i.e. http://api.example.org"
+        "title": "2. Connectors",
+        "tip": "Geben Sie die Daten ein, die für die Verbindung mit der Objects-API und der OpenNotificatie-API erforderlich sind.",
+        "connectors": {
+          "panelTitle": "Connectors",
+          "objectsApiConnector": {
+            "label": "Objects API connector",
+            "placeholder": "objectsApiInstance"
           },
-          "token": {
-            "label": "Token",
-            "tooltip": "i.e. 1234"
-          }
-        },
-        "objectTypesApi": {
-          "panelTitle": "Object types API",
-          "url": {
-            "label": "URL",
-            "tooltip": "i.e. http://api.example.org"
-          },
-          "token": {
-            "label": "Token",
-            "tooltip": "i.e. 1234"
+          "openNotificatieConnector": {
+            "label": "Open Notificatie Connector",
+            "placeholder": "openNotificatieInstance"
           }
         }
       },
       "step2": {
-        "title": "3. Object type",
-        "tip": "Enter the data of the object type of the product requests.",
-        "objectType": {
-          "panelTitle": "Object type",
-          "name": {
-            "label": "Name",
-            "tooltip": "i.e. productRequest"
-          },
-          "title": {
-            "label": "Title",
-            "tooltip": "i.e. Product request"
-          },
-          "url": {
-            "label": "URL",
-            "tooltip": "i.e. http://api.example.org/api/v1/objecttypes/xxxx-xxxx-xxxx-xxxx-xxxx"
-          },
-          "typeVersion": {
-            "label": "Version",
-            "tooltip": "i.e. 1"
-          }
-        }
-      },
-      "step3": {
-        "title": "4. Open Notifications",
-        "tip": "Enter the data needed to connect to Open Notifications.",
-        "openNotifications": {
-          "panelTitle": "Open Notifications",
-          "baseUrl": {
-            "label": "URL",
-            "tooltip": "i.e. http://api.example.org"
-          },
-          "clientId": {
-            "label": "Client ID",
-            "tooltip": "i.e. my-client"
-          },
-          "secret": {
-            "label": "Secret",
-            "tooltip": "i.e. xxxx-xxxx-xxxx-xxxx-xxxx"
-          },
-          "callbackBaseUrl": {
-            "label": "Callback URL",
-            "tooltip": "i.e. http://api.example.org"
-          }
-        }
-      },
-      "step4": {
-        "title": "5. Request",
-        "tip": "Enter the data needed for processing product requests.",
+        "title": "3. Anfrage",
+        "tip": "Geben Sie die für die Bearbeitung von Produktanfragen erforderlichen Daten ein.",
         "applicant": {
-          "panelTitle": "Applicant role type",
-          "tip": "Enter the URL which points to the role type in OpenZaak that is attributed to the user who starts the product request.",
+          "panelTitle": "Rollentyp des Bewerbers",
+          "tip": "Geben Sie die URL ein, die auf den Rollentyp in OpenZaak verweist, der dem Benutzer zugeordnet ist, der die Produktanfrage startet.",
           "roleTypeUrl": {
-            "label": "URL to role type",
+            "label": "URL zum Rollentyp",
             "tooltip": "http://api.example.org/catalogi/api/v1/roltypen/xxxx-xxxx-xxxx-xxxx-xxxx"
           }
         }
       },
       "step0": {
-        "title": "1. Types",
-        "tip": "Enter the case types and the process types which are started for each type of product request.",
+        "title": "1. Typen",
+        "tip": "Geben Sie die Fallarten und die Prozessarten ein, die für jede Art von Produktanfrage gestartet werden.",
         "typeMapping": {
-          "panelTitle": "Types",
+          "panelTitle": "Typen",
           "productAanvraagType": {
-            "label": "Type of request",
+            "label": "Art der Anfrage",
             "tooltip": "i.e. test-product-request"
           },
           "caseDefinitionKey": {
-            "label": "Case definition",
-            "placeholder": "choose definition"
+            "label": "Falldefinition",
+            "placeholder": "Definition wählen"
           },
           "processDefinitionKey": {
-            "label": "Process definition",
-            "placeholder": "choose definition"
+            "label": "Prozessdefinition",
+            "placeholder": "Definition wählen"
           }
         }
       },
-      "step5": {
-        "title": "6. Name",
-        "tip": "Enter the name of the connection.",
-        "name": "Connection name"
+      "step3": {
+        "title": "4. Name",
+        "tip": "Geben Sie den Namen der Verbindung ein.",
+        "name": "Verbindungsname"
       }
     }
   }
