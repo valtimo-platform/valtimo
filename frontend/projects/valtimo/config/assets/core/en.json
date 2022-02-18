@@ -418,7 +418,9 @@
       "secret": "Secret",
       "rsin": "RSIN",
       "username": "Username",
-      "password": "Password"
+      "password": "Password",
+      "baseUrl": "Base URL",
+      "callbackBaseUrl": "Callback base URL"
     },
     "messages": {
       "addSuccess": "Connection has been added successfully.",

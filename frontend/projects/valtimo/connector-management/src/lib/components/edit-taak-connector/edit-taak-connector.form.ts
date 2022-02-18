@@ -51,7 +51,7 @@ export const editTaakConnectorForm = {
     {
       key: 'submit',
       type: 'button',
-      customClass: 'submit',
+      customClass: 'list-inline',
       leftIcon: 'icon mdi mdi-save mt-1',
       input: true,
       label: 'connectorManagement.save',

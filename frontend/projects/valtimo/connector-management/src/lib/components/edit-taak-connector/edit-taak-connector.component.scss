@@ -16,11 +16,15 @@
 
 .edit-taak {
   ::ng-deep {
-    .submit {
+    .list-inline {
       display: flex;
       flex-direction: row;
       justify-content: flex-end;
-      margin-bottom: -15px;
     }
+  }
+
+  .btn-danger {
+    position: absolute;
+    bottom: 35px;
   }
 }

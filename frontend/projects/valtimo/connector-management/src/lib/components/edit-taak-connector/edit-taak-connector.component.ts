@@ -17,7 +17,7 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {editTaakConnectorForm} from './edit-taak-connector.form';
 import {FormMappingService, FormTranslationService} from '@valtimo/form';
-import {BehaviorSubject, combineLatest, Subject, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, Subject, Subscription, timer} from 'rxjs';
 import {ConnectorProperties} from '../../models';
 import {FormioForm, FormioRefreshValue} from 'angular-formio';
 import {FormioOptions} from 'angular-formio/formio.common';
@@ -64,6 +64,7 @@ export class EditTaakConnectorComponent implements OnInit, OnDestroy {
     this.openFormDefinitionSubscription();
     this.formDefinition$.next(editTaakConnectorForm);
     this.loadConnectorNames();
+    this.prefillForm();
   }
 
   ngOnDestroy(): void {
@@ -96,14 +97,19 @@ export class EditTaakConnectorComponent implements OnInit, OnDestroy {
   }
 
   private prefillForm(): void {
-    const properties = cloneDeep(this.properties);
-    const submission: { [key: string]: string } = {};
+    timer(100).pipe(tap(() => {
+        if (this.defaultName !== undefined) {
+          const properties = cloneDeep(this.properties);
+          const submission: { [key: string]: string } = {};
 
-    submission.objectsApiConnectionName = properties.objectsApiConnectionName;
-    submission.openNotificatieConnectionName = properties.openNotificatieConnectionName;
-    submission.connectorName = this.defaultName;
+          submission.objectsApiConnectionName = properties.objectsApiConnectionName;
+          submission.openNotificatieConnectionName = properties.openNotificatieConnectionName;
+          submission.connectorName = this.defaultName;
 
-    this.refreshForm({submission: {data: submission}});
+          this.refreshForm({submission: {data: submission}});
+        }
+      })
+    ).subscribe()
   }
 
   private refreshForm(refreshValue: FormioRefreshValue): void {
@@ -120,7 +126,6 @@ export class EditTaakConnectorComponent implements OnInit, OnDestroy {
             } else if (connectorType.name === 'OpenNotificatie') {
               this.loadConnectorNamesByType('openNotificatieConnectorNames', connectorType.id);
             }
-            this.prefillForm();
           });
         })
       )

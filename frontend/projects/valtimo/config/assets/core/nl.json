@@ -418,7 +418,9 @@
       "secret": "Secret",
       "rsin": "RSIN",
       "username": "Gebruikersnaam",
-      "password": "Wachtwoord"
+      "password": "Wachtwoord",
+      "baseUrl": "Base URL",
+      "callbackBaseUrl": "Callback base URL"
     },
     "messages": {
       "addSuccess": "Connectie is succesvol toegevoegd.",
