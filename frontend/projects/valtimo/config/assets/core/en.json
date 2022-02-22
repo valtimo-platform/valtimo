@@ -179,7 +179,18 @@
     "readonly": "Read-only",
     "connectedProcesses": "Connected processes",
     "connectProcess": "Connect process",
-    "selectProcessDef": "Select process definition"
+    "selectProcessDef": "Select process definition",
+    "roles": {
+      "rolesTitle": "Entitlements",
+      "rolesDescription": "Select the roles below that should have access to this case. When a role is not selected a user that belongs to that role will not see this case in the menu 'Cases'",
+      "selectRoles": "Allowed roles",
+      "rolesPlaceHolder": "Choose the roles that have access to this dossier type",
+      "messages": {
+        "successfullyStored": "Succesfully stored the entitlement roles",
+        "unsuccessfullyStored": "Failed to store the entitlement roles",
+        "unsuccessfullyRetrievedRoles": "Failed to retrieve the current entitlement roles"
+      }
+    }
   },
   "serviceTaskManagement": {
     "subtitle": "Link {{selectedElement}} to Open Zaak",

@@ -179,7 +179,19 @@
     "readonly": "Schreibgeschützt",
     "connectedProcesses": "Verknüpfte Prozesse",
     "connectProcess": "Prozess verknüpfen",
-    "selectProcessDef": "Prozessdefinition auswählen"
+    "selectProcessDef": "Prozessdefinition auswählen",
+    "roles": {
+      "rolesTitle": "Berechtigungen",
+      "rolesDescription": "Wählen Sie unten die Rollen aus, die Zugriff auf diesen Fall haben sollen. Wenn eine Rolle nicht ausgewählt ist, wird ein Benutzer, der dieser Rolle angehört, diesen Fall nicht im Menü 'Cases' sehen.",
+      "selectRoles": "Erlaubte rollen",
+      "rolesPlaceHolder": "Wählen Sie die Rollen aus, die Zugriff auf diesen Dateityp haben",
+      "messages": {
+        "successfullyStored": "Die Rollen wurden erfolgreich gespeichert",
+        "unsuccessfullyStored": "Beim Speichern der Rollen ist etwas schief gelaufen",
+        "unsuccessfullyRetrievedRoles": "Beim Abrufen der aktuellen Dokumentrollen ist ein Fehler aufgetreten"
+      }
+    }
+
   },
   "serviceTaskManagement": {
     "subtitle": "Verknüpfe {{selectedElement}} mit Open Zaak",

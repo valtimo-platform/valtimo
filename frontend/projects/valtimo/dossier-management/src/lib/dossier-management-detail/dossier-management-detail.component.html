@@ -70,7 +70,7 @@
                 data-placement="left"
                 title="Delete this connected process"
               >
-                <i class="icon mdi mdi-download mr-1"></i>
+                <i class="icon mdi mdi-delete mr-1"></i>
               </button>
               <input
                 class="form-control"
@@ -120,6 +120,8 @@
               >{{ 'dossierManagement.connectProcess' | translate }}
             </button>
           </div>
+          <valtimo-dossier-management-roles [documentDefinitionName]="documentDefinitionName">
+          </valtimo-dossier-management-roles>
           <valtimo-extension
             module="dossier-management"
             page="dossier"

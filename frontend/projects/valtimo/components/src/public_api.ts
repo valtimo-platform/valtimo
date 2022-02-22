@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,3 +115,6 @@ export * from './lib/components/progress-bar/progress-bar.component';
 
 export * from './lib/components/searchable-dropdown-select/searchable-dropdown-select.module';
 export * from './lib/components/searchable-dropdown-select/searchable-dropdown-select.component';
+
+export * from './lib/components/multiselect-dropdown/multiselect-dropdown.module';
+export * from './lib/components/multiselect-dropdown/multiselect-dropdown.component';

@@ -21,9 +21,11 @@ import {
   AuditRecord,
   Document,
   DocumentDefinition,
+  DocumentDefinitionCreateRequest,
   DocumentDefinitions,
   DocumentResult,
   Documents,
+  DocumentSendMessageRequest,
   ModifyDocumentAndCompleteTaskRequestImpl,
   ModifyDocumentAndCompleteTaskResult,
   ModifyDocumentAndStartProcessRequestImpl,
@@ -34,9 +36,7 @@ import {
   ProcessDocumentDefinition,
   ProcessDocumentDefinitionRequest,
   ProcessDocumentInstance,
-  DocumentDefinitionCreateRequest,
   UndeployDocumentDefinitionResult,
-  DocumentSendMessageRequest,
 } from './models';
 import {DocumentSearchRequest} from './document-search-request';
 import {ConfigService} from '@valtimo/config';
@@ -74,6 +74,19 @@ export class DocumentService {
       `${this.valtimoEndpointUri}document-search`,
       documentSearchRequest.asHttpBody(),
       {params: documentSearchRequest.asHttpParams()}
+    );
+  }
+
+  public getDocumentRoles(documentDefinitionName: string): Observable<Array<String>> {
+    return this.http.get<Array<String>>(
+      `${this.valtimoEndpointUri}document-definition/${documentDefinitionName}/roles`
+    );
+  }
+
+  public modifyDocumentRoles(documentDefinitionName: string, roles: any): Observable<void> {
+    return this.http.put<void>(
+      `${this.valtimoEndpointUri}document-definition/${documentDefinitionName}/roles`,
+      roles
     );
   }
 

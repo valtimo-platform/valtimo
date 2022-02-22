@@ -15,11 +15,12 @@
  */
 
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {DocumentService, DocumentDefinition, ProcessDocumentDefinition} from '@valtimo/document';
+import {DocumentDefinition, DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
 import {ActivatedRoute} from '@angular/router';
 import {DossierManagementConnectModalComponent} from '../dossier-management-connect-modal/dossier-management-connect-modal.component';
 import {AlertService} from '@valtimo/components';
 import {DossierManagementRemoveModalComponent} from '../dossier-management-remove-modal/dossier-management-remove-modal.component';
+import {DossierManagementRolesComponent} from '../dossier-management-roles/dossier-management-roles.component';
 
 @Component({
   selector: 'valtimo-dossier-management-detail',
@@ -27,12 +28,13 @@ import {DossierManagementRemoveModalComponent} from '../dossier-management-remov
   styleUrls: ['./dossier-management-detail.component.scss'],
 })
 export class DossierManagementDetailComponent implements OnInit {
-  private documentDefinitionName: string | null = null;
+  public documentDefinitionName: string | null = null;
   public documentDefinition: DocumentDefinition | null = null;
   public processDocumentDefinitions: ProcessDocumentDefinition[] = [];
 
   @ViewChild('dossierConnectModal') dossierConnectModal: DossierManagementConnectModalComponent;
   @ViewChild('dossierRemoveModal') dossierRemoveModal: DossierManagementRemoveModalComponent;
+  @ViewChild('documentRoles') documentRoles: DossierManagementRolesComponent;
 
   constructor(
     private documentService: DocumentService,

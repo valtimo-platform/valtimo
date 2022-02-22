@@ -258,3 +258,11 @@ export interface DocumentSendMessageRequest {
   subject: string;
   bodyText: string;
 }
+
+export interface DocumentRoles {
+  content: DocumentRole[];
+}
+
+export interface DocumentRole {
+  name: string;
+}
