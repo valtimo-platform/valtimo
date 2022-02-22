@@ -19,7 +19,8 @@
     "ngx-toastr": "^13.0.0",
     "angular-formio": "^4.11.5",
     "ngx-spinner": "^10.0.1",
-    "tslib": "^2.0.0"
+    "tslib": "^2.0.0",
+    "ng-multiselect-dropdown": "^0.3.8"
   },
   "devDependencies": {
     "karma-moment": "^0.1.0"
