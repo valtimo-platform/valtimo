@@ -17,97 +17,86 @@
 <div class="main-content">
   <div class="container-fluid">
     <div class="col-12 px-0 mb-5">
-      <valtimo-widget *ngIf="authority">
-        <div>
-          <div class="card-body bg-light">
-            <div class="row py-5">
-              <div class="col-12">
-                <div class="row">
-                  <div class="col-12 col-sm-3 text-sm-right"><strong>System authority</strong></div>
-                  <div class="col-12 col-sm-8 col-lg-6">
-                    {{ authority.systemAuthorityDisplayString }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white p-5">
-            <form [formGroup]="form" (ngSubmit)="onSubmit()">
-              <div class="form-group row">
-                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="name">Name</label>
-                <div class="col-12 col-sm-8 col-lg-6">
-                  <input
-                    valtimoFieldAutoFocus
-                    type="text"
-                    id="name"
-                    formControlName="name"
-                    class="form-control"
-                    placeholder="Entitlement name"
-                    [ngClass]="{
-                      'is-valid': formControls.name.touched && formControls.name.valid,
-                      'is-invalid': formControls.name.touched && formControls.name.errors
-                    }"
-                    required
-                  />
-                  <div
-                    *ngIf="formControls.name.touched && formControls.name.errors"
-                    class="invalid-feedback"
-                  >
-                    <div *ngIf="formControls.name.errors.required">Name is required</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="form-group row">
-                <label class="col-12 col-sm-3 col-form-label text-sm-right" for="hourlyRate"
-                  >Hourly rate</label
-                >
-                <div class="col-12 col-sm-8 col-lg-6">
-                  <input
-                    type="text"
-                    id="hourlyRate"
-                    formControlName="hourlyRate"
-                    class="form-control"
-                    placeholder="Hourly rate"
-                    [ngClass]="{
-                      'is-valid': formControls.hourlyRate.touched && formControls.hourlyRate.valid,
-                      'is-invalid':
-                        formControls.hourlyRate.touched && formControls.hourlyRate.errors
-                    }"
-                    required
-                  />
-                  <div
-                    *ngIf="formControls.hourlyRate.touched && formControls.hourlyRate.errors"
-                    class="invalid-feedback"
-                  >
-                    <div *ngIf="formControls.hourlyRate.errors.required">
-                      Hourly rate is required
+      <ng-container *ngIf="!(loading$ | async); else loading">
+        <valtimo-widget *ngIf="translatedAuthority$ | async as authority">
+          <div>
+            <div class="card-body bg-light">
+              <div class="row py-5">
+                <div class="col-12">
+                  <div class="row">
+                    <div class="col-12 col-sm-3 text-sm-right">
+                      <strong>{{ 'entitlement.systemAuthority' | translate }}</strong>
+                    </div>
+                    <div class="col-12 col-sm-8 col-lg-6">
+                      {{ authority.systemAuthorityDisplayString }}
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div class="row pt-3 mt-1">
-                <div class="col-12 col-sm-6 text-left">
-                  <a [routerLink]="'/entitlements'" class="btn btn-space btn-default">Back</a>
-                  <button class="btn btn-space btn-danger" type="button" (click)="delete()">
-                    Delete
-                  </button>
+            <div class="bg-white p-5">
+              <form [formGroup]="form" (ngSubmit)="onSubmit()">
+                <div class="form-group row">
+                  <label class="col-12 col-sm-3 col-form-label text-sm-right" for="name">{{
+                    'entitlement.name' | translate
+                  }}</label>
+                  <div class="col-12 col-sm-8 col-lg-6">
+                    <input
+                      valtimoFieldAutoFocus
+                      type="text"
+                      id="name"
+                      formControlName="name"
+                      class="form-control"
+                      [placeholder]="'entitlement.namePlaceHolder' | translate"
+                      [ngClass]="{
+                        'is-valid': formControls.name.touched && formControls.name.valid,
+                        'is-invalid': formControls.name.touched && formControls.name.errors
+                      }"
+                      required
+                    />
+                    <div
+                      *ngIf="formControls.name.touched && formControls.name.errors"
+                      class="invalid-feedback"
+                    >
+                      <div *ngIf="formControls.name.errors.required">
+                        {{ 'entitlement.nameIsRequired' | translate }}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="col-12 col-sm-6 text-right">
-                  <button class="btn btn-space btn-secondary" type="button" (click)="reset()">
-                    Reset
-                  </button>
-                  <button class="btn btn-space btn-primary" type="submit" [disabled]="form.invalid">
-                    Submit
-                  </button>
+
+                <div class="row pt-3 mt-1">
+                  <div class="col-12 col-sm-6 text-left">
+                    <a [routerLink]="'/entitlements'" class="btn btn-space btn-default">{{
+                      'entitlement.back' | translate
+                    }}</a>
+                    <button class="btn btn-space btn-danger" type="button" (click)="delete()">
+                      {{ 'entitlement.delete' | translate }}
+                    </button>
+                  </div>
+                  <div class="col-12 col-sm-6 text-right">
+                    <button class="btn btn-space btn-secondary" type="button" (click)="reset()">
+                      {{ 'entitlement.reset' | translate }}
+                    </button>
+                    <button
+                      class="btn btn-space btn-primary"
+                      type="submit"
+                      [disabled]="form.invalid"
+                    >
+                      {{ 'entitlement.submit' | translate }}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
-        </div>
-      </valtimo-widget>
+        </valtimo-widget>
+      </ng-container>
     </div>
   </div>
 </div>
+
+<ng-template #loading>
+  <valtimo-spinner></valtimo-spinner>
+</ng-template>

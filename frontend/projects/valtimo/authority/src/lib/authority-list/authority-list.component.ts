@@ -18,6 +18,9 @@ import {Component, OnInit} from '@angular/core';
 import {Authority} from '../models';
 import {AuthorityService} from '../authority.service';
 import {Router} from '@angular/router';
+import {TranslateService} from '@ngx-translate/core';
+import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-authority-list',
@@ -25,32 +28,58 @@ import {Router} from '@angular/router';
   styleUrls: ['./authority-list.component.css'],
 })
 export class AuthorityListComponent implements OnInit {
-  public authorities: Array<Authority> = [];
+  private authorities$ = new BehaviorSubject<Array<Authority>>([]);
+  public translatedAuthorities$ = combineLatest([
+    this.authorities$,
+    this.translateService.stream('entitlement.hasSystemAuthority'),
+    this.translateService.stream('entitlement.noSystemAuthority'),
+  ]).pipe(
+    map(([authorities, hasAuthorityString, noAuthorityString]) =>
+      authorities.map(authority => ({
+        ...authority,
+        systemAuthorityDisplayString: authority.systemAuthority
+          ? hasAuthorityString
+          : noAuthorityString,
+      }))
+    )
+  );
+
+  readonly loading$ = new BehaviorSubject<boolean>(true);
+
   public pagination = {
     collectionSize: 0,
     page: 1,
     size: 10,
     maxPaginationItemSize: 5,
   };
+
   public pageParam = 0;
-  public fields: Array<any> = [
-    {
-      key: 'name',
-      label: 'Name',
-    },
-    {
-      key: 'systemAuthorityDisplayString',
-      label: 'System authority',
-    },
-    {
-      key: 'hourlyRateDisplayString',
-      label: 'Hourly rate',
-    },
-  ];
 
-  constructor(private router: Router, private service: AuthorityService) {}
+  public fields$: Observable<Array<{key: string; label: string}>> = combineLatest([
+    this.translateService.stream('entitlement.name'),
+    this.translateService.stream('entitlement.systemAuthority'),
+  ]).pipe(
+    map(([nameString, systemAuthorityString]) => [
+      {
+        key: 'name',
+        label: nameString,
+      },
+      {
+        key: 'systemAuthorityDisplayString',
+        label: systemAuthorityString,
+      },
+    ])
+  );
 
-  ngOnInit() {}
+  constructor(
+    private readonly router: Router,
+    private readonly service: AuthorityService,
+    private readonly translateService: TranslateService
+  ) {}
+
+  ngOnInit(): void {
+    this.initData();
+  }
 
   paginationSet() {
     this.initData();
@@ -59,11 +88,8 @@ export class AuthorityListComponent implements OnInit {
   private initData() {
     this.service.query({page: this.pageParam, size: this.pagination.size}).subscribe(results => {
       this.pagination.collectionSize = results.headers.get('x-total-count');
-      this.authorities = results.body;
-      this.authorities.forEach(authority => {
-        authority.hourlyRateDisplayString = authority.hourlyRate.displayString;
-        authority.systemAuthorityDisplayString = authority.systemAuthority ? 'Yes' : 'No';
-      });
+      this.authorities$.next(results?.body);
+      this.loading$.next(false);
     });
   }
 

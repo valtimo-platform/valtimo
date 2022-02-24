@@ -42,25 +42,31 @@
       {{ 'Select options for the selected process' | translate }}
     </p>
     <div class="input-group mb-3 align-items-center">
-      <label class="custom-control custom-checkbox custom-control-inline pl-6 mb-0">
+      <label
+        class="custom-control custom-checkbox custom-control-inline pl-6 mb-0"
+        placement="bottom"
+        ngbTooltip="{{ 'processCaseConnection.processCreatesCaseTooltip' | translate }}"
+      >
         <input
           class="custom-control-input"
           type="checkbox"
           [(ngModel)]="newDocumentProcessDefinitionInit"
-        /><span class="custom-control-label custom-control-color">Init document?</span>
+        /><span class="custom-control-label custom-control-color">{{
+          'processCaseConnection.processCreatesCase' | translate
+        }}</span>
       </label>
       <label
         class="custom-control custom-checkbox custom-control-inline ml-2 pl-6 mb-0"
-        placement="right"
-        ngbTooltip="{{ 'Startable by user tooltip' | translate }}"
+        placement="bottom"
+        ngbTooltip="{{ 'processCaseConnection.startableWithinCaseTooltip' | translate }}"
       >
         <input
           class="custom-control-input"
           type="checkbox"
           [(ngModel)]="newDocumentProcessDefinitionStartableByUser"
-        /><span class="custom-control-label custom-control-color"
-          >{{ 'Startable by user' | translate }}?</span
-        >
+        /><span class="custom-control-label custom-control-color">{{
+          'processCaseConnection.startableWithinCase' | translate
+        }}</span>
       </label>
     </div>
   </div>

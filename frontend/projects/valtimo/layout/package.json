@@ -1,7 +1,7 @@
 {
   "name": "@valtimo/layout",
   "license": "EUPL-1.2",
-  "version": "4.15.2",
+  "version": "4.17.0",
   "peerDependencies": {
     "@angular/common": "^10.0.11",
     "@angular/core": "^10.0.11"
@@ -34,11 +34,11 @@
     "dropzone": "^4.3.0",
     "fuelux": "^3.15.11",
     "fullcalendar": "^3.8.0",
-    "jquery": "3.4.1",
-    "jquery-touchswipe": "^1.6.12",
-    "components-jqueryui": "^1.11.4",
+    "jquery": "3.6.0",
+    "jquery-touchswipe": "^1.6.19",
+    "components-jqueryui": "^1.12.1",
     "jquery.maskedinput": "^1.4.1",
-    "jquery.quicksearch": "^2.3.1",
+    "jquery.quicksearch": "^2.4.0",
     "jqvmap": "^1.5.1",
     "jszip": "^3.1.5",
     "magnific-popup": "^1.0.0",
