@@ -5,5 +5,10 @@
   "lib": {
     "entryFile": "src/public_api.ts"
   },
-  "allowedNonPeerDependencies": ["ngx-skeleton-loader", "@ng-select/ng-select", "@angular/cdk"]
+  "allowedNonPeerDependencies": [
+    "ngx-skeleton-loader",
+    "@ng-select/ng-select",
+    "@angular/cdk",
+    "@mdi/font"
+  ]
 }
