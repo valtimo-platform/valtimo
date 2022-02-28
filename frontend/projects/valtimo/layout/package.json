@@ -52,7 +52,6 @@
     "raphael": "^2.1.0",
     "roboto-fontface": "~0.4.3",
     "select2": "^4.0.3",
-    "summernote": "^0.8.10",
     "sweetalert2": "^7.26.28",
     "tinycolor2": "^1.2.1",
     "tslib": "^2.0.0"
