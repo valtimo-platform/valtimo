@@ -26,7 +26,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
-import * as Dropzone from 'dropzone';
+import Dropzone from 'dropzone';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription} from 'rxjs';
 import {map} from 'rxjs/operators';
 

@@ -2,18 +2,7 @@
   "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../../dist/valtimo/process",
   "lib": {
-    "entryFile": "src/public_api.ts",
-    "umdModuleIds": {
-      "@valtimo/security": "security",
-      "@valtimo/task": "task",
-      "@valtimo/components": "components",
-      "@valtimo/config": "config",
-      "bpmn-js/dist/bpmn-navigated-viewer.production.min.js": "BpmnJS",
-      "heatmap.js-fixed": "heatmap_jsFixed",
-      "ngx-toastr": "ngxToastr",
-      "@valtimo/view-configurator": "viewConfigurator",
-      "moment": "moment"
-    }
+    "entryFile": "src/public_api.ts"
   },
-  "whitelistedNonPeerDependencies": ["."]
+  "allowedNonPeerDependencies": ["ngx-toastr", "moment", "bpmn-js", "jquery", "heatmap.js-fixed"]
 }

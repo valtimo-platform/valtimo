@@ -3,10 +3,6 @@
   "dest": "../../../dist/valtimo/layout",
   "assets": ["./assets"],
   "lib": {
-    "entryFile": "src/public_api.ts",
-    "umdModuleIds": {
-      "@valtimo/components": "components"
-    }
-  },
-  "whitelistedNonPeerDependencies": ["."]
+    "entryFile": "src/public_api.ts"
+  }
 }

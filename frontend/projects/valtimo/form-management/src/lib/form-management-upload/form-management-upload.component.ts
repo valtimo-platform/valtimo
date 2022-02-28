@@ -152,7 +152,7 @@ export class FormManagementUploadComponent implements AfterViewInit, OnDestroy {
 
   private stringIsValidJson(string: string) {
     try {
-      // tslint:disable-next-line
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       JSON.parse(string)?.formDefinition?.components;
     } catch (e) {
       this.clearDropzone();

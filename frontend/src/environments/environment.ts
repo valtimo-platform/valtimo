@@ -90,7 +90,7 @@ export const environment: ValtimoConfig = {
         roles: [ROLE_USER],
         link: ['/analysis'],
         title: 'Analysis',
-        iconClass: 'icon mdi mdi-chart',
+        iconClass: 'icon mdi mdi-chart-bar',
         sequence: 3,
       },
       {
@@ -169,4 +169,4 @@ export const environment: ValtimoConfig = {
  * This import should be commented out in production mode because it will have a negative impact
  * on performance if an error is thrown.
  */
-// import 'zone.js/dist/zone-error';  // Included with Angular CLI.
+// import 'zone.js/plugins/zone-error';  // Included with Angular CLI.

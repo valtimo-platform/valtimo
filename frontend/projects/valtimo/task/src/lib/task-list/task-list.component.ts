@@ -17,14 +17,13 @@
 import {Component, OnDestroy, ViewChild, ViewEncapsulation} from '@angular/core';
 import {Router} from '@angular/router';
 import {TaskService} from '../task.service';
-import * as moment_ from 'moment';
+import moment from 'moment';
 import {Task, TaskList} from '../models';
 import {NGXLogger} from 'ngx-logger';
 import {TaskDetailModalComponent} from '../task-detail-modal/task-detail-modal.component';
 import {TranslateService} from '@ngx-translate/core';
 import {combineLatest, Subscription} from 'rxjs';
 
-const moment = moment_;
 moment.locale(localStorage.getItem('langKey') || '');
 
 @Component({
@@ -128,7 +127,7 @@ export class TaskListComponent implements OnDestroy {
 
     this.taskService.queryTasks(params).subscribe((results: any) => {
       this.tasks[type].pagination.collectionSize = results.headers.get('x-total-count');
-      this.tasks[type].tasks = <Task[]>results.body;
+      this.tasks[type].tasks = results.body as Array<Task>;
       this.tasks[type].tasks.map((task: Task) => {
         task.created = moment(task.created).format('DD MMM YYYY HH:mm');
         if (task.due) {

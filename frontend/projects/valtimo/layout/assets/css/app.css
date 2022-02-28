@@ -113,6 +113,7 @@ body {
   color: #404040;
   text-align: left;
   background-color: #eeeeee;
+  overflow-y: scroll;
 }
 
 [tabindex='-1']:focus:not(:focus-visible) {
@@ -12013,9 +12014,9 @@ a.text-grey:focus {
 }
 
 /* General styles for the modal */
-/* 
+/*
 Styles for the html/body for special modal where we want 3d effects
-Note that we need a container wrapping all content on the page for the 
+Note that we need a container wrapping all content on the page for the
 perspective effects (not including the modals and the overlay).
 */
 .modal-open {
@@ -13494,9 +13495,9 @@ canvas {
 }
 
 .be-top-header .be-toggle-top-header-menu:before {
-  content: '\f2f8';
+  content: '\F0360';
   float: right;
-  font-family: 'Material Icons';
+  font-family: 'Material Design Icons';
   font-size: 2.077rem;
   line-height: 22px;
   color: #c5c5c5;
@@ -13508,7 +13509,7 @@ canvas {
 }
 
 .be-top-header .be-toggle-top-header-menu.collapsed:before {
-  content: '\f2f2';
+  content: '\F035D';
 }
 
 @media (max-width: 767.98px) {
@@ -14431,16 +14432,16 @@ canvas {
 }
 
 .be-left-sidebar .left-sidebar-toggle:before {
-  content: '\f2f2';
+  content: '\F035D';
   float: right;
-  font-family: 'Material Icons';
+  font-family: 'Material Design Icons';
   font-size: 2.077rem;
   line-height: 22px;
   color: #c5c5c5;
 }
 
 .be-left-sidebar .left-sidebar-toggle.open:before {
-  content: '\f2f8';
+  content: '\F0360';
 }
 
 @media (max-width: 767.98px) {
@@ -14781,9 +14782,9 @@ canvas {
 }
 
 .be-left-sidebar .sidebar-elements li.parent > a:before {
-  content: '\f2f2';
+  content: '\F035D';
   float: right;
-  font-family: 'Material Icons';
+  font-family: 'Material Design Icons';
   font-size: 1.615rem;
   color: #b0b0b0;
 }
@@ -14795,7 +14796,7 @@ canvas {
 }
 
 .be-left-sidebar .sidebar-elements li.parent.open > a:before {
-  content: '\f2f8';
+  content: '\F0360';
 }
 
 .be-left-sidebar .sidebar-elements li.open > ul {
@@ -16413,8 +16414,8 @@ canvas {
 }
 
 .be-scroll-top:before {
-  content: '\f2fc';
-  font-family: 'Material Icons';
+  content: '\F0143';
+  font-family: 'Material Design Icons';
   font-size: 2.538rem;
   display: inline-block;
   vertical-align: middle;
@@ -16586,13 +16587,13 @@ canvas {
 }
 
 .be-sub-navigation-collapse.collapsed:before {
-  content: '\f2f2';
+  content: '\F035D';
 }
 
 .be-sub-navigation-collapse:before {
-  content: '\f2f8';
+  content: '\F0360';
   float: right;
-  font-family: 'Material Icons';
+  font-family: 'Material Design Icons';
   font-size: 2.077rem;
   line-height: 22px;
   color: #c5c5c5;
@@ -16701,7 +16702,7 @@ canvas {
   .be-mega-menu-section.parent > .nav-link:after {
     position: absolute;
     content: '';
-    font-family: 'Material Icons';
+    font-family: 'Material Design Icons';
     font-size: 1.615rem;
     vertical-align: middle;
     top: 0;
@@ -16874,7 +16875,7 @@ canvas {
 }
 
 .be-sub-header .navbar-toggler.collapsed .mega-menu-toggle:before {
-  content: '\f2f2';
+  content: '\F035D';
 }
 
 .be-sub-header .navbar-toggler .mega-menu-toggle {
@@ -16888,9 +16889,9 @@ canvas {
 }
 
 .be-sub-header .navbar-toggler .mega-menu-toggle:before {
-  content: '\f2f8';
+  content: '\F0360';
   float: right;
-  font-family: 'Material Icons';
+  font-family: 'Material Design Icons';
   font-size: 2.077rem;
   line-height: 22px;
   color: #c5c5c5;
@@ -16983,7 +16984,7 @@ canvas {
   .be-sub-header .navbar-nav > .nav-item.parent > .nav-link:after {
     position: absolute;
     content: '';
-    font-family: 'Material Icons';
+    font-family: 'Material Design Icons';
     font-size: 1.615rem;
     vertical-align: middle;
     right: 15px;
@@ -17119,7 +17120,7 @@ canvas {
 .be-nav-tabs-sub > .nav-item.parent > .nav-link:after {
   position: absolute;
   content: '';
-  font-family: 'Material Icons';
+  font-family: 'Material Design Icons';
   font-size: 1.615rem;
   vertical-align: middle;
   margin-top: 1px;
@@ -23798,9 +23799,9 @@ fieldset[disabled] .btn-color.btn-evernote.active {
 }
 
 .custom-checkbox .custom-control-input:checked ~ .custom-control-label::after {
-  content: '\f26b';
+  content: '\F012C';
   font-size: 1.5452rem;
-  font-family: 'Material Icons';
+  font-family: 'Material Design Icons';
   margin: 0 0;
   font-weight: normal;
   text-align: center;
@@ -23816,12 +23817,12 @@ fieldset[disabled] .btn-color.btn-evernote.active {
 }
 
 .custom-radio .custom-control-input:checked ~ .custom-control-label::after {
-  content: '\f26d';
+  content: '\F0765';
   width: 1.77592rem;
   height: 1.77592rem;
   margin: 0 0;
   font-size: 1rem;
-  font-family: 'Material Icons';
+  font-family: 'Material Design Icons';
   text-align: center;
   line-height: 1.8;
 }
@@ -28321,8 +28322,8 @@ fieldset[disabled] .full-calendar .fc-button.active {
 
 .gritter-item-wrapper .gritter-item .gritter-content.gritter-with-image .gritter-close:after,
 .gritter-item-wrapper .gritter-item .gritter-content.gritter-without-image .gritter-close:after {
-  content: '\f136';
-  font-family: 'Material Icons';
+  content: '\F0156';
+  font-family: 'Material Design Icons';
   color: #ffffff;
   font-size: 1.538rem;
   text-shadow: none;
@@ -28577,8 +28578,8 @@ fieldset[disabled] .full-calendar .fc-button.active {
 }
 
 .select2-container--default .select2-selection--single .select2-selection__arrow b:after {
-  content: '\f2f9';
-  font-family: 'Material Icons';
+  content: '\F035D';
+  font-family: 'Material Design Icons';
   font-size: 1.923rem;
   font-weight: normal;
   line-height: 3.5382rem;
@@ -28636,7 +28637,7 @@ fieldset[disabled] .full-calendar .fc-button.active {
   .select2-selection--single
   .select2-selection__arrow
   b:after {
-  content: '\f2f9';
+  content: '\F035D';
 }
 
 .select2-container--default .select2-results__group {
@@ -29100,7 +29101,7 @@ fieldset[disabled] .full-calendar .fc-button.active {
 
 .dd-list .dd-item > button,
 .dd-list .dd3-item > button {
-  font-family: 'Material Icons';
+  font-family: 'Material Design Icons';
   display: block;
   position: relative;
   cursor: pointer;
@@ -29121,7 +29122,7 @@ fieldset[disabled] .full-calendar .fc-button.active {
 
 .dd-list .dd-item > button:before,
 .dd-list .dd3-item > button:before {
-  content: '\f278';
+  content: '\F0415';
   display: block;
   position: absolute;
   width: 100%;
@@ -29131,7 +29132,7 @@ fieldset[disabled] .full-calendar .fc-button.active {
 
 .dd-list .dd-item > button[data-action='collapse']:before,
 .dd-list .dd3-item > button[data-action='collapse']:before {
-  content: '\f273';
+  content: '\F0374';
 }
 
 .dd-list .dd-item .dd3-content,
@@ -30154,8 +30155,8 @@ fieldset[disabled] .full-calendar .fc-button.active {
 .widget-calendar .ui-datepicker .ui-datepicker-header .ui-datepicker-prev span:after,
 .widget-calendar .ui-datepicker .ui-datepicker-header .ui-datepicker-next span:after {
   cursor: pointer;
-  content: '\f2fa';
-  font-family: 'Material Icons';
+  content: '\F035E';
+  font-family: 'Material Design Icons';
   display: block;
   position: absolute;
   width: 16px;
@@ -30173,7 +30174,7 @@ fieldset[disabled] .full-calendar .fc-button.active {
 }
 
 .widget-calendar .ui-datepicker .ui-datepicker-header .ui-datepicker-next span:after {
-  content: '\f2fb';
+  content: '\F035F';
   right: 2px;
 }
 

@@ -29,7 +29,7 @@ export class TaskService {
   }
 
   queryTasks(params?: any): Observable<any> {
-    return this.http.get(`${this.valtimoEndpointUri}task`, {observe: 'response', params: params});
+    return this.http.get(`${this.valtimoEndpointUri}task`, {observe: 'response', params});
   }
 
   getTasks(): Observable<Task[]> {
@@ -54,7 +54,7 @@ export class TaskService {
 
   completeTask(id: string, variables: Map<string, any>): Observable<any> {
     return this.http.post(this.valtimoEndpointUri + 'task/' + id + '/complete', {
-      variables: variables,
+      variables,
       filesToDelete: [],
     });
   }

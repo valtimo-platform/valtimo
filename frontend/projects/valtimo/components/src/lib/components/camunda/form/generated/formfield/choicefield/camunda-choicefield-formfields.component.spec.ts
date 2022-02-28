@@ -100,7 +100,7 @@ describe('CamundaChoicefieldFormfieldComponent', () => {
         values: enumValues,
         name: 'ChoiceField',
       },
-      validationConstraints: validationConstraints,
+      validationConstraints,
     };
   }
 

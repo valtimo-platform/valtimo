@@ -17,7 +17,7 @@
 <div class="main-content">
   <div class="container-fluid">
     <div class="col-12 px-0 mb-5">
-      <ng-container *ngIf="!(loading$ | async); else loading">
+      <ng-container *ngIf="(loading$ | async) === false; else loading">
         <valtimo-widget *ngIf="translatedAuthority$ | async as authority">
           <div>
             <div class="card-body bg-light">

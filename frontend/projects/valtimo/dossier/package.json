@@ -3,13 +3,13 @@
   "license": "EUPL-1.2",
   "version": "4.15.2",
   "peerDependencies": {
-    "@angular/common": "^10.0.11",
-    "@angular/core": "^10.0.11"
+    "@angular/common": "^13.2.3",
+    "@angular/core": "^13.2.3"
   },
   "dependencies": {
     "ngx-csv": "^0.3.1",
     "ngx-toastr": "^13.0.0",
-    "moment": "2.24.0",
+    "moment": "2.29.1",
     "@ngx-translate/core": "^13.0.0",
     "@ngx-translate/http-loader": "6.0.0",
     "tslib": "^2.0.0"

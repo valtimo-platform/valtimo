@@ -17,7 +17,7 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {editProductAanvragenConnectorForm} from './edit-product-aanvragen-connector.form';
 import {FormMappingService, FormTranslationService} from '@valtimo/form';
-import {DocumentDefinition, DocumentService,} from '@valtimo/document';
+import {DocumentDefinition, DocumentService} from '@valtimo/document';
 import {ExtendedComponentSchema} from 'formiojs';
 import {BehaviorSubject, combineLatest, Subject, Subscription} from 'rxjs';
 import {ConnectorProperties} from '../../models';
@@ -38,7 +38,7 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
   @Input() defaultName!: string;
   @Input() showDeleteButton = false;
 
-  @Output() propertiesSave = new EventEmitter<{ properties: ConnectorProperties; name: string }>();
+  @Output() propertiesSave = new EventEmitter<{properties: ConnectorProperties; name: string}>();
   @Output() connectorDelete = new EventEmitter<any>();
 
   formRefresh$ = new Subject<FormioRefreshValue>();
@@ -46,8 +46,8 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
   translatedFormDefinition$ = this.formDefinition$.pipe(
     map(definition => this.formTranslationService.translateForm(definition))
   );
-  caseDefinitionOptions: Array<{ label: string; value: string }> = [];
-  processDocumentDefinitionOptions: { [caseDefinitionId: string]: Array<string> } = {};
+  caseDefinitionOptions: Array<{label: string; value: string}> = [];
+  processDocumentDefinitionOptions: {[caseDefinitionId: string]: Array<string>} = {};
 
   readonly options: FormioOptions = {
     disableAlerts: true,
@@ -62,8 +62,7 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
     private readonly documentService: DocumentService,
     private readonly translateService: TranslateService,
     private readonly connectorManagementService: ConnectorManagementService
-  ) {
-  }
+  ) {}
 
   ngOnInit(): void {
     window['productRequestDefinitions'] = {};
@@ -106,7 +105,7 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
 
   private prefillForm(): void {
     const properties = cloneDeep(this.properties);
-    const submission: { [key: string]: string } = {};
+    const submission: {[key: string]: string} = {};
 
     submission.objectsApiConnectionName = properties.objectsApiConnectionName;
     submission.openNotificatieConnectionName = properties.openNotificatieConnectionName;
@@ -146,9 +145,10 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
           )
         ),
         tap(res => {
-          this.caseDefinitionOptions = documentDefinitions.map(documentDefinition => {
-            return {label: documentDefinition.id.name, value: documentDefinition.id.name};
-          });
+          this.caseDefinitionOptions = documentDefinitions.map(documentDefinition => ({
+            label: documentDefinition.id.name,
+            value: documentDefinition.id.name,
+          }));
 
           documentDefinitions.forEach((documentDefinition, index) => {
             this.processDocumentDefinitionOptions[documentDefinition.id.name] = res[index].map(
@@ -174,7 +174,8 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
   }
 
   private loadConnectorNames(): void {
-    this.connectorManagementService.getConnectorTypes()
+    this.connectorManagementService
+      .getConnectorTypes()
       .pipe(
         tap(res => {
           res.forEach(connectorType => {
@@ -190,8 +191,9 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
   }
 
   private loadConnectorNamesByType(windowKey: string, connectorTypeId: string) {
-    this.connectorManagementService.getConnectorInstancesByType(connectorTypeId)
-      .pipe(map(res => window[windowKey] = res.content.map(connector => connector.name)))
+    this.connectorManagementService
+      .getConnectorInstancesByType(connectorTypeId)
+      .pipe(map(res => (window[windowKey] = res.content.map(connector => connector.name))))
       .subscribe();
   }
 }

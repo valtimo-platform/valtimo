@@ -36,7 +36,7 @@ export class EditTaakConnectorComponent implements OnInit, OnDestroy {
   @Input() defaultName!: string;
   @Input() showDeleteButton = false;
 
-  @Output() propertiesSave = new EventEmitter<{ properties: ConnectorProperties; name: string }>();
+  @Output() propertiesSave = new EventEmitter<{properties: ConnectorProperties; name: string}>();
   @Output() connectorDelete = new EventEmitter<any>();
 
   formRefresh$ = new Subject<FormioRefreshValue>();
@@ -57,8 +57,7 @@ export class EditTaakConnectorComponent implements OnInit, OnDestroy {
     private readonly formMappingService: FormMappingService,
     private readonly translateService: TranslateService,
     private readonly connectorManagementService: ConnectorManagementService
-  ) {
-  }
+  ) {}
 
   ngOnInit(): void {
     this.openFormDefinitionSubscription();
@@ -97,19 +96,22 @@ export class EditTaakConnectorComponent implements OnInit, OnDestroy {
   }
 
   private prefillForm(): void {
-    timer(100).pipe(tap(() => {
-        if (this.defaultName !== undefined) {
-          const properties = cloneDeep(this.properties);
-          const submission: { [key: string]: string } = {};
+    timer(100)
+      .pipe(
+        tap(() => {
+          if (this.defaultName !== undefined) {
+            const properties = cloneDeep(this.properties);
+            const submission: {[key: string]: string} = {};
 
-          submission.objectsApiConnectionName = properties.objectsApiConnectionName;
-          submission.openNotificatieConnectionName = properties.openNotificatieConnectionName;
-          submission.connectorName = this.defaultName;
+            submission.objectsApiConnectionName = properties.objectsApiConnectionName;
+            submission.openNotificatieConnectionName = properties.openNotificatieConnectionName;
+            submission.connectorName = this.defaultName;
 
-          this.refreshForm({submission: {data: submission}});
-        }
-      })
-    ).subscribe()
+            this.refreshForm({submission: {data: submission}});
+          }
+        })
+      )
+      .subscribe();
   }
 
   private refreshForm(refreshValue: FormioRefreshValue): void {
@@ -117,7 +119,8 @@ export class EditTaakConnectorComponent implements OnInit, OnDestroy {
   }
 
   private loadConnectorNames(): void {
-    this.connectorManagementService.getConnectorTypes()
+    this.connectorManagementService
+      .getConnectorTypes()
       .pipe(
         tap(res => {
           res.forEach(connectorType => {
@@ -133,8 +136,9 @@ export class EditTaakConnectorComponent implements OnInit, OnDestroy {
   }
 
   private loadConnectorNamesByType(windowKey: string, connectorTypeId: string) {
-    this.connectorManagementService.getConnectorInstancesByType(connectorTypeId)
-      .pipe(map(res => window[windowKey] = res.content.map(connector => connector.name)))
+    this.connectorManagementService
+      .getConnectorInstancesByType(connectorTypeId)
+      .pipe(map(res => (window[windowKey] = res.content.map(connector => connector.name))))
       .subscribe();
   }
 }

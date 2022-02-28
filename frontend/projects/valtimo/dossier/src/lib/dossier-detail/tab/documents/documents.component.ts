@@ -44,12 +44,10 @@ export class DossierDetailTabDocumentsComponent implements OnInit {
     ),
     map(([document]) => {
       const relatedFiles = document?.relatedFiles || [];
-      const translatedFiles = relatedFiles.map(file => {
-        return {
-          ...file,
-          createdBy: file.createdBy || this.translateService.instant('list.automaticallyGenerated'),
-        };
-      });
+      const translatedFiles = relatedFiles.map(file => ({
+        ...file,
+        createdBy: file.createdBy || this.translateService.instant('list.automaticallyGenerated'),
+      }));
 
       return translatedFiles || [];
     })

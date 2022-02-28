@@ -15,10 +15,8 @@
  */
 
 import {TypeConverter} from './type-converters.model';
+import moment from 'moment';
 
-import * as momentImported from 'moment';
-
-const moment = momentImported;
 moment.locale(localStorage.getItem('langKey'));
 
 export class DateTypeConverter implements TypeConverter {

@@ -37,7 +37,7 @@ export class CamundaCustomFormComponent implements OnInit {
 
   ngOnInit() {
     const factories = Array.from(this.resolver['_factories'].keys());
-    const factoryClass = <Type<any>>factories.find((x: any) => x.name === this.componentName);
+    const factoryClass = factories.find((x: any) => x.name === this.componentName) as any;
     const cmpFactory = this.resolver.resolveComponentFactory(factoryClass);
     this.viewContainerRef.createComponent(cmpFactory);
   }

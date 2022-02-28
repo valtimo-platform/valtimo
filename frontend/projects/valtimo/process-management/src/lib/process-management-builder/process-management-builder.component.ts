@@ -70,7 +70,7 @@ export class ProcessManagementBuilderComponent implements OnInit, OnDestroy {
         moddleExtensions: {
           camunda: CamundaModdleDescriptor,
         },
-        elementTemplates: elementTemplates,
+        elementTemplates,
       });
       if (this.processKey) {
         this.loadProcessVersions(this.processKey);

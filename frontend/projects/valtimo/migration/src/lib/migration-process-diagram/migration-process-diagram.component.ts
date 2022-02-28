@@ -25,7 +25,7 @@ import {
   ViewChild,
 } from '@angular/core';
 
-import * as BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
+import BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
 import {NGXLogger} from 'ngx-logger';
 
 @Component({

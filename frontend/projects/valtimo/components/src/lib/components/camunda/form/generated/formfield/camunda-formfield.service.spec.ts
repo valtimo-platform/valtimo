@@ -37,7 +37,7 @@ describe('CamundaFormfieldService', () => {
       label: 'formfield1',
       value: {},
       properties: {},
-      validationConstraints: validationConstraints,
+      validationConstraints,
     };
   }
 
@@ -76,7 +76,7 @@ describe('CamundaFormfieldService', () => {
     const validationConstraints = [
       {
         name: 'minDate',
-        configuration: configuration,
+        configuration,
       },
     ];
     const minDateFormField = formField(validationConstraints);
@@ -91,7 +91,7 @@ describe('CamundaFormfieldService', () => {
     const validationConstraints = [
       {
         name: 'maxDate',
-        configuration: configuration,
+        configuration,
       },
     ];
     const maxDateFormField = formField(validationConstraints);

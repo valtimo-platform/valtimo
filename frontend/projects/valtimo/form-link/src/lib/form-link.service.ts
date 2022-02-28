@@ -86,7 +86,7 @@ export class FormLinkService {
 
     return this.http.get(`${this.valtimoApiConfig.endpointUri}form-association/form-definition`, {
       headers: InterceptorSkipHeader.set('Content-Type', 'application/json'),
-      params: params,
+      params,
     });
   }
 
@@ -134,7 +134,7 @@ export class FormLinkService {
 
     const httpOptions = {
       headers: new HttpHeaders().set('Content-Type', 'application/json'),
-      params: params,
+      params,
     };
     return this.http.post<FormSubmissionResult>(
       `${this.valtimoApiConfig.endpointUri}form-association/form-definition/submission`,

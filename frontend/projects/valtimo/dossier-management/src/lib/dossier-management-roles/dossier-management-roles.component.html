@@ -15,13 +15,13 @@
   -->
 
 <!--<h2 class="mb-4 mt-6">{{ 'connectorManagement.extension.title' | translate }}</h2>-->
-<h2 class="mb-4 mt-6">{{'dossierManagement.roles.rolesTitle' | translate}}</h2>
-<p class="card-text">{{'dossierManagement.roles.rolesDescription' | translate}}</p>
+<h2 class="mb-4 mt-6">{{ 'dossierManagement.roles.rolesTitle' | translate }}</h2>
+<p class="card-text">{{ 'dossierManagement.roles.rolesDescription' | translate }}</p>
 
 <valtimo-multiselect-dropdown
   [items]="roles | async"
   [selectedItems]="preSelectedItems | async"
   [dropdownSettings]="dropdownSettings"
-  [placeHolder]="'dossierManagement.roles.rolesPlaceHolder'|translate"
+  [placeHolder]="'dossierManagement.roles.rolesPlaceHolder' | translate"
   (itemsSelected)="onSelectedItems($event)"
 ></valtimo-multiselect-dropdown>

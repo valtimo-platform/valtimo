@@ -44,9 +44,11 @@ import {TranslateService} from '@ngx-translate/core';
 export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   @Input() form: any;
   @Input() options: ValtimoFormioOptions;
-  @Input() submission?: object | {} = {};
+  @Input() submission?: object = {};
   @Input() formRefresh$!: Subject<FormioRefreshValue>;
+  // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() submit: EventEmitter<any> = new EventEmitter();
+  // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() change: EventEmitter<any> = new EventEmitter();
   refreshForm: EventEmitter<FormioRefreshValue> = new EventEmitter();
   formDefinition: FormioForm;

@@ -30,6 +30,8 @@
 .icon-container .icon {
   background-color: #fff;
   color: #6b6b6b;
+  line-height: 2rem;
+  cursor: pointer;
 }
 
 .toggle-filter-sidebar:hover .icon-container .icon {

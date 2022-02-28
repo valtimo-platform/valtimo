@@ -18,6 +18,7 @@ import {Component, OnInit} from '@angular/core';
 import {NGXLogger} from 'ngx-logger';
 import {Auth0UserService} from '../auth0-user.service';
 
+// eslint-disable-next-line no-var
 declare var $;
 
 @Component({

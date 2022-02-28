@@ -1,0 +1,178 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container>
+  <div class="v-table-container">
+    <table class="v-table">
+      <ng-container *ngTemplateOutlet="tableHead"></ng-container>
+      <ng-container *ngTemplateOutlet="tableBody"></ng-container>
+      <ng-container *ngTemplateOutlet="tableBodyLoading"></ng-container>
+    </table>
+    <ng-container *ngTemplateOutlet="paginationContainer"></ng-container>
+  </div>
+</ng-container>
+
+<ng-template #tableHead>
+  <thead *ngIf="columns">
+    <tr>
+      <th class="v-table__header" *ngFor="let column of columns">
+        {{ column.labelTranslationKey | translate }}
+      </th>
+      <th *ngIf="showEditButtons" class="v-table__header"></th>
+    </tr>
+  </thead>
+</ng-template>
+
+<ng-template #tableBody>
+  <tbody class="v-table__body" *ngIf="!loading && items">
+    <tr *ngFor="let item of items" class="v-table__row">
+      <ng-container *ngTemplateOutlet="tableCell; context: {item: item}"></ng-container>
+      <ng-container *ngTemplateOutlet="tableEditButtonCell; context: {item: item}"></ng-container>
+    </tr>
+  </tbody>
+</ng-template>
+
+<ng-template #tableCell let-item="item">
+  <td *ngFor="let column of columns" class="v-table__cell">
+    <span class="v-table__cell-content">
+      {{ item[column.dataKey] }}
+    </span>
+  </td>
+</ng-template>
+
+<ng-template #tableEditButtonCell let-item="item">
+  <td *ngIf="showEditButtons" class="v-table__cell v-table__cell--with-button">
+    <span class="v-table__cell-button-container">
+      <v-button type="secondary" (clickEvent)="editButtonClicked.emit(item)">{{
+        editButtonTranslationKey || 'interface.edit' | translate
+      }}</v-button>
+    </span>
+  </td>
+</ng-template>
+
+<ng-template #tableBodyLoading>
+  <tbody class="v-table__body" *ngIf="loading">
+    <tr *ngFor="let item of getArrayOfLength(amountOfLoadingRows)" class="v-table__row">
+      <ng-container *ngTemplateOutlet="tableCellLoading"></ng-container>
+      <ng-container *ngTemplateOutlet="tableEditButtonCellLoading"></ng-container>
+    </tr>
+  </tbody>
+</ng-template>
+
+<ng-template #tableCellLoading>
+  <td *ngFor="let column of columns" class="v-table__cell">
+    <span class="v-table__cell-content"
+      ><ngx-skeleton-loader
+        appearance="line"
+        [theme]="{
+          width: 'var(--v-table-loading-skeleton-width)',
+          height: 'var(--v-table-loading-skeleton-line-height)',
+          margin: '0',
+          'background-color': 'var(--v-table-loading-skeleton-bg-color)'
+        }"
+      ></ngx-skeleton-loader
+    ></span>
+  </td>
+</ng-template>
+
+<ng-template #tableEditButtonCellLoading>
+  <td *ngIf="showEditButtons" class="v-table__cell v-table__cell--with-button">
+    <span class="v-table__cell-button-container">
+      <v-button type="secondary" [disabled]="true">{{
+        editButtonTranslationKey || 'interface.edit' | translate
+      }}</v-button>
+    </span>
+  </td>
+</ng-template>
+
+<ng-template #paginationContainer>
+  <div *ngIf="pagination$ | async as paginationObject" class="v-table__pagination-container">
+    <div class="v-table__pagination-size-container">
+      <ng-container
+        *ngTemplateOutlet="paginationSizeSelect; context: {paginationObject: paginationObject}"
+      ></ng-container>
+      <ng-container
+        *ngTemplateOutlet="paginationSizeAmountText; context: {paginationObject: paginationObject}"
+      ></ng-container>
+    </div>
+    <ng-container
+      *ngTemplateOutlet="paginationNavigation; context: {paginationObject: paginationObject}"
+    ></ng-container>
+  </div>
+</ng-template>
+
+<ng-template #paginationSizeSelect let-paginationObject="paginationObject">
+  <span class="v-table__pagination-size-text">{{ 'interface.show' | translate }}</span>
+  <span class="v-table__pagination-size-select">
+    <v-select
+      [items]="paginationOptions"
+      [clearable]="false"
+      [defaultSelection]="(defaultPaginationSize$ | async) || paginationOptions[0]"
+      [disabled]="loading"
+      (selectedChange)="setPaginationSize($event)"
+    ></v-select>
+  </span>
+  <span class="v-table__pagination-size-text">{{
+    itemsTranslationKey ? (itemsTranslationKey | translate) : ('interface.items' | translate)
+  }}</span>
+</ng-template>
+
+<ng-template #paginationSizeAmountText let-paginationObject="paginationObject">
+  <ng-container *ngTemplateOutlet="paginationSizeAmountTextLoading"></ng-container>
+  <span class="v-table__pagination-amount-text" *ngIf="!loading && items && paginationObject">{{
+    items.length +
+      ' ' +
+      ('interface.of' | translate) +
+      ' ' +
+      paginationObject.collectionSize +
+      ' ' +
+      (itemsTranslationKey ? (itemsTranslationKey | translate) : ('interface.items' | translate)) +
+      ' ' +
+      ('interface.visible' | translate)
+  }}</span>
+</ng-template>
+
+<ng-template #paginationSizeAmountTextLoading>
+  <span class="v-table__pagination-amount-text" *ngIf="loading"
+    ><ngx-skeleton-loader
+      appearance="line"
+      [theme]="{
+        width: 'var(--v-table-loading-skeleton-width)',
+        height: 'var(--v-table-loading-skeleton-line-height)',
+        margin: '0',
+        'background-color': 'var(--v-table-loading-skeleton-pagination-size-bg-color)'
+      }"
+    ></ngx-skeleton-loader
+  ></span>
+</ng-template>
+
+<ng-template #paginationNavigation let-paginationObject="paginationObject">
+  <div
+    class="v-table__pagination-navigation-container"
+    *ngIf="paginationObject && paginationObject.collectionSize > paginationObject.size"
+  >
+    <span *ngIf="paginationObject.page > 1">
+      <v-button (clickEvent)="setPage('previous')" type="text" [disabled]="loading">{{
+        'interface.previous' | translate
+      }}</v-button>
+    </span>
+    <span *ngIf="paginationObject.page * paginationObject.size < paginationObject.collectionSize">
+      <v-button (clickEvent)="setPage('next')" type="text" [disabled]="loading">{{
+        'interface.next' | translate
+      }}</v-button>
+    </span>
+  </div>
+</ng-template>

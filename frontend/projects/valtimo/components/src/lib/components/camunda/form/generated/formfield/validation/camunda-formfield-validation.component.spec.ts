@@ -26,9 +26,8 @@ import {
 } from '@angular/forms';
 import {FormField} from '../formfield.model';
 import {maxDate, minDate} from './date.validators';
-import * as momentImported from 'moment';
+import moment from 'moment';
 
-const moment = momentImported;
 moment.locale(localStorage.getItem('langKey'));
 
 describe('CamundaFormfieldValidationComponent', () => {

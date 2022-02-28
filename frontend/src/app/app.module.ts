@@ -158,11 +158,6 @@ export function tabsFactory() {
     }),
   ],
   providers: [FormioComponent],
-  entryComponents: [
-    CustomFormExampleComponent,
-    StartProcessCustomFormComponent,
-    FormIoUploaderComponent,
-  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {

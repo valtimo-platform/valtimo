@@ -60,7 +60,7 @@ describe('CamundaDateFormfieldComponent', () => {
       label: 'formfield1',
       value: {},
       properties: {},
-      validationConstraints: validationConstraints,
+      validationConstraints,
     };
   }
 

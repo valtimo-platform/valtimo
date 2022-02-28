@@ -33,7 +33,7 @@ export class AuthorityService {
   query(params?: any): Observable<any> {
     return this.http.get<Authority>(`${this.valtimoApiConfig.endpointUri}authorities`, {
       observe: 'response',
-      params: params,
+      params,
     });
   }
 

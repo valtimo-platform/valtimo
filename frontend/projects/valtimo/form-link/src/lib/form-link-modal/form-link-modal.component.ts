@@ -33,6 +33,7 @@ import {
 import {NGXLogger} from 'ngx-logger';
 import {TranslateService} from '@ngx-translate/core';
 
+// eslint-disable-next-line no-var
 declare var $;
 
 @Component({
