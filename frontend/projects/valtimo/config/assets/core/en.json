@@ -213,7 +213,9 @@
     "selectZaakStatus": "Select a zaak status",
     "noZaakStatusConfigured": "No zaak status available go to Open Zaak to create a zaak status",
     "selectZaakResult": "Select a zaak result",
-    "noZaakResultConfigured": "No zaak result available go to Open Zaak to create a zaak result"
+    "noZaakResultConfigured": "No zaak result available go to Open Zaak to create a zaak result",
+    "selectBesluitType": "Select a besluit type",
+    "noBesluitTypeConfigured": "No besluit type available go to Open Zaak to create a besluit type"
   },
   "task-list": {
     "mine": {

@@ -56,6 +56,10 @@ export class OpenZaakService {
     return this.http.get<ZaakType[]>(`${this.valtimoApiConfig.endpointUri}openzaak/zaaktype`);
   }
 
+  getBesluittypen(): Observable<any> {
+    return this.http.get(`${this.valtimoApiConfig.endpointUri}besluittype`);
+  }
+
   getInformatieObjectTypes(): Observable<InformatieObjectType[]> {
     return this.http.get<InformatieObjectType[]>(
       `${this.valtimoApiConfig.endpointUri}openzaak/informatie-object-typen/${this.catalogus}`
