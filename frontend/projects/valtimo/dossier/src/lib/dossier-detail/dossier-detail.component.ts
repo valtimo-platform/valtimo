@@ -29,6 +29,8 @@ import {Location} from '@angular/common';
 import {TabService} from '../tab.service';
 import {ProcessService} from '@valtimo/process';
 import {DossierSupportingProcessStartModalComponent} from '../dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
+import {ConfigService} from '@valtimo/config';
+import * as moment from 'moment';
 
 @Component({
   selector: 'valtimo-dossier-detail',
@@ -48,6 +50,7 @@ export class DossierDetailComponent implements OnInit {
   public processDefinitionListFields: Array<any> = [];
   public processDocumentDefinitions: ProcessDocumentDefinition[] = [];
   private initialTabName: string;
+  public customDossierHeaderItems: Array<any> = [];
   @ViewChild('supportingProcessStartModal')
   supportingProcessStart: DossierSupportingProcessStartModalComponent;
 
@@ -59,7 +62,8 @@ export class DossierDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private location: Location,
-    private tabService: TabService
+    private tabService: TabService,
+    private configService: ConfigService
   ) {
     this.snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this.snapshot.get('documentDefinitionName') || '';
@@ -80,6 +84,7 @@ export class DossierDetailComponent implements OnInit {
       .subscribe(definition => {
         this.documentDefinitionNameTitle = definition.schema.title;
       });
+    this.getCustomDossierHeader();
     this.initialTabName = this.snapshot.get('tab');
     this.tabLoader.initial(this.initialTabName);
     this.getAllAssociatedProcessDefinitions();
@@ -103,5 +108,42 @@ export class DossierDetailComponent implements OnInit {
 
   startProcess(processDocumentDefinition: ProcessDocumentDefinition) {
     this.supportingProcessStart.openModal(processDocumentDefinition, this.documentId);
+  }
+
+  private getCustomDossierHeader() {
+    if (
+      this.configService.config.customDossierHeader?.hasOwnProperty(
+        this.documentDefinitionName.toLowerCase()
+      )
+    ) {
+      this.documentService.getDocument(this.documentId).subscribe(document => {
+        this.document = document;
+        this.configService.config.customDossierHeader[
+          this.documentDefinitionName.toLowerCase()
+        ]?.forEach(item => this.getCustomDossierHeaderItem(item));
+      });
+    }
+  }
+
+  private getCustomDossierHeaderItem(item) {
+    this.customDossierHeaderItems.push({
+      label: item['labelTranslationKey'] || '',
+      columnSize: item['columnSize'] || 3,
+      textSize: item['textSize'] || 'md',
+      customClass: item['customClass'] || '',
+      value: item['propertyPaths']?.reduce(
+        (prev, curr) => prev + this.getStringFromDocumentPath(item, curr),
+        ''
+      ),
+    });
+  }
+
+  private getStringFromDocumentPath(item, path) {
+    const prefix = item['propertyPaths'].indexOf(path) > 0 ? ' ' : '';
+    const string =
+      path.split('.').reduce((o, i) => o[i], this.document.content) || item['noValueText'] || '';
+    const regex = new RegExp('(T\\d\\d:\\d\\d:\\d\\d[+-])');
+    const formattedString = regex.test(string) ? moment(string).format('DD-MM-YYYY') : string;
+    return prefix + formattedString;
   }
 }
