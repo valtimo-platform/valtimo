@@ -33,6 +33,7 @@ export class ConfigService {
 
   get config(): ValtimoConfig {
     const config = this.valtimoConfig;
+    const translationResourcesConfig = config.translationResources;
 
     return {
       ...config,
@@ -51,6 +52,12 @@ export class ConfigService {
         ...config.valtimoApi,
         endpointUri: this.formatUrlTrailingSlash(config.valtimoApi.endpointUri, true),
       },
+      ...(translationResourcesConfig && {
+        translationResources: translationResourcesConfig.map(resource => ({
+          prefix: this.formatUrlTrailingSlash(resource.prefix, true),
+          suffix: resource.suffix
+        }))
+      })
     };
   }
 
