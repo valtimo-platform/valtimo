@@ -16,11 +16,12 @@
 
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import {TimelineItem, TimelineItemImpl} from '@valtimo/components';
-import moment from 'moment';
+import * as moment_ from 'moment';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentService, AuditEvent} from '@valtimo/document';
 import {NgxSpinnerService} from 'ngx-spinner';
 
+const moment = moment_;
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
 

@@ -43,17 +43,17 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         retry(1),
         catchError((error: HttpErrorResponse) => {
           let errorMessage = '';
-          if (error?.error instanceof ErrorEvent) {
+          if (error.error instanceof ErrorEvent) {
             // client-side error
             errorMessage = `Error: ${error.error.message}`;
           } else {
             // server-side error
-            if (error?.error?.errors) {
-              errorMessage = error?.error?.errors;
-            } else if (error?.error?.message) {
-              errorMessage = error?.error?.message;
+            if (error.error.errors) {
+              errorMessage = error.error.errors;
+            } else if (error.error.message) {
+              errorMessage = error.error.message;
             } else {
-              errorMessage = `Error Code: ${error?.status}\nMessage: ${error?.message}`;
+              errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
             }
           }
           this.toastr.warning(`An unexpected error occurred...${errorMessage}`);

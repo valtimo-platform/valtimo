@@ -21,7 +21,6 @@ import {ITranslationResource} from 'ngx-translate-multi-http-loader';
 
 export const VALTIMO_CONFIG = new InjectionToken<ValtimoConfig>('valtimoConfig');
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export const INITIALIZERS = new InjectionToken<(() => Function)[]>('initializers');
 
 export interface DefinitionColumn {
@@ -42,7 +41,6 @@ export interface CustomDossierHeaderItem {
 }
 
 export interface ValtimoConfig {
-  // eslint-disable-next-line @typescript-eslint/ban-types
   initializers: ((injector: Injector) => Function)[];
   menu: MenuConfig;
   authentication: Auth;

@@ -2,7 +2,16 @@
   "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../../dist/valtimo/milestone",
   "lib": {
-    "entryFile": "src/public-api.ts"
+    "entryFile": "src/public-api.ts",
+    "umdModuleIds": {
+      "@valtimo/contract": "contract",
+      "@valtimo/process": "process",
+      "@valtimo/components": "components",
+      "@valtimo/security": "security",
+      "@valtimo/config": "config",
+      "@ngx-translate/core": "core$1",
+      "ngx-color-picker": "ngxColorPicker"
+    }
   },
-  "allowedNonPeerDependencies": ["ngx-color-picker"]
+  "whitelistedNonPeerDependencies": ["ngx-color-picker"]
 }

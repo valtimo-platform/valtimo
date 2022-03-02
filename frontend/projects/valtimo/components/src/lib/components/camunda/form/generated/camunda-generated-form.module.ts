@@ -43,5 +43,14 @@ import {CamundaFormfieldValidationComponent} from './formfield/validation/camund
   ],
   imports: [CommonModule, ReactiveFormsModule],
   exports: [CamundaGeneratedFormComponent],
+  entryComponents: [
+    CamundaStringFormfieldComponent,
+    CamundaBooleanFormfieldComponent,
+    CamundaDateFormfieldComponent,
+    CamundaLongFormfieldComponent,
+    CamundaEnumFormfieldComponent,
+    CamundaTextareaFormfieldComponent,
+    CamundaChoicefieldFormfieldComponent,
+  ],
 })
 export class CamundaGeneratedFormModule {}

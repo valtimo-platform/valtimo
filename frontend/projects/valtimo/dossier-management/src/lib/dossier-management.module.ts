@@ -58,5 +58,6 @@ import {DossierManagementRolesComponent} from './dossier-management-roles/dossie
     MultiselectDropdownModule,
   ],
   exports: [],
+  entryComponents: [ExtensionComponent],
 })
 export class DossierManagementModule {}

@@ -30,13 +30,10 @@ export function registerFormioUploadComponent(injector: Injector) {
       return true;
     }
   }
-
-  if (!customElements.get(COMPONENT_OPTIONS.selector)) {
-    registerCustomFormioComponentWithClass(
-      COMPONENT_OPTIONS,
-      FormIoUploaderComponent,
-      UploaderComponent,
-      injector
-    );
-  }
+  registerCustomFormioComponentWithClass(
+    COMPONENT_OPTIONS,
+    FormIoUploaderComponent,
+    UploaderComponent,
+    injector
+  );
 }

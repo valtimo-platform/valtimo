@@ -110,13 +110,13 @@ export class OpenZaakServiceTaskConnectorModalExtensionComponent implements OnIn
       );
       if (foundServiceTaskHandler != null) {
         this.connectedServiceTasks.push(foundServiceTaskHandler);
-        const existingServiceTaskHandlers = this.connectedZaakTypeLinks.filter(zaakTypeLink =>
-          zaakTypeLink.serviceTaskHandlers.some(
+        const existingServiceTaskHandlers = this.connectedZaakTypeLinks.filter(zaakTypeLink => {
+          return zaakTypeLink.serviceTaskHandlers.some(
             serviceHandler =>
               serviceHandler.processDefinitionKey === this.processDefinitionKey &&
               serviceHandler.serviceTaskId === this.selectedElement.id
-          )
-        );
+          );
+        });
         this.filteredConnectedZaakTypeLinks = this.connectedZaakTypeLinks.filter(
           serviceTaskHandler => !existingServiceTaskHandlers.includes(serviceTaskHandler)
         );
@@ -199,16 +199,14 @@ export class OpenZaakServiceTaskConnectorModalExtensionComponent implements OnIn
           });
         break;
       case Operation.CREATE_BESLUIT:
-        this.openZaakService
-          .getBesluittypen()
-          .subscribe((besluitTypes: ZaakResultType[]) => {
-            this.besluitTypes = besluitTypes;
-            if (data.parameter != null) {
-              this.selectedBesluitType = this.besluitTypes.find(
-                (resultType: ZaakResultType) => resultType.url === data.parameter
-              );
-            }
-          });
+        this.openZaakService.getBesluittypen().subscribe((besluitTypes: ZaakResultType[]) => {
+          this.besluitTypes = besluitTypes;
+          if (data.parameter != null) {
+            this.selectedBesluitType = this.besluitTypes.find(
+              (resultType: ZaakResultType) => resultType.url === data.parameter
+            );
+          }
+        });
         break;
       default:
         return null;
@@ -244,7 +242,6 @@ export class OpenZaakServiceTaskConnectorModalExtensionComponent implements OnIn
         parameter = this.selectedZaakTypeLink.zaakTypeUrl;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     !this.isEditMode
       ? this.createServiceTaskHandler(parameter)
       : this.modifyServieTaskHandler(zaakType, parameter);
@@ -279,7 +276,7 @@ export class OpenZaakServiceTaskConnectorModalExtensionComponent implements OnIn
     this.previousSelectedZaak = {
       zaakTypeLink: this.selectedZaakTypeLink,
       zaakType: this.selectedZaakType,
-      serviceTaskHandler,
+      serviceTaskHandler: serviceTaskHandler,
     };
   }
 

@@ -23,8 +23,8 @@ export function emailExtensionInitializer(injector: Injector): () => Promise<any
   const configService = injector.get<ConfigService>(ConfigService);
   const logger = injector.get<NGXLogger>(NGXLogger);
 
-  return (): Promise<any> =>
-    new Promise<void>((resolve, reject) => {
+  return (): Promise<any> => {
+    return new Promise((resolve, reject) => {
       try {
         logger.debug('email extension initializer before init');
         const extension = new Extension(
@@ -44,4 +44,5 @@ export function emailExtensionInitializer(injector: Injector): () => Promise<any
         reject(error);
       }
     });
+  };
 }

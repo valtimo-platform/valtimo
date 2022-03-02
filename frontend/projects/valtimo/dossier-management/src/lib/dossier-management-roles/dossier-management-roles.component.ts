@@ -40,7 +40,7 @@ export class DossierManagementRolesComponent implements OnInit {
     allowSearchFilter: true,
   };
   public roles = new BehaviorSubject<Array<Authority>>(undefined);
-  public preSelectedItems = new BehaviorSubject<Array<string>>(undefined);
+  public preSelectedItems = new BehaviorSubject<Array<String>>(undefined);
 
   constructor(
     private readonly authorityService: AuthorityService,
@@ -104,7 +104,7 @@ export class DossierManagementRolesComponent implements OnInit {
    *
    * This method will always make sure an array of strings is returned
    */
-  private returnArrayOfString(data): Array<string> {
+  private returnArrayOfString(data): Array<String> {
     return data.map(el => {
       if (typeof el === 'string') {
         return el;

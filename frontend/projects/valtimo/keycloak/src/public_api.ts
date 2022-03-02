@@ -24,4 +24,3 @@ export * from './lib/keycloak-auth-guard.service';
 export * from './lib/keycloak-user.service';
 export * from './lib/keycloak.init';
 export * from './lib/keycloak-options.service';
-export * from './lib/callback.component';

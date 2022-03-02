@@ -21,11 +21,12 @@ import {Task} from '../models';
 import {FormioSubmission, ValtimoFormioOptions, FormioOptionsImpl} from '@valtimo/components';
 import {FormSubmissionResult, FormAssociation, FormLinkService} from '@valtimo/form-link';
 import {FormioForm} from 'angular-formio';
-import moment from 'moment';
+import * as momentImported from 'moment';
 import {NGXLogger} from 'ngx-logger';
 import {ToastrService} from 'ngx-toastr';
 import {take} from 'rxjs/operators';
 
+const moment = momentImported;
 moment.locale(localStorage.getItem('langKey') || '');
 
 @Component({
@@ -45,7 +46,7 @@ export class TaskDetailModalComponent {
   @Output() formSubmit = new EventEmitter();
   @Output() assignmentOfTaskChanged = new EventEmitter();
   private formAssociation: FormAssociation;
-  public errorMessage: string = null;
+  public errorMessage: String = null;
 
   constructor(
     private readonly toastr: ToastrService,

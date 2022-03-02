@@ -22,12 +22,11 @@ import {ConfigService} from '@valtimo/config';
 import {menuInitializer} from '@valtimo/components';
 
 export function initialize(
-  // eslint-disable-next-line @typescript-eslint/ban-types
   initializers: (() => Function)[],
   logger: NGXLogger
 ): () => Promise<any> {
-  return (): Promise<any> =>
-    new Promise<void>(async (resolve, reject) => {
+  return (): Promise<any> => {
+    return new Promise(async (resolve, reject) => {
       logger.debug('Initializing application');
       try {
         logger.debug('Running', initializers.length);
@@ -42,6 +41,7 @@ export function initialize(
         reject(err);
       }
     });
+  };
 }
 
 export function initializerFactory(

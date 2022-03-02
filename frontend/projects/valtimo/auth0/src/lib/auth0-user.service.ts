@@ -120,7 +120,7 @@ export class Auth0UserService implements UserService {
 
   public async handleAuthentication() {
     this.logger.debug('handleAuthentication');
-    return new Promise<void>(resolve => {
+    return new Promise(resolve => {
       this.auth0js.parseHash((error: any, authResult: any) => {
         this.logger.debug('Checking session: ', authResult, error);
         if (error) {
@@ -142,7 +142,7 @@ export class Auth0UserService implements UserService {
   }
 
   public refreshToken(options: {doLogout: boolean} = {doLogout: true}): Promise<any> {
-    return new Promise<void>((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       this.auth0js.checkSession({}, (err: any, authResult: any) => {
         if (authResult && authResult.idToken && authResult.idTokenPayload) {
           this.localLogin(authResult);

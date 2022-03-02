@@ -25,8 +25,8 @@ import {
 } from '@angular/core';
 import {ProcessService, ProcessDefinition} from '@valtimo/process';
 import {Heatpoint} from '../models';
-import BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
-import heatmap from 'heatmap.js-fixed/build/heatmap.js';
+import * as BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
+import * as heatmap from 'heatmap.js-fixed/build/heatmap.js';
 
 @Component({
   selector: 'valtimo-analyse-process-diagram',
@@ -75,8 +75,8 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
     this.bpmnJS = new BpmnJS();
     this.bpmnJS.on('import.done', ({error}: any) => {
       if (!error && !this.initialized) {
-        const canvas = this.bpmnJS.get('canvas');
-        const eventBus = this.bpmnJS.get('eventBus');
+        const canvas = this.bpmnJS.get('canvas'),
+          eventBus = this.bpmnJS.get('eventBus');
         if (this.processDiagram.historicActivityInstances) {
           this.processDiagram.historicActivityInstances.forEach((instance: any) => {
             if (instance.activityType !== 'multiInstanceBody') {
@@ -160,10 +160,10 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
       this.max = 0;
 
       Object.keys(this.inputData).forEach(key => {
-        const diagramContainer = this.el.nativeElement.querySelector('svg').getBoundingClientRect();
-        const diagramElm = this.el.nativeElement
-          .querySelector(`g[data-element-id=${key}]`)
-          .getBoundingClientRect();
+        const diagramContainer = this.el.nativeElement.querySelector('svg').getBoundingClientRect(),
+          diagramElm = this.el.nativeElement
+            .querySelector(`g[data-element-id=${key}]`)
+            .getBoundingClientRect();
         this.setMax(key);
         this.heatPoints.data.push({
           x: Math.round(diagramElm.x - diagramContainer.x + diagramElm.width / 2),
@@ -200,10 +200,10 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
       this.max = 0;
 
       Object.keys(this.inputData).forEach(key => {
-        const diagramContainer = this.el.nativeElement.querySelector('svg').getBoundingClientRect();
-        const diagramElm = this.el.nativeElement
-          .querySelector(`g[data-element-id=${key}]`)
-          .getBoundingClientRect();
+        const diagramContainer = this.el.nativeElement.querySelector('svg').getBoundingClientRect(),
+          diagramElm = this.el.nativeElement
+            .querySelector(`g[data-element-id=${key}]`)
+            .getBoundingClientRect();
         this.setMax(key);
         this.heatPoints.data.push({
           x: Math.round(diagramElm.x - diagramContainer.x + diagramElm.width / 2),

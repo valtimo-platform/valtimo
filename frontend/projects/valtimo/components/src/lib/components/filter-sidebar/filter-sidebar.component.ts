@@ -16,7 +16,6 @@
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 
-// eslint-disable-next-line no-var
 declare var $;
 
 @Component({

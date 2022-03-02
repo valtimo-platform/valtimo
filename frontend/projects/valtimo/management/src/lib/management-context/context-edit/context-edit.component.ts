@@ -202,13 +202,13 @@ export class ContextEditComponent implements OnInit {
       );
       if (indexContextProcesses === -1 && visibleInMenu !== null) {
         contextProcessesArray.push({
-          processDefinitionKey,
-          visibleInMenu,
+          processDefinitionKey: processDefinitionKey,
+          visibleInMenu: visibleInMenu,
         });
       } else if (indexContextProcesses !== -1 && visibleInMenu !== null) {
         contextProcessesArray[indexContextProcesses] = {
-          processDefinitionKey,
-          visibleInMenu,
+          processDefinitionKey: processDefinitionKey,
+          visibleInMenu: visibleInMenu,
         };
       } else if (indexContextProcesses !== -1 && visibleInMenu === null) {
         contextProcessesArray.splice(indexContextProcesses, 1);

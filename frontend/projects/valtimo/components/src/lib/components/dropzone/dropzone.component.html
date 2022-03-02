@@ -1,6 +1,6 @@
 <form #dropzone [ngClass]="{disabled: disabled || uploading}" class="dropzone dz-clickable">
   <div class="dz-message">
-    <div class="icon large-icon"><span class="mdi mdi-cloud-upload"></span></div>
+    <div class="icon"><span class="mdi mdi-cloud-upload"></span></div>
     <ng-container *ngTemplateOutlet="body"></ng-container>
     <ng-container *ngIf="uploading">
       <ng-container *ngTemplateOutlet="progressBar"></ng-container>

@@ -3,6 +3,9 @@
   "dest": "../../../dist/valtimo/config",
   "assets": ["./assets"],
   "lib": {
-    "entryFile": "src/public-api.ts"
+    "entryFile": "src/public-api.ts",
+    "umdModuleIds": {
+      "@valtimo/contract": "contract"
+    }
   }
 }

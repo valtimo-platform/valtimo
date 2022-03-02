@@ -55,9 +55,9 @@ export class ConfigService {
       ...(translationResourcesConfig && {
         translationResources: translationResourcesConfig.map(resource => ({
           prefix: this.formatUrlTrailingSlash(resource.prefix, true),
-          suffix: resource.suffix
-        }))
-      })
+          suffix: resource.suffix,
+        })),
+      }),
     };
   }
 

@@ -22,7 +22,6 @@ import {TranslateService} from '@ngx-translate/core';
 import {ConnectorManagementService} from '../../services/connector-management/connector-management.service';
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
 import {Pagination} from '@valtimo/components';
-import {TableColumn} from '@valtimo/user-interface';
 
 @Component({
   selector: 'valtimo-connector-management',
@@ -33,15 +32,6 @@ export class ConnectorManagementComponent implements OnDestroy {
   readonly loading$ = new BehaviorSubject<boolean>(true);
 
   readonly fields$ = new BehaviorSubject<Array<{key: string; label: string}>>([]);
-
-  readonly columns$: Observable<Array<TableColumn>> = this.fields$.pipe(
-    map(fields =>
-      fields.map(field => ({
-        dataKey: field.key,
-        labelTranslationKey: field.label,
-      }))
-    )
-  );
 
   readonly currentPageAndSize$ = new BehaviorSubject<Partial<Pagination>>({
     page: 0,
@@ -84,10 +74,9 @@ export class ConnectorManagementComponent implements OnDestroy {
       });
     }),
     map(([instanceRes, typesRes]) =>
-      instanceRes.content.map(instance => ({
-        ...instance,
-        typeName: typesRes.find(type => type.id === instance.type.id)?.name,
-      }))
+      instanceRes.content.map(instance => {
+        return {...instance, typeName: typesRes.find(type => type.id === instance.type.id)?.name};
+      })
     ),
     tap(() => this.loading$.next(false))
   );
@@ -130,7 +119,9 @@ export class ConnectorManagementComponent implements OnDestroy {
   }
 
   private setFields(): void {
+    const getTranslatedLabel = (key: string) =>
+      this.translateService.instant(`connectorManagement.labels.${key}`);
     const keys: Array<string> = ['name', 'typeName'];
-    this.fields$.next(keys.map(key => ({label: `connectorManagement.labels.${key}`, key})));
+    this.fields$.next(keys.map(key => ({label: getTranslatedLabel(key), key})));
   }
 }

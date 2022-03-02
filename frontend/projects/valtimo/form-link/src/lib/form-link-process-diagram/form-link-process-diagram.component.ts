@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {ProcessService, ProcessDefinition} from '@valtimo/process';
 
-import BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
+import * as BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
 import {ActivatedRoute} from '@angular/router';
 import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -54,7 +54,11 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     combineLatest([this.route.queryParams, this.processService.getProcessDefinitions()])
-      .pipe(map(([queryParams, processDefinitions]) => ({queryParams, processDefinitions})))
+      .pipe(
+        map(([queryParams, processDefinitions]) => {
+          return {queryParams, processDefinitions};
+        })
+      )
       .subscribe(response => {
         this.processDefinitions = response.processDefinitions;
         if (response.queryParams.process) {

@@ -19,7 +19,6 @@ import {Subscription} from 'rxjs';
 import {Alert, AlertType} from '../../models';
 import {AlertService} from './alert.service';
 
-// eslint-disable-next-line no-var
 declare var $;
 
 @Component({

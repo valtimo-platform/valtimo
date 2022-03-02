@@ -93,7 +93,6 @@ export interface AuthProviders {
 
 export interface Auth {
   module: any;
-  // eslint-disable-next-line @typescript-eslint/ban-types
   initializer: (injector: Injector) => Function;
   authProviders: AuthProviders;
   options: any;

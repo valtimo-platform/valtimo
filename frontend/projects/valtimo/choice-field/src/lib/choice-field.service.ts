@@ -33,7 +33,7 @@ export class ChoiceFieldService {
   query(params?: any): Observable<any> {
     return this.http.get<ChoiceField>(`${this.valtimoApiConfig.endpointUri}choice-fields`, {
       observe: 'response',
-      params,
+      params: params,
     });
   }
 
@@ -56,7 +56,7 @@ export class ChoiceFieldService {
   queryValues(keyName: string, params?: any): Observable<any> {
     return this.http.get<ChoiceField>(
       `${this.valtimoApiConfig.endpointUri}choice-field-values/${keyName}/values`,
-      {observe: 'response', params}
+      {observe: 'response', params: params}
     );
   }
 

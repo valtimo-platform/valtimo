@@ -17,9 +17,10 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {AlertService} from '@valtimo/components';
-import moment from 'moment';
+import * as momentImported from 'moment';
 import {TranslateService} from '@ngx-translate/core';
 
+const moment = momentImported;
 moment.locale(localStorage.getItem('langKey'));
 
 @Component({

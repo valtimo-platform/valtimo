@@ -2,7 +2,16 @@
   "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../../dist/valtimo/auth0",
   "lib": {
-    "entryFile": "src/public_api.ts"
+    "entryFile": "src/public_api.ts",
+    "umdModuleIds": {
+      "@valtimo/config": "config",
+      "@valtimo/contract": "contract",
+      "auth0-js": "auth0Js",
+      "ngx-logger": "ngxLogger",
+      "@auth0/angular-jwt": "angularJwt",
+      "@valtimo/auth0": "auth0",
+      "moment": "moment"
+    }
   },
-  "allowedNonPeerDependencies": ["auth0-js", "@auth0/angular-jwt"]
+  "whitelistedNonPeerDependencies": ["."]
 }

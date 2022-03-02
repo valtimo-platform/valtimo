@@ -19,25 +19,31 @@
   *ngIf="{
     connectorInstances: connectorInstances$ | async,
     fields: fields$ | async,
-    columns: columns$ | async,
     pagination: pagination$ | async,
     loading: loading$ | async
   } as obs"
 >
   <div class="container-fluid">
     <ng-container *ngTemplateOutlet="buttons; context: {loading: obs.loading}"></ng-container>
-    <v-table
-      [loading]="obs.loading"
-      [items]="obs.connectorInstances"
-      [columns]="obs.columns"
-      [showEditButtons]="true"
-      [amountOfLoadingRows]="2"
-      [pagination]="obs.pagination"
-      [itemsTranslationKey]="'connectorManagement.tableItemsText'"
-      (editButtonClicked)="rowClicked($event)"
-      (paginationSizeSet)="paginationSet($event)"
-      (paginationPageSet)="paginationClicked($event)"
-    ></v-table>
+    <valtimo-widget *ngIf="obs.loading === false; else loading">
+      <valtimo-list
+        [items]="obs.connectorInstances"
+        [fields]="obs.fields"
+        [header]="true"
+        [viewMode]="true"
+        [isSearchable]="false"
+        [pagination]="obs.pagination"
+        paginationIdentifier="connectorManagementList"
+        (paginationClicked)="paginationClicked($event)"
+        (paginationSet)="paginationSet($event)"
+        (rowClicked)="rowClicked($event)"
+      >
+        <div header>
+          <h3 class="list-header-title">{{ 'connectorManagement.title' | translate }}</h3>
+          <h5 class="list-header-description">{{ 'connectorManagement.subtitle' | translate }}</h5>
+        </div>
+      </valtimo-list>
+    </valtimo-widget>
   </div>
 </div>
 
@@ -45,9 +51,14 @@
 
 <ng-template #buttons let-loading="loading">
   <div class="btn-group mt-m3px mb-3 float-right">
-    <v-button (clickEvent)="showAddModal()" type="primary" mdiIcon="plus" [disabled]="loading">
+    <button class="btn btn-primary btn-space mr-0" [disabled]="loading" (click)="showAddModal()">
+      <i class="icon mdi mdi-plus mr-1"></i>
       {{ 'connectorManagement.add' | translate }}
-    </v-button>
+    </button>
   </div>
   <div class="clearfix"></div>
+</ng-template>
+
+<ng-template #loading>
+  <valtimo-spinner></valtimo-spinner>
 </ng-template>

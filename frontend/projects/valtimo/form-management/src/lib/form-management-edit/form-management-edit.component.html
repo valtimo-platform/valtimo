@@ -55,7 +55,7 @@
         </div>
       </h3>
     </div>
-    <ng-container *ngIf="(reloading$ | async) === false">
+    <ng-container *ngIf="!(reloading$ | async)">
       <valtimo-form-io-builder
         [form]="formDefinition.formDefinition"
         (change)="formBuilderChanged($event)"

@@ -336,16 +336,7 @@
     "toggleMenu": "Menu",
     "typeToSearch": "Type here to search",
     "noSearchResults": "No results",
-    "loading": "Loading...",
-    "edit": "Edit",
-    "noItemsFound": "No items found",
-    "clearAll": "Clear all",
-    "show": "Show",
-    "items": "items",
-    "of": "of",
-    "visible": "visible",
-    "next": "Next >",
-    "previous": "< Previous"
+    "loading": "Loading..."
   },
   "assignTask": {
     "assignedTo": "Assigned to ",
@@ -410,7 +401,6 @@
     "removeValue": "Remove value",
     "goBack": "Go back",
     "autoSync": "Automatically sync case details",
-    "tableItemsText": "connections",
     "labels": {
       "name": "Name",
       "typeName": "Connector"

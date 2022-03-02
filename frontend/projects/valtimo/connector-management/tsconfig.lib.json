@@ -1,24 +1,22 @@
 {
-  "extends": "../../../tsconfig.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "resolveJsonModule": true,
-    "declarationMap": true,
     "outDir": "../../../out-tsc/lib",
     "target": "es2015",
     "declaration": true,
     "inlineSources": true,
     "types": [],
-    "lib": ["dom", "es2018"],
-    "allowSyntheticDefaultImports": true
+    "lib": ["dom", "es2018"]
   },
   "angularCompilerOptions": {
     "skipTemplateCodegen": true,
-    "compilationMode": "partial",
     "strictMetadataEmit": true,
     "fullTemplateTypeCheck": true,
     "strictInjectionParameters": true,
     "enableResourceInlining": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "enableIvy": false
   },
   "exclude": ["src/test.ts", "**/*.spec.ts"]
 }

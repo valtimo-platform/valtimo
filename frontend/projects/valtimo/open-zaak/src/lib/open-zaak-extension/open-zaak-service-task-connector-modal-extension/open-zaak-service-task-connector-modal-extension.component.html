@@ -24,7 +24,7 @@
   <div body *ngIf="selectedElement">
     <ng-container
       *ngIf="
-        connectedZaakTypeLinks && connectedZaakTypeLinks.length > 0;
+        connectedZaakTypeLinks != null && connectedZaakTypeLinks.length > 0;
         else noConnectedZaakTypeLinks
       "
     >
@@ -82,12 +82,14 @@
               </select>
             </ng-container>
 
-            <ng-container *ngIf="selectedZaakOperation && selectedZaakOperation === 'SET_STATUS'">
+            <ng-container
+              *ngIf="selectedZaakOperation != null && selectedZaakOperation === 'SET_STATUS'"
+            >
               <label class="mt-3" for="selectZaakStatus">
                 <span [translate]="'serviceTaskManagement.selectZaakStatus'"></span>
               </label>
               <select
-                *ngIf="statusTypes !== null && statusTypes.length > 0"
+                *ngIf="statusTypes != null && statusTypes.length > 0"
                 class="form-control"
                 [(ngModel)]="selectedZaakStatus"
                 id="selectZaakStatus"
@@ -98,7 +100,7 @@
                 </option>
               </select>
               <div
-                *ngIf="statusTypes && !statusTypes.length"
+                *ngIf="statusTypes != null && !statusTypes.length"
                 class="bg-warning text-black mb-0 p-2 pl-3 pr-3"
                 role="alert"
               >
@@ -107,13 +109,13 @@
             </ng-container>
 
             <ng-container
-              *ngIf="selectedZaakOperation && selectedZaakOperation === 'SET_RESULTAAT'"
+              *ngIf="selectedZaakOperation != null && selectedZaakOperation === 'SET_RESULTAAT'"
             >
               <label class="mt-3" for="selectZaakResult">
                 <span [translate]="'serviceTaskManagement.selectZaakResult'"></span>
               </label>
               <select
-                *ngIf="resultTypes && resultTypes.length > 0"
+                *ngIf="resultTypes != null && resultTypes.length > 0"
                 class="form-control"
                 [(ngModel)]="selectedZaakResult"
                 id="selectZaakResult"
@@ -124,7 +126,7 @@
                 </option>
               </select>
               <div
-                *ngIf="resultTypes && !resultTypes.length"
+                *ngIf="resultTypes != null && !resultTypes.length"
                 class="bg-warning text-black mb-0 p-2 pl-3 pr-3"
                 role="alert"
               >
@@ -210,16 +212,24 @@
           <p class="card-text">
             <strong>{{ 'serviceTaskManagement.serviceTaskHandler.operation' | translate }} </strong>
             {{ serviceTaskHandler['operation'] }} <br />
-            <span *ngIf="serviceTaskHandler['operation'] === 'SET_STATUS' && selectedZaakStatus">
+            <span
+              *ngIf="serviceTaskHandler['operation'] === 'SET_STATUS' && selectedZaakStatus != null"
+            >
               <strong>{{ 'serviceTaskManagement.serviceTaskHandler.status' | translate }}</strong>
               {{ selectedZaakStatus.omschrijving }}
             </span>
-            <span *ngIf="serviceTaskHandler['operation'] === 'SET_RESULTAAT' && selectedZaakResult">
+            <span
+              *ngIf="
+                serviceTaskHandler['operation'] === 'SET_RESULTAAT' && selectedZaakResult != null
+              "
+            >
               <strong>{{ 'serviceTaskManagement.serviceTaskHandler.result' | translate }}</strong>
               {{ selectedZaakResult.omschrijving }}
             </span>
             <span
-                    *ngIf="serviceTaskHandler['operation'] === 'CREATE_BESLUIT' && selectedBesluitType != null"
+              *ngIf="
+                serviceTaskHandler['operation'] === 'CREATE_BESLUIT' && selectedBesluitType != null
+              "
             >
               <strong>{{ 'serviceTaskManagement.serviceTaskHandler.status' | translate }}</strong>
               {{ selectedBesluitType.omschrijving }}

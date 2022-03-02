@@ -18,7 +18,6 @@ import {AfterViewInit, Component, ElementRef, Renderer2, ViewChild} from '@angul
 import {BehaviorSubject} from 'rxjs';
 import {LayoutService} from '../layout.service';
 
-// eslint-disable-next-line no-var
 declare var App;
 
 @Component({

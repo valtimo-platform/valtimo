@@ -28,10 +28,12 @@ import {DocumentService, Document, ProcessDocumentInstance} from '@valtimo/docum
 import {TaskDetailModalComponent, TaskService} from '@valtimo/task';
 import {FormService} from '@valtimo/form';
 import {FormioOptionsImpl, ValtimoFormioOptions} from '@valtimo/components';
-import moment from 'moment';
+
+import * as moment_ from 'moment';
 import {FormioForm} from 'angular-formio';
 import {UserProviderService} from '@valtimo/security';
 
+const moment = moment_;
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
 

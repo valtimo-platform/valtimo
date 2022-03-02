@@ -22,7 +22,7 @@ import {Component, OnInit} from '@angular/core';
   styleUrls: ['./form-io.component.scss'],
 })
 export class FormioComponent implements OnInit {
-  public formBuilder: object = {
+  public formBuilder: Object = {
     components: [],
   };
   public formDefinition: any;

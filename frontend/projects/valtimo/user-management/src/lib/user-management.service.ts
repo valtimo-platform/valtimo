@@ -31,7 +31,7 @@ export class UserManagementService {
   }
 
   query(params?: any): Observable<any> {
-    return this.http.get<User>(`${this.valtimoApiConfig.endpointUri}users`, {params});
+    return this.http.get<User>(`${this.valtimoApiConfig.endpointUri}users`, {params: params});
   }
 
   get(id: string): Observable<any> {
@@ -68,7 +68,7 @@ export class UserManagementService {
   getAuthorities(params?: any): Observable<any> {
     return this.http.get<any>(`${this.valtimoApiConfig.endpointUri}authorities`, {
       observe: 'response',
-      params,
+      params: params,
     });
   }
 }

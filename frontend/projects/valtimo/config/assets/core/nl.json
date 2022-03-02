@@ -336,16 +336,7 @@
     "toggleMenu": "Menu",
     "typeToSearch": "Typ hier om te zoeken",
     "noSearchResults": "Geen resultaten",
-    "loading": "Aan het laden...",
-    "edit": "Aanpassen",
-    "noItemsFound": "Geen items gevonden",
-    "clearAll": "Alles wissen",
-    "show": "Toon",
-    "items": "items",
-    "of": "van",
-    "visible": "zichtbaar",
-    "next": "Volgende >",
-    "previous": "< Vorige"
+    "loading": "Aan het laden..."
   },
   "assignTask": {
     "assignedTo": "Toegewezen aan ",
@@ -410,7 +401,6 @@
     "removeValue": "Waarde verwijderen",
     "goBack": "Ga terug",
     "autoSync": "Automatisch zaakdetails synchroniseren",
-    "tableItemsText": "connecties",
     "labels": {
       "name": "Naam",
       "typeName": "Connector"

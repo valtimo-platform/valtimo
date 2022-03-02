@@ -336,16 +336,7 @@
     "toggleMenu": "Menü",
     "typeToSearch": "Hier tippen zum Suchen",
     "noSearchResults": "Keine Ergebnisse",
-    "loading": "Lädt...",
-    "edit": "Bearbeiten",
-    "noItemsFound": "Keine Elemente gefunden",
-    "clearAll": "Alles löschen",
-    "show": "Zeig",
-    "items": "Elemente",
-    "of": "von",
-    "visible": "sichtbar",
-    "next": "Nächste >",
-    "previous": "< Vorherige"
+    "loading": "Lädt..."
   },
   "assignTask": {
     "assignedTo": "User-Zuordnung: ",
@@ -410,7 +401,6 @@
     "removeValue": "Wert entfernen",
     "goBack": "Zurück",
     "autoSync": "Casedetails automatisch synchronisieren",
-    "tableItemsText": "Connectors",
     "labels": {
       "name": "Name",
       "typeName": "Connector"

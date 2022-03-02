@@ -16,13 +16,14 @@
 
 import {Component, ViewChild} from '@angular/core';
 import {ContactMomentService} from '@valtimo/contact-moment';
-import moment from 'moment';
+import * as moment_ from 'moment';
 import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
 import {ModalComponent, TimelineItem, TimelineItemImpl} from '@valtimo/components';
 import {map, switchMap, take} from 'rxjs/operators';
 import {AlertService} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 
+const moment = moment_;
 moment.locale(localStorage.getItem('langKey') || '');
 
 @Component({

@@ -46,9 +46,14 @@ describe('CamundaGeneratedFormComponent', () => {
 
   let component: CamundaGeneratedFormComponent;
   let fixture: ComponentFixture<CamundaGeneratedFormComponent>;
-  const camundaFormfieldServicePartial: Partial<CamundaFormfieldService> = {
-    isFormFieldDisabled: () => false,
-    getValidatorTypes: () => [],
+  let camundaFormfieldServicePartial: Partial<CamundaFormfieldService>;
+  camundaFormfieldServicePartial = {
+    isFormFieldDisabled: function () {
+      return false;
+    },
+    getValidatorTypes: function () {
+      return [];
+    },
   };
 
   @Directive({

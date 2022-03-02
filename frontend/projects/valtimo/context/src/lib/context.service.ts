@@ -33,7 +33,7 @@ export class ContextService {
   public query(params?: any): Observable<HttpResponse<Context[]>> {
     return this.http.get<Context[]>(`${this.valtimoApiConfig.endpointUri}contexts`, {
       observe: 'response',
-      params,
+      params: params,
     });
   }
 
@@ -75,7 +75,7 @@ export class ContextService {
 
   public setUserContext(contextId: number) {
     return this.http.post(`${this.valtimoApiConfig.endpointUri}user/context`, {
-      contextId,
+      contextId: contextId,
     });
   }
 }

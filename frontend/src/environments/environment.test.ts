@@ -77,7 +77,7 @@ export const environment: ValtimoConfig = {
         roles: [ROLE_USER],
         link: ['/analysis'],
         title: 'Analysis',
-        iconClass: 'icon mdi mdi-chart-bar',
+        iconClass: 'icon mdi mdi-chart',
         sequence: 3,
       },
       {

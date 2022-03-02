@@ -58,6 +58,6 @@ export class FormioOptionsImpl implements ValtimoFormioOptions {
   }
 
   setHooks(beforeSubmit: FormioBeforeSubmit) {
-    this.hooks = {beforeSubmit};
+    this.hooks = {beforeSubmit: beforeSubmit};
   }
 }

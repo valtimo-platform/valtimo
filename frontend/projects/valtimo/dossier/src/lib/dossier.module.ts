@@ -103,6 +103,13 @@ export type TabsFactory = () => Map<string, object>;
     ConfigModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
+  entryComponents: [
+    DossierDetailTabSummaryComponent,
+    DossierDetailTabProgressComponent,
+    DossierDetailTabAuditComponent,
+    DossierDetailTabDocumentsComponent,
+    DossierDetailTabContactMomentsComponent,
+  ],
 })
 export class DossierModule {
   static forRoot(tabsFactory: TabsFactory): ModuleWithProviders<DossierModule> {

@@ -2,13 +2,19 @@
   "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../../dist/valtimo/dashboard",
   "lib": {
-    "entryFile": "src/public_api.ts"
+    "entryFile": "src/public_api.ts",
+    "umdModuleIds": {
+      "@ngx-translate/core": "core$1",
+      "@valtimo/context": "context",
+      "d3-shape": "d3Shape",
+      "@valtimo/task": "task",
+      "moment": "moment",
+      "@valtimo/process": "process",
+      "@valtimo/components": "components",
+      "@ngx-translate/http-loader": "httpLoader",
+      "@valtimo/security": "security",
+      "@valtimo/contract": "contract"
+    }
   },
-  "allowedNonPeerDependencies": [
-    "moment",
-    "d3",
-    "d3-shape",
-    "@ngx-translate/core",
-    "@ngx-translate/http-loader"
-  ]
+  "whitelistedNonPeerDependencies": ["."]
 }

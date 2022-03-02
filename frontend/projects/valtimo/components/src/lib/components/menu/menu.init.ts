@@ -20,8 +20,8 @@ import {MenuService} from './menu.service';
 
 export function menuInitializer(injector: Injector, logger: NGXLogger): () => Promise<any> {
   const menuService = injector.get<MenuService>(MenuService);
-  return (): Promise<any> =>
-    new Promise<void>((resolve, reject) => {
+  return (): Promise<any> => {
+    return new Promise((resolve, reject) => {
       try {
         logger.debug('menu initializer before init');
         menuService.init();
@@ -32,4 +32,5 @@ export function menuInitializer(injector: Injector, logger: NGXLogger): () => Pr
         reject(error);
       }
     });
+  };
 }

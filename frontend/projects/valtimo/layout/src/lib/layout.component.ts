@@ -19,7 +19,6 @@ import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {filter} from 'rxjs/operators';
 import {Subscription} from 'rxjs';
 
-// eslint-disable-next-line no-var
 declare var App: any;
 
 @Component({

@@ -32,7 +32,6 @@ import {EditProductAanvragenConnectorComponent} from './components/edit-product-
 import {FormIoModule} from '@valtimo/components';
 import {EditConnectorFormComponent} from './components/edit-connector-form/edit-connector-form.component';
 import {EditTaakConnectorComponent} from './components/edit-taak-connector/edit-taak-connector.component';
-import {ButtonModule, TableModule} from '@valtimo/user-interface';
 
 @NgModule({
   providers: [ConnectorManagementStateService],
@@ -58,8 +57,6 @@ import {ButtonModule, TableModule} from '@valtimo/user-interface';
     SpinnerModule,
     ModalModule,
     FormIoModule,
-    ButtonModule,
-    TableModule,
   ],
   exports: [
     ConnectorManagementComponent,
@@ -73,5 +70,6 @@ import {ButtonModule, TableModule} from '@valtimo/user-interface';
     EditProductAanvragenConnectorComponent,
     EditTaakConnectorComponent,
   ],
+  entryComponents: [ConnectorLinkExtensionComponent],
 })
 export class ConnectorManagementModule {}

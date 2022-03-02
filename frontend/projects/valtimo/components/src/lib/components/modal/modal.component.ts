@@ -16,7 +16,6 @@
 
 import {AfterViewInit, Component, Input, TemplateRef} from '@angular/core';
 
-// eslint-disable-next-line no-var
 declare var $;
 
 @Component({

@@ -40,7 +40,7 @@
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/perfect-scrollbar/css/perfect-scrollbar.css",
-              "node_modules/@mdi/font/css/materialdesignicons.css",
+              "node_modules/@foxythemes/material-design-iconic-font/dist/css/material-design-iconic-font.css",
               "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/css/bootstrap-datetimepicker.css",
               "node_modules/ngx-toastr/toastr.css",
               "node_modules/swagger-ui/dist/swagger-ui.css",
@@ -63,8 +63,7 @@
               "node_modules/bpmn-js-properties-panel/dist/assets/bpmn-js-properties-panel.css",
               "dist/valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
               "dist/valtimo/layout/assets/css/app.css",
-              "src/styles.scss",
-              "dist/valtimo/user-interface/assets/design-tokens.css"
+              "src/styles.scss"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
@@ -87,13 +86,7 @@
               "camunda-bpmn-moddle/lib",
               "object-refs",
               "heatmap.js-fixed"
-            ],
-            "vendorChunk": true,
-            "extractLicenses": false,
-            "buildOptimizer": false,
-            "sourceMap": true,
-            "optimization": false,
-            "namedChunks": true
+            ]
           },
           "configurations": {
             "production": {
@@ -106,6 +99,7 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
+              "extractCss": true,
               "namedChunks": false,
               "aot": true,
               "extractLicenses": true,
@@ -130,10 +124,15 @@
                   "with": "src/environments/environment.test.ts"
                 }
               ],
+              "optimization": false,
               "outputHashing": "all",
               "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": true,
+              "aot": false,
               "extractLicenses": true,
               "vendorChunk": false,
+              "buildOptimizer": false,
               "budgets": [
                 {
                   "type": "initial",
@@ -146,8 +145,7 @@
                 }
               ]
             }
-          },
-          "defaultConfiguration": ""
+          }
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
@@ -179,9 +177,10 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
+            "tsConfig": ["src/tsconfig.app.json", "src/tsconfig.spec.json"],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -202,42 +201,12 @@
               "devServerTarget": "valtimo-angular-console:serve:production"
             }
           }
-        }
-      }
-    },
-    "@valtimo/user-interface": {
-      "root": "projects/valtimo/user-interface",
-      "sourceRoot": "projects/valtimo/user-interface/src",
-      "projectType": "library",
-      "prefix": "valtimo",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "tsConfig": "projects/valtimo/user-interface/tsconfig.lib.json",
-            "project": "projects/valtimo/user-interface/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/valtimo/user-interface/tsconfig.lib.prod.json"
-            }
-          }
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "projects/valtimo/user-interface/src/test.ts",
-            "tsConfig": "projects/valtimo/user-interface/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/user-interface/karma.conf.js"
-          }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/user-interface/src/**/*.ts",
-              "projects/valtimo/user-interface/src/**/*.html"
-            ]
+            "tsConfig": "e2e/tsconfig.e2e.json",
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -249,7 +218,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/layout/tsconfig.lib.json",
             "project": "projects/valtimo/layout/ng-package.json"
@@ -269,12 +238,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/layout/src/**/*.ts",
-              "projects/valtimo/layout/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/layout/tsconfig.lib.json",
+              "projects/valtimo/layout/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -286,7 +256,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/auth0/tsconfig.lib.json",
             "project": "projects/valtimo/auth0/ng-package.json"
@@ -306,12 +276,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/auth0/src/**/*.ts",
-              "projects/valtimo/auth0/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/auth0/tsconfig.lib.json",
+              "projects/valtimo/auth0/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -323,7 +294,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/components/tsconfig.lib.json",
             "project": "projects/valtimo/components/ng-package.json"
@@ -343,12 +314,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/components/src/**/*.ts",
-              "projects/valtimo/components/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/components/tsconfig.lib.json",
+              "projects/valtimo/components/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -360,7 +332,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/task/tsconfig.lib.json",
             "project": "projects/valtimo/task/ng-package.json"
@@ -380,12 +352,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/task/src/**/*.ts",
-              "projects/valtimo/task/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/task/tsconfig.lib.json",
+              "projects/valtimo/task/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -397,7 +370,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/security/tsconfig.lib.json",
             "project": "projects/valtimo/security/ng-package.json"
@@ -417,12 +390,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/security/src/**/*.ts",
-              "projects/valtimo/security/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/security/tsconfig.lib.json",
+              "projects/valtimo/security/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -434,7 +408,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/dossier/tsconfig.lib.json",
             "project": "projects/valtimo/dossier/ng-package.json"
@@ -454,12 +428,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/dossier/src/**/*.ts",
-              "projects/valtimo/dossier/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/dossier/tsconfig.lib.json",
+              "projects/valtimo/dossier/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -471,7 +446,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/choicefield/tsconfig.lib.json",
             "project": "projects/valtimo/choicefield/ng-package.json"
@@ -491,12 +466,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/choicefield/src/**/*.ts",
-              "projects/valtimo/choicefield/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/choicefield/tsconfig.lib.json",
+              "projects/valtimo/choicefield/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -508,7 +484,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/process/tsconfig.lib.json",
             "project": "projects/valtimo/process/ng-package.json"
@@ -528,12 +504,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/process/src/**/*.ts",
-              "projects/valtimo/process/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/process/tsconfig.lib.json",
+              "projects/valtimo/process/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -545,7 +522,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/view-configurator/tsconfig.lib.json",
             "project": "projects/valtimo/view-configurator/ng-package.json"
@@ -565,12 +542,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/view-configurator/src/**/*.ts",
-              "projects/valtimo/view-configurator/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/view-configurator/tsconfig.lib.json",
+              "projects/valtimo/view-configurator/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -582,7 +560,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/context/tsconfig.lib.json",
             "project": "projects/valtimo/context/ng-package.json"
@@ -602,12 +580,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/context/src/**/*.ts",
-              "projects/valtimo/context/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/context/tsconfig.lib.json",
+              "projects/valtimo/context/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -619,7 +598,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/dashboard/tsconfig.lib.json",
             "project": "projects/valtimo/dashboard/ng-package.json"
@@ -639,12 +618,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/dashboard/src/**/*.ts",
-              "projects/valtimo/dashboard/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/dashboard/tsconfig.lib.json",
+              "projects/valtimo/dashboard/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -656,7 +636,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/document/tsconfig.lib.json",
             "project": "projects/valtimo/document/ng-package.json"
@@ -676,12 +656,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/document/src/**/*.ts",
-              "projects/valtimo/document/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/document/tsconfig.lib.json",
+              "projects/valtimo/document/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -693,7 +674,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/contact-moment/tsconfig.lib.json",
             "project": "projects/valtimo/contact-moment/ng-package.json"
@@ -713,12 +694,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/contact-moment/src/**/*.ts",
-              "projects/valtimo/contact-moment/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/contact-moment/tsconfig.lib.json",
+              "projects/valtimo/contact-moment/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -730,7 +712,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/account/tsconfig.lib.json",
             "project": "projects/valtimo/account/ng-package.json"
@@ -750,12 +732,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/account/src/**/*.ts",
-              "projects/valtimo/account/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/account/tsconfig.lib.json",
+              "projects/valtimo/account/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -767,7 +750,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/user-management/tsconfig.lib.json",
             "project": "projects/valtimo/user-management/ng-package.json"
@@ -787,12 +770,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/user-management/src/**/*.ts",
-              "projects/valtimo/user-management/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/user-management/tsconfig.lib.json",
+              "projects/valtimo/user-management/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -804,7 +788,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/authority/tsconfig.lib.json",
             "project": "projects/valtimo/authority/ng-package.json"
@@ -824,12 +808,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/authority/src/**/*.ts",
-              "projects/valtimo/authority/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/authority/tsconfig.lib.json",
+              "projects/valtimo/authority/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -841,7 +826,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/choice-field/tsconfig.lib.json",
             "project": "projects/valtimo/choice-field/ng-package.json"
@@ -861,12 +846,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/choice-field/src/**/*.ts",
-              "projects/valtimo/choice-field/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/choice-field/tsconfig.lib.json",
+              "projects/valtimo/choice-field/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -878,7 +864,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/form/tsconfig.lib.json",
             "project": "projects/valtimo/form/ng-package.json"
@@ -898,12 +884,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/form/src/**/*.ts",
-              "projects/valtimo/form/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/form/tsconfig.lib.json",
+              "projects/valtimo/form/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -915,7 +902,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/management/tsconfig.lib.json",
             "project": "projects/valtimo/management/ng-package.json"
@@ -935,12 +922,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/management/src/**/*.ts",
-              "projects/valtimo/management/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/management/tsconfig.lib.json",
+              "projects/valtimo/management/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -952,7 +940,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/analyse/tsconfig.lib.json",
             "project": "projects/valtimo/analyse/ng-package.json"
@@ -972,12 +960,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/analyse/src/**/*.ts",
-              "projects/valtimo/analyse/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/analyse/tsconfig.lib.json",
+              "projects/valtimo/analyse/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -989,7 +978,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/swagger/tsconfig.lib.json",
             "project": "projects/valtimo/swagger/ng-package.json"
@@ -1009,12 +998,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/swagger/src/**/*.ts",
-              "projects/valtimo/swagger/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/swagger/tsconfig.lib.json",
+              "projects/valtimo/swagger/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1026,7 +1016,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/connector-management/tsconfig.lib.json",
             "project": "projects/valtimo/connector-management/ng-package.json"
@@ -1046,12 +1036,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/connector-management/src/**/*.ts",
-              "projects/valtimo/connector-management/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/connector-management/tsconfig.lib.json",
+              "projects/valtimo/connector-management/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1063,7 +1054,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/process-management/tsconfig.lib.json",
             "project": "projects/valtimo/process-management/ng-package.json"
@@ -1083,12 +1074,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/process-management/src/**/*.ts",
-              "projects/valtimo/process-management/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/process-management/tsconfig.lib.json",
+              "projects/valtimo/process-management/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1100,7 +1092,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/decision/tsconfig.lib.json",
             "project": "projects/valtimo/decision/ng-package.json"
@@ -1120,12 +1112,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/decision/src/**/*.ts",
-              "projects/valtimo/decision/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/decision/tsconfig.lib.json",
+              "projects/valtimo/decision/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1137,7 +1130,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/milestone/tsconfig.lib.json",
             "project": "projects/valtimo/milestone/ng-package.json"
@@ -1157,12 +1150,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/milestone/src/**/*.ts",
-              "projects/valtimo/milestone/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/milestone/tsconfig.lib.json",
+              "projects/valtimo/milestone/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1174,7 +1168,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/form-management/tsconfig.lib.json",
             "project": "projects/valtimo/form-management/ng-package.json"
@@ -1194,12 +1188,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/form-management/src/**/*.ts",
-              "projects/valtimo/form-management/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/form-management/tsconfig.lib.json",
+              "projects/valtimo/form-management/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1211,7 +1206,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/form-link/tsconfig.lib.json",
             "project": "projects/valtimo/form-link/ng-package.json"
@@ -1231,12 +1226,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/form-link/src/**/*.ts",
-              "projects/valtimo/form-link/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/form-link/tsconfig.lib.json",
+              "projects/valtimo/form-link/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1248,7 +1244,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/migration/tsconfig.lib.json",
             "project": "projects/valtimo/migration/ng-package.json"
@@ -1268,12 +1264,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/migration/src/**/*.ts",
-              "projects/valtimo/migration/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/migration/tsconfig.lib.json",
+              "projects/valtimo/migration/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1285,7 +1282,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/dossier-management/tsconfig.lib.json",
             "project": "projects/valtimo/dossier-management/ng-package.json"
@@ -1305,12 +1302,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/dossier-management/src/**/*.ts",
-              "projects/valtimo/dossier-management/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/dossier-management/tsconfig.lib.json",
+              "projects/valtimo/dossier-management/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1322,7 +1320,7 @@
       "prefix": "valtimo",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/keycloak/tsconfig.lib.json",
             "project": "projects/valtimo/keycloak/ng-package.json"
@@ -1342,12 +1340,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/keycloak/src/**/*.ts",
-              "projects/valtimo/keycloak/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/keycloak/tsconfig.lib.json",
+              "projects/valtimo/keycloak/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1359,7 +1358,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/bootstrap/tsconfig.lib.json",
             "project": "projects/valtimo/bootstrap/ng-package.json"
@@ -1379,12 +1378,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/bootstrap/src/**/*.ts",
-              "projects/valtimo/bootstrap/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/bootstrap/tsconfig.lib.json",
+              "projects/valtimo/bootstrap/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1396,7 +1396,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/contract/tsconfig.lib.json",
             "project": "projects/valtimo/contract/ng-package.json"
@@ -1416,12 +1416,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/contract/src/**/*.ts",
-              "projects/valtimo/contract/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/contract/tsconfig.lib.json",
+              "projects/valtimo/contract/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1433,7 +1434,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/config/tsconfig.lib.json",
             "project": "projects/valtimo/config/ng-package.json"
@@ -1453,12 +1454,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/config/src/**/*.ts",
-              "projects/valtimo/config/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/config/tsconfig.lib.json",
+              "projects/valtimo/config/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1470,7 +1472,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/open-zaak/tsconfig.lib.json",
             "project": "projects/valtimo/open-zaak/ng-package.json"
@@ -1490,12 +1492,13 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/open-zaak/src/**/*.ts",
-              "projects/valtimo/open-zaak/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/open-zaak/tsconfig.lib.json",
+              "projects/valtimo/open-zaak/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -1507,7 +1510,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/valtimo/resource/tsconfig.lib.json",
             "project": "projects/valtimo/resource/ng-package.json"
@@ -1527,19 +1530,17 @@
           }
         },
         "lint": {
-          "builder": "@angular-eslint/builder:lint",
+          "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/resource/src/**/*.ts",
-              "projects/valtimo/resource/src/**/*.html"
-            ]
+            "tsConfig": [
+              "projects/valtimo/resource/tsconfig.lib.json",
+              "projects/valtimo/resource/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
     }
   },
-  "defaultProject": "valtimo-angular-console",
-  "cli": {
-    "defaultCollection": "@angular-eslint/schematics"
-  }
+  "defaultProject": "valtimo-angular-console"
 }

@@ -21,8 +21,8 @@ export function accountInitializer(
   translate: TranslateService,
   logger: NGXLogger
 ): () => Promise<any> {
-  return (): Promise<any> =>
-    new Promise<void>((resolve, reject) => {
+  return (): Promise<any> => {
+    return new Promise((resolve, reject) => {
       try {
         logger.debug('Account initializer');
         translate.addLangs(['en', 'nl', 'de']);
@@ -39,4 +39,5 @@ export function accountInitializer(
         reject(error);
       }
     });
+  };
 }

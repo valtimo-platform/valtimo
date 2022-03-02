@@ -23,7 +23,6 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 })
 export class FormioBuilderComponent implements OnInit {
   @Input() form: any;
-  // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() change: EventEmitter<any> = new EventEmitter();
 
   constructor() {}

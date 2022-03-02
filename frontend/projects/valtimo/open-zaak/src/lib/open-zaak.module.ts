@@ -39,5 +39,10 @@ import {EmailExtensionComponent} from './email-extension/email-extension.compone
     SpinnerModule,
   ],
   exports: [],
+  entryComponents: [
+    OpenZaakTypeLinkExtensionComponent,
+    OpenZaakServiceTaskConnectorModalExtensionComponent,
+    EmailExtensionComponent,
+  ],
 })
 export class OpenZaakModule {}
