@@ -8,7 +8,8 @@
     "ProcessEndedEvent": "Prozess abgeschlossen",
     "DossierDocumentGeneratedEvent": "Case-Dokument erstellt",
     "DocumentRelatedFileAddedEvent": "Datei hinzugefügt",
-    "DocumentRelatedFileRemovedEvent": "Datei entfernt"
+    "DocumentRelatedFileRemovedEvent": "Datei entfernt",
+    "BesluitAddedEvent": "Entscheidung getroffen <i class=\"mdi mdi-arrow-right\"></i> {{identificatie}}"
   },
   "dossier": {
     "title": {

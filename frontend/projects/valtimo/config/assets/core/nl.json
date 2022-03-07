@@ -8,7 +8,8 @@
     "ProcessEndedEvent": "Proces afgerond",
     "DossierDocumentGeneratedEvent": "Dossier document gegenereerd",
     "DocumentRelatedFileAddedEvent": "Gerelateerd bestand toegevoegd",
-    "DocumentRelatedFileRemovedEvent": "Gerelateerd bestand verwijderd"
+    "DocumentRelatedFileRemovedEvent": "Gerelateerd bestand verwijderd",
+    "BesluitAddedEvent": "Besluit toegevoegd <i class=\"mdi mdi-arrow-right\"></i> {{identificatie}}"
   },
   "dossier": {
     "title": {
