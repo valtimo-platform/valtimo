@@ -201,7 +201,8 @@
     "serviceTaskHandler": {
       "operation": "Operatie:",
       "status": "Status:",
-      "result": "Resultaat:"
+      "result": "Resultaat:",
+      "type": "Type:"
     },
     "delete": "Verwijderen",
     "edit": "Wijzigen",

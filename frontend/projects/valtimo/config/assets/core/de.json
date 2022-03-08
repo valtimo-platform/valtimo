@@ -200,7 +200,8 @@
     "serviceTaskHandler": {
       "operation": "Tätigkeit:",
       "status": "Status:",
-      "result": "Ergebnis:"
+      "result": "Ergebnis:",
+      "type": "Art:"
     },
     "delete": "Löschen",
     "edit": "Editieren",
