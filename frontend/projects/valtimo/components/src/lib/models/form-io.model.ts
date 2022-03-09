@@ -30,6 +30,11 @@ export interface FormioSubmission {
   state: string;
 }
 
+export interface ResourceOption {
+  label: string;
+  value: string;
+}
+
 export class AlertsOptionsImpl implements AlertsOptions {
   submitMessage: string;
 

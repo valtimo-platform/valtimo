@@ -68,6 +68,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnInit() {
     const documentDefinitionName = this.route.snapshot.paramMap.get('documentDefinitionName');
+    const documentId = this.route.snapshot.paramMap.get('documentId');
     const formDefinition = this.form;
 
     this.formDefinition = formDefinition;
@@ -79,6 +80,9 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
     if (documentDefinitionName) {
       this.stateService.setDocumentDefinitionName(documentDefinitionName);
+    }
+    if (documentId) {
+      this.stateService.setDocumentId(documentId);
     }
 
     this.subscribeFormRefresh();
