@@ -134,6 +134,7 @@ export class ListComponent implements OnChanges, OnInit, AfterViewInit {
         item.listItemFields = this.fields.map(field => ({
           key: field.key,
           label: field.label,
+          type: field.type || '',
           value: this.resolveObject(field, item),
         }));
       });

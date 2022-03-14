@@ -88,7 +88,15 @@
             (click)="onClickRow(item)"
           >
             <td class="align-top" *ngFor="let listItemField of item.listItemFields">
-              {{ listItemField.value || '-' }}
+              <ng-container *ngIf="listItemField.type === ''">
+                {{ listItemField.value || '-' }}
+              </ng-container>
+
+              <ng-container
+                *ngIf="listItemField.type === 'dropdownActions'"
+                [ngTemplateOutlet]="dropdownActions"
+                [ngTemplateOutletContext]="{listItemField: listItemField, item: item}"
+              ></ng-container>
             </td>
             <td class="align-top" *ngFor="let action of actions">
               <i
@@ -181,3 +189,30 @@
     {{ 'list.noFieldDefinitions' | translate }}
   </div>
 </div>
+
+<ng-template #dropdownActions let-listItemField="listItemField" let-item="item">
+  <div class="dropdown" *ngIf="listItemField?.value.length > 0">
+    <a
+      style="cursor: pointer"
+      class="dropdown-toggle d-block"
+      id="dropdownMenu"
+      data-toggle="dropdown"
+      aria-haspopup="true"
+      aria-expanded="false"
+    >
+      <i class="action-icon icon mdi mdi-more-vert"></i>
+    </a>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenu">
+      <a
+        (click)="action.callback(item)"
+        class="dropdown-item p-2"
+        *ngFor="let action of listItemField.value"
+      >
+        <ng-container *ngIf="action.iconClass != null">
+          <i [ngClass]="action.iconClass"></i>
+        </ng-container>
+        {{ action?.label || '-' }}
+      </a>
+    </div>
+  </div>
+</ng-template>

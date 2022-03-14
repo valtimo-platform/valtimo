@@ -18,6 +18,10 @@
   table-layout: fixed;
 }
 
+.table-responsive {
+  overflow-x: visible;
+}
+
 .click-able {
   cursor: pointer;
 }
