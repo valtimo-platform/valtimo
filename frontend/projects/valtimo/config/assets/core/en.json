@@ -429,7 +429,7 @@
       "openZaakConfig.clientId": "Client ID",
       "openZaakConfig.secret": "Secret",
       "openZaakConfig.rsin": "Rsin",
-      "openZaakConfig.catalogiUrl": "Catalogues URL",
+      "openZaakConfig.catalogiUrl": "Catalog URL",
       "clientId": "Client ID",
       "secret": "Secret",
       "rsin": "RSIN",
