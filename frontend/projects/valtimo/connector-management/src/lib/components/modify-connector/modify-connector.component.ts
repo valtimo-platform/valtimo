@@ -15,7 +15,7 @@
  */
 
 import {Component} from '@angular/core';
-import {ConnectorInstance, ConnectorProperties} from '../../models';
+import {ConnectorInstance, ConnectorProperties} from '@valtimo/config';
 import {Observable} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {AlertService} from '@valtimo/components';

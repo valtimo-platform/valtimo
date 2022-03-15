@@ -16,14 +16,14 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {ConfigService} from '@valtimo/config';
-import {Observable} from 'rxjs';
 import {
+  ConfigService,
   ConnectorInstance,
   ConnectorType,
   ConnectorInstanceCreateRequest,
   ConnectorInstanceUpdateRequest,
-} from '../../models';
+} from '@valtimo/config';
+import {Observable} from 'rxjs';
 import {Page} from '@valtimo/document';
 
 @Injectable({

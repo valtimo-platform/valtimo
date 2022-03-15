@@ -16,14 +16,4 @@
  *
  */
 
-export * from './config';
-export * from './email-notification-settings.model';
-export * from './menu-item.model';
-export * from './menu.config';
-export * from './security.config';
-export * from './extension.model';
-export * from './http-loader';
-export * from './roles';
-export * from './user-management.model';
-export * from './page';
-export * from './connector.model';
+export * from './customer';

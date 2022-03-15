@@ -16,7 +16,7 @@
 
 import {Component, OnDestroy} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
-import {ConnectorInstance, ConnectorModal} from '../../models';
+import {ConnectorInstance, ConnectorModal} from '@valtimo/config';
 import {map, switchMap, take, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {ConnectorManagementService} from '../../services/connector-management/connector-management.service';

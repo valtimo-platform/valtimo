@@ -14,27 +14,24 @@
  * limitations under the License.
  */
 
-import {ModuleWithProviders, NgModule} from '@angular/core';
-import {ConfigService} from './services/config.service';
-import {VALTIMO_CONFIG, ValtimoConfig} from './models';
-import {ExtensionComponent} from './extension/extension.component';
+import {NgModule} from '@angular/core';
+import {RouterModule, Routes} from '@angular/router';
+import {CommonModule} from '@angular/common';
+import {AuthGuardService} from '@valtimo/security';
+import {ROLE_USER} from '@valtimo/config';
+import {CustomerListComponent} from './components/customer-list/customer-list.component';
+
+const routes: Routes = [
+  {
+    path: 'klanten',
+    component: CustomerListComponent,
+    canActivate: [AuthGuardService],
+    data: {title: 'Customers', roles: [ROLE_USER]},
+  },
+];
 
 @NgModule({
-  declarations: [ExtensionComponent],
-  imports: [],
-  exports: [ExtensionComponent],
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class ConfigModule {
-  static forRoot(config: ValtimoConfig): ModuleWithProviders<ConfigModule> {
-    return {
-      ngModule: ConfigModule,
-      providers: [
-        ConfigService,
-        {
-          provide: VALTIMO_CONFIG,
-          useValue: config,
-        },
-      ],
-    };
-  }
-}
+export class CustomerRoutingModule {}

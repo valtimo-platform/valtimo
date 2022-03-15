@@ -213,6 +213,12 @@
     },
     {
       "path": "./projects/valtimo/resource/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/customer/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/customer/tsconfig.spec.json"
     }
   ]
 }

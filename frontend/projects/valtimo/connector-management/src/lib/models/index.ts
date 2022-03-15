@@ -16,5 +16,4 @@
  *
  */
 
-export * from './connector.model';
 export * from './object-sync';

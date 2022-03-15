@@ -15,7 +15,7 @@
  */
 
 import {Component, Input, OnInit, ViewChild, ViewContainerRef} from '@angular/core';
-import {ConfigService} from '../config.service';
+import {ConfigService} from '../services/config.service';
 import {Extension, ExtensionLoader, ExtensionPoint} from '../models';
 
 @Component({

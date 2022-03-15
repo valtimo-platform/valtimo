@@ -16,14 +16,35 @@
  *
  */
 
-export * from './config';
-export * from './email-notification-settings.model';
-export * from './menu-item.model';
-export * from './menu.config';
-export * from './security.config';
-export * from './extension.model';
-export * from './http-loader';
-export * from './roles';
-export * from './user-management.model';
-export * from './page';
-export * from './connector.model';
+interface Customer {
+  burgerservicenummer: string;
+  geboorteDatum: string;
+  geslachtsnaam: string;
+  voorletters: string;
+  voornamen: string;
+}
+
+interface MappedCustomer {
+  citizenServiceNumber: string;
+  name: string;
+  dateOfBirth: string;
+}
+
+interface CustomerBsnSearchRequest {
+  bsn: string;
+}
+
+interface CustomerDataSearchRequest {
+  geslachtsnaam: string;
+  geboortedatum: string;
+}
+
+type CustomerSearchRequest = CustomerBsnSearchRequest | CustomerDataSearchRequest;
+
+export {
+  CustomerBsnSearchRequest,
+  CustomerDataSearchRequest,
+  CustomerSearchRequest,
+  Customer,
+  MappedCustomer,
+};

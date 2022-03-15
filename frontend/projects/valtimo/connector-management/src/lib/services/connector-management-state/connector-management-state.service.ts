@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import {ConnectorInstance} from '../../models';
+import {ConnectorInstance} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',

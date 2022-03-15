@@ -16,14 +16,31 @@
  *
  */
 
-export * from './config';
-export * from './email-notification-settings.model';
-export * from './menu-item.model';
-export * from './menu.config';
-export * from './security.config';
-export * from './extension.model';
-export * from './http-loader';
-export * from './roles';
-export * from './user-management.model';
-export * from './page';
-export * from './connector.model';
+interface SortResult {
+  sorted: boolean;
+  unsorted: boolean;
+}
+
+interface Pageable {
+  sort: SortResult;
+  pageSize: number;
+  pageNumber: number;
+  offset: number;
+  unpaged: boolean;
+  paged: boolean;
+}
+
+interface Page<T> {
+  content: Array<T>;
+  pageable: Pageable;
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  first: boolean;
+  sort: SortResult;
+  numberOfElements: number;
+  size: number;
+  number: number;
+}
+
+export {SortResult, Pageable, Page};

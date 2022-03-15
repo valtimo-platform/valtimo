@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2021 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,10 @@
  */
 
 /*
- * Public API Surface of config
+ * Public API Surface of contact-moment
  */
 
+export * from './lib/customer.module';
+export * from './lib/components/customer-list/customer-list.component';
+export * from './lib/services/customer.service';
 export * from './lib/models';
-
-export * from './lib/services/config.service';
-
-export * from './lib/services/menu-include.service';
-
-export * from './lib/config.module';
-
-export * from './lib/extension/extension.component';
-
-export * from './lib/translation/multi-translate-http-loader-factory';

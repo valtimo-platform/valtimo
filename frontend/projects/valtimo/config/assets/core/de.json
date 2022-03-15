@@ -310,6 +310,7 @@
   "Select process definition for document definition": "Prozess-Definition für Dokument-Definition auswählen",
   "Select options for the selected process": "Optionen für gewählten Prozess auswählen",
   "Save": "Speichern",
+  "Customers": "Kunden",
   "processManagement": {
     "download": "Herunterladen",
     "clear": "Löschen",
@@ -385,6 +386,19 @@
     "save": "Speichern",
     "redo": "Wiederherstellen"
   },
+  "customers": {
+    "name": "Name",
+    "citizenServiceNumber": "Sozialversicherungsnummer",
+    "citizenServiceNumberPlaceholder": "z.B. 070003816",
+    "dateOfBirth": "Geburtsdatum",
+    "dateOfBirthPlaceholder": "z.B. 1970-03-17",
+    "familyName": "Familienname",
+    "familyNamePlaceholder": "z.B. Jansen",
+    "title": "Kunden",
+    "subtitle": "Übersicht aller Kunden",
+    "searchBasedOn": "Suchen nach",
+    "lastNameAndDateOfBirth": "Familienname und Geburtsdatum"
+  },
   "Connectors": "Connectors",
   "connectorManagement": {
     "title": "Connectors",
@@ -436,7 +450,8 @@
       "username": "Nutzername",
       "password": "Passwort",
       "baseUrl": "Base URL",
-      "callbackBaseUrl": "Callback base URL"
+      "callbackBaseUrl": "Callback base URL",
+      "apiKey": "API-Schlüssel"
     },
     "messages": {
       "addSuccess": "Connection erfolgreich hinzugefügt.",

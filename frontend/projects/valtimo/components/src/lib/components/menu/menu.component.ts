@@ -17,7 +17,7 @@
 import {Component, ElementRef, OnDestroy, OnInit, Renderer2} from '@angular/core';
 import {Event, NavigationEnd, Router} from '@angular/router';
 import {MenuItem} from '@valtimo/config';
-import {Subscription} from 'rxjs';
+import {Observable, Subscription} from 'rxjs';
 import {MenuService} from './menu.service';
 
 @Component({
@@ -27,6 +27,7 @@ import {MenuService} from './menu.service';
 })
 export class MenuComponent implements OnInit, OnDestroy {
   public menuItems: MenuItem[];
+  public includeFunctionObservables: {[key: string]: Observable<boolean>} = {};
   private routerSubscription: Subscription;
   private menuItemSubscription: Subscription;
 
@@ -35,7 +36,9 @@ export class MenuComponent implements OnInit, OnDestroy {
     private elRef: ElementRef,
     private renderer: Renderer2,
     private router: Router
-  ) {}
+  ) {
+    this.includeFunctionObservables = this.menuService.includeFunctionObservables;
+  }
 
   ngOnInit(): void {
     this.openRouterSubscription();

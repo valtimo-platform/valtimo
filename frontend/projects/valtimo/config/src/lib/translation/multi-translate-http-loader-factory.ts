@@ -1,6 +1,6 @@
 import {HttpClient} from '@angular/common/http';
 import {MultiTranslateHttpLoader} from 'ngx-translate-multi-http-loader';
-import {ConfigService} from '../config.service';
+import {ConfigService} from '../services/config.service';
 
 export function MultiTranslateHttpLoaderFactory(http: HttpClient, configService: ConfigService) {
   const translationResources = configService.config.translationResources;

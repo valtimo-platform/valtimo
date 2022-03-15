@@ -1,0 +1,12 @@
+{
+  "name": "@valtimo/customer",
+  "license": "EUPL-1.2",
+  "version": "4.18.0",
+  "peerDependencies": {
+    "@angular/common": "^10.0.11",
+    "@angular/core": "^10.0.11"
+  },
+  "dependencies": {
+    "tslib": "^2.0.0"
+  }
+}

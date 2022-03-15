@@ -17,7 +17,7 @@
 import {AfterViewInit, Component, Input, OnDestroy, ViewChild} from '@angular/core';
 import {ModalComponent} from '@valtimo/components';
 import {Subscription} from 'rxjs';
-import {ConnectorModal} from '../../models';
+import {ConnectorModal} from '@valtimo/config';
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
 
 @Component({

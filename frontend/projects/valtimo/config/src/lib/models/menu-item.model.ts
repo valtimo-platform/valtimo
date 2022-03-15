@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-export interface MenuItem {
+enum IncludeFunction {
+  HaalcentraalConnectorConfigured,
+}
+
+interface MenuItem {
   title: string;
   sequence: number;
   link?: string[] | null;
@@ -23,4 +27,7 @@ export interface MenuItem {
   children?: MenuItem[];
   roles?: string[];
   show?: boolean;
+  includeFunction?: IncludeFunction;
 }
+
+export {MenuItem, IncludeFunction};

@@ -18,7 +18,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {editTaakConnectorForm} from './edit-taak-connector.form';
 import {FormMappingService, FormTranslationService} from '@valtimo/form';
 import {BehaviorSubject, combineLatest, Subject, Subscription, timer} from 'rxjs';
-import {ConnectorProperties} from '../../models';
+import {ConnectorProperties} from '@valtimo/config';
 import {FormioForm, FormioRefreshValue} from 'angular-formio';
 import {FormioOptions} from 'angular-formio/formio.common';
 import {cloneDeep} from 'lodash';

@@ -15,7 +15,7 @@
  */
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {ConnectorProperties} from '../../models';
+import {ConnectorProperties} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-edit-connector-form',

@@ -15,7 +15,7 @@
  */
 
 import {Component, Input, OnDestroy, OnInit, Output, EventEmitter} from '@angular/core';
-import {ConnectorPropertyEditField, ConnectorPropertyValueType} from '../../models';
+import {ConnectorPropertyEditField, ConnectorPropertyValueType} from '@valtimo/config';
 import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 

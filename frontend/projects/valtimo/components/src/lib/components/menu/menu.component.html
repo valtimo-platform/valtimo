@@ -21,6 +21,12 @@
       [hidden]="!menuItem.show"
       [routerLinkActive]="'active'"
       [routerLinkActiveOptions]="{exact: true}"
+      [ngClass]="{
+        'menu-item--hidden': menuItem.includeFunction !== undefined,
+        'menu-item--visible':
+          menuItem.includeFunction !== undefined &&
+          (includeFunctionObservables[menuItem.title] | async)
+      }"
     >
       <a *ngIf="menuItem.link" [routerLink]="menuItem.link" class="sub-item">
         <valtimo-menu-item-text [menuItem]="menuItem"></valtimo-menu-item-text>

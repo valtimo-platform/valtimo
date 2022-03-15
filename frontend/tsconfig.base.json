@@ -79,7 +79,9 @@
       "@valtimo/config": ["dist/valtimo/config/valtimo-config", "dist/valtimo/config"],
       "@valtimo/open-zaak": ["dist/valtimo/open-zaak/valtimo-openzaak", "dist/valtimo/open-zaak"],
       "@valtimo/resource": ["dist/valtimo/resource"],
-      "@valtimo/resource/*": ["dist/valtimo/resource/*"]
+      "@valtimo/resource/*": ["dist/valtimo/resource/*"],
+      "@valtimo/customer": ["dist/valtimo/customer"],
+      "@valtimo/customer/*": ["dist/valtimo/customer/*"]
     }
   }
 }

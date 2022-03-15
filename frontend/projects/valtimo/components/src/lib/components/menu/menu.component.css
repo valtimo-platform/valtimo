@@ -21,3 +21,11 @@
 .sub-item {
   cursor: pointer;
 }
+
+.menu-item--hidden {
+  display: none;
+}
+
+.menu-item--visible {
+  display: block;
+}

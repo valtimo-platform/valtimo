@@ -310,6 +310,7 @@
   "Select process definition for document definition": "Select process definition for document definition",
   "Select options for the selected process": "Select options for the selected process",
   "Save": "Save",
+  "Customers": "Customers",
   "processManagement": {
     "download": "Download",
     "clear": "Clear",
@@ -385,6 +386,19 @@
     "save": "Save",
     "redo": "Redo"
   },
+  "customers": {
+    "name": "Name",
+    "citizenServiceNumber": "Citizen service number",
+    "citizenServiceNumberPlaceholder": "e.g. 070003816",
+    "dateOfBirth": "Date of birth",
+    "dateOfBirthPlaceholder": "e.g. 1970-03-17",
+    "familyName": "Family name",
+    "familyNamePlaceholder": "e.g. Jansen",
+    "title": "Customers",
+    "subtitle": "Overview of all customers",
+    "searchBasedOn": "Search with",
+    "lastNameAndDateOfBirth": "Family name and date of birth"
+  },
   "Connectors": "Connections",
   "connectorManagement": {
     "title": "Connections",
@@ -436,7 +450,8 @@
       "username": "Username",
       "password": "Password",
       "baseUrl": "Base URL",
-      "callbackBaseUrl": "Callback base URL"
+      "callbackBaseUrl": "Callback base URL",
+      "apiKey": "API Key"
     },
     "messages": {
       "addSuccess": "Connection has been added successfully.",

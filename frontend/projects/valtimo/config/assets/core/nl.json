@@ -310,6 +310,7 @@
   "Select process definition for document definition": "Selecteer een processdefinitie voor de documentdefinitie",
   "Select options for the selected process": "Kies opties voor het geselecteerde proces",
   "Save": "Opslaan",
+  "Customers": "Klanten",
   "processManagement": {
     "download": "Downloaden",
     "clear": "Wissen",
@@ -385,6 +386,19 @@
     "save": "Opslaan",
     "redo": "Opnieuw"
   },
+  "customers": {
+    "name": "Naam",
+    "citizenServiceNumber": "Burgerservicenummer",
+    "citizenServiceNumberPlaceholder": "bv. 070003816",
+    "dateOfBirth": "Geboortedatum",
+    "dateOfBirthPlaceholder": "bv. 1970-03-17",
+    "familyName": "Geslachtsnaam",
+    "familyNamePlaceholder": "bv. Jansen",
+    "title": "Klanten",
+    "subtitle": "Overzicht van alle klanten",
+    "searchBasedOn": "Zoeken op",
+    "lastNameAndDateOfBirth": "Geslachtsnaam en geboortedatum"
+  },
   "Connectors": "Connecties",
   "connectorManagement": {
     "title": "Connecties",
@@ -436,7 +450,8 @@
       "username": "Gebruikersnaam",
       "password": "Wachtwoord",
       "baseUrl": "Base URL",
-      "callbackBaseUrl": "Callback base URL"
+      "callbackBaseUrl": "Callback base URL",
+      "apiKey": "API-sleutel"
     },
     "messages": {
       "addSuccess": "Connectie is succesvol toegevoegd.",

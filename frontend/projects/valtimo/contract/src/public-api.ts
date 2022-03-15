@@ -42,6 +42,15 @@ export {
   ValtimoConfig,
   UploadProvider,
   HttpLoaderFactory,
+  ConnectorProperties,
+  ConnectorInstance,
+  ConnectorType,
+  ConnectorModal,
+  ConnectorPropertyEditField,
+  ConnectorPropertyEditType,
+  ConnectorInstanceCreateRequest,
+  ConnectorInstanceUpdateRequest,
+  ConnectorPropertyValueType,
 } from '@valtimo/config';
 
 export {AuditEvent, MetaData, AuditRecord} from '@valtimo/document';
@@ -175,15 +184,6 @@ export {ValtimoKeycloakOptions} from '@valtimo/keycloak';
 export {TabLoader, TabLoaderImpl, Tab, TabImpl} from '@valtimo/dossier';
 
 export {
-  ConnectorProperties,
-  ConnectorInstance,
-  ConnectorType,
-  ConnectorModal,
-  ConnectorPropertyEditField,
-  ConnectorPropertyEditType,
-  ConnectorInstanceCreateRequest,
-  ConnectorInstanceUpdateRequest,
-  ConnectorPropertyValueType,
   ObjectSyncConfig,
   CreateObjectSyncConfigRequest,
   CreateObjectSyncConfigResult,

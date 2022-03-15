@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {MenuConfig, MenuItem} from '@valtimo/config';
+import {MenuConfig, MenuItem, MenuIncludeService, IncludeFunction} from '@valtimo/config';
 import {NGXLogger} from 'ngx-logger';
 import {ConfigService} from '@valtimo/config';
 import {BehaviorSubject, Observable} from 'rxjs';
@@ -26,14 +26,17 @@ import {UserProviderService} from '@valtimo/security';
   providedIn: 'root',
 })
 export class MenuService {
+  public includeFunctionObservables: {[key: string]: Observable<boolean>} = {};
+
   private _menuItems$ = new BehaviorSubject<MenuItem[]>(undefined);
   private menuConfig: MenuConfig;
 
   constructor(
-    private configService: ConfigService,
-    private documentService: DocumentService,
-    private userProviderService: UserProviderService,
-    private logger: NGXLogger
+    private readonly configService: ConfigService,
+    private readonly documentService: DocumentService,
+    private readonly userProviderService: UserProviderService,
+    private readonly logger: NGXLogger,
+    private readonly menuIncludeService: MenuIncludeService
   ) {
     this.menuConfig = configService.config.menu;
   }
@@ -54,6 +57,11 @@ export class MenuService {
   private loadMenuItems(): MenuItem[] {
     let menuItems: MenuItem[] = [];
     this.menuConfig.menuItems.forEach((menuItem: MenuItem) => {
+      if (menuItem.includeFunction !== undefined) {
+        this.includeFunctionObservables[menuItem.title] =
+          this.menuIncludeService.getIncludeFunction(menuItem.includeFunction);
+      }
+
       menuItem.show = true;
       menuItems.push(menuItem);
     });

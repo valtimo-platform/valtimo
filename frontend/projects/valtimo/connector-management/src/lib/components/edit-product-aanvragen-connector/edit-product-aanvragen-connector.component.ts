@@ -20,7 +20,7 @@ import {FormMappingService, FormTranslationService} from '@valtimo/form';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
 import {ExtendedComponentSchema} from 'formiojs';
 import {BehaviorSubject, combineLatest, Subject, Subscription} from 'rxjs';
-import {ConnectorProperties} from '../../models';
+import {ConnectorProperties} from '@valtimo/config';
 import {FormioForm, FormioRefreshValue} from 'angular-formio';
 import {FormioOptions} from 'angular-formio/formio.common';
 import {cloneDeep} from 'lodash';

@@ -18,7 +18,7 @@ import {AfterViewInit, Component, OnDestroy, ViewChild} from '@angular/core';
 import {ModalComponent} from '@valtimo/components';
 import {BehaviorSubject, combineLatest, Observable, of, Subscription} from 'rxjs';
 import {map, switchMap, take, tap} from 'rxjs/operators';
-import {ConnectorInstance} from '../../models';
+import {ConnectorInstance} from '@valtimo/config';
 import {TranslateService} from '@ngx-translate/core';
 import {ActivatedRoute} from '@angular/router';
 import {AlertService, Pagination} from '@valtimo/components';
