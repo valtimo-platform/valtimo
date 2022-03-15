@@ -1,0 +1,13 @@
+1a65356 - Merge branch 'rc/4.17.0-5.RC'
+258e0e6 - Updated version to 4.17.0
+5946272 - Updated version to 4.17.0-5.RC-SNAPSHOT
+38042c6 - Added field translations for connector properties for smart documents (#40)
+dc3f567 - fix: reset upload field on error, clear message after timeout (#44)
+e9e9319 - feat: remove hourly rate from entitlements (#41)
+871c909 - improve texts, add tooltips (#43)
+2f1965e - changed the project name to be in line with the repo name, added .nvmrc file for the Node Version Manager (#42)
+e256148 - upgrade jquery (related) deps in libs (#39)
+8977890 - upgrade jquery (related) deps (#38)
+1db623b - upgrade jquery (related) deps (#37)
+3ee685b - Merge pull request #36 from valtimo-platform/development
+fa36856 - Merge pull request #35 from valtimo-platform/development
