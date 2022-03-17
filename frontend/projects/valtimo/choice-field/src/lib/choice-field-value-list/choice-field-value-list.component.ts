@@ -43,12 +43,12 @@ export class ChoiceFieldValueListComponent implements OnInit {
       label: 'ID',
     },
     {
-      key: 'value',
+      key: 'name',
       label: 'Key',
     },
     {
-      key: 'name',
-      label: 'Title',
+      key: 'value',
+      label: 'Value',
     },
     {
       key: 'deprecatedDisplayString',
