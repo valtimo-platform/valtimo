@@ -443,7 +443,7 @@
       "openZaakConfig.clientId": "Client ID",
       "openZaakConfig.secret": "Secret",
       "openZaakConfig.rsin": "Rsin",
-      "openZaakConfig.catalogiUrl": "Catalogus URL",
+      "openZaakConfig.catalogusUrl": "Catalogus URL",
       "clientId": "Client ID",
       "secret": "Secret",
       "rsin": "RSIN",
