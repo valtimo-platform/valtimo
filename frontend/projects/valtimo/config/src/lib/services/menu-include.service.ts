@@ -15,11 +15,11 @@
  */
 
 import {Injectable} from '@angular/core';
-import {IncludeFunction, ValtimoConfig, Page, ConnectorInstance, ConnectorType} from '../models';
+import {ConnectorInstance, IncludeFunction, Page, ValtimoConfig} from '../models';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from './config.service';
 import {Observable, of} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -34,46 +34,23 @@ export class MenuIncludeService {
   getIncludeFunction(includeFunction: IncludeFunction): Observable<boolean> {
     switch (includeFunction) {
       case IncludeFunction.HaalcentraalConnectorConfigured:
-        return this.isHaalcentraalConnectorConfigured();
+        return this.isHaalCentraalConnectorConfigured();
       default:
         return of(true);
     }
   }
 
-  private isHaalcentraalConnectorConfigured(): Observable<boolean> {
-    return this.getConnectorTypes().pipe(
-      map(types => {
-        const haalcentraalType = types.find(type => type.name === 'HaalCentraal');
-        const haalCentraalTypeId = haalcentraalType?.id;
-
-        return haalCentraalTypeId;
-      }),
-      switchMap(haalcentraalTypeId => {
-        if (haalcentraalTypeId) {
-          return this.getConnectorInstancesByType(haalcentraalTypeId);
-        } else {
-          return of(undefined);
-        }
-      }),
+  private isHaalCentraalConnectorConfigured(): Observable<boolean> {
+    return this.getHaalCentraalConnectorInstances().pipe(
       map(haalcentraalConnectorInstances => {
         return haalcentraalConnectorInstances?.content?.length > 0;
       })
     );
   }
 
-  private getConnectorTypes(): Observable<Array<ConnectorType>> {
-    return this.http.get<Array<ConnectorType>>(
-      `${this.valtimoConfig.valtimoApi.endpointUri}connector/type`
-    );
-  }
-
-  private getConnectorInstancesByType(
-    typeId: string,
-    params?: any
-  ): Observable<Page<ConnectorInstance>> {
+  private getHaalCentraalConnectorInstances(): Observable<Page<ConnectorInstance>> {
     return this.http.get<Page<ConnectorInstance>>(
-      `${this.valtimoConfig.valtimoApi.endpointUri}connector/instance/${typeId}`,
-      {params}
+      `${this.valtimoConfig.valtimoApi.endpointUri}connector/instance?typeName=HaalCentraal`
     );
   }
 }
