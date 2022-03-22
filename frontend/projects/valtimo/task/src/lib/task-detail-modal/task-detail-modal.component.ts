@@ -69,7 +69,7 @@ export class TaskDetailModalComponent {
     this.task = task;
     this.page = {
       title: task.name,
-      subtitle: `Created ${moment(task.created).fromNow()}`,
+      subtitle: `Created ${task.created}`,
     };
     this.formLinkService
       .getPreFilledFormDefinitionByFormLinkId(
