@@ -324,8 +324,16 @@
   },
   "openZaak": {
     "links": "Gekoppeld zaak type",
+    "success": {
+      "serviceTaskLinked": "Servicetaak gekoppeld",
+      "serviceTaskLinkUpdated": "Servicetaak-link bijgewerkt",
+      "serviceTaskUnlinked": "Servicetaak ontkoppeld"
+    },
     "error": {
-      "configNotFound": "OpenZaak configuratie niet gevonden, ga naar Admin > Open Zaak"
+      "configNotFound": "OpenZaak configuratie niet gevonden, ga naar Admin > Open Zaak",
+      "serviceTaskLinkFailed": "Kan servicetaak niet koppelen",
+      "serviceTaskLinkUpdateFailed": "Kan koppeling servicetaak niet updaten",
+      "serviceTaskUnlinkFailed": "Kan servicetaak niet ontkoppelen"
     },
     "linkZaakType": "Zaaktype koppelen",
     "autoCreateForCase": "Automatisch aanmaken voor elk dossier",

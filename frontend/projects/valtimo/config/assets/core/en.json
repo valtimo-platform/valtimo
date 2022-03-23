@@ -324,8 +324,16 @@
   },
   "openZaak": {
     "links": "Connected zaak type",
+    "success": {
+      "serviceTaskLinked": "Service task linked",
+      "serviceTaskLinkUpdated": "Service task link updated",
+      "serviceTaskUnlinked": "Service task unlinked"
+    },
     "error": {
-      "configNotFound": "OpenZaak configuration not found, go to Admin > Open Zaak"
+      "configNotFound": "OpenZaak configuration not found, go to Admin > Open Zaak",
+      "serviceTaskLinkFailed": "Failed to link Service task",
+      "serviceTaskLinkUpdateFailed": "Failed to update Service task link",
+      "serviceTaskUnlinkFailed": "Failed to unlink Service task"
     },
     "linkZaakType": "Link zaak type",
     "autoCreateForCase": "Automatically create for each case",
