@@ -17,9 +17,10 @@
 import {Component} from '@angular/core';
 import {CustomerService} from '../../services/customer.service';
 import {BehaviorSubject, combineLatest, Observable, of} from 'rxjs';
-import {map, tap, switchMap, debounceTime} from 'rxjs/operators';
+import {map, tap, switchMap, debounceTime, catchError} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {
+  Customer,
   CustomerBsnSearchRequest,
   CustomerDataSearchRequest,
   CustomerSearchRequest,
@@ -100,13 +101,17 @@ export class CustomerListComponent {
         ((searchParameters as CustomerDataSearchRequest)?.geslachtsnaam &&
           (searchParameters as CustomerDataSearchRequest)?.geboortedatum)
       ) {
-        return this.customerService.getCustomers(searchParameters as CustomerSearchRequest);
+        return this.customerService.getCustomers(searchParameters as CustomerSearchRequest).pipe(
+          catchError(() => {
+            return of([]);
+          })
+        );
       } else {
         return of([]);
       }
     }),
     map(customers =>
-      customers.map(customer => ({
+      (customers as Array<Customer>).map(customer => ({
         citizenServiceNumber: customer.burgerservicenummer,
         dateOfBirth: customer.geboorteDatum,
         name: `${customer.geslachtsnaam}, ${customer.voornamen} ${customer.voorletters}`,
