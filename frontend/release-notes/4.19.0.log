@@ -1,0 +1,20 @@
+2849f28 - Updated version to 4.19.0
+75192ef - catalogusUrl
+203ae01 - Updated version to 4.19.0-14.RC-SNAPSHOT
+0afd35a - feat: search persons in haalcentraal (#70)
+5a4f3d2 - Merge branch 'main' into development
+68eb2c6 - Feature/allnex custom dropdown menu options per row (#68)
+3fb3848 - #33902 enkelfout catalog url voor zaakbesluit (#71)
+971ef55 - #33902 Add Catalogi URL to OpenZaakConnector (#69)
+8d69bb8 - feat: custom formio component voor document-picker (#66)
+f221099 - #33902 Configureren taak voor maken Zaakbesluit (#67)
+2ab7858 - feature 33903 - Added text for besluit audit log (#65)
+6972340 - feat: revert to previous state of development branch (#63)
+8cb1696 - feat: slash agnostic translationResources prefix (#62)
+fa08186 - Added customDossierHeader to the dossier component (#55)
+9eb8e65 - #33902 configureren taak voor maken zaakbesluit (#57)
+d4777fc - delete summernote (#60)
+107e46d - remove summernote (#59)
+cd6f1a3 - fix: restore layout lib deps (#58)
+e8471e2 - move eslint deps to regular deps (#56)
+cf197af - feat: implement new connector management design (#54)
