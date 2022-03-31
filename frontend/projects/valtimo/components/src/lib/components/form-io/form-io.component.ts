@@ -150,6 +150,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   private setToken(token: string): void {
     Formio.setToken(token);
+    localStorage.setItem('formioToken', token);
     this.setTimerForTokenRefresh(token);
 
     this.logger.debug('New token set for form.io.');
