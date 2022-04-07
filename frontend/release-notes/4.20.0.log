@@ -1,0 +1,9 @@
+4d60c18 - Updated version to 4.20.0
+9ea5d89 - Updated version to 4.20.0-19.RC-SNAPSHOT
+1344d0b - Merge branch 'main' into development
+86ccc65 - feat: koppeling zaakbesluit vertalingen (#78)
+5ac4429 - return empty array on error get customers (#77)
+4910848 - fix: task modal subtitle timestamp
+e618957 - feat: rename openzaak property (#75)
+c1a1582 - fix: menu laden duurt lang bij gzac (#74)
+d3808cb - 33904 - Fix choice-fields list columns and column titles
