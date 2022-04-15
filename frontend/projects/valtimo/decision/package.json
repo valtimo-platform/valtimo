@@ -7,7 +7,7 @@
     "@angular/core": "^10.0.11"
   },
   "dependencies": {
-    "dmn-js": "^7.3.0",
+    "dmn-js": "^12.1.0",
     "tslib": "^2.0.0"
   }
 }
