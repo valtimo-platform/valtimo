@@ -50,7 +50,7 @@ export class MenuIncludeService {
 
   private getHaalCentraalConnectorInstances(): Observable<Page<ConnectorInstance>> {
     return this.http.get<Page<ConnectorInstance>>(
-      `${this.valtimoConfig.valtimoApi.endpointUri}connector/instance?typeName=HaalCentraal`
+      `${this.valtimoConfig.valtimoApi.endpointUri}connector/instance?typeName=HaalCentraalBrp`
     );
   }
 }
