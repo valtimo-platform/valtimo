@@ -298,10 +298,14 @@ export class OpenZaakServiceTaskConnectorModalExtensionComponent implements OnIn
       )
       .subscribe(
         () => {
-          this.alertService.success(this.translateService.instant('openZaak.success.serviceTaskLinked'));
+          this.alertService.success(
+            this.translateService.instant('openZaak.success.serviceTaskLinked')
+          );
         },
         () => {
-          this.alertService.error(this.translateService.instant('openZaak.error.serviceTaskLinkFailed'));
+          this.alertService.error(
+            this.translateService.instant('openZaak.error.serviceTaskLinkFailed')
+          );
         }
       );
   }
@@ -323,10 +327,14 @@ export class OpenZaakServiceTaskConnectorModalExtensionComponent implements OnIn
       )
       .subscribe(
         () => {
-          this.alertService.success(this.translateService.instant('openZaak.success.serviceTaskLinkUpdated'));
+          this.alertService.success(
+            this.translateService.instant('openZaak.success.serviceTaskLinkUpdated')
+          );
         },
         () => {
-          this.alertService.error(this.translateService.instant('openZaak.error.serviceTaskLinkUpdateFailed'));
+          this.alertService.error(
+            this.translateService.instant('openZaak.error.serviceTaskLinkUpdateFailed')
+          );
         }
       );
   }
@@ -352,10 +360,14 @@ export class OpenZaakServiceTaskConnectorModalExtensionComponent implements OnIn
                 )
                 .subscribe(
                   () => {
-                    this.alertService.success(this.translateService.instant('openZaak.success.serviceTaskUnlinked'));
+                    this.alertService.success(
+                      this.translateService.instant('openZaak.success.serviceTaskUnlinked')
+                    );
                   },
                   () => {
-                    this.alertService.error(this.translateService.instant('openZaak.error.serviceTaskUnlinkFailed'));
+                    this.alertService.error(
+                      this.translateService.instant('openZaak.error.serviceTaskUnlinkFailed')
+                    );
                   }
                 );
             }

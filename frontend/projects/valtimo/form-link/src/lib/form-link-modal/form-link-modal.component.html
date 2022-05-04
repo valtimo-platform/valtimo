@@ -70,6 +70,51 @@
         </div>
       </div>
       <div class="card">
+        <div class="card-header" id="headingFormFlowDefinition">
+          <button
+            class="btn collapsed"
+            data-toggle="collapse"
+            data-target="#collapseFormFlowDefinition"
+            aria-expanded="false"
+            aria-controls="collapseFormFlowDefinition"
+          >
+            <i class="icon icon-not-selected mdi mdi-circle-o"></i>
+            <i class="icon icon-selected mdi mdi-dot-circle"></i>
+            {{ 'formLink.formFlowDefinition' | translate }}
+            <i
+              class="icon icon-info mdi mdi-info-outline click-able mr-0"
+              [title]="'formLink.infoFormFlowDefinition' | translate"
+            ></i>
+          </button>
+        </div>
+        <div
+          class="collapse"
+          id="collapseFormFlowDefinition"
+          aria-labelledby="headingFormFlowDefinition"
+          data-parent="#associationAccordion"
+        >
+          <div class="card-body">
+            <div class="mt-2">
+              <valtimo-searchable-dropdown-select
+                [style]="'button'"
+                [items]="mapFormFlowDefinitionsForDropdown(formFlowDefinitions)"
+                [buttonText]="'formLink.header' | translate"
+                [searchText]="'interface.typeToSearch' | translate"
+                [noResultsText]="'interface.noSearchResults' | translate"
+                [selectedText]="'formLink.linkedFormFLowDefinition' | translate"
+                [selectedTextValue]="selectedFormFlowDefinition?.name"
+                [clearSelectionButtonTitle]="'formLink.deselect' | translate"
+                [hasSelection]="!!selectedFormFlowDefinition"
+                [width]="400"
+                (itemSelected)="onFormFlowDefinitionSelected($event)"
+                (clearSelection)="clearSelectedFormFlowDefinition()"
+              >
+              </valtimo-searchable-dropdown-select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
         <div class="card-header" id="headingAngularState">
           <button
             class="btn collapsed"
@@ -157,6 +202,7 @@
       [disabled]="
         selectedAssociationType === null ||
         (selectedAssociationType === 'form-definition' && !selectedFormDefinition) ||
+        (selectedAssociationType === 'form-flow' && !selectedFormFlowDefinition) ||
         (selectedAssociationType === 'custom-url' && !enteredCustomUrl) ||
         (selectedAssociationType === 'angular-state' && !enteredAngularState)
       "

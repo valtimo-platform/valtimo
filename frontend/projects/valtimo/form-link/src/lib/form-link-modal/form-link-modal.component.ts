@@ -21,6 +21,7 @@ import {
   BpmnElement,
   CreateFormAssociationRequest,
   FormAssociation,
+  FormFlowDefinition,
   ModifyFormAssociationRequest,
 } from '../models';
 import {FormLinkService} from '../form-link.service';
@@ -32,6 +33,7 @@ import {
 } from '@valtimo/components';
 import {NGXLogger} from 'ngx-logger';
 import {TranslateService} from '@ngx-translate/core';
+import {FormFlowService} from '../form-flow.service';
 
 declare var $;
 
@@ -43,15 +45,18 @@ declare var $;
 export class FormLinkModalComponent implements OnInit {
   public modalOptions: NgbModalOptions;
   public formDefinitions: FormDefinition[] = [];
+  public formFlowDefinitions: FormFlowDefinition[] = [];
   public selectedElement: BpmnElement | null = null;
   public associationType: string | null = null;
   public selectedFormDefinition: FormDefinition | null = null;
+  public selectedFormFlowDefinition: FormFlowDefinition | null = null;
   public enteredCustomUrl: string | null = null;
   public enteredAngularState: string | null = null;
   public previousFormLink: FormAssociation | null = null;
   private processDefinitionKey: string | null = null;
   private isListenersAdded = false;
   private isFormDefinitionSelected = false;
+  private isFormFlowDefinitionSelected = false;
   private isAngularStateSelected = false;
   private isCustomUrlSelected = false;
   private size = 50;
@@ -72,6 +77,7 @@ export class FormLinkModalComponent implements OnInit {
   constructor(
     private modalService: NgbModal,
     private formLinkService: FormLinkService,
+    private formFlowService: FormFlowService,
     private formManagementService: FormManagementService,
     private alertService: AlertService,
     private logger: NGXLogger,
@@ -91,11 +97,16 @@ export class FormLinkModalComponent implements OnInit {
         this.ngOnInit();
       }
     });
+    this.formFlowService.getFormFlowDefinitions().subscribe(formFlowDefinitions => {
+      this.formFlowDefinitions = formFlowDefinitions;
+    });
   }
 
   public get selectedAssociationType() {
     if (this.isFormDefinitionSelected) {
       return 'form-definition';
+    } else if (this.isFormFlowDefinitionSelected) {
+      return 'form-flow';
     } else if (this.isAngularStateSelected) {
       return 'angular-state';
     } else if (this.isCustomUrlSelected) {
@@ -105,7 +116,12 @@ export class FormLinkModalComponent implements OnInit {
     }
   }
 
-  private addCollapseListeners(collapseFormDefinition, collapseAngularState, collapseCustomUrl) {
+  private addCollapseListeners(
+    collapseFormDefinition,
+    collapseFormFlowDefinition,
+    collapseAngularState,
+    collapseCustomUrl
+  ) {
     collapseFormDefinition.on('show.bs.collapse', () => {
       this.ngZone.run(() => {
         this.isFormDefinitionSelected = true;
@@ -114,6 +130,16 @@ export class FormLinkModalComponent implements OnInit {
     collapseFormDefinition.on('hide.bs.collapse', () => {
       this.ngZone.run(() => {
         this.isFormDefinitionSelected = false;
+      });
+    });
+    collapseFormFlowDefinition.on('show.bs.collapse', () => {
+      this.ngZone.run(() => {
+        this.isFormFlowDefinitionSelected = true;
+      });
+    });
+    collapseFormFlowDefinition.on('hide.bs.collapse', () => {
+      this.ngZone.run(() => {
+        this.isFormFlowDefinitionSelected = false;
       });
     });
     collapseAngularState.on('show.bs.collapse', () => {
@@ -142,6 +168,7 @@ export class FormLinkModalComponent implements OnInit {
     this.selectedElement = element;
     this.processDefinitionKey = processDefinitionKey;
     this.selectedFormDefinition = null;
+    this.selectedFormFlowDefinition = null;
     this.enteredAngularState = null;
     this.enteredCustomUrl = null;
     this.associationType = null;
@@ -150,11 +177,13 @@ export class FormLinkModalComponent implements OnInit {
       .subscribe((formLink: FormAssociation) => {
         this.previousFormLink = formLink;
         const collapseFormDefinition = $('#collapseFormDefinition');
+        const collapseFormFlowDefinition = $('#collapseFormFlowDefinition');
         const collapseCustomUrl = $('#collapseCustomUrl');
         const collapseAngularState = $('#collapseAngularState');
         if (!this.isListenersAdded) {
           this.addCollapseListeners(
             collapseFormDefinition,
+            collapseFormFlowDefinition,
             collapseAngularState,
             collapseCustomUrl
           );
@@ -172,6 +201,15 @@ export class FormLinkModalComponent implements OnInit {
                 this.selectedFormDefinition = foundFormDefinition;
               }
               collapseFormDefinition.collapse('show');
+              break;
+            case 'BpmnElementFormFlowIdLink':
+              const foundFormFlowDefinition = this.formFlowDefinitions.find(
+                formFlowDefinition => formFlowDefinition.id === formLink.formLink.formFlowId
+              );
+              if (foundFormFlowDefinition !== undefined) {
+                this.selectedFormFlowDefinition = foundFormFlowDefinition;
+              }
+              collapseFormFlowDefinition.collapse('show');
               break;
             case 'BpmnElementUrlLink':
               this.enteredCustomUrl = formLink.formLink.url;
@@ -203,6 +241,11 @@ export class FormLinkModalComponent implements OnInit {
         currentAssociation.selected = this.selectedFormDefinition;
         currentAssociation.different = () =>
           this.previousFormLink.formLink.formId !== this.selectedFormDefinition.id;
+        break;
+      case 'form-flow':
+        currentAssociation.selected = this.selectedFormFlowDefinition;
+        currentAssociation.different = () =>
+          this.previousFormLink.formLink.formFlowId !== this.selectedFormFlowDefinition.id;
         break;
       case 'custom-url':
         currentAssociation.selected = this.enteredCustomUrl;
@@ -237,6 +280,10 @@ export class FormLinkModalComponent implements OnInit {
       case 'form-definition':
         modifyFormAssociationRequest.formLinkRequest.formId = this.selectedFormDefinition.id;
         break;
+      case 'form-flow':
+        modifyFormAssociationRequest.formLinkRequest.formFlowId =
+          this.selectedFormFlowDefinition.id;
+        break;
       case 'custom-url':
         modifyFormAssociationRequest.formLinkRequest.customUrl = this.enteredCustomUrl;
         break;
@@ -268,6 +315,10 @@ export class FormLinkModalComponent implements OnInit {
     switch (associationType) {
       case 'form-definition':
         createFormAssociationRequest.formLinkRequest.formId = this.selectedFormDefinition.id;
+        break;
+      case 'form-flow':
+        createFormAssociationRequest.formLinkRequest.formFlowId =
+          this.selectedFormFlowDefinition.id;
         break;
       case 'custom-url':
         createFormAssociationRequest.formLinkRequest.customUrl = this.enteredCustomUrl;
@@ -322,5 +373,26 @@ export class FormLinkModalComponent implements OnInit {
 
   clearSelectedFormDefinition(): void {
     this.selectedFormDefinition = null;
+  }
+
+  public mapFormFlowDefinitionsForDropdown(
+    formFlowDefinitions: FormFlowDefinition[]
+  ): DropdownItem[] {
+    return (
+      formFlowDefinitions &&
+      formFlowDefinitions
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map(formFlowDefinition => ({text: formFlowDefinition.name, id: formFlowDefinition.id}))
+    );
+  }
+
+  onFormFlowDefinitionSelected(formFlowDefinitionId: string) {
+    this.selectedFormFlowDefinition = this.formFlowDefinitions.find(
+      formFlowDefinition => formFlowDefinition.id === formFlowDefinitionId
+    );
+  }
+
+  clearSelectedFormFlowDefinition(): void {
+    this.selectedFormFlowDefinition = null;
   }
 }

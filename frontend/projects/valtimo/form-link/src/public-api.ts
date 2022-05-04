@@ -18,6 +18,7 @@
  * Public API Surface of form-link
  */
 
+export * from './lib/form-flow.service';
 export * from './lib/form-link.service';
 export * from './lib/form-link.component';
 export * from './lib/form-link.module';

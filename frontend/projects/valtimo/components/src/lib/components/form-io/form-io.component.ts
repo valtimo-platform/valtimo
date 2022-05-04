@@ -159,7 +159,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
       this.tokenRefreshTimerSubscription = timer(expiryTime).subscribe(() => {
         this.refreshToken();
       });
-    };
+    }
 
     this.logger.debug(`Timer for form.io token refresh set for: ${expiryTime}ms.`);
   }

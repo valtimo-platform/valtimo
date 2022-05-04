@@ -20,6 +20,7 @@ export interface FormAssociation {
   formLink: {
     id: string;
     formId: string;
+    formFlowId: string;
     url: string;
     className: string;
   };
@@ -29,6 +30,7 @@ export interface FormLinkRequest {
   id: string;
   type: string;
   formId?: string;
+  formFlowId?: string;
   customUrl?: string;
   angularStateUrl?: string;
 }
@@ -52,4 +54,9 @@ export interface FormSubmissionResult {
 export interface BpmnElement {
   id: string;
   type: string;
+}
+
+export interface FormFlowDefinition {
+  id: string;
+  name: string;
 }
