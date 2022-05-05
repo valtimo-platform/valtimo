@@ -32,7 +32,7 @@ export class FormFlowService {
 
   getFormFlowDefinitions(): Observable<FormFlowDefinition[]> {
     return this.http.get<FormFlowDefinition[]>(
-      `${this.valtimoApiConfig.endpointUri}form-flow-definition`
+      `${this.valtimoApiConfig.endpointUri}process-link/form-flow-definition`
     );
   }
 }
