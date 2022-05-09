@@ -27,6 +27,7 @@ import {cloneDeep} from 'lodash';
 import {TranslateService} from '@ngx-translate/core';
 import {map, switchMap, tap} from 'rxjs/operators';
 import {ConnectorManagementService} from '../../services/connector-management/connector-management.service';
+import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
 
 @Component({
   selector: 'valtimo-edit-product-aanvragen-connector',
@@ -61,7 +62,8 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
     private readonly formMappingService: FormMappingService,
     private readonly documentService: DocumentService,
     private readonly translateService: TranslateService,
-    private readonly connectorManagementService: ConnectorManagementService
+    private readonly connectorManagementService: ConnectorManagementService,
+    private readonly stateService: ConnectorManagementStateService
   ) {}
 
   ngOnInit(): void {
@@ -70,6 +72,7 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
     this.formDefinition$.next(editProductAanvragenConnectorForm);
     this.loadConnectorNames();
     this.loadDefinitions();
+    this.stateService.hideModalSaveButton();
   }
 
   ngOnDestroy(): void {
@@ -145,9 +148,10 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
           )
         ),
         tap(res => {
-          this.caseDefinitionOptions = documentDefinitions.map(documentDefinition => {
-            return {label: documentDefinition.id.name, value: documentDefinition.id.name};
-          });
+          this.caseDefinitionOptions = documentDefinitions.map(documentDefinition => ({
+            label: documentDefinition.id.name,
+            value: documentDefinition.id.name,
+          }));
 
           documentDefinitions.forEach((documentDefinition, index) => {
             this.processDocumentDefinitionOptions[documentDefinition.id.name] = res[index].map(

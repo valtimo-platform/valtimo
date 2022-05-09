@@ -26,6 +26,7 @@ export class EditConnectorFormComponent {
   @Input() properties: ConnectorProperties;
   @Input() withDefaults = false;
   @Input() showDeleteButton = false;
+  @Input() showSaveButton = true;
   @Input() defaultName!: string;
   @Input() connectorName: string;
 

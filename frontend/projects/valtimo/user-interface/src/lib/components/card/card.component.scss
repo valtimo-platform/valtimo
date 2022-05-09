@@ -1,0 +1,65 @@
+/*
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.v-card {
+  width: 100%;
+  padding-inline-start: var(--v-card-padding-inline);
+  padding-inline-end: var(--v-card-padding-inline);
+  padding-block-start: var(--v-card-padding-block-start);
+  padding-block-end: var(--v-card-padding-block-end);
+  border-radius: var(--v-card-border-radius);
+  outline: var(--v-card-border);
+  background-color: var(--v-card-bg-color);
+  transition: var(--v-card-transition);
+}
+
+.v-card--selectable {
+  user-select: none;
+  cursor: var(--v-card-selectable-cursor);
+
+  &:hover {
+    background-color: var(--v-card-selectable-hover-bg-color);
+  }
+}
+
+.v-card--selected {
+  outline: var(--v-card-selected-border);
+}
+
+.v-card--full-height {
+  height: 100%;
+}
+
+.v-card__title {
+  font-size: var(--v-card-title-font-size);
+  line-height: var(--v-card-title-line-height);
+  color: var(--v-card-title-color);
+  font-weight: var(--v-card-title-font-weight);
+  margin: 0;
+  margin-block-end: var(--v-card-title-spacing-block);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.v-card__description {
+  font-size: var(--v-card-description-font-size);
+  line-height: var(--v-card-description-line-height);
+  color: var(--v-card-description-color);
+  font-weight: var(--v-card-description-font-weight);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -38,7 +38,7 @@ export class Auth0Module {
         JwtModule.forRoot({
           config: {
             tokenGetter: jwtTokenGetter,
-            allowedDomains: allowedDomains,
+            allowedDomains,
           },
         }).providers,
       ],

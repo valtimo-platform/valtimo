@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import * as momentImported from 'moment';
+import moment from 'moment';
 import {AbstractControl, ValidatorFn} from '@angular/forms';
 
-const moment = momentImported;
 moment.locale(localStorage.getItem('langKey'));
 const DATE_FORMAT = 'DD-MM-YYYY';
 

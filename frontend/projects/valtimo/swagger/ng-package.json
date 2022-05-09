@@ -2,15 +2,7 @@
   "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../../dist/valtimo/swagger",
   "lib": {
-    "entryFile": "src/public_api.ts",
-    "umdModuleIds": {
-      "@valtimo/contract": "contract",
-      "@valtimo/security": "security",
-      "@valtimo/auth0": "auth0",
-      "@valtimo/config": "config",
-      "ngx-logger": "ngxLogger",
-      "swagger-ui": "SwaggerUI"
-    }
+    "entryFile": "src/public_api.ts"
   },
-  "whitelistedNonPeerDependencies": ["swagger-ui"]
+  "allowedNonPeerDependencies": ["swagger-ui"]
 }

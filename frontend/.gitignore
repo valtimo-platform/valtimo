@@ -33,6 +33,7 @@ speed-measure-plugin.json
 .history/*
 
 # misc
+/.angular/cache
 /.sass-cache
 /connect.lock
 /coverage
@@ -53,3 +54,5 @@ Thumbs.db
 /projects/out-tsc
 
 /.gradle
+
+/.git

@@ -1,0 +1,73 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="v-card"
+  [ngClass]="{
+    'v-card--selectable': selectable,
+    'v-card--selected': selected,
+    'v-card--full-height': fullHeight
+  }"
+  (click)="click()"
+>
+  <div class="v-card__body">
+    <ng-container *ngTemplateOutlet="cardTitle"></ng-container>
+    <ng-container *ngTemplateOutlet="cardTitleLoading"></ng-container>
+    <ng-container *ngTemplateOutlet="cardDescription"></ng-container>
+    <ng-container *ngTemplateOutlet="cardDescriptionLoading"></ng-container>
+  </div>
+</div>
+
+<ng-template #cardTitle>
+  <h2 class="v-card__title" *ngIf="!loading && (titleTranslationKey || title)">
+    {{ titleTranslationKey ? (titleTranslationKey | translate) : title }}
+  </h2>
+</ng-template>
+
+<ng-template #cardTitleLoading>
+  <h2 class="v-card__title" *ngIf="loading && loadingTitle">
+    <ngx-skeleton-loader
+      appearance="line"
+      [theme]="{
+        width: 'var(--v-card-title-loading-skeleton-width)',
+        height: 'var(--v-card-title-line-height)',
+        margin: '0',
+        'background-color': 'var(--v-card-loading-skeleton-bg-color)'
+      }"
+    ></ngx-skeleton-loader>
+  </h2>
+</ng-template>
+
+<ng-template #cardDescription>
+  <p class="v-card__description" *ngIf="!loading && (descriptionTranslationKey || description)">
+    {{ descriptionTranslationKey ? (descriptionTranslationKey | translate) : description }}
+  </p>
+</ng-template>
+
+<ng-template #cardDescriptionLoading>
+  <p class="v-card__description" *ngIf="loading && loadingDescription">
+    <ngx-skeleton-loader
+      appearance="line"
+      count="3"
+      [theme]="{
+        width: '100%',
+        height: 'var(--v-card-description-line-height)',
+        margin: '0',
+        'background-color': 'var(--v-card-loading-skeleton-bg-color)'
+      }"
+    ></ngx-skeleton-loader>
+  </p>
+</ng-template>

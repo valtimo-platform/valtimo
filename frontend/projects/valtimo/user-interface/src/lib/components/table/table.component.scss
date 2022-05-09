@@ -1,0 +1,155 @@
+/*
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.v-table-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.v-table {
+  width: 100%;
+  border-spacing: var(--v-table-border-spacing);
+  table-layout: var(--v-table-layout);
+}
+
+.v-table__header {
+  color: var(--v-table-header-font-color);
+  text-transform: var(--v-table-header-text-transform);
+  font-size: var(--v-table-header-font-size);
+  font-weight: var(--v-table-header-font-weight);
+  letter-spacing: var(--v-table-header-letter-spacing);
+  padding-block-end: var(--v-table-header-padding-block-end);
+  padding-inline-start: var(--v-table-cell-padding-inline);
+  padding-inline-end: var(--v-table-cell-padding-inline);
+
+  &:first-child {
+    padding-inline-start: var(--v-table-first-cell-padding-inline-start);
+  }
+}
+
+.v-table__body {
+  box-shadow: var(--v-table-body-box-shadow);
+  border-radius: var(--v-border-radius-md);
+}
+
+.v-table__row {
+  border-bottom: var(--v-table-row-bottom-border);
+
+  &:first-child {
+    .v-table__cell {
+      &:first-child {
+        border-top-left-radius: var(--v-border-radius-md);
+      }
+      &:last-child {
+        border-top-right-radius: var(--v-border-radius-md);
+      }
+    }
+  }
+
+  &:last-child {
+    border-bottom: none;
+
+    .v-table__cell {
+      &:first-child {
+        border-bottom-left-radius: var(--v-border-radius-md);
+      }
+      &:last-child {
+        border-bottom-right-radius: var(--v-border-radius-md);
+      }
+    }
+  }
+}
+
+.v-table__cell {
+  padding-block-start: var(--v-table-cell-padding-block);
+  padding-block-end: var(--v-table-cell-padding-block);
+  padding-inline-start: var(--v-table-cell-padding-inline);
+  padding-inline-end: var(--v-table-cell-padding-inline);
+  background-color: var(--v-table-background-color);
+  font-size: var(--v-font-size-smaller);
+  font-weight: var(--v-font-weight-bold);
+  line-height: var(--v-line-height-smaller);
+  width: var(--v-table-cell-width);
+
+  &:first-child {
+    padding-inline-start: var(--v-table-first-cell-padding-inline-start);
+  }
+}
+
+.v-table__cell-content {
+  display: flex;
+  color: var(--v-table-cell-font-color);
+  padding-block-start: var(--v-table-cell-content-padding-block);
+  padding-block-end: var(--v-table-cell-content-padding-block);
+}
+
+.v-table__cell--with-button {
+  width: 0.1%;
+  white-space: nowrap;
+}
+
+.v-table__cell-button-container {
+  display: flex;
+}
+
+ngx-skeleton-loader {
+  display: flex;
+}
+
+.v-table__pagination-container {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-block-start: var(--v-table-pagination-margin-block);
+}
+
+.v-table__pagination-size-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  span:not(:last-child) {
+    margin-inline-end: var(--v-table-pagination-size-spacing-inline);
+  }
+}
+
+.v-table__pagination-size-text {
+  color: var(--v-table-pagination-size-text-color);
+  font-size: var(--v-table-pagination-size-text-font-size);
+  font-weight: var(--v-table-pagination-size-text-font-weight);
+}
+
+.v-table__pagination-size-select {
+  display: flex;
+}
+
+.v-table__pagination-amount-text {
+  margin-inline-start: var(--v-table-pagination-amount-text-margin-inline);
+  color: var(--v-table-pagination-size-text-color);
+  font-size: var(--v-table-pagination-size-text-font-size);
+  font-weight: var(--v-table-pagination-amount-text-font-weight);
+}
+
+.v-table__pagination-navigation-container {
+  display: flex;
+  flex-direction: row;
+
+  span:not(:last-child) {
+    margin-inline-end: var(--v-table-pagination-button-spacing-inline);
+  }
+}

@@ -35,6 +35,7 @@ import {NGXLogger} from 'ngx-logger';
 import {TranslateService} from '@ngx-translate/core';
 import {FormFlowService} from '../form-flow.service';
 
+// eslint-disable-next-line no-var
 declare var $;
 
 @Component({

@@ -105,7 +105,7 @@ export class ProcessService {
     return this.http.post<ProcessInstance>(
       `${this.valtimoEndpointUri}v2/process/${key}/search`,
       {},
-      {params: params}
+      {params}
     );
   }
 
@@ -157,7 +157,7 @@ export class ProcessService {
     params.set('toDate', toDate);
     params.set('processFilter', processFilter);
     return this.http.get<any[]>(`${this.valtimoEndpointUri}reporting/instancesstatistics`, {
-      params: params,
+      params,
     });
   }
 

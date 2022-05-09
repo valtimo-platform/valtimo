@@ -82,6 +82,7 @@ import {OpenZaakModule} from '@valtimo/open-zaak';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {ConnectorManagementModule} from '@valtimo/connector-management';
 import {CustomerModule} from '@valtimo/customer';
+import {ModalService, UserInterfaceService} from '@valtimo/user-interface';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -161,7 +162,7 @@ export function tabsFactory() {
       },
     }),
   ],
-  providers: [FormioComponent, FormIoStateService],
+  providers: [FormioComponent, FormIoStateService, ModalService, UserInterfaceService],
   entryComponents: [
     CustomFormExampleComponent,
     StartProcessCustomFormComponent,

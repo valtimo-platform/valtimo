@@ -25,8 +25,8 @@ import {
   EventEmitter,
   OnInit,
 } from '@angular/core';
-import * as BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
-import * as heatmap from 'heatmap.js-fixed/build/heatmap.js';
+import BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
+import heatmap from 'heatmap.js-fixed/build/heatmap.js';
 
 @Component({
   selector: 'valtimo-bpmn-js-diagram',
@@ -55,8 +55,8 @@ export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestr
     this.bpmnJS = new BpmnJS();
     this.bpmnJS.on('import.done', ({error}) => {
       if (!error) {
-        const canvas = this.bpmnJS.get('canvas'),
-          eventBus = this.bpmnJS.get('eventBus');
+        const canvas = this.bpmnJS.get('canvas');
+        const eventBus = this.bpmnJS.get('eventBus');
 
         if (this.historicActivityInstances) {
           this.historicActivityInstances.forEach(instance => {
@@ -95,7 +95,8 @@ export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestr
   }
 
   getHeatmapData() {
-    let inputData: any, valueKey: any;
+    let inputData: any;
+    let valueKey: any;
 
     this.heatPoints = {data: []};
     this.min = 0;
@@ -111,10 +112,10 @@ export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestr
 
     if (inputData) {
       Object.keys(inputData).forEach(key => {
-        const diagramContainer = this.el.nativeElement.querySelector('svg').getBoundingClientRect(),
-          diagramElm = this.el.nativeElement
-            .querySelector(`g[data-element-id=${key}]`)
-            .getBoundingClientRect();
+        const diagramContainer = this.el.nativeElement.querySelector('svg').getBoundingClientRect();
+        const diagramElm = this.el.nativeElement
+          .querySelector(`g[data-element-id=${key}]`)
+          .getBoundingClientRect();
         this.setMax(key);
         this.heatPoints.data.push({
           x: Math.round(diagramElm.x - diagramContainer.x + diagramElm.width / 2),

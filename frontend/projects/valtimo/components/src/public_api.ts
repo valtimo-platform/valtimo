@@ -30,6 +30,7 @@ export * from './lib/components/menu/menu.service';
 export * from './lib/components/menu/menu-routing.module';
 export * from './lib/components/menu/menu.module';
 export * from './lib/components/menu/menu.init';
+export * from './lib/components/menu/menu.component';
 
 export * from './lib/components/right-sidebar/right-sidebar.component';
 export * from './lib/components/right-sidebar/right-sidebar.module';
@@ -97,6 +98,7 @@ export * from './lib/components/modal/modal.module';
 export * from './lib/components/modal/modal.component';
 
 export * from './lib/components/spinner/spinner.module';
+export * from './lib/components/spinner/spinner.component';
 
 export * from './lib/components/searchable-dropdown/searchable-dropdown.module';
 export * from './lib/components/searchable-dropdown/searchable-dropdown.component';

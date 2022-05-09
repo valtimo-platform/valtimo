@@ -39,7 +39,7 @@ export class FormManagementService {
   queryFormDefinitions(params?: any): Observable<any> {
     return this.http.get(`${this.valtimoApiConfig.endpointUri}form-management`, {
       observe: 'response',
-      params: params,
+      params,
     });
   }
 

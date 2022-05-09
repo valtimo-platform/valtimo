@@ -1,0 +1,317 @@
+/*!
+ *
+ *  * Copyright 2015-2020 Ritense BV, the Netherlands.
+ *  *
+ *  * Licensed under EUPL, Version 1.2 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" basis,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
+ *
+ */
+
+:root {
+  /* colors */
+  --v-color-white: #ffffff;
+  --v-color-black: #222222;
+  --v-color-grey-1: #6b6b6b;
+  --v-color-grey-2: #a0a0a0;
+  --v-color-grey-3: #b2b2b2;
+  --v-color-grey-4: #dbdbdb;
+  --v-color-grey-5: #ececec;
+  --v-color-grey-6: #cccccc;
+  --v-color-grey-7: #f2f3f3;
+  --v-color-grey-8: #f9f9f9;
+  --v-color-grey-8-transparant: rgba(249, 249, 249, 0);
+  --v-color-accent-1: #ef6622;
+  /* lighten base with amount 10 on https://pinetools.com/lighten-color */
+  --v-color-accent-1-lighter: #f07538;
+  /* darken base with amount 10 on https://pinetools.com/darken-color */
+  --v-color-accent-1-darker: #e55710;
+  --v-color-accent-1-light-background: #fef3ed;
+  --v-color-accent-2: #316d3a;
+  /* lighten base with amount 10 on https://pinetools.com/lighten-color */
+  --v-color-accent-2-lighter: #3b8546;
+  /* darken base with amount 10 on https://pinetools.com/darken-color */
+  --v-color-accent-2-darker: #2c6234;
+  --v-color-accent-3: #ff2e00;
+  /* lighten base with amount 10 on https://pinetools.com/lighten-color */
+  --v-color-accent-3-lighter: #ff4219;
+  /* darken base with amount 10 on https://pinetools.com/darken-color */
+  --v-color-accent-3-darker: #e52900;
+  --v-color-accent-3-light-background: #f9e5e0;
+  /* lighten base with amount 10 on https://pinetools.com/lighten-color */
+  --v-color-accent-3-light-background-lighter: #f9e7e3;
+  /* darken base with amount 10 on https://pinetools.com/darken-color */
+  --v-color-accent-3-light-background-darker: #f1c3b8;
+  --v-color-accent-4: #19a84a;
+  /* darken base with amount 10 on https://pinetools.com/darken-color */
+  --v-color-accent-4-darker: #169742;
+  --v-color-backdrop: rgba(0, 0, 0, 0.28);
+  --v-color-backdrop-hover: rgba(0, 0, 0, 0.24);
+  --v-color-backdrop-transparant: rgba(0, 0, 0, 0);
+  /* font size */
+  --v-font-size-smaller: 12px;
+  --v-font-size-default: 14px;
+  --v-font-size-larger: 16px;
+  --v-font-size-xl: 28px;
+  /* font weight */
+  --v-font-weight-light: 300;
+  --v-font-weight-lighter: 400;
+  --v-font-weight-regular: 500;
+  --v-font-weight-bold: 700;
+  /* line height */
+  --v-line-height-smaller: 14px;
+  --v-line-height-default: 16px;
+  --v-line-height-larger: 20px;
+  --v-line-height-large: 24px;
+  --v-line-height-xl: 32px;
+  /* spacing block */
+  --v-spacing-block-xsm: 6px;
+  --v-spacing-block-sm: 8px;
+  --v-spacing-block-md: 12px;
+  --v-spacing-block-l: 16px;
+  --v-spacing-block-xl: 24px;
+  --v-spacing-block-2xl: 34px;
+  --v-spacing-block-3xl: 40px;
+  --v-spacing-block-4xl: 50px;
+  --v-spacing-block-5xl: 64px;
+  /* spacing inline */
+  --v-spacing-inline-sm: 6px;
+  --v-spacing-inline-md: 12px;
+  --v-spacing-inline-l: 16px;
+  --v-spacing-inline-2xl: 30px;
+  --v-spacing-inline-3xl: 58px;
+  --v-spacing-inline-5xl: 75px;
+  --v-spacing-inline-8xl: 140px;
+  /* border */
+  --v-border-radius-xsm: 2px;
+  --v-border-radius-sm: 4px;
+  --v-border-radius-md: 5px;
+  --v-border-radius-lg: 9px;
+  /* transitions */
+  --v-transition-bg-fast: background-color 0.07s ease-in;
+  --v-transition-color-fast: color 0.07s ease-in;
+  --v-transition-font-size-fast: font-size 0.07s ease-in;
+  --v-transition-border-fast: border 0.07s ease-in;
+  --v-transition-outline-fast: outline 0.07s ease-in;
+  --v-transition-bg-medium: background-color 0.14s ease-in;
+  --v-transition-backdrop-medium: backdrop-filter 0.14s ease-in;
+  --v-transition-opacity-medium: opacity 0.14s ease-in;
+  --v-transition-transform-medium: transform 0.14s ease-in;
+  /* cursors */
+  --v-cursor-default: default;
+  --v-cursor-clickable: pointer;
+  --v-cursor-disabled: not-allowed;
+  /* box shadow */
+  --v-box-shadow-medium: 0 3px 40px 0 rgba(0, 0, 0, 0.06);
+  --v-box-shadow-heavier: 0 4px 40px 0 rgba(0, 0, 0, 0.1);
+  /* backdrop filter */
+  --v-backdrop-filter-heavy-blur: blur(13px);
+  --v-backdrop-filter-heavy-blur-hover: blur(11px);
+  /* button */
+  --v-button-font-color: var(--v-color-white);
+  --v-button-icon-container-bg-color: var(--v-color-white);
+  --v-button-primary-bg-color: var(--v-color-accent-1);
+  --v-button-primary-hover-bg-color: var(--v-color-accent-1-lighter);
+  --v-button-primary-active-bg-color: var(--v-color-accent-1-darker);
+  --v-button-secondary-bg-color: var(--v-color-accent-1-light-background);
+  --v-button-secondary-font-color: var(--v-color-accent-1);
+  --v-button-secondary-border: solid 1px var(--v-color-accent-1);
+  --v-button-secondary-margin: -1px;
+  --v-button-secondary-icon-color: var(--v-color-white);
+  --v-button-secondary-icon-container-bg-color: var(--v-color-accent-1);
+  --v-button-secondary-active-border: solid 1px var(--v-color-accent-1-darker);
+  --v-button-success-bg-color: var(--v-color-accent-2);
+  --v-button-success-hover-bg-color: var(--v-color-accent-2-lighter);
+  --v-button-success-active-bg-color: var(--v-color-accent-2-darker);
+  --v-button-disabled-bg-color: var(--v-color-grey-4);
+  --v-button-disabled-font-color: var(--v-color-grey-2);
+  --v-button-icon-circle-width: 24px;
+  --v-button-text-font-size: var(--v-font-size-smaller);
+  --v-button-type-icon-width: 35px;
+  --v-button-type-icon-height: 35px;
+  --v-button-type-icon-danger-bg-color: var(--v-color-accent-3-light-background);
+  --v-button-type-icon-danger-bg-color-hover: var(--v-color-accent-3-light-background-lighter);
+  --v-button-type-icon-danger-bg-color-active: var(--v-color-accent-3-light-background-darker);
+  --v-button-type-icon-danger-color: var(--v-color-accent-3);
+  --v-button-type-icon-danger-color-hover: var(--v-color-accent-3-lighter);
+  --v-button-type-icon-danger-color-active: var(--v-color-accent-3-darker);
+  --v-button-danger-bg-color: var(--v-color-accent-3);
+  --v-button-danger-hover-bg-color: var(--v-color-accent-3-lighter);
+  --v-button-danger-active-bg-color: var(--v-color-accent-3-darker);
+  /* table */
+  --v-table-layout: auto;
+  --v-table-cell-width: 1000px;
+  --v-table-header-font-color: var(--v-color-grey-3);
+  --v-table-header-text-transform: uppercase;
+  --v-table-header-font-size: var(--v-font-size-default);
+  --v-table-header-letter-spacing: 3px;
+  --v-table-header-font-weight: var(--v-font-weight-regular);
+  --v-table-header-padding-block-end: var(--v-spacing-block-l);
+  --v-table-border-spacing: 0px;
+  --v-table-first-cell-padding-inline-start: var(--v-spacing-inline-2xl);
+  --v-table-cell-padding-block: var(--v-spacing-block-md);
+  --v-table-cell-padding-inline: var(--v-spacing-inline-md);
+  --v-table-cell-content-padding-block: var(--v-spacing-block-md);
+  --v-table-row-bottom-border: 1px solid var(--v-color-grey-5);
+  --v-table-background-color: var(--v-color-white);
+  --v-table-body-box-shadow: var(--v-box-shadow-medium);
+  --v-table-cell-font-color: var(--v-color-grey-1);
+  --v-table-loading-skeleton-width: 100px;
+  --v-table-loading-skeleton-line-height: var(--v-line-height-smaller);
+  --v-table-loading-skeleton-bg-color: var(--v-color-grey-5);
+  --v-table-loading-skeleton-pagination-size-bg-color: var(--v-color-grey-4);
+  --v-table-pagination-margin-block: var(--v-spacing-block-xl);
+  --v-table-pagination-size-text-color: var(--v-color-grey-1);
+  --v-table-pagination-size-text-font-size: var(--v-font-size-smaller);
+  --v-table-pagination-size-text-font-weight: var(--v-font-weight-bold);
+  --v-table-pagination-amount-text-font-weight: var(--v-font-weight-light);
+  --v-table-pagination-amount-text-margin-inline: var(--v-spacing-inline-2xl);
+  --v-table-pagination-size-spacing-inline: var(--v-spacing-inline-sm);
+  --v-table-pagination-button-spacing-inline: var(--v-spacing-inline-2xl);
+  /* select */
+  --v-select-background-color: var(--v-color-grey-4);
+  --v-select-selected-background-color: var(--v-color-grey-3);
+  --v-select-highlighted-background-color: var(--v-color-grey-5);
+  --v-select-disabled-font-color: var(--v-color-grey-2);
+  --v-select-placeholder-font-color: var(--v-color-grey-2);
+  --v-select-font-color: var(--v-color-grey-1);
+  --v-select-arrow-color: var(--v-color-grey-2);
+  --v-select-arrow-hover-color: var(--v-color-grey-1);
+  --v-select-border-radius: var(--v-border-radius-md);
+  --v-select-min-height: 18px;
+  --v-select-value-font-weight: var(--v-font-weight-bold);
+  --v-select-font-size: var(--v-font-size-smaller);
+  --v-select-multi-value-background-color: var(--v-color-grey-3);
+  --v-select-multi-value-hover-background-color: var(--v-color-grey-2);
+  --v-select-multi-value-disabled-font-color: var(--v-color-grey-2);
+  --v-select-clear-icon-color: var(--v-color-grey-2);
+  --v-select-clear-icon-hover-color: var(--v-color-grey-1);
+  --v-select-dropdown-box-shadow: var(--v-box-shadow-medium);
+  /* modal */
+  --v-modal-z-index: 9999;
+  --v-modal-backdrop-color: var(--v-color-backdrop);
+  --v-modal-backdrop-color-hover: var(--v-color-backdrop-hover);
+  --v-modal-backdrop-filter: var(--v-backdrop-filter-heavy-blur);
+  --v-modal-backdrop-filter-hover: var(--v-backdrop-filter-heavy-blur-hover);
+  --v-modal-backdrop-transition: var(--v-transition-bg-medium), var(--v-transition-backdrop-medium);
+  --v-modal-backdrop-cursor: var(--v-cursor-clickable);
+  --v-modal-backdrop-cursor-disappearing: var(--v-cursor-default);
+  --v-modal-backdrop-padding-inline: var(--v-spacing-inline-md);
+  --v-modal-backdrop-padding-block: var(--v-spacing-block-md);
+  --v-modal-max-width: 850px;
+  --v-modal-min-height: 150px;
+  --v-modal-box-shadow: var(--v-box-shadow-medium);
+  --v-modal-background-color: var(--v-color-grey-7);
+  --v-modal-transition: var(--v-transition-opacity-medium), var(--v-transition-transform-medium);
+  --v-modal-cursor: var(--v-cursor-default);
+  --v-modal-border-radius: var(--v-border-radius-lg);
+  --v-modal-padding-inline: var(--v-spacing-inline-2xl);
+  --v-modal-header-bg-color: var(--v-color-grey-8);
+  --v-modal-header-padding-block: var(--v-spacing-block-xl);
+  --v-modal-header-border: 1px solid var(--v-color-grey-6);
+  --v-modal-header-min-height: var(--v-button-type-icon-height);
+  --v-modal-footer-bg-color: var(--v-color-grey-8);
+  --v-modal-footer-padding-block: var(--v-spacing-block-xl);
+  --v-modal-footer-border: 1px solid var(--v-color-grey-6);
+  --v-modal-header-overflow-width: var(--v-button-type-icon-width);
+  --v-modal-header-overflow-gradient-width: var(--v-spacing-inline-2xl);
+  --v-modal-header-overflow-gradient-bg-image: linear-gradient(
+    to right,
+    var(--v-color-grey-8-transparant),
+    var(--v-color-grey-8)
+  );
+  --v-modal-content-padding-block-start: var(--v-spacing-block-2xl);
+  --v-modal-content-padding-block-end: var(--v-spacing-block-xl);
+
+  /* stepper */
+  --v-stepper-header-number-circle-width: 24px;
+  --v-stepper-header-number-circle-height: 24px;
+  --v-stepper-header-number-spacing-block: var(--v-spacing-block-sm);
+  --v-stepper-header-bg-color: var(--v-color-grey-5);
+  --v-stepper-header-font-color: var(--v-color-grey-2);
+  --v-stepper-header-font-size: var(--v-font-size-smaller);
+  --v-stepper-header-line-height: var(--v-line-height-smaller);
+  --v-stepper-header-font-weight: var(--v-font-weight-bold);
+  --v-stepper-header-step-spacing-inline: 100px;
+  --v-stepper-header-step-title-font-color: var(--v-color-grey-6);
+  --v-stepper-header-progress-bar-height: 8px;
+  --v-stepper-header-progress-bar-spacing-top: var(--v-spacing-block-sm);
+  --v-stepper-header-progress-bar-bg-color: var(--v-stepper-header-bg-color);
+  --v-stepper-header-active-bg-color: var(--v-color-accent-4);
+  --v-stepper-header-active-bg-color-outline: var(--v-color-accent-4-darker);
+  --v-stepper-header-number-active-font-color: var(--v-color-white);
+  --v-stepper-header-number-active-border: 1px solid var(--v-stepper-header-active-bg-color-outline);
+  --v-stepper-header-number-circle-width-active: 22px;
+  --v-stepper-header-number-circle-height-active: 22px;
+  --v-stepper-header-number-spacing-block-active: calc(2px + var(--v-spacing-block-sm));
+  --v-stepper-header-active-bar-height: 6px;
+  --v-stepper-header-active-bar-bg-color: var(--v-stepper-header-active-bg-color);
+  --v-stepper-header-active-bar-border-radius: var(--v-border-radius-xsm);
+  /* card */
+  --v-card-padding-inline: var(--v-spacing-inline-l);
+  --v-card-padding-block-start: var(--v-spacing-block-l);
+  --v-card-padding-block-end: var(--v-spacing-block-xl);
+  --v-card-border-radius: var(--v-border-radius-md);
+  --v-card-border: 1px solid var(--v-color-grey-4);
+  --v-card-bg-color: var(--v-color-white);
+  --v-card-title-color: var(--v-color-black);
+  --v-card-title-font-weight: var(--v-font-weight-bold);
+  --v-card-title-font-size: var(--v-font-size-larger);
+  --v-card-title-line-height: var(--v-line-height-larger);
+  --v-card-title-spacing-block: var(--v-spacing-block-sm);
+  --v-card-description-color: var(--v-color-grey-1);
+  --v-card-description-font-weight: var(--v-font-weight-regular);
+  --v-card-description-line-height: var(--v-line-height-larger);
+  --v-card-description-font-size: var(--v-font-size-smaller);
+  --v-card-selectable-cursor: var(--v-cursor-clickable);
+  --v-card-selected-border: 2px solid var(--v-color-accent-1);
+  --v-card-transition: var(--v-transition-outline-fast), var(--v-transition-bg-fast);
+  --v-card-selectable-hover-bg-color: var(--v-color-grey-8);
+  --v-card-title-loading-skeleton-width: 100px;
+  --v-card-loading-skeleton-bg-color: var(--v-color-grey-4);
+  /* title */
+  --v-title-h1-color: var(--v-color-grey-1);
+  --v-title-h1-font-weight: var(--v-font-weight-light);
+  --v-title-h1-line-height: var(--v-line-height-xl);
+  --v-title-h1-font-size: var(--v-font-size-xl);
+  --v-title-h1-margin-block-end: var(--v-spacing-block-2xl);
+  /* input */
+  --v-input-font-size: var(--v-font-size-smaller);
+  --v-input-line-height: var(--v-line-height-larger);
+  --v-input-color: var(--v-color-grey-1);
+  --v-input-font-color-disabled: var(--v-color-grey-2);
+  --v-input-font-weight: var(--v-font-weight-regular);
+  --v-input-padding-block: var(--v-spacing-block-xsm);
+  --v-input-padding-inline: var(--v-spacing-inline-md);
+  --v-input-bg-color: var(--v-color-white);
+  --v-input-border-radius: var(--v-border-radius-sm);
+  --v-input-box-shadow: var(--v-box-shadow-heavier);
+  --v-input-focus-border: 2px solid var(--v-color-accent-1);
+  --v-input-transition: var(--v-transition-outline-fast);
+  --v-input-title-font-size: var(--v-font-size-larger);
+  --v-input-title-font-color: var(--v-color-black);
+  --v-input-title-line-height: var(--v-line-height-larger);
+  --v-input-title-font-weight: var(--v-font-weight-bold);
+  --v-input-title-margin: var(--v-spacing-block-md);
+  --v-input-default-width: 200px;
+  --v-input-margin: var(--v-spacing-block-4xl);
+  --v-input-disabled-cursor: var(--v-cursor-disabled);
+  /* page */
+  --v-page-padding-inline: var(--v-spacing-inline-3xl);
+  --v-page-padding-block: var(--v-spacing-block-5xl);
+  --v-page-header-introduction-padding-inline: var(--v-spacing-inline-8xl);
+  --v-page-header-margin-block: var(--v-spacing-block-3xl);
+  /* paragraph */
+  --v-paragraph-font-size: var(--v-font-size-default);
+  --v-paragraph-line-height: var(--v-line-height-large);
+  --v-paragraph-color: var(--v-color-grey-1);
+  --v-paragraph-font-weight: var(--v-font-weight-lighter);
+}

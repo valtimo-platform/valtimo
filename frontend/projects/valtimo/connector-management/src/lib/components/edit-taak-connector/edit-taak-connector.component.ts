@@ -25,6 +25,7 @@ import {cloneDeep} from 'lodash';
 import {TranslateService} from '@ngx-translate/core';
 import {map, tap} from 'rxjs/operators';
 import {ConnectorManagementService} from '../../services/connector-management/connector-management.service';
+import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
 
 @Component({
   selector: 'valtimo-edit-taak-connector',
@@ -56,7 +57,8 @@ export class EditTaakConnectorComponent implements OnInit, OnDestroy {
     private readonly formTranslationService: FormTranslationService,
     private readonly formMappingService: FormMappingService,
     private readonly translateService: TranslateService,
-    private readonly connectorManagementService: ConnectorManagementService
+    private readonly connectorManagementService: ConnectorManagementService,
+    private readonly stateService: ConnectorManagementStateService
   ) {}
 
   ngOnInit(): void {
@@ -64,6 +66,7 @@ export class EditTaakConnectorComponent implements OnInit, OnDestroy {
     this.formDefinition$.next(editTaakConnectorForm);
     this.loadConnectorNames();
     this.prefillForm();
+    this.stateService.hideModalSaveButton();
   }
 
   ngOnDestroy(): void {

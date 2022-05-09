@@ -2,13 +2,7 @@
   "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../../dist/valtimo/security",
   "lib": {
-    "entryFile": "src/public_api.ts",
-    "umdModuleIds": {
-      "@valtimo/auth0": "auth0",
-      "@valtimo/config": "config",
-      "ngx-toastr": "ngxToastr",
-      "ngx-logger": "ngxLogger"
-    }
+    "entryFile": "src/public_api.ts"
   },
-  "whitelistedNonPeerDependencies": ["."]
+  "allowedNonPeerDependencies": ["ngx-toastr"]
 }

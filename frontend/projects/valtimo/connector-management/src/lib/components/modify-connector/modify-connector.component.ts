@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {ConnectorInstance, ConnectorProperties} from '@valtimo/config';
 import {Observable} from 'rxjs';
 import {take} from 'rxjs/operators';
@@ -29,6 +29,9 @@ import {ConnectorManagementStateService} from '../../services/connector-manageme
   styleUrls: ['./modify-connector.component.scss'],
 })
 export class ModifyConnectorComponent {
+  @Input() showSaveButton = true;
+  @Input() showDeleteButton = true;
+
   instance$!: Observable<ConnectorInstance>;
 
   constructor(
@@ -41,6 +44,8 @@ export class ModifyConnectorComponent {
   }
 
   onSave(event: {properties: ConnectorProperties; name: string}): void {
+    this.stateService.disableInput();
+
     this.instance$.pipe(take(1)).subscribe(instance => {
       this.connectorManagementService
         .updateConnectorInstance({
@@ -66,6 +71,8 @@ export class ModifyConnectorComponent {
   }
 
   onDelete(): void {
+    this.stateService.disableInput();
+
     this.instance$.pipe(take(1)).subscribe(instance => {
       this.connectorManagementService.deleteConnectorInstance(instance.id).subscribe(
         () => {

@@ -1,0 +1,108 @@
+/*
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.stepper-header {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: center;
+}
+
+.stepper-header__step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-inline-end: var(--v-stepper-header-step-spacing-inline);
+}
+
+.stepper-header__step--last {
+  margin-inline-end: calc(0px - var(--v-stepper-header-step-spacing-inline));
+}
+
+.stepper-header__step-progress-bar {
+  position: absolute;
+  background-color: var(--v-stepper-header-progress-bar-bg-color);
+  width: calc(100%);
+  height: var(--v-stepper-header-progress-bar-height);
+  top: var(--v-stepper-header-progress-bar-spacing-top);
+  display: flex;
+  align-items: center;
+}
+
+.stepper-header__step-progress-bar--first {
+  width: calc(50%);
+  transform: translateX(50%);
+}
+
+.stepper-header__step-progress-bar--last {
+  width: calc(50%);
+  transform: translateX(-50%);
+}
+
+.stepper-header__step-active-bar {
+  height: var(--v-stepper-header-active-bar-height);
+  width: 0;
+  background-color: var(--v-stepper-header-active-bar-bg-color);
+}
+
+.stepper-header__step-active-bar--visible {
+  width: calc(100% + 2px);
+  margin: 0 -1px;
+}
+
+.stepper-header__step-active-bar--last-visible {
+  width: calc(75% + 2px);
+  border-top-right-radius: var(--v-stepper-header-active-bar-border-radius);
+  border-bottom-right-radius: var(--v-stepper-header-active-bar-border-radius);
+}
+
+.stepper-header__step-number {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--v-stepper-header-number-circle-width);
+  height: var(--v-stepper-header-number-circle-height);
+  border-radius: 50%;
+  background-color: var(--v-stepper-header-bg-color);
+  color: var(--v-stepper-header-font-color);
+  font-size: var(--v-stepper-header-font-size);
+  font-weight: var(--v-stepper-header-font-weight);
+  line-height: var(--v-stepper-header-line-height);
+  margin-block-end: var(--v-stepper-header-number-spacing-block);
+}
+
+.stepper-header__step-number--active {
+  background-color: var(--v-stepper-header-active-bg-color);
+  border: var(--v-stepper-header-number-active-border);
+  color: var(--v-stepper-header-number-active-font-color);
+  width: var(--v-stepper-header-number-circle-width-active);
+  height: var(--v-stepper-header-number-circle-height-active);
+  margin-block-end: var(--v-stepper-header-number-spacing-block-active);
+}
+
+.stepper-header__step-title {
+  position: relative;
+  font-size: var(--v-stepper-header-font-size);
+  font-weight: var(--v-stepper-header-font-weight);
+  line-height: var(--v-stepper-header-line-height);
+  color: var(--v-stepper-header-step-title-font-color);
+}
+
+.stepper-header__step-title--active {
+  color: var(--v-stepper-header-active-bg-color);
+}

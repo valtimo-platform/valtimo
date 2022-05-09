@@ -28,7 +28,7 @@
         </button>
       </div>
     </div>
-    <valtimo-widget *ngIf="!(loading$ | async); else loading">
+    <valtimo-widget *ngIf="(loading$ | async) === false; else loading">
       <valtimo-list
         [items]="translatedAuthorities$ | async"
         [fields]="fields$ | async"

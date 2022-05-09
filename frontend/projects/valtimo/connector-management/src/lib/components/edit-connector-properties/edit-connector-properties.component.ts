@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output} from '@angular/core';
 import {
   ConnectorProperties,
   ConnectorPropertyEditField,
   ConnectorPropertyValueType,
 } from '@valtimo/config';
-import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {set, get, cloneDeep} from 'lodash';
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
@@ -30,10 +30,11 @@ import {ConnectorManagementStateService} from '../../services/connector-manageme
   templateUrl: './edit-connector-properties.component.html',
   styleUrls: ['./edit-connector-properties.component.scss'],
 })
-export class EditConnectorPropertiesComponent implements OnInit, OnChanges {
+export class EditConnectorPropertiesComponent implements OnInit, OnChanges, OnDestroy {
   @Input() properties: ConnectorProperties;
   @Input() withDefaults = false;
   @Input() showDeleteButton = false;
+  @Input() showSaveButton = true;
   @Input() defaultName!: string;
 
   @Output() propertiesSave = new EventEmitter<{properties: ConnectorProperties; name: string}>();
@@ -47,20 +48,11 @@ export class EditConnectorPropertiesComponent implements OnInit, OnChanges {
 
   readonly connectorName$ = new BehaviorSubject<string>('');
 
-  readonly saveButtonDisabled$ = combineLatest([
-    this.editFields$,
-    this.modifiedProperties$,
-    this.connectorName$,
-  ]).pipe(
-    map(([editFields, modifiedProperties, connectorName]) => {
-      const values = editFields.map(field => get(modifiedProperties, field.key));
-      const validValues = values.filter(value =>
-        Array.isArray(value) ? value.length > 0 : value === 0 || value
-      );
+  readonly saveButtonDisabled$ = this.stateService.saveButtonDisabled$;
 
-      return editFields.length !== validValues.length || !connectorName;
-    })
-  );
+  private saveButtonDisabledSubscription!: Subscription;
+  private saveSubscription!: Subscription;
+  private deleteSubscription!: Subscription;
 
   constructor(private readonly stateService: ConnectorManagementStateService) {
     this.disabled$ = this.stateService.inputDisabled$;
@@ -69,11 +61,21 @@ export class EditConnectorPropertiesComponent implements OnInit, OnChanges {
   ngOnInit(): void {
     this.setEditFields();
     this.setName();
+    this.openSaveButtonDisabledSubscription();
+    this.openSaveSubscription();
+    this.openDeleteSubscription();
+    this.stateService.showModalSaveButton();
   }
 
   ngOnChanges(): void {
     this.setEditFields();
     this.setName();
+  }
+
+  ngOnDestroy(): void {
+    this.saveButtonDisabledSubscription?.unsubscribe();
+    this.saveSubscription?.unsubscribe();
+    this.deleteSubscription?.unsubscribe();
   }
 
   multiFieldValuesSet(event: {editFieldKey: string; values: Array<string> | Array<number>}): void {
@@ -169,5 +171,41 @@ export class EditConnectorPropertiesComponent implements OnInit, OnChanges {
 
     this.editFields$.next(editFields);
     this.setModifiedProperties(editFields);
+  }
+
+  private openSaveButtonDisabledSubscription(): void {
+    this.saveButtonDisabledSubscription = combineLatest([
+      this.editFields$,
+      this.modifiedProperties$,
+      this.connectorName$,
+    ])
+      .pipe(
+        map(([editFields, modifiedProperties, connectorName]) => {
+          const values = editFields.map(field => get(modifiedProperties, field.key));
+          const validValues = values.filter(value =>
+            Array.isArray(value) ? value.length > 0 : value === 0 || value
+          );
+          const invalidProperties = editFields.length !== validValues.length || !connectorName;
+
+          if (invalidProperties) {
+            this.stateService.disableSaveButton();
+          } else {
+            this.stateService.enableSaveButton();
+          }
+        })
+      )
+      .subscribe();
+  }
+
+  private openSaveSubscription(): void {
+    this.stateService.save$.subscribe(() => {
+      this.onSave();
+    });
+  }
+
+  private openDeleteSubscription(): void {
+    this.stateService.delete$.subscribe(() => {
+      this.onDelete();
+    });
   }
 }

@@ -17,7 +17,9 @@
 import {AfterViewInit, Component, ElementRef, Renderer2, ViewChild} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
 import {LayoutService} from '../layout.service';
+import {UserInterfaceService} from '@valtimo/user-interface';
 
+// eslint-disable-next-line no-var
 declare var App;
 
 @Component({
@@ -35,7 +37,13 @@ export class LayoutInternalComponent implements AfterViewInit {
     this.menuOpen$.next(!e[0].target.className.includes('be-collapsible-sidebar-collapsed'))
   );
 
-  constructor(public layoutService: LayoutService, private renderer: Renderer2) {
+  readonly showPageHeader$ = this.userInterfaceService.showPageHeader$;
+
+  constructor(
+    public layoutService: LayoutService,
+    private renderer: Renderer2,
+    private readonly userInterfaceService: UserInterfaceService
+  ) {
     this.renderer.addClass(document.body, 'be-animate');
   }
 

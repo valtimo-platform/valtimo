@@ -1,0 +1,156 @@
+/*
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.v-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--v-modal-z-index);
+  background-color: var(--v-color-backdrop-transparant);
+  backdrop-filter: blur(0);
+  transition: var(--v-modal-backdrop-transition);
+  display: none;
+  cursor: var(--v-modal-backdrop-cursor);
+  padding-inline-start: var(--v-modal-backdrop-padding-inline);
+  padding-inline-end: var(--v-modal-backdrop-padding-inline);
+  padding-block-start: var(--v-modal-backdrop-padding-block);
+  padding-block-end: var(--v-modal-backdrop-padding-block);
+}
+
+.v-modal-backdrop--visible,
+.v-modal-backdrop--disappearing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v-modal {
+  background-color: var(--v-modal-background-color);
+  height: max-content;
+  min-height: var(--v-modal-min-height);
+  max-height: 100%;
+  width: 100%;
+  max-width: var(--v-modal-max-width);
+  transform: translateY(-100vh);
+  opacity: 0;
+  transition: var(--v-modal-transition);
+  cursor: var(--v-modal-cursor);
+  border-radius: var(--v-modal-border-radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--v-modal-box-shadow);
+}
+
+.v-modal-backdrop--backdrop {
+  background-color: var(--v-modal-backdrop-color);
+  backdrop-filter: var(--v-modal-backdrop-filter);
+
+  .v-modal {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  &.v-modal-backdrop--mouse-on-backdrop {
+    &:not(.v-modal-backdrop--disappearing),
+    &:not(.v-modal-backdrop--appearing),
+    &:hover {
+      background-color: var(--v-modal-backdrop-color-hover);
+      backdrop-filter: var(--v-modal-backdrop-filter-hover);
+    }
+  }
+}
+
+.v-modal-backdrop--hidden,
+.v-modal-backdrop--appearing {
+  cursor: var(--v-modal-backdrop-cursor-disappearing);
+}
+
+.v-modal__header {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  background-color: var(--v-modal-header-bg-color);
+  padding-block-start: var(--v-modal-header-padding-block);
+  padding-block-end: var(--v-modal-header-padding-block);
+  padding-inline-start: var(--v-modal-padding-inline);
+  padding-inline-end: var(--v-modal-padding-inline);
+  border-bottom: var(--v-modal-header-border);
+  min-height: var(--v-modal-header-min-height);
+  box-sizing: content-box;
+}
+
+.v-modal__header-buttons {
+  position: absolute;
+  right: var(--v-modal-padding-inline);
+  top: var(--v-modal-header-padding-block);
+}
+
+.v-modal__header-overflow {
+  position: absolute;
+  right: var(--v-modal-padding-inline);
+  top: var(--v-modal-header-padding-block);
+  height: calc(100% - var(--v-modal-header-padding-block) - var(--v-modal-header-padding-block));
+  display: flex;
+  flex-direction: row;
+}
+
+.v-modal__header-overflow-gradient {
+  width: var(--v-modal-header-overflow-gradient-width);
+  height: 100%;
+  background-image: var(--v-modal-header-overflow-gradient-bg-image);
+}
+
+.v-modal__header-overflow-bg {
+  width: var(--v-modal-header-overflow-width);
+  height: 100%;
+  background-color: var(--v-modal-header-bg-color);
+}
+
+.v-modal__footer {
+  display: flex;
+  flex-shrink: 0;
+  background-color: var(--v-modal-footer-bg-color);
+  padding-block-start: var(--v-modal-footer-padding-block);
+  padding-block-end: var(--v-modal-footer-padding-block);
+  padding-inline-start: var(--v-modal-padding-inline);
+  padding-inline-end: var(--v-modal-padding-inline);
+  border-top: var(--v-modal-footer-border);
+}
+
+.v-modal__content {
+  padding-block-start: var(--v-modal-content-padding-block-start);
+  padding-block-end: var(--v-modal-content-padding-block-end);
+  padding-inline-start: var(--v-modal-padding-inline);
+  padding-inline-end: var(--v-modal-padding-inline);
+  overflow: auto;
+}
+
+::ng-deep {
+  .v-modal {
+    div[role='header'],
+    div[role='content'],
+    div[role='footer'] {
+      width: 100%;
+    }
+  }
+}

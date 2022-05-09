@@ -16,9 +16,11 @@
 
 import {AfterViewInit, Component, Input, OnDestroy, ViewChild} from '@angular/core';
 import {ModalComponent} from '@valtimo/components';
-import {Subscription} from 'rxjs';
-import {ConnectorModal} from '@valtimo/config';
+import {ModalComponent as vModalComponent, ModalService} from '@valtimo/user-interface';
+import {BehaviorSubject, Observable, Subject, Subscription} from 'rxjs';
+import {ConnectorModal, ConnectorType} from '@valtimo/config';
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
+import {take} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-connector-modal',
@@ -26,33 +28,77 @@ import {ConnectorManagementStateService} from '../../services/connector-manageme
   styleUrls: ['./connector-modal.component.scss'],
 })
 export class ConnectorModalComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('modal') modal: ModalComponent;
-
-  @Input() modalType: ConnectorModal;
+  @ViewChild('connectorCreateModal') connectorCreateModal: vModalComponent;
+  @ViewChild('connectorEditModal') connectorEditModal: vModalComponent;
 
   showSubscription!: Subscription;
+  hideSubscription!: Subscription;
 
-  constructor(private readonly stateService: ConnectorManagementStateService) {}
+  readonly connectorTypeSelected$: Observable<ConnectorType> = this.stateService.selectedConnector$;
+  readonly saveButtonDisabled$: Observable<boolean> = this.stateService.saveButtonDisabled$;
+  readonly inputDisabled$: Observable<boolean> = this.stateService.inputDisabled$;
+  readonly hideModalSaveButton$: Observable<boolean> = this.stateService.hideModalSaveButton$;
+  readonly returnToFirstStepSubject$ = new Subject<boolean>();
+
+  constructor(
+    private readonly stateService: ConnectorManagementStateService,
+    private readonly modalService: ModalService
+  ) {}
 
   ngAfterViewInit(): void {
-    this.showSubscription = this.stateService.showModal$.subscribe(show => {
-      if (show) {
-        this.show();
-      } else {
-        this.hide();
-      }
-    });
+    this.openShowSubscription();
+    this.openHideSubscription();
   }
 
   ngOnDestroy(): void {
     this.showSubscription?.unsubscribe();
+    this.hideSubscription?.unsubscribe();
+  }
+
+  hide(): void {
+    this.stateService.disableInput();
+    this.modalService.closeModal();
+
+    this.modalService.appearingDelayMs$.pipe(take(1)).subscribe(appearingDelay => {
+      setTimeout(() => {
+        this.returnToFirstStep();
+        this.stateService.enableInput();
+        this.stateService.clearSelectedConnector();
+      }, appearingDelay);
+    });
+  }
+
+  complete(): void {
+    this.stateService.save();
+  }
+
+  delete(): void {
+    this.stateService.delete();
+  }
+
+  private openShowSubscription(): void {
+    this.showSubscription = this.stateService.showModal$.subscribe(() => {
+      this.show();
+    });
+  }
+
+  private openHideSubscription(): void {
+    this.hideSubscription = this.stateService.hideModal$.subscribe(() => {
+      this.hide();
+    });
+  }
+
+  private returnToFirstStep(): void {
+    this.returnToFirstStepSubject$.next(true);
   }
 
   private show(): void {
-    this.modal.show();
-  }
-
-  private hide(): void {
-    this.modal.hide();
+    this.stateService.modalType$.pipe(take(1)).subscribe(modalType => {
+      if (modalType === 'add') {
+        this.modalService.openModal(this.connectorCreateModal);
+      } else if (modalType === 'modify') {
+        this.modalService.openModal(this.connectorEditModal);
+      }
+    });
   }
 }

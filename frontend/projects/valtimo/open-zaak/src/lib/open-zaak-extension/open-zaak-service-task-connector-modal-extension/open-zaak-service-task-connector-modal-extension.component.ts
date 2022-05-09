@@ -110,13 +110,13 @@ export class OpenZaakServiceTaskConnectorModalExtensionComponent implements OnIn
       );
       if (foundServiceTaskHandler != null) {
         this.connectedServiceTasks.push(foundServiceTaskHandler);
-        const existingServiceTaskHandlers = this.connectedZaakTypeLinks.filter(zaakTypeLink => {
-          return zaakTypeLink.serviceTaskHandlers.some(
+        const existingServiceTaskHandlers = this.connectedZaakTypeLinks.filter(zaakTypeLink =>
+          zaakTypeLink.serviceTaskHandlers.some(
             serviceHandler =>
               serviceHandler.processDefinitionKey === this.processDefinitionKey &&
               serviceHandler.serviceTaskId === this.selectedElement.id
-          );
-        });
+          )
+        );
         this.filteredConnectedZaakTypeLinks = this.connectedZaakTypeLinks.filter(
           serviceTaskHandler => !existingServiceTaskHandlers.includes(serviceTaskHandler)
         );
@@ -242,6 +242,7 @@ export class OpenZaakServiceTaskConnectorModalExtensionComponent implements OnIn
         parameter = this.selectedZaakTypeLink.zaakTypeUrl;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     !this.isEditMode
       ? this.createServiceTaskHandler(parameter)
       : this.modifyServieTaskHandler(zaakType, parameter);
@@ -276,7 +277,7 @@ export class OpenZaakServiceTaskConnectorModalExtensionComponent implements OnIn
     this.previousSelectedZaak = {
       zaakTypeLink: this.selectedZaakTypeLink,
       zaakType: this.selectedZaakType,
-      serviceTaskHandler: serviceTaskHandler,
+      serviceTaskHandler,
     };
   }
 

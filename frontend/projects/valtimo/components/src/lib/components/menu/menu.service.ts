@@ -73,9 +73,7 @@ export class MenuService {
   }
 
   private sortMenuItems(menuItems: MenuItem[]): MenuItem[] {
-    return menuItems.sort((a, b) => {
-      return a.sequence - b.sequence;
-    });
+    return menuItems.sort((a, b) => a.sequence - b.sequence);
   }
 
   private appendDossierSubMenuItems(menuItems: MenuItem[]): Observable<MenuItem[]> {

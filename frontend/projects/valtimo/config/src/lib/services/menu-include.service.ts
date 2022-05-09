@@ -42,9 +42,7 @@ export class MenuIncludeService {
 
   private isHaalCentraalConnectorConfigured(): Observable<boolean> {
     return this.getHaalCentraalConnectorInstances().pipe(
-      map(haalcentraalConnectorInstances => {
-        return haalcentraalConnectorInstances?.content?.length > 0;
-      })
+      map(haalcentraalConnectorInstances => haalcentraalConnectorInstances?.content?.length > 0)
     );
   }
 

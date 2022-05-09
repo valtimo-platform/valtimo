@@ -41,7 +41,7 @@ export class S3Service {
 
   public upload(url: URL, file: File): Observable<any> {
     const headers = new HttpHeaders().set('Content-Type', file.type);
-    return this.http.put(url.toString(), file, {headers: headers});
+    return this.http.put(url.toString(), file, {headers});
   }
 
   public registerResource(s3ResourceDTO: S3Resource): Observable<Resource> {
@@ -52,14 +52,14 @@ export class S3Service {
     const headers = new HttpHeaders().set('Content-Type', 'application/json;charset=UTF-8');
     return this.http.get<ResourceDto>(
       `${this.valtimoApiConfig.endpointUri}resource/${resourceId}`,
-      {headers: headers}
+      {headers}
     );
   }
 
   public delete(resourceId: string): Observable<any> {
     const headers = new HttpHeaders().set('Content-Type', 'application/json;charset=UTF-8');
     return this.http.delete(`${this.valtimoApiConfig.endpointUri}resource/${resourceId}`, {
-      headers: headers,
+      headers,
     });
   }
 }

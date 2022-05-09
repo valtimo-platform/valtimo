@@ -14,18 +14,15 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="instance$ | async as instance">
-  <p class="lead text-center mb-3 pb-3 border-bottom">
-    {{ ('connectorManagement.modifyWith' | translate) + ' ' + instance.type.name }}
-  </p>
-  <valtimo-edit-connector-form
-    [properties]="instance.properties"
-    [withDefaults]="true"
-    [defaultName]="instance.name"
-    [showDeleteButton]="true"
-    [connectorName]="instance.type.name"
-    (propertiesSave)="onSave($event)"
-    (connectorDelete)="onDelete()"
-  >
-  </valtimo-edit-connector-form>
-</ng-container>
+<valtimo-edit-connector-form
+  *ngIf="instance$ | async as instance"
+  [properties]="instance.properties"
+  [withDefaults]="true"
+  [defaultName]="instance.name"
+  [showDeleteButton]="showDeleteButton"
+  [connectorName]="instance.type.name"
+  [showSaveButton]="showSaveButton"
+  (propertiesSave)="onSave($event)"
+  (connectorDelete)="onDelete()"
+>
+</valtimo-edit-connector-form>

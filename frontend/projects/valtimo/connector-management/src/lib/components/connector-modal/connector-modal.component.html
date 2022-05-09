@@ -14,9 +14,73 @@
   ~ limitations under the License.
   -->
 
-<valtimo-modal #modal [title]="'connectorManagement.' + modalType | translate">
-  <div class="mt-2" body>
-    <valtimo-add-connector *ngIf="modalType === 'add'"></valtimo-add-connector>
-    <valtimo-modify-connector *ngIf="modalType === 'modify'"></valtimo-modify-connector>
+<v-modal #connectorEditModal>
+  <div role="header">
+    <div class="edit-connector-title">
+      <v-title [margin]="false">{{ 'connectorManagement.modify' | translate }}</v-title>
+    </div>
   </div>
-</valtimo-modal>
+  <div role="content">
+    <valtimo-modify-connector
+      [showSaveButton]="false"
+      [showDeleteButton]="false"
+    ></valtimo-modify-connector>
+  </div>
+  <div role="footer">
+    <div class="edit-connector-buttons">
+      <v-button
+        [disabled]="inputDisabled$ | async"
+        (clickEvent)="delete()"
+        [mdiIcon]="'delete'"
+        type="danger"
+        >{{ 'connectorManagement.remove' | translate }}</v-button
+      >
+      <v-button
+        *ngIf="(hideModalSaveButton$ | async) === false"
+        [disabled]="(saveButtonDisabled$ | async) || (inputDisabled$ | async)"
+        (clickEvent)="complete()"
+        [mdiIcon]="'check'"
+        type="success"
+        >{{ 'connectorManagement.save' | translate }}</v-button
+      >
+    </div>
+  </div>
+</v-modal>
+
+<v-stepper-container
+  (completeEvent)="complete()"
+  (cancelClickEvent)="hide()"
+  [disabled]="inputDisabled$ | async"
+  [returnToFirstStepSubject$]="returnToFirstStepSubject$"
+>
+  <v-modal #connectorCreateModal (closeEvent)="hide()">
+    <div role="header">
+      <v-stepper-header></v-stepper-header>
+    </div>
+    <div role="content">
+      <v-stepper-content>
+        <v-stepper-step titleTranslationKey="addConnectorSteps.step0">
+          <valtimo-add-connector-select></valtimo-add-connector-select>
+        </v-stepper-step>
+        <v-stepper-step titleTranslationKey="addConnectorSteps.step1">
+          <valtimo-add-connector-configure
+            [showSaveButton]="false"
+          ></valtimo-add-connector-configure>
+        </v-stepper-step>
+      </v-stepper-content>
+    </div>
+    <div role="footer">
+      <v-stepper-footer>
+        <v-stepper-footer-step
+          nextButtonTranslationKey="addConnectorSteps.step1"
+          [nextButtonEnabled]="connectorTypeSelected$ | async"
+        ></v-stepper-footer-step>
+        <v-stepper-footer-step
+          completeButtonTranslationKey="addConnectorSteps.complete"
+          [completeButtonEnabled]="(saveButtonDisabled$ | async) === false"
+          [showCompleteButton]="(hideModalSaveButton$ | async) === false"
+        ></v-stepper-footer-step>
+      </v-stepper-footer>
+    </div>
+  </v-modal>
+</v-stepper-container>

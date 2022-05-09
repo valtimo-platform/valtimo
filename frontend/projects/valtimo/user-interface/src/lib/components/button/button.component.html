@@ -1,0 +1,57 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<button
+  class="v-button"
+  role="button"
+  (click)="clickEvent.emit()"
+  [ngClass]="{
+    'v-button--primary': isPrimary,
+    'v-button--secondary': isSecondary,
+    'v-button--success': isSuccess,
+    'v-button--danger': isDanger,
+    'v-button--disabled': !isText && disabled,
+    'v-button--text': isText,
+    'v-button--text-disabled': isText && disabled,
+    'v-button--icon': isIcon,
+    'v-button--icon-danger': isIconDanger
+  }"
+  [disabled]="disabled"
+>
+  <ng-container *ngIf="!isIcon">
+    <ng-content></ng-content>
+  </ng-container>
+  <ng-container *ngTemplateOutlet="buttonIcon"></ng-container>
+</button>
+
+<ng-template #buttonIcon>
+  <span
+    *ngIf="!isText && (disabled || mdiIcon)"
+    class="v-button__icon-container"
+    [ngClass]="[!disabled && isSecondary ? 'v-button__icon-container--secondary' : '']"
+  >
+    <i
+      [ngClass]="[
+        !disabled && isPrimary ? 'v-button__icon--primary' : '',
+        !disabled && isSecondary ? 'v-button__icon--secondary' : '',
+        !disabled && isSuccess ? 'v-button__icon--success' : '',
+        !disabled && isDanger ? 'v-button__icon--danger' : '',
+        !disabled && mdiIcon ? 'v-button__icon mdi mdi-' + mdiIcon : '',
+        disabled ? 'mdi mdi-cancel v-button__icon--disabled' : ''
+      ]"
+    ></i>
+  </span>
+</ng-template>

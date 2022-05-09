@@ -62,7 +62,7 @@ export class OpenZaakTypeLinkExtensionComponent {
     this.documentDefinitionName = this.route.snapshot.paramMap.get('name');
   }
 
-  // tslint:disable-next-line:use-life-cycle-interface
+  // eslint-disable-next-line @angular-eslint/use-lifecycle-interface
   ngOnInit() {
     this.openZaakService.getOpenZaakConfig().subscribe(config => {
       if (config !== null) {

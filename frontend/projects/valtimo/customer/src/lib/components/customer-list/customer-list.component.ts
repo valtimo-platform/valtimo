@@ -38,22 +38,20 @@ export class CustomerListComponent {
     this.translateService.stream('customers.citizenServiceNumber'),
     this.translateService.stream('customers.dateOfBirth'),
   ]).pipe(
-    map(([nameLabel, numberLabel, dateOfBirthLabel]) => {
-      return [
-        {
-          label: numberLabel,
-          key: 'citizenServiceNumber',
-        },
-        {
-          label: nameLabel,
-          key: 'name',
-        },
-        {
-          label: dateOfBirthLabel,
-          key: 'dateOfBirth',
-        },
-      ];
-    })
+    map(([nameLabel, numberLabel, dateOfBirthLabel]) => [
+      {
+        label: numberLabel,
+        key: 'citizenServiceNumber',
+      },
+      {
+        label: nameLabel,
+        key: 'name',
+      },
+      {
+        label: dateOfBirthLabel,
+        key: 'dateOfBirth',
+      },
+    ])
   );
 
   readonly bsn$ = new BehaviorSubject<string>('');
@@ -101,11 +99,9 @@ export class CustomerListComponent {
         ((searchParameters as CustomerDataSearchRequest)?.geslachtsnaam &&
           (searchParameters as CustomerDataSearchRequest)?.geboortedatum)
       ) {
-        return this.customerService.getCustomers(searchParameters as CustomerSearchRequest).pipe(
-          catchError(() => {
-            return of([]);
-          })
-        );
+        return this.customerService
+          .getCustomers(searchParameters as CustomerSearchRequest)
+          .pipe(catchError(() => of([])));
       } else {
         return of([]);
       }

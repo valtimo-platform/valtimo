@@ -26,18 +26,17 @@ export function registerFormioFileSelectorComponent(injector: Injector) {
       .getDocument(documentId)
       .toPromise()
       .then(document =>
-        document.relatedFiles.map(relatedFile => {
-          return {
-            label: relatedFile.fileName,
-            value: relatedFile.fileId,
-          };
-        })
+        document.relatedFiles.map(relatedFile => ({
+          label: relatedFile.fileName,
+          value: relatedFile.fileId,
+        }))
       )
-      .catch(() => {
-        return new Promise(resolve => {
-          resolve([unavailableMessage]);
-        });
-      });
+      .catch(
+        () =>
+          new Promise(resolve => {
+            resolve([unavailableMessage]);
+          })
+      );
   }
 
   class ResourceSelectorComponent extends SelectComponent {

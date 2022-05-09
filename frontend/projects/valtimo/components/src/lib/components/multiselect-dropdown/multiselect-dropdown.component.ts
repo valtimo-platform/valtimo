@@ -22,9 +22,9 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
   styleUrls: ['./multiselect-dropdown.component.scss'],
 })
 export class MultiselectDropdownComponent {
-  @Input() selectedItems: Array<String>;
+  @Input() selectedItems: Array<string>;
   @Input() items = [];
-  @Input() placeHolder: String;
+  @Input() placeHolder: string;
   @Input() dropdownSettings = {
     singleSelection: false,
     selectAllText: 'Select All',

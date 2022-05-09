@@ -39,55 +39,44 @@
 </div>
 
 <ng-template #nameInput let-disabled="disabled">
-  <div class="form-group row">
-    <label class="col-3 col-form-label text-sm-right">
-      {{ 'connectorManagement.inputLabels.connectorName' | translate }}
-    </label>
-    <div class="col-7">
-      <input
-        class="form-control"
-        type="text"
-        (input)="onNameValueChange($event.target.value)"
-        [disabled]="disabled"
-        [value]="withDefaults && defaultName ? defaultName : ''"
-      />
-    </div>
-  </div>
+  <v-input
+    titleTranslationKey="connectorManagement.inputLabels.connectorName"
+    [defaultValue]="withDefaults && defaultName ? defaultName : ''"
+    [fullWidth]="true"
+    [margin]="true"
+    [disabled]="disabled"
+    (valueChange)="onNameValueChange($event)"
+  ></v-input>
 </ng-template>
 
 <ng-template #singleInput let-editField="editField" let-disabled="disabled">
-  <div class="form-group row">
-    <label class="col-3 col-form-label text-sm-right">
-      {{ 'connectorManagement.inputLabels.' + editField.key | translate }}
-    </label>
-    <div class="col-7">
-      <input
-        *ngIf="editField.editType === 'string'"
-        class="form-control"
-        type="text"
-        (input)="onSingleValueChange($event.target.value, editField)"
-        [disabled]="disabled"
-        [value]="withDefaults ? editField.defaultValue : ''"
-      />
-      <input
-        *ngIf="editField.editType === 'number'"
-        class="form-control"
-        type="number"
-        step="1"
-        min="0"
-        oninput="validity.valid||(value='');"
-        (input)="onSingleValueChange($event.target.value, editField)"
-        [disabled]="disabled"
-        [value]="withDefaults ? editField.defaultValue : ''"
-      />
-    </div>
-  </div>
+  <v-input
+    *ngIf="editField.editType === 'string'"
+    [titleTranslationKey]="'connectorManagement.inputLabels.' + editField.key"
+    [defaultValue]="withDefaults ? editField.defaultValue : ''"
+    [fullWidth]="true"
+    [margin]="true"
+    [disabled]="disabled"
+    (valueChange)="onSingleValueChange($event, editField)"
+  ></v-input>
+  <v-input
+    *ngIf="editField.editType === 'number'"
+    [titleTranslationKey]="'connectorManagement.inputLabels.' + editField.key"
+    [defaultValue]="withDefaults ? editField.defaultValue : ''"
+    [fullWidth]="true"
+    [margin]="true"
+    [disabled]="disabled"
+    (valueChange)="onSingleValueChange($event, editField)"
+    [step]="1"
+    [min]="0"
+  ></v-input>
 </ng-template>
 
 <ng-template #buttons let-disabled="disabled">
-  <div class="border-top mt-3 pt-6">
+  <div class="border-top mt-3 pt-6" *ngIf="showDeleteButton || showSaveButton">
     <div class="button-container">
       <button
+        *ngIf="showSaveButton"
         class="btn btn-primary"
         [disabled]="disabled || (saveButtonDisabled$ | async)"
         (click)="onSave()"

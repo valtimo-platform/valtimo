@@ -25,15 +25,15 @@ import {
   SortState,
   ProcessDocumentDefinition,
 } from '@valtimo/document';
-import * as momentImported from 'moment';
+import moment from 'moment';
 import {combineLatest, Subscription} from 'rxjs';
 import {DefaultTabs} from '../dossier-detail-tab-enum';
 import {DossierProcessStartModalComponent} from '../dossier-process-start-modal/dossier-process-start-modal.component';
 import {DossierService} from '../dossier.service';
 
+// eslint-disable-next-line no-var
 declare var $;
 
-const moment = momentImported;
 moment.locale(localStorage.getItem('langKey') || '');
 
 @Component({

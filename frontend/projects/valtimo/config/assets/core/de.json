@@ -347,7 +347,16 @@
     "toggleMenu": "Menü",
     "typeToSearch": "Hier tippen zum Suchen",
     "noSearchResults": "Keine Ergebnisse",
-    "loading": "Lädt..."
+    "loading": "Lädt...",
+    "edit": "Bearbeiten",
+    "noItemsFound": "Keine Elemente gefunden",
+    "clearAll": "Alles löschen",
+    "show": "Zeig",
+    "items": "Elemente",
+    "of": "von",
+    "visible": "sichtbar",
+    "next": "Nächste >",
+    "previous": "< Vorherige"
   },
   "assignTask": {
     "assignedTo": "User-Zuordnung: ",
@@ -407,6 +416,11 @@
     "searchBasedOn": "Suchen nach",
     "lastNameAndDateOfBirth": "Familienname und Geburtsdatum"
   },
+  "stepper": {
+    "cancelButtonText": "Stornieren",
+    "nextButtonText": "Weiter",
+    "completeButtonText": "Abschließen"
+  },
   "Connectors": "Connectors",
   "connectorManagement": {
     "title": "Connectors",
@@ -425,6 +439,7 @@
     "removeValue": "Wert entfernen",
     "goBack": "Zurück",
     "autoSync": "Casedetails automatisch synchronisieren",
+    "tableItemsText": "Connectors",
     "labels": {
       "name": "Name",
       "typeName": "Connector"
@@ -572,6 +587,52 @@
         "tip": "Geben Sie den Namen der Verbindung ein.",
         "name": "Verbindungsname"
       }
+    }
+  },
+  "addConnectorSteps": {
+    "step0": "Wählen Sie Ihren Connector",
+    "step1": "Daten eingeben",
+    "step2": "Testen und aktivieren",
+    "complete": "Connector erstellen"
+  },
+  "connector": {
+    "OpenNotificatie": {
+      "title": "Open Notificaties",
+      "description": "Open Notificaties ist eine moderne Open-Source-Komponente zum Weiterleiten von Nachrichten zwischen Komponenten, Systemen und Anwendungen."
+    },
+    "Taak": {
+      "title": "Taak",
+      "description": "Speichern Sie Aufgaben mithilfe von Open Notificaties in der Objects API."
+    },
+    "ObjectsApi": {
+      "title": "Objects API",
+      "description": "Die Objects API zielt darauf ab, verschiedene Objekte in einem standardisierten Format zu speichern."
+    },
+    "Besluiten": {
+      "title": "Besluiten API",
+      "description": "API zur Speicherung und Offenlegung von Entscheidungen und zugehörigen Metadaten."
+    },
+    "ProductAanvragen": {
+      "title": "Productaanvragen API",
+      "description": "API zur Registrierung und Offenlegung von Produkten."
+    },
+    "HaalCentraalBrp": {
+      "title": "Haal Centraal BRP",
+      "description": "APIs, mit denen Ihre Gemeinde Basisdaten direkt von den nationalen Registrierungen anfordern kann."
+    },
+    "ContactMoment": {
+      "title": "Contactmomenten API",
+      "description": "API zur Speicherung und Offenlegung von Kontaktmomenten und zugehörigen Metadaten."
+    },
+    "OpenZaak": {
+      "title": "OpenZaak",
+      "description": "OpenZaak ist eine produktionstaugliche API-Plattform, die den API-Standard für fallorientiertes Arbeiten (die ZGW-APIs) implementiert."
+    }
+  },
+  "pages": {
+    "connectors": {
+      "title": "Connectors",
+      "description": "Auf dieser Seite können Sie Verbindungen zu externen Diensten erstellen, ändern oder löschen."
     }
   }
 }

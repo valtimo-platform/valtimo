@@ -68,7 +68,7 @@ describe('CamundaEnumFormfieldComponent', () => {
         values: enumValues,
         name: 'enum',
       },
-      validationConstraints: validationConstraints,
+      validationConstraints,
     };
   }
 

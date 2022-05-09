@@ -347,7 +347,16 @@
     "toggleMenu": "Menu",
     "typeToSearch": "Type here to search",
     "noSearchResults": "No results",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "edit": "Edit",
+    "noItemsFound": "No items found",
+    "clearAll": "Clear all",
+    "show": "Show",
+    "items": "items",
+    "of": "of",
+    "visible": "visible",
+    "next": "Next >",
+    "previous": "< Previous"
   },
   "assignTask": {
     "assignedTo": "Assigned to ",
@@ -407,6 +416,11 @@
     "searchBasedOn": "Search with",
     "lastNameAndDateOfBirth": "Family name and date of birth"
   },
+  "stepper": {
+    "cancelButtonText": "Cancel",
+    "nextButtonText": "Next step",
+    "completeButtonText": "Complete"
+  },
   "Connectors": "Connections",
   "connectorManagement": {
     "title": "Connections",
@@ -425,6 +439,7 @@
     "removeValue": "Remove value",
     "goBack": "Go back",
     "autoSync": "Automatically sync case details",
+    "tableItemsText": "connections",
     "labels": {
       "name": "Name",
       "typeName": "Connector"
@@ -572,6 +587,52 @@
         "tip": "Enter the name of the connection.",
         "name": "Connection name"
       }
+    }
+  },
+  "addConnectorSteps": {
+    "step0": "Choose your connector",
+    "step1": "Enter data",
+    "step2": "Test and activate",
+    "complete": "Create connector"
+  },
+  "connector": {
+    "OpenNotificatie": {
+      "title": "Open Notificaties",
+      "description": "Open Notificaties is a modern and open source component for routing messages between components, systems and applications."
+    },
+    "Taak": {
+      "title": "Taak",
+      "description": "Save tasks in the Objects API with Open Notificaties."
+    },
+    "ObjectsApi": {
+      "title": "Objects API",
+      "description": "The Objects API aims to easily store various objects and make them available in standardized format."
+    },
+    "Besluiten": {
+      "title": "Besluiten API",
+      "description": "API for storage and disclosure of decisions and associated metadata."
+    },
+    "ProductAanvragen": {
+      "title": "Productaanvragen API",
+      "description": "API for registration and disclosure of products."
+    },
+    "HaalCentraalBrp": {
+      "title": "Haal Centraal BRP",
+      "description": "APIs with which your municipality can request basic data directly from the national registrations."
+    },
+    "ContactMoment": {
+      "title": "Contactmomenten API",
+      "description": "API for storage and disclosure of contact moments and associated metadata."
+    },
+    "OpenZaak": {
+      "title": "OpenZaak",
+      "description": "OpenZaak is a production-worthy API platform that implements the API standard for case-oriented working (the ZGW APIs)."
+    }
+  },
+  "pages": {
+    "connectors": {
+      "title": "Connections",
+      "description": "On this page you can create, modify or delete connections with external services."
     }
   }
 }

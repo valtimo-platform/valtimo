@@ -13,7 +13,7 @@
     ></valtimo-dropzone>
   </div>
   <div footer>
-    <ng-container *ngIf="(jsonString$ | async) && !(error$ | async); else pleaseSelect">
+    <ng-container *ngIf="(jsonString$ | async) && (error$ | async) === ''; else pleaseSelect">
       <button [disabled]="disabled$ | async" class="btn btn-primary" (click)="uploadDefinition()">
         <i class="icon mdi mdi-upload mr-1"></i>
         {{ 'Upload' | translate }}

@@ -16,21 +16,34 @@
 
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import {ConnectorInstance} from '@valtimo/config';
+import {take} from 'rxjs/operators';
+import {ConnectorInstance, ConnectorModal, ConnectorType} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ConnectorManagementStateService {
-  private readonly _showModal$ = new BehaviorSubject<boolean>(false);
+  private readonly _showModal$ = new Subject();
+  private readonly _hideModal$ = new Subject();
   private readonly _showExtensionModal$ = new BehaviorSubject<boolean>(false);
   private readonly _inputDisabled$ = new BehaviorSubject<boolean>(false);
-  private readonly _refresh$ = new BehaviorSubject<'refresh'>('refresh');
+  private readonly _saveButtonDisabled$ = new BehaviorSubject<boolean>(true);
+  private readonly _refresh$ = new BehaviorSubject<null>(null);
+  private readonly _save$ = new Subject();
   private readonly _selectedInstance$ = new BehaviorSubject<ConnectorInstance>(undefined);
   private readonly _lastConfigIdAdded$ = new BehaviorSubject<string>('');
+  private readonly _selectedConnector$ = new BehaviorSubject<ConnectorType>(undefined);
+  private readonly _connectorTypes$ = new BehaviorSubject<Array<ConnectorType>>(undefined);
+  private readonly _modalType$ = new BehaviorSubject<ConnectorModal>('add');
+  private readonly _delete$ = new Subject();
+  private readonly _hideModalSaveButton$ = new BehaviorSubject<boolean>(false);
 
-  get showModal$(): Observable<boolean> {
+  get showModal$(): Observable<any> {
     return this._showModal$.asObservable();
+  }
+
+  get hideModal$(): Observable<any> {
+    return this._hideModal$.asObservable();
   }
 
   get showExtensionModal$(): Observable<boolean> {
@@ -53,12 +66,40 @@ export class ConnectorManagementStateService {
     return this._lastConfigIdAdded$.asObservable();
   }
 
+  get selectedConnector$(): Observable<ConnectorType> {
+    return this._selectedConnector$.asObservable();
+  }
+
+  get connectorTypes$(): Observable<Array<ConnectorType>> {
+    return this._connectorTypes$.asObservable();
+  }
+
+  get saveButtonDisabled$(): Observable<boolean> {
+    return this._saveButtonDisabled$.asObservable();
+  }
+
+  get save$(): Observable<any> {
+    return this._save$.asObservable();
+  }
+
+  get modalType$(): Observable<ConnectorModal> {
+    return this._modalType$.asObservable();
+  }
+
+  get delete$(): Observable<any> {
+    return this._delete$.asObservable();
+  }
+
+  get hideModalSaveButton$(): Observable<boolean> {
+    return this._hideModalSaveButton$.asObservable();
+  }
+
   showModal(): void {
-    this._showModal$.next(true);
+    this._showModal$.next();
   }
 
   hideModal(): void {
-    this._showModal$.next(false);
+    this._hideModal$.next();
   }
 
   showExtensionModal(): void {
@@ -78,7 +119,7 @@ export class ConnectorManagementStateService {
   }
 
   refresh(): void {
-    this._refresh$.next('refresh');
+    this._refresh$.next(null);
   }
 
   setConnectorInstance(instance: ConnectorInstance): void {
@@ -91,5 +132,49 @@ export class ConnectorManagementStateService {
 
   clearLastConfigIdAdded(): void {
     this._lastConfigIdAdded$.next('');
+  }
+
+  setSelectedConnectorType(connectorType: ConnectorType): void {
+    this._selectedConnector$.next(connectorType);
+  }
+
+  clearSelectedConnector(): void {
+    this._selectedConnector$.next(undefined);
+  }
+
+  setConnectorTypes(connectorTypes: Array<ConnectorType>): void {
+    this._connectorTypes$.next(connectorTypes);
+  }
+
+  enableSaveButton(): void {
+    this._saveButtonDisabled$.next(false);
+  }
+
+  disableSaveButton(): void {
+    this._saveButtonDisabled$.next(true);
+  }
+
+  save(): void {
+    this._saveButtonDisabled$.pipe(take(1)).subscribe(saveButtonDisabled => {
+      if (!saveButtonDisabled) {
+        this._save$.next();
+      }
+    });
+  }
+
+  setModalType(type: ConnectorModal): void {
+    this._modalType$.next(type);
+  }
+
+  delete(): void {
+    this._delete$.next();
+  }
+
+  hideModalSaveButton(): void {
+    this._hideModalSaveButton$.next(true);
+  }
+
+  showModalSaveButton(): void {
+    this._hideModalSaveButton$.next(false);
   }
 }
