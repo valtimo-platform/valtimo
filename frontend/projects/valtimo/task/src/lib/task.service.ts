@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {AssigneeRequest, Task} from './models';
+import {AssigneeRequest, Task, TaskProcessLinkResult} from './models';
 import {ConfigService, User} from '@valtimo/config';
 
 @Injectable({providedIn: 'root'})
@@ -57,5 +57,11 @@ export class TaskService {
       variables,
       filesToDelete: [],
     });
+  }
+
+  getTaskProcessLink(taskId: string): Observable<TaskProcessLinkResult> {
+    return this.http.get<TaskProcessLinkResult>(
+      `${this.valtimoEndpointUri}process-link/task/${taskId}`
+    );
   }
 }

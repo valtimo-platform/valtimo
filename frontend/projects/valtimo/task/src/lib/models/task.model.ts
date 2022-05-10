@@ -55,3 +55,13 @@ export interface ListItemField {
 export interface AssigneeRequest {
   assignee: string;
 }
+
+export type TaskProcessLinkType = 'form' | 'form-flow';
+
+export interface TaskProcessLinkResult {
+  type: TaskProcessLinkType;
+  properties: {
+    formLinkId?: string;
+    formFlowId?: string;
+  };
+}

@@ -24,15 +24,15 @@ import {ConfigService} from '@valtimo/config';
   providedIn: 'root',
 })
 export class FormFlowService {
-  private valtimoApiConfig: any;
+  private valtimoEndpointUri!: string;
 
   constructor(private http: HttpClient, private configService: ConfigService) {
-    this.valtimoApiConfig = configService.config.valtimoApi;
+    this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
   getFormFlowDefinitions(): Observable<FormFlowDefinition[]> {
     return this.http.get<FormFlowDefinition[]>(
-      `${this.valtimoApiConfig.endpointUri}process-link/form-flow-definition`
+      `${this.valtimoEndpointUri}process-link/form-flow-definition`
     );
   }
 }

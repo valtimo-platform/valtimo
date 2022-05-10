@@ -25,6 +25,7 @@ import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
 import {ToastrService} from 'ngx-toastr';
 import {take} from 'rxjs/operators';
+import {TaskService} from '../task.service';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -52,19 +53,16 @@ export class TaskDetailModalComponent {
     private readonly formLinkService: FormLinkService,
     private readonly router: Router,
     private readonly logger: NGXLogger,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly taskService: TaskService
   ) {
     this.formioOptions = new FormioOptionsImpl();
     this.formioOptions.disableAlerts = true;
   }
 
-  resetFormDefinition() {
-    // reset formDefinition in order to reload form-io component
-    this.formDefinition = null;
-  }
-
   openTaskDetails(task: Task) {
     this.resetFormDefinition();
+    this.getTaskProcessLink(task.id);
     this.task = task;
     this.page = {
       title: task.name,
@@ -144,5 +142,16 @@ export class TaskDetailModalComponent {
           this.form.showErrors(errors);
         }
       );
+  }
+
+  private resetFormDefinition() {
+    // reset formDefinition in order to reload form-io component
+    this.formDefinition = null;
+  }
+
+  private getTaskProcessLink(taskId: string): void {
+    this.taskService.getTaskProcessLink(taskId).subscribe(res => {
+      console.log('Task process link type:', res.type);
+    });
   }
 }
