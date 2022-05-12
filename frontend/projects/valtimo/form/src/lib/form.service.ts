@@ -19,6 +19,7 @@ import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {FormioForm} from 'angular-formio';
 import {ConfigService} from '@valtimo/config';
+import {InterceptorSkipHeader} from '@valtimo/security';
 
 @Injectable({
   providedIn: 'root',
@@ -41,7 +42,9 @@ export class FormService {
     documentId: string
   ): Observable<FormioForm> {
     return this.http.get<FormioForm>(
-      `${this.valtimoApiConfig.endpointUri}form-association/form-definition/${formDefinitionName}?documentId=${documentId}`
+      `${this.valtimoApiConfig.endpointUri}form-association/form-definition/${formDefinitionName}?documentId=${documentId}`, {
+        headers: InterceptorSkipHeader
+      }
     );
   }
 }
