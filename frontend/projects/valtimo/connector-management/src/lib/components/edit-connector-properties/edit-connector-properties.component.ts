@@ -198,13 +198,13 @@ export class EditConnectorPropertiesComponent implements OnInit, OnChanges, OnDe
   }
 
   private openSaveSubscription(): void {
-    this.stateService.save$.subscribe(() => {
+    this.saveSubscription = this.stateService.save$.subscribe(() => {
       this.onSave();
     });
   }
 
   private openDeleteSubscription(): void {
-    this.stateService.delete$.subscribe(() => {
+    this.deleteSubscription = this.stateService.delete$.subscribe(() => {
       this.onDelete();
     });
   }

@@ -52,6 +52,7 @@ export class EditTaakConnectorComponent implements OnInit, OnDestroy {
 
   private formDefinitionSubscription!: Subscription;
   private translateSubscription!: Subscription;
+  private deleteSubscription!: Subscription;
 
   constructor(
     private readonly formTranslationService: FormTranslationService,
@@ -63,6 +64,7 @@ export class EditTaakConnectorComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.openFormDefinitionSubscription();
+    this.openDeleteSubscription();
     this.formDefinition$.next(editTaakConnectorForm);
     this.loadConnectorNames();
     this.prefillForm();
@@ -72,6 +74,7 @@ export class EditTaakConnectorComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.formDefinitionSubscription?.unsubscribe();
     this.translateSubscription?.unsubscribe();
+    this.deleteSubscription?.unsubscribe();
   }
 
   onSubmit(event: any): void {
@@ -85,6 +88,7 @@ export class EditTaakConnectorComponent implements OnInit, OnDestroy {
   }
 
   onDelete(): void {
+    this.stateService.disableInput();
     this.connectorDelete.emit();
   }
 
@@ -143,5 +147,11 @@ export class EditTaakConnectorComponent implements OnInit, OnDestroy {
       .getConnectorInstancesByType(connectorTypeId)
       .pipe(map(res => (window[windowKey] = res.content.map(connector => connector.name))))
       .subscribe();
+  }
+
+  private openDeleteSubscription(): void {
+    this.deleteSubscription = this.stateService.delete$.subscribe(() => {
+      this.onDelete();
+    });
   }
 }

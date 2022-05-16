@@ -192,7 +192,9 @@
                           <i
                             class="icon mdi"
                             [ngClass]="
-                              validateRole(authority.name) ? 'mdi-check-square' : 'mdi-square-o'
+                              validateRole(authority.name)
+                                ? 'mdi-checkbox-marked'
+                                : 'mdi-checkbox-blank-outline'
                             "
                           ></i>
                           {{ authority.name }}

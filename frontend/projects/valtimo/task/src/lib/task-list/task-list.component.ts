@@ -70,14 +70,15 @@ export class TaskListComponent implements OnDestroy {
 
   tabChange(tab) {
     this.clearPagination(this.currentTaskType);
+
     switch (tab.nextId) {
-      case 'ngb-tab-0':
+      case 1:
         this.getTasks('mine');
         break;
-      case 'ngb-tab-1':
+      case 2:
         this.getTasks('open');
         break;
-      case 'ngb-tab-2':
+      case 3:
         this.getTasks('all');
         break;
       default:

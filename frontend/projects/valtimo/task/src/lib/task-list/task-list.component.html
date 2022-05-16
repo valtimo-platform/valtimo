@@ -34,10 +34,16 @@
           <h5 class="list-header-description">{{ listDescription }}</h5>
         </div>
         <div tabs>
-          <ul ngbNav [destroyOnHide]="false" (navChange)="tabChange($event)">
-            <li [ngbNavItem]="1" [title]="'task-list.mine.title' | translate"></li>
-            <li [ngbNavItem]="2" [title]="'task-list.open.title' | translate"></li>
-            <li [ngbNavItem]="3" [title]="'task-list.all.title' | translate"></li>
+          <ul ngbNav [destroyOnHide]="false" (navChange)="tabChange($event)" class="nav-tabs">
+            <li [ngbNavItem]="1" [title]="'task-list.mine.title' | translate">
+              <a ngbNavLink>{{ 'task-list.mine.title' | translate }}</a>
+            </li>
+            <li [ngbNavItem]="2" [title]="'task-list.open.title' | translate">
+              <a ngbNavLink>{{ 'task-list.open.title' | translate }}</a>
+            </li>
+            <li [ngbNavItem]="3" [title]="'task-list.all.title' | translate">
+              <a ngbNavLink>{{ 'task-list.all.title' | translate }}</a>
+            </li>
           </ul>
         </div>
       </valtimo-list>
