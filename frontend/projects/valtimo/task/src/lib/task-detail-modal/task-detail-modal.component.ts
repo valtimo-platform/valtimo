@@ -17,15 +17,16 @@
 import {Component, EventEmitter, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {FormioComponent, ModalComponent} from '@valtimo/components';
-import {Task} from '../models';
+import {Task, TaskProcessLinkType} from '../models';
 import {FormioSubmission, ValtimoFormioOptions, FormioOptionsImpl} from '@valtimo/components';
 import {FormSubmissionResult, FormAssociation, FormLinkService} from '@valtimo/form-link';
 import {FormioForm} from 'angular-formio';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
 import {ToastrService} from 'ngx-toastr';
-import {take} from 'rxjs/operators';
+import {map, take} from 'rxjs/operators';
 import {TaskService} from '../task.service';
+import {BehaviorSubject} from 'rxjs';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -36,17 +37,22 @@ moment.locale(localStorage.getItem('langKey') || '');
   encapsulation: ViewEncapsulation.None,
 })
 export class TaskDetailModalComponent {
-  public task: Task | null = null;
-  public formDefinition: FormioForm;
-  public page: any = null;
-  public formioOptions: ValtimoFormioOptions;
-
   @ViewChild('form') form: FormioComponent;
   @ViewChild('taskDetailModal') modal: ModalComponent;
   @Output() formSubmit = new EventEmitter();
   @Output() assignmentOfTaskChanged = new EventEmitter();
-  private formAssociation: FormAssociation;
+
+  public task: Task | null = null;
+  public formDefinition: FormioForm;
+  public page: any = null;
+  public formioOptions: ValtimoFormioOptions;
   public errorMessage: string = null;
+
+  private formAssociation: FormAssociation;
+  private taskProcessLinkType$ = new BehaviorSubject<TaskProcessLinkType | null>(null);
+
+  processLinkIsForm$ = this.taskProcessLinkType$.pipe(map(type => type === 'form'));
+  processLinkIsFormFlow$ = this.taskProcessLinkType$.pipe(map(type => type === 'form-flow'));
 
   constructor(
     private readonly toastr: ToastrService,
@@ -61,13 +67,16 @@ export class TaskDetailModalComponent {
   }
 
   openTaskDetails(task: Task) {
+    this.resetTaskProcessLinkType();
     this.resetFormDefinition();
     this.getTaskProcessLink(task.id);
+
     this.task = task;
     this.page = {
       title: task.name,
       subtitle: `Created ${task.created}`,
     };
+
     this.formLinkService
       .getPreFilledFormDefinitionByFormLinkId(
         task.processDefinitionKey,
@@ -78,31 +87,19 @@ export class TaskDetailModalComponent {
       .subscribe(
         formDefinition => {
           this.formAssociation = formDefinition.formAssociation;
+
           const className = this.formAssociation.formLink.className.split('.');
           const linkType = className[className.length - 1];
+
           switch (linkType) {
             case 'BpmnElementFormIdLink':
-              this.formDefinition = formDefinition;
-              this.modal.show();
+              this.setFormDefinitionAndOpenModal(formDefinition);
               break;
             case 'BpmnElementUrlLink':
-              const url = this.router.serializeUrl(
-                this.router.createUrlTree([formDefinition.formAssociation.formLink.url])
-              );
-              window.open(url, '_blank');
+              this.openUrlLink(formDefinition);
               break;
             case 'BpmnElementAngularStateUrlLink':
-              this.route.params.pipe(take(1)).subscribe(params => {
-                const taskId = task?.id;
-                const documentId = params?.documentId;
-
-                this.router.navigate([formDefinition.formAssociation.formLink.url], {
-                  state: {
-                    ...(taskId && {taskId}),
-                    ...(documentId && {documentId}),
-                  },
-                });
-              });
+              this.openAngularStateUrlLink(task, formDefinition);
               break;
             default:
               this.logger.fatal('Unsupported class name');
@@ -112,17 +109,18 @@ export class TaskDetailModalComponent {
           if (errors?.error?.detail) {
             this.errorMessage = errors.error.detail;
           }
+
           this.modal.show();
         }
       );
   }
 
-  public gotoFormLinkScreen() {
+  public gotoFormLinkScreen(): void {
     this.modal.hide();
     this.router.navigate(['form-links']);
   }
 
-  public onSubmit(submission: FormioSubmission) {
+  public onSubmit(submission: FormioSubmission): void {
     this.formLinkService
       .onSubmit(
         this.task.processDefinitionKey,
@@ -144,14 +142,51 @@ export class TaskDetailModalComponent {
       );
   }
 
-  private resetFormDefinition() {
-    // reset formDefinition in order to reload form-io component
+  private resetFormDefinition(): void {
     this.formDefinition = null;
   }
 
   private getTaskProcessLink(taskId: string): void {
     this.taskService.getTaskProcessLink(taskId).subscribe(res => {
-      console.log('Task process link type:', res.type);
+      switch (res?.type) {
+        case 'form':
+          this.taskProcessLinkType$.next('form');
+          break;
+        case 'form-flow':
+          this.taskProcessLinkType$.next('form-flow');
+          break;
+      }
+    });
+  }
+
+  private resetTaskProcessLinkType(): void {
+    this.taskProcessLinkType$.next(null);
+  }
+
+  private setFormDefinitionAndOpenModal(formDefinition: any): void {
+    this.formDefinition = formDefinition;
+    this.modal.show();
+  }
+
+  private openUrlLink(formDefinition: any): void {
+    const url = this.router.serializeUrl(
+      this.router.createUrlTree([formDefinition.formAssociation.formLink.url])
+    );
+
+    window.open(url, '_blank');
+  }
+
+  private openAngularStateUrlLink(task: Task, formDefinition: any): void {
+    this.route.params.pipe(take(1)).subscribe(params => {
+      const taskId = task?.id;
+      const documentId = params?.documentId;
+
+      this.router.navigate([formDefinition.formAssociation.formLink.url], {
+        state: {
+          ...(taskId && {taskId}),
+          ...(documentId && {documentId}),
+        },
+      });
     });
   }
 }
