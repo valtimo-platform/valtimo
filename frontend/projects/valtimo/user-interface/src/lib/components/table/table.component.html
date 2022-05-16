@@ -14,14 +14,16 @@
   ~ limitations under the License.
   -->
 
-<ng-container>
+<ng-container *ngIf="{items: items$ | async} as obs">
   <div class="v-table-container">
     <table class="v-table">
       <ng-container *ngTemplateOutlet="tableHead"></ng-container>
-      <ng-container *ngTemplateOutlet="tableBody"></ng-container>
+      <ng-container *ngTemplateOutlet="tableBody; context: {tableItems: obs.items}"></ng-container>
       <ng-container *ngTemplateOutlet="tableBodyLoading"></ng-container>
     </table>
-    <ng-container *ngTemplateOutlet="paginationContainer"></ng-container>
+    <ng-container
+      *ngTemplateOutlet="paginationContainer; context: {tableItems: obs.items}"
+    ></ng-container>
   </div>
 </ng-container>
 
@@ -36,9 +38,9 @@
   </thead>
 </ng-template>
 
-<ng-template #tableBody>
-  <tbody class="v-table__body" *ngIf="!loading && items">
-    <tr *ngFor="let item of items" class="v-table__row">
+<ng-template #tableBody let-tableItems="tableItems">
+  <tbody class="v-table__body" *ngIf="!loading && tableItems">
+    <tr *ngFor="let item of tableItems" class="v-table__row">
       <ng-container *ngTemplateOutlet="tableCell; context: {item: item}"></ng-container>
       <ng-container *ngTemplateOutlet="tableEditButtonCell; context: {item: item}"></ng-container>
     </tr>
@@ -98,14 +100,17 @@
   </td>
 </ng-template>
 
-<ng-template #paginationContainer>
+<ng-template #paginationContainer let-tableItems="tableItems">
   <div *ngIf="pagination$ | async as paginationObject" class="v-table__pagination-container">
     <div class="v-table__pagination-size-container">
       <ng-container
         *ngTemplateOutlet="paginationSizeSelect; context: {paginationObject: paginationObject}"
       ></ng-container>
       <ng-container
-        *ngTemplateOutlet="paginationSizeAmountText; context: {paginationObject: paginationObject}"
+        *ngTemplateOutlet="
+          paginationSizeAmountText;
+          context: {paginationObject: paginationObject, tableItems: tableItems}
+        "
       ></ng-container>
     </div>
     <ng-container
@@ -130,19 +135,29 @@
   }}</span>
 </ng-template>
 
-<ng-template #paginationSizeAmountText let-paginationObject="paginationObject">
+<ng-template
+  #paginationSizeAmountText
+  let-paginationObject="paginationObject"
+  let-tableItems="tableItems"
+>
   <ng-container *ngTemplateOutlet="paginationSizeAmountTextLoading"></ng-container>
-  <span class="v-table__pagination-amount-text" *ngIf="!loading && items && paginationObject">{{
-    items.length +
-      ' ' +
-      ('interface.of' | translate) +
-      ' ' +
-      paginationObject.collectionSize +
-      ' ' +
-      (itemsTranslationKey ? (itemsTranslationKey | translate) : ('interface.items' | translate)) +
-      ' ' +
-      ('interface.visible' | translate)
-  }}</span>
+  <span
+    class="v-table__pagination-amount-text"
+    *ngIf="!loading && tableItems && paginationObject"
+    >{{
+      tableItems.length +
+        ' ' +
+        ('interface.of' | translate) +
+        ' ' +
+        paginationObject.collectionSize +
+        ' ' +
+        (itemsTranslationKey
+          ? (itemsTranslationKey | translate)
+          : ('interface.items' | translate)) +
+        ' ' +
+        ('interface.visible' | translate)
+    }}</span
+  >
 </ng-template>
 
 <ng-template #paginationSizeAmountTextLoading>

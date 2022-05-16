@@ -14,28 +14,22 @@
  * limitations under the License.
  */
 
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-  Output,
-  SimpleChanges,
-} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {BreakpointObserver, BreakpointState} from '@angular/cdk/layout';
-import {BehaviorSubject, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
 import {SelectItem, TableColumn, TablePagination} from '../../models';
-import {take} from 'rxjs/operators';
+import {map, take, tap} from 'rxjs/operators';
 
 @Component({
   selector: 'v-table',
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.scss'],
 })
-export class TableComponent implements OnInit, OnDestroy, OnChanges {
-  @Input() items!: Array<object>;
+export class TableComponent implements OnInit, OnDestroy {
+  @Input()
+  set items(items: Array<object>) {
+    this.items$.next(items);
+  }
   @Input() columns!: Array<TableColumn>;
   @Input() loading = false;
   @Input() showEditButtons = false;
@@ -43,7 +37,23 @@ export class TableComponent implements OnInit, OnDestroy, OnChanges {
   @Input() itemsTranslationKey!: string;
   @Input() mobileBreakpointPx = 768;
   @Input() amountOfLoadingRows = 3;
-  @Input() pagination?: TablePagination;
+
+  @Input()
+  set collectionSize(collectionSize: TablePagination['collectionSize']) {
+    this.collectionSize$.next(collectionSize);
+  }
+  @Input()
+  set maxPaginationItemSize(maxPaginationItemSize: TablePagination['maxPaginationItemSize']) {
+    this.maxPaginationItemSize$.next(maxPaginationItemSize);
+  }
+  @Input()
+  set page(page: TablePagination['page']) {
+    this.page$.next(page);
+  }
+  @Input()
+  set size(size: TablePagination['size']) {
+    this.size$.next(size);
+  }
 
   @Output() editButtonClicked: EventEmitter<any> = new EventEmitter();
   @Output() paginationSizeSet: EventEmitter<number> = new EventEmitter();
@@ -51,7 +61,41 @@ export class TableComponent implements OnInit, OnDestroy, OnChanges {
 
   readonly defaultPaginationSize$ = new BehaviorSubject<SelectItem | undefined>(undefined);
   readonly isMobile$ = new BehaviorSubject<boolean>(false);
-  readonly pagination$ = new BehaviorSubject<TablePagination | undefined>(undefined);
+
+  private readonly collectionSize$ = new BehaviorSubject<TablePagination['collectionSize']>(0);
+  private readonly maxPaginationItemSize$ = new BehaviorSubject<
+    TablePagination['maxPaginationItemSize']
+  >(0);
+  private readonly page$ = new BehaviorSubject<TablePagination['page']>(0);
+  private readonly size$ = new BehaviorSubject<TablePagination['size']>(0);
+
+  readonly pagination$ = combineLatest([
+    this.collectionSize$,
+    this.maxPaginationItemSize$,
+    this.page$,
+    this.size$,
+  ]).pipe(
+    map(([collectionSize, maxPaginationItemSize, page, size]) => ({
+      collectionSize,
+      maxPaginationItemSize,
+      page,
+      size,
+    })),
+    tap(({collectionSize, maxPaginationItemSize, page, size}) => {
+      const amountOfPagesAvailable = Math.ceil(collectionSize / size);
+
+      if (
+        !this.skippingToPreviousPage &&
+        amountOfPagesAvailable > 0 &&
+        page > amountOfPagesAvailable
+      ) {
+        this.skippingToPreviousPage = true;
+        this.setPage(amountOfPagesAvailable);
+      }
+    })
+  );
+
+  readonly items$ = new BehaviorSubject<Array<object>>([]);
 
   readonly paginationOptions: Array<SelectItem> = [
     {id: 10, text: '10'},
@@ -62,18 +106,13 @@ export class TableComponent implements OnInit, OnDestroy, OnChanges {
 
   private breakpointSubscription!: Subscription;
 
-  private collectionSizeSet = false;
+  private skippingToPreviousPage = false;
 
   constructor(private readonly breakpointObserver: BreakpointObserver) {}
 
   ngOnInit() {
-    this.setPagination();
     this.setDefaultPaginationSize();
     this.openBreakpointSubscription();
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    this.setCollectionSize();
   }
 
   ngOnDestroy() {
@@ -84,31 +123,31 @@ export class TableComponent implements OnInit, OnDestroy, OnChanges {
     return new Array(length).fill(0);
   }
 
-  setPage(setTo: 'previous' | 'next'): void {
+  setPage(setTo: 'previous' | 'next' | number): void {
     this.pagination$.pipe(take(1)).subscribe(pagination => {
       const currentPage = pagination?.page;
 
       if (currentPage) {
-        let newPageNumber: number;
+        let newPageNumber: number = 0;
 
         if (setTo === 'previous') {
           newPageNumber = currentPage - 1;
-        } else {
+        } else if (setTo === 'next') {
           newPageNumber = currentPage + 1;
+        } else if (typeof setTo === 'number') {
+          newPageNumber = setTo;
         }
 
         this.paginationPageSet.emit(newPageNumber);
-        this.pagination$.next({...(pagination as TablePagination), page: newPageNumber});
+        this.page$.next(newPageNumber);
+        this.skippingToPreviousPage = false;
       }
     });
   }
 
   setPaginationSize(newPageSize: number): void {
     this.paginationSizeSet.emit(newPageSize);
-
-    this.pagination$.pipe(take(1)).subscribe(pagination => {
-      this.pagination$.next({...(pagination as TablePagination), size: newPageSize});
-    });
+    this.size$.next(newPageSize);
   }
 
   private openBreakpointSubscription(): void {
@@ -123,37 +162,14 @@ export class TableComponent implements OnInit, OnDestroy, OnChanges {
       });
   }
 
-  private setPagination(): void {
-    const pagination = this.pagination;
-
-    if (pagination) {
-      this.pagination$.next(pagination);
-    }
-  }
-
   private setDefaultPaginationSize(): void {
-    const pagination = this.pagination;
-    const defaultPaginationOption =
-      pagination && this.paginationOptions.find(option => option.id === pagination.size);
+    this.size$.pipe(take(1)).subscribe(size => {
+      const defaultPaginationOption =
+        size && this.paginationOptions.find(option => option.id === size);
 
-    if (defaultPaginationOption) {
-      this.defaultPaginationSize$.next(defaultPaginationOption);
-    }
-  }
-
-  private setCollectionSize(): void {
-    const pagination = this.pagination;
-
-    if (!this.collectionSizeSet) {
-      this.pagination$.pipe(take(1)).subscribe(paginationObject => {
-        if (paginationObject && pagination?.collectionSize !== paginationObject?.collectionSize) {
-          this.collectionSizeSet = true;
-          this.pagination$.next({
-            ...paginationObject,
-            collectionSize: pagination?.collectionSize || 0,
-          });
-        }
-      });
-    }
+      if (defaultPaginationOption) {
+        this.defaultPaginationSize$.next(defaultPaginationOption);
+      }
+    });
   }
 }
