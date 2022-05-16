@@ -128,7 +128,7 @@ export class TableComponent implements OnInit, OnDestroy {
       const currentPage = pagination?.page;
 
       if (currentPage) {
-        let newPageNumber: number = 0;
+        let newPageNumber = 0;
 
         if (setTo === 'previous') {
           newPageNumber = currentPage - 1;
