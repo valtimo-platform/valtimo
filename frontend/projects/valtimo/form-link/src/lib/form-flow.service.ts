@@ -48,4 +48,11 @@ export class FormFlowService {
       submissionData
     )
   }
+
+  back(formFlowInstanceId: string): Observable<FormFlowInstance> {
+    return this.http.post<FormFlowInstance>(
+      `${this.valtimoEndpointUri}form-flow/${formFlowInstanceId}/back`,
+      {}
+    )
+  }
 }

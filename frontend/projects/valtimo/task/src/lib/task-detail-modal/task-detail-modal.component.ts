@@ -137,34 +137,50 @@ export class TaskDetailModalComponent {
   }
 
   public onSubmit(submission: FormioSubmission): void {
-    if (this.taskProcessLinkType$.getValue() === 'form') {
-      this.formLinkService
-        .onSubmit(
-          this.task.processDefinitionKey,
-          this.formAssociation.formLink.id,
-          submission.data,
-          this.task.businessKey,
-          this.task.id
-        )
-        .subscribe(
-          (_: FormSubmissionResult) => {
-            this.completeTask();
+    if (submission.data.submit) {
+      if (this.taskProcessLinkType$.getValue() === 'form') {
+        this.formLinkService
+          .onSubmit(
+            this.task.processDefinitionKey,
+            this.formAssociation.formLink.id,
+            submission.data,
+            this.task.businessKey,
+            this.task.id
+          )
+          .subscribe(
+            (_: FormSubmissionResult) => {
+              this.completeTask();
+            },
+            errors => {
+              this.form.showErrors(errors);
+            }
+          );
+      }
+
+      if (this.taskProcessLinkType$.getValue() === 'form-flow') {
+        this.formFlowService.submitStep(this.formFlowInstanceId, this.formFlowStepInstanceId, submission.data).subscribe(
+          (result: FormFlowInstance) => {
+            this.handleFormFlowStep(result)
           },
           errors => {
             this.form.showErrors(errors);
           }
         );
-    }
-
-    if (this.taskProcessLinkType$.getValue() === 'form-flow') {
-      this.formFlowService.submitStep(this.formFlowInstanceId, this.formFlowStepInstanceId, submission.data).subscribe(
-        (result: FormFlowInstance) => {
-          this.handleFormFlowStep(result)
-        },
-        errors => {
-          this.form.showErrors(errors);
-        }
-      );
+      }
+    } else {
+      if (this.taskProcessLinkType$.getValue() === 'form') {
+        this.modal.hide();
+      }
+      if (this.taskProcessLinkType$.getValue() === 'form-flow') {
+        this.formFlowService.back(this.formFlowInstanceId).subscribe(
+          (result: FormFlowInstance) => {
+            this.handleFormFlowStep(result)
+          },
+          errors => {
+            this.form.showErrors(errors);
+          }
+        );
+      }
     }
   }
 
@@ -189,9 +205,9 @@ export class TaskDetailModalComponent {
   private getFormFlowStep(formFlowInstanceId: string): void {
     this.formFlowService.getFormFlowStep(formFlowInstanceId).subscribe(
       (result: FormFlowInstance) => {
-            this.handleFormFlowStep(result)
-          }
-      );
+        this.handleFormFlowStep(result)
+      }
+    );
   }
 
   private handleFormFlowStep(formFlowInstance: FormFlowInstance) {
