@@ -41,4 +41,11 @@ export class FormFlowService {
       `${this.valtimoEndpointUri}form-flow/${formFlowInstanceId}`
     )
   }
+
+  submitStep(formFlowInstanceId: string, stepInstanceId: string, submissionData: any): Observable<FormFlowInstance> {
+    return this.http.post<FormFlowInstance>(
+      `${this.valtimoEndpointUri}form-flow/${formFlowInstanceId}/step/${stepInstanceId}`,
+      submissionData
+    )
+  }
 }

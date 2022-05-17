@@ -63,7 +63,7 @@ export interface FormFlowDefinition {
 
 export interface FormFlowInstance {
   id: string;
-  step: FormFlowStep;
+  step?: FormFlowStep;
 }
 
 export type FormFlowStepType = 'form';

@@ -50,6 +50,8 @@ export class TaskDetailModalComponent {
 
   public task: Task | null = null;
   public formDefinition: FormioForm;
+  public formFlowInstanceId: string;
+  public formFlowStepInstanceId?: string;
   public page: any = null;
   public formioOptions: ValtimoFormioOptions;
   public errorMessage: string = null;
@@ -135,25 +137,35 @@ export class TaskDetailModalComponent {
   }
 
   public onSubmit(submission: FormioSubmission): void {
-    this.formLinkService
-      .onSubmit(
-        this.task.processDefinitionKey,
-        this.formAssociation.formLink.id,
-        submission.data,
-        this.task.businessKey,
-        this.task.id
-      )
-      .subscribe(
-        (formSubmissionResult: FormSubmissionResult) => {
-          this.toastr.success(this.task.name + ' has successfully been completed');
-          this.modal.hide();
-          this.task = null;
-          this.formSubmit.emit();
+    if (this.taskProcessLinkType$.getValue() === 'form') {
+      this.formLinkService
+        .onSubmit(
+          this.task.processDefinitionKey,
+          this.formAssociation.formLink.id,
+          submission.data,
+          this.task.businessKey,
+          this.task.id
+        )
+        .subscribe(
+          (_: FormSubmissionResult) => {
+            this.completeTask();
+          },
+          errors => {
+            this.form.showErrors(errors);
+          }
+        );
+    }
+
+    if (this.taskProcessLinkType$.getValue() === 'form-flow') {
+      this.formFlowService.submitStep(this.formFlowInstanceId, this.formFlowStepInstanceId, submission.data).subscribe(
+        (result: FormFlowInstance) => {
+          this.handleFormFlowStep(result)
         },
         errors => {
           this.form.showErrors(errors);
         }
       );
+    }
   }
 
   private resetFormDefinition(): void {
@@ -177,10 +189,30 @@ export class TaskDetailModalComponent {
   private getFormFlowStep(formFlowInstanceId: string): void {
     this.formFlowService.getFormFlowStep(formFlowInstanceId).subscribe(
       (result: FormFlowInstance) => {
-            this.formFlowStepType$.next(result.step.type)
-            this.setFormDefinitionAndOpenModal(result.step.typeProperties.definition);
+            this.handleFormFlowStep(result)
           }
       );
+  }
+
+  private handleFormFlowStep(formFlowInstance: FormFlowInstance) {
+    if (formFlowInstance.step === null) {
+      this.formFlowStepType$.next(null);
+      this.formFlowInstanceId = null;
+      this.formFlowStepInstanceId = null;
+      this.completeTask()
+    } else {
+      this.formFlowStepType$.next(formFlowInstance.step.type);
+      this.formFlowInstanceId = formFlowInstance.id;
+      this.formFlowStepInstanceId = formFlowInstance.step.id;
+      this.setFormDefinitionAndOpenModal(formFlowInstance.step.typeProperties.definition);
+    }
+  }
+
+  private completeTask() {
+    this.toastr.success(this.task.name + ' has successfully been completed');
+    this.modal.hide();
+    this.task = null;
+    this.formSubmit.emit();
   }
 
   private resetTaskProcessLinkType(): void {
