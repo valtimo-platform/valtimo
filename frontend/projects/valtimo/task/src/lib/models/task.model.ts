@@ -63,5 +63,6 @@ export interface TaskProcessLinkResult {
   properties: {
     formLinkId?: string;
     formFlowId?: string;
+    formFlowInstanceId?: string;
   };
 }

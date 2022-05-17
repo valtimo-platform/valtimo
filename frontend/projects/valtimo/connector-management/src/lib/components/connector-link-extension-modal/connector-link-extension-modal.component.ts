@@ -15,13 +15,12 @@
  */
 
 import {AfterViewInit, Component, OnDestroy, ViewChild} from '@angular/core';
-import {ModalComponent} from '@valtimo/components';
-import {BehaviorSubject, combineLatest, Observable, of, Subscription} from 'rxjs';
+import {AlertService, ModalComponent, Pagination} from '@valtimo/components';
+import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map, switchMap, take, tap} from 'rxjs/operators';
 import {ConnectorInstance} from '@valtimo/config';
 import {TranslateService} from '@ngx-translate/core';
 import {ActivatedRoute} from '@angular/router';
-import {AlertService, Pagination} from '@valtimo/components';
 import {ConnectorManagementService} from '../../services/connector-management/connector-management.service';
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
 import {ObjectApiSyncService} from '../../services/object-api-sync/object-api-sync.service';
@@ -69,7 +68,7 @@ export class ConnectorLinkExtensionModalComponent implements AfterViewInit, OnDe
     tap(() => this.setFields()),
     switchMap(([currentPage, types]) =>
       this.connectorManagementService.getConnectorInstancesByType(
-        types.find(type => type.name.toLowerCase().includes('objectsapi')).id,
+        types.find(type => type.name.toLowerCase().includes('objectsapi'))?.id,
         {page: currentPage.page, size: currentPage.size}
       )
     ),

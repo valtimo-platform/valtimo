@@ -60,3 +60,20 @@ export interface FormFlowDefinition {
   id: string;
   name: string;
 }
+
+export interface FormFlowInstance {
+  id: string;
+  step: FormFlowStep;
+}
+
+export type FormFlowStepType = 'form';
+
+export interface FormFlowStep {
+  id: string;
+  type: FormFlowStepType;
+  typeProperties: FormTypeProperties
+}
+
+export interface FormTypeProperties {
+  definition: any;
+}

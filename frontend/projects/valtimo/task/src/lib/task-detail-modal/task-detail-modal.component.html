@@ -21,7 +21,7 @@
   [subtitle]="page?.subtitle"
   [templateBelowSubtitle]="assignUserToTask"
 >
-  <div body *ngIf="formDefinition && (processLinkIsForm$ | async)">
+  <div body *ngIf="formDefinition && ((processLinkIsForm$ | async) || (formFlowStepTypeIsForm$ | async))">
     <valtimo-form-io
       #form
       [form]="formDefinition"

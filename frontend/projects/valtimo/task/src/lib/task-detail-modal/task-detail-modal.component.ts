@@ -16,10 +16,16 @@
 
 import {Component, EventEmitter, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
-import {FormioComponent, ModalComponent} from '@valtimo/components';
+import {FormioComponent, FormioOptionsImpl, FormioSubmission, ModalComponent, ValtimoFormioOptions} from '@valtimo/components';
 import {Task, TaskProcessLinkType} from '../models';
-import {FormioSubmission, ValtimoFormioOptions, FormioOptionsImpl} from '@valtimo/components';
-import {FormSubmissionResult, FormAssociation, FormLinkService} from '@valtimo/form-link';
+import {
+  FormAssociation,
+  FormFlowInstance,
+  FormFlowService,
+  FormFlowStepType,
+  FormLinkService,
+  FormSubmissionResult
+} from '@valtimo/form-link';
 import {FormioForm} from 'angular-formio';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
@@ -54,9 +60,13 @@ export class TaskDetailModalComponent {
   processLinkIsForm$ = this.taskProcessLinkType$.pipe(map(type => type === 'form'));
   processLinkIsFormFlow$ = this.taskProcessLinkType$.pipe(map(type => type === 'form-flow'));
 
+  private formFlowStepType$ = new BehaviorSubject<FormFlowStepType | null>(null);
+  formFlowStepTypeIsForm$ = this.formFlowStepType$.pipe(map( type => type === 'form'));
+
   constructor(
     private readonly toastr: ToastrService,
     private readonly formLinkService: FormLinkService,
+    private readonly formFlowService: FormFlowService,
     private readonly router: Router,
     private readonly logger: NGXLogger,
     private readonly route: ActivatedRoute,
@@ -94,6 +104,10 @@ export class TaskDetailModalComponent {
           switch (linkType) {
             case 'BpmnElementFormIdLink':
               this.setFormDefinitionAndOpenModal(formDefinition);
+              break;
+            case 'BpmnElementFormFlowIdLink':
+              // We can't use the formDefinition here because the form definition is provided per form flow step
+              // I'm still leaving this in here in case we want to add form flow specific code.
               break;
             case 'BpmnElementUrlLink':
               this.openUrlLink(formDefinition);
@@ -154,9 +168,19 @@ export class TaskDetailModalComponent {
           break;
         case 'form-flow':
           this.taskProcessLinkType$.next('form-flow');
+          this.getFormFlowStep(res?.properties.formFlowInstanceId)
           break;
       }
     });
+  }
+
+  private getFormFlowStep(formFlowInstanceId: string): void {
+    this.formFlowService.getFormFlowStep(formFlowInstanceId).subscribe(
+      (result: FormFlowInstance) => {
+            this.formFlowStepType$.next(result.step.type)
+            this.setFormDefinitionAndOpenModal(result.step.typeProperties.definition);
+          }
+      );
   }
 
   private resetTaskProcessLinkType(): void {
