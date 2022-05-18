@@ -26,6 +26,9 @@ import {TranslateModule} from '@ngx-translate/core';
 import {ProcessLinkComponent} from './components/process-link/process-link.component';
 import {StepperModule, ModalModule as VModalModule, CardModule} from '@valtimo/user-interface';
 import {SelectPluginComponent} from './components/select-plugin/select-plugin.component';
+import {SelectPluginConfigurationComponent} from './components/select-plugin-configuration/select-plugin-configuration.component';
+import {SelectPluginFunctionComponent} from './components/select-plugin-function/select-plugin-function.component';
+import {FlexLayoutModule} from '@angular/flex-layout';
 
 @NgModule({
   declarations: [
@@ -34,6 +37,8 @@ import {SelectPluginComponent} from './components/select-plugin/select-plugin.co
     FormLinkProcessDiagramComponent,
     FormLinkModalComponent,
     SelectPluginComponent,
+    SelectPluginConfigurationComponent,
+    SelectPluginFunctionComponent,
   ],
   imports: [
     CommonModule,
@@ -45,7 +50,14 @@ import {SelectPluginComponent} from './components/select-plugin/select-plugin.co
     StepperModule,
     VModalModule,
     CardModule,
+    FlexLayoutModule,
   ],
-  exports: [FormLinkComponent, ProcessLinkComponent, SelectPluginComponent],
+  exports: [
+    FormLinkComponent,
+    ProcessLinkComponent,
+    SelectPluginComponent,
+    SelectPluginConfigurationComponent,
+    SelectPluginFunctionComponent,
+  ],
 })
 export class FormLinkModule {}

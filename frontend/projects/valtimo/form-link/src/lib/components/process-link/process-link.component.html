@@ -38,8 +38,12 @@
         <v-stepper-step titleTranslationKey="pluginSteps.step0">
           <valtimo-select-plugin></valtimo-select-plugin>
         </v-stepper-step>
-        <v-stepper-step titleTranslationKey="pluginSteps.step1"> </v-stepper-step>
-        <v-stepper-step titleTranslationKey="pluginSteps.step2"> </v-stepper-step>
+        <v-stepper-step titleTranslationKey="pluginSteps.step1">
+          <valtimo-select-plugin-configuration></valtimo-select-plugin-configuration>
+        </v-stepper-step>
+        <v-stepper-step titleTranslationKey="pluginSteps.step2">
+          <valtimo-select-plugin-function></valtimo-select-plugin-function>
+        </v-stepper-step>
       </v-stepper-content>
     </div>
     <div role="footer">
@@ -50,11 +54,11 @@
         ></v-stepper-footer-step>
         <v-stepper-footer-step
           nextButtonTranslationKey="pluginSteps.step2"
-          [nextButtonEnabled]="true"
+          [nextButtonEnabled]="(selectedPluginConfiguration$ | async) !== undefined"
         ></v-stepper-footer-step>
         <v-stepper-footer-step
           completeButtonTranslationKey="pluginSteps.complete"
-          [completeButtonEnabled]="true"
+          [completeButtonEnabled]="(selectedPluginFunction$ | async) !== undefined"
         ></v-stepper-footer-step>
       </v-stepper-footer>
     </div>

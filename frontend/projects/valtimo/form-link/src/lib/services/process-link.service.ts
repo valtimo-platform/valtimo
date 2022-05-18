@@ -32,7 +32,7 @@ import {delay} from 'rxjs/operators';
 })
 export class ProcessLinkService {
   getPluginDefinitions(): Observable<Array<PluginDefinition>> {
-    return of([{identifier: 'openzaak', name: 'Open Zaak'}]).pipe(delay(500));
+    return of([{identifier: 'openzaak', name: 'Open Zaak'}]).pipe(delay(1500));
   }
 
   getPluginConfigurations(pluginDefinitionId: string): Observable<Array<PluginConfiguration>> {
@@ -41,7 +41,7 @@ export class ProcessLinkService {
         id: '1ebdad87-3899-4ab7-b4ad-403237b17dbd',
         name: 'Den Haag Open Zaak',
       },
-    ]).pipe(delay(500));
+    ]).pipe(delay(1500));
   }
 
   getPluginFunctions(pluginDefinitionId: string): Observable<Array<PluginFunction>> {
@@ -62,7 +62,7 @@ export class ProcessLinkService {
         identifier: 'set-besluit',
         name: 'Besluit toevoegen aan de Zaak',
       },
-    ]).pipe(delay(500));
+    ]).pipe(delay(1500));
   }
 
   getAllPluginConfigurations(): Observable<Array<PluginConfiguration>> {
@@ -71,6 +71,6 @@ export class ProcessLinkService {
         id: '1ebdad87-3899-4ab7-b4ad-403237b17dbd',
         name: 'Den Haag Open Zaak',
       },
-    ]).pipe(delay(500));
+    ]).pipe(delay(1500));
   }
 }

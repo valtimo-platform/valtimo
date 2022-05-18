@@ -16,27 +16,57 @@
 
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import {PluginDefinition} from '../models';
+import {PluginConfiguration, PluginDefinition, PluginFunction} from '../models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProcessLinkStateService {
   private readonly _selectedPluginDefinition$ = new BehaviorSubject<PluginDefinition>(undefined);
+  private readonly _selectedPluginConfiguration$ = new BehaviorSubject<PluginConfiguration>(
+    undefined
+  );
+  private readonly _selectedPluginFunction$ = new BehaviorSubject<PluginFunction>(undefined);
 
   get selectedPluginDefinition$(): Observable<PluginDefinition> {
     return this._selectedPluginDefinition$.asObservable();
+  }
+
+  get selectedPluginConfiguration$(): Observable<PluginConfiguration> {
+    return this._selectedPluginConfiguration$.asObservable();
+  }
+
+  get selectedPluginFunction$(): Observable<PluginFunction> {
+    return this._selectedPluginFunction$.asObservable();
   }
 
   selectPluginDefinition(definition: PluginDefinition): void {
     this._selectedPluginDefinition$.next(definition);
   }
 
+  selectPluginConfiguration(configuration: PluginConfiguration): void {
+    this._selectedPluginConfiguration$.next(configuration);
+  }
+
+  selectPluginFunction(pluginFunction: PluginFunction): void {
+    this._selectedPluginFunction$.next(pluginFunction);
+  }
+
   deselectPluginDefinition(): void {
     this._selectedPluginDefinition$.next(undefined);
   }
 
+  deselectPluginConfiguration(): void {
+    this._selectedPluginConfiguration$.next(undefined);
+  }
+
+  deselectPluginFunction(): void {
+    this._selectedPluginFunction$.next(undefined);
+  }
+
   clear(): void {
     this.deselectPluginDefinition();
+    this.deselectPluginConfiguration();
+    this.deselectPluginFunction();
   }
 }

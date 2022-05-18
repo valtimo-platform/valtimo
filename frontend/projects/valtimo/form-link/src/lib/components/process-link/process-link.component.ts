@@ -32,6 +32,8 @@ export class ProcessLinkComponent {
 
   readonly returnToFirstStepSubject$ = new Subject<boolean>();
   readonly selectedPluginDefinition$ = this.processLinkStateService.selectedPluginDefinition$;
+  readonly selectedPluginConfiguration$ = this.processLinkStateService.selectedPluginConfiguration$;
+  readonly selectedPluginFunction$ = this.processLinkStateService.selectedPluginFunction$;
 
   constructor(
     private readonly modalService: ModalService,
@@ -39,16 +41,16 @@ export class ProcessLinkComponent {
   ) {}
 
   complete(): void {
-    console.log('complete');
+    this.hide();
   }
 
   hide(): void {
-    this.processLinkStateService.clear();
     this.modalService.closeModal();
 
     this.modalService.appearingDelayMs$.pipe(take(1)).subscribe(appearingDelay => {
       setTimeout(() => {
         this.returnToFirstStepSubject$.next(true);
+        this.processLinkStateService.clear();
       }, appearingDelay);
     });
   }
