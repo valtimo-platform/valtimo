@@ -7,17 +7,13 @@
  *
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.See the License for the specific language governing permissions and limitations under the License.
  */
 
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {FormFlowDefinition, FormFlowInstance} from './models';
+import {FormFlowDefinition, FormFlowInstance} from '../models';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
@@ -39,20 +35,24 @@ export class FormFlowService {
   getFormFlowStep(formFlowInstanceId: string): Observable<FormFlowInstance> {
     return this.http.get<FormFlowInstance>(
       `${this.valtimoEndpointUri}form-flow/${formFlowInstanceId}`
-    )
+    );
   }
 
-  submitStep(formFlowInstanceId: string, stepInstanceId: string, submissionData: any): Observable<FormFlowInstance> {
+  submitStep(
+    formFlowInstanceId: string,
+    stepInstanceId: string,
+    submissionData: any
+  ): Observable<FormFlowInstance> {
     return this.http.post<FormFlowInstance>(
       `${this.valtimoEndpointUri}form-flow/${formFlowInstanceId}/step/${stepInstanceId}`,
       submissionData
-    )
+    );
   }
 
   back(formFlowInstanceId: string): Observable<FormFlowInstance> {
     return this.http.post<FormFlowInstance>(
       `${this.valtimoEndpointUri}form-flow/${formFlowInstanceId}/back`,
       {}
-    )
+    );
   }
 }

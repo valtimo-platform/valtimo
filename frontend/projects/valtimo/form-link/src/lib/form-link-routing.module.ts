@@ -17,13 +17,20 @@
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {AuthGuardService} from '@valtimo/security';
-import {FormLinkComponent} from './form-link.component';
+import {FormLinkComponent} from './components/form-link/form-link.component';
 import {ROLE_ADMIN} from '@valtimo/config';
+import {ProcessLinkComponent} from './components/process-link/process-link.component';
 
 const routes: Routes = [
   {
     path: 'form-links',
     component: FormLinkComponent,
+    canActivate: [AuthGuardService],
+    data: {title: 'Form links', roles: [ROLE_ADMIN]},
+  },
+  {
+    path: 'process-links',
+    component: ProcessLinkComponent,
     canActivate: [AuthGuardService],
     data: {title: 'Form links', roles: [ROLE_ADMIN]},
   },

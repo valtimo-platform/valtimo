@@ -15,17 +15,23 @@
  */
 
 import {NgModule} from '@angular/core';
-import {FormLinkComponent} from './form-link.component';
-import {FormLinkProcessDiagramComponent} from './form-link-process-diagram/form-link-process-diagram.component';
+import {FormLinkComponent} from './components/form-link/form-link.component';
+import {FormLinkProcessDiagramComponent} from './components/form-link-process-diagram/form-link-process-diagram.component';
 import {CommonModule} from '@angular/common';
 import {FormLinkRoutingModule} from './form-link-routing.module';
 import {FormsModule} from '@angular/forms';
-import {FormLinkModalComponent} from './form-link-modal/form-link-modal.component';
+import {FormLinkModalComponent} from './components/form-link-modal/form-link-modal.component';
 import {ModalModule, SearchableDropdownSelectModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
+import {ProcessLinkComponent} from './components/process-link/process-link.component';
 
 @NgModule({
-  declarations: [FormLinkComponent, FormLinkProcessDiagramComponent, FormLinkModalComponent],
+  declarations: [
+    FormLinkComponent,
+    ProcessLinkComponent,
+    FormLinkProcessDiagramComponent,
+    FormLinkModalComponent,
+  ],
   imports: [
     CommonModule,
     FormLinkRoutingModule,
@@ -34,6 +40,6 @@ import {TranslateModule} from '@ngx-translate/core';
     SearchableDropdownSelectModule,
     TranslateModule,
   ],
-  exports: [FormLinkComponent],
+  exports: [FormLinkComponent, ProcessLinkComponent],
 })
 export class FormLinkModule {}
