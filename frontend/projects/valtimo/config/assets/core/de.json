@@ -634,5 +634,17 @@
       "title": "Connectors",
       "description": "Auf dieser Seite können Sie Verbindungen zu externen Diensten erstellen, ändern oder löschen."
     }
+  },
+  "pluginSteps": {
+    "step0": "Wählen Sie Ihr Plugin aus",
+    "step1": "Wählen Sie Ihre Konfiguration",
+    "step2": "Wählen Sie Ihre Funktion",
+    "complete": "Plugin-Funktion verbinden"
+  },
+  "plugin": {
+    "openzaak": {
+      "title": "OpenZaak",
+      "description": "OpenZaak ist eine produktionstaugliche API-Plattform, die den API-Standard für fallorientiertes Arbeiten (die ZGW-APIs) implementiert."
+    }
   }
 }

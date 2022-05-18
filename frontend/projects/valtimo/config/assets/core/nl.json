@@ -634,5 +634,17 @@
       "title": "Connecties",
       "description": "Op deze pagina kun je connecties met externe diensten aanmaken, aanpassen of verwijderen."
     }
+  },
+  "pluginSteps": {
+    "step0": "Kies je plugin",
+    "step1": "Kies je configuratie",
+    "step2": "Kies je functie",
+    "complete": "Pluginfunctie koppelen"
+  },
+  "plugin": {
+    "openzaak": {
+      "title": "OpenZaak",
+      "description": "OpenZaak is een productiewaardig API platform die de API-standaard voor zaakgericht werken implementeert (de ZGW-API’s)."
+    }
   }
 }

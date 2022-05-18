@@ -7,19 +7,18 @@
  *
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.See the License for the specific language governing permissions and limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import {Component, ViewChild, ViewContainerRef} from '@angular/core';
 import {FormLinkModalComponent} from '../form-link-modal/form-link-modal.component';
-import {BpmnElement} from '../../models';
+import {BpmnElement, ModalParams} from '../../models';
 import {ConfigService} from '@valtimo/config';
 import {ModalComponent} from '@valtimo/components';
-
-interface ModalParams {
-  element: BpmnElement;
-  processDefinitionKey: string;
-}
 
 @Component({
   selector: 'valtimo-form-link',

@@ -24,6 +24,8 @@ import {FormLinkModalComponent} from './components/form-link-modal/form-link-mod
 import {ModalModule, SearchableDropdownSelectModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {ProcessLinkComponent} from './components/process-link/process-link.component';
+import {StepperModule, ModalModule as VModalModule, CardModule} from '@valtimo/user-interface';
+import {SelectPluginComponent} from './components/select-plugin/select-plugin.component';
 
 @NgModule({
   declarations: [
@@ -31,6 +33,7 @@ import {ProcessLinkComponent} from './components/process-link/process-link.compo
     ProcessLinkComponent,
     FormLinkProcessDiagramComponent,
     FormLinkModalComponent,
+    SelectPluginComponent,
   ],
   imports: [
     CommonModule,
@@ -39,7 +42,10 @@ import {ProcessLinkComponent} from './components/process-link/process-link.compo
     ModalModule,
     SearchableDropdownSelectModule,
     TranslateModule,
+    StepperModule,
+    VModalModule,
+    CardModule,
   ],
-  exports: [FormLinkComponent, ProcessLinkComponent],
+  exports: [FormLinkComponent, ProcessLinkComponent, SelectPluginComponent],
 })
 export class FormLinkModule {}

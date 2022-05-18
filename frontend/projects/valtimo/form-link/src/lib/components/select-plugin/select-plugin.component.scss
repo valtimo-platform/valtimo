@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,15 +14,27 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of form-link
- */
+.btn-back {
+  position: absolute;
+}
 
-export * from './lib/services/form-flow.service';
-export * from './lib/services/form-link.service';
-export * from './lib/services/process-link.service';
-export * from './lib/components/form-link/form-link.component';
-export * from './lib/components/process-link/process-link.component';
-export * from './lib/components/select-plugin/select-plugin.component';
-export * from './lib/form-link.module';
-export * from './lib/models';
+.cards-container {
+  display: flex;
+  flex-flow: row wrap;
+  width: 100%;
+}
+
+.card {
+  width: calc(33.3% - 20px);
+  margin-right: 30px;
+
+  &:nth-child(3n + 3) {
+    margin-right: 0;
+  }
+}
+
+.card-header {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

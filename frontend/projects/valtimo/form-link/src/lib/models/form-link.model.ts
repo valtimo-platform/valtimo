@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export interface FormAssociation {
+interface FormAssociation {
   className: string;
   id: string;
   formLink: {
@@ -26,7 +26,7 @@ export interface FormAssociation {
   };
 }
 
-export interface FormLinkRequest {
+interface FormLinkRequest {
   id: string;
   type: string;
   formId?: string;
@@ -35,45 +35,65 @@ export interface FormLinkRequest {
   angularStateUrl?: string;
 }
 
-export interface CreateFormAssociationRequest {
+interface CreateFormAssociationRequest {
   processDefinitionKey: string;
   formLinkRequest: FormLinkRequest;
 }
 
-export interface ModifyFormAssociationRequest {
+interface ModifyFormAssociationRequest {
   processDefinitionKey: string;
   formAssociationId: string;
   formLinkRequest: FormLinkRequest;
 }
 
-export interface FormSubmissionResult {
+interface FormSubmissionResult {
   errors: string[];
   documentId?: string;
 }
 
-export interface BpmnElement {
+interface BpmnElement {
   id: string;
   type: string;
 }
 
-export interface FormFlowDefinition {
+interface FormFlowDefinition {
   id: string;
   name: string;
 }
 
-export interface FormFlowInstance {
+interface FormFlowInstance {
   id: string;
   step?: FormFlowStep;
 }
 
-export type FormFlowStepType = 'form';
+type FormFlowStepType = 'form';
 
-export interface FormFlowStep {
+interface FormFlowStep {
   id: string;
   type: FormFlowStepType;
-  typeProperties: FormTypeProperties
+  typeProperties: FormTypeProperties;
 }
 
-export interface FormTypeProperties {
+interface FormTypeProperties {
   definition: any;
 }
+
+interface ModalParams {
+  element: BpmnElement;
+  processDefinitionKey: string;
+}
+
+export {
+  FormAssociation,
+  FormLinkRequest,
+  CreateFormAssociationRequest,
+  ModifyFormAssociationRequest,
+  FormSubmissionResult,
+  BpmnElement,
+  FormFlowDefinition,
+  FormFlowInstance,
+  FormFlowStepType,
+  FormFlowStep,
+  FormTypeProperties,
+  ModalParams,
+};

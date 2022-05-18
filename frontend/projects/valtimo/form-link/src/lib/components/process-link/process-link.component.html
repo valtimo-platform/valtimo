@@ -23,3 +23,40 @@
     <ng-template #extension></ng-template>
   </div>
 </div>
+
+<v-stepper-container
+  (completeEvent)="complete()"
+  (cancelClickEvent)="hide()"
+  [returnToFirstStepSubject$]="returnToFirstStepSubject$"
+>
+  <v-modal #pluginModal (closeEvent)="hide()">
+    <div role="header">
+      <v-stepper-header></v-stepper-header>
+    </div>
+    <div role="content">
+      <v-stepper-content>
+        <v-stepper-step titleTranslationKey="pluginSteps.step0">
+          <valtimo-select-plugin></valtimo-select-plugin>
+        </v-stepper-step>
+        <v-stepper-step titleTranslationKey="pluginSteps.step1"> </v-stepper-step>
+        <v-stepper-step titleTranslationKey="pluginSteps.step2"> </v-stepper-step>
+      </v-stepper-content>
+    </div>
+    <div role="footer">
+      <v-stepper-footer>
+        <v-stepper-footer-step
+          nextButtonTranslationKey="pluginSteps.step1"
+          [nextButtonEnabled]="(selectedPluginDefinition$ | async) !== undefined"
+        ></v-stepper-footer-step>
+        <v-stepper-footer-step
+          nextButtonTranslationKey="pluginSteps.step2"
+          [nextButtonEnabled]="true"
+        ></v-stepper-footer-step>
+        <v-stepper-footer-step
+          completeButtonTranslationKey="pluginSteps.complete"
+          [completeButtonEnabled]="true"
+        ></v-stepper-footer-step>
+      </v-stepper-footer>
+    </div>
+  </v-modal>
+</v-stepper-container>

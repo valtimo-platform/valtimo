@@ -634,5 +634,17 @@
       "title": "Connections",
       "description": "On this page you can create, modify or delete connections with external services."
     }
+  },
+  "pluginSteps": {
+    "step0": "Select your plugin",
+    "step1": "Select your configuration",
+    "step2": "Select your function",
+    "complete": "Connect plugin function"
+  },
+  "plugin": {
+    "openzaak": {
+      "title": "OpenZaak",
+      "description": "OpenZaak is a production-worthy API platform that implements the API standard for case-oriented working (the ZGW APIs)."
+    }
   }
 }
