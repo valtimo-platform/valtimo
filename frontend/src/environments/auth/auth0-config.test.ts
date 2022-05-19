@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import {Auth, AuthProviders, ValtimoAuth0Options} from '@valtimo/contract';
+import {Auth, AuthProviders} from '@valtimo/config';
 import {
   Auth0AuthGuardService,
   auth0Initializer,
   Auth0Module,
   Auth0UserService,
+  ValtimoAuth0Options,
 } from '@valtimo/auth0';
 
 export const valtimoAuth0Options: ValtimoAuth0Options = {

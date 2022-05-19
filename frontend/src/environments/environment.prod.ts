@@ -21,7 +21,7 @@ import {
   ROLE_USER,
   UploadProvider,
   ValtimoConfig,
-} from '@valtimo/contract';
+} from '@valtimo/config';
 import {authenticationAuth0} from './auth/auth0-config.prod';
 import {openZaakExtensionInitializer} from '@valtimo/open-zaak';
 

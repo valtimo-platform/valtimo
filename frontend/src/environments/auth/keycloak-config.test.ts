@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-import {Auth, AuthProviders, ValtimoKeycloakOptions} from '@valtimo/contract';
 import {
   KeycloakAuthGuardService,
   keycloakInitializer,
   KeycloakModule,
   KeycloakUserService,
+  ValtimoKeycloakOptions,
 } from '@valtimo/keycloak';
 import {KeycloakConfig, KeycloakOnLoad} from 'keycloak-js';
+import {Auth, AuthProviders} from '@valtimo/config';
 
 export const keycloakAuthenticationProviders: AuthProviders = {
   guardServiceProvider: KeycloakAuthGuardService,

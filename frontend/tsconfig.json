@@ -76,7 +76,6 @@
       "@valtimo/keycloak": ["dist/valtimo/keycloak"],
       "@valtimo/keycloak/*": ["dist/valtimo/keycloak/*"],
       "@valtimo/bootstrap": ["dist/valtimo/bootstrap/valtimo-bootstrap", "dist/valtimo/bootstrap"],
-      "@valtimo/contract": ["dist/valtimo/contract/valtimo-contract", "dist/valtimo/contract"],
       "@valtimo/config": ["dist/valtimo/config/valtimo-config", "dist/valtimo/config"],
       "@valtimo/open-zaak": ["dist/valtimo/open-zaak/valtimo-openzaak", "dist/valtimo/open-zaak"],
       "@valtimo/resource": ["dist/valtimo/resource"],
@@ -277,12 +276,6 @@
     },
     {
       "path": "./projects/valtimo/bootstrap/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/valtimo/contract/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/valtimo/contract/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/config/tsconfig.lib.json"

@@ -24,8 +24,8 @@ import {
   ROLE_USER,
   UploadProvider,
   ValtimoConfig,
-} from '@valtimo/contract';
-import {IncludeFunction} from '@valtimo/config';
+  IncludeFunction,
+} from '@valtimo/config';
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
 import {openZaakExtensionInitializer, emailExtensionInitializer} from '@valtimo/open-zaak';
 import {connectorLinkExtensionInitializer} from '@valtimo/connector-management';

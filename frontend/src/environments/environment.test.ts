@@ -15,10 +15,15 @@
  */
 
 import {NgxLoggerLevel} from 'ngx-logger';
-import {ROLE_ADMIN, ROLE_DEVELOPER, ROLE_USER, ValtimoConfig} from '@valtimo/contract';
 import {authenticationAuth0} from './auth/auth0-config.test';
 import {openZaakExtensionInitializer} from '@valtimo/open-zaak';
-import {UploadProvider} from '@valtimo/config';
+import {
+  UploadProvider,
+  ROLE_ADMIN,
+  ROLE_DEVELOPER,
+  ROLE_USER,
+  ValtimoConfig,
+} from '@valtimo/config';
 
 const defaultDefinitionColumns = [
   {
