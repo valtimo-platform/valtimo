@@ -17,60 +17,46 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable, of} from 'rxjs';
-import {
-  FormFlowDefinition,
-  FormFlowInstance,
-  PluginConfiguration,
-  PluginDefinition,
-  PluginFunction,
-} from '../models';
+import {PluginConfiguration, PluginDefinition, PluginFunction} from '../models';
 import {ConfigService} from '@valtimo/config';
 import {delay} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ProcessLinkService {
+export class PluginService {
+  private readonly OPEN_ZAAK_CONFIGURATION = {
+    definitionKey: 'openzaak',
+    key: '1ebdad87-3899-4ab7-b4ad-403237b17dbd',
+    title: 'Den Haag Open Zaak',
+  };
+
   getPluginDefinitions(): Observable<Array<PluginDefinition>> {
-    return of([{identifier: 'openzaak', name: 'Open Zaak'}]).pipe(delay(1500));
+    return of([{key: 'openzaak'}]).pipe(delay(1500));
   }
 
   getPluginConfigurations(pluginDefinitionId: string): Observable<Array<PluginConfiguration>> {
-    return of([
-      {
-        id: '1ebdad87-3899-4ab7-b4ad-403237b17dbd',
-        name: 'Den Haag Open Zaak',
-      },
-    ]).pipe(delay(1500));
+    return of([this.OPEN_ZAAK_CONFIGURATION]).pipe(delay(1500));
   }
 
   getPluginFunctions(pluginDefinitionId: string): Observable<Array<PluginFunction>> {
     return of([
       {
-        identifier: 'create-zaak',
-        name: 'Zaak aanmaken',
+        key: 'create-zaak',
       },
       {
-        identifier: 'set-status',
-        name: 'Status van de Zaak wijzigen',
+        key: 'set-status',
       },
       {
-        identifier: 'set-resultaat',
-        name: 'Resultaat toevoegen aan de Zaak',
+        key: 'set-resultaat',
       },
       {
-        identifier: 'set-besluit',
-        name: 'Besluit toevoegen aan de Zaak',
+        key: 'set-besluit',
       },
     ]).pipe(delay(1500));
   }
 
   getAllPluginConfigurations(): Observable<Array<PluginConfiguration>> {
-    return of([
-      {
-        id: '1ebdad87-3899-4ab7-b4ad-403237b17dbd',
-        name: 'Den Haag Open Zaak',
-      },
-    ]).pipe(delay(1500));
+    return of([this.OPEN_ZAAK_CONFIGURATION]).pipe(delay(1500));
   }
 }

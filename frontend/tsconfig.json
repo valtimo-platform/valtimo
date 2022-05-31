@@ -83,7 +83,9 @@
       "@valtimo/user-interface": ["dist/valtimo/user-interface"],
       "@valtimo/user-interface/*": ["dist/valtimo/user-interface/*"],
       "@valtimo/customer": ["dist/valtimo/customer"],
-      "@valtimo/customer/*": ["dist/valtimo/customer/*"]
+      "@valtimo/customer/*": ["dist/valtimo/customer/*"],
+      "@valtimo/plugin-management": ["dist/valtimo/plugin-management"],
+      "@valtimo/plugin-management/*": ["dist/valtimo/plugin-management/*"]
     }
   },
   "files": [],
@@ -306,6 +308,12 @@
     },
     {
       "path": "./projects/valtimo/customer/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/plugin-management/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/plugin-management/tsconfig.spec.json"
     }
   ]
 }

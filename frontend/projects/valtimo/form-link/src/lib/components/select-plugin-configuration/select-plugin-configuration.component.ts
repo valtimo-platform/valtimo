@@ -16,8 +16,7 @@
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {switchMap, take, tap} from 'rxjs/operators';
-import {ProcessLinkService} from '../../services/process-link.service';
-import {PluginConfiguration, PluginDefinition} from '../../models';
+import {PluginDefinition, PluginConfiguration, PluginService} from '@valtimo/plugin-management';
 import {ProcessLinkStateService} from '../../services/process-link-state.service';
 import {Observable, of} from 'rxjs';
 
@@ -31,14 +30,14 @@ export class SelectPluginConfigurationComponent {
     this.processLinkStateService.selectedPluginDefinition$.pipe(
       switchMap(selectedDefinition =>
         selectedDefinition
-          ? this.processLinkService.getPluginConfigurations(selectedDefinition.identifier)
+          ? this.pluginService.getPluginConfigurations(selectedDefinition.key)
           : of(undefined)
       )
     );
   readonly selectedPluginConfiguration$ = this.processLinkStateService.selectedPluginConfiguration$;
 
   constructor(
-    private readonly processLinkService: ProcessLinkService,
+    private readonly pluginService: PluginService,
     private readonly processLinkStateService: ProcessLinkStateService
   ) {}
 

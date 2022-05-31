@@ -633,6 +633,10 @@
     "connectors": {
       "title": "Connections",
       "description": "On this page you can create, modify or delete connections with external services."
+    },
+    "plugins": {
+      "title": "Plugins",
+      "description": "On this page you can create, change and delete configurations of plugins that have been added to your application."
     }
   },
   "pluginSteps": {
@@ -644,7 +648,21 @@
   "plugin": {
     "openzaak": {
       "title": "OpenZaak",
-      "description": "OpenZaak is a production-worthy API platform that implements the API standard for case-oriented working (the ZGW APIs)."
+      "description": "OpenZaak is a production-worthy API platform that implements the API standard for case-oriented working (the ZGW APIs).",
+      "functions": {
+        "create-zaak": "Create zaak",
+        "set-status": "Set status",
+        "set-resultaat": "Set result",
+        "set-besluit": "Set besluit"
+      }
+    }
+  },
+  "pluginManagement": {
+    "tableItemsText": "plugin configurations",
+    "labels": {
+      "pluginName": "Plugin name",
+      "identifier": "Identifier",
+      "configurationName": "Configuration name"
     }
   }
 }

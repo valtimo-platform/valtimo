@@ -633,6 +633,10 @@
     "connectors": {
       "title": "Connecties",
       "description": "Op deze pagina kun je connecties met externe diensten aanmaken, aanpassen of verwijderen."
+    },
+    "plugins": {
+      "title": "Plug-ins",
+      "description": "Op deze pagina kun je configuraties aanmaken, wijzigen en verwijderen van plug-ins die zijn toegevoegd aan je applicatie."
     }
   },
   "pluginSteps": {
@@ -644,7 +648,21 @@
   "plugin": {
     "openzaak": {
       "title": "OpenZaak",
-      "description": "OpenZaak is een productiewaardig API platform die de API-standaard voor zaakgericht werken implementeert (de ZGW-API’s)."
+      "description": "OpenZaak is een productiewaardig API platform die de API-standaard voor zaakgericht werken implementeert (de ZGW-API’s).",
+      "functions": {
+        "create-zaak": "Zaak aanmaken",
+        "set-status": "Status instellen",
+        "set-resultaat": "Resultaat instellen",
+        "set-besluit": "Besluit instellen"
+      }
+    }
+  },
+  "pluginManagement": {
+    "tableItemsText": "plug-in-configuraties",
+    "labels": {
+      "pluginName": "Plug-in-naam",
+      "identifier": "Identifier",
+      "configurationName": "Configuratienaam"
     }
   }
 }

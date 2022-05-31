@@ -15,6 +15,7 @@
  */
 
 import {Component, OnInit} from '@angular/core';
+import {UserInterfaceService} from '@valtimo/user-interface';
 
 @Component({
   selector: 'valtimo-page-header',
@@ -22,7 +23,9 @@ import {Component, OnInit} from '@angular/core';
   styleUrls: ['./page-header.component.css'],
 })
 export class PageHeaderComponent implements OnInit {
-  constructor() {}
+  readonly showPageHeader$ = this.userInterfaceService.showPageHeader$;
+
+  constructor(private readonly userInterfaceService: UserInterfaceService) {}
 
   ngOnInit() {}
 }

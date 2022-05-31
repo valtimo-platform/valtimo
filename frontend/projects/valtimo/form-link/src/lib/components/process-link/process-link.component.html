@@ -54,12 +54,10 @@
         ></v-stepper-footer-step>
         <v-stepper-footer-step
           nextButtonTranslationKey="pluginSteps.step2"
-          cancelButtonTranslationKey="pluginSteps.step0"
           [nextButtonEnabled]="(selectedPluginConfiguration$ | async) !== undefined"
         ></v-stepper-footer-step>
         <v-stepper-footer-step
           completeButtonTranslationKey="pluginSteps.complete"
-          cancelButtonTranslationKey="pluginSteps.step1"
           [completeButtonEnabled]="(selectedPluginFunction$ | async) !== undefined"
         ></v-stepper-footer-step>
       </v-stepper-footer>

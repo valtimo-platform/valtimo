@@ -18,10 +18,10 @@
   <div fxLayout="row wrap" fxLayoutGap="22px grid">
     <div fxFlex="33.3%" *ngFor="let pluginDefinition of pluginDefinitions">
       <v-card
-        [titleTranslationKey]="'plugin.' + pluginDefinition.identifier + '.title'"
-        [descriptionTranslationKey]="'plugin.' + pluginDefinition.identifier + '.description'"
+        [titleTranslationKey]="'plugin.' + pluginDefinition.key + '.title'"
+        [descriptionTranslationKey]="'plugin.' + pluginDefinition.key + '.description'"
         [selectable]="true"
-        [selected]="(selectedPluginDefinition$ | async)?.identifier === pluginDefinition.identifier"
+        [selected]="(selectedPluginDefinition$ | async)?.key === pluginDefinition.key"
         [fullHeight]="true"
         (selectEvent)="selectPlugin(pluginDefinition)"
         (deselectEvent)="deselectPlugin()"

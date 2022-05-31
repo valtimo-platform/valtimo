@@ -18,9 +18,9 @@
   <div fxLayout="row wrap" fxLayoutGap="22px grid">
     <div fxFlex="33.3%" *ngFor="let pluginConfiguration of pluginConfigurations">
       <v-card
-        [title]="pluginConfiguration.name"
+        [title]="pluginConfiguration.title"
         [selectable]="true"
-        [selected]="(selectedPluginConfiguration$ | async)?.id === pluginConfiguration.id"
+        [selected]="(selectedPluginConfiguration$ | async)?.key === pluginConfiguration.key"
         [fullHeight]="true"
         (selectEvent)="selectConfiguration(pluginConfiguration)"
         (deselectEvent)="deselectConfiguration()"

@@ -28,7 +28,19 @@ import {MenuItem} from '@valtimo/config';
       autoClose="true"
     >
     </i>
-    <span>{{ menuItem.title | translate }}</span>
+    <span
+      *ngIf="{
+        translation: menuItem.title | translate,
+        pageTranslation: 'pages.' + menuItem.title.toLowerCase() + '.title' | translate
+      } as obs"
+      >{{
+        (obs.pageTranslation !== 'pages.' + menuItem.title.toLowerCase() + '.title'
+          ? obs.pageTranslation
+          : '') ||
+          (obs.translation !== menuItem.title ? obs.translation : '') ||
+          menuItem.title
+      }}</span
+    >
   `,
 })
 export class MenuItemTextComponent {
