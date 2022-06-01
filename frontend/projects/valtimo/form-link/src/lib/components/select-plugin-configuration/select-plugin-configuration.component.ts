@@ -26,14 +26,8 @@ import {Observable, of} from 'rxjs';
   styleUrls: ['./select-plugin-configuration.component.scss'],
 })
 export class SelectPluginConfigurationComponent {
-  readonly pluginConfigurations$: Observable<Array<PluginConfiguration> | undefined> =
-    this.processLinkStateService.selectedPluginDefinition$.pipe(
-      switchMap(selectedDefinition =>
-        selectedDefinition
-          ? this.pluginService.getPluginConfigurations(selectedDefinition.key)
-          : of(undefined)
-      )
-    );
+  readonly pluginConfigurations$: Observable<Array<PluginConfiguration>> =
+    this.pluginService.getAllPluginConfigurations();
   readonly selectedPluginConfiguration$ = this.processLinkStateService.selectedPluginConfiguration$;
 
   constructor(
@@ -42,10 +36,12 @@ export class SelectPluginConfigurationComponent {
   ) {}
 
   selectConfiguration(configuration: PluginConfiguration): void {
+    this.processLinkStateService.selectPluginDefinition({key: configuration.definitionKey});
     this.processLinkStateService.selectPluginConfiguration(configuration);
   }
 
   deselectConfiguration(): void {
+    this.processLinkStateService.deselectPluginDefinition();
     this.processLinkStateService.deselectPluginConfiguration();
   }
 }
