@@ -25,18 +25,40 @@ import {delay} from 'rxjs/operators';
   providedIn: 'root',
 })
 export class PluginService {
-  private readonly OPEN_ZAAK_CONFIGURATION = {
-    definitionKey: 'openzaak',
-    key: '1ebdad87-3899-4ab7-b4ad-403237b17dbd',
-    title: 'Den Haag Open Zaak',
-  };
+  private readonly OPEN_ZAAK_CONFIGURATIONS = [
+    {
+      definitionKey: 'openzaak',
+      key: '1ebdad87-3899-4ab7-b4ad-403237b17dbd',
+      title: 'Den Haag Open Zaak 1',
+    },
+    {
+      definitionKey: 'openzaak',
+      key: '1ebdad87-3899-4ab7-b4ad-403237b17dbe',
+      title: 'Den Haag Open Zaak 2',
+    },
+    {
+      definitionKey: 'openzaak',
+      key: '1ebdad87-3899-4ab7-b4ad-403237b17dbf',
+      title: 'Den Haag Open Zaak 3',
+    },
+    {
+      definitionKey: 'openzaak',
+      key: '1ebdad87-3899-4ab7-b4ad-403237b17dbg',
+      title: 'Den Haag Open Zaak 4',
+    },
+    {
+      definitionKey: 'openzaak',
+      key: '1ebdad87-3899-4ab7-b4ad-403237b17dbh',
+      title: 'Den Haag Open Zaak 5',
+    },
+  ];
 
   getPluginDefinitions(): Observable<Array<PluginDefinition>> {
     return of([{key: 'openzaak'}]).pipe(delay(1500));
   }
 
   getPluginConfigurations(pluginDefinitionId: string): Observable<Array<PluginConfiguration>> {
-    return of([this.OPEN_ZAAK_CONFIGURATION]).pipe(delay(1500));
+    return of(this.OPEN_ZAAK_CONFIGURATIONS).pipe(delay(1500));
   }
 
   getPluginFunctions(pluginDefinitionId: string): Observable<Array<PluginFunction>> {
@@ -57,6 +79,6 @@ export class PluginService {
   }
 
   getAllPluginConfigurations(): Observable<Array<PluginConfiguration>> {
-    return of([this.OPEN_ZAAK_CONFIGURATION]).pipe(delay(1500));
+    return of(this.OPEN_ZAAK_CONFIGURATIONS).pipe(delay(1500));
   }
 }

@@ -26,6 +26,16 @@
       <v-title>{{ 'pages.plugins.title' | translate }}</v-title>
       <v-paragraph>{{ 'pages.plugins.description' | translate }}</v-paragraph>
     </v-page-header-introduction>
+    <v-page-header-actions>
+      <v-button
+        (clickEvent)="showAddModal()"
+        type="primary"
+        mdiIcon="plus"
+        [disabled]="obs.loading"
+      >
+        {{ 'pluginManagement.add' | translate }}
+      </v-button>
+    </v-page-header-actions>
   </v-page-header>
   <v-page-content>
     <v-table
@@ -39,3 +49,5 @@
     ></v-table>
   </v-page-content>
 </v-page-container>
+
+<valtimo-plugin-add-modal></valtimo-plugin-add-modal>

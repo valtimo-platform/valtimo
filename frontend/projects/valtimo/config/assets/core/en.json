@@ -659,10 +659,15 @@
   },
   "pluginManagement": {
     "tableItemsText": "plugin configurations",
+    "add": "Configure plugin",
     "labels": {
       "pluginName": "Plugin name",
       "identifier": "Identifier",
       "configurationName": "Configuration name"
+    },
+    "addSteps": {
+      "step0": "Choose your plugin",
+      "step1": "Enter data"
     }
   }
 }

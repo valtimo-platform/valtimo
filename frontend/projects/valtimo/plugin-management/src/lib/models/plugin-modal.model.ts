@@ -10,13 +10,6 @@
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.See the License for the specific language governing permissions and limitations under the License.
  */
 
-/*
- * Public API Surface of plugin-management
- */
+type PluginModal = 'add' | 'edit';
 
-export * from './lib/models';
-export * from './lib/services';
-export * from './lib/plugin-management.module';
-export * from './lib/components/plugin-management/plugin-management.component';
-export * from './lib/components/plugin-add-modal/plugin-add-modal.component';
-export * from './lib/components/plugin-add-select/plugin-add-select.component';
+export {PluginModal};

@@ -659,10 +659,15 @@
   },
   "pluginManagement": {
     "tableItemsText": "plug-in-configuraties",
+    "add": "Plug-in configureren",
     "labels": {
       "pluginName": "Plug-in-naam",
       "identifier": "Identifier",
       "configurationName": "Configuratienaam"
+    },
+    "addSteps": {
+      "step0": "Kies je plug-in",
+      "step1": "Gegevens invullen"
     }
   }
 }

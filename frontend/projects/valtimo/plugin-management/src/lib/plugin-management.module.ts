@@ -16,11 +16,23 @@ import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {FlexLayoutModule} from '@angular/flex-layout';
 import {PluginManagementComponent} from './components/plugin-management/plugin-management.component';
-import {PageModule, ParagraphModule, TitleModule, TableModule} from '@valtimo/user-interface';
+import {
+  PageModule,
+  ParagraphModule,
+  TitleModule,
+  TableModule,
+  StepperModule,
+  ModalModule,
+  ButtonModule,
+  CardModule,
+} from '@valtimo/user-interface';
+import {PluginAddModalComponent} from './components/plugin-add-modal/plugin-add-modal.component';
+import {PluginManagementStateService} from './services';
+import {PluginAddSelectComponent} from './components/plugin-add-select/plugin-add-select.component';
 
 @NgModule({
-  providers: [],
-  declarations: [PluginManagementComponent],
+  providers: [PluginManagementStateService],
+  declarations: [PluginManagementComponent, PluginAddModalComponent, PluginAddSelectComponent],
   imports: [
     CommonModule,
     PluginManagementRoutingModule,
@@ -30,7 +42,11 @@ import {PageModule, ParagraphModule, TitleModule, TableModule} from '@valtimo/us
     ParagraphModule,
     TitleModule,
     TableModule,
+    StepperModule,
+    ModalModule,
+    ButtonModule,
+    CardModule,
   ],
-  exports: [PluginManagementComponent],
+  exports: [PluginManagementComponent, PluginAddModalComponent, PluginAddSelectComponent],
 })
 export class PluginManagementModule {}

@@ -14,18 +14,10 @@
  * limitations under the License.
  */
 
-// "pluginManagement": {
-//   "labels": {
-//     "pluginName": "Plug-in-naam",
-//       "identifier": "Identifier",
-//       "configurationName": "Configuratienaam"
-//   }
-// }
-
 import {Component} from '@angular/core';
 import {BehaviorSubject, combineLatest} from 'rxjs';
 import {TableColumn} from '@valtimo/user-interface';
-import {PluginService} from '../../services';
+import {PluginManagementStateService, PluginService} from '../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {map, tap} from 'rxjs/operators';
 
@@ -36,6 +28,7 @@ import {map, tap} from 'rxjs/operators';
 })
 export class PluginManagementComponent {
   readonly loading$ = new BehaviorSubject<boolean>(true);
+
   readonly columns$ = new BehaviorSubject<Array<TableColumn>>([
     {
       labelTranslationKey: 'pluginManagement.labels.pluginName',
@@ -50,6 +43,7 @@ export class PluginManagementComponent {
       dataKey: 'title',
     },
   ]);
+
   readonly pluginConfigurations$ = combineLatest([
     this.pluginService.getAllPluginConfigurations(),
     this.translateService.stream('key'),
@@ -67,6 +61,11 @@ export class PluginManagementComponent {
 
   constructor(
     private readonly pluginService: PluginService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly stateService: PluginManagementStateService
   ) {}
+
+  showAddModal(): void {
+    this.stateService.showModal('add');
+  }
 }
