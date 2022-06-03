@@ -42,7 +42,12 @@
 </ng-container>
 
 <ng-template #modal let-appearing="appearing" let-disappearing="disappearing">
-  <div class="v-modal" (mouseenter)="modalMouseEnter()" (mouseleave)="modalMouseLeave()">
+  <div
+    class="v-modal"
+    (mouseenter)="modalMouseEnter()"
+    (mouseleave)="modalMouseLeave()"
+    [style.max-width.px]="maxWidthPx"
+  >
     <ng-container
       *ngTemplateOutlet="modalHeader; context: {appearing: appearing, disappearing: disappearing}"
     ></ng-container>

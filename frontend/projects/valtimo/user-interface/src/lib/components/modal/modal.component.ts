@@ -27,6 +27,7 @@ import {ModalService} from '../../services/modal.service';
 })
 export class ModalComponent implements OnInit {
   @Input() appearingDelayMs = 140;
+  @Input() maxWidthPx!: number;
 
   @Output() closeEvent: EventEmitter<any> = new EventEmitter();
 

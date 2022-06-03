@@ -34,6 +34,7 @@ import {
 import {NGXLogger} from 'ngx-logger';
 import {TranslateService} from '@ngx-translate/core';
 import {FormFlowService} from '../../services/form-flow.service';
+import {ConfigService} from '@valtimo/config';
 
 // eslint-disable-next-line no-var
 declare var $;
@@ -54,6 +55,7 @@ export class FormLinkModalComponent implements OnInit {
   public enteredCustomUrl: string | null = null;
   public enteredAngularState: string | null = null;
   public previousFormLink: FormAssociation | null = null;
+  public formFlowDisabled: boolean | null = null;
   private processDefinitionKey: string | null = null;
   private isListenersAdded = false;
   private isFormDefinitionSelected = false;
@@ -83,9 +85,11 @@ export class FormLinkModalComponent implements OnInit {
     private alertService: AlertService,
     private logger: NGXLogger,
     private ngZone: NgZone,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly configService: ConfigService
   ) {
     this.modalOptions = {};
+    this.formFlowDisabled = this.configService.config?.featureToggles?.disableFormFlow;
   }
 
   ngOnInit() {
@@ -98,9 +102,7 @@ export class FormLinkModalComponent implements OnInit {
         this.ngOnInit();
       }
     });
-    this.formFlowService.getFormFlowDefinitions().subscribe(formFlowDefinitions => {
-      this.formFlowDefinitions = formFlowDefinitions;
-    });
+    this.getFormFlowDefinitions();
   }
 
   public get selectedAssociationType() {
@@ -395,5 +397,13 @@ export class FormLinkModalComponent implements OnInit {
 
   clearSelectedFormFlowDefinition(): void {
     this.selectedFormFlowDefinition = null;
+  }
+
+  private getFormFlowDefinitions(): void {
+    if (!this.formFlowDisabled) {
+      this.formFlowService.getFormFlowDefinitions().subscribe(formFlowDefinitions => {
+        this.formFlowDefinitions = formFlowDefinitions;
+      });
+    }
   }
 }

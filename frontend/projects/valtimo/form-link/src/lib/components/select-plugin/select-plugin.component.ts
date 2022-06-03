@@ -16,8 +16,7 @@
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {take, tap} from 'rxjs/operators';
-import {ProcessLinkService} from '../../services/process-link.service';
-import {PluginDefinition} from '../../models';
+import {PluginDefinition, PluginService} from '@valtimo/plugin-management';
 import {ProcessLinkStateService} from '../../services/process-link-state.service';
 
 @Component({
@@ -26,11 +25,11 @@ import {ProcessLinkStateService} from '../../services/process-link-state.service
   styleUrls: ['./select-plugin.component.scss'],
 })
 export class SelectPluginComponent {
-  readonly pluginDefinitions$ = this.processLinkService.getPluginDefinitions();
+  readonly pluginDefinitions$ = this.pluginService.getPluginDefinitions();
   readonly selectedPluginDefinition$ = this.processLinkStateService.selectedPluginDefinition$;
 
   constructor(
-    private readonly processLinkService: ProcessLinkService,
+    private readonly pluginService: PluginService,
     private readonly processLinkStateService: ProcessLinkStateService
   ) {}
 

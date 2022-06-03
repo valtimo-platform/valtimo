@@ -20,8 +20,20 @@ import {MenuItem} from '@valtimo/config';
 @Component({
   selector: 'valtimo-submenu-item-text',
   template: `
-    <span [ngClass]="submenuItem.textClass">
-      {{ submenuItem.title | translate }}
+    <span
+      [ngClass]="submenuItem.textClass"
+      *ngIf="{
+        translation: submenuItem.title | translate,
+        pageTranslation: 'pages.' + submenuItem.title.toLowerCase() + '.title' | translate
+      } as obs"
+    >
+      {{
+        (obs.pageTranslation !== 'pages.' + submenuItem.title.toLowerCase() + '.title'
+          ? obs.pageTranslation
+          : '') ||
+          (obs.translation !== submenuItem.title ? obs.translation : '') ||
+          submenuItem.title
+      }}
       <ng-container *ngIf="!submenuItem.link">&gt;</ng-container>
     </span>
   `,

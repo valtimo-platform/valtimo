@@ -1,0 +1,50 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<v-stepper-container
+  (completeEvent)="complete()"
+  (cancelClickEvent)="hide()"
+  [disabled]="inputDisabled$ | async"
+  [returnToFirstStepSubject$]="returnToFirstStepSubject$"
+>
+  <v-modal #pluginAddModal (closeEvent)="hide()">
+    <div role="header">
+      <v-stepper-header></v-stepper-header>
+    </div>
+    <div role="content">
+      <v-stepper-content>
+        <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step0">
+          <valtimo-plugin-add-select></valtimo-plugin-add-select>
+        </v-stepper-step>
+        <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step1">
+          configure plugin
+        </v-stepper-step>
+      </v-stepper-content>
+    </div>
+    <div role="footer">
+      <v-stepper-footer>
+        <v-stepper-footer-step
+          nextButtonTranslationKey="pluginManagement.addSteps.step1"
+          [nextButtonEnabled]="selectedPluginDefinition$ | async"
+        ></v-stepper-footer-step>
+        <v-stepper-footer-step
+          nextButtonTranslationKey="pluginManagement.addSteps.step2"
+          [nextButtonEnabled]="false"
+        ></v-stepper-footer-step>
+      </v-stepper-footer>
+    </div>
+  </v-modal>
+</v-stepper-container>

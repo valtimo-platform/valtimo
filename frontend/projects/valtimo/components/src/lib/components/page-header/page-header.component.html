@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<div class="page-head">
+<div class="page-head" [ngClass]="{'page-head--hidden': (showPageHeader$ | async) === false}">
   <valtimo-page-title></valtimo-page-title>
   <valtimo-breadcrumb-navigation></valtimo-breadcrumb-navigation>
 </div>
