@@ -18,7 +18,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {Title} from '@angular/platform-browser';
 import {filter} from 'rxjs/operators';
-import {Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 import {NGXLogger} from 'ngx-logger';
 
@@ -28,9 +28,9 @@ import {NGXLogger} from 'ngx-logger';
   styleUrls: ['./page-title.component.css'],
 })
 export class PageTitleComponent implements OnInit, OnDestroy {
-  public title: string;
   public appTitle = 'Valtimo';
-  private routerSub = Subscription.EMPTY;
+  readonly translatedTitle$ = new BehaviorSubject<string>('');
+  private routerTranslateSubscription!: Subscription;
 
   constructor(
     private router: Router,
@@ -40,34 +40,44 @@ export class PageTitleComponent implements OnInit, OnDestroy {
     private logger: NGXLogger
   ) {}
 
-  private setTitle() {
-    this.title = this.activatedRoute.snapshot.firstChild.data.title;
-
-    // When loading lazy title is nested
-    if (!this.title) {
-      this.title = this.activatedRoute.snapshot.firstChild.children[0].data.title;
-    }
-    if (this.title) {
-      this.translateService.stream(this.title).subscribe((title: string) => {
-        this.logger.debug('PageTitle: setTitle translated async', title);
-        this.titleService.setTitle(this.appTitle + ' - ' + title);
-      });
-    } else {
-      this.logger.debug('PageTitle: setTitle default', this.appTitle);
-      this.titleService.setTitle(this.appTitle);
-    }
-  }
-
   ngOnInit() {
-    this.setTitle();
-    this.routerSub = this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe(event => {
-        this.setTitle();
-      });
+    this.openRouterTranslateSubscription();
   }
 
   ngOnDestroy() {
-    this.routerSub.unsubscribe();
+    this.routerTranslateSubscription?.unsubscribe();
+  }
+
+  private openRouterTranslateSubscription(): void {
+    this.routerTranslateSubscription = combineLatest([
+      this.router.events,
+      this.translateService.stream('key'),
+    ]).subscribe(() => {
+      const routeTitle =
+        this.activatedRoute?.snapshot?.firstChild?.data?.title ||
+        this.activatedRoute?.snapshot?.firstChild?.children[0]?.data?.title;
+      const routeTitleTranslation = this.translateService.instant(routeTitle);
+      const routeTitlePageTranslationString = `pages.${routeTitle.toLowerCase()}.title`;
+      const routeTitlePageTranslation = this.translateService.instant(
+        routeTitlePageTranslationString
+      );
+      const translatedRouteTitle =
+        routeTitle &&
+        ((routeTitlePageTranslation !== routeTitlePageTranslationString
+          ? routeTitlePageTranslation
+          : '') ||
+          (routeTitle !== routeTitleTranslation ? routeTitleTranslation : '') ||
+          routeTitle);
+
+      if (translatedRouteTitle) {
+        this.logger.debug('PageTitle: setTitle translated async', translatedRouteTitle);
+        this.translatedTitle$.next(translatedRouteTitle);
+        this.titleService.setTitle(this.appTitle + ' - ' + translatedRouteTitle);
+      } else {
+        this.logger.debug('PageTitle: setTitle default', this.appTitle);
+        this.translatedTitle$.next('');
+        this.titleService.setTitle(this.appTitle);
+      }
+    });
   }
 }

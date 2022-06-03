@@ -21,9 +21,11 @@
       <ng-container *ngTemplateOutlet="tableBody; context: {tableItems: obs.items}"></ng-container>
       <ng-container *ngTemplateOutlet="tableBodyLoading"></ng-container>
     </table>
-    <ng-container
-      *ngTemplateOutlet="paginationContainer; context: {tableItems: obs.items}"
-    ></ng-container>
+    <ng-container *ngIf="showPagination">
+      <ng-container
+        *ngTemplateOutlet="paginationContainer; context: {tableItems: obs.items}"
+      ></ng-container>
+    </ng-container>
   </div>
 </ng-container>
 

@@ -15,12 +15,18 @@
   -->
 
 <ng-container *ngIf="pluginFunctions$ | async as pluginFunctions; else loading">
-  <div fxLayout="row wrap" fxLayoutGap="22px grid">
+  <div
+    fxLayout="row wrap"
+    fxLayoutGap="22px grid"
+    *ngIf="{selectedPluginDefinition: selectedPluginDefinition$ | async} as obs"
+  >
     <div fxFlex="33.3%" *ngFor="let pluginFunction of pluginFunctions">
       <v-card
-        [title]="pluginFunction.name"
+        [titleTranslationKey]="
+          'plugin.' + obs.selectedPluginDefinition.key + '.functions.' + pluginFunction.key
+        "
         [selectable]="true"
-        [selected]="(selectedPluginFunction$ | async)?.identifier === pluginFunction.identifier"
+        [selected]="(selectedPluginFunction$ | async)?.key === pluginFunction.key"
         [fullHeight]="true"
         (selectEvent)="selectFunction(pluginFunction)"
         (deselectEvent)="deselectFunction()"

@@ -83,6 +83,7 @@ import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {ConnectorManagementModule} from '@valtimo/connector-management';
 import {CustomerModule} from '@valtimo/customer';
 import {ModalService, UserInterfaceService} from '@valtimo/user-interface';
+import {PluginManagementModule} from '@valtimo/plugin-management';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -153,6 +154,7 @@ export function tabsFactory() {
     DossierManagementModule,
     OpenZaakModule,
     CustomerModule,
+    PluginManagementModule,
     HttpClientModule,
     TranslateModule.forRoot({
       loader: {

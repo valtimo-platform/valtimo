@@ -72,6 +72,9 @@ export interface ValtimoConfig {
     [definitionNameId: string]: Array<CustomDossierHeaderItem>;
   };
   translationResources?: Array<ITranslationResource>;
+  featureToggles?: {
+    disableFormFlow?: boolean;
+  };
 }
 
 export enum UploadProvider {

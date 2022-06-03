@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import {PluginConfiguration, PluginDefinition, PluginFunction} from '../models';
+import {PluginConfiguration, PluginDefinition, PluginFunction} from '@valtimo/plugin-management';
 
 @Injectable({
   providedIn: 'root',

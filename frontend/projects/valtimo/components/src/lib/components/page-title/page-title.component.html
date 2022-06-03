@@ -14,4 +14,6 @@
   ~ limitations under the License.
   -->
 
-<h2 class="page-head-title" *ngIf="title !== ''"><span [innerHTML]="title | translate"></span></h2>
+<ng-container *ngIf="{title: translatedTitle$ | async} as obs">
+  <h2 class="page-head-title" *ngIf="obs.title !== ''"><span [innerHTML]="obs.title"></span></h2>
+</ng-container>
