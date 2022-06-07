@@ -1,0 +1,29 @@
+ba48890 - Updated version to 5.0.0
+587a05a - removed empty package.json from contract module
+61303a7 - Merge remote-tracking branch 'origin/rc/5.0.0-32.RC' into rc/5.0.0-32.RC
+9ed8071 - Merge branch 'main' into rc/5.0.0-32.RC
+4fc57b1 - Merge branch 'development' into rc/5.0.0-32.RC
+a5b2729 - add feature toggle for form flow (#106)
+ac8d48a - feat: feedback process link screen (#105)
+e04fbd7 - feat: show plugin definitions (#104)
+e2b4d09 - feat: plugin management module and configurations overview (#103)
+d5334b5 - - Added 'height: 70vh' to canvas for the DMN table viewer, so the DMN table doesn't get cut off halfway. (#102)
+9dbb224 - Updated version to 5.0.0-32.RC-SNAPSHOT
+6c079a4 - feat: remove contract lib (#101)
+dd03858 - Added translation keys for cancel buttons. (#100)
+a748f1e - feat: select plugin config and function (#99)
+d2c1d3d - feat: select plugin on process link page (#98)
+487f6fc - feat: add mock process link api (#97)
+ed5c9cc - feat: add mock process links page (#96)
+b8e92dd - fix: back button (#95)
+238a4a0 - #no-tp:  Support back button for FormFlow (#94)
+629c2ff - #35146 Verwerken ingezonden formulier voor taken van type 'form flow' (#93)
+5ffbd40 - Feature/35018 render form definition type form flow (#92)
+c3aafea - fix lint
+aef421f - fix: functional feedback ui design table (#91)
+45c7af6 - fix: functional feedback new ui design (#90)
+0b8d62a - refactor task detail modal comp.; check on link type in template (#87)
+2da7963 - #no-tp  update customer dependencies (#89)
+3154888 - #35254 Missende summary form geeft foutmelding (#88)
+fe55e13 - feat: get task process link type on open task (#86)
+d56148d - feat: implement new design (#84)
