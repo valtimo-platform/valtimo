@@ -32,9 +32,11 @@ export class DownloadService {
       // if download url is on backend use angular to get the content so access token is used
       this.http.get(url, {responseType: 'blob'}).subscribe(content => {
         const downloadUrl = window.URL.createObjectURL(content);
-        this.isFileTypeSupportedForNewWindow(name)
-          ? this.openBlobInNewTab(downloadUrl)
-          : this.openDownloadLink(downloadUrl, name)
+        if (this.isFileTypeSupportedForNewWindow(name)) {
+          this.openBlobInNewTab(downloadUrl);
+        } else {
+          this.openDownloadLink(downloadUrl, name);
+        }
       });
     } else {
       // download links to external services (like amazon s3) open in a new window
@@ -47,7 +49,7 @@ export class DownloadService {
    * close the tab again. The method used below will prevent this from happening.
    */
   private openBlobInNewTab(url: string) {
-    let newWindow = window.open('/');
+    const newWindow = window.open('/');
     if (newWindow.document.readyState === 'complete') {
       newWindow.location = url;
     } else {
