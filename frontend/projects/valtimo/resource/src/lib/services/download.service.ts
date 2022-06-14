@@ -32,11 +32,28 @@ export class DownloadService {
       // if download url is on backend use angular to get the content so access token is used
       this.http.get(url, {responseType: 'blob'}).subscribe(content => {
         const downloadUrl = window.URL.createObjectURL(content);
-        this.openDownloadLink(downloadUrl, name);
+        this.isFileTypeSupportedForNewWindow(name)
+          ? this.openBlobInNewTab(downloadUrl)
+          : this.openDownloadLink(downloadUrl, name)
       });
     } else {
       // download links to external services (like amazon s3) open in a new window
       this.openDownloadLink(url, name);
+    }
+  }
+
+  /**
+   * A window.open won't work for blobs because ad blocker extensions will immediately
+   * close the tab again. The method used below will prevent this from happening.
+   */
+  private openBlobInNewTab(url: string) {
+    let newWindow = window.open('/');
+    if (newWindow.document.readyState === 'complete') {
+      newWindow.location = url;
+    } else {
+      newWindow.onload = () => {
+        newWindow.location = url;
+      }
     }
   }
 
@@ -47,5 +64,13 @@ export class DownloadService {
     link.target = '_blank';
     link.click();
     link.remove();
+  }
+
+  private isFileTypeSupportedForNewWindow(name: string): boolean {
+    const supportedFileTypes = ['doc', 'docx', 'rtf', 'pdf', 'jpg', 'png', 'svg'];
+
+    return supportedFileTypes.some(function (suffix) {
+      return name.endsWith(suffix);
+    })
   }
 }
