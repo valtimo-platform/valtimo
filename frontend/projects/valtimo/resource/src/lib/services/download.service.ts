@@ -72,7 +72,7 @@ export class DownloadService {
     const supportedFileTypes = ['doc', 'docx', 'rtf', 'pdf', 'jpg', 'png', 'svg'];
 
     return supportedFileTypes.some(function (suffix) {
-      return name.endsWith(suffix);
+      return name.toUpperCase().endsWith(suffix.toUpperCase());
     })
   }
 }
