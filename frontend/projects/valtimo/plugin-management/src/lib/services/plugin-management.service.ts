@@ -110,8 +110,8 @@ export class PluginManagementService {
     pluginConfigurations$: Observable<Array<PluginConfiguration>>
   ): Observable<Array<PluginConfigurationWithLogo>> {
     return combineLatest([pluginConfigurations$, this.pluginService.pluginSpecifications$]).pipe(
-      map(([pluginConfigurations, pluginSpecifications]) => {
-        return pluginConfigurations?.map(pluginConfiguration => {
+      map(([pluginConfigurations, pluginSpecifications]) =>
+        pluginConfigurations?.map(pluginConfiguration => {
           const pluginSpecification = pluginSpecifications.find(
             specification => specification.pluginId === pluginConfiguration.definitionKey
           );
@@ -124,8 +124,8 @@ export class PluginManagementService {
               ),
             }),
           };
-        });
-      })
+        })
+      )
     );
   }
 }

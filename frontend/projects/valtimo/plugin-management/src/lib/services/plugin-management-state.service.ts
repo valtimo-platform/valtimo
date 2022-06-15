@@ -35,8 +35,8 @@ export class PluginManagementStateService {
   private readonly _pluginDefinitionsWithLogos$: Observable<
     Array<PluginDefinitionWithLogo> | undefined
   > = combineLatest([this._pluginDefinitions$, this.pluginService.pluginSpecifications$]).pipe(
-    map(([pluginDefinitions, pluginSpecifications]) => {
-      return pluginDefinitions?.map(pluginDefinition => {
+    map(([pluginDefinitions, pluginSpecifications]) =>
+      pluginDefinitions?.map(pluginDefinition => {
         const pluginSpecification = pluginSpecifications.find(
           specification => specification.pluginId === pluginDefinition.key
         );
@@ -49,8 +49,8 @@ export class PluginManagementStateService {
             ),
           }),
         };
-      });
-    })
+      })
+    )
   );
   private readonly _selectedPluginDefinition$ = new BehaviorSubject<PluginDefinition | undefined>(
     undefined
