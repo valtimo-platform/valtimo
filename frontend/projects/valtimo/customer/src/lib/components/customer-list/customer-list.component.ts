@@ -145,9 +145,9 @@ export class CustomerListComponent {
     this.familyName$.next(familyName);
   }
 
-  public rowClick(customer: Customer) {
+  public rowClick(customer: MappedCustomer) {
     const config = this.configService.config;
-    const bsn = customer?.burgerservicenummer;
+    const bsn = customer?.citizenServiceNumber;
 
     if (bsn && config?.featureToggles?.enableHackathonCasesPage) {
       this.router.navigate([`/klanten/klant/${bsn}`]);
