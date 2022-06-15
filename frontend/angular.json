@@ -1570,6 +1570,43 @@
           }
         }
       }
+    },
+    "@valtimo/plugin": {
+      "projectType": "library",
+      "root": "projects/valtimo/plugin",
+      "sourceRoot": "projects/valtimo/plugin/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/valtimo/plugin/tsconfig.lib.json",
+            "project": "projects/valtimo/plugin/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/plugin/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/valtimo/plugin/src/test.ts",
+            "tsConfig": "projects/valtimo/plugin/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/plugin/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/plugin/src/**/*.ts",
+              "projects/valtimo/plugin/src/**/*.html"
+            ]
+          }
+        }
+      }
     }
   },
   "defaultProject": "valtimo-angular-console",

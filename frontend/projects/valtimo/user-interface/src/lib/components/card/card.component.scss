@@ -63,3 +63,32 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+::ng-deep {
+  .v-card {
+    div[role='header'] {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: calc(100% + (var(--v-card-padding-inline) * 2));
+      background-color: var(--v-card-header-bg-color);
+      margin-block-start: calc(0px - var(--v-card-padding-block-start));
+      margin-inline-start: calc(0px - var(--v-card-padding-inline));
+      padding-inline-start: var(--v-card-header-padding-inline);
+      padding-inline-end: var(--v-card-header-padding-inline);
+      padding-block-start: var(--v-card-header-padding-block);
+      padding-block-end: var(--v-card-header-padding-block);
+      margin-block-end: var(--v-card-header-margin-block-end);
+      border-bottom: var(--v-card-header-border);
+      transition: var(--v-card-transition);
+    }
+  }
+
+  .v-card--selectable {
+    &:hover {
+      div[role='header'] {
+        background-color: var(--v-card-header-hover-bg-color);
+      }
+    }
+  }
+}

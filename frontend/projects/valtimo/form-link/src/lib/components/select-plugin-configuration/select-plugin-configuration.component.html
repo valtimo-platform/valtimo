@@ -24,7 +24,15 @@
         [fullHeight]="true"
         (selectEvent)="selectConfiguration(pluginConfiguration)"
         (deselectEvent)="deselectConfiguration()"
-      ></v-card>
+      >
+        <div *ngIf="pluginConfiguration.pluginLogoBase64" role="header">
+          <img
+            class="plugin-configuration-logo"
+            [title]="'title' | pluginTranslate: pluginConfiguration.key | async"
+            [src]="pluginConfiguration.pluginLogoBase64"
+          />
+        </div>
+      </v-card>
     </div>
   </div>
 </ng-container>

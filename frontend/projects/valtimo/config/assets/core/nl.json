@@ -643,19 +643,11 @@
     "step0": "Kies je plugin",
     "step1": "Kies je configuratie",
     "step2": "Kies je functie",
+    "step3": "Functie configureren",
     "complete": "Pluginfunctie koppelen"
   },
   "plugin": {
-    "openzaak": {
-      "title": "OpenZaak",
-      "description": "OpenZaak is een productiewaardig API platform die de API-standaard voor zaakgericht werken implementeert (de ZGW-API’s).",
-      "functions": {
-        "create-zaak": "Zaak aanmaken",
-        "set-status": "Status instellen",
-        "set-resultaat": "Resultaat instellen",
-        "set-besluit": "Besluit instellen"
-      }
-    }
+    "noConfigurationComponent": "Er is geen configuratie beschikbaar voor deze plug-in."
   },
   "pluginManagement": {
     "tableItemsText": "plug-in-configuraties",

@@ -20,7 +20,7 @@ import {
   PluginDefinition,
   PluginConfiguration,
   PluginFunction,
-  PluginService,
+  PluginManagementService,
 } from '@valtimo/plugin-management';
 import {ProcessLinkStateService} from '../../services/process-link-state.service';
 import {Observable, of} from 'rxjs';
@@ -35,7 +35,7 @@ export class SelectPluginFunctionComponent {
     this.processLinkStateService.selectedPluginDefinition$.pipe(
       switchMap(selectedDefinition =>
         selectedDefinition
-          ? this.pluginService.getPluginFunctions(selectedDefinition.key)
+          ? this.pluginManagementService.getPluginFunctions(selectedDefinition.key)
           : of(undefined)
       )
     );
@@ -43,7 +43,7 @@ export class SelectPluginFunctionComponent {
   readonly selectedPluginFunction$ = this.processLinkStateService.selectedPluginFunction$;
 
   constructor(
-    private readonly pluginService: PluginService,
+    private readonly pluginManagementService: PluginManagementService,
     private readonly processLinkStateService: ProcessLinkStateService
   ) {}
 

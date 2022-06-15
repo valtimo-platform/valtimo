@@ -25,5 +25,6 @@ export * from './lib/components/process-link/process-link.component';
 export * from './lib/components/select-plugin/select-plugin.component';
 export * from './lib/components/select-plugin-configuration/select-plugin-configuration.component';
 export * from './lib/components/select-plugin-function/select-plugin-function.component';
+export * from './lib/components/plugin-function-configuration/plugin-function-configuration.component';
 export * from './lib/form-link.module';
 export * from './lib/models';

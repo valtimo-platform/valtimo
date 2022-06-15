@@ -16,7 +16,12 @@
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {switchMap, take, tap} from 'rxjs/operators';
-import {PluginDefinition, PluginConfiguration, PluginService} from '@valtimo/plugin-management';
+import {
+  PluginDefinition,
+  PluginConfiguration,
+  PluginManagementService,
+  PluginConfigurationWithLogo,
+} from '@valtimo/plugin-management';
 import {ProcessLinkStateService} from '../../services/process-link-state.service';
 import {Observable, of} from 'rxjs';
 
@@ -26,12 +31,13 @@ import {Observable, of} from 'rxjs';
   styleUrls: ['./select-plugin-configuration.component.scss'],
 })
 export class SelectPluginConfigurationComponent {
-  readonly pluginConfigurations$: Observable<Array<PluginConfiguration>> =
-    this.pluginService.getAllPluginConfigurations();
+  readonly pluginConfigurations$: Observable<Array<PluginConfigurationWithLogo>> =
+    this.pluginManagementService.getAllPluginConfigurationsWithLogos();
+
   readonly selectedPluginConfiguration$ = this.processLinkStateService.selectedPluginConfiguration$;
 
   constructor(
-    private readonly pluginService: PluginService,
+    private readonly pluginManagementService: PluginManagementService,
     private readonly processLinkStateService: ProcessLinkStateService
   ) {}
 

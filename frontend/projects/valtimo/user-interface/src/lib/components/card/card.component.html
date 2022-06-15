@@ -23,6 +23,7 @@
   }"
   (click)="click()"
 >
+  <ng-content select="div[role=header]"></ng-content>
   <div class="v-card__body">
     <ng-container *ngTemplateOutlet="cardTitle"></ng-container>
     <ng-container *ngTemplateOutlet="cardTitleLoading"></ng-container>

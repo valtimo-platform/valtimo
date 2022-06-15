@@ -643,18 +643,11 @@
     "step0": "Wählen Sie Ihr Plugin aus",
     "step1": "Wählen Sie Ihre Konfiguration",
     "step2": "Wählen Sie Ihre Funktion",
+    "step3": "Funktion konfigurieren",
     "complete": "Plugin-Funktion verbinden"
   },
   "plugin": {
-    "openzaak": {
-      "title": "OpenZaak",
-      "description": "OpenZaak ist eine produktionstaugliche API-Plattform, die den API-Standard für fallorientiertes Arbeiten (die ZGW-APIs) implementiert.",
-      "functions": {
-        "create-zaak": "Zaak erstellen",
-        "set-status": "Status festlegen",
-        "set-resultaat": "Ergebnis einstellen",
-        "set-besluit": "Besluit setzen"
-      }
+    "noConfigurationComponent": "Für dieses Plugin ist keine Konfiguration verfügbar."
     }
   },
   "pluginManagement": {

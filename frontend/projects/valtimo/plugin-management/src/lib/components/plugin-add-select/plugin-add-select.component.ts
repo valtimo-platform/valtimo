@@ -17,10 +17,10 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {ConnectorProperties, ConnectorType} from '@valtimo/config';
-import {take} from 'rxjs/operators';
+import {take, map} from 'rxjs/operators';
 import {AlertService} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
-import {PluginManagementStateService, PluginService} from '../../services';
+import {PluginManagementStateService, PluginManagementService} from '../../services';
 import {PluginDefinition} from '../../models';
 
 @Component({
@@ -31,12 +31,12 @@ import {PluginDefinition} from '../../models';
 export class PluginAddSelectComponent implements OnInit, OnDestroy {
   readonly selectedPluginDefinition$ = this.stateService.selectedPluginDefinition$;
   readonly disabled$ = this.stateService.inputDisabled$;
-  readonly pluginDefinitions$ = this.stateService.pluginDefinitions$;
+  readonly pluginDefinitionsWithLogos$ = this.stateService.pluginDefinitionsWithLogos$;
 
   private refreshSubscription!: Subscription;
 
   constructor(
-    private readonly pluginService: PluginService,
+    private readonly pluginManagementService: PluginManagementService,
     private readonly stateService: PluginManagementStateService,
     private readonly translateService: TranslateService
   ) {}
@@ -59,7 +59,7 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
   }
 
   private getPluginDefinitions(): void {
-    this.pluginService.getPluginDefinitions().subscribe(pluginDefinitions => {
+    this.pluginManagementService.getPluginDefinitions().subscribe(pluginDefinitions => {
       this.stateService.setPluginDefinitions(pluginDefinitions);
     });
   }

@@ -24,11 +24,18 @@ import {FormLinkModalComponent} from './components/form-link-modal/form-link-mod
 import {ModalModule, SearchableDropdownSelectModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {ProcessLinkComponent} from './components/process-link/process-link.component';
-import {StepperModule, ModalModule as VModalModule, CardModule} from '@valtimo/user-interface';
+import {
+  StepperModule,
+  ModalModule as VModalModule,
+  CardModule,
+  ParagraphModule,
+} from '@valtimo/user-interface';
 import {SelectPluginComponent} from './components/select-plugin/select-plugin.component';
 import {SelectPluginConfigurationComponent} from './components/select-plugin-configuration/select-plugin-configuration.component';
 import {SelectPluginFunctionComponent} from './components/select-plugin-function/select-plugin-function.component';
 import {FlexLayoutModule} from '@angular/flex-layout';
+import {PluginTranslatePipeModule} from '@valtimo/plugin';
+import {PluginFunctionConfigurationComponent} from './components/plugin-function-configuration/plugin-function-configuration.component';
 
 @NgModule({
   declarations: [
@@ -39,6 +46,7 @@ import {FlexLayoutModule} from '@angular/flex-layout';
     SelectPluginComponent,
     SelectPluginConfigurationComponent,
     SelectPluginFunctionComponent,
+    PluginFunctionConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -51,6 +59,8 @@ import {FlexLayoutModule} from '@angular/flex-layout';
     VModalModule,
     CardModule,
     FlexLayoutModule,
+    PluginTranslatePipeModule,
+    ParagraphModule,
   ],
   exports: [
     FormLinkComponent,
@@ -58,6 +68,7 @@ import {FlexLayoutModule} from '@angular/flex-layout';
     SelectPluginComponent,
     SelectPluginConfigurationComponent,
     SelectPluginFunctionComponent,
+    PluginFunctionConfigurationComponent,
   ],
 })
 export class FormLinkModule {}

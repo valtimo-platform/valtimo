@@ -85,7 +85,9 @@
       "@valtimo/customer": ["dist/valtimo/customer"],
       "@valtimo/customer/*": ["dist/valtimo/customer/*"],
       "@valtimo/plugin-management": ["dist/valtimo/plugin-management"],
-      "@valtimo/plugin-management/*": ["dist/valtimo/plugin-management/*"]
+      "@valtimo/plugin-management/*": ["dist/valtimo/plugin-management/*"],
+      "@valtimo/plugin": ["dist/valtimo/plugin"],
+      "@valtimo/plugin/*": ["dist/valtimo/plugin/*"]
     }
   },
   "files": [],
@@ -314,6 +316,12 @@
     },
     {
       "path": "./projects/valtimo/plugin-management/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/plugin/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/plugin/tsconfig.spec.json"
     }
   ]
 }

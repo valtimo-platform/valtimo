@@ -11,9 +11,11 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import {take} from 'rxjs/operators';
-import {PluginDefinition, PluginModal} from '../models';
+import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
+import {map, take} from 'rxjs/operators';
+import {PluginDefinition, PluginDefinitionWithLogo, PluginModal} from '../models';
+import {PluginService, PluginSpecification} from '@valtimo/plugin';
+import {DomSanitizer} from '@angular/platform-browser';
 
 @Injectable({
   providedIn: 'root',
@@ -30,9 +32,44 @@ export class PluginManagementStateService {
   private readonly _pluginDefinitions$ = new BehaviorSubject<Array<PluginDefinition> | undefined>(
     undefined
   );
+  private readonly _pluginDefinitionsWithLogos$: Observable<
+    Array<PluginDefinitionWithLogo> | undefined
+  > = combineLatest([this._pluginDefinitions$, this.pluginService.pluginSpecifications$]).pipe(
+    map(([pluginDefinitions, pluginSpecifications]) => {
+      return pluginDefinitions?.map(pluginDefinition => {
+        const pluginSpecification = pluginSpecifications.find(
+          specification => specification.pluginId === pluginDefinition.key
+        );
+
+        return {
+          ...pluginDefinition,
+          ...(pluginSpecification?.pluginLogoBase64 && {
+            pluginLogoBase64: this.sanitizer.bypassSecurityTrustResourceUrl(
+              pluginSpecification?.pluginLogoBase64
+            ),
+          }),
+        };
+      });
+    })
+  );
   private readonly _selectedPluginDefinition$ = new BehaviorSubject<PluginDefinition | undefined>(
     undefined
   );
+  private readonly _selectedPluginSpecification$: Observable<PluginSpecification | null> =
+    combineLatest([this.pluginService.pluginSpecifications$, this.selectedPluginDefinition$]).pipe(
+      map(([pluginSpecifications, selectedPluginDefinition]) => {
+        const selectedPluginSpecification = pluginSpecifications?.find(
+          specification => specification.pluginId === selectedPluginDefinition?.key
+        );
+
+        return selectedPluginSpecification || null;
+      })
+    );
+
+  constructor(
+    private readonly pluginService: PluginService,
+    private readonly sanitizer: DomSanitizer
+  ) {}
 
   get showModal$(): Observable<PluginModal> {
     return this._showModal$.asObservable();
@@ -54,6 +91,10 @@ export class PluginManagementStateService {
     return this._pluginDefinitions$.asObservable();
   }
 
+  get pluginDefinitionsWithLogos$(): Observable<Array<PluginDefinitionWithLogo> | undefined> {
+    return this._pluginDefinitionsWithLogos$;
+  }
+
   get selectedPluginDefinition$(): Observable<PluginDefinition | undefined> {
     return this._selectedPluginDefinition$.asObservable();
   }
@@ -72,6 +113,10 @@ export class PluginManagementStateService {
 
   get hideModalSaveButton$(): Observable<boolean> {
     return this._hideModalSaveButton$.asObservable();
+  }
+
+  get selectedPluginSpecification$(): Observable<PluginSpecification | null> {
+    return this._selectedPluginSpecification$;
   }
 
   showModal(modalType: PluginModal): void {

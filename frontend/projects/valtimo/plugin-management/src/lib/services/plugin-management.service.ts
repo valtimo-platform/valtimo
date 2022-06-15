@@ -16,15 +16,22 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable, of} from 'rxjs';
-import {PluginConfiguration, PluginDefinition, PluginFunction} from '../models';
+import {combineLatest, Observable, of} from 'rxjs';
+import {
+  PluginConfiguration,
+  PluginConfigurationWithLogo,
+  PluginDefinition,
+  PluginFunction,
+} from '../models';
 import {ConfigService} from '@valtimo/config';
-import {delay} from 'rxjs/operators';
+import {delay, map} from 'rxjs/operators';
+import {PluginService} from '@valtimo/plugin';
+import {DomSanitizer} from '@angular/platform-browser';
 
 @Injectable({
   providedIn: 'root',
 })
-export class PluginService {
+export class PluginManagementService {
   private readonly OPEN_ZAAK_CONFIGURATIONS = [
     {
       definitionKey: 'openzaak',
@@ -53,12 +60,25 @@ export class PluginService {
     },
   ];
 
+  constructor(
+    private readonly pluginService: PluginService,
+    private readonly sanitizer: DomSanitizer
+  ) {}
+
   getPluginDefinitions(): Observable<Array<PluginDefinition>> {
     return of([{key: 'openzaak'}]).pipe(delay(1500));
   }
 
   getPluginConfigurations(pluginDefinitionId: string): Observable<Array<PluginConfiguration>> {
     return of(this.OPEN_ZAAK_CONFIGURATIONS).pipe(delay(1500));
+  }
+
+  getPluginConfigurationsWithLogos(
+    pluginDefinitionId: string
+  ): Observable<Array<PluginConfiguration>> {
+    return this.returnPluginConfigurationsWithLogos(
+      this.getPluginConfigurations(pluginDefinitionId)
+    );
   }
 
   getPluginFunctions(pluginDefinitionId: string): Observable<Array<PluginFunction>> {
@@ -80,5 +100,32 @@ export class PluginService {
 
   getAllPluginConfigurations(): Observable<Array<PluginConfiguration>> {
     return of(this.OPEN_ZAAK_CONFIGURATIONS).pipe(delay(1500));
+  }
+
+  getAllPluginConfigurationsWithLogos(): Observable<Array<PluginConfiguration>> {
+    return this.returnPluginConfigurationsWithLogos(this.getAllPluginConfigurations());
+  }
+
+  private returnPluginConfigurationsWithLogos(
+    pluginConfigurations$: Observable<Array<PluginConfiguration>>
+  ): Observable<Array<PluginConfigurationWithLogo>> {
+    return combineLatest([pluginConfigurations$, this.pluginService.pluginSpecifications$]).pipe(
+      map(([pluginConfigurations, pluginSpecifications]) => {
+        return pluginConfigurations?.map(pluginConfiguration => {
+          const pluginSpecification = pluginSpecifications.find(
+            specification => specification.pluginId === pluginConfiguration.definitionKey
+          );
+
+          return {
+            ...pluginConfiguration,
+            ...(pluginSpecification?.pluginLogoBase64 && {
+              pluginLogoBase64: this.sanitizer.bypassSecurityTrustResourceUrl(
+                pluginSpecification?.pluginLogoBase64
+              ),
+            }),
+          };
+        });
+      })
+    );
   }
 }

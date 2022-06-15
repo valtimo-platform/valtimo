@@ -29,7 +29,7 @@
   (cancelClickEvent)="hide()"
   [returnToFirstStepSubject$]="returnToFirstStepSubject$"
 >
-  <v-modal #pluginModal (closeEvent)="hide()">
+  <v-modal #pluginModal (closeEvent)="hide()" [maxWidthPx]="750">
     <div role="header">
       <v-stepper-header></v-stepper-header>
     </div>
@@ -41,6 +41,9 @@
         <v-stepper-step titleTranslationKey="pluginSteps.step2">
           <valtimo-select-plugin-function></valtimo-select-plugin-function>
         </v-stepper-step>
+        <v-stepper-step titleTranslationKey="pluginSteps.step3">
+          <valtimo-plugin-function-configuration></valtimo-plugin-function-configuration>
+        </v-stepper-step>
       </v-stepper-content>
     </div>
     <div role="footer">
@@ -50,8 +53,12 @@
           [nextButtonEnabled]="(selectedPluginConfiguration$ | async) !== undefined"
         ></v-stepper-footer-step>
         <v-stepper-footer-step
+          nextButtonTranslationKey="pluginSteps.step3"
+          [nextButtonEnabled]="(selectedPluginFunction$ | async) !== undefined"
+        ></v-stepper-footer-step>
+        <v-stepper-footer-step
           completeButtonTranslationKey="pluginSteps.complete"
-          [completeButtonEnabled]="(selectedPluginFunction$ | async) !== undefined"
+          [completeButtonEnabled]="true"
         ></v-stepper-footer-step>
       </v-stepper-footer>
     </div>
