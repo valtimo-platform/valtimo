@@ -33,7 +33,12 @@
 
 <ng-template #list let-customers="customers" let-fields="fields">
   <valtimo-widget>
-    <valtimo-list [items]="customers" [fields]="fields" [header]="true">
+    <valtimo-list
+      [items]="customers"
+      [fields]="fields"
+      [header]="true"
+      (rowClicked)="rowClick($event)"
+    >
       <div header>
         <h3 class="list-header-title">{{ 'customers.title' | translate }}</h3>
         <h5 class="list-header-description">{{ 'customers.subtitle' | translate }}</h5>

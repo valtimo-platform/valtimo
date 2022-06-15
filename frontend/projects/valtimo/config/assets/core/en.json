@@ -347,6 +347,7 @@
     "toggleMenu": "Menu",
     "typeToSearch": "Type here to search",
     "noSearchResults": "No results",
+    "noResults": "No results",
     "loading": "Loading...",
     "edit": "Edit",
     "noItemsFound": "No items found",
@@ -637,6 +638,10 @@
     "plugins": {
       "title": "Plugins",
       "description": "On this page you can create, change and delete configurations of plugins that have been added to your application."
+    },
+    "customercases": {
+      "title": "Cases",
+      "description": "On this page you can view the cases of a specific customer."
     }
   },
   "pluginSteps": {
@@ -660,6 +665,14 @@
     "addSteps": {
       "step0": "Choose your plugin",
       "step1": "Enter data"
+    }
+  },
+  "customerCases": {
+    "tableItemsText": "cases",
+    "labels": {
+      "zaakNummer": "Case number",
+      "zaakStatus": "Status",
+      "zaakType": "Type"
     }
   }
 }

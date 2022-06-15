@@ -20,6 +20,9 @@
       <ng-container *ngTemplateOutlet="tableHead"></ng-container>
       <ng-container *ngTemplateOutlet="tableBody; context: {tableItems: obs.items}"></ng-container>
       <ng-container *ngTemplateOutlet="tableBodyLoading"></ng-container>
+      <ng-container
+        *ngTemplateOutlet="tableBodyNoResults; context: {tableItems: obs.items}"
+      ></ng-container>
     </table>
     <ng-container *ngIf="showPagination">
       <ng-container
@@ -41,10 +44,26 @@
 </ng-template>
 
 <ng-template #tableBody let-tableItems="tableItems">
-  <tbody class="v-table__body" *ngIf="!loading && tableItems">
+  <tbody class="v-table__body" *ngIf="!loading && tableItems && tableItems?.length > 0">
     <tr *ngFor="let item of tableItems" class="v-table__row">
       <ng-container *ngTemplateOutlet="tableCell; context: {item: item}"></ng-container>
       <ng-container *ngTemplateOutlet="tableEditButtonCell; context: {item: item}"></ng-container>
+    </tr>
+  </tbody>
+</ng-template>
+
+<ng-template #tableBodyNoResults let-tableItems="tableItems">
+  <tbody class="v-table__body" *ngIf="!loading && tableItems && tableItems?.length === 0">
+    <tr class="v-table__row">
+      <td class="v-table__cell" *ngFor="let column of columns; let i = index">
+        <span *ngIf="i === 0" class="v-table__cell-content">
+          {{
+            noResultsTranslationKey
+              ? (noResultsTranslationKey | translate)
+              : ('interface.noResults' | translate)
+          }}
+        </span>
+      </td>
     </tr>
   </tbody>
 </ng-template>

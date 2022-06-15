@@ -347,6 +347,7 @@
     "toggleMenu": "Menu",
     "typeToSearch": "Typ hier om te zoeken",
     "noSearchResults": "Geen resultaten",
+    "noResults": "Geen resultaten",
     "loading": "Aan het laden...",
     "edit": "Aanpassen",
     "noItemsFound": "Geen items gevonden",
@@ -637,6 +638,10 @@
     "plugins": {
       "title": "Plug-ins",
       "description": "Op deze pagina kun je configuraties aanmaken, wijzigen en verwijderen van plug-ins die zijn toegevoegd aan je applicatie."
+    },
+    "customercases": {
+      "title": "Zaken",
+      "description": "Op deze pagina kun je de zaken van een specifieke klant inzien."
     }
   },
   "pluginSteps": {
@@ -660,6 +665,14 @@
     "addSteps": {
       "step0": "Kies je plug-in",
       "step1": "Gegevens invullen"
+    }
+  },
+  "customerCases": {
+    "tableItemsText": "zaken",
+    "labels": {
+      "zaakNummer": "Zaaknummer",
+      "zaakStatus": "Status",
+      "zaakType": "Type"
     }
   }
 }

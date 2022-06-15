@@ -16,9 +16,10 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
-import {Customer, CustomerSearchRequest} from '../models';
+import {Customer, CustomerCase, CustomerSearchRequest} from '../models';
+import {delay} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -35,5 +36,28 @@ export class CustomerService {
       `${this.valtimoEndpointUri}haalcentraal/personen`,
       request
     );
+  }
+
+  getCustomerCases(bsn: string): Observable<Array<CustomerCase>> {
+    return of([
+      {
+        zaakNummer: 'ZAAK-2022-0000000893',
+        zaakStatus: 'In behandeling',
+        zaakType: 'ZaakPbacA',
+        zaakId: 'ad0ad39c-fb87-4e34-b86d-038282d15839',
+      },
+      {
+        zaakNummer: 'ZAAK-2022-0000000894',
+        zaakStatus: 'In behandeling',
+        zaakType: 'ZaakPbacAa',
+        zaakId: 'ad0ad39c-fb87-4e34-b86d-038282d15833',
+      },
+      {
+        zaakNummer: 'ZAAK-2022-0000000894',
+        zaakStatus: 'In behandeling',
+        zaakType: 'ZaakPbacA3',
+        zaakId: 'ad0ad39c-fb87-4e34-b86d-038282d15836',
+      },
+    ]).pipe(delay(1500));
   }
 }

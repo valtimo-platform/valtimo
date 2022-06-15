@@ -17,3 +17,4 @@
  */
 
 export * from './customer';
+export * from './case';

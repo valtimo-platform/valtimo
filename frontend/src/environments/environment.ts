@@ -171,6 +171,10 @@ export const environment: ValtimoConfig = {
       },
     ],
   },
+  featureToggles: {
+    disableFormFlow: true,
+    enableHackathonCasesPage: true,
+  },
 };
 
 /*

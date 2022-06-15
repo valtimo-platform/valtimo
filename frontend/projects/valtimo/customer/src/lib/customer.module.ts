@@ -21,6 +21,8 @@ import {CustomerRoutingModule} from './customer-routing.module';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {FormsModule} from '@angular/forms';
+import {CasesListComponent} from './components/cases-list/cases-list.component';
+import {PageModule, ParagraphModule, TableModule, TitleModule} from '@valtimo/user-interface';
 
 @NgModule({
   imports: [
@@ -32,8 +34,12 @@ import {FormsModule} from '@angular/forms';
     TranslateModule,
     FilterSidebarModule,
     FormsModule,
+    PageModule,
+    TitleModule,
+    ParagraphModule,
+    TableModule,
   ],
-  declarations: [CustomerListComponent],
-  exports: [CustomerListComponent],
+  declarations: [CustomerListComponent, CasesListComponent],
+  exports: [CustomerListComponent, CasesListComponent],
 })
 export class CustomerModule {}

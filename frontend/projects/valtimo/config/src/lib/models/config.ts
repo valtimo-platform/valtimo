@@ -74,6 +74,7 @@ export interface ValtimoConfig {
   translationResources?: Array<ITranslationResource>;
   featureToggles?: {
     disableFormFlow?: boolean;
+    enableHackathonCasesPage?: boolean;
   };
 }
 

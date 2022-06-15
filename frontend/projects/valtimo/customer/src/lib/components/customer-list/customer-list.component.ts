@@ -26,6 +26,8 @@ import {
   CustomerSearchRequest,
   MappedCustomer,
 } from '../../models';
+import {ConfigService} from '@valtimo/config';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'valtimo-customer-list',
@@ -122,7 +124,9 @@ export class CustomerListComponent {
 
   constructor(
     private readonly customerService: CustomerService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly configService: ConfigService,
+    private readonly router: Router
   ) {}
 
   bsnChange(bsn: string): void {
@@ -139,6 +143,15 @@ export class CustomerListComponent {
   familyNameChange(familyName: string): void {
     this.clearBsn();
     this.familyName$.next(familyName);
+  }
+
+  public rowClick(customer: Customer) {
+    const config = this.configService.config;
+    const bsn = customer?.burgerservicenummer;
+
+    if (bsn && config?.featureToggles?.enableHackathonCasesPage) {
+      this.router.navigate([`/klanten/klant/${bsn}`]);
+    }
   }
 
   private clearBsn(): void {

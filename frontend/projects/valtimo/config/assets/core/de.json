@@ -347,6 +347,7 @@
     "toggleMenu": "Menü",
     "typeToSearch": "Hier tippen zum Suchen",
     "noSearchResults": "Keine Ergebnisse",
+    "noResults": "Keine Ergebnisse",
     "loading": "Lädt...",
     "edit": "Bearbeiten",
     "noItemsFound": "Keine Elemente gefunden",
@@ -637,6 +638,10 @@
     "plugins": {
       "title": "Plugins",
       "description": "Auf dieser Seite können Sie Konfigurationen von Plugins erstellen, ändern und löschen, die Ihrer Anwendung hinzugefügt wurden."
+    },
+    "customercases": {
+      "title": "Cases",
+      "description": "Auf dieser Seite können Sie die Cases eines bestimmten Kunden einsehen."
     }
   },
   "pluginSteps": {
@@ -648,7 +653,6 @@
   },
   "plugin": {
     "noConfigurationComponent": "Für dieses Plugin ist keine Konfiguration verfügbar."
-    }
   },
   "pluginManagement": {
     "tableItemsText": "Plugin-Konfigurationen",
@@ -661,6 +665,14 @@
     "addSteps": {
       "step0": "Wählen Sie Ihren Plugin",
       "step1": "Daten eingeben"
+    }
+  },
+  "customerCases": {
+    "tableItemsText": "cases",
+    "labels": {
+      "zaakNummer": "Casenummer",
+      "zaakStatus": "Status",
+      "zaakType": "Typ"
     }
   }
 }

@@ -36,6 +36,7 @@ export class TableComponent implements OnInit, OnDestroy {
   @Input() showPagination = true;
   @Input() editButtonTranslationKey!: string;
   @Input() itemsTranslationKey!: string;
+  @Input() noResultsTranslationKey!: string;
   @Input() mobileBreakpointPx = 768;
   @Input() amountOfLoadingRows = 3;
 
