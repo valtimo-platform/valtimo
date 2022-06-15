@@ -16,10 +16,9 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable, of} from 'rxjs';
+import {Observable} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
 import {Customer, CustomerCase, CustomerSearchRequest} from '../models';
-import {delay} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
