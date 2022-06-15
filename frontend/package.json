@@ -166,7 +166,7 @@
     "libs:lint:decision": "ng lint @valtimo/decision",
     "libs:lint:milestone": "ng lint @valtimo/milestone",
     "libs:lint:form-management": "ng lint @valtimo/form-management",
-    "libs:lint:plugin": "ng lint @valtimo/plugint",
+    "libs:lint:plugin": "ng lint @valtimo/plugin",
     "libs:lint:plugin-management": "ng lint @valtimo/plugin-management",
     "libs:lint:form-link": "ng lint @valtimo/form-link",
     "libs:lint:migration": "ng lint @valtimo/migration",

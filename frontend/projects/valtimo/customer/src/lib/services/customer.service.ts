@@ -39,25 +39,6 @@ export class CustomerService {
   }
 
   getCustomerCases(bsn: string): Observable<Array<CustomerCase>> {
-    return of([
-      {
-        zaakNummer: 'ZAAK-2022-0000000893',
-        zaakStatus: 'In behandeling',
-        zaakType: 'ZaakPbacA',
-        zaakId: 'ad0ad39c-fb87-4e34-b86d-038282d15839',
-      },
-      {
-        zaakNummer: 'ZAAK-2022-0000000894',
-        zaakStatus: 'In behandeling',
-        zaakType: 'ZaakPbacAa',
-        zaakId: 'ad0ad39c-fb87-4e34-b86d-038282d15833',
-      },
-      {
-        zaakNummer: 'ZAAK-2022-0000000894',
-        zaakStatus: 'In behandeling',
-        zaakType: 'ZaakPbacA3',
-        zaakId: 'ad0ad39c-fb87-4e34-b86d-038282d15836',
-      },
-    ]).pipe(delay(1500));
+    return this.http.get<Array<CustomerCase>>(`${this.valtimoEndpointUri}zaken/${bsn}`);
   }
 }

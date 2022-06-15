@@ -31,9 +31,9 @@ export class PluginTranslationService {
       this.pluginService.pluginSpecifications$,
       this.translateService.stream('key'),
     ]).pipe(
-      map(([pluginSpecifications]) => {
-        return this.getTranslation(pluginSpecifications, pluginDefinitionKey, translateKey);
-      })
+      map(([pluginSpecifications]) =>
+        this.getTranslation(pluginSpecifications, pluginDefinitionKey, translateKey)
+      )
     );
   }
 
