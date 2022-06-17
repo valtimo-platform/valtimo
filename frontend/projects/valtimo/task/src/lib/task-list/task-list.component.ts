@@ -23,6 +23,7 @@ import {NGXLogger} from 'ngx-logger';
 import {TaskDetailModalComponent} from '../task-detail-modal/task-detail-modal.component';
 import {TranslateService} from '@ngx-translate/core';
 import {combineLatest, Subscription} from 'rxjs';
+import {SortState} from '@valtimo/config';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -42,6 +43,7 @@ export class TaskListComponent implements OnDestroy {
   public currentTaskType = 'mine';
   public listTitle: string | null = null;
   public listDescription: string | null = null;
+  public sortState: SortState | null = null;
   private translationSubscription: Subscription;
 
   public paginationClicked(page: number, type: string) {
@@ -54,13 +56,15 @@ export class TaskListComponent implements OnDestroy {
     private router: Router,
     private logger: NGXLogger,
     private translateService: TranslateService
-  ) {}
+  ) {
+    this.setDefaultSorting();
+  }
 
   paginationSet() {
     this.tasks.mine.pagination.size =
       this.tasks.all.pagination.size =
-      this.tasks.open.pagination.size =
-        this.tasks[this.currentTaskType].pagination.size;
+        this.tasks.open.pagination.size =
+          this.tasks[this.currentTaskType].pagination.size;
     this.getTasks(this.currentTaskType);
   }
 
@@ -126,6 +130,10 @@ export class TaskListComponent implements OnDestroy {
         this.logger.fatal('Unreachable case');
     }
 
+    if (this.sortState) {
+      params.sort = this.getSortString(this.sortState);
+    }
+
     this.taskService.queryTasks(params).subscribe((results: any) => {
       this.tasks[type].pagination.collectionSize = results.headers.get('x-total-count');
       this.tasks[type].tasks = results.body as Array<Task>;
@@ -135,24 +143,50 @@ export class TaskListComponent implements OnDestroy {
           task.due = moment(task.due).format('DD MMM YYYY HH:mm');
         }
       });
+      this.taskService.getConfigCustomTaskList() ? this.customTaskListFields(type) : this.defaultTaskListFields(type);
+    });
+  }
+
+  public defaultTaskListFields(type) {
+    this.translationSubscription = combineLatest([
+      this.translateService.stream(`task-list.fieldLabels.created`),
+      this.translateService.stream(`task-list.fieldLabels.name`),
+      this.translateService.stream(`task-list.fieldLabels.valtimoAssignee.fullName`),
+      this.translateService.stream(`task-list.fieldLabels.due`),
+    ]).subscribe(([created, name, assignee, due]) => {
       this.tasks[type].fields = [
         {
           key: 'created',
-          label: 'Created on',
+          label: created,
         },
         {
           key: 'name',
-          label: 'Name',
+          label: name,
         },
         {
           key: 'valtimoAssignee.fullName',
-          label: 'Assignee',
+          label: assignee,
         },
         {
           key: 'due',
-          label: 'Due date',
+          label: due,
         },
       ];
+    });
+  }
+
+  public customTaskListFields(type) {
+    const customTaskListFields = this.taskService.getConfigCustomTaskList().fields;
+
+    this.translationSubscription = combineLatest(
+      customTaskListFields.map(column => this.translateService.stream(`task-list.fieldLabels.${column.translationKey}`))
+    ).subscribe(labels => {
+      this.tasks[type].fields = customTaskListFields.map((column, index) => ({
+        key: column.propertyName,
+        label: labels[index],
+        sortable: column.sortable,
+        ...(column.viewType && {viewType: column.viewType}),
+      }));
     });
   }
 
@@ -162,6 +196,19 @@ export class TaskListComponent implements OnDestroy {
     } else {
       return false;
     }
+  }
+
+  setDefaultSorting() {
+    this.sortState = this.taskService.getConfigCustomTaskList()?.defaultSortedColumn || null;
+  }
+
+  public sortChanged(sortState: SortState) {
+    this.sortState = sortState;
+    this.getTasks(this.currentTaskType)
+  }
+
+  getSortString(sort: SortState): string {
+    return `${sort.state.name},${sort.state.direction}`;
   }
 
   ngOnDestroy(): void {

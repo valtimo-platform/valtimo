@@ -23,6 +23,7 @@ export const VALTIMO_CONFIG = new InjectionToken<ValtimoConfig>('valtimoConfig')
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const INITIALIZERS = new InjectionToken<(() => Function)[]>('initializers');
+export declare type Direction = 'ASC' | 'DESC';
 
 export interface DefinitionColumn {
   propertyName: string;
@@ -39,6 +40,20 @@ export interface CustomDossierHeaderItem {
   textSize?: string;
   noValueText?: string;
   customClass?: string;
+}
+
+export interface CustomTaskList {
+  fields: Array<DefinitionColumn>
+  defaultSortedColumn?: SortState
+}
+
+export interface Sort {
+  name: string;
+  direction: Direction;
+}
+export interface SortState {
+  state: Sort;
+  isSorting: boolean;
 }
 
 export interface ValtimoConfig {
@@ -76,6 +91,7 @@ export interface ValtimoConfig {
     disableFormFlow?: boolean;
     enableHackathonCasesPage?: boolean;
   };
+  customTaskList?: CustomTaskList
 }
 
 export enum UploadProvider {

@@ -220,6 +220,12 @@
     "noBesluitTypeConfigured": "Geen besluit types beschikbaar ga naar Open zaak om een besluit type te maken"
   },
   "task-list": {
+    "fieldLabels": {
+      "created": "Aanmaakdatum",
+      "name": "Naam",
+      "valtimoAssignee.fullName": "Eigenaar",
+      "due": "Opleveringsdatum"
+    },
     "mine": {
       "title": "Mijn taken",
       "description": "Overzicht van alle toegewezen taken"

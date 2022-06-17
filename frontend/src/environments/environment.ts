@@ -171,6 +171,36 @@ export const environment: ValtimoConfig = {
       },
     ],
   },
+  customTaskList: {
+    fields: [
+      {
+        propertyName: 'due',
+        translationKey: 'due',
+        sortable: true
+      },
+      {
+        propertyName: 'created',
+        translationKey: 'created',
+        sortable: true
+      },
+      {
+        propertyName: 'name',
+        translationKey: 'name',
+        sortable: true
+      },
+      {
+        propertyName: 'assignee',
+        translationKey: 'valtimoAssignee.fullName',
+      },
+    ],
+    defaultSortedColumn: {
+      isSorting: true,
+      state: {
+        name: 'created',
+        direction: 'ASC'
+      }
+    }
+  },
   featureToggles: {
     disableFormFlow: true,
     enableHackathonCasesPage: true,

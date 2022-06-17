@@ -28,6 +28,7 @@
         [isSearchable]="true"
         [header]="true"
         (rowClicked)="rowOpenTaskClick($event)"
+        (sortChanged)="sortChanged($event)"
       >
         <div header>
           <h3 class="list-header-title">{{ listTitle }}</h3>

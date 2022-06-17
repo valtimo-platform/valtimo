@@ -18,13 +18,13 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {AssigneeRequest, Task, TaskProcessLinkResult} from './models';
-import {ConfigService, User} from '@valtimo/config';
+import {ConfigService, CustomTaskList, User} from '@valtimo/config';
 
 @Injectable({providedIn: 'root'})
 export class TaskService {
   private valtimoEndpointUri: string;
 
-  constructor(private http: HttpClient, configService: ConfigService) {
+  constructor(private http: HttpClient, private readonly configService: ConfigService) {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
@@ -63,5 +63,9 @@ export class TaskService {
     return this.http.get<TaskProcessLinkResult>(
       `${this.valtimoEndpointUri}process-link/task/${taskId}`
     );
+  }
+
+  getConfigCustomTaskList(): CustomTaskList {
+    return this.configService.config.customTaskList;
   }
 }

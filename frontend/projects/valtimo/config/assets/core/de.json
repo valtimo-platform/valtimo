@@ -220,6 +220,12 @@
     "noBesluitTypeConfigured": "Kein Besluit-Typ verfügbar. Gehen Sie zu Open Zaak, um einen Besluit-Typ zu erstellen."
   },
   "task-list": {
+    "fieldLabels": {
+      "created": "Erstellt am",
+      "name": "Name",
+      "valtimoAssignee.fullName": "Eigentümer",
+      "due": "Geburtstermin"
+    },
     "mine": {
       "title": "Meine Aufgaben",
       "description": "Überblick alle zugeordneten Aufgaben"

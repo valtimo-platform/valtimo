@@ -220,6 +220,12 @@
     "noBesluitTypeConfigured": "No besluit type available go to Open Zaak to create a besluit type"
   },
   "task-list": {
+    "fieldLabels": {
+      "created": "Created on",
+      "name": "Name",
+      "valtimoAssignee.fullName": "Assignee",
+      "due": "Due date"
+    },
     "mine": {
       "title": "My tasks",
       "description": "Overview of all tasks assigned to you"
