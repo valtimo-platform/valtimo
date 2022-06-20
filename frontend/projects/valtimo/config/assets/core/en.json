@@ -658,7 +658,7 @@
     "complete": "Connect plugin function"
   },
   "plugin": {
-    "noConfigurationComponent": "There is no configuration available for this plugin."
+    "noConfigurationComponent": "No configuration component is available."
   },
   "pluginManagement": {
     "tableItemsText": "plugin configurations",
@@ -670,7 +670,8 @@
     },
     "addSteps": {
       "step0": "Choose your plugin",
-      "step1": "Enter data"
+      "step1": "Enter data",
+      "complete": "Save configuration"
     }
   },
   "customerCases": {

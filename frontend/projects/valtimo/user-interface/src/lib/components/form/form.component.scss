@@ -13,14 +13,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component, Input} from '@angular/core';
-
-@Component({
-  selector: 'v-paragraph',
-  templateUrl: './paragraph.component.html',
-  styleUrls: ['./paragraph.component.scss'],
-})
-export class ParagraphComponent {
-  @Input() center = false;
-}

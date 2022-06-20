@@ -18,7 +18,7 @@ import {Component, OnInit, ViewChild} from '@angular/core';
 import {PluginManagementStateService} from '../../services';
 import {take} from 'rxjs/operators';
 import {ModalComponent, ModalService} from '@valtimo/user-interface';
-import {Subject, Subscription} from 'rxjs';
+import {BehaviorSubject, Subject, Subscription} from 'rxjs';
 
 @Component({
   selector: 'valtimo-plugin-add-modal',
@@ -30,6 +30,7 @@ export class PluginAddModalComponent implements OnInit {
 
   readonly inputDisabled$ = this.stateService.inputDisabled$;
   readonly selectedPluginDefinition$ = this.stateService.selectedPluginDefinition$;
+  readonly configurationValid$ = new BehaviorSubject<boolean>(false);
   readonly returnToFirstStepSubject$ = new Subject<boolean>();
 
   private showSubscription!: Subscription;
@@ -47,6 +48,7 @@ export class PluginAddModalComponent implements OnInit {
 
   complete(): void {
     this.stateService.save();
+    this.hide();
   }
 
   delete(): void {
@@ -64,6 +66,10 @@ export class PluginAddModalComponent implements OnInit {
         this.stateService.clear();
       }, appearingDelay);
     });
+  }
+
+  onValid(valid: boolean): void {
+    this.configurationValid$.next(valid);
   }
 
   private openShowSubscription(): void {

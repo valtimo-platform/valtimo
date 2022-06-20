@@ -658,7 +658,7 @@
     "complete": "Pluginfunctie koppelen"
   },
   "plugin": {
-    "noConfigurationComponent": "Er is geen configuratie beschikbaar voor deze plug-in."
+    "noConfigurationComponent": "Er is geen configuratie-component beschikbaar."
   },
   "pluginManagement": {
     "tableItemsText": "plug-in-configuraties",
@@ -670,7 +670,8 @@
     },
     "addSteps": {
       "step0": "Kies je plug-in",
-      "step1": "Gegevens invullen"
+      "step1": "Gegevens invullen",
+      "complete": "Configuratie opslaan"
     }
   },
   "customerCases": {

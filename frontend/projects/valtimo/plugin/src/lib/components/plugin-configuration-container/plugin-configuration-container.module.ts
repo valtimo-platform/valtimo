@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-import {Component, Input} from '@angular/core';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {PluginConfigurationContainerComponent} from './plugin-configuration-container.component';
+import {ParagraphModule, TitleModule} from '@valtimo/user-interface';
+import {SpinnerModule} from '@valtimo/components';
+import {TranslateModule} from '@ngx-translate/core';
 
-@Component({
-  selector: 'v-paragraph',
-  templateUrl: './paragraph.component.html',
-  styleUrls: ['./paragraph.component.scss'],
+@NgModule({
+  declarations: [PluginConfigurationContainerComponent],
+  imports: [CommonModule, ParagraphModule, TranslateModule],
+  exports: [PluginConfigurationContainerComponent],
 })
-export class ParagraphComponent {
-  @Input() center = false;
-}
+export class PluginConfigurationContainerModule {}

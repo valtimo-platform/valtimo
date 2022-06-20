@@ -34,7 +34,7 @@ import {SelectPluginComponent} from './components/select-plugin/select-plugin.co
 import {SelectPluginConfigurationComponent} from './components/select-plugin-configuration/select-plugin-configuration.component';
 import {SelectPluginFunctionComponent} from './components/select-plugin-function/select-plugin-function.component';
 import {FlexLayoutModule} from '@angular/flex-layout';
-import {PluginTranslatePipeModule} from '@valtimo/plugin';
+import {PluginTranslatePipeModule, PluginConfigurationContainerModule} from '@valtimo/plugin';
 import {PluginFunctionConfigurationComponent} from './components/plugin-function-configuration/plugin-function-configuration.component';
 
 @NgModule({
@@ -61,6 +61,7 @@ import {PluginFunctionConfigurationComponent} from './components/plugin-function
     FlexLayoutModule,
     PluginTranslatePipeModule,
     ParagraphModule,
+    PluginConfigurationContainerModule,
   ],
   exports: [
     FormLinkComponent,

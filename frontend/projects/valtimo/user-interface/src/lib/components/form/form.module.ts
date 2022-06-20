@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import {Component, Input} from '@angular/core';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormComponent} from './form.component';
 
-@Component({
-  selector: 'v-paragraph',
-  templateUrl: './paragraph.component.html',
-  styleUrls: ['./paragraph.component.scss'],
+@NgModule({
+  declarations: [FormComponent],
+  imports: [CommonModule],
+  exports: [FormComponent],
 })
-export class ParagraphComponent {
-  @Input() center = false;
-}
+export class FormModule {}

@@ -40,6 +40,7 @@
 
 <ng-template #nameInput let-disabled="disabled">
   <v-input
+    name="name"
     titleTranslationKey="connectorManagement.inputLabels.connectorName"
     [defaultValue]="withDefaults && defaultName ? defaultName : ''"
     [fullWidth]="true"
@@ -52,6 +53,7 @@
 <ng-template #singleInput let-editField="editField" let-disabled="disabled">
   <v-input
     *ngIf="editField.editType === 'string'"
+    [name]="editField.key"
     [titleTranslationKey]="'connectorManagement.inputLabels.' + editField.key"
     [defaultValue]="withDefaults ? editField.defaultValue : ''"
     [fullWidth]="true"
@@ -61,6 +63,7 @@
   ></v-input>
   <v-input
     *ngIf="editField.editType === 'number'"
+    [name]="editField.key"
     [titleTranslationKey]="'connectorManagement.inputLabels.' + editField.key"
     [defaultValue]="withDefaults ? editField.defaultValue : ''"
     [fullWidth]="true"

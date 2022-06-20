@@ -11,8 +11,10 @@
  */
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {PluginConfigurationComponent} from '../../../../models';
+import {PluginConfigurationComponent, PluginConfigurationData} from '../../../../models';
 import {Observable} from 'rxjs';
+import {openZaakPluginSpecification} from '../../open-zaak-plugin.specification';
+import {OpenZaakConfig} from '../../models';
 
 @Component({
   selector: 'valtimo-open-zaak-configuration',
@@ -24,6 +26,28 @@ export class OpenZaakConfigurationComponent implements PluginConfigurationCompon
   @Input() save$: Observable<void>;
   @Input() disabled: boolean;
   @Input() error: boolean;
+  @Input() pluginId: string;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<object> = new EventEmitter<object>();
+  @Output() configuration: EventEmitter<OpenZaakConfig> = new EventEmitter<OpenZaakConfig>();
+
+  formValueChange(formValue: OpenZaakConfig): void {
+    this.configuration.emit(formValue);
+    this.handleValid(formValue);
+  }
+
+  private handleValid(formValue: OpenZaakConfig): void {
+    const valid =
+      formValue.name &&
+      formValue.url &&
+      formValue.catalogusUrl &&
+      formValue.rsin &&
+      formValue.secret &&
+      formValue.clientId;
+
+    if (valid) {
+      this.valid.emit(true);
+    } else {
+      this.valid.emit(false);
+    }
+  }
 }

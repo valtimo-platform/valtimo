@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {Component, ViewChild, ViewContainerRef} from '@angular/core';
+import {Component} from '@angular/core';
 import {ProcessLinkStateService} from '../../services';
-import {BehaviorSubject, combineLatest} from 'rxjs';
-import {take, tap} from 'rxjs/operators';
+import {combineLatest} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-plugin-function-configuration',
@@ -25,31 +25,11 @@ import {take, tap} from 'rxjs/operators';
   styleUrls: ['./plugin-function-configuration.component.scss'],
 })
 export class PluginFunctionConfigurationComponent {
-  @ViewChild('functionConfigurationComponent', {static: true, read: ViewContainerRef})
-  public dynamicContainer: ViewContainerRef;
-
-  readonly noConfigurationComponentAvailable$ = new BehaviorSubject<boolean>(false);
-
-  selectedPluginFunction$ = combineLatest([
-    this.stateService.selectedPluginSpecification$,
-    this.stateService.selectedPluginFunction$,
-  ]).pipe(
-    tap(([selectedPluginSpecification, pluginFunction]) => {
-      const selectedPluginFunctionId = pluginFunction?.key;
-      const selectedPluginFunctionConfigurationComponent =
-        selectedPluginSpecification?.functionConfigurationComponents[selectedPluginFunctionId];
-
-      this.dynamicContainer.clear();
-
-      if (selectedPluginSpecification && selectedPluginFunctionConfigurationComponent) {
-        const componentInstance = this.dynamicContainer.createComponent(
-          selectedPluginFunctionConfigurationComponent
-        );
-        this.noConfigurationComponentAvailable$.next(false);
-      } else {
-        this.noConfigurationComponentAvailable$.next(true);
-      }
-    })
+  readonly pluginDefinitionKey$ = this.stateService.selectedPluginConfiguration$.pipe(
+    map(configuration => configuration?.definitionKey)
+  );
+  readonly functionKey$ = this.stateService.selectedPluginFunction$.pipe(
+    map(pluginFunction => pluginFunction?.key)
   );
 
   constructor(private readonly stateService: ProcessLinkStateService) {}

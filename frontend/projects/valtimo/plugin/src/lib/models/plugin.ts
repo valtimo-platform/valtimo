@@ -13,13 +13,19 @@
 import {Component, EventEmitter, Input, Type} from '@angular/core';
 import {Observable} from 'rxjs';
 
+interface PluginConfigurationData {
+  [key: string]: any;
+}
+
 interface PluginConfigurationComponent {
   save$: Observable<void>;
   clear$: Observable<void>;
   disabled: boolean;
   error: boolean;
+  pluginId: string;
+  prefillConfiguration?: PluginConfigurationData;
   valid: EventEmitter<boolean>;
-  configuration: EventEmitter<object>;
+  configuration: EventEmitter<PluginConfigurationData>;
 }
 
 interface PluginSpecification {
@@ -38,4 +44,12 @@ interface PluginSpecification {
 
 type PluginConfig = Array<PluginSpecification>;
 
-export {PluginSpecification, PluginConfig, PluginConfigurationComponent};
+type ConfigurationComponentType = 'function' | 'configuration';
+
+export {
+  PluginSpecification,
+  PluginConfig,
+  PluginConfigurationComponent,
+  ConfigurationComponentType,
+  PluginConfigurationData,
+};

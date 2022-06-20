@@ -14,8 +14,8 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="selectedPluginSpecification$ | async"></ng-container>
-<ng-template #pluginConfigurationComponent></ng-template>
-<ng-container *ngIf="noConfigurationComponentAvailable$ | async">
-  <v-paragraph>{{ 'plugin.noConfigurationComponent' }}</v-paragraph>
-</ng-container>
+<valtimo-plugin-configuration-container
+  [pluginDefinitionKey]="pluginDefinitionKey$ | async"
+  (valid)="onValid($event)"
+  type="configuration"
+></valtimo-plugin-configuration-container>

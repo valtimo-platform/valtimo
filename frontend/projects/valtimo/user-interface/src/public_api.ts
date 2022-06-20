@@ -65,3 +65,6 @@ export * from './lib/services/user-interface.service';
 // Paragraph
 export * from './lib/components/paragraph/paragraph.module';
 export * from './lib/components/paragraph/paragraph.component';
+// Form
+export * from './lib/components/form/form.module';
+export * from './lib/components/form/form.component';

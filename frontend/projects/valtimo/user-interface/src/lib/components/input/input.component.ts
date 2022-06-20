@@ -33,6 +33,7 @@ import {BehaviorSubject, Subscription} from 'rxjs';
   styleUrls: ['./input.component.scss'],
 })
 export class InputComponent implements OnInit, OnChanges, OnDestroy {
+  @Input() name = '';
   @Input() type: InputType = 'text';
   @Input() title = '';
   @Input() titleTranslationKey = '';

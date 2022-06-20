@@ -21,9 +21,9 @@
 </ng-container>
 
 <ng-template #inputTitle>
-  <h3 *ngIf="title || titleTranslationKey" class="v-input__title">
+  <label *ngIf="title || titleTranslationKey" class="v-input__label" [for]="name">
     {{ titleTranslationKey ? (titleTranslationKey | translate) : title }}
-  </h3>
+  </label>
 </ng-template>
 
 <ng-template #textInput>
@@ -41,6 +41,7 @@
     (ngModelChange)="onValueChange($event)"
     [step]="step"
     [min]="0"
+    [name]="name"
   />
 </ng-template>
 
@@ -59,5 +60,6 @@
     (ngModelChange)="onValueChange($event)"
     [step]="step"
     [min]="min"
+    [name]="name"
   />
 </ng-template>

@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import {Component, ViewChild, ViewContainerRef} from '@angular/core';
+import {Component, EventEmitter, Output} from '@angular/core';
+import {map} from 'rxjs/operators';
 import {PluginManagementStateService} from '../../services';
-import {BehaviorSubject, combineLatest} from 'rxjs';
-import {take, tap} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-plugin-configure',
@@ -25,25 +24,15 @@ import {take, tap} from 'rxjs/operators';
   styleUrls: ['./plugin-configure.component.scss'],
 })
 export class PluginConfigureComponent {
-  @ViewChild('pluginConfigurationComponent', {static: true, read: ViewContainerRef})
-  public dynamicContainer: ViewContainerRef;
+  @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-  readonly noConfigurationComponentAvailable$ = new BehaviorSubject<boolean>(false);
-
-  selectedPluginSpecification$ = this.stateService.selectedPluginSpecification$.pipe(
-    tap(selectedPluginSpecification => {
-      this.dynamicContainer.clear();
-
-      if (selectedPluginSpecification) {
-        const componentInstance = this.dynamicContainer.createComponent(
-          selectedPluginSpecification.pluginConfigurationComponent
-        );
-        this.noConfigurationComponentAvailable$.next(false);
-      } else {
-        this.noConfigurationComponentAvailable$.next(true);
-      }
-    })
+  readonly pluginDefinitionKey$ = this.stateService.selectedPluginDefinition$.pipe(
+    map(definition => definition?.key)
   );
 
   constructor(private readonly stateService: PluginManagementStateService) {}
+
+  onValid(valid: boolean): void {
+    this.valid.emit(valid);
+  }
 }
