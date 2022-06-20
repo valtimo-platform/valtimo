@@ -63,8 +63,8 @@ export class TaskListComponent implements OnDestroy {
   paginationSet() {
     this.tasks.mine.pagination.size =
       this.tasks.all.pagination.size =
-        this.tasks.open.pagination.size =
-          this.tasks[this.currentTaskType].pagination.size;
+      this.tasks.open.pagination.size =
+        this.tasks[this.currentTaskType].pagination.size;
     this.getTasks(this.currentTaskType);
   }
 
@@ -143,7 +143,11 @@ export class TaskListComponent implements OnDestroy {
           task.due = moment(task.due).format('DD MMM YYYY HH:mm');
         }
       });
-      this.taskService.getConfigCustomTaskList() ? this.customTaskListFields(type) : this.defaultTaskListFields(type);
+      if (this.taskService.getConfigCustomTaskList()) {
+        this.customTaskListFields(type);
+      } else {
+        this.defaultTaskListFields(type);
+      }
     });
   }
 
@@ -179,7 +183,9 @@ export class TaskListComponent implements OnDestroy {
     const customTaskListFields = this.taskService.getConfigCustomTaskList().fields;
 
     this.translationSubscription = combineLatest(
-      customTaskListFields.map(column => this.translateService.stream(`task-list.fieldLabels.${column.translationKey}`))
+      customTaskListFields.map(column =>
+        this.translateService.stream(`task-list.fieldLabels.${column.translationKey}`)
+      )
     ).subscribe(labels => {
       this.tasks[type].fields = customTaskListFields.map((column, index) => ({
         key: column.propertyName,
@@ -204,7 +210,7 @@ export class TaskListComponent implements OnDestroy {
 
   public sortChanged(sortState: SortState) {
     this.sortState = sortState;
-    this.getTasks(this.currentTaskType)
+    this.getTasks(this.currentTaskType);
   }
 
   getSortString(sort: SortState): string {
