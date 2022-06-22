@@ -24,7 +24,7 @@
   [margin]="true"
   [widthInPx]="350"
   [title]="'zaakResultaat' | pluginTranslate: pluginId | async"
-  [disabled]="!(selectedZaakType$ | async) || disabled"
+  [disabled]="(selectedZaakType$ | async) === null || disabled"
   [clearSelectionSubject$]="clearSubject$"
   (selectedChange)="selectResultaat($event)"
 ></v-select>

@@ -53,9 +53,9 @@ export class SelectZaakTypeComponent {
     this.selectedZaakTypeUrl$,
     this.openZaakService.getZaakTypes(),
   ]).pipe(
-    map(([selectedZaakTypeUrl, zaakTypes]) => {
-      return zaakTypes.find(zaakType => zaakType.url === selectedZaakTypeUrl);
-    }),
+    map(([selectedZaakTypeUrl, zaakTypes]) =>
+      zaakTypes.find(zaakType => zaakType.url === selectedZaakTypeUrl)
+    ),
     tap(selectedZaakType => this.zaakTypeSelected.emit(selectedZaakType))
   );
 

@@ -10,7 +10,7 @@
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.See the License for the specific language governing permissions and limitations under the License.
  */
 
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {PluginConfigurationComponent, PluginConfigurationData} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription} from 'rxjs';
 import {SelectItem} from '@valtimo/user-interface';
@@ -22,7 +22,9 @@ import {tap} from 'rxjs/operators';
   templateUrl: './set-resultaat-configuration.component.html',
   styleUrls: ['./set-resultaat-configuration.component.scss'],
 })
-export class SetResultaatConfigurationComponent implements PluginConfigurationComponent {
+export class SetResultaatConfigurationComponent
+  implements PluginConfigurationComponent, OnInit, OnDestroy
+{
   @Input() clear$: Observable<void>;
   @Input() save$: Observable<void>;
   @Input() disabled: boolean;

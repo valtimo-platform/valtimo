@@ -10,7 +10,7 @@
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.See the License for the specific language governing permissions and limitations under the License.
  */
 
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {PluginConfigurationComponent, PluginConfigurationData} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map, switchMap, tap} from 'rxjs/operators';
@@ -21,7 +21,9 @@ import {ZaakType} from '@valtimo/resource';
   templateUrl: './create-zaak-configuration.component.html',
   styleUrls: ['./create-zaak-configuration.component.scss'],
 })
-export class CreateZaakConfigurationComponent implements PluginConfigurationComponent {
+export class CreateZaakConfigurationComponent
+  implements PluginConfigurationComponent, OnInit, OnDestroy
+{
   @Input() clear$: Observable<void>;
   @Input() save$: Observable<void>;
   @Input() disabled: boolean;
