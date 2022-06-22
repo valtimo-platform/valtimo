@@ -42,7 +42,9 @@
           <valtimo-select-plugin-function></valtimo-select-plugin-function>
         </v-stepper-step>
         <v-stepper-step titleTranslationKey="pluginSteps.step3">
-          <valtimo-plugin-function-configuration></valtimo-plugin-function-configuration>
+          <valtimo-plugin-function-configuration
+            (valid)="onValid($event)"
+          ></valtimo-plugin-function-configuration>
         </v-stepper-step>
       </v-stepper-content>
     </div>
@@ -58,7 +60,7 @@
         ></v-stepper-footer-step>
         <v-stepper-footer-step
           completeButtonTranslationKey="pluginSteps.complete"
-          [completeButtonEnabled]="true"
+          [completeButtonEnabled]="functionConfigurationValid$ | async"
         ></v-stepper-footer-step>
       </v-stepper-footer>
     </div>

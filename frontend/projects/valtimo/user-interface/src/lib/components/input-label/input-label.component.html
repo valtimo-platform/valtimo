@@ -14,9 +14,6 @@
   ~ limitations under the License.
   -->
 
-<valtimo-plugin-configuration-container
-  [pluginDefinitionKey]="pluginDefinitionKey$ | async"
-  [functionKey]="functionKey$ | async"
-  (valid)="onValid($event)"
-  type="function"
-></valtimo-plugin-configuration-container>
+<label *ngIf="title || titleTranslationKey" class="v-input__label" [for]="name">
+  {{ titleTranslationKey ? (titleTranslationKey | translate) : title }}
+</label>

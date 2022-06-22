@@ -16,7 +16,7 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {SelectedValue, SelectItem} from '../../models';
-import {BehaviorSubject, Subscription} from 'rxjs';
+import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 
 @Component({
   selector: 'v-select',
@@ -29,13 +29,21 @@ export class SelectComponent implements OnInit, OnDestroy {
   @Input() clearable = true;
   @Input() disabled = false;
   @Input() multiple = false;
+  @Input() margin = false;
+  @Input() widthInPx!: number;
   @Input() notFoundText!: string;
   @Input() clearAllText!: string;
+  @Input() name = '';
+  @Input() title = '';
+  @Input() titleTranslationKey = '';
+  @Input() clearSelectionSubject$!: Observable<void>;
   @Output() selectedChange: EventEmitter<SelectedValue> = new EventEmitter();
+  @Output() clear: EventEmitter<any> = new EventEmitter();
 
   selected$ = new BehaviorSubject<SelectedValue>('');
 
   private selectedSubscription!: Subscription;
+  private clearSubjectSubscription!: Subscription;
 
   setSelectedValue(selectedValue: SelectedValue): void {
     this.selected$.next(selectedValue);
@@ -44,30 +52,46 @@ export class SelectComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.setDefaultSelection();
     this.openSelectedSubscription();
+    this.openClearSubjectSubscription();
   }
 
   ngOnDestroy() {
     this.selectedSubscription?.unsubscribe();
+    this.clearSubjectSubscription?.unsubscribe();
+  }
+
+  clearSelection(): void {
+    this.clear.emit();
   }
 
   private setDefaultSelection(): void {
-    const itemsIds = this.items.map(item => item.id);
+    const itemsIds = this.items?.map(item => item.id);
     const defaultSelectionId = this.defaultSelection?.id;
 
-    if (defaultSelectionId && itemsIds.includes(defaultSelectionId)) {
+    if (defaultSelectionId && itemsIds?.includes(defaultSelectionId)) {
       if (this.multiple) {
-        this.selected$.next([defaultSelectionId]);
+        this.setSelectedValue([defaultSelectionId]);
       } else {
-        this.selected$.next(defaultSelectionId);
+        this.setSelectedValue(defaultSelectionId);
       }
     }
   }
 
   private openSelectedSubscription(): void {
     this.selectedSubscription = this.selected$.subscribe(selectedValue => {
-      if (selectedValue) {
-        this.selectedChange.emit(selectedValue);
-      }
+      this.selectedChange.emit(selectedValue);
     });
+  }
+
+  private openClearSubjectSubscription(): void {
+    if (this.clearSelectionSubject$) {
+      this.clearSubjectSubscription = this.clearSelectionSubject$.subscribe(() => {
+        if (this.multiple) {
+          this.setSelectedValue([]);
+        } else {
+          this.setSelectedValue('');
+        }
+      });
+    }
   }
 }

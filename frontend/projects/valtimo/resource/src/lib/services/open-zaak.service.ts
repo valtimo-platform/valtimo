@@ -97,8 +97,8 @@ export class OpenZaakService {
     );
   }
 
-  getZaakTypeLinkListByProcess(processDefinitionKey: string): Observable<any> {
-    return this.http.get(
+  getZaakTypeLinkListByProcess(processDefinitionKey: string): Observable<Array<ZaakTypeLink>> {
+    return this.http.get<Array<ZaakTypeLink>>(
       `${this.valtimoApiConfig.endpointUri}openzaak/link/process/${processDefinitionKey}`
     );
   }

@@ -18,6 +18,7 @@ import {Injectable} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {map, take, tap} from 'rxjs/operators';
 import {ModalComponent} from '../components/modal/modal.component';
+import {ModalData} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -28,6 +29,7 @@ export class ModalService {
   private readonly _appearing$ = new BehaviorSubject<boolean>(false);
   private readonly _disappearing$ = new BehaviorSubject<boolean>(false);
   private readonly _appearingDelayMs$ = new BehaviorSubject<number>(140);
+  private readonly _modalData$ = new BehaviorSubject<ModalData>({});
 
   get modalUuid$() {
     return this._modalUuid$.asObservable();
@@ -49,11 +51,23 @@ export class ModalService {
     return this._appearingDelayMs$.asObservable();
   }
 
+  get modalData$() {
+    return this._modalData$.asObservable();
+  }
+
   setCurrentModal(modalComponent: ModalComponent): void {
     this._modalUuid$.next(modalComponent.uuid);
   }
 
-  openModal(modalComponent?: ModalComponent): void {
+  setModalData(modalData: ModalData): void {
+    this._modalData$.next(modalData);
+  }
+
+  clearModalData(): void {
+    this._modalData$.next({});
+  }
+
+  openModal(modalComponent?: ModalComponent, modalData?: ModalData): void {
     this._modalVisible$.next(true);
 
     if (modalComponent) {
@@ -62,6 +76,10 @@ export class ModalService {
           this.setCurrentModal(modalComponent);
         }
       });
+    }
+
+    if (modalData) {
+      this.setModalData(modalData);
     }
   }
 
@@ -102,6 +120,7 @@ export class ModalService {
     this._appearingDelayMs$.pipe(take(1)).subscribe(appearingDelayMs => {
       setTimeout(() => {
         this._disappearing$.next(false);
+        this.clearModalData();
       }, appearingDelayMs);
     });
   }

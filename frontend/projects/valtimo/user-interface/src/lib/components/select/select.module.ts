@@ -20,10 +20,11 @@ import {SelectComponent} from './select.component';
 import {NgSelectModule} from '@ng-select/ng-select';
 import {FormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
+import {InputLabelModule} from '../input-label/input-label.module';
 
 @NgModule({
   declarations: [SelectComponent],
-  imports: [CommonModule, NgSelectModule, FormsModule, TranslateModule],
+  imports: [CommonModule, NgSelectModule, FormsModule, TranslateModule, InputLabelModule],
   exports: [SelectComponent],
 })
 export class SelectModule {}

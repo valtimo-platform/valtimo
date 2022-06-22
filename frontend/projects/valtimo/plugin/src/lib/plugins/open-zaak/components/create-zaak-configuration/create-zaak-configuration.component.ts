@@ -12,7 +12,9 @@
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {PluginConfigurationComponent, PluginConfigurationData} from '../../../../models';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
+import {map, switchMap, tap} from 'rxjs/operators';
+import {ZaakType} from '@valtimo/resource';
 
 @Component({
   selector: 'valtimo-create-zaak-configuration',
@@ -28,4 +30,34 @@ export class CreateZaakConfigurationComponent implements PluginConfigurationComp
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<PluginConfigurationData> =
     new EventEmitter<PluginConfigurationData>();
+
+  readonly selectedZaakType$ = new BehaviorSubject<ZaakType | null>(null);
+
+  private validSubscription!: Subscription;
+
+  ngOnInit(): void {
+    this.openValidSubscription();
+  }
+
+  ngOnDestroy(): void {
+    this.validSubscription?.unsubscribe();
+  }
+
+  selectZaakType(zaakType: ZaakType | null): void {
+    this.selectedZaakType$.next(zaakType);
+  }
+
+  private openValidSubscription(): void {
+    this.validSubscription = combineLatest([this.selectedZaakType$])
+      .pipe(
+        tap(([zaakType]) => {
+          if (zaakType) {
+            this.valid.emit(true);
+          } else {
+            this.valid.emit(false);
+          }
+        })
+      )
+      .subscribe();
+  }
 }

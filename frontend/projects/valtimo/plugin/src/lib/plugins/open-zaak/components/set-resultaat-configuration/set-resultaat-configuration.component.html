@@ -14,4 +14,17 @@
   ~ limitations under the License.
   -->
 
-<v-title>set-resultaat function config works</v-title>
+<valtimo-select-zaak-type
+  [pluginId]="pluginId"
+  [disabled]="disabled"
+  (zaakTypeSelected)="selectZaakType($event)"
+></valtimo-select-zaak-type>
+<v-select
+  [items]="resultaatSelectItems"
+  [margin]="true"
+  [widthInPx]="350"
+  [title]="'zaakResultaat' | pluginTranslate: pluginId | async"
+  [disabled]="!(selectedZaakType$ | async) || disabled"
+  [clearSelectionSubject$]="clearSubject$"
+  (selectedChange)="selectResultaat($event)"
+></v-select>

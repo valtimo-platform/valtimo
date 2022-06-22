@@ -21,9 +21,13 @@
 </ng-container>
 
 <ng-template #inputTitle>
-  <label *ngIf="title || titleTranslationKey" class="v-input__label" [for]="name">
-    {{ titleTranslationKey ? (titleTranslationKey | translate) : title }}
-  </label>
+  <v-input-label
+    *ngIf="title || titleTranslationKey"
+    [title]="title"
+    [titleTranslationKey]="titleTranslationKey"
+    [name]="name"
+  >
+  </v-input-label>
 </ng-template>
 
 <ng-template #textInput>

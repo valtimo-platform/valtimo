@@ -29,3 +29,4 @@ export * from './lib/plugins/open-zaak/components/create-zaak-configuration/crea
 export * from './lib/plugins/open-zaak/components/set-besluit-configuration/set-besluit-configuration.component';
 export * from './lib/plugins/open-zaak/components/set-resultaat-configuration/set-resultaat-configuration.component';
 export * from './lib/plugins/open-zaak/components/set-status-configuration/set-status-configuration.component';
+export * from './lib/plugins/open-zaak/components/select-zaak-type/select-zaak-type.component';

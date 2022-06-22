@@ -12,7 +12,10 @@
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {PluginConfigurationComponent, PluginConfigurationData} from '../../../../models';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subject, Subscription} from 'rxjs';
+import {ZaakType} from '@valtimo/resource';
+import {tap} from 'rxjs/operators';
+import {SelectItem} from '@valtimo/user-interface';
 
 @Component({
   selector: 'valtimo-set-besluit-configuration',
@@ -28,4 +31,58 @@ export class SetBesluitConfigurationComponent implements PluginConfigurationComp
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<PluginConfigurationData> =
     new EventEmitter<PluginConfigurationData>();
+
+  private readonly selectedBesluit$ = new BehaviorSubject<string>('');
+
+  readonly selectedZaakType$ = new BehaviorSubject<ZaakType | null>(null);
+
+  readonly BESLUITEN: Array<string> = ['test besluit', 'test besluit met document'];
+
+  readonly besluitSelectItems: Array<SelectItem> = this.BESLUITEN.map(besluit => ({
+    id: besluit,
+    text: besluit,
+  }));
+
+  readonly clearSubject$ = new Subject();
+
+  private validSubscription!: Subscription;
+
+  ngOnInit(): void {
+    this.openValidSubscription();
+  }
+
+  ngOnDestroy(): void {
+    this.validSubscription?.unsubscribe();
+  }
+
+  selectZaakType(zaakType: ZaakType | null): void {
+    this.selectedZaakType$.next(zaakType);
+
+    if (!zaakType) {
+      this.clearBesluit();
+    }
+  }
+
+  clearBesluit(): void {
+    this.selectedBesluit$.next('');
+    this.clearSubject$.next();
+  }
+
+  selectBesluit(besluit: string): void {
+    this.selectedBesluit$.next(besluit);
+  }
+
+  private openValidSubscription(): void {
+    this.validSubscription = combineLatest([this.selectedBesluit$, this.selectedZaakType$])
+      .pipe(
+        tap(([besluit, zaakType]) => {
+          if (besluit && zaakType) {
+            this.valid.emit(true);
+          } else {
+            this.valid.emit(false);
+          }
+        })
+      )
+      .subscribe();
+  }
 }

@@ -17,13 +17,12 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {InputComponent} from './input.component';
+import {InputLabelComponent} from './input-label.component';
 import {TranslateModule} from '@ngx-translate/core';
-import {InputLabelModule} from '../input-label/input-label.module';
 
 @NgModule({
-  declarations: [InputComponent],
-  imports: [CommonModule, TranslateModule, FormsModule, InputLabelModule],
-  exports: [InputComponent],
+  declarations: [InputLabelComponent],
+  imports: [CommonModule, TranslateModule, FormsModule],
+  exports: [InputLabelComponent],
 })
-export class InputModule {}
+export class InputLabelModule {}

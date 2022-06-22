@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+.ng-select--margin {
+  margin-block-end: var(--v-input-margin);
+}
+
 ::ng-deep {
   .ng-select.ng-select-opened > .ng-select-container {
     background: var(--v-select-background-color);

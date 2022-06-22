@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, EventEmitter, Output} from '@angular/core';
 import {ProcessLinkStateService} from '../../services';
 import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -25,6 +25,8 @@ import {map} from 'rxjs/operators';
   styleUrls: ['./plugin-function-configuration.component.scss'],
 })
 export class PluginFunctionConfigurationComponent {
+  @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
+
   readonly pluginDefinitionKey$ = this.stateService.selectedPluginConfiguration$.pipe(
     map(configuration => configuration?.definitionKey)
   );
@@ -33,4 +35,8 @@ export class PluginFunctionConfigurationComponent {
   );
 
   constructor(private readonly stateService: ProcessLinkStateService) {}
+
+  onValid(valid: boolean): void {
+    this.valid.emit(valid);
+  }
 }

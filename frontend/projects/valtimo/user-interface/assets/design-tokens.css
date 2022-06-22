@@ -182,7 +182,7 @@
   /* select */
   --v-select-background-color: var(--v-color-grey-4);
   --v-select-selected-background-color: var(--v-color-grey-3);
-  --v-select-highlighted-background-color: var(--v-color-grey-5);
+  --v-select-highlighted-background-color: var(--v-color-grey-4);
   --v-select-disabled-font-color: var(--v-color-grey-2);
   --v-select-placeholder-font-color: var(--v-color-grey-2);
   --v-select-font-color: var(--v-color-grey-1);
@@ -197,7 +197,7 @@
   --v-select-multi-value-disabled-font-color: var(--v-color-grey-2);
   --v-select-clear-icon-color: var(--v-color-grey-2);
   --v-select-clear-icon-hover-color: var(--v-color-grey-1);
-  --v-select-dropdown-box-shadow: var(--v-box-shadow-medium);
+  --v-select-dropdown-box-shadow: var(--v-box-shadow-heavier);
   /* modal */
   --v-modal-z-index: 9999;
   --v-modal-backdrop-color: var(--v-color-backdrop);

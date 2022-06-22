@@ -34,6 +34,7 @@ export class ProcessLinkComponent {
   readonly selectedPluginDefinition$ = this.processLinkStateService.selectedPluginDefinition$;
   readonly selectedPluginConfiguration$ = this.processLinkStateService.selectedPluginConfiguration$;
   readonly selectedPluginFunction$ = this.processLinkStateService.selectedPluginFunction$;
+  readonly functionConfigurationValid$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private readonly modalService: ModalService,
@@ -56,6 +57,10 @@ export class ProcessLinkComponent {
   }
 
   openModal(params: ModalParams): void {
-    this.modalService.openModal(this.connectorCreateModal);
+    this.modalService.openModal(this.connectorCreateModal, params);
+  }
+
+  onValid(valid: boolean): void {
+    this.functionConfigurationValid$.next(valid);
   }
 }

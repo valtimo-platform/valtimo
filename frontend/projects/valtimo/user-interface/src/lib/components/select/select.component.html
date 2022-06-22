@@ -14,16 +14,26 @@
   ~ limitations under the License.
   -->
 
-<ng-select
-  [ngModel]="selected$ | async"
-  (ngModelChange)="setSelectedValue($event)"
-  [clearable]="clearable"
-  [disabled]="disabled"
-  [multiple]="multiple"
-  [notFoundText]="notFoundText || ('interface.noItemsFound' | translate)"
-  [clearAllText]="clearAllText || ('interface.clearAll' | translate)"
->
-  <ng-option *ngFor="let item of items" [value]="item.id">{{
-    item.translationKey ? (item.translationKey | translate) : item.text
-  }}</ng-option>
-</ng-select>
+<div [ngClass]="{'ng-select--margin': margin}" [style.width.px]="widthInPx">
+  <v-input-label
+    *ngIf="title || titleTranslationKey"
+    [title]="title"
+    [titleTranslationKey]="titleTranslationKey"
+    [name]="name"
+  >
+  </v-input-label>
+  <ng-select
+    [ngModel]="selected$ | async"
+    (ngModelChange)="setSelectedValue($event)"
+    [clearable]="clearable"
+    [disabled]="disabled"
+    [multiple]="multiple"
+    [notFoundText]="notFoundText || ('interface.noItemsFound' | translate)"
+    [clearAllText]="clearAllText || ('interface.clearAll' | translate)"
+    (clear)="clearSelection()"
+  >
+    <ng-option *ngFor="let item of items" [value]="item.id">{{
+      item.translationKey ? (item.translationKey | translate) : item.text
+    }}</ng-option>
+  </ng-select>
+</div>

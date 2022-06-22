@@ -12,7 +12,10 @@
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {PluginConfigurationComponent, PluginConfigurationData} from '../../../../models';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subject, Subscription} from 'rxjs';
+import {SelectItem} from '@valtimo/user-interface';
+import {ZaakType} from '@valtimo/resource';
+import {tap} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-set-resultaat-configuration',
@@ -28,4 +31,68 @@ export class SetResultaatConfigurationComponent implements PluginConfigurationCo
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<PluginConfigurationData> =
     new EventEmitter<PluginConfigurationData>();
+
+  private readonly selectedResultaat$ = new BehaviorSubject<string>('');
+
+  readonly selectedZaakType$ = new BehaviorSubject<ZaakType | null>(null);
+
+  readonly RESULTATEN: Array<string> = [
+    'Ingetrokken',
+    'Ongegrond met financ',
+    'Gegrond met financië',
+    'Informeel afgehandel',
+    'Niet ontvankelijk ve',
+    'Gegrond met invloed',
+    'Ongegrond',
+    'Afgebroken',
+    'Gegrond',
+  ];
+
+  readonly resultaatSelectItems: Array<SelectItem> = this.RESULTATEN.map(resultaat => ({
+    id: resultaat,
+    text: resultaat,
+  }));
+
+  readonly clearSubject$ = new Subject();
+
+  private validSubscription!: Subscription;
+
+  ngOnInit(): void {
+    this.openValidSubscription();
+  }
+
+  ngOnDestroy(): void {
+    this.validSubscription?.unsubscribe();
+  }
+
+  selectZaakType(zaakType: ZaakType | null): void {
+    this.selectedZaakType$.next(zaakType);
+
+    if (!zaakType) {
+      this.clearResultaat();
+    }
+  }
+
+  clearResultaat(): void {
+    this.selectedResultaat$.next('');
+    this.clearSubject$.next();
+  }
+
+  selectResultaat(resultaat: string): void {
+    this.selectedResultaat$.next(resultaat);
+  }
+
+  private openValidSubscription(): void {
+    this.validSubscription = combineLatest([this.selectedResultaat$, this.selectedZaakType$])
+      .pipe(
+        tap(([resultaat, zaakType]) => {
+          if (resultaat && zaakType) {
+            this.valid.emit(true);
+          } else {
+            this.valid.emit(false);
+          }
+        })
+      )
+      .subscribe();
+  }
 }

@@ -14,4 +14,17 @@
   ~ limitations under the License.
   -->
 
-<v-title>set-besluit function config works</v-title>
+<valtimo-select-zaak-type
+  [pluginId]="pluginId"
+  [disabled]="disabled"
+  (zaakTypeSelected)="selectZaakType($event)"
+></valtimo-select-zaak-type>
+<v-select
+  [items]="besluitSelectItems"
+  [margin]="true"
+  [widthInPx]="350"
+  [title]="'besluit' | pluginTranslate: pluginId | async"
+  [disabled]="!(selectedZaakType$ | async) || disabled"
+  [clearSelectionSubject$]="clearSubject$"
+  (selectedChange)="selectBesluit($event)"
+></v-select>

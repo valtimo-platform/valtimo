@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
-import {InputComponent} from './input.component';
-import {TranslateModule} from '@ngx-translate/core';
-import {InputLabelModule} from '../input-label/input-label.module';
-
-@NgModule({
-  declarations: [InputComponent],
-  imports: [CommonModule, TranslateModule, FormsModule, InputLabelModule],
-  exports: [InputComponent],
-})
-export class InputModule {}
+.v-input__label {
+  margin: 0;
+  font-size: var(--v-input-title-font-size);
+  color: var(--v-input-title-font-color);
+  line-height: var(--v-input-title-line-height);
+  font-weight: var(--v-input-title-font-weight);
+  margin-block-end: var(--v-input-title-margin);
+}
