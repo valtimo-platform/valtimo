@@ -69,7 +69,7 @@ export class DownloadService {
   }
 
   private isFileTypeSupportedForNewWindow(name: string): boolean {
-    const supportedFileTypes = ['doc', 'docx', 'rtf', 'pdf', 'jpg', 'png', 'svg'];
+    const supportedFileTypes = ['pdf', 'jpg', 'png', 'svg'];
 
     return supportedFileTypes.some(function (suffix) {
       return name.toUpperCase().endsWith(suffix.toUpperCase());
