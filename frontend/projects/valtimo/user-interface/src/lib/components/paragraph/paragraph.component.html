@@ -14,6 +14,9 @@
   ~ limitations under the License.
   -->
 
-<p class="v-paragraph" [ngClass]="{'v-paragraph--center': center}">
+<p
+  class="v-paragraph"
+  [ngClass]="{'v-paragraph--center': center, 'v-paragraph--full-width': fullWidth}"
+>
   <ng-content></ng-content>
 </p>

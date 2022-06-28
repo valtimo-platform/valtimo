@@ -17,7 +17,12 @@
 <button
   class="v-button"
   role="button"
-  (click)="clickEvent.emit()"
+  (click)="buttonClick()"
+  [title]="
+    (titleTranslationKey || title) && titleTranslationKey
+      ? (titleTranslationKey | translate)
+      : title
+  "
   [ngClass]="{
     'v-button--primary': isPrimary,
     'v-button--secondary': isSecondary,

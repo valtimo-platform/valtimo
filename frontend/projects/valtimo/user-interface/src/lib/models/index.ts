@@ -22,3 +22,4 @@ export * from './title';
 export * from './input';
 export * from './form';
 export * from './modal';
+export * from './multi-input';

@@ -32,7 +32,7 @@ import {DomSanitizer} from '@angular/platform-browser';
   providedIn: 'root',
 })
 export class PluginManagementService {
-  private readonly OPEN_ZAAK_CONFIGURATIONS = [
+  private readonly CONFIGURATIONS = [
     {
       definitionKey: 'openzaak',
       key: '1ebdad87-3899-4ab7-b4ad-403237b17dbd',
@@ -44,19 +44,14 @@ export class PluginManagementService {
       title: 'Den Haag Open Zaak 2',
     },
     {
-      definitionKey: 'openzaak',
-      key: '1ebdad87-3899-4ab7-b4ad-403237b17dbf',
-      title: 'Den Haag Open Zaak 3',
+      definitionKey: 'smartdocuments',
+      key: '1ebdad87-3899-4ab7-b4ad-403237b17dbx',
+      title: 'Den Haag SmartDocuments 1',
     },
     {
-      definitionKey: 'openzaak',
-      key: '1ebdad87-3899-4ab7-b4ad-403237b17dbg',
-      title: 'Den Haag Open Zaak 4',
-    },
-    {
-      definitionKey: 'openzaak',
-      key: '1ebdad87-3899-4ab7-b4ad-403237b17dbh',
-      title: 'Den Haag Open Zaak 5',
+      definitionKey: 'smartdocuments',
+      key: '1ebdad87-3899-4ab7-b4ad-403237b17dby',
+      title: 'Den Haag SmartDocuments 2',
     },
   ];
 
@@ -66,11 +61,11 @@ export class PluginManagementService {
   ) {}
 
   getPluginDefinitions(): Observable<Array<PluginDefinition>> {
-    return of([{key: 'openzaak'}]).pipe(delay(1500));
+    return of([{key: 'openzaak'}, {key: 'smartdocuments'}]).pipe(delay(1500));
   }
 
   getPluginConfigurations(pluginDefinitionId: string): Observable<Array<PluginConfiguration>> {
-    return of(this.OPEN_ZAAK_CONFIGURATIONS).pipe(delay(1500));
+    return of(this.CONFIGURATIONS).pipe(delay(1500));
   }
 
   getPluginConfigurationsWithLogos(
@@ -82,24 +77,28 @@ export class PluginManagementService {
   }
 
   getPluginFunctions(pluginDefinitionId: string): Observable<Array<PluginFunction>> {
-    return of([
-      {
-        key: 'create-zaak',
-      },
-      {
-        key: 'set-status',
-      },
-      {
-        key: 'set-resultaat',
-      },
-      {
-        key: 'set-besluit',
-      },
-    ]).pipe(delay(1500));
+    return of(
+      pluginDefinitionId === 'openzaak'
+        ? [
+            {
+              key: 'create-zaak',
+            },
+            {
+              key: 'set-status',
+            },
+            {
+              key: 'set-resultaat',
+            },
+            {
+              key: 'set-besluit',
+            },
+          ]
+        : [{key: 'generate-document'}]
+    ).pipe(delay(1500));
   }
 
   getAllPluginConfigurations(): Observable<Array<PluginConfiguration>> {
-    return of(this.OPEN_ZAAK_CONFIGURATIONS).pipe(delay(1500));
+    return of(this.CONFIGURATIONS).pipe(delay(1500));
   }
 
   getAllPluginConfigurationsWithLogos(): Observable<Array<PluginConfiguration>> {

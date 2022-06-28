@@ -44,6 +44,7 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   @Input() disabled = false;
   @Input() step!: number;
   @Input() min!: number;
+  @Input() maxLength = 250;
 
   @Output() valueChange: EventEmitter<any> = new EventEmitter();
 

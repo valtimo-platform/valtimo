@@ -363,7 +363,9 @@
     "of": "van",
     "visible": "zichtbaar",
     "next": "Volgende >",
-    "previous": "< Vorige"
+    "previous": "< Vorige",
+    "addRow": "Rij toevoegen",
+    "deleteRow": "Rij verwijderen"
   },
   "assignTask": {
     "assignedTo": "Toegewezen aan ",
@@ -528,7 +530,8 @@
     "alertLink": "Formulier gekoppeld",
     "alertLinkError": "Er ging iets mis bij het koppelen van het formulier",
     "alertUnlink": "Formulier ontkoppeld",
-    "alertUnlinkError": "Er ging iets mis bij het ontkoppelen van het formulier"
+    "alertUnlinkError": "Er ging iets mis bij het ontkoppelen van het formulier",
+    "noPluginConfigurations": "Geen pluginconfiguraties gevonden."
   },
   "connectorForm": {
     "taak": {
@@ -663,6 +666,7 @@
   "pluginManagement": {
     "tableItemsText": "plug-in-configuraties",
     "add": "Plug-in configureren",
+    "noDefinitions": "Geen plugin-definities gevonden.",
     "labels": {
       "pluginName": "Plug-in-naam",
       "identifier": "Identifier",

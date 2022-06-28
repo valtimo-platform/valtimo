@@ -16,26 +16,49 @@
 
 <ng-container *ngIf="pluginConfigurations$ | async as pluginConfigurations; else loading">
   <div fxLayout="row wrap" fxLayoutGap="22px grid">
-    <div fxFlex="33.3%" *ngFor="let pluginConfiguration of pluginConfigurations">
-      <v-card
-        [title]="pluginConfiguration.title"
-        [selectable]="true"
-        [selected]="(selectedPluginConfiguration$ | async)?.key === pluginConfiguration.key"
-        [fullHeight]="true"
-        (selectEvent)="selectConfiguration(pluginConfiguration)"
-        (deselectEvent)="deselectConfiguration()"
-      >
-        <div *ngIf="pluginConfiguration.pluginLogoBase64" role="header">
-          <img
-            class="plugin-configuration-logo"
-            [title]="'title' | pluginTranslate: pluginConfiguration.key | async"
-            [src]="pluginConfiguration.pluginLogoBase64"
-          />
-        </div>
-      </v-card>
-    </div>
+    <ng-container
+      *ngTemplateOutlet="
+        pluginConfigurationsTemplate;
+        context: {pluginConfigurations: pluginConfigurations}
+      "
+    ></ng-container>
+    <ng-container
+      *ngTemplateOutlet="
+        noPluginConfigurationsTemplate;
+        context: {pluginConfigurations: pluginConfigurations}
+      "
+    ></ng-container>
   </div>
 </ng-container>
+
+<ng-template #noPluginConfigurationsTemplate let-pluginConfigurations="pluginConfigurations">
+  <div fxFlex="100%" *ngIf="pluginConfigurations?.length === 0">
+    <v-paragraph [center]="true" [fullWidth]="true">{{
+      'formLink.noPluginConfigurations' | translate
+    }}</v-paragraph>
+  </div>
+</ng-template>
+
+<ng-template #pluginConfigurationsTemplate let-pluginConfigurations="pluginConfigurations">
+  <div fxFlex="33.3%" *ngFor="let pluginConfiguration of pluginConfigurations">
+    <v-card
+      [title]="pluginConfiguration.title"
+      [selectable]="true"
+      [selected]="(selectedPluginConfiguration$ | async)?.key === pluginConfiguration.key"
+      [fullHeight]="true"
+      (selectEvent)="selectConfiguration(pluginConfiguration)"
+      (deselectEvent)="deselectConfiguration()"
+    >
+      <div *ngIf="pluginConfiguration.pluginLogoBase64" role="header">
+        <img
+          class="plugin-configuration-logo"
+          [title]="'title' | pluginTranslate: pluginConfiguration.key | async"
+          [src]="pluginConfiguration.pluginLogoBase64"
+        />
+      </div>
+    </v-card>
+  </div>
+</ng-template>
 
 <ng-template #loading>
   <div fxLayout="row wrap" fxLayoutGap="22px grid">

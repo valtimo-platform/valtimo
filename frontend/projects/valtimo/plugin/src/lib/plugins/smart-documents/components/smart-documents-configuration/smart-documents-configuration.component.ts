@@ -11,38 +11,32 @@
  */
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {PluginConfigurationComponent, PluginConfigurationData} from '../../../../models';
+import {PluginConfigurationComponent} from '../../../../models';
 import {Observable} from 'rxjs';
-import {openZaakPluginSpecification} from '../../open-zaak-plugin.specification';
-import {OpenZaakConfig} from '../../models';
+import {SmartDocumentsConfig} from '../../models';
 
 @Component({
-  selector: 'valtimo-open-zaak-configuration',
-  templateUrl: './open-zaak-configuration.component.html',
-  styleUrls: ['./open-zaak-configuration.component.scss'],
+  selector: 'valtimo-smart-documents-configuration',
+  templateUrl: './smart-documents-configuration.component.html',
+  styleUrls: ['./smart-documents-configuration.component.scss'],
 })
-export class OpenZaakConfigurationComponent implements PluginConfigurationComponent {
+export class SmartDocumentsConfigurationComponent implements PluginConfigurationComponent {
   @Input() clear$: Observable<void>;
   @Input() save$: Observable<void>;
   @Input() disabled: boolean;
   @Input() error: boolean;
   @Input() pluginId: string;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<OpenZaakConfig> = new EventEmitter<OpenZaakConfig>();
+  @Output() configuration: EventEmitter<SmartDocumentsConfig> =
+    new EventEmitter<SmartDocumentsConfig>();
 
-  formValueChange(formValue: OpenZaakConfig): void {
+  formValueChange(formValue: SmartDocumentsConfig): void {
     this.configuration.emit(formValue);
     this.handleValid(formValue);
   }
 
-  private handleValid(formValue: OpenZaakConfig): void {
-    const valid =
-      formValue.name &&
-      formValue.url &&
-      formValue.catalogusUrl &&
-      formValue.rsin &&
-      formValue.secret &&
-      formValue.clientId;
+  private handleValid(formValue: SmartDocumentsConfig): void {
+    const valid = formValue.name && formValue.url && formValue.password && formValue.username;
 
     this.valid.emit(!!valid);
   }

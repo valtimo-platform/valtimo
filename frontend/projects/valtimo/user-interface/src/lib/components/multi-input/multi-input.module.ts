@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-import {Component, Input} from '@angular/core';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {MultiInputComponent} from './multi-input.component';
+import {InputLabelModule} from '../input-label/input-label.module';
+import {InputModule} from '../input/input.module';
+import {ButtonModule} from '../button/button.module';
+import {TranslateModule} from '@ngx-translate/core';
 
-@Component({
-  selector: 'v-paragraph',
-  templateUrl: './paragraph.component.html',
-  styleUrls: ['./paragraph.component.scss'],
+@NgModule({
+  declarations: [MultiInputComponent],
+  imports: [CommonModule, InputLabelModule, InputModule, ButtonModule, TranslateModule],
+  exports: [MultiInputComponent],
 })
-export class ParagraphComponent {
-  @Input() center = false;
-  @Input() fullWidth = false;
-}
+export class MultiInputModule {}

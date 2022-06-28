@@ -26,6 +26,8 @@ export class ButtonComponent implements OnInit {
   @Input() type: ButtonType = 'primary';
   @Input() mdiIcon!: string;
   @Input() disabled!: boolean;
+  @Input() title = '';
+  @Input() titleTranslationKey = '';
   @Output() clickEvent: EventEmitter<any> = new EventEmitter();
 
   isPrimary!: boolean;
@@ -38,6 +40,12 @@ export class ButtonComponent implements OnInit {
 
   ngOnInit(): void {
     this.setIconTypes();
+  }
+
+  buttonClick(): void {
+    if (!this.disabled) {
+      this.clickEvent.emit();
+    }
   }
 
   private setIconTypes(): void {

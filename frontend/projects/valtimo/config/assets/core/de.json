@@ -363,7 +363,9 @@
     "of": "von",
     "visible": "sichtbar",
     "next": "Nächste >",
-    "previous": "< Vorherige"
+    "previous": "< Vorherige",
+    "addRow": "Zeile hinzufügen",
+    "deleteRow": "Zeile löschen"
   },
   "assignTask": {
     "assignedTo": "User-Zuordnung: ",
@@ -528,7 +530,8 @@
     "alertLink": "Form linked",
     "alertLinkError": "Failed to link form",
     "alertUnlink": "Form unlinked",
-    "alertUnlinkError": "Failed to unlink form"
+    "alertUnlinkError": "Failed to unlink form",
+    "noPluginConfigurations": "Keine Plugin-Konfigurationen gefunden."
   },
   "connectorForm": {
     "taak": {
@@ -663,6 +666,7 @@
   "pluginManagement": {
     "tableItemsText": "Plugin-Konfigurationen",
     "add": "Plugin konfigurieren",
+    "noDefinitions": "Keine Plugin-Definitionen gefunden.",
     "labels": {
       "pluginName": "Plugin-Name",
       "identifier": "Identifier",

@@ -11,38 +11,42 @@
  */
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {PluginConfigurationComponent, PluginConfigurationData} from '../../../../models';
+import {PluginConfigurationComponent} from '../../../../models';
 import {Observable} from 'rxjs';
-import {openZaakPluginSpecification} from '../../open-zaak-plugin.specification';
-import {OpenZaakConfig} from '../../models';
+import {DocumentFormat, GenerateDocumentConfig} from '../../models';
 
 @Component({
-  selector: 'valtimo-open-zaak-configuration',
-  templateUrl: './open-zaak-configuration.component.html',
-  styleUrls: ['./open-zaak-configuration.component.scss'],
+  selector: 'valtimo-generate-document-configuration',
+  templateUrl: './generate-document-configuration.component.html',
+  styleUrls: ['./generate-document-configuration.component.scss'],
 })
-export class OpenZaakConfigurationComponent implements PluginConfigurationComponent {
+export class GenerateDocumentConfigurationComponent implements PluginConfigurationComponent {
   @Input() clear$: Observable<void>;
   @Input() save$: Observable<void>;
   @Input() disabled: boolean;
   @Input() error: boolean;
   @Input() pluginId: string;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<OpenZaakConfig> = new EventEmitter<OpenZaakConfig>();
+  @Output() configuration: EventEmitter<GenerateDocumentConfig> =
+    new EventEmitter<GenerateDocumentConfig>();
 
-  formValueChange(formValue: OpenZaakConfig): void {
+  readonly FORMATS: Array<DocumentFormat> = ['DOCX', 'HTML', 'PDF', 'XML'];
+  readonly FORMAT_SELECT_ITEMS: Array<{id: string; text: string}> = this.FORMATS.map(format => ({
+    id: format,
+    text: format,
+  }));
+
+  formValueChange(formValue: GenerateDocumentConfig): void {
     this.configuration.emit(formValue);
     this.handleValid(formValue);
   }
 
-  private handleValid(formValue: OpenZaakConfig): void {
+  private handleValid(formValue: GenerateDocumentConfig): void {
     const valid =
-      formValue.name &&
-      formValue.url &&
-      formValue.catalogusUrl &&
-      formValue.rsin &&
-      formValue.secret &&
-      formValue.clientId;
+      formValue.templateGroup &&
+      formValue.templateName &&
+      formValue.format &&
+      formValue.templateData.length > 0;
 
     this.valid.emit(!!valid);
   }

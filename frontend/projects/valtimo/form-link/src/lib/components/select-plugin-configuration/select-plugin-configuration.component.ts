@@ -15,7 +15,7 @@
  */
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {switchMap, take, tap} from 'rxjs/operators';
+import {map, switchMap, take, tap} from 'rxjs/operators';
 import {
   PluginDefinition,
   PluginConfiguration,
@@ -23,7 +23,8 @@ import {
   PluginConfigurationWithLogo,
 } from '@valtimo/plugin-management';
 import {ProcessLinkStateService} from '../../services/process-link-state.service';
-import {Observable, of} from 'rxjs';
+import {combineLatest, Observable, of} from 'rxjs';
+import {PluginService} from '@valtimo/plugin';
 
 @Component({
   selector: 'valtimo-select-plugin-configuration',
@@ -31,14 +32,23 @@ import {Observable, of} from 'rxjs';
   styleUrls: ['./select-plugin-configuration.component.scss'],
 })
 export class SelectPluginConfigurationComponent {
-  readonly pluginConfigurations$: Observable<Array<PluginConfigurationWithLogo>> =
-    this.pluginManagementService.getAllPluginConfigurationsWithLogos();
+  readonly pluginConfigurations$: Observable<Array<PluginConfigurationWithLogo>> = combineLatest([
+    this.pluginManagementService.getAllPluginConfigurationsWithLogos(),
+    this.pluginService.availablePluginIds$,
+  ]).pipe(
+    map(([pluginConfigurations, availablePluginIds]) =>
+      pluginConfigurations.filter(configuration =>
+        availablePluginIds.includes(configuration.definitionKey)
+      )
+    )
+  );
 
   readonly selectedPluginConfiguration$ = this.processLinkStateService.selectedPluginConfiguration$;
 
   constructor(
     private readonly pluginManagementService: PluginManagementService,
-    private readonly processLinkStateService: ProcessLinkStateService
+    private readonly processLinkStateService: ProcessLinkStateService,
+    private readonly pluginService: PluginService
   ) {}
 
   selectConfiguration(configuration: PluginConfiguration): void {

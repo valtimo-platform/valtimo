@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-import {Component, Input} from '@angular/core';
+.v-multi-input__row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-block-end: var(--v-multi-input-row-spacing-block);
+}
 
-@Component({
-  selector: 'v-paragraph',
-  templateUrl: './paragraph.component.html',
-  styleUrls: ['./paragraph.component.scss'],
-})
-export class ParagraphComponent {
-  @Input() center = false;
-  @Input() fullWidth = false;
+.v-multi-input__input {
+  margin-inline-end: var(--v-multi-input-input-spacing-inline);
 }

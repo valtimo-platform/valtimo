@@ -34,22 +34,28 @@ export class PluginManagementStateService {
   );
   private readonly _pluginDefinitionsWithLogos$: Observable<
     Array<PluginDefinitionWithLogo> | undefined
-  > = combineLatest([this._pluginDefinitions$, this.pluginService.pluginSpecifications$]).pipe(
-    map(([pluginDefinitions, pluginSpecifications]) =>
-      pluginDefinitions?.map(pluginDefinition => {
-        const pluginSpecification = pluginSpecifications.find(
-          specification => specification.pluginId === pluginDefinition.key
-        );
+  > = combineLatest([
+    this._pluginDefinitions$,
+    this.pluginService.pluginSpecifications$,
+    this.pluginService.availablePluginIds$,
+  ]).pipe(
+    map(([pluginDefinitions, pluginSpecifications, availablePluginIds]) =>
+      pluginDefinitions
+        ?.filter(pluginDefinition => availablePluginIds.includes(pluginDefinition.key))
+        .map(pluginDefinition => {
+          const pluginSpecification = pluginSpecifications.find(
+            specification => specification.pluginId === pluginDefinition.key
+          );
 
-        return {
-          ...pluginDefinition,
-          ...(pluginSpecification?.pluginLogoBase64 && {
-            pluginLogoBase64: this.sanitizer.bypassSecurityTrustResourceUrl(
-              pluginSpecification?.pluginLogoBase64
-            ),
-          }),
-        };
-      })
+          return {
+            ...pluginDefinition,
+            ...(pluginSpecification?.pluginLogoBase64 && {
+              pluginLogoBase64: this.sanitizer.bypassSecurityTrustResourceUrl(
+                pluginSpecification?.pluginLogoBase64
+              ),
+            }),
+          };
+        })
     )
   );
   private readonly _selectedPluginDefinition$ = new BehaviorSubject<PluginDefinition | undefined>(

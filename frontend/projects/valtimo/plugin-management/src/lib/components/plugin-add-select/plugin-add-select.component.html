@@ -16,27 +16,47 @@
 
 <ng-container *ngIf="pluginDefinitionsWithLogos$ | async as pluginDefinitions; else loading">
   <div fxLayout="row wrap" fxLayoutGap="22px grid">
-    <div fxFlex="33.3%" *ngFor="let pluginDefinition of pluginDefinitions">
-      <v-card
-        [title]="'title' | pluginTranslate: pluginDefinition.key | async"
-        [description]="'description' | pluginTranslate: pluginDefinition.key | async"
-        [selectable]="true"
-        [selected]="(selectedPluginDefinition$ | async)?.key === pluginDefinition.key"
-        [fullHeight]="true"
-        (selectEvent)="selectPluginDefinition(pluginDefinition)"
-        (deselectEvent)="deselectPluginDefinition()"
-      >
-        <div *ngIf="pluginDefinition.pluginLogoBase64" role="header">
-          <img
-            class="plugin-definition-logo"
-            [title]="'title' | pluginTranslate: pluginDefinition.key | async"
-            [src]="pluginDefinition.pluginLogoBase64"
-          />
-        </div>
-      </v-card>
-    </div>
+    <ng-container
+      *ngTemplateOutlet="pluginDefinitionsTemplate; context: {pluginDefinitions: pluginDefinitions}"
+    ></ng-container>
+    <ng-container
+      *ngTemplateOutlet="
+        noPluginDefinitionsTemplate;
+        context: {pluginDefinitions: pluginDefinitions}
+      "
+    ></ng-container>
   </div>
 </ng-container>
+
+<ng-template #noPluginDefinitionsTemplate let-pluginDefinitions="pluginDefinitions">
+  <div fxFlex="100%" *ngIf="pluginDefinitions?.length === 0">
+    <v-paragraph [center]="true" [fullWidth]="true">{{
+      'pluginManagement.noDefinitions' | translate
+    }}</v-paragraph>
+  </div>
+</ng-template>
+
+<ng-template #pluginDefinitionsTemplate let-pluginDefinitions="pluginDefinitions">
+  <div fxFlex="33.3%" *ngFor="let pluginDefinition of pluginDefinitions">
+    <v-card
+      [title]="'title' | pluginTranslate: pluginDefinition.key | async"
+      [description]="'description' | pluginTranslate: pluginDefinition.key | async"
+      [selectable]="true"
+      [selected]="(selectedPluginDefinition$ | async)?.key === pluginDefinition.key"
+      [fullHeight]="true"
+      (selectEvent)="selectPluginDefinition(pluginDefinition)"
+      (deselectEvent)="deselectPluginDefinition()"
+    >
+      <div *ngIf="pluginDefinition.pluginLogoBase64" role="header">
+        <img
+          class="plugin-definition-logo"
+          [title]="'title' | pluginTranslate: pluginDefinition.key | async"
+          [src]="pluginDefinition.pluginLogoBase64"
+        />
+      </div>
+    </v-card>
+  </div>
+</ng-template>
 
 <ng-template #loading>
   <div fxLayout="row wrap" fxLayoutGap="22px grid">
