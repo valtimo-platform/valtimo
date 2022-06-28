@@ -165,7 +165,7 @@ export class DossierManagementUploadComponent implements AfterViewInit, OnDestro
   }
 
   private clearDropzone(): void {
-    this.clear$.next();
+    this.clear$.next(null);
   }
 
   private showModal(): void {

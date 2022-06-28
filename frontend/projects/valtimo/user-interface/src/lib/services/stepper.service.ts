@@ -99,11 +99,11 @@ export class StepperService {
   }
 
   cancelClick(): void {
-    this._cancelClick$.next();
+    this._cancelClick$.next(null);
   }
 
   complete(): void {
-    this._complete$.next();
+    this._complete$.next(null);
   }
 
   disable(): void {

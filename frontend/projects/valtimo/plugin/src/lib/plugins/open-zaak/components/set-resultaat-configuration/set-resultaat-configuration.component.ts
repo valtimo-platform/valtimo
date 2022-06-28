@@ -77,7 +77,7 @@ export class SetResultaatConfigurationComponent
 
   clearResultaat(): void {
     this.selectedResultaat$.next('');
-    this.clearSubject$.next();
+    this.clearSubject$.next(null);
   }
 
   selectResultaat(resultaat: string): void {

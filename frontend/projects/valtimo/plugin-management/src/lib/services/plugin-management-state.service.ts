@@ -116,7 +116,7 @@ export class PluginManagementStateService {
   }
 
   hideModal(): void {
-    this._hideModal$.next();
+    this._hideModal$.next(null);
   }
 
   disableInput(): void {
@@ -154,13 +154,13 @@ export class PluginManagementStateService {
   save(): void {
     this._saveButtonDisabled$.pipe(take(1)).subscribe(saveButtonDisabled => {
       if (!saveButtonDisabled) {
-        this._save$.next();
+        this._save$.next(null);
       }
     });
   }
 
   delete(): void {
-    this._delete$.next();
+    this._delete$.next(null);
   }
 
   hideModalSaveButton(): void {

@@ -67,7 +67,7 @@ export class SetBesluitConfigurationComponent
 
   clearBesluit(): void {
     this.selectedBesluit$.next('');
-    this.clearSubject$.next();
+    this.clearSubject$.next(null);
   }
 
   selectBesluit(besluit: string): void {

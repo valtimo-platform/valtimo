@@ -72,7 +72,7 @@ export class SetStatusConfigurationComponent
 
   clearStatus(): void {
     this.selectedStatus.next('');
-    this.clearSubject$.next();
+    this.clearSubject$.next(null);
   }
 
   selectStatus(status: string): void {

@@ -139,7 +139,7 @@ export class FormManagementUploadComponent implements AfterViewInit, OnDestroy {
   }
 
   private clearDropzone(): void {
-    this.clear$.next();
+    this.clear$.next(null);
   }
 
   private showModal(): void {

@@ -7,7 +7,7 @@
     "@angular/core": "^13.2.3"
   },
   "dependencies": {
-    "ngx-toastr": "^13.0.0",
+    "ngx-toastr": "^14.3.0",
     "tslib": "^2.0.0"
   }
 }

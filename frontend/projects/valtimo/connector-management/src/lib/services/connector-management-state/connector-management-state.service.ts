@@ -95,11 +95,11 @@ export class ConnectorManagementStateService {
   }
 
   showModal(): void {
-    this._showModal$.next();
+    this._showModal$.next(null);
   }
 
   hideModal(): void {
-    this._hideModal$.next();
+    this._hideModal$.next(null);
   }
 
   showExtensionModal(): void {
@@ -157,7 +157,7 @@ export class ConnectorManagementStateService {
   save(): void {
     this._saveButtonDisabled$.pipe(take(1)).subscribe(saveButtonDisabled => {
       if (!saveButtonDisabled) {
-        this._save$.next();
+        this._save$.next(null);
       }
     });
   }
@@ -167,7 +167,7 @@ export class ConnectorManagementStateService {
   }
 
   delete(): void {
-    this._delete$.next();
+    this._delete$.next(null);
   }
 
   hideModalSaveButton(): void {

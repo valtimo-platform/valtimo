@@ -7,8 +7,8 @@
     "@angular/core": "^13.2.3"
   },
   "dependencies": {
-    "ngx-toastr": "^13.0.0",
-    "moment": "2.29.1",
+    "ngx-toastr": "^14.3.0",
+    "moment": "2.29.3",
     "bpmn-js": "^6.4.2",
     "jquery": "3.6.0",
     "heatmap.js-fixed": "^2.0.2",
