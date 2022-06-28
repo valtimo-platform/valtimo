@@ -30,9 +30,9 @@ export class MultiInputComponent implements OnInit, OnDestroy {
   @Input() title = '';
   @Input() titleTranslationKey = '';
   @Input() type: MultiInputType = 'value';
-  @Input() initialAmountOfRows: number = 1;
-  @Input() minimumAmountOfRows: number = 1;
-  @Input() maxRows: number = 20;
+  @Input() initialAmountOfRows = 1;
+  @Input() minimumAmountOfRows = 1;
+  @Input() maxRows = 20;
   @Input() addRowText = '';
   @Input() addRowTranslationKey = '';
   @Input() deleteRowText = '';
