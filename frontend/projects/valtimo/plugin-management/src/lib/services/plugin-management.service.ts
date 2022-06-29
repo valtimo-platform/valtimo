@@ -32,6 +32,8 @@ import {DomSanitizer} from '@angular/platform-browser';
   providedIn: 'root',
 })
 export class PluginManagementService {
+  private readonly VALTIMO_API_ENDPOINT_URI = this.configService.config.valtimoApi.endpointUri;
+
   private readonly CONFIGURATIONS = [
     {
       definitionKey: 'openzaak',
@@ -56,12 +58,16 @@ export class PluginManagementService {
   ];
 
   constructor(
+    private readonly configService: ConfigService,
     private readonly pluginService: PluginService,
-    private readonly sanitizer: DomSanitizer
+    private readonly sanitizer: DomSanitizer,
+    private readonly http: HttpClient
   ) {}
 
   getPluginDefinitions(): Observable<Array<PluginDefinition>> {
-    return of([{key: 'openzaak'}, {key: 'smartdocuments'}]).pipe(delay(1500));
+    return this.http.get<Array<PluginDefinition>>(
+      `${this.VALTIMO_API_ENDPOINT_URI}plugin/definition`
+    );
   }
 
   getPluginConfigurations(pluginDefinitionId: string): Observable<Array<PluginConfiguration>> {

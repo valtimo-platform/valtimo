@@ -14,6 +14,8 @@ import {SafeResourceUrl} from '@angular/platform-browser';
 
 interface PluginDefinition {
   key: string;
+  description: string;
+  title: string;
 }
 
 interface PluginDefinitionWithLogo extends PluginDefinition {
