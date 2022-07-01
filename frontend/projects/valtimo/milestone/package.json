@@ -1,7 +1,7 @@
 {
   "name": "@valtimo/milestone",
   "license": "EUPL-1.2",
-  "version": "5.2.0-43.RC",
+  "version": "5.2.0",
   "peerDependencies": {
     "@angular/common": "^13.2.3",
     "@angular/core": "^13.2.3"
