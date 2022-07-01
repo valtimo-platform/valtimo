@@ -1,0 +1,13 @@
+e6be76b - Updated version to 5.2.0
+cc2c83b - Updated version to 5.2.0-43.RC-SNAPSHOT
+4244ed7 - Merge branch 'main' into development
+295fea4 - fix: customer route fix (#115)
+4a448d8 - fix: pipeline (#114)
+22abc87 - fix lint (#113)
+921f44f - feat: add hackathon cases endpoint (#112)
+df00b63 - Merge branch 'main' into development
+99274c5 - feat: add hackathon customer cases page (#111)
+e528c71 - feat: implement oz plugin (#107)
+d9198c2 - Feature/35396 open documents in new tab (#110)
+cd97a31 - Feature/35396 open documents in new tab (#109)
+ef342be - feature 35396 - Documents now open in new tab (#108)
