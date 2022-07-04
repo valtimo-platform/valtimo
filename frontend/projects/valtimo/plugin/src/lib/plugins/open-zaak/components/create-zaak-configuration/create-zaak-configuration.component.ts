@@ -11,7 +11,7 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {PluginConfigurationComponent, PluginConfigurationData} from '../../../../models';
+import {FunctionConfigurationComponent, FunctionConfigurationData} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map, switchMap, tap} from 'rxjs/operators';
 import {ZaakType} from '@valtimo/resource';
@@ -22,7 +22,7 @@ import {ZaakType} from '@valtimo/resource';
   styleUrls: ['./create-zaak-configuration.component.scss'],
 })
 export class CreateZaakConfigurationComponent
-  implements PluginConfigurationComponent, OnInit, OnDestroy
+  implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
   @Input() clear$: Observable<void>;
   @Input() save$: Observable<void>;
@@ -30,8 +30,8 @@ export class CreateZaakConfigurationComponent
   @Input() error: boolean;
   @Input() pluginId: string;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<PluginConfigurationData> =
-    new EventEmitter<PluginConfigurationData>();
+  @Output() configuration: EventEmitter<FunctionConfigurationData> =
+    new EventEmitter<FunctionConfigurationData>();
 
   readonly selectedZaakType$ = new BehaviorSubject<ZaakType | null>(null);
 

@@ -24,10 +24,9 @@ export class PluginManagementStateService {
   private readonly _showModal$ = new Subject<PluginModal>();
   private readonly _hideModal$ = new Subject();
   private readonly _inputDisabled$ = new BehaviorSubject<boolean>(false);
-  private readonly _saveButtonDisabled$ = new BehaviorSubject<boolean>(true);
   private readonly _refresh$ = new BehaviorSubject<null>(null);
-  private readonly _save$ = new Subject();
-  private readonly _delete$ = new Subject();
+  private readonly _save$ = new Subject<null>();
+  private readonly _delete$ = new Subject<null>();
   private readonly _hideModalSaveButton$ = new BehaviorSubject<boolean>(false);
   private readonly _pluginDefinitions$ = new BehaviorSubject<Array<PluginDefinition> | undefined>(
     undefined
@@ -95,10 +94,6 @@ export class PluginManagementStateService {
     return this._selectedPluginDefinition$.asObservable();
   }
 
-  get saveButtonDisabled$(): Observable<boolean> {
-    return this._saveButtonDisabled$.asObservable();
-  }
-
   get save$(): Observable<any> {
     return this._save$.asObservable();
   }
@@ -143,20 +138,8 @@ export class PluginManagementStateService {
     this._selectedPluginDefinition$.next(undefined);
   }
 
-  enableSaveButton(): void {
-    this._saveButtonDisabled$.next(false);
-  }
-
-  disableSaveButton(): void {
-    this._saveButtonDisabled$.next(true);
-  }
-
   save(): void {
-    this._saveButtonDisabled$.pipe(take(1)).subscribe(saveButtonDisabled => {
-      if (!saveButtonDisabled) {
-        this._save$.next(null);
-      }
-    });
+    this._save$.next(null);
   }
 
   delete(): void {

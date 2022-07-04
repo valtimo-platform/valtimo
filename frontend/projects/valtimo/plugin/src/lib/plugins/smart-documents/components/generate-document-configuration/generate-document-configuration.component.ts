@@ -11,7 +11,7 @@
  */
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {PluginConfigurationComponent} from '../../../../models';
+import {FunctionConfigurationComponent, PluginConfigurationComponent} from '../../../../models';
 import {Observable} from 'rxjs';
 import {DocumentFormat, GenerateDocumentConfig} from '../../models';
 
@@ -20,7 +20,7 @@ import {DocumentFormat, GenerateDocumentConfig} from '../../models';
   templateUrl: './generate-document-configuration.component.html',
   styleUrls: ['./generate-document-configuration.component.scss'],
 })
-export class GenerateDocumentConfigurationComponent implements PluginConfigurationComponent {
+export class GenerateDocumentConfigurationComponent implements FunctionConfigurationComponent {
   @Input() clear$: Observable<void>;
   @Input() save$: Observable<void>;
   @Input() disabled: boolean;

@@ -11,7 +11,12 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {PluginConfigurationComponent, PluginConfigurationData} from '../../../../models';
+import {
+  FunctionConfigurationComponent,
+  FunctionConfigurationData,
+  PluginConfigurationComponent,
+  PluginConfigurationData,
+} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription} from 'rxjs';
 import {ZaakType} from '@valtimo/resource';
 import {tap} from 'rxjs/operators';
@@ -23,7 +28,7 @@ import {SelectItem} from '@valtimo/user-interface';
   styleUrls: ['./set-besluit-configuration.component.scss'],
 })
 export class SetBesluitConfigurationComponent
-  implements PluginConfigurationComponent, OnInit, OnDestroy
+  implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
   @Input() clear$: Observable<void>;
   @Input() save$: Observable<void>;
@@ -31,7 +36,7 @@ export class SetBesluitConfigurationComponent
   @Input() error: boolean;
   @Input() pluginId: string;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<PluginConfigurationData> =
+  @Output() configuration: EventEmitter<FunctionConfigurationData> =
     new EventEmitter<PluginConfigurationData>();
 
   private readonly selectedBesluit$ = new BehaviorSubject<string>('');

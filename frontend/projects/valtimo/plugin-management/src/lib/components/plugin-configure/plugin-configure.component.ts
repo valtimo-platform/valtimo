@@ -17,6 +17,7 @@
 import {Component, EventEmitter, Output} from '@angular/core';
 import {map} from 'rxjs/operators';
 import {PluginManagementStateService} from '../../services';
+import {PluginConfigurationData} from '@valtimo/plugin';
 
 @Component({
   selector: 'valtimo-plugin-configure',
@@ -25,14 +26,24 @@ import {PluginManagementStateService} from '../../services';
 })
 export class PluginConfigureComponent {
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() configuration: EventEmitter<PluginConfigurationData> =
+    new EventEmitter<PluginConfigurationData>();
+
+  readonly save$ = this.stateService.save$;
 
   readonly pluginDefinitionKey$ = this.stateService.selectedPluginDefinition$.pipe(
     map(definition => definition?.key)
   );
 
+  readonly disabled$ = this.stateService.inputDisabled$;
+
   constructor(private readonly stateService: PluginManagementStateService) {}
 
   onValid(valid: boolean): void {
     this.valid.emit(valid);
+  }
+
+  onConfiguration(configuration: PluginConfigurationData) {
+    this.configuration.emit(configuration);
   }
 }

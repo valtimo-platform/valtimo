@@ -26,7 +26,7 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
     nl: {
       title: 'SmartDocuments',
       description: 'Automatiseer documenten met slimme templates.',
-      name: 'Configuratienaam',
+      configurationTitle: 'Configuratienaam',
       url: 'SmartDocuments URL',
       username: 'Gebruikersnaam',
       password: 'Wachtwoord',
@@ -39,7 +39,7 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
     en: {
       title: 'SmartDocuments',
       description: 'Automate documents with smart templates.',
-      name: 'Configuration name',
+      configurationTitle: 'Configuration name',
       url: 'SmartDocuments URL',
       username: 'Username',
       password: 'Password',
@@ -52,7 +52,7 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
     de: {
       title: 'SmartDocuments',
       description: 'Automatisieren Sie Dokumente mit intelligenten Templates.',
-      name: 'Konfigurationsname',
+      configurationTitle: 'Konfigurationsname',
       url: 'SmartDocuments URL',
       username: 'Nutzername',
       password: 'Passwort',

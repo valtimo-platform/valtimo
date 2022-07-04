@@ -15,10 +15,12 @@
  */
 
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {PluginManagementStateService} from '../../services';
+import {PluginManagementService, PluginManagementStateService} from '../../services';
 import {take} from 'rxjs/operators';
 import {ModalComponent, ModalService} from '@valtimo/user-interface';
 import {BehaviorSubject, Subject, Subscription} from 'rxjs';
+import {PluginConfigurationData} from '@valtimo/plugin';
+import {NGXLogger} from 'ngx-logger';
 
 @Component({
   selector: 'valtimo-plugin-add-modal',
@@ -38,7 +40,9 @@ export class PluginAddModalComponent implements OnInit {
 
   constructor(
     private readonly stateService: PluginManagementStateService,
-    private readonly modalService: ModalService
+    private readonly modalService: ModalService,
+    private readonly pluginManagementService: PluginManagementService,
+    private readonly logger: NGXLogger
   ) {}
 
   ngOnInit(): void {
@@ -48,7 +52,6 @@ export class PluginAddModalComponent implements OnInit {
 
   complete(): void {
     this.stateService.save();
-    this.hide();
   }
 
   delete(): void {
@@ -70,6 +73,32 @@ export class PluginAddModalComponent implements OnInit {
 
   onValid(valid: boolean): void {
     this.configurationValid$.next(valid);
+  }
+
+  onConfiguration(configuration: PluginConfigurationData): void {
+    const pluginConfiguration = {...configuration};
+    delete pluginConfiguration['configurationTitle'];
+
+    this.stateService.disableInput();
+
+    this.stateService.selectedPluginDefinition$.pipe(take(1)).subscribe(selectedDefinition => {
+      this.pluginManagementService
+        .savePluginConfiguration({
+          definitionKey: selectedDefinition.key,
+          title: configuration.configurationTitle,
+          properties: pluginConfiguration,
+        })
+        .subscribe(
+          response => {
+            this.stateService.refresh();
+            this.hide();
+          },
+          () => {
+            this.logger.error('Something went wrong with saving the plugin configuration.');
+            this.hide();
+          }
+        );
+    });
   }
 
   private openShowSubscription(): void {

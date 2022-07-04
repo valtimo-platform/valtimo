@@ -19,7 +19,7 @@ import {BehaviorSubject, combineLatest} from 'rxjs';
 import {TableColumn} from '@valtimo/user-interface';
 import {PluginManagementStateService, PluginManagementService} from '../../services';
 import {TranslateService} from '@ngx-translate/core';
-import {map, tap} from 'rxjs/operators';
+import {map, switchMap, tap} from 'rxjs/operators';
 import {PluginTranslationService} from '@valtimo/plugin';
 
 @Component({
@@ -45,23 +45,31 @@ export class PluginManagementComponent {
     },
   ]);
 
-  readonly pluginConfigurations$ = combineLatest([
-    this.pluginService.getAllPluginConfigurations(),
-    this.translateService.stream('key'),
-  ]).pipe(
-    map(([pluginConfigurations]) =>
-      pluginConfigurations.map(configuration => ({
-        ...configuration,
-        pluginName: this.pluginTranslationService.instant('title', configuration.definitionKey),
-      }))
-    ),
-    tap(() => {
-      this.loading$.next(false);
-    })
+  readonly pluginConfigurations$ = this.stateService.refresh$.pipe(
+    switchMap(() =>
+      combineLatest([
+        this.pluginManagementService.getAllPluginConfigurations(),
+        this.translateService.stream('key'),
+      ]).pipe(
+        map(([pluginConfigurations]) =>
+          pluginConfigurations.map(configuration => ({
+            ...configuration,
+            pluginName: this.pluginTranslationService.instant(
+              'title',
+              configuration.pluginDefinition.key
+            ),
+            definitionKey: configuration.pluginDefinition.key,
+          }))
+        ),
+        tap(() => {
+          this.loading$.next(false);
+        })
+      )
+    )
   );
 
   constructor(
-    private readonly pluginService: PluginManagementService,
+    private readonly pluginManagementService: PluginManagementService,
     private readonly translateService: TranslateService,
     private readonly stateService: PluginManagementStateService,
     private readonly pluginTranslationService: PluginTranslationService

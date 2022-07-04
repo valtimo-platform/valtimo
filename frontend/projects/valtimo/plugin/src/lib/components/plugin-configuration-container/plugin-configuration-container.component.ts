@@ -31,6 +31,7 @@ import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map, take, tap} from 'rxjs/operators';
 import {
   ConfigurationComponentType,
+  FunctionConfigurationComponent,
   PluginConfigurationComponent,
   PluginConfigurationData,
 } from '../../models';
@@ -65,7 +66,7 @@ export class PluginConfigurationContainerComponent
 
   readonly noConfigurationComponentAvailable$ = new BehaviorSubject<boolean>(false);
   readonly componentRef$ = new BehaviorSubject<
-    ComponentRef<PluginConfigurationComponent> | undefined
+    ComponentRef<PluginConfigurationComponent | FunctionConfigurationComponent> | undefined
   >(undefined);
 
   private componentRefSubscription!: Subscription;
@@ -98,7 +99,9 @@ export class PluginConfigurationContainerComponent
     ])
       .pipe(
         tap(([pluginDefinitionKey, functionKey, componentType, pluginSpecifications]) => {
-          let configurationComponent!: Type<PluginConfigurationComponent>;
+          let configurationComponent!: Type<
+            PluginConfigurationComponent | FunctionConfigurationComponent
+          >;
 
           this.dynamicContainer.clear();
 

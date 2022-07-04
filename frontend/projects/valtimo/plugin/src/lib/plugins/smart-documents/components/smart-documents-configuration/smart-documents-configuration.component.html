@@ -16,8 +16,8 @@
 
 <v-form (valueChange)="formValueChange($event)">
   <v-input
-    name="name"
-    [title]="'name' | pluginTranslate: pluginId | async"
+    name="configurationTitle"
+    [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
     [margin]="true"
     [disabled]="disabled"
