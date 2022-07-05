@@ -21,7 +21,7 @@ import {FormDefinition, ModifyFormDefinitionRequest} from '../models';
 import {ActivatedRoute, Router} from '@angular/router';
 import {first, take} from 'rxjs/operators';
 import {BehaviorSubject, Subscription} from 'rxjs';
-import {FormioForm} from 'angular-formio';
+import {FormioForm} from '@formio/angular';
 
 @Component({
   selector: 'valtimo-form-management-edit',

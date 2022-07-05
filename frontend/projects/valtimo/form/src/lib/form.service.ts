@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {FormioForm} from 'angular-formio';
+import {FormioForm} from '@formio/angular';
 import {ConfigService} from '@valtimo/config';
 import {InterceptorSkipHeader} from '@valtimo/security';
 

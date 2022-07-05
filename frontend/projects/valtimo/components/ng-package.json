@@ -15,8 +15,9 @@
     "@ngx-translate/core",
     "@ngx-translate/http-loader",
     "@ng-bootstrap/ng-bootstrap",
-    "angular-formio",
+    "@formio/angular",
     "ngx-spinner",
-    "ng-multiselect-dropdown"
+    "ng-multiselect-dropdown",
+    "formiojs"
   ]
 }

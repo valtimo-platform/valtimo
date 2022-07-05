@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {FormioForm} from 'angular-formio';
+import {FormioForm} from '@formio/angular';
 
 export function compareFormDefinitions(fd1: FormDefinition, fd2: FormDefinition) {
   if (fd1 === null && fd2 === null) {

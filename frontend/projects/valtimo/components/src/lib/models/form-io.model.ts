@@ -20,7 +20,7 @@ import {
   FormioBeforeSubmit,
   FormioHookOptions,
   FormioOptions,
-} from 'angular-formio/formio.common';
+} from '@formio/angular/formio.common';
 
 export interface FormioSubmission {
   data: {

@@ -26,7 +26,7 @@ import {
   FormLinkService,
   FormSubmissionResult
 } from '@valtimo/form-link';
-import {FormioForm} from 'angular-formio';
+import {FormioForm} from '@formio/angular';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
 import {ToastrService} from 'ngx-toastr';

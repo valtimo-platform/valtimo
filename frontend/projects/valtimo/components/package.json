@@ -10,6 +10,7 @@
   "dependencies": {
     "@foxythemes/bootstrap-datetime-picker-bs4": "^2.3.4",
     "bpmn-js": "^6.4.2",
+    "formiojs": "~4.14.8",
     "jquery": "3.6.0",
     "moment": "2.29.3",
     "heatmap.js-fixed": "^2.0.2",
@@ -17,7 +18,7 @@
     "@ngx-translate/http-loader": "7.0.0",
     "@ng-bootstrap/ng-bootstrap": "^12.0.0",
     "ngx-toastr": "^14.3.0",
-    "angular-formio": "^4.11.5",
+    "@formio/angular": "^5.2.2",
     "ngx-spinner": "^13.1.1",
     "tslib": "^2.0.0",
     "ng-multiselect-dropdown": "^0.3.8"

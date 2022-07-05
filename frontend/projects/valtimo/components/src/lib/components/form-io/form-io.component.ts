@@ -26,8 +26,8 @@ import {
 } from '@angular/core';
 import {FormioSubmission, ValtimoFormioOptions} from '../../models';
 import {UserProviderService} from '@valtimo/security';
-import {Formio, FormioComponent as FormIoSourceComponent, FormioForm} from 'angular-formio';
-import {FormioRefreshValue} from 'angular-formio/formio.common';
+import {Formio, FormioComponent as FormIoSourceComponent, FormioForm} from '@formio/angular';
+import {FormioRefreshValue} from '@formio/angular/formio.common';
 import jwt_decode from 'jwt-decode';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, from, Subject, Subscription, timer} from 'rxjs';
@@ -71,9 +71,8 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit() {
     const documentDefinitionName = this.route.snapshot.paramMap.get('documentDefinitionName');
     const documentId = this.route.snapshot.paramMap.get('documentId');
-    const formDefinition = this.form;
 
-    this.formDefinition = formDefinition;
+    this.formDefinition = this.form;
     this.errors = [];
 
     this.setInitialToken();
@@ -90,8 +89,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    const currentForm = changes.form.currentValue;
-    this.formDefinition = currentForm;
+    this.formDefinition = changes.form.currentValue;
     this.reloadForm();
 
     this.setInitialToken();
@@ -131,13 +129,6 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   onChange(object: any): void {
     this.change.emit(object);
-  }
-
-  private formHasLegacyUpload(formDefinition: any): boolean {
-    const stringifiedFormDefinition = JSON.stringify(formDefinition);
-    const legacyUploadString = '"type":"file"';
-
-    return stringifiedFormDefinition.includes(legacyUploadString);
   }
 
   private setInitialToken(): void {

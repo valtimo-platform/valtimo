@@ -15,7 +15,7 @@
  */
 
 import {Component, EventEmitter, Output, ViewChild, ViewEncapsulation} from '@angular/core';
-import {FormioBeforeSubmit, FormioForm} from 'angular-formio';
+import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
 import {
   FormioComponent,
   ModalComponent,

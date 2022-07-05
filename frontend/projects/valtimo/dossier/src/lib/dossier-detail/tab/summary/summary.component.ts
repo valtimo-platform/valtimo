@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-import {
-  Component,
-  ElementRef,
-  OnInit,
-  Renderer2,
-  ViewChild,
-  ViewEncapsulation,
-} from '@angular/core';
-import {ProcessService, ProcessInstanceTask} from '@valtimo/process';
+import {Component, ElementRef, OnInit, Renderer2, ViewChild, ViewEncapsulation,} from '@angular/core';
+import {ProcessInstanceTask, ProcessService} from '@valtimo/process';
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
-import {DocumentService, Document, ProcessDocumentInstance} from '@valtimo/document';
+import {Document, DocumentService, ProcessDocumentInstance} from '@valtimo/document';
 import {TaskDetailModalComponent, TaskService} from '@valtimo/task';
 import {FormService} from '@valtimo/form';
 import {FormioOptionsImpl, ValtimoFormioOptions} from '@valtimo/components';
 import moment from 'moment';
-import {FormioForm} from 'angular-formio';
+import {FormioForm} from '@formio/angular';
 import {UserProviderService} from '@valtimo/security';
 
 moment.locale(localStorage.getItem('langKey') || '');
