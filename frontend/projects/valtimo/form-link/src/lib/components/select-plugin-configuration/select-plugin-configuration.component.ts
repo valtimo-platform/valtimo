@@ -38,7 +38,7 @@ export class SelectPluginConfigurationComponent {
   ]).pipe(
     map(([pluginConfigurations, availablePluginIds]) =>
       pluginConfigurations.filter(configuration =>
-        availablePluginIds.includes(configuration.definitionKey)
+        availablePluginIds.includes(configuration.pluginDefinition.key)
       )
     )
   );
@@ -52,7 +52,7 @@ export class SelectPluginConfigurationComponent {
   ) {}
 
   selectConfiguration(configuration: PluginConfiguration): void {
-    this.processLinkStateService.selectPluginDefinition({key: configuration.definitionKey});
+    this.processLinkStateService.selectPluginDefinition({key: configuration.pluginDefinition.key});
     this.processLinkStateService.selectPluginConfiguration(configuration);
   }
 

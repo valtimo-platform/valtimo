@@ -28,7 +28,7 @@ export class PluginFunctionConfigurationComponent {
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   readonly pluginDefinitionKey$ = this.stateService.selectedPluginConfiguration$.pipe(
-    map(configuration => configuration?.definitionKey)
+    map(configuration => configuration?.pluginDefinition.key)
   );
   readonly functionKey$ = this.stateService.selectedPluginFunction$.pipe(
     map(pluginFunction => pluginFunction?.key)
