@@ -81,7 +81,7 @@ export const environment: ValtimoConfig = {
         children: [],
       },
       {
-        roles: [ROLE_USER],
+        roles: [ROLE_ADMIN],
         link: ['/klanten'],
         title: 'Customers',
         iconClass: 'icon mdi mdi-account',

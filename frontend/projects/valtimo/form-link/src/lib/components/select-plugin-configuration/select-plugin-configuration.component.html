@@ -44,7 +44,7 @@
     <v-card
       [title]="pluginConfiguration.title"
       [selectable]="true"
-      [selected]="(selectedPluginConfiguration$ | async)?.key === pluginConfiguration.key"
+      [selected]="(selectedPluginConfiguration$ | async)?.id === pluginConfiguration.id"
       [fullHeight]="true"
       (selectEvent)="selectConfiguration(pluginConfiguration)"
       (deselectEvent)="deselectConfiguration()"
