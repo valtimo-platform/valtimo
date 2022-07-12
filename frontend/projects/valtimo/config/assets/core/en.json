@@ -164,7 +164,7 @@
     "moreDetails": "More details"
   },
   "formManagement": {
-    "noFormDefinitionFoundAdmin": "There is no form connected to the start event/user task. To link a form goto Admin menu > Process connections.",
+    "noFormDefinitionFoundAdmin": "There is no form connected to the start event/user task. To link a form go to Admin menu > Process links.",
     "noFormDefinitionFoundUser": "There is no form connected to the start event/user task. Ask an admin user for assistance.",
     "gotoFormLinksButton": "Configure now",
     "name": "Name",
@@ -289,7 +289,7 @@
   "Overview of all Forms": "Overview of all Forms",
   "Create new Form": "Create new Form",
   "Form Builder": "Form Builder",
-  "Form links": "Process connections",
+  "Form links": "Process links",
   "uploadFormDefinition": "Upload form definition",
   "Process migration": "Process migration",
   "Process migration warning": "<b>Warning:</b> When migrating a process, the candidate groups of running instances will not be updated. This can be done in the database if necessary. (For example if a specific user task is open for ROLE_USER and the candidate group for the user task is updated in the process to ROLE_ADMIN, this user task is still accessible for ROLE_USER. Only newly started processes will use the updated candidate group)",
