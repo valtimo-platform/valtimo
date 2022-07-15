@@ -1,0 +1,15 @@
+b5a2faf - Updated version to 5.3.0
+8158c14 - Merge remote-tracking branch 'origin/main' into rc/5.3.0-51.RC
+b71ff6b - Updated version to 5.3.0-51.RC-SNAPSHOT
+9568923 - fix build (#127)
+4ee8229 - get plugin definitions form endpoint (#126)
+7e9e622 - feat: upgrade fe libs deps (#124)
+ea9c3fc - fix lint multi input (#125)
+a85854f - feat: implement smartdocuments plugin (#123)
+cbd9744 - sanitize input on timeline component (#122)
+08d4d40 - Feature/35396 open documents in new tab (#119)
+1edd4ef - fix lint (#121)
+47f95c1 - feat: configure oz plugin functions (#120)
+77cfe9b - lint fix task list component (#118)
+3ad6cfc - feat: add oz config screen (#117)
+382f64b - feat: add task list sorting (#116)
