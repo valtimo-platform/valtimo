@@ -12,7 +12,7 @@
     "bpmn-js": "^6.4.2",
     "formiojs": "~4.14.8",
     "jquery": "3.6.0",
-    "moment": "2.29.3",
+    "moment": "^2.29.4",
     "heatmap.js-fixed": "^2.0.2",
     "@ngx-translate/core": "^14.0.0",
     "@ngx-translate/http-loader": "7.0.0",

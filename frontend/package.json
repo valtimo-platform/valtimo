@@ -274,7 +274,7 @@
     "lodash": "^4.17.21",
     "magnific-popup": "^1.0.0",
     "masonry-layout": "^4.1.0",
-    "moment": "2.29.3",
+    "moment": "^2.29.4",
     "multiselect": "^0.9.12",
     "ng-multiselect-dropdown": "^0.3.8",
     "ng-packagr": "^13.2.1",
