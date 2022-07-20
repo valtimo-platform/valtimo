@@ -7,7 +7,11 @@
  *
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.See the License for the specific language governing permissions and limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import {PluginSpecification} from '../../models';
@@ -35,6 +39,9 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       templateName: 'Template-naam',
       format: 'Documentformaat',
       templateData: 'Template-data',
+      resultingDocumentProcessVariableName: 'Naam procesvariabele voor opslag document',
+      resultingDocumentProcessVariableNameTooltip:
+        'De locatie van het gegenereerde document wordt opgeslagen in een procesvariabele. Deze procesvariabele wordt gebruikt om toegang te krijgen tot het document in een andere BPMN-taak.',
     },
     en: {
       title: 'SmartDocuments',
@@ -48,6 +55,9 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       templateName: 'Template name',
       format: 'Document format',
       templateData: 'Template data',
+      resultingDocumentProcessVariableName: 'Process variable name for storing document',
+      resultingDocumentProcessVariableNameTooltip:
+        'The location of the generated document is stored in a process variable. This process variable is used to access the document in another BPMN task.',
     },
     de: {
       title: 'SmartDocuments',
@@ -61,6 +71,9 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       templateName: 'Templatename',
       format: 'Dokumentformat',
       templateData: 'Templatedaten',
+      resultingDocumentProcessVariableName: 'Prozessvariablenname zum Speichern des Dokuments',
+      resultingDocumentProcessVariableNameTooltip:
+        'Der Ort des generierten Dokuments wird in einer Prozessvariablen gespeichert. Diese Prozessvariable wird verwendet, um in einer anderen BPMN-Aufgabe auf das Dokument zuzugreifen.',
     },
   },
 };

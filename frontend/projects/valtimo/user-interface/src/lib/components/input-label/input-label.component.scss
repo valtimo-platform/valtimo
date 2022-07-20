@@ -14,11 +14,28 @@
  * limitations under the License.
  */
 
-.v-input__label {
+.v-input-label-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-block-end: var(--v-input-title-margin);
+}
+
+.v-input-label {
   margin: 0;
   font-size: var(--v-input-title-font-size);
   color: var(--v-input-title-font-color);
   line-height: var(--v-input-title-line-height);
   font-weight: var(--v-input-title-font-weight);
-  margin-block-end: var(--v-input-title-margin);
+}
+
+.v-input-label__tooltip {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: var(--v-input-tooltip-icon-size);
+  width: var(--v-input-tooltip-icon-size);
+  height: var(--v-input-tooltip-icon-size);
+  color: var(--v-input-tooltip-icon-color);
+  margin-inline-start: var(--v-input-tooltip-icon-margin);
 }

@@ -25,4 +25,5 @@ export class InputLabelComponent {
   @Input() name = '';
   @Input() title = '';
   @Input() titleTranslationKey = '';
+  @Input() tooltip = '';
 }

@@ -37,6 +37,15 @@
     [disabled]="obs.disabled"
   >
   </v-input>
+  <v-input
+    name="resultingDocumentProcessVariableName"
+    [title]="'resultingDocumentProcessVariableName' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.resultingDocumentProcessVariableName"
+    [disabled]="obs.disabled"
+    [tooltip]="'resultingDocumentProcessVariableNameTooltip' | pluginTranslate: pluginId | async"
+  >
+  </v-input>
   <v-select
     [items]="FORMAT_SELECT_ITEMS"
     [margin]="true"
@@ -52,5 +61,6 @@
     type="keyValue"
     [disabled]="obs.disabled"
     [defaultValues]="obs.prefill?.templateData"
+    [margin]="true"
   ></v-multi-input>
 </v-form>

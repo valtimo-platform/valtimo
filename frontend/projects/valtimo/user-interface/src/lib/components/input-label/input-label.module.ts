@@ -19,10 +19,11 @@ import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {InputLabelComponent} from './input-label.component';
 import {TranslateModule} from '@ngx-translate/core';
+import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 
 @NgModule({
   declarations: [InputLabelComponent],
-  imports: [CommonModule, TranslateModule, FormsModule],
+  imports: [CommonModule, TranslateModule, FormsModule, NgbTooltipModule],
   exports: [InputLabelComponent],
 })
 export class InputLabelModule {}
