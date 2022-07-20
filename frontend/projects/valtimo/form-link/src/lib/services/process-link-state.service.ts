@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subject, switchMap} from 'rxjs';
 import {
   PluginConfiguration,
   PluginDefinition,
@@ -25,6 +25,7 @@ import {
 } from '@valtimo/plugin-management';
 import {map} from 'rxjs/operators';
 import {PluginService, PluginSpecification} from '@valtimo/plugin';
+import {ProcessLink, ProcessLinkModalType} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -35,8 +36,16 @@ export class ProcessLinkStateService {
     undefined
   );
   private readonly _selectedPluginFunction$ = new BehaviorSubject<PluginFunction>(undefined);
+  private readonly _selectedProcessLink$ = new BehaviorSubject<ProcessLink>(undefined);
+  private readonly _inputDisabled$ = new BehaviorSubject<boolean>(false);
+  private readonly _save$ = new Subject<null>();
+  private readonly _saveModify$ = new Subject<null>();
+  private readonly _modalType$ = new BehaviorSubject<ProcessLinkModalType>('create');
 
-  constructor(private readonly pluginManagementService: PluginManagementService) {}
+  constructor(
+    private readonly pluginManagementService: PluginManagementService,
+    private readonly pluginService: PluginService
+  ) {}
 
   get selectedPluginDefinition$(): Observable<PluginDefinition> {
     return this._selectedPluginDefinition$.asObservable();
@@ -48,6 +57,70 @@ export class ProcessLinkStateService {
 
   get selectedPluginFunction$(): Observable<PluginFunction> {
     return this._selectedPluginFunction$.asObservable();
+  }
+
+  get inputDisabled$(): Observable<boolean> {
+    return this._inputDisabled$.asObservable();
+  }
+
+  get isCreateModal$(): Observable<boolean> {
+    return this._modalType$.pipe(map(modalType => modalType === 'create'));
+  }
+
+  get isEditModal$(): Observable<boolean> {
+    return this._modalType$.pipe(map(modalType => modalType === 'edit'));
+  }
+
+  get save$(): Observable<any> {
+    return this.isCreateModal$.pipe(
+      switchMap(isCreateModal =>
+        isCreateModal ? this._save$.asObservable() : this._saveModify$.asObservable()
+      )
+    );
+  }
+
+  get selectedProcessLink$(): Observable<ProcessLink> {
+    return this._selectedProcessLink$.asObservable();
+  }
+
+  get modalType$(): Observable<ProcessLinkModalType> {
+    return this._modalType$.asObservable();
+  }
+
+  get functionKey$(): Observable<string> {
+    return this.isCreateModal$.pipe(
+      switchMap(isCreateModal =>
+        isCreateModal
+          ? this._selectedPluginFunction$.pipe(map(pluginFunction => pluginFunction?.key))
+          : this._selectedProcessLink$.pipe(
+              map(processLink => processLink?.pluginActionDefinitionKey)
+            )
+      )
+    );
+  }
+
+  get pluginDefinitionKey$(): Observable<string> {
+    return this.isCreateModal$.pipe(
+      switchMap(isCreateModal =>
+        isCreateModal
+          ? this._selectedPluginConfiguration$.pipe(
+              map(configuration => configuration?.pluginDefinition.key)
+            )
+          : combineLatest([
+              this._selectedProcessLink$,
+              this.pluginService.pluginSpecifications$,
+            ]).pipe(
+              map(([processLink, pluginSpecifications]) => {
+                const pluginSpecification = pluginSpecifications.find(specification => {
+                  const functionKeys = Object.keys(specification.functionConfigurationComponents);
+                  return functionKeys.includes(processLink?.pluginActionDefinitionKey);
+                });
+
+                return pluginSpecification?.pluginId;
+              })
+            )
+      )
+    );
   }
 
   selectPluginDefinition(definition: PluginDefinition): void {
@@ -62,6 +135,10 @@ export class ProcessLinkStateService {
     this._selectedPluginFunction$.next(pluginFunction);
   }
 
+  selectProcessLink(processLink: ProcessLink): void {
+    this._selectedProcessLink$.next(processLink);
+  }
+
   deselectPluginDefinition(): void {
     this._selectedPluginDefinition$.next(undefined);
   }
@@ -74,9 +151,34 @@ export class ProcessLinkStateService {
     this._selectedPluginFunction$.next(undefined);
   }
 
+  deselectProcessLink(): void {
+    this._selectedProcessLink$.next(undefined);
+  }
+
+  disableInput(): void {
+    this._inputDisabled$.next(true);
+  }
+
+  enableInput(): void {
+    this._inputDisabled$.next(false);
+  }
+
+  save(): void {
+    this._save$.next(null);
+  }
+
+  saveModify(): void {
+    this._saveModify$.next(null);
+  }
+
+  setModalType(type: ProcessLinkModalType): void {
+    this._modalType$.next(type);
+  }
+
   clear(): void {
     this.deselectPluginDefinition();
     this.deselectPluginConfiguration();
     this.deselectPluginFunction();
+    this.deselectProcessLink();
   }
 }

@@ -27,6 +27,7 @@ export class TitleComponent implements OnInit {
   @Input() margin = true;
 
   isH1!: boolean;
+  isH2!: boolean;
 
   ngOnInit(): void {
     this.setTitleType();
@@ -36,6 +37,9 @@ export class TitleComponent implements OnInit {
     switch (this.type) {
       case 'h1':
         this.isH1 = true;
+        break;
+      case 'h2':
+        this.isH2 = true;
         break;
     }
   }

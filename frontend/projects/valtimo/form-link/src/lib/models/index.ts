@@ -15,3 +15,4 @@
  */
 
 export * from './form-link.model';
+export * from './process-link.model';

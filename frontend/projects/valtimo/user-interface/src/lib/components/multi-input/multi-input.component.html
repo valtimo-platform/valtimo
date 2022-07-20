@@ -50,7 +50,7 @@
         <ng-container *ngTemplateOutlet="keyValue; context: {value: value}"></ng-container>
       </ng-container>
       <v-button
-        [disabled]="values?.length <= this.minimumAmountOfRows"
+        [disabled]="values?.length <= this.minimumAmountOfRows || disabled"
         mdiIcon="close"
         type="icon-danger"
         (clickEvent)="deleteRow(value.uuid)"
@@ -63,7 +63,7 @@
         type="success"
         (clickEvent)="addRow()"
         [title]="vars.addRowText"
-        [disabled]="(addRowEnabled$ | async) === false"
+        [disabled]="(addRowEnabled$ | async) === false || disabled"
         >{{ vars.addRowText }}</v-button
       >
     </div>
@@ -72,15 +72,27 @@
 
 <ng-template #singleValue let-value="value">
   <div class="v-multi-input__input">
-    <v-input (valueChange)="onValueChange(value, $event, 'value')"></v-input>
+    <v-input
+      (valueChange)="onValueChange(value, $event, 'value')"
+      [disabled]="disabled"
+      [defaultValue]="value.value"
+    ></v-input>
   </div>
 </ng-template>
 
 <ng-template #keyValue let-value="value">
   <div class="v-multi-input__input">
-    <v-input (valueChange)="onValueChange(value, $event, 'key')"></v-input>
+    <v-input
+      (valueChange)="onValueChange(value, $event, 'key')"
+      [disabled]="disabled"
+      [defaultValue]="value.key"
+    ></v-input>
   </div>
   <div class="v-multi-input__input">
-    <v-input (valueChange)="onValueChange(value, $event, 'value')"></v-input>
+    <v-input
+      (valueChange)="onValueChange(value, $event, 'value')"
+      [disabled]="disabled"
+      [defaultValue]="value.value"
+    ></v-input>
   </div>
 </ng-template>

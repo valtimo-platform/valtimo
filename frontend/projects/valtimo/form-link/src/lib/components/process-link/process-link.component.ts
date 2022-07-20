@@ -15,52 +15,148 @@
  */
 
 import {Component, ViewChild} from '@angular/core';
-import {BehaviorSubject, Subject} from 'rxjs';
-import {ModalParams} from '../../models';
+import {BehaviorSubject, combineLatest, Subject} from 'rxjs';
+import {ModalParams, SaveProcessLinkRequest, UpdateProcessLinkRequest} from '../../models';
 import {ModalComponent, ModalService} from '@valtimo/user-interface';
 import {ProcessLinkStateService} from '../../services/process-link-state.service';
 import {take} from 'rxjs/operators';
+import {PluginConfigurationData} from '@valtimo/plugin';
+import {ProcessLinkService} from '../../services';
+import {NGXLogger} from 'ngx-logger';
 
 @Component({
   selector: 'valtimo-process-link',
   templateUrl: './process-link.component.html',
   styleUrls: ['./process-link.component.scss'],
-  providers: [ProcessLinkStateService],
 })
 export class ProcessLinkComponent {
-  @ViewChild('pluginModal') connectorCreateModal: ModalComponent;
+  @ViewChild('createProcessLink') createProcessLinkModal: ModalComponent;
+  @ViewChild('editProcessLink') editProcessLinkModal: ModalComponent;
 
+  readonly pluginDefinitionKey$ = this.stateService.pluginDefinitionKey$;
+  readonly functionKey$ = this.stateService.functionKey$;
   readonly returnToFirstStepSubject$ = new Subject<boolean>();
-  readonly selectedPluginDefinition$ = this.processLinkStateService.selectedPluginDefinition$;
-  readonly selectedPluginConfiguration$ = this.processLinkStateService.selectedPluginConfiguration$;
-  readonly selectedPluginFunction$ = this.processLinkStateService.selectedPluginFunction$;
+  readonly selectedPluginDefinition$ = this.stateService.selectedPluginDefinition$;
+  readonly selectedPluginConfiguration$ = this.stateService.selectedPluginConfiguration$;
+  readonly selectedPluginFunction$ = this.stateService.selectedPluginFunction$;
+  readonly inputDisabled$ = this.stateService.inputDisabled$;
+  readonly isCreateModal$ = this.stateService.isCreateModal$;
+  readonly isEditModal$ = this.stateService.isEditModal$;
+  readonly selectedProcessLink$ = this.stateService.selectedProcessLink$;
   readonly functionConfigurationValid$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private readonly modalService: ModalService,
-    private readonly processLinkStateService: ProcessLinkStateService
+    private readonly stateService: ProcessLinkStateService,
+    private readonly processLinkService: ProcessLinkService,
+    private readonly logger: NGXLogger
   ) {}
 
   complete(): void {
-    this.hide();
+    this.stateService.save();
+  }
+
+  completeModify(): void {
+    this.stateService.saveModify();
   }
 
   hide(): void {
-    this.modalService.closeModal();
-
-    this.modalService.appearingDelayMs$.pipe(take(1)).subscribe(appearingDelay => {
-      setTimeout(() => {
-        this.returnToFirstStepSubject$.next(true);
-        this.processLinkStateService.clear();
-      }, appearingDelay);
+    this.modalService.closeModal(() => {
+      this.returnToFirstStepSubject$.next(true);
+      this.stateService.clear();
+      this.stateService.enableInput();
     });
   }
 
+  unlink(): void {
+    this.logger.error('Endpoint for removing process link has not been implemented.');
+  }
+
   openModal(params: ModalParams): void {
-    this.modalService.openModal(this.connectorCreateModal, params);
+    this.processLinkService
+      .getProcessLink({
+        processDefinitionId: params.processDefinitionKey,
+        activityId: params?.element?.id,
+      })
+      .subscribe(
+        processLinks => {
+          if (processLinks?.length > 0) {
+            this.stateService.selectProcessLink(processLinks[0]);
+            this.openEditModal(params);
+          } else {
+            this.openCreateModal(params);
+          }
+        },
+        () => {
+          this.openCreateModal(params);
+        }
+      );
   }
 
   onValid(valid: boolean): void {
     this.functionConfigurationValid$.next(valid);
+  }
+
+  onConfiguration(configuration: PluginConfigurationData): void {
+    this.stateService.disableInput();
+
+    combineLatest([
+      this.modalService.modalData$,
+      this.stateService.selectedPluginConfiguration$,
+      this.stateService.selectedPluginFunction$,
+    ])
+      .pipe(take(1))
+      .subscribe(([modalData, selectedConfiguration, selectedFunction]) => {
+        const processLinkRequest: SaveProcessLinkRequest = {
+          actionProperties: configuration,
+          activityId: modalData?.element?.id,
+          pluginConfigurationId: selectedConfiguration.id,
+          processDefinitionId: modalData?.processDefinitionKey,
+          pluginActionDefinitionKey: selectedFunction.key,
+        };
+
+        this.processLinkService.saveProcessLink(processLinkRequest).subscribe(
+          response => {
+            this.hide();
+          },
+          () => {
+            this.logger.error('Something went wrong with saving the process link.');
+            this.stateService.enableInput();
+          }
+        );
+      });
+  }
+
+  onModifyConfiguration(configuration: PluginConfigurationData): void {
+    this.stateService.disableInput();
+
+    this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
+      const updateProcessLinkRequest: UpdateProcessLinkRequest = {
+        id: selectedProcessLink.id,
+        pluginConfigurationId: selectedProcessLink.pluginConfigurationId,
+        pluginActionDefinitionKey: selectedProcessLink.pluginActionDefinitionKey,
+        actionProperties: configuration,
+      };
+
+      this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
+        response => {
+          this.hide();
+        },
+        () => {
+          this.logger.error('Something went wrong with updating the process link.');
+          this.stateService.enableInput();
+        }
+      );
+    });
+  }
+
+  private openCreateModal(params: ModalParams): void {
+    this.stateService.setModalType('create');
+    this.modalService.openModal(this.createProcessLinkModal, params);
+  }
+
+  private openEditModal(params: ModalParams): void {
+    this.stateService.setModalType('edit');
+    this.modalService.openModal(this.editProcessLinkModal, params);
   }
 }

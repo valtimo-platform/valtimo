@@ -685,5 +685,10 @@
       "zaakStatus": "Status",
       "zaakType": "Type"
     }
+  },
+  "processLink": {
+    "edit": "Proceskoppeling wijzigen",
+    "saveChanges": "Wijzigingen opslaan",
+    "unlink": "Ontkoppelen"
   }
 }

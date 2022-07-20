@@ -685,5 +685,10 @@
       "zaakStatus": "Status",
       "zaakType": "Type"
     }
+  },
+  "processLink": {
+    "edit": "Edit process link",
+    "saveChanges": "Save changes",
+    "unlink": "Unlink"
   }
 }

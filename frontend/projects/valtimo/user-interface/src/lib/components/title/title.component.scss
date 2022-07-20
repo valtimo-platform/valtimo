@@ -23,6 +23,15 @@
   margin-block-end: var(--v-title-h1-margin-block-end);
 }
 
+.v-title--h2 {
+  color: var(--v-title-h2-color);
+  font-size: var(--v-title-h2-font-size);
+  font-weight: var(--v-title-h2-font-weight);
+  line-height: var(--v-title-h2-line-height);
+  margin: 0;
+  margin-block-end: var(--v-title-h2-margin-block-end);
+}
+
 .v-title--no-margin {
   margin: 0;
 }

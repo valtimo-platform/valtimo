@@ -60,6 +60,7 @@
   --v-font-size-smaller: 12px;
   --v-font-size-default: 14px;
   --v-font-size-larger: 16px;
+  --v-font-size-large: 20px;
   --v-font-size-xl: 28px;
   /* font weight */
   --v-font-weight-light: 300;
@@ -292,6 +293,11 @@
   --v-title-h1-line-height: var(--v-line-height-xl);
   --v-title-h1-font-size: var(--v-font-size-xl);
   --v-title-h1-margin-block-end: var(--v-spacing-block-2xl);
+  --v-title-h2-color: var(--v-color-grey-1);
+  --v-title-h2-font-weight: var(--v-font-weight-light);
+  --v-title-h2-line-height: var(--v-line-height-large);
+  --v-title-h2-font-size: var(--v-font-size-large);
+  --v-title-h2-margin-block-end: var(--v-spacing-block-xl);
   /* input */
   --v-input-font-size: var(--v-font-size-smaller);
   --v-input-line-height: var(--v-line-height-larger);

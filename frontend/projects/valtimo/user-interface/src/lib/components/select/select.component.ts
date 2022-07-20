@@ -26,6 +26,7 @@ import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 export class SelectComponent implements OnInit, OnDestroy {
   @Input() items: Array<SelectItem> = [];
   @Input() defaultSelection!: SelectItem;
+  @Input() defaultSelectionId!: string;
   @Input() clearable = true;
   @Input() disabled = false;
   @Input() multiple = false;
@@ -66,7 +67,7 @@ export class SelectComponent implements OnInit, OnDestroy {
 
   private setDefaultSelection(): void {
     const itemsIds = this.items?.map(item => item.id);
-    const defaultSelectionId = this.defaultSelection?.id;
+    const defaultSelectionId = this.defaultSelection?.id || this.defaultSelectionId;
 
     if (defaultSelectionId && itemsIds?.includes(defaultSelectionId)) {
       if (this.multiple) {

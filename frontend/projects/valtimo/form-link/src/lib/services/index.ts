@@ -13,3 +13,4 @@
 export * from './form-flow.service';
 export * from './process-link-state.service';
 export * from './form-link.service';
+export * from './process-link.service';

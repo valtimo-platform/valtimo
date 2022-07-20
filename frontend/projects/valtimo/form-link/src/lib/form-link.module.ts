@@ -29,6 +29,8 @@ import {
   ModalModule as VModalModule,
   CardModule,
   ParagraphModule,
+  ButtonModule,
+  TitleModule,
 } from '@valtimo/user-interface';
 import {SelectPluginComponent} from './components/select-plugin/select-plugin.component';
 import {SelectPluginConfigurationComponent} from './components/select-plugin-configuration/select-plugin-configuration.component';
@@ -62,6 +64,8 @@ import {PluginFunctionConfigurationComponent} from './components/plugin-function
     PluginTranslatePipeModule,
     ParagraphModule,
     PluginConfigurationContainerModule,
+    ButtonModule,
+    TitleModule,
   ],
   exports: [
     FormLinkComponent,

@@ -16,7 +16,7 @@
 
 <valtimo-select-zaak-type
   [pluginId]="pluginId"
-  [disabled]="disabled"
+  [disabled]="disabled$ | async"
   (zaakTypeSelected)="selectZaakType($event)"
 ></valtimo-select-zaak-type>
 <v-select
@@ -24,7 +24,7 @@
   [margin]="true"
   [widthInPx]="350"
   [title]="'zaakStatus' | pluginTranslate: pluginId | async"
-  [disabled]="(selectedZaakType$ | async) === null || disabled"
+  [disabled]="(selectedZaakType$ | async) === null || (disabled$ | async)"
   [clearSelectionSubject$]="clearSubject$"
   (selectedChange)="selectStatus($event)"
 ></v-select>

@@ -16,8 +16,9 @@
 
 import {Component, EventEmitter, Output} from '@angular/core';
 import {ProcessLinkStateService} from '../../services';
-import {combineLatest} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {combineLatest, of, switchMap} from 'rxjs';
+import {map, tap} from 'rxjs/operators';
+import {PluginConfigurationData} from '@valtimo/plugin';
 
 @Component({
   selector: 'valtimo-plugin-function-configuration',
@@ -26,17 +27,30 @@ import {map} from 'rxjs/operators';
 })
 export class PluginFunctionConfigurationComponent {
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() configuration: EventEmitter<PluginConfigurationData> =
+    new EventEmitter<PluginConfigurationData>();
 
-  readonly pluginDefinitionKey$ = this.stateService.selectedPluginConfiguration$.pipe(
-    map(configuration => configuration?.pluginDefinition.key)
-  );
-  readonly functionKey$ = this.stateService.selectedPluginFunction$.pipe(
-    map(pluginFunction => pluginFunction?.key)
+  readonly pluginDefinitionKey$ = this.stateService.pluginDefinitionKey$;
+  readonly functionKey$ = this.stateService.functionKey$;
+  readonly save$ = this.stateService.save$;
+  readonly disabled$ = this.stateService.inputDisabled$;
+  readonly prefillConfiguration$ = this.stateService.modalType$.pipe(
+    switchMap(modalType =>
+      modalType === 'edit'
+        ? this.stateService.selectedProcessLink$.pipe(
+            map(processLink => processLink?.actionProperties)
+          )
+        : of(undefined)
+    )
   );
 
   constructor(private readonly stateService: ProcessLinkStateService) {}
 
   onValid(valid: boolean): void {
     this.valid.emit(valid);
+  }
+
+  onConfiguration(configuration: PluginConfigurationData) {
+    this.configuration.emit(configuration);
   }
 }

@@ -132,7 +132,7 @@ export class PluginManagementService {
       map(([pluginConfigurations, pluginSpecifications]) =>
         pluginConfigurations?.map(pluginConfiguration => {
           const pluginSpecification = pluginSpecifications.find(
-            specification => specification.pluginId === pluginConfiguration.definitionKey
+            specification => specification.pluginId === pluginConfiguration?.pluginDefinition?.key
           );
 
           return {

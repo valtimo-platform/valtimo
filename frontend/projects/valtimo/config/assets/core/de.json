@@ -685,5 +685,10 @@
       "zaakStatus": "Status",
       "zaakType": "Typ"
     }
+  },
+  "processLink": {
+    "edit": "Prozesslink bearbeiten",
+    "saveChanges": "Änderungen speichern",
+    "unlink": "Verknüpfung aufheben"
   }
 }

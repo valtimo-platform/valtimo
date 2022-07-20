@@ -16,6 +16,6 @@
 
 <valtimo-select-zaak-type
   [pluginId]="pluginId"
-  [disabled]="disabled"
+  [disabled]="disabled$ | async"
   (zaakTypeSelected)="selectZaakType($event)"
 ></valtimo-select-zaak-type>

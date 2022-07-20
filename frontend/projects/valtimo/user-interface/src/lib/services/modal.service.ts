@@ -51,6 +51,10 @@ export class ModalService {
     return this._appearingDelayMs$.asObservable();
   }
 
+  get appearingDelayMs() {
+    return this._appearingDelayMs$.getValue();
+  }
+
   get modalData$() {
     return this._modalData$.asObservable();
   }
@@ -83,10 +87,16 @@ export class ModalService {
     }
   }
 
-  closeModal(): void {
+  closeModal(callBackFunction?: () => void): void {
     this._disappearing$.next(true);
     this.setDisappearingTimeout();
     this._modalVisible$.next(false);
+
+    if (callBackFunction) {
+      setTimeout(() => {
+        callBackFunction();
+      }, this.appearingDelayMs);
+    }
   }
 
   getModalVisible(modalUuid: string): Observable<boolean> {

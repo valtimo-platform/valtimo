@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+.v-input-container {
+  display: flex;
+  flex-direction: column;
+}
+
 .v-input__label {
   margin: 0;
   font-size: var(--v-input-title-font-size);

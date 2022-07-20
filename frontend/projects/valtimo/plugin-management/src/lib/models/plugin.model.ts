@@ -25,7 +25,7 @@ interface PluginDefinitionWithLogo extends PluginDefinition {
 interface PluginConfiguration {
   definitionKey?: string;
   pluginDefinition?: PluginDefinition;
-  key?: string;
+  id?: string;
   title: string;
   properties: object;
 }

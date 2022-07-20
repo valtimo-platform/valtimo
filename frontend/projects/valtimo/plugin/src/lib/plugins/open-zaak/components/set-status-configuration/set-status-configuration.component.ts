@@ -27,7 +27,7 @@ export class SetStatusConfigurationComponent
 {
   @Input() clear$: Observable<void>;
   @Input() save$: Observable<void>;
-  @Input() disabled: boolean;
+  @Input() disabled$: Observable<boolean>;
   @Input() error: boolean;
   @Input() pluginId: string;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();

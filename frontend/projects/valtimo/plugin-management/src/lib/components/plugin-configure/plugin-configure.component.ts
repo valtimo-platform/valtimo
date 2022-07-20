@@ -43,7 +43,7 @@ export class PluginConfigureComponent {
     this.valid.emit(valid);
   }
 
-  onConfiguration(configuration: PluginConfigurationData) {
+  onFunctionConfiguration(configuration: PluginConfigurationData) {
     this.configuration.emit(configuration);
   }
 }

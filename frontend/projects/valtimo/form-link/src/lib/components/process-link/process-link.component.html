@@ -27,9 +27,10 @@
 <v-stepper-container
   (completeEvent)="complete()"
   (cancelClickEvent)="hide()"
+  [disabled]="inputDisabled$ | async"
   [returnToFirstStepSubject$]="returnToFirstStepSubject$"
 >
-  <v-modal #pluginModal (closeEvent)="hide()" [maxWidthPx]="750">
+  <v-modal #createProcessLink (closeEvent)="hide()" [maxWidthPx]="750">
     <div role="header">
       <v-stepper-header></v-stepper-header>
     </div>
@@ -43,7 +44,9 @@
         </v-stepper-step>
         <v-stepper-step titleTranslationKey="pluginSteps.step3">
           <valtimo-plugin-function-configuration
+            *ngIf="isCreateModal$ | async"
             (valid)="onValid($event)"
+            (configuration)="onConfiguration($event)"
           ></valtimo-plugin-function-configuration>
         </v-stepper-step>
       </v-stepper-content>
@@ -66,3 +69,46 @@
     </div>
   </v-modal>
 </v-stepper-container>
+
+<v-modal #editProcessLink (closeEvent)="hide()">
+  <div role="header">
+    <div
+      class="edit-function-title"
+      *ngIf="{
+        pluginDefinitionKey: pluginDefinitionKey$ | async,
+        functionKey: functionKey$ | async
+      } as obs"
+    >
+      <v-title [margin]="false" type="h2">{{
+        ('title' | pluginTranslate: obs.pluginDefinitionKey | async) +
+          ' - ' +
+          (obs.functionKey | pluginTranslate: obs.pluginDefinitionKey | async)
+      }}</v-title>
+    </div>
+  </div>
+  <div role="content">
+    <valtimo-plugin-function-configuration
+      *ngIf="(selectedProcessLink$ | async) && (isEditModal$ | async)"
+      (valid)="onValid($event)"
+      (configuration)="onModifyConfiguration($event)"
+    ></valtimo-plugin-function-configuration>
+  </div>
+  <div role="footer">
+    <div class="edit-function-buttons">
+      <v-button
+        [disabled]="(inputDisabled$ | async) || true"
+        (clickEvent)="unlink()"
+        [mdiIcon]="'link-variant-minus'"
+        type="danger"
+        >{{ 'processLink.unlink' | translate }}</v-button
+      >
+      <v-button
+        [disabled]="(functionConfigurationValid$ | async) === false || (inputDisabled$ | async)"
+        (clickEvent)="completeModify()"
+        [mdiIcon]="'check'"
+        type="success"
+        >{{ 'processLink.saveChanges' | translate }}</v-button
+      >
+    </div>
+  </div>
+</v-modal>
