@@ -1,7 +1,7 @@
 {
   "events": {
-    "TaskCompletedEvent": "Taak afgerond <i class=\"mdi mdi-arrow-right\"></i> {{taskName}}",
-    "TaskAssignedEvent": "Taak toegewezen <i class=\"mdi mdi-arrow-right\"></i> {{taskName}}",
+    "TaskCompletedEvent": "Taak afgerond > {{taskName}}",
+    "TaskAssignedEvent": "Taak toegewezen > {{taskName}}",
     "JsonSchemaDocumentCreatedEvent": "Dossier aangemaakt",
     "JsonSchemaDocumentModifiedEvent": "Dossier aangepast",
     "ProcessStartedEvent": "Proces gestart",
@@ -9,7 +9,7 @@
     "DossierDocumentGeneratedEvent": "Dossier document gegenereerd",
     "DocumentRelatedFileAddedEvent": "Gerelateerd bestand toegevoegd",
     "DocumentRelatedFileRemovedEvent": "Gerelateerd bestand verwijderd",
-    "BesluitAddedEvent": "Besluit toegevoegd <i class=\"mdi mdi-arrow-right\"></i> {{identificatie}}"
+    "BesluitAddedEvent": "Besluit toegevoegd > {{identificatie}}"
   },
   "dossier": {
     "title": {

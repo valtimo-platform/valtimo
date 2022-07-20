@@ -1,7 +1,7 @@
 {
   "events": {
-    "TaskCompletedEvent": "Aufgabe abgeschlossen <i class=\"mdi mdi-arrow-right\"></i> {{taskName}}",
-    "TaskAssignedEvent": "Aufgabe zugeordnet <i class=\"mdi mdi-arrow-right\"></i> {{taskName}}",
+    "TaskCompletedEvent": "Aufgabe abgeschlossen > {{taskName}}",
+    "TaskAssignedEvent": "Aufgabe zugeordnet > {{taskName}}",
     "JsonSchemaDocumentCreatedEvent": "Case erstellt",
     "JsonSchemaDocumentModifiedEvent": "Case angepasst",
     "ProcessStartedEvent": "Prozess gestartet",
@@ -9,7 +9,7 @@
     "DossierDocumentGeneratedEvent": "Case-Dokument erstellt",
     "DocumentRelatedFileAddedEvent": "Datei hinzugefügt",
     "DocumentRelatedFileRemovedEvent": "Datei entfernt",
-    "BesluitAddedEvent": "Entscheidung getroffen <i class=\"mdi mdi-arrow-right\"></i> {{identificatie}}"
+    "BesluitAddedEvent": "Entscheidung getroffen > {{identificatie}}"
   },
   "dossier": {
     "title": {
