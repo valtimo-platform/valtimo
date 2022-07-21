@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
-type ButtonType = 'primary' | 'secondary' | 'success' | 'text' | 'icon-danger' | 'danger';
+type ButtonType =
+  | 'primary'
+  | 'secondary'
+  | 'success'
+  | 'text'
+  | 'icon-danger'
+  | 'danger'
+  | 'icon-grey'
+  | 'icon-danger-small'
+  | 'icon-grey-small';
 
 export {ButtonType};

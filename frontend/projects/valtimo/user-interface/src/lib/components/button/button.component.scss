@@ -251,6 +251,30 @@
   }
 }
 
+.v-button--icon-grey {
+  color: var(--v-button-type-icon-grey-color);
+
+  .v-button__icon-container {
+    background-color: var(--v-button-type-icon-grey-bg-color);
+  }
+
+  &:hover {
+    color: var(--v-button-type-icon-grey-color-hover);
+
+    .v-button__icon-container {
+      background-color: var(--v-button-type-icon-grey-bg-color-hover);
+    }
+  }
+
+  &:active {
+    color: var(--v-button-type-icon-grey-color-active);
+
+    .v-button__icon-container {
+      background-color: var(--v-button-type-icon-grey-bg-color-active);
+    }
+  }
+}
+
 .v-button--icon {
   padding-inline-start: 0;
   padding-inline-end: 0;
@@ -285,5 +309,15 @@
     .v-button__icon-container {
       background-color: var(--v-button-disabled-bg-color);
     }
+  }
+}
+
+.v-button--icon-small {
+  width: var(--v-button-type-icon-small-width);
+  height: var(--v-button-type-icon-small-height);
+
+  .v-button__icon-container {
+    width: var(--v-button-type-icon-small-width);
+    height: var(--v-button-type-icon-small-height);
   }
 }

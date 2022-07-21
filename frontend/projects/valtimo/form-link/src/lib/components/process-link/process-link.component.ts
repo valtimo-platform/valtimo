@@ -75,7 +75,7 @@ export class ProcessLinkComponent {
   openModal(params: ModalParams): void {
     this.processLinkService
       .getProcessLink({
-        processDefinitionId: params.processDefinitionKey,
+        processDefinitionId: params.processDefinitionId,
         activityId: params?.element?.id,
       })
       .subscribe(
@@ -111,7 +111,7 @@ export class ProcessLinkComponent {
           actionProperties: configuration,
           activityId: modalData?.element?.id,
           pluginConfigurationId: selectedConfiguration.id,
-          processDefinitionId: modalData?.processDefinitionKey,
+          processDefinitionId: modalData?.processDefinitionId,
           pluginActionDefinitionKey: selectedFunction.key,
         };
 

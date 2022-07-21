@@ -81,6 +81,7 @@ interface FormTypeProperties {
 interface ModalParams {
   element: BpmnElement;
   processDefinitionKey: string;
+  processDefinitionId: string;
 }
 
 export {

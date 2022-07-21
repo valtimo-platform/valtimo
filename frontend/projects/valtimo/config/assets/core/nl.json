@@ -656,9 +656,9 @@
   "pluginSteps": {
     "step0": "Kies je plugin",
     "step1": "Kies je configuratie",
-    "step2": "Kies je functie",
-    "step3": "Functie configureren",
-    "complete": "Pluginfunctie koppelen"
+    "step2": "Kies je actie",
+    "step3": "Actie configureren",
+    "complete": "Pluginactie koppelen"
   },
   "plugin": {
     "noConfigurationComponent": "Er is geen configuratie-component beschikbaar."

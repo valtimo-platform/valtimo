@@ -20,10 +20,11 @@ import {FormsModule} from '@angular/forms';
 import {InputComponent} from './input.component';
 import {TranslateModule} from '@ngx-translate/core';
 import {InputLabelModule} from '../input-label/input-label.module';
+import {ButtonModule} from '../button/button.module';
 
 @NgModule({
   declarations: [InputComponent],
-  imports: [CommonModule, TranslateModule, FormsModule, InputLabelModule],
+  imports: [CommonModule, TranslateModule, FormsModule, InputLabelModule, ButtonModule],
   exports: [InputComponent],
 })
 export class InputModule {}

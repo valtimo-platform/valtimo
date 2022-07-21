@@ -35,7 +35,9 @@ export class ButtonComponent implements OnInit {
   isSuccess!: boolean;
   isText!: boolean;
   isIcon!: boolean;
+  isIconSmall!: boolean;
   isIconDanger!: boolean;
+  isIconGrey!: boolean;
   isDanger!: boolean;
 
   ngOnInit(): void {
@@ -68,6 +70,20 @@ export class ButtonComponent implements OnInit {
       case 'icon-danger':
         this.isIcon = true;
         this.isIconDanger = true;
+        break;
+      case 'icon-grey':
+        this.isIcon = true;
+        this.isIconGrey = true;
+        break;
+      case 'icon-danger-small':
+        this.isIconSmall = true;
+        this.isIcon = true;
+        this.isIconDanger = true;
+        break;
+      case 'icon-grey-small':
+        this.isIconSmall = true;
+        this.isIcon = true;
+        this.isIconGrey = true;
         break;
     }
   }

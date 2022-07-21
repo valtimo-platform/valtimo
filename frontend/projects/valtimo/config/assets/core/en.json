@@ -656,9 +656,9 @@
   "pluginSteps": {
     "step0": "Select your plugin",
     "step1": "Select your configuration",
-    "step2": "Select your function",
-    "step3": "Configure function",
-    "complete": "Connect plugin function"
+    "step2": "Select your action",
+    "step3": "Configure action",
+    "complete": "Connect plugin action"
   },
   "plugin": {
     "noConfigurationComponent": "No configuration component is available."

@@ -18,6 +18,7 @@
   /* colors */
   --v-color-white: #ffffff;
   --v-color-black: #222222;
+  --v-color-grey-0: #5e5e5e;
   --v-color-grey-1: #6b6b6b;
   --v-color-grey-2: #a0a0a0;
   --v-color-grey-3: #b2b2b2;
@@ -139,6 +140,8 @@
   --v-button-text-font-size: var(--v-font-size-smaller);
   --v-button-type-icon-width: 35px;
   --v-button-type-icon-height: 35px;
+  --v-button-type-icon-small-width: 24px;
+  --v-button-type-icon-small-height: 24px;
   --v-button-type-icon-danger-bg-color: var(--v-color-accent-3-light-background);
   --v-button-type-icon-danger-bg-color-hover: var(--v-color-accent-3-light-background-lighter);
   --v-button-type-icon-danger-bg-color-active: var(--v-color-accent-3-light-background-darker);
@@ -148,6 +151,12 @@
   --v-button-danger-bg-color: var(--v-color-accent-3);
   --v-button-danger-hover-bg-color: var(--v-color-accent-3-lighter);
   --v-button-danger-active-bg-color: var(--v-color-accent-3-darker);
+  --v-button-type-icon-grey-bg-color: var(--v-color-grey-1);
+  --v-button-type-icon-grey-bg-color-hover: var(--v-color-grey-2);
+  --v-button-type-icon-grey-bg-color-active: var(--v-color-grey-0);
+  --v-button-type-icon-grey-color: var(--v-color-white);
+  --v-button-type-icon-grey-color-hover: var(--v-color-white);
+  --v-button-type-icon-grey-color-active: var(--v-color-white);
   /* table */
   --v-table-layout: auto;
   --v-table-cell-width: 1000px;
@@ -320,6 +329,7 @@
   --v-input-tooltip-icon-size: var(--v-font-size-default);
   --v-input-tooltip-icon-margin: var(--v-spacing-inline-sm);
   --v-input-tooltip-icon-color: var(--v-color-black);
+  --v-input-password-icon-spacing: var(--v-spacing-inline-sm);
   /* page */
   --v-page-padding-inline: var(--v-spacing-inline-3xl);
   --v-page-padding-block: var(--v-spacing-block-5xl);

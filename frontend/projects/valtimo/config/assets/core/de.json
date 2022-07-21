@@ -656,9 +656,9 @@
   "pluginSteps": {
     "step0": "Wählen Sie Ihr Plugin aus",
     "step1": "Wählen Sie Ihre Konfiguration",
-    "step2": "Wählen Sie Ihre Funktion",
-    "step3": "Funktion konfigurieren",
-    "complete": "Plugin-Funktion verbinden"
+    "step2": "Wählen Sie Ihre Aktion",
+    "step3": "Aktion konfigurieren",
+    "complete": "Plugin-Aktion verbinden"
   },
   "plugin": {
     "noConfigurationComponent": "Es ist keine Konfigurationskomponente verfügbar."

@@ -63,3 +63,13 @@
 .v-input--margin {
   margin-block-end: var(--v-input-margin);
 }
+
+.v-input__password-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.v-input__password-icon {
+  margin-inline-start: var(--v-input-password-icon-spacing);
+}

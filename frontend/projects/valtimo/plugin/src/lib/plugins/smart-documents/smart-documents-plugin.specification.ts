@@ -41,7 +41,7 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       templateData: 'Template-data',
       resultingDocumentProcessVariableName: 'Naam procesvariabele voor opslag document',
       resultingDocumentProcessVariableNameTooltip:
-        'De locatie van het gegenereerde document wordt opgeslagen in een procesvariabele. Deze procesvariabele wordt gebruikt om toegang te krijgen tot het document in een andere BPMN-taak.',
+        'De locatie van het gegenereerde document wordt opgeslagen in een procesvariabele. Deze procesvariabele kan gebruikt worden om het document te verwerken in een andere BPMN-taak.',
     },
     en: {
       title: 'SmartDocuments',
@@ -57,7 +57,7 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       templateData: 'Template data',
       resultingDocumentProcessVariableName: 'Process variable name for storing document',
       resultingDocumentProcessVariableNameTooltip:
-        'The location of the generated document is stored in a process variable. This process variable is used to access the document in another BPMN task.',
+        'The location of the generated document is stored in a process variable. This process variable can be used to access the document in another BPMN task.',
     },
     de: {
       title: 'SmartDocuments',

@@ -49,6 +49,7 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
   public processDefinitionVersions: ProcessDefinition[];
   public version: number;
   private callbacksAdded = false;
+  private processDefinitionId!: string;
 
   constructor(private processService: ProcessService, private route: ActivatedRoute) {}
 
@@ -66,6 +67,7 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
               type: 'bpmn:StartEvent',
             },
             processDefinitionKey: this.processDefinitionKey,
+            processDefinitionId: this.processDefinitionId,
           });
         }
         if (!this.processDefinitionKey && response.processDefinitions.length !== 0) {
@@ -93,6 +95,7 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
                   type: e.element.businessObject.$type,
                 },
                 processDefinitionKey: this.processDefinitionKey,
+                processDefinitionId: this.processDefinitionId,
               });
             }
           });
@@ -113,6 +116,7 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
     this.processService
       .getProcessDefinition(processDefinitionKey)
       .subscribe((processDefinition: ProcessDefinition) => {
+        this.processDefinitionId = processDefinition.id;
         this.version = processDefinition.version;
         this.loadProcessDefinitionXml(processDefinition.id);
       });
@@ -145,6 +149,14 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
   }
 
   public setProcessDefinitionVersion(version: string): void {
+    const processDefinitionId = this.processDefinitionVersions.find(
+      definition => definition.version === +version
+    )?.id;
+
+    if (processDefinitionId) {
+      this.processDefinitionId = processDefinitionId;
+    }
+
     this.version = +version;
   }
 }
