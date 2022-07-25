@@ -34,10 +34,8 @@ import {PluginTranslationService} from '../../../../services';
 export class StoreTempDocumentConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  @Input() clear$: Observable<void>;
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
-  @Input() error: boolean;
   @Input() pluginId: string;
   @Input() prefillConfiguration$: Observable<StoreTempDocumentConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();

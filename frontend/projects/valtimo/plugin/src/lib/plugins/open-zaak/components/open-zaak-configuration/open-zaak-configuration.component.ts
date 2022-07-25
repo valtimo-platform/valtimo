@@ -28,10 +28,8 @@ import {OpenZaakConfig} from '../../models';
 export class OpenZaakConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy
 {
-  @Input() clear$: Observable<void>;
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
-  @Input() error: boolean;
   @Input() pluginId: string;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<OpenZaakConfig> = new EventEmitter<OpenZaakConfig>();

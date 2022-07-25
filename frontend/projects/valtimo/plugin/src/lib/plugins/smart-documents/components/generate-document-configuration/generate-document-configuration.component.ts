@@ -32,10 +32,8 @@ import {DocumentFormat, GenerateDocumentConfig, SmartDocumentsConfig} from '../.
 export class GenerateDocumentConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  @Input() clear$: Observable<void>;
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
-  @Input() error: boolean;
   @Input() pluginId: string;
   @Input() prefillConfiguration$: Observable<GenerateDocumentConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();

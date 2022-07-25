@@ -34,10 +34,8 @@ import {SelectItem} from '@valtimo/user-interface';
 export class SetBesluitConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  @Input() clear$: Observable<void>;
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
-  @Input() error: boolean;
   @Input() pluginId: string;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<FunctionConfigurationData> =

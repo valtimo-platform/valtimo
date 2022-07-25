@@ -57,13 +57,9 @@ export class PluginConfigurationContainerComponent
   @Input() set functionKey(key: string) {
     this._functionKey.next(key);
   }
-  @Input() clear$: Observable<void>;
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
-  @Input() error: boolean;
-  @Input() prefillConfiguration$:
-    | Observable<PluginConfigurationData>
-    | Observable<FunctionConfigurationData>;
+  @Input() prefillConfiguration$: Observable<any>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<PluginConfigurationData> =
     new EventEmitter<PluginConfigurationData>();
@@ -145,8 +141,6 @@ export class PluginConfigurationContainerComponent
 
       if (instance) {
         instance.save$ = this.save$;
-        instance.clear$ = this.clear$;
-        instance.error = this.error;
         instance.disabled$ = this.disabled$;
         instance.pluginId = pluginDefinitionKey;
 

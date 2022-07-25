@@ -18,7 +18,7 @@ import {Component, EventEmitter, Input, Type} from '@angular/core';
 import {Observable} from 'rxjs';
 
 interface PluginConfigurationData {
-  configurationTitle?: string;
+  configurationTitle: string;
   [key: string]: any;
 }
 
@@ -28,9 +28,7 @@ interface FunctionConfigurationData {
 
 interface ConfigurationComponent {
   save$: Observable<void>;
-  clear$: Observable<void>;
   disabled$: Observable<boolean>;
-  error: boolean;
   pluginId: string;
   valid: EventEmitter<boolean>;
 }
@@ -54,6 +52,8 @@ interface PluginSpecification {
   };
   pluginTranslations: {
     [langKey: string]: {
+      title: string;
+      description: string;
       [translationKey: string]: string;
     };
   };
