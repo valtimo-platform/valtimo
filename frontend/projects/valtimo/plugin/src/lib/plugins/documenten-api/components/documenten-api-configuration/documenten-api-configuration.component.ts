@@ -15,64 +15,47 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {
-  FunctionConfigurationComponent,
-  FunctionConfigurationData,
-  PluginConfigurationComponent,
-  PluginConfigurationData,
-} from '../../../../models';
-import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
-import {DocumentFormat, GenerateDocumentConfig, SmartDocumentsConfig} from '../../models';
+import {PluginConfigurationComponent} from '../../../../models';
+import {BehaviorSubject, combineLatest, Observable, Subscription, take, tap} from 'rxjs';
+import {DocumentenApiConfig} from '../../models';
 
 @Component({
-  selector: 'valtimo-generate-document-configuration',
-  templateUrl: './generate-document-configuration.component.html',
-  styleUrls: ['./generate-document-configuration.component.scss'],
+  selector: 'valtimo-documenten-api-configuration',
+  templateUrl: './documenten-api-configuration.component.html',
+  styleUrls: ['./documenten-api-configuration.component.scss'],
 })
-export class GenerateDocumentConfigurationComponent
-  implements FunctionConfigurationComponent, OnInit, OnDestroy
+export class DocumentenApiConfigurationComponent
+  implements PluginConfigurationComponent, OnInit, OnDestroy
 {
   @Input() clear$: Observable<void>;
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() error: boolean;
   @Input() pluginId: string;
-  @Input() prefillConfiguration$: Observable<GenerateDocumentConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<GenerateDocumentConfig> =
-    new EventEmitter<GenerateDocumentConfig>();
-
-  readonly FORMATS: Array<DocumentFormat> = ['DOCX', 'HTML', 'PDF', 'XML'];
-  readonly FORMAT_SELECT_ITEMS: Array<{id: string; text: string}> = this.FORMATS.map(format => ({
-    id: format,
-    text: format,
-  }));
+  @Output() configuration: EventEmitter<DocumentenApiConfig> =
+    new EventEmitter<DocumentenApiConfig>();
 
   private saveSubscription!: Subscription;
-  private readonly formValue$ = new BehaviorSubject<GenerateDocumentConfig | null>(null);
+
+  private readonly formValue$ = new BehaviorSubject<DocumentenApiConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
 
   ngOnInit(): void {
     this.openSaveSubscription();
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.saveSubscription?.unsubscribe();
   }
 
-  formValueChange(formValue: GenerateDocumentConfig): void {
+  formValueChange(formValue: DocumentenApiConfig): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
   }
 
-  private handleValid(formValue: GenerateDocumentConfig): void {
-    const valid = !!(
-      formValue.templateGroup &&
-      formValue.templateName &&
-      formValue.format &&
-      formValue.resultingDocumentProcessVariableName &&
-      formValue.templateData?.length > 0
-    );
+  private handleValid(formValue: DocumentenApiConfig): void {
+    const valid = !!(formValue.configurationTitle && formValue.url);
 
     this.valid$.next(valid);
     this.valid.emit(valid);

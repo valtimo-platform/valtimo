@@ -330,6 +330,7 @@
   --v-input-tooltip-icon-margin: var(--v-spacing-inline-sm);
   --v-input-tooltip-icon-color: var(--v-color-black);
   --v-input-password-icon-spacing: var(--v-spacing-inline-sm);
+  --v-input-required-asterisk-color: var(--v-color-accent-3);
   /* page */
   --v-page-padding-inline: var(--v-spacing-inline-3xl);
   --v-page-padding-block: var(--v-spacing-block-5xl);

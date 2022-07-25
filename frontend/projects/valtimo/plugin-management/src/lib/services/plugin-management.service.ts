@@ -34,33 +34,6 @@ import {DomSanitizer} from '@angular/platform-browser';
 export class PluginManagementService {
   private readonly VALTIMO_API_ENDPOINT_URI = this.configService.config.valtimoApi.endpointUri;
 
-  private readonly CONFIGURATIONS = [
-    {
-      definitionKey: 'openzaak',
-      key: '1ebdad87-3899-4ab7-b4ad-403237b17dbd',
-      title: 'Den Haag Open Zaak 1',
-      properties: {},
-    },
-    {
-      definitionKey: 'openzaak',
-      key: '1ebdad87-3899-4ab7-b4ad-403237b17dbe',
-      title: 'Den Haag Open Zaak 2',
-      properties: {},
-    },
-    {
-      definitionKey: 'smartdocuments',
-      key: '1ebdad87-3899-4ab7-b4ad-403237b17dbx',
-      title: 'Den Haag SmartDocuments 1',
-      properties: {},
-    },
-    {
-      definitionKey: 'smartdocuments',
-      key: '1ebdad87-3899-4ab7-b4ad-403237b17dby',
-      title: 'Den Haag SmartDocuments 2',
-      properties: {},
-    },
-  ];
-
   constructor(
     private readonly configService: ConfigService,
     private readonly pluginService: PluginService,
@@ -74,37 +47,10 @@ export class PluginManagementService {
     );
   }
 
-  getPluginConfigurations(pluginDefinitionId: string): Observable<Array<PluginConfiguration>> {
-    return of(this.CONFIGURATIONS).pipe(delay(1500));
-  }
-
-  getPluginConfigurationsWithLogos(
-    pluginDefinitionId: string
-  ): Observable<Array<PluginConfiguration>> {
-    return this.returnPluginConfigurationsWithLogos(
-      this.getPluginConfigurations(pluginDefinitionId)
-    );
-  }
-
   getPluginFunctions(pluginDefinitionId: string): Observable<Array<PluginFunction>> {
-    return of(
-      pluginDefinitionId === 'openzaak'
-        ? [
-            {
-              key: 'create-zaak',
-            },
-            {
-              key: 'set-status',
-            },
-            {
-              key: 'set-resultaat',
-            },
-            {
-              key: 'set-besluit',
-            },
-          ]
-        : [{key: 'generate-document'}]
-    ).pipe(delay(1500));
+    return this.http.get<Array<PluginFunction>>(
+      `${this.VALTIMO_API_ENDPOINT_URI}plugin/definition/${pluginDefinitionId}/action`
+    );
   }
 
   getAllPluginConfigurations(): Observable<Array<PluginConfiguration>> {

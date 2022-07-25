@@ -39,7 +39,9 @@ interface PluginConfigurationWithLogo extends PluginConfiguration {
 }
 
 interface PluginFunction {
+  description?: string;
   key: string;
+  title?: string;
 }
 
 export {

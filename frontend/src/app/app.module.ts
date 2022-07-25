@@ -91,6 +91,8 @@ import {
   PLUGINS_TOKEN,
   SmartDocumentsPluginModule,
   smartDocumentsPluginSpecification,
+  DocumentenApiPluginModule,
+  documentenApiPluginSpecification,
 } from '@valtimo/plugin';
 
 export function tabsFactory() {
@@ -165,6 +167,7 @@ export function tabsFactory() {
     PluginManagementModule,
     OpenZaakPluginModule,
     SmartDocumentsPluginModule,
+    DocumentenApiPluginModule,
     HttpClientModule,
     TranslateModule.forRoot({
       loader: {
@@ -178,7 +181,11 @@ export function tabsFactory() {
     FormioComponent,
     {
       provide: PLUGINS_TOKEN,
-      useValue: [openZaakPluginSpecification, smartDocumentsPluginSpecification],
+      useValue: [
+        openZaakPluginSpecification,
+        documentenApiPluginSpecification,
+        smartDocumentsPluginSpecification,
+      ],
     },
   ],
   entryComponents: [

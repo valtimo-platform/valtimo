@@ -22,50 +22,49 @@
   } as obs"
 >
   <v-input
-    name="templateGroup"
-    [title]="'templateGroup' | pluginTranslate: pluginId | async"
+    name="localDocumentLocation"
+    [title]="'localDocumentLocation' | pluginTranslate: pluginId | async"
     [margin]="true"
-    [defaultValue]="obs.prefill?.templateGroup"
+    [defaultValue]="obs.prefill?.localDocumentLocation"
     [disabled]="obs.disabled"
     [required]="true"
   >
   </v-input>
   <v-input
-    name="templateName"
-    [title]="'templateName' | pluginTranslate: pluginId | async"
+    name="storedDocumentUrl"
+    [title]="'storedDocumentUrl' | pluginTranslate: pluginId | async"
     [margin]="true"
-    [defaultValue]="obs.prefill?.templateName"
+    [defaultValue]="obs.prefill?.storedDocumentUrl"
     [disabled]="obs.disabled"
-    [required]="true"
-  >
-  </v-input>
-  <v-input
-    name="resultingDocumentProcessVariableName"
-    [title]="'resultingDocumentProcessVariableName' | pluginTranslate: pluginId | async"
-    [margin]="true"
-    [defaultValue]="obs.prefill?.resultingDocumentProcessVariableName"
-    [disabled]="obs.disabled"
-    [tooltip]="'resultingDocumentProcessVariableNameTooltip' | pluginTranslate: pluginId | async"
-    [required]="true"
   >
   </v-input>
   <v-select
-    [items]="FORMAT_SELECT_ITEMS"
+    [items]="languageSelectItems$ | async"
     [margin]="true"
-    [widthInPx]="150"
-    name="format"
-    [title]="'format' | pluginTranslate: pluginId | async"
+    [widthInPx]="200"
+    name="taal"
+    [title]="'taal' | pluginTranslate: pluginId | async"
     [disabled]="obs.disabled"
-    [defaultSelectionId]="obs.prefill?.format"
+    [defaultSelectionId]="obs.prefill?.taal || LANGUAGE_ITEMS[0]"
     [required]="true"
   ></v-select>
-  <v-multi-input
-    name="templateData"
-    [title]="'templateData' | pluginTranslate: pluginId | async"
-    type="keyValue"
-    [disabled]="obs.disabled"
-    [defaultValues]="obs.prefill?.templateData"
+  <v-select
+    [items]="statusSelectItems$ | async"
     [margin]="true"
+    [widthInPx]="200"
+    name="status"
+    [title]="'status' | pluginTranslate: pluginId | async"
+    [disabled]="obs.disabled"
+    [defaultSelectionId]="obs.prefill?.status || STATUS_ITEMS[2]"
     [required]="true"
-  ></v-multi-input>
+  ></v-select>
+  <v-input
+    name="informatieobjecttype"
+    [title]="'informatieobjecttype' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.informatieobjecttype"
+    [disabled]="obs.disabled"
+    [required]="true"
+  >
+  </v-input>
 </v-form>

@@ -39,6 +39,7 @@ export class SelectComponent implements OnInit, OnDestroy {
   @Input() titleTranslationKey = '';
   @Input() clearSelectionSubject$!: Observable<void>;
   @Input() tooltip = '';
+  @Input() required = false;
 
   @Output() selectedChange: EventEmitter<SelectedValue> = new EventEmitter();
   @Output() clear: EventEmitter<any> = new EventEmitter();

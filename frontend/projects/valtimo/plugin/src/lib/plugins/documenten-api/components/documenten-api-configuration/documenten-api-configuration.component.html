@@ -14,19 +14,23 @@
   ~ limitations under the License.
   -->
 
-<div class="v-input-label-container">
-  <label
-    *ngIf="title || titleTranslationKey"
-    class="v-input-label"
-    [for]="name"
-    [ngClass]="{'v-input-label--required': required}"
+<v-form (valueChange)="formValueChange($event)" *ngIf="{disabled: disabled$ | async} as obs">
+  <v-input
+    name="configurationTitle"
+    [title]="'configurationTitle' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
+    [margin]="true"
+    [disabled]="obs.disabled"
+    [required]="true"
   >
-    {{ titleTranslationKey ? (titleTranslationKey | translate) : title }}
-  </label>
-  <i
-    *ngIf="tooltip"
-    class="v-input-label__tooltip mdi mdi-help-circle"
-    placement="right"
-    ngbTooltip="{{ tooltip }}"
-  ></i>
-</div>
+  </v-input>
+  <v-input
+    name="url"
+    [title]="'url' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
+    [margin]="true"
+    [disabled]="obs.disabled"
+    [required]="true"
+  >
+  </v-input>
+</v-form>

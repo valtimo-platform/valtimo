@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-import {Component, Input} from '@angular/core';
+import {PluginConfigurationData} from '../../../models';
 
-@Component({
-  selector: 'v-input-label',
-  templateUrl: './input-label.component.html',
-  styleUrls: ['./input-label.component.scss'],
-})
-export class InputLabelComponent {
-  @Input() name = '';
-  @Input() title = '';
-  @Input() titleTranslationKey = '';
-  @Input() tooltip = '';
-  @Input() required = false;
+interface DocumentenApiConfig extends PluginConfigurationData {
+  url: string;
 }
+
+type DocumentLanguage = 'nld';
+
+type DocumentStatus = 'in_bewerking' | 'ter_vaststelling' | 'definitief' | 'gearchiveerd';
+
+interface StoreTempDocumentConfig {
+  localDocumentLocation: string;
+  storedDocumentUrl: string;
+  taal: DocumentLanguage;
+  status: DocumentStatus;
+  informatieobjecttype: string;
+}
+
+export {DocumentenApiConfig, StoreTempDocumentConfig, DocumentLanguage, DocumentStatus};

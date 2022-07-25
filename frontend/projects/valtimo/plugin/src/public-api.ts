@@ -39,3 +39,8 @@ export * from './lib/plugins/smart-documents/smart-documents-plugin.module';
 export * from './lib/plugins/smart-documents/smart-documents-plugin.specification';
 export * from './lib/plugins/smart-documents/components/smart-documents-configuration/smart-documents-configuration.component';
 export * from './lib/plugins/smart-documents/components/generate-document-configuration/generate-document-configuration.component';
+/* documenten api plugin */
+export * from './lib/plugins/documenten-api/documenten-api-plugin.module';
+export * from './lib/plugins/documenten-api/documenten-api-plugin.specification';
+export * from './lib/plugins/documenten-api/components/store-temp-document/store-temp-document-configuration.component';
+export * from './lib/plugins/documenten-api/components/documenten-api-configuration/documenten-api-configuration.component';
