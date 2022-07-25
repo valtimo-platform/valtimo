@@ -16,7 +16,12 @@
 
 <p
   class="v-paragraph"
-  [ngClass]="{'v-paragraph--center': center, 'v-paragraph--full-width': fullWidth}"
+  [ngClass]="{
+    'v-paragraph--center': center,
+    'v-paragraph--full-width': fullWidth,
+    'v-paragraph--margin': margin,
+    'v-paragraph--italic': italic
+  }"
 >
   <ng-content></ng-content>
 </p>

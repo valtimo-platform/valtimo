@@ -29,3 +29,11 @@
 .v-paragraph--full-width {
   width: 100%;
 }
+
+.v-paragraph--margin {
+  margin-block-end: var(--v-paragraph-margin);
+}
+
+.v-paragraph--italic {
+  font-style: italic;
+}

@@ -341,6 +341,7 @@
   --v-paragraph-line-height: var(--v-line-height-large);
   --v-paragraph-color: var(--v-color-grey-1);
   --v-paragraph-font-weight: var(--v-font-weight-lighter);
+  --v-paragraph-margin: var(--v-spacing-block-l);
   /* multi-input */
   --v-multi-input-row-spacing-block: var(--v-spacing-block-md);
   --v-multi-input-input-spacing-inline: var(--v-spacing-inline-md);

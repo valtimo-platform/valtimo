@@ -18,7 +18,13 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {SmartDocumentsConfigurationComponent} from './components/smart-documents-configuration/smart-documents-configuration.component';
 import {PluginTranslatePipeModule} from '../../pipes';
-import {FormModule, InputModule, SelectModule, MultiInputModule} from '@valtimo/user-interface';
+import {
+  FormModule,
+  InputModule,
+  SelectModule,
+  MultiInputModule,
+  ParagraphModule,
+} from '@valtimo/user-interface';
 import {GenerateDocumentConfigurationComponent} from './components/generate-document-configuration/generate-document-configuration.component';
 
 @NgModule({
@@ -30,6 +36,7 @@ import {GenerateDocumentConfigurationComponent} from './components/generate-docu
     InputModule,
     SelectModule,
     MultiInputModule,
+    ParagraphModule,
   ],
   exports: [SmartDocumentsConfigurationComponent, GenerateDocumentConfigurationComponent],
 })

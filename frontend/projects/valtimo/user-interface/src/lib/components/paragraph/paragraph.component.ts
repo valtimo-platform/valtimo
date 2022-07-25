@@ -24,4 +24,6 @@ import {Component, Input} from '@angular/core';
 export class ParagraphComponent {
   @Input() center = false;
   @Input() fullWidth = false;
+  @Input() margin = false;
+  @Input() italic = false;
 }
