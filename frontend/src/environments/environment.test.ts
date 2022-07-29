@@ -142,4 +142,7 @@ export const environment: ValtimoConfig = {
   },
   defaultDefinitionTable: defaultDefinitionColumns,
   customDefinitionTables: {},
+  featureToggles: {
+    showUserNameInTopBar: true,
+  },
 };

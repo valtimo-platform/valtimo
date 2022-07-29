@@ -23,6 +23,7 @@
       <!-- important empty div: in order to made float-right element works on mobile  -->
       <div></div>
       <ul class="nav navbar-nav be-user-nav float-right be-icons-nav">
+        <ng-container *ngTemplateOutlet="userFullName"></ng-container>
         <li class="nav-item dropdown special">
           <a class="nav-link be-toggle-right-sidebar" href="#" role="button" aria-expanded="false">
             <i class="mdi mdi-account-circle user-icon"></i>
@@ -32,3 +33,11 @@
     </div>
   </div>
 </nav>
+
+<ng-template #userFullName>
+  <li class="nav-item" *ngIf="showUserNameInTopBar">
+    <div class="user-full-name" *ngIf="{userFullName: userFullName$ | async} as obs">
+      <v-paragraph [loading]="!obs.userFullName">{{ obs.userFullName }}</v-paragraph>
+    </div>
+  </li>
+</ng-template>

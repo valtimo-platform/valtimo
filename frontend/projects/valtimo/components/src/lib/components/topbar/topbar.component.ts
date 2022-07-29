@@ -14,13 +14,30 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
+import {KeycloakService} from 'keycloak-angular';
+import {from, switchMap, map} from 'rxjs';
+import {ConfigService} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-topbar',
   templateUrl: './topbar.component.html',
   styleUrls: ['./topbar.component.scss'],
 })
-export class TopbarComponent {
-  constructor() {}
+export class TopbarComponent implements OnInit {
+  showUserNameInTopBar!: boolean;
+
+  readonly userFullName$ = from(this.keyCloakService.isLoggedIn()).pipe(
+    switchMap(() => this.keyCloakService.loadUserProfile()),
+    map(profile => `${profile.firstName} ${profile.lastName}`)
+  );
+
+  constructor(
+    private readonly keyCloakService: KeycloakService,
+    private readonly configService: ConfigService
+  ) {}
+
+  ngOnInit(): void {
+    this.showUserNameInTopBar = this.configService.config.featureToggles?.showUserNameInTopBar;
+  }
 }

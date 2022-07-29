@@ -176,17 +176,17 @@ export const environment: ValtimoConfig = {
       {
         propertyName: 'due',
         translationKey: 'due',
-        sortable: true
+        sortable: true,
       },
       {
         propertyName: 'created',
         translationKey: 'created',
-        sortable: true
+        sortable: true,
       },
       {
         propertyName: 'name',
         translationKey: 'name',
-        sortable: true
+        sortable: true,
       },
       {
         propertyName: 'assignee',
@@ -197,13 +197,14 @@ export const environment: ValtimoConfig = {
       isSorting: true,
       state: {
         name: 'created',
-        direction: 'ASC'
-      }
-    }
+        direction: 'ASC',
+      },
+    },
   },
   featureToggles: {
     disableFormFlow: true,
     enableHackathonCasesPage: true,
+    showUserNameInTopBar: true,
   },
 };
 

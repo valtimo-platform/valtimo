@@ -23,5 +23,18 @@
     'v-paragraph--italic': italic
   }"
 >
-  <ng-content></ng-content>
+  <ng-container *ngIf="loading">
+    <ngx-skeleton-loader
+      appearance="line"
+      [theme]="{
+        width: 'var(--v-paragraph-skeleton-loading-width)',
+        height: 'var(--v-paragraph-font-size)',
+        margin: '0',
+        'background-color': 'var(--v-paragraph-loading-skeleton-bg-color)'
+      }"
+    ></ngx-skeleton-loader>
+  </ng-container>
+  <ng-container *ngIf="!loading">
+    <ng-content></ng-content>
+  </ng-container>
 </p>

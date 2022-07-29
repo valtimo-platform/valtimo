@@ -141,4 +141,7 @@ export const environment: ValtimoConfig = {
   caseFileSizeUploadLimitMB: 10,
   defaultDefinitionTable: defaultDefinitionColumns,
   customDefinitionTables: {},
+  featureToggles: {
+    showUserNameInTopBar: true,
+  },
 };

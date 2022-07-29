@@ -21,3 +21,11 @@
 .be-toggle-right-sidebar {
   display: flex;
 }
+
+.user-full-name {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  margin-inline-end: var(--v-top-bar-user-name-spacing);
+}

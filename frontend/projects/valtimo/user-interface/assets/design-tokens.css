@@ -342,7 +342,11 @@
   --v-paragraph-color: var(--v-color-grey-1);
   --v-paragraph-font-weight: var(--v-font-weight-lighter);
   --v-paragraph-margin: var(--v-spacing-block-l);
+  --v-paragraph-skeleton-loading-width: 60px;
+  --v-paragraph-loading-skeleton-bg-color: var(--v-color-grey-5);
   /* multi-input */
   --v-multi-input-row-spacing-block: var(--v-spacing-block-md);
   --v-multi-input-input-spacing-inline: var(--v-spacing-inline-md);
+  /* top-bar */
+  --v-top-bar-user-name-spacing: var(--v-spacing-inline-md);
 }

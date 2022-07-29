@@ -18,10 +18,11 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TopbarComponent} from './topbar.component';
 import {RouterModule} from '@angular/router';
+import {ParagraphModule} from '@valtimo/user-interface';
 
 @NgModule({
   declarations: [TopbarComponent],
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ParagraphModule],
   exports: [TopbarComponent],
 })
 export class TopbarModule {}

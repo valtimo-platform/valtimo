@@ -43,8 +43,8 @@ export interface CustomDossierHeaderItem {
 }
 
 export interface CustomTaskList {
-  fields: Array<DefinitionColumn>
-  defaultSortedColumn?: SortState
+  fields: Array<DefinitionColumn>;
+  defaultSortedColumn?: SortState;
 }
 
 export interface Sort {
@@ -90,8 +90,9 @@ export interface ValtimoConfig {
   featureToggles?: {
     disableFormFlow?: boolean;
     enableHackathonCasesPage?: boolean;
+    showUserNameInTopBar?: boolean;
   };
-  customTaskList?: CustomTaskList
+  customTaskList?: CustomTaskList;
 }
 
 export enum UploadProvider {

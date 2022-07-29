@@ -17,10 +17,11 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ParagraphComponent} from './paragraph.component';
+import {NgxSkeletonLoaderModule} from 'ngx-skeleton-loader';
 
 @NgModule({
   declarations: [ParagraphComponent],
-  imports: [CommonModule],
+  imports: [CommonModule, NgxSkeletonLoaderModule],
   exports: [ParagraphComponent],
 })
 export class ParagraphModule {}

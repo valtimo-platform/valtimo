@@ -26,4 +26,5 @@ export class ParagraphComponent {
   @Input() fullWidth = false;
   @Input() margin = false;
   @Input() italic = false;
+  @Input() loading = false;
 }
