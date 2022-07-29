@@ -1,7 +1,7 @@
 {
   "name": "@valtimo/process",
   "license": "EUPL-1.2",
-  "version": "5.4.0",
+  "version": "5.5.0-60.RC",
   "peerDependencies": {
     "@angular/common": "^13.2.3",
     "@angular/core": "^13.2.3"
