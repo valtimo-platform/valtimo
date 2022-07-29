@@ -16,7 +16,7 @@
     "heatmap.js-fixed": "^2.0.2",
     "@ngx-translate/core": "^14.0.0",
     "@ngx-translate/http-loader": "7.0.0",
-    "@ng-bootstrap/ng-bootstrap": "^12.0.0",
+    "@ng-bootstrap/ng-bootstrap": "^11.0.0",
     "ngx-toastr": "^14.3.0",
     "@formio/angular": "^5.2.2",
     "ngx-spinner": "^13.1.1",
