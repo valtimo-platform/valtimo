@@ -14,13 +14,20 @@
   ~ limitations under the License.
   -->
 
-<v-form (valueChange)="formValueChange($event)" *ngIf="{disabled: disabled$ | async} as obs">
+<v-form
+  (valueChange)="formValueChange($event)"
+  *ngIf="{
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+  } as obs"
+>
   <v-input
     name="configurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
     [margin]="true"
     [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
   >
   </v-input>
@@ -30,6 +37,7 @@
     [fullWidth]="true"
     [margin]="true"
     [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.url"
     [required]="true"
   >
   </v-input>
@@ -39,6 +47,7 @@
     [fullWidth]="true"
     [margin]="true"
     [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.username"
     [required]="true"
   >
   </v-input>
@@ -49,6 +58,7 @@
     [fullWidth]="true"
     [margin]="true"
     [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.password"
     [required]="true"
   >
   </v-input>

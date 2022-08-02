@@ -18,25 +18,30 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {map, switchMap} from 'rxjs/operators';
 import {PluginManagementStateService} from '../../services';
 import {PluginConfigurationData} from '@valtimo/plugin';
-import {of} from 'rxjs';
 
 @Component({
-  selector: 'valtimo-plugin-configure',
-  templateUrl: './plugin-configure.component.html',
-  styleUrls: ['./plugin-configure.component.scss'],
+  selector: 'valtimo-plugin-edit',
+  templateUrl: './plugin-edit.component.html',
+  styleUrls: ['./plugin-edit.component.scss'],
 })
-export class PluginConfigureComponent {
+export class PluginEditComponent {
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<PluginConfigurationData> =
     new EventEmitter<PluginConfigurationData>();
 
-  readonly save$ = this.stateService.save$;
+  readonly saveEdit$ = this.stateService.saveEdit$;
 
-  readonly pluginDefinitionKey$ = this.stateService.selectedPluginDefinition$.pipe(
-    map(definition => definition?.key)
+  readonly pluginDefinitionKey$ = this.stateService.selectedPluginConfiguration$.pipe(
+    map(configuration => configuration?.pluginDefinition?.key)
   );
 
-  readonly prefillConfiguration$ = of(undefined);
+  readonly prefillConfiguration$ = this.stateService.selectedPluginConfiguration$.pipe(
+    map(configuration =>
+      configuration
+        ? {...configuration.properties, configurationTitle: configuration.title}
+        : undefined
+    )
+  );
 
   readonly disabled$ = this.stateService.inputDisabled$;
 

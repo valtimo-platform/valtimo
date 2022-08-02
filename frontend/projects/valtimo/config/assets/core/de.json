@@ -667,6 +667,8 @@
     "tableItemsText": "Plugin-Konfigurationen",
     "add": "Plugin konfigurieren",
     "noDefinitions": "Keine Plugin-Definitionen gefunden.",
+    "save": "Konfiguration speichern",
+    "remove": "Konfiguration löschen",
     "labels": {
       "pluginName": "Plugin-Name",
       "identifier": "Identifier",

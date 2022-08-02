@@ -42,12 +42,15 @@
       [loading]="obs.loading"
       [items]="obs.pluginConfigurations"
       [columns]="obs.columns"
-      [showEditButtons]="false"
+      [showEditButtons]="true"
       [amountOfLoadingRows]="2"
       [itemsTranslationKey]="'pluginManagement.tableItemsText'"
       [showPagination]="false"
+      (editButtonClicked)="rowClicked($event)"
     ></v-table>
   </v-page-content>
 </v-page-container>
 
 <valtimo-plugin-add-modal></valtimo-plugin-add-modal>
+
+<valtimo-plugin-edit-modal></valtimo-plugin-edit-modal>

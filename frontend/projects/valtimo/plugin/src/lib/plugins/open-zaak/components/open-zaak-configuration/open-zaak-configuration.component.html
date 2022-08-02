@@ -14,13 +14,20 @@
   ~ limitations under the License.
   -->
 
-<v-form (valueChange)="formValueChange($event)" *ngIf="{disabled: disabled$ | async} as obs">
+<v-form
+  (valueChange)="formValueChange($event)"
+  *ngIf="{
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+  } as obs"
+>
   <v-input
     name="configurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
     [margin]="true"
     [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.configurationTitle"
   >
   </v-input>
   <v-input
@@ -29,6 +36,7 @@
     [fullWidth]="true"
     [margin]="true"
     [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.url"
   >
   </v-input>
   <v-input
@@ -37,6 +45,7 @@
     [fullWidth]="true"
     [margin]="true"
     [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.clientId"
   >
   </v-input>
   <v-input
@@ -46,6 +55,7 @@
     [fullWidth]="true"
     [margin]="true"
     [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.secret"
   >
   </v-input>
   <v-input
@@ -54,6 +64,7 @@
     [fullWidth]="true"
     [margin]="true"
     [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.rsin"
   >
   </v-input>
   <v-input
@@ -62,6 +73,7 @@
     [fullWidth]="true"
     [margin]="true"
     [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.catalogusUrl"
   >
   </v-input>
 </v-form>

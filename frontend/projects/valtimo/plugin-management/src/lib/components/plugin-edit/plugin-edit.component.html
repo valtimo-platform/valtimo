@@ -18,7 +18,7 @@
   *ngIf="pluginDefinitionKey$ | async as pluginDefinitionKey"
   [pluginDefinitionKey]="pluginDefinitionKey"
   [prefillConfiguration$]="prefillConfiguration$"
-  [save$]="save$"
+  [save$]="saveEdit$"
   [disabled$]="disabled$"
   (valid)="onValid($event)"
   (configuration)="onFunctionConfiguration($event)"

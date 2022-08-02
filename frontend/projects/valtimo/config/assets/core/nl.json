@@ -667,6 +667,8 @@
     "tableItemsText": "plug-in-configuraties",
     "add": "Plug-in configureren",
     "noDefinitions": "Geen plugin-definities gevonden.",
+    "save": "Configuratie opslaan",
+    "remove": "Configuratie verwijderen",
     "labels": {
       "pluginName": "Plug-in-naam",
       "identifier": "Identifier",

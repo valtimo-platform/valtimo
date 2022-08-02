@@ -25,3 +25,5 @@ export * from './lib/components/plugin-management/plugin-management.component';
 export * from './lib/components/plugin-add-modal/plugin-add-modal.component';
 export * from './lib/components/plugin-add-select/plugin-add-select.component';
 export * from './lib/components/plugin-configure/plugin-configure.component';
+export * from './lib/components/plugin-edit-modal/plugin-edit-modal.component';
+export * from './lib/components/plugin-edit/plugin-edit.component';

@@ -1,0 +1,55 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<v-modal
+  #pluginEditModal
+  (closeEvent)="hide()"
+  *ngIf="{selectedConfiguration: selectedPluginConfiguration$ | async} as obs"
+>
+  <div role="header">
+    <div class="edit-configuration-title">
+      <v-title [margin]="false" type="h2">{{
+        obs.selectedConfiguration?.title +
+          ' - ' +
+          ('title' | pluginTranslate: obs.selectedConfiguration?.pluginDefinition?.key | async)
+      }}</v-title>
+    </div>
+  </div>
+  <div role="content">
+    <valtimo-plugin-edit
+      (valid)="onPluginValid($event)"
+      (configuration)="onPluginConfiguration($event)"
+    ></valtimo-plugin-edit>
+  </div>
+  <div role="footer">
+    <div class="edit-plugin-buttons">
+      <v-button
+        [disabled]="inputDisabled$ | async"
+        (clickEvent)="delete()"
+        [mdiIcon]="'delete'"
+        type="danger"
+        >{{ 'pluginManagement.remove' | translate }}</v-button
+      >
+      <v-button
+        [disabled]="(configurationValid$ | async) === false || (inputDisabled$ | async)"
+        (clickEvent)="save()"
+        [mdiIcon]="'check'"
+        type="success"
+        >{{ 'pluginManagement.save' | translate }}</v-button
+      >
+    </div>
+  </div>
+</v-modal>

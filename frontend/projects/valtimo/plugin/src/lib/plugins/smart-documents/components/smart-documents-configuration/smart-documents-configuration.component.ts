@@ -30,6 +30,7 @@ export class SmartDocumentsConfigurationComponent
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
+  @Input() prefillConfiguration$: Observable<SmartDocumentsConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<SmartDocumentsConfig> =
     new EventEmitter<SmartDocumentsConfig>();

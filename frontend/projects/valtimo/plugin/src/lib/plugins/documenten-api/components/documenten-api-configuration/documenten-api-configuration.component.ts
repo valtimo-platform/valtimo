@@ -30,6 +30,7 @@ export class DocumentenApiConfigurationComponent
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
+  @Input() prefillConfiguration$: Observable<DocumentenApiConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<DocumentenApiConfig> =
     new EventEmitter<DocumentenApiConfig>();

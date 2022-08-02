@@ -667,6 +667,8 @@
     "tableItemsText": "plugin configurations",
     "add": "Configure plugin",
     "noDefinitions": "No plugin definitions found.",
+    "save": "Save configuration",
+    "remove": "Delete configuration",
     "labels": {
       "pluginName": "Plugin name",
       "identifier": "Identifier",

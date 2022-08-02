@@ -60,14 +60,10 @@ export class PluginAddModalComponent implements OnInit {
 
   hide(): void {
     this.stateService.disableInput();
-    this.modalService.closeModal();
-
-    this.modalService.appearingDelayMs$.pipe(take(1)).subscribe(appearingDelay => {
-      setTimeout(() => {
-        this.returnToFirstStep();
-        this.stateService.enableInput();
-        this.stateService.clear();
-      }, appearingDelay);
+    this.modalService.closeModal(() => {
+      this.returnToFirstStep();
+      this.stateService.enableInput();
+      this.stateService.clear();
     });
   }
 

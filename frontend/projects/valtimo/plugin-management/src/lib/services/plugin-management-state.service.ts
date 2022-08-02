@@ -17,7 +17,12 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
 import {map, take} from 'rxjs/operators';
-import {PluginDefinition, PluginDefinitionWithLogo, PluginModal} from '../models';
+import {
+  PluginConfiguration,
+  PluginDefinition,
+  PluginDefinitionWithLogo,
+  PluginModal,
+} from '../models';
 import {PluginService, PluginSpecification} from '@valtimo/plugin';
 import {DomSanitizer} from '@angular/platform-browser';
 
@@ -30,6 +35,7 @@ export class PluginManagementStateService {
   private readonly _inputDisabled$ = new BehaviorSubject<boolean>(false);
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   private readonly _save$ = new Subject<null>();
+  private readonly _saveEdit$ = new Subject<null>();
   private readonly _delete$ = new Subject<null>();
   private readonly _hideModalSaveButton$ = new BehaviorSubject<boolean>(false);
   private readonly _pluginDefinitions$ = new BehaviorSubject<Array<PluginDefinition> | undefined>(
@@ -65,6 +71,10 @@ export class PluginManagementStateService {
     undefined
   );
 
+  private readonly _selectedPluginConfiguration$ = new BehaviorSubject<
+    PluginConfiguration | undefined
+  >(undefined);
+
   constructor(
     private readonly pluginService: PluginService,
     private readonly sanitizer: DomSanitizer
@@ -98,8 +108,16 @@ export class PluginManagementStateService {
     return this._selectedPluginDefinition$.asObservable();
   }
 
+  get selectedPluginConfiguration$(): Observable<PluginConfiguration | undefined> {
+    return this._selectedPluginConfiguration$.asObservable();
+  }
+
   get save$(): Observable<any> {
     return this._save$.asObservable();
+  }
+
+  get saveEdit$(): Observable<any> {
+    return this._saveEdit$.asObservable();
   }
 
   get delete$(): Observable<any> {
@@ -138,12 +156,24 @@ export class PluginManagementStateService {
     this._selectedPluginDefinition$.next(definition);
   }
 
+  selectPluginConfiguration(configuration: PluginConfiguration): void {
+    this._selectedPluginConfiguration$.next(configuration);
+  }
+
   clearSelectedPluginDefinition(): void {
     this._selectedPluginDefinition$.next(undefined);
   }
 
+  clearSelectedPluginConfiguration(): void {
+    this._selectedPluginConfiguration$.next(undefined);
+  }
+
   save(): void {
     this._save$.next(null);
+  }
+
+  saveEdit(): void {
+    this._saveEdit$.next(null);
   }
 
   delete(): void {
@@ -159,6 +189,7 @@ export class PluginManagementStateService {
   }
 
   clear(): void {
-    this._selectedPluginDefinition$.next(undefined);
+    this.clearSelectedPluginDefinition();
+    this.clearSelectedPluginConfiguration();
   }
 }

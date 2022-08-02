@@ -71,6 +71,27 @@ export class PluginManagementService {
       pluginConfiguration
     );
   }
+
+  updatePluginConfiguration(
+    configurationId: string,
+    configurationTitle: string,
+    configurationProperties: object
+  ): Observable<PluginConfiguration> {
+    return this.http.put<PluginConfiguration>(
+      `${this.VALTIMO_API_ENDPOINT_URI}plugin/configuration/${configurationId}`,
+      {
+        title: configurationTitle,
+        properties: configurationProperties,
+      }
+    );
+  }
+
+  deletePluginConfiguration(configurationId: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.VALTIMO_API_ENDPOINT_URI}plugin/configuration/${configurationId}`
+    );
+  }
+
   private returnPluginConfigurationsWithLogos(
     pluginConfigurations$: Observable<Array<PluginConfiguration>>
   ): Observable<Array<PluginConfigurationWithLogo>> {

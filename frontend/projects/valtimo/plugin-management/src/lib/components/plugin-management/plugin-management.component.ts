@@ -21,6 +21,7 @@ import {PluginManagementStateService, PluginManagementService} from '../../servi
 import {TranslateService} from '@ngx-translate/core';
 import {map, switchMap, tap} from 'rxjs/operators';
 import {PluginTranslationService} from '@valtimo/plugin';
+import {PluginConfiguration} from '../../models';
 
 @Component({
   selector: 'valtimo-plugin-management',
@@ -77,5 +78,10 @@ export class PluginManagementComponent {
 
   showAddModal(): void {
     this.stateService.showModal('add');
+  }
+
+  rowClicked(configuration: PluginConfiguration): void {
+    this.stateService.selectPluginConfiguration(configuration);
+    this.stateService.showModal('edit');
   }
 }
