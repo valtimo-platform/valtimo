@@ -295,7 +295,7 @@
     "rxjs": "~7.5.5",
     "select2": "^4.1.0-rc.0",
     "stylus": "^0.58.1",
-    "swagger-ui": "^4.12.0",
+    "swagger-ui": "4.12.0",
     "ts-node": "~10.8.1",
     "tslib": "^2.0.0",
     "tslint-config-prettier": "^1.18.0",
