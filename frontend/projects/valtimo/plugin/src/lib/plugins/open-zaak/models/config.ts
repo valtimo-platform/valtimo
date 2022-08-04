@@ -17,12 +17,8 @@
 import {PluginConfigurationData} from '../../../models';
 
 interface OpenZaakConfig extends PluginConfigurationData {
-  id?: string;
-  url: string;
   clientId: string;
-  secret: string;
-  rsin: string;
-  catalogusUrl: string;
+  clientSecret: string;
 }
 
 export {OpenZaakConfig};

@@ -15,11 +15,11 @@
  */
 
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {PluginManagementService, PluginManagementStateService} from '../../services';
+import {PluginManagementStateService} from '../../services';
 import {take} from 'rxjs/operators';
 import {ModalComponent, ModalService} from '@valtimo/user-interface';
 import {BehaviorSubject, Subject, Subscription} from 'rxjs';
-import {PluginConfigurationData} from '@valtimo/plugin';
+import {PluginConfigurationData, PluginManagementService} from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
 
 @Component({

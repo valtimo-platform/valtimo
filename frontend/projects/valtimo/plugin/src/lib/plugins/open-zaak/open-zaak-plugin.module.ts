@@ -17,48 +17,13 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {OpenZaakConfigurationComponent} from './components/open-zaak-configuration/open-zaak-configuration.component';
-import {
-  FormModule,
-  InputModule,
-  TitleModule,
-  SelectModule,
-  InputLabelModule,
-  ParagraphModule,
-} from '@valtimo/user-interface';
+import {FormModule, InputModule} from '@valtimo/user-interface';
 import {SpinnerModule} from '@valtimo/components';
-import {CreateZaakConfigurationComponent} from './components/create-zaak-configuration/create-zaak-configuration.component';
-import {SetBesluitConfigurationComponent} from './components/set-besluit-configuration/set-besluit-configuration.component';
-import {SetResultaatConfigurationComponent} from './components/set-resultaat-configuration/set-resultaat-configuration.component';
-import {SetStatusConfigurationComponent} from './components/set-status-configuration/set-status-configuration.component';
 import {PluginTranslatePipeModule} from '../../pipes';
-import {SelectZaakTypeComponent} from './components/select-zaak-type/select-zaak-type.component';
 
 @NgModule({
-  declarations: [
-    OpenZaakConfigurationComponent,
-    CreateZaakConfigurationComponent,
-    SetBesluitConfigurationComponent,
-    SetResultaatConfigurationComponent,
-    SetStatusConfigurationComponent,
-    SelectZaakTypeComponent,
-  ],
-  imports: [
-    CommonModule,
-    TitleModule,
-    FormModule,
-    InputModule,
-    PluginTranslatePipeModule,
-    SelectModule,
-    InputLabelModule,
-    ParagraphModule,
-  ],
-  exports: [
-    OpenZaakConfigurationComponent,
-    CreateZaakConfigurationComponent,
-    SetBesluitConfigurationComponent,
-    SetResultaatConfigurationComponent,
-    SetStatusConfigurationComponent,
-    SelectZaakTypeComponent,
-  ],
+  declarations: [OpenZaakConfigurationComponent],
+  imports: [CommonModule, FormModule, InputModule, PluginTranslatePipeModule],
+  exports: [OpenZaakConfigurationComponent],
 })
 export class OpenZaakPluginModule {}

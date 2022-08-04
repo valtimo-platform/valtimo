@@ -33,6 +33,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
       'store-temp-document': 'Document opslaan',
       configurationTitle: 'Configuratienaam',
       url: 'Documenten API URL',
+      bronorganisatie: 'Bronorganisatie RSIN',
       localDocumentLocation: 'Naam procesvariabele met document',
       storedDocumentUrl: 'Naam procesvariabele voor opslag document-URL',
       taal: 'Taal',
@@ -43,6 +44,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
       ter_vaststelling: 'Ter vaststelling',
       definitief: 'Definitief',
       gearchiveerd: 'Gearchiveerd',
+      authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
     },
     en: {
       title: 'Documenten API',
@@ -50,6 +52,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
       'store-temp-document': 'Save document',
       configurationTitle: 'Configuration name',
       url: 'Documenten API URL',
+      bronorganisatie: 'Organisation RSIN',
       localDocumentLocation: 'Name of process variable with document',
       storedDocumentUrl: 'Process variable name for storing document URL',
       taal: 'Language',
@@ -60,6 +63,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
       ter_vaststelling: 'To be confirmed',
       definitief: 'Final',
       gearchiveerd: 'Archived',
+      authenticationPluginConfiguration: 'Authentication plugin configuration',
     },
     de: {
       title: 'Documenten API',
@@ -67,6 +71,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
       'store-temp-document': 'Dokument speichern',
       configurationTitle: 'Konfigurationsname',
       url: 'Documenten API URL',
+      bronorganisatie: 'Organisation RSIN',
       localDocumentLocation: 'Name Prozessvariable mit Dokument',
       storedDocumentUrl: 'Name der Prozessvariablen zum Speichern der Dokument-URL',
       taal: 'Sprache',
@@ -77,6 +82,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
       ter_vaststelling: 'Zu bestimmen',
       definitief: 'Endgültig',
       gearchiveerd: 'Archiviert',
+      authenticationPluginConfiguration: 'Authentifizierungs-Plugin-Konfiguration',
     },
   },
 };

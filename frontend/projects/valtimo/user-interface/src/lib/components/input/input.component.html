@@ -91,12 +91,13 @@
 
 <ng-template #numberInput>
   <input
-    *ngIf="isNumber"
+    *ngIf="isNumber && !digitOnly"
     type="number"
     class="v-input"
     [ngClass]="{
       'v-input--full-width': fullWidth,
-      'v-input--margin': margin
+      'v-input--margin': margin,
+      'v-input--hide-spinbox': hideNumberSpinBox
     }"
     [style.width.px]="widthPx"
     [disabled]="disabled"
@@ -106,5 +107,24 @@
     [min]="min"
     [name]="name"
     [maxLength]="maxLength"
+  />
+  <input
+    *ngIf="isNumber && digitOnly"
+    type="number"
+    class="v-input"
+    [ngClass]="{
+      'v-input--full-width': fullWidth,
+      'v-input--margin': margin,
+      'v-input--hide-spinbox': hideNumberSpinBox
+    }"
+    [style.width.px]="widthPx"
+    [disabled]="disabled"
+    [ngModel]="inputValue$ | async"
+    (ngModelChange)="onValueChange($event)"
+    [step]="step"
+    [min]="min"
+    [name]="name"
+    [maxLength]="maxLength"
+    digitOnly
   />
 </ng-template>

@@ -20,8 +20,8 @@ import {ConnectorProperties, ConnectorType} from '@valtimo/config';
 import {take, map} from 'rxjs/operators';
 import {AlertService} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
-import {PluginManagementStateService, PluginManagementService} from '../../services';
-import {PluginDefinition} from '../../models';
+import {PluginManagementStateService} from '../../services';
+import {PluginManagementService, PluginDefinition} from '@valtimo/plugin';
 
 @Component({
   selector: 'valtimo-plugin-add-select',

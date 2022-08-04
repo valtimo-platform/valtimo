@@ -21,9 +21,10 @@ import {InputComponent} from './input.component';
 import {TranslateModule} from '@ngx-translate/core';
 import {InputLabelModule} from '../input-label/input-label.module';
 import {ButtonModule} from '../button/button.module';
+import {DigitOnlyDirective} from '../../directives';
 
 @NgModule({
-  declarations: [InputComponent],
+  declarations: [InputComponent, DigitOnlyDirective],
   imports: [CommonModule, TranslateModule, FormsModule, InputLabelModule, ButtonModule],
   exports: [InputComponent],
 })

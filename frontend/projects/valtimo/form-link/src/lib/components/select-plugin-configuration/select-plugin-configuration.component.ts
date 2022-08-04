@@ -16,15 +16,15 @@
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {map, switchMap, take, tap} from 'rxjs/operators';
+import {ProcessLinkStateService} from '../../services/process-link-state.service';
+import {combineLatest, Observable, of} from 'rxjs';
 import {
   PluginDefinition,
   PluginConfiguration,
   PluginManagementService,
   PluginConfigurationWithLogo,
-} from '@valtimo/plugin-management';
-import {ProcessLinkStateService} from '../../services/process-link-state.service';
-import {combineLatest, Observable, of} from 'rxjs';
-import {PluginService} from '@valtimo/plugin';
+  PluginService,
+} from '@valtimo/plugin';
 
 @Component({
   selector: 'valtimo-select-plugin-configuration',

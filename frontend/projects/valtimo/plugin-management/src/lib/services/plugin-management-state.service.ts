@@ -17,13 +17,14 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
 import {map, take} from 'rxjs/operators';
+import {PluginModal} from '../models';
 import {
+  PluginService,
+  PluginSpecification,
   PluginConfiguration,
   PluginDefinition,
   PluginDefinitionWithLogo,
-  PluginModal,
-} from '../models';
-import {PluginService, PluginSpecification} from '@valtimo/plugin';
+} from '@valtimo/plugin';
 import {DomSanitizer} from '@angular/platform-browser';
 
 @Injectable({

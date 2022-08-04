@@ -73,3 +73,13 @@
 .v-input__password-icon {
   margin-inline-start: var(--v-input-password-icon-spacing);
 }
+
+.v-input--hide-spinbox::-webkit-outer-spin-button,
+.v-input--hide-spinbox::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.v-input--hide-spinbox {
+  -moz-appearance: textfield;
+}

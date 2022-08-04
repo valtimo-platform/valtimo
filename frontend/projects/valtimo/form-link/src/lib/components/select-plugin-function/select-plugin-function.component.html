@@ -20,6 +20,20 @@
     fxLayoutGap="22px grid"
     *ngIf="{selectedPluginDefinition: selectedPluginDefinition$ | async} as obs"
   >
+    <ng-container
+      *ngTemplateOutlet="
+        pluginFunctionsTemplate;
+        context: {pluginFunctions: pluginFunctions, obs: obs}
+      "
+    ></ng-container>
+    <ng-container
+      *ngTemplateOutlet="noPluginFunctionsTemplate; context: {pluginFunctions: pluginFunctions}"
+    ></ng-container>
+  </div>
+</ng-container>
+
+<ng-template #pluginFunctionsTemplate let-pluginFunctions="pluginFunctions" let-obs="obs">
+  <ng-container *ngIf="pluginFunctions?.length > 0">
     <div fxFlex="33.3%" *ngFor="let pluginFunction of pluginFunctions">
       <v-card
         [title]="pluginFunction.key | pluginTranslate: obs.selectedPluginDefinition.key | async"
@@ -30,8 +44,16 @@
         (deselectEvent)="deselectFunction()"
       ></v-card>
     </div>
+  </ng-container>
+</ng-template>
+
+<ng-template #noPluginFunctionsTemplate let-pluginFunctions="pluginFunctions">
+  <div fxFlex="100%" *ngIf="pluginFunctions?.length === 0">
+    <v-paragraph [center]="true" [fullWidth]="true">{{
+      'processLink.noPluginFunctions' | translate
+    }}</v-paragraph>
   </div>
-</ng-container>
+</ng-template>
 
 <ng-template #loading>
   <div fxLayout="row wrap" fxLayoutGap="22px grid">

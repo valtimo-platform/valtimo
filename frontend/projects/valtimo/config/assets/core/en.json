@@ -691,6 +691,7 @@
   "processLink": {
     "edit": "Edit process link",
     "saveChanges": "Save changes",
-    "unlink": "Unlink"
+    "unlink": "Unlink",
+    "noPluginFunctions": "This plugin does not support any plugin actions."
   }
 }

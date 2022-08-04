@@ -691,6 +691,7 @@
   "processLink": {
     "edit": "Prozesslink bearbeiten",
     "saveChanges": "Änderungen speichern",
-    "unlink": "Verknüpfung aufheben"
+    "unlink": "Verknüpfung aufheben",
+    "noPluginFunctions": "Dieses Plugin unterstützt keine Plugin-Aktionen."
   }
 }

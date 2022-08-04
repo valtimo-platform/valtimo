@@ -54,14 +54,7 @@ export class OpenZaakConfigurationComponent
   }
 
   private handleValid(formValue: OpenZaakConfig): void {
-    const valid = !!(
-      formValue.configurationTitle &&
-      formValue.url &&
-      formValue.catalogusUrl &&
-      formValue.rsin &&
-      formValue.secret &&
-      formValue.clientId
-    );
+    const valid = !!(formValue.configurationTitle && formValue.clientId && formValue.clientSecret);
 
     this.valid$.next(valid);
     this.valid.emit(valid);

@@ -16,6 +16,7 @@
 
 import {Component, EventEmitter, Input, Type} from '@angular/core';
 import {Observable} from 'rxjs';
+import {SafeResourceUrl} from '@angular/platform-browser';
 
 interface PluginConfigurationData {
   configurationTitle: string;
@@ -63,6 +64,34 @@ type PluginConfig = Array<PluginSpecification>;
 
 type ConfigurationComponentType = 'function' | 'configuration';
 
+interface PluginDefinition {
+  key: string;
+  description?: string;
+  title?: string;
+}
+
+interface PluginDefinitionWithLogo extends PluginDefinition {
+  pluginLogoBase64?: SafeResourceUrl;
+}
+
+interface PluginConfiguration {
+  definitionKey?: string;
+  pluginDefinition?: PluginDefinition;
+  id?: string;
+  title: string;
+  properties: object;
+}
+
+interface PluginConfigurationWithLogo extends PluginConfiguration {
+  pluginLogoBase64?: SafeResourceUrl;
+}
+
+interface PluginFunction {
+  description?: string;
+  key: string;
+  title?: string;
+}
+
 export {
   PluginSpecification,
   PluginConfig,
@@ -71,4 +100,9 @@ export {
   PluginConfigurationData,
   FunctionConfigurationComponent,
   FunctionConfigurationData,
+  PluginConfiguration,
+  PluginDefinition,
+  PluginFunction,
+  PluginDefinitionWithLogo,
+  PluginConfigurationWithLogo,
 };

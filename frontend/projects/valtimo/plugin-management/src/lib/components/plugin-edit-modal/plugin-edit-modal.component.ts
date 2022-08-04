@@ -15,13 +15,16 @@
  */
 
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {PluginManagementService, PluginManagementStateService} from '../../services';
+import {PluginManagementStateService} from '../../services';
 import {take} from 'rxjs/operators';
 import {ModalComponent, ModalService} from '@valtimo/user-interface';
 import {BehaviorSubject, Observable, Subject, Subscription} from 'rxjs';
-import {PluginConfigurationData} from '@valtimo/plugin';
+import {
+  PluginConfigurationData,
+  PluginConfiguration,
+  PluginManagementService,
+} from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
-import {PluginConfiguration} from '../../models';
 
 @Component({
   selector: 'valtimo-plugin-edit-modal',

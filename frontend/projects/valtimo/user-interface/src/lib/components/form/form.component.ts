@@ -24,7 +24,7 @@ import {
   QueryList,
 } from '@angular/core';
 import {InputComponent} from '../input/input.component';
-import {combineLatest, of, Subscription} from 'rxjs';
+import {combineLatest, of, startWith, Subscription} from 'rxjs';
 import {tap} from 'rxjs/operators';
 import {FormOutput} from '../../models';
 import {SelectComponent} from '../select/select.component';
@@ -43,8 +43,22 @@ export class FormComponent implements AfterContentInit, OnDestroy {
   @Output() valueChange: EventEmitter<FormOutput> = new EventEmitter();
 
   private componentValuesSubscription!: Subscription;
+  private changesSubscription!: Subscription;
 
   ngAfterContentInit(): void {
+    this.openChangesSubscription();
+  }
+
+  ngOnDestroy(): void {
+    this.closeComponentValuesSubscription();
+    this.changesSubscription?.unsubscribe();
+  }
+
+  onContentChange(): void {
+    this.openComponentValuesSubscription();
+  }
+
+  private openComponentValuesSubscription(): void {
     const valueComponents = [
       ...this.inputComponents?.toArray(),
       ...this.selectComponents?.toArray(),
@@ -82,7 +96,18 @@ export class FormComponent implements AfterContentInit, OnDestroy {
       .subscribe();
   }
 
-  ngOnDestroy(): void {
+  private closeComponentValuesSubscription(): void {
     this.componentValuesSubscription?.unsubscribe();
+  }
+
+  private openChangesSubscription(): void {
+    this.changesSubscription = combineLatest([
+      this.inputComponents.changes.pipe(startWith(null)),
+      this.selectComponents.changes.pipe(startWith(null)),
+      this.multiInputComponents.changes.pipe(startWith(null)),
+    ]).subscribe(() => {
+      this.closeComponentValuesSubscription();
+      this.openComponentValuesSubscription();
+    });
   }
 }

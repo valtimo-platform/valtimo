@@ -17,11 +17,14 @@
 import {Component} from '@angular/core';
 import {BehaviorSubject, combineLatest} from 'rxjs';
 import {TableColumn} from '@valtimo/user-interface';
-import {PluginManagementStateService, PluginManagementService} from '../../services';
+import {PluginManagementStateService} from '../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {map, switchMap, tap} from 'rxjs/operators';
-import {PluginTranslationService} from '@valtimo/plugin';
-import {PluginConfiguration} from '../../models';
+import {
+  PluginTranslationService,
+  PluginManagementService,
+  PluginConfiguration,
+} from '@valtimo/plugin';
 
 @Component({
   selector: 'valtimo-plugin-management',

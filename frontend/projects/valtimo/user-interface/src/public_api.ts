@@ -20,6 +20,8 @@
 
 // Typings
 export * from './lib/models';
+// Directives
+export * from './lib/directives';
 // Button component
 export * from './lib/components/button/button.module';
 export * from './lib/components/button/button.component';

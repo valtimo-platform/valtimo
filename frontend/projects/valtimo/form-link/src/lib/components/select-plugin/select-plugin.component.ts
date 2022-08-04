@@ -16,7 +16,7 @@
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {take, tap} from 'rxjs/operators';
-import {PluginDefinition, PluginManagementService} from '@valtimo/plugin-management';
+import {PluginDefinition, PluginManagementService} from '@valtimo/plugin';
 import {ProcessLinkStateService} from '../../services/process-link-state.service';
 
 @Component({

@@ -41,4 +41,45 @@
     [required]="true"
   >
   </v-input>
+  <v-input
+    name="bronorganisatie"
+    type="number"
+    [hideNumberSpinBox]="true"
+    [digitOnly]="true"
+    [min]="0"
+    [step]="1"
+    [title]="'bronorganisatie' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
+    [margin]="true"
+    [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.bronorganisatie"
+    [required]="true"
+  >
+  </v-input>
+  <v-select
+    *ngIf="
+      authenticationPluginSelectItems$ | async as authenticationPluginSelectItems;
+      else authenticationPluginConfigurationLoading
+    "
+    [items]="authenticationPluginSelectItems"
+    [margin]="true"
+    [widthInPx]="350"
+    name="authenticationPluginConfiguration"
+    [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
+    [disabled]="obs.disabled"
+    [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"
+    [required]="true"
+  ></v-select>
 </v-form>
+
+<ng-template #authenticationPluginConfigurationLoading>
+  <v-select
+    [items]="[]"
+    [margin]="true"
+    [widthInPx]="350"
+    name="authenticationPluginConfiguration"
+    [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
+    [disabled]="true"
+    [required]="true"
+  ></v-select>
+</ng-template>

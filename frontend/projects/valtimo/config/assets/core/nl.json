@@ -691,6 +691,7 @@
   "processLink": {
     "edit": "Proceskoppeling wijzigen",
     "saveChanges": "Wijzigingen opslaan",
-    "unlink": "Ontkoppelen"
+    "unlink": "Ontkoppelen",
+    "noPluginFunctions": "Deze plug-in ondersteunt geen pluginacties."
   }
 }

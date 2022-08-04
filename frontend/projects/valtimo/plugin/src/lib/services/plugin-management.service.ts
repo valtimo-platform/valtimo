@@ -25,7 +25,7 @@ import {
 } from '../models';
 import {ConfigService} from '@valtimo/config';
 import {delay, map} from 'rxjs/operators';
-import {PluginService} from '@valtimo/plugin';
+import {PluginService} from './plugin.service';
 import {DomSanitizer} from '@angular/platform-browser';
 
 @Injectable({
@@ -59,7 +59,13 @@ export class PluginManagementService {
     );
   }
 
-  getAllPluginConfigurationsWithLogos(): Observable<Array<PluginConfiguration>> {
+  getPluginConfigurationsByCategory(categoryId: string): Observable<Array<PluginConfiguration>> {
+    return this.http.get<Array<PluginConfiguration>>(
+      `${this.VALTIMO_API_ENDPOINT_URI}plugin/configuration?category=${categoryId}`
+    );
+  }
+
+  getAllPluginConfigurationsWithLogos(): Observable<Array<PluginConfigurationWithLogo>> {
     return this.returnPluginConfigurationsWithLogos(this.getAllPluginConfigurations());
   }
 

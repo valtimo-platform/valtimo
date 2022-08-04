@@ -14,5 +14,4 @@
  * limitations under the License.
  */
 
-export * from './plugin.model';
 export * from './plugin-modal.model';

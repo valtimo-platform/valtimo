@@ -21,7 +21,7 @@ import {
   PluginConfiguration,
   PluginFunction,
   PluginManagementService,
-} from '@valtimo/plugin-management';
+} from '@valtimo/plugin';
 import {ProcessLinkStateService} from '../../services/process-link-state.service';
 import {Observable, of} from 'rxjs';
 

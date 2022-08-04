@@ -29,11 +29,6 @@ export * from './lib/components/plugin-configuration-container/plugin-configurat
 export * from './lib/plugins/open-zaak/open-zaak-plugin.module';
 export * from './lib/plugins/open-zaak/components/open-zaak-configuration/open-zaak-configuration.component';
 export * from './lib/plugins/open-zaak/open-zaak-plugin.specification';
-export * from './lib/plugins/open-zaak/components/create-zaak-configuration/create-zaak-configuration.component';
-export * from './lib/plugins/open-zaak/components/set-besluit-configuration/set-besluit-configuration.component';
-export * from './lib/plugins/open-zaak/components/set-resultaat-configuration/set-resultaat-configuration.component';
-export * from './lib/plugins/open-zaak/components/set-status-configuration/set-status-configuration.component';
-export * from './lib/plugins/open-zaak/components/select-zaak-type/select-zaak-type.component';
 /* smart-documents plugin */
 export * from './lib/plugins/smart-documents/smart-documents-plugin.module';
 export * from './lib/plugins/smart-documents/smart-documents-plugin.specification';
