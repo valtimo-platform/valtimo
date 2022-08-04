@@ -506,7 +506,7 @@
     }
   },
   "formLink": {
-    "title": "Welche der drei Optionen soll genutzt werden, um ein Formular zu verknüpfen:",
+    "title": "Welche der Optionen soll genutzt werden, um ein Formular zu verknüpfen:",
     "subtitle": "Connect {{type}} to a form",
     "formDefinition": "Form definition",
     "formFlowDefinition": "Formularflussdefinition",

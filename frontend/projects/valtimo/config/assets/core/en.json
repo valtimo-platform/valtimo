@@ -506,7 +506,7 @@
     }
   },
   "formLink": {
-    "title": "Choose one of the three ways below to specify a form for this element:",
+    "title": "Choose one of the ways below to specify a form for this element:",
     "subtitle": "Connect {{type}} to a form",
     "formDefinition": "Form definition",
     "formFlowDefinition": "Form Flow definition",

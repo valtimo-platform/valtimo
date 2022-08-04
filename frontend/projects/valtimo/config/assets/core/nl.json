@@ -506,7 +506,7 @@
     }
   },
   "formLink": {
-    "title": "Kies een van de drie onderstaande manieren om een formulier in te stellen voor dit element:",
+    "title": "Kies een van de onderstaande manieren om een formulier in te stellen voor dit element:",
     "subtitle": "Koppel {{type}} aan een formulier",
     "formDefinition": "Formulierdefinitie",
     "formFlowDefinition": "Form Flow definitie",
