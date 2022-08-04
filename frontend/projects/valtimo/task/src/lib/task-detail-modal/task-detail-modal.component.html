@@ -21,7 +21,10 @@
   [subtitle]="page?.subtitle"
   [templateBelowSubtitle]="assignUserToTask"
 >
-  <div body *ngIf="formDefinition && ((processLinkIsForm$ | async) || (formFlowStepTypeIsForm$ | async))">
+  <div
+    body
+    *ngIf="formDefinition && ((processLinkIsForm$ | async) || (formFlowStepTypeIsForm$ | async))"
+  >
     <valtimo-form-io
       #form
       [form]="formDefinition"
@@ -30,10 +33,13 @@
     ></valtimo-form-io>
   </div>
   <div body *ngIf="!formDefinition && !errorMessage">
-    <div
-      class="bg-warning text-black mb-0 p-3 text-center"
-      [translate]="'formManagement.noFormDefinitionFound'"
-    ></div>
+    <div class="bg-warning text-black mb-0 p-3 text-center">
+      {{
+        (isAdmin$ | async)
+          ? ('formManagement.noFormDefinitionFoundAdmin' | translate)
+          : ('formManagement.noFormDefinitionFoundUser' | translate)
+      }}
+    </div>
   </div>
   <div body *ngIf="errorMessage">
     <div class="bg-danger text-black mb-0 p-3 text-center">

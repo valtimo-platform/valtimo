@@ -16,7 +16,13 @@
 
 import {Component, EventEmitter, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
-import {FormioComponent, FormioOptionsImpl, FormioSubmission, ModalComponent, ValtimoFormioOptions} from '@valtimo/components';
+import {
+  FormioComponent,
+  FormioOptionsImpl,
+  FormioSubmission,
+  ModalComponent,
+  ValtimoFormioOptions,
+} from '@valtimo/components';
 import {Task, TaskProcessLinkType} from '../models';
 import {
   FormAssociation,
@@ -24,7 +30,7 @@ import {
   FormFlowService,
   FormFlowStepType,
   FormLinkService,
-  FormSubmissionResult
+  FormSubmissionResult,
 } from '@valtimo/form-link';
 import {FormioForm} from '@formio/angular';
 import moment from 'moment';
@@ -32,7 +38,8 @@ import {NGXLogger} from 'ngx-logger';
 import {ToastrService} from 'ngx-toastr';
 import {map, take} from 'rxjs/operators';
 import {TaskService} from '../task.service';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {UserProviderService} from '@valtimo/security';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -63,7 +70,11 @@ export class TaskDetailModalComponent {
   processLinkIsFormFlow$ = this.taskProcessLinkType$.pipe(map(type => type === 'form-flow'));
 
   private formFlowStepType$ = new BehaviorSubject<FormFlowStepType | null>(null);
-  formFlowStepTypeIsForm$ = this.formFlowStepType$.pipe(map( type => type === 'form'));
+  formFlowStepTypeIsForm$ = this.formFlowStepType$.pipe(map(type => type === 'form'));
+
+  readonly isAdmin$: Observable<boolean> = this.userProviderService
+    .getUserSubject()
+    .pipe(map(userIdentity => userIdentity?.roles?.includes('ROLE_ADMIN')));
 
   constructor(
     private readonly toastr: ToastrService,
@@ -72,7 +83,8 @@ export class TaskDetailModalComponent {
     private readonly router: Router,
     private readonly logger: NGXLogger,
     private readonly route: ActivatedRoute,
-    private readonly taskService: TaskService
+    private readonly taskService: TaskService,
+    private readonly userProviderService: UserProviderService
   ) {
     this.formioOptions = new FormioOptionsImpl();
     this.formioOptions.disableAlerts = true;
@@ -158,10 +170,12 @@ export class TaskDetailModalComponent {
 
     if (this.taskProcessLinkType$.getValue() === 'form-flow') {
       if (submission.data.submit) {
-        this.formFlowService.submitStep(this.formFlowInstanceId, this.formFlowStepInstanceId, submission.data).subscribe(
-          (result: FormFlowInstance) => this.handleFormFlowStep(result),
-          errors => this.form.showErrors(errors)
-        );
+        this.formFlowService
+          .submitStep(this.formFlowInstanceId, this.formFlowStepInstanceId, submission.data)
+          .subscribe(
+            (result: FormFlowInstance) => this.handleFormFlowStep(result),
+            errors => this.form.showErrors(errors)
+          );
       } else if (submission.data['back']) {
         this.formFlowService.back(this.formFlowInstanceId).subscribe(
           (result: FormFlowInstance) => this.handleFormFlowStep(result),
@@ -183,18 +197,18 @@ export class TaskDetailModalComponent {
           break;
         case 'form-flow':
           this.taskProcessLinkType$.next('form-flow');
-          this.getFormFlowStep(res?.properties.formFlowInstanceId)
+          this.getFormFlowStep(res?.properties.formFlowInstanceId);
           break;
       }
     });
   }
 
   private getFormFlowStep(formFlowInstanceId: string): void {
-    this.formFlowService.getFormFlowStep(formFlowInstanceId).subscribe(
-      (result: FormFlowInstance) => {
-        this.handleFormFlowStep(result)
-      }
-    );
+    this.formFlowService
+      .getFormFlowStep(formFlowInstanceId)
+      .subscribe((result: FormFlowInstance) => {
+        this.handleFormFlowStep(result);
+      });
   }
 
   private handleFormFlowStep(formFlowInstance: FormFlowInstance) {
@@ -202,7 +216,7 @@ export class TaskDetailModalComponent {
       this.formFlowStepType$.next(null);
       this.formFlowInstanceId = null;
       this.formFlowStepInstanceId = null;
-      this.completeTask()
+      this.completeTask();
     } else {
       this.formFlowStepType$.next(formFlowInstance.step.type);
       this.formFlowInstanceId = formFlowInstance.id;

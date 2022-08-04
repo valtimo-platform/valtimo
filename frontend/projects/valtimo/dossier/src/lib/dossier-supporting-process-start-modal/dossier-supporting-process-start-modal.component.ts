@@ -29,8 +29,9 @@ import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
 import {FormLinkService} from '@valtimo/form-link';
 import {NGXLogger} from 'ngx-logger';
 import {FormAssociation, FormSubmissionResult} from '@valtimo/form-link';
-import {noop} from 'rxjs';
-import {take} from 'rxjs/operators';
+import {noop, Observable} from 'rxjs';
+import {map, take} from 'rxjs/operators';
+import {UserProviderService} from '@valtimo/security';
 
 @Component({
   selector: 'valtimo-dossier-supporting-process-start-modal',
@@ -48,6 +49,10 @@ export class DossierSupportingProcessStartModalComponent {
   public options: ValtimoFormioOptions;
   public submission: object;
 
+  readonly isAdmin$: Observable<boolean> = this.userProviderService
+    .getUserSubject()
+    .pipe(map(userIdentity => userIdentity?.roles?.includes('ROLE_ADMIN')));
+
   @ViewChild('form', {static: false}) form: FormioComponent;
   @ViewChild('supportingProcessStartModal', {static: false}) modal: ModalComponent;
   private documentId: string;
@@ -59,7 +64,8 @@ export class DossierSupportingProcessStartModalComponent {
     private processService: ProcessService,
     private documentService: DocumentService,
     private formLinkService: FormLinkService,
-    private logger: NGXLogger
+    private logger: NGXLogger,
+    private readonly userProviderService: UserProviderService
   ) {}
 
   private loadFormDefinition() {
