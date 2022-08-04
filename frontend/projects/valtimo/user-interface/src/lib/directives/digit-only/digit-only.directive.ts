@@ -135,7 +135,7 @@ export class DigitOnlyDirective implements OnChanges {
   @HostListener('paste', ['$event'])
   onPaste(event: any): void {
     if (this.allowPaste === true) {
-      let pastedInput: string = '';
+      let pastedInput = '';
       if ((window as {[key: string]: any})['clipboardData']) {
         // Browser is IE
         pastedInput = (window as {[key: string]: any})['clipboardData'].getData('text');
