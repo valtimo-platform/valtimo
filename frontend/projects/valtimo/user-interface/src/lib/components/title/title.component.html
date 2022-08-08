@@ -15,8 +15,12 @@
   -->
 
 <h1 *ngIf="isH1" class="v-title--h1" [ngClass]="{'v-title--no-margin': !margin}">
-  <ng-content></ng-content>
+  <ng-container *ngTemplateOutlet="content"></ng-container>
 </h1>
 <h2 *ngIf="isH2" class="v-title--h2" [ngClass]="{'v-title--no-margin': !margin}">
-  <ng-content></ng-content>
+  <ng-container *ngTemplateOutlet="content"></ng-container>
 </h2>
+
+<ng-template #content>
+  <ng-content></ng-content>
+</ng-template>
