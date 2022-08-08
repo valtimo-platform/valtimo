@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {ConfigService, DefinitionColumn} from '@valtimo/config';
+import {ConfigService, DefinitionColumn, Direction} from '@valtimo/config';
 import {SortState} from '@valtimo/document';
 
 @Injectable({
@@ -40,11 +40,15 @@ export class DossierService {
 
   getInitialSortState(columns: Array<DefinitionColumn>): SortState {
     const defaultColumn = columns.find(column => column.default);
+    const isSorting = defaultColumn.default === 'ASC' || defaultColumn.default === 'DESC';
+    const direction: Direction =
+      typeof defaultColumn.default === 'boolean' ? 'DESC' : defaultColumn.default;
+
     return {
-      isSorting: false,
+      isSorting,
       state: {
         name: defaultColumn ? defaultColumn.propertyName : columns[0].propertyName,
-        direction: 'DESC',
+        direction,
       },
     };
   }

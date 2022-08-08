@@ -30,7 +30,7 @@ export interface DefinitionColumn {
   translationKey: string;
   sortable?: boolean;
   viewType?: string;
-  default?: boolean;
+  default?: boolean | Direction;
 }
 
 export interface CustomDossierHeaderItem {
