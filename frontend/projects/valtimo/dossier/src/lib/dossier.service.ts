@@ -42,7 +42,9 @@ export class DossierService {
     const defaultColumn = columns.find(column => column.default);
     const isSorting = defaultColumn.default === 'ASC' || defaultColumn.default === 'DESC';
     const direction: Direction =
-      typeof defaultColumn.default === 'boolean' ? 'DESC' : defaultColumn.default;
+      typeof defaultColumn.default === 'boolean'
+        ? 'DESC'
+        : (defaultColumn.default as any as Direction);
 
     return {
       isSorting,
