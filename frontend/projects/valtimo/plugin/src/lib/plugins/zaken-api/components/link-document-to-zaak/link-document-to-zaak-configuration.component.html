@@ -1,0 +1,55 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<v-paragraph [margin]="true" [italic]="true">
+  {{ 'linkDocumentInformation' | pluginTranslate: pluginId | async }}
+</v-paragraph>
+<v-form
+  (valueChange)="formValueChange($event)"
+  *ngIf="{
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+  } as obs"
+>
+  <v-input
+    name="documentUrl"
+    [title]="'documentUrl' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.documentUrl"
+    [disabled]="obs.disabled"
+    [required]="true"
+    [tooltip]="'documentUrlTooltip' | pluginTranslate: pluginId | async"
+  >
+  </v-input>
+  <v-input
+    name="titel"
+    [title]="'titel' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.titel"
+    [disabled]="obs.disabled"
+    [required]="false"
+  >
+  </v-input>
+  <v-input
+    name="beschrijving"
+    [title]="'beschrijving' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.beschrijving"
+    [disabled]="obs.disabled"
+    [required]="false"
+  >
+  </v-input>
+</v-form>

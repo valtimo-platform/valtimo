@@ -39,3 +39,8 @@ export * from './lib/plugins/documenten-api/documenten-api-plugin.module';
 export * from './lib/plugins/documenten-api/documenten-api-plugin.specification';
 export * from './lib/plugins/documenten-api/components/store-temp-document/store-temp-document-configuration.component';
 export * from './lib/plugins/documenten-api/components/documenten-api-configuration/documenten-api-configuration.component';
+/* zaken api plugin */
+export * from './lib/plugins/zaken-api/zaken-api-plugin.module';
+export * from './lib/plugins/zaken-api/zaken-api-plugin.specification';
+export * from './lib/plugins/zaken-api/components/zaken-api-configuration/zaken-api-configuration.component';
+export * from './lib/plugins/zaken-api/components/link-document-to-zaak/link-document-to-zaak-configuration.component';

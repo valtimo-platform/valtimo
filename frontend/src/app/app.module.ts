@@ -30,11 +30,10 @@ import {
   FormIoModule,
   FormIoUploaderComponent,
   MenuModule,
+  registerFormioFileSelectorComponent,
   registerFormioUploadComponent,
   UploaderModule,
   WidgetModule,
-  FormIoStateService,
-  registerFormioFileSelectorComponent,
 } from '@valtimo/components';
 import {ChoicefieldModule} from '@valtimo/choicefield';
 import {
@@ -82,17 +81,17 @@ import {OpenZaakModule} from '@valtimo/open-zaak';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {ConnectorManagementModule} from '@valtimo/connector-management';
 import {CustomerModule} from '@valtimo/customer';
-import {ModalService, UserInterfaceService} from '@valtimo/user-interface';
 import {PluginManagementModule} from '@valtimo/plugin-management';
 import {
-  PluginService,
+  DocumentenApiPluginModule,
+  documentenApiPluginSpecification,
   OpenZaakPluginModule,
   openZaakPluginSpecification,
   PLUGINS_TOKEN,
   SmartDocumentsPluginModule,
   smartDocumentsPluginSpecification,
-  DocumentenApiPluginModule,
-  documentenApiPluginSpecification,
+  ZakenApiPluginModule,
+  zakenApiPluginSpecification,
 } from '@valtimo/plugin';
 
 export function tabsFactory() {
@@ -168,6 +167,7 @@ export function tabsFactory() {
     OpenZaakPluginModule,
     SmartDocumentsPluginModule,
     DocumentenApiPluginModule,
+    ZakenApiPluginModule,
     HttpClientModule,
     TranslateModule.forRoot({
       loader: {
@@ -185,6 +185,7 @@ export function tabsFactory() {
         openZaakPluginSpecification,
         documentenApiPluginSpecification,
         smartDocumentsPluginSpecification,
+        zakenApiPluginSpecification,
       ],
     },
   ],
