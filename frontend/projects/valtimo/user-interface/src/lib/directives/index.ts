@@ -15,3 +15,4 @@
  */
 
 export * from './digit-only';
+export * from './v-tooltip';

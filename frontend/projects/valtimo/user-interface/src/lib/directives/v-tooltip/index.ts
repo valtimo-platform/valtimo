@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
-import {InputLabelComponent} from './input-label.component';
-import {TranslateModule} from '@ngx-translate/core';
-import {TooltipModule} from '../../directives';
-
-@NgModule({
-  declarations: [InputLabelComponent],
-  imports: [CommonModule, TranslateModule, FormsModule, TooltipModule],
-  exports: [InputLabelComponent],
-})
-export class InputLabelModule {}
+export * from './tooltip.directive';
+export * from './tooltip.component';
+export * from './tooltip.module';
