@@ -36,6 +36,7 @@
     [margin]="true"
     [defaultValue]="obs.prefill?.storedDocumentUrl"
     [disabled]="obs.disabled"
+    [tooltip]="'storeDocumentUrlTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
   <v-select
@@ -65,6 +66,7 @@
     [defaultValue]="obs.prefill?.informatieobjecttype"
     [disabled]="obs.disabled"
     [required]="true"
+    [tooltip]="'informatieobjecttypeTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
 </v-form>

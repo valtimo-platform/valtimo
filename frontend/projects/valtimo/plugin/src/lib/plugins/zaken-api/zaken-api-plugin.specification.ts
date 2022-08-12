@@ -33,14 +33,22 @@ const zakenApiPluginSpecification: PluginSpecification = {
   pluginTranslations: {
     nl: {
       title: 'Zaken API',
-      url: 'URL',
+      url: 'Zaken API URL',
+      urlTooltip:
+        'In dit veld moet de verwijzing komen naar de REST api van Open zaak. Deze url moet dus eindigen op /zaken/api/v1/',
       description:
         'De API ondersteunt het opslaan en het naar andere applicaties ontsluiten van gegevens over alle gemeentelijke zaken, van elk type.',
       'link-document-to-zaak': 'Koppel document aan zaak',
       configurationTitle: 'Configuratienaam',
+      configurationTitleTooltip:
+        'Hier kunt u een eigen naam verzinnen. Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
       documentUrl: 'URL naar het document',
       titel: 'Documenttitel',
+      titelTooltip:
+        '(Optioneel) Vult het titel veld in de metadata van de link tussen de Zaak en het Document',
       beschrijving: 'Documentbeschrijving',
+      beschrijvingTooltip:
+        '(Optioneel) Vult het beschrijving veld in de metadata van de link tussen de Zaak en het Document',
       authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
       linkDocumentInformation:
         'Deze actie koppelt een document uit de Documenten API aan de zaak die bij het dossier hoort.',
@@ -50,13 +58,19 @@ const zakenApiPluginSpecification: PluginSpecification = {
     en: {
       title: 'Zaken API',
       url: 'URL',
+      urlTooltip:
+        'This field must contain the URL to the rest API of Open Zaak, therefore this URL should end with /zaken/api/v1/',
       description:
         'The API supports the storage and disclosure of data on all municipal matters to other applications, of all types.',
       'link-document-to-zaak': 'Link document to zaak',
       configurationTitle: 'Configuration name',
       documentUrl: 'URL to the document',
       titel: 'Document title',
+      titelTooltip:
+        '(Optional) Fills the title field in the metadata of the link between the Zaak and the Document',
       beschrijving: 'Document description',
+      beschrijvingTooltip:
+        '(Optional) Fills the description field in the metadata of the link between the Zaak and the Document',
       authenticationPluginConfiguration: 'Authentication plugin configuration',
       linkDocumentInformation:
         'This action links a document from the Documents API to the zaak associated with the case.',
@@ -66,13 +80,19 @@ const zakenApiPluginSpecification: PluginSpecification = {
     de: {
       title: 'Zaken API',
       url: 'URL',
+      urlTooltip:
+        'Dieses Feld muss die URL zur rest API von Open Zaak enthalten, daher sollte diese URL mit enden /zaken/api/v1/',
       description:
         'Die API unterstützt die Speicherung und Weitergabe von Daten zu allen kommunalen Belangen an andere Anwendungen.',
       'link-document-to-zaak': 'Dokument mit Zaak verknüpfen',
       configurationTitle: 'Konfigurationsname',
       documentUrl: 'URL zum Dokument',
       titel: 'Dokumenttitel',
+      titelTooltip:
+        '(Optional) Füllt das Titelfeld in den Metadaten des Links zwischen dem Zaak und dem Dokument aus',
       beschrijving: 'Dokumentbeschreibung',
+      beschrijvingTooltip:
+        '(Optional) Füllt das Beschreibungsfeld in den Metadaten des Links zwischen dem Zaak und dem Dokument aus',
       authenticationPluginConfiguration: 'Authentifizierungs-Plugin-Konfiguration',
       linkDocumentInformation:
         'Diese Aktion verknüpft ein Dokument aus der Dokumenten-API mit dem mit dem Fall verknüpften Zaak.',

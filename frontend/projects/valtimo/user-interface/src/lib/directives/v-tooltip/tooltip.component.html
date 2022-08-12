@@ -14,19 +14,4 @@
   ~ limitations under the License.
   -->
 
-<div class="v-input-label-container">
-  <label
-    *ngIf="title || titleTranslationKey"
-    class="v-input-label"
-    [for]="name"
-    [ngClass]="{'v-input-label--required': required}"
-  >
-    {{ titleTranslationKey ? (titleTranslationKey | translate) : title }}
-  </label>
-  <i
-    *ngIf="tooltip"
-    class="v-input-label__tooltip mdi mdi-help-circle"
-    placement="right"
-    vTooltip="{{ tooltip }}"
-  ></i>
-</div>
+<div @tooltip>{{ text }}</div>

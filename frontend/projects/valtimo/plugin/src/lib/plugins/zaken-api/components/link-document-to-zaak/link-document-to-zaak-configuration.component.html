@@ -41,6 +41,7 @@
     [defaultValue]="obs.prefill?.titel"
     [disabled]="obs.disabled"
     [required]="false"
+    [tooltip]="'titelTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
   <v-input
@@ -50,6 +51,7 @@
     [defaultValue]="obs.prefill?.beschrijving"
     [disabled]="obs.disabled"
     [required]="false"
+    [tooltip]="'beschrijvingTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
 </v-form>

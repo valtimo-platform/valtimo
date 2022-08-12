@@ -16,14 +16,13 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
-import {InputLabelComponent} from './input-label.component';
-import {TranslateModule} from '@ngx-translate/core';
-import {TooltipModule} from '../../directives/v-tooltip/tooltip.module';
+import {TooltipDirective} from './tooltip.directive';
+import {TooltipComponent} from './tooltip.component';
+import {OverlayModule} from '@angular/cdk/overlay';
 
 @NgModule({
-  declarations: [InputLabelComponent],
-  imports: [CommonModule, TranslateModule, FormsModule, TooltipModule],
-  exports: [InputLabelComponent],
+  declarations: [TooltipDirective, TooltipComponent],
+  imports: [CommonModule, OverlayModule],
+  exports: [TooltipComponent, TooltipDirective],
 })
-export class InputLabelModule {}
+export class TooltipModule {}

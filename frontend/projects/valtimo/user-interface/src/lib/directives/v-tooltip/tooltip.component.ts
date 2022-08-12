@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
-import {InputLabelComponent} from './input-label.component';
-import {TranslateModule} from '@ngx-translate/core';
-import {TooltipModule} from '../../directives/v-tooltip/tooltip.module';
+import {Component, Input} from '@angular/core';
+import {animate, style, transition, trigger} from '@angular/animations';
 
-@NgModule({
-  declarations: [InputLabelComponent],
-  imports: [CommonModule, TranslateModule, FormsModule, TooltipModule],
-  exports: [InputLabelComponent],
+@Component({
+  selector: 'v-tooltip',
+  styleUrls: ['./tooltip.component.scss'],
+  templateUrl: './tooltip.component.html',
+  animations: [
+    trigger('tooltip', [
+      transition(':enter', [style({opacity: 0}), animate(300, style({opacity: 1}))]),
+      transition(':leave', [animate(300, style({opacity: 0}))]),
+    ]),
+  ],
 })
-export class InputLabelModule {}
+export class TooltipComponent {
+  @Input() text = '';
+}

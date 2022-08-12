@@ -349,4 +349,14 @@
   --v-multi-input-input-spacing-inline: var(--v-spacing-inline-md);
   /* top-bar */
   --v-top-bar-user-name-spacing: var(--v-spacing-inline-md);
+  /* tooltip */
+  --v-tooltip-bg-color: var(--v-color-black);
+  --v-tooltip-font-color: var(--v-color-white);
+  --v-tooltip-font-size: var(--v-font-size-default);
+  --v-tooltip-font-weight: var(--v-font-weight-lighter);
+  --v-tooltip-line-height: var(--v-line-height-default);
+  --v-tooltip-border-radius: var(--v-border-radius-sm);
+  --v-tooltip-spacing-inline: var(--v-spacing-inline-sm);
+  --v-tooltip-spacing-block: var(--v-spacing-block-xsm);
+  --v-tooltip-max-width: 600px;
 }

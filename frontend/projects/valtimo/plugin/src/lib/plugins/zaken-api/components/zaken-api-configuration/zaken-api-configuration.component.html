@@ -29,6 +29,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
+    [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
   <v-input
@@ -39,6 +40,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.url"
     [required]="true"
+    [tooltip]="'urlTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
   <v-select
