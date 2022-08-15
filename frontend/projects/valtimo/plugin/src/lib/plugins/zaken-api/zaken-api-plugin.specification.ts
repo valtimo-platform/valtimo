@@ -41,8 +41,10 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'link-document-to-zaak': 'Koppel document aan zaak',
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
-        'Hier kunt u een eigen naam verzinnen. Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
+        'Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
       documentUrl: 'URL naar het document',
+      documentUrlTooltip:
+        'Dit veld ondersteunt URLs en proces variabelen. Gebruik pv:variable om een proces variabele uit te lezen',
       titel: 'Documenttitel',
       titelTooltip:
         '(Optioneel) Vult het titel veld in de metadata van de link tussen de Zaak en het Document',
@@ -52,8 +54,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
       authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
       linkDocumentInformation:
         'Deze actie koppelt een document uit de Documenten API aan de zaak die bij het dossier hoort.',
-      documentUrlTooltip:
-        'Dit veld ondersteunt URLs en proces variabelen. Gebruik pv:variable om een proces variabele uit te lezen',
     },
     en: {
       title: 'Zaken API',
@@ -64,7 +64,11 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'The API supports the storage and disclosure of data on all municipal matters to other applications, of all types.',
       'link-document-to-zaak': 'Link document to zaak',
       configurationTitle: 'Configuration name',
+      configurationTitleTooltip:
+        'With this name the plugin will be recognizable in the rest of the application',
       documentUrl: 'URL to the document',
+      documentUrlTooltip:
+        'This field supports URLs and process variables. Use pv:variable to read a process variable',
       titel: 'Document title',
       titelTooltip:
         '(Optional) Fills the title field in the metadata of the link between the Zaak and the Document',
@@ -74,8 +78,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
       authenticationPluginConfiguration: 'Authentication plugin configuration',
       linkDocumentInformation:
         'This action links a document from the Documents API to the zaak associated with the case.',
-      documentUrlTooltip:
-        'This field supports URLs and process variables. Use pv:variable to read a process variable',
     },
     de: {
       title: 'Zaken API',
@@ -86,7 +88,11 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'Die API unterstützt die Speicherung und Weitergabe von Daten zu allen kommunalen Belangen an andere Anwendungen.',
       'link-document-to-zaak': 'Dokument mit Zaak verknüpfen',
       configurationTitle: 'Konfigurationsname',
+      configurationTitleTooltip:
+        'An diesem Namen wird das Plugin im Rest der Anwendung erkennbar sein',
       documentUrl: 'URL zum Dokument',
+      documentUrlTooltip:
+        'Dieses Feld unterstützt URLs und Prozessvariablen. Verwenden Sie pv:Variablen, um eine Prozessvariable zu lesen',
       titel: 'Dokumenttitel',
       titelTooltip:
         '(Optional) Füllt das Titelfeld in den Metadaten des Links zwischen dem Zaak und dem Dokument aus',
@@ -96,8 +102,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
       authenticationPluginConfiguration: 'Authentifizierungs-Plugin-Konfiguration',
       linkDocumentInformation:
         'Diese Aktion verknüpft ein Dokument aus der Dokumenten-API mit dem mit dem Fall verknüpften Zaak.',
-      documentUrlTooltip:
-        'Dieses Feld unterstützt URLs und Prozessvariablen. Verwenden Sie pv:Variablen, um eine Prozessvariable zu lesen',
     },
   },
 };
