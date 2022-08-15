@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-import {SortState} from '@valtimo/document';
-
-interface Pagination {
-  collectionSize: number;
-  page: number;
-  size: number;
-  maxPaginationItemSize: number;
-  sort?: SortState;
+interface ListField {
+  key: string;
+  label: string;
+  sortable: boolean;
+  viewType: string;
 }
 
-export {Pagination};
+export {ListField};

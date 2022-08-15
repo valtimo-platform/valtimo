@@ -49,6 +49,7 @@ export class ListComponent implements OnChanges, OnInit, AfterViewInit {
   @Input() actions: any[] = [];
   @Input() paginationIdentifier?: string;
   @Input() initialSortState: SortState;
+
   @Output() rowClicked: EventEmitter<any> = new EventEmitter();
   @Output() paginationClicked: EventEmitter<any> = new EventEmitter();
   @Output() paginationSet: EventEmitter<any> = new EventEmitter();
@@ -70,7 +71,7 @@ export class ListComponent implements OnChanges, OnInit, AfterViewInit {
     this.viewListAs = localStorage.getItem('viewListAs') || 'table';
   }
 
-  loadPaginationSize() {
+  loadPaginationSize(): void {
     const entries = localStorage.getItem(
       `${this.paginationIdentifier}${ListComponent.PAGINATION_SIZE}`
     );
@@ -82,8 +83,8 @@ export class ListComponent implements OnChanges, OnInit, AfterViewInit {
       this.logger.debug(
         'Pagination does NOT exist in local storage for this list. Will use default. Change it to create an entry.'
       );
+      this.paginationSet.emit(10);
     }
-    this.paginationSet.emit();
   }
 
   setPaginationSize(numberOfEntries: string) {
@@ -109,6 +110,10 @@ export class ListComponent implements OnChanges, OnInit, AfterViewInit {
   ngOnChanges(changes: SimpleChanges) {
     if (changes.items && changes.items.currentValue) {
       this.transformListItemsMatchFields();
+    }
+
+    if (changes?.initialSortState?.currentValue) {
+      this.sort$.next(changes?.initialSortState?.currentValue);
     }
   }
 

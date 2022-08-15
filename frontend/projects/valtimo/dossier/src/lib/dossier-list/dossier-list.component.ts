@@ -24,12 +24,31 @@ import {
   DocumentService,
   SortState,
   ProcessDocumentDefinition,
+  Documents,
+  DocumentDefinition,
 } from '@valtimo/document';
 import moment from 'moment';
-import {combineLatest, Subscription} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  fromEvent,
+  map,
+  Observable,
+  of,
+  startWith,
+  Subscription,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {DefaultTabs} from '../dossier-detail-tab-enum';
 import {DossierProcessStartModalComponent} from '../dossier-process-start-modal/dossier-process-start-modal.component';
 import {DossierService} from '../dossier.service';
+import {Pagination, ListField} from '@valtimo/components';
+import {NGXLogger} from 'ngx-logger';
 
 // eslint-disable-next-line no-var
 declare var $;
@@ -41,204 +60,214 @@ moment.locale(localStorage.getItem('langKey') || '');
   templateUrl: './dossier-list.component.html',
   styleUrls: ['./dossier-list.component.css'],
 })
-export class DossierListComponent implements OnInit, OnDestroy {
-  public documentDefinitionName = '';
-  public implementationDefinitions: any;
-  public showCreateDocument = false;
-  public schema: any;
-  public documents: any;
-  public items: Array<any> = [];
-  public fields: Array<any> = [];
-  public processDefinitionListFields: Array<any> = [];
-  public processDocumentDefinitions: ProcessDocumentDefinition[] = [];
-  public pagination = {
+export class DossierListComponent implements OnInit {
+  @ViewChild('processStartModal') processStart: DossierProcessStartModalComponent;
+
+  private selectedProcessDocumentDefinition: ProcessDocumentDefinition | null = null;
+  private modalListenerAdded = false;
+
+  private readonly settingPaginationForDocName$ = new BehaviorSubject<string | undefined>(
+    undefined
+  );
+
+  private readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
+    map(params => params.documentDefinitionName || ''),
+    tap(documentDefinitionName => {
+      this.resetPagination(documentDefinitionName);
+    })
+  );
+
+  readonly associatedProcessDocumentDefinitions$: Observable<Array<ProcessDocumentDefinition>> =
+    this.documentDefinitionName$.pipe(
+      switchMap(documentDefinitionName =>
+        documentDefinitionName
+          ? this.documentService.findProcessDocumentDefinitions(documentDefinitionName)
+          : of([])
+      ),
+      map(processDocumentDefinitions =>
+        processDocumentDefinitions.filter(definition => definition.canInitializeDocument)
+      )
+    );
+
+  readonly schema$ = this.documentDefinitionName$.pipe(
+    switchMap(documentDefinitionName =>
+      this.documentService.getDocumentDefinition(documentDefinitionName)
+    ),
+    map(documentDefinition => documentDefinition?.schema)
+  );
+
+  private readonly storedSearchRequestKey$: Observable<string> = this.documentDefinitionName$.pipe(
+    map(documentDefinitionName => `list-search-${documentDefinitionName}`)
+  );
+
+  private readonly hasStoredSearchRequest$: Observable<boolean> = this.storedSearchRequestKey$.pipe(
+    map(storedSearchRequestKey => localStorage.getItem(storedSearchRequestKey) !== null)
+  );
+
+  private readonly columns$: Observable<Array<DefinitionColumn>> =
+    this.documentDefinitionName$.pipe(
+      map(documentDefinitionName =>
+        this.dossierService.getDefinitionColumns(documentDefinitionName)
+      )
+    );
+
+  readonly fields$: Observable<Array<ListField>> = combineLatest([
+    this.columns$,
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([columns]) =>
+      columns.map((column, index) => ({
+        key: column.propertyName,
+        label: this.translateService.instant(`fieldLabels.${column.translationKey}`),
+        sortable: column.sortable,
+        ...(column.viewType && {viewType: column.viewType}),
+      }))
+    )
+  );
+
+  private readonly DEFAULT_PAGINATION: Pagination = {
     collectionSize: 0,
     page: 1,
     size: 10,
     maxPaginationItemSize: 5,
     sort: undefined,
   };
-  public globalSearchFilter: string | undefined;
-  public sequence: number | undefined;
-  public createdBy: string | undefined;
-  private selectedProcessDocumentDefinition: ProcessDocumentDefinition | null = null;
-  private modalListenerAdded = false;
-  @ViewChild('processStartModal') processStart: DossierProcessStartModalComponent;
 
-  private routerSubscription: Subscription;
+  private readonly pagination$ = new BehaviorSubject<Pagination | undefined>(undefined);
 
-  private translationSubscription: Subscription;
+  readonly paginationCopy$ = this.pagination$.pipe(
+    map(pagination => pagination && JSON.parse(JSON.stringify(pagination)))
+  );
 
-  initialSortState: SortState;
+  readonly sequence$ = new BehaviorSubject<number | undefined>(undefined);
+
+  readonly globalSearchFilter$ = new BehaviorSubject<string | undefined>(undefined);
+
+  private readonly createdBy$ = new BehaviorSubject<string | undefined>(undefined);
+
+  private readonly documentSearchRequest$: Observable<DocumentSearchRequest> = combineLatest([
+    this.pagination$,
+    this.documentDefinitionName$,
+    this.sequence$,
+    this.createdBy$,
+    this.globalSearchFilter$,
+  ]).pipe(
+    filter(([pagination]) => !!pagination),
+    map(
+      ([pagination, documentDefinitionName, sequence, createdBy, globalSearchFilter]) =>
+        new DocumentSearchRequestImpl(
+          documentDefinitionName,
+          pagination.page - 1,
+          pagination.size,
+          sequence,
+          createdBy,
+          globalSearchFilter,
+          pagination.sort
+        )
+    )
+  );
+
+  private readonly documentsRequest$: Observable<Documents> = this.documentSearchRequest$.pipe(
+    distinctUntilChanged((prev, curr) => {
+      return JSON.stringify(prev) === JSON.stringify(curr);
+    }),
+    tap(request => {
+      this.storedSearchRequestKey$.pipe(take(1)).subscribe(storedSearchRequestKey => {
+        this.logger.log(`store request in local storage: ${JSON.stringify(request)}`);
+        localStorage.setItem(storedSearchRequestKey, JSON.stringify(request));
+      });
+    }),
+    switchMap(documentSearchRequest => this.documentService.getDocuments(documentSearchRequest)),
+    tap(documents => {
+      this.setCollectionSize(documents);
+    })
+  );
+
+  readonly documentItems$ = this.documentsRequest$.pipe(
+    map(documents =>
+      documents.content.map(document => {
+        const {content, ...others} = document;
+        return {...content, ...others};
+      })
+    )
+  );
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private documentService: DocumentService,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly documentService: DocumentService,
     private readonly translateService: TranslateService,
-    private readonly dossierService: DossierService
+    private readonly dossierService: DossierService,
+    private readonly logger: NGXLogger
   ) {}
 
   ngOnInit(): void {
-    this.doInit();
-    this.routeEvent(this.router);
     this.modalListenerAdded = false;
   }
 
-  ngOnDestroy(): void {
-    this.routerSubscription.unsubscribe();
-    this.translationSubscription.unsubscribe();
+  globalSearchFilterChange(filter: string): void {
+    this.globalSearchFilter$.next(filter);
+    this.pageChange(1);
   }
 
-  paginationSet() {
-    this.getData();
+  sequenceChange(sequence: string): void {
+    this.sequence$.next(Number(sequence));
+    this.pageChange(1);
   }
 
-  private routeEvent(router: Router) {
-    this.routerSubscription = router.events.subscribe(e => {
-      if (e instanceof NavigationEnd) {
-        this.doInit();
-        this.getData();
+  pageChange(newPage: number): void {
+    this.pagination$.pipe(take(1)).subscribe(pagination => {
+      if (pagination && pagination.page !== newPage) {
+        this.logger.log(`Page change: ${newPage}`);
+        this.pagination$.next({...pagination, page: newPage});
       }
     });
   }
 
-  public doInit() {
-    const documentDefinitionName = this.route.snapshot.paramMap.get('documentDefinitionName') || '';
-    const columns: Array<DefinitionColumn> =
-      this.dossierService.getDefinitionColumns(documentDefinitionName);
+  pageSizeChange(newPageSize: number): void {
+    this.pagination$.pipe(take(1)).subscribe(pagination => {
+      if (pagination && pagination.size !== newPageSize) {
+        const amountOfAvailablePages = Math.ceil(pagination.collectionSize / newPageSize);
+        const newPage =
+          amountOfAvailablePages < pagination.page ? amountOfAvailablePages : pagination.page;
 
-    this.documentDefinitionName = documentDefinitionName;
-    this.initialSortState = this.dossierService.getInitialSortState(columns);
-
-    this.openTranslationSubscription(columns);
-  }
-
-  private openTranslationSubscription(columns: Array<DefinitionColumn>): void {
-    this.translationSubscription = combineLatest(
-      columns.map(column => this.translateService.stream(`fieldLabels.${column.translationKey}`))
-    ).subscribe(labels => {
-      this.fields = columns.map((column, index) => ({
-        key: column.propertyName,
-        label: labels[index],
-        sortable: column.sortable,
-        ...(column.viewType && {viewType: column.viewType}),
-      }));
+        this.logger.log(`Page size change. New Page: ${newPage} New page size: ${newPageSize}`);
+        this.pagination$.next({...pagination, size: newPageSize, page: newPage});
+      }
     });
   }
 
-  public getData() {
-    this.findDocumentDefinition(this.documentDefinitionName);
-
-    if (this.hasCachedSearchRequest()) {
-      const documentSearchRequest = this.getCachedSearch();
-      this.globalSearchFilter = documentSearchRequest.globalSearchFilter;
-      this.sequence = documentSearchRequest.sequence;
-      this.createdBy = documentSearchRequest.createdBy;
-      this.findDocuments(documentSearchRequest);
-    } else {
-      this.doSearch();
-    }
-
-    this.getAllAssociatedProcessDefinitions();
-  }
-
-  public doSearch() {
-    const documentSearchRequest = this.buildDocumentSearchRequest();
-    this.findDocuments(documentSearchRequest);
-  }
-
-  private findDocuments(documentSearchRequest: DocumentSearchRequest) {
-    return this.documentService.getDocuments(documentSearchRequest).subscribe(documents => {
-      this.documents = documents;
-      this.transformDocuments(this.documents.content);
-      this.pagination.collectionSize = this.documents.totalElements;
-      this.storeSearch(documentSearchRequest);
+  sortChanged(newSortState: SortState): void {
+    this.pagination$.pipe(take(1)).subscribe(pagination => {
+      if (pagination && JSON.stringify(pagination.sort) !== JSON.stringify(newSortState)) {
+        this.logger.log(`Sort state change: ${JSON.stringify(newSortState)}`);
+        this.pagination$.next({...pagination, sort: newSortState});
+      }
     });
   }
 
-  public getAllAssociatedProcessDefinitions() {
-    this.documentService
-      .findProcessDocumentDefinitions(this.documentDefinitionName)
-      .subscribe(processDocumentDefinitions => {
-        this.processDocumentDefinitions = processDocumentDefinitions.filter(
-          processDocumentDefinition => processDocumentDefinition.canInitializeDocument
-        );
-        this.processDefinitionListFields = [
-          {
-            key: 'processName',
-            label: 'Proces',
-          },
-        ];
+  rowClick(document: any): void {
+    this.documentDefinitionName$.pipe(take(1)).subscribe(documentDefinitionName => {
+      this.router.navigate([
+        `/dossiers/${documentDefinitionName}/document/${document.id}/${DefaultTabs.summary}`,
+      ]);
+    });
+  }
+
+  startDossier(): void {
+    this.associatedProcessDocumentDefinitions$
+      .pipe(take(1))
+      .subscribe(associatedProcessDocumentDefinitions => {
+        if (associatedProcessDocumentDefinitions.length > 1) {
+          $('#startProcess').modal('show');
+        } else {
+          this.selectedProcessDocumentDefinition = associatedProcessDocumentDefinitions[0];
+          this.showStartProcessModal();
+        }
       });
   }
 
-  public getCachedSearch(): DocumentSearchRequest {
-    const json = JSON.parse(this.getCachedDocumentSearchRequest());
-    return new DocumentSearchRequestImpl(
-      json.definitionName,
-      this.pagination.page - 1,
-      this.pagination.size,
-      json.sequence,
-      json.createdBy,
-      json.globalSearchFilter,
-      json.sort
-    );
-  }
-
-  private buildDocumentSearchRequest(): DocumentSearchRequest {
-    return new DocumentSearchRequestImpl(
-      this.documentDefinitionName,
-      this.pagination.page - 1,
-      this.pagination.size,
-      this.sequence,
-      this.createdBy,
-      this.globalSearchFilter,
-      this.pagination.sort && this.pagination.sort.isSorting
-        ? this.pagination.sort
-        : this.initialSortState
-    );
-  }
-
-  private storeSearch(documentSearchRequest: DocumentSearchRequest) {
-    localStorage.setItem(this.getCachedKey(), JSON.stringify(documentSearchRequest));
-  }
-
-  private getCachedDocumentSearchRequest(): string {
-    return localStorage.getItem(this.getCachedKey()) || '';
-  }
-
-  private hasCachedSearchRequest(): boolean {
-    return localStorage.getItem(this.getCachedKey()) !== null;
-  }
-
-  private getCachedKey(): string {
-    return 'list-search-' + this.documentDefinitionName;
-  }
-
-  public rowClick(document: any) {
-    this.router.navigate([
-      `/dossiers/${this.documentDefinitionName}/document/${document.id}/${DefaultTabs.summary}`,
-    ]);
-  }
-
-  public startDossier() {
-    if (this.processDocumentDefinitions.length > 1) {
-      $('#startProcess').modal('show');
-    } else {
-      this.selectedProcessDocumentDefinition = this.processDocumentDefinitions[0];
-      this.showStartProcessModal();
-    }
-  }
-
-  private showStartProcessModal() {
-    if (this.selectedProcessDocumentDefinition !== null) {
-      this.processStart.openModal(this.selectedProcessDocumentDefinition);
-      this.selectedProcessDocumentDefinition = null;
-    }
-  }
-
-  public selectProcess(processDocumentDefinition: ProcessDocumentDefinition) {
+  selectProcess(processDocumentDefinition: ProcessDocumentDefinition): void {
     const modal = $('#startProcess');
     if (!this.modalListenerAdded) {
       modal.on('hidden.bs.modal', this.showStartProcessModal.bind(this));
@@ -248,34 +277,70 @@ export class DossierListComponent implements OnInit, OnDestroy {
     modal.modal('hide');
   }
 
-  private findDocumentDefinition(documentDefinitionName: string) {
-    this.documentService.getDocumentDefinition(documentDefinitionName).subscribe(definition => {
-      this.schema = definition.schema;
+  private resetPagination(documentDefinitionName): void {
+    this.settingPaginationForDocName$.pipe(take(1)).subscribe(settingPaginationForDocName => {
+      if (documentDefinitionName !== settingPaginationForDocName) {
+        this.pagination$.next(undefined);
+        this.logger.log('clear pagination');
+        this.settingPaginationForDocName$.next(documentDefinitionName);
+        this.setPagination(documentDefinitionName);
+      }
     });
   }
 
-  private transformDocuments(documentsContent: Array<any>) {
-    this.items = documentsContent.map(document => {
-      const {content, ...others} = document;
-      return {...content, ...others};
+  private setPagination(documentDefinitionName: string): void {
+    combineLatest([this.hasStoredSearchRequest$, this.storedSearchRequestKey$, this.columns$])
+      .pipe(take(1))
+      .subscribe(([hasStoredSearchRequest, storedSearchRequestKey, columns]) => {
+        const defaultPagination: Pagination = this.getDefaultPagination(columns);
+        const storedPagination: Pagination = this.getStoredPagination(
+          hasStoredSearchRequest,
+          storedSearchRequestKey
+        );
+
+        this.logger.log(`Set pagination: ${JSON.stringify(storedPagination || defaultPagination)}`);
+        this.pagination$.next(storedPagination || defaultPagination);
+      });
+  }
+
+  private getDefaultPagination(columns: Array<DefinitionColumn>): Pagination {
+    const defaultSortState = this.dossierService.getInitialSortState(columns);
+
+    return {
+      ...this.DEFAULT_PAGINATION,
+      sort: defaultSortState,
+    };
+  }
+
+  private getStoredPagination(
+    hasStoredSearchRequest: boolean,
+    storedSearchRequestKey: string
+  ): Pagination | undefined {
+    const storedSearchRequest =
+      hasStoredSearchRequest && JSON.parse(localStorage.getItem(storedSearchRequestKey));
+
+    return (
+      storedSearchRequest && {
+        ...this.DEFAULT_PAGINATION,
+        sort: storedSearchRequest.sort,
+        page: storedSearchRequest.page + 1,
+        size: storedSearchRequest.size,
+      }
+    );
+  }
+
+  private setCollectionSize(documents: Documents): void {
+    this.pagination$.pipe(take(1)).subscribe(pagination => {
+      if (pagination.collectionSize !== documents.totalElements) {
+        this.pagination$.next({...pagination, collectionSize: documents.totalElements});
+      }
     });
   }
 
-  public paginationClicked(page: number) {
-    this.pagination.page = page;
-    this.doSearch();
-  }
-
-  public sortChanged(sortState: SortState) {
-    this.pagination.sort = sortState;
-    this.doSearch();
-  }
-
-  public getInitialSortState(): SortState {
-    if (this.hasCachedSearchRequest()) {
-      const cachedRequest = JSON.parse(this.getCachedDocumentSearchRequest());
-      return cachedRequest.sort ? cachedRequest.sort : this.initialSortState;
+  private showStartProcessModal(): void {
+    if (this.selectedProcessDocumentDefinition !== null) {
+      this.processStart.openModal(this.selectedProcessDocumentDefinition);
+      this.selectedProcessDocumentDefinition = null;
     }
-    return this.initialSortState;
   }
 }

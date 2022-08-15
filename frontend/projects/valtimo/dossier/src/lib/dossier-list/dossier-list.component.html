@@ -19,15 +19,19 @@
 <div class="main-content pt-0">
   <div class="container-fluid">
     <div class="col-12 px-0 mb-5">
-      <div>
+      <div
+        *ngIf="
+          associatedProcessDocumentDefinitions$ | async as associatedProcessDocumentDefinitions
+        "
+      >
         <div class="text-right mt-m3px mb-3">
           <button
             type="button"
             class="btn btn-space btn-primary mr-0"
             (click)="startDossier()"
-            [ngbTooltip]="processDocumentDefinitions.length === 0 ? 'No action' : null"
+            [ngbTooltip]="associatedProcessDocumentDefinitions.length === 0 ? 'No action' : null"
             placement="bottom"
-            [disabled]="processDocumentDefinitions.length === 0"
+            [disabled]="associatedProcessDocumentDefinitions.length === 0"
           >
             <i class="icon mdi mdi-plus mr-1"></i>
             {{ 'Start Dossier' | translate }}
@@ -56,7 +60,7 @@
                 <div class="table-responsive">
                   <table class="table m-0">
                     <tr
-                      *ngFor="let processDocumentDefinition of processDocumentDefinitions"
+                      *ngFor="let processDocumentDefinition of associatedProcessDocumentDefinitions"
                       (click)="selectProcess(processDocumentDefinition)"
                       style="cursor: pointer"
                     >
@@ -75,33 +79,40 @@
         </div>
       </div>
       <valtimo-widget>
-        <valtimo-list
-          [items]="items"
-          [fields]="fields"
-          (rowClicked)="rowClick($event)"
-          [pagination]="pagination"
-          [viewMode]="true"
-          [header]="true"
-          paginationIdentifier="dossierList"
-          (paginationClicked)="paginationClicked($event)"
-          (paginationSet)="paginationSet()"
-          [initialSortState]="getInitialSortState()"
-          (sortChanged)="sortChanged($event)"
-        >
-          <div header>
-            <h3 class="list-header-title">
-              {{ schema?.title }}
-              <sup class="ml-1 badge badge-pill badge-primary">{{
-                documents?.content.length || 0
-              }}</sup>
-            </h3>
-          </div>
-        </valtimo-list>
+        <ng-container *ngTemplateOutlet="list"></ng-container>
       </valtimo-widget>
     </div>
   </div>
   <valtimo-dossier-process-start-modal #processStartModal></valtimo-dossier-process-start-modal>
 </div>
+
+<ng-template #list>
+  <ng-container *ngIf="paginationCopy$ | async as pagination">
+    <ng-container *ngIf="fields$ | async as fields">
+      <valtimo-list
+        *ngIf="documentItems$ | async as documentItems"
+        [items]="documentItems"
+        [fields]="fields"
+        (rowClicked)="rowClick($event)"
+        [pagination]="pagination"
+        [viewMode]="true"
+        [header]="true"
+        paginationIdentifier="dossierList"
+        (paginationClicked)="pageChange($event)"
+        (paginationSet)="pageSizeChange($event)"
+        [initialSortState]="pagination.sort"
+        (sortChanged)="sortChanged($event)"
+      >
+        <div header>
+          <h3 class="list-header-title">
+            {{ (schema$ | async)?.title }}
+            <sup class="ml-1 badge badge-pill badge-primary">{{ documentItems?.length || 0 }}</sup>
+          </h3>
+        </div>
+      </valtimo-list>
+    </ng-container>
+  </ng-container>
+</ng-template>
 
 <ng-template #sidebar>
   <valtimo-filter-sidebar>
@@ -111,9 +122,8 @@
         type="text"
         class="form-control"
         placeholder="{{ 'dossier.forms.globalSearchPlaceHolder' | translate }}"
-        [(ngModel)]="globalSearchFilter"
-        (blur)="doSearch()"
-        (keyup.enter)="doSearch()"
+        [ngModel]="globalSearchFilter$ | async"
+        (ngModelChange)="globalSearchFilterChange($event)"
       />
     </div>
 
@@ -122,9 +132,8 @@
         type="number"
         class="form-control"
         placeholder="{{ 'dossier.forms.referenceNumberPlaceHolder' | translate }}"
-        [(ngModel)]="sequence"
-        (blur)="doSearch()"
-        (keyup.enter)="doSearch()"
+        [ngModel]="sequence$ | async"
+        (ngModelChange)="sequenceChange($event)"
       />
     </div>
   </valtimo-filter-sidebar>

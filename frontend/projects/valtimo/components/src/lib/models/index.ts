@@ -20,3 +20,4 @@ export * from './pagination.model';
 export * from './searchable-dropdown.model';
 export * from './timeline.model';
 export * from './version.model';
+export * from './list.model';
