@@ -188,12 +188,14 @@
   --v-table-pagination-size-spacing-inline: var(--v-spacing-inline-sm);
   --v-table-pagination-button-spacing-inline: var(--v-spacing-inline-2xl);
   /* select */
-  --v-select-background-color: var(--v-color-grey-4);
+  --v-select-background-color: var(--v-color-white);
   --v-select-selected-background-color: var(--v-color-grey-3);
   --v-select-highlighted-background-color: var(--v-color-grey-4);
   --v-select-disabled-font-color: var(--v-color-grey-2);
+  --v-select-disabled-bg-color: var(--v-color-grey-4);
   --v-select-placeholder-font-color: var(--v-color-grey-2);
   --v-select-font-color: var(--v-color-grey-1);
+  --v-select-darker-font-color: var(--v-color-grey-0);
   --v-select-arrow-color: var(--v-color-grey-2);
   --v-select-arrow-hover-color: var(--v-color-grey-1);
   --v-select-border-radius: var(--v-border-radius-md);
