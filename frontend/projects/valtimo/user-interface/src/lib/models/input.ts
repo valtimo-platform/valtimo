@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-type InputType = 'text' | 'number' | 'password';
+type InputType = 'text' | 'number' | 'password' | 'digitOnly';
 
 export {InputType};

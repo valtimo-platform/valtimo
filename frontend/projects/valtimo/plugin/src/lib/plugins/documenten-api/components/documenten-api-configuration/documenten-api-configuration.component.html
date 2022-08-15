@@ -45,11 +45,7 @@
   </v-input>
   <v-input
     name="bronorganisatie"
-    type="number"
-    [hideNumberSpinBox]="true"
-    [digitOnly]="true"
-    [min]="0"
-    [step]="1"
+    type="digitOnly"
     [title]="'bronorganisatie' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
     [margin]="true"

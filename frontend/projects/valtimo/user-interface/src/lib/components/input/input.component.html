@@ -19,6 +19,7 @@
   <ng-container *ngTemplateOutlet="textInput"></ng-container>
   <ng-container *ngTemplateOutlet="passwordInput"></ng-container>
   <ng-container *ngTemplateOutlet="numberInput"></ng-container>
+  <ng-container *ngTemplateOutlet="digitOnlyInput"></ng-container>
 </div>
 
 <ng-template #inputTitle>
@@ -91,7 +92,7 @@
 
 <ng-template #numberInput>
   <input
-    *ngIf="isNumber && !digitOnly"
+    *ngIf="isNumber"
     type="number"
     class="v-input"
     [ngClass]="{
@@ -108,21 +109,23 @@
     [name]="name"
     [maxLength]="maxLength"
   />
+</ng-template>
+
+<ng-template #digitOnlyInput>
   <input
-    *ngIf="isNumber && digitOnly"
-    type="number"
+    *ngIf="isDigitOnly"
+    type="text"
     class="v-input"
     [ngClass]="{
       'v-input--full-width': fullWidth,
-      'v-input--margin': margin,
-      'v-input--hide-spinbox': hideNumberSpinBox
+      'v-input--margin': margin
     }"
     [style.width.px]="widthPx"
     [disabled]="disabled"
     [ngModel]="inputValue$ | async"
     (ngModelChange)="onValueChange($event)"
     [step]="step"
-    [min]="min"
+    [min]="0"
     [name]="name"
     [maxLength]="maxLength"
     digitOnly

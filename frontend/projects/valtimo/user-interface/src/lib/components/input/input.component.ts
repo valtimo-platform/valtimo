@@ -48,7 +48,6 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   @Input() tooltip = '';
   @Input() required = false;
   @Input() hideNumberSpinBox = false;
-  @Input() digitOnly = false;
 
   @Output() valueChange: EventEmitter<any> = new EventEmitter();
 
@@ -57,6 +56,7 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   isText!: boolean;
   isNumber!: boolean;
   isPassword!: boolean;
+  isDigitOnly!: boolean;
 
   readonly showPassword$ = new BehaviorSubject<boolean>(false);
 
@@ -105,6 +105,8 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
       case 'password':
         this.isPassword = true;
         break;
+      case 'digitOnly':
+        this.isDigitOnly = true;
     }
   }
 
