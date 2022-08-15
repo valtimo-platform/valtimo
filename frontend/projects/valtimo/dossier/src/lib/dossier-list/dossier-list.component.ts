@@ -168,9 +168,7 @@ export class DossierListComponent implements OnInit {
   );
 
   private readonly documentsRequest$: Observable<Documents> = this.documentSearchRequest$.pipe(
-    distinctUntilChanged((prev, curr) => {
-      return JSON.stringify(prev) === JSON.stringify(curr);
-    }),
+    distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
     tap(request => {
       this.storedSearchRequestKey$.pipe(take(1)).subscribe(storedSearchRequestKey => {
         this.logger.log(`store request in local storage: ${JSON.stringify(request)}`);
@@ -205,8 +203,8 @@ export class DossierListComponent implements OnInit {
     this.modalListenerAdded = false;
   }
 
-  globalSearchFilterChange(filter: string): void {
-    this.globalSearchFilter$.next(filter);
+  globalSearchFilterChange(searchFilter: string): void {
+    this.globalSearchFilter$.next(searchFilter);
     this.pageChange(1);
   }
 
