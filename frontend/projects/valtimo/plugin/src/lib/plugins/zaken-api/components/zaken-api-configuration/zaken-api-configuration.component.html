@@ -53,7 +53,7 @@
     [widthInPx]="350"
     name="authenticationPluginConfiguration"
     [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
-    [disabled]="true"
+    [disabled]="obs.disabled"
     [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"
     [required]="true"
   ></v-select>
