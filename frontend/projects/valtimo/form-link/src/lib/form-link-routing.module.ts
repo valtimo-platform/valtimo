@@ -32,7 +32,7 @@ const routes: Routes = [
     path: 'process-links',
     component: ProcessLinkComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Form links', roles: [ROLE_ADMIN]},
+    data: {title: 'Form links Plugin', roles: [ROLE_ADMIN]},
   },
 ];
 
