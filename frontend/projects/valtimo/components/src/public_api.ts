@@ -19,6 +19,7 @@
  */
 
 export * from './lib/models';
+export * from './lib/services/valtimo-modal.service';
 
 export * from './lib/components/camunda/form/camunda-form.components';
 export * from './lib/components/camunda/form/camunda-form.module';

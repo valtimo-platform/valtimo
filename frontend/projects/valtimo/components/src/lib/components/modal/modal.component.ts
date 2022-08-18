@@ -14,7 +14,18 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, Input, TemplateRef} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  OnDestroy,
+  OnInit,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
+import {ValtimoModalService} from '../../services/valtimo-modal.service';
+import {Subscription} from 'rxjs';
 
 // eslint-disable-next-line no-var
 declare var $;
@@ -24,14 +35,22 @@ declare var $;
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.scss'],
 })
-export class ModalComponent implements AfterViewInit {
+export class ModalComponent implements AfterViewInit, OnInit, OnDestroy {
   @Input() elementId: string;
   @Input() title = '';
   @Input() subtitle = '';
   @Input() templateBelowSubtitle: TemplateRef<any>;
   @Input() showFooter = false;
 
-  constructor() {}
+  @ViewChild('scrollModal') scrollModal: ElementRef<HTMLDivElement>;
+
+  private scrollSubscription!: Subscription;
+
+  constructor(private readonly modalService: ValtimoModalService) {}
+
+  ngOnInit(): void {
+    this.openScrollSubscription();
+  }
 
   ngAfterViewInit() {
     $(`#${this.elementId}`).modal({show: false});
@@ -43,5 +62,17 @@ export class ModalComponent implements AfterViewInit {
 
   hide() {
     $(`#${this.elementId}`).modal('hide');
+  }
+
+  ngOnDestroy(): void {
+    this.scrollSubscription.unsubscribe();
+  }
+
+  private openScrollSubscription(): void {
+    this.scrollSubscription = this.modalService.scrollToTop$.subscribe(() => {
+      const element = this.scrollModal.nativeElement;
+
+      if (element) element.scrollTo(0, 0);
+    });
   }
 }

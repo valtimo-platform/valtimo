@@ -22,6 +22,7 @@ import {
   FormioSubmission,
   ModalComponent,
   ValtimoFormioOptions,
+  ValtimoModalService,
 } from '@valtimo/components';
 import {Task, TaskProcessLinkType} from '../models';
 import {
@@ -84,7 +85,8 @@ export class TaskDetailModalComponent {
     private readonly logger: NGXLogger,
     private readonly route: ActivatedRoute,
     private readonly taskService: TaskService,
-    private readonly userProviderService: UserProviderService
+    private readonly userProviderService: UserProviderService,
+    private readonly modalService: ValtimoModalService
   ) {
     this.formioOptions = new FormioOptionsImpl();
     this.formioOptions.disableAlerts = true;
@@ -218,6 +220,7 @@ export class TaskDetailModalComponent {
       this.formFlowStepInstanceId = null;
       this.completeTask();
     } else {
+      this.modalService.scrollToTop();
       this.formFlowStepType$.next(formFlowInstance.step.type);
       this.formFlowInstanceId = formFlowInstance.id;
       this.formFlowStepInstanceId = formFlowInstance.step.id;

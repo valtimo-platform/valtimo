@@ -25,6 +25,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {FormioSubmission, ValtimoFormioOptions} from '../../models';
+import {ValtimoModalService} from '../../services/valtimo-modal.service';
 import {UserProviderService} from '@valtimo/security';
 import {Formio, FormioComponent as FormIoSourceComponent, FormioForm} from '@formio/angular';
 import {FormioRefreshValue} from '@formio/angular/formio.common';
@@ -65,7 +66,8 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     private logger: NGXLogger,
     private readonly stateService: FormIoStateService,
     private readonly route: ActivatedRoute,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly modalService: ValtimoModalService
   ) {}
 
   ngOnInit() {
@@ -129,6 +131,18 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   onChange(object: any): void {
     this.change.emit(object);
+  }
+
+  nextPage(): void {
+    this.scrollToTop();
+  }
+
+  prevPage(): void {
+    this.scrollToTop();
+  }
+
+  private scrollToTop(): void {
+    this.modalService.scrollToTop();
   }
 
   private setInitialToken(): void {
