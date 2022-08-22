@@ -28,6 +28,7 @@ import {
 import {TranslateService} from '@ngx-translate/core';
 import {BehaviorSubject, combineLatest, fromEvent, Subscription} from 'rxjs';
 import {debounceTime, map, take} from 'rxjs/operators';
+import {ConfigService, CustomLeftSidebar} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-left-sidebar',
@@ -55,20 +56,26 @@ export class LeftSidebarComponent implements OnInit, AfterViewInit, OnDestroy {
   private mouseXSubscription: Subscription;
   private mouseUpSubscription: Subscription;
 
-  private readonly defaultMenuWidth = 230;
-  private readonly maxMenuWidth = 330;
-  private readonly minMenuWidth = 120;
+  private defaultMenuWidth!: number;
+  private maxMenuWidth!: number;
+  private minMenuWidth!: number;
 
   private readonly mouseX$ = fromEvent(document.body, 'mousemove').pipe(
     map((e: MouseEvent) => e.pageX)
   );
 
-  constructor(private translateService: TranslateService, private readonly elementRef: ElementRef) {
+  constructor(
+    private translateService: TranslateService,
+    private readonly elementRef: ElementRef,
+    private readonly configService: ConfigService
+  ) {
     this.bodyStyle = elementRef.nativeElement.ownerDocument.body.style;
   }
 
   ngOnInit(): void {
-    this.setMenuWidth(this.defaultMenuWidth);
+    const customLeftSidebar = this.configService.config.customLeftSidebar;
+
+    this.setInitialWidth(customLeftSidebar);
   }
 
   ngAfterViewInit(): void {
@@ -120,6 +127,16 @@ export class LeftSidebarComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  private setInitialWidth(customLeftSidebar: CustomLeftSidebar | undefined): void {
+    const localMenuWidth = localStorage.getItem('menuWidth');
+    const localMenuWidthNumber = localMenuWidth ? Number(localMenuWidth) : undefined;
+
+    this.defaultMenuWidth = localMenuWidthNumber || customLeftSidebar?.defaultMenuWidth || 230;
+    this.maxMenuWidth = customLeftSidebar?.maxMenuWidth | 330;
+    this.minMenuWidth = customLeftSidebar?.minMenuWidth | 120;
+    this.setMenuWidth(this.defaultMenuWidth);
+  }
+
   private snapMenu(snapTo: number): void {
     this.stopResizing();
     this.setMenuWidth(snapTo);
@@ -132,6 +149,7 @@ export class LeftSidebarComponent implements OnInit, AfterViewInit, OnDestroy {
     this.bodyStyle.cursor = 'auto';
     this.bodyStyle.userSelect = 'auto';
     this.isResizing$.next(false);
+    localStorage.setItem('menuWidth', this.menuWidth$.getValue().toString());
   }
 
   private setMenuWidth(width: number): void {

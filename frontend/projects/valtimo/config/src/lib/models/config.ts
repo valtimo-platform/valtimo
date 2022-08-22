@@ -47,6 +47,12 @@ export interface CustomTaskList {
   defaultSortedColumn?: SortState;
 }
 
+export interface CustomLeftSidebar {
+  defaultMenuWidth?: number;
+  maxMenuWidth?: number;
+  minMenuWidth?: number;
+}
+
 export interface Sort {
   name: string;
   direction: Direction;
@@ -93,6 +99,7 @@ export interface ValtimoConfig {
     showUserNameInTopBar?: boolean;
   };
   customTaskList?: CustomTaskList;
+  customLeftSidebar?: CustomLeftSidebar;
 }
 
 export enum UploadProvider {
