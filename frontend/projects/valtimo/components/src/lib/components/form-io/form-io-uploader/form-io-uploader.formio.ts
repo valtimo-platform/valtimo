@@ -15,7 +15,11 @@
  */
 
 import {Injector} from '@angular/core';
-import {createCustomFormioComponent, FormioCustomComponentInfo, registerCustomFormioComponentWithClass,} from '@formio/angular';
+import {
+  createCustomFormioComponent,
+  FormioCustomComponentInfo,
+  registerCustomFormioComponentWithClass,
+} from '@formio/angular';
 import {FormIoUploaderComponent} from './form-io-uploader.component';
 import {formIoUploaderEditForm} from './form-io-uploader-edit-form';
 

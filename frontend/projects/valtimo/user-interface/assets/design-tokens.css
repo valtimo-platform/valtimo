@@ -325,6 +325,7 @@
   --v-input-title-line-height: var(--v-line-height-larger);
   --v-input-title-font-weight: var(--v-font-weight-bold);
   --v-input-title-margin: var(--v-spacing-block-md);
+  --v-input-title-margin-large: var(--v-spacing-block-2xl);
   --v-input-default-width: 200px;
   --v-input-margin: var(--v-spacing-block-4xl);
   --v-input-disabled-cursor: var(--v-cursor-disabled);

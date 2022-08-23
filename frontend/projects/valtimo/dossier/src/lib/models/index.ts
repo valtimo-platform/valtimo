@@ -15,3 +15,4 @@
  */
 
 export * from './tabs.model';
+export * from './zaakobjecten.model';

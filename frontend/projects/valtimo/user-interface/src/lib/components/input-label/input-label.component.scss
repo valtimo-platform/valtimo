@@ -21,6 +21,10 @@
   margin-block-end: var(--v-input-title-margin);
 }
 
+.v-input-label-container--large-margin {
+  margin-block-end: var(--v-input-title-margin-large);
+}
+
 .v-input-label {
   margin: 0;
   font-size: var(--v-input-title-font-size);

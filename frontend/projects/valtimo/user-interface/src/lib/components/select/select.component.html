@@ -33,6 +33,9 @@
     [notFoundText]="notFoundText || ('interface.noItemsFound' | translate)"
     [clearAllText]="clearAllText || ('interface.clearAll' | translate)"
     (clear)="clearSelection()"
+    [loading]="loading"
+    [loadingText]="loadingText || ('interface.loading' | translate)"
+    [placeholder]="placeholder"
   >
     <ng-option *ngFor="let item of items" [value]="item.id">{{
       item.translationKey ? (item.translationKey | translate) : item.text

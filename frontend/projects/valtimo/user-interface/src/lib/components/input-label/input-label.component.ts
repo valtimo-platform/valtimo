@@ -27,4 +27,5 @@ export class InputLabelComponent {
   @Input() titleTranslationKey = '';
   @Input() tooltip = '';
   @Input() required = false;
+  @Input() largeMargin = false;
 }

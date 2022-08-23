@@ -32,6 +32,7 @@
     [disabled]="obs.disabled"
     [required]="true"
     [tooltip]="'documentUrlTooltip' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
   >
   </v-input>
   <v-input
@@ -42,6 +43,7 @@
     [disabled]="obs.disabled"
     [required]="false"
     [tooltip]="'titelTooltip' | pluginTranslate: pluginId | async"
+    [widthPx]="350"
   >
   </v-input>
   <v-input
@@ -52,6 +54,7 @@
     [disabled]="obs.disabled"
     [required]="false"
     [tooltip]="'beschrijvingTooltip' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
   >
   </v-input>
 </v-form>

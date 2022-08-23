@@ -20,4 +20,5 @@ export enum DefaultTabs {
   audit = 'audit',
   documents = 'documents',
   contactMoments = 'contact-moments',
+  zaakobjecten = 'zaakobjecten',
 }

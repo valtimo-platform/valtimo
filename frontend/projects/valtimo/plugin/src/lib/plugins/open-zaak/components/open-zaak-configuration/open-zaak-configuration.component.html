@@ -29,6 +29,7 @@
     [defaultValue]="obs.prefill?.configurationTitle"
     [widthPx]="350"
     [required]="true"
+    [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
   <v-input
@@ -39,6 +40,7 @@
     [defaultValue]="obs.prefill?.clientId"
     [widthPx]="350"
     [required]="true"
+    [tooltip]="'clientIdTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
   <v-input
@@ -48,8 +50,9 @@
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.clientSecret"
-    [widthPx]="350"
     [required]="true"
+    [fullWidth]="true"
+    [tooltip]="'clientSecretTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
 </v-form>

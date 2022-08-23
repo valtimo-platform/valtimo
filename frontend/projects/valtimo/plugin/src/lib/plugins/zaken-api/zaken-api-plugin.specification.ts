@@ -52,6 +52,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       beschrijvingTooltip:
         '(Optioneel) Vult het beschrijving veld in de metadata van de link tussen de Zaak en het Document',
       authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
+      authenticationPluginConfigurationTooltip:
+        'Selecteer de plugin die de authenticatie kan afhandelen. Wanneer de selectiebox leeg blijft zal de authenticatie plugin (bv. OpenZaak) eerst aangemaakt moeten worden',
       linkDocumentInformation:
         'Deze actie koppelt een document uit de Documenten API aan de zaak die bij het dossier hoort.',
     },
@@ -76,6 +78,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       beschrijvingTooltip:
         '(Optional) Fills the description field in the metadata of the link between the Zaak and the Document',
       authenticationPluginConfiguration: 'Authentication plugin configuration',
+      authenticationPluginConfigurationTooltip:
+        'Select the plugin that can handle the authentication. If the selection box remains empty, the authentication plugin (e.g. OpenZaak) will have to be created first',
       linkDocumentInformation:
         'This action links a document from the Documents API to the zaak associated with the case.',
     },
@@ -100,6 +104,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       beschrijvingTooltip:
         '(Optional) Füllt das Beschreibungsfeld in den Metadaten des Links zwischen dem Zaak und dem Dokument aus',
       authenticationPluginConfiguration: 'Authentifizierungs-Plugin-Konfiguration',
+      authenticationPluginConfigurationTooltip:
+        'Wählen Sie das Plugin aus, das die Authentifizierung verarbeiten kann. Bleibt das Auswahlfeld leer, muss zunächst das Authentifizierungs-Plugin (z. B. OpenZaak) erstellt werden',
       linkDocumentInformation:
         'Diese Aktion verknüpft ein Dokument aus der Dokumenten-API mit dem mit dem Fall verknüpften Zaak.',
     },

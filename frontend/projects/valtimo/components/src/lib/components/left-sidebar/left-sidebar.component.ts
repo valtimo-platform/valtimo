@@ -132,8 +132,8 @@ export class LeftSidebarComponent implements OnInit, AfterViewInit, OnDestroy {
     const localMenuWidthNumber = localMenuWidth ? Number(localMenuWidth) : undefined;
 
     this.defaultMenuWidth = localMenuWidthNumber || customLeftSidebar?.defaultMenuWidth || 230;
-    this.maxMenuWidth = customLeftSidebar?.maxMenuWidth | 330;
-    this.minMenuWidth = customLeftSidebar?.minMenuWidth | 120;
+    this.maxMenuWidth = customLeftSidebar?.maxMenuWidth || 330;
+    this.minMenuWidth = customLeftSidebar?.minMenuWidth || 120;
     this.setMenuWidth(this.defaultMenuWidth);
   }
 

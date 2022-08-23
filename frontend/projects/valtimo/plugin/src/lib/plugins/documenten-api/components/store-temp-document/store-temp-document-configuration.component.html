@@ -28,6 +28,7 @@
     [defaultValue]="obs.prefill?.localDocumentLocation"
     [disabled]="obs.disabled"
     [required]="true"
+    [tooltip]="'localDocumentLocationTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
   <v-input
@@ -67,6 +68,7 @@
     [disabled]="obs.disabled"
     [required]="true"
     [tooltip]="'informatieobjecttypeTooltip' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
   >
   </v-input>
 </v-form>

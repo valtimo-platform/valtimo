@@ -24,12 +24,12 @@
   <v-input
     name="configurationTitle"
     [title]="'configurationTitle' | pluginTranslate: pluginId | async"
-    [fullWidth]="true"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
+    [widthPx]="350"
   >
   </v-input>
   <v-input
@@ -43,30 +43,20 @@
     [tooltip]="'urlTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
-  <v-select
-    *ngIf="
-      authenticationPluginSelectItems$ | async as authenticationPluginSelectItems;
-      else authenticationPluginConfigurationLoading
-    "
-    [items]="authenticationPluginSelectItems"
-    [margin]="true"
-    [widthInPx]="350"
-    name="authenticationPluginConfiguration"
-    [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
-    [disabled]="obs.disabled"
-    [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"
-    [required]="true"
-  ></v-select>
+  <ng-container
+    *ngIf="{authenticationPluginSelectItems: authenticationPluginSelectItems$ | async} as authObs"
+  >
+    <v-select
+      [loading]="!authObs.authenticationPluginSelectItems"
+      [items]="authObs.authenticationPluginSelectItems"
+      [margin]="true"
+      [widthInPx]="350"
+      name="authenticationPluginConfiguration"
+      [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
+      [disabled]="obs.disabled"
+      [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"
+      [required]="true"
+      [tooltip]="'authenticationPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
+    ></v-select>
+  </ng-container>
 </v-form>
-
-<ng-template #authenticationPluginConfigurationLoading>
-  <v-select
-    [items]="[]"
-    [margin]="true"
-    [widthInPx]="350"
-    name="authenticationPluginConfiguration"
-    [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
-    [disabled]="true"
-    [required]="true"
-  ></v-select>
-</ng-template>

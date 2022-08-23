@@ -24,7 +24,8 @@
       "documents": "Documenten",
       "contact-moments": "Contactmomenten",
       "custom-dossier": "Custom dossier",
-      "custom-maps": "Custom maps"
+      "custom-maps": "Custom maps",
+      "zaakobjecten": "Zaakobjecten"
     },
     "forms": {
       "globalSearchPlaceHolder": "Alles",
@@ -44,6 +45,15 @@
       "noteText": "Aantekening",
       "saveButtonText": "Aantekening opslaan",
       "saveSuccess": "Uw aantekening is succesvol opgeslagen."
+    },
+    "zaakobjecten": {
+      "objecttype": "Objecttype",
+      "objecttypePlaceholder": "Selecteer een objecttype",
+      "objecten": "Objecten",
+      "objectenPlaceholder": "Selecteer een objecttype om een lijst van objecten van dit type te laden.",
+      "index": "Index",
+      "registrationAt": "Geregistreerd op",
+      "title": "Titel"
     }
   },
   "document": {

@@ -14,7 +14,10 @@
   ~ limitations under the License.
   -->
 
-<div class="v-input-label-container">
+<div
+  class="v-input-label-container"
+  [ngClass]="{'v-input-label-container--large-margin': largeMargin}"
+>
   <label
     *ngIf="title || titleTranslationKey"
     class="v-input-label"

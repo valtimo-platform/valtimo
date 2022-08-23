@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import {SelectedValue, SelectItem} from '../../models';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 
@@ -23,7 +32,7 @@ import {BehaviorSubject, Observable, Subscription} from 'rxjs';
   templateUrl: './select.component.html',
   styleUrls: ['./select.component.scss'],
 })
-export class SelectComponent implements OnInit, OnDestroy {
+export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   @Input() items: Array<SelectItem> = [];
   @Input() defaultSelection!: SelectItem;
   @Input() defaultSelectionId!: string;
@@ -40,6 +49,9 @@ export class SelectComponent implements OnInit, OnDestroy {
   @Input() clearSelectionSubject$!: Observable<void>;
   @Input() tooltip = '';
   @Input() required = false;
+  @Input() loading = false;
+  @Input() loadingText = '';
+  @Input() placeholder = '';
 
   @Output() selectedChange: EventEmitter<SelectedValue> = new EventEmitter();
   @Output() clear: EventEmitter<any> = new EventEmitter();
@@ -57,6 +69,12 @@ export class SelectComponent implements OnInit, OnDestroy {
     this.setDefaultSelection();
     this.openSelectedSubscription();
     this.openClearSubjectSubscription();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes?.items?.currentValue) {
+      this.setDefaultSelection();
+    }
   }
 
   ngOnDestroy() {

@@ -55,7 +55,7 @@ export class DownloadService {
     } else {
       newWindow.onload = () => {
         newWindow.location = url;
-      }
+      };
     }
   }
 
@@ -73,6 +73,6 @@ export class DownloadService {
 
     return supportedFileTypes.some(function (suffix) {
       return name.toUpperCase().endsWith(suffix.toUpperCase());
-    })
+    });
   }
 }

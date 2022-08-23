@@ -70,5 +70,6 @@
     [defaultValues]="obs.prefill?.templateData"
     [margin]="true"
     [required]="true"
+    [tooltip]="'templateDataTooltip' | pluginTranslate: pluginId | async"
   ></v-multi-input>
 </v-form>

@@ -31,12 +31,16 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       title: 'SmartDocuments',
       description: 'Automatiseer documenten met slimme templates.',
       configurationTitle: 'Configuratienaam',
+      configurationTitleTooltip:
+        'Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
       url: 'SmartDocuments URL',
       username: 'Gebruikersnaam',
       password: 'Wachtwoord',
       'generate-document': 'Document genereren',
       templateGroup: 'Template-groep',
       templateName: 'Template-naam',
+      templateDataTooltip:
+        'De rechter value-kolom ondersteunt ook het gebruik van procesvariabelen zoals pv: en doc:',
       format: 'Documentformaat',
       templateData: 'Template-data',
       resultingDocumentProcessVariableName: 'Naam procesvariabele voor opslag document',
@@ -49,6 +53,8 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       title: 'SmartDocuments',
       description: 'Automate documents with smart templates.',
       configurationTitle: 'Configuration name',
+      configurationTitleTooltip:
+        'With this name the plugin will be recognizable in the rest of the application',
       url: 'SmartDocuments URL',
       username: 'Username',
       password: 'Password',
@@ -57,6 +63,8 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       templateName: 'Template name',
       format: 'Document format',
       templateData: 'Template data',
+      templateDataTooltip:
+        'The right value-column also supports the use of process variables such as pv: and doc:',
       resultingDocumentProcessVariableName: 'Process variable name for storing document',
       resultingDocumentProcessVariableNameTooltip:
         'The location of the generated document is stored in a process variable. This process variable can be used to access the document in another BPMN task.',
@@ -67,6 +75,8 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       title: 'SmartDocuments',
       description: 'Automatisieren Sie Dokumente mit intelligenten Templates.',
       configurationTitle: 'Konfigurationsname',
+      configurationTitleTooltip:
+        'An diesem Namen wird das Plugin im Rest der Anwendung erkennbar sein',
       url: 'SmartDocuments URL',
       username: 'Nutzername',
       password: 'Passwort',
@@ -75,6 +85,8 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       templateName: 'Templatename',
       format: 'Dokumentformat',
       templateData: 'Templatedaten',
+      templateDataTooltip:
+        'Die rechte Wertespalte unterstützt auch die Verwendung von Prozessvariablen wie pv: und doc:',
       resultingDocumentProcessVariableName: 'Prozessvariablenname zum Speichern des Dokuments',
       resultingDocumentProcessVariableNameTooltip:
         'Der Ort des generierten Dokuments wird in einer Prozessvariablen gespeichert. Diese Prozessvariable wird verwendet, um in einer anderen BPMN-Aufgabe auf das Dokument zuzugreifen.',

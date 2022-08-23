@@ -24,7 +24,8 @@
       "documents": "Documents",
       "contact-moments": "Contact moments",
       "custom-dossier": "Custom dossier",
-      "custom-maps": "Custom maps"
+      "custom-maps": "Custom maps",
+      "zaakobjecten": "Zaak objects"
     },
     "forms": {
       "globalSearchPlaceHolder": "Everything",
@@ -44,6 +45,15 @@
       "noteText": "Note",
       "saveButtonText": "Save note",
       "saveSuccess": "Your note has been saved successfully."
+    },
+    "zaakobjecten": {
+      "objecttype": "Object type",
+      "objecttypePlaceholder": "Select an object type",
+      "objecten": "Objects",
+      "objectenPlaceholder": "Select an object type to load a list of objects of this type.",
+      "index": "Index",
+      "registrationAt": "Registration at",
+      "title": "Title"
     }
   },
   "document": {

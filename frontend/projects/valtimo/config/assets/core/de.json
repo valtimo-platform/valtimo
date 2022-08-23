@@ -24,7 +24,8 @@
       "documents": "Dokumente",
       "contact-moments": "Kontaktmomente",
       "custom-dossier": "Kunden-Dossier",
-      "custom-maps": "Kunden-Karten"
+      "custom-maps": "Kunden-Karten",
+      "zaakobjecten": "Zaak-Objecte"
     },
     "forms": {
       "globalSearchPlaceHolder": "Alles",
@@ -44,6 +45,15 @@
       "noteText": "Notiz",
       "saveButtonText": "Notiz speichern",
       "saveSuccess": "Ihre Notiz wurde erfolgreich gespeichert."
+    },
+    "zaakobjecten": {
+      "objecttype": "Objekttyp",
+      "objecttypePlaceholder": "Wählen Sie einen Objekttyp aus",
+      "objecten": "Objekte",
+      "objectenPlaceholder": "Wählen Sie einen Objekttyp aus, um eine Liste mit Objekten dieses Typs zu laden.",
+      "index": "Index",
+      "registrationAt": "Registriert auf",
+      "title": "Titel"
     }
   },
   "document": {
