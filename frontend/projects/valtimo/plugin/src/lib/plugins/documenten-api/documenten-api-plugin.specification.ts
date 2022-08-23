@@ -33,7 +33,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
       'store-temp-document': 'Document opslaan',
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
-        'Hier kunt u een eigen naam verzinnen. Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
+        'Hier kunt je een eigen naam verzinnen. Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
       url: 'Documenten API URL',
       urlTooltip:
         'In dit veld moet de verwijzing komen naar de REST API van Documenten. Deze url moet dus eindigen op /documenten/api/v1/',
@@ -69,7 +69,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
         'Here you can enter a name for the plugin. This name will be used to recognize the plugin throughout the rest of the application',
       url: 'Documenten API URL',
       urlTooltip:
-        'This field must contain the URL to the rest API of Documenten, therefore this URL should end with /documenten/api/v1/',
+        'This field must contain the URL to the REST API of Documenten, therefore this URL should end with /documenten/api/v1/',
       bronorganisatie: 'Organisation RSIN',
       bronorganisatieTooltip:
         'Enter here the RSIN of the organization responsible for the documents. The RSIN is a dutch identification number for legal entities and partnerships ',
@@ -102,7 +102,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
         'Hier können Sie einen Namen für das Plugin eingeben. Dieser Name wird verwendet, um das Plugin im Rest der Anwendung zu erkennen',
       url: 'Documenten API URL',
       urlTooltip:
-        'Dieses Feld muss die URL zur rest API von Documenten enthalten, daher sollte diese URL mit enden /documenten/api/v1/',
+        'Dieses Feld muss die URL zur REST API von Documenten enthalten, daher sollte diese URL mit enden /documenten/api/v1/',
       bronorganisatie: 'Organisation RSIN',
       bronorganisatieTooltip:
         'Geben Sie hier den RAIN der für die Dokumente verantwortlichen Organisation ein. Der RAIN ist eine niederländische Identifikationsnummer für juristische Personen und Personengesellschaften',
