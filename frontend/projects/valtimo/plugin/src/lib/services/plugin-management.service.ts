@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {combineLatest, Observable, of} from 'rxjs';
+import {combineLatest, Observable} from 'rxjs';
 import {
   PluginConfiguration,
   PluginConfigurationWithLogo,
@@ -24,7 +24,7 @@ import {
   PluginFunction,
 } from '../models';
 import {ConfigService} from '@valtimo/config';
-import {delay, map} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 import {PluginService} from './plugin.service';
 import {DomSanitizer} from '@angular/platform-browser';
 
@@ -65,8 +65,22 @@ export class PluginManagementService {
     );
   }
 
-  getAllPluginConfigurationsWithLogos(): Observable<Array<PluginConfigurationWithLogo>> {
-    return this.returnPluginConfigurationsWithLogos(this.getAllPluginConfigurations());
+  getPluginConfigurationsWithActionsForActivityType(
+    activityType: string
+  ): Observable<Array<PluginConfiguration>> {
+    return this.http.get<Array<PluginConfiguration>>(
+      `${this.VALTIMO_API_ENDPOINT_URI}plugin/configuration?activityType=${activityType}`
+    );
+  }
+
+  getAllPluginConfigurationsWithLogos(
+    activityType?: string
+  ): Observable<Array<PluginConfigurationWithLogo>> {
+    return activityType && activityType.length > 0
+      ? this.returnPluginConfigurationsWithLogos(
+          this.getPluginConfigurationsWithActionsForActivityType(activityType)
+        )
+      : this.returnPluginConfigurationsWithLogos(this.getAllPluginConfigurations());
   }
 
   savePluginConfiguration(

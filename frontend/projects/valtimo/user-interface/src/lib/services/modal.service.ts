@@ -94,6 +94,7 @@ export class ModalService {
 
     if (callBackFunction) {
       setTimeout(() => {
+        this.clearModalData();
         callBackFunction();
       }, this.appearingDelayMs);
     }
