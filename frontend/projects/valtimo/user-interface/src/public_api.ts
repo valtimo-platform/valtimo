@@ -76,3 +76,8 @@ export * from './lib/components/form/form.component';
 // Multi input
 export * from './lib/components/multi-input/multi-input.module';
 export * from './lib/components/multi-input/multi-input.component';
+// Prompt component
+export * from './lib/components/prompt/prompt.module';
+export * from './lib/components/prompt/prompt.component';
+// Modal service
+export * from './lib/services/prompt.service';

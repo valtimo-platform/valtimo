@@ -14,24 +14,52 @@
  * limitations under the License.
  */
 
-import {Injectable} from '@angular/core';
-import {ReplaySubject} from 'rxjs';
+import {Injectable, OnDestroy} from '@angular/core';
+import {combineLatest, map, ReplaySubject, Subject, Subscription, switchMap, timer} from 'rxjs';
 import {NGXLogger} from 'ngx-logger';
-import {KeycloakService} from 'keycloak-angular';
+import {KeycloakEventType, KeycloakService} from 'keycloak-angular';
 import {UserIdentity, UserService, ValtimoUserIdentity} from '@valtimo/config';
 import {KeycloakOptionsService} from './keycloak-options.service';
+import jwt_decode from 'jwt-decode';
+import {PromptService} from '@valtimo/user-interface';
+import {TranslateService} from '@ngx-translate/core';
+import {DatePipe} from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
 })
-export class KeycloakUserService implements UserService {
+export class KeycloakUserService implements UserService, OnDestroy {
   private userIdentity: ReplaySubject<UserIdentity>;
 
+  private tokenRefreshSubscription!: Subscription;
+  private refreshTokenSubscription!: Subscription;
+  private expiryTimerSubscription!: Subscription;
+
+  private readonly _refreshToken$ = new Subject<string>();
+
+  private _expiryTimeMs!: number;
+
+  private readonly FIVE_MINUTES_MS = 300000;
+
+  private _counter!: Date;
+
   constructor(
-    private keycloakService: KeycloakService,
-    private keycloakOptionsService: KeycloakOptionsService,
-    private logger: NGXLogger
-  ) {}
+    private readonly keycloakService: KeycloakService,
+    private readonly keycloakOptionsService: KeycloakOptionsService,
+    private readonly logger: NGXLogger,
+    private readonly promptService: PromptService,
+    private readonly translateService: TranslateService,
+    private readonly datePipe: DatePipe
+  ) {
+    this.openTokenRefreshSubscription();
+    this.openRefreshTokenSubscription();
+  }
+
+  ngOnDestroy(): void {
+    this.tokenRefreshSubscription?.unsubscribe();
+    this.refreshTokenSubscription?.unsubscribe();
+    this.closeExpiryTimerSubscription();
+  }
 
   init(): void {
     this.userIdentity = new ReplaySubject();
@@ -49,6 +77,7 @@ export class KeycloakUserService implements UserService {
       this.logger.debug('KeycloakUserService: loaded user identity', valtimoUserIdentity);
       this.userIdentity.next(valtimoUserIdentity);
     });
+    this.setRefreshToken();
   }
 
   getUserSubject(): ReplaySubject<UserIdentity> {
@@ -69,5 +98,91 @@ export class KeycloakUserService implements UserService {
   async updateToken(minValidity: number): Promise<boolean> {
     this.logger.debug('KeycloakUserService: updateToken');
     return this.keycloakService.updateToken(minValidity);
+  }
+
+  private openTokenRefreshSubscription(): void {
+    this.tokenRefreshSubscription = this.keycloakService.keycloakEvents$.subscribe(
+      keycloakEvent => {
+        if (keycloakEvent.type === KeycloakEventType.OnAuthRefreshSuccess) {
+          this.setRefreshToken();
+        }
+      }
+    );
+  }
+
+  private openRefreshTokenSubscription(): void {
+    this.refreshTokenSubscription = this._refreshToken$.subscribe(refreshToken => {
+      const decodedRefreshToken: any = jwt_decode(refreshToken);
+      const tokenExp = decodedRefreshToken.exp * 1000;
+      const expiryTimeMs = tokenExp - Date.now() - 1000;
+
+      this._expiryTimeMs = expiryTimeMs;
+      this.closeExpiryTimerSubscription();
+      this.openExpiryTimerSubscription();
+    });
+  }
+
+  private setRefreshToken(): void {
+    const refreshToken = this.keycloakService.getKeycloakInstance()?.refreshToken;
+    if (refreshToken) this._refreshToken$.next(refreshToken);
+  }
+
+  private openExpiryTimerSubscription(): void {
+    this.expiryTimerSubscription = timer(0, 1000)
+      .pipe(
+        map(() => {
+          this._expiryTimeMs = this._expiryTimeMs - 1000;
+          return this._expiryTimeMs;
+        }),
+        switchMap(expiryTimeMs => {
+          if (expiryTimeMs <= this.FIVE_MINUTES_MS) {
+            this._counter = new Date(0, 0, 0, 0, 0, 0);
+            this._counter.setSeconds(expiryTimeMs / 1000);
+          }
+
+          return combineLatest([
+            this.promptService.promptVisible$,
+            this.translateService.stream('keycloak.expiryPromptTitle'),
+            this.translateService.stream('keycloak.expiryPromptDescription', {
+              expiryTime: this.datePipe.transform(this._counter, 'mm:ss'),
+            }),
+            this.translateService.stream('keycloak.expiryPromptCancel'),
+            this.translateService.stream('keycloak.expiryPromptConfirm'),
+          ]);
+        })
+      )
+      .subscribe(([promptVisible, headerText, bodyText, cancelButtonText, confirmButtonText]) => {
+        if (!promptVisible && this._expiryTimeMs <= this.FIVE_MINUTES_MS) {
+          this.promptService.openPrompt({
+            headerText,
+            bodyText,
+            cancelButtonText,
+            confirmButtonText,
+            cancelMdiIcon: 'logout',
+            confirmMdiIcon: 'check',
+            closeOnConfirm: true,
+            closeOnCancel: false,
+            cancelCallbackFunction: () => {
+              this.keycloakService.logout();
+            },
+            confirmCallBackFunction: () => {
+              this.closeExpiryTimerSubscription();
+              this.updateToken(20);
+            },
+          });
+        }
+
+        if (promptVisible) {
+          this.promptService.setBodyText(bodyText);
+        }
+
+        if (this._expiryTimeMs < 2000) {
+          this.logout();
+        }
+      });
+  }
+
+  private closeExpiryTimerSubscription(): void {
+    this.expiryTimerSubscription?.unsubscribe();
   }
 }

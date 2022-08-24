@@ -704,5 +704,11 @@
     "saveChanges": "Save changes",
     "unlink": "Unlink",
     "noPluginFunctions": "This plugin does not support any plugin actions."
+  },
+  "keycloak": {
+    "expiryPromptTitle": "The session is about to expire",
+    "expiryPromptDescription": "You wil be logged out in {{expiryTime}}.",
+    "expiryPromptCancel": "Logout",
+    "expiryPromptConfirm": "Continue session"
   }
 }

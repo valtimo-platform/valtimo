@@ -171,7 +171,7 @@ export class DossierListComponent implements OnInit {
     distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
     tap(request => {
       this.storedSearchRequestKey$.pipe(take(1)).subscribe(storedSearchRequestKey => {
-        this.logger.log(`store request in local storage: ${JSON.stringify(request)}`);
+        this.logger.debug(`store request in local storage: ${JSON.stringify(request)}`);
         localStorage.setItem(storedSearchRequestKey, JSON.stringify(request));
       });
     }),
@@ -216,7 +216,7 @@ export class DossierListComponent implements OnInit {
   pageChange(newPage: number): void {
     this.pagination$.pipe(take(1)).subscribe(pagination => {
       if (pagination && pagination.page !== newPage) {
-        this.logger.log(`Page change: ${newPage}`);
+        this.logger.debug(`Page change: ${newPage}`);
         this.pagination$.next({...pagination, page: newPage});
       }
     });
@@ -229,7 +229,7 @@ export class DossierListComponent implements OnInit {
         const newPage =
           amountOfAvailablePages < pagination.page ? amountOfAvailablePages : pagination.page;
 
-        this.logger.log(`Page size change. New Page: ${newPage} New page size: ${newPageSize}`);
+        this.logger.debug(`Page size change. New Page: ${newPage} New page size: ${newPageSize}`);
         this.pagination$.next({...pagination, size: newPageSize, page: newPage});
       }
     });
@@ -238,7 +238,7 @@ export class DossierListComponent implements OnInit {
   sortChanged(newSortState: SortState): void {
     this.pagination$.pipe(take(1)).subscribe(pagination => {
       if (pagination && JSON.stringify(pagination.sort) !== JSON.stringify(newSortState)) {
-        this.logger.log(`Sort state change: ${JSON.stringify(newSortState)}`);
+        this.logger.debug(`Sort state change: ${JSON.stringify(newSortState)}`);
         this.pagination$.next({...pagination, sort: newSortState});
       }
     });
@@ -279,7 +279,7 @@ export class DossierListComponent implements OnInit {
     this.settingPaginationForDocName$.pipe(take(1)).subscribe(settingPaginationForDocName => {
       if (documentDefinitionName !== settingPaginationForDocName) {
         this.pagination$.next(undefined);
-        this.logger.log('clear pagination');
+        this.logger.debug('clear pagination');
         this.settingPaginationForDocName$.next(documentDefinitionName);
         this.setPagination(documentDefinitionName);
       }
@@ -296,7 +296,9 @@ export class DossierListComponent implements OnInit {
           storedSearchRequestKey
         );
 
-        this.logger.log(`Set pagination: ${JSON.stringify(storedPagination || defaultPagination)}`);
+        this.logger.debug(
+          `Set pagination: ${JSON.stringify(storedPagination || defaultPagination)}`
+        );
         this.pagination$.next(storedPagination || defaultPagination);
       });
   }

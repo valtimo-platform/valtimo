@@ -243,7 +243,6 @@
   );
   --v-modal-content-padding-block-start: var(--v-spacing-block-2xl);
   --v-modal-content-padding-block-end: var(--v-spacing-block-xl);
-
   /* stepper */
   --v-stepper-header-number-circle-width: 24px;
   --v-stepper-header-number-circle-height: 24px;
@@ -362,4 +361,32 @@
   --v-tooltip-spacing-inline: var(--v-spacing-inline-sm);
   --v-tooltip-spacing-block: var(--v-spacing-block-xsm);
   --v-tooltip-max-width: 600px;
+  /* prompt */
+  --v-prompt-z-index: 99999;
+  --v-prompt-backdrop-color: var(--v-color-backdrop);
+  --v-prompt-backdrop-color-hover: var(--v-color-backdrop-hover);
+  --v-prompt-backdrop-filter: none;
+  --v-prompt-backdrop-filter-hover: none;
+  --v-prompt-backdrop-transition: var(--v-transition-bg-medium);
+  --v-prompt-backdrop-cursor: var(--v-cursor-default);
+  --v-prompt-backdrop-cursor-disappearing: var(--v-cursor-default);
+  --v-prompt-backdrop-padding-inline: var(--v-spacing-inline-md);
+  --v-prompt-backdrop-padding-block: var(--v-spacing-block-md);
+  --v-prompt-max-width: 550px;
+  --v-prompt-min-height: 150px;
+  --v-prompt-box-shadow: var(--v-box-shadow-medium);
+  --v-prompt-background-color: var(--v-color-grey-7);
+  --v-prompt-transition: var(--v-transition-opacity-medium), var(--v-transition-transform-medium);
+  --v-prompt-cursor: var(--v-cursor-default);
+  --v-prompt-border-radius: var(--v-border-radius-lg);
+  --v-prompt-padding-inline: var(--v-spacing-inline-2xl);
+  --v-prompt-header-bg-color: var(--v-color-grey-8);
+  --v-prompt-header-padding-block: var(--v-spacing-block-xl);
+  --v-prompt-header-border: 1px solid var(--v-color-grey-6);
+  --v-prompt-header-min-height: var(--v-button-type-icon-height);
+  --v-prompt-footer-bg-color: var(--v-color-grey-8);
+  --v-prompt-footer-padding-block: var(--v-spacing-block-xl);
+  --v-prompt-footer-border: 1px solid var(--v-color-grey-6);
+  --v-prompt-content-padding-block-start: var(--v-spacing-block-2xl);
+  --v-prompt-content-padding-block-end: var(--v-spacing-block-xl);
 }

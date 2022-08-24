@@ -704,5 +704,11 @@
     "saveChanges": "Änderungen speichern",
     "unlink": "Verknüpfung aufheben",
     "noPluginFunctions": "Dieses Plugin unterstützt keine Plugin-Aktionen."
+  },
+  "keycloak": {
+    "expiryPromptTitle": "Die Sitzung neigt sich dem Ende zu",
+    "expiryPromptDescription": "Sie werden in {{expiryTime}} abgemeldet.",
+    "expiryPromptCancel": "Ausloggen",
+    "expiryPromptConfirm": "Sitzung fortsetzen"
   }
 }

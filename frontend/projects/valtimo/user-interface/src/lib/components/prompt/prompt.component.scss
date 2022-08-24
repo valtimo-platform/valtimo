@@ -1,0 +1,126 @@
+/*
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.v-prompt-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--v-prompt-z-index);
+  background-color: var(--v-color-backdrop-transparant);
+  backdrop-filter: blur(0);
+  transition: var(--v-prompt-backdrop-transition);
+  display: none;
+  cursor: var(--v-prompt-backdrop-cursor);
+  padding-inline-start: var(--v-prompt-backdrop-padding-inline);
+  padding-inline-end: var(--v-prompt-backdrop-padding-inline);
+  padding-block-start: var(--v-prompt-backdrop-padding-block);
+  padding-block-end: var(--v-prompt-backdrop-padding-block);
+}
+
+.v-prompt-backdrop--visible,
+.v-prompt-backdrop--disappearing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v-prompt {
+  background-color: var(--v-prompt-background-color);
+  min-height: var(--v-prompt-min-height);
+  max-height: 100%;
+  width: 100%;
+  max-width: var(--v-prompt-max-width);
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: var(--v-prompt-transition);
+  cursor: var(--v-prompt-cursor);
+  border-radius: var(--v-prompt-border-radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--v-prompt-box-shadow);
+}
+
+.v-prompt-backdrop--backdrop {
+  background-color: var(--v-prompt-backdrop-color);
+  backdrop-filter: var(--v-prompt-backdrop-filter);
+
+  .v-prompt {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  &.v-prompt-backdrop--mouse-on-backdrop {
+    &:not(.v-prompt-backdrop--disappearing),
+    &:not(.v-prompt-backdrop--appearing),
+    &:hover {
+      background-color: var(--v-prompt-backdrop-color-hover);
+      backdrop-filter: var(--v-prompt-backdrop-filter-hover);
+    }
+  }
+}
+
+.v-prompt-backdrop--hidden,
+.v-prompt-backdrop--appearing {
+  cursor: var(--v-prompt-backdrop-cursor-disappearing);
+}
+
+.v-prompt__header {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  background-color: var(--v-prompt-header-bg-color);
+  padding-block-start: var(--v-prompt-header-padding-block);
+  padding-block-end: var(--v-prompt-header-padding-block);
+  padding-inline-start: var(--v-prompt-padding-inline);
+  padding-inline-end: var(--v-prompt-padding-inline);
+  border-bottom: var(--v-prompt-header-border);
+  min-height: var(--v-prompt-header-min-height);
+  box-sizing: content-box;
+}
+
+.v-prompt__footer {
+  display: flex;
+  flex-shrink: 0;
+  background-color: var(--v-prompt-footer-bg-color);
+  padding-block-start: var(--v-prompt-footer-padding-block);
+  padding-block-end: var(--v-prompt-footer-padding-block);
+  padding-inline-start: var(--v-prompt-padding-inline);
+  padding-inline-end: var(--v-prompt-padding-inline);
+  border-top: var(--v-prompt-footer-border);
+}
+
+.v-prompt__content {
+  height: 100%;
+  padding-block-start: var(--v-prompt-content-padding-block-start);
+  padding-block-end: var(--v-prompt-content-padding-block-end);
+  padding-inline-start: var(--v-prompt-padding-inline);
+  padding-inline-end: var(--v-prompt-padding-inline);
+  overflow: auto;
+}
+
+.v-prompt__buttons {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-between;
+}

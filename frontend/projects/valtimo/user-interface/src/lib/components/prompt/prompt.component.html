@@ -1,0 +1,82 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    visible: visible$ | async,
+    appearing: appearing$ | async,
+    disappearing: disappearing$ | async,
+    showBackdrop: showBackdrop$ | async
+  } as obs"
+>
+  <div
+    class="v-prompt-backdrop"
+    [ngClass]="{
+      'v-prompt-backdrop--visible': obs.visible || obs.disappearing,
+      'v-prompt-backdrop--backdrop': obs.showBackdrop,
+      'v-prompt-backdrop--hidden': !obs.visible,
+      'v-prompt-backdrop--appearing': obs.appearing,
+      'v-prompt-backdrop--disappearing': obs.disappearing
+    }"
+  >
+    <ng-container
+      *ngTemplateOutlet="modal; context: {appearing: obs.appearing, disappearing: obs.disappearing}"
+    ></ng-container>
+  </div>
+</ng-container>
+
+<ng-template #modal let-appearing="appearing" let-disappearing="disappearing">
+  <div class="v-prompt" [style.max-width.px]="maxWidthPx">
+    <ng-container
+      *ngTemplateOutlet="modalHeader; context: {appearing: appearing, disappearing: disappearing}"
+    ></ng-container>
+    <ng-container *ngTemplateOutlet="modalContent"></ng-container>
+    <ng-container
+      *ngTemplateOutlet="modalFooter; context: {appearing: appearing, disappearing: disappearing}"
+    ></ng-container>
+  </div>
+</ng-template>
+
+<ng-template #modalHeader let-appearing="appearing" let-disappearing="disappearing">
+  <div class="v-prompt__header">
+    <v-title [margin]="false" type="h2">{{ headerText$ | async }}</v-title>
+  </div>
+</ng-template>
+
+<ng-template #modalContent>
+  <div class="v-prompt__content">
+    <v-paragraph>{{ bodyText$ | async }}</v-paragraph>
+  </div>
+</ng-template>
+
+<ng-template #modalFooter let-appearing="appearing" let-disappearing="disappearing">
+  <div class="v-prompt__footer">
+    <div class="v-prompt__buttons">
+      <v-button
+        [disabled]="appearing || disappearing"
+        (clickEvent)="cancel()"
+        [mdiIcon]="(cancelMdiIcon$ | async) || 'cancel'"
+        >{{ cancelText$ | async }}</v-button
+      >
+      <v-button
+        [disabled]="appearing || disappearing"
+        (clickEvent)="confirm()"
+        [mdiIcon]="(confirmMdiIcon$ | async) || 'check'"
+        >{{ confirmText$ | async }}</v-button
+      >
+    </div>
+  </div>
+</ng-template>
