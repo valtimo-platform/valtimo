@@ -15,6 +15,7 @@
  */
 
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Components} from '@formio/angular';
 
 @Component({
   selector: 'valtimo-form-io-builder',
@@ -28,7 +29,18 @@ export class FormioBuilderComponent implements OnInit {
 
   constructor() {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    const originalEditForm = Components.baseEditForm;
+    Components.baseEditForm = function (...extend) {
+      const editForm = originalEditForm(...extend);
+      const keyField = editForm.components
+        .find(element => element.key == 'tabs')
+        .components.find(element => element.key == 'api')
+        .components.find(element => element.key == 'key');
+      delete keyField.validate;
+      return editForm;
+    };
+  }
 
   onChange(event) {
     this.change.emit(event);
