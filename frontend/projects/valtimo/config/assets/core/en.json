@@ -47,7 +47,7 @@
       "saveSuccess": "Your note has been saved successfully."
     },
     "zaakobjecten": {
-      "objecttype": "Object type",
+      "objecttype": "Select the type of object you would like to see",
       "objecttypePlaceholder": "Select an object type",
       "objecten": "Objects",
       "objectenPlaceholder": "Select an object type to load a list of objects of this type.",

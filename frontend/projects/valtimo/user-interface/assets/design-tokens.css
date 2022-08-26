@@ -96,6 +96,7 @@
   --v-border-radius-sm: 4px;
   --v-border-radius-md: 5px;
   --v-border-radius-lg: 9px;
+  --v-border-medium: 1px solid var(--v-color-grey-3);
   /* transitions */
   --v-transition-bg-fast: background-color 0.07s ease-in;
   --v-transition-color-fast: color 0.07s ease-in;
@@ -174,6 +175,7 @@
   --v-table-row-bottom-border: 1px solid var(--v-color-grey-5);
   --v-table-background-color: var(--v-color-white);
   --v-table-body-box-shadow: var(--v-box-shadow-medium);
+  --v-table-body-border: var(--v-border-medium);
   --v-table-cell-font-color: var(--v-color-grey-1);
   --v-table-loading-skeleton-width: 100px;
   --v-table-loading-skeleton-line-height: var(--v-line-height-smaller);
@@ -316,6 +318,7 @@
   --v-input-padding-inline: var(--v-spacing-inline-md);
   --v-input-bg-color: var(--v-color-white);
   --v-input-border-radius: var(--v-border-radius-sm);
+  --v-input-border: var(--v-border-medium);
   --v-input-box-shadow: var(--v-box-shadow-heavier);
   --v-input-focus-border: 2px solid var(--v-color-accent-1);
   --v-input-transition: var(--v-transition-outline-fast);

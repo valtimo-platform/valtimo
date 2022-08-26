@@ -47,7 +47,7 @@
       "saveSuccess": "Uw aantekening is succesvol opgeslagen."
     },
     "zaakobjecten": {
-      "objecttype": "Objecttype",
+      "objecttype": "Selecteer het type object dat je wilt zien",
       "objecttypePlaceholder": "Selecteer een objecttype",
       "objecten": "Objecten",
       "objectenPlaceholder": "Selecteer een objecttype om een lijst van objecten van dit type te laden.",

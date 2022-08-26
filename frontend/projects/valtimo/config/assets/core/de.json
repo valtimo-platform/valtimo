@@ -47,7 +47,7 @@
       "saveSuccess": "Ihre Notiz wurde erfolgreich gespeichert."
     },
     "zaakobjecten": {
-      "objecttype": "Objekttyp",
+      "objecttype": "Wählen Sie den Objekttyp aus, den Sie sehen möchten",
       "objecttypePlaceholder": "Wählen Sie einen Objekttyp aus",
       "objecten": "Objekte",
       "objectenPlaceholder": "Wählen Sie einen Objekttyp aus, um eine Liste mit Objekten dieses Typs zu laden.",
