@@ -34,9 +34,9 @@ export class FormioBuilderComponent implements OnInit {
     Components.baseEditForm = function (...extend) {
       const editForm = originalEditForm(...extend);
       const keyField = editForm.components
-        .find(element => element.key == 'tabs')
-        .components.find(element => element.key == 'api')
-        .components.find(element => element.key == 'key');
+        .find(element => element.key === 'tabs')
+        .components.find(element => element.key === 'api')
+        .components.find(element => element.key === 'key');
       delete keyField.validate;
       return editForm;
     };
