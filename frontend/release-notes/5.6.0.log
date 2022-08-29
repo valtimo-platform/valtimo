@@ -1,0 +1,17 @@
+ff2e22b - Updated version to 5.6.0
+523f342 - Updated version to 5.6.0-66.RC-SNAPSHOT
+1d368c1 - Feature/36693 fixing zgw plugin labels (#159)
+170b1e7 - Merge branch 'main' into development
+759f110 - Feature/36279 zaken api plugin (#157)
+ab171dc - add type coercion to direction variable (#155)
+21991f7 - change the type of default direction to string (#154)
+2398c74 - fix title component (#152)
+b746dc7 - feat: configurable sorting direction case list columns (#151)
+d35dea2 - fix lint
+9e4f524 - feat: support multiple zgw api plugins (#143)
+0dbd09d - fix no form definition found warning message (#150)
+0125f59 - updated translation files so the number of options is no longer specified (#149)
+5cbf806 - lock swagger-ui 4.12.0 (#148)
+5fa6ec7 - feat: edit and delete plugin configs (#147)
+a463f22 - fix: downgrade @ng-bootstrap/ng-bootstrap (#145)
+d2dfd05 - show user full name in top bar (#144)
