@@ -42,7 +42,8 @@
 }
 
 .v-table__body {
-  border: var(--v-table-body-border);
+  outline: var(--v-table-body-border);
+  border-radius: var(--v-border-radius-md);
 }
 
 .v-table__row {

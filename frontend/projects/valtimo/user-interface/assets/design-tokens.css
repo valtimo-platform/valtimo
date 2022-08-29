@@ -96,7 +96,7 @@
   --v-border-radius-sm: 4px;
   --v-border-radius-md: 5px;
   --v-border-radius-lg: 9px;
-  --v-border-medium: 1px solid var(--v-color-grey-3);
+  --v-border-medium: 1px solid var(--v-color-grey-4);
   /* transitions */
   --v-transition-bg-fast: background-color 0.07s ease-in;
   --v-transition-color-fast: color 0.07s ease-in;
