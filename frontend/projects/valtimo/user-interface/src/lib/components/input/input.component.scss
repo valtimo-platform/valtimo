@@ -41,13 +41,13 @@
   background-color: var(--v-input-bg-color);
   border-radius: var(--v-input-border-radius);
   border: var(--v-input-border);
-  outline: 0 solid transparent;
   transition: var(--v-input-transition);
   width: var(--v-input-default-width);
   box-sizing: border-box;
 
   &:focus {
     outline: var(--v-input-focus-border);
+    outline-offset: var(--v-outline-offset);
   }
 
   &:disabled {

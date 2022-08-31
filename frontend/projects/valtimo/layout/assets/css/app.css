@@ -379,7 +379,7 @@ progress {
 }
 
 [type='search'] {
-  outline-offset: -2px;
+  outline-offset: var(--v-outline-offset);
   -webkit-appearance: none;
 }
 

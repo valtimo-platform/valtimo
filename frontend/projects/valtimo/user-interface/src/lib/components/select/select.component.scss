@@ -278,6 +278,7 @@
   }
   .ng-dropdown-panel.ng-select-bottom {
     top: 100%;
+    border: var(--v-input-border);
     border-bottom-right-radius: var(--v-select-border-radius);
     border-bottom-left-radius: var(--v-select-border-radius);
     border-top-color: #e6e6e6;
