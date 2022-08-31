@@ -70,6 +70,9 @@
     "userTasksDoneState": "Helemaal bij!",
     "taskLocked": "Je hebt geen toegang tot deze taak"
   },
+  "progress": {
+    "noProcessDocumentInstances": "Er is nog geen proces gestart"
+  },
   "dashboard": {
     "openTasks": {
       "title": "Alle taken"

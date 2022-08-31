@@ -70,6 +70,9 @@
     "userTasksDoneState": "All done!",
     "taskLocked": "You don't have access to this task"
   },
+  "progress": {
+    "noProcessDocumentInstances": "There is no process started yet"
+  },
   "dashboard": {
     "openTasks": {
       "title": "All tasks"

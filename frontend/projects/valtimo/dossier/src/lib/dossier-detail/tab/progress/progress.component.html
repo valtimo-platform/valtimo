@@ -14,7 +14,8 @@
   ~ limitations under the License.
   -->
 
-<div class="full-height-tab-content" *ngIf="processDocumentInstances">
+<div class="full-height-tab-content"
+     *ngIf="processDocumentInstances && processDocumentInstances.length > 0; else emptyProcessDocumentInstances">
   <div class="col-3">
     <label><strong>Process</strong></label
     ><br />
@@ -32,3 +33,7 @@
     [processInstanceId]="selectedProcessInstanceId"
   ></valtimo-process-diagram>
 </div>
+
+<ng-template #emptyProcessDocumentInstances>
+  <span> {{ 'progress.noProcessDocumentInstances' | translate }}</span>
+</ng-template>
