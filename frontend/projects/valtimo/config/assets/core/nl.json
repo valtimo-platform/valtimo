@@ -59,7 +59,8 @@
       "objectType": {
         "viewObject": "Object bekijken"
       }
-    }
+    },
+    "startSubProcess": "Start"
   },
   "document": {
     "title": {
