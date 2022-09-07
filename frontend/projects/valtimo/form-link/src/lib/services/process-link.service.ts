@@ -56,4 +56,8 @@ export class ProcessLinkService {
   saveProcessLink(saveProcessLinkRequest: SaveProcessLinkRequest): Observable<null> {
     return this.http.post<null>(`${this.VALTIMO_ENDPOINT_URI}process-link`, saveProcessLinkRequest);
   }
+
+  deleteProcessLink(id: string): Observable<null> {
+    return this.http.delete<null>(`${this.VALTIMO_ENDPOINT_URI}process-link/${id}`);
+  }
 }

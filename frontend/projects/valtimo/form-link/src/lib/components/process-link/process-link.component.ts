@@ -69,7 +69,19 @@ export class ProcessLinkComponent {
   }
 
   unlink(): void {
-    this.logger.error('Endpoint for removing process link has not been implemented.');
+    this.stateService.disableInput();
+
+    this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
+      this.processLinkService.deleteProcessLink(selectedProcessLink.id).subscribe(
+        response => {
+          this.hide();
+        },
+        () => {
+          this.logger.error('Something went wrong while deleting the process link.');
+          this.stateService.enableInput();
+        }
+      );
+    });
   }
 
   openModal(params: ModalParams): void {
