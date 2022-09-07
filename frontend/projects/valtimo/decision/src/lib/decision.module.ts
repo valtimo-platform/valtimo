@@ -22,8 +22,10 @@ import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {DecisionDisplayComponent} from './decision-display/decision-display.component';
 import {DecisionListComponent} from './decision-list/decision-list.component';
-import {ListModule, ModalModule, WidgetModule} from '@valtimo/components';
+import {ListModule, ModalModule, SpinnerModule, WidgetModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
+import {DecisionModelerComponent} from './decision-modeler/decision-modeler.component';
+import {SelectModule} from '@valtimo/user-interface';
 
 @NgModule({
   declarations: [
@@ -31,6 +33,7 @@ import {TranslateModule} from '@ngx-translate/core';
     DecisionDeployComponent,
     DecisionDisplayComponent,
     DecisionListComponent,
+    DecisionModelerComponent,
   ],
   imports: [
     DecisionRoutingModule,
@@ -40,7 +43,9 @@ import {TranslateModule} from '@ngx-translate/core';
     ModalModule,
     CommonModule,
     FormsModule,
+    SelectModule,
+    SpinnerModule,
   ],
-  exports: [DecisionComponent],
+  exports: [DecisionComponent, DecisionModelerComponent],
 })
 export class DecisionModule {}

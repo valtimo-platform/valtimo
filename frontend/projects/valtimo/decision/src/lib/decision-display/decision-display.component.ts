@@ -19,6 +19,8 @@ import {DecisionService} from '../decision.service';
 import DmnViewer from 'dmn-js';
 import {DecisionXml} from '../models';
 import {ActivatedRoute} from '@angular/router';
+import {ToastrService} from 'ngx-toastr';
+import {migrateDiagram} from '@bpmn-io/dmn-migrate';
 
 @Component({
   selector: 'valtimo-decision-display',
@@ -31,7 +33,11 @@ export class DecisionDisplayComponent implements OnInit {
   private decisionId: string;
   public decisionXml: string;
 
-  constructor(private decisionService: DecisionService, private route: ActivatedRoute) {}
+  constructor(
+    private readonly decisionService: DecisionService,
+    private readonly route: ActivatedRoute,
+    private readonly toasterService: ToastrService
+  ) {}
 
   ngOnInit() {
     this.viewer = new DmnViewer({
@@ -43,9 +49,26 @@ export class DecisionDisplayComponent implements OnInit {
 
   loadDecisionXml(): void {
     this.decisionService.getDecisionXml(this.decisionId).subscribe((decision: DecisionXml) => {
-      this.viewer.importXML(decision.dmnXml);
+      this.viewer.importXML(decision.dmnXml, error => {
+        if (error) {
+          this.migrateAndLoadDecisionXml(decision);
+        }
+      });
       this.decisionXml = decision.dmnXml;
     });
+  }
+
+  async migrateAndLoadDecisionXml(decision: DecisionXml) {
+    const decisionXml = await migrateDiagram(decision.dmnXml);
+
+    if (decisionXml) {
+      this.viewer.importXML(decisionXml, error => {
+        if (error) {
+          console.log('error');
+        }
+      });
+      this.decisionXml = decisionXml;
+    }
   }
 
   download(): void {

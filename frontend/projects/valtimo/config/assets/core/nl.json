@@ -172,7 +172,12 @@
   "decisions": {
     "upload": {
       "description": "Selecteer een .dmn bestand om te uploaden"
-    }
+    },
+    "version": "Versie",
+    "deploy": "Deploy",
+    "loadFailure": "Er is iets misgegaan bij het laden van het beslistabel.",
+    "deploySuccess": "Het beslistabel is succesvol opgeslagen.",
+    "deployFailure": "Er is iets misgegaan bij het opslaan van het beslistabel."
   },
   "message": {
     "empty": "Geen resultaat gevonden"
@@ -300,6 +305,8 @@
   "Create new Process": "Maak nieuw Proces",
   "Process details": "Proces details",
   "Decision tables": "Beslistabellen",
+  "Edit decision table": "Beslistabel bewerken",
+  "Create decision table": "Beslistabel aanmaken",
   "Overview of all Decision tables": "Overzicht van alle Beslistabellen",
   "Create new Milestone": "Maak nieuw Milestone",
   "Create new Milestone Set": "Maak nieuw Milestone Set",

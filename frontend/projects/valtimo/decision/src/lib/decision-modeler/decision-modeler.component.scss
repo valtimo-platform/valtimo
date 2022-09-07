@@ -1,0 +1,62 @@
+/*!
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+$border: 1px solid #dee2e6;
+
+#save-button {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: white;
+  padding: 5px;
+  border: solid 1px #ccc;
+  border-radius: 2px;
+  padding: 8px;
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+  cursor: default;
+  font-size: 14px;
+  color: #444;
+}
+
+.dmn-modeler {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 1rem;
+}
+
+.diagram {
+  border: $border;
+}
+
+.diagram-header {
+  border: $border;
+}
+
+.decision-title {
+  color: #6b6b6b;
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.fullscreen-toggle {
+  font-size: 2rem;
+
+  > i {
+    cursor: pointer;
+  }
+}

@@ -21,3 +21,4 @@
 export * from './lib/models';
 export * from './lib/decision.module';
 export * from './lib/decision.component';
+export * from './lib/decision-modeler/decision-modeler.component';

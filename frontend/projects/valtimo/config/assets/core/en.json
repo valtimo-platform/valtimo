@@ -172,7 +172,12 @@
   "decisions": {
     "upload": {
       "description": "Select a .dmn file to upload"
-    }
+    },
+    "version": "Version",
+    "deploy": "Deploy",
+    "loadFailure": "Something went wrong with loading your decision table.",
+    "deploySuccess": "Decision table has been deployed successfully.",
+    "deployFailure": "Something went wrong with deploying your decision table."
   },
   "message": {
     "empty": "No result found"
@@ -300,6 +305,8 @@
   "Create new Process": "Create new Process",
   "Process details": "Process details",
   "Decision tables": "Decision tables",
+  "Edit decision table": "Edit decision table",
+  "Create decision table": "Create decision table",
   "Overview of all Decision tables": "Overview of all decision tables",
   "Create new Milestone": "Create new Milestone",
   "Create new Milestone Set": "Create new Milestone Set",

@@ -17,6 +17,7 @@
 import {Component, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
 import {DecisionService} from '../decision.service';
 import {ModalComponent} from '@valtimo/components';
+import {DecisionStateService} from '../services';
 
 @Component({
   selector: 'valtimo-decision-deploy',
@@ -28,7 +29,10 @@ export class DecisionDeployComponent implements OnInit {
   @Output() deploySuccessful = new EventEmitter();
   @ViewChild('decisionDeployModal') modal: ModalComponent;
 
-  constructor(private decisionService: DecisionService) {}
+  constructor(
+    private readonly decisionService: DecisionService,
+    private readonly stateService: DecisionStateService
+  ) {}
 
   ngOnInit() {}
 
@@ -40,6 +44,7 @@ export class DecisionDeployComponent implements OnInit {
     this.decisionService.deployDmn(this.dmn).subscribe(() => {
       this.modal.hide();
       this.deploySuccessful.emit();
+      this.stateService.refreshDecisions();
     });
   }
 

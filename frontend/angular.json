@@ -73,7 +73,8 @@
               "node_modules/select2/dist/js/select2.min.js",
               "dist/valtimo/layout/assets/js/app.js",
               "src/assets/bpmn/ValtimoBPMNModeler.js",
-              "node_modules/@webcomponents/custom-elements/src/native-shim.js"
+              "node_modules/@webcomponents/custom-elements/src/native-shim.js",
+              "node_modules/dmn-js/dist/dmn-modeler.development.js"
             ],
             "allowedCommonJsDependencies": [
               "swagger-ui",

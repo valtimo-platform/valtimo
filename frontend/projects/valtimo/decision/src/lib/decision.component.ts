@@ -17,6 +17,7 @@
 import {Component, ViewChild} from '@angular/core';
 import {DecisionDeployComponent} from './decision-deploy/decision-deploy.component';
 import {DecisionListComponent} from './decision-list/decision-list.component';
+import {ConfigService} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-decision',
@@ -24,6 +25,12 @@ import {DecisionListComponent} from './decision-list/decision-list.component';
   styleUrls: ['./decision.component.scss'],
 })
 export class DecisionComponent {
+  readonly experimentalEditing!: boolean;
+
+  constructor(private readonly configService: ConfigService) {
+    this.experimentalEditing = this.configService.config.featureToggles.experimentalDmnEditing;
+  }
+
   @ViewChild('decisionDeploy') deploy: DecisionDeployComponent;
   @ViewChild('decisionList') list: DecisionListComponent;
 }

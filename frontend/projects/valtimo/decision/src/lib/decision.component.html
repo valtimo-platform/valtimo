@@ -18,16 +18,21 @@
   <div class="container-fluid">
     <div class="text-right">
       <div class="btn-group mt-m3px mb-3">
-        <button (click)="this.deploy.openModal()" class="btn btn-secondary btn-space mr-0">
+        <button (click)="this.deploy.openModal()" class="btn btn-secondary btn-space">
           <i class="icon mdi mdi-upload mr-1"></i>
           {{ 'Upload' | translate }}
         </button>
+        <!--        <button-->
+        <!--          *ngIf="experimentalEditing"-->
+        <!--          class="btn btn-primary btn-space"-->
+        <!--          [routerLink]="'edit/create'"-->
+        <!--        >-->
+        <!--          <i class="icon mdi mdi-plus mr-1"></i>-->
+        <!--          {{ 'Create decision table' | translate }}-->
+        <!--        </button>-->
       </div>
     </div>
     <valtimo-decision-list #decisionList></valtimo-decision-list>
-    <valtimo-decision-deploy
-      #decisionDeploy
-      (deploySuccessful)="this.list.loadDecisions()"
-    ></valtimo-decision-deploy>
+    <valtimo-decision-deploy #decisionDeploy></valtimo-decision-deploy>
   </div>
 </div>

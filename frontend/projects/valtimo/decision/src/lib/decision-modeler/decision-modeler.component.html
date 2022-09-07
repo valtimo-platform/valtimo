@@ -1,0 +1,137 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  [ngClass]="{'main-content pt-0': !layoutService.isFullscreen}"
+  class="mb-5"
+  *ngIf="{
+    decisionXml: decisionXml$ | async
+  } as obs"
+>
+  <div [ngClass]="{'container-fluid': !layoutService.isFullscreen}">
+    <ng-container *ngTemplateOutlet="buttons"></ng-container>
+    <ng-container *ngTemplateOutlet="createButtons"></ng-container>
+    <div [ngClass]="{'mt-4': !layoutService.isFullscreen}" class="modeler pl-3 pr-3 mb-3">
+      <ng-container *ngTemplateOutlet="diagramHeader"></ng-container>
+      <ng-container *ngTemplateOutlet="diagram"></ng-container>
+    </div>
+  </div>
+</div>
+
+<ng-template #buttons>
+  <div
+    class="text-right"
+    *ngIf="(isCreating$ | async) === false && {selectionId: selectionId$ | async} as obs"
+  >
+    <div class="btn-group mt-m3px mb-3" *ngIf="obs.selectionId && !layoutService.isFullscreen">
+      <button class="btn btn-primary btn-space" (click)="download()">
+        <i class="icon mdi mdi-download mr-1"></i>{{ 'processManagement.download' | translate }}
+      </button>
+      <button
+        class="btn btn-success btn-space"
+        (click)="deploy()"
+        [ngClass]="{'mr-0': obs.selectionId !== null}"
+      >
+        <i class="icon mdi mdi-upload mr-1"></i>{{ 'decisions.deploy' | translate }}
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #createButtons>
+  <div class="text-right" *ngIf="isCreating$ | async">
+    <div class="btn-group mt-m3px mb-3" *ngIf="!layoutService.isFullscreen">
+      <button class="btn btn-success btn-space" (click)="deploy()">
+        <i class="icon mdi mdi-upload mr-1"></i>{{ 'decisions.deploy' | translate }}
+      </button>
+      <!--      <button-->
+      <!--        *ngIf="selectedVersion === null"-->
+      <!--        class="btn btn-danger btn-space mr-0"-->
+      <!--        (click)="reset()"-->
+      <!--      >-->
+      <!--        <i class="icon mdi mdi-delete mr-1"></i>{{ 'processManagement.clear' | translate }}-->
+      <!--      </button>-->
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #diagramHeader>
+  <div class="row pt-4 pb-3 bg-light diagram-header justify-content-between">
+    <ng-container *ngTemplateOutlet="decisionTitle"></ng-container>
+    <ng-container *ngTemplateOutlet="versionSelection"></ng-container>
+    <ng-container *ngTemplateOutlet="fullScreenToggle"></ng-container>
+  </div>
+</ng-template>
+
+<ng-template #decisionTitle>
+  <div class="col-md-5 d-flex align-items-center">
+    <h2 class="decision-title">
+      {{ decisionTitle$ | async }}
+    </h2>
+  </div>
+</ng-template>
+
+<ng-template #versionSelection>
+  <div class="col-md-2 d-flex justify-content-center align-items-center">
+    <ng-container
+      *ngIf="
+        (isCreating$ | async) === false && {
+          versionSelectItems: decisionVersionSelectItems$ | async,
+          defaultSelectionId: selectionId$ | async,
+          disabled: versionSelectionDisabled$ | async
+        } as obs
+      "
+    >
+      <v-select
+        name="version"
+        [title]="'decisions.version' | translate"
+        [disabled]="obs.disabled"
+        [clearable]="false"
+        [loading]="!obs.versionSelectItems"
+        [items]="obs.versionSelectItems"
+        [defaultSelectionId]="obs.defaultSelectionId"
+        [widthInPx]="100"
+        (selectedChange)="switchVersion($event)"
+      ></v-select>
+    </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #fullScreenToggle>
+  <div class="col-md-2 d-flex fullscreen-toggle align-items-start justify-content-end">
+    <i
+      (click)="layoutService.toggleFullscreen()"
+      [ngClass]="{
+        'mdi-fullscreen': !layoutService.isFullscreen,
+        'mdi-fullscreen-exit': layoutService.isFullscreen
+      }"
+      class="mdi"
+    ></i>
+  </div>
+</ng-template>
+
+<ng-template #diagram>
+  <div class="row bg-white diagram mb-3">
+    <div class="dmn-modeler">
+      <div class="test-container">
+        <div class="editor-parent">
+          <div class="editor-container"></div>
+          <div class="editor-tabs"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>

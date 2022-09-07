@@ -201,6 +201,7 @@
     "@angular/platform-browser-dynamic": "^13.2.3",
     "@angular/router": "^13.2.3",
     "@auth0/angular-jwt": "^5.0.1",
+    "@bpmn-io/dmn-migrate": "^0.4.3",
     "@formio/angular": "^5.2.2",
     "@foxythemes/bootstrap-datetime-picker-bs4": "^2.3.4",
     "@foxythemes/fastclick": "^1.0.3",
