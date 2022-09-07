@@ -137,6 +137,10 @@
   border-top: var(--v-modal-footer-border);
 }
 
+.v-modal__footer--hidden {
+  display: none;
+}
+
 .v-modal__content {
   height: 100%;
   padding-block-start: var(--v-modal-content-padding-block-start);

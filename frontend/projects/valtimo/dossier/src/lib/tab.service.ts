@@ -17,24 +17,65 @@
 import {Inject, Injectable} from '@angular/core';
 import {TabImpl} from './models';
 import {DEFAULT_TABS, TAB_MAP} from './dossier.config';
+import {ConfigService} from '@valtimo/config';
+import {ActivatedRoute, Event as NavigationEvent, NavigationEnd, Router} from '@angular/router';
+import {DossierDetailTabObjectTypeComponent} from './dossier-detail/tab/object-type/object-type.component';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TabService {
   private readonly tabMap: Map<string, object>;
-  private readonly tabs: TabImpl[] = [];
+  private tabs: TabImpl[] = [];
+  private allTabs!: Map<string, object>;
+  private extraTabs!: Map<string, object>;
 
-  constructor(@Inject(TAB_MAP) tabMap: Map<string, object> = DEFAULT_TABS) {
+  constructor(
+    @Inject(TAB_MAP) tabMap: Map<string, object> = DEFAULT_TABS,
+    private readonly configService: ConfigService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
     this.tabMap = tabMap;
+    this.setTabs();
+    this.openRouterSubscription();
+  }
+
+  public getTabs(): TabImpl[] {
+    return this.tabs;
+  }
+
+  private setTabs(extraTabs?: Map<string, object>) {
     let i = 0;
-    this.tabMap.forEach((component, name, map) => {
+
+    this.tabs = [];
+
+    this.allTabs = extraTabs
+      ? new Map([...Array.from(this.tabMap.entries()), ...Array.from(extraTabs.entries())])
+      : this.tabMap;
+
+    this.allTabs.forEach((component, name) => {
       this.tabs.push(new TabImpl(name, i, component));
       i++;
     });
   }
 
-  public getTabs(): TabImpl[] {
-    return this.tabs;
+  getConfigurableTabs(documentDefinitionName: string) {
+    const allNamesObjects = this.configService.config.caseObjectTypes[documentDefinitionName];
+    const map = new Map();
+
+    allNamesObjects?.forEach(name => {
+      map.set(name, DossierDetailTabObjectTypeComponent);
+    });
+
+    this.extraTabs = map;
+  }
+
+  private openRouterSubscription(): void {
+    this.router.events.subscribe((event: NavigationEvent) => {
+      if (event instanceof NavigationEnd) {
+        this.setTabs(this.extraTabs);
+      }
+    });
   }
 }

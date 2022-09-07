@@ -100,6 +100,9 @@ export interface ValtimoConfig {
   };
   customTaskList?: CustomTaskList;
   customLeftSidebar?: CustomLeftSidebar;
+  caseObjectTypes?: {
+    [definitionNameId: string]: Array<string>;
+  };
 }
 
 export enum UploadProvider {

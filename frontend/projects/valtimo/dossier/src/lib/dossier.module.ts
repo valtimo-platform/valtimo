@@ -20,11 +20,12 @@ import {DossierRoutingModule} from './dossier-routing.module';
 import {DossierListComponent} from './dossier-list/dossier-list.component';
 import {DossierService} from './dossier.service';
 import {TAB_MAP} from './dossier.config';
-import {HttpLoaderFactory} from '@valtimo/config';
+import {ConfigModule, HttpLoaderFactory} from '@valtimo/config';
 import {
   BpmnJsDiagramModule,
   CamundaFormModule,
   DataListModule,
+  DropzoneModule,
   FilterSidebarModule,
   FormIoModule,
   ListModule,
@@ -33,7 +34,6 @@ import {
   TimelineModule,
   UploaderModule,
   WidgetModule,
-  DropzoneModule,
 } from '@valtimo/components';
 import {DossierDetailComponent} from './dossier-detail/dossier-detail.component';
 import {DossierDetailTabSummaryComponent} from './dossier-detail/tab/summary/summary.component';
@@ -43,7 +43,7 @@ import {ProcessModule} from '@valtimo/process';
 import {DossierDetailTabAuditComponent} from './dossier-detail/tab/audit/audit.component';
 import {DossierDetailTabContactMomentsComponent} from './dossier-detail/tab/contact-moments/contact-moments.component';
 import {DossierDetailTabDocumentsComponent} from './dossier-detail/tab/documents/documents.component';
-import {NgbButtonsModule, NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
+import {NgbButtonsModule, NgbPaginationModule, NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {DossierProcessStartModalComponent} from './dossier-process-start-modal/dossier-process-start-modal.component';
 import {FormModule} from '@valtimo/form';
 import {FormsModule} from '@angular/forms';
@@ -52,15 +52,17 @@ import {HttpClient} from '@angular/common/http';
 import {TabService} from './tab.service';
 import {TaskModule} from '@valtimo/task';
 import {DossierSupportingProcessStartModalComponent} from './dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
-import {NgbPaginationModule} from '@ng-bootstrap/ng-bootstrap';
-import {ConfigModule} from '@valtimo/config';
 import {DossierDetailTabZaakobjectenComponent} from './dossier-detail/tab/zaakobjecten/zaakobjecten.component';
 import {
-  SelectModule,
+  ButtonModule,
   InputLabelModule,
+  ModalModule as VModalModule,
   ParagraphModule,
+  SelectModule,
   TableModule,
+  TitleModule,
 } from '@valtimo/user-interface';
+import {DossierDetailTabObjectTypeComponent} from './dossier-detail/tab/object-type/object-type.component';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -77,6 +79,7 @@ export type TabsFactory = () => Map<string, object>;
     DossierUpdateComponent,
     DossierProcessStartModalComponent,
     DossierSupportingProcessStartModalComponent,
+    DossierDetailTabObjectTypeComponent,
   ],
   imports: [
     CommonModule,
@@ -113,6 +116,9 @@ export type TabsFactory = () => Map<string, object>;
     InputLabelModule,
     ParagraphModule,
     TableModule,
+    VModalModule,
+    TitleModule,
+    ButtonModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

@@ -53,7 +53,12 @@
       "objectenPlaceholder": "Selecteer een objecttype om een lijst van objecten van dit type te laden.",
       "index": "Index",
       "registrationAt": "Geregistreerd op",
-      "title": "Titel"
+      "title": "Titel",
+      "noFormDefinitionComponent": "Geen formulierdefinitie voor dit object gevonden.",
+      "noObjectType": "Geen objecten gevonden voor dit objecttype.",
+      "objectType": {
+        "viewObject": "Object bekijken"
+      }
     }
   },
   "document": {

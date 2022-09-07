@@ -16,44 +16,31 @@
 
 <ng-container
   *ngIf="{
-    objecttypeSelectItems: objecttypeSelectItems$ | async,
     objects: objects$ | async,
     columns: columns$ | async,
-    selectedObjectTypeUrl: selectedObjecttypeUrl$ | async
+    loading: loading$ | async,
+    hasData: hasData$ | async
   } as obs"
 >
-  <v-select
-    [items]="obs.objecttypeSelectItems"
-    [margin]="true"
-    [widthInPx]="350"
-    name="objecttypes"
-    [title]="'dossier.zaakobjecten.objecttype' | translate"
-    [placeholder]="'dossier.zaakobjecten.objecttypePlaceholder' | translate"
-    [loading]="!obs.objecttypeSelectItems"
-    (selectedChange)="selectObjectType($event)"
-  ></v-select>
-  <v-input-label
-    titleTranslationKey="dossier.zaakobjecten.objecten"
-    [largeMargin]="!!obs.selectedObjectTypeUrl"
-  ></v-input-label>
-  <v-paragraph *ngIf="!obs.selectedObjectTypeUrl">{{
-    'dossier.zaakobjecten.objectenPlaceholder' | translate
-  }}</v-paragraph>
   <v-table
-    *ngIf="obs.selectedObjectTypeUrl"
-    [loading]="!obs.objects"
+    *ngIf="obs.hasData || obs.loading"
+    [loading]="obs.loading"
     [items]="obs.objects"
     [columns]="obs.columns"
     [showEditButtons]="true"
+    editButtonTranslationKey="dossier.zaakobjecten.objectType.viewObject"
     [amountOfLoadingRows]="2"
     [itemsTranslationKey]="'pluginManagement.tableItemsText'"
     [showPagination]="false"
-    editButtonTranslationKey="dossier.zaakobjecten.objectType.viewObject"
-    (editButtonClicked)="rowClicked($event, obs.objecttypeSelectItems)"
+    (editButtonClicked)="rowClicked($event)"
   ></v-table>
+
+  <v-paragraph *ngIf="!obs.hasData && !obs.loading" [center]="true">{{
+    'dossier.zaakobjecten.noObjectType' | translate
+  }}</v-paragraph>
 </ng-container>
 
-<v-modal #viewZaakobjectModal (closeEvent)="hide()" [hideFooter]="true" [maxWidthPx]="750">
+<v-modal #viewObjectModal (closeEvent)="hide()" [hideFooter]="true" [maxWidthPx]="750">
   <div role="header">
     <v-title [margin]="false" type="h2" [fullWidth]="true" [center]="true">{{
       objectName$ | async

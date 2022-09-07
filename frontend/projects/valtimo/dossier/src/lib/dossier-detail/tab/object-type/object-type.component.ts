@@ -17,19 +17,19 @@
 import {Component, ViewChild} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ZaakobjectenService} from '../../../services/zaakobjecten.service';
-import {BehaviorSubject, combineLatest, map, Observable, of, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
 import {ZaakObject, ZaakObjectType} from '../../../models';
-import {ModalComponent, ModalService, SelectItem, TableColumn} from '@valtimo/user-interface';
+import {ModalComponent, ModalService, TableColumn} from '@valtimo/user-interface';
 import {take} from 'rxjs/operators';
 import {FormioForm} from '@formio/angular';
 
 @Component({
-  selector: 'valtimo-dossier-detail-tab-zaakobjecten',
-  templateUrl: './zaakobjecten.component.html',
-  styleUrls: ['./zaakobjecten.component.scss'],
+  selector: 'valtimo-object-type',
+  templateUrl: './object-type.component.html',
+  styleUrls: ['./object-type.component.scss'],
 })
-export class DossierDetailTabZaakobjectenComponent {
-  @ViewChild('viewZaakobjectModal') viewZaakobjectModal: ModalComponent;
+export class DossierDetailTabObjectTypeComponent {
+  @ViewChild('viewObjectModal') viewObjectModal: ModalComponent;
 
   private readonly documentId$ = this.route.params.pipe(map(params => params.documentId));
 
@@ -37,11 +37,36 @@ export class DossierDetailTabZaakobjectenComponent {
     switchMap(documentId => this.zaakobjectenService.getDocumentObjectTypes(documentId))
   );
 
-  readonly objecttypeSelectItems$: Observable<Array<SelectItem>> = this.objecttypes$.pipe(
-    map(objecttypes => objecttypes.map(type => ({id: type.url, text: type.name || '-'})))
+  readonly objectName$ = this.route.params.pipe(
+    map(() => {
+      const currentUrl = window.location.href;
+      const splitUrl = currentUrl.split('/');
+      const lastUrlPart = splitUrl[splitUrl.length - 1];
+
+      return lastUrlPart;
+    })
   );
 
-  readonly selectedObjecttypeUrl$ = new BehaviorSubject<string | null>(null);
+  readonly selectedObjecttypeUrl$: Observable<string> = combineLatest([
+    this.objecttypes$,
+    this.objectName$,
+  ]).pipe(
+    map(([objectTypes, objectName]) => {
+      const currentType = objectTypes?.find(
+        type => type?.name.toLowerCase() === objectName?.toLowerCase()
+      );
+
+      const currentTypeUrl = currentType?.url;
+
+      if (objectTypes && objectName && currentTypeUrl) return currentTypeUrl;
+
+      return '';
+    })
+  );
+
+  readonly loading$ = new BehaviorSubject<boolean>(true);
+
+  readonly hasData$ = new BehaviorSubject<boolean>(false);
 
   readonly objects$: Observable<Array<ZaakObject> | null> = combineLatest([
     this.documentId$,
@@ -49,10 +74,19 @@ export class DossierDetailTabZaakobjectenComponent {
   ]).pipe(
     switchMap(([documentId, selectedObjecttypeUrl]) =>
       documentId && selectedObjecttypeUrl
-        ? this.zaakobjectenService
-            .getDocumentObjectsOfType(documentId, selectedObjecttypeUrl)
-            .pipe(map(objects => objects.map(object => ({...object, title: object.title || '-'}))))
-        : of(null)
+        ? this.zaakobjectenService.getDocumentObjectsOfType(documentId, selectedObjecttypeUrl).pipe(
+            map(objects => objects.map(object => ({...object, title: object.title || '-'}))),
+            tap(() => {
+              this.loading$.next(false);
+              this.hasData$.next(true);
+            })
+          )
+        : of(null).pipe(
+            tap(() => {
+              this.loading$.next(false);
+              this.hasData$.next(false);
+            })
+          )
     )
   );
 
@@ -73,9 +107,9 @@ export class DossierDetailTabZaakobjectenComponent {
 
   readonly objectForm$ = new BehaviorSubject<FormioForm | null>(null);
 
-  readonly objectName$ = new BehaviorSubject<string>('');
-
   readonly noFormDefinitionComponent$ = new BehaviorSubject<boolean>(false);
+
+  hasData: boolean;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -83,25 +117,19 @@ export class DossierDetailTabZaakobjectenComponent {
     private readonly modalService: ModalService
   ) {}
 
-  selectObjectType(objectTypeUrl: string): void {
-    this.selectedObjecttypeUrl$.next(objectTypeUrl);
-  }
-
-  rowClicked(object: ZaakObject, objectTypeSelectItems: Array<SelectItem>): void {
+  rowClicked(object: ZaakObject): void {
     this.documentId$.pipe(take(1)).subscribe(documentId => {
       this.zaakobjectenService.getObjectTypeForm(documentId, object.url).subscribe(
         res => {
           const definition = res.formDefinition;
-
           definition.components = definition.components.map(component => ({
             ...component,
             disabled: true,
           }));
-
-          this.setModalData(objectTypeSelectItems, definition);
+          this.setModalData(definition);
         },
         () => {
-          this.setModalData(objectTypeSelectItems);
+          this.setModalData();
         }
       );
     });
@@ -109,25 +137,15 @@ export class DossierDetailTabZaakobjectenComponent {
 
   hide(): void {
     this.modalService.closeModal(() => {
-      this.objectName$.next('');
       this.objectForm$.next(null);
     });
   }
 
   private show(): void {
-    this.modalService.openModal(this.viewZaakobjectModal);
+    this.modalService.openModal(this.viewObjectModal);
   }
 
-  private getObjectTypeName(objectTypeSelectItems: Array<SelectItem>): string {
-    const selectedObjectTypeUrl = this.selectedObjecttypeUrl$.getValue();
-    const currentTypeSelectItem = objectTypeSelectItems.find(
-      selectItem => selectItem.id === selectedObjectTypeUrl
-    );
-
-    return currentTypeSelectItem.text;
-  }
-
-  private setModalData(objectTypeSelectItems: Array<SelectItem>, definition?: FormioForm): void {
+  private setModalData(definition?: FormioForm): void {
     if (definition) {
       this.objectForm$.next(definition);
       this.noFormDefinitionComponent$.next(false);
@@ -135,7 +153,6 @@ export class DossierDetailTabZaakobjectenComponent {
       this.noFormDefinitionComponent$.next(true);
     }
 
-    this.objectName$.next(this.getObjectTypeName(objectTypeSelectItems));
     this.show();
   }
 }

@@ -25,6 +25,8 @@ import {TitleType} from '../../models';
 export class TitleComponent implements OnInit {
   @Input() type: TitleType = 'h1';
   @Input() margin = true;
+  @Input() fullWidth = false;
+  @Input() center = false;
 
   isH1!: boolean;
   isH2!: boolean;

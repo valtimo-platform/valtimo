@@ -105,7 +105,9 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
   }
 
   translateTabName(tab: TabImpl): string {
-    return this._translateService.instant('dossier.tabs.' + tab.name);
+    const translationId = 'dossier.tabs.' + tab.name;
+    const translation = this._translateService.instant('dossier.tabs.' + tab.name);
+    return translationId !== translation ? translation : tab.name;
   }
 }
 

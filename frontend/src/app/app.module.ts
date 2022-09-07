@@ -86,10 +86,12 @@ import {PluginManagementModule} from '@valtimo/plugin-management';
 import {
   DocumentenApiPluginModule,
   documentenApiPluginSpecification,
-  ObjecttypenApiPluginModule,
-  objecttypenApiPluginSpecification,
+  ObjectenApiPluginModule,
+  objectenApiPluginSpecification,
   ObjectTokenAuthenticationPluginModule,
   objectTokenAuthenticationPluginSpecification,
+  ObjecttypenApiPluginModule,
+  objecttypenApiPluginSpecification,
   OpenZaakPluginModule,
   openZaakPluginSpecification,
   PLUGINS_TOKEN,
@@ -97,8 +99,6 @@ import {
   smartDocumentsPluginSpecification,
   ZakenApiPluginModule,
   zakenApiPluginSpecification,
-  ObjectenApiPluginModule,
-  objectenApiPluginSpecification,
 } from '@valtimo/plugin';
 
 export function tabsFactory() {

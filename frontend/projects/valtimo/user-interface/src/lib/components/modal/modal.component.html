@@ -76,7 +76,7 @@
 </ng-template>
 
 <ng-template #modalFooter>
-  <div class="v-modal__footer">
+  <div class="v-modal__footer" [ngClass]="{'v-modal__footer--hidden': hideFooter}">
     <ng-content select="div[role=footer]"></ng-content>
   </div>
 </ng-template>

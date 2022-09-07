@@ -14,10 +14,26 @@
   ~ limitations under the License.
   -->
 
-<h1 *ngIf="isH1" class="v-title--h1" [ngClass]="{'v-title--no-margin': !margin}">
+<h1
+  *ngIf="isH1"
+  class="v-title--h1"
+  [ngClass]="{
+    'v-title--no-margin': !margin,
+    'v-title--full-width': fullWidth,
+    'v-title--center': center
+  }"
+>
   <ng-container *ngTemplateOutlet="content"></ng-container>
 </h1>
-<h2 *ngIf="isH2" class="v-title--h2" [ngClass]="{'v-title--no-margin': !margin}">
+<h2
+  *ngIf="isH2"
+  class="v-title--h2"
+  [ngClass]="{
+    'v-title--no-margin': !margin,
+    'v-title--full-width': fullWidth,
+    'v-title--center': center
+  }"
+>
   <ng-container *ngTemplateOutlet="content"></ng-container>
 </h2>
 

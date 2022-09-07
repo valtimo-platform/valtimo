@@ -19,15 +19,15 @@
 // The list of file replacements can be found in `angular.json`.
 import {NgxLoggerLevel} from 'ngx-logger';
 import {
+  IncludeFunction,
   ROLE_ADMIN,
   ROLE_DEVELOPER,
   ROLE_USER,
   UploadProvider,
   ValtimoConfig,
-  IncludeFunction,
 } from '@valtimo/config';
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
-import {openZaakExtensionInitializer, emailExtensionInitializer} from '@valtimo/open-zaak';
+import {emailExtensionInitializer, openZaakExtensionInitializer} from '@valtimo/open-zaak';
 import {connectorLinkExtensionInitializer} from '@valtimo/connector-management';
 
 const defaultDefinitionColumns = [
@@ -205,6 +205,9 @@ export const environment: ValtimoConfig = {
     defaultMenuWidth: 230,
     maxMenuWidth: 330,
     minMenuWidth: 120,
+  },
+  caseObjectTypes: {
+    leningen: ['Boom', 'Straatverlichting'],
   },
   featureToggles: {
     disableFormFlow: false,
