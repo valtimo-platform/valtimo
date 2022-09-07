@@ -96,7 +96,7 @@
   <div role="footer">
     <div class="edit-function-buttons">
       <v-button
-        [disabled]="(inputDisabled$ | async) || true"
+        [disabled]="(inputDisabled$ | async)"
         (clickEvent)="unlink()"
         [mdiIcon]="'link-variant-minus'"
         type="danger"
