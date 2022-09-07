@@ -29,6 +29,7 @@
     [defaultValue]="obs.prefill?.configurationTitle"
     [widthPx]="350"
     [required]="true"
+    [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
   <v-input
