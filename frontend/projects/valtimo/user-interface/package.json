@@ -1,14 +1,14 @@
 {
   "name": "@valtimo/user-interface",
   "license": "EUPL-1.2",
-  "version": "5.7.0",
+  "version": "5.8.0",
   "peerDependencies": {
     "@angular/common": "^13.2.3",
     "@angular/core": "^13.2.3",
     "@angular/cdk": "^13.3.2"
   },
   "dependencies": {
-    "ngx-skeleton-loader": "^6.0.0",
+    "ngx-skeleton-loader": "^5.0.0",
     "@ng-select/ng-select": "^8.1.1",
     "@mdi/font": "^6.5.95",
     "tslib": "^2.0.0",
