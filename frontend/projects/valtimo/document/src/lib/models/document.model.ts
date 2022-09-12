@@ -120,6 +120,7 @@ export interface ProcessDocumentInstanceId {
 export interface ProcessDocumentInstance {
   id: ProcessDocumentInstanceId;
   processName: string;
+  isActive: Boolean;
 }
 
 export interface NewDocumentAndStartProcessResult {
