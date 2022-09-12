@@ -18,12 +18,20 @@
 // `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 import {NgxLoggerLevel} from 'ngx-logger';
-import {IncludeFunction, ROLE_ADMIN, ROLE_DEVELOPER, ROLE_USER, UploadProvider, ValtimoConfig,} from '@valtimo/config';
+import {
+  DefinitionColumn,
+  IncludeFunction,
+  ROLE_ADMIN,
+  ROLE_DEVELOPER,
+  ROLE_USER,
+  UploadProvider,
+  ValtimoConfig,
+} from '@valtimo/config';
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
 import {emailExtensionInitializer, openZaakExtensionInitializer} from '@valtimo/open-zaak';
 import {connectorLinkExtensionInitializer} from '@valtimo/connector-management';
 
-const defaultDefinitionColumns = [
+const defaultDefinitionColumns: Array<DefinitionColumn> = [
   {
     propertyName: 'sequence',
     translationKey: 'referenceNumber',

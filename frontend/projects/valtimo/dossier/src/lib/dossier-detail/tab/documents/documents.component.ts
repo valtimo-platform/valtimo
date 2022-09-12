@@ -14,128 +14,24 @@
  * limitations under the License.
  */
 
-import {Component, OnInit} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {DocumentService, RelatedFile} from '@valtimo/document';
-import {ResourceDto} from '@valtimo/resource';
-import {ToastrService} from 'ngx-toastr';
-import {DownloadService, UploadProviderService} from '@valtimo/resource';
-import {map, switchMap} from 'rxjs/operators';
-import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
-import {TranslateService} from '@ngx-translate/core';
-import {ConfigService} from '@valtimo/config';
+import {Component} from '@angular/core';
+import {ConfigService, UploadProvider} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-dossier-detail-tab-documents',
   templateUrl: './documents.component.html',
   styleUrls: ['./documents.component.css'],
 })
-export class DossierDetailTabDocumentsComponent implements OnInit {
-  public readonly documentId: string;
-  public readonly documentDefinitionName: string;
-  public readonly maxFileSize: number = this.configService?.config?.caseFileSizeUploadLimitMB || 5;
-  private readonly refetch$ = new BehaviorSubject<null>(null);
-  public relatedFiles$: Observable<Array<RelatedFile>> = this.refetch$.pipe(
-    switchMap(() =>
-      combineLatest([
-        this.documentService.getDocument(this.documentId),
-        this.translateService.stream('key'),
-      ])
-    ),
-    map(([document]) => {
-      const relatedFiles = document?.relatedFiles || [];
-      const translatedFiles = relatedFiles.map(file => ({
-        ...file,
-        createdBy: file.createdBy || this.translateService.instant('list.automaticallyGenerated'),
-      }));
+export class DossierDetailTabDocumentsComponent {
+  openZaakUploadProvider!: boolean;
+  s3UploadProvider!: boolean;
 
-      return translatedFiles || [];
-    })
-  );
-
-  public fields = [
-    {key: 'fileName', label: 'File name'},
-    {key: 'sizeInBytes', label: 'Size in bytes'},
-    {key: 'createdOn', label: 'Created on', viewType: 'date'},
-    {key: 'createdBy', label: 'Created by'},
-  ];
-  public actions = [
-    {
-      columnName: '',
-      iconClass: 'mdi mdi-open-in-new',
-      callback: this.downloadDocument.bind(this),
-    },
-    {
-      columnName: '',
-      iconClass: 'mdi mdi-delete',
-      callback: this.removeRelatedFile.bind(this),
-    },
-  ];
-
-  readonly uploading$ = new BehaviorSubject<boolean>(false);
-
-  constructor(
-    private readonly route: ActivatedRoute,
-    private readonly documentService: DocumentService,
-    private readonly toastrService: ToastrService,
-    private readonly uploadProviderService: UploadProviderService,
-    private readonly downloadService: DownloadService,
-    private readonly translateService: TranslateService,
-    private readonly configService: ConfigService
-  ) {
-    const snapshot = this.route.snapshot.paramMap;
-    this.documentId = snapshot.get('documentId') || '';
-    this.documentDefinitionName = snapshot.get('documentDefinitionName') || '';
+  constructor(private readonly configService: ConfigService) {
+    this.setUploaderProvider(configService.config.uploadProvider);
   }
 
-  ngOnInit(): void {
-    this.refetchDocuments();
-  }
-
-  fileSelected(file: File): void {
-    this.uploading$.next(true);
-
-    this.uploadProviderService
-      .uploadFile(file, this.documentDefinitionName)
-      .pipe(
-        switchMap(resourceFile =>
-          this.documentService.assignResource(this.documentId, resourceFile.data.resourceId)
-        )
-      )
-      .subscribe(
-        () => {
-          this.toastrService.success('Successfully uploaded document to dossier');
-          this.refetchDocuments();
-          this.uploading$.next(false);
-        },
-        () => {
-          this.toastrService.error('Failed to upload document to dossier');
-          this.uploading$.next(false);
-        }
-      );
-  }
-
-  downloadDocument(relatedFile: RelatedFile): void {
-    this.uploadProviderService
-      .getResource(relatedFile.fileId)
-      .subscribe((resource: ResourceDto) => {
-        this.downloadService.downloadFile(resource.url, resource.resource.name);
-      });
-  }
-
-  removeRelatedFile(relatedFile: RelatedFile): void {
-    this.documentService.removeResource(this.documentId, relatedFile.fileId).subscribe(
-      () => {
-        this.toastrService.success('Successfully removed document from dossier');
-        this.refetchDocuments();
-      },
-      () => {
-        this.toastrService.error('Failed to remove document from dossier');
-      }
-    );
-  }
-
-  private refetchDocuments(): void {
-    this.refetch$.next(null);
+  private setUploaderProvider(uploadProvider: UploadProvider): void {
+    this.openZaakUploadProvider = uploadProvider === UploadProvider.OPEN_ZAAK;
+    this.s3UploadProvider = uploadProvider === UploadProvider.S3;
   }
 }
