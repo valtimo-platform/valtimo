@@ -40,6 +40,24 @@ const documentenApiPluginSpecification: PluginSpecification = {
       bronorganisatie: 'Bronorganisatie RSIN',
       bronorganisatieTooltip:
         'Vul hier het RSIN van de organisatie in die verantwoordelijk is voor de documenten',
+      fileName: 'Bestandsnaam',
+      fileNameTooltip:
+        'De naam van het fysieke bestand waarin de inhoud van het document is vastgelegd, inclusief extensie',
+      confidentialityLevel: 'Vertrouwelijkheidsaanduiding',
+      confidentialityLevelTooltip:
+        'Aanduiding van de mate waarin het document voor de openbaarheid bestemd is',
+      inputTitle: 'Titel',
+      inputTitleTooltip: 'De naam waaronder het document formeel bekend is',
+      inputDescription: 'Beschrijving',
+      inputDescriptionTooltip: 'Een generieke beschrijving van de inhoud van het document',
+      openbaar: 'Openbaar',
+      beperkt_openbaar: 'Beperkt openbaar',
+      intern: 'Intern',
+      zaakvertrouwelijk: 'Zaakvertrouwelijk',
+      vertrouwelijk: 'Vertrouwelijk',
+      confidentieel: 'Confidentieel',
+      geheim: 'Geheim',
+      zeer_geheim: 'Zeer geheim',
       localDocumentLocation: 'Naam procesvariabele met document',
       localDocumentLocationTooltip:
         'Hier moet de procesvariabele ingevuld worden die wijst naar de locatie waar het document lokaal staat opgeslagen',
@@ -73,6 +91,24 @@ const documentenApiPluginSpecification: PluginSpecification = {
       bronorganisatie: 'Organisation RSIN',
       bronorganisatieTooltip:
         'Enter here the RSIN of the organization responsible for the documents. The RSIN is a dutch identification number for legal entities and partnerships ',
+      fileName: 'File name',
+      fileNameTooltip:
+        'The name of the physical file in which the content of the document is captured, including extension',
+      confidentialityLevel: 'Confidentiality level',
+      confidentialityLevelTooltip:
+        'Indication of the extent to which the document is intended for public access',
+      inputTitle: 'Title',
+      inputTitleTooltip: 'The name by which the document is formally known',
+      inputDescription: 'Description',
+      inputDescriptionTooltip: 'A generic description of the content of the document',
+      openbaar: 'Public',
+      beperkt_openbaar: 'Restricted public',
+      intern: 'Internal',
+      zaakvertrouwelijk: 'Case confidential',
+      vertrouwelijk: 'Private',
+      confidentieel: 'Confidential',
+      geheim: 'Secret',
+      zeer_geheim: 'Very secret',
       localDocumentLocation: 'Name of process variable with document',
       localDocumentLocationTooltip:
         'Enter the process variable that points to the location where the document is stored locally',
@@ -106,6 +142,24 @@ const documentenApiPluginSpecification: PluginSpecification = {
       bronorganisatie: 'Organisation RSIN',
       bronorganisatieTooltip:
         'Geben Sie hier den RAIN der für die Dokumente verantwortlichen Organisation ein. Der RAIN ist eine niederländische Identifikationsnummer für juristische Personen und Personengesellschaften',
+      fileName: 'Dateiname',
+      fileNameTooltip:
+        'Der Name der physischen Datei, in der der Inhalt des Dokuments erfasst wird, einschließlich Erweiterung',
+      confidentialityLevel: 'Vertraulichkeitshinweis',
+      confidentialityLevelTooltip:
+        'Angabe, inwieweit das Dokument für die Öffentlichkeit bestimmt ist',
+      inputTitle: 'Titel',
+      inputTitleTooltip: 'Der Name, unter dem das Dokument offiziell bekannt ist',
+      inputDescription: 'Beschreibung',
+      inputDescriptionTooltip: 'Eine allgemeine Beschreibung des Inhalts des Dokuments',
+      openbaar: 'Öffentlichkeit',
+      beperkt_openbaar: 'Eingeschränkt_öffentlich',
+      intern: 'Intern',
+      zaakvertrouwelijk: 'Geschäftlich vertraulich',
+      vertrouwelijk: 'Vertraulich',
+      confidentieel: 'Geheim',
+      geheim: 'Geheimnis',
+      zeer_geheim: 'Sehr geheim',
       localDocumentLocation: 'Name Prozessvariable mit Dokument',
       localDocumentLocationTooltip:
         'Geben Sie die Prozessvariable ein, die auf den Ort zeigt, an dem das Dokument lokal gespeichert ist',

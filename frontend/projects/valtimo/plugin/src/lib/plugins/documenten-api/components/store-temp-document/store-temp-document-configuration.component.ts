@@ -25,6 +25,7 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {StoreTempDocumentConfig, DocumentLanguage, DocumentStatus} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {PluginTranslationService} from '../../../../services';
+import {ConfidentialityLevel} from '../../../documenten-api/models';
 
 @Component({
   selector: 'valtimo-store-temp-document-configuration',
@@ -41,6 +42,26 @@ export class StoreTempDocumentConfigurationComponent
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<StoreTempDocumentConfig> =
     new EventEmitter<StoreTempDocumentConfig>();
+
+  readonly CONFIDENTIALITY_LEVEL_ITEMS: Array<ConfidentialityLevel> = [
+    'openbaar',
+    'beperkt_openbaar',
+    'intern',
+    'zaakvertrouwelijk',
+    'vertrouwelijk',
+    'confidentieel',
+    'geheim',
+    'zeer_geheim',
+  ];
+  readonly confidentialityLevelItems$: Observable<Array<{id: string; text: string}>> =
+    this.translateService.stream('key').pipe(
+      map(() =>
+        this.CONFIDENTIALITY_LEVEL_ITEMS.map(confidentialityLevel => ({
+          id: confidentialityLevel,
+          text: this.pluginTranslationService.instant(confidentialityLevel, this.pluginId),
+        }))
+      )
+    );
 
   readonly LANGUAGE_ITEMS: Array<DocumentLanguage> = ['nld'];
   readonly languageSelectItems$: Observable<Array<{id: DocumentLanguage; text: string}>> =
@@ -92,6 +113,9 @@ export class StoreTempDocumentConfigurationComponent
 
   private handleValid(formValue: StoreTempDocumentConfig): void {
     const valid = !!(
+      formValue.confidentialityLevel &&
+      formValue.title &&
+      formValue.description &&
       formValue.localDocumentLocation &&
       formValue.taal &&
       formValue.status &&

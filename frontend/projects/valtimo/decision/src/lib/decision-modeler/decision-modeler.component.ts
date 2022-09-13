@@ -21,7 +21,19 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Decision, DecisionXml} from '../models';
 import {migrateDiagram} from '@bpmn-io/dmn-migrate';
 import {LayoutService} from '@valtimo/layout';
-import {BehaviorSubject, catchError, combineLatest, filter, from, map, Observable, of, switchMap, take, tap,} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  filter,
+  from,
+  map,
+  Observable,
+  of,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {SelectedValue, SelectItem} from '@valtimo/user-interface';
 import {AlertService} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
