@@ -347,7 +347,11 @@
   "processManagement": {
     "download": "Download",
     "clear": "Clear",
-    "deploy": "Deploy"
+    "deploy": "Deploy",
+    "readOnly": "Read-only",
+    "systemProcess": "System process",
+    "systemProcessWarningMessage": "This is a system process. Pay close attention when making adjustments to this process",
+    "readOnlySystemProcessWarningMessage": "This is a system process, so it is marked as read-only. This process can be used but not modified."
   },
   "processCaseConnection": {
     "processCreatesCase": "Process creates new case",

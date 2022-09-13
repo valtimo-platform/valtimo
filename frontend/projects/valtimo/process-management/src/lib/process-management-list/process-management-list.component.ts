@@ -15,7 +15,7 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {ProcessService, ProcessDefinition} from '@valtimo/process';
+import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {Router} from '@angular/router';
 
 @Component({
@@ -28,6 +28,7 @@ export class ProcessManagementListComponent implements OnInit {
   public fields = [
     {key: 'key', label: 'Key'},
     {key: 'name', label: 'Name'},
+    {key: 'readOnly', label: 'Read-only'},
   ];
 
   constructor(private processService: ProcessService, private router: Router) {}

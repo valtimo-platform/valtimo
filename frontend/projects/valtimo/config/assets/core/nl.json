@@ -347,7 +347,11 @@
   "processManagement": {
     "download": "Downloaden",
     "clear": "Wissen",
-    "deploy": "Deploy"
+    "deploy": "Deploy",
+    "readOnly": "Alleen-lezen",
+    "systemProcess": "Systeemproces",
+    "systemProcessWarningMessage": "Dit is een systeemproces. Let goed op bij het maken van aanpassingen aan dit proces",
+    "readOnlySystemProcessWarningMessage": "Dit is een systeemproces, daarmee is het gemarkeerd als alleen-lezen. Dit proces is wel te gebruiken maar niet aan te passen."
   },
   "processCaseConnection": {
     "processCreatesCase": "Proces maakt nieuw dossier aan",

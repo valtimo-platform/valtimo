@@ -347,7 +347,11 @@
   "processManagement": {
     "download": "Herunterladen",
     "clear": "Löschen",
-    "deploy": "Deploy"
+    "deploy": "Deploy",
+    "readOnly": "Schreibgeschützt",
+    "systemProcess": "Systemprozess",
+    "systemProcessWarningMessage": "Dies ist ein Systemprozess. Achten Sie genau darauf, wenn Sie Anpassungen an diesem Prozess vornehmen",
+    "readOnlySystemProcessWarningMessage": "Dies ist ein Systemprozess, daher ist er als schreibgeschützt gekennzeichnet. Dieser Prozess kann verwendet, aber nicht geändert werden."
   },
   "processCaseConnection": {
     "processCreatesCase": "Prozess erstellt neuen Case",

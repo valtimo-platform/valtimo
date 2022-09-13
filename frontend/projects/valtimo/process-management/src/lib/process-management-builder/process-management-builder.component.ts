@@ -16,12 +16,13 @@
 
 import {Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {ProcessService, ProcessDefinition} from '@valtimo/process';
+import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {AlertService} from '@valtimo/components';
 import {ActivatedRoute, Router} from '@angular/router';
-import {forkJoin, Observable} from 'rxjs';
+import {BehaviorSubject, forkJoin, Observable} from 'rxjs';
 import {LayoutService} from '@valtimo/layout';
 import Modeler from 'bpmn-js/lib/Modeler';
+import BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
 import PropertiesPanelModule from 'bpmn-js-properties-panel';
 import PropertiesProviderModule from 'bpmn-js-properties-panel/lib/provider/camunda';
 import CamundaExtensionModule from 'camunda-bpmn-moddle/lib';
@@ -35,9 +36,12 @@ import CamundaModdleDescriptor from 'camunda-bpmn-moddle/resources/camunda.json'
 })
 export class ProcessManagementBuilderComponent implements OnInit, OnDestroy {
   public bpmnModeler;
+  public bpmnViewer;
   public processDefinitionVersions: ProcessDefinition[] | null = null;
   public selectedVersion: ProcessDefinition | null = null;
   public processKey: string | null = null;
+  public isReadOnlyProcess$ = new BehaviorSubject<boolean>(false);
+  public isSystemProcess$ = new BehaviorSubject<boolean>(false);
   private elementTemplateFiles: string[] = ['mailSendTask'];
 
   constructor(
@@ -72,6 +76,8 @@ export class ProcessManagementBuilderComponent implements OnInit, OnDestroy {
         },
         elementTemplates,
       });
+      this.bpmnViewer = new BpmnJS();
+      this.bpmnViewer.attachTo('#readOnlyCanvas');
       if (this.processKey) {
         this.loadProcessVersions(this.processKey);
         this.selectedVersion = null;
@@ -97,6 +103,7 @@ export class ProcessManagementBuilderComponent implements OnInit, OnDestroy {
 
   reset() {
     this.bpmnModeler.destroy();
+    this.bpmnViewer.destroy();
     this.init();
   }
 
@@ -121,6 +128,7 @@ export class ProcessManagementBuilderComponent implements OnInit, OnDestroy {
       })
       .subscribe((xml: any) => {
         this.bpmnModeler.importXML(xml);
+        this.bpmnViewer.importXML(xml);
       });
   }
 
@@ -164,12 +172,16 @@ export class ProcessManagementBuilderComponent implements OnInit, OnDestroy {
   }
 
   loadProcessBpmn() {
-    this.processService.getProcessDefinitionXml(this.selectedVersion.id).subscribe(xml => {
-      this.bpmnModeler.importXML(xml['bpmn20Xml']);
+    this.processService.getProcessDefinitionXml(this.selectedVersion.id).subscribe(result => {
+      this.bpmnModeler.importXML(result['bpmn20Xml']);
+      this.bpmnViewer.importXML(result['bpmn20Xml']);
+      this.isReadOnlyProcess$.next(result.readOnly);
+      this.isSystemProcess$.next(result.systemProcess);
     });
   }
 
   ngOnDestroy() {
     this.bpmnModeler.destroy();
+    this.bpmnViewer.destroy();
   }
 }

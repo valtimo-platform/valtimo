@@ -27,6 +27,7 @@
         <button
           class="btn btn-success btn-space"
           (click)="deploy()"
+          *ngIf="(isReadOnlyProcess$ | async) === false"
           [ngClass]="{'mr-0': selectedVersion !== null}"
         >
           <i class="icon mdi mdi-upload mr-1"></i>{{ 'processManagement.deploy' | translate }}
@@ -51,6 +52,18 @@
           <h2 class="process-title">
             {{ processDefinitionVersions[0].name }}
           </h2>
+          <span
+            class="badge badge-pill badge-info mr-1"
+            *ngIf="isReadOnlyProcess$ | async"
+          >
+            {{ 'processManagement.readOnly' | translate }}
+          </span>
+          <span
+            class="badge badge-pill badge-warning mr-1"
+            *ngIf="isSystemProcess$ | async"
+          >
+            {{ 'processManagement.systemProcess' | translate }}
+          </span>
         </div>
         <div class="col-md-1 offset-md-6">
           <label for="processVersion"><strong>Version</strong></label>
@@ -89,7 +102,7 @@
         </div>
         <div
           *ngIf="selectedVersion"
-          class="col-md-1 text-right fullscreen-toggle"
+          class="col-md-1 fullscreen-toggle text-right"
           [ngClass]="{'offset-md-2': !layoutService.isFullscreen}"
         >
           <i
@@ -102,9 +115,22 @@
           ></i>
         </div>
       </div>
+      <div *ngIf="(isSystemProcess$ | async) && (isReadOnlyProcess$ | async)"
+        class="row bg-warning text-black mb-0 p-3 text-center"
+        [translate]="'processManagement.readOnlySystemProcessWarningMessage'"
+      ></div>
+      <div *ngIf="(isSystemProcess$ | async) && (isReadOnlyProcess$ | async) === false"
+        class="row bg-warning text-black mb-0 p-3 text-center"
+        [translate]="'processManagement.systemProcessWarningMessage'"
+      ></div>
       <div [hidden]="!selectedVersion && processKey" class="row bg-white diagram mb-3">
-        <div id="canvas" class="col-9"></div>
-        <div id="properties" class="col-3 pr-0"></div>
+        <div id="canvas" class="col-9" [hidden]="isReadOnlyProcess$ | async"></div>
+        <div id="properties" class="col-3 pr-0" [hidden]="isReadOnlyProcess$ | async"></div>
+        <div
+          id="readOnlyCanvas"
+          class="col-12"
+          [hidden]="(isReadOnlyProcess$ | async) === false"
+        ></div>
       </div>
     </div>
   </div>
