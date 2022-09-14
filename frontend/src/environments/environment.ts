@@ -215,6 +215,7 @@ export const environment: ValtimoConfig = {
     enableHackathonCasesPage: true,
     showUserNameInTopBar: true,
     experimentalDmnEditing: true,
+    enableDocumentenApiDocumentTab: true,
   },
 };
 

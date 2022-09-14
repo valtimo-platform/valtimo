@@ -20,7 +20,7 @@ import {DocumentService, RelatedFile} from '@valtimo/document';
 import {DownloadService, ResourceDto, UploadProviderService} from '@valtimo/resource';
 import {ToastrService} from 'ngx-toastr';
 import {map, switchMap} from 'rxjs/operators';
-import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 import {ConfigService} from '@valtimo/config';
 
@@ -53,6 +53,10 @@ export class DossierDetailTabOpenzaakDocumentsComponent implements OnInit {
     },
   ];
   readonly uploading$ = new BehaviorSubject<boolean>(false);
+  readonly showModal$ = new Subject<null>();
+  readonly hideModal$ = new Subject<null>();
+  readonly modalDisabled$ = new BehaviorSubject<boolean>(false);
+  readonly fileToBeUploaded$ = new BehaviorSubject<File | null>(null);
   private readonly refetch$ = new BehaviorSubject<null>(null);
   public relatedFiles$: Observable<Array<RelatedFile>> = this.refetch$.pipe(
     switchMap(() =>
@@ -91,6 +95,9 @@ export class DossierDetailTabOpenzaakDocumentsComponent implements OnInit {
   }
 
   fileSelected(file: File): void {
+    this.fileToBeUploaded$.next(file);
+    this.showModal$.next(null);
+    return;
     this.uploading$.next(true);
 
     this.uploadProviderService

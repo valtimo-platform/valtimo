@@ -50,17 +50,13 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() hideFilePreview: boolean;
   @Input() uploading: boolean;
   @Input() camera = false;
+  @Input() maxFiles!: number;
 
   @Output() fileSelected: EventEmitter<File> = new EventEmitter();
-
-  private clearSubscription: Subscription;
-
-  private dropzone: Dropzone;
-
   readonly file$ = new BehaviorSubject<File>(undefined);
-
   readonly showingCamera$ = new BehaviorSubject<boolean>(false);
-
+  private clearSubscription: Subscription;
+  private dropzone: Dropzone;
   private readonly error$ = new BehaviorSubject<string>('');
 
   private readonly errorMessagesStrings: {[key: string]: string} = {
@@ -129,6 +125,7 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
       createImageThumbnails: false,
       acceptedFiles: this.acceptedFiles,
       previewTemplate: `<p style='display:none'></p>`,
+      ...(this.maxFiles && {maxFiles: this.maxFiles}),
       accept: file => {
         this.dropzone.removeAllFiles();
         this.setFile(file);

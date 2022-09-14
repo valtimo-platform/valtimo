@@ -15,7 +15,7 @@
  */
 
 import {Component} from '@angular/core';
-import {ConfigService, UploadProvider} from '@valtimo/config';
+import {ConfigService, UploadProvider, ValtimoConfig} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-dossier-detail-tab-documents',
@@ -25,13 +25,15 @@ import {ConfigService, UploadProvider} from '@valtimo/config';
 export class DossierDetailTabDocumentsComponent {
   openZaakUploadProvider!: boolean;
   s3UploadProvider!: boolean;
+  enableDocumentenApiDocumentTab!: boolean;
 
   constructor(private readonly configService: ConfigService) {
-    this.setUploaderProvider(configService.config.uploadProvider);
+    this.setConfig(configService.config);
   }
 
-  private setUploaderProvider(uploadProvider: UploadProvider): void {
-    this.openZaakUploadProvider = uploadProvider === UploadProvider.OPEN_ZAAK;
-    this.s3UploadProvider = uploadProvider === UploadProvider.S3;
+  private setConfig(config: ValtimoConfig): void {
+    this.enableDocumentenApiDocumentTab = config.featureToggles.enableDocumentenApiDocumentTab;
+    this.openZaakUploadProvider = config.uploadProvider === UploadProvider.OPEN_ZAAK;
+    this.s3UploadProvider = config.uploadProvider === UploadProvider.S3;
   }
 }

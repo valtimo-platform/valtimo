@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-export * from './alert.model';
-export * from './form-io.model';
-export * from './pagination.model';
-export * from './searchable-dropdown.model';
-export * from './timeline.model';
-export * from './version.model';
-export * from './list.model';
-export * from './documenten-api-metadata.model';
+.buttons {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-between;
+}

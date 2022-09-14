@@ -25,6 +25,7 @@ import {
   BpmnJsDiagramModule,
   CamundaFormModule,
   DataListModule,
+  DocumentenApiMetadataModalModule,
   DropzoneModule,
   FilterSidebarModule,
   FormIoModule,
@@ -123,6 +124,7 @@ export type TabsFactory = () => Map<string, object>;
     VModalModule,
     TitleModule,
     ButtonModule,
+    DocumentenApiMetadataModalModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

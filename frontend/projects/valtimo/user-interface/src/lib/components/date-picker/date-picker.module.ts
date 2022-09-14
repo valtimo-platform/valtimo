@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-export * from './alert.model';
-export * from './form-io.model';
-export * from './pagination.model';
-export * from './searchable-dropdown.model';
-export * from './timeline.model';
-export * from './version.model';
-export * from './list.model';
-export * from './documenten-api-metadata.model';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {DatePickerComponent} from './date-picker.component';
+import {FormsModule} from '@angular/forms';
+import {InputLabelModule} from '../input-label/input-label.module';
+import {TranslateModule} from '@ngx-translate/core';
+
+@NgModule({
+  declarations: [DatePickerComponent],
+  imports: [CommonModule, InputLabelModule, FormsModule, TranslateModule],
+  exports: [DatePickerComponent],
+})
+export class DatePickerModule {}

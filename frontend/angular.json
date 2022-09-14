@@ -61,7 +61,8 @@
               "dist/valtimo/components/assets/css/ng-multiselect-dropdown.theme.scss",
               "dist/valtimo/layout/assets/css/app.css",
               "src/styles.scss",
-              "dist/valtimo/user-interface/assets/design-tokens.css"
+              "dist/valtimo/user-interface/assets/design-tokens.css",
+              "node_modules/flatpickr/dist/flatpickr.css"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",

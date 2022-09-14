@@ -14,11 +14,28 @@
  * limitations under the License.
  */
 
-export * from './alert.model';
-export * from './form-io.model';
-export * from './pagination.model';
-export * from './searchable-dropdown.model';
-export * from './timeline.model';
-export * from './version.model';
-export * from './list.model';
-export * from './documenten-api-metadata.model';
+type ConfidentialityLevel =
+  | 'openbaar'
+  | 'beperkt_openbaar'
+  | 'intern'
+  | 'zaakvertrouwelijk'
+  | 'vertrouwelijk'
+  | 'confidentieel'
+  | 'geheim'
+  | 'zeer_geheim';
+
+type DocumentStatus = 'in_bewerking' | 'ter_vaststelling' | 'definitief' | 'gearchiveerd';
+
+interface DocumentenApiMetadata {
+  title: string;
+  description: string;
+  filename: string;
+  confidentialityLevel: ConfidentialityLevel;
+  author: string;
+  status: DocumentStatus;
+  creationDate: string;
+  receiptDate: string;
+  sendDate: string;
+}
+
+export {DocumentenApiMetadata, ConfidentialityLevel, DocumentStatus};

@@ -125,3 +125,6 @@ export * from './lib/components/searchable-dropdown-select/searchable-dropdown-s
 
 export * from './lib/components/multiselect-dropdown/multiselect-dropdown.module';
 export * from './lib/components/multiselect-dropdown/multiselect-dropdown.component';
+
+export * from './lib/components/documenten-api-metadata-modal/documenten-api-metadata-modal.module';
+export * from './lib/components/documenten-api-metadata-modal/documenten-api-metadata-modal.component';

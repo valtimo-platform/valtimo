@@ -1,0 +1,139 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<v-modal
+  #documentenApiMetadataModal
+  (closeEvent)="hide()"
+  *ngIf="{file: file$ | async, disabled: disabled$ | async, valid: valid$ | async} as obs"
+>
+  <div role="header">
+    <div class="edit-configuration-title">
+      <v-title [center]="true" [fullWidth]="true" [margin]="false" type="h2">{{
+        'document.fillInMetadata' | translate
+      }}</v-title>
+    </div>
+  </div>
+  <div role="content">
+    <ng-container *ngTemplateOutlet="metadataForm; context: {obs: obs}"></ng-container>
+  </div>
+  <div role="footer">
+    <div class="buttons">
+      <v-button (clickEvent)="cancel()" [disabled]="obs.disabled" type="secondary">{{
+        'document.cancel' | translate
+      }}</v-button>
+      <v-button
+        (clickEvent)="save()"
+        [disabled]="obs.disabled || !obs.valid"
+        mdiIcon="upload"
+        type="success"
+        >{{ 'document.upload' | translate }}</v-button
+      >
+    </div>
+  </div>
+</v-modal>
+
+<ng-template #metadataForm let-obs="obs">
+  <ng-container *ngIf="showForm$ | async">
+    <v-form (valueChange)="formValueChange($event)">
+      <v-input
+        [defaultValue]="obs.file?.name"
+        [disabled]="obs.disabled"
+        [fullWidth]="true"
+        [margin]="true"
+        [required]="true"
+        [title]="'document.filename' | translate"
+        [tooltip]="'document.filenameTooltip' | translate"
+        name="filename"
+      >
+      </v-input>
+      <v-input
+        [disabled]="obs.disabled"
+        [margin]="true"
+        [required]="true"
+        [title]="'document.inputTitle' | translate"
+        [tooltip]="'document.inputTitleTooltip' | translate"
+        [widthPx]="400"
+        name="title"
+      >
+      </v-input>
+      <v-input
+        [disabled]="obs.disabled"
+        [margin]="true"
+        [required]="true"
+        [title]="'document.author' | translate"
+        [tooltip]="'document.authorTooltip' | translate"
+        [widthPx]="300"
+        name="author"
+      >
+      </v-input>
+      <v-date-picker
+        [defaultDateIsToday]="true"
+        [disabled]="obs.disabled"
+        [margin]="true"
+        [required]="true"
+        [title]="'document.creationDate' | translate"
+        [tooltip]="'document.creationDateTooltip' | translate"
+        [widthPx]="100"
+        name="creationDate"
+      ></v-date-picker>
+      <v-date-picker
+        [defaultDateIsToday]="true"
+        [disabled]="obs.disabled"
+        [margin]="true"
+        [title]="'document.receiptDate' | translate"
+        [tooltip]="'document.receiptDateTooltip' | translate"
+        [widthPx]="100"
+        name="receiptDate"
+      ></v-date-picker>
+      <v-date-picker
+        [defaultDateIsToday]="true"
+        [disabled]="obs.disabled"
+        [margin]="true"
+        [title]="'document.sendDate' | translate"
+        [tooltip]="'document.sendDateTooltip' | translate"
+        [widthPx]="100"
+        name="sendDate"
+      ></v-date-picker>
+      <v-input
+        [disabled]="obs.disabled"
+        [fullWidth]="true"
+        [margin]="true"
+        [title]="'document.inputDescription' | translate"
+        [tooltip]="'document.inputDescriptionTooltip' | translate"
+        name="description"
+      >
+      </v-input>
+      <v-select
+        [disabled]="obs.disabled"
+        [items]="confidentialityLevelItems$ | async"
+        [margin]="true"
+        [title]="'document.confidentialityLevel' | translate"
+        [tooltip]="'document.confidentialityLevelTooltip' | translate"
+        [widthInPx]="200"
+        name="confidentialityLevel"
+      ></v-select>
+      <v-select
+        [disabled]="obs.disabled"
+        [items]="statusItems$ | async"
+        [margin]="true"
+        [title]="'document.status' | translate"
+        [tooltip]="'document.statusTooltip' | translate"
+        [widthInPx]="200"
+        name="status"
+      ></v-select>
+    </v-form>
+  </ng-container>
+</ng-template>

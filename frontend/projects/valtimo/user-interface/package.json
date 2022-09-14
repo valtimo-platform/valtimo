@@ -12,6 +12,7 @@
     "@ng-select/ng-select": "^8.1.1",
     "@mdi/font": "^6.5.95",
     "tslib": "^2.0.0",
-    "uuid": "^3.4.0"
+    "uuid": "^3.4.0",
+    "flatpickr": "^4.6.13"
   }
 }

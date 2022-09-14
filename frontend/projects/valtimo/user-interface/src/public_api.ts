@@ -81,3 +81,6 @@ export * from './lib/components/prompt/prompt.module';
 export * from './lib/components/prompt/prompt.component';
 // Modal service
 export * from './lib/services/prompt.service';
+// Date picker
+export * from './lib/components/date-picker/date-picker.module';
+export * from './lib/components/date-picker/date-picker.component';

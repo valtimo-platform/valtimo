@@ -29,6 +29,7 @@ import {tap} from 'rxjs/operators';
 import {FormOutput} from '../../models';
 import {SelectComponent} from '../select/select.component';
 import {MultiInputComponent} from '../multi-input/multi-input.component';
+import {DatePickerComponent} from '../date-picker/date-picker.component';
 
 @Component({
   selector: 'v-form',
@@ -39,6 +40,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
   @ContentChildren(InputComponent) inputComponents!: QueryList<InputComponent>;
   @ContentChildren(SelectComponent) selectComponents!: QueryList<SelectComponent>;
   @ContentChildren(MultiInputComponent) multiInputComponents!: QueryList<MultiInputComponent>;
+  @ContentChildren(DatePickerComponent) datePickerComponents!: QueryList<DatePickerComponent>;
 
   @Output() valueChange: EventEmitter<FormOutput> = new EventEmitter();
 
@@ -63,6 +65,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
       ...this.inputComponents?.toArray(),
       ...this.selectComponents?.toArray(),
       ...this.multiInputComponents?.toArray(),
+      ...this.datePickerComponents?.toArray(),
     ];
 
     this.componentValuesSubscription = combineLatest(
@@ -70,6 +73,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
         const inputComponent = component as InputComponent;
         const selectComponent = component as SelectComponent;
         const multiInputComponent = component as MultiInputComponent;
+        const datePickerComponent = component as DatePickerComponent;
 
         if (inputComponent?.inputValue$) {
           return inputComponent.inputValue$.asObservable();
@@ -77,6 +81,8 @@ export class FormComponent implements AfterContentInit, OnDestroy {
           return selectComponent.selected$.asObservable();
         } else if (multiInputComponent?.mappedValues$) {
           return multiInputComponent.mappedValues$;
+        } else if (datePickerComponent?.dateValue$) {
+          return datePickerComponent.dateValue$;
         } else {
           return of(null);
         }
@@ -105,6 +111,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
       this.inputComponents.changes.pipe(startWith(null)),
       this.selectComponents.changes.pipe(startWith(null)),
       this.multiInputComponents.changes.pipe(startWith(null)),
+      this.datePickerComponents.changes.pipe(startWith(null)),
     ]).subscribe(() => {
       this.closeComponentValuesSubscription();
       this.openComponentValuesSubscription();
