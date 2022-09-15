@@ -26,6 +26,8 @@ type ConfidentialityLevel =
 
 type DocumentStatus = 'in_bewerking' | 'ter_vaststelling' | 'definitief' | 'gearchiveerd';
 
+type DocumentLanguage = 'nld' | 'eng' | 'deu';
+
 interface DocumentenApiMetadata {
   title: string;
   description: string;
@@ -36,6 +38,7 @@ interface DocumentenApiMetadata {
   creationDate: string;
   receiptDate: string;
   sendDate: string;
+  language: DocumentLanguage;
 }
 
-export {DocumentenApiMetadata, ConfidentialityLevel, DocumentStatus};
+export {DocumentenApiMetadata, ConfidentialityLevel, DocumentStatus, DocumentLanguage};

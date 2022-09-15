@@ -64,7 +64,7 @@ import {
   TitleModule,
 } from '@valtimo/user-interface';
 import {DossierDetailTabObjectTypeComponent} from './dossier-detail/tab/object-type/object-type.component';
-import {DossierDetailTabOpenzaakDocumentsComponent} from './dossier-detail/tab/openzaak-documents/openzaak-documents.component';
+import {DossierDetailTabDocumentenApiDocumentsComponent} from './dossier-detail/tab/documenten-api-documents/documenten-api-documents.component';
 import {DossierDetailTabS3DocumentsComponent} from './dossier-detail/tab/s3-documents/s3-documents.component';
 
 export type TabsFactory = () => Map<string, object>;
@@ -83,7 +83,7 @@ export type TabsFactory = () => Map<string, object>;
     DossierProcessStartModalComponent,
     DossierSupportingProcessStartModalComponent,
     DossierDetailTabObjectTypeComponent,
-    DossierDetailTabOpenzaakDocumentsComponent,
+    DossierDetailTabDocumentenApiDocumentsComponent,
     DossierDetailTabS3DocumentsComponent,
   ],
   imports: [

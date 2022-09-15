@@ -71,7 +71,7 @@
     "createdBy": "Created by",
     "createdOn": "Created on",
     "sequence": "Sequence",
-    "fillInMetadata": "Fill in metadata",
+    "fillInMetadata": "File information",
     "cancel": "Cancel",
     "upload": "Upload",
     "filename": "Filename",
@@ -103,7 +103,12 @@
     "receiptDate": "Receipt date",
     "receiptDateTooltip": "The date the document was received",
     "sendDate": "Send date",
-    "sendDateTooltip": "The date the document was sent"
+    "sendDateTooltip": "The date the document was sent",
+    "language": "Language",
+    "languageTooltip": "The language in which the document is written",
+    "nld": "Dutch",
+    "eng": "English",
+    "deu": "German"
   },
   "summary": {
     "userTasksDoneState": "All done!",

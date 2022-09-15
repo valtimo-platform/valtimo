@@ -25,15 +25,16 @@ import {TranslateService} from '@ngx-translate/core';
 import {ConfigService} from '@valtimo/config';
 
 @Component({
-  selector: 'valtimo-dossier-detail-tab-openzaak-documents',
-  templateUrl: './openzaak-documents.component.html',
-  styleUrls: ['./openzaak-documents.component.scss'],
+  selector: 'valtimo-dossier-detail-tab-documenten-api-documents',
+  templateUrl: './documenten-api-documents.component.html',
+  styleUrls: ['./documenten-api-documents.component.scss'],
 })
-export class DossierDetailTabOpenzaakDocumentsComponent implements OnInit {
+export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
   public readonly documentId: string;
   public readonly documentDefinitionName: string;
   public readonly maxFileSize: number = this.configService?.config?.caseFileSizeUploadLimitMB || 5;
-  public readonly acceptedFiles: string = this.configService?.config?.caseFileUploadAcceptedFiles || null;
+  public readonly acceptedFiles: string =
+    this.configService?.config?.caseFileUploadAcceptedFiles || null;
   public fields = [
     {key: 'fileName', label: 'File name'},
     {key: 'sizeInBytes', label: 'Size in bytes'},

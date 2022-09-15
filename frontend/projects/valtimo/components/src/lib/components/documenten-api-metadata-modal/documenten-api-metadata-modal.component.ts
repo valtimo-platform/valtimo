@@ -17,7 +17,12 @@
 import {Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ModalComponent, ModalService, SelectItem} from '@valtimo/user-interface';
 import {BehaviorSubject, map, Observable, Subscription} from 'rxjs';
-import {ConfidentialityLevel, DocumentenApiMetadata, DocumentStatus} from '../../models';
+import {
+  ConfidentialityLevel,
+  DocumentenApiMetadata,
+  DocumentLanguage,
+  DocumentStatus,
+} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 
 @Component({
@@ -67,6 +72,15 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
       }))
     )
   );
+  readonly LANGUAGES: Array<DocumentLanguage> = ['nld', 'eng', 'deu'];
+  readonly languageItems$: Observable<Array<SelectItem>> = this.translateService.stream('key').pipe(
+    map(() =>
+      this.LANGUAGES.map(language => ({
+        id: language,
+        text: this.translateService.instant(`document.${language}`),
+      }))
+    )
+  );
   readonly showForm$: Observable<boolean> = this.modalService.modalVisible$;
   readonly valid$ = new BehaviorSubject<boolean>(false);
   private showSubscription!: Subscription;
@@ -104,7 +118,16 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   }
 
   private setValid(data: DocumentenApiMetadata): void {
-    this.valid$.next(!!(data.filename && data.title && data.author && data.creationDate));
+    this.valid$.next(
+      !!(
+        data.filename &&
+        data.title &&
+        data.author &&
+        data.creationDate &&
+        data.status &&
+        data.language
+      )
+    );
   }
 
   private openShowSubscription(): void {

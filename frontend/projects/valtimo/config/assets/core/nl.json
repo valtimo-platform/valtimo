@@ -71,7 +71,7 @@
     "createdBy": "Aangemaakt door",
     "createdOn": "Aangemaakt op",
     "sequence": "Volgnummer",
-    "fillInMetadata": "Metadata invullen",
+    "fillInMetadata": "Informatie over dit bestand",
     "cancel": "Annuleren",
     "upload": "Uploaden",
     "filename": "Bestandsnaam",
@@ -103,7 +103,12 @@
     "receiptDate": "Ontvangstdatum",
     "receiptDateTooltip": "De datum waarop het document ontvangen is",
     "sendDate": "Verzenddatum",
-    "sendDateTooltip": "De datum waarop het document verzonden is"
+    "sendDateTooltip": "De datum waarop het document verzonden is",
+    "language": "Taal",
+    "languageTooltip": "De taal waarin het document is opgesteld",
+    "nld": "Nederlands",
+    "eng": "Engels",
+    "deu": "Duits"
   },
   "summary": {
     "userTasksDoneState": "Helemaal bij!",

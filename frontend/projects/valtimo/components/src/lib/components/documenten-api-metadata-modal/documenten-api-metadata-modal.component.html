@@ -79,6 +79,28 @@
         name="author"
       >
       </v-input>
+      <v-select
+        [disabled]="obs.disabled"
+        [items]="statusItems$ | async"
+        [margin]="true"
+        [required]="true"
+        [title]="'document.status' | translate"
+        [tooltip]="'document.statusTooltip' | translate"
+        [widthInPx]="200"
+        name="status"
+      ></v-select>
+      <v-select
+        *ngIf="languageItems$ | async as languageItems"
+        [defaultSelection]="languageItems[0]"
+        [disabled]="obs.disabled"
+        [items]="languageItems"
+        [margin]="true"
+        [required]="true"
+        [title]="'document.language' | translate"
+        [tooltip]="'document.languageTooltip' | translate"
+        [widthInPx]="200"
+        name="language"
+      ></v-select>
       <v-date-picker
         [defaultDateIsToday]="true"
         [disabled]="obs.disabled"
@@ -124,15 +146,6 @@
         [tooltip]="'document.confidentialityLevelTooltip' | translate"
         [widthInPx]="200"
         name="confidentialityLevel"
-      ></v-select>
-      <v-select
-        [disabled]="obs.disabled"
-        [items]="statusItems$ | async"
-        [margin]="true"
-        [title]="'document.status' | translate"
-        [tooltip]="'document.statusTooltip' | translate"
-        [widthInPx]="200"
-        name="status"
       ></v-select>
     </v-form>
   </ng-container>

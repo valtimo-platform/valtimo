@@ -71,7 +71,7 @@
     "createdBy": "Erstellt von",
     "createdOn": "Erstellt am",
     "sequence": "Abfolge",
-    "fillInMetadata": "Metadaten ausfüllen",
+    "fillInMetadata": "Informationen zu dieser Datei",
     "cancel": "Abbrechen",
     "upload": "Upload",
     "filename": "Dateiname",
@@ -103,7 +103,12 @@
     "receiptDate": "Eingangsdatum",
     "receiptDateTooltip": "Das Datum, an dem das Dokument eingegangen ist",
     "sendDate": "Versanddatum",
-    "sendDateTooltip": "Das Datum, an dem das Dokument gesendet wurde"
+    "sendDateTooltip": "Das Datum, an dem das Dokument gesendet wurde",
+    "language": "Sprache",
+    "languageTooltip": "Die Sprache, in der das Dokument geschrieben ist",
+    "nld": "Niederländisch",
+    "eng": "Englisch",
+    "deu": "Deutsch"
   },
   "summary": {
     "userTasksDoneState": "Alles erledigt!",
