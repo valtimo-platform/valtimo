@@ -84,6 +84,8 @@ import {ConnectorManagementModule} from '@valtimo/connector-management';
 import {CustomerModule} from '@valtimo/customer';
 import {PluginManagementModule} from '@valtimo/plugin-management';
 import {
+  CatalogiApiPluginModule,
+  catalogiApiPluginSpecification,
   DocumentenApiPluginModule,
   documentenApiPluginSpecification,
   ObjectenApiPluginModule,
@@ -179,6 +181,7 @@ export function tabsFactory() {
     ObjecttypenApiPluginModule,
     ZakenApiPluginModule,
     ObjectenApiPluginModule,
+    CatalogiApiPluginModule,
     HttpClientModule,
     TranslateModule.forRoot({
       loader: {
@@ -200,6 +203,7 @@ export function tabsFactory() {
         objecttypenApiPluginSpecification,
         zakenApiPluginSpecification,
         objectenApiPluginSpecification,
+        catalogiApiPluginSpecification,
       ],
     },
   ],

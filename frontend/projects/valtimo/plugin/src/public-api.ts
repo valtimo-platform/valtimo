@@ -56,3 +56,7 @@ export * from './lib/plugins/zaken-api/components/link-document-to-zaak/link-doc
 export * from './lib/plugins/objecten-api/objecten-api-plugin-module';
 export * from './lib/plugins/objecten-api/objecten-api-plugin.specification';
 export * from './lib/plugins/objecten-api/components/objecten-api-configuration/objecten-api-configuration.component';
+/* catalogi api plugin */
+export * from './lib/plugins/catalogi-api/catalogi-api-plugin-module';
+export * from './lib/plugins/catalogi-api/catalogi-api-plugin.specification';
+export * from './lib/plugins/catalogi-api/components/catalogi-api-configuration/catalogi-api-configuration.component';
