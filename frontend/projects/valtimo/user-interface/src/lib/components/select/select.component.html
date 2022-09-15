@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<div [ngClass]="{'ng-select--margin': margin}" [style.width.px]="widthInPx">
+<div [ngClass]="{'ng-select--margin': margin}">
   <v-input-label
     *ngIf="title || titleTranslationKey"
     [title]="title"
@@ -25,6 +25,7 @@
   >
   </v-input-label>
   <ng-select
+    [style.width.px]="widthInPx"
     [ngModel]="selected$ | async"
     (ngModelChange)="setSelectedValue($event)"
     [clearable]="clearable"
