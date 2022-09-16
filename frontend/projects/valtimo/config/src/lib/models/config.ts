@@ -87,6 +87,7 @@ export interface ValtimoConfig {
   uploadProvider: UploadProvider;
   caseFileSizeUploadLimitMB?: number;
   caseFileUploadAcceptedFiles?: string;
+  supportedDocumentFileTypesToViewInBrowser?: string[];
   defaultDefinitionTable: Array<DefinitionColumn>;
   customDefinitionTables: {
     [definitionNameId: string]: Array<DefinitionColumn>;

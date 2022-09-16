@@ -159,6 +159,7 @@ export const environment: ValtimoConfig = {
   },
   uploadProvider: UploadProvider.DOCUMENTEN_API,
   caseFileSizeUploadLimitMB: 100,
+  supportedDocumentFileTypesToViewInBrowser: ['pdf', 'jpg', 'png', 'svg'],
   defaultDefinitionTable: defaultDefinitionColumns,
   customDefinitionTables: {
     leningen: [

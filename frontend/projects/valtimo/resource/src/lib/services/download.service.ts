@@ -33,7 +33,7 @@ export class DownloadService {
       this.http.get(url, {responseType: 'blob'}).subscribe(content => {
         const downloadUrl = window.URL.createObjectURL(content);
         if (this.isFileTypeSupportedForNewWindow(name)) {
-          this.openBlobInNewTab(downloadUrl);
+          this.openBlobInNewTab(downloadUrl, name);
         } else {
           this.openDownloadLink(downloadUrl, name);
         }
@@ -48,14 +48,15 @@ export class DownloadService {
    * A window.open won't work for blobs because ad blocker extensions will immediately
    * close the tab again. The method used below will prevent this from happening.
    */
-  private openBlobInNewTab(url: string) {
+  private openBlobInNewTab(url: string, name: string) {
     const newWindow = window.open('/');
-    if (newWindow.document.readyState === 'complete') {
+
+    // newWindow will be null if the browser blocks the opening of a new tab.
+    if (newWindow != null) {
       newWindow.location = url;
     } else {
-      newWindow.onload = () => {
-        newWindow.location = url;
-      };
+      // In case the tab is blocked it will just download the file.
+      this.openDownloadLink(url, name)
     }
   }
 
@@ -69,7 +70,7 @@ export class DownloadService {
   }
 
   private isFileTypeSupportedForNewWindow(name: string): boolean {
-    const supportedFileTypes = ['pdf', 'jpg', 'png', 'svg'];
+    const supportedFileTypes = this.configService?.config?.supportedDocumentFileTypesToViewInBrowser || ['pdf', 'jpg', 'png', 'svg'];
 
     return supportedFileTypes.some(function (suffix) {
       return name.toUpperCase().endsWith(suffix.toUpperCase());
