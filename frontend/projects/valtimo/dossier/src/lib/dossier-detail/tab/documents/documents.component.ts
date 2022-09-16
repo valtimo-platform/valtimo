@@ -25,15 +25,16 @@ import {ConfigService, UploadProvider, ValtimoConfig} from '@valtimo/config';
 export class DossierDetailTabDocumentsComponent {
   openZaakUploadProvider!: boolean;
   s3UploadProvider!: boolean;
-  enableDocumentenApiDocumentTab!: boolean;
+  documentenApiUploadProvider!: boolean;
 
   constructor(private readonly configService: ConfigService) {
     this.setConfig(configService.config);
   }
 
   private setConfig(config: ValtimoConfig): void {
-    this.enableDocumentenApiDocumentTab = config.featureToggles.enableDocumentenApiDocumentTab;
-    this.openZaakUploadProvider = config.uploadProvider === UploadProvider.OPEN_ZAAK;
+    const uploadProvider = config.uploadProvider;
+    this.openZaakUploadProvider = uploadProvider === UploadProvider.OPEN_ZAAK;
+    this.documentenApiUploadProvider = uploadProvider === UploadProvider.DOCUMENTEN_API;
     this.s3UploadProvider = config.uploadProvider === UploadProvider.S3;
   }
 }

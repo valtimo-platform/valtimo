@@ -16,7 +16,7 @@
 
 import {Injectable, Injector} from '@angular/core';
 import {NGXLogger} from 'ngx-logger';
-import {ResourceFile, UploadService, ResourceDto} from '../models';
+import {ResourceDto, ResourceFile, UploadService} from '../models';
 import {ConfigService, UploadProvider} from '@valtimo/config';
 import {Observable} from 'rxjs';
 import {OpenZaakUploadService} from './open-zaak-upload.service';
@@ -33,10 +33,21 @@ export class UploadProviderService implements UploadService {
     private injector: Injector,
     private logger: NGXLogger
   ) {
-    this.uploadService =
-      configService.config.uploadProvider === UploadProvider.S3
-        ? injector.get<UploadService>(S3UploadService)
-        : injector.get<UploadService>(OpenZaakUploadService);
+    let uploadService: UploadService;
+
+    switch (configService.config.uploadProvider) {
+      case UploadProvider.S3:
+        uploadService = injector.get<UploadService>(S3UploadService);
+        break;
+      case UploadProvider.OPEN_ZAAK:
+        uploadService = injector.get<UploadService>(OpenZaakUploadService);
+        break;
+      case UploadProvider.DOCUMENTEN_API:
+        uploadService = injector.get<UploadService>(OpenZaakUploadService);
+        break;
+    }
+
+    this.uploadService = uploadService;
     this.logger.debug('Loading UploadService as', this.uploadService);
   }
 

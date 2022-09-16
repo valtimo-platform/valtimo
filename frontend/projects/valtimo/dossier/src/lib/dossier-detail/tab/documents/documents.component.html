@@ -13,13 +13,9 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<ng-container *ngIf="!enableDocumentenApiDocumentTab">
-  <valtimo-dossier-detail-tab-s3-documents></valtimo-dossier-detail-tab-s3-documents>
-</ng-container>
-<ng-container *ngIf="enableDocumentenApiDocumentTab">
-  <valtimo-dossier-detail-tab-s3-documents
-    *ngIf="s3UploadProvider"
-  ></valtimo-dossier-detail-tab-s3-documents>
-  <valtimo-dossier-detail-tab-documenten-api-documents *ngIf="openZaakUploadProvider">
-  </valtimo-dossier-detail-tab-documenten-api-documents>
-</ng-container>
+
+<valtimo-dossier-detail-tab-s3-documents
+  *ngIf="s3UploadProvider || openZaakUploadProvider"
+></valtimo-dossier-detail-tab-s3-documents>
+<valtimo-dossier-detail-tab-documenten-api-documents *ngIf="documentenApiUploadProvider">
+</valtimo-dossier-detail-tab-documenten-api-documents>
