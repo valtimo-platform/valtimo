@@ -52,16 +52,10 @@
           <h2 class="process-title">
             {{ processDefinitionVersions[0].name }}
           </h2>
-          <span
-            class="badge badge-pill badge-info mr-1"
-            *ngIf="isReadOnlyProcess$ | async"
-          >
+          <span class="badge badge-pill badge-info mr-1" *ngIf="isReadOnlyProcess$ | async">
             {{ 'processManagement.readOnly' | translate }}
           </span>
-          <span
-            class="badge badge-pill badge-warning mr-1"
-            *ngIf="isSystemProcess$ | async"
-          >
+          <span class="badge badge-pill badge-warning mr-1" *ngIf="isSystemProcess$ | async">
             {{ 'processManagement.systemProcess' | translate }}
           </span>
         </div>
@@ -84,16 +78,20 @@
           </select>
         </div>
         <div
-          class="col-md-auto d-flex align-items-end"
+          class="col-md-auto d-flex align-items-end text-right"
           *ngIf="(selectedVersion !== null || processKey === null) && layoutService.isFullscreen"
         >
           <div class="btn-group">
-            <button class="btn btn-primary btn-space" (click)="deploy()">
-              <i class="icon mdi mdi-upload mr-1"></i>{{ 'processManagement.deploy' | translate }}
-            </button>
-            <button class="btn btn-secondary btn-space" (click)="download()">
+            <button class="btn btn-primary btn-space" (click)="download()">
               <i class="icon mdi mdi-download mr-1"></i
               >{{ 'processManagement.download' | translate }}
+            </button>
+            <button
+              class="btn btn-success btn-space"
+              (click)="deploy()"
+              *ngIf="(isReadOnlyProcess$ | async) === false"
+            >
+              <i class="icon mdi mdi-upload mr-1"></i>{{ 'processManagement.deploy' | translate }}
             </button>
             <button *ngIf="!selectedVersion" class="btn btn-danger btn-space" (click)="reset()">
               <i class="icon mdi mdi-delete mr-1"></i>{{ 'processManagement.clear' | translate }}
@@ -115,11 +113,13 @@
           ></i>
         </div>
       </div>
-      <div *ngIf="(isSystemProcess$ | async) && (isReadOnlyProcess$ | async)"
+      <div
+        *ngIf="(isSystemProcess$ | async) && (isReadOnlyProcess$ | async)"
         class="row bg-warning text-black mb-0 p-3 text-center"
         [translate]="'processManagement.readOnlySystemProcessWarningMessage'"
       ></div>
-      <div *ngIf="(isSystemProcess$ | async) && (isReadOnlyProcess$ | async) === false"
+      <div
+        *ngIf="(isSystemProcess$ | async) && (isReadOnlyProcess$ | async) === false"
         class="row bg-warning text-black mb-0 p-3 text-center"
         [translate]="'processManagement.systemProcessWarningMessage'"
       ></div>
