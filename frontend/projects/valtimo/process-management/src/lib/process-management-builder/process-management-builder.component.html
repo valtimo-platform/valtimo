@@ -48,7 +48,7 @@
         *ngIf="processDefinitionVersions"
         [ngClass]="{'border-bottom-0': selectedVersion !== null}"
       >
-        <div class="col-md-2" *ngIf="processDefinitionVersions.length > 0">
+        <div class="col-md-4" *ngIf="processDefinitionVersions.length > 0">
           <h2 class="process-title">
             {{ processDefinitionVersions[0].name }}
           </h2>
@@ -65,11 +65,11 @@
             {{ 'processManagement.systemProcess' | translate }}
           </span>
         </div>
-        <div class="col-md-1 offset-md-6">
+        <div class="col-md-2 offset-md-2">
           <label for="processVersion"><strong>Version</strong></label>
           <select
             id="processVersion"
-            class="form-control w-100"
+            class="form-control select-version-control"
             [(ngModel)]="selectedVersion"
             (change)="loadProcessBpmn()"
             [compareWith]="compareProcessDefinitions"
@@ -84,7 +84,7 @@
           </select>
         </div>
         <div
-          class="col-md-2 d-flex align-items-end"
+          class="col-md-auto d-flex align-items-end"
           *ngIf="(selectedVersion !== null || processKey === null) && layoutService.isFullscreen"
         >
           <div class="btn-group">
