@@ -29,9 +29,9 @@ export class StoreUploadedDocumentConfigurationComponent
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
-  @Input() prefillConfiguration$: Observable<{}>;
+  @Input() prefillConfiguration$: Observable<any>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<{}> = new EventEmitter<{}>();
+  @Output() configuration: EventEmitter<any> = new EventEmitter<any>();
 
   private saveSubscription!: Subscription;
 
