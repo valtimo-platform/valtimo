@@ -237,14 +237,14 @@ export class DocumentService {
     processDefinitionKey: string
   ): Observable<UploadProcessLink> {
     return this.http.put<UploadProcessLink>(
-      `${this.valtimoEndpointUri}/process-document/demo/${documentDefinitionName}/process`,
+      `${this.valtimoEndpointUri}process-document/demo/${documentDefinitionName}/process`,
       {processDefinitionKey}
     );
   }
 
   deleteLinkedUploadProcess(documentDefinitionName: string): Observable<void> {
     return this.http.delete<void>(
-      `${this.valtimoEndpointUri}/process-document/demo/${documentDefinitionName}/process`
+      `${this.valtimoEndpointUri}process-document/demo/${documentDefinitionName}/process`
     );
   }
 }
