@@ -267,3 +267,8 @@ export interface DocumentRoles {
 export interface DocumentRole {
   name: string;
 }
+
+export interface DocumentType {
+  url: string;
+  name: string;
+}

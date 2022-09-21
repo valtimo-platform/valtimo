@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 import {ModalComponent, ModalService, SelectItem} from '@valtimo/user-interface';
-import {BehaviorSubject, map, Observable, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
 import {
   ConfidentialityLevel,
   DocumentenApiMetadata,
@@ -24,6 +24,8 @@ import {
   DocumentStatus,
 } from '../../models';
 import {TranslateService} from '@ngx-translate/core';
+import {ActivatedRoute} from '@angular/router';
+import {DocumentService} from '@valtimo/document';
 
 @Component({
   selector: 'valtimo-documenten-api-metadata-modal',
@@ -37,6 +39,8 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   @Input() hide$!: Observable<null>;
   @Input() disabled$!: Observable<boolean>;
   @Input() file$!: Observable<File>;
+
+  @Output() metadata: EventEmitter<DocumentenApiMetadata> = new EventEmitter();
 
   readonly CONFIDENTIALITY_LEVELS: Array<ConfidentialityLevel> = [
     'openbaar',
@@ -81,14 +85,21 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
       }))
     )
   );
+  readonly documentTypeItems$: Observable<Array<SelectItem>> = this.route.params.pipe(
+    switchMap(params => this.documentService.getDocumentTypes(params.documentDefinitionName)),
+    map(documentTypes => documentTypes.map(type => ({id: type.url, text: type.name})))
+  );
   readonly showForm$: Observable<boolean> = this.modalService.modalVisible$;
   readonly valid$ = new BehaviorSubject<boolean>(false);
+  readonly formData$ = new BehaviorSubject<DocumentenApiMetadata>(null);
   private showSubscription!: Subscription;
   private hideSubscription!: Subscription;
 
   constructor(
     private readonly modalService: ModalService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly route: ActivatedRoute,
+    private readonly documentService: DocumentService
   ) {}
 
   ngOnInit(): void {
@@ -102,18 +113,27 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   }
 
   hide(): void {
+    this.formData$.next(null);
+    this.valid$.next(false);
     this.modalService.closeModal();
   }
 
   cancel(): void {
-    console.log('cancel');
+    this.hide();
   }
 
   save(): void {
-    console.log('save');
+    combineLatest([this.valid$, this.formData$])
+      .pipe(take(1))
+      .subscribe(([valid, formData]) => {
+        if (valid) {
+          this.metadata.emit(formData);
+        }
+      });
   }
 
   formValueChange(data: DocumentenApiMetadata): void {
+    this.formData$.next(data);
     this.setValid(data);
   }
 
@@ -125,7 +145,8 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
         data.author &&
         data.creationDate &&
         data.status &&
-        data.language
+        data.language &&
+        data.informatieobjecttype
       )
     );
   }

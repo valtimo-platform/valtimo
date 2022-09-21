@@ -26,6 +26,7 @@ import {
   DocumentResult,
   Documents,
   DocumentSendMessageRequest,
+  DocumentType,
   ModifyDocumentAndCompleteTaskRequestImpl,
   ModifyDocumentAndCompleteTaskResult,
   ModifyDocumentAndStartProcessRequestImpl,
@@ -216,5 +217,11 @@ export class DocumentService {
 
   sendMessage(documentId: string, request: DocumentSendMessageRequest): Observable<any> {
     return this.http.post(`${this.valtimoEndpointUri}document/${documentId}/message`, request);
+  }
+
+  getDocumentTypes(documentDefinitionName: string): Observable<Array<DocumentType>> {
+    return this.http.get<Array<DocumentType>>(
+      `${this.valtimoEndpointUri}documentdefinition/${documentDefinitionName}/zaaktype/documenttype`
+    );
   }
 }

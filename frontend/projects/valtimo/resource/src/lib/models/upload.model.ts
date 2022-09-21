@@ -43,4 +43,9 @@ export interface UploadService {
   uploadFile(file: File, documentDefinitionName?: string): Observable<ResourceFile>;
   getResource(resourceId: string): Observable<ResourceDto>;
   checkUploadProcessLink?(caseDefinitionKey: string): Observable<boolean>;
+  uploadFileWithMetadata?(
+    file: File,
+    documentId: string,
+    metadata: {[key: string]: any}
+  ): Observable<void>;
 }

@@ -54,6 +54,7 @@
 </valtimo-widget>
 
 <valtimo-documenten-api-metadata-modal
+  (metadata)="metadataSet($event)"
   [disabled$]="modalDisabled$"
   [file$]="fileToBeUploaded$"
   [hide$]="hideModal$"

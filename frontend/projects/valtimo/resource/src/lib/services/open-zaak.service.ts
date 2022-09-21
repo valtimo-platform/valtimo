@@ -152,4 +152,23 @@ export class OpenZaakService {
       }
     );
   }
+
+  uploadWithMetadata(
+    file: File,
+    documentId: string,
+    metadata: {[key: string]: any}
+  ): Observable<void> {
+    const formData: FormData = new FormData();
+    formData.append('file', file);
+    formData.append('documentId', documentId);
+
+    Object.keys(metadata).forEach(metaDataKey => {
+      formData.append(metaDataKey, metadata[metaDataKey] || null);
+    });
+
+    return this.http.post<void>(`${this.valtimoApiConfig.endpointUri}resource/temp`, formData, {
+      reportProgress: true,
+      responseType: 'json',
+    });
+  }
 }

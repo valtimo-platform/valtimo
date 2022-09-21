@@ -114,7 +114,9 @@
     "languageTooltip": "The language in which the document is written",
     "nld": "Dutch",
     "eng": "English",
-    "deu": "German"
+    "deu": "German",
+    "informatieobjecttype": "Document type",
+    "informatieobjecttypeTooltip": "A document type which is related to the zaak type of the current case"
   },
   "summary": {
     "userTasksDoneState": "All done!",

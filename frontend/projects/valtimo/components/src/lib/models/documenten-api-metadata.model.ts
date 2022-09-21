@@ -39,6 +39,7 @@ interface DocumentenApiMetadata {
   receiptDate: string;
   sendDate: string;
   language: DocumentLanguage;
+  informatieobjecttype: string;
 }
 
 export {DocumentenApiMetadata, ConfidentialityLevel, DocumentStatus, DocumentLanguage};

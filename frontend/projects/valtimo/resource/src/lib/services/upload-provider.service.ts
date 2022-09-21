@@ -66,4 +66,16 @@ export class UploadProviderService implements UploadService {
       return of(false);
     }
   }
+
+  uploadFileWithMetadata(
+    file: File,
+    documentId: string,
+    metadata: {[key: string]: any}
+  ): Observable<void> {
+    if (this.uploadService.uploadFileWithMetadata) {
+      return this.uploadService.uploadFileWithMetadata(file, documentId, metadata);
+    } else {
+      return of(null);
+    }
+  }
 }

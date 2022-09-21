@@ -19,10 +19,11 @@ import {ActivatedRoute} from '@angular/router';
 import {DocumentService, RelatedFile} from '@valtimo/document';
 import {DownloadService, ResourceDto, UploadProviderService} from '@valtimo/resource';
 import {ToastrService} from 'ngx-toastr';
-import {map, switchMap} from 'rxjs/operators';
+import {map, switchMap, take, tap} from 'rxjs/operators';
 import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 import {ConfigService} from '@valtimo/config';
+import {DocumentenApiMetadata} from '@valtimo/components';
 import {UserProviderService} from '@valtimo/security';
 
 @Component({
@@ -147,16 +148,23 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
     );
   }
 
-  private refetchDocuments(): void {
-    this.refetch$.next(null);
-  }
+  metadataSet(metadata: DocumentenApiMetadata): void {
+    this.uploading$.next(true);
+    this.hideModal$.next(null);
 
-  private setUploadProcessLinked(): void {
-    this.uploadProviderService
-      .checkUploadProcessLink(this.documentDefinitionName)
-      .subscribe(linked => {
-        this.uploadProcessLinked = linked;
-      });
+    this.fileToBeUploaded$
+      .pipe(take(1))
+      .pipe(
+        tap(file => {
+          this.uploadProviderService
+            .uploadFileWithMetadata(file, this.documentId, metadata)
+            .subscribe(res => {
+              this.uploading$.next(false);
+              this.fileToBeUploaded$.next(null);
+            });
+        })
+      )
+      .subscribe();
   }
 
   public isUserAdmin() {
@@ -168,5 +176,17 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
         this.isAdmin = false;
       }
     );
+  }
+
+  private refetchDocuments(): void {
+    this.refetch$.next(null);
+  }
+
+  private setUploadProcessLinked(): void {
+    this.uploadProviderService
+      .checkUploadProcessLink(this.documentDefinitionName)
+      .subscribe(linked => {
+        this.uploadProcessLinked = linked;
+      });
   }
 }

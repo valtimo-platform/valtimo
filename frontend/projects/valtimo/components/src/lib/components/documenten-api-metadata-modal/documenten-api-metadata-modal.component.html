@@ -101,6 +101,19 @@
         [widthInPx]="200"
         name="language"
       ></v-select>
+      <ng-container *ngIf="{documentTypeItems: documentTypeItems$ | async} as obs">
+        <v-select
+          [disabled]="obs.disabled"
+          [items]="obs.documentTypeItems"
+          [loading]="!obs.documentTypeItems"
+          [margin]="true"
+          [required]="true"
+          [title]="'document.informatieobjecttype' | translate"
+          [tooltip]="'document.informatieobjecttypeTooltip' | translate"
+          [widthInPx]="200"
+          name="informatieobjecttype"
+        ></v-select>
+      </ng-container>
       <v-date-picker
         [defaultDateIsToday]="true"
         [disabled]="obs.disabled"

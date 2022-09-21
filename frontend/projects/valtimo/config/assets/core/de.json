@@ -114,7 +114,9 @@
     "languageTooltip": "Die Sprache, in der das Dokument geschrieben ist",
     "nld": "Niederländisch",
     "eng": "Englisch",
-    "deu": "Deutsch"
+    "deu": "Deutsch",
+    "informatieobjecttype": "Dokumententyp",
+    "informatieobjecttypeTooltip": "Ein Dokumenttyp, der sich auf den Falltyp des aktuellen Falls bezieht"
   },
   "summary": {
     "userTasksDoneState": "Alles erledigt!",
