@@ -139,13 +139,12 @@ export class DossierProcessStartModalComponent implements OnInit {
       );
   }
 
-  public isUserAdmin() {
+  public isUserAdmin(): void {
     this.userProviderService.getUserSubject().subscribe(
       userIdentity => {
         this.isAdmin = userIdentity.roles.includes('ROLE_ADMIN');
       },
       error => {
-        this.logger.error('Failed to retrieve user identity', error);
         this.isAdmin = false;
       }
     );

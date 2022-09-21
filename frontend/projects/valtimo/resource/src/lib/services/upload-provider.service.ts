@@ -18,7 +18,7 @@ import {Injectable, Injector} from '@angular/core';
 import {NGXLogger} from 'ngx-logger';
 import {ResourceDto, ResourceFile, UploadService} from '../models';
 import {ConfigService, UploadProvider} from '@valtimo/config';
-import {Observable} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {OpenZaakUploadService} from './open-zaak-upload.service';
 import {S3UploadService} from './s3-upload.service';
 
@@ -57,5 +57,13 @@ export class UploadProviderService implements UploadService {
 
   getResource(resourceId: string): Observable<ResourceDto> {
     return this.uploadService.getResource(resourceId);
+  }
+
+  checkUploadProcessLink(caseDefinitionKey: string): Observable<boolean> {
+    if (this.uploadService.checkUploadProcessLink) {
+      return this.uploadService.checkUploadProcessLink(caseDefinitionKey);
+    } else {
+      return of(false);
+    }
   }
 }

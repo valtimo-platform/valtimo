@@ -13,11 +13,20 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+<div *ngIf="!uploadProcessLinked">
+  <div *ngIf="isAdmin" class="bg-warning text-black mb-2 p-3 text-center"
+          [translate]="'dossier.documenten.noProcessLinked.adminRole'"
+  ></div>
+  <div *ngIf="!isAdmin" class="bg-warning text-black mb-2 p-3 text-center"
+       [translate]="'dossier.documenten.noProcessLinked.regularUser'"
+  ></div>
+</div>
 
 <valtimo-dropzone
   (fileSelected)="fileSelected($event)"
   [acceptedFiles]="acceptedFiles"
   [camera]="false"
+  [disabled]="!uploadProcessLinked"
   [hideFilePreview]="true"
   [hideTitle]="true"
   [maxFileSize]="maxFileSize"

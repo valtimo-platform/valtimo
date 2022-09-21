@@ -60,6 +60,12 @@
         "viewObject": "Object bekijken"
       }
     },
+    "documenten": {
+      "noProcessLinked": {
+        "regularUser": "Het uploaden van documenten is in dit geval niet beschikbaar. Neem contact op met een beheerder",
+        "adminRole": "Het proces voor het uploaden van documenten is niet geconfigureerd. Configureer dit proces op de casebeheerpagina"
+      }
+    },
     "startSubProcess": "Start"
   },
   "document": {

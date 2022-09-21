@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
 import {Observable} from 'rxjs';
-import {OpenZaakResource, ResourceFile, UploadService, ResourceDto} from '../models';
+import {OpenZaakResource, ResourceDto, ResourceFile, UploadService} from '../models';
 import {OpenZaakService} from './open-zaak.service';
 import {map} from 'rxjs/operators';
 
@@ -42,6 +42,14 @@ export class OpenZaakUploadService implements UploadService {
 
   getResource(resourceId: string): Observable<ResourceDto> {
     return this.openZaakService.getResource(resourceId);
+  }
+
+  checkUploadProcessLink(caseDefinitionKey: string): Observable<boolean> {
+    return this.http
+      .get<{processCaseLinkExists: boolean}>(
+        `${this.valtimoApiConfig.endpointUri}uploadprocess/case/${caseDefinitionKey}/check-link`
+      )
+      .pipe(map(res => res.processCaseLinkExists));
   }
 
   private getResourceFile(result: OpenZaakResource): ResourceFile {
