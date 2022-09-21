@@ -261,6 +261,10 @@
         "unsuccessfullyStored": "Failed to store the entitlement roles",
         "unsuccessfullyRetrievedRoles": "Failed to retrieve the current entitlement roles"
       }
+    },
+    "linkProcess": {
+      "title": "Link upload process to case",
+      "description": "Choose which process should handle file uploads."
     }
   },
   "serviceTaskManagement": {

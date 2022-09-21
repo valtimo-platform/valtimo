@@ -261,6 +261,10 @@
         "unsuccessfullyStored": "Er is iets fout gegaan bij het opslaan van de rollen",
         "unsuccessfullyRetrievedRoles": "Er is iets fout gegaan bij het ophalen van de huidige document rollen"
       }
+    },
+    "linkProcess": {
+      "title": "Uploadproces koppelen aan dossier",
+      "description": "Kies wel proces het uploaden van bestanden moet afhandelen."
     }
   },
   "serviceTaskManagement": {

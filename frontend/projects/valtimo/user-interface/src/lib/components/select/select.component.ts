@@ -101,7 +101,11 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
 
   private openSelectedSubscription(): void {
     this.selectedSubscription = this.selected$.subscribe(selectedValue => {
-      this.selectedChange.emit(selectedValue);
+      const defaultSelectionId = this.defaultSelection?.id || this.defaultSelectionId;
+
+      if ((!this.multiple && selectedValue !== defaultSelectionId) || this.multiple) {
+        this.selectedChange.emit(selectedValue);
+      }
     });
   }
 

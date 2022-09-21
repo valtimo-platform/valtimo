@@ -261,6 +261,10 @@
         "unsuccessfullyStored": "Beim Speichern der Rollen ist etwas schief gelaufen",
         "unsuccessfullyRetrievedRoles": "Beim Abrufen der aktuellen Dokumentrollen ist ein Fehler aufgetreten"
       }
+    },
+    "linkProcess": {
+      "title": "Verknüpfen Sie den Upload-Prozess mit dem Fall",
+      "description": "Wählen Sie einen Prozess, der das Hochladen von Dateien handhaben soll."
     }
   },
   "serviceTaskManagement": {

@@ -17,15 +17,15 @@
 <div class="main-content pt-0">
   <div class="container-fluid">
     <div *ngIf="documentDefinition" class="btn-group mt-m3px mb-3 float-right">
-      <button class="btn btn-primary btn-space" (click)="downloadDefinition()">
+      <button (click)="downloadDefinition()" class="btn btn-primary btn-space">
         <i class="icon mdi mdi-download mr-1"></i>
         {{ 'Download document definition' | translate }}
       </button>
       <a id="downloadAnchorElement" style="display: none"></a>
       <button
+        (click)="openDossierRemoveModal()"
         *ngIf="!this.documentDefinition.readOnly"
         class="btn btn-secondary btn-space mr-0"
-        (click)="openDossierRemoveModal()"
       >
         <i class="icon mdi mdi-delete mr-1"></i>
         {{ 'Remove document definition' | translate }}
@@ -53,61 +53,61 @@
       </div>
       <div class="row bg-white mb-5 pb-4 pl-2 pr-2">
         <div class="col-5 bg-red">
-          <textarea class="w-100 dossier-schema" rows="25" disabled
+          <textarea class="w-100 dossier-schema" disabled rows="25"
             >{{ documentDefinition | json }}
           </textarea>
         </div>
         <div class="col-5 offset-2 bg-blue">
           <div
-            class="input-group mb-5"
             *ngFor="let processDocumentDefinition of processDocumentDefinitions"
+            class="input-group mb-5"
           >
             <div class="input-group-prepend w-75">
               <button
-                class="btn btn-danger"
                 (click)="deleteProcessDocumentDefinition(processDocumentDefinition)"
-                data-toggle="tooltip"
+                class="btn btn-danger"
                 data-placement="left"
+                data-toggle="tooltip"
                 title="Delete this connected process"
               >
                 <i class="icon mdi mdi-delete mr-1"></i>
               </button>
               <input
-                class="form-control"
                 [value]="
                   processDocumentDefinition.processName
                     ? processDocumentDefinition.processName
                     : '' + ' (' + processDocumentDefinition.id.processDefinitionKey + ')'
                 "
-                type="text"
+                class="form-control"
                 disabled
+                type="text"
               />
             </div>
             <div class="row mb-2 mt-2">
               <label
                 class="custom-control custom-checkbox custom-control-inline pl-6 mr-5"
-                placement="bottom"
                 ngbTooltip="{{ 'processCaseConnection.processCreatesCaseTooltip' | translate }}"
+                placement="bottom"
               >
                 <input
-                  class="custom-control-input"
-                  type="checkbox"
                   [checked]="processDocumentDefinition.canInitializeDocument"
+                  class="custom-control-input"
                   disabled
+                  type="checkbox"
                 /><span class="custom-control-label custom-control-color">{{
                   'processCaseConnection.processCreatesCase' | translate
                 }}</span>
               </label>
               <label
                 class="custom-control custom-checkbox custom-control-inline pl-6"
-                placement="bottom"
                 ngbTooltip="{{ 'processCaseConnection.startableWithinCaseTooltip' | translate }}"
+                placement="bottom"
               >
                 <input
-                  class="custom-control-input"
-                  type="checkbox"
                   [checked]="processDocumentDefinition.startableByUser"
+                  class="custom-control-input"
                   disabled
+                  type="checkbox"
                 /><span class="custom-control-label custom-control-color">{{
                   'processCaseConnection.startableWithinCase' | translate
                 }}</span>
@@ -115,13 +115,14 @@
             </div>
           </div>
           <div class="text-right mt-5 mb-5">
-            <button class="btn btn-primary" (click)="openDossierConnectModal()">
+            <button (click)="openDossierConnectModal()" class="btn btn-primary">
               <i class="icon mdi mdi-plus mr-1"></i
               >{{ 'dossierManagement.connectProcess' | translate }}
             </button>
           </div>
           <valtimo-dossier-management-roles [documentDefinitionName]="documentDefinitionName">
           </valtimo-dossier-management-roles>
+          <valtimo-dossier-management-link-process></valtimo-dossier-management-link-process>
           <valtimo-extension
             module="dossier-management"
             page="dossier"

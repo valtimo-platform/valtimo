@@ -38,6 +38,7 @@ import {
   ProcessDocumentDefinitionRequest,
   ProcessDocumentInstance,
   UndeployDocumentDefinitionResult,
+  UploadProcessLink,
 } from './models';
 import {DocumentSearchRequest} from './document-search-request';
 import {ConfigService} from '@valtimo/config';
@@ -222,6 +223,28 @@ export class DocumentService {
   getDocumentTypes(documentDefinitionName: string): Observable<Array<DocumentType>> {
     return this.http.get<Array<DocumentType>>(
       `${this.valtimoEndpointUri}documentdefinition/${documentDefinitionName}/zaaktype/documenttype`
+    );
+  }
+
+  getLinkedUploadProcess(documentDefinitionName: string): Observable<UploadProcessLink> {
+    return this.http.get<UploadProcessLink>(
+      `${this.valtimoEndpointUri}process-document/demo/${documentDefinitionName}/process`
+    );
+  }
+
+  updateLinkedUploadProcess(
+    documentDefinitionName: string,
+    processDefinitionKey: string
+  ): Observable<UploadProcessLink> {
+    return this.http.put<UploadProcessLink>(
+      `${this.valtimoEndpointUri}/process-document/demo/${documentDefinitionName}/process`,
+      {processDefinitionKey: processDefinitionKey}
+    );
+  }
+
+  deleteLinkedUploadProcess(documentDefinitionName: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.valtimoEndpointUri}/process-document/demo/${documentDefinitionName}/process`
     );
   }
 }

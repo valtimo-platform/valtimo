@@ -272,3 +272,12 @@ export interface DocumentType {
   url: string;
   name: string;
 }
+
+export interface UploadProcessLink {
+  processDefinitionKey: string;
+  processName: string;
+}
+
+export interface UpdateUploadProcessLinkRequest {
+  processDefinitionKey: string;
+}
