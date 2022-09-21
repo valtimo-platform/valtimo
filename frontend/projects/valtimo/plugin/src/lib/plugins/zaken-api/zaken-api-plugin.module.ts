@@ -20,9 +20,14 @@ import {PluginTranslatePipeModule} from '../../pipes';
 import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/user-interface';
 import {ZakenApiConfigurationComponent} from './components/zaken-api-configuration/zaken-api-configuration.component';
 import {LinkDocumentToZaakConfigurationComponent} from './components/link-document-to-zaak/link-document-to-zaak-configuration.component';
+import {LinkUploadedDocumentToZaakConfigurationComponent} from './components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
 
 @NgModule({
-  declarations: [ZakenApiConfigurationComponent, LinkDocumentToZaakConfigurationComponent],
+  declarations: [
+    ZakenApiConfigurationComponent,
+    LinkDocumentToZaakConfigurationComponent,
+    LinkUploadedDocumentToZaakConfigurationComponent,
+  ],
   imports: [
     CommonModule,
     PluginTranslatePipeModule,
@@ -31,6 +36,10 @@ import {LinkDocumentToZaakConfigurationComponent} from './components/link-docume
     SelectModule,
     ParagraphModule,
   ],
-  exports: [ZakenApiConfigurationComponent, LinkDocumentToZaakConfigurationComponent],
+  exports: [
+    ZakenApiConfigurationComponent,
+    LinkDocumentToZaakConfigurationComponent,
+    LinkUploadedDocumentToZaakConfigurationComponent,
+  ],
 })
 export class ZakenApiPluginModule {}

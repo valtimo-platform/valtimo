@@ -18,18 +18,16 @@ import {PluginSpecification} from '../../models';
 import {ZAKEN_API_PLUGIN_LOGO_BASE64} from './assets';
 import {LinkDocumentToZaakConfigurationComponent} from './components/link-document-to-zaak/link-document-to-zaak-configuration.component';
 import {ZakenApiConfigurationComponent} from './components/zaken-api-configuration/zaken-api-configuration.component';
+import {LinkUploadedDocumentToZaakConfigurationComponent} from './components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
-  /*
-  A component of the interface PluginConfigurationComponent, used to configure the plugin itself.
-   */
   pluginConfigurationComponent: ZakenApiConfigurationComponent,
   pluginLogoBase64: ZAKEN_API_PLUGIN_LOGO_BASE64,
   functionConfigurationComponents: {
     'link-document-to-zaak': LinkDocumentToZaakConfigurationComponent,
+    'link-uploaded-document-to-zaak': LinkUploadedDocumentToZaakConfigurationComponent,
   },
-
   pluginTranslations: {
     nl: {
       title: 'Zaken API',
@@ -39,6 +37,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       description:
         'De API ondersteunt het opslaan en het naar andere applicaties ontsluiten van gegevens over alle gemeentelijke zaken, van elk type.',
       'link-document-to-zaak': 'Koppel document aan zaak',
+      'link-uploaded-document-to-zaak': 'Koppel geupload document aan zaak',
+      linkUploadedDocumentToZaakMessage:
+        'Het koppelen van een geupload document aan een zaak heeft geen configuratie nodig.',
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
         'Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
@@ -65,6 +66,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       description:
         'The API supports the storage and disclosure of data on all municipal matters to other applications, of all types.',
       'link-document-to-zaak': 'Link document to zaak',
+      'link-uploaded-document-to-zaak': 'Link uploaded document to zaak',
+      linkUploadedDocumentToZaakMessage:
+        'Linking an uploaded document to a zaak requires no configuration.',
       configurationTitle: 'Configuration name',
       configurationTitleTooltip:
         'With this name the plugin will be recognizable in the rest of the application',
@@ -91,6 +95,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       description:
         'Die API unterstützt die Speicherung und Weitergabe von Daten zu allen kommunalen Belangen an andere Anwendungen.',
       'link-document-to-zaak': 'Dokument mit Zaak verknüpfen',
+      'link-uploaded-document-to-zaak': 'Hochgeladenes Dokument mit Zaak verknüpfen',
+      linkUploadedDocumentToZaakMessage:
+        'Das Verknüpfen eines hochgeladenen Dokuments mit einem Zaak erfordert keine Konfiguration.',
       configurationTitle: 'Konfigurationsname',
       configurationTitleTooltip:
         'An diesem Namen wird das Plugin im Rest der Anwendung erkennbar sein',

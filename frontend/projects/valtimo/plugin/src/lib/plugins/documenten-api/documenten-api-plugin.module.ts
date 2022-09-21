@@ -18,12 +18,28 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DocumentenApiConfigurationComponent} from './components/documenten-api-configuration/documenten-api-configuration.component';
 import {PluginTranslatePipeModule} from '../../pipes';
-import {FormModule, InputModule, SelectModule} from '@valtimo/user-interface';
+import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/user-interface';
 import {StoreTempDocumentConfigurationComponent} from './components/store-temp-document/store-temp-document-configuration.component';
+import {StoreUploadedDocumentConfigurationComponent} from './components/store-uploaded-document/store-uploaded-document-configuration.component';
 
 @NgModule({
-  declarations: [DocumentenApiConfigurationComponent, StoreTempDocumentConfigurationComponent],
-  imports: [CommonModule, PluginTranslatePipeModule, FormModule, InputModule, SelectModule],
-  exports: [DocumentenApiConfigurationComponent, StoreTempDocumentConfigurationComponent],
+  declarations: [
+    DocumentenApiConfigurationComponent,
+    StoreTempDocumentConfigurationComponent,
+    StoreUploadedDocumentConfigurationComponent,
+  ],
+  imports: [
+    CommonModule,
+    PluginTranslatePipeModule,
+    FormModule,
+    InputModule,
+    SelectModule,
+    ParagraphModule,
+  ],
+  exports: [
+    DocumentenApiConfigurationComponent,
+    StoreTempDocumentConfigurationComponent,
+    StoreUploadedDocumentConfigurationComponent,
+  ],
 })
 export class DocumentenApiPluginModule {}
