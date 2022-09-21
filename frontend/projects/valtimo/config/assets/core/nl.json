@@ -264,7 +264,7 @@
     },
     "linkProcess": {
       "title": "Uploadproces koppelen aan dossier",
-      "description": "Kies wel proces het uploaden van bestanden moet afhandelen."
+      "description": "Kies welk proces het uploaden van bestanden moet afhandelen."
     }
   },
   "serviceTaskManagement": {
