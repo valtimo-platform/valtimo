@@ -1,7 +1,7 @@
 {
   "name": "@valtimo/connector-management",
   "license": "EUPL-1.2",
-  "version": "5.9.0-86.RC",
+  "version": "5.9.0",
   "peerDependencies": {
     "@angular/common": "^13.2.3",
     "@angular/core": "^13.2.3",
