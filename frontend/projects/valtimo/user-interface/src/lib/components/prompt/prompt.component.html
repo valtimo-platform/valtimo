@@ -69,14 +69,16 @@
         [disabled]="appearing || disappearing"
         (clickEvent)="cancel()"
         [mdiIcon]="(cancelMdiIcon$ | async) || 'cancel'"
-        >{{ cancelText$ | async }}</v-button
-      >
+        [type]="(cancelButtonType$ | async) || 'primary'"
+        >{{ cancelText$ | async }}
+      </v-button>
       <v-button
         [disabled]="appearing || disappearing"
         (clickEvent)="confirm()"
         [mdiIcon]="(confirmMdiIcon$ | async) || 'check'"
-        >{{ confirmText$ | async }}</v-button
-      >
+        [type]="(confirmButtonType$ | async) || 'primary'"
+        >{{ confirmText$ | async }}
+      </v-button>
     </div>
   </div>
 </ng-template>

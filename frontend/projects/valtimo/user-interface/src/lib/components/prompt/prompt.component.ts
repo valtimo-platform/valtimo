@@ -41,6 +41,8 @@ export class PromptComponent implements OnInit {
   readonly confirmText$ = this.promptService.confirmText$;
   readonly cancelMdiIcon$ = this.promptService.cancelMdiIcon$;
   readonly confirmMdiIcon$ = this.promptService.confirmMdiIcon$;
+  readonly cancelButtonType$ = this.promptService.cancelButtonType$;
+  readonly confirmButtonType$ = this.promptService.confirmButtonType$;
 
   constructor(private readonly promptService: PromptService) {}
 

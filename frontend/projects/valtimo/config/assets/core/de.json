@@ -66,7 +66,13 @@
         "adminRole": "Der Prozess zum Hochladen von Dokumenten wurde nicht konfiguriert. Bitte konfigurieren Sie diesen Prozess auf der Fallverwaltungsseite"
       }
   },
-    "startSubProcess": "Starten"
+    "startSubProcess": "Starten",
+    "deleteConfirmation": {
+      "title": "Datei löschen",
+      "description": "Möchten Sie diese Datei wirklich löschen?",
+      "cancel": "Absagen",
+      "delete": "Löschen"
+    }
   },
   "document": {
     "title": {

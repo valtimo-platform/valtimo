@@ -17,6 +17,7 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable, combineLatest} from 'rxjs';
 import {take} from 'rxjs/operators';
+import {ButtonType} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -26,12 +27,15 @@ export class PromptService {
   private readonly _appearing$ = new BehaviorSubject<boolean>(false);
   private readonly _disappearing$ = new BehaviorSubject<boolean>(false);
   private readonly _appearingDelayMs$ = new BehaviorSubject<number>(140);
+  private readonly _identifier$ = new BehaviorSubject<string>('');
   private readonly _headerText$ = new BehaviorSubject<string>('');
   private readonly _bodyText$ = new BehaviorSubject<string>('');
   private readonly _cancelText$ = new BehaviorSubject<string>('');
   private readonly _confirmText$ = new BehaviorSubject<string>('');
   private readonly _cancelMdiIcon$ = new BehaviorSubject<string>('');
   private readonly _confirmMdiIcon$ = new BehaviorSubject<string>('');
+  private readonly _cancelButtonType$ = new BehaviorSubject<ButtonType>('primary');
+  private readonly _confirmButtonType$ = new BehaviorSubject<ButtonType>('primary');
   private readonly _closeOnConfirm$ = new BehaviorSubject<boolean>(false);
   private readonly _closeOnCancel$ = new BehaviorSubject<boolean>(false);
   private readonly _cancelCallbackFunction$ = new BehaviorSubject<() => void>(() => {});
@@ -55,6 +59,10 @@ export class PromptService {
 
   get appearingDelayMs() {
     return this._appearingDelayMs$.getValue();
+  }
+
+  get identifier$(): Observable<string> {
+    return this._identifier$.asObservable();
   }
 
   get headerText$(): Observable<string> {
@@ -81,18 +89,31 @@ export class PromptService {
     return this._confirmMdiIcon$.asObservable();
   }
 
+  get cancelButtonType$(): Observable<ButtonType> {
+    return this._cancelButtonType$.asObservable();
+  }
+
+  get confirmButtonType$(): Observable<ButtonType> {
+    return this._confirmButtonType$.asObservable();
+  }
+
   openPrompt(promptParameters: {
+    identifier?: string;
     headerText: string;
     bodyText: string;
     cancelButtonText: string;
     confirmButtonText: string;
     cancelMdiIcon?: string;
     confirmMdiIcon?: string;
+    cancelButtonType?: ButtonType;
+    confirmButtonType?: ButtonType;
     closeOnConfirm?: boolean;
     closeOnCancel?: boolean;
     cancelCallbackFunction?: () => void;
     confirmCallBackFunction?: () => void;
   }): void {
+    if (promptParameters.identifier)
+      this._identifier$.next(promptParameters.identifier);
     this._headerText$.next(promptParameters.headerText);
     this._bodyText$.next(promptParameters.bodyText);
     this._cancelText$.next(promptParameters.cancelButtonText);
@@ -100,6 +121,10 @@ export class PromptService {
     if (promptParameters.cancelMdiIcon) this._cancelMdiIcon$.next(promptParameters.cancelMdiIcon);
     if (promptParameters.confirmMdiIcon)
       this._confirmMdiIcon$.next(promptParameters.confirmMdiIcon);
+    if (promptParameters.cancelButtonType)
+      this._cancelButtonType$.next(promptParameters.cancelButtonType);
+    if (promptParameters.confirmButtonType)
+      this._confirmButtonType$.next(promptParameters.confirmButtonType);
     if (promptParameters.closeOnConfirm)
       this._closeOnConfirm$.next(promptParameters.closeOnConfirm);
     if (promptParameters.closeOnCancel) this._closeOnCancel$.next(promptParameters.closeOnCancel);
@@ -172,12 +197,15 @@ export class PromptService {
   }
 
   private clear(): void {
+    this._identifier$.next('');
     this._headerText$.next('');
     this._bodyText$.next('');
     this._cancelText$.next('');
     this._confirmText$.next('');
     this._cancelMdiIcon$.next('');
     this._confirmMdiIcon$.next('');
+    this._cancelButtonType$.next('primary');
+    this._confirmButtonType$.next('primary');
     this._closeOnCancel$.next(false);
     this._closeOnConfirm$.next(false);
     this._cancelCallbackFunction$.next(() => {});

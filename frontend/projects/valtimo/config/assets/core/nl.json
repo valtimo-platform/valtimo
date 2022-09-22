@@ -66,7 +66,13 @@
         "adminRole": "Het proces voor het uploaden van documenten is niet geconfigureerd. Configureer dit proces op de casebeheerpagina"
       }
     },
-    "startSubProcess": "Start"
+    "startSubProcess": "Start",
+    "deleteConfirmation": {
+      "title": "Bestand verwijderen",
+      "description": "Weet u zeker dat u dit bestand wilt verwijderen?",
+      "cancel": "Annuleren",
+      "delete": "Verwijderen"
+    }
   },
   "document": {
     "title": {

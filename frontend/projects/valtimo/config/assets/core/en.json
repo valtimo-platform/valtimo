@@ -66,7 +66,13 @@
         "adminRole": "The process for uploading documents has not been configured. Please configure this process on the case management page"
       }
     },
-    "startSubProcess": "Start"
+    "startSubProcess": "Start",
+    "deleteConfirmation": {
+      "title": "Delete file",
+      "description": "Are you sure you want to delete this file?",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    }
   },
   "document": {
     "title": {

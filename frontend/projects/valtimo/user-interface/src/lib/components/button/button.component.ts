@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, Output, EventEmitter, Input, OnInit} from '@angular/core';
+import {Component, Output, EventEmitter, Input, OnInit, SimpleChanges, OnChanges} from '@angular/core';
 import {ButtonType} from '../../models';
 
 @Component({
@@ -22,7 +22,7 @@ import {ButtonType} from '../../models';
   templateUrl: './button.component.html',
   styleUrls: ['./button.component.scss'],
 })
-export class ButtonComponent implements OnInit {
+export class ButtonComponent implements OnInit, OnChanges {
   @Input() type: ButtonType = 'primary';
   @Input() mdiIcon!: string;
   @Input() disabled!: boolean;
@@ -42,6 +42,12 @@ export class ButtonComponent implements OnInit {
 
   ngOnInit(): void {
     this.setIconTypes();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes?.type || changes?.mdiIcon) {
+      this.setIconTypes();
+    }
   }
 
   buttonClick(): void {

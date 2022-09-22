@@ -23,6 +23,7 @@ import {map, switchMap} from 'rxjs/operators';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 import {ConfigService} from '@valtimo/config';
+import {PromptService} from '@valtimo/user-interface';
 
 @Component({
   selector: 'valtimo-dossier-detail-tab-s3-documents',
@@ -78,6 +79,7 @@ export class DossierDetailTabS3DocumentsComponent implements OnInit {
     private readonly toastrService: ToastrService,
     private readonly uploadProviderService: UploadProviderService,
     private readonly downloadService: DownloadService,
+    private readonly promptService: PromptService,
     private readonly translateService: TranslateService,
     private readonly configService: ConfigService
   ) {
@@ -121,16 +123,30 @@ export class DossierDetailTabS3DocumentsComponent implements OnInit {
       });
   }
 
-  removeRelatedFile(relatedFile: RelatedFile): void {
-    this.documentService.removeResource(this.documentId, relatedFile.fileId).subscribe(
-      () => {
-        this.toastrService.success('Successfully removed document from dossier');
-        this.refetchDocuments();
-      },
-      () => {
-        this.toastrService.error('Failed to remove document from dossier');
+  removeRelatedFile(relatedFile: RelatedFile) {
+    this.promptService.openPrompt({
+      headerText: this.translateService.instant('dossier.deleteConfirmation.title'),
+      bodyText: this.translateService.instant('dossier.deleteConfirmation.description'),
+      cancelButtonText: this.translateService.instant('dossier.deleteConfirmation.cancel'),
+      confirmButtonText: this.translateService.instant('dossier.deleteConfirmation.delete'),
+      cancelMdiIcon: 'cancel',
+      confirmMdiIcon: 'delete',
+      cancelButtonType: 'secondary',
+      confirmButtonType: 'primary',
+      closeOnConfirm: true,
+      closeOnCancel: true,
+      confirmCallBackFunction: () => {
+        this.documentService.removeResource(this.documentId, relatedFile.fileId).subscribe(
+          () => {
+            this.toastrService.success('Successfully removed document from dossier');
+            this.refetchDocuments();
+          },
+          () => {
+            this.toastrService.error('Failed to remove document from dossier');
+          }
+        );
       }
-    );
+    });
   }
 
   private refetchDocuments(): void {
