@@ -105,27 +105,6 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
   fileSelected(file: File): void {
     this.fileToBeUploaded$.next(file);
     this.showModal$.next(null);
-    return;
-    this.uploading$.next(true);
-
-    this.uploadProviderService
-      .uploadFile(file, this.documentDefinitionName)
-      .pipe(
-        switchMap(resourceFile =>
-          this.documentService.assignResource(this.documentId, resourceFile.data.resourceId)
-        )
-      )
-      .subscribe(
-        () => {
-          this.toastrService.success('Successfully uploaded document to dossier');
-          this.refetchDocuments();
-          this.uploading$.next(false);
-        },
-        () => {
-          this.toastrService.error('Failed to upload document to dossier');
-          this.uploading$.next(false);
-        }
-      );
   }
 
   downloadDocument(relatedFile: RelatedFile): void {
@@ -159,6 +138,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
           this.uploadProviderService
             .uploadFileWithMetadata(file, this.documentId, metadata)
             .subscribe(res => {
+              this.refetchDocuments();
               this.uploading$.next(false);
               this.fileToBeUploaded$.next(null);
             });
