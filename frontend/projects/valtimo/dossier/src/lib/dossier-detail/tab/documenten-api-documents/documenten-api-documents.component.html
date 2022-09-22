@@ -13,7 +13,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<div *ngIf="!uploadProcessLinked">
+<div *ngIf="uploadProcessLinkedSet && !uploadProcessLinked">
   <div
     *ngIf="isAdmin"
     [translate]="'dossier.documenten.noProcessLinked.adminRole'"
@@ -30,7 +30,7 @@
   (fileSelected)="fileSelected($event)"
   [acceptedFiles]="acceptedFiles"
   [camera]="false"
-  [disabled]="!uploadProcessLinked"
+  [disabled]="!uploadProcessLinkedSet || !uploadProcessLinked"
   [hideFilePreview]="true"
   [hideTitle]="true"
   [maxFileSize]="maxFileSize"

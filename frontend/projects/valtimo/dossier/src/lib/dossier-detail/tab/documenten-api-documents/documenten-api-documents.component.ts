@@ -56,7 +56,8 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
     },
   ];
   public isAdmin: boolean;
-  public uploadProcessLinked = false;
+  public uploadProcessLinkedSet = false;
+  public uploadProcessLinked!: boolean;
   readonly uploading$ = new BehaviorSubject<boolean>(false);
   readonly showModal$ = new Subject<null>();
   readonly hideModal$ = new Subject<null>();
@@ -163,10 +164,14 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
   }
 
   private setUploadProcessLinked(): void {
-    this.uploadProviderService
-      .checkUploadProcessLink(this.documentDefinitionName)
-      .subscribe(linked => {
+    this.uploadProviderService.checkUploadProcessLink(this.documentDefinitionName).subscribe(
+      linked => {
         this.uploadProcessLinked = linked;
-      });
+        this.uploadProcessLinkedSet = true;
+      },
+      () => {
+        this.uploadProcessLinkedSet = true;
+      }
+    );
   }
 }
