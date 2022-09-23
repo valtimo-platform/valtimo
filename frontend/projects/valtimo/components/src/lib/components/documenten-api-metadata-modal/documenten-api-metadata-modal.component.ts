@@ -16,7 +16,16 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 import {ModalComponent, ModalService, SelectItem} from '@valtimo/user-interface';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  from,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+  take,
+} from 'rxjs';
 import {
   ConfidentialityLevel,
   DocumentenApiMetadata,
@@ -26,6 +35,7 @@ import {
 import {TranslateService} from '@ngx-translate/core';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentService} from '@valtimo/document';
+import {KeycloakService} from 'keycloak-angular';
 
 @Component({
   selector: 'valtimo-documenten-api-metadata-modal',
@@ -92,6 +102,9 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   readonly showForm$: Observable<boolean> = this.modalService.modalVisible$;
   readonly valid$ = new BehaviorSubject<boolean>(false);
   readonly formData$ = new BehaviorSubject<DocumentenApiMetadata>(null);
+  readonly userEmail$ = from(this.keycloakService.loadUserProfile()).pipe(
+    map(userProfile => userProfile?.email || '')
+  );
   private showSubscription!: Subscription;
   private hideSubscription!: Subscription;
 
@@ -99,7 +112,8 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     private readonly modalService: ModalService,
     private readonly translateService: TranslateService,
     private readonly route: ActivatedRoute,
-    private readonly documentService: DocumentService
+    private readonly documentService: DocumentService,
+    private readonly keycloakService: KeycloakService
   ) {}
 
   ngOnInit(): void {

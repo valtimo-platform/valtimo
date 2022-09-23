@@ -70,6 +70,7 @@
       >
       </v-input>
       <v-input
+        [defaultValue]="userEmail$ | async"
         [disabled]="obs.disabled"
         [margin]="true"
         [required]="true"
