@@ -27,7 +27,6 @@
     [margin]="true"
     [defaultValue]="obs.prefill?.fileName"
     [disabled]="obs.disabled"
-    [required]="true"
     [tooltip]="'fileNameTooltip' | pluginTranslate: pluginId | async"
   ></v-input>
   <v-select
@@ -38,7 +37,6 @@
     [title]="'confidentialityLevel' | pluginTranslate: pluginId | async"
     [disabled]="obs.disabled"
     [defaultSelectionId]="obs.prefill?.confidentialityLevel || CONFIDENTIALITY_LEVEL_ITEMS[3]"
-    [required]="true"
     [tooltip]="'confidentialityLevelTooltip' | pluginTranslate: pluginId | async"
   ></v-select>
   <v-input
@@ -47,7 +45,6 @@
     [margin]="true"
     [defaultValue]="obs.prefill?.title"
     [disabled]="obs.disabled"
-    [required]="true"
     [tooltip]="'inputTitleTooltip' | pluginTranslate: pluginId | async"
   ></v-input>
   <v-input
@@ -56,7 +53,6 @@
     [margin]="true"
     [defaultValue]="obs.prefill?.description"
     [disabled]="obs.disabled"
-    [required]="true"
     [tooltip]="'inputDescriptionTooltip' | pluginTranslate: pluginId | async"
   ></v-input>
   <v-input

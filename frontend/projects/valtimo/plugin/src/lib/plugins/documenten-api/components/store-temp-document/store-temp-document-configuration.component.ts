@@ -113,9 +113,6 @@ export class StoreTempDocumentConfigurationComponent
 
   private handleValid(formValue: StoreTempDocumentConfig): void {
     const valid = !!(
-      formValue.confidentialityLevel &&
-      formValue.title &&
-      formValue.description &&
       formValue.localDocumentLocation &&
       formValue.taal &&
       formValue.status &&

@@ -238,7 +238,10 @@ export class DocumentService {
   ): Observable<UploadProcessLink> {
     return this.http.put<UploadProcessLink>(
       `${this.valtimoEndpointUri}process-document/demo/${documentDefinitionName}/process`,
-      {processDefinitionKey}
+      {
+        processDefinitionKey: processDefinitionKey,
+        linkType: 'DOCUMENT_UPLOAD',
+      }
     );
   }
 
