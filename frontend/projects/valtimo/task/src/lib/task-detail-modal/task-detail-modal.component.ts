@@ -41,6 +41,7 @@ import {map, take} from 'rxjs/operators';
 import {TaskService} from '../task.service';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {UserProviderService} from '@valtimo/security';
+import {DocumentService} from '@valtimo/document';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -63,19 +64,15 @@ export class TaskDetailModalComponent {
   public page: any = null;
   public formioOptions: ValtimoFormioOptions;
   public errorMessage: string = null;
-
-  private formAssociation: FormAssociation;
-  private taskProcessLinkType$ = new BehaviorSubject<TaskProcessLinkType | null>(null);
-
-  processLinkIsForm$ = this.taskProcessLinkType$.pipe(map(type => type === 'form'));
-  processLinkIsFormFlow$ = this.taskProcessLinkType$.pipe(map(type => type === 'form-flow'));
-
-  private formFlowStepType$ = new BehaviorSubject<FormFlowStepType | null>(null);
-  formFlowStepTypeIsForm$ = this.formFlowStepType$.pipe(map(type => type === 'form'));
-
   readonly isAdmin$: Observable<boolean> = this.userProviderService
     .getUserSubject()
     .pipe(map(userIdentity => userIdentity?.roles?.includes('ROLE_ADMIN')));
+  private formAssociation: FormAssociation;
+  private taskProcessLinkType$ = new BehaviorSubject<TaskProcessLinkType | null>(null);
+  processLinkIsForm$ = this.taskProcessLinkType$.pipe(map(type => type === 'form'));
+  processLinkIsFormFlow$ = this.taskProcessLinkType$.pipe(map(type => type === 'form-flow'));
+  private formFlowStepType$ = new BehaviorSubject<FormFlowStepType | null>(null);
+  formFlowStepTypeIsForm$ = this.formFlowStepType$.pipe(map(type => type === 'form'));
 
   constructor(
     private readonly toastr: ToastrService,
@@ -86,7 +83,8 @@ export class TaskDetailModalComponent {
     private readonly route: ActivatedRoute,
     private readonly taskService: TaskService,
     private readonly userProviderService: UserProviderService,
-    private readonly modalService: ValtimoModalService
+    private readonly modalService: ValtimoModalService,
+    private readonly documentService: DocumentService
   ) {
     this.formioOptions = new FormioOptionsImpl();
     this.formioOptions.disableAlerts = true;
@@ -96,6 +94,7 @@ export class TaskDetailModalComponent {
     this.resetTaskProcessLinkType();
     this.resetFormDefinition();
     this.getTaskProcessLink(task.id);
+    this.setDocumentDefinitionNameInService(task);
 
     this.task = task;
     this.page = {
@@ -264,5 +263,15 @@ export class TaskDetailModalComponent {
         },
       });
     });
+  }
+
+  private setDocumentDefinitionNameInService(task: Task): void {
+    this.documentService
+      .getProcessDocumentDefinitionFromProcessInstanceId(task.processInstanceId)
+      .subscribe(processDocumentDefinition => {
+        this.modalService.setDocumentDefinitionName(
+          processDocumentDefinition.id.documentDefinitionId.name
+        );
+      });
   }
 }

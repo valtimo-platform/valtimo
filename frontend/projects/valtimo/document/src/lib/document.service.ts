@@ -250,4 +250,12 @@ export class DocumentService {
       `${this.valtimoEndpointUri}process-document/demo/${documentDefinitionName}/process`
     );
   }
+
+  getProcessDocumentDefinitionFromProcessInstanceId(
+    processInstanceId: string
+  ): Observable<ProcessDocumentDefinition> {
+    return this.http.get<ProcessDocumentDefinition>(
+      `${this.valtimoEndpointUri}process-document/definition/processinstance/${processInstanceId}`
+    );
+  }
 }

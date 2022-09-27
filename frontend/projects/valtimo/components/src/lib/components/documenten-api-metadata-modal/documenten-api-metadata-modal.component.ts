@@ -19,6 +19,7 @@ import {ModalComponent, ModalService, SelectItem} from '@valtimo/user-interface'
 import {
   BehaviorSubject,
   combineLatest,
+  filter,
   from,
   map,
   Observable,
@@ -36,6 +37,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentService} from '@valtimo/document';
 import {KeycloakService} from 'keycloak-angular';
+import {ValtimoModalService} from '../../services/valtimo-modal.service';
 
 @Component({
   selector: 'valtimo-documenten-api-metadata-modal',
@@ -115,10 +117,21 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   readonly documentTypeItems$: Observable<Array<SelectItem>> = combineLatest([
     this.route.params,
     this.route.firstChild.params,
+    this.valtimoModalService.documentDefinitionName$,
   ]).pipe(
-    switchMap(([params, firstChildParams]) =>
+    filter(
+      ([params, firstChildParams, documentDefinitionName]) =>
+        !!(
+          params?.documentDefinitionName ||
+          firstChildParams?.documentDefinitionName ||
+          documentDefinitionName
+        )
+    ),
+    switchMap(([params, firstChildParams, documentDefinitionName]) =>
       this.documentService.getDocumentTypes(
-        params?.documentDefinitionName || firstChildParams?.documentDefinitionName
+        params?.documentDefinitionName ||
+          firstChildParams?.documentDefinitionName ||
+          documentDefinitionName
       )
     ),
     map(documentTypes => documentTypes.map(type => ({id: type.url, text: type.name})))
@@ -137,7 +150,8 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly route: ActivatedRoute,
     private readonly documentService: DocumentService,
-    private readonly keycloakService: KeycloakService
+    private readonly keycloakService: KeycloakService,
+    private readonly valtimoModalService: ValtimoModalService
   ) {}
 
   ngOnInit(): void {
