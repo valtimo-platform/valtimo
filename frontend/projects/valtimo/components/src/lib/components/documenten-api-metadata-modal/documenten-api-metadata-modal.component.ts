@@ -50,6 +50,23 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   @Input() disabled$!: Observable<boolean>;
   @Input() file$!: Observable<File>;
 
+  @Input() documentTitle = '';
+  @Input() disableDocumentTitle: boolean;
+  @Input() filename: string;
+  @Input() disableFilename: boolean;
+  @Input() author: string;
+  @Input() disableAuthor: boolean;
+  @Input() status: string;
+  @Input() disableStatus: boolean;
+  @Input() language: string;
+  @Input() disableLanguage: boolean;
+  @Input() documentType: string;
+  @Input() disableDocumentType: boolean;
+  @Input() description: string;
+  @Input() disableDescription: boolean;
+  @Input() confidentialityLevel: string;
+  @Input() disableConfidentialityLevel: boolean;
+
   @Output() metadata: EventEmitter<DocumentenApiMetadata> = new EventEmitter();
 
   readonly CONFIDENTIALITY_LEVELS: Array<ConfidentialityLevel> = [
@@ -95,8 +112,15 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
       }))
     )
   );
-  readonly documentTypeItems$: Observable<Array<SelectItem>> = this.route.params.pipe(
-    switchMap(params => this.documentService.getDocumentTypes(params.documentDefinitionName)),
+  readonly documentTypeItems$: Observable<Array<SelectItem>> = combineLatest([
+    this.route.params,
+    this.route.firstChild.params,
+  ]).pipe(
+    switchMap(([params, firstChildParams]) =>
+      this.documentService.getDocumentTypes(
+        params?.documentDefinitionName || firstChildParams?.documentDefinitionName
+      )
+    ),
     map(documentTypes => documentTypes.map(type => ({id: type.url, text: type.name})))
   );
   readonly showForm$: Observable<boolean> = this.modalService.modalVisible$;

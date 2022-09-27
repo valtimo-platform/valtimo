@@ -239,7 +239,7 @@ export class DocumentService {
     return this.http.put<UploadProcessLink>(
       `${this.valtimoEndpointUri}process-document/demo/${documentDefinitionName}/process`,
       {
-        processDefinitionKey: processDefinitionKey,
+        processDefinitionKey,
         linkType: 'DOCUMENT_UPLOAD',
       }
     );

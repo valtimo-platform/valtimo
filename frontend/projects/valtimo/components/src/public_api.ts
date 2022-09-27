@@ -110,6 +110,9 @@ export * from './lib/components/dropzone/dropzone.component';
 export * from './lib/components/form-io/form-io-uploader/form-io-uploader.component';
 export * from './lib/components/form-io/form-io-uploader/form-io-uploader.formio';
 
+export * from './lib/components/form-io/documenten-api-uploader/documenten-api-uploader.component';
+export * from './lib/components/form-io/documenten-api-uploader/documenten-api-uploader.formio';
+
 export * from './lib/components/form-io/form-io-resource-selector/form-io-resource-selector.formio';
 
 export * from './lib/components/form-io/services/form-io-state.service';

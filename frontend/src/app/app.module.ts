@@ -30,6 +30,7 @@ import {
   FormIoModule,
   FormIoUploaderComponent,
   MenuModule,
+  registerDocumentenApiFormioUploadComponent,
   registerFormioFileSelectorComponent,
   registerFormioUploadComponent,
   UploaderModule,
@@ -218,5 +219,6 @@ export class AppModule {
   constructor(injector: Injector) {
     registerFormioUploadComponent(injector);
     registerFormioFileSelectorComponent(injector);
+    registerDocumentenApiFormioUploadComponent(injector);
   }
 }

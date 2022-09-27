@@ -17,7 +17,7 @@
 import {Observable} from 'rxjs';
 import {ResourceDto} from './uploader.model';
 
-export interface ResourceFile {
+interface ResourceFile {
   customUpload?: boolean;
   originalName: string;
   size: number;
@@ -39,7 +39,7 @@ export interface ResourceFile {
   };
 }
 
-export interface UploadService {
+interface UploadService {
   uploadFile(file: File, documentDefinitionName?: string): Observable<ResourceFile>;
   getResource(resourceId: string): Observable<ResourceDto>;
   checkUploadProcessLink?(caseDefinitionKey: string): Observable<boolean>;
@@ -49,3 +49,11 @@ export interface UploadService {
     metadata: {[key: string]: any}
   ): Observable<void>;
 }
+
+interface DocumentenApiFileReference {
+  filename: string;
+  size: number;
+  reference: string;
+}
+
+export {ResourceFile, UploadService, DocumentenApiFileReference};

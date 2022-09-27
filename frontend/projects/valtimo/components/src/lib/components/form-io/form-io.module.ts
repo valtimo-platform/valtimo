@@ -28,6 +28,8 @@ import {FormIoDomService} from './services/form-io-dom.service';
 import {FileSizeModule} from '../file-size/file-size.module';
 import {ResourceModule} from '@valtimo/resource';
 import {RouterModule} from '@angular/router';
+import {DocumentenApiUploaderComponent} from './documenten-api-uploader/documenten-api-uploader.component';
+import {DocumentenApiMetadataModalModule} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.module';
 
 @NgModule({
   imports: [
@@ -39,9 +41,20 @@ import {RouterModule} from '@angular/router';
     FileSizeModule,
     ResourceModule,
     RouterModule,
+    DocumentenApiMetadataModalModule,
   ],
-  declarations: [FormioComponent, FormioBuilderComponent, FormIoUploaderComponent],
-  exports: [FormioComponent, FormioBuilderComponent, FormIoUploaderComponent],
+  declarations: [
+    FormioComponent,
+    FormioBuilderComponent,
+    FormIoUploaderComponent,
+    DocumentenApiUploaderComponent,
+  ],
+  exports: [
+    FormioComponent,
+    FormioBuilderComponent,
+    FormIoUploaderComponent,
+    DocumentenApiUploaderComponent,
+  ],
   providers: [FormIoDomService, {provide: FormioAppConfig, useValue: AppConfig}],
 })
 export class FormIoModule {}

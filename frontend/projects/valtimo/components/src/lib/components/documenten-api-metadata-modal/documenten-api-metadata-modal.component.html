@@ -49,8 +49,8 @@
   <ng-container *ngIf="showForm$ | async">
     <v-form (valueChange)="formValueChange($event)">
       <v-input
-        [defaultValue]="obs.file?.name"
-        [disabled]="obs.disabled"
+        [defaultValue]="filename || obs.file?.name"
+        [disabled]="obs.disabled || disableFilename"
         [fullWidth]="true"
         [margin]="true"
         [required]="true"
@@ -60,7 +60,8 @@
       >
       </v-input>
       <v-input
-        [disabled]="obs.disabled"
+        [defaultValue]="documentTitle"
+        [disabled]="obs.disabled || disableDocumentTitle"
         [margin]="true"
         [required]="true"
         [title]="'document.inputTitle' | translate"
@@ -70,8 +71,8 @@
       >
       </v-input>
       <v-input
-        [defaultValue]="userEmail$ | async"
-        [disabled]="obs.disabled"
+        [defaultValue]="author || (userEmail$ | async)"
+        [disabled]="obs.disabled || disableAuthor"
         [margin]="true"
         [required]="true"
         [title]="'document.author' | translate"
@@ -81,7 +82,8 @@
       >
       </v-input>
       <v-select
-        [disabled]="obs.disabled"
+        [defaultSelectionId]="status"
+        [disabled]="obs.disabled || disableStatus"
         [items]="statusItems$ | async"
         [margin]="true"
         [required]="true"
@@ -92,8 +94,8 @@
       ></v-select>
       <v-select
         *ngIf="languageItems$ | async as languageItems"
-        [defaultSelection]="languageItems[0]"
-        [disabled]="obs.disabled"
+        [defaultSelectionId]="language || languageItems[0].id"
+        [disabled]="obs.disabled || disableLanguage"
         [items]="languageItems"
         [margin]="true"
         [required]="true"
@@ -104,7 +106,8 @@
       ></v-select>
       <ng-container *ngIf="{documentTypeItems: documentTypeItems$ | async} as obs">
         <v-select
-          [disabled]="obs.disabled"
+          [defaultSelectionId]="documentType"
+          [disabled]="obs.disabled || disableDocumentType"
           [items]="obs.documentTypeItems"
           [loading]="!obs.documentTypeItems"
           [margin]="true"
@@ -144,7 +147,8 @@
         name="sendDate"
       ></v-date-picker>
       <v-input
-        [disabled]="obs.disabled"
+        [defaultValue]="description"
+        [disabled]="obs.disabled || disableDescription"
         [fullWidth]="true"
         [margin]="true"
         [title]="'document.inputDescription' | translate"
@@ -153,7 +157,8 @@
       >
       </v-input>
       <v-select
-        [disabled]="obs.disabled"
+        [defaultSelectionId]="confidentialityLevel"
+        [disabled]="obs.disabled || disableConfidentialityLevel"
         [items]="confidentialityLevelItems$ | async"
         [margin]="true"
         [title]="'document.confidentialityLevel' | translate"
