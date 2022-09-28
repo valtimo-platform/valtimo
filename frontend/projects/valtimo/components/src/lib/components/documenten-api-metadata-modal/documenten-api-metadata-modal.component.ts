@@ -23,6 +23,7 @@ import {
   from,
   map,
   Observable,
+  of,
   Subscription,
   switchMap,
   take,
@@ -115,8 +116,8 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     )
   );
   readonly documentTypeItems$: Observable<Array<SelectItem>> = combineLatest([
-    this.route.params,
-    this.route.firstChild.params,
+    this.route?.params || of(null),
+    this.route?.firstChild?.params || of(null),
     this.valtimoModalService.documentDefinitionName$,
   ]).pipe(
     filter(
