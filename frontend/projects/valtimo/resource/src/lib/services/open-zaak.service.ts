@@ -21,6 +21,7 @@ import {Observable} from 'rxjs';
 import {
   CreateInformatieObjectTypeLinkRequest,
   CreateZaakTypeLinkRequest,
+  DocumentenApiFileReference,
   InformatieObjectType,
   InformatieObjectTypeLink,
   OpenZaakConfig,
@@ -170,5 +171,26 @@ export class OpenZaakService {
       reportProgress: true,
       responseType: 'json',
     });
+  }
+
+  uploadTempFileWithMetadata(
+    file: File,
+    metadata: {[key: string]: any}
+  ): Observable<DocumentenApiFileReference> {
+    const formData: FormData = new FormData();
+    formData.append('file', file);
+
+    Object.keys(metadata).forEach(metaDataKey => {
+      formData.append(metaDataKey, metadata[metaDataKey] || null);
+    });
+
+    return this.http.post<DocumentenApiFileReference>(
+      `${this.valtimoApiConfig.endpointUri}resource/temp`,
+      formData,
+      {
+        reportProgress: true,
+        responseType: 'json',
+      }
+    );
   }
 }

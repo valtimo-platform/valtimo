@@ -31,17 +31,17 @@
 
 <div *ngFor="let resource of _value" class="file-preview">
   <div class="file-preview-name">
-    <a (click)="downloadFile(resource)" href="#">
-      {{ resource.originalName }}
-    </a>
+    <span>
+      {{ resource.filename }}
+    </span>
   </div>
   <div class="file-preview-size">
     <span>
-      {{ resource.size | filesize }}
+      {{ resource.sizeInBytes | filesize }}
     </span>
   </div>
   <div *ngIf="!disabled" class="file-preview-delete">
-    <a (click)="deleteFile(resource.data.resourceId)">
+    <a (click)="deleteFile(resource.id)">
       <i class="icon mdi mdi-delete"></i>
     </a>
   </div>

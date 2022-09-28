@@ -18,7 +18,13 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
 import {Observable} from 'rxjs';
-import {OpenZaakResource, ResourceDto, ResourceFile, UploadService} from '../models';
+import {
+  DocumentenApiFileReference,
+  OpenZaakResource,
+  ResourceDto,
+  ResourceFile,
+  UploadService,
+} from '../models';
 import {OpenZaakService} from './open-zaak.service';
 import {map} from 'rxjs/operators';
 
@@ -48,6 +54,16 @@ export class OpenZaakUploadService implements UploadService {
     return this.openZaakService.uploadWithMetadata(
       new File([file], file.name, {type: file.type}),
       documentId,
+      metadata
+    );
+  }
+
+  uploadTempFileWithMetadata(
+    file: File,
+    metadata: {[key: string]: any}
+  ): Observable<DocumentenApiFileReference> {
+    return this.openZaakService.uploadTempFileWithMetadata(
+      new File([file], file.name, {type: file.type}),
       metadata
     );
   }

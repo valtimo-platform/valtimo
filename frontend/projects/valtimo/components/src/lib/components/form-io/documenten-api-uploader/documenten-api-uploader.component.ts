@@ -16,8 +16,12 @@
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {FormioCustomComponent} from '@formio/angular';
-import {BehaviorSubject, Subject} from 'rxjs';
-import {DownloadService, ResourceDto, ResourceFile, UploadProviderService} from '@valtimo/resource';
+import {BehaviorSubject, Subject, switchMap} from 'rxjs';
+import {
+  DocumentenApiFileReference,
+  DownloadService,
+  UploadProviderService,
+} from '@valtimo/resource';
 import {FormIoStateService} from '../services/form-io-state.service';
 import {FormIoDomService} from '../services/form-io-dom.service';
 import {DocumentenApiMetadata} from '../../../models';
@@ -28,7 +32,9 @@ import {take, tap} from 'rxjs/operators';
   templateUrl: './documenten-api-uploader.component.html',
   styleUrls: ['./documenten-api-uploader.component.scss'],
 })
-export class DocumentenApiUploaderComponent implements FormioCustomComponent<Array<ResourceFile>> {
+export class DocumentenApiUploaderComponent
+  implements FormioCustomComponent<Array<DocumentenApiFileReference>>
+{
   @Input() disabled: boolean;
   @Input() title: string;
   @Input() hideTitle: boolean;
@@ -54,7 +60,7 @@ export class DocumentenApiUploaderComponent implements FormioCustomComponent<Arr
   @Input() confidentialityLevel: string;
   @Input() disableConfidentialityLevel: boolean;
 
-  @Output() valueChange = new EventEmitter<Array<ResourceFile>>();
+  @Output() valueChange = new EventEmitter<Array<DocumentenApiFileReference>>();
 
   readonly uploading$ = new BehaviorSubject<boolean>(false);
   readonly fileToBeUploaded$ = new BehaviorSubject<File | null>(null);
@@ -69,25 +75,17 @@ export class DocumentenApiUploaderComponent implements FormioCustomComponent<Arr
     private readonly downloadService: DownloadService
   ) {}
 
-  _value: Array<ResourceFile> = [];
+  _value: Array<DocumentenApiFileReference> = [];
 
-  public get value(): Array<ResourceFile> {
+  public get value(): Array<DocumentenApiFileReference> {
     return this._value;
   }
 
   @Input()
-  public set value(value: Array<ResourceFile>) {
+  public set value(value: Array<DocumentenApiFileReference>) {
     if (Array.isArray(value)) {
       this._value = value;
     }
-  }
-
-  downloadFile(resourceFile: ResourceFile): void {
-    this.uploadProviderService
-      .getResource(resourceFile.data.resourceId)
-      .subscribe((resource: ResourceDto) => {
-        this.downloadService.downloadFile(resource.url, resource.resource.name);
-      });
   }
 
   fileSelected(file: File): void {
@@ -95,10 +93,10 @@ export class DocumentenApiUploaderComponent implements FormioCustomComponent<Arr
     this.showModal$.next(null);
   }
 
-  deleteFile(resourceId: string): void {
+  deleteFile(id: string): void {
     this.domService.toggleSubmitButton(true);
-    this._value = this._value.filter((file: ResourceFile) =>
-      file?.data ? file?.data?.resourceId !== resourceId : true
+    this._value = this._value.filter((file: DocumentenApiFileReference) =>
+      file?.id ? file?.id !== id : true
     );
     this.valueChange.emit(this._value);
   }
@@ -106,12 +104,17 @@ export class DocumentenApiUploaderComponent implements FormioCustomComponent<Arr
   metadataSet(metadata: DocumentenApiMetadata): void {
     this.uploading$.next(true);
     this.hideModal$.next(null);
+    this.domService.toggleSubmitButton(true);
 
     this.fileToBeUploaded$
       .pipe(
         take(1),
-        tap(file => {
-          console.log('upload', file, metadata);
+        switchMap(file => this.uploadProviderService.uploadTempFileWithMetadata(file, metadata)),
+        tap(result => {
+          this.domService.toggleSubmitButton(false);
+          this.uploading$.next(false);
+          this._value.push(result);
+          this.valueChange.emit(this._value);
         })
       )
       .subscribe();

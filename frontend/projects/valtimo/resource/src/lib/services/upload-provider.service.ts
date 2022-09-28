@@ -16,7 +16,7 @@
 
 import {Injectable, Injector} from '@angular/core';
 import {NGXLogger} from 'ngx-logger';
-import {ResourceDto, ResourceFile, UploadService} from '../models';
+import {DocumentenApiFileReference, ResourceDto, ResourceFile, UploadService} from '../models';
 import {ConfigService, UploadProvider} from '@valtimo/config';
 import {Observable, of} from 'rxjs';
 import {OpenZaakUploadService} from './open-zaak-upload.service';
@@ -74,6 +74,17 @@ export class UploadProviderService implements UploadService {
   ): Observable<void> {
     if (this.uploadService.uploadFileWithMetadata) {
       return this.uploadService.uploadFileWithMetadata(file, documentId, metadata);
+    } else {
+      return of(null);
+    }
+  }
+
+  uploadTempFileWithMetadata(
+    file: File,
+    metadata: {[key: string]: any}
+  ): Observable<DocumentenApiFileReference> {
+    if (this.uploadService.uploadTempFileWithMetadata) {
+      return this.uploadService.uploadTempFileWithMetadata(file, metadata);
     } else {
       return of(null);
     }

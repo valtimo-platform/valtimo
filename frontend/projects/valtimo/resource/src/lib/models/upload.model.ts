@@ -48,12 +48,16 @@ interface UploadService {
     documentId: string,
     metadata: {[key: string]: any}
   ): Observable<void>;
+  uploadTempFileWithMetadata?(
+    file: File,
+    metadata: {[key: string]: any}
+  ): Observable<DocumentenApiFileReference>;
 }
 
 interface DocumentenApiFileReference {
   filename: string;
-  size: number;
-  reference: string;
+  sizeInBytes: number;
+  id: string;
 }
 
 export {ResourceFile, UploadService, DocumentenApiFileReference};
