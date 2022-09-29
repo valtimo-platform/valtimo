@@ -29,7 +29,7 @@ const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
   type: customDocumentApiUploaderType,
   selector: 'documenten-api-form-io-uploader',
   title: 'Documenten API File Upload',
-  group: 'basic',
+  group: 'advanced',
   icon: 'upload',
   // set empty value to force formio to accept arrays as valid input value for this field type
   emptyValue: [],

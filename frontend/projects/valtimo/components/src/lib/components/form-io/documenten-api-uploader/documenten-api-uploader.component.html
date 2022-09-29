@@ -14,20 +14,34 @@
   ~ limitations under the License.
   -->
 
-<valtimo-dropzone
-  (fileSelected)="fileSelected($event)"
-  [acceptedFiles]="null"
-  [camera]="camera"
-  [disabled]="disabled"
-  [hideFilePreview]="true"
-  [hideTitle]="hideTitle"
-  [maxFileSize]="maxFileSize"
-  [maxFiles]="1"
-  [showMaxFileSize]="!hideMaxFileSize"
-  [subtitle]="subtitle"
-  [title]="title"
-  [uploading]="uploading$ | async"
-></valtimo-dropzone>
+<ng-container *ngIf="{linked: uploadProcessLinked$ | async, isAdmin: isAdmin$ | async} as obs">
+  <div *ngIf="obs.linked === false">
+    <div
+      *ngIf="obs.isAdmin"
+      [translate]="'dossier.documenten.noProcessLinked.adminRole'"
+      class="bg-warning text-black mb-2 p-3 text-center"
+    ></div>
+    <div
+      *ngIf="!obs.isAdmin"
+      [translate]="'dossier.documenten.noProcessLinked.regularUser'"
+      class="bg-warning text-black mb-2 p-3 text-center"
+    ></div>
+  </div>
+  <valtimo-dropzone
+    (fileSelected)="fileSelected($event)"
+    [acceptedFiles]="null"
+    [camera]="camera"
+    [disabled]="disabled || obs.linked === false || obs.linked === 'loading'"
+    [hideFilePreview]="true"
+    [hideTitle]="hideTitle"
+    [maxFileSize]="maxFileSize"
+    [maxFiles]="1"
+    [showMaxFileSize]="!hideMaxFileSize"
+    [subtitle]="subtitle"
+    [title]="title"
+    [uploading]="uploading$ | async"
+  ></valtimo-dropzone>
+</ng-container>
 
 <div *ngFor="let resource of _value" class="file-preview">
   <div class="file-preview-name">

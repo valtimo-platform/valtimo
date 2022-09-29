@@ -16,7 +16,7 @@
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {FormioCustomComponent} from '@formio/angular';
-import {BehaviorSubject, Subject, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, of, startWith, Subject, switchMap} from 'rxjs';
 import {
   DocumentenApiFileReference,
   DownloadService,
@@ -25,7 +25,10 @@ import {
 import {FormIoStateService} from '../services/form-io-state.service';
 import {FormIoDomService} from '../services/form-io-dom.service';
 import {DocumentenApiMetadata} from '../../../models';
-import {take, tap} from 'rxjs/operators';
+import {filter, map, take, tap} from 'rxjs/operators';
+import {ValtimoModalService} from '../../../services/valtimo-modal.service';
+import {UserProviderService} from '@valtimo/security';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'valtimo-documenten-api-formio-uploader',
@@ -67,12 +70,40 @@ export class DocumentenApiUploaderComponent
   readonly modalDisabled$ = new BehaviorSubject<boolean>(false);
   readonly showModal$ = new Subject<null>();
   readonly hideModal$ = new Subject<null>();
+  readonly uploadProcessLinked$: Observable<boolean | string> = combineLatest([
+    this.route?.params || of(null),
+    this.route?.firstChild?.params || of(null),
+    this.modalService.documentDefinitionName$,
+  ]).pipe(
+    filter(
+      ([params, firstChildParams, documentDefinitionName]) =>
+        !!(
+          params?.documentDefinitionName ||
+          firstChildParams?.documentDefinitionName ||
+          documentDefinitionName
+        )
+    ),
+    switchMap(([params, firstChildParams, documentDefinitionName]) =>
+      this.uploadProviderService.checkUploadProcessLink(
+        params?.documentDefinitionName ||
+          firstChildParams?.documentDefinitionName ||
+          documentDefinitionName
+      )
+    ),
+    startWith('loading')
+  );
+  readonly isAdmin$: Observable<boolean> = this.userProviderService
+    .getUserSubject()
+    .pipe(map(userIdentity => userIdentity?.roles.includes('ROLE_ADMIN')));
 
   constructor(
     private readonly uploadProviderService: UploadProviderService,
     private readonly stateService: FormIoStateService,
     private readonly domService: FormIoDomService,
-    private readonly downloadService: DownloadService
+    private readonly downloadService: DownloadService,
+    private readonly modalService: ValtimoModalService,
+    private readonly userProviderService: UserProviderService,
+    private readonly route: ActivatedRoute
   ) {}
 
   _value: Array<DocumentenApiFileReference> = [];
