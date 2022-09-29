@@ -24,7 +24,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {DropdownItem} from '@valtimo/components';
-import {BehaviorSubject, combineLatest} from 'rxjs';
+import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
 import {take, tap} from 'rxjs/operators';
 import {TaskService} from '../task.service';
 import {User} from '@valtimo/config';
@@ -44,21 +44,23 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges {
   assignedEmailOnServer$ = new BehaviorSubject<string>(null);
   userEmailToAssign: string = null;
   assignedUserFullName$ = new BehaviorSubject<string>(null);
-
+  private _subscriptions = new Subscription();
   constructor(private taskService: TaskService) {}
 
   ngOnInit(): void {
-    this.taskService.getCandidateUsers(this.taskId).subscribe(candidateUsers => {
-      this.candidateUsersForTask$.next(candidateUsers);
-      if (this.assigneeEmail) {
-        this.assignedEmailOnServer$.next(this.assigneeEmail);
-        this.userEmailToAssign = this.assigneeEmail;
-        this.assignedUserFullName$.next(
-          this.getAssignedUserName(candidateUsers, this.assigneeEmail)
-        );
-      }
-      this.enable();
-    });
+    this._subscriptions.add(
+      this.taskService.getCandidateUsers(this.taskId).subscribe(candidateUsers => {
+        this.candidateUsersForTask$.next(candidateUsers);
+        if (this.assigneeEmail) {
+          this.assignedEmailOnServer$.next(this.assigneeEmail);
+          this.userEmailToAssign = this.assigneeEmail;
+          this.assignedUserFullName$.next(
+            this.getAssignedUserName(candidateUsers, this.assigneeEmail)
+          );
+        }
+        this.enable();
+      })
+    );
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -73,6 +75,10 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges {
     } else {
       this.clear();
     }
+  }
+
+  ngOnDestroy() {
+    this._subscriptions.unsubscribe();
   }
 
   assignTask(userEmail: string): void {
