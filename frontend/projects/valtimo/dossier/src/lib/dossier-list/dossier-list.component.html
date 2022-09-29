@@ -16,7 +16,7 @@
 
 <ng-container *ngTemplateOutlet="sidebar"></ng-container>
 
-<div class="main-content pt-0">
+<div class="main-content pt-0" *ngIf="{loading: loading$ | async} as obs">
   <div class="container-fluid">
     <div class="col-12 px-0 mb-5">
       <div
@@ -31,7 +31,7 @@
             (click)="startDossier()"
             [ngbTooltip]="associatedProcessDocumentDefinitions.length === 0 ? 'No action' : null"
             placement="bottom"
-            [disabled]="associatedProcessDocumentDefinitions.length === 0"
+            [disabled]="associatedProcessDocumentDefinitions.length === 0 || obs.loading"
           >
             <i class="icon mdi mdi-plus mr-1"></i>
             {{ 'Start Dossier' | translate }}
@@ -78,40 +78,43 @@
           </div>
         </div>
       </div>
-      <valtimo-widget>
-        <ng-container *ngTemplateOutlet="list"></ng-container>
-      </valtimo-widget>
+      <valtimo-spinner *ngIf="obs.loading"></valtimo-spinner>
+      <ng-container *ngTemplateOutlet="list; context:{obs: obs}"></ng-container>
     </div>
   </div>
   <valtimo-dossier-process-start-modal #processStartModal></valtimo-dossier-process-start-modal>
 </div>
 
-<ng-template #list>
-  <ng-container *ngIf="paginationCopy$ | async as pagination">
+<ng-template #list let-obs="obs">
+    <ng-container *ngIf="paginationCopy$ | async as pagination">
     <ng-container *ngIf="fields$ | async as fields">
-      <valtimo-list
-        *ngIf="documentItems$ | async as documentItems"
-        [items]="documentItems"
-        [fields]="fields"
-        (rowClicked)="rowClick($event)"
-        [pagination]="pagination"
-        [viewMode]="true"
-        [header]="true"
-        paginationIdentifier="dossierList"
-        (paginationClicked)="pageChange($event)"
-        (paginationSet)="pageSizeChange($event)"
-        [initialSortState]="pagination.sort"
-        (sortChanged)="sortChanged($event)"
-      >
-        <div header>
-          <h3 class="list-header-title">
-            {{ (schema$ | async)?.title }}
-            <sup class="ml-1 badge badge-pill badge-primary">{{ documentItems?.length || 0 }}</sup>
-          </h3>
-        </div>
-      </valtimo-list>
+      <ng-container *ngIf="documentItems$ | async as documentItems">
+        <valtimo-widget *ngIf="obs.loading === false">
+          <valtimo-list
+            [items]="documentItems"
+            [fields]="fields"
+            (rowClicked)="rowClick($event)"
+            [pagination]="pagination"
+            [viewMode]="true"
+            [header]="true"
+            paginationIdentifier="dossierList"
+            (paginationClicked)="pageChange($event)"
+            (paginationSet)="pageSizeChange($event)"
+            [initialSortState]="pagination.sort"
+            (sortChanged)="sortChanged($event)"
+          >
+            <div header>
+              <h3 class="list-header-title">
+                {{ (schema$ | async)?.title }}
+                <sup class="ml-1 badge badge-pill badge-primary">{{ documentItems?.length || 0 }}</sup>
+              </h3>
+            </div>
+          </valtimo-list>
+        </valtimo-widget>
+      </ng-container>
     </ng-container>
   </ng-container>
+
 </ng-template>
 
 <ng-template #sidebar>

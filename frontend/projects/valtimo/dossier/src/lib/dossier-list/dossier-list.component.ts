@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {DefinitionColumn} from '@valtimo/config';
 import {
@@ -25,21 +25,16 @@ import {
   SortState,
   ProcessDocumentDefinition,
   Documents,
-  DocumentDefinition,
 } from '@valtimo/document';
 import moment from 'moment';
 import {
   BehaviorSubject,
   combineLatest,
-  debounceTime,
   distinctUntilChanged,
   filter,
-  fromEvent,
   map,
   Observable,
   of,
-  startWith,
-  Subscription,
   switchMap,
   take,
   tap,
@@ -65,6 +60,7 @@ export class DossierListComponent implements OnInit {
 
   private selectedProcessDocumentDefinition: ProcessDocumentDefinition | null = null;
   private modalListenerAdded = false;
+  readonly loading$ = new BehaviorSubject<boolean>(true);
 
   private readonly settingPaginationForDocName$ = new BehaviorSubject<string | undefined>(
     undefined
@@ -187,7 +183,8 @@ export class DossierListComponent implements OnInit {
         const {content, ...others} = document;
         return {...content, ...others};
       })
-    )
+    ),
+    tap(() => this.loading$.next(false))
   );
 
   constructor(
