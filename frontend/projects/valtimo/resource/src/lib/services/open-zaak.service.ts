@@ -164,7 +164,11 @@ export class OpenZaakService {
     formData.append('documentId', documentId);
 
     Object.keys(metadata).forEach(metaDataKey => {
-      formData.append(metaDataKey, metadata[metaDataKey] || null);
+      const metadataValue = metadata[metaDataKey];
+
+      if (metadataValue) {
+        formData.append(metaDataKey, metadataValue);
+      }
     });
 
     return this.http.post<void>(`${this.valtimoApiConfig.endpointUri}resource/temp`, formData, {
@@ -181,7 +185,11 @@ export class OpenZaakService {
     formData.append('file', file);
 
     Object.keys(metadata).forEach(metaDataKey => {
-      formData.append(metaDataKey, metadata[metaDataKey] || null);
+      const metadataValue = metadata[metaDataKey];
+
+      if (metadataValue) {
+        formData.append(metaDataKey, metadataValue);
+      }
     });
 
     return this.http.post<DocumentenApiFileReference>(
