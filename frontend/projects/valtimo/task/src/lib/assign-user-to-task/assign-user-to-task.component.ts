@@ -19,6 +19,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
@@ -34,7 +35,7 @@ import {User} from '@valtimo/config';
   templateUrl: './assign-user-to-task.component.html',
   styleUrls: ['./assign-user-to-task.component.scss'],
 })
-export class AssignUserToTaskComponent implements OnInit, OnChanges {
+export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   @Input() taskId: string;
   @Input() assigneeEmail: string;
   @Output() assignmentOfTaskChanged = new EventEmitter();
