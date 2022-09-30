@@ -61,14 +61,18 @@ export class TabService {
   }
 
   getConfigurableTabs(documentDefinitionName: string) {
-    const allNamesObjects = this.configService.config.caseObjectTypes[documentDefinitionName];
-    const map = new Map();
+    if (this.configService?.config?.caseObjectTypes) {
+      const allNamesObjects = this.configService?.config?.caseObjectTypes[documentDefinitionName];
+      const map = new Map();
 
-    allNamesObjects?.forEach(name => {
-      map.set(name, DossierDetailTabObjectTypeComponent);
-    });
+      allNamesObjects?.forEach(name => {
+        map.set(name, DossierDetailTabObjectTypeComponent);
+      });
 
-    this.extraTabs = map;
+      this.extraTabs = map;
+    } else {
+      this.extraTabs = new Map<string, object>();
+    }
   }
 
   private openRouterSubscription(): void {
