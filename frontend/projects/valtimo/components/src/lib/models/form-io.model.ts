@@ -55,6 +55,9 @@ export class FormioOptionsImpl implements ValtimoFormioOptions {
   i18n?: object;
   fileService?: object;
   hooks?: FormioHookOptions;
+  readonly?: boolean;
+  decimalSeparator?: string;
+  thousandsSeparator?: string;
 
   constructor() {}
 
