@@ -47,7 +47,10 @@
 
 <ng-template #metadataForm let-obs="obs">
   <ng-container *ngIf="showForm$ | async">
-    <v-form (valueChange)="formValueChange($event)">
+    <v-form
+      (valueChange)="formValueChange($event)"
+      *ngIf="additionalDocumentDate$ | async as additionalDate"
+    >
       <v-input
         [defaultValue]="filename || obs.file?.name"
         [disabled]="obs.disabled || disableFilename"
@@ -81,17 +84,6 @@
         name="author"
       >
       </v-input>
-      <v-select
-        [defaultSelectionId]="status"
-        [disabled]="obs.disabled || disableStatus"
-        [items]="statusItems$ | async"
-        [margin]="true"
-        [required]="true"
-        [title]="'document.status' | translate"
-        [tooltip]="'document.statusTooltip' | translate"
-        [widthInPx]="200"
-        name="status"
-      ></v-select>
       <v-select
         *ngIf="languageItems$ | async as languageItems"
         [defaultSelectionId]="language || languageItems[0].id"
@@ -128,7 +120,11 @@
         [widthPx]="100"
         name="creationDate"
       ></v-date-picker>
+      <ng-container
+        *ngTemplateOutlet="additionalDatePicker; context: {additionalDate: additionalDate}"
+      ></ng-container>
       <v-date-picker
+        *ngIf="additionalDate === 'received'"
         [defaultDateIsToday]="true"
         [disabled]="obs.disabled"
         [margin]="true"
@@ -138,6 +134,7 @@
         name="receiptDate"
       ></v-date-picker>
       <v-date-picker
+        *ngIf="additionalDate === 'sent'"
         [defaultDateIsToday]="true"
         [disabled]="obs.disabled"
         [margin]="true"
@@ -146,6 +143,18 @@
         [widthPx]="100"
         name="sendDate"
       ></v-date-picker>
+      <v-select
+        [defaultSelectionId]="status"
+        [disabled]="obs.disabled || disableStatus"
+        [items]="statusItems$ | async"
+        [margin]="true"
+        [required]="true"
+        [title]="'document.status' | translate"
+        [tooltip]="'document.statusTooltip' | translate"
+        [widthInPx]="200"
+        [clearSelectionSubject$]="clearStatusSelection$"
+        name="status"
+      ></v-select>
       <v-input
         [defaultValue]="description"
         [disabled]="obs.disabled || disableDescription"
@@ -168,4 +177,28 @@
       ></v-select>
     </v-form>
   </ng-container>
+</ng-template>
+
+<ng-template #additionalDatePicker let-additionalDate="additionalDate">
+  <v-input-label
+    [title]="'document.additionalDate' | translate"
+    [name]="'additionalDate'"
+    [tooltip]="'document.additionalDateTooltip' | translate"
+    [required]="true"
+  >
+  </v-input-label>
+  <div class="col-12 col-sm-8 col-lg-6 form-check mt-1 additional-date">
+    <label
+      class="custom-control custom-radio custom-control-inline"
+      *ngFor="let option of ADDITONAL_DOCUMENT_DATE_OPTIONS"
+      (click)="setAdditionalDate(option.value)"
+    >
+      <input
+        class="custom-control-input"
+        type="radio"
+        name="radio-inline"
+        [checked]="additionalDate === option.value"
+      /><span class="custom-control-label">{{ option.translationKey | translate }}</span>
+    </label>
+  </div>
 </ng-template>

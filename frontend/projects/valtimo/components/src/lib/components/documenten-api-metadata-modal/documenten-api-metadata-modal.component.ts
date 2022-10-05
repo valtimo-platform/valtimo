@@ -24,11 +24,13 @@ import {
   map,
   Observable,
   of,
+  Subject,
   Subscription,
   switchMap,
   take,
 } from 'rxjs';
 import {
+  AdditionalDocumentDate,
   ConfidentialityLevel,
   DocumentenApiMetadata,
   DocumentLanguage,
@@ -39,6 +41,7 @@ import {ActivatedRoute} from '@angular/router';
 import {DocumentService} from '@valtimo/document';
 import {KeycloakService} from 'keycloak-angular';
 import {ValtimoModalService} from '../../services/valtimo-modal.service';
+import {tap} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-documenten-api-metadata-modal',
@@ -92,18 +95,54 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
         }))
       )
     );
+  readonly ADDITONAL_DOCUMENT_DATE_OPTIONS: Array<{
+    value: AdditionalDocumentDate;
+    translationKey: string;
+  }> = [
+    {
+      value: 'neither',
+      translationKey: 'document.noAdditionalDate',
+    },
+    {
+      value: 'sent',
+      translationKey: 'document.sendDate',
+    },
+    {
+      value: 'received',
+      translationKey: 'document.receiptDate',
+    },
+  ];
+  readonly clearStatusSelection$ = new Subject<null>();
+  readonly additionalDocumentDate$ = new BehaviorSubject<AdditionalDocumentDate>('neither');
   readonly STATUSES: Array<DocumentStatus> = [
     'in_bewerking',
     'ter_vaststelling',
     'definitief',
     'gearchiveerd',
   ];
-  readonly statusItems$: Observable<Array<SelectItem>> = this.translateService.stream('key').pipe(
-    map(() =>
-      this.STATUSES.map(status => ({
-        id: status,
-        text: this.translateService.instant(`document.${status}`),
-      }))
+  readonly RECEIPT_STATUSES: Array<DocumentStatus> = ['definitief', 'gearchiveerd'];
+  readonly formData$ = new BehaviorSubject<DocumentenApiMetadata>(null);
+  readonly statusItems$: Observable<Array<SelectItem>> = combineLatest([
+    this.additionalDocumentDate$,
+    this.translateService.stream('key'),
+  ]).pipe(
+    tap(([additionalDocumentDate]) => {
+      this.formData$.pipe(take(1)).subscribe(formData => {
+        if (
+          additionalDocumentDate === 'received' &&
+          (formData.status === 'in_bewerking' || formData.status === 'ter_vaststelling')
+        ) {
+          this.clearStatusSelection$.next(null);
+        }
+      });
+    }),
+    map(([additionalDocumentDate]) =>
+      (additionalDocumentDate === 'received' ? this.RECEIPT_STATUSES : this.STATUSES).map(
+        status => ({
+          id: status,
+          text: this.translateService.instant(`document.${status}`),
+        })
+      )
     )
   );
   readonly LANGUAGES: Array<DocumentLanguage> = ['nld', 'eng', 'deu'];
@@ -139,10 +178,10 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   );
   readonly showForm$: Observable<boolean> = this.modalService.modalVisible$;
   readonly valid$ = new BehaviorSubject<boolean>(false);
-  readonly formData$ = new BehaviorSubject<DocumentenApiMetadata>(null);
   readonly userEmail$ = from(this.keycloakService.loadUserProfile()).pipe(
     map(userProfile => userProfile?.email || '')
   );
+
   private showSubscription!: Subscription;
   private hideSubscription!: Subscription;
 
@@ -188,6 +227,10 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   formValueChange(data: DocumentenApiMetadata): void {
     this.formData$.next(data);
     this.setValid(data);
+  }
+
+  setAdditionalDate(value: AdditionalDocumentDate): void {
+    this.additionalDocumentDate$.next(value);
   }
 
   private setValid(data: DocumentenApiMetadata): void {

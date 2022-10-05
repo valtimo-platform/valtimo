@@ -65,7 +65,7 @@
         "regularUser": "Der Dokumenten-Upload steht für diesen Fall nicht zur Verfügung. Bitte wenden Sie sich an einen Administrator",
         "adminRole": "Der Prozess zum Hochladen von Dokumenten wurde nicht konfiguriert. Bitte konfigurieren Sie diesen Prozess auf der Fallverwaltungsseite"
       }
-  },
+    },
     "startSubProcess": "Starten",
     "deleteConfirmation": {
       "title": "Datei löschen",
@@ -122,7 +122,10 @@
     "eng": "Englisch",
     "deu": "Deutsch",
     "informatieobjecttype": "Dokumententyp",
-    "informatieobjecttypeTooltip": "Ein Dokumenttyp, der sich auf den Falltyp des aktuellen Falls bezieht"
+    "informatieobjecttypeTooltip": "Ein Dokumenttyp, der sich auf den Falltyp des aktuellen Falls bezieht",
+    "additionalDate": "Zusätzliches Dokumentdatum",
+    "additionalDateTooltip": "Ein zusätzliches Datum, das dem Dokument als Metadaten hinzugefügt werden kann. Dieses zusätzliche Datum ist optional. Wenn „Eingangsdatum“ ausgewählt ist, kann der Dokumentstatus nur auf 'final' oder 'archiviert' gesetzt werden.",
+    "noAdditionalDate": "Kein Zusatztermin"
   },
   "summary": {
     "userTasksDoneState": "Alles erledigt!",

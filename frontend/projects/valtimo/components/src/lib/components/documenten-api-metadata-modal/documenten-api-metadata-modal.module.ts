@@ -22,6 +22,7 @@ import {
   ButtonModule,
   DatePickerModule,
   FormModule,
+  InputLabelModule,
   InputModule,
   ModalModule,
   SelectModule,
@@ -42,6 +43,7 @@ import {
     InputModule,
     SelectModule,
     DatePickerModule,
+    InputLabelModule,
   ],
 })
 export class DocumentenApiMetadataModalModule {}

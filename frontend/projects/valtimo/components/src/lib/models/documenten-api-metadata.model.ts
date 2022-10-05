@@ -42,4 +42,12 @@ interface DocumentenApiMetadata {
   informatieobjecttype: string;
 }
 
-export {DocumentenApiMetadata, ConfidentialityLevel, DocumentStatus, DocumentLanguage};
+type AdditionalDocumentDate = 'sent' | 'received' | 'neither';
+
+export {
+  DocumentenApiMetadata,
+  ConfidentialityLevel,
+  DocumentStatus,
+  DocumentLanguage,
+  AdditionalDocumentDate,
+};

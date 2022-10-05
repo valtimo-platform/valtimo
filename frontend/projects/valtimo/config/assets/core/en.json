@@ -122,7 +122,10 @@
     "eng": "English",
     "deu": "German",
     "informatieobjecttype": "Document type",
-    "informatieobjecttypeTooltip": "A document type which is related to the zaak type of the current case"
+    "informatieobjecttypeTooltip": "A document type which is related to the zaak type of the current case",
+    "additionalDate": "Additional document date",
+    "additionalDateTooltip": "An additional date that can be added to the document as metadata. This additional date is optional. If 'Receipt date' is selected, the document status can only be set to 'definitive' or 'archived'.",
+    "noAdditionalDate": "No additional date"
   },
   "summary": {
     "userTasksDoneState": "All done!",
