@@ -102,6 +102,7 @@ export interface ValtimoConfig {
     showUserNameInTopBar?: boolean;
     experimentalDmnEditing?: boolean;
   };
+  visibleTaskListTabs?: Array<TaskListTab>;
   customTaskList?: CustomTaskList;
   customLeftSidebar?: CustomLeftSidebar;
   caseObjectTypes?: {
@@ -113,4 +114,10 @@ export enum UploadProvider {
   S3,
   OPEN_ZAAK,
   DOCUMENTEN_API,
+}
+
+export enum TaskListTab {
+  MINE = 'mine',
+  OPEN = 'open',
+  ALL = 'all'
 }

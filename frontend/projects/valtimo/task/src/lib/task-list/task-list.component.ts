@@ -23,7 +23,7 @@ import {NGXLogger} from 'ngx-logger';
 import {TaskDetailModalComponent} from '../task-detail-modal/task-detail-modal.component';
 import {TranslateService} from '@ngx-translate/core';
 import {combineLatest, Subscription} from 'rxjs';
-import {SortState} from '@valtimo/config';
+import {ConfigService, SortState, TaskListTab} from '@valtimo/config';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -40,24 +40,30 @@ export class TaskListComponent implements OnDestroy {
     open: new TaskList(),
     all: new TaskList(),
   };
+  public visibleTabs: Array<TaskListTab> | null = null;
   public currentTaskType = 'mine';
   public listTitle: string | null = null;
   public listDescription: string | null = null;
   public sortState: SortState | null = null;
   private translationSubscription: Subscription;
 
-  public paginationClicked(page: number, type: string) {
-    this.tasks[type].page = page - 1;
-    this.getTasks(type);
-  }
-
   constructor(
     private taskService: TaskService,
     private router: Router,
     private logger: NGXLogger,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private configService: ConfigService
   ) {
+    this.visibleTabs = this.configService.config?.visibleTaskListTabs || null;
+    if (this.visibleTabs != null) {
+      this.currentTaskType = this.visibleTabs[0];
+    }
     this.setDefaultSorting();
+  }
+
+  public paginationClicked(page: number, type: string) {
+    this.tasks[type].page = page - 1;
+    this.getTasks(type);
   }
 
   paginationSet() {
@@ -74,20 +80,7 @@ export class TaskListComponent implements OnDestroy {
 
   tabChange(tab) {
     this.clearPagination(this.currentTaskType);
-
-    switch (tab.nextId) {
-      case 1:
-        this.getTasks('mine');
-        break;
-      case 2:
-        this.getTasks('open');
-        break;
-      case 3:
-        this.getTasks('all');
-        break;
-      default:
-        this.logger.fatal('Unreachable case');
-    }
+    this.getTasks(tab.nextId);
   }
 
   showTask(task) {

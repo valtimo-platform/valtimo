@@ -24,6 +24,7 @@ import {
   ROLE_ADMIN,
   ROLE_DEVELOPER,
   ROLE_USER,
+  TaskListTab,
   UploadProvider,
   ValtimoConfig,
 } from '@valtimo/config';
@@ -173,6 +174,7 @@ export const environment: ValtimoConfig = {
       },
     ],
   },
+  visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.OPEN, TaskListTab.ALL],
   customTaskList: {
     fields: [
       {
