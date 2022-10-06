@@ -1,7 +1,7 @@
 {
   "name": "@valtimo/dossier-management",
   "license": "EUPL-1.2",
-  "version": "5.10.0-103.RC",
+  "version": "5.9.1",
   "peerDependencies": {
     "@angular/common": "^13.2.3",
     "@angular/core": "^13.2.3"

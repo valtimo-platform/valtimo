@@ -1,7 +1,7 @@
 {
   "name": "@valtimo/account",
   "license": "EUPL-1.2",
-  "version": "5.10.0-103.RC",
+  "version": "5.9.1",
   "peerDependencies": {
     "moment": "^2.29.4",
     "@angular/common": "^13.2.3",
