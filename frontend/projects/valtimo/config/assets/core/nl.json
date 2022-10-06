@@ -129,7 +129,10 @@
   },
   "summary": {
     "userTasksDoneState": "Helemaal bij!",
-    "taskLocked": "Je hebt geen toegang tot deze taak"
+    "taskLocked": "Je hebt geen toegang tot deze taak",
+    "userTasks": "Taken",
+    "taskOpen": "Open",
+    "taskCreated": "Aangemaakt op"
   },
   "progress": {
     "noProcessDocumentInstances": "Er is nog geen proces gestart"
@@ -457,6 +460,10 @@
     "addRow": "Rij toevoegen",
     "deleteRow": "Rij verwijderen"
   },
+  "taskDetail": {
+    "taskCreated": "Aangemaakt op",
+    "taskCompleted": "is succesvol afgerond"
+  },
   "assignTask": {
     "assignedTo": "Toegewezen aan ",
     "header": "Gebruiker toewijzen aan deze taak",
@@ -495,7 +502,8 @@
     "noResults": "Geen resultaten",
     "showingResults": "{{number}} van {{total}} resultaten zichtbaar",
     "showingResult": "{{number}} resultaat zichtbaar",
-    "automaticallyGenerated": "Automatisch gegenereerd"
+    "automaticallyGenerated": "Automatisch gegenereerd",
+    "search": "Zoeken..."
   },
   "webcam": {
     "takePicture": "Foto maken",

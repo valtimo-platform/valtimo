@@ -28,7 +28,7 @@
 
     <!--Current user tasks right side-->
     <div class="col-sm-12 col-md-4 col-xl-3">
-      <h4 class="user-tasks-title">User tasks</h4>
+      <h4 class="user-tasks-title">{{ 'summary.userTasks' | translate }}</h4>
       <ng-container *ngIf="!tasks.length">
         <valtimo-widget>
           <div class="p-3">
@@ -45,9 +45,9 @@
             (click)="rowTaskClick(task)"
             *ngIf="!task.isLocked()"
           >
-            <span class="float-right badge badge-pill badge-primary">Open</span>
+            <span class="float-right badge badge-pill badge-primary">{{ 'summary.taskOpen' | translate }}</span>
             <strong>{{ task.name }}</strong>
-            <div>Created {{ task.created }}</div>
+            <div>{{ 'summary.taskCreated' | translate }} {{ task.created }}</div>
           </div>
           <div class="p-3 hoverable" *ngIf="task.isLocked()">
             <span
@@ -57,7 +57,7 @@
               <i class="icon mdi mdi-lock"></i>
             </span>
             <strong>{{ task.name }}</strong>
-            <div>Created {{ task.created }}</div>
+            <div>{{ 'summary.taskCreated' | translate }} {{ task.created }}</div>
           </div>
         </valtimo-widget>
       </ng-container>

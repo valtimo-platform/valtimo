@@ -129,7 +129,10 @@
   },
   "summary": {
     "userTasksDoneState": "All done!",
-    "taskLocked": "You don't have access to this task"
+    "taskLocked": "You don't have access to this task",
+    "userTasks": "User tasks",
+    "taskOpen": "Open",
+    "taskCreated": "Created"
   },
   "progress": {
     "noProcessDocumentInstances": "There is no process started yet"
@@ -457,6 +460,10 @@
     "addRow": "Add row",
     "deleteRow": "Delete row"
   },
+  "taskDetail": {
+    "taskCreated": "Created",
+    "taskCompleted": "has successfully been completed"
+  },
   "assignTask": {
     "assignedTo": "Assigned to ",
     "header": "Assign a user to this task",
@@ -495,7 +502,8 @@
     "noResults": "No result found",
     "showingResults": "Showing {{number}} of {{total}} results",
     "showingResult": "Showing {{number}} result",
-    "automaticallyGenerated": "Automatically generated"
+    "automaticallyGenerated": "Automatically generated",
+    "search": "Search..."
   },
   "webcam": {
     "takePicture": "Take picture",

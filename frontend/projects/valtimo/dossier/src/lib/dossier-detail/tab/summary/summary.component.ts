@@ -16,7 +16,7 @@
 
 import {
   Component,
-  ElementRef,
+  ElementRef, OnDestroy,
   OnInit,
   Renderer2,
   ViewChild,
@@ -31,6 +31,7 @@ import {FormioOptionsImpl, ValtimoFormioOptions} from '@valtimo/components';
 import moment from 'moment';
 import {FormioForm} from '@formio/angular';
 import {UserProviderService} from '@valtimo/security';
+import {Subscription} from 'rxjs';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -41,7 +42,7 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
   styleUrls: ['./summary.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class DossierDetailTabSummaryComponent implements OnInit {
+export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
   public readonly documentDefinitionName: string;
   public document: Document;
   public documentId: string;
@@ -52,6 +53,7 @@ export class DossierDetailTabSummaryComponent implements OnInit {
   public formDefinition: FormioForm = null;
   public options: ValtimoFormioOptions;
   public roles: string[] = [];
+  private _subscriptions = new Subscription();
   @ViewChild('taskDetail') taskDetail: TaskDetailModalComponent;
 
   constructor(
@@ -77,54 +79,72 @@ export class DossierDetailTabSummaryComponent implements OnInit {
     this.init();
   }
 
+  ngOnDestroy() {
+    this._subscriptions.unsubscribe();
+  }
+
   init() {
-    this.documentService.getDocument(this.documentId).subscribe(document => {
-      this.document = document;
-    });
-    this.formService
-      .getFormDefinitionByNamePreFilled(`${this.documentDefinitionName}.summary`, this.documentId)
-      .subscribe(formDefinition => {
-        this.formDefinition = formDefinition;
-      });
-    this.userProviderService.getUserSubject().subscribe(user => {
-      this.roles = user.roles;
-      this.tasks = [];
-      this.loadProcessDocumentInstances(this.documentId);
-    });
+    this._subscriptions.add(
+      this.documentService.getDocument(this.documentId).subscribe(document => {
+        this.document = document;
+      })
+    );
+
+    this._subscriptions.add(
+      this.formService
+        .getFormDefinitionByNamePreFilled(`${this.documentDefinitionName}.summary`, this.documentId)
+        .subscribe(formDefinition => {
+          this.formDefinition = formDefinition;
+        })
+    );
+
+    this._subscriptions.add(
+      this.userProviderService.getUserSubject().subscribe(user => {
+        this.roles = user.roles;
+        this.tasks = [];
+        this.loadProcessDocumentInstances(this.documentId);
+      })
+    );
   }
 
   public loadProcessDocumentInstances(documentId: string) {
-    this.documentService
-      .findProcessDocumentInstances(documentId)
-      .subscribe(processDocumentInstances => {
-        this.processDocumentInstances = processDocumentInstances;
-        this.processDocumentInstances.forEach(instance => {
-          this.loadProcessInstanceTasks(instance.id.processInstanceId);
-        });
-      });
+    this._subscriptions.add(
+      this.documentService
+        .findProcessDocumentInstances(documentId)
+        .subscribe(processDocumentInstances => {
+          this.processDocumentInstances = processDocumentInstances;
+          this.processDocumentInstances.forEach(instance => {
+            this.loadProcessInstanceTasks(instance.id.processInstanceId);
+          });
+        })
+    );
   }
 
   private loadProcessInstanceTasks(processInstanceId: string) {
-    this.processService.getProcessInstanceTasks(processInstanceId).subscribe(tasks => {
-      tasks.forEach(task => {
-        task.createdUnix = this.moment(task.created).unix();
-        task.created = this.moment(task.created).format('DD MMM YYYY HH:mm');
-        task.isLocked = () => {
-          let locked = true;
-          for (const link of task.identityLinks) {
-            if (link.type === 'candidate' && link.groupId) {
-              if (this.roles.includes(link.groupId)) {
-                locked = false;
-                break;
+    this._subscriptions.add(
+      this.processService.getProcessInstanceTasks(processInstanceId).subscribe(tasks => {
+        if (tasks != null) {
+          tasks.forEach(task => {
+            task.createdUnix = this.moment(task.created).unix();
+            task.created = this.moment(task.created).format('DD MMM YYYY HH:mm');
+            task.isLocked = () => {
+              let locked = true;
+              for (const link of task.identityLinks) {
+                if (link.type === 'candidate' && link.groupId) {
+                  if (this.roles.includes(link.groupId)) {
+                    locked = false;
+                    break;
+                  }
+                }
               }
-            }
-          }
-          return locked;
-        };
-      });
-      this.tasks = this.tasks.concat(tasks);
-      this.tasks.sort((t1, t2) => t2.createdUnix - t1.createdUnix);
-    });
+              return locked;
+            };
+          });
+          this.tasks = this.tasks.concat(tasks);
+          this.tasks.sort((t1, t2) => t2.createdUnix - t1.createdUnix);
+        }
+      })
+    );
   }
 
   public rowTaskClick(task: any) {

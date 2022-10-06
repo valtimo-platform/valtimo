@@ -42,6 +42,7 @@ import {TaskService} from '../task.service';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {UserProviderService} from '@valtimo/security';
 import {DocumentService} from '@valtimo/document';
+import {TranslateService} from '@ngx-translate/core';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -84,7 +85,8 @@ export class TaskDetailModalComponent {
     private readonly taskService: TaskService,
     private readonly userProviderService: UserProviderService,
     private readonly modalService: ValtimoModalService,
-    private readonly documentService: DocumentService
+    private readonly documentService: DocumentService,
+    private readonly translateService: TranslateService
   ) {
     this.formioOptions = new FormioOptionsImpl();
     this.formioOptions.disableAlerts = true;
@@ -99,7 +101,7 @@ export class TaskDetailModalComponent {
     this.task = task;
     this.page = {
       title: task.name,
-      subtitle: `Created ${task.created}`,
+      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task.created}`
     };
 
     this.formLinkService
@@ -228,7 +230,7 @@ export class TaskDetailModalComponent {
   }
 
   private completeTask() {
-    this.toastr.success(this.task.name + ' has successfully been completed');
+    this.toastr.success(`${this.task.name} ${this.translateService.instant('taskDetail.taskCompleted')}`);
     this.modal.hide();
     this.task = null;
     this.formSubmit.emit();

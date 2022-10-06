@@ -129,7 +129,10 @@
   },
   "summary": {
     "userTasksDoneState": "Alles erledigt!",
-    "taskLocked": "Kein Zugriff zu dieser Aufgabe!"
+    "taskLocked": "Kein Zugriff zu dieser Aufgabe!",
+    "userTasks": "Aufgaben",
+    "taskOpen": "Öffnen",
+    "taskCreated": "Erstellt"
   },
   "progress": {
     "noProcessDocumentInstances": "Es wurde noch kein Prozess gestartet"
@@ -457,6 +460,10 @@
     "addRow": "Zeile hinzufügen",
     "deleteRow": "Zeile löschen"
   },
+  "taskDetail": {
+    "taskCreated": "Erstellt",
+    "taskCompleted": "erfolgreich abgeschlossen"
+  },
   "assignTask": {
     "assignedTo": "User-Zuordnung: ",
     "header": "Aufgabe einen User zuordnen",
@@ -495,7 +502,8 @@
     "noResults": "Keine Ergebnisse gefunden",
     "showingResults": "Zeigt {{number}} von {{total}} Ergebnissen",
     "showingResult": "Zeigt {{number}} Ergebnisse",
-    "automaticallyGenerated": "Automatisch erzeugt"
+    "automaticallyGenerated": "Automatisch erzeugt",
+    "search": "Suche..."
   },
   "webcam": {
     "takePicture": "Foto machen",
