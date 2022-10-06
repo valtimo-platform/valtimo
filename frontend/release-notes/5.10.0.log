@@ -1,0 +1,33 @@
+5b5d462 - Updated version to 5.10.0
+7bac401 - Merge branch 'main' into rc/5.10.0-103.RC
+3aa421d - Updated version to 5.10.0-103.RC-SNAPSHOT
+b5026e8 - Merge branch 'main' into development
+34c4822 - Add prompt when deleting files (#214)
+1d97d7e - fix flashing warning message
+8dca2af - clean up; refetch documents
+c080cba - fix typo
+e8d528b - fix extra slashes
+604aa98 - lint fix
+afef9d9 - lint fix
+4d5d72f - feat: configure upload process on case management page (#213)
+1207393 - feat: get document types, use new upload endpoint (#212)
+9238a1c - feat: get document types from catalogi api (#211)
+2127b74 - feat: add new action configuration components (#210)
+93c51ac - fix: avoid case list goes to dashboard behavior (#209)
+18e9600 - changed chart icon for development (#207)
+a4151ca - Fixed bug which prevents viewing documents from the document tab in a… (#208)
+661ab64 - Bugfix/fixed misaligned badges on smaller screens (#206)
+86b0259 - Bugfix/fixed misaligned badges on smaller screens (#204)
+773a6d9 - add documenten api upload provider (#205)
+25fc78d - Updated the nxt-skeleton-loader to version 6.0.0 in the user-interface module (#202)
+a53b18d - feat: improvements to documenten api documents tab (#201)
+64cb711 - feature 36899 - Labels of v-select can now be longer (#200)
+2903f1f - feat: add catalogi api plugin (#199)
+267c4ff - build(deps): bump moment-timezone from 0.5.34 to 0.5.37 (#184)
+9e6622e - lint fix
+b93b81c - feat: extend dropzone, add metadata form (#198)
+3dc0520 - #36899 Fill in Document metadata on process link (#194)
+c08c21c - Feature/37108 system processes (#196)
+a6aa619 - Add a option in the environment file to set the supported files types for the file uploads in a case (#197)
+b72d1f7 - feat: separate s3 and openzaak upload tabs (#195)
+ff86a86 - sort processes on isActive (#192)
