@@ -6,14 +6,7 @@
     "entryFile": "src/public_api.ts"
   },
   "allowedNonPeerDependencies": [
-    "@foxythemes/material-design-iconic-font",
-    "@foxythemes/gritter",
-    "@foxythemes/sparkline",
     "@foxythemes/bootstrap-datetime-picker-bs4",
-    "@foxythemes/fastclick",
-    "@foxythemes/jquery-nestable",
-    "@foxythemes/jvectormap",
-    "@foxythemes/morris.js",
     "beagle-resources",
     "bootstrap",
     "@popperjs/core",
