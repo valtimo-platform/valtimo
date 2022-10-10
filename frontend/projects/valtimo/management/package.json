@@ -7,9 +7,9 @@
     "node": ">=18.0.0 <19.0.0"
   },
   "peerDependencies": {
-    "@angular/common": "^13.2.3",
-    "@angular/core": "^13.2.3",
-    "@angular/elements": "^13.2.3"
+    "@angular/common": "^14.2.5",
+    "@angular/core": "^14.2.5",
+    "@angular/elements": "^14.2.5"
   },
   "dependencies": {
     "jquery": "3.6.0",

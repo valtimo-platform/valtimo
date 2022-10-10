@@ -119,5 +119,5 @@ export enum UploadProvider {
 export enum TaskListTab {
   MINE = 'mine',
   OPEN = 'open',
-  ALL = 'all'
+  ALL = 'all',
 }

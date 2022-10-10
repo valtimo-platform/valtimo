@@ -17,7 +17,7 @@
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {CamundaGeneratedFormComponent} from './camunda-generated-form.component';
 import {FormField} from './formfield/formfield.model';
-import {FormGroup, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {UntypedFormGroup, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 import {Directive, Input} from '@angular/core';
 import {CamundaFormfieldService} from './formfield/camunda-formfield.service';
@@ -56,7 +56,7 @@ describe('CamundaGeneratedFormComponent', () => {
   })
   class CamundaFormfieldGeneratorDirective {
     @Input() formField: FormField;
-    @Input() formGroup: FormGroup;
+    @Input() formGroup: UntypedFormGroup;
   }
 
   beforeEach(async(() => {

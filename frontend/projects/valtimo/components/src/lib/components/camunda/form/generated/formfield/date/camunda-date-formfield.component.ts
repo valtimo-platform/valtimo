@@ -15,7 +15,7 @@
  */
 
 import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {FormGroup} from '@angular/forms';
+import {UntypedFormGroup} from '@angular/forms';
 import {FormField} from '../formfield.model';
 import {CamundaFormfieldService} from '../camunda-formfield.service';
 import moment from 'moment';
@@ -29,7 +29,7 @@ declare var $;
   templateUrl: './camunda-date-formfield.component.html',
 })
 export class CamundaDateFormfieldComponent implements OnInit, AfterViewInit {
-  public formGroup: FormGroup;
+  public formGroup: UntypedFormGroup;
   public formField: FormField;
 
   private INPUT_SELECTOR: string;

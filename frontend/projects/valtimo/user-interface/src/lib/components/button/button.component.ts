@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import {Component, Output, EventEmitter, Input, OnInit, SimpleChanges, OnChanges} from '@angular/core';
+import {
+  Component,
+  Output,
+  EventEmitter,
+  Input,
+  OnInit,
+  SimpleChanges,
+  OnChanges,
+} from '@angular/core';
 import {ButtonType} from '../../models';
 
 @Component({

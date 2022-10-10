@@ -15,7 +15,7 @@
  */
 
 import {Component} from '@angular/core';
-import {FormGroup} from '@angular/forms';
+import {UntypedFormGroup} from '@angular/forms';
 import {FormField} from '../formfield.model';
 
 @Component({
@@ -23,7 +23,7 @@ import {FormField} from '../formfield.model';
   templateUrl: './camunda-textarea-formfield.component.html',
 })
 export class CamundaTextareaFormfieldComponent {
-  public formGroup: FormGroup;
+  public formGroup: UntypedFormGroup;
   public formField: FormField;
 
   constructor() {}

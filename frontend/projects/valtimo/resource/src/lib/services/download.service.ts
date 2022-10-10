@@ -56,7 +56,7 @@ export class DownloadService {
       newWindow.location = url;
     } else {
       // In case the tab is blocked it will just download the file.
-      this.openDownloadLink(url, name)
+      this.openDownloadLink(url, name);
     }
   }
 
@@ -70,7 +70,8 @@ export class DownloadService {
   }
 
   private isFileTypeSupportedForNewWindow(name: string): boolean {
-    const supportedFileTypes = this.configService?.config?.supportedDocumentFileTypesToViewInBrowser || ['pdf', 'jpg', 'png', 'svg'];
+    const supportedFileTypes = this.configService?.config
+      ?.supportedDocumentFileTypesToViewInBrowser || ['pdf', 'jpg', 'png', 'svg'];
 
     return supportedFileTypes.some(function (suffix) {
       return name.toUpperCase().endsWith(suffix.toUpperCase());

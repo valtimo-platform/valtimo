@@ -41,7 +41,7 @@ export class KeycloakUserService implements UserService, OnDestroy {
   private _expiryTimeMs!: number;
 
   private readonly FIVE_MINUTES_MS = 300000;
-  private readonly EXPIRE_TOKEN_CONFIRMATION = 'EXPIRE_TOKEN_CONFIRMATION'
+  private readonly EXPIRE_TOKEN_CONFIRMATION = 'EXPIRE_TOKEN_CONFIRMATION';
 
   private _counter!: Date;
 
@@ -155,26 +155,29 @@ export class KeycloakUserService implements UserService, OnDestroy {
       )
       .subscribe(([promptVisible, headerText, bodyText, cancelButtonText, confirmButtonText]) => {
         this.promptService.identifier$.pipe(take(1)).subscribe(identifier => {
-          if ((!promptVisible || identifier !== this.EXPIRE_TOKEN_CONFIRMATION) && this._expiryTimeMs <= this.FIVE_MINUTES_MS) {
-          this.promptService.openPrompt({
-            identifier: this.EXPIRE_TOKEN_CONFIRMATION,
-            headerText,
-            bodyText,
-            cancelButtonText,
-            confirmButtonText,
-            cancelMdiIcon: 'logout',
-            confirmMdiIcon: 'check',
-            closeOnConfirm: true,
-            closeOnCancel: false,
-            cancelCallbackFunction: () => {
-              this.keycloakService.logout();
-            },
-            confirmCallBackFunction: () => {
-              this.closeExpiryTimerSubscription();
-              this.updateToken(20);
-            },
-          });
-        }
+          if (
+            (!promptVisible || identifier !== this.EXPIRE_TOKEN_CONFIRMATION) &&
+            this._expiryTimeMs <= this.FIVE_MINUTES_MS
+          ) {
+            this.promptService.openPrompt({
+              identifier: this.EXPIRE_TOKEN_CONFIRMATION,
+              headerText,
+              bodyText,
+              cancelButtonText,
+              confirmButtonText,
+              cancelMdiIcon: 'logout',
+              confirmMdiIcon: 'check',
+              closeOnConfirm: true,
+              closeOnCancel: false,
+              cancelCallbackFunction: () => {
+                this.keycloakService.logout();
+              },
+              confirmCallBackFunction: () => {
+                this.closeExpiryTimerSubscription();
+                this.updateToken(20);
+              },
+            });
+          }
 
           if (promptVisible && identifier === this.EXPIRE_TOKEN_CONFIRMATION) {
             this.promptService.setBodyText(bodyText);

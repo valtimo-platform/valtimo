@@ -17,9 +17,9 @@
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
 import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
   FormsModule,
   ReactiveFormsModule,
   Validators,
@@ -62,7 +62,7 @@ class MockChoicefieldService {
 describe('CamundaChoicefieldFormfieldComponent', () => {
   let component: CamundaChoicefieldFormfieldComponent;
   let fixture: ComponentFixture<CamundaChoicefieldFormfieldComponent>;
-  let formGroup: FormGroup;
+  let formGroup: UntypedFormGroup;
 
   const mockConfig = {endpointUri: '/api/'};
   const enumValues = {
@@ -73,7 +73,7 @@ describe('CamundaChoicefieldFormfieldComponent', () => {
   @Component({selector: 'valtimo-camunda-formfield-validation', template: ''})
   class CamundaFormFieldValidationComponent {
     @Input() formField: FormField;
-    @Input() formGroup: FormGroup;
+    @Input() formGroup: UntypedFormGroup;
   }
 
   beforeEach(async(() => {
@@ -110,10 +110,10 @@ describe('CamundaChoicefieldFormfieldComponent', () => {
 
   it('should create choicefield formfield and exclude deprecated item', () => {
     const formField = getFormField([]);
-    formGroup = new FormBuilder().group({});
+    formGroup = new UntypedFormBuilder().group({});
     formGroup.addControl(
       formField.id,
-      new FormControl(formField.defaultValue, Validators.required)
+      new UntypedFormControl(formField.defaultValue, Validators.required)
     );
     component.formField = formField;
     component.formGroup = formGroup;

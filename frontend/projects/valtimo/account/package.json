@@ -8,8 +8,8 @@
   },
   "peerDependencies": {
     "moment": "^2.29.4",
-    "@angular/common": "^13.2.3",
-    "@angular/core": "^13.2.3"
+    "@angular/common": "^14.2.5",
+    "@angular/core": "^14.2.5"
   },
   "dependencies": {
     "tslib": "^2.0.0"

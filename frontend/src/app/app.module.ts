@@ -208,11 +208,6 @@ export function tabsFactory() {
       ],
     },
   ],
-  entryComponents: [
-    CustomFormExampleComponent,
-    StartProcessCustomFormComponent,
-    FormIoUploaderComponent,
-  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {

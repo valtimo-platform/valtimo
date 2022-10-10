@@ -45,7 +45,9 @@
             (click)="rowTaskClick(task)"
             *ngIf="!task.isLocked()"
           >
-            <span class="float-right badge badge-pill badge-primary">{{ 'summary.taskOpen' | translate }}</span>
+            <span class="float-right badge badge-pill badge-primary">{{
+              'summary.taskOpen' | translate
+            }}</span>
             <strong>{{ task.name }}</strong>
             <div>{{ 'summary.taskCreated' | translate }} {{ task.created }}</div>
           </div>

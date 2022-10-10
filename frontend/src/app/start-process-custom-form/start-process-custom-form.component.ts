@@ -15,7 +15,7 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {FormBuilder, FormGroup, FormControl, Validators} from '@angular/forms';
+import {UntypedFormBuilder, UntypedFormGroup, UntypedFormControl, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ToastrService} from 'ngx-toastr';
 import {ProcessService} from '@valtimo/process';
@@ -27,7 +27,7 @@ import {ProcessService} from '@valtimo/process';
 })
 export class StartProcessCustomFormComponent implements OnInit {
   public processDefinition: any;
-  public startProcessCustomForm: FormGroup;
+  public startProcessCustomForm: UntypedFormGroup;
   public key: string;
   public businessKeyFieldId: string;
   public submitted = false;
@@ -35,7 +35,7 @@ export class StartProcessCustomFormComponent implements OnInit {
   constructor(
     private processService: ProcessService,
     private route: ActivatedRoute,
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private toastr: ToastrService,
     private router: Router
   ) {
@@ -60,8 +60,8 @@ export class StartProcessCustomFormComponent implements OnInit {
 
   private createFormGroup() {
     const group = this.formBuilder.group({
-      businessKey: new FormControl('', Validators.required),
-      inputTextarea: new FormControl('', Validators.required),
+      businessKey: new UntypedFormControl('', Validators.required),
+      inputTextarea: new UntypedFormControl('', Validators.required),
     });
     return group;
   }
