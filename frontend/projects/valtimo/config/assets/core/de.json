@@ -491,7 +491,8 @@
     "createdOn": "Erstellt am",
     "lastModified": "Letzte Änderung",
     "files": "Dateien",
-    "firstName": "Vorname"
+    "firstName": "Vorname",
+    "assigneeFullName": "Eigentümer"
   },
   "list": {
     "currentPage": "Seite {{current}} von {{total}}",

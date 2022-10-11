@@ -491,7 +491,8 @@
     "createdOn": "Created on",
     "lastModified": "Last modified",
     "files": "Files",
-    "firstName": "First name"
+    "firstName": "First name",
+    "assigneeFullName": "Assignee"
   },
   "list": {
     "currentPage": "Page {{current}} of {{total}}",

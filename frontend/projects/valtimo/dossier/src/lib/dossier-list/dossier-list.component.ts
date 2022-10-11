@@ -180,8 +180,9 @@ export class DossierListComponent implements OnInit {
   readonly documentItems$ = this.documentsRequest$.pipe(
     map(documents =>
       documents.content.map(document => {
+        const assigneeFullName = (document?.assigneeFirstName && document?.assigneeLastName) ? `${document.assigneeFirstName}  ${document.assigneeLastName}` : null;
         const {content, ...others} = document;
-        return {...content, ...others};
+        return {assignee: assigneeFullName, ...content, ...others};
       })
     ),
     tap(() => this.loading$.next(false))
