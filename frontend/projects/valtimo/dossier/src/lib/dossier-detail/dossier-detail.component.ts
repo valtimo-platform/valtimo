@@ -85,7 +85,7 @@ export class DossierDetailComponent implements OnInit {
       .subscribe(definition => {
         this.documentDefinitionNameTitle = definition.schema.title;
       });
-    this.getCustomDossierHeader();
+    this.getDocument();
     this.initialTabName = this.snapshot.get('tab');
     this.tabLoader.initial(this.initialTabName);
     this.getAllAssociatedProcessDefinitions();
@@ -111,19 +111,20 @@ export class DossierDetailComponent implements OnInit {
     this.supportingProcessStart.openModal(processDocumentDefinition, this.documentId);
   }
 
-  private getCustomDossierHeader() {
-    if (
-      this.configService.config.customDossierHeader?.hasOwnProperty(
-        this.documentDefinitionName.toLowerCase()
-      )
-    ) {
-      this.documentService.getDocument(this.documentId).subscribe(document => {
-        this.document = document;
+  private getDocument(): void {
+    this.documentService.getDocument(this.documentId).subscribe(document => {
+      this.document = document;
+
+      if (
+        this.configService.config.customDossierHeader?.hasOwnProperty(
+          this.documentDefinitionName.toLowerCase()
+        )
+      ) {
         this.configService.config.customDossierHeader[
           this.documentDefinitionName.toLowerCase()
         ]?.forEach(item => this.getCustomDossierHeaderItem(item));
-      });
-    }
+      }
+    });
   }
 
   private getCustomDossierHeaderItem(item) {
