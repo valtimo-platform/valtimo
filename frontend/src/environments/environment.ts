@@ -57,7 +57,7 @@ const defaultDefinitionColumns: Array<DefinitionColumn> = [
     viewType: 'date',
   },
   {
-    propertyName: 'assignee',
+    propertyName: 'assigneeFullName',
     translationKey: 'assigneeFullName',
     sortable: true,
   }
