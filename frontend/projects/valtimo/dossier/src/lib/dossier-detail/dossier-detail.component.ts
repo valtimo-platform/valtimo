@@ -30,7 +30,7 @@ import {TabService} from '../tab.service';
 import {ProcessService} from '@valtimo/process';
 import {DossierSupportingProcessStartModalComponent} from '../dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
 import {ConfigService} from '@valtimo/config';
-import * as moment from 'moment';
+import moment from 'moment';
 
 @Component({
   selector: 'valtimo-dossier-detail',
@@ -133,6 +133,7 @@ export class DossierDetailComponent implements OnInit {
       columnSize: item['columnSize'] || 3,
       textSize: item['textSize'] || 'md',
       customClass: item['customClass'] || '',
+      modifier: item['modifier'] || '',
       value: item['propertyPaths']?.reduce(
         (prev, curr) => prev + this.getStringFromDocumentPath(item, curr),
         ''
@@ -142,10 +143,27 @@ export class DossierDetailComponent implements OnInit {
 
   private getStringFromDocumentPath(item, path) {
     const prefix = item['propertyPaths'].indexOf(path) > 0 ? ' ' : '';
-    const string =
+    let string =
       path.split('.').reduce((o, i) => o[i], this.document.content) || item['noValueText'] || '';
-    const regex = new RegExp('(T\\d\\d:\\d\\d:\\d\\d[+-])');
-    const formattedString = regex.test(string) ? moment(string).format('DD-MM-YYYY') : string;
-    return prefix + formattedString;
+    const dateFormats = [
+      moment.ISO_8601,
+      "MM-DD-YYYY",
+      "DD-MM-YYYY",
+      "YYYY-MM-DD"
+    ];
+    switch (item['modifier']) {
+      case 'age': {
+        if (moment(string, dateFormats, true).isValid()) {
+          string = moment().diff(string, 'years');
+        }
+        break;
+      }
+      default: {
+        if (moment(string, dateFormats, true).isValid()) {
+          string = moment(string).format('DD-MM-YYYY');
+        }
+      }
+    }
+    return prefix + string;
   }
 }

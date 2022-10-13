@@ -102,8 +102,8 @@
       }"
       *ngFor="let item of customDossierHeaderItems"
     >
-      <span *ngIf="item.label !== ''">{{ item.label | translate }}</span>
-      <span *ngIf="item.label !== '' && item.value !== '' && item.value !== null">: </span>
+      <span *ngIf="item.label">{{ item.label | translate }}</span>
+      <span *ngIf="item.label && item.value">: </span>
       <strong>{{ item.value }}</strong>
     </span>
   </div>

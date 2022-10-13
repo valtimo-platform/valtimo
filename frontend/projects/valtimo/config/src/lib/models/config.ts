@@ -40,6 +40,7 @@ export interface CustomDossierHeaderItem {
   textSize?: string;
   noValueText?: string;
   customClass?: string;
+  modifier?: string;
 }
 
 export interface CustomTaskList {
