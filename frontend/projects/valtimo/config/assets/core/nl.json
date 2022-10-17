@@ -798,5 +798,8 @@
     "expiryPromptDescription": "Je wordt uitgelogd over {{expiryTime}}.",
     "expiryPromptCancel": "Uitloggen",
     "expiryPromptConfirm": "Sessie voortzetten"
+  },
+  "userManagement": {
+    "notSupported": "Wanneer Keycloak wordt gebruikt is gebruikersbeheer in Valtimo niet beschikbaar. Gebruik in plaats daarvan het gebruikersbeheer in Keycloak."
   }
 }

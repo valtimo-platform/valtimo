@@ -798,5 +798,8 @@
     "expiryPromptDescription": "You will be logged out in {{expiryTime}}.",
     "expiryPromptCancel": "Logout",
     "expiryPromptConfirm": "Continue session"
+  },
+  "userManagement": {
+    "notSupported": "When using Keycloak, user management in Valtimo is not supported. Please use user management within Keycloak instead."
   }
 }

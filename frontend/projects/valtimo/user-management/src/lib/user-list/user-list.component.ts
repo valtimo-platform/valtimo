@@ -16,9 +16,10 @@
 
 import {Component} from '@angular/core';
 import {UserManagementService} from '../user-management.service';
-import {User} from '@valtimo/config';
+import {ConfigService, User} from '@valtimo/config';
 import {Page} from '@valtimo/document';
 import {Router} from '@angular/router';
+import {KeycloakModule} from '@valtimo/keycloak';
 
 @Component({
   selector: 'valtimo-user-list',
@@ -52,8 +53,15 @@ export class UserListComponent {
     },
   ];
   private searchTerm = '';
+  public userManagementDisabled = true;
 
-  constructor(private router: Router, private service: UserManagementService) {}
+  constructor(
+    private router: Router,
+    private service: UserManagementService,
+    private configService: ConfigService
+  ) {
+    this.userManagementDisabled = configService.config.authentication.module === KeycloakModule;
+  }
 
   paginationSet() {
     this.pagination.page = 1;

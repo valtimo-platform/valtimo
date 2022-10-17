@@ -798,5 +798,8 @@
     "expiryPromptDescription": "Sie werden in {{expiryTime}} abgemeldet.",
     "expiryPromptCancel": "Ausloggen",
     "expiryPromptConfirm": "Sitzung fortsetzen"
+  },
+  "userManagement": {
+    "notSupported": "Wenn Keycloak verwendet wird, ist die Benutzerverwaltung in Valtimo nicht verfügbar. Verwenden Sie stattdessen die Benutzerverwaltung in Keycloak."
   }
 }
