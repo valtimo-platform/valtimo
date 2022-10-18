@@ -30657,3 +30657,7 @@ fieldset[disabled] .full-calendar .fc-button.active {
 .nav-tabs > li.nav-item a.nav-link {
   cursor: pointer;
 }
+
+.clickable {
+  cursor: pointer;
+}
