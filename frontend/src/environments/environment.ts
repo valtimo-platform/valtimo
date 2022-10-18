@@ -60,7 +60,7 @@ const defaultDefinitionColumns: Array<DefinitionColumn> = [
     propertyName: 'assigneeFullName',
     translationKey: 'assigneeFullName',
     sortable: true,
-  }
+  },
 ];
 
 export const environment: ValtimoConfig = {
@@ -223,6 +223,15 @@ export const environment: ValtimoConfig = {
     enableHackathonCasesPage: true,
     showUserNameInTopBar: true,
     experimentalDmnEditing: true,
+  },
+  customDossierHeader: {
+    leningen: [
+      {
+        propertyPaths: ['voornaam'],
+        columnSize: 3,
+        textSize: 'sm',
+      },
+    ],
   },
 };
 

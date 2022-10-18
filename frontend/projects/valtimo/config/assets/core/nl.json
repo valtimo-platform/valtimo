@@ -67,6 +67,7 @@
       }
     },
     "startSubProcess": "Start",
+    "claimAssigneeCase": "Claimen",
     "deleteConfirmation": {
       "title": "Bestand verwijderen",
       "description": "Weet u zeker dat u dit bestand wilt verwijderen?",
