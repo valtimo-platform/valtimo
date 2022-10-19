@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {delay, Observable, of} from 'rxjs';
 import {
   AssignHandlerToDocumentResult,
   AuditRecord,
@@ -42,7 +42,7 @@ import {
   UploadProcessLink,
 } from './models';
 import {DocumentSearchRequest} from './document-search-request';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService, SearchField} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',
@@ -260,10 +260,66 @@ export class DocumentService {
     );
   }
 
-  assignHandlerToDocument(documentId: string, assigneeId: string): Observable<AssignHandlerToDocumentResult> {
+  assignHandlerToDocument(
+    documentId: string,
+    assigneeId: string
+  ): Observable<AssignHandlerToDocumentResult> {
     return this.http.post<AssignHandlerToDocumentResult>(
       `${this.valtimoEndpointUri}document/${documentId}/assign`,
       {assigneeId}
     );
+  }
+
+  getDocumentSearchFields(documentDefinitionName: string): Observable<Array<SearchField>> {
+    return of([
+      {
+        key: 'text',
+        datatype: 'text',
+        fieldtype: 'single',
+        matchtype: 'exact',
+      },
+      {
+        key: 'number',
+        datatype: 'number',
+        fieldtype: 'single',
+        matchtype: 'exact',
+      },
+      {
+        key: 'date',
+        datatype: 'date',
+        fieldtype: 'single',
+        matchtype: 'exact',
+      },
+      {
+        key: 'numberRange',
+        datatype: 'number',
+        fieldtype: 'range',
+        matchtype: 'exact',
+      },
+      {
+        key: 'dateRange',
+        datatype: 'date',
+        fieldtype: 'range',
+        matchtype: 'exact',
+      },
+      {
+        key: 'datetime',
+        datatype: 'datetime',
+        fieldtype: 'single',
+        matchtype: 'exact',
+      },
+      {
+        key: 'boolean',
+        datatype: 'boolean',
+        fieldtype: 'single',
+        matchtype: 'exact',
+      },
+      {
+        key: 'datetimeRange',
+        datatype: 'datetime',
+        fieldtype: 'range',
+        matchtype: 'exact',
+      },
+    ] as Array<SearchField>).pipe(delay(1000));
   }
 }

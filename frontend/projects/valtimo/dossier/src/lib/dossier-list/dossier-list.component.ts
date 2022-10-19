@@ -17,14 +17,14 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {DefinitionColumn} from '@valtimo/config';
+import {ConfigService, DefinitionColumn, SearchField} from '@valtimo/config';
 import {
+  Documents,
   DocumentSearchRequest,
   DocumentSearchRequestImpl,
   DocumentService,
-  SortState,
   ProcessDocumentDefinition,
-  Documents,
+  SortState,
 } from '@valtimo/document';
 import moment from 'moment';
 import {
@@ -42,7 +42,7 @@ import {
 import {DefaultTabs} from '../dossier-detail-tab-enum';
 import {DossierProcessStartModalComponent} from '../dossier-process-start-modal/dossier-process-start-modal.component';
 import {DossierService} from '../dossier.service';
-import {Pagination, ListField} from '@valtimo/components';
+import {ListField, Pagination} from '@valtimo/components';
 import {NGXLogger} from 'ngx-logger';
 
 // eslint-disable-next-line no-var
@@ -66,12 +66,24 @@ export class DossierListComponent implements OnInit {
     undefined
   );
 
+  readonly loadingDocumentSearchFields$ = new BehaviorSubject<boolean>(true);
+
   private readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
     map(params => params.documentDefinitionName || ''),
     tap(documentDefinitionName => {
       this.resetPagination(documentDefinitionName);
     })
   );
+
+  readonly documentSearchFields$: Observable<Array<SearchField> | null> =
+    this.documentDefinitionName$.pipe(
+      distinctUntilChanged(),
+      tap(() => this.loadingDocumentSearchFields$.next(true)),
+      switchMap(documentDefinitionName =>
+        this.documentService.getDocumentSearchFields(documentDefinitionName)
+      ),
+      tap(() => this.loadingDocumentSearchFields$.next(false))
+    );
 
   readonly associatedProcessDocumentDefinitions$: Observable<Array<ProcessDocumentDefinition>> =
     this.documentDefinitionName$.pipe(
@@ -165,6 +177,7 @@ export class DossierListComponent implements OnInit {
 
   private readonly documentsRequest$: Observable<Documents> = this.documentSearchRequest$.pipe(
     distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
+    tap(() => this.loading$.next(true)),
     tap(request => {
       this.storedSearchRequestKey$.pipe(take(1)).subscribe(storedSearchRequestKey => {
         this.logger.debug(`store request in local storage: ${JSON.stringify(request)}`);
@@ -187,14 +200,19 @@ export class DossierListComponent implements OnInit {
     tap(() => this.loading$.next(false))
   );
 
+  enableCaseSearchFields!: boolean;
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly documentService: DocumentService,
     private readonly translateService: TranslateService,
     private readonly dossierService: DossierService,
-    private readonly logger: NGXLogger
-  ) {}
+    private readonly logger: NGXLogger,
+    private readonly configService: ConfigService
+  ) {
+    this.enableCaseSearchFields = configService.config.featureToggles.caseSearchFields;
+  }
 
   ngOnInit(): void {
     this.modalListenerAdded = false;

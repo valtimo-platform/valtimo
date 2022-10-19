@@ -14,6 +14,41 @@
  * limitations under the License.
  */
 
-export * from './tabs.model';
-export * from './zaakobjecten.model';
-export * from './search.model';
+.w-100 {
+  height: 15px;
+
+  &:last-child {
+    display: none;
+  }
+}
+
+::ng-deep .multiple-search-fields {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+}
+
+.to-text {
+  margin-inline-start: 8px;
+  margin-inline-end: 8px;
+}
+
+.buttons-container {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.right-buttons {
+  display: flex;
+  flex-direction: row;
+
+  v-button:last-child {
+    margin-left: 8px;
+  }
+}
+
+.row--hidden {
+  display: none;
+}

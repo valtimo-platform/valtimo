@@ -25,3 +25,4 @@ export * from './roles';
 export * from './user-management.model';
 export * from './page';
 export * from './connector.model';
+export * from './search.model';

@@ -79,14 +79,24 @@
         </div>
       </div>
       <valtimo-spinner *ngIf="obs.loading"></valtimo-spinner>
-      <ng-container *ngTemplateOutlet="list; context:{obs: obs}"></ng-container>
+      <ng-container *ngTemplateOutlet="searchFields"></ng-container>
+      <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
     </div>
   </div>
   <valtimo-dossier-process-start-modal #processStartModal></valtimo-dossier-process-start-modal>
 </div>
 
+<ng-template #searchFields>
+  <div class="mb-3" *ngIf="enableCaseSearchFields">
+    <valtimo-search-fields
+      [loading]="loadingDocumentSearchFields$ | async"
+      [searchFields]="documentSearchFields$ | async"
+    ></valtimo-search-fields>
+  </div>
+</ng-template>
+
 <ng-template #list let-obs="obs">
-    <ng-container *ngIf="paginationCopy$ | async as pagination">
+  <ng-container *ngIf="paginationCopy$ | async as pagination">
     <ng-container *ngIf="fields$ | async as fields">
       <ng-container *ngIf="documentItems$ | async as documentItems">
         <valtimo-widget *ngIf="obs.loading === false">
@@ -106,7 +116,9 @@
             <div header>
               <h3 class="list-header-title">
                 {{ (schema$ | async)?.title }}
-                <sup class="ml-1 badge badge-pill badge-primary">{{ documentItems?.length || 0 }}</sup>
+                <sup class="ml-1 badge badge-pill badge-primary">{{
+                  documentItems?.length || 0
+                }}</sup>
               </h3>
             </div>
           </valtimo-list>
@@ -114,11 +126,10 @@
       </ng-container>
     </ng-container>
   </ng-container>
-
 </ng-template>
 
 <ng-template #sidebar>
-  <valtimo-filter-sidebar>
+  <valtimo-filter-sidebar *ngIf="!enableCaseSearchFields">
     <h4 class="title">Search</h4>
     <div class="mb-4">
       <input

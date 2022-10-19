@@ -102,6 +102,7 @@ export interface ValtimoConfig {
     enableHackathonCasesPage?: boolean;
     showUserNameInTopBar?: boolean;
     experimentalDmnEditing?: boolean;
+    caseSearchFields?: boolean;
   };
   visibleTaskListTabs?: Array<TaskListTab>;
   customTaskList?: CustomTaskList;
@@ -120,5 +121,5 @@ export enum UploadProvider {
 export enum TaskListTab {
   MINE = 'mine',
   OPEN = 'open',
-  ALL = 'all'
+  ALL = 'all',
 }

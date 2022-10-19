@@ -328,6 +328,10 @@
   --v-input-title-font-color: var(--v-color-black);
   --v-input-title-line-height: var(--v-line-height-larger);
   --v-input-title-font-weight: var(--v-font-weight-bold);
+  --v-input-title-small-font-size: var(--v-font-size-default);
+  --v-input-title-small-font-color: var(--v-color-black);
+  --v-input-title-small-line-height: var(--v-line-height-default);
+  --v-input-title-small-font-weight: var(--v-font-weight-regular);
   --v-input-title-margin: var(--v-spacing-block-md);
   --v-input-title-margin-large: var(--v-spacing-block-2xl);
   --v-input-default-width: 200px;

@@ -131,3 +131,6 @@ export * from './lib/components/multiselect-dropdown/multiselect-dropdown.compon
 
 export * from './lib/components/documenten-api-metadata-modal/documenten-api-metadata-modal.module';
 export * from './lib/components/documenten-api-metadata-modal/documenten-api-metadata-modal.component';
+
+export * from './lib/components/search-fields/search-fields.module';
+export * from './lib/components/search-fields/search-fields.component';

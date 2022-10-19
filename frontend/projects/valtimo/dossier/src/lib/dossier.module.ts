@@ -31,6 +31,7 @@ import {
   FormIoModule,
   ListModule,
   ModalModule,
+  SearchFieldsModule,
   SpinnerModule,
   TimelineModule,
   UploaderModule,
@@ -125,6 +126,7 @@ export type TabsFactory = () => Map<string, object>;
     TitleModule,
     ButtonModule,
     DocumentenApiMetadataModalModule,
+    SearchFieldsModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

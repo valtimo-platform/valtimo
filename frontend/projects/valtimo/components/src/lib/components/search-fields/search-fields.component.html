@@ -1,0 +1,229 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="search fields">
+  <ng-container *ngIf="loading">
+    <ng-container *ngTemplateOutlet="loadingTemplate"></ng-container>
+  </ng-container>
+  <ng-container *ngIf="!loading">
+    <ng-container *ngTemplateOutlet="searchFieldsTemplate"></ng-container>
+  </ng-container>
+</div>
+
+<ng-template #loadingTemplate>
+  <valtimo-spinner></valtimo-spinner>
+</ng-template>
+
+<ng-template #searchFieldsTemplate>
+  <valtimo-widget>
+    <div class="row p-3" [ngClass]="{'row--hidden': (expanded$ | async) === false}">
+      <ng-container *ngFor="let searchField of searchFields$ | async; let i = index">
+        <div class="col-4">
+          <ng-container
+            *ngTemplateOutlet="searchFieldTemplate; context: {searchField: searchField}"
+          ></ng-container>
+        </div>
+        <div class="w-100" *ngIf="(i + 1) % 3 === 0"></div>
+      </ng-container>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <ng-container *ngTemplateOutlet="buttonsTemplate"></ng-container>
+      </div>
+    </div>
+  </valtimo-widget>
+</ng-template>
+
+<ng-template #searchFieldTemplate let-searchField="searchField">
+  <ng-container
+    *ngIf="{
+      tooltipKey: 'searchFieldsTooltips.' + searchField.key,
+      tooltip: 'searchFieldsTooltips.' + searchField.key | translate
+    } as vars"
+  >
+    <ng-container
+      *ngTemplateOutlet="
+        searchFieldTemplateText;
+        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip}
+      "
+    ></ng-container>
+    <ng-container
+      *ngTemplateOutlet="
+        searchFieldTemplateNumber;
+        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip}
+      "
+    ></ng-container>
+    <ng-container
+      *ngTemplateOutlet="
+        searchFieldTemplateDate;
+        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip}
+      "
+    ></ng-container>
+    <ng-container
+      *ngTemplateOutlet="
+        searchFieldTemplateNumberRange;
+        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip}
+      "
+    ></ng-container>
+    <ng-container
+      *ngTemplateOutlet="
+        searchFieldTemplateDateRange;
+        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip}
+      "
+    ></ng-container>
+  </ng-container>
+</ng-template>
+
+<ng-template
+  #searchFieldTemplateText
+  let-searchField="searchField"
+  let-tooltip="tooltip"
+  let-tooltipKey="tooltipKey"
+>
+  <v-input
+    *ngIf="searchField.datatype === 'text' && searchField.fieldtype === 'single'"
+    [name]="searchField.key"
+    [title]="'searchFields.' + searchField.key | translate"
+    [fullWidth]="true"
+    [tooltip]="tooltip !== tooltipKey && tooltip"
+    (valueChange)="singleValueChange(searchField.key, $event)"
+    [smallLabel]="true"
+  >
+  </v-input>
+</ng-template>
+
+<ng-template
+  #searchFieldTemplateNumber
+  let-searchField="searchField"
+  let-tooltip="tooltip"
+  let-tooltipKey="tooltipKey"
+>
+  <v-input
+    *ngIf="searchField.datatype === 'number' && searchField.fieldtype === 'single'"
+    [name]="searchField.key"
+    [title]="'searchFields.' + searchField.key | translate"
+    [fullWidth]="true"
+    (valueChange)="singleValueChange(searchField.key, $event)"
+    type="number"
+    [hideNumberSpinBox]="true"
+    [tooltip]="tooltip !== tooltipKey && tooltip"
+    [smallLabel]="true"
+  >
+  </v-input>
+</ng-template>
+
+<ng-template
+  #searchFieldTemplateDate
+  let-searchField="searchField"
+  let-tooltip="tooltip"
+  let-tooltipKey="tooltipKey"
+>
+  <v-date-picker
+    *ngIf="searchField.datatype === 'date' && searchField.fieldtype === 'single'"
+    [title]="'searchFields.' + searchField.key | translate"
+    [tooltip]="tooltip !== tooltipKey && tooltip"
+    [name]="searchField.key"
+    fullWidth="true"
+    (valueChange)="singleValueChange(searchField.key, $event)"
+    [smallLabel]="true"
+  ></v-date-picker>
+</ng-template>
+
+<ng-template
+  #searchFieldTemplateNumberRange
+  let-searchField="searchField"
+  let-tooltip="tooltip"
+  let-tooltipKey="tooltipKey"
+>
+  <ng-container *ngIf="searchField.datatype === 'number' && searchField.fieldtype === 'range'">
+    <v-input-label
+      [title]="'searchFields.' + searchField.key | translate"
+      [tooltip]="tooltip !== tooltipKey && tooltip"
+      [small]="true"
+    ></v-input-label>
+    <v-form
+      (valueChange)="multipleValueChange(searchField.key, $event)"
+      className="multiple-search-fields"
+    >
+      <v-input name="start" [fullWidth]="true" type="number" [hideNumberSpinBox]="true"> </v-input>
+      <ng-container *ngTemplateOutlet="toText"></ng-container>
+      <v-input name="end" [fullWidth]="true" type="number" [hideNumberSpinBox]="true"> </v-input>
+    </v-form>
+  </ng-container>
+</ng-template>
+
+<ng-template
+  #searchFieldTemplateDateRange
+  let-searchField="searchField"
+  let-tooltip="tooltip"
+  let-tooltipKey="tooltipKey"
+>
+  <ng-container *ngIf="searchField.datatype === 'date' && searchField.fieldtype === 'range'">
+    <v-input-label
+      [title]="'searchFields.' + searchField.key | translate"
+      [tooltip]="tooltip !== tooltipKey && tooltip"
+      [small]="true"
+    ></v-input-label>
+    <v-form
+      (valueChange)="multipleValueChange(searchField.key, $event)"
+      className="multiple-search-fields"
+    >
+      <v-date-picker name="start" fullWidth="true"></v-date-picker>
+      <ng-container *ngTemplateOutlet="toText"></ng-container>
+      <v-date-picker name="end" fullWidth="true"></v-date-picker>
+    </v-form>
+  </ng-container>
+</ng-template>
+
+<ng-template #toText>
+  <div class="to-text">
+    <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
+  </div>
+</ng-template>
+
+<ng-template #buttonsTemplate>
+  <div class="buttons-container p-3" *ngIf="{expanded: expanded$ | async} as obs">
+    <v-button
+      (clickEvent)="toggleExpanded()"
+      [disabled]="loading"
+      type="secondary"
+      [mdiIcon]="obs.expanded ? 'chevron-up' : 'chevron-down'"
+      >{{
+        obs.expanded
+          ? ('searchFields.collapseButtonText' | translate)
+          : ('searchFields.expandButtonText' | translate)
+      }}</v-button
+    >
+    <div class="right-buttons">
+      <v-button
+        (clickEvent)="search()"
+        [disabled]="loading"
+        type="danger"
+        *ngIf="obs.expanded"
+        mdiIcon="close"
+        >{{ 'searchFields.clearButtonText' | translate }}</v-button
+      >
+      <v-button
+        (clickEvent)="search()"
+        [disabled]="loading"
+        type="primary"
+        *ngIf="obs.expanded"
+        mdiIcon="magnify"
+        >{{ 'searchFields.searchButtonText' | translate }}</v-button
+      >
+    </div>
+  </div>
+</ng-template>

@@ -804,5 +804,30 @@
   },
   "userManagement": {
     "notSupported": "When using Keycloak, user management in Valtimo is not supported. Please use user management within Keycloak instead."
+  },
+  "searchFields": {
+    "expandButtonText": "Show search fields",
+    "collapseButtonText": "Hide",
+    "searchButtonText": "Search",
+    "clearButtonText": "Clear",
+    "to": "to",
+    "text": "Text",
+    "number": "Number",
+    "date": "Date",
+    "datetime": "Date and time",
+    "boolean": "Yes / no",
+    "numberRange": "Number range",
+    "dateRange": "Date range",
+    "datetimeRange": "Date and time range"
+  },
+  "searchFieldsTooltips": {
+    "text": "A text field",
+    "number": "A number field",
+    "date": "A date field",
+    "datetime": "A date and time field",
+    "boolean": "A boolean field",
+    "numberRange": "A number range field",
+    "dateRange": "A date range field",
+    "datetimeRange": "A date and time range field"
   }
 }

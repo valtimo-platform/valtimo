@@ -33,6 +33,13 @@
   font-weight: var(--v-input-title-font-weight);
 }
 
+.v-input-label--small {
+  font-size: var(--v-input-title-small-font-size);
+  color: var(--v-input-title-small-font-color);
+  line-height: var(--v-input-title-small-line-height);
+  font-weight: var(--v-input-title-small-font-weight);
+}
+
 .v-input-label__tooltip {
   display: flex;
   justify-content: center;

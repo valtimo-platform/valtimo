@@ -28,4 +28,5 @@ export class InputLabelComponent {
   @Input() tooltip = '';
   @Input() required = false;
   @Input() largeMargin = false;
+  @Input() small = false;
 }

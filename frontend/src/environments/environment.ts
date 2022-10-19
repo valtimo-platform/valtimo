@@ -223,6 +223,7 @@ export const environment: ValtimoConfig = {
     enableHackathonCasesPage: true,
     showUserNameInTopBar: true,
     experimentalDmnEditing: true,
+    caseSearchFields: true,
   },
   customDossierHeader: {
     leningen: [

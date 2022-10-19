@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import flatpickr from 'flatpickr';
 import {BehaviorSubject, Subscription} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
@@ -44,25 +53,37 @@ export class DatePickerComponent implements AfterViewInit, OnDestroy {
   @Input() required = false;
   @Input() defaultDate!: string;
   @Input() defaultDateIsToday!: boolean;
+  @Input() smallLabel = false;
+
+  @Output() valueChange: EventEmitter<any> = new EventEmitter();
 
   dateValue$ = new BehaviorSubject<string>('');
 
   private flatpickrInstance!: flatpickr.Instance;
   private localeSubscription!: Subscription;
+  private dateValueSubscription!: Subscription;
 
   constructor(private readonly translateService: TranslateService) {}
 
   ngAfterViewInit(): void {
     this.openLocaleSubscription();
+    this.openDateValueSubscription();
   }
 
   ngOnDestroy(): void {
     this.localeSubscription?.unsubscribe();
+    this.dateValueSubscription?.unsubscribe();
   }
 
   private openLocaleSubscription(): void {
     this.localeSubscription = this.translateService.stream('key').subscribe(() => {
       this.setFlatpickrInstance(this.translateService.currentLang as LocaleKey);
+    });
+  }
+
+  private openDateValueSubscription(): void {
+    this.dateValueSubscription = this.dateValue$.subscribe(dateValue => {
+      this.valueChange.emit(dateValue);
     });
   }
 

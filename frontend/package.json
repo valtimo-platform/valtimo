@@ -5,6 +5,7 @@
   "scripts": {
     "clean": "rimraf dist",
     "ng": "ng",
+    "installDeps": "npm install",
     "start": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng serve --proxy-config proxy.conf.json",
     "startProd": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng serve --proxy-config proxy.conf.json --configuration production",
     "startAot": "ng serve --proxy-config proxy.conf.json --aot",
