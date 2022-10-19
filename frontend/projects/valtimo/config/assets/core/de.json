@@ -9,7 +9,9 @@
     "DossierDocumentGeneratedEvent": "Case-Dokument erstellt",
     "DocumentRelatedFileAddedEvent": "Datei hinzugefügt",
     "DocumentRelatedFileRemovedEvent": "Datei entfernt",
-    "BesluitAddedEvent": "Entscheidung getroffen > {{identificatie}}"
+    "BesluitAddedEvent": "Entscheidung getroffen > {{identificatie}}",
+    "DocumentAssigneeChangedEvent": "Der Beauftragte wurde geändert in {{assigneeName}}",
+    "DocumentUnassignedEvent": "Die Zuweisung des Bevollmächtigten wurde aufgehoben"
   },
   "dossier": {
     "title": {

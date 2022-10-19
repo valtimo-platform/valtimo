@@ -9,7 +9,9 @@
     "DossierDocumentGeneratedEvent": "Case document generated",
     "DocumentRelatedFileAddedEvent": "Related file added",
     "DocumentRelatedFileRemovedEvent": "Related file removed",
-    "BesluitAddedEvent": "Decision added > {{identificatie}}"
+    "BesluitAddedEvent": "Decision added > {{identificatie}}",
+    "DocumentAssigneeChangedEvent": "The assignee has been changed to {{assigneeName}}",
+    "DocumentUnassignedEvent": "The assignee has been unassigned"
   },
   "dossier": {
     "title": {
