@@ -1,0 +1,21 @@
+29d570f - Updated version to 5.11.0
+69bb9f8 - Updated version to 5.11.0-113.RC-SNAPSHOT
+fa8909f - Merge branch 'main' into development
+675764a - reset additional date selection on close modal (#233)
+c743084 - Feature/story 37099 (#232)
+16c9a23 - complete functionality (#231)
+39e113e - Added 3 parameters to the 'ValtimoFormioOptions': `readOnly` (boolean), `decimalSeparator` (string) and `thousandsSeparator` (string) (#230)
+7954d88 - Merge branch 'main' into development
+96ec465 - lint fix
+24a8983 - remove null values (#227)
+634c637 - Add the ability to set a separator key to add for example a format of… (#226)
+415fe43 - feat: add loading icon at list cases (#223)
+1cee59d - Add and remove subscription when component is destoryed (#225)
+772b332 - Removed retry in interceptor (#215)
+49906ae - feat: check if upload process link is checked inside new formio component (#224)
+f7cc14a - implement endpoints (#221)
+6f7b1fd - fix null error (#220)
+b4d3ac3 - feat: fetch document definition name when opening task (#219)
+ce028ae - feat: add documenten api formio component (#218)
+0d98cda - #36897 Document_metadata (#217)
+4248900 - prefill author (#216)
