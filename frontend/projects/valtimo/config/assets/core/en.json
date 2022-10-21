@@ -475,6 +475,12 @@
     "save": "Save",
     "fetchingUsers": "Fetching users..."
   },
+  "assignDocument": {
+    "assignedTo": "Assigned to ",
+    "header": "Assign a user to this case",
+    "remove": "Unassign",
+    "fetchingUsers": "Fetching users..."
+  },
   "dropzone": {
     "drop": "Choose a file or drag it here",
     "maxFileSize": "Maximum file size: ",

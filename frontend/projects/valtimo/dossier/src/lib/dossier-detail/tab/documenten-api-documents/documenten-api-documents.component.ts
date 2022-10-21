@@ -140,7 +140,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
             this.toastrService.error('Failed to remove document from dossier');
           }
         );
-      }
+      },
     });
   }
 

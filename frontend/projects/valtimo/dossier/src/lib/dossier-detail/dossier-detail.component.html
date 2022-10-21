@@ -116,24 +116,29 @@
 </ng-template>
 
 <ng-template #caseDetailAssignee>
-  <div class="row ml-0 mr-0 mt-1 mb-1" *ngIf="(document$ | async)?.assigneeFullName as assignee">
-    <h5>{{ ('assignTask.assignedTo' | translate) + assignee }}</h5>
+  <div class="row ml-0 mr-0 mt-1 mb-1" *ngIf="document$ | async as document">
+    <valtimo-dossier-assign-user
+      [documentId]="document.id"
+      [assigneeId]="document.assigneeId"
+      [assigneeFullName]="document?.assigneeFullName"
+      (assignmentOfDocumentChanged)="assignmentOfDocumentChanged()"
+    ></valtimo-dossier-assign-user>
   </div>
 </ng-template>
 
 <ng-template #claimButton>
-    <div class="user-full-name">
-      <button
-        class="btn btn-space btn-primary mr-1"
-        type="button"
-        id=""
-        placement="bottom"
-        aria-haspopup="true"
-        aria-expanded="false"
-        (click)="claimAssignee()"
-        [disabled]="(isAssigning$ | async) || (isAssignedToCurrentUser$ | async)"
-      >
-        <span>{{ 'dossier.claimAssigneeCase' | translate }}</span>
-      </button>
-    </div>
+  <div class="user-full-name">
+    <button
+      class="btn btn-space btn-primary mr-1"
+      type="button"
+      id=""
+      placement="bottom"
+      aria-haspopup="true"
+      aria-expanded="false"
+      (click)="claimAssignee()"
+      [disabled]="(isAssigning$ | async) || (isAssignedToCurrentUser$ | async)"
+    >
+      <span>{{ 'dossier.claimAssigneeCase' | translate }}</span>
+    </button>
+  </div>
 </ng-template>

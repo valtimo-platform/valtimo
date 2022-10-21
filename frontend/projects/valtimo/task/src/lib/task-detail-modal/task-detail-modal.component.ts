@@ -101,7 +101,7 @@ export class TaskDetailModalComponent {
     this.task = task;
     this.page = {
       title: task.name,
-      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task.created}`
+      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task.created}`,
     };
 
     this.formLinkService
@@ -230,7 +230,9 @@ export class TaskDetailModalComponent {
   }
 
   private completeTask() {
-    this.toastr.success(`${this.task.name} ${this.translateService.instant('taskDetail.taskCompleted')}`);
+    this.toastr.success(
+      `${this.task.name} ${this.translateService.instant('taskDetail.taskCompleted')}`
+    );
     this.modal.hide();
     this.task = null;
     this.formSubmit.emit();

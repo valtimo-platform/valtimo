@@ -112,8 +112,7 @@ export class PromptService {
     cancelCallbackFunction?: () => void;
     confirmCallBackFunction?: () => void;
   }): void {
-    if (promptParameters.identifier)
-      this._identifier$.next(promptParameters.identifier);
+    if (promptParameters.identifier) this._identifier$.next(promptParameters.identifier);
     this._headerText$.next(promptParameters.headerText);
     this._bodyText$.next(promptParameters.bodyText);
     this._cancelText$.next(promptParameters.cancelButtonText);

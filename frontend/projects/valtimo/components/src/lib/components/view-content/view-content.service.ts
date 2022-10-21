@@ -32,17 +32,22 @@ export class ViewContentService {
   }
 
   public get(value: any, definition: any) {
-    const separator = ':'
+    const separator = ':';
     if (!definition.viewType) {
       definition.viewType = typeof value;
     }
 
     if (definition.viewType.includes(separator)) {
       // Get the substring of the string after the separator (:) and assign it to a new key
-      definition.format = definition.viewType.slice(this.getSeparatorIndex(definition, separator) + 1);
+      definition.format = definition.viewType.slice(
+        this.getSeparatorIndex(definition, separator) + 1
+      );
 
       // Remove the substring after the separator and the separator from the string and assign it back to the viewType
-      definition.viewType = definition.viewType.slice(0, this.getSeparatorIndex(definition, separator));
+      definition.viewType = definition.viewType.slice(
+        0,
+        this.getSeparatorIndex(definition, separator)
+      );
     }
 
     if (typeof this.converters[definition.viewType] !== 'undefined') {

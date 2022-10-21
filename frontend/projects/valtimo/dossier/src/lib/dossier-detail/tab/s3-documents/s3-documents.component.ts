@@ -34,7 +34,8 @@ export class DossierDetailTabS3DocumentsComponent implements OnInit {
   public readonly documentId: string;
   public readonly documentDefinitionName: string;
   public readonly maxFileSize: number = this.configService?.config?.caseFileSizeUploadLimitMB || 5;
-  public readonly acceptedFiles: string = this.configService?.config?.caseFileUploadAcceptedFiles || null;
+  public readonly acceptedFiles: string =
+    this.configService?.config?.caseFileUploadAcceptedFiles || null;
   public fields = [
     {key: 'fileName', label: 'File name'},
     {key: 'sizeInBytes', label: 'Size in bytes'},
@@ -145,7 +146,7 @@ export class DossierDetailTabS3DocumentsComponent implements OnInit {
             this.toastrService.error('Failed to remove document from dossier');
           }
         );
-      }
+      },
     });
   }
 

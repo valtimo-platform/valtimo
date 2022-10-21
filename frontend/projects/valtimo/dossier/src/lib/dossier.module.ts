@@ -31,6 +31,7 @@ import {
   FormIoModule,
   ListModule,
   ModalModule,
+  SearchableDropdownSelectModule,
   SearchFieldsModule,
   SpinnerModule,
   TimelineModule,
@@ -67,6 +68,7 @@ import {
 import {DossierDetailTabObjectTypeComponent} from './dossier-detail/tab/object-type/object-type.component';
 import {DossierDetailTabDocumentenApiDocumentsComponent} from './dossier-detail/tab/documenten-api-documents/documenten-api-documents.component';
 import {DossierDetailTabS3DocumentsComponent} from './dossier-detail/tab/s3-documents/s3-documents.component';
+import {DossierAssignUserComponent} from './dossier-assign-user/dossier-assign-user.component';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -86,6 +88,7 @@ export type TabsFactory = () => Map<string, object>;
     DossierDetailTabObjectTypeComponent,
     DossierDetailTabDocumentenApiDocumentsComponent,
     DossierDetailTabS3DocumentsComponent,
+    DossierAssignUserComponent,
   ],
   imports: [
     CommonModule,
@@ -126,6 +129,7 @@ export type TabsFactory = () => Map<string, object>;
     TitleModule,
     ButtonModule,
     DocumentenApiMetadataModalModule,
+    SearchableDropdownSelectModule,
     SearchFieldsModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],

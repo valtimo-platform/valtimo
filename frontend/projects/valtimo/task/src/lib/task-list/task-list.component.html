@@ -35,16 +35,22 @@
           <h5 class="list-header-description">{{ listDescription }}</h5>
         </div>
         <div tabs>
-          <ul *ngIf="visibleTabs === null; else configuredTabs" ngbNav [destroyOnHide]="false" (navChange)="tabChange($event)" class="nav-tabs">
-              <li ngbNavItem="mine" [title]="'task-list.mine.title' | translate">
-                <a ngbNavLink>{{ 'task-list.mine.title' | translate }}</a>
-              </li>
-              <li ngbNavItem="open" [title]="'task-list.open.title' | translate">
-                <a ngbNavLink>{{ 'task-list.open.title' | translate }}</a>
-              </li>
-              <li ngbNavItem="all" [title]="'task-list.all.title' | translate">
-                <a ngbNavLink>{{ 'task-list.all.title' | translate }}</a>
-              </li>
+          <ul
+            *ngIf="visibleTabs === null; else configuredTabs"
+            ngbNav
+            [destroyOnHide]="false"
+            (navChange)="tabChange($event)"
+            class="nav-tabs"
+          >
+            <li ngbNavItem="mine" [title]="'task-list.mine.title' | translate">
+              <a ngbNavLink>{{ 'task-list.mine.title' | translate }}</a>
+            </li>
+            <li ngbNavItem="open" [title]="'task-list.open.title' | translate">
+              <a ngbNavLink>{{ 'task-list.open.title' | translate }}</a>
+            </li>
+            <li ngbNavItem="all" [title]="'task-list.all.title' | translate">
+              <a ngbNavLink>{{ 'task-list.all.title' | translate }}</a>
+            </li>
           </ul>
         </div>
       </valtimo-list>
@@ -57,11 +63,13 @@
   </div>
 </div>
 
-
 <ng-template #configuredTabs>
   <ul ngbNav [destroyOnHide]="false" (navChange)="tabChange($event)" class="nav-tabs">
-    <li *ngFor="let tab of visibleTabs;" [ngbNavItem]="tab"
-        [title]="'task-list.' + tab + '.title' | translate">
+    <li
+      *ngFor="let tab of visibleTabs"
+      [ngbNavItem]="tab"
+      [title]="'task-list.' + tab + '.title' | translate"
+    >
       <a ngbNavLink>{{ 'task-list.' + tab + '.title' | translate }}</a>
     </li>
   </ul>

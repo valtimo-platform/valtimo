@@ -475,6 +475,12 @@
     "save": "Speichern",
     "fetchingUsers": "User abrufen..."
   },
+  "assignDocument": {
+    "assignedTo": "User-Zuordnung: ",
+    "header": "Fall einem User zuordnen",
+    "remove": "Entfernen",
+    "fetchingUsers": "User abrufen..."
+  },
   "dropzone": {
     "drop": "Datei auswählen oder hier über drag-and-drop ablegen",
     "maxFileSize": "Maximale Datei-Größe: ",

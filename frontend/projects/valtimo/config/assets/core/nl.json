@@ -475,6 +475,12 @@
     "save": "Opslaan",
     "fetchingUsers": "Gebruikers ophalen..."
   },
+  "assignDocument": {
+    "assignedTo": "Toegewezen aan ",
+    "header": "Gebruiker toewijzen aan dit dossier",
+    "remove": "Toewijzing ongedaan maken",
+    "fetchingUsers": "Gebruikers ophalen..."
+  },
   "dropzone": {
     "drop": "Kies een bestand, of sleep het hier naartoe",
     "maxFileSize": "Maximale bestandsgrootte: ",
