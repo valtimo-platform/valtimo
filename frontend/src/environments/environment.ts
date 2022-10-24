@@ -27,6 +27,7 @@ import {
   TaskListTab,
   UploadProvider,
   ValtimoConfig,
+  Language
 } from '@valtimo/config';
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
 import {emailExtensionInitializer, openZaakExtensionInitializer} from '@valtimo/open-zaak';
@@ -145,6 +146,7 @@ export const environment: ValtimoConfig = {
     ],
   },
   whitelistedDomains: ['localhost:4200'],
+  langKey: Language.NL,
   mockApi: {
     endpointUri: '/mock-api/',
   },

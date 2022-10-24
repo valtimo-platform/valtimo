@@ -71,6 +71,7 @@ export interface ValtimoConfig {
   authentication: Auth;
   production: boolean;
   whitelistedDomains: string[];
+  langKey?: Language;
   valtimoApi: {
     endpointUri: string;
   };
@@ -122,4 +123,10 @@ export enum TaskListTab {
   MINE = 'mine',
   OPEN = 'open',
   ALL = 'all',
+}
+
+export enum Language {
+  NL = 'nl',
+  EN = 'en',
+  DE = 'de',
 }

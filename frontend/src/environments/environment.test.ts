@@ -23,6 +23,7 @@ import {
   ROLE_DEVELOPER,
   ROLE_USER,
   ValtimoConfig,
+  Language
 } from '@valtimo/config';
 
 const defaultDefinitionColumns = [
@@ -120,6 +121,7 @@ export const environment: ValtimoConfig = {
     ],
   },
   whitelistedDomains: ['localhost:4200'],
+  langKey: Language.NL,
   swagger: {
     endpointUri: 'http://localhost:4200/v2/api-docs',
   },

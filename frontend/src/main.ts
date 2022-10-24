@@ -27,8 +27,3 @@ if (environment.production) {
 platformBrowserDynamic()
   .bootstrapModule(AppModule)
   .catch(err => console.error(err));
-
-// set default langKey in localStorage
-if (!localStorage.getItem('langKey')) {
-  localStorage.setItem('langKey', 'en');
-}
