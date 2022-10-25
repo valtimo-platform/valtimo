@@ -10,7 +10,7 @@
   "dependencies": {
     "@foxythemes/bootstrap-datetime-picker-bs4": "^2.3.4",
     "bpmn-js": "^6.4.2",
-    "formiojs": "~4.14.8",
+    "formiojs": "4.14.8",
     "jquery": "3.6.0",
     "moment": "^2.29.4",
     "heatmap.js-fixed": "^2.0.2",
