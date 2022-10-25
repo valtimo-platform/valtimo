@@ -7,8 +7,8 @@
     "@angular/core": "^14.2.5"
   },
   "dependencies": {
-    "keycloak-angular": "^10.0.1",
-    "keycloak-js": "^18.0.1",
+    "keycloak-angular": "^12.1.0",
+    "keycloak-js": "^19.0.3",
     "tslib": "^2.0.0"
   }
 }

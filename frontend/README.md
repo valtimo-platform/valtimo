@@ -64,7 +64,3 @@ Code you can refer to
 ## Running unit tests
 
 Run `npm run libs:test:libraryName` to execute unit tests.
-
-## Running the mock API
-
-We use json-server to mock APIs. To use it run `npm run mock`.

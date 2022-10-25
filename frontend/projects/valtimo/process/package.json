@@ -7,7 +7,7 @@
     "@angular/core": "^14.2.5"
   },
   "dependencies": {
-    "ngx-toastr": "^14.3.0",
+    "ngx-toastr": "^15.2.1",
     "moment": "^2.29.4",
     "bpmn-js": "^6.4.2",
     "jquery": "3.6.0",

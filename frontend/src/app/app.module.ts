@@ -17,7 +17,7 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {Injector, NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {HttpClient, HttpClientModule} from '@angular/common/http';
+import {HttpBackend, HttpClientModule} from '@angular/common/http';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {LayoutModule} from '@valtimo/layout';
@@ -28,7 +28,6 @@ import {
   BpmnJsDiagramModule,
   CardModule,
   FormIoModule,
-  FormIoUploaderComponent,
   MenuModule,
   registerDocumentenApiFormioUploadComponent,
   registerFormioFileSelectorComponent,
@@ -188,7 +187,7 @@ export function tabsFactory() {
       loader: {
         provide: TranslateLoader,
         useFactory: MultiTranslateHttpLoaderFactory,
-        deps: [HttpClient, ConfigService],
+        deps: [HttpBackend, ConfigService],
       },
     }),
   ],

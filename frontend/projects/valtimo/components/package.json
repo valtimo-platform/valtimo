@@ -8,20 +8,20 @@
     "@angular/elements": "^14.2.5"
   },
   "dependencies": {
-    "@foxythemes/bootstrap-datetime-picker-bs4": "^2.3.4",
+    "@foxythemes/bootstrap-datetime-picker-bs4": "^2.3.5",
     "bpmn-js": "^6.4.2",
-    "formiojs": "~4.14.8",
-    "jquery": "3.6.0",
+    "formiojs": "4.14.8",
+    "jquery": "^3.6.0",
     "moment": "^2.29.4",
     "heatmap.js-fixed": "^2.0.2",
     "@ngx-translate/core": "^14.0.0",
     "@ngx-translate/http-loader": "7.0.0",
     "@ng-bootstrap/ng-bootstrap": "^11.0.0",
-    "ngx-toastr": "^14.3.0",
+    "ngx-toastr": "^15.2.1",
     "@formio/angular": "^5.2.2",
     "ngx-spinner": "^14.0.0",
     "tslib": "^2.0.0",
-    "ng-multiselect-dropdown": "^0.3.8"
+    "ng-multiselect-dropdown": "^1.0.0-beta.19"
   },
   "devDependencies": {
     "karma-moment": "^0.1.0"
