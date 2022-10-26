@@ -279,7 +279,7 @@ export class DocumentService {
 
   getCandidateUsers(documentId: string): Observable<Array<User>> {
     return this.http.get<Array<User>>(
-      `${this.valtimoEndpointUri}/document/${documentId}/candidate-user`
+      `${this.valtimoEndpointUri}document/${documentId}/candidate-user`
     );
   }
 
