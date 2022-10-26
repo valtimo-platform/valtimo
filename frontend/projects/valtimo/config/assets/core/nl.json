@@ -753,8 +753,8 @@
       "description": "Op deze pagina kun je connecties met externe diensten aanmaken, aanpassen of verwijderen."
     },
     "plugins": {
-      "title": "Plug-ins",
-      "description": "Op deze pagina kun je configuraties aanmaken, wijzigen en verwijderen van plug-ins die zijn toegevoegd aan je applicatie."
+      "title": "Plugins",
+      "description": "Op deze pagina kun je configuraties aanmaken, wijzigen en verwijderen van plugins die zijn toegevoegd aan je applicatie."
     },
     "customercases": {
       "title": "Zaken",
@@ -772,18 +772,18 @@
     "noConfigurationComponent": "Er is geen configuratie-component beschikbaar."
   },
   "pluginManagement": {
-    "tableItemsText": "plug-in-configuraties",
-    "add": "Plug-in configureren",
+    "tableItemsText": "plugin-configuraties",
+    "add": "Plugin configureren",
     "noDefinitions": "Geen plugin-definities gevonden.",
     "save": "Configuratie opslaan",
     "remove": "Configuratie verwijderen",
     "labels": {
-      "pluginName": "Plug-in-naam",
+      "pluginName": "Plugin naam",
       "identifier": "Identifier",
       "configurationName": "Configuratienaam"
     },
     "addSteps": {
-      "step0": "Kies je plug-in",
+      "step0": "Kies je plugin",
       "step1": "Gegevens invullen",
       "complete": "Configuratie opslaan"
     }
@@ -800,7 +800,7 @@
     "edit": "Proceskoppeling wijzigen",
     "saveChanges": "Wijzigingen opslaan",
     "unlink": "Ontkoppelen",
-    "noPluginFunctions": "Deze plug-in ondersteunt geen pluginacties."
+    "noPluginFunctions": "Deze plugin ondersteunt geen pluginacties."
   },
   "keycloak": {
     "expiryPromptTitle": "De sessie verloopt bijna",
