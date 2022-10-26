@@ -8,7 +8,7 @@
   "allowedNonPeerDependencies": [
     "@foxythemes/bootstrap-datetime-picker-bs4",
     "bootstrap",
-    "@popperjs/core",
+    "popper.js",
     "bootstrap-slider",
     "bs4-breakpoint-check",
     "chart.js",

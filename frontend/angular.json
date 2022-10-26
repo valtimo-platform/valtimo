@@ -67,7 +67,7 @@
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/components-jqueryui/jquery-ui.min.js",
-              "node_modules/@popperjs/core/dist/umd/popper.js",
+              "node_modules/popper.js/dist/umd/popper.js",
               "node_modules/bootstrap/dist/js/bootstrap.js",
               "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/js/bootstrap-datetimepicker.min.js",
               "node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
