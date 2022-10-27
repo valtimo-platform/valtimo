@@ -36,6 +36,7 @@ import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {DossierManagementRolesComponent} from './dossier-management-roles/dossier-management-roles.component';
 import {DossierManagementLinkProcessComponent} from './dossier-management-link-process/dossier-management-link-process.component';
 import {ParagraphModule, SelectModule} from '@valtimo/user-interface';
+import {DossierManagementSearchFieldsComponent} from './dossier-management-search-fields/dossier-management-search-fields.component';
 
 @NgModule({
   declarations: [
@@ -46,6 +47,7 @@ import {ParagraphModule, SelectModule} from '@valtimo/user-interface';
     DossierManagementUploadComponent,
     DossierManagementRolesComponent,
     DossierManagementLinkProcessComponent,
+    DossierManagementSearchFieldsComponent,
   ],
   imports: [
     CommonModule,

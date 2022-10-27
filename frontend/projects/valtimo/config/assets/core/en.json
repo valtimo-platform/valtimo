@@ -835,5 +835,16 @@
     "numberRange": "A number range field",
     "dateRange": "A date range field",
     "datetimeRange": "A date and time range field"
+  },
+  "searchFieldsOverview": {
+    "path": "Path",
+    "datatype": "Data type",
+    "fieldtype": "Field type",
+    "matchtype": "Match",
+    "exact": "Exact",
+    "like": "Contains",
+    "single": "Single",
+    "multiple": "Multiple",
+    "range": "Range"
   }
 }

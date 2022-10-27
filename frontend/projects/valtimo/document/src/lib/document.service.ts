@@ -271,10 +271,7 @@ export class DocumentService {
   }
 
   unassignHandlerFromDocument(documentId: string): Observable<void> {
-    return this.http.post<void>(
-      `${this.valtimoEndpointUri}document/${documentId}/unassign`,
-      {}
-    );
+    return this.http.post<void>(`${this.valtimoEndpointUri}document/${documentId}/unassign`, {});
   }
 
   getCandidateUsers(documentId: string): Observable<Array<User>> {
@@ -290,6 +287,7 @@ export class DocumentService {
         datatype: 'text',
         fieldtype: 'single',
         matchtype: 'exact',
+        path: '/profile/name',
       },
       {
         key: 'number',
@@ -302,6 +300,7 @@ export class DocumentService {
         datatype: 'date',
         fieldtype: 'single',
         matchtype: 'exact',
+        path: '/profile/dateOfBirth',
       },
       {
         key: 'numberRange',

@@ -122,16 +122,18 @@
           </div>
           <valtimo-dossier-management-roles [documentDefinitionName]="documentDefinitionName">
           </valtimo-dossier-management-roles>
-          <valtimo-dossier-management-link-process></valtimo-dossier-management-link-process>
-          <valtimo-extension
+          <valtimo-dossier-management-link-process></valtimo-dossier-management-link-process
+          ><valtimo-extension
             module="dossier-management"
             page="dossier"
             section="right-panel"
           ></valtimo-extension>
         </div>
       </div>
+      <valtimo-dossier-management-search-fields
+        *ngIf="showCaseSearchFields"
+      ></valtimo-dossier-management-search-fields>
     </valtimo-widget>
-
     <valtimo-dossier-management-connect-modal
       #dossierConnectModal
       (reloadProcessDocumentDefinitions)="loadProcessDocumentDefinitions()"

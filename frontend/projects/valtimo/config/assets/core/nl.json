@@ -835,5 +835,16 @@
     "numberRange": "Een nummerreeks-veld",
     "dateRange": "Een datumreeks-veld",
     "datetimeRange": "Een datum en tijd-reeks-veld"
+  },
+  "searchFieldsOverview": {
+    "path": "Pad",
+    "datatype": "Datatype",
+    "fieldtype": "Veldtype",
+    "matchtype": "Overeenkomst",
+    "exact": "Precies",
+    "like": "Bevat",
+    "single": "Enkel",
+    "multiple": "Meerdere",
+    "range": "Reeks"
   }
 }

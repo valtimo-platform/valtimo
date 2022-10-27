@@ -835,5 +835,16 @@
     "numberRange": "Ein Zahlenfolgefeld",
     "dateRange": "Ein Datumsbereichsfeld",
     "datetimeRange": "Ein Datums- und Zeitreihenfeld"
+  },
+  "searchFieldsOverview": {
+    "path": "Pfad",
+    "datatype": "Datentyp",
+    "fieldtype": "Feldtyp",
+    "matchtype": "Übereinstimmen",
+    "exact": "Genau",
+    "like": "Enthält",
+    "single": "Nur",
+    "multiple": "Mehrere",
+    "range": "Serie"
   }
 }
