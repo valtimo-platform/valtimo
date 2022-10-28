@@ -10,8 +10,8 @@
     "DocumentRelatedFileAddedEvent": "Gerelateerd bestand toegevoegd",
     "DocumentRelatedFileRemovedEvent": "Gerelateerd bestand verwijderd",
     "BesluitAddedEvent": "Besluit toegevoegd > {{identificatie}}",
-    "DocumentAssigneeChangedEvent": "De eigenaar is gewijzigd naar {{assigneeName}}",
-    "DocumentUnassignedEvent": "De eigenaar is van het dossier afgehaald"
+    "DocumentAssigneeChangedEvent": "De behandelaar is gewijzigd naar {{assigneeName}}",
+    "DocumentUnassignedEvent": "De behandelaar is van het dossier afgehaald"
   },
   "dossier": {
     "title": {
@@ -501,7 +501,7 @@
     "lastModified": "Laatst gewijzigd op",
     "files": "Bestanden",
     "firstName": "Voornaam",
-    "assigneeFullName": "Eigenaar"
+    "assigneeFullName": "Behandelaar"
   },
   "list": {
     "currentPage": "Pagina {{current}} van {{total}}",
