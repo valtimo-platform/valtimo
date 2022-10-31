@@ -280,6 +280,10 @@
     "linkProcess": {
       "title": "Link upload process to case",
       "description": "Choose which process should handle file uploads."
+    },
+    "tabs": {
+      "cases": "Case Details",
+      "searchFields": "Search Fields"
     }
   },
   "serviceTaskManagement": {

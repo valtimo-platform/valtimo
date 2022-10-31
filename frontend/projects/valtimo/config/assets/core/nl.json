@@ -280,6 +280,10 @@
     "linkProcess": {
       "title": "Uploadproces koppelen aan dossier",
       "description": "Kies welk proces het uploaden van bestanden moet afhandelen."
+    },
+    "tabs": {
+      "cases": "Zaak Details",
+      "searchFields": "Zoekvelden"
     }
   },
   "serviceTaskManagement": {

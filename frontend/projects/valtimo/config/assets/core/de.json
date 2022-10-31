@@ -280,6 +280,10 @@
     "linkProcess": {
       "title": "Verknüpfen Sie den Upload-Prozess mit dem Fall",
       "description": "Wählen Sie einen Prozess, der das Hochladen von Dateien handhaben soll."
+    },
+    "tabs": {
+      "cases": "Falldetails",
+      "searchFields": "Suchfelder"
     }
   },
   "serviceTaskManagement": {
