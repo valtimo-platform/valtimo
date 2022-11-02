@@ -29,6 +29,11 @@
 
 <ng-template #searchFieldsTemplate>
   <valtimo-widget>
+    <div class="row">
+      <div class="col-12">
+        <ng-container *ngTemplateOutlet="buttonAccordion"></ng-container>
+      </div>
+    </div>
     <div class="row p-3" [ngClass]="{'row--hidden': (expanded$ | async) === false}">
       <ng-container *ngFor="let searchField of searchFields$ | async; let i = index">
         <div class="col-4">
@@ -38,8 +43,6 @@
         </div>
         <div class="w-100" *ngIf="(i + 1) % 3 === 0"></div>
       </ng-container>
-    </div>
-    <div class="row">
       <div class="col-12">
         <ng-container *ngTemplateOutlet="buttonsTemplate"></ng-container>
       </div>
@@ -195,35 +198,42 @@
 </ng-template>
 
 <ng-template #buttonsTemplate>
-  <div class="buttons-container p-3" *ngIf="{expanded: expanded$ | async} as obs">
-    <v-button
-      (clickEvent)="toggleExpanded()"
-      [disabled]="loading"
-      type="secondary"
-      [mdiIcon]="obs.expanded ? 'chevron-up' : 'chevron-down'"
-      >{{
-        obs.expanded
-          ? ('searchFields.collapseButtonText' | translate)
-          : ('searchFields.expandButtonText' | translate)
-      }}</v-button
-    >
+  <div class="buttons-container" *ngIf="{expanded: expanded$ | async} as obs">
     <div class="right-buttons">
-      <v-button
-        (clickEvent)="search()"
+      <button
+        (click)="search()"
         [disabled]="loading"
-        type="danger"
+        type="button"
+        class="btn btn-space btn-secondary"
         *ngIf="obs.expanded"
-        mdiIcon="close"
-        >{{ 'searchFields.clearButtonText' | translate }}</v-button
+        >{{ 'searchFields.clearButtonText' | translate }}</button
       >
-      <v-button
-        (clickEvent)="search()"
+      <button
+        (click)="search()"
         [disabled]="loading"
-        type="primary"
+        type="button"
+        class="btn btn-space btn-primary"
         *ngIf="obs.expanded"
-        mdiIcon="magnify"
-        >{{ 'searchFields.searchButtonText' | translate }}</v-button
+        >{{ 'searchFields.searchButtonText' | translate }}</button
       >
     </div>
+  </div>
+</ng-template>
+
+<ng-template #buttonAccordion>
+  <div class="buttons-container" *ngIf="{ expanded: expanded$ | async } as obs">
+    <button
+            [disabled]="loading"
+            type="button"
+            class="accordion-button"
+            (click)="toggleExpanded()"
+            [ngClass]="
+        obs.expanded
+          ? 'mdi mdi-chevron-right accordion-button--active'
+          : 'mdi mdi-chevron-down'
+      "
+    >
+      {{ "searchFields.searchButtonText" | translate }}
+    </button>
   </div>
 </ng-template>

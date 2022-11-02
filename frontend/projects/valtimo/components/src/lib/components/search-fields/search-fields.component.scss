@@ -37,7 +37,7 @@
   width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: end;
 }
 
 .right-buttons {
@@ -51,4 +51,22 @@
 
 .row--hidden {
   display: none;
+}
+
+.accordion-button {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  background: #F8F9F9;
+  text-align: left;
+  transition: background 0.2s;
+  font-size: 1.2rem;
+  color: #404040;
+}
+
+.accordion-button--active {
+  background: #F1F1F1;
 }
