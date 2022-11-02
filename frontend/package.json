@@ -63,6 +63,7 @@
     "libs:watch:bootstrap": "ng build @valtimo/bootstrap --watch",
     "libs:watch:open-zaak": "ng build @valtimo/open-zaak --watch",
     "libs:watch:customer": "ng build @valtimo/customer --watch",
+    "libs:watch:exact-plugin": "ng build @valtimo/exact-plugin --watch",
     "libs:build:config": "ng build @valtimo/config",
     "libs:build:user-interface": "ng build @valtimo/user-interface",
     "libs:build:resource": "ng build @valtimo/resource",
@@ -101,6 +102,7 @@
     "libs:build:bootstrap": "ng build @valtimo/bootstrap",
     "libs:build:open-zaak": "ng build @valtimo/open-zaak",
     "libs:build:customer": "ng build @valtimo/customer",
+    "libs:build:exact-plugin": "ng build @valtimo/exact-plugin",
     "libs:test:user-interface": "ng test @valtimo/user-interface",
     "libs:test:config": "ng test @valtimo/config",
     "libs:test:view-configurator": "ng test @valtimo/view-configurator",
@@ -139,6 +141,7 @@
     "libs:test:open-zaak": "ng test @valtimo/open-zaak",
     "libs:test:resource": "ng test @valtimo/resource",
     "libs:test:customer": "ng test @valtimo/customer",
+    "libs:test:exact-plugin": "ng test @valtimo/exact-plugin",
     "libs:lint:user-interface": "ng lint @valtimo/user-interface",
     "libs:lint:config": "ng lint @valtimo/config",
     "libs:lint:view-configurator": "ng lint @valtimo/view-configurator",
@@ -176,7 +179,8 @@
     "libs:lint:bootstrap": "ng lint @valtimo/bootstrap",
     "libs:lint:open-zaak": "ng lint @valtimo/open-zaak",
     "libs:lint:resource": "ng lint @valtimo/resource",
-    "libs:lint:customer": "ng lint @valtimo/customer"
+    "libs:lint:customer": "ng lint @valtimo/customer",
+    "libs:lint:exact-plugin": "ng lint @valtimo/exact-plugin"
   },
   "private": true,
   "dependencies": {
@@ -308,6 +312,8 @@
     "zone.js": "~0.11.6"
   },
   "devDependencies": {
+    "@angular-devkit/build-angular": "~13.3.9",
+    "@angular/compiler-cli": "~13.3.0",
     "@valtimo/account": "file:dist/valtimo/account",
     "@valtimo/analyse": "file:dist/valtimo/analyse",
     "@valtimo/auth0": "file:dist/valtimo/auth0",
@@ -344,6 +350,8 @@
     "@valtimo/task": "file:dist/valtimo/task",
     "@valtimo/user-interface": "file:dist/valtimo/user-interface",
     "@valtimo/user-management": "file:dist/valtimo/user-management",
-    "@valtimo/view-configurator": "file:dist/valtimo/view-configurator"
+    "@valtimo/view-configurator": "file:dist/valtimo/view-configurator",
+    "ng-packagr": "^13.0.0",
+    "typescript": "~4.6.2"
   }
 }
