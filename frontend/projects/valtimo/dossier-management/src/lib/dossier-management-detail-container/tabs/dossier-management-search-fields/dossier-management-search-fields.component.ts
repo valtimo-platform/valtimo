@@ -15,11 +15,12 @@
  */
 import {Component} from '@angular/core';
 import {DocumentService} from '@valtimo/document';
-import {combineLatest, filter, map, Observable, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, take, tap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {ListField} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 import {DefinitionColumn, SearchField} from '@valtimo/config';
+import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
 
 @Component({
   selector: 'valtimo-dossier-management-search-fields',
@@ -74,7 +75,12 @@ export class DossierManagementSearchFieldsComponent {
     this.documentDefinitionName$.pipe(
       switchMap(documentDefinitionName =>
         this.documentService.getDocumentSearchFields(documentDefinitionName)
-      )
+      ),
+      tap(searchFields => {
+        this.documentDefinitionName$.pipe(take(1)).subscribe(documentDefinitionName => {
+          this.setDownload(documentDefinitionName, searchFields);
+        });
+      })
     );
 
   readonly translatedSearchFields$: Observable<Array<SearchField>> = combineLatest([
@@ -91,9 +97,23 @@ export class DossierManagementSearchFieldsComponent {
     )
   );
 
+  readonly downloadName$ = new BehaviorSubject<string>('');
+  readonly downloadUrl$ = new BehaviorSubject<SafeUrl>(undefined);
+
   constructor(
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly sanitizer: DomSanitizer
   ) {}
+
+  private setDownload(documentDefinitionName: string, searchFields: Array<SearchField>): void {
+    this.downloadName$.next(`${documentDefinitionName}.json`);
+    this.downloadUrl$.next(
+      this.sanitizer.bypassSecurityTrustUrl(
+        'data:text/json;charset=UTF-8,' +
+          encodeURIComponent(JSON.stringify({searchFields}, null, 2))
+      )
+    );
+  }
 }

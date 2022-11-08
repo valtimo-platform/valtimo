@@ -48,9 +48,7 @@
       "@valtimo/choice-field": ["dist/valtimo/choice-field"],
       "@valtimo/choice-field/*": ["dist/valtimo/choice-field/*"],
       "@valtimo/contact-moment": ["dist/valtimo/contact-moment"],
-      "@valtimo/contact-moment/*": [
-        "dist/valtimo/contact-moment/*"
-      ],
+      "@valtimo/contact-moment/*": ["dist/valtimo/contact-moment/*"],
       "@valtimo/exact-plugin": [
         "dist/valtimo/exact-plugin/valtimo-exact-plugin",
         "dist/valtimo/exact-plugin"

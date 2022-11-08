@@ -21,22 +21,22 @@
         <ul class="nav nav-tabs">
           <li class="nav-item">
             <a
-                    id="test-tab"
-                    class="nav-link clickable active"
-                    data-toggle="tab"
-                    (click)="displayBodyComponent('case')"
+              id="test-tab"
+              class="nav-link clickable active"
+              data-toggle="tab"
+              (click)="displayBodyComponent('case')"
             >
-              {{ "dossierManagement.tabs.cases" | translate }}
+              {{ 'dossierManagement.tabs.cases' | translate }}
             </a>
           </li>
           <li class="nav-item" *ngIf="showCaseSearchFields">
             <a
-                    id="test-tab-1"
-                    class="nav-link clickable"
-                    data-toggle="tab"
-                    (click)="displayBodyComponent('search')"
+              id="test-tab-1"
+              class="nav-link clickable"
+              data-toggle="tab"
+              (click)="displayBodyComponent('search')"
             >
-              {{ "dossierManagement.tabs.searchFields" | translate }}
+              {{ 'dossierManagement.tabs.searchFields' | translate }}
             </a>
           </li>
         </ul>

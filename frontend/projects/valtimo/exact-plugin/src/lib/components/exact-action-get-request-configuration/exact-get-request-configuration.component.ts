@@ -21,11 +21,12 @@ import ExactGetRequestConfiguration from './exact-get-request-configuration';
 
 @Component({
   selector: 'valtimo-exact-get-request-configuration',
-  templateUrl: './exact-get-request-configuration.component.html'
+  templateUrl: './exact-get-request-configuration.component.html',
 })
+// The component explicitly implements the PluginConfigurationComponent interface
 export class ExactGetRequestConfigurationComponent
-  // The component explicitly implements the PluginConfigurationComponent interface
-  implements FunctionConfigurationComponent, OnInit, OnDestroy {
+  implements FunctionConfigurationComponent, OnInit, OnDestroy
+{
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
@@ -53,8 +54,8 @@ export class ExactGetRequestConfigurationComponent
     const formValue: ExactGetRequestConfiguration = {
       properties: {
         uri: input.uri,
-        bean: input.bean
-      }
+        bean: input.bean,
+      },
     };
 
     this.formValue$.next(formValue);

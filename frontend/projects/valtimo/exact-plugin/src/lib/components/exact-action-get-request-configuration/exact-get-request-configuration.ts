@@ -16,7 +16,7 @@
 
 export default interface ExactGetRequestConfiguration {
   properties: {
-    uri?: string,
-    bean?: string
-  }
+    uri?: string;
+    bean?: string;
+  };
 }

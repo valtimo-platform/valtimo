@@ -19,21 +19,17 @@ import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'valtimo-exact-redirect',
-  templateUrl: './exact-redirect.component.html'
+  templateUrl: './exact-redirect.component.html',
 })
-export class ExactRedirectComponent
-  implements OnInit, OnDestroy {
-
-  constructor(private route: ActivatedRoute) { }
+export class ExactRedirectComponent implements OnInit, OnDestroy {
+  constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
+    this.route.queryParams.subscribe(params => {
       localStorage.setItem('exactAuthorizationCode', params.code);
-      window.close()
+      window.close();
     });
   }
 
-  ngOnDestroy() {
-  }
-
+  ngOnDestroy() {}
 }

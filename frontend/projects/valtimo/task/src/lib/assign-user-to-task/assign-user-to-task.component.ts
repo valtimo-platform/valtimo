@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges,} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import {DropdownItem} from '@valtimo/components';
 import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
 import {take, tap} from 'rxjs/operators';
@@ -38,8 +47,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   assignedUserFullName$ = new BehaviorSubject<string>(null);
   private _subscriptions = new Subscription();
 
-  constructor(private taskService: TaskService) {
-  }
+  constructor(private taskService: TaskService) {}
 
   ngOnInit(): void {
     this._subscriptions.add(

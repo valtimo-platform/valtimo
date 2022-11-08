@@ -31,7 +31,7 @@ import {ExactRedirectComponent} from './components/exact-redirect/exact-redirect
     ExactPostRequestConfigurationComponent,
     ExactPutRequestConfigurationComponent,
     ExactPluginConfigurationComponent,
-    ExactRedirectComponent
+    ExactRedirectComponent,
   ],
   imports: [
     CommonModule,
@@ -40,9 +40,8 @@ import {ExactRedirectComponent} from './components/exact-redirect/exact-redirect
     FormModule,
     InputModule,
     ButtonModule,
-    ExactPluginRoutingModule
+    ExactPluginRoutingModule,
   ],
-  exports: []
+  exports: [],
 })
-export class ExactPluginModule {
-}
+export class ExactPluginModule {}

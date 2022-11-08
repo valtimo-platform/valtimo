@@ -23,7 +23,7 @@ import {
   ROLE_DEVELOPER,
   ROLE_USER,
   ValtimoConfig,
-  Language
+  Language,
 } from '@valtimo/config';
 
 const defaultDefinitionColumns = [

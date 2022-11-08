@@ -20,7 +20,7 @@ import {ConfigService} from '@valtimo/config';
 @Component({
   selector: 'valtimo-dossier-management-detail-container',
   templateUrl: './dossier-management-detail-container.component.html',
-  styleUrls: ['./dossier-management-detail-container.component.css']
+  styleUrls: ['./dossier-management-detail-container.component.css'],
 })
 export class DossierManagementDetailContainerComponent {
   public isCase = true;
@@ -31,6 +31,6 @@ export class DossierManagementDetailContainerComponent {
   }
 
   displayBodyComponent(tab: string): void {
-    this.isCase = (tab  === 'case');
+    this.isCase = tab === 'case';
   }
 }

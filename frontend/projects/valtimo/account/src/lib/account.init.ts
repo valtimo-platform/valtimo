@@ -30,7 +30,7 @@ export function accountInitializer(
         translate.addLangs([Language.EN, Language.NL, Language.DE]);
         let langKey = localStorage.getItem('langKey');
         if (langKey === null) {
-          langKey = configService?.config?.langKey || Language.NL
+          langKey = configService?.config?.langKey || Language.NL;
           localStorage.setItem('langKey', langKey);
         }
         logger.debug('Using langKey', langKey);

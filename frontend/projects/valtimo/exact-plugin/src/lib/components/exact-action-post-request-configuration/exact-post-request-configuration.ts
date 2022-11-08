@@ -16,8 +16,8 @@
 
 export default interface ExactPostRequestConfiguration {
   properties: {
-    uri?: string,
-    bean?: string,
-    content?: string
-  }
+    uri?: string;
+    bean?: string;
+    content?: string;
+  };
 }

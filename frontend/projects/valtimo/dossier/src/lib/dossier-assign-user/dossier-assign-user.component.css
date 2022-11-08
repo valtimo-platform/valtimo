@@ -22,6 +22,6 @@ valtimo-searchable-dropdown-select {
   font-size: 13px;
 }
 
-:host::ng-deep #dossier-candidates-dropdown h5{
+:host::ng-deep #dossier-candidates-dropdown h5 {
   margin-block: 0;
 }

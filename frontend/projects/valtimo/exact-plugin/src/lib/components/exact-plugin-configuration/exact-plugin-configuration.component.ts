@@ -24,23 +24,23 @@ import {ExactPluginConfig} from '../../exact-plugin';
   selector: 'valtimo-exact-plugin-configuration',
   templateUrl: './exact-plugin-configuration.component.html',
 })
+// The component explicitly implements the PluginConfigurationComponent interface
 export class ExactPluginConfigurationComponent
-  // The component explicitly implements the PluginConfigurationComponent interface
-  implements PluginConfigurationComponent, OnInit, OnDestroy {
+  implements PluginConfigurationComponent, OnInit, OnDestroy
+{
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
   @Input() prefillConfiguration$: Observable<ExactPluginConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<ExactPluginConfig> =
-    new EventEmitter<ExactPluginConfig>();
+  @Output() configuration: EventEmitter<ExactPluginConfig> = new EventEmitter<ExactPluginConfig>();
 
   private saveSubscription!: Subscription;
   private readonly formValue$ = new BehaviorSubject<ExactPluginConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
-  private storageCallbackFun!: (any) => void
+  private storageCallbackFun!: (any) => void;
 
-  constructor(private exactPluginService: ExactPluginService) { }
+  constructor(private exactPluginService: ExactPluginService) {}
 
   ngOnInit(): void {
     this.openSaveSubscription();
@@ -50,9 +50,12 @@ export class ExactPluginConfigurationComponent
 
   onReceiveToken(event): void {
     if (event.key === 'exactAuthorizationCode') {
-      this.formValue$.pipe(take(1)).subscribe((formValue) => {
-        this.exchangeAuthorizationCode(formValue, localStorage.getItem('exactAuthorizationCode'));
-      }).unsubscribe();
+      this.formValue$
+        .pipe(take(1))
+        .subscribe(formValue => {
+          this.exchangeAuthorizationCode(formValue, localStorage.getItem('exactAuthorizationCode'));
+        })
+        .unsubscribe();
     }
   }
 
@@ -64,7 +67,7 @@ export class ExactPluginConfigurationComponent
   exchangeAuthorizationCode(formValue, code): void {
     this.exactPluginService
       .exchangeAuthorizationCode(formValue.clientId, formValue.clientSecret, code)
-      .subscribe((response) => {
+      .subscribe(response => {
         formValue.accessToken = response.accessToken;
         formValue.accessTokenExpiresOn = response.accessTokenExpiresOn;
         formValue.refreshToken = response.refreshToken;
@@ -79,14 +82,24 @@ export class ExactPluginConfigurationComponent
   }
 
   openAuthenticationWindow(): void {
-    this.formValue$.subscribe((formValue: ExactPluginConfig) => {
-      const redirect_url = window.location.origin + '/plugins/exact/redirect';
-      window.open(`https://start.exactonline.nl/api/oauth2/auth?client_id=${formValue.clientId}&redirect_uri=${redirect_url}&response_type=code&force_login=0`, '_blank');
-    }).unsubscribe();
+    this.formValue$
+      .subscribe((formValue: ExactPluginConfig) => {
+        const redirect_url = window.location.origin + '/plugins/exact/redirect';
+        window.open(
+          `https://start.exactonline.nl/api/oauth2/auth?client_id=${formValue.clientId}&redirect_uri=${redirect_url}&response_type=code&force_login=0`,
+          '_blank'
+        );
+      })
+      .unsubscribe();
   }
 
   private handleValid(formValue: ExactPluginConfig): void {
-    const valid = !!(formValue.clientId && formValue.clientSecret && formValue.accessToken && formValue.refreshToken);
+    const valid = !!(
+      formValue.clientId &&
+      formValue.clientSecret &&
+      formValue.accessToken &&
+      formValue.refreshToken
+    );
 
     this.valid$.next(valid);
     this.valid.emit(valid);

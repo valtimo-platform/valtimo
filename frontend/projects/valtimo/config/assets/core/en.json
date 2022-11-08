@@ -820,6 +820,7 @@
     "collapseButtonText": "Hide",
     "searchButtonText": "Search",
     "clearButtonText": "Clear",
+    "downloadButtonText": "Download search field configuration",
     "to": "to",
     "text": "Text",
     "number": "Number",

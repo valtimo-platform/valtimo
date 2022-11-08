@@ -206,34 +206,34 @@
         type="button"
         class="btn btn-space btn-secondary"
         *ngIf="obs.expanded"
-        >{{ 'searchFields.clearButtonText' | translate }}</button
       >
+        {{ 'searchFields.clearButtonText' | translate }}
+      </button>
       <button
         (click)="search()"
         [disabled]="loading"
         type="button"
         class="btn btn-space btn-primary"
         *ngIf="obs.expanded"
-        >{{ 'searchFields.searchButtonText' | translate }}</button
       >
+        {{ 'searchFields.searchButtonText' | translate }}
+      </button>
     </div>
   </div>
 </ng-template>
 
 <ng-template #buttonAccordion>
-  <div class="buttons-container" *ngIf="{ expanded: expanded$ | async } as obs">
+  <div class="buttons-container" *ngIf="{expanded: expanded$ | async} as obs">
     <button
-            [disabled]="loading"
-            type="button"
-            class="accordion-button"
-            (click)="toggleExpanded()"
-            [ngClass]="
-        obs.expanded
-          ? 'mdi mdi-chevron-right accordion-button--active'
-          : 'mdi mdi-chevron-down'
+      [disabled]="loading"
+      type="button"
+      class="accordion-button"
+      (click)="toggleExpanded()"
+      [ngClass]="
+        obs.expanded ? 'mdi mdi-chevron-right accordion-button--active' : 'mdi mdi-chevron-down'
       "
     >
-      {{ "searchFields.searchButtonText" | translate }}
+      {{ 'searchFields.searchButtonText' | translate }}
     </button>
   </div>
 </ng-template>

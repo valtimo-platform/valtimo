@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { TestBed } from '@angular/core/testing';
+import {TestBed} from '@angular/core/testing';
 
-import { ExactPluginService } from './exact-plugin.service';
+import {ExactPluginService} from './exact-plugin.service';
 
 describe('ExactPluginService', () => {
   let service: ExactPluginService;

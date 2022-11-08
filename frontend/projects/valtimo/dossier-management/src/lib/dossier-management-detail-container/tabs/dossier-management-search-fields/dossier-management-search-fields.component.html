@@ -15,13 +15,42 @@
   -->
 
 <ng-container
-  *ngIf="{searchFields: translatedSearchFields$ | async, fields: fields$ | async} as obs"
+  *ngIf="{
+    searchFields: translatedSearchFields$ | async,
+    fields: fields$ | async,
+    downloadUrl: downloadUrl$ | async,
+    downloadName: downloadName$ | async
+  } as obs"
 >
+  <ng-container *ngTemplateOutlet="buttons; context: {obs: obs}"></ng-container>
+  <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
+</ng-container>
+
+<ng-template #buttons let-obs="obs">
+  <div class="btn-group mt-m3px mb-3 float-right pr-2">
+    <a
+      class="btn btn-primary btn-space"
+      [href]="obs.downloadUrl"
+      [download]="obs.downloadName"
+      [ngClass]="{disabled: !obs.downloadUrl || !obs.downloadName}"
+    >
+      <i class="icon mdi mdi-download mr-1"></i>
+      {{ 'searchFields.downloadButtonText' | translate }}
+    </a>
+  </div>
+</ng-template>
+
+<ng-template #list let-obs="obs">
   <valtimo-list
+    *ngIf="obs.searchFields; else loading"
     [items]="obs.searchFields"
     [fields]="obs.fields"
     [viewMode]="false"
     [header]="false"
   >
   </valtimo-list>
-</ng-container>
+</ng-template>
+
+<ng-template #loading>
+  <valtimo-spinner></valtimo-spinner>
+</ng-template>

@@ -30,11 +30,15 @@ export class ExactPluginService {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
-  exchangeAuthorizationCode(clientId: string, clientSecret: string, code: string): Observable<ExactRefreshToken> {
+  exchangeAuthorizationCode(
+    clientId: string,
+    clientSecret: string,
+    code: string
+  ): Observable<ExactRefreshToken> {
     return this.http.post<ExactRefreshToken>(`${this.valtimoEndpointUri}plugin/exact/exchange`, {
       clientId,
       clientSecret,
-      code
+      code,
     });
   }
 }

@@ -21,11 +21,12 @@ import ExactPutRequestConfiguration from './exact-put-request-configuration';
 
 @Component({
   selector: 'valtimo-exact-put-request-configuration',
-  templateUrl: './exact-put-request-configuration.component.html'
+  templateUrl: './exact-put-request-configuration.component.html',
 })
+// The component explicitly implements the PluginConfigurationComponent interface
 export class ExactPutRequestConfigurationComponent
-  // The component explicitly implements the PluginConfigurationComponent interface
-  implements FunctionConfigurationComponent, OnInit, OnDestroy {
+  implements FunctionConfigurationComponent, OnInit, OnDestroy
+{
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
@@ -54,16 +55,19 @@ export class ExactPutRequestConfigurationComponent
       properties: {
         uri: input.uri,
         content: input.content,
-        bean: input.bean
-      }
-    }
+        bean: input.bean,
+      },
+    };
 
     this.formValue$.next(formValue);
     this.handleValid(formValue);
   }
 
   private handleValid(formValue: ExactPutRequestConfiguration): void {
-    const valid = !!(formValue.properties.uri && formValue.properties.content || formValue.properties.bean);
+    const valid = !!(
+      (formValue.properties.uri && formValue.properties.content) ||
+      formValue.properties.bean
+    );
 
     this.valid$.next(valid);
     this.valid.emit(valid);

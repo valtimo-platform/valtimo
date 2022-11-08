@@ -18,7 +18,14 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {DropzoneModule, ListModule, ModalModule, MultiselectDropdownModule, WidgetModule,} from '@valtimo/components';
+import {
+  DropzoneModule,
+  ListModule,
+  ModalModule,
+  MultiselectDropdownModule,
+  SpinnerModule,
+  WidgetModule,
+} from '@valtimo/components';
 import {ConfigModule} from '@valtimo/config';
 import {DossierManagementConnectModalComponent} from './dossier-management-connect-modal/dossier-management-connect-modal.component';
 import {DossierManagementDetailComponent} from './dossier-management-detail-container/tabs/dossier-management-detail/dossier-management-detail.component';
@@ -43,7 +50,7 @@ import {DossierManagementDetailContainerComponent} from './dossier-management-de
     DossierManagementRolesComponent,
     DossierManagementLinkProcessComponent,
     DossierManagementSearchFieldsComponent,
-    DossierManagementDetailContainerComponent
+    DossierManagementDetailContainerComponent,
   ],
   imports: [
     CommonModule,
@@ -59,6 +66,7 @@ import {DossierManagementDetailContainerComponent} from './dossier-management-de
     MultiselectDropdownModule,
     ParagraphModule,
     SelectModule,
+    SpinnerModule,
   ],
   exports: [],
 })
