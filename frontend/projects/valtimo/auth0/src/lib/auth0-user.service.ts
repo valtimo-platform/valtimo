@@ -188,14 +188,14 @@ export class Auth0UserService implements UserService {
 
   updateProfile(profile: any): Observable<any> {
     return this.http.post(
-      `${this.configService.config.valtimoApi.endpointUri}account/profile`,
+      `${this.configService.config.valtimoApi.endpointUri}v1/account/profile`,
       profile
     );
   }
 
   changePassword(password: string): Observable<any> {
     return this.http.post(
-      `${this.configService.config.valtimoApi.endpointUri}account/change_password`,
+      `${this.configService.config.valtimoApi.endpointUri}v1/account/change_password`,
       password
     );
   }

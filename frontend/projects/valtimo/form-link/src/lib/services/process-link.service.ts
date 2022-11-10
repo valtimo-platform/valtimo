@@ -41,23 +41,26 @@ export class ProcessLinkService {
       .set('activityId', getProcessLinkRequest.activityId)
       .set('processDefinitionId', getProcessLinkRequest.processDefinitionId);
 
-    return this.http.get<GetProcessLinkResponse>(`${this.VALTIMO_ENDPOINT_URI}process-link`, {
+    return this.http.get<GetProcessLinkResponse>(`${this.VALTIMO_ENDPOINT_URI}v1/process-link`, {
       params,
     });
   }
 
   updateProcessLink(updateProcessLinkRequest: UpdateProcessLinkRequest): Observable<null> {
     return this.http.put<null>(
-      `${this.VALTIMO_ENDPOINT_URI}process-link`,
+      `${this.VALTIMO_ENDPOINT_URI}v1/process-link`,
       updateProcessLinkRequest
     );
   }
 
   saveProcessLink(saveProcessLinkRequest: SaveProcessLinkRequest): Observable<null> {
-    return this.http.post<null>(`${this.VALTIMO_ENDPOINT_URI}process-link`, saveProcessLinkRequest);
+    return this.http.post<null>(
+      `${this.VALTIMO_ENDPOINT_URI}v1/process-link`,
+      saveProcessLinkRequest
+    );
   }
 
   deleteProcessLink(id: string): Observable<null> {
-    return this.http.delete<null>(`${this.VALTIMO_ENDPOINT_URI}process-link/${id}`);
+    return this.http.delete<null>(`${this.VALTIMO_ENDPOINT_URI}v1/process-link/${id}`);
   }
 }

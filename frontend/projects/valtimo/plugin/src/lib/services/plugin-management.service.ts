@@ -43,25 +43,25 @@ export class PluginManagementService {
 
   getPluginDefinitions(): Observable<Array<PluginDefinition>> {
     return this.http.get<Array<PluginDefinition>>(
-      `${this.VALTIMO_API_ENDPOINT_URI}plugin/definition`
+      `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/definition`
     );
   }
 
   getPluginFunctions(pluginDefinitionId: string): Observable<Array<PluginFunction>> {
     return this.http.get<Array<PluginFunction>>(
-      `${this.VALTIMO_API_ENDPOINT_URI}plugin/definition/${pluginDefinitionId}/action`
+      `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/definition/${pluginDefinitionId}/action`
     );
   }
 
   getAllPluginConfigurations(): Observable<Array<PluginConfiguration>> {
     return this.http.get<Array<PluginConfiguration>>(
-      `${this.VALTIMO_API_ENDPOINT_URI}plugin/configuration`
+      `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/configuration`
     );
   }
 
   getPluginConfigurationsByCategory(categoryId: string): Observable<Array<PluginConfiguration>> {
     return this.http.get<Array<PluginConfiguration>>(
-      `${this.VALTIMO_API_ENDPOINT_URI}plugin/configuration?category=${categoryId}`
+      `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/configuration?category=${categoryId}`
     );
   }
 
@@ -69,7 +69,7 @@ export class PluginManagementService {
     activityType: string
   ): Observable<Array<PluginConfiguration>> {
     return this.http.get<Array<PluginConfiguration>>(
-      `${this.VALTIMO_API_ENDPOINT_URI}plugin/configuration?activityType=${activityType}`
+      `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/configuration?activityType=${activityType}`
     );
   }
 
@@ -87,7 +87,7 @@ export class PluginManagementService {
     pluginConfiguration: PluginConfiguration
   ): Observable<PluginConfiguration> {
     return this.http.post<PluginConfiguration>(
-      `${this.VALTIMO_API_ENDPOINT_URI}plugin/configuration`,
+      `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/configuration`,
       pluginConfiguration
     );
   }
@@ -98,7 +98,7 @@ export class PluginManagementService {
     configurationProperties: object
   ): Observable<PluginConfiguration> {
     return this.http.put<PluginConfiguration>(
-      `${this.VALTIMO_API_ENDPOINT_URI}plugin/configuration/${configurationId}`,
+      `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/configuration/${configurationId}`,
       {
         title: configurationTitle,
         properties: configurationProperties,
@@ -108,7 +108,7 @@ export class PluginManagementService {
 
   deletePluginConfiguration(configurationId: string): Observable<void> {
     return this.http.delete<void>(
-      `${this.VALTIMO_API_ENDPOINT_URI}plugin/configuration/${configurationId}`
+      `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/configuration/${configurationId}`
     );
   }
 

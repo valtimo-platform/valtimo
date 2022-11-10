@@ -31,44 +31,44 @@ export class ChoiceFieldService {
   }
 
   query(params?: any): Observable<any> {
-    return this.http.get<ChoiceField>(`${this.valtimoApiConfig.endpointUri}choice-fields`, {
+    return this.http.get<ChoiceField>(`${this.valtimoApiConfig.endpointUri}v1/choice-fields`, {
       observe: 'response',
       params,
     });
   }
 
   get(id: string): Observable<any> {
-    return this.http.get<ChoiceField>(`${this.valtimoApiConfig.endpointUri}choice-fields/${id}`);
+    return this.http.get<ChoiceField>(`${this.valtimoApiConfig.endpointUri}v1/choice-fields/${id}`);
   }
 
   create(choiceField: any): Observable<any> {
-    return this.http.post(`${this.valtimoApiConfig.endpointUri}choice-fields`, choiceField);
+    return this.http.post(`${this.valtimoApiConfig.endpointUri}v1/choice-fields`, choiceField);
   }
 
   delete(id: any) {
-    return this.http.delete(`${this.valtimoApiConfig.endpointUri}choice-fields/${id}`);
+    return this.http.delete(`${this.valtimoApiConfig.endpointUri}v1/choice-fields/${id}`);
   }
 
   update(choiceField: any): Observable<any> {
-    return this.http.put(`${this.valtimoApiConfig.endpointUri}choice-fields`, choiceField);
+    return this.http.put(`${this.valtimoApiConfig.endpointUri}v1/choice-fields`, choiceField);
   }
 
   queryValues(keyName: string, params?: any): Observable<any> {
     return this.http.get<ChoiceField>(
-      `${this.valtimoApiConfig.endpointUri}choice-field-values/${keyName}/values`,
+      `${this.valtimoApiConfig.endpointUri}v1/choice-field-values/${keyName}/values`,
       {observe: 'response', params}
     );
   }
 
   getValue(choiceFieldId: string): Observable<any> {
     return this.http.get<ChoiceField>(
-      `${this.valtimoApiConfig.endpointUri}choice-field-values/${choiceFieldId}`
+      `${this.valtimoApiConfig.endpointUri}v1/choice-field-values/${choiceFieldId}`
     );
   }
 
   updateValue(choiceFieldValue: any, choiceFieldName: string): Observable<any> {
     return this.http.put(
-      `${this.valtimoApiConfig.endpointUri}choice-field-values`,
+      `${this.valtimoApiConfig.endpointUri}v1/choice-field-values`,
       choiceFieldValue,
       {
         params: {choice_field_name: choiceFieldName},
@@ -78,7 +78,7 @@ export class ChoiceFieldService {
 
   createValue(choiceFieldValue: any, choiceFieldName: string): Observable<any> {
     return this.http.post(
-      `${this.valtimoApiConfig.endpointUri}choice-field-values`,
+      `${this.valtimoApiConfig.endpointUri}v1/choice-field-values`,
       choiceFieldValue,
       {params: {choice_field_name: choiceFieldName}}
     );

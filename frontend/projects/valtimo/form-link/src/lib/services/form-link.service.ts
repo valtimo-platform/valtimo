@@ -41,7 +41,7 @@ export class FormLinkService {
     formLinkId: string
   ): Observable<FormAssociation> {
     return this.http.get<FormAssociation>(
-      `${this.valtimoApiConfig.endpointUri}form-association-management`,
+      `${this.valtimoApiConfig.endpointUri}v1/form-association-management`,
       {
         params: {
           processDefinitionKey,
@@ -52,21 +52,27 @@ export class FormLinkService {
   }
 
   getStartEventFormDefinitionByProcessDefinitionKey(processDefinitionKey: string): Observable<any> {
-    return this.http.get(`${this.valtimoApiConfig.endpointUri}form-association/form-definition`, {
-      headers: InterceptorSkipHeader.set('Content-Type', 'application/json'),
-      params: {
-        processDefinitionKey,
-      },
-    });
+    return this.http.get(
+      `${this.valtimoApiConfig.endpointUri}v1/form-association/form-definition`,
+      {
+        headers: InterceptorSkipHeader.set('Content-Type', 'application/json'),
+        params: {
+          processDefinitionKey,
+        },
+      }
+    );
   }
 
   getFormDefinitionByFormLinkId(processDefinitionKey: string, formLinkId: string): Observable<any> {
-    return this.http.get<FormAssociation>(`${this.valtimoApiConfig.endpointUri}form-association`, {
-      params: {
-        processDefinitionKey,
-        formLinkId,
-      },
-    });
+    return this.http.get<FormAssociation>(
+      `${this.valtimoApiConfig.endpointUri}v1/form-association`,
+      {
+        params: {
+          processDefinitionKey,
+          formLinkId,
+        },
+      }
+    );
   }
 
   getPreFilledFormDefinitionByFormLinkId(
@@ -84,17 +90,20 @@ export class FormLinkService {
       params = params.set('taskInstanceId', taskInstanceId);
     }
 
-    return this.http.get(`${this.valtimoApiConfig.endpointUri}form-association/form-definition`, {
-      headers: InterceptorSkipHeader.set('Content-Type', 'application/json'),
-      params,
-    });
+    return this.http.get(
+      `${this.valtimoApiConfig.endpointUri}v1/form-association/form-definition`,
+      {
+        headers: InterceptorSkipHeader.set('Content-Type', 'application/json'),
+        params,
+      }
+    );
   }
 
   createFormAssociation(
     createFormAssociationRequest: CreateFormAssociationRequest
   ): Observable<FormAssociation> {
     return this.http.post<FormAssociation>(
-      `${this.valtimoApiConfig.endpointUri}form-association-management`,
+      `${this.valtimoApiConfig.endpointUri}v1/form-association-management`,
       createFormAssociationRequest
     );
   }
@@ -103,14 +112,14 @@ export class FormLinkService {
     modifyFormAssociationRequest: ModifyFormAssociationRequest
   ): Observable<FormAssociation> {
     return this.http.put<FormAssociation>(
-      `${this.valtimoApiConfig.endpointUri}form-association-management`,
+      `${this.valtimoApiConfig.endpointUri}v1/form-association-management`,
       modifyFormAssociationRequest
     );
   }
 
   deleteFormAssociation(processDefinitionKey: string, formAssociationId: string): Observable<any> {
     return this.http.delete(
-      `${this.valtimoApiConfig.endpointUri}form-association-management/${processDefinitionKey}/${formAssociationId}`
+      `${this.valtimoApiConfig.endpointUri}v1/form-association-management/${processDefinitionKey}/${formAssociationId}`
     );
   }
 
@@ -137,7 +146,7 @@ export class FormLinkService {
       params,
     };
     return this.http.post<FormSubmissionResult>(
-      `${this.valtimoApiConfig.endpointUri}form-association/form-definition/submission`,
+      `${this.valtimoApiConfig.endpointUri}v1/form-association/form-definition/submission`,
       formData,
       httpOptions
     );

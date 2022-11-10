@@ -38,47 +38,47 @@ export class ConnectorManagementService {
 
   getConnectorInstances(params?: any): Observable<Page<ConnectorInstance>> {
     return this.http.get<Page<ConnectorInstance>>(
-      `${this.valtimoApiConfig.endpointUri}connector/instance`,
+      `${this.valtimoApiConfig.endpointUri}v1/connector/instance`,
       {params}
     );
   }
 
   getConnectorInstancesByType(typeId: string, params?: any): Observable<Page<ConnectorInstance>> {
     return this.http.get<Page<ConnectorInstance>>(
-      `${this.valtimoApiConfig.endpointUri}connector/instance/${typeId}`,
+      `${this.valtimoApiConfig.endpointUri}v1/connector/instance/${typeId}`,
       {params}
     );
   }
 
   getConnectorInstanceById(instanceId: string): Observable<ConnectorInstance> {
     return this.http.get<ConnectorInstance>(
-      `${this.valtimoApiConfig.endpointUri}connector/instance?instanceId=${instanceId}`
+      `${this.valtimoApiConfig.endpointUri}v1/connector/instance?instanceId=${instanceId}`
     );
   }
 
   getConnectorTypes(): Observable<Array<ConnectorType>> {
     return this.http.get<Array<ConnectorType>>(
-      `${this.valtimoApiConfig.endpointUri}connector/type`
+      `${this.valtimoApiConfig.endpointUri}v1/connector/type`
     );
   }
 
   createConnectorInstance(request: ConnectorInstanceCreateRequest): Observable<ConnectorInstance> {
     return this.http.post<ConnectorInstance>(
-      `${this.valtimoApiConfig.endpointUri}connector/instance`,
+      `${this.valtimoApiConfig.endpointUri}v1/connector/instance`,
       request
     );
   }
 
   updateConnectorInstance(request: ConnectorInstanceUpdateRequest): Observable<ConnectorInstance> {
     return this.http.put<ConnectorInstance>(
-      `${this.valtimoApiConfig.endpointUri}connector/instance`,
+      `${this.valtimoApiConfig.endpointUri}v1/connector/instance`,
       request
     );
   }
 
   deleteConnectorInstance(connectorInstanceId: string): Observable<ConnectorInstance> {
     return this.http.delete<ConnectorInstance>(
-      `${this.valtimoApiConfig.endpointUri}connector/instance/${connectorInstanceId}`
+      `${this.valtimoApiConfig.endpointUri}v1/connector/instance/${connectorInstanceId}`
     );
   }
 }

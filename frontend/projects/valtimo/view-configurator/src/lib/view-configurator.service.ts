@@ -30,6 +30,6 @@ export class ViewConfiguratorService {
   }
 
   getViewConfig(processDefinitionId: string): Observable<any> {
-    return this.http.get(`${this.valtimoEndpointUri}viewconfig/${processDefinitionId}`);
+    return this.http.get(`${this.valtimoEndpointUri}v1/viewconfig/${processDefinitionId}`);
   }
 }

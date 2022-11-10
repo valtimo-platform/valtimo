@@ -36,7 +36,7 @@ export class ObjectApiSyncService {
 
   getObjectSyncConfigs(documentDefinitionName: string): Observable<Array<ObjectSyncConfig>> {
     return this.http.get<Array<ObjectSyncConfig>>(
-      `${this.valtimoApiConfig.endpointUri}object/sync/config`,
+      `${this.valtimoApiConfig.endpointUri}v1/object/sync/config`,
       {params: {documentDefinitionName}}
     );
   }
@@ -45,21 +45,21 @@ export class ObjectApiSyncService {
     request: CreateObjectSyncConfigRequest
   ): Observable<CreateObjectSyncConfigResult> {
     return this.http.post<CreateObjectSyncConfigResult>(
-      `${this.valtimoApiConfig.endpointUri}object/sync/config`,
+      `${this.valtimoApiConfig.endpointUri}v1/object/sync/config`,
       request
     );
   }
 
   modifyObjectSyncConfig(request: ObjectSyncConfig): Observable<CreateObjectSyncConfigResult> {
     return this.http.put<CreateObjectSyncConfigResult>(
-      `${this.valtimoApiConfig.endpointUri}object/sync/config`,
+      `${this.valtimoApiConfig.endpointUri}v1/object/sync/config`,
       request
     );
   }
 
   deleteObjectSyncConfig(configId: string): Observable<any> {
     return this.http.delete<any>(
-      `${this.valtimoApiConfig.endpointUri}object/sync/config/${configId}`
+      `${this.valtimoApiConfig.endpointUri}v1/object/sync/config/${configId}`
     );
   }
 }

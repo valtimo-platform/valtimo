@@ -18,15 +18,19 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {ValtimoVersion} from '../../models';
+import {ConfigService} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class VersionService {
-  constructor(private http: HttpClient) {}
+  private valtimoEndpointUri: string;
+
+  constructor(private readonly http: HttpClient, private readonly configService: ConfigService) {
+    this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
+  }
 
   public getVersion(): Observable<ValtimoVersion> {
-    // TODO: this hardcoded string should be taken care of with the introduction of a config service
-    return this.http.get<ValtimoVersion>(`/api/valtimo/version`);
+    return this.http.get<ValtimoVersion>(`${this.valtimoEndpointUri}v1/valtimo/version`);
   }
 }

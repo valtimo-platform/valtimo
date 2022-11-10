@@ -32,12 +32,12 @@ export class CustomerService {
 
   getCustomers(request: CustomerSearchRequest): Observable<Array<Customer>> {
     return this.http.post<Array<Customer>>(
-      `${this.valtimoEndpointUri}haalcentraal/personen`,
+      `${this.valtimoEndpointUri}v1/haalcentraal/personen`,
       request
     );
   }
 
   getCustomerCases(bsn: string): Observable<Array<CustomerCase>> {
-    return this.http.get<Array<CustomerCase>>(`${this.valtimoEndpointUri}zaken/${bsn}`);
+    return this.http.get<Array<CustomerCase>>(`${this.valtimoEndpointUri}v1/zaken/${bsn}`);
   }
 }

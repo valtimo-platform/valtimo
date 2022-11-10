@@ -34,7 +34,7 @@ export class S3Service {
     const headers = new HttpHeaders().set('Content-Type', 'text/plain; charset=utf-8');
     const options = {headers, responseType: 'text' as 'text'};
     return this.http.get(
-      `${this.valtimoApiConfig.endpointUri}resource/pre-signed-url/${fileName}`,
+      `${this.valtimoApiConfig.endpointUri}v1/resource/pre-signed-url/${fileName}`,
       options
     );
   }
@@ -45,20 +45,23 @@ export class S3Service {
   }
 
   public registerResource(s3ResourceDTO: S3Resource): Observable<Resource> {
-    return this.http.put<Resource>(`${this.valtimoApiConfig.endpointUri}resource`, s3ResourceDTO);
+    return this.http.put<Resource>(
+      `${this.valtimoApiConfig.endpointUri}v1/resource`,
+      s3ResourceDTO
+    );
   }
 
   public get(resourceId: string): Observable<ResourceDto> {
     const headers = new HttpHeaders().set('Content-Type', 'application/json;charset=UTF-8');
     return this.http.get<ResourceDto>(
-      `${this.valtimoApiConfig.endpointUri}resource/${resourceId}`,
+      `${this.valtimoApiConfig.endpointUri}v1/resource/${resourceId}`,
       {headers}
     );
   }
 
   public delete(resourceId: string): Observable<any> {
     const headers = new HttpHeaders().set('Content-Type', 'application/json;charset=UTF-8');
-    return this.http.delete(`${this.valtimoApiConfig.endpointUri}resource/${resourceId}`, {
+    return this.http.delete(`${this.valtimoApiConfig.endpointUri}v1/resource/${resourceId}`, {
       headers,
     });
   }

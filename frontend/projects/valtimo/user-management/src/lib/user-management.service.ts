@@ -31,42 +31,42 @@ export class UserManagementService {
   }
 
   query(params?: any): Observable<any> {
-    return this.http.get<User>(`${this.valtimoApiConfig.endpointUri}users`, {params});
+    return this.http.get<User>(`${this.valtimoApiConfig.endpointUri}v1/users`, {params});
   }
 
   get(id: string): Observable<any> {
-    return this.http.get(`${this.valtimoApiConfig.endpointUri}users/${id}`);
+    return this.http.get(`${this.valtimoApiConfig.endpointUri}v1/users/${id}`);
   }
 
   create(user: any): Observable<any> {
-    return this.http.post(`${this.valtimoApiConfig.endpointUri}users`, user);
+    return this.http.post(`${this.valtimoApiConfig.endpointUri}v1/users`, user);
   }
 
   delete(id: any) {
-    return this.http.delete(`${this.valtimoApiConfig.endpointUri}users/${id}`);
+    return this.http.delete(`${this.valtimoApiConfig.endpointUri}v1/users/${id}`);
   }
 
   update(user: any): Observable<any> {
-    return this.http.put(`${this.valtimoApiConfig.endpointUri}users`, user);
+    return this.http.put(`${this.valtimoApiConfig.endpointUri}v1/users`, user);
   }
 
   resendVerificationEmail(id: string) {
     return this.http.post(
-      `${this.valtimoApiConfig.endpointUri}users/send-verification-email/${id}`,
+      `${this.valtimoApiConfig.endpointUri}v1/users/send-verification-email/${id}`,
       {}
     );
   }
 
   activate(id: string) {
-    return this.http.put(`${this.valtimoApiConfig.endpointUri}users/${id}/activate`, {});
+    return this.http.put(`${this.valtimoApiConfig.endpointUri}v1/users/${id}/activate`, {});
   }
 
   deactivate(id: string) {
-    return this.http.put(`${this.valtimoApiConfig.endpointUri}users/${id}/deactivate`, {});
+    return this.http.put(`${this.valtimoApiConfig.endpointUri}v1/users/${id}/deactivate`, {});
   }
 
   getAuthorities(params?: any): Observable<any> {
-    return this.http.get<any>(`${this.valtimoApiConfig.endpointUri}authorities`, {
+    return this.http.get<any>(`${this.valtimoApiConfig.endpointUri}v1/authorities`, {
       observe: 'response',
       params,
     });

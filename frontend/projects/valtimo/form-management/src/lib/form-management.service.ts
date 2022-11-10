@@ -32,12 +32,12 @@ export class FormManagementService {
 
   getFormDefinition(formDefinitionId: string): Observable<FormDefinition> {
     return this.http.get<FormDefinition>(
-      `${this.valtimoApiConfig.endpointUri}form-management/${formDefinitionId}`
+      `${this.valtimoApiConfig.endpointUri}v1/form-management/${formDefinitionId}`
     );
   }
 
   queryFormDefinitions(params?: any): Observable<any> {
-    return this.http.get(`${this.valtimoApiConfig.endpointUri}form-management`, {
+    return this.http.get(`${this.valtimoApiConfig.endpointUri}v1/form-management`, {
       observe: 'response',
       params,
     });
@@ -45,21 +45,21 @@ export class FormManagementService {
 
   createFormDefinition(request: CreateFormDefinitionRequest): Observable<FormDefinition> {
     return this.http.post<FormDefinition>(
-      `${this.valtimoApiConfig.endpointUri}form-management`,
+      `${this.valtimoApiConfig.endpointUri}v1/form-management`,
       request
     );
   }
 
   modifyFormDefinition(request: ModifyFormDefinitionRequest): Observable<FormDefinition> {
     return this.http.put<FormDefinition>(
-      `${this.valtimoApiConfig.endpointUri}form-management`,
+      `${this.valtimoApiConfig.endpointUri}v1/form-management`,
       request
     );
   }
 
   deleteFormDefinition(formDefinitionId: string): Observable<void> {
     return this.http.delete<void>(
-      `${this.valtimoApiConfig.endpointUri}form-management/${formDefinitionId}`
+      `${this.valtimoApiConfig.endpointUri}v1/form-management/${formDefinitionId}`
     );
   }
 }

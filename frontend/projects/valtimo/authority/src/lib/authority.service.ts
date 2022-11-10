@@ -31,25 +31,25 @@ export class AuthorityService {
   }
 
   query(params?: any): Observable<any> {
-    return this.http.get<Authority>(`${this.valtimoApiConfig.endpointUri}authorities`, {
+    return this.http.get<Authority>(`${this.valtimoApiConfig.endpointUri}v1/authorities`, {
       observe: 'response',
       params,
     });
   }
 
   get(name: string): Observable<any> {
-    return this.http.get<Authority>(`${this.valtimoApiConfig.endpointUri}authorities/${name}`);
+    return this.http.get<Authority>(`${this.valtimoApiConfig.endpointUri}v1/authorities/${name}`);
   }
 
   create(authority: any): Observable<any> {
-    return this.http.post(`${this.valtimoApiConfig.endpointUri}authorities`, authority);
+    return this.http.post(`${this.valtimoApiConfig.endpointUri}v1/authorities`, authority);
   }
 
   delete(name: any) {
-    return this.http.delete(`${this.valtimoApiConfig.endpointUri}authorities/${name}`);
+    return this.http.delete(`${this.valtimoApiConfig.endpointUri}v1/authorities/${name}`);
   }
 
   update(authority: any): Observable<any> {
-    return this.http.put(`${this.valtimoApiConfig.endpointUri}authorities`, authority);
+    return this.http.put(`${this.valtimoApiConfig.endpointUri}v1/authorities`, authority);
   }
 }
