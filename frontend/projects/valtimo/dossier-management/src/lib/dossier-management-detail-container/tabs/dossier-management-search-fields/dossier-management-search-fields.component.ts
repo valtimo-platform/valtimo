@@ -62,6 +62,7 @@ export class DossierManagementSearchFieldsComponent {
         label: this.translateService.instant(`searchFieldsOverview.${column.translationKey}`),
         sortable: column.sortable,
         ...(column.viewType && {viewType: column.viewType}),
+        ...(column.enum && {enum: column.enum})
       }))
     )
   );

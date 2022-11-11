@@ -129,6 +129,7 @@ export class DossierListComponent implements OnInit {
         label: this.translateService.instant(`fieldLabels.${column.translationKey}`),
         sortable: column.sortable,
         ...(column.viewType && {viewType: column.viewType}),
+        ...(column.enum && {enum: column.enum})
       }))
     )
   );
