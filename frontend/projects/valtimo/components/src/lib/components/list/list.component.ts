@@ -24,9 +24,10 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  TemplateRef,
   ViewChild,
 } from '@angular/core';
-import {SortState, Direction} from '@valtimo/document';
+import {Direction, SortState} from '@valtimo/document';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, fromEvent} from 'rxjs';
 import {debounceTime, take} from 'rxjs/operators';
@@ -49,6 +50,7 @@ export class ListComponent implements OnChanges, OnInit, AfterViewInit {
   @Input() actions: any[] = [];
   @Input() paginationIdentifier?: string;
   @Input() initialSortState: SortState;
+  @Input() lastColumnTemplate?: TemplateRef<any>;
 
   @Output() rowClicked: EventEmitter<any> = new EventEmitter();
   @Output() paginationClicked: EventEmitter<any> = new EventEmitter();

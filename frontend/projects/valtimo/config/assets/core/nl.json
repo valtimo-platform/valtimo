@@ -842,14 +842,27 @@
     "datetimeRange": "Een datum en tijd-reeks-veld"
   },
   "searchFieldsOverview": {
+    "key": "Sleutel",
+    "edit": "Zoekveld bewerken",
     "path": "Pad",
-    "datatype": "Datatype",
-    "fieldtype": "Veldtype",
-    "matchtype": "Overeenkomst",
+    "dataType": "Datatype",
+    "fieldType": "Veldtype",
+    "matchType": "Overeenkomst",
     "exact": "Precies",
     "like": "Bevat",
     "single": "Enkel",
     "multiple": "Meerdere",
-    "range": "Reeks"
+    "range": "Reeks",
+    "submit": "Indienen",
+    "delete": "Verwijderen",
+    "addRow": "Zoekveld toevoegen",
+    "searchFieldPlaceholder": "Kies een type..."
+  },
+  "searchFieldsOverviewTooltips": {
+    "key": "Een unieke sleutel waarmee het zoekveld wordt geïdentificeerd. Als de sleutel niet uniek is, kan het zoekveld niet worden opgeslagen.",
+    "path": "Een pad dat leidt naar een eigenschap in het JSON-schema van het document. Bijvoorbeeld: doc:customer.firstName",
+    "dataType": "Het datatype bepaalt welke invoer aan de gebruiker wordt getoond. Voor het datatype 'Datum' wordt bijvoorbeeld een datumkiezer getoond.",
+    "fieldType": "Het veldtype bepaalt de waarden die de gebruiker kan invoeren. Voor de optie 'Enkel' kan de gebruiker slechts één waarde invoeren. Bij de optie 'Reeks' kan de gebruiker twee waarden invoeren. Naar deze waarden, en alle waarden daartussen, wordt vervolgens gezocht.",
+    "matchType": "De overeenkomst bepaalt hoe waarden in de database worden gekoppeld aan de zoekwaarden. Voor het zoektype 'Exact' zou de waarde '1' alleen overeenkomen met de waarde '1'. Voor het zoektype 'Bevat' zou de waarde '1' overeenkomen met de waarde '1', '123' en alle andere waarden die '1' bevatten."
   }
 }

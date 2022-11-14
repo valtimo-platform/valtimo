@@ -84,7 +84,7 @@
         <tbody>
           <tr
             [ngClass]="{'click-able': this.rowClicked.observers.length > 0}"
-            *ngFor="let item of items | listFilter: searchModel"
+            *ngFor="let item of items | listFilter: searchModel; let i = index"
             (click)="onClickRow(item)"
           >
             <td class="align-top" *ngFor="let listItemField of item.listItemFields">
@@ -103,8 +103,13 @@
                 class="action-icon"
                 style="cursor: pointer"
                 [ngClass]="action.iconClass"
-                (click)="action.callback(item)"
+                (click)="action.callback(item, $event)"
               ></i>
+            </td>
+            <td *ngIf="lastColumnTemplate">
+              <ng-container
+                *ngTemplateOutlet="lastColumnTemplate; context: {index: i, length: items.length}"
+              ></ng-container>
             </td>
           </tr>
           <tr>
@@ -204,7 +209,7 @@
     </a>
     <div class="dropdown-menu" aria-labelledby="dropdownMenu">
       <a
-        (click)="action.callback(item)"
+        (click)="action.callback(item, $event)"
         class="dropdown-item p-2"
         *ngFor="let action of listItemField.value"
       >

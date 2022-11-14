@@ -32,8 +32,10 @@ export class DossierManagementDetailComponent implements OnInit {
   public documentDefinition: DocumentDefinition | null = null;
   public processDocumentDefinitions: ProcessDocumentDefinition[] = [];
 
-  @ViewChild('dossierConnectModal') dossierConnectModal: DossierManagementConnectModalComponent;
-  @ViewChild('dossierRemoveModal') dossierRemoveModal: DossierManagementRemoveModalComponent;
+  @ViewChild('dossierConnectModal')
+  dossierConnectModal: DossierManagementConnectModalComponent;
+  @ViewChild('dossierRemoveModal')
+  dossierRemoveModal: DossierManagementRemoveModalComponent;
   @ViewChild('documentRoles') documentRoles: DossierManagementRolesComponent;
 
   constructor(

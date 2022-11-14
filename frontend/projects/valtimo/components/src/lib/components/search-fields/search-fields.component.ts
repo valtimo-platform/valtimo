@@ -87,8 +87,6 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
           }
         });
 
-        console.log(searchFieldsCopy);
-
         this.valueChange.emit(searchFieldsCopy);
       }
     );

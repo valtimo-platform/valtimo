@@ -83,6 +83,12 @@
     ></ng-container>
     <ng-container
       *ngTemplateOutlet="
+        searchFieldTemplateTextRange;
+        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip}
+      "
+    ></ng-container>
+    <ng-container
+      *ngTemplateOutlet="
         searchFieldTemplateDateRange;
         context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip}
       "
@@ -97,7 +103,7 @@
   let-tooltipKey="tooltipKey"
 >
   <v-input
-    *ngIf="searchField.datatype === 'text' && searchField.fieldtype === 'single'"
+    *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'single'"
     [name]="searchField.key"
     [title]="'searchFields.' + searchField.key | translate"
     [fullWidth]="true"
@@ -115,7 +121,7 @@
   let-tooltipKey="tooltipKey"
 >
   <v-input
-    *ngIf="searchField.datatype === 'number' && searchField.fieldtype === 'single'"
+    *ngIf="searchField.dataType === 'number' && searchField.fieldType === 'single'"
     [name]="searchField.key"
     [title]="'searchFields.' + searchField.key | translate"
     [fullWidth]="true"
@@ -135,7 +141,7 @@
   let-tooltipKey="tooltipKey"
 >
   <v-date-picker
-    *ngIf="searchField.datatype === 'date' && searchField.fieldtype === 'single'"
+    *ngIf="searchField.dataType === 'date' && searchField.fieldType === 'single'"
     [title]="'searchFields.' + searchField.key | translate"
     [tooltip]="tooltip !== tooltipKey && tooltip"
     [name]="searchField.key"
@@ -146,12 +152,35 @@
 </ng-template>
 
 <ng-template
+  #searchFieldTemplateTextRange
+  let-searchField="searchField"
+  let-tooltip="tooltip"
+  let-tooltipKey="tooltipKey"
+>
+  <ng-container *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'range'">
+    <v-input-label
+      [title]="'searchFields.' + searchField.key | translate"
+      [tooltip]="tooltip !== tooltipKey && tooltip"
+      [small]="true"
+    ></v-input-label>
+    <v-form
+      (valueChange)="multipleValueChange(searchField.key, $event)"
+      className="multiple-search-fields"
+    >
+      <v-input name="start" [fullWidth]="true"> </v-input>
+      <ng-container *ngTemplateOutlet="toText"></ng-container>
+      <v-input name="end" [fullWidth]="true"> </v-input>
+    </v-form>
+  </ng-container>
+</ng-template>
+
+<ng-template
   #searchFieldTemplateNumberRange
   let-searchField="searchField"
   let-tooltip="tooltip"
   let-tooltipKey="tooltipKey"
 >
-  <ng-container *ngIf="searchField.datatype === 'number' && searchField.fieldtype === 'range'">
+  <ng-container *ngIf="searchField.dataType === 'number' && searchField.fieldType === 'range'">
     <v-input-label
       [title]="'searchFields.' + searchField.key | translate"
       [tooltip]="tooltip !== tooltipKey && tooltip"
@@ -174,7 +203,7 @@
   let-tooltip="tooltip"
   let-tooltipKey="tooltipKey"
 >
-  <ng-container *ngIf="searchField.datatype === 'date' && searchField.fieldtype === 'range'">
+  <ng-container *ngIf="searchField.dataType === 'date' && searchField.fieldType === 'range'">
     <v-input-label
       [title]="'searchFields.' + searchField.key | translate"
       [tooltip]="tooltip !== tooltipKey && tooltip"

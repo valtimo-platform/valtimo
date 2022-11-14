@@ -842,14 +842,27 @@
     "datetimeRange": "A date and time range field"
   },
   "searchFieldsOverview": {
+    "key": "Key",
+    "edit": "Edit search field",
     "path": "Path",
-    "datatype": "Data type",
-    "fieldtype": "Field type",
-    "matchtype": "Match",
+    "dataType": "Data type",
+    "fieldType": "Field type",
+    "matchType": "Match",
     "exact": "Exact",
     "like": "Contains",
     "single": "Single",
     "multiple": "Multiple",
-    "range": "Range"
+    "range": "Range",
+    "submit": "Submit",
+    "delete": "Delete",
+    "addRow": "Add search field",
+    "searchFieldPlaceholder": "Select a type..."
+  },
+  "searchFieldsOverviewTooltips": {
+    "key": "A unique key by which the search field is identified. If the key is not unique, you will not be able to save the search field.",
+    "path": "A path which leads to a property in the document's JSON schema. For example: doc:customer.firstName",
+    "dataType": "The data type decides what input is shown to the user. For example, for the data type 'Date', a date picker is shown.",
+    "fieldType": "The field type decides the values the user can input. For the option 'Single', the user can only input a single value. For the option 'Range', the user may input two values, and these values, and all the values in between, are searched for.",
+    "matchType": "The match type decides how values in the database are matched to the search values. For the match type 'Exact', the value '1' would only be matched to the value '1'. For the match type 'Contains', the value '1' would be matched to the value '1', '123', and all other values containing '1'."
   }
 }

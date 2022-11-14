@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {delay, Observable, of} from 'rxjs';
+import {Observable} from 'rxjs';
 import {
   AssignHandlerToDocumentResult,
   AuditRecord,
@@ -77,6 +77,38 @@ export class DocumentService {
       `${this.valtimoEndpointUri}document-search`,
       documentSearchRequest.asHttpBody(),
       {params: documentSearchRequest.asHttpParams()}
+    );
+  }
+
+  getDocumentSearchFields(documentDefinitionName: string): Observable<Array<SearchField>> {
+    return this.http.get<Array<SearchField>>(
+      `${this.valtimoEndpointUri}v1/document-search/${documentDefinitionName}/fields`
+    );
+  }
+
+  putDocumentSearch(documentDefinitionName: string, request: Array<SearchField>): Observable<void> {
+    return this.http.put<void>(
+      `${this.valtimoEndpointUri}v1/document-search/${documentDefinitionName}/fields`,
+      [...request]
+    );
+  }
+
+  postDocumentSearch(documentDefinitionName: string, request: SearchField): Observable<void> {
+    return this.http.post<void>(
+      `${this.valtimoEndpointUri}v1/document-search/${documentDefinitionName}/fields`,
+      {...request}
+    );
+  }
+
+  deleteDocumentSearch(documentDefinitionName: string, key: string): Observable<any> {
+    const options = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+      }),
+    };
+    return this.http.delete(
+      `${this.valtimoEndpointUri}v1/document-search/${documentDefinitionName}/fields?key=${key}`,
+      options
     );
   }
 
@@ -278,60 +310,5 @@ export class DocumentService {
     return this.http.get<Array<User>>(
       `${this.valtimoEndpointUri}document/${documentId}/candidate-user`
     );
-  }
-
-  getDocumentSearchFields(documentDefinitionName: string): Observable<Array<SearchField>> {
-    return of([
-      {
-        key: 'text',
-        datatype: 'text',
-        fieldtype: 'single',
-        matchtype: 'exact',
-        path: '/profile/name',
-      },
-      {
-        key: 'number',
-        datatype: 'number',
-        fieldtype: 'single',
-        matchtype: 'exact',
-      },
-      {
-        key: 'date',
-        datatype: 'date',
-        fieldtype: 'single',
-        matchtype: 'exact',
-        path: '/profile/dateOfBirth',
-      },
-      {
-        key: 'numberRange',
-        datatype: 'number',
-        fieldtype: 'range',
-        matchtype: 'exact',
-      },
-      {
-        key: 'dateRange',
-        datatype: 'date',
-        fieldtype: 'range',
-        matchtype: 'exact',
-      },
-      {
-        key: 'datetime',
-        datatype: 'datetime',
-        fieldtype: 'single',
-        matchtype: 'exact',
-      },
-      {
-        key: 'boolean',
-        datatype: 'boolean',
-        fieldtype: 'single',
-        matchtype: 'exact',
-      },
-      {
-        key: 'datetimeRange',
-        datatype: 'datetime',
-        fieldtype: 'range',
-        matchtype: 'exact',
-      },
-    ] as Array<SearchField>).pipe(delay(1000));
   }
 }

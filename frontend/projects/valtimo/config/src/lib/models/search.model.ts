@@ -20,9 +20,9 @@ type SearchFieldValue = BooleanValueSingle | TextValueSingle | NumberValueSingle
 interface SearchField {
   key: string;
   path?: string;
-  datatype: SearchFieldDataType;
-  fieldtype: SearchFieldFieldType;
-  matchtype: SearchFieldMatchType;
+  dataType: SearchFieldDataType;
+  fieldType: SearchFieldFieldType;
+  matchType: SearchFieldMatchType;
 }
 
 interface SearchFieldWithValue extends SearchField {

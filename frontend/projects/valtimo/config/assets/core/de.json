@@ -842,14 +842,27 @@
     "datetimeRange": "Ein Datums- und Zeitreihenfeld"
   },
   "searchFieldsOverview": {
+    "key": "Schlüssel",
+    "edit": "Suchfeld bearbeiten",
     "path": "Pfad",
-    "datatype": "Datentyp",
-    "fieldtype": "Feldtyp",
-    "matchtype": "Übereinstimmen",
+    "dataType": "Datentyp",
+    "fieldType": "Feldtyp",
+    "matchType": "Übereinstimmen",
     "exact": "Genau",
     "like": "Enthält",
     "single": "Nur",
     "multiple": "Mehrere",
-    "range": "Serie"
+    "range": "Serie",
+    "submit": "Einreichen",
+    "delete": "Löschen",
+    "addRow": "Suchfeld hinzufügen",
+    "searchFieldPlaceholder": "Wählen Sie einen Typ..."
+  },
+  "searchFieldsOverviewTooltips": {
+    "key": "Ein eindeutiger Schlüssel, der das Suchfeld identifiziert. Wenn der Schlüssel nicht eindeutig ist, kann das Suchfeld nicht gespeichert werden.",
+    "path": "Ein Pfad, der zu einer Eigenschaft im JSON-Schema des Dokuments führt. Zum Beispiel: doc:customer.firstName",
+    "dataType": "Der Datentyp bestimmt, welche Eingaben dem Benutzer angezeigt werden. Beispielsweise wird für den Datentyp 'Datum' eine Datumsauswahl angezeigt.",
+    "fieldType": "Der Feldtyp bestimmt die Werte, die der Benutzer eingeben kann. Die Option 'Nur' ermöglicht dem Benutzer, nur einen Wert einzugeben. Die Option 'Serie' ermöglicht dem Benutzer die Eingabe von zwei Werten. Nach diesen Werten und allen Werten dazwischen wird dann gesucht.",
+    "matchType": "Die Übereinstimmen legt fest, wie Werte in der Datenbank mit den Suchwerten verknüpft werden. Beim Übereinstimmungstyp 'Genau' würde der Wert '1' nur mit dem Wert '1' übereinstimmen. Für den Übereinstimmungstyp 'Enthält' würde der Wert '1' mit dem Wert '1', '123' und allen anderen Werten übereinstimmen, die '1' enthalten."
   }
 }

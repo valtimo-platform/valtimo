@@ -19,7 +19,7 @@
   padding-top: 21px;
   padding-left: 18px;
   padding-right: 18px;
-  border-bottom: 1px solid #dee2e6;
+  border-block: 1px solid rgba(0, 0, 0, 0.125);
 }
 
 .dossier-title {
@@ -33,4 +33,8 @@
 
 .dossier-schema {
   resize: none;
+}
+
+valtimo-widget::ng-deep .card-border.card-full-default {
+  border: none;
 }
