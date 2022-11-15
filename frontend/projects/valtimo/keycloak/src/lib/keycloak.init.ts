@@ -35,8 +35,11 @@ export function keycloakInitializer(injector: Injector): () => Promise<any> {
 
       if (keycloakOptions.initOptions.redirectUri !== currentUrl) {
         const redirectTo = window.location.pathname;
+        const urlSearchParams = new URLSearchParams(window.location.search);
+        const params = Object.fromEntries(urlSearchParams.entries());
         logger.debug('Setting redirectTo =', redirectTo);
         window.sessionStorage.setItem('redirectTo', redirectTo);
+        window.sessionStorage.setItem('redirectToParams', JSON.stringify(params));
       }
 
       const initResult = await keycloakService.init(keycloakOptions);
