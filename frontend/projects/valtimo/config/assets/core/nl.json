@@ -842,6 +842,7 @@
     "datetimeRange": "Een datum en tijd-reeks-veld"
   },
   "searchFieldsOverview": {
+    "title": "Titel",
     "key": "Sleutel",
     "edit": "Zoekveld bewerken",
     "path": "Pad",
@@ -859,6 +860,7 @@
     "searchFieldPlaceholder": "Kies een type..."
   },
   "searchFieldsOverviewTooltips": {
+    "title": "De titel is een optioneel veld dat wordt weergegeven als een label voor het huidige zoekveld. Als de titel niet is ingesteld, is de standaardwaarde de sleutelvertaling van het zoekveld (als er geen vertaling beschikbaar is, wordt de oorspronkelijke sleutelwaarde weergegeven).",
     "key": "Een unieke sleutel waarmee het zoekveld wordt geïdentificeerd. Als de sleutel niet uniek is, kan het zoekveld niet worden opgeslagen.",
     "path": "Een pad dat leidt naar een eigenschap in het JSON-schema van het document. Bijvoorbeeld: doc:customer.firstName",
     "dataType": "Het datatype bepaalt welke invoer aan de gebruiker wordt getoond. Voor het datatype 'Datum' wordt bijvoorbeeld een datumkiezer getoond.",

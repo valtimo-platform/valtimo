@@ -54,43 +54,44 @@
   <ng-container
     *ngIf="{
       tooltipKey: 'searchFieldsTooltips.' + searchField.key,
-      tooltip: 'searchFieldsTooltips.' + searchField.key | translate
-    } as vars"
+      tooltip: 'searchFieldsTooltips.' + searchField.key | translate, searchField,
+      title: searchField.title || (('searchFields.' + searchField.key) !== ('searchFields.' + searchField.key | translate) ? ('searchFields.' + searchField.key | translate) : searchField.key)
+     } as vars"
   >
     <ng-container
       *ngTemplateOutlet="
         searchFieldTemplateText;
-        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip}
+        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip, title: vars.title}
       "
     ></ng-container>
     <ng-container
       *ngTemplateOutlet="
         searchFieldTemplateNumber;
-        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip}
+        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip, title: vars.title}
       "
     ></ng-container>
     <ng-container
       *ngTemplateOutlet="
         searchFieldTemplateDate;
-        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip}
+        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip, title: vars.title}
       "
     ></ng-container>
     <ng-container
       *ngTemplateOutlet="
         searchFieldTemplateNumberRange;
-        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip}
+        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip, title: vars.title}
       "
     ></ng-container>
     <ng-container
       *ngTemplateOutlet="
         searchFieldTemplateTextRange;
-        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip}
+        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip, title: vars.title}
       "
     ></ng-container>
     <ng-container
       *ngTemplateOutlet="
         searchFieldTemplateDateRange;
-        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip}
+        context: {searchField: searchField, tooltipKey: vars.tooltipKey, tooltip: vars.tooltip, title: vars.title}
       "
     ></ng-container>
   </ng-container>
@@ -101,11 +102,12 @@
   let-searchField="searchField"
   let-tooltip="tooltip"
   let-tooltipKey="tooltipKey"
+  let-title="title"
 >
   <v-input
     *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'single'"
     [name]="searchField.key"
-    [title]="'searchFields.' + searchField.key | translate"
+    [title]="title"
     [fullWidth]="true"
     [tooltip]="tooltip !== tooltipKey && tooltip"
     (valueChange)="singleValueChange(searchField.key, $event)"
@@ -119,11 +121,12 @@
   let-searchField="searchField"
   let-tooltip="tooltip"
   let-tooltipKey="tooltipKey"
+  let-title="title"
 >
   <v-input
     *ngIf="searchField.dataType === 'number' && searchField.fieldType === 'single'"
     [name]="searchField.key"
-    [title]="'searchFields.' + searchField.key | translate"
+    [title]="title"
     [fullWidth]="true"
     (valueChange)="singleValueChange(searchField.key, $event)"
     type="number"
@@ -139,10 +142,11 @@
   let-searchField="searchField"
   let-tooltip="tooltip"
   let-tooltipKey="tooltipKey"
+  let-title="title"
 >
   <v-date-picker
     *ngIf="searchField.dataType === 'date' && searchField.fieldType === 'single'"
-    [title]="'searchFields.' + searchField.key | translate"
+    [title]="title"
     [tooltip]="tooltip !== tooltipKey && tooltip"
     [name]="searchField.key"
     fullWidth="true"
@@ -156,10 +160,11 @@
   let-searchField="searchField"
   let-tooltip="tooltip"
   let-tooltipKey="tooltipKey"
+  let-title="title"
 >
   <ng-container *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'range'">
     <v-input-label
-      [title]="'searchFields.' + searchField.key | translate"
+      [title]="title"
       [tooltip]="tooltip !== tooltipKey && tooltip"
       [small]="true"
     ></v-input-label>
@@ -179,10 +184,11 @@
   let-searchField="searchField"
   let-tooltip="tooltip"
   let-tooltipKey="tooltipKey"
+  let-title="title"
 >
   <ng-container *ngIf="searchField.dataType === 'number' && searchField.fieldType === 'range'">
     <v-input-label
-      [title]="'searchFields.' + searchField.key | translate"
+      [title]="title"
       [tooltip]="tooltip !== tooltipKey && tooltip"
       [small]="true"
     ></v-input-label>
@@ -202,10 +208,11 @@
   let-searchField="searchField"
   let-tooltip="tooltip"
   let-tooltipKey="tooltipKey"
+  let-title="title"
 >
   <ng-container *ngIf="searchField.dataType === 'date' && searchField.fieldType === 'range'">
     <v-input-label
-      [title]="'searchFields.' + searchField.key | translate"
+      [title]="title"
       [tooltip]="tooltip !== tooltipKey && tooltip"
       [small]="true"
     ></v-input-label>

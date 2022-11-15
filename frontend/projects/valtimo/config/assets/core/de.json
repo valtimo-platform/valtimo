@@ -842,6 +842,7 @@
     "datetimeRange": "Ein Datums- und Zeitreihenfeld"
   },
   "searchFieldsOverview": {
+    "title": "Titel",
     "key": "Schlüssel",
     "edit": "Suchfeld bearbeiten",
     "path": "Pfad",
@@ -859,6 +860,7 @@
     "searchFieldPlaceholder": "Wählen Sie einen Typ..."
   },
   "searchFieldsOverviewTooltips": {
+    "title": "Der Titel ist ein optionales Feld, das als Bezeichnung für das aktuelle Suchfeld erscheint. Wenn der Titel nicht festgelegt ist, ist der Standardwert die Übersetzung des Suchfeldschlüssels (wenn keine Übersetzung verfügbar ist, wird der ursprüngliche Schlüsselwert angezeigt).",
     "key": "Ein eindeutiger Schlüssel, der das Suchfeld identifiziert. Wenn der Schlüssel nicht eindeutig ist, kann das Suchfeld nicht gespeichert werden.",
     "path": "Ein Pfad, der zu einer Eigenschaft im JSON-Schema des Dokuments führt. Zum Beispiel: doc:customer.firstName",
     "dataType": "Der Datentyp bestimmt, welche Eingaben dem Benutzer angezeigt werden. Beispielsweise wird für den Datentyp 'Datum' eine Datumsauswahl angezeigt.",

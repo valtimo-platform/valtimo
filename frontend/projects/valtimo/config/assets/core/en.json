@@ -842,6 +842,7 @@
     "datetimeRange": "A date and time range field"
   },
   "searchFieldsOverview": {
+    "title": "Title",
     "key": "Key",
     "edit": "Edit search field",
     "path": "Path",
@@ -859,6 +860,7 @@
     "searchFieldPlaceholder": "Select a type..."
   },
   "searchFieldsOverviewTooltips": {
+    "title": "The title is an optional field that appears as a label for the current search field. When the title is not set, the default value will be the search field key translation (if there is no translation available, the original key value will be displayed).",
     "key": "A unique key by which the search field is identified. If the key is not unique, you will not be able to save the search field.",
     "path": "A path which leads to a property in the document's JSON schema. For example: doc:customer.firstName",
     "dataType": "The data type decides what input is shown to the user. For example, for the data type 'Date', a date picker is shown.",

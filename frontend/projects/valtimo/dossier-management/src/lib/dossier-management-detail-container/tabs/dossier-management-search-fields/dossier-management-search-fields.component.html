@@ -106,6 +106,17 @@
         *ngIf="showSearchFieldsForm && {searchField: selectedSearchField$ | async} as searchObs"
       >
         <v-input
+          name="title"
+          [title]="'searchFieldsOverview.title' | translate"
+          [margin]="true"
+          [defaultValue]="searchObs.searchField?.title"
+          [disabled]="obs.disableInput"
+          [required]="false"
+          [fullWidth]="true"
+          [tooltip]="'searchFieldsOverviewTooltips.title' | translate"
+        >
+        </v-input>
+        <v-input
           name="key"
           [title]="'searchFieldsOverview.key' | translate"
           [margin]="true"

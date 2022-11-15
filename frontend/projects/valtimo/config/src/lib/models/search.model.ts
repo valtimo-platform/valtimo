@@ -18,6 +18,7 @@ interface NumberValueRange {
 type SearchFieldValue = BooleanValueSingle | TextValueSingle | NumberValueSingle | NumberValueRange;
 
 interface SearchField {
+  title?: string;
   key: string;
   path?: string;
   dataType: SearchFieldDataType;
