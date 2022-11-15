@@ -120,7 +120,7 @@ export const environment: ValtimoConfig = {
   },
   whitelistedDomains: [],
   swagger: {
-    endpointUri: '/v2/api-docs',
+    endpointUri: '/v3/api-docs',
   },
   mockApi: {
     endpointUri: '/mock-api/',

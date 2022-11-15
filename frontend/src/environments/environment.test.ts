@@ -121,7 +121,7 @@ export const environment: ValtimoConfig = {
   },
   whitelistedDomains: ['localhost:4200'],
   swagger: {
-    endpointUri: 'http://localhost:4200/v2/api-docs',
+    endpointUri: 'http://localhost:4200/v3/api-docs',
   },
   mockApi: {
     endpointUri: 'http://localhost:4200/mock-api/',
