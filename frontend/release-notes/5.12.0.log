@@ -1,0 +1,19 @@
+29859f8 - Updated version to 5.12.0
+cefc4f9 - Updated version to 5.12.0-131.RC-SNAPSHOT
+a640575 - Updated formiojs version also in the dependencies of the components package
+5936a8e - Updated version to 5.12.0-130.RC-SNAPSHOT
+d7c882b - Downgrade formiojs from 4.14.9 to 4.14.8 since it breaks existings forms with a new bug
+d511671 - Updated version to 5.12.0-118.RC-SNAPSHOT
+cc1646c - Merge branch 'main' into development
+6fcc38c - feat: add front-end case search fields (#249)
+859fc2f - feature 37421 - Added translations for new events (#248)
+30987ae - Feature/37413 claim case (#246)
+407eaf0 - Update app.css (#247)
+c5b72f4 - 38923 - Updated the user management page with a warning note  (#244)
+2c9d184 - Feature/custom dossier header modifiers (#243)
+072ab82 - add assignee to dossier detail page (#242)
+e5747e1 - language in direct observable, show formio when language is available (#241)
+261e8be - fix: show case assignee (#240)
+6a23a5d - feat: show case assignee (#238)
+60d4661 - add flatpickr dep (#236)
+aa20494 - Add multiple translation which were hardcoded before (#228)
