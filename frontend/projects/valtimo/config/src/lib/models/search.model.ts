@@ -4,6 +4,8 @@ type SearchFieldFieldType = 'single' | 'multiple' | 'range';
 
 type SearchFieldMatchType = 'exact' | 'like';
 
+type SearchFieldBoolean = 'yes' | 'no' | 'either';
+
 type BooleanValueSingle = boolean;
 
 type TextValueSingle = string;
@@ -34,6 +36,7 @@ export {
   SearchFieldDataType,
   SearchFieldFieldType,
   SearchFieldMatchType,
+  SearchFieldBoolean,
   SearchField,
   SearchFieldValue,
   SearchFieldWithValue,

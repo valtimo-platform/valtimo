@@ -829,7 +829,10 @@
     "boolean": "Yes / no",
     "numberRange": "Number range",
     "dateRange": "Date range",
-    "datetimeRange": "Date and time range"
+    "datetimeRange": "Date and time range",
+    "yes": "Yes",
+    "no": "No",
+    "either": "Either"
   },
   "searchFieldsTooltips": {
     "text": "A text field",

@@ -185,7 +185,7 @@ export class TaskListComponent implements OnDestroy {
         label: labels[index],
         sortable: column.sortable,
         ...(column.viewType && {viewType: column.viewType}),
-        ...(column.enum && {enum: column.enum})
+        ...(column.enum && {enum: column.enum}),
       }));
     });
   }

@@ -54,6 +54,7 @@ export class DatePickerComponent implements AfterViewInit, OnDestroy {
   @Input() defaultDate!: string;
   @Input() defaultDateIsToday!: boolean;
   @Input() smallLabel = false;
+  @Input() enableTime = false;
 
   @Output() valueChange: EventEmitter<any> = new EventEmitter();
 
@@ -93,6 +94,7 @@ export class DatePickerComponent implements AfterViewInit, OnDestroy {
       locale: this.getLocale(localeKey),
       onChange: [this.onChange],
       defaultDate: this.getFlatpickrValue(),
+      enableTime: this.enableTime,
     });
     this.emitDate();
   }

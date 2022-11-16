@@ -829,7 +829,10 @@
     "boolean": "Ja / nee",
     "numberRange": "Nummerreeks",
     "dateRange": "Datumreeks",
-    "datetimeRange": "Datum en tijd-reeks"
+    "datetimeRange": "Datum en tijd-reeks",
+    "yes": "Ja",
+    "no": "Nee",
+    "either": "Ook"
   },
   "searchFieldsTooltips": {
     "text": "Een tekstveld",

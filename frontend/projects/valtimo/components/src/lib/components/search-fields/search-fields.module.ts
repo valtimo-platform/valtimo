@@ -27,6 +27,7 @@ import {
   InputLabelModule,
   InputModule,
   ParagraphModule,
+  SelectModule,
 } from '@valtimo/user-interface';
 
 @NgModule({
@@ -42,6 +43,7 @@ import {
     InputLabelModule,
     ParagraphModule,
     ButtonModule,
+    SelectModule,
   ],
   exports: [SearchFieldsComponent],
 })

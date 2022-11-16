@@ -829,7 +829,10 @@
     "boolean": "Ja / Nein",
     "numberRange": "Zahlenfolge",
     "dateRange": "Datumsbereich",
-    "datetimeRange": "Datums- und Zeit-bereich"
+    "datetimeRange": "Datums- und Zeit-bereich",
+    "yes": "Ja",
+    "no": "Nein",
+    "either": "Entweder"
   },
   "searchFieldsTooltips": {
     "text": "Ein Textfeld",
