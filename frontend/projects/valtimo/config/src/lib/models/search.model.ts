@@ -4,7 +4,7 @@ type SearchFieldFieldType = 'single' | 'multiple' | 'range';
 
 type SearchFieldMatchType = 'exact' | 'like';
 
-type SearchFieldBoolean = 'yes' | 'no' | 'either';
+type SearchFieldBoolean = 'booleanPositive' | 'booleanNegative';
 
 type BooleanValueSingle = boolean;
 
@@ -32,6 +32,23 @@ interface SearchFieldWithValue extends SearchField {
   value: SearchFieldValue;
 }
 
+interface SearchFieldValues {
+  [searchFieldKey: string]: SearchFieldValue;
+}
+
+type SearchOperator = 'AND' | 'OR';
+
+interface SearchFilter {
+  key: string;
+  values: Array<string>;
+}
+
+interface SearchFilterRange {
+  key: string;
+  rangeFrom: string;
+  rangeTo: string;
+}
+
 export {
   SearchFieldDataType,
   SearchFieldFieldType,
@@ -40,4 +57,8 @@ export {
   SearchField,
   SearchFieldValue,
   SearchFieldWithValue,
+  SearchFieldValues,
+  SearchOperator,
+  SearchFilter,
+  SearchFilterRange,
 };

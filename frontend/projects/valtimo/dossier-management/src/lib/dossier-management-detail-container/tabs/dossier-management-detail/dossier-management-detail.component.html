@@ -15,33 +15,13 @@
   -->
 
 <div id="management-datail-content" class="pt-0">
-  <div *ngIf="documentDefinition" class="btn-group mt-m3px mb-3 pr-2 float-right">
-    <button (click)="downloadDefinition()" class="btn btn-primary btn-space">
-      <i class="icon mdi mdi-download mr-1"></i>
-      {{ 'Download document definition' | translate }}
-    </button>
-    <a id="downloadAnchorElement" style="display: none"></a>
-    <button
-      (click)="openDossierRemoveModal()"
-      *ngIf="!this.documentDefinition.readOnly"
-      class="btn btn-secondary btn-space mr-0"
-    >
-      <i class="icon mdi mdi-delete mr-1"></i>
-      {{ 'Remove document definition' | translate }}
-    </button>
-  </div>
+  <ng-container *ngTemplateOutlet="buttons"></ng-container>
   <div class="clearfix"></div>
+  <ng-container *ngTemplateOutlet="widget"></ng-container>
+</div>
+
+<ng-template #widget>
   <valtimo-widget *ngIf="documentDefinition">
-    <div class="bg-light dossier-header">
-      <h3 class="dossier-title">
-        {{ documentDefinition.schema.title }}
-        <div *ngIf="documentDefinition.readOnly" class="pull-right">
-          <span class="badge badge-pill badge-info increase-size">{{
-            'dossierManagement.readonly' | translate
-          }}</span>
-        </div>
-      </h3>
-    </div>
     <div class="row bg-white mt-5 mb-2 pl-2 pr-2">
       <div class="col-5">
         <h2>{{ 'document definition' | translate }}</h2>
@@ -131,11 +111,30 @@
       </div>
     </div>
   </valtimo-widget>
-  <valtimo-dossier-management-connect-modal
-    #dossierConnectModal
-    (reloadProcessDocumentDefinitions)="loadProcessDocumentDefinitions()"
-  ></valtimo-dossier-management-connect-modal>
-  <valtimo-dossier-management-remove-modal
-    #dossierRemoveModal
-  ></valtimo-dossier-management-remove-modal>
-</div>
+</ng-template>
+
+<ng-template #buttons>
+  <div *ngIf="documentDefinition" class="btn-group mt-m3px mb-3 pr-2 float-right">
+    <button (click)="downloadDefinition()" class="btn btn-primary btn-space">
+      <i class="icon mdi mdi-download mr-1"></i>
+      {{ 'Download document definition' | translate }}
+    </button>
+    <a id="downloadAnchorElement" style="display: none"></a>
+    <button
+      (click)="openDossierRemoveModal()"
+      *ngIf="!this.documentDefinition.readOnly"
+      class="btn btn-secondary btn-space mr-0"
+    >
+      <i class="icon mdi mdi-delete mr-1"></i>
+      {{ 'Remove document definition' | translate }}
+    </button>
+  </div>
+</ng-template>
+
+<valtimo-dossier-management-connect-modal
+  #dossierConnectModal
+  (reloadProcessDocumentDefinitions)="loadProcessDocumentDefinitions()"
+></valtimo-dossier-management-connect-modal>
+<valtimo-dossier-management-remove-modal
+  #dossierRemoveModal
+></valtimo-dossier-management-remove-modal>

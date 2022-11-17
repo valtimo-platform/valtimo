@@ -25,7 +25,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import flatpickr from 'flatpickr';
-import {BehaviorSubject, Subscription} from 'rxjs';
+import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 import {key as LocaleKey} from 'flatpickr/dist/types/locale';
 import {Dutch} from 'flatpickr/dist/l10n/nl';
@@ -54,6 +54,7 @@ export class DatePickerComponent implements AfterViewInit, OnDestroy {
   @Input() defaultDate!: string;
   @Input() defaultDateIsToday!: boolean;
   @Input() smallLabel = false;
+  @Input() clear$!: Observable<null>;
   @Input() enableTime = false;
 
   @Output() valueChange: EventEmitter<any> = new EventEmitter();
@@ -63,17 +64,20 @@ export class DatePickerComponent implements AfterViewInit, OnDestroy {
   private flatpickrInstance!: flatpickr.Instance;
   private localeSubscription!: Subscription;
   private dateValueSubscription!: Subscription;
+  private clearSubscription!: Subscription;
 
   constructor(private readonly translateService: TranslateService) {}
 
   ngAfterViewInit(): void {
     this.openLocaleSubscription();
     this.openDateValueSubscription();
+    this.openClearSubscription();
   }
 
   ngOnDestroy(): void {
     this.localeSubscription?.unsubscribe();
     this.dateValueSubscription?.unsubscribe();
+    this.clearSubscription?.unsubscribe();
   }
 
   private openLocaleSubscription(): void {
@@ -141,5 +145,13 @@ export class DatePickerComponent implements AfterViewInit, OnDestroy {
     }
 
     return locale;
+  }
+
+  private openClearSubscription(): void {
+    if (this.clear$) {
+      this.clearSubscription = this.clear$.subscribe(() => {
+        this.dateValue$.next('');
+      });
+    }
   }
 }

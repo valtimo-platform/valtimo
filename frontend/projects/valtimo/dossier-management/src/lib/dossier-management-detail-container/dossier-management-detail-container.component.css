@@ -17,3 +17,16 @@
 .tab-container {
   min-height: 300px;
 }
+
+.dossier-header {
+  height: 80px;
+  padding-top: 21px;
+  padding-left: 18px;
+  padding-right: 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.dossier-title {
+  margin-top: 0;
+  margin-bottom: 7px;
+}

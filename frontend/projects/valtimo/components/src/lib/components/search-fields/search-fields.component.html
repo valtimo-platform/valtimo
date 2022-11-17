@@ -34,8 +34,12 @@
         <ng-container *ngTemplateOutlet="buttonAccordion"></ng-container>
       </div>
     </div>
-    <div class="row p-3" [ngClass]="{'row--hidden': (expanded$ | async) === false}">
-      <ng-container *ngFor="let searchField of searchFields$ | async; let i = index">
+    <div
+      class="row p-3"
+      [ngClass]="{'row--hidden': (expanded$ | async) === false}"
+      *ngIf="searchFields$ | async as searchFields"
+    >
+      <ng-container *ngFor="let searchField of searchFields; let i = index">
         <div class="col-4">
           <ng-container
             *ngTemplateOutlet="searchFieldTemplate; context: {searchField: searchField}"
@@ -44,7 +48,12 @@
         <div class="w-100" *ngIf="(i + 1) % 3 === 0"></div>
       </ng-container>
       <div class="col-12">
-        <ng-container *ngTemplateOutlet="buttonsTemplate"></ng-container>
+        <ng-container
+          *ngTemplateOutlet="
+            buttonsTemplate;
+            context: {noSearchFields: !searchFields || searchFields.length === 0}
+          "
+        ></ng-container>
       </div>
     </div>
   </valtimo-widget>
@@ -180,6 +189,7 @@
     [tooltip]="tooltip !== tooltipKey && tooltip"
     (valueChange)="singleValueChange(searchField.key, $event)"
     [smallLabel]="true"
+    [clear$]="clear$"
   >
   </v-input>
 </ng-template>
@@ -201,6 +211,7 @@
     [hideNumberSpinBox]="true"
     [tooltip]="tooltip !== tooltipKey && tooltip"
     [smallLabel]="true"
+    [clear$]="clear$"
   >
   </v-input>
 </ng-template>
@@ -220,6 +231,7 @@
     fullWidth="true"
     (valueChange)="singleValueChange(searchField.key, $event)"
     [smallLabel]="true"
+    [clear$]="clear$"
   ></v-date-picker>
 </ng-template>
 
@@ -240,9 +252,9 @@
       (valueChange)="multipleValueChange(searchField.key, $event)"
       className="multiple-search-fields"
     >
-      <v-input name="start" [fullWidth]="true"> </v-input>
+      <v-input name="start" [fullWidth]="true" [clear$]="clear$"> </v-input>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
-      <v-input name="end" [fullWidth]="true"> </v-input>
+      <v-input name="end" [fullWidth]="true" [clear$]="clear$"> </v-input>
     </v-form>
   </ng-container>
 </ng-template>
@@ -264,9 +276,23 @@
       (valueChange)="multipleValueChange(searchField.key, $event)"
       className="multiple-search-fields"
     >
-      <v-input name="start" [fullWidth]="true" type="number" [hideNumberSpinBox]="true"> </v-input>
+      <v-input
+        name="start"
+        [fullWidth]="true"
+        type="number"
+        [hideNumberSpinBox]="true"
+        [clear$]="clear$"
+      >
+      </v-input>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
-      <v-input name="end" [fullWidth]="true" type="number" [hideNumberSpinBox]="true"> </v-input>
+      <v-input
+        name="end"
+        [fullWidth]="true"
+        type="number"
+        [hideNumberSpinBox]="true"
+        [clear$]="clear$"
+      >
+      </v-input>
     </v-form>
   </ng-container>
 </ng-template>
@@ -288,9 +314,9 @@
       (valueChange)="multipleValueChange(searchField.key, $event)"
       className="multiple-search-fields"
     >
-      <v-date-picker name="start" fullWidth="true"></v-date-picker>
+      <v-date-picker name="start" fullWidth="true" [clear$]="clear$"></v-date-picker>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
-      <v-date-picker name="end" fullWidth="true"></v-date-picker>
+      <v-date-picker name="end" fullWidth="true" [clear$]="clear$"></v-date-picker>
     </v-form>
   </ng-container>
 </ng-template>
@@ -308,20 +334,16 @@
       [tooltip]="tooltip !== tooltipKey && tooltip"
       [small]="true"
     ></v-input-label>
-    <v-form
-      (valueChange)="singleValueChange(searchField.key, $event)"
-      className="multiple-search-fields"
-    >
-      <v-select
-        *ngIf="booleanItems$ | async as booleanItems"
-        [defaultSelectionId]="booleanItems[0]"
-        [items]="booleanItems"
-        [margin]="true"
-        [required]="false"
-        [widthInPx]="200"
-        name="booleanType"
-      ></v-select>
-    </v-form>
+    <v-select
+      *ngIf="booleanItems$ | async as booleanItems"
+      [items]="booleanItems"
+      [margin]="false"
+      [required]="false"
+      [widthInPx]="200"
+      [name]="searchField.key"
+      [clearSelectionSubject$]="clear$"
+      (selectedChange)="singleValueChange(searchField.key, $event)"
+    ></v-select>
   </ng-container>
 </ng-template>
 
@@ -338,9 +360,10 @@
     [tooltip]="tooltip !== tooltipKey && tooltip"
     [name]="searchField.key"
     fullWidth="true"
-    (valueChange)="singleValueChange(searchField.key, $event)"
+    (valueChange)="singleValueChange(searchField.key, $event, true)"
     [smallLabel]="true"
     [enableTime]="true"
+    [clear$]="clear$"
   ></v-date-picker>
 </ng-template>
 
@@ -358,12 +381,22 @@
       [small]="true"
     ></v-input-label>
     <v-form
-      (valueChange)="multipleValueChange(searchField.key, $event)"
+      (valueChange)="multipleValueChange(searchField.key, $event, true)"
       className="multiple-search-fields"
     >
-      <v-date-picker name="start" fullWidth="true" [enableTime]="true"></v-date-picker>
+      <v-date-picker
+        name="start"
+        fullWidth="true"
+        [enableTime]="true"
+        [clear$]="clear$"
+      ></v-date-picker>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
-      <v-date-picker name="end" fullWidth="true" [enableTime]="true"></v-date-picker>
+      <v-date-picker
+        name="end"
+        fullWidth="true"
+        [enableTime]="true"
+        [clear$]="clear$"
+      ></v-date-picker>
     </v-form>
   </ng-container>
 </ng-template>
@@ -374,12 +407,15 @@
   </div>
 </ng-template>
 
-<ng-template #buttonsTemplate>
+<ng-template #buttonsTemplate let-noSearchFields="noSearchFields">
+  <ng-container
+    *ngTemplateOutlet="noSearchFieldsTemplate; context: {noSearchFields: noSearchFields}"
+  ></ng-container>
   <div class="buttons-container" *ngIf="{expanded: expanded$ | async} as obs">
     <div class="right-buttons">
       <button
-        (click)="search()"
-        [disabled]="loading"
+        (click)="clear()"
+        [disabled]="loading || noSearchFields"
         type="button"
         class="btn btn-space btn-secondary"
         *ngIf="obs.expanded"
@@ -388,7 +424,7 @@
       </button>
       <button
         (click)="search()"
-        [disabled]="loading"
+        [disabled]="loading || noSearchFields || (hasValidValues$ | async) === false"
         type="button"
         class="btn btn-space btn-primary"
         *ngIf="obs.expanded"
@@ -396,6 +432,14 @@
         {{ 'searchFields.searchButtonText' | translate }}
       </button>
     </div>
+  </div>
+</ng-template>
+
+<ng-template #noSearchFieldsTemplate let-noSearchFields="noSearchFields">
+  <div class="w-100 mb-3" *ngIf="noSearchFields">
+    <v-paragraph [fullWidth]="true" [center]="true">{{
+      'searchFields.noneConfigured' | translate
+    }}</v-paragraph>
   </div>
 </ng-template>
 

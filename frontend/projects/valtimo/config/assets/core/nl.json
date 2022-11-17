@@ -505,7 +505,8 @@
     "lastModified": "Laatst gewijzigd op",
     "files": "Bestanden",
     "firstName": "Voornaam",
-    "assigneeFullName": "Behandelaar"
+    "assigneeFullName": "Behandelaar",
+    "accepted": "Akkoord"
   },
   "list": {
     "currentPage": "Pagina {{current}} van {{total}}",
@@ -816,6 +817,7 @@
     "notSupported": "Wanneer Keycloak wordt gebruikt is gebruikersbeheer in Valtimo niet beschikbaar. Gebruik in plaats daarvan het gebruikersbeheer in Keycloak."
   },
   "searchFields": {
+    "noneConfigured": "Er zijn geen zoekvelden geconfigureerd voor dit documenttype.",
     "expandButtonText": "Zoekvelden tonen",
     "collapseButtonText": "Verbergen",
     "searchButtonText": "Zoeken",
@@ -830,9 +832,8 @@
     "numberRange": "Nummerreeks",
     "dateRange": "Datumreeks",
     "datetimeRange": "Datum en tijd-reeks",
-    "yes": "Ja",
-    "no": "Nee",
-    "either": "Ook"
+    "booleanPositive": "Ja",
+    "booleanNegative": "Nee"
   },
   "searchFieldsTooltips": {
     "text": "Een tekstveld",
@@ -865,7 +866,7 @@
   "searchFieldsOverviewTooltips": {
     "title": "De titel is een optioneel veld dat wordt weergegeven als een label voor het huidige zoekveld. Als de titel niet is ingesteld, is de standaardwaarde de sleutelvertaling van het zoekveld (als er geen vertaling beschikbaar is, wordt de oorspronkelijke sleutelwaarde weergegeven).",
     "key": "Een unieke sleutel waarmee het zoekveld wordt geïdentificeerd. Als de sleutel niet uniek is, kan het zoekveld niet worden opgeslagen.",
-    "path": "Een pad dat leidt naar een eigenschap in het JSON-schema van het document. Bijvoorbeeld: doc:customer.firstName",
+    "path": "Een pad dat leidt naar de eigenschap waarop u wilt zoeken. Volg dit voorbeeld om te zoeken in het JSON-schema van het document: 'doc:customer.firstName'. Volg deze voorbeelden om te zoeken in de documenteigenschappen: 'case:createdBy', of 'case:sequence', of 'case:assigneeFullName'. Let op: wanneer er speciale tekens in een eigenschap zitten, moet de eigenschap binnen aanhalingstekens staan. Bijvoorbeeld: case:\"loan-accepted\".",
     "dataType": "Het datatype bepaalt welke invoer aan de gebruiker wordt getoond. Voor het datatype 'Datum' wordt bijvoorbeeld een datumkiezer getoond.",
     "fieldType": "Het veldtype bepaalt de waarden die de gebruiker kan invoeren. Voor de optie 'Enkel' kan de gebruiker slechts één waarde invoeren. Bij de optie 'Reeks' kan de gebruiker twee waarden invoeren. Naar deze waarden, en alle waarden daartussen, wordt vervolgens gezocht.",
     "matchType": "De overeenkomst bepaalt hoe waarden in de database worden gekoppeld aan de zoekwaarden. Voor het zoektype 'Exact' zou de waarde '1' alleen overeenkomen met de waarde '1'. Voor het zoektype 'Bevat' zou de waarde '1' overeenkomen met de waarde '1', '123' en alle andere waarden die '1' bevatten."

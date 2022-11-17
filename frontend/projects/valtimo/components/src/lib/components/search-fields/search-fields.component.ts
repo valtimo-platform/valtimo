@@ -15,15 +15,10 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {
-  SearchField,
-  SearchFieldBoolean,
-  SearchFieldValue,
-  SearchFieldWithValue,
-} from '@valtimo/config';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} from 'rxjs';
-import {TranslateService} from '@ngx-translate/core';
+import {SearchField, SearchFieldBoolean, SearchFieldValues} from '@valtimo/config';
+import {BehaviorSubject, map, Observable, Subject, Subscription, take} from 'rxjs';
 import {SelectItem} from '@valtimo/user-interface';
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   selector: 'valtimo-search-fields',
@@ -31,24 +26,47 @@ import {SelectItem} from '@valtimo/user-interface';
   styleUrls: ['./search-fields.component.scss'],
 })
 export class SearchFieldsComponent implements OnInit, OnDestroy {
-  readonly searchFields$ = new BehaviorSubject<Array<SearchField>>([]);
-
-  readonly values$ = new BehaviorSubject<{[key: string]: SearchFieldValue}>({});
-
   @Input() loading: boolean;
   @Input() set searchFields(fields: Array<SearchField>) {
     this.searchFields$.next(fields);
   }
-  @Output() valueChange: EventEmitter<Array<SearchFieldWithValue>> = new EventEmitter<
-    Array<SearchFieldWithValue>
-  >();
-  @Output() doSearch: EventEmitter<any> = new EventEmitter<any>();
+  @Input() set documentDefinitionName(documentDefinitionName: string) {
+    this.documentDefinitionName$.pipe(take(1)).subscribe(currentDocumentDefinitionName => {
+      if (currentDocumentDefinitionName !== documentDefinitionName) {
+        this.documentDefinitionName$.next(documentDefinitionName);
+      }
+    });
+  }
+  @Output() doSearch: EventEmitter<SearchFieldValues> = new EventEmitter<SearchFieldValues>();
+
+  readonly documentDefinitionName$ = new BehaviorSubject<string>('');
+
+  readonly searchFields$ = new BehaviorSubject<Array<SearchField>>([]);
+
+  readonly values$ = new BehaviorSubject<SearchFieldValues>({});
+
+  readonly hasValidValues$: Observable<boolean> = this.values$.pipe(
+    map(values => {
+      const hasValues = (Object.keys(values) || []).length > 0;
+      const rangeValues =
+        (hasValues && Object.values(values)?.filter(value => (value as any).start)) || [];
+      const validRangeValues = rangeValues?.filter(
+        value => (value as any).start < (value as any).end
+      );
+
+      return !!(hasValues && rangeValues.length === validRangeValues.length);
+    })
+  );
 
   readonly expanded$ = new BehaviorSubject<boolean>(false);
+  readonly clear$ = new Subject<null>();
 
-  private valuesSubscription!: Subscription;
+  private documentDefinitionNameSubscription!: Subscription;
 
-  readonly BOOLEANTYPES: Array<SearchFieldBoolean> = ['yes', 'no', 'either'];
+  private readonly BOOLEAN_POSITIVE: SearchFieldBoolean = 'booleanPositive';
+  private readonly BOOLEAN_NEGATIVE: SearchFieldBoolean = 'booleanNegative';
+
+  readonly BOOLEANTYPES: Array<SearchFieldBoolean> = [this.BOOLEAN_POSITIVE, this.BOOLEAN_NEGATIVE];
   readonly booleanItems$: Observable<Array<SelectItem>> = this.translateService.stream('key').pipe(
     map(() =>
       this.BOOLEANTYPES.map(type => ({
@@ -61,22 +79,40 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   constructor(private readonly translateService: TranslateService) {}
 
   ngOnInit() {
-    this.openValuesSubscription();
+    this.openDocumentDefinitionNameSubscription();
   }
 
   ngOnDestroy(): void {
-    this.valuesSubscription?.unsubscribe();
+    this.documentDefinitionNameSubscription?.unsubscribe();
   }
 
-  singleValueChange(searchFieldKey: string, value: any): void {
+  singleValueChange(searchFieldKey: string, value: any, isDateTime?: boolean): void {
     this.values$.pipe(take(1)).subscribe(values => {
-      this.values$.next({...values, [searchFieldKey]: value});
+      if (value) {
+        this.values$.next({...values, [searchFieldKey]: this.getSingleValue(value, isDateTime)});
+      } else if (Object.keys(values).includes(searchFieldKey)) {
+        const valuesCopy = {...values};
+        delete valuesCopy[searchFieldKey];
+        this.values$.next(valuesCopy);
+      }
     });
   }
 
-  multipleValueChange(searchFieldKey: string, value: any): void {
+  multipleValueChange(searchFieldKey: string, value: any, isDateTime?: boolean): void {
     this.values$.pipe(take(1)).subscribe(values => {
-      this.values$.next({...values, [searchFieldKey]: {start: value.start, end: value.end}});
+      if (value.start && value.end) {
+        this.values$.next({
+          ...values,
+          [searchFieldKey]: {
+            start: this.getSingleValue(value.start, isDateTime),
+            end: this.getSingleValue(value.end, isDateTime),
+          },
+        });
+      } else if (values[searchFieldKey]) {
+        const valuesCopy = {...values};
+        delete valuesCopy[searchFieldKey];
+        this.values$.next(valuesCopy);
+      }
     });
   }
 
@@ -87,27 +123,38 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   search(): void {
-    this.doSearch.emit();
+    this.values$.pipe(take(1)).subscribe(values => {
+      this.doSearch.emit(values);
+    });
   }
 
-  private openValuesSubscription(): void {
-    this.valuesSubscription = combineLatest([this.searchFields$, this.values$]).subscribe(
-      ([searchFields, values]) => {
-        const valuesKeys = Object.keys(values);
-        const searchFieldsCopy = [...(searchFields || [])] as Array<SearchFieldWithValue>;
+  clear(): void {
+    this.clear$.next(null);
+    this.doSearch.emit({});
+  }
 
-        valuesKeys.forEach(valueKey => {
-          const correspondingSearchFieldIndex = searchFieldsCopy.findIndex(
-            searchField => searchField.key === valueKey
-          );
+  private getSingleValue(value: any, isDateTime?: boolean): any {
+    if (isDateTime) {
+      return new Date(value).toISOString();
+    }
+    if (value === this.BOOLEAN_POSITIVE) {
+      return true;
+    }
+    if (value === this.BOOLEAN_NEGATIVE) {
+      return false;
+    }
 
-          if (correspondingSearchFieldIndex !== -1) {
-            searchFieldsCopy[correspondingSearchFieldIndex].value = values[valueKey];
-          }
-        });
+    return value;
+  }
 
-        this.valueChange.emit(searchFieldsCopy);
-      }
-    );
+  private openDocumentDefinitionNameSubscription(): void {
+    this.documentDefinitionNameSubscription = this.documentDefinitionName$.subscribe(() => {
+      this.collapse();
+      this.clear();
+    });
+  }
+
+  private collapse(): void {
+    this.expanded$.next(false);
   }
 }

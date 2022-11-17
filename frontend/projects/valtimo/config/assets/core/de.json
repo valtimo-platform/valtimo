@@ -505,7 +505,8 @@
     "lastModified": "Letzte Änderung",
     "files": "Dateien",
     "firstName": "Vorname",
-    "assigneeFullName": "Eigentümer"
+    "assigneeFullName": "Eigentümer",
+    "accepted": "Akzeptiert"
   },
   "list": {
     "currentPage": "Seite {{current}} von {{total}}",
@@ -816,6 +817,7 @@
     "notSupported": "Wenn Keycloak verwendet wird, ist die Benutzerverwaltung in Valtimo nicht verfügbar. Verwenden Sie stattdessen die Benutzerverwaltung in Keycloak."
   },
   "searchFields": {
+    "noneConfigured": "Für diesen Dokumenttyp wurden keine Suchfelder konfiguriert.",
     "expandButtonText": "Suchfelder anzeigen",
     "collapseButtonText": "Ausblenden",
     "searchButtonText": "Suche",
@@ -830,9 +832,8 @@
     "numberRange": "Zahlenfolge",
     "dateRange": "Datumsbereich",
     "datetimeRange": "Datums- und Zeit-bereich",
-    "yes": "Ja",
-    "no": "Nein",
-    "either": "Entweder"
+    "booleanPositive": "Ja",
+    "booleanNegative": "Nein"
   },
   "searchFieldsTooltips": {
     "text": "Ein Textfeld",
@@ -865,7 +866,7 @@
   "searchFieldsOverviewTooltips": {
     "title": "Der Titel ist ein optionales Feld, das als Bezeichnung für das aktuelle Suchfeld erscheint. Wenn der Titel nicht festgelegt ist, ist der Standardwert die Übersetzung des Suchfeldschlüssels (wenn keine Übersetzung verfügbar ist, wird der ursprüngliche Schlüsselwert angezeigt).",
     "key": "Ein eindeutiger Schlüssel, der das Suchfeld identifiziert. Wenn der Schlüssel nicht eindeutig ist, kann das Suchfeld nicht gespeichert werden.",
-    "path": "Ein Pfad, der zu einer Eigenschaft im JSON-Schema des Dokuments führt. Zum Beispiel: doc:customer.firstName",
+    "path": "Ein Pfad, der zu der Eigenschaft führt, die Sie durchsuchen möchten. Um im JSON-Schema des Dokuments zu suchen, folgen Sie diesem Beispiel: 'doc:customer.firstName'. Folgen Sie für die Suche in den Dokumenteigenschaften diesen Beispielen: 'case:createdBy', oder 'case:sequence', oder 'case:assigneeFullName'. Hinweis: Wenn eine Eigenschaft Sonderzeichen enthält, muss die Eigenschaft in Anführungszeichen gesetzt werden. Zum Beispiel: case:\"loan-accepted\".",
     "dataType": "Der Datentyp bestimmt, welche Eingaben dem Benutzer angezeigt werden. Beispielsweise wird für den Datentyp 'Datum' eine Datumsauswahl angezeigt.",
     "fieldType": "Der Feldtyp bestimmt die Werte, die der Benutzer eingeben kann. Die Option 'Nur' ermöglicht dem Benutzer, nur einen Wert einzugeben. Die Option 'Serie' ermöglicht dem Benutzer die Eingabe von zwei Werten. Nach diesen Werten und allen Werten dazwischen wird dann gesucht.",
     "matchType": "Die Übereinstimmen legt fest, wie Werte in der Datenbank mit den Suchwerten verknüpft werden. Beim Übereinstimmungstyp 'Genau' würde der Wert '1' nur mit dem Wert '1' übereinstimmen. Für den Übereinstimmungstyp 'Enthält' würde der Wert '1' mit dem Wert '1', '123' und allen anderen Werten übereinstimmen, die '1' enthalten."

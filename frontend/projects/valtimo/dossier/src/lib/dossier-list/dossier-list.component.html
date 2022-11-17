@@ -14,8 +14,6 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngTemplateOutlet="sidebar"></ng-container>
-
 <div class="main-content pt-0" *ngIf="{loading: loading$ | async} as obs">
   <div class="container-fluid">
     <div class="col-12 px-0 mb-5">
@@ -87,10 +85,12 @@
 </div>
 
 <ng-template #searchFields>
-  <div class="mb-3" *ngIf="enableCaseSearchFields">
+  <div class="mb-3">
     <valtimo-search-fields
       [loading]="loadingDocumentSearchFields$ | async"
       [searchFields]="documentSearchFields$ | async"
+      (doSearch)="search($event)"
+      [documentDefinitionName]="documentDefinitionName$ | async"
     ></valtimo-search-fields>
   </div>
 </ng-template>
@@ -126,29 +126,4 @@
       </ng-container>
     </ng-container>
   </ng-container>
-</ng-template>
-
-<ng-template #sidebar>
-  <valtimo-filter-sidebar *ngIf="!enableCaseSearchFields">
-    <h4 class="title">Search</h4>
-    <div class="mb-4">
-      <input
-        type="text"
-        class="form-control"
-        placeholder="{{ 'dossier.forms.globalSearchPlaceHolder' | translate }}"
-        [ngModel]="globalSearchFilter$ | async"
-        (ngModelChange)="globalSearchFilterChange($event)"
-      />
-    </div>
-
-    <div class="mb-4">
-      <input
-        type="number"
-        class="form-control"
-        placeholder="{{ 'dossier.forms.referenceNumberPlaceHolder' | translate }}"
-        [ngModel]="sequence$ | async"
-        (ngModelChange)="sequenceChange($event)"
-      />
-    </div>
-  </valtimo-filter-sidebar>
 </ng-template>

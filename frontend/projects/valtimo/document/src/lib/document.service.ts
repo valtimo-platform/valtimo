@@ -42,7 +42,15 @@ import {
   UploadProcessLink,
 } from './models';
 import {DocumentSearchRequest} from './document-search-request';
-import {ConfigService, SearchField, User} from '@valtimo/config';
+import {
+  ConfigService,
+  SearchField,
+  SearchFilter,
+  SearchFilterRange,
+  SearchOperator,
+  User,
+} from '@valtimo/config';
+import {AdvancedDocumentSearchRequest} from './advanced-document-search-request';
 
 @Injectable({
   providedIn: 'root',
@@ -76,6 +84,30 @@ export class DocumentService {
     return this.http.post<Documents>(
       `${this.valtimoEndpointUri}document-search`,
       documentSearchRequest.asHttpBody(),
+      {
+        params: documentSearchRequest.asHttpParams(),
+      }
+    );
+  }
+
+  getDocumentsSearch(
+    documentSearchRequest: AdvancedDocumentSearchRequest,
+    searchOperator?: SearchOperator,
+    otherFilters?: Array<SearchFilter | SearchFilterRange>
+  ): Observable<Documents> {
+    const body = documentSearchRequest.asHttpBody();
+
+    if (searchOperator) {
+      body.searchOperator = searchOperator;
+    }
+
+    if (otherFilters) {
+      body.otherFilters = otherFilters;
+    }
+
+    return this.http.post<Documents>(
+      `${this.valtimoEndpointUri}v1/document-definition/${documentSearchRequest.definitionName}/search`,
+      body,
       {params: documentSearchRequest.asHttpParams()}
     );
   }

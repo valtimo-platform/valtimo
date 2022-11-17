@@ -18,39 +18,59 @@
   <div class="container-fluid">
     <div class="col-12 px-0 mb-5">
       <valtimo-widget>
-        <ul class="nav nav-tabs">
-          <li class="nav-item">
-            <a
-              id="test-tab"
-              class="nav-link clickable active"
-              data-toggle="tab"
-              (click)="displayBodyComponent('case')"
-            >
-              {{ 'dossierManagement.tabs.cases' | translate }}
-            </a>
-          </li>
-          <li class="nav-item" *ngIf="showCaseSearchFields">
-            <a
-              id="test-tab-1"
-              class="nav-link clickable"
-              data-toggle="tab"
-              (click)="displayBodyComponent('search')"
-            >
-              {{ 'dossierManagement.tabs.searchFields' | translate }}
-            </a>
-          </li>
-        </ul>
-
-        <div class="pt-3 bg-white position-relative tab-container">
-          <div *ngIf="isCase">
-            <valtimo-dossier-management-detail></valtimo-dossier-management-detail>
-          </div>
-
-          <div *ngIf="!isCase">
-            <valtimo-dossier-management-search-fields></valtimo-dossier-management-search-fields>
-          </div>
-        </div>
+        <ng-container *ngTemplateOutlet="title"></ng-container>
+        <ng-container *ngTemplateOutlet="tabs"></ng-container>
+        <ng-container *ngTemplateOutlet="tabContent"></ng-container>
       </valtimo-widget>
     </div>
   </div>
 </div>
+
+<ng-template #title>
+  <div class="bg-light dossier-header" *ngIf="documentDefinition$ | async as documentDefinition">
+    <h3 class="dossier-title">
+      {{ documentDefinition.schema.title }}
+      <div *ngIf="documentDefinition.readOnly" class="pull-right">
+        <span class="badge badge-pill badge-info increase-size">{{
+          'dossierManagement.readonly' | translate
+        }}</span>
+      </div>
+    </h3>
+  </div>
+</ng-template>
+
+<ng-template #tabs>
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a
+        id="test-tab"
+        class="nav-link clickable active"
+        data-toggle="tab"
+        (click)="displayBodyComponent('case')"
+      >
+        {{ 'dossierManagement.tabs.cases' | translate }}
+      </a>
+    </li>
+    <li class="nav-item">
+      <a
+        id="test-tab-1"
+        class="nav-link clickable"
+        data-toggle="tab"
+        (click)="displayBodyComponent('search')"
+      >
+        {{ 'dossierManagement.tabs.searchFields' | translate }}
+      </a>
+    </li>
+  </ul>
+</ng-template>
+
+<ng-template #tabContent>
+  <div class="pt-3 bg-white position-relative tab-container">
+    <div *ngIf="isCase">
+      <valtimo-dossier-management-detail></valtimo-dossier-management-detail>
+    </div>
+    <div *ngIf="!isCase">
+      <valtimo-dossier-management-search-fields></valtimo-dossier-management-search-fields>
+    </div>
+  </div>
+</ng-template>
