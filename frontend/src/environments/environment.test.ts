@@ -15,13 +15,13 @@
  */
 
 import {NgxLoggerLevel} from 'ngx-logger';
-import {authenticationAuth0} from './auth/auth0-config.test';
+import {authenticationKeycloak} from './auth/keycloak-config.test';
 import {openZaakExtensionInitializer} from '@valtimo/open-zaak';
 import {
-  UploadProvider,
   ROLE_ADMIN,
   ROLE_DEVELOPER,
   ROLE_USER,
+  UploadProvider,
   ValtimoConfig,
 } from '@valtimo/config';
 
@@ -54,7 +54,7 @@ const defaultDefinitionColumns = [
 export const environment: ValtimoConfig = {
   production: false,
   initializers: [openZaakExtensionInitializer],
-  authentication: authenticationAuth0,
+  authentication: authenticationKeycloak,
   menu: {
     menuItems: [
       {

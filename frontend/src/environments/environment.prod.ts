@@ -22,7 +22,7 @@ import {
   UploadProvider,
   ValtimoConfig,
 } from '@valtimo/config';
-import {authenticationAuth0} from './auth/auth0-config.prod';
+import {authenticationKeycloak} from './auth/keycloak-config.prod';
 import {openZaakExtensionInitializer} from '@valtimo/open-zaak';
 
 const defaultDefinitionColumns = [
@@ -54,7 +54,7 @@ const defaultDefinitionColumns = [
 export const environment: ValtimoConfig = {
   production: true,
   initializers: [openZaakExtensionInitializer],
-  authentication: authenticationAuth0,
+  authentication: authenticationKeycloak,
   menu: {
     menuItems: [
       {
