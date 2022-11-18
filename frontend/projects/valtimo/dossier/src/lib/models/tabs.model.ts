@@ -89,10 +89,16 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
 
   private replaceUrlState(tab: TabImpl): void {
     const currentUrl = this._router.url;
+    const queryParams = currentUrl.split('?')[1] || '';
     const urlParts = currentUrl.split('/');
     urlParts.splice(urlParts.length - 1, 1, tab.name);
     const newUrl = urlParts.join('/');
-    this._location.replaceState(newUrl);
+
+    if (currentUrl.includes(newUrl) && queryParams) {
+      this._router.navigateByUrl(`${newUrl}?${queryParams}`);
+    } else {
+      this._router.navigateByUrl(newUrl);
+    }
   }
 
   private setActive(tab: TabImpl): void {
