@@ -18,7 +18,6 @@ import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
 import {Observable} from 'rxjs';
 import {
-  FormFlowInstance,
   GetProcessLinkRequest,
   GetProcessLinkResponse,
   SaveProcessLinkRequest,
@@ -47,6 +46,12 @@ export class ProcessLinkService {
   }
 
   updateProcessLink(updateProcessLinkRequest: UpdateProcessLinkRequest): Observable<null> {
+    Object.keys(updateProcessLinkRequest.actionProperties).forEach(key => {
+      if (updateProcessLinkRequest.actionProperties[key] === "") {
+        updateProcessLinkRequest.actionProperties[key] = null;
+      }
+    })
+
     return this.http.put<null>(
       `${this.VALTIMO_ENDPOINT_URI}process-link`,
       updateProcessLinkRequest
@@ -54,6 +59,12 @@ export class ProcessLinkService {
   }
 
   saveProcessLink(saveProcessLinkRequest: SaveProcessLinkRequest): Observable<null> {
+    Object.keys(saveProcessLinkRequest.actionProperties).forEach(key => {
+      if (saveProcessLinkRequest.actionProperties[key] === "") {
+        saveProcessLinkRequest.actionProperties[key] = null;
+      }
+    })
+
     return this.http.post<null>(`${this.VALTIMO_ENDPOINT_URI}process-link`, saveProcessLinkRequest);
   }
 
