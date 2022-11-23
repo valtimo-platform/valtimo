@@ -107,6 +107,7 @@ export interface ValtimoConfig {
     caseSearchFields?: boolean;
   };
   visibleTaskListTabs?: Array<TaskListTab>;
+  visibleDossierListTabs?: Array<DossierListTab>;
   customTaskList?: CustomTaskList;
   customLeftSidebar?: CustomLeftSidebar;
   caseObjectTypes?: {
@@ -124,6 +125,12 @@ export enum TaskListTab {
   MINE = 'mine',
   OPEN = 'open',
   ALL = 'all',
+}
+
+export enum DossierListTab {
+  MINE = 'MINE',
+  OPEN = 'OPEN',
+  ALL = 'ALL',
 }
 
 export enum Language {

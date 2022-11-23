@@ -43,6 +43,7 @@ import {
 } from './models';
 import {DocumentSearchRequest} from './document-search-request';
 import {
+  AssigneeFilter,
   ConfigService,
   SearchField,
   SearchFilter,
@@ -93,12 +94,17 @@ export class DocumentService {
   getDocumentsSearch(
     documentSearchRequest: AdvancedDocumentSearchRequest,
     searchOperator?: SearchOperator,
+    assigneeFilter?: AssigneeFilter,
     otherFilters?: Array<SearchFilter | SearchFilterRange>
   ): Observable<Documents> {
     const body = documentSearchRequest.asHttpBody();
 
     if (searchOperator) {
       body.searchOperator = searchOperator;
+    }
+
+    if (assigneeFilter) {
+      body.assigneeFilter = assigneeFilter;
     }
 
     if (otherFilters) {

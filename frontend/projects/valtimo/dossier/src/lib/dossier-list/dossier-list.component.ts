@@ -18,7 +18,10 @@ import {Component, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {
+  AssigneeFilter,
+  ConfigService,
   DefinitionColumn,
+  DossierListTab,
   SearchField,
   SearchFieldValues,
   SearchFilter,
@@ -50,6 +53,7 @@ import {DossierProcessStartModalComponent} from '../dossier-process-start-modal/
 import {DossierService} from '../dossier.service';
 import {ListField, Pagination} from '@valtimo/components';
 import {NGXLogger} from 'ngx-logger';
+import {NgbNavChangeEvent} from '@ng-bootstrap/ng-bootstrap';
 
 // eslint-disable-next-line no-var
 declare var $;
@@ -64,13 +68,15 @@ moment.locale(localStorage.getItem('langKey') || '');
 export class DossierListComponent implements OnInit {
   @ViewChild('processStartModal') processStart: DossierProcessStartModalComponent;
 
+  public dossierVisibleTabs: Array<DossierListTab> | null = null;
+
   private selectedProcessDocumentDefinition: ProcessDocumentDefinition | null = null;
   private modalListenerAdded = false;
-  readonly loading$ = new BehaviorSubject<boolean>(true);
-
   private readonly settingPaginationForDocName$ = new BehaviorSubject<string | undefined>(
     undefined
   );
+
+  readonly loading$ = new BehaviorSubject<boolean>(true);
 
   readonly loadingDocumentSearchFields$ = new BehaviorSubject<boolean>(true);
 
@@ -170,14 +176,20 @@ export class DossierListComponent implements OnInit {
 
   private readonly searchFieldValues$ = new BehaviorSubject<SearchFieldValues>({});
 
+  private readonly assigneeFilter$ = new BehaviorSubject<AssigneeFilter>('ALL');
+
   private readonly documentsRequest$: Observable<Documents> = combineLatest([
     this.documentSearchRequest$,
     this.searchFieldValues$,
+    this.assigneeFilter$
   ]).pipe(
     distinctUntilChanged(
-      ([prevSearchRequest, prevSearchValues], [currSearchRequest, currSearchValues]) =>
-        JSON.stringify({...prevSearchRequest, ...prevSearchValues}) ===
-        JSON.stringify({...currSearchRequest, ...currSearchValues})
+      (
+        [prevSearchRequest, prevSearchValues, prevAssigneeFilter],
+        [currSearchRequest, currSearchValues, currAssigneeFilter]
+      ) =>
+        JSON.stringify({...prevSearchRequest, ...prevSearchValues}) + prevAssigneeFilter ===
+        JSON.stringify({...currSearchRequest, ...currSearchValues}) + currAssigneeFilter
     ),
     tap(([documentSearchRequest]) => {
       this.storedSearchRequestKey$.pipe(take(1)).subscribe(storedSearchRequestKey => {
@@ -187,15 +199,22 @@ export class DossierListComponent implements OnInit {
         localStorage.setItem(storedSearchRequestKey, JSON.stringify(documentSearchRequest));
       });
     }),
-    switchMap(([documentSearchRequest, searchValues]) => {
+    switchMap(([documentSearchRequest, searchValues, assigneeFilter]) => {
+      console.log('-', assigneeFilter);
+
       if ((Object.keys(searchValues) || []).length > 0) {
         return this.documentService.getDocumentsSearch(
           documentSearchRequest,
           'AND',
+          assigneeFilter,
           this.mapSearchValuesToFilters(searchValues)
         );
       } else {
-        return this.documentService.getDocumentsSearch(documentSearchRequest);
+        return this.documentService.getDocumentsSearch(
+          documentSearchRequest,
+          'AND',
+          assigneeFilter
+        );
       }
     }),
     tap(documents => {
@@ -220,8 +239,11 @@ export class DossierListComponent implements OnInit {
     private readonly documentService: DocumentService,
     private readonly translateService: TranslateService,
     private readonly dossierService: DossierService,
-    private readonly logger: NGXLogger
-  ) {}
+    private readonly logger: NGXLogger,
+    private configService: ConfigService
+  ) {
+    this.dossierVisibleTabs = this.configService.config?.visibleDossierListTabs || null;
+  }
 
   ngOnInit(): void {
     this.modalListenerAdded = false;
@@ -389,5 +411,12 @@ export class DossierListComponent implements OnInit {
         this.pagination$.next({...pagination, page: amountOfPages});
       }
     });
+  }
+
+  tabChange(tab: NgbNavChangeEvent<any>): void {
+    this.pagination$.pipe(take(1)).subscribe(pagination => {
+      this.pagination$.next({...pagination, page: 1});
+    });
+    this.assigneeFilter$.next(tab.nextId.toUpperCase());
   }
 }

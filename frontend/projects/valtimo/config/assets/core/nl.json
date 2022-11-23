@@ -27,7 +27,10 @@
       "contact-moments": "Contactmomenten",
       "custom-dossier": "Custom dossier",
       "custom-maps": "Custom maps",
-      "zaakobjecten": "Zaakobjecten"
+      "zaakobjecten": "Zaakobjecten",
+      "MINE": "Mijn dossier",
+      "OPEN": "Niet toegewezen dossier",
+      "ALL": "Alle dossier"
     },
     "forms": {
       "globalSearchPlaceHolder": "Alles",

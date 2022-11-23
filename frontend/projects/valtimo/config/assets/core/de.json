@@ -27,7 +27,10 @@
       "contact-moments": "Kontaktmomente",
       "custom-dossier": "Kunden-Dossier",
       "custom-maps": "Kunden-Karten",
-      "zaakobjecten": "Zaak-Objecte"
+      "zaakobjecten": "Zaak-Objecte",
+      "MINE": "Meine Cases",
+      "OPEN": "Nicht zugeordnete Cases",
+      "ALL": "Alle Cases"
     },
     "forms": {
       "globalSearchPlaceHolder": "Alles",

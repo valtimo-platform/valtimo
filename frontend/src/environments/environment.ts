@@ -26,6 +26,7 @@ import {
   ROLE_DEVELOPER,
   ROLE_USER,
   TaskListTab,
+  DossierListTab,
   UploadProvider,
   ValtimoConfig,
 } from '@valtimo/config';
@@ -188,6 +189,7 @@ export const environment: ValtimoConfig = {
     ],
   },
   visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.OPEN, TaskListTab.ALL],
+  visibleDossierListTabs: [DossierListTab.MINE, DossierListTab.OPEN, DossierListTab.ALL],
   customTaskList: {
     fields: [
       {

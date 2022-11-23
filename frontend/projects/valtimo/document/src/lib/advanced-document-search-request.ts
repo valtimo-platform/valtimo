@@ -16,7 +16,7 @@
 
 import {HttpParams} from '@angular/common/http';
 import {SortState} from './models';
-import {SearchFilter, SearchFilterRange, SearchOperator} from '@valtimo/config';
+import {AssigneeFilter, SearchFilter, SearchFilterRange, SearchOperator} from '@valtimo/config';
 
 export interface AdvancedDocumentSearchRequest {
   definitionName: string;
@@ -36,6 +36,7 @@ export class AdvancedDocumentSearchRequestHttpBody {
   createdBy?: string;
   searchOperator?: SearchOperator;
   otherFilters?: Array<SearchFilter | SearchFilterRange>;
+  assigneeFilter?: AssigneeFilter;
 }
 
 export class AdvancedDocumentSearchRequestImpl implements AdvancedDocumentSearchRequest {
