@@ -200,7 +200,6 @@ export class DossierListComponent implements OnInit {
       });
     }),
     switchMap(([documentSearchRequest, searchValues, assigneeFilter]) => {
-      console.log('-', assigneeFilter);
 
       if ((Object.keys(searchValues) || []).length > 0) {
         return this.documentService.getDocumentsSearch(
