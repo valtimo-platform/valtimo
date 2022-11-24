@@ -152,14 +152,14 @@
     (navChange)="tabChange($event)"
     class="nav-tabs"
   >
+    <li ngbNavItem="all" [title]="'dossier.tabs.ALL' | translate">
+      <a ngbNavLink>{{ 'dossier.tabs.ALL' | translate }}</a>
+    </li>
     <li ngbNavItem="mine" [title]="'dossier.tabs.MINE' | translate">
       <a ngbNavLink>{{ 'dossier.tabs.MINE' | translate }}</a>
     </li>
     <li ngbNavItem="open" [title]="'dossier.tabs.OPEN' | translate">
       <a ngbNavLink>{{ 'dossier.tabs.OPEN' | translate }}</a>
-    </li>
-    <li ngbNavItem="all" [title]="'dossier.tabs.ALL' | translate">
-      <a ngbNavLink>{{ 'dossier.tabs.ALL' | translate }}</a>
     </li>
   </ul>
 </ng-template>

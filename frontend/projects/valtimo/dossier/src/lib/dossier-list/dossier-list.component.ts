@@ -181,7 +181,7 @@ export class DossierListComponent implements OnInit {
   private readonly documentsRequest$: Observable<Documents> = combineLatest([
     this.documentSearchRequest$,
     this.searchFieldValues$,
-    this.assigneeFilter$
+    this.assigneeFilter$,
   ]).pipe(
     distinctUntilChanged(
       (
@@ -200,7 +200,6 @@ export class DossierListComponent implements OnInit {
       });
     }),
     switchMap(([documentSearchRequest, searchValues, assigneeFilter]) => {
-
       if ((Object.keys(searchValues) || []).length > 0) {
         return this.documentService.getDocumentsSearch(
           documentSearchRequest,
