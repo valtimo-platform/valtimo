@@ -33,7 +33,7 @@ import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {VersionService} from '../version/version.service';
 import {ShellService} from '../../services/shell.service';
-import packageInfo from '@valtimo/config/package.json';
+import * as packageInfo from '@valtimo/config/package.json';
 import {tap} from 'rxjs/operators';
 
 @Component({
