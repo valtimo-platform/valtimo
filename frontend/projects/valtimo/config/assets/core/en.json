@@ -9,7 +9,9 @@
     "DossierDocumentGeneratedEvent": "Case document generated",
     "DocumentRelatedFileAddedEvent": "Related file added",
     "DocumentRelatedFileRemovedEvent": "Related file removed",
-    "BesluitAddedEvent": "Decision added > {{identificatie}}"
+    "BesluitAddedEvent": "Decision added > {{identificatie}}",
+    "DocumentAssigneeChangedEvent": "The assignee has been changed to {{assigneeName}}",
+    "DocumentUnassignedEvent": "The assignee has been unassigned"
   },
   "dossier": {
     "title": {
@@ -67,6 +69,7 @@
       }
     },
     "startSubProcess": "Start",
+    "claimAssigneeCase": "Claim",
     "deleteConfirmation": {
       "title": "Delete file",
       "description": "Are you sure you want to delete this file?",
@@ -185,6 +188,8 @@
   },
   "account": {
     "title": "Account",
+    "informationTitle": "Information",
+    "quickLinks": "Quick links",
     "links": {
       "profile": "Profile",
       "password": "Password",
@@ -277,6 +282,10 @@
     "linkProcess": {
       "title": "Link upload process to case",
       "description": "Choose which process should handle file uploads."
+    },
+    "tabs": {
+      "cases": "Case Details",
+      "searchFields": "Search Fields"
     }
   },
   "serviceTaskManagement": {
@@ -458,7 +467,16 @@
     "next": "Next >",
     "previous": "< Previous",
     "addRow": "Add row",
-    "deleteRow": "Delete row"
+    "deleteRow": "Delete row",
+    "on": "On",
+    "off": "Off",
+    "builds": {
+      "valtimo-backend-libraries": "Valtimo back-end",
+      "valtimo-frontend-libraries": "Valtimo front-end"
+    },
+    "email": "Email",
+    "username": "User name",
+    "name": "Name"
   },
   "taskDetail": {
     "taskCreated": "Created",
@@ -470,6 +488,12 @@
     "placeholder": "Select a user",
     "remove": "Unassign",
     "save": "Save",
+    "fetchingUsers": "Fetching users..."
+  },
+  "assignDocument": {
+    "assignedTo": "Assigned to ",
+    "header": "Assign a user to this case",
+    "remove": "Unassign",
     "fetchingUsers": "Fetching users..."
   },
   "dropzone": {
@@ -491,7 +515,9 @@
     "createdOn": "Created on",
     "lastModified": "Last modified",
     "files": "Files",
-    "firstName": "First name"
+    "firstName": "First name",
+    "assigneeFullName": "Assignee",
+    "accepted": "Accepted"
   },
   "list": {
     "currentPage": "Page {{current}} of {{total}}",
@@ -797,5 +823,63 @@
     "expiryPromptDescription": "You will be logged out in {{expiryTime}}.",
     "expiryPromptCancel": "Logout",
     "expiryPromptConfirm": "Continue session"
+  },
+  "userManagement": {
+    "notSupported": "When using Keycloak, user management in Valtimo is not supported. Please use user management within Keycloak instead."
+  },
+  "searchFields": {
+    "noneConfigured": "No search fields have been configured for this document type.",
+    "expandButtonText": "Show search fields",
+    "collapseButtonText": "Hide",
+    "searchButtonText": "Search",
+    "clearButtonText": "Clear",
+    "downloadButtonText": "Download search field configuration",
+    "to": "to",
+    "text": "Text",
+    "number": "Number",
+    "date": "Date",
+    "datetime": "Date and time",
+    "boolean": "Yes / no",
+    "numberRange": "Number range",
+    "dateRange": "Date range",
+    "datetimeRange": "Date and time range",
+    "booleanPositive": "Yes",
+    "booleanNegative": "No"
+  },
+  "searchFieldsTooltips": {
+    "text": "A text field",
+    "number": "A number field",
+    "date": "A date field",
+    "datetime": "A date and time field",
+    "boolean": "A boolean field",
+    "numberRange": "A number range field",
+    "dateRange": "A date range field",
+    "datetimeRange": "A date and time range field"
+  },
+  "searchFieldsOverview": {
+    "title": "Title",
+    "key": "Key",
+    "edit": "Edit search field",
+    "path": "Path",
+    "dataType": "Data type",
+    "fieldType": "Field type",
+    "matchType": "Match",
+    "exact": "Exact",
+    "like": "Contains",
+    "single": "Single",
+    "multiple": "Multiple",
+    "range": "Range",
+    "submit": "Submit",
+    "delete": "Delete",
+    "addRow": "Add search field",
+    "searchFieldPlaceholder": "Select a type..."
+  },
+  "searchFieldsOverviewTooltips": {
+    "title": "The title is an optional field that appears as a label for the current search field. When the title is not set, the default value will be the search field key translation (if there is no translation available, the original key value will be displayed).",
+    "key": "A unique key by which the search field is identified. If the key is not unique, you will not be able to save the search field.",
+    "path": "A path which leads to the property you want to search on. For searching in the document's JSON schema, follow this example: 'doc:customer.firstName'. For searching in the document properties, follow these examples: 'case:createdBy', or 'case:sequence', or 'case:assigneeFullName'. Note: When there are special characters in a property, the property must be enclosed in quotes. For example: case:\"loan-accepted\".",
+    "dataType": "The data type decides what input is shown to the user. For example, for the data type 'Date', a date picker is shown.",
+    "fieldType": "The field type decides the values the user can input. For the option 'Single', the user can only input a single value. For the option 'Range', the user may input two values, and these values, and all the values in between, are searched for.",
+    "matchType": "The match type decides how values in the database are matched to the search values. For the match type 'Exact', the value '1' would only be matched to the value '1'. For the match type 'Contains', the value '1' would be matched to the value '1', '123', and all other values containing '1'."
   }
 }

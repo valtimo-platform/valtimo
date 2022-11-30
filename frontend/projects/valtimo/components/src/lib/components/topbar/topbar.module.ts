@@ -19,10 +19,11 @@ import {CommonModule} from '@angular/common';
 import {TopbarComponent} from './topbar.component';
 import {RouterModule} from '@angular/router';
 import {ParagraphModule} from '@valtimo/user-interface';
+import {IconModule, UIShellModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [TopbarComponent],
-  imports: [CommonModule, RouterModule, ParagraphModule],
+  imports: [CommonModule, RouterModule, ParagraphModule, UIShellModule, IconModule],
   exports: [TopbarComponent],
 })
 export class TopbarModule {}

@@ -14,30 +14,32 @@
   ~ limitations under the License.
   -->
 
-<nav class="navbar navbar-expand fixed-top be-top-header">
-  <div class="container-fluid">
-    <div class="be-navbar-header">
-      <a class="navbar-brand" [routerLink]="['/']"></a>
-    </div>
-    <div class="be-right-navbar">
-      <!-- important empty div: in order to made float-right element works on mobile  -->
-      <div></div>
-      <ul class="nav navbar-nav be-user-nav float-right be-icons-nav">
-        <ng-container *ngTemplateOutlet="userFullName"></ng-container>
-        <li class="nav-item dropdown special">
-          <a class="nav-link be-toggle-right-sidebar" href="#" role="button" aria-expanded="false">
-            <i class="mdi mdi-account-circle user-icon"></i>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
+<ibm-header [useRouter]="false" (mouseenter)="mouseEnter()" (mouseleave)="mouseLeave()">
+  <a *ngIf="logoBase64" class="logo-link" [routerLink]="['/']" [title]="applicationTitle">
+    <img [src]="logoBase64" class="logo-image" />
+  </a>
+  <ibm-hamburger
+    *ngIf="(largeScreen$ | async) === false"
+    [active]="sideBarExpanded$ | async"
+    (selected)="toggleSideBar()"
+  ></ibm-hamburger>
+  <ibm-header-global>
+    <ng-container *ngTemplateOutlet="userFullName"></ng-container>
+    <ibm-header-action
+      title="action"
+      [active]="panelExpanded$ | async"
+      (activeChange)="setPanelExpanded($event)"
+    >
+      <svg ibmIcon="user" size="20"></svg>
+    </ibm-header-action>
+  </ibm-header-global>
+</ibm-header>
 
 <ng-template #userFullName>
-  <li class="nav-item" *ngIf="showUserNameInTopBar">
-    <div class="user-full-name" *ngIf="{userFullName: userFullName$ | async} as obs">
-      <v-paragraph [loading]="!obs.userFullName">{{ obs.userFullName }}</v-paragraph>
-    </div>
-  </li>
+  <div
+    class="user-full-name"
+    *ngIf="showUserNameInTopBar && {userFullName: userFullName$ | async} as obs"
+  >
+    <v-paragraph [loading]="!obs.userFullName">{{ obs.userFullName }}</v-paragraph>
+  </div>
 </ng-template>

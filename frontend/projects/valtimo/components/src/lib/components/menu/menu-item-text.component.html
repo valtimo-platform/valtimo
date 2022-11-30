@@ -1,0 +1,6 @@
+<ng-container *ngIf="{titleTranslation: menuItem | menuItemTranslate | async} as obs">
+  <div class="menu-item-icon-container">
+    <i class="{{ menuItem.iconClass }}"></i>
+  </div>
+  {{ obs.titleTranslation }}
+</ng-container>

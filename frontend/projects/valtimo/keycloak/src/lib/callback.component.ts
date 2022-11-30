@@ -31,13 +31,27 @@ export class CallbackComponent {
   ) {
     logger.debug('callback');
     const savedRedirectTo = window.sessionStorage.getItem('redirectTo');
-    let redirectTo;
-    if (savedRedirectTo !== null) {
-      redirectTo = window.sessionStorage.getItem('redirectTo');
+    const savedRedirectToParams = window.sessionStorage.getItem('redirectToParams');
+    const parsedSavedRedirectToParams =
+      typeof savedRedirectToParams === 'string' &&
+      savedRedirectToParams.length > 2 &&
+      JSON.parse(savedRedirectToParams);
+    let redirectTo!: string;
+    let redirectToParams!: object;
+
+    if (savedRedirectTo) {
+      redirectTo = savedRedirectTo;
     } else {
       redirectTo = '/';
     }
+
+    if (savedRedirectToParams && parsedSavedRedirectToParams) {
+      redirectToParams = parsedSavedRedirectToParams;
+    }
+
     logger.debug('keycloak callback redirect =', redirectTo);
-    this.router.navigate([redirectTo]);
+    logger.debug('keycloak callback redirect params =', savedRedirectToParams);
+
+    this.router.navigate([redirectTo], {queryParams: redirectToParams || {}});
   }
 }

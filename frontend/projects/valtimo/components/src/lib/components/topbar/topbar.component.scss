@@ -29,3 +29,19 @@
   justify-content: center;
   margin-inline-end: var(--v-top-bar-user-name-spacing);
 }
+
+::ng-deep .cds--header__name {
+  display: none !important;
+}
+
+.logo-link {
+  height: 100%;
+  padding-left: 16px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.logo-image {
+  height: 100%;
+  object-fit: contain;
+}

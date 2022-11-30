@@ -25,7 +25,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {ValtimoModalService} from '../../services/valtimo-modal.service';
-import {Subscription} from 'rxjs';
+import {BehaviorSubject, Subscription} from 'rxjs';
 
 // eslint-disable-next-line no-var
 declare var $;
@@ -44,7 +44,11 @@ export class ModalComponent implements AfterViewInit, OnInit, OnDestroy {
 
   @ViewChild('scrollModal') scrollModal: ElementRef<HTMLDivElement>;
 
+  readonly modalShowing$ = new BehaviorSubject<boolean>(false);
+
   private scrollSubscription!: Subscription;
+
+  private observer!: MutationObserver;
 
   constructor(private readonly modalService: ValtimoModalService) {}
 
@@ -54,6 +58,7 @@ export class ModalComponent implements AfterViewInit, OnInit, OnDestroy {
 
   ngAfterViewInit() {
     $(`#${this.elementId}`).modal({show: false});
+    this.watchForClassChanges();
   }
 
   show() {
@@ -65,7 +70,8 @@ export class ModalComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.scrollSubscription.unsubscribe();
+    this.scrollSubscription?.unsubscribe();
+    this.observer?.disconnect();
   }
 
   private openScrollSubscription(): void {
@@ -74,5 +80,18 @@ export class ModalComponent implements AfterViewInit, OnInit, OnDestroy {
 
       if (element) element.scrollTo(0, 0);
     });
+  }
+
+  private watchForClassChanges(): void {
+    this.observer = new MutationObserver(mutations => {
+      mutations?.forEach(mutation => {
+        if (mutation?.attributeName === 'class') {
+          const modalShowing = (mutation?.target as any)?.classList?.contains('show');
+          this.modalShowing$.next(modalShowing);
+        }
+      });
+    });
+    const config = {attributes: true, childList: false, characterData: false};
+    this.observer.observe(this.scrollModal.nativeElement, config);
   }
 }

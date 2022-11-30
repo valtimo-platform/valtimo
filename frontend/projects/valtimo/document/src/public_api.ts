@@ -22,3 +22,4 @@ export * from './lib/models';
 export * from './lib/document.service';
 export * from './lib/document.module';
 export * from './lib/document-search-request';
+export * from './lib/advanced-document-search-request';

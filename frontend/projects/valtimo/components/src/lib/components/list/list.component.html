@@ -84,7 +84,7 @@
         <tbody>
           <tr
             [ngClass]="{'click-able': this.rowClicked.observers.length > 0}"
-            *ngFor="let item of items | listFilter: searchModel"
+            *ngFor="let item of items | listFilter : searchModel; let i = index"
             (click)="onClickRow(item)"
           >
             <td class="align-top" *ngFor="let listItemField of item.listItemFields">
@@ -103,12 +103,17 @@
                 class="action-icon"
                 style="cursor: pointer"
                 [ngClass]="action.iconClass"
-                (click)="action.callback(item)"
+                (click)="action.callback(item, $event)"
               ></i>
+            </td>
+            <td *ngIf="lastColumnTemplate">
+              <ng-container
+                *ngTemplateOutlet="lastColumnTemplate; context: {index: i, length: items.length}"
+              ></ng-container>
             </td>
           </tr>
           <tr>
-            <td *ngIf="(items | listFilter: searchModel).length === 0" [colSpan]="fields.length">
+            <td *ngIf="(items | listFilter : searchModel).length === 0" [colSpan]="fields.length">
               {{ 'list.noMatchingItems' | translate }}<i>"{{ searchModel }}"</i>
             </td>
           </tr>
@@ -120,7 +125,7 @@
       <div class="row p-2">
         <div
           class="col-12 col-sm-6 col-xl-4 p-2"
-          *ngFor="let item of items | listFilter: searchModel"
+          *ngFor="let item of items | listFilter : searchModel"
           (click)="onClickRow(item)"
         >
           <div class="click-able tile-holder p-4">
@@ -130,7 +135,7 @@
             </dl>
           </div>
         </div>
-        <div class="col-12" *ngIf="(items | listFilter: searchModel).length === 0">
+        <div class="col-12" *ngIf="(items | listFilter : searchModel).length === 0">
           {{ 'list.noMatchingItems' | translate }}<i>"{{ searchModel }}"</i>
         </div>
       </div>
@@ -143,16 +148,16 @@
   >
     <div class="float-left page-count col-4">
       <strong>{{
-        'list.currentPage' | translate: {current: pagination.page, total: getTotalPageCount()}
+        'list.currentPage' | translate : {current: pagination.page, total: getTotalPageCount()}
       }}</strong>
       <br />
       {{
         pagination.collectionSize === 1
-          ? ('list.showingResult' | translate: {number: (items | listFilter: searchModel).length})
+          ? ('list.showingResult' | translate : {number: (items | listFilter : searchModel).length})
           : ('list.showingResults'
             | translate
               : {
-                  number: (items | listFilter: searchModel).length,
+                  number: (items | listFilter : searchModel).length,
                   total: pagination.collectionSize
                 })
       }}
@@ -204,7 +209,7 @@
     </a>
     <div class="dropdown-menu" aria-labelledby="dropdownMenu">
       <a
-        (click)="action.callback(item)"
+        (click)="action.callback(item, $event)"
         class="dropdown-item p-2"
         *ngFor="let action of listItemField.value"
       >

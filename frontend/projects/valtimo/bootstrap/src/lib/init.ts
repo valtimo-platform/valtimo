@@ -63,6 +63,6 @@ export function initializerFactory(
   });
 
   initializersArray.push(menuInitializer(injector, logger));
-  initializersArray.push(accountInitializer(translateService, logger));
+  initializersArray.push(accountInitializer(translateService, logger, configService));
   return initializersArray;
 }

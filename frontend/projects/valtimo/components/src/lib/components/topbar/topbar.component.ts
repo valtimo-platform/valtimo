@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-import {Component, OnInit} from '@angular/core';
+import {Component, HostBinding, OnInit} from '@angular/core';
 import {KeycloakService} from 'keycloak-angular';
-import {from, switchMap, map} from 'rxjs';
+import {from, map, switchMap} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
+import {IconService} from 'carbon-components-angular';
+import User20 from '@carbon/icons/es/user/20';
+import {ShellService} from '../../services/shell.service';
+import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 
 @Component({
   selector: 'valtimo-topbar',
@@ -25,19 +29,63 @@ import {ConfigService} from '@valtimo/config';
   styleUrls: ['./topbar.component.scss'],
 })
 export class TopbarComponent implements OnInit {
+  @HostBinding('class.cds--header') headerClass = true;
+
   showUserNameInTopBar!: boolean;
+
+  logoBase64!: SafeResourceUrl;
 
   readonly userFullName$ = from(this.keyCloakService.isLoggedIn()).pipe(
     switchMap(() => this.keyCloakService.loadUserProfile()),
     map(profile => `${profile.firstName} ${profile.lastName}`)
   );
 
+  readonly applicationTitle = this.configService.config.applicationTitle;
+  readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
+  readonly largeScreen$ = this.shellService.largeScreen$;
+  readonly panelExpanded$ = this.shellService.panelExpanded$;
+
   constructor(
     private readonly keyCloakService: KeycloakService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly iconService: IconService,
+    private readonly shellService: ShellService,
+    private readonly sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
+    this.iconService.registerAll([User20]);
     this.showUserNameInTopBar = this.configService.config.featureToggles?.showUserNameInTopBar;
+    this.setLogo();
+  }
+
+  toggleSideBar(): void {
+    this.shellService.toggleSideBar();
+  }
+
+  setPanelExpanded(expanded: boolean): void {
+    this.shellService.setPanelExpanded(expanded);
+  }
+
+  mouseEnter(): void {
+    this.shellService.setMouseOnTopBar(true);
+  }
+
+  mouseLeave(): void {
+    this.shellService.setMouseOnTopBar(false);
+  }
+
+  private setLogo(): void {
+    const config = this.configService.config;
+
+    if (config.logoSvgBase64) {
+      this.logoBase64 = this.sanitizer.bypassSecurityTrustResourceUrl(
+        `data:image/svg+xml;base64, ${config.logoSvgBase64}`
+      );
+    } else if (config.logoPngBase64) {
+      this.logoBase64 = this.sanitizer.bypassSecurityTrustResourceUrl(
+        `data:image/png;base64, ${config.logoPngBase64}`
+      );
+    }
   }
 }

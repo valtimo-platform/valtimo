@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-.be-scroller-settings {
-  padding-bottom: 150px !important;
+.container-fluid {
+  color: #959595;
 }
-.version-holder {
-  position: fixed;
-  bottom: 0;
-  width: 259px;
-  background-color: #f8f9fa;
+
+valtimo-searchable-dropdown-select {
+  font-size: 13px;
 }
-.info-text {
-  line-height: 1em !important;
-  padding-right: 70px;
-  margin-bottom: 15px;
+
+:host::ng-deep #dossier-candidates-dropdown h5 {
+  margin-block: 0;
 }

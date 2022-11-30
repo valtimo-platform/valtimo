@@ -102,3 +102,44 @@
 .d-4-flipped {
   d: path('M15.58 15.61L16.99 17 22 12l-5.01-5-1.41 1.39L19.14 12l-3.56 3.61');
 }
+
+::ng-deep .cds--side-nav__menu {
+  padding-left: 0;
+}
+
+::ng-deep .cds--side-nav__navigation {
+  border-right: 1px solid #e0e0e0;
+  height: 100%;
+}
+
+::ng-deep .cds--side-nav--ux {
+  width: 0;
+}
+
+::ng-deep .cds--side-nav--expanded {
+  width: 16rem;
+}
+
+::ng-deep .cds--side-nav__header-divider {
+  display: none !important;
+}
+
+.menu-item-icon-container {
+  position: relative;
+  top: 8px;
+  left: 17px;
+  height: 0;
+
+  i {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.menu-item--hidden {
+  display: none;
+}
+
+.menu-item--visible {
+  display: block;
+}

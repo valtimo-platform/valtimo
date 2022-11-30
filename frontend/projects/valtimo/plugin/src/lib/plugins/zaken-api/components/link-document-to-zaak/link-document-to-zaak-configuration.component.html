@@ -15,7 +15,7 @@
   -->
 
 <v-paragraph [margin]="true" [italic]="true">
-  {{ 'linkDocumentInformation' | pluginTranslate: pluginId | async }}
+  {{ 'linkDocumentInformation' | pluginTranslate : pluginId | async }}
 </v-paragraph>
 <v-form
   (valueChange)="formValueChange($event)"
@@ -26,34 +26,34 @@
 >
   <v-input
     name="documentUrl"
-    [title]="'documentUrl' | pluginTranslate: pluginId | async"
+    [title]="'documentUrl' | pluginTranslate : pluginId | async"
     [margin]="true"
     [defaultValue]="obs.prefill?.documentUrl"
     [disabled]="obs.disabled"
     [required]="true"
-    [tooltip]="'documentUrlTooltip' | pluginTranslate: pluginId | async"
+    [tooltip]="'documentUrlTooltip' | pluginTranslate : pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
   <v-input
     name="titel"
-    [title]="'titel' | pluginTranslate: pluginId | async"
+    [title]="'titel' | pluginTranslate : pluginId | async"
     [margin]="true"
     [defaultValue]="obs.prefill?.titel"
     [disabled]="obs.disabled"
     [required]="false"
-    [tooltip]="'titelTooltip' | pluginTranslate: pluginId | async"
+    [tooltip]="'titelTooltip' | pluginTranslate : pluginId | async"
     [widthPx]="350"
   >
   </v-input>
   <v-input
     name="beschrijving"
-    [title]="'beschrijving' | pluginTranslate: pluginId | async"
+    [title]="'beschrijving' | pluginTranslate : pluginId | async"
     [margin]="true"
     [defaultValue]="obs.prefill?.beschrijving"
     [disabled]="obs.disabled"
     [required]="false"
-    [tooltip]="'beschrijvingTooltip' | pluginTranslate: pluginId | async"
+    [tooltip]="'beschrijvingTooltip' | pluginTranslate : pluginId | async"
     [fullWidth]="true"
   >
   </v-input>

@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-.c-default {
-  cursor: default;
+.row {
+  margin: 0;
 }
 
-.sub-item {
-  cursor: pointer;
+.dossier-schema {
+  resize: none;
 }
 
-.menu-item--hidden {
-  display: none;
-}
-
-.menu-item--visible {
-  display: block;
+valtimo-widget::ng-deep .card-border.card-full-default {
+  border: none;
 }

@@ -18,6 +18,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {
+  AssignHandlerToDocumentResult,
   AuditRecord,
   Document,
   DocumentDefinition,
@@ -41,7 +42,15 @@ import {
   UploadProcessLink,
 } from './models';
 import {DocumentSearchRequest} from './document-search-request';
-import {ConfigService} from '@valtimo/config';
+import {
+  ConfigService,
+  SearchField,
+  SearchFilter,
+  SearchFilterRange,
+  SearchOperator,
+  User,
+} from '@valtimo/config';
+import {AdvancedDocumentSearchRequest} from './advanced-document-search-request';
 
 @Injectable({
   providedIn: 'root',
@@ -75,7 +84,63 @@ export class DocumentService {
     return this.http.post<Documents>(
       `${this.valtimoEndpointUri}v1/document-search`,
       documentSearchRequest.asHttpBody(),
+      {
+        params: documentSearchRequest.asHttpParams(),
+      }
+    );
+  }
+
+  getDocumentsSearch(
+    documentSearchRequest: AdvancedDocumentSearchRequest,
+    searchOperator?: SearchOperator,
+    otherFilters?: Array<SearchFilter | SearchFilterRange>
+  ): Observable<Documents> {
+    const body = documentSearchRequest.asHttpBody();
+
+    if (searchOperator) {
+      body.searchOperator = searchOperator;
+    }
+
+    if (otherFilters) {
+      body.otherFilters = otherFilters;
+    }
+
+    return this.http.post<Documents>(
+      `${this.valtimoEndpointUri}v1/document-definition/${documentSearchRequest.definitionName}/search`,
+      body,
       {params: documentSearchRequest.asHttpParams()}
+    );
+  }
+
+  getDocumentSearchFields(documentDefinitionName: string): Observable<Array<SearchField>> {
+    return this.http.get<Array<SearchField>>(
+      `${this.valtimoEndpointUri}v1/document-search/${documentDefinitionName}/fields`
+    );
+  }
+
+  putDocumentSearch(documentDefinitionName: string, request: Array<SearchField>): Observable<void> {
+    return this.http.put<void>(
+      `${this.valtimoEndpointUri}v1/document-search/${documentDefinitionName}/fields`,
+      [...request]
+    );
+  }
+
+  postDocumentSearch(documentDefinitionName: string, request: SearchField): Observable<void> {
+    return this.http.post<void>(
+      `${this.valtimoEndpointUri}v1/document-search/${documentDefinitionName}/fields`,
+      {...request}
+    );
+  }
+
+  deleteDocumentSearch(documentDefinitionName: string, key: string): Observable<any> {
+    const options = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+      }),
+    };
+    return this.http.delete(
+      `${this.valtimoEndpointUri}v1/document-search/${documentDefinitionName}/fields?key=${key}`,
+      options
     );
   }
 
@@ -256,6 +321,26 @@ export class DocumentService {
   ): Observable<ProcessDocumentDefinition> {
     return this.http.get<ProcessDocumentDefinition>(
       `${this.valtimoEndpointUri}v1/process-document/definition/processinstance/${processInstanceId}`
+    );
+  }
+
+  assignHandlerToDocument(
+    documentId: string,
+    assigneeId: string
+  ): Observable<AssignHandlerToDocumentResult> {
+    return this.http.post<AssignHandlerToDocumentResult>(
+      `${this.valtimoEndpointUri}v1/document/${documentId}/assign`,
+      {assigneeId}
+    );
+  }
+
+  unassignHandlerFromDocument(documentId: string): Observable<void> {
+    return this.http.post<void>(`${this.valtimoEndpointUri}v1/document/${documentId}/unassign`, {});
+  }
+
+  getCandidateUsers(documentId: string): Observable<Array<User>> {
+    return this.http.get<Array<User>>(
+      `${this.valtimoEndpointUri}v1/document/${documentId}/candidate-user`
     );
   }
 }

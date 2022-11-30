@@ -16,6 +16,7 @@
 
 import {NgxLoggerLevel} from 'ngx-logger';
 import {
+  Language,
   ROLE_ADMIN,
   ROLE_DEVELOPER,
   ROLE_USER,
@@ -24,6 +25,7 @@ import {
 } from '@valtimo/config';
 import {authenticationKeycloak} from './auth/keycloak-config.prod';
 import {openZaakExtensionInitializer} from '@valtimo/open-zaak';
+import {LOGO_BASE_64} from './logo';
 
 const defaultDefinitionColumns = [
   {
@@ -52,6 +54,8 @@ const defaultDefinitionColumns = [
 ];
 
 export const environment: ValtimoConfig = {
+  logoSvgBase64: LOGO_BASE_64,
+  applicationTitle: 'Valtimo',
   production: true,
   initializers: [openZaakExtensionInitializer],
   authentication: authenticationKeycloak,
@@ -119,6 +123,7 @@ export const environment: ValtimoConfig = {
     ],
   },
   whitelistedDomains: [],
+  langKey: Language.NL,
   swagger: {
     endpointUri: '/v3/api-docs',
   },

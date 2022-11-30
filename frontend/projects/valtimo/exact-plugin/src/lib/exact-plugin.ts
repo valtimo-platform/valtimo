@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-.dossier-header {
-  height: 80px;
-  padding-top: 21px;
-  padding-left: 18px;
-  padding-right: 18px;
-  border-bottom: 1px solid #dee2e6;
+import {PluginConfigurationData} from '@valtimo/plugin';
+
+interface ExactPluginConfig extends PluginConfigurationData {
+  clientId: string;
+  clientSecret: string;
+  accessToken: string;
+  accessTokenExpiresOn: Date;
+  refreshToken: string;
+  refreshTokenExpiresOn: Date;
 }
 
-.dossier-title {
-  margin-top: 0;
-  margin-bottom: 7px;
-}
-
-.row {
-  margin: 0;
-}
-
-.dossier-schema {
-  resize: none;
-}
+export {ExactPluginConfig};

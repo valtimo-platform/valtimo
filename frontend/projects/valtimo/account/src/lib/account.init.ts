@@ -16,20 +16,22 @@
 
 import {NGXLogger} from 'ngx-logger';
 import {TranslateService} from '@ngx-translate/core';
+import {ConfigService, Language} from '@valtimo/config';
 
 export function accountInitializer(
   translate: TranslateService,
-  logger: NGXLogger
+  logger: NGXLogger,
+  configService: ConfigService
 ): () => Promise<any> {
   return (): Promise<any> =>
     new Promise<void>((resolve, reject) => {
       try {
         logger.debug('Account initializer');
-        translate.addLangs(['en', 'nl', 'de']);
+        translate.addLangs([Language.EN, Language.NL, Language.DE]);
         let langKey = localStorage.getItem('langKey');
         if (langKey === null) {
-          langKey = 'nl';
-          localStorage.setItem('langKey', 'nl');
+          langKey = configService?.config?.langKey || Language.NL;
+          localStorage.setItem('langKey', langKey);
         }
         logger.debug('Using langKey', langKey);
         translate.use(langKey);

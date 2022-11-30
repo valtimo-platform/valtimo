@@ -1,6 +1,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "resolveJsonModule": true,
     "skipLibCheck": true,
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
@@ -48,6 +49,10 @@
       "@valtimo/choice-field/*": ["dist/valtimo/choice-field/*"],
       "@valtimo/contact-moment": ["dist/valtimo/contact-moment"],
       "@valtimo/contact-moment/*": ["dist/valtimo/contact-moment/*"],
+      "@valtimo/exact-plugin": [
+        "dist/valtimo/exact-plugin/valtimo-exact-plugin",
+        "dist/valtimo/exact-plugin"
+      ],
       "@valtimo/form": ["dist/valtimo/form"],
       "@valtimo/form/*": ["dist/valtimo/form/*"],
       "@valtimo/management": ["dist/valtimo/management"],
@@ -86,7 +91,9 @@
       "@valtimo/plugin-management": ["dist/valtimo/plugin-management"],
       "@valtimo/plugin-management/*": ["dist/valtimo/plugin-management/*"],
       "@valtimo/plugin": ["dist/valtimo/plugin"],
-      "@valtimo/plugin/*": ["dist/valtimo/plugin/*"]
+      "@valtimo/plugin/*": ["dist/valtimo/plugin/*"],
+      "@valtimo/exact-plugin": ["dist/valtimo/exact-plugin"],
+      "@valtimo/exact-plugin/*": ["dist/valtimo/exact-plugin/*"]
     }
   },
   "files": [],
@@ -315,6 +322,12 @@
     },
     {
       "path": "./projects/valtimo/plugin/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/exact-plugin/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/exact-plugin/tsconfig.spec.json"
     }
   ]
 }

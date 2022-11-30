@@ -1,0 +1,96 @@
+/*!
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+html {
+  overflow-y: scroll !important;
+}
+
+body {
+  height: unset !important;
+  min-height: unset !important;
+}
+
+.page-head {
+  padding-top: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.main-content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  font-size: 13px !important;
+}
+
+.main-content > .container-fluid {
+  margin-left: -15px !important;
+  margin-right: -15px !important;
+  width: calc(100% + 30px) !important;
+}
+
+.page-head-title {
+  margin-top: 0 !important;
+}
+
+.list-header-title {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.list-header-description {
+  margin-top: 5px;
+  margin-bottom: 10px;
+  font-size: 0.8rem;
+}
+
+.btn {
+  font-size: 0.8rem;
+}
+
+.badge {
+  font-size: 0.7rem;
+}
+
+.dossier-title,
+.process-title,
+.formbuilder-title {
+  font-size: 1.3rem;
+}
+
+form.dropzone .icon span {
+  font-size: 3rem;
+  height: 100% !important;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  z-index: 10050;
+}
+
+.modal-backdrop {
+  z-index: 10040;
+}
+
+h4 {
+  font-size: 17px;
+}
+
+h5 {
+  font-size: 14px;
+}

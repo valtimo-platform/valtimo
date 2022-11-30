@@ -31,8 +31,8 @@ import {Formio, FormioComponent as FormIoSourceComponent, FormioForm} from '@for
 import {FormioRefreshValue} from '@formio/angular/formio.common';
 import jwt_decode from 'jwt-decode';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, from, Subject, Subscription, timer} from 'rxjs';
-import {switchMap, take} from 'rxjs/operators';
+import {from, Subject, Subscription, timer} from 'rxjs';
+import {map, switchMap, take} from 'rxjs/operators';
 import {FormIoStateService} from './services/form-io-state.service';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
@@ -58,8 +58,9 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   private tokenRefreshTimerSubscription: Subscription;
   private formRefreshSubscription: Subscription;
 
-  readonly currentLanguage$ = new BehaviorSubject<string>(this.translateService.currentLang);
-  private languageSubscription!: Subscription;
+  readonly currentLanguage$ = this.translateService
+    .stream('key')
+    .pipe(map(() => this.translateService.currentLang));
 
   constructor(
     private userProviderService: UserProviderService,
@@ -87,7 +88,6 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     this.subscribeFormRefresh();
-    this.openLanguageSubscription();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -106,7 +106,6 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     this.unsubscribeFormRefresh();
 
     this.tokenRefreshTimerSubscription?.unsubscribe();
-    this.languageSubscription?.unsubscribe();
   }
 
   reloadForm() {
@@ -196,11 +195,5 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     if (this.formRefreshSubscription) {
       this.formRefreshSubscription.unsubscribe();
     }
-  }
-
-  private openLanguageSubscription(): void {
-    this.languageSubscription = this.translateService.stream('key').subscribe(() => {
-      this.currentLanguage$.next(this.translateService.currentLang);
-    });
   }
 }

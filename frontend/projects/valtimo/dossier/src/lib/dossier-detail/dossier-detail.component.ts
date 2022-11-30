@@ -30,7 +30,21 @@ import {TabService} from '../tab.service';
 import {ProcessService} from '@valtimo/process';
 import {DossierSupportingProcessStartModalComponent} from '../dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
 import {ConfigService} from '@valtimo/config';
-import * as moment from 'moment';
+import moment from 'moment';
+import {
+  BehaviorSubject,
+  combineLatest,
+  from,
+  map,
+  Observable,
+  of,
+  startWith,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
+import {KeycloakService} from 'keycloak-angular';
+import {NGXLogger} from 'ngx-logger';
 
 @Component({
   selector: 'valtimo-dossier-detail',
@@ -54,16 +68,62 @@ export class DossierDetailComponent implements OnInit {
   @ViewChild('supportingProcessStartModal')
   supportingProcessStart: DossierSupportingProcessStartModalComponent;
 
+  readonly refreshDocument$ = new BehaviorSubject<null>(null);
+
+  readonly assigneeId$ = new BehaviorSubject<string>('');
+
+  readonly document$: Observable<Document | null> = this.refreshDocument$.pipe(
+    switchMap(() => this.route.params),
+    map(params => params?.documentId),
+    switchMap(documentId =>
+      documentId ? this.documentService.getDocument(this.documentId) : of(null)
+    ),
+    tap(document => {
+      if (document) {
+        this.assigneeId$.next(document.assigneeId);
+        this.document = document;
+
+        if (
+          this.configService.config.customDossierHeader?.hasOwnProperty(
+            this.documentDefinitionName.toLowerCase()
+          ) &&
+          this.customDossierHeaderItems.length === 0
+        ) {
+          this.configService.config.customDossierHeader[
+            this.documentDefinitionName.toLowerCase()
+          ]?.forEach(item => this.getCustomDossierHeaderItem(item));
+        }
+      }
+    })
+  );
+
+  readonly userId$: Observable<string> = from(this.keyCloakService.isLoggedIn()).pipe(
+    switchMap(() => this.keyCloakService.loadUserProfile()),
+    map(profile => profile?.id)
+  );
+
+  readonly isAssigning$ = new BehaviorSubject<boolean>(false);
+
+  readonly isAssignedToCurrentUser$: Observable<boolean> = combineLatest([
+    this.assigneeId$,
+    this.userId$,
+  ]).pipe(
+    map(([assigneeId, userId]) => assigneeId && userId && assigneeId === userId),
+    startWith(true)
+  );
+
   constructor(
-    private componentFactoryResolver: ComponentFactoryResolver,
-    private translateService: TranslateService,
-    private documentService: DocumentService,
-    private processService: ProcessService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private location: Location,
-    private tabService: TabService,
-    private configService: ConfigService
+    private readonly componentFactoryResolver: ComponentFactoryResolver,
+    private readonly translateService: TranslateService,
+    private readonly documentService: DocumentService,
+    private readonly processService: ProcessService,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly location: Location,
+    private readonly tabService: TabService,
+    private readonly configService: ConfigService,
+    private readonly keyCloakService: KeycloakService,
+    private readonly logger: NGXLogger
   ) {
     this.snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this.snapshot.get('documentDefinitionName') || '';
@@ -71,7 +131,7 @@ export class DossierDetailComponent implements OnInit {
     this.tabService.getConfigurableTabs(this.documentDefinitionName);
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.tabLoader = new TabLoaderImpl(
       this.tabService.getTabs(),
       this.componentFactoryResolver,
@@ -85,13 +145,12 @@ export class DossierDetailComponent implements OnInit {
       .subscribe(definition => {
         this.documentDefinitionNameTitle = definition.schema.title;
       });
-    this.getCustomDossierHeader();
     this.initialTabName = this.snapshot.get('tab');
     this.tabLoader.initial(this.initialTabName);
     this.getAllAssociatedProcessDefinitions();
   }
 
-  public getAllAssociatedProcessDefinitions() {
+  public getAllAssociatedProcessDefinitions(): void {
     this.documentService
       .findProcessDocumentDefinitions(this.documentDefinitionName)
       .subscribe(processDocumentDefinitions => {
@@ -107,31 +166,41 @@ export class DossierDetailComponent implements OnInit {
       });
   }
 
-  startProcess(processDocumentDefinition: ProcessDocumentDefinition) {
+  startProcess(processDocumentDefinition: ProcessDocumentDefinition): void {
     this.supportingProcessStart.openModal(processDocumentDefinition, this.documentId);
   }
 
-  private getCustomDossierHeader() {
-    if (
-      this.configService.config.customDossierHeader?.hasOwnProperty(
-        this.documentDefinitionName.toLowerCase()
+  claimAssignee(): void {
+    this.isAssigning$.next(true);
+
+    this.userId$
+      .pipe(
+        take(1),
+        switchMap(userId => this.documentService.assignHandlerToDocument(this.documentId, userId))
       )
-    ) {
-      this.documentService.getDocument(this.documentId).subscribe(document => {
-        this.document = document;
-        this.configService.config.customDossierHeader[
-          this.documentDefinitionName.toLowerCase()
-        ]?.forEach(item => this.getCustomDossierHeaderItem(item));
-      });
-    }
+      .subscribe(
+        (): void => {
+          this.isAssigning$.next(false);
+          this.refreshDocument$.next(null);
+        },
+        (): void => {
+          this.isAssigning$.next(false);
+          this.logger.debug('Something went wrong while assigning user to case');
+        }
+      );
   }
 
-  private getCustomDossierHeaderItem(item) {
+  assignmentOfDocumentChanged(): void {
+    this.refreshDocument$.next(null);
+  }
+
+  private getCustomDossierHeaderItem(item): void {
     this.customDossierHeaderItems.push({
       label: item['labelTranslationKey'] || '',
       columnSize: item['columnSize'] || 3,
       textSize: item['textSize'] || 'md',
       customClass: item['customClass'] || '',
+      modifier: item['modifier'] || '',
       value: item['propertyPaths']?.reduce(
         (prev, curr) => prev + this.getStringFromDocumentPath(item, curr),
         ''
@@ -139,12 +208,24 @@ export class DossierDetailComponent implements OnInit {
     });
   }
 
-  private getStringFromDocumentPath(item, path) {
+  private getStringFromDocumentPath(item, path): string {
     const prefix = item['propertyPaths'].indexOf(path) > 0 ? ' ' : '';
-    const string =
+    let string =
       path.split('.').reduce((o, i) => o[i], this.document.content) || item['noValueText'] || '';
-    const regex = new RegExp('(T\\d\\d:\\d\\d:\\d\\d[+-])');
-    const formattedString = regex.test(string) ? moment(string).format('DD-MM-YYYY') : string;
-    return prefix + formattedString;
+    const dateFormats = [moment.ISO_8601, 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD'];
+    switch (item['modifier']) {
+      case 'age': {
+        if (moment(string, dateFormats, true).isValid()) {
+          string = moment().diff(string, 'years');
+        }
+        break;
+      }
+      default: {
+        if (moment(string, dateFormats, true).isValid()) {
+          string = moment(string).format('DD-MM-YYYY');
+        }
+      }
+    }
+    return prefix + string;
   }
 }

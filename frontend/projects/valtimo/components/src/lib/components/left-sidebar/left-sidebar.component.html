@@ -13,58 +13,65 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<ng-container *ngIf="{isResizing: isResizing$ | async} as obs">
-  <div
-    class="be-left-sidebar"
-    [style.width.px]="menuIsOpen ? (menuWidth$ | async) : null"
-    [ngClass]="{'no-transition': obs.isResizing}"
+
+<ibm-sidenav
+  *ngIf="{
+    sideBarExpanded: sideBarExpanded$ | async,
+    closestSequence: closestSequence$ | async
+  } as obs"
+  [allowExpansion]="false"
+  [expanded]="obs.sideBarExpanded"
+>
+  <ng-container *ngFor="let menuItem of menuItems$ | async">
+    <ng-container *ngIf="!menuItem.children">
+      <ng-container
+        *ngTemplateOutlet="
+          topMenuItem;
+          context: {menuItem: menuItem, closestSequence: obs.closestSequence}
+        "
+      ></ng-container>
+    </ng-container>
+    <ng-container *ngIf="menuItem.children">
+      <ng-container
+        *ngTemplateOutlet="
+          topMenuItem;
+          context: {menuItem: menuItem, closestSequence: obs.closestSequence}
+        "
+      ></ng-container>
+      <ng-container *ngTemplateOutlet="subMenuIcon; context: {menuItem: menuItem}"></ng-container>
+      <ibm-sidenav-menu [title]="menuItem | menuItemTranslate | async">
+        <ng-container *ngFor="let childMenuItem of menuItem.children">
+          <ibm-sidenav-item
+            href="javascript:void(0)"
+            *ngIf="childMenuItem.link"
+            (click)="navigateToRoute(childMenuItem.link, $event)"
+            [active]="'' + menuItem.sequence + childMenuItem.sequence === obs.closestSequence"
+          >
+            <valtimo-menu-item-text [menuItem]="childMenuItem"></valtimo-menu-item-text>
+          </ibm-sidenav-item>
+        </ng-container>
+      </ibm-sidenav-menu>
+    </ng-container>
+  </ng-container>
+</ibm-sidenav>
+
+<ng-template #subMenuIcon let-menuItem="menuItem">
+  <div class="menu-item-icon-container"><i class="{{ menuItem.iconClass }}"></i></div>
+</ng-template>
+
+<ng-template #topMenuItem let-menuItem="menuItem" let-closestSequence="closestSequence">
+  <ibm-sidenav-item
+    href="javascript:void(0)"
+    (click)="navigateToRoute(menuItem.link, $event)"
+    *ngIf="!menuItem.children"
+    [active]="'' + menuItem.sequence === closestSequence"
+    [ngClass]="{
+      'menu-item--hidden': menuItem.includeFunction !== undefined,
+      'menu-item--visible':
+        menuItem.includeFunction !== undefined &&
+        (includeFunctionObservables[menuItem.title] | async)
+    }"
   >
-    <div class="left-sidebar-wrapper">
-      <a class="left-sidebar-toggle" href="javascript:void(0);"
-        ><valtimo-page-title></valtimo-page-title
-      ></a>
-      <div class="progress-widget" style="padding: 20px 0">
-        <ul class="sidebar-elements">
-          <li>
-            <a
-              #toggleButton
-              class="be-toggle-left-sidebar"
-              href="javascript:void(0);"
-              [title]="menuTooltipText$ | async"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-                width="1em"
-                height="1em"
-                style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg)"
-                viewBox="0 0 24 24"
-                transform="rotate(360)"
-              >
-                <path [ngClass]="menuIsOpen ? 'd-1' : 'd-1-flipped'" />
-                <path [ngClass]="menuIsOpen ? 'd-2' : 'd-2-flipped'" />
-                <path [ngClass]="menuIsOpen ? 'd-3' : 'd-3-flipped'" />
-                <path [ngClass]="menuIsOpen ? 'd-4' : 'd-4-flipped'" />
-              </svg>
-              <span>{{ toggleMenuText$ | async }}</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-      <div class="left-sidebar-spacer">
-        <div class="left-sidebar-scroll">
-          <div class="left-sidebar-content">
-            <valtimo-menu></valtimo-menu>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div
-      class="resize-border"
-      (mouseenter)="enterBorder()"
-      (mouseleave)="leaveBorder()"
-      (mousedown)="resizeBorderClick($event)"
-      [ngClass]="{'resize-hover': (mouseIsOnResizeBorder$ | async) || obs.isResizing}"
-    ></div>
-  </div>
-</ng-container>
+    <valtimo-menu-item-text [menuItem]="menuItem"></valtimo-menu-item-text>
+  </ibm-sidenav-item>
+</ng-template>

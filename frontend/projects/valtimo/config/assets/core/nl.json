@@ -9,7 +9,9 @@
     "DossierDocumentGeneratedEvent": "Dossier document gegenereerd",
     "DocumentRelatedFileAddedEvent": "Gerelateerd bestand toegevoegd",
     "DocumentRelatedFileRemovedEvent": "Gerelateerd bestand verwijderd",
-    "BesluitAddedEvent": "Besluit toegevoegd > {{identificatie}}"
+    "BesluitAddedEvent": "Besluit toegevoegd > {{identificatie}}",
+    "DocumentAssigneeChangedEvent": "De behandelaar is gewijzigd naar {{assigneeName}}",
+    "DocumentUnassignedEvent": "De behandelaar is van het dossier afgehaald"
   },
   "dossier": {
     "title": {
@@ -67,6 +69,7 @@
       }
     },
     "startSubProcess": "Start",
+    "claimAssigneeCase": "Claimen",
     "deleteConfirmation": {
       "title": "Bestand verwijderen",
       "description": "Weet u zeker dat u dit bestand wilt verwijderen?",
@@ -185,6 +188,8 @@
   },
   "account": {
     "title": "Account",
+    "informationTitle": "Gegevens",
+    "quickLinks": "Snelkoppelingen",
     "links": {
       "profile": "Profiel",
       "password": "Wachtwoord",
@@ -214,7 +219,7 @@
       },
       "taskNotifications": "Taakmeldingen",
       "taskNotificationsIntro": "Ontvang een e-mail wanneer een taak aan jou is toegewezen",
-      "emailNotifications": "Dagelijks taak overzicht",
+      "emailNotifications": "Dagelijks taakoverzicht",
       "emailNotificationsIntro": "Persoonlijke overzicht van je open taken",
       "emailNotificationOnMonday": "Maandag",
       "emailNotificationOnTuesday": "Dinsdag",
@@ -225,7 +230,7 @@
       "emailNotificationOnSunday": "Zondag"
     },
     "version": {
-      "title": "Versie informatie"
+      "title": "Versie-informatie"
     }
   },
   "decisions": {
@@ -277,6 +282,10 @@
     "linkProcess": {
       "title": "Uploadproces koppelen aan dossier",
       "description": "Kies welk proces het uploaden van bestanden moet afhandelen."
+    },
+    "tabs": {
+      "cases": "Zaak Details",
+      "searchFields": "Zoekvelden"
     }
   },
   "serviceTaskManagement": {
@@ -458,7 +467,16 @@
     "next": "Volgende >",
     "previous": "< Vorige",
     "addRow": "Rij toevoegen",
-    "deleteRow": "Rij verwijderen"
+    "deleteRow": "Rij verwijderen",
+    "on": "Aan",
+    "off": "Uit",
+    "builds": {
+      "valtimo-backend-libraries": "Valtimo back-end",
+      "valtimo-frontend-libraries": "Valtimo front-end"
+    },
+    "email": "E-mail",
+    "username": "Gebruikersnaam",
+    "name": "Naam"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",
@@ -470,6 +488,12 @@
     "placeholder": "Selecteer een gebruiker",
     "remove": "Toewijzing ongedaan maken",
     "save": "Opslaan",
+    "fetchingUsers": "Gebruikers ophalen..."
+  },
+  "assignDocument": {
+    "assignedTo": "Toegewezen aan ",
+    "header": "Gebruiker toewijzen aan dit dossier",
+    "remove": "Toewijzing ongedaan maken",
     "fetchingUsers": "Gebruikers ophalen..."
   },
   "dropzone": {
@@ -491,7 +515,9 @@
     "createdOn": "Aangemaakt op",
     "lastModified": "Laatst gewijzigd op",
     "files": "Bestanden",
-    "firstName": "Voornaam"
+    "firstName": "Voornaam",
+    "assigneeFullName": "Behandelaar",
+    "accepted": "Akkoord"
   },
   "list": {
     "currentPage": "Pagina {{current}} van {{total}}",
@@ -743,8 +769,8 @@
       "description": "Op deze pagina kun je connecties met externe diensten aanmaken, aanpassen of verwijderen."
     },
     "plugins": {
-      "title": "Plug-ins",
-      "description": "Op deze pagina kun je configuraties aanmaken, wijzigen en verwijderen van plug-ins die zijn toegevoegd aan je applicatie."
+      "title": "Plugins",
+      "description": "Op deze pagina kun je configuraties aanmaken, wijzigen en verwijderen van plugins die zijn toegevoegd aan je applicatie."
     },
     "customercases": {
       "title": "Zaken",
@@ -762,18 +788,18 @@
     "noConfigurationComponent": "Er is geen configuratie-component beschikbaar."
   },
   "pluginManagement": {
-    "tableItemsText": "plug-in-configuraties",
-    "add": "Plug-in configureren",
+    "tableItemsText": "plugin-configuraties",
+    "add": "Plugin configureren",
     "noDefinitions": "Geen plugin-definities gevonden.",
     "save": "Configuratie opslaan",
     "remove": "Configuratie verwijderen",
     "labels": {
-      "pluginName": "Plug-in-naam",
+      "pluginName": "Plugin naam",
       "identifier": "Identifier",
       "configurationName": "Configuratienaam"
     },
     "addSteps": {
-      "step0": "Kies je plug-in",
+      "step0": "Kies je plugin",
       "step1": "Gegevens invullen",
       "complete": "Configuratie opslaan"
     }
@@ -790,12 +816,70 @@
     "edit": "Proceskoppeling wijzigen",
     "saveChanges": "Wijzigingen opslaan",
     "unlink": "Ontkoppelen",
-    "noPluginFunctions": "Deze plug-in ondersteunt geen pluginacties."
+    "noPluginFunctions": "Deze plugin ondersteunt geen pluginacties."
   },
   "keycloak": {
     "expiryPromptTitle": "De sessie verloopt bijna",
     "expiryPromptDescription": "Je wordt uitgelogd over {{expiryTime}}.",
     "expiryPromptCancel": "Uitloggen",
     "expiryPromptConfirm": "Sessie voortzetten"
+  },
+  "userManagement": {
+    "notSupported": "Wanneer Keycloak wordt gebruikt is gebruikersbeheer in Valtimo niet beschikbaar. Gebruik in plaats daarvan het gebruikersbeheer in Keycloak."
+  },
+  "searchFields": {
+    "noneConfigured": "Er zijn geen zoekvelden geconfigureerd voor dit documenttype.",
+    "expandButtonText": "Zoekvelden tonen",
+    "collapseButtonText": "Verbergen",
+    "searchButtonText": "Zoeken",
+    "clearButtonText": "Wissen",
+    "downloadButtonText": "Download zoekveldconfiguratie",
+    "to": "tot",
+    "text": "Tekst",
+    "number": "Nummer",
+    "date": "Datum",
+    "datetime": "Datum en tijd",
+    "boolean": "Ja / nee",
+    "numberRange": "Nummerreeks",
+    "dateRange": "Datumreeks",
+    "datetimeRange": "Datum en tijd-reeks",
+    "booleanPositive": "Ja",
+    "booleanNegative": "Nee"
+  },
+  "searchFieldsTooltips": {
+    "text": "Een tekstveld",
+    "number": "Een nummerveld",
+    "date": "Een datumveld",
+    "datetime": "Een datum en tijd-veld",
+    "boolean": "Een boolean-veld",
+    "numberRange": "Een nummerreeks-veld",
+    "dateRange": "Een datumreeks-veld",
+    "datetimeRange": "Een datum en tijd-reeks-veld"
+  },
+  "searchFieldsOverview": {
+    "title": "Titel",
+    "key": "Sleutel",
+    "edit": "Zoekveld bewerken",
+    "path": "Pad",
+    "dataType": "Datatype",
+    "fieldType": "Veldtype",
+    "matchType": "Overeenkomst",
+    "exact": "Precies",
+    "like": "Bevat",
+    "single": "Enkel",
+    "multiple": "Meerdere",
+    "range": "Reeks",
+    "submit": "Indienen",
+    "delete": "Verwijderen",
+    "addRow": "Zoekveld toevoegen",
+    "searchFieldPlaceholder": "Kies een type..."
+  },
+  "searchFieldsOverviewTooltips": {
+    "title": "De titel is een optioneel veld dat wordt weergegeven als een label voor het huidige zoekveld. Als de titel niet is ingesteld, is de standaardwaarde de sleutelvertaling van het zoekveld (als er geen vertaling beschikbaar is, wordt de oorspronkelijke sleutelwaarde weergegeven).",
+    "key": "Een unieke sleutel waarmee het zoekveld wordt geïdentificeerd. Als de sleutel niet uniek is, kan het zoekveld niet worden opgeslagen.",
+    "path": "Een pad dat leidt naar de eigenschap waarop u wilt zoeken. Volg dit voorbeeld om te zoeken in het JSON-schema van het document: 'doc:customer.firstName'. Volg deze voorbeelden om te zoeken in de documenteigenschappen: 'case:createdBy', of 'case:sequence', of 'case:assigneeFullName'. Let op: wanneer er speciale tekens in een eigenschap zitten, moet de eigenschap binnen aanhalingstekens staan. Bijvoorbeeld: case:\"loan-accepted\".",
+    "dataType": "Het datatype bepaalt welke invoer aan de gebruiker wordt getoond. Voor het datatype 'Datum' wordt bijvoorbeeld een datumkiezer getoond.",
+    "fieldType": "Het veldtype bepaalt de waarden die de gebruiker kan invoeren. Voor de optie 'Enkel' kan de gebruiker slechts één waarde invoeren. Bij de optie 'Reeks' kan de gebruiker twee waarden invoeren. Naar deze waarden, en alle waarden daartussen, wordt vervolgens gezocht.",
+    "matchType": "De overeenkomst bepaalt hoe waarden in de database worden gekoppeld aan de zoekwaarden. Voor het zoektype 'Exact' zou de waarde '1' alleen overeenkomen met de waarde '1'. Voor het zoektype 'Bevat' zou de waarde '1' overeenkomen met de waarde '1', '123' en alle andere waarden die '1' bevatten."
   }
 }

@@ -14,29 +14,27 @@
   ~ limitations under the License.
   -->
 
-<div class="px-3">
-  <div class="main-content container-fluid" *ngIf="{loading: loading$ | async} as obs">
-    <h4 class="title">
-      {{ 'dashboard.openTasks.title' | translate }}
-      <sup *ngIf="obs.loading === false" class="ml-1 badge badge-pill badge-primary">{{
-        openTasks?.length
-      }}</sup>
-    </h4>
-    <ng-container *ngIf="obs.loading === false; else loading">
-      <valtimo-widget>
-        <valtimo-list
-          [items]="openTasks"
-          [fields]="openTaskFields"
-          (rowClicked)="rowOpenTaskClick($event)"
-        ></valtimo-list>
-      </valtimo-widget>
-    </ng-container>
-    <valtimo-task-detail-modal
-      #taskDetail
-      (formSubmit)="getOpenTasks()"
-      (assignmentOfTaskChanged)="getOpenTasks()"
-    ></valtimo-task-detail-modal>
-  </div>
+<div class="main-content container-fluid" *ngIf="{loading: loading$ | async} as obs">
+  <h4 class="title">
+    {{ 'dashboard.openTasks.title' | translate }}
+    <sup *ngIf="obs.loading === false" class="ml-1 badge badge-pill badge-primary">{{
+      openTasks?.length
+    }}</sup>
+  </h4>
+  <ng-container *ngIf="obs.loading === false; else loading">
+    <valtimo-widget>
+      <valtimo-list
+        [items]="openTasks"
+        [fields]="openTaskFields"
+        (rowClicked)="rowOpenTaskClick($event)"
+      ></valtimo-list>
+    </valtimo-widget>
+  </ng-container>
+  <valtimo-task-detail-modal
+    #taskDetail
+    (formSubmit)="getOpenTasks()"
+    (assignmentOfTaskChanged)="getOpenTasks()"
+  ></valtimo-task-detail-modal>
 </div>
 
 <ng-template #loading>

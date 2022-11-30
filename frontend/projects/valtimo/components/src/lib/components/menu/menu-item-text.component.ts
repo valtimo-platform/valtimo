@@ -19,29 +19,8 @@ import {MenuItem} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-menu-item-text',
-  template: `
-    <i
-      class="{{ menuItem.iconClass }}"
-      container="body"
-      placement="right"
-      ngbTooltip="{{ menuItem.title | translate }}"
-      autoClose="true"
-    >
-    </i>
-    <span
-      *ngIf="{
-        translation: menuItem.title | translate,
-        pageTranslation: 'pages.' + menuItem.title.toLowerCase() + '.title' | translate
-      } as obs"
-      >{{
-        (obs.pageTranslation !== 'pages.' + menuItem.title.toLowerCase() + '.title'
-          ? obs.pageTranslation
-          : '') ||
-          (obs.translation !== menuItem.title ? obs.translation : '') ||
-          menuItem.title
-      }}</span
-    >
-  `,
+  templateUrl: './menu-item-text.component.html',
+  styleUrls: ['./menu-item-text.component.scss'],
 })
 export class MenuItemTextComponent {
   @Input() menuItem: MenuItem;

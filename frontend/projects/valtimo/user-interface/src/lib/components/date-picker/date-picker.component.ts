@@ -14,9 +14,18 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import flatpickr from 'flatpickr';
-import {BehaviorSubject, Subscription} from 'rxjs';
+import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 import {key as LocaleKey} from 'flatpickr/dist/types/locale';
 import {Dutch} from 'flatpickr/dist/l10n/nl';
@@ -44,25 +53,42 @@ export class DatePickerComponent implements AfterViewInit, OnDestroy {
   @Input() required = false;
   @Input() defaultDate!: string;
   @Input() defaultDateIsToday!: boolean;
+  @Input() smallLabel = false;
+  @Input() clear$!: Observable<null>;
+  @Input() enableTime = false;
+
+  @Output() valueChange: EventEmitter<any> = new EventEmitter();
 
   dateValue$ = new BehaviorSubject<string>('');
 
   private flatpickrInstance!: flatpickr.Instance;
   private localeSubscription!: Subscription;
+  private dateValueSubscription!: Subscription;
+  private clearSubscription!: Subscription;
 
   constructor(private readonly translateService: TranslateService) {}
 
   ngAfterViewInit(): void {
     this.openLocaleSubscription();
+    this.openDateValueSubscription();
+    this.openClearSubscription();
   }
 
   ngOnDestroy(): void {
     this.localeSubscription?.unsubscribe();
+    this.dateValueSubscription?.unsubscribe();
+    this.clearSubscription?.unsubscribe();
   }
 
   private openLocaleSubscription(): void {
     this.localeSubscription = this.translateService.stream('key').subscribe(() => {
       this.setFlatpickrInstance(this.translateService.currentLang as LocaleKey);
+    });
+  }
+
+  private openDateValueSubscription(): void {
+    this.dateValueSubscription = this.dateValue$.subscribe(dateValue => {
+      this.valueChange.emit(dateValue);
     });
   }
 
@@ -72,6 +98,7 @@ export class DatePickerComponent implements AfterViewInit, OnDestroy {
       locale: this.getLocale(localeKey),
       onChange: [this.onChange],
       defaultDate: this.getFlatpickrValue(),
+      enableTime: this.enableTime,
     });
     this.emitDate();
   }
@@ -118,5 +145,13 @@ export class DatePickerComponent implements AfterViewInit, OnDestroy {
     }
 
     return locale;
+  }
+
+  private openClearSubscription(): void {
+    if (this.clear$) {
+      this.clearSubscription = this.clear$.subscribe(() => {
+        this.dateValue$.next('');
+      });
+    }
   }
 }

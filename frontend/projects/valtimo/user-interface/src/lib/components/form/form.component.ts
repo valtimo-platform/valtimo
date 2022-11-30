@@ -19,6 +19,7 @@ import {
   Component,
   ContentChildren,
   EventEmitter,
+  Input,
   OnDestroy,
   Output,
   QueryList,
@@ -41,6 +42,8 @@ export class FormComponent implements AfterContentInit, OnDestroy {
   @ContentChildren(SelectComponent) selectComponents!: QueryList<SelectComponent>;
   @ContentChildren(MultiInputComponent) multiInputComponents!: QueryList<MultiInputComponent>;
   @ContentChildren(DatePickerComponent) datePickerComponents!: QueryList<DatePickerComponent>;
+
+  @Input() className = '';
 
   @Output() valueChange: EventEmitter<FormOutput> = new EventEmitter();
 

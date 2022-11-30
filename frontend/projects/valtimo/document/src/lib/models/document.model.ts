@@ -98,6 +98,8 @@ export interface Document {
   definitionName: string;
   relations: string[];
   relatedFiles: RelatedFile[];
+  assigneeFullName: string;
+  assigneeId: string;
 }
 
 export interface ProcessDocumentDefinitionId {
@@ -121,6 +123,10 @@ export interface ProcessDocumentInstance {
   id: ProcessDocumentInstanceId;
   processName: string;
   isActive: boolean;
+}
+
+export interface AssignHandlerToDocumentResult {
+  assigneeId: string;
 }
 
 export interface NewDocumentAndStartProcessResult {

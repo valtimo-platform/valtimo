@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, ElementRef, Renderer2, ViewChild} from '@angular/core';
-import {BehaviorSubject} from 'rxjs';
+import {AfterViewInit, Component, Renderer2} from '@angular/core';
 import {LayoutService} from '../layout.service';
 import {UserInterfaceService} from '@valtimo/user-interface';
+import {ShellService} from '@valtimo/components';
 
 // eslint-disable-next-line no-var
 declare var App;
@@ -28,37 +28,19 @@ declare var App;
   styleUrls: ['./layout-internal.component.scss'],
 })
 export class LayoutInternalComponent implements AfterViewInit {
-  @ViewChild('wrapper') wrapperRef: ElementRef;
-
-  readonly menuOpen$ = new BehaviorSubject<boolean>(true);
-  readonly menuWidth$ = new BehaviorSubject<number>(undefined);
-
-  readonly observer = new MutationObserver((e: any) =>
-    this.menuOpen$.next(!e[0].target.className.includes('be-collapsible-sidebar-collapsed'))
-  );
-
   readonly showPageHeader$ = this.userInterfaceService.showPageHeader$;
+  readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
 
   constructor(
     public layoutService: LayoutService,
     private renderer: Renderer2,
-    private readonly userInterfaceService: UserInterfaceService
+    private readonly userInterfaceService: UserInterfaceService,
+    private readonly shellService: ShellService
   ) {
     this.renderer.addClass(document.body, 'be-animate');
   }
 
   ngAfterViewInit(): void {
     App.init();
-
-    this.observer.observe(this.wrapperRef.nativeElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-      childList: false,
-      characterData: false,
-    });
-  }
-
-  menuWidthChanged(width: number): void {
-    this.menuWidth$.next(width);
   }
 }

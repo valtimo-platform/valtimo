@@ -43,7 +43,7 @@
   <div fxFlex="33.3%" *ngFor="let pluginConfiguration of pluginConfigurations">
     <v-card
       [title]="pluginConfiguration.title"
-      [description]="'title' | pluginTranslate: pluginConfiguration.pluginDefinition.key | async"
+      [description]="'title' | pluginTranslate : pluginConfiguration.pluginDefinition.key | async"
       [selectable]="true"
       [selected]="(selectedPluginConfiguration$ | async)?.id === pluginConfiguration.id"
       [fullHeight]="true"
@@ -53,7 +53,7 @@
       <div *ngIf="pluginConfiguration.pluginLogoBase64" role="header">
         <img
           class="plugin-configuration-logo"
-          [title]="'title' | pluginTranslate: pluginConfiguration.key | async"
+          [title]="'title' | pluginTranslate : pluginConfiguration.key | async"
           [src]="pluginConfiguration.pluginLogoBase64"
         />
       </div>

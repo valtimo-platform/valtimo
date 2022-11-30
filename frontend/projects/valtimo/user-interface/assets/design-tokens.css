@@ -328,6 +328,10 @@
   --v-input-title-font-color: var(--v-color-black);
   --v-input-title-line-height: var(--v-line-height-larger);
   --v-input-title-font-weight: var(--v-font-weight-bold);
+  --v-input-title-small-font-size: var(--v-font-size-default);
+  --v-input-title-small-font-color: var(--v-color-black);
+  --v-input-title-small-line-height: var(--v-line-height-default);
+  --v-input-title-small-font-weight: var(--v-font-weight-regular);
   --v-input-title-margin: var(--v-spacing-block-md);
   --v-input-title-margin-large: var(--v-spacing-block-2xl);
   --v-input-default-width: 200px;
@@ -339,8 +343,8 @@
   --v-input-password-icon-spacing: var(--v-spacing-inline-sm);
   --v-input-required-asterisk-color: var(--v-color-accent-3);
   /* page */
-  --v-page-padding-inline: var(--v-spacing-inline-3xl);
-  --v-page-padding-block: var(--v-spacing-block-5xl);
+  --v-page-padding-inline: 0;
+  --v-page-padding-block: 0;
   --v-page-header-introduction-padding-inline: var(--v-spacing-inline-8xl);
   --v-page-header-margin-block: var(--v-spacing-block-3xl);
   /* paragraph */

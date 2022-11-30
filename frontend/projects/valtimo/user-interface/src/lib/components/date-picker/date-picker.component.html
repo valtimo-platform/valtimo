@@ -27,6 +27,7 @@
     [titleTranslationKey]="titleTranslationKey"
     [title]="title"
     [tooltip]="tooltip"
+    [small]="smallLabel"
   >
   </v-input-label>
 </ng-template>
@@ -42,5 +43,6 @@
     [style.width.px]="widthPx"
     class="v-date-picker"
     type="text"
+    [ngModel]="dateValue$ | async"
   />
 </ng-template>

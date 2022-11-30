@@ -22,7 +22,7 @@
     *ngIf="title || titleTranslationKey"
     class="v-input-label"
     [for]="name"
-    [ngClass]="{'v-input-label--required': required}"
+    [ngClass]="{'v-input-label--required': required, 'v-input-label--small': small}"
   >
     {{ titleTranslationKey ? (titleTranslationKey | translate) : title }}
   </label>

@@ -23,11 +23,12 @@ import {
   ListModule,
   ModalModule,
   MultiselectDropdownModule,
+  SpinnerModule,
   WidgetModule,
 } from '@valtimo/components';
 import {ConfigModule} from '@valtimo/config';
 import {DossierManagementConnectModalComponent} from './dossier-management-connect-modal/dossier-management-connect-modal.component';
-import {DossierManagementDetailComponent} from './dossier-management-detail/dossier-management-detail.component';
+import {DossierManagementDetailComponent} from './dossier-management-detail-container/tabs/dossier-management-detail/dossier-management-detail.component';
 import {DossierManagementListComponent} from './dossier-management-list/dossier-management-list.component';
 import {DossierManagementRoutingModule} from './dossier-management-routing.module';
 import {DossierManagementUploadComponent} from './dossier-management-upload/dossier-management-upload.component';
@@ -35,7 +36,9 @@ import {DossierManagementRemoveModalComponent} from './dossier-management-remove
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {DossierManagementRolesComponent} from './dossier-management-roles/dossier-management-roles.component';
 import {DossierManagementLinkProcessComponent} from './dossier-management-link-process/dossier-management-link-process.component';
-import {ParagraphModule, SelectModule} from '@valtimo/user-interface';
+import {ParagraphModule, SelectModule, InputModule, FormModule} from '@valtimo/user-interface';
+import {DossierManagementSearchFieldsComponent} from './dossier-management-detail-container/tabs/dossier-management-search-fields/dossier-management-search-fields.component';
+import {DossierManagementDetailContainerComponent} from './dossier-management-detail-container/dossier-management-detail-container.component';
 
 @NgModule({
   declarations: [
@@ -46,6 +49,8 @@ import {ParagraphModule, SelectModule} from '@valtimo/user-interface';
     DossierManagementUploadComponent,
     DossierManagementRolesComponent,
     DossierManagementLinkProcessComponent,
+    DossierManagementSearchFieldsComponent,
+    DossierManagementDetailContainerComponent,
   ],
   imports: [
     CommonModule,
@@ -61,6 +66,10 @@ import {ParagraphModule, SelectModule} from '@valtimo/user-interface';
     MultiselectDropdownModule,
     ParagraphModule,
     SelectModule,
+    SpinnerModule,
+    InputModule,
+    SelectModule,
+    FormModule,
   ],
   exports: [],
 })

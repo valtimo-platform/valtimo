@@ -23,6 +23,17 @@ import {HttpClient} from '@angular/common/http';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {HttpLoaderFactory} from '@valtimo/config';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
+import {
+  GridModule,
+  IconModule,
+  LinkModule,
+  SelectModule,
+  StructuredListModule,
+  TabsModule,
+  TagModule,
+  ToggleModule,
+  UIShellModule,
+} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [RightSidebarComponent],
@@ -39,6 +50,15 @@ import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
       },
     }),
     NgbTooltipModule,
+    UIShellModule,
+    IconModule,
+    GridModule,
+    TabsModule,
+    StructuredListModule,
+    SelectModule,
+    ToggleModule,
+    TagModule,
+    LinkModule,
   ],
   exports: [RightSidebarComponent],
 })

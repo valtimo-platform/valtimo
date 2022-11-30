@@ -17,10 +17,10 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {DocumentDefinition, DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
 import {ActivatedRoute} from '@angular/router';
-import {DossierManagementConnectModalComponent} from '../dossier-management-connect-modal/dossier-management-connect-modal.component';
+import {DossierManagementConnectModalComponent} from '../../../dossier-management-connect-modal/dossier-management-connect-modal.component';
 import {AlertService} from '@valtimo/components';
-import {DossierManagementRemoveModalComponent} from '../dossier-management-remove-modal/dossier-management-remove-modal.component';
-import {DossierManagementRolesComponent} from '../dossier-management-roles/dossier-management-roles.component';
+import {DossierManagementRemoveModalComponent} from '../../../dossier-management-remove-modal/dossier-management-remove-modal.component';
+import {DossierManagementRolesComponent} from '../../../dossier-management-roles/dossier-management-roles.component';
 
 @Component({
   selector: 'valtimo-dossier-management-detail',
@@ -32,8 +32,10 @@ export class DossierManagementDetailComponent implements OnInit {
   public documentDefinition: DocumentDefinition | null = null;
   public processDocumentDefinitions: ProcessDocumentDefinition[] = [];
 
-  @ViewChild('dossierConnectModal') dossierConnectModal: DossierManagementConnectModalComponent;
-  @ViewChild('dossierRemoveModal') dossierRemoveModal: DossierManagementRemoveModalComponent;
+  @ViewChild('dossierConnectModal')
+  dossierConnectModal: DossierManagementConnectModalComponent;
+  @ViewChild('dossierRemoveModal')
+  dossierRemoveModal: DossierManagementRemoveModalComponent;
   @ViewChild('documentRoles') documentRoles: DossierManagementRolesComponent;
 
   constructor(

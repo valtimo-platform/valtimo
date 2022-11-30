@@ -113,7 +113,6 @@ body {
   color: #404040;
   text-align: left;
   background-color: #eeeeee;
-  overflow-y: scroll;
 }
 
 [tabindex='-1']:focus:not(:focus-visible) {
@@ -30655,5 +30654,9 @@ fieldset[disabled] .full-calendar .fc-button.active {
 }
 
 .nav-tabs > li.nav-item a.nav-link {
+  cursor: pointer;
+}
+
+.clickable {
   cursor: pointer;
 }

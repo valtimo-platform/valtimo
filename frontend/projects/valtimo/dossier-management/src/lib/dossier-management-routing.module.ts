@@ -17,9 +17,9 @@
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {AuthGuardService} from '@valtimo/security';
-import {DossierManagementDetailComponent} from './dossier-management-detail/dossier-management-detail.component';
 import {DossierManagementListComponent} from './dossier-management-list/dossier-management-list.component';
 import {ROLE_ADMIN} from '@valtimo/config';
+import {DossierManagementDetailContainerComponent} from './dossier-management-detail-container/dossier-management-detail-container.component';
 
 const routes: Routes = [
   {
@@ -30,7 +30,7 @@ const routes: Routes = [
   },
   {
     path: 'dossier-management/dossier/:name',
-    component: DossierManagementDetailComponent,
+    component: DossierManagementDetailContainerComponent,
     canActivate: [AuthGuardService],
     data: {title: 'Dossier details', roles: [ROLE_ADMIN]},
   },

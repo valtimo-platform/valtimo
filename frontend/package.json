@@ -198,6 +198,7 @@
     "@angular/platform-browser-dynamic": "^14.2.5",
     "@angular/router": "^14.2.5",
     "@bpmn-io/dmn-migrate": "^0.4.3",
+    "@carbon/icons": "^11.9.0",
     "@formio/angular": "^5.2.2",
     "@foxythemes/bootstrap-datetime-picker-bs4": "^2.3.5",
     "@mdi/font": "^7.0.96",
@@ -217,6 +218,8 @@
     "bpmn-js": "^6.4.2",
     "bpmn-js-properties-panel": "^0.33.1",
     "camunda-bpmn-moddle": "^4.3.0",
+    "carbon-components": "^11.17.0",
+    "carbon-components-angular": "^5.2.1",
     "cli-progress": "^3.11.2",
     "components-jqueryui": "^1.12.1",
     "core-js": "^3.23.3",
@@ -311,6 +314,7 @@
     "@valtimo/user-management": "file:dist/valtimo/user-management",
     "@valtimo/view-configurator": "file:dist/valtimo/view-configurator",
     "cypress": "latest",
-    "deepmerge-ts": "^4.2.2"
+    "deepmerge-ts": "^4.2.2",
+    "sass": "^1.56.1"
   }
 }

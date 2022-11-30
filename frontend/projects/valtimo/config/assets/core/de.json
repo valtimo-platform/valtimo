@@ -9,7 +9,9 @@
     "DossierDocumentGeneratedEvent": "Case-Dokument erstellt",
     "DocumentRelatedFileAddedEvent": "Datei hinzugefügt",
     "DocumentRelatedFileRemovedEvent": "Datei entfernt",
-    "BesluitAddedEvent": "Entscheidung getroffen > {{identificatie}}"
+    "BesluitAddedEvent": "Entscheidung getroffen > {{identificatie}}",
+    "DocumentAssigneeChangedEvent": "Der Beauftragte wurde geändert in {{assigneeName}}",
+    "DocumentUnassignedEvent": "Die Zuweisung des Bevollmächtigten wurde aufgehoben"
   },
   "dossier": {
     "title": {
@@ -67,6 +69,7 @@
       }
     },
     "startSubProcess": "Starten",
+    "claimAssigneeCase": "Anmaßen",
     "deleteConfirmation": {
       "title": "Datei löschen",
       "description": "Möchten Sie diese Datei wirklich löschen?",
@@ -185,6 +188,8 @@
   },
   "account": {
     "title": "Account",
+    "informationTitle": "Informationen",
+    "quickLinks": "Verknüpfungen",
     "links": {
       "profile": "Profile",
       "password": "Passwort",
@@ -277,6 +282,10 @@
     "linkProcess": {
       "title": "Verknüpfen Sie den Upload-Prozess mit dem Fall",
       "description": "Wählen Sie einen Prozess, der das Hochladen von Dateien handhaben soll."
+    },
+    "tabs": {
+      "cases": "Falldetails",
+      "searchFields": "Suchfelder"
     }
   },
   "serviceTaskManagement": {
@@ -458,7 +467,16 @@
     "next": "Nächste >",
     "previous": "< Vorherige",
     "addRow": "Zeile hinzufügen",
-    "deleteRow": "Zeile löschen"
+    "deleteRow": "Zeile löschen",
+    "on": "Ein",
+    "off": "Aus",
+    "builds": {
+      "valtimo-backend-libraries": "Valtimo back-end",
+      "valtimo-frontend-libraries": "Valtimo front-end"
+    },
+    "email": "Email",
+    "username": "Nutzername",
+    "name": "Name"
   },
   "taskDetail": {
     "taskCreated": "Erstellt",
@@ -470,6 +488,12 @@
     "placeholder": "User auswählen",
     "remove": "Entfernen",
     "save": "Speichern",
+    "fetchingUsers": "User abrufen..."
+  },
+  "assignDocument": {
+    "assignedTo": "User-Zuordnung: ",
+    "header": "Fall einem User zuordnen",
+    "remove": "Entfernen",
     "fetchingUsers": "User abrufen..."
   },
   "dropzone": {
@@ -491,7 +515,9 @@
     "createdOn": "Erstellt am",
     "lastModified": "Letzte Änderung",
     "files": "Dateien",
-    "firstName": "Vorname"
+    "firstName": "Vorname",
+    "assigneeFullName": "Eigentümer",
+    "accepted": "Akzeptiert"
   },
   "list": {
     "currentPage": "Seite {{current}} von {{total}}",
@@ -797,5 +823,63 @@
     "expiryPromptDescription": "Sie werden in {{expiryTime}} abgemeldet.",
     "expiryPromptCancel": "Ausloggen",
     "expiryPromptConfirm": "Sitzung fortsetzen"
+  },
+  "userManagement": {
+    "notSupported": "Wenn Keycloak verwendet wird, ist die Benutzerverwaltung in Valtimo nicht verfügbar. Verwenden Sie stattdessen die Benutzerverwaltung in Keycloak."
+  },
+  "searchFields": {
+    "noneConfigured": "Für diesen Dokumenttyp wurden keine Suchfelder konfiguriert.",
+    "expandButtonText": "Suchfelder anzeigen",
+    "collapseButtonText": "Ausblenden",
+    "searchButtonText": "Suche",
+    "clearButtonText": "Löschen",
+    "downloadButtonText": "Suchfeldkonfiguration herunterladen",
+    "to": "bis",
+    "text": "Text",
+    "number": "Nummer",
+    "date": "Datum",
+    "datetime": "Datum und zeit",
+    "boolean": "Ja / Nein",
+    "numberRange": "Zahlenfolge",
+    "dateRange": "Datumsbereich",
+    "datetimeRange": "Datums- und Zeit-bereich",
+    "booleanPositive": "Ja",
+    "booleanNegative": "Nein"
+  },
+  "searchFieldsTooltips": {
+    "text": "Ein Textfeld",
+    "number": "Ein Zahlenfeld",
+    "date": "Ein Datumsfeld",
+    "datetime": "Ein Datums- und Zeitfeld",
+    "boolean": "Ein boolesches Feld",
+    "numberRange": "Ein Zahlenfolgefeld",
+    "dateRange": "Ein Datumsbereichsfeld",
+    "datetimeRange": "Ein Datums- und Zeitreihenfeld"
+  },
+  "searchFieldsOverview": {
+    "title": "Titel",
+    "key": "Schlüssel",
+    "edit": "Suchfeld bearbeiten",
+    "path": "Pfad",
+    "dataType": "Datentyp",
+    "fieldType": "Feldtyp",
+    "matchType": "Übereinstimmen",
+    "exact": "Genau",
+    "like": "Enthält",
+    "single": "Nur",
+    "multiple": "Mehrere",
+    "range": "Serie",
+    "submit": "Einreichen",
+    "delete": "Löschen",
+    "addRow": "Suchfeld hinzufügen",
+    "searchFieldPlaceholder": "Wählen Sie einen Typ..."
+  },
+  "searchFieldsOverviewTooltips": {
+    "title": "Der Titel ist ein optionales Feld, das als Bezeichnung für das aktuelle Suchfeld erscheint. Wenn der Titel nicht festgelegt ist, ist der Standardwert die Übersetzung des Suchfeldschlüssels (wenn keine Übersetzung verfügbar ist, wird der ursprüngliche Schlüsselwert angezeigt).",
+    "key": "Ein eindeutiger Schlüssel, der das Suchfeld identifiziert. Wenn der Schlüssel nicht eindeutig ist, kann das Suchfeld nicht gespeichert werden.",
+    "path": "Ein Pfad, der zu der Eigenschaft führt, die Sie durchsuchen möchten. Um im JSON-Schema des Dokuments zu suchen, folgen Sie diesem Beispiel: 'doc:customer.firstName'. Folgen Sie für die Suche in den Dokumenteigenschaften diesen Beispielen: 'case:createdBy', oder 'case:sequence', oder 'case:assigneeFullName'. Hinweis: Wenn eine Eigenschaft Sonderzeichen enthält, muss die Eigenschaft in Anführungszeichen gesetzt werden. Zum Beispiel: case:\"loan-accepted\".",
+    "dataType": "Der Datentyp bestimmt, welche Eingaben dem Benutzer angezeigt werden. Beispielsweise wird für den Datentyp 'Datum' eine Datumsauswahl angezeigt.",
+    "fieldType": "Der Feldtyp bestimmt die Werte, die der Benutzer eingeben kann. Die Option 'Nur' ermöglicht dem Benutzer, nur einen Wert einzugeben. Die Option 'Serie' ermöglicht dem Benutzer die Eingabe von zwei Werten. Nach diesen Werten und allen Werten dazwischen wird dann gesucht.",
+    "matchType": "Die Übereinstimmen legt fest, wie Werte in der Datenbank mit den Suchwerten verknüpft werden. Beim Übereinstimmungstyp 'Genau' würde der Wert '1' nur mit dem Wert '1' übereinstimmen. Für den Übereinstimmungstyp 'Enthält' würde der Wert '1' mit dem Wert '1', '123' und allen anderen Werten übereinstimmen, die '1' enthalten."
   }
 }

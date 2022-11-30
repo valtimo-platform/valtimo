@@ -1,0 +1,72 @@
+/*
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.w-100 {
+  height: 15px;
+
+  &:last-child {
+    display: none;
+  }
+}
+
+::ng-deep .multiple-search-fields {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+}
+
+.to-text {
+  margin-inline-start: 8px;
+  margin-inline-end: 8px;
+}
+
+.buttons-container {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+}
+
+.right-buttons {
+  display: flex;
+  flex-direction: row;
+
+  v-button:last-child {
+    margin-left: 8px;
+  }
+}
+
+.row--hidden {
+  display: none;
+}
+
+.accordion-button {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  background: #f8f9f9;
+  text-align: left;
+  transition: background 0.2s;
+  font-size: 1.2rem;
+  color: #404040;
+}
+
+.accordion-button--active {
+  background: #f1f1f1;
+}

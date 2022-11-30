@@ -46,6 +46,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   userEmailToAssign: string = null;
   assignedUserFullName$ = new BehaviorSubject<string>(null);
   private _subscriptions = new Subscription();
+
   constructor(private taskService: TaskService) {}
 
   ngOnInit(): void {

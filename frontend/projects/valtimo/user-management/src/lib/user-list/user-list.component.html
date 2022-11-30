@@ -16,33 +16,45 @@
 
 <div class="main-content pt-0">
   <div class="container-fluid">
-    <div class="text-right">
-      <div class="btn-group mt-m3px mb-3">
-        <button [routerLink]="'create'" class="btn btn-primary btn-space mr-0">
-          <i class="icon mdi mdi-plus mr-1"></i>
-          <span>{{ 'Create new User' | translate }}</span>
-        </button>
+    <div class="row mb-5" *ngIf="userManagementDisabled">
+      <div class="col-12">
+        <div class="alert alert-warning pl-2 plr-2" role="alert">
+          <div class="icon"><span class="mdi mdi-alert-triangle"></span></div>
+          <div class="message">
+            {{ 'userManagement.notSupported' | translate }}
+          </div>
+        </div>
       </div>
     </div>
-    <valtimo-widget>
-      <valtimo-list
-        [items]="users"
-        [fields]="fields"
-        (rowClicked)="rowClick($event)"
-        [pagination]="pagination"
-        [viewMode]="true"
-        [isSearchable]="true"
-        (search)="searchTermEntered($event)"
-        paginationIdentifier="userList"
-        (paginationSet)="paginationSet()"
-        (paginationClicked)="paginationClicked($event)"
-        [header]="true"
-      >
-        <div header>
-          <h3 class="list-header-title">{{ 'Users' | translate }}</h3>
-          <h5 class="list-header-description">{{ 'Overview of all Users' | translate }}</h5>
+    <div *ngIf="!userManagementDisabled">
+      <div class="text-right">
+        <div class="btn-group mt-m3px mb-3">
+          <button [routerLink]="'create'" class="btn btn-primary btn-space mr-0">
+            <em class="icon mdi mdi-plus mr-1"></em>
+            <span>{{ 'Create new User' | translate }}</span>
+          </button>
         </div>
-      </valtimo-list>
-    </valtimo-widget>
+      </div>
+      <valtimo-widget>
+        <valtimo-list
+          [items]="users"
+          [fields]="fields"
+          (rowClicked)="rowClick($event)"
+          [pagination]="pagination"
+          [viewMode]="true"
+          [isSearchable]="true"
+          (search)="searchTermEntered($event)"
+          paginationIdentifier="userList"
+          (paginationSet)="paginationSet()"
+          (paginationClicked)="paginationClicked($event)"
+          [header]="true"
+        >
+          <div header>
+            <h3 class="list-header-title">{{ 'Users' | translate }}</h3>
+            <h5 class="list-header-description">{{ 'Overview of all Users' | translate }}</h5>
+          </div>
+        </valtimo-list>
+      </valtimo-widget>
+    </div>
   </div>
 </div>

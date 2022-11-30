@@ -14,26 +14,19 @@
  * limitations under the License.
  */
 
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
-import {PageHeaderComponent} from './page-header.component';
+import {TestBed} from '@angular/core/testing';
 
-describe('PageHeaderComponent', () => {
-  let component: PageHeaderComponent;
-  let fixture: ComponentFixture<PageHeaderComponent>;
+import {ExactPluginService} from './exact-plugin.service';
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [PageHeaderComponent],
-    }).compileComponents();
-  }));
+describe('ExactPluginService', () => {
+  let service: ExactPluginService;
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(PageHeaderComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(ExactPluginService);
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('should be created', () => {
+    expect(service).toBeTruthy();
   });
 });
