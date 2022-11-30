@@ -117,7 +117,7 @@
               <h3 class="list-header-title">
                 {{ (schema$ | async)?.title }}
                 <sup class="ml-1 badge badge-pill badge-primary">{{
-                  documentItems?.length || 0
+                  pagination?.collectionSize || 0
                 }}</sup>
               </h3>
             </div>
