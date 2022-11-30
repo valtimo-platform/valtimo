@@ -91,7 +91,7 @@ export class MenuService {
               iconClass: 'icon mdi mdi-dot-circle',
               sequence: index,
               show: true,
-              badgeCount$: openDocumentCountMap.get(definition.id.name),
+              count$: openDocumentCountMap.get(definition.id.name),
             } as MenuItem)
         );
         this.logger.debug('found dossierMenuItems', dossierMenuItems);
@@ -108,14 +108,13 @@ export class MenuService {
     });
   }
 
-  private getOpenDocumentCountMap(definitions: DocumentDefinitions): Map<String, Subject<number>> {
-    const countMap = new Map<String, Subject<number>>();
+  private getOpenDocumentCountMap(definitions: DocumentDefinitions): Map<string, Subject<number>> {
+    const countMap = new Map<string, Subject<number>>();
     definitions.content.forEach(definition =>
       countMap.set(definition.id.name, new Subject<number>())
     );
 
     timer(0, 5000).subscribe(() => {
-      this.logger.debug('polling');
       this.documentService.getOpenDocumentCount().subscribe(openDocumentCountList => {
         openDocumentCountList.forEach(openDocumentCount =>
           countMap

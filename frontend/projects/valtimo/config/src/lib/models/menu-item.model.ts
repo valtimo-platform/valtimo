@@ -29,7 +29,7 @@ interface MenuItem {
   children?: MenuItem[];
   roles?: string[];
   show?: boolean;
-  badgeCount$?: Subject<number>;
+  count$?: Subject<number>;
   includeFunction?: IncludeFunction;
 }
 

@@ -20,12 +20,13 @@ import {MenuItem} from '@valtimo/config';
 @Component({
   selector: 'valtimo-submenu-item-text',
   template: `
-    <span
+    <div
+      class="d-flex"
       [ngClass]="submenuItem.textClass"
       *ngIf="{
         translation: submenuItem.title | translate,
         pageTranslation: 'pages.' + submenuItem.title.toLowerCase() + '.title' | translate,
-        badgeCount: submenuItem.badgeCount$ | async
+        count: submenuItem.count$ | async
       } as obs"
     >
       {{
@@ -35,11 +36,11 @@ import {MenuItem} from '@valtimo/config';
           (obs.translation !== submenuItem.title ? obs.translation : '') ||
           submenuItem.title
       }}
-      <span *ngIf="obs.badgeCount" class="badge badge-pill badge-primary">
-        {{ obs.badgeCount }}
-      </span>
+      <strong *ngIf="obs.count" class="ml-auto">
+        {{ obs.count }}
+      </strong>
       <ng-container *ngIf="!submenuItem.link">&gt;</ng-container>
-    </span>
+    </div>
   `,
 })
 export class SubmenuItemTextComponent {
