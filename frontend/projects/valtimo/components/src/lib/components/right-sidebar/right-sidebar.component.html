@@ -210,7 +210,7 @@
 
 <ng-template #versionTemplate>
   <ng-container *ngIf="{backendVersion: backendVersion$ | async} as obs">
-    <ibm-structured-list *ngIf="frontendVersion || obs.backendVersion">
+    <ibm-structured-list *ngIf="obs.backendVersion">
       <ibm-list-header>
         <ibm-list-column>{{ 'settings.version.title' | translate }}</ibm-list-column>
       </ibm-list-header>
@@ -221,12 +221,6 @@
               'interface.builds.' + obs.backendVersion.title | translate
             }}</span>
             <ibm-tag type="blue">{{ obs.backendVersion.version }}</ibm-tag>
-          </div>
-          <div class="build-information" *ngIf="frontendVersion">
-            <span class="build-title">{{
-              'interface.builds.valtimo-frontend-libraries' | translate
-            }}</span>
-            <ibm-tag type="blue">{{ frontendVersion }}</ibm-tag>
           </div>
         </ibm-list-column>
       </ibm-list-row>

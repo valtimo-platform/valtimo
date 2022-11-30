@@ -33,7 +33,6 @@ import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {VersionService} from '../version/version.service';
 import {ShellService} from '../../services/shell.service';
-import * as packageInfo from '@valtimo/config/package.json';
 import {tap} from 'rxjs/operators';
 
 @Component({
@@ -119,9 +118,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     private readonly logger: NGXLogger,
     private readonly shellService: ShellService,
     private readonly elementRef: ElementRef
-  ) {
-    this.frontendVersion = packageInfo?.version;
-  }
+  ) {}
 
   ngOnInit(): void {
     this.setLanguage();
