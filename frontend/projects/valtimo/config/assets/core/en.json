@@ -498,7 +498,8 @@
       "wrongType": "The filetype of the file you tried to submit is not supported",
       "generic": "Something went wrong. Please try again.",
       "invalidDocDef": "The case definition could not be uploaded. Please try again.",
-      "invalidFormDef": "The form definition is not valid. Please try again."
+      "invalidFormDef": "The form definition is not valid. Please try again.",
+      "invalidJson": "The file contains an error. Please make sure it contains a valid JSON value."
     }
   },
   "fieldLabels": {

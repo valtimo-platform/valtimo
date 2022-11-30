@@ -498,7 +498,8 @@
       "wrongType": "Het bestandstype van het opgegeven bestand wordt niet ondersteund",
       "generic": "Er ging iets mis. Probeer het opnieuw.",
       "invalidDocDef": "Uw dossier-definitie kon niet geüpload worden. Probeer het opnieuw.",
-      "invalidFormDef": "Uw formulier-definitie is niet geldig. Probeer het opnieuw."
+      "invalidFormDef": "Uw formulier-definitie is niet geldig. Probeer het opnieuw.",
+      "invalidJson": "Het opgegeven bestand bevat een fout. Controleer of de inhoud een geldige JSON-waarde is."
     }
   },
   "fieldLabels": {

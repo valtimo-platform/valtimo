@@ -494,11 +494,12 @@
     "jsonDocDef": "Die Case-Definition muss im JSON-Format sein",
     "formJsonDocDef": "Die Formular-Definition muss im JSON-Format sein",
     "error": {
-      "tooBig": "Die Detai ist zu groß",
+      "tooBig": "Die Datei ist zu groß",
       "wrongType": "Der Dokumenten-Typ wird nicht unterstützt",
       "generic": "Etwas ist schief gelaufen. Bitte erneut versuchen.",
       "invalidDocDef": "Die Case-Definition konnte nicht hochgeladen werden. Bitte erneut versuchen.",
-      "invalidFormDef": "Die Formular-Definition ist ungültig. Bitte erneut versuchen."
+      "invalidFormDef": "Die Formular-Definition ist ungültig. Bitte erneut versuchen.",
+      "invalidJson": "Es gibt ein Fehler in der Datei. Bitte überprüfen ob es einen gültigen JSON-Wert enthält."
     }
   },
   "fieldLabels": {

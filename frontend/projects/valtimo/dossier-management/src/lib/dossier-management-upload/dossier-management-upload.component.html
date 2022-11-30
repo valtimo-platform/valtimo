@@ -26,10 +26,11 @@
       [disabled]="disabled$ | async"
       [subtitle]="'dropzone.jsonDocDef' | translate"
       [externalError$]="error$"
+      [maxFiles]="1"
     ></valtimo-dropzone>
   </div>
   <div footer>
-    <ng-container *ngIf="(jsonString$ | async) && (error$ | async) === ''; else pleaseSelect">
+    <ng-container *ngIf="(jsonString$ | async) && (error$ | async) === ''; else disabledUpload">
       <button [disabled]="disabled$ | async" class="btn btn-primary" (click)="uploadDefinition()">
         <i class="icon mdi mdi-upload mr-1"></i>
         {{ 'Upload' | translate }}
@@ -38,8 +39,9 @@
   </div>
 </valtimo-modal>
 
-<ng-template #pleaseSelect>
-  <button class="btn btn-primary" [disabled]="true">
-    {{ 'Select a document definition' | translate }}
+<ng-template #disabledUpload>
+  <button [disabled]="true" class="btn btn-primary" >
+    <i class="icon mdi mdi-upload mr-1"></i>
+    {{ 'Upload' | translate }}
   </button>
 </ng-template>
