@@ -13,7 +13,8 @@
     "importHelpers": true,
     "types": [],
     "lib": ["dom", "es2018"],
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true
   },
   "angularCompilerOptions": {
     "compilationMode": "partial",
