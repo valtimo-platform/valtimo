@@ -24,7 +24,8 @@ import {MenuItem} from '@valtimo/config';
       [ngClass]="submenuItem.textClass"
       *ngIf="{
         translation: submenuItem.title | translate,
-        pageTranslation: 'pages.' + submenuItem.title.toLowerCase() + '.title' | translate
+        pageTranslation: 'pages.' + submenuItem.title.toLowerCase() + '.title' | translate,
+        badgeCount: submenuItem.badgeCount$ | async
       } as obs"
     >
       {{
@@ -34,6 +35,9 @@ import {MenuItem} from '@valtimo/config';
           (obs.translation !== submenuItem.title ? obs.translation : '') ||
           submenuItem.title
       }}
+      <span *ngIf="obs.badgeCount" class="badge badge-pill badge-primary">
+        {{ obs.badgeCount }}
+      </span>
       <ng-container *ngIf="!submenuItem.link">&gt;</ng-container>
     </span>
   `,

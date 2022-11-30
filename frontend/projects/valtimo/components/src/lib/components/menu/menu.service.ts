@@ -15,12 +15,13 @@
  */
 
 import {Injectable} from '@angular/core';
-import {MenuConfig, MenuItem, MenuIncludeService, IncludeFunction} from '@valtimo/config';
+import {MenuConfig, MenuItem, MenuIncludeService} from '@valtimo/config';
 import {NGXLogger} from 'ngx-logger';
 import {ConfigService} from '@valtimo/config';
 import {BehaviorSubject, Observable} from 'rxjs';
-import {DocumentService} from '@valtimo/document';
+import {DocumentDefinitions, DocumentService} from '@valtimo/document';
 import {UserProviderService} from '@valtimo/security';
+import {Subject, timer} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -80,6 +81,8 @@ export class MenuService {
     return new Observable(subscriber => {
       this.logger.debug('appendDossierSubMenuItems');
       this.documentService.getAllDefinitions().subscribe(definitions => {
+        const openDocumentCountMap = this.getOpenDocumentCountMap(definitions);
+
         const dossierMenuItems: MenuItem[] = definitions.content.map(
           (definition, index) =>
             ({
@@ -88,6 +91,7 @@ export class MenuService {
               iconClass: 'icon mdi mdi-dot-circle',
               sequence: index,
               show: true,
+              badgeCount$: openDocumentCountMap.get(definition.id.name),
             } as MenuItem)
         );
         this.logger.debug('found dossierMenuItems', dossierMenuItems);
@@ -102,6 +106,25 @@ export class MenuService {
         this.logger.debug('appendDossierSubMenuItems finished');
       });
     });
+  }
+
+  private getOpenDocumentCountMap(definitions: DocumentDefinitions): Map<String, Subject<number>> {
+    const countMap = new Map<String, Subject<number>>();
+    definitions.content.forEach(definition =>
+      countMap.set(definition.id.name, new Subject<number>())
+    );
+
+    timer(0, 5000).subscribe(() => {
+      this.logger.debug('polling');
+      this.documentService.getOpenDocumentCount().subscribe(openDocumentCountList => {
+        openDocumentCountList.forEach(openDocumentCount =>
+          countMap
+            .get(openDocumentCount.documentDefinitionName)
+            .next(openDocumentCount.openDocumentCount)
+        );
+      });
+    });
+    return countMap;
   }
 
   private applyMenuRoleSecurity(menuItems: MenuItem[]): MenuItem[] {
@@ -123,12 +146,6 @@ export class MenuService {
   }
 
   private determineRoleAccess(menuItem: MenuItem, roles: string[]): boolean {
-    if (!menuItem.roles) {
-      return true;
-    } else if (menuItem.roles.some(role => roles.includes(role))) {
-      return true;
-    } else {
-      return false;
-    }
+    return !menuItem.roles || menuItem.roles.some(role => roles.includes(role));
   }
 }
