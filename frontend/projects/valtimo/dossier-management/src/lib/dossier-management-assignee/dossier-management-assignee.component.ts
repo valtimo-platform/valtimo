@@ -10,7 +10,7 @@ import {tap} from 'rxjs/operators';
   styleUrls: ['./dossier-management-assignee.component.css'],
 })
 export class DossierManagementAssigneeComponent {
-  public disabled$!: Observable<boolean>;
+  readonly disabled$ = new BehaviorSubject<boolean>(false);
 
   private readonly _refresh$ = new BehaviorSubject<null>(null);
 
