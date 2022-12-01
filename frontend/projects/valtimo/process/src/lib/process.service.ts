@@ -17,13 +17,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {
-  ProcessDefinition,
-  ProcessDefinitionStartForm,
-  ProcessInstance,
-  ProcessInstanceTask,
-  ProcessStart,
-} from './models';
+import {ProcessDefinition, ProcessDefinitionStartForm, ProcessInstance, ProcessInstanceTask, ProcessStart,} from './models';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
@@ -171,7 +165,7 @@ export class ProcessService {
     formData.append('deployment-name', 'valtimoConsoleApp');
     formData.append('deployment-source', 'process application');
     return this.http.post(
-      `${this.valtimoEndpointUri}camunda-rest/engine/default/deployment/create`,
+      `${this.valtimoEndpointUri}v1/process/definition/deployment`,
       formData
     );
   }

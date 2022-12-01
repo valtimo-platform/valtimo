@@ -36,7 +36,7 @@ export class DecisionService {
     formData.append('deployment-name', 'dmnTableDeploy');
     formData.append('deployment-source', 'process application');
     return this.http.post<any>(
-      `${this.valtimoApiConfig.endpointUri}camunda-rest/engine/default/deployment/create`,
+      `${this.valtimoApiConfig.endpointUri}v1/process/definition/deployment`,
       formData
     );
   }

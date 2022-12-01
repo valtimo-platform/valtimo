@@ -117,6 +117,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     private readonly http: HttpClient,
     private readonly logger: NGXLogger,
     private readonly shellService: ShellService,
+
     private readonly elementRef: ElementRef
   ) {}
 
