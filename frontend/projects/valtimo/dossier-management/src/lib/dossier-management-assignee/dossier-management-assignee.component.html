@@ -1,0 +1,31 @@
+<h2 class="mb-4 mt-6">{{ 'dossierManagement.handleAssignee.title' | translate }}</h2>
+
+<ng-container
+  *ngIf="{
+    currentValue: currentValue$ | async,
+    documentDefinitionName: documentDefinitionName$ | async,
+    loading: loading$ | async,
+    disabled: disabled$ | async
+  } as obs"
+>
+  <ng-container *ngIf="obs.loading === false; else loading">
+    <label
+      class="custom-control custom-checkbox custom-control-inline pl-6 mr-5"
+      placement="bottom"
+    >
+      <input
+        [checked]="obs.currentValue.canHaveAssignee"
+        class="custom-control-input"
+        type="checkbox"
+        [disabled]="obs.disabled"
+        (click)="toggleAssignee(!obs.currentValue.canHaveAssignee, obs.documentDefinitionName)"
+      /><span class="custom-control-label custom-control-color">{{
+        'dossierManagement.handleAssignee.checkboxDescription' | translate
+      }}</span>
+    </label>
+  </ng-container>
+</ng-container>
+
+<ng-template #loading>
+  <valtimo-spinner></valtimo-spinner>
+</ng-template>

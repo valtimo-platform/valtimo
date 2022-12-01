@@ -39,6 +39,7 @@ import {DossierManagementLinkProcessComponent} from './dossier-management-link-p
 import {ParagraphModule, SelectModule, InputModule, FormModule} from '@valtimo/user-interface';
 import {DossierManagementSearchFieldsComponent} from './dossier-management-detail-container/tabs/dossier-management-search-fields/dossier-management-search-fields.component';
 import {DossierManagementDetailContainerComponent} from './dossier-management-detail-container/dossier-management-detail-container.component';
+import {DossierManagementAssigneeComponent} from './dossier-management-assignee/dossier-management-assignee.component';
 
 @NgModule({
   declarations: [
@@ -51,6 +52,7 @@ import {DossierManagementDetailContainerComponent} from './dossier-management-de
     DossierManagementLinkProcessComponent,
     DossierManagementSearchFieldsComponent,
     DossierManagementDetailContainerComponent,
+    DossierManagementAssigneeComponent,
   ],
   imports: [
     CommonModule,

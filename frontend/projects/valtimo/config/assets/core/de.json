@@ -284,6 +284,10 @@
       "title": "Verknüpfen Sie den Upload-Prozess mit dem Fall",
       "description": "Wählen Sie einen Prozess, der das Hochladen von Dateien handhaben soll."
     },
+    "handleAssignee": {
+      "title": "Casehandler",
+      "checkboxDescription": "Dieser Casetyp kann einen Handler haben"
+    },
     "tabs": {
       "cases": "Falldetails",
       "searchFields": "Suchfelder"

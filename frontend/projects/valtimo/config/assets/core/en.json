@@ -284,6 +284,10 @@
       "title": "Link upload process to case",
       "description": "Choose which process should handle file uploads."
     },
+    "handleAssignee": {
+      "title": "Case handler",
+      "checkboxDescription": "This case type can have a handler"
+    },
     "tabs": {
       "cases": "Case Details",
       "searchFields": "Search Fields"

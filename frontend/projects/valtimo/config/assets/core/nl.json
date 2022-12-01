@@ -284,6 +284,10 @@
       "title": "Uploadproces koppelen aan dossier",
       "description": "Kies welk proces het uploaden van bestanden moet afhandelen."
     },
+    "handleAssignee": {
+      "title": "Dossierbehandelaar",
+      "checkboxDescription": "Dit type dossier kan een behandelaar hebben"
+    },
     "tabs": {
       "cases": "Zaak Details",
       "searchFields": "Zoekvelden"

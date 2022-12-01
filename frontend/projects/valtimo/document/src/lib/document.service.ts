@@ -20,6 +20,7 @@ import {Observable} from 'rxjs';
 import {
   AssignHandlerToDocumentResult,
   AuditRecord,
+  CaseSettings,
   Document,
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
@@ -354,6 +355,22 @@ export class DocumentService {
   getOpenDocumentCount(): Observable<Array<OpenDocumentCount>> {
     return this.http.get<Array<OpenDocumentCount>>(
       `${this.valtimoEndpointUri}document-definition/open/count`
+    );
+  }
+
+  patchCaseSettings(
+    documentDefinitionName: string,
+    request: CaseSettings
+  ): Observable<CaseSettings> {
+    return this.http.patch<CaseSettings>(
+      `${this.valtimoEndpointUri}v1/case/${documentDefinitionName}/settings`,
+      {...request}
+    );
+  }
+
+  getCaseSettings(documentDefinitionName: string): Observable<CaseSettings> {
+    return this.http.get<CaseSettings>(
+      `${this.valtimoEndpointUri}v1/case/${documentDefinitionName}/settings`
     );
   }
 }
