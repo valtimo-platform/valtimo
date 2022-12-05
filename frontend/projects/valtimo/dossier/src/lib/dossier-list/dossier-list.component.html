@@ -117,13 +117,49 @@
               <h3 class="list-header-title">
                 {{ (schema$ | async)?.title }}
                 <sup class="ml-1 badge badge-pill badge-primary">{{
-                  documentItems?.length || 0
+                  pagination?.collectionSize || 0
                 }}</sup>
               </h3>
+            </div>
+
+            <div tabs>
+              <ng-container *ngTemplateOutlet="tabs"></ng-container>
             </div>
           </valtimo-list>
         </valtimo-widget>
       </ng-container>
     </ng-container>
   </ng-container>
+</ng-template>
+
+<ng-template #configuredTabs>
+  <ul ngbNav [destroyOnHide]="false" (navChange)="tabChange($event)" class="nav-tabs">
+    <li
+      *ngFor="let tab of dossierVisibleTabs"
+      [ngbNavItem]="tab"
+      [title]="'dossier.tabs.' + tab | translate"
+    >
+      <a ngbNavLink>{{ 'dossier.tabs.' + tab | translate }}</a>
+    </li>
+  </ul>
+</ng-template>
+
+<ng-template #tabs>
+  <ul
+    *ngIf="dossierVisibleTabs === null; else configuredTabs"
+    ngbNav
+    [destroyOnHide]="false"
+    (navChange)="tabChange($event)"
+    class="nav-tabs"
+  >
+    <li ngbNavItem="all" [title]="'dossier.tabs.ALL' | translate">
+      <a ngbNavLink>{{ 'dossier.tabs.ALL' | translate }}</a>
+    </li>
+    <li ngbNavItem="mine" [title]="'dossier.tabs.MINE' | translate">
+      <a ngbNavLink>{{ 'dossier.tabs.MINE' | translate }}</a>
+    </li>
+    <li ngbNavItem="open" [title]="'dossier.tabs.OPEN' | translate">
+      <a ngbNavLink>{{ 'dossier.tabs.OPEN' | translate }}</a>
+    </li>
+  </ul>
 </ng-template>

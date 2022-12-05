@@ -20,6 +20,7 @@ import {Observable} from 'rxjs';
 import {
   AssignHandlerToDocumentResult,
   AuditRecord,
+  CaseSettings,
   Document,
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
@@ -34,6 +35,7 @@ import {
   ModifyDocumentAndStartProcessResult,
   NewDocumentAndStartProcessRequestImpl,
   NewDocumentAndStartProcessResult,
+  OpenDocumentCount,
   Page,
   ProcessDocumentDefinition,
   ProcessDocumentDefinitionRequest,
@@ -42,14 +44,7 @@ import {
   UploadProcessLink,
 } from './models';
 import {DocumentSearchRequest} from './document-search-request';
-import {
-  ConfigService,
-  SearchField,
-  SearchFilter,
-  SearchFilterRange,
-  SearchOperator,
-  User,
-} from '@valtimo/config';
+import {AssigneeFilter, ConfigService, SearchField, SearchFilter, SearchFilterRange, SearchOperator, User,} from '@valtimo/config';
 import {AdvancedDocumentSearchRequest} from './advanced-document-search-request';
 
 @Injectable({
@@ -93,12 +88,17 @@ export class DocumentService {
   getDocumentsSearch(
     documentSearchRequest: AdvancedDocumentSearchRequest,
     searchOperator?: SearchOperator,
+    assigneeFilter?: AssigneeFilter,
     otherFilters?: Array<SearchFilter | SearchFilterRange>
   ): Observable<Documents> {
     const body = documentSearchRequest.asHttpBody();
 
     if (searchOperator) {
       body.searchOperator = searchOperator;
+    }
+
+    if (assigneeFilter) {
+      body.assigneeFilter = assigneeFilter;
     }
 
     if (otherFilters) {
@@ -341,6 +341,28 @@ export class DocumentService {
   getCandidateUsers(documentId: string): Observable<Array<User>> {
     return this.http.get<Array<User>>(
       `${this.valtimoEndpointUri}v1/document/${documentId}/candidate-user`
+    );
+  }
+
+  getOpenDocumentCount(): Observable<Array<OpenDocumentCount>> {
+    return this.http.get<Array<OpenDocumentCount>>(
+      `${this.valtimoEndpointUri}v1/document-definition/open/count`
+    );
+  }
+
+  patchCaseSettings(
+    documentDefinitionName: string,
+    request: CaseSettings
+  ): Observable<CaseSettings> {
+    return this.http.patch<CaseSettings>(
+      `${this.valtimoEndpointUri}v1/case/${documentDefinitionName}/settings`,
+      {...request}
+    );
+  }
+
+  getCaseSettings(documentDefinitionName: string): Observable<CaseSettings> {
+    return this.http.get<CaseSettings>(
+      `${this.valtimoEndpointUri}v1/case/${documentDefinitionName}/settings`
     );
   }
 }

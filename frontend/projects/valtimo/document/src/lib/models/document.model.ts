@@ -287,3 +287,12 @@ export interface UploadProcessLink {
 export interface UpdateUploadProcessLinkRequest {
   processDefinitionKey: string;
 }
+
+export interface CaseSettings {
+  canHaveAssignee: boolean;
+}
+
+export interface OpenDocumentCount {
+  documentDefinitionName: string;
+  openDocumentCount: number;
+}

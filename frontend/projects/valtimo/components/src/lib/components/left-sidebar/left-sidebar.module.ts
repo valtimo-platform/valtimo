@@ -20,10 +20,10 @@ import {LeftSidebarComponent} from './left-sidebar.component';
 import {PageTitleModule} from '../page-title/page-title.module';
 import {MenuModule} from '../menu/menu.module';
 import {IconModule, UIShellModule} from 'carbon-components-angular';
-import {ComponentsPipesModule} from '../../pipes';
+import {CaseCountPipe, ComponentsPipesModule} from '../../pipes';
 
 @NgModule({
-  declarations: [LeftSidebarComponent],
+  declarations: [LeftSidebarComponent, CaseCountPipe],
   imports: [
     CommonModule,
     MenuModule,

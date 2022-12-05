@@ -106,9 +106,9 @@ export interface ValtimoConfig {
     enableHackathonCasesPage?: boolean;
     showUserNameInTopBar?: boolean;
     experimentalDmnEditing?: boolean;
-    caseSearchFields?: boolean;
   };
   visibleTaskListTabs?: Array<TaskListTab>;
+  visibleDossierListTabs?: Array<DossierListTab>;
   customTaskList?: CustomTaskList;
   customLeftSidebar?: CustomLeftSidebar;
   caseObjectTypes?: {
@@ -122,14 +122,20 @@ export enum UploadProvider {
   DOCUMENTEN_API,
 }
 
-export enum Language {
-  NL = 'nl',
-  EN = 'en',
-  DE = 'de',
-}
-
 export enum TaskListTab {
   MINE = 'mine',
   OPEN = 'open',
   ALL = 'all',
+}
+
+export enum DossierListTab {
+  MINE = 'MINE',
+  OPEN = 'OPEN',
+  ALL = 'ALL',
+}
+
+export enum Language {
+  NL = 'nl',
+  EN = 'en',
+  DE = 'de',
 }

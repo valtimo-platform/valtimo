@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {Subject} from 'rxjs';
+
 enum IncludeFunction {
   HaalcentraalConnectorConfigured,
 }
@@ -27,6 +29,7 @@ interface MenuItem {
   children?: MenuItem[];
   roles?: string[];
   show?: boolean;
+  count$?: Subject<number>;
   includeFunction?: IncludeFunction;
 }
 

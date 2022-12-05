@@ -12,6 +12,7 @@ type TextValueSingle = string;
 type TextValueMultiple = Array<TextValueSingle>;
 
 type NumberValueSingle = number;
+
 interface NumberValueRange {
   start: NumberValueSingle;
   end: NumberValueSingle;
@@ -49,6 +50,8 @@ interface SearchFilterRange {
   rangeTo: string;
 }
 
+type AssigneeFilter = 'OPEN' | 'MINE' | 'ALL';
+
 export {
   SearchFieldDataType,
   SearchFieldFieldType,
@@ -61,4 +64,5 @@ export {
   SearchOperator,
   SearchFilter,
   SearchFilterRange,
+  AssigneeFilter,
 };

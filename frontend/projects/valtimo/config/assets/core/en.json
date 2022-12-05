@@ -27,7 +27,10 @@
       "contact-moments": "Contact moments",
       "custom-dossier": "Custom dossier",
       "custom-maps": "Custom maps",
-      "zaakobjecten": "Zaak objects"
+      "zaakobjecten": "Zaak objects",
+      "MINE": "My cases",
+      "OPEN": "Unassigned cases",
+      "ALL": "All cases"
     },
     "forms": {
       "globalSearchPlaceHolder": "Everything",
@@ -69,7 +72,6 @@
       }
     },
     "startSubProcess": "Start",
-    "claimAssigneeCase": "Claim",
     "deleteConfirmation": {
       "title": "Delete file",
       "description": "Are you sure you want to delete this file?",
@@ -282,6 +284,10 @@
     "linkProcess": {
       "title": "Link upload process to case",
       "description": "Choose which process should handle file uploads."
+    },
+    "handleAssignee": {
+      "title": "Case handler",
+      "checkboxDescription": "This case type can have a handler"
     },
     "tabs": {
       "cases": "Case Details",
@@ -506,7 +512,8 @@
       "wrongType": "The filetype of the file you tried to submit is not supported",
       "generic": "Something went wrong. Please try again.",
       "invalidDocDef": "The case definition could not be uploaded. Please try again.",
-      "invalidFormDef": "The form definition is not valid. Please try again."
+      "invalidFormDef": "The form definition is not valid. Please try again.",
+      "invalidJson": "The file contains an error. Please make sure it contains a valid JSON value."
     }
   },
   "fieldLabels": {

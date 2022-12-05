@@ -46,6 +46,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   @Input() form: any;
   @Input() options: ValtimoFormioOptions;
   @Input() submission?: object = {};
+  @Input() readOnly?: boolean;
   @Input() formRefresh$!: Subject<FormioRefreshValue>;
   // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() submit: EventEmitter<any> = new EventEmitter();

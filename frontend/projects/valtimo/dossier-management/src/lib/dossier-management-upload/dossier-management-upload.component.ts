@@ -136,6 +136,9 @@ export class DossierManagementUploadComponent implements AfterViewInit, OnDestro
           const result = reader.result.toString();
           if (this.stringIsValidJson(result)) {
             this.jsonString$.next(result);
+          } else {
+            this.clearJsonString();
+            this.error$.next(this.translateService.instant('dropzone.error.invalidJson'));
           }
         };
 

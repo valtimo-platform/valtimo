@@ -27,7 +27,10 @@
       "contact-moments": "Contactmomenten",
       "custom-dossier": "Custom dossier",
       "custom-maps": "Custom maps",
-      "zaakobjecten": "Zaakobjecten"
+      "zaakobjecten": "Zaakobjecten",
+      "MINE": "Mijn dossiers",
+      "OPEN": "Niet-toegewezen dossiers",
+      "ALL": "Alle dossiers"
     },
     "forms": {
       "globalSearchPlaceHolder": "Alles",
@@ -283,6 +286,10 @@
       "title": "Uploadproces koppelen aan dossier",
       "description": "Kies welk proces het uploaden van bestanden moet afhandelen."
     },
+    "handleAssignee": {
+      "title": "Dossierbehandelaar",
+      "checkboxDescription": "Dit type dossier kan een behandelaar hebben"
+    },
     "tabs": {
       "cases": "Zaak Details",
       "searchFields": "Zoekvelden"
@@ -506,7 +513,8 @@
       "wrongType": "Het bestandstype van het opgegeven bestand wordt niet ondersteund",
       "generic": "Er ging iets mis. Probeer het opnieuw.",
       "invalidDocDef": "Uw dossier-definitie kon niet geüpload worden. Probeer het opnieuw.",
-      "invalidFormDef": "Uw formulier-definitie is niet geldig. Probeer het opnieuw."
+      "invalidFormDef": "Uw formulier-definitie is niet geldig. Probeer het opnieuw.",
+      "invalidJson": "Het opgegeven bestand bevat een fout. Controleer of de inhoud een geldige JSON-waarde is."
     }
   },
   "fieldLabels": {

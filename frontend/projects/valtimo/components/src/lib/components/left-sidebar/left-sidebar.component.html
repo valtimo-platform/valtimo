@@ -41,14 +41,21 @@
       <ng-container *ngTemplateOutlet="subMenuIcon; context: {menuItem: menuItem}"></ng-container>
       <ibm-sidenav-menu [title]="menuItem | menuItemTranslate | async">
         <ng-container *ngFor="let childMenuItem of menuItem.children">
-          <ibm-sidenav-item
-            href="javascript:void(0)"
-            *ngIf="childMenuItem.link"
-            (click)="navigateToRoute(childMenuItem.link, $event)"
-            [active]="'' + menuItem.sequence + childMenuItem.sequence === obs.closestSequence"
+          <ng-container
+            *ngIf="{count: childMenuItem?.count$ && (childMenuItem?.count$ | async)} as vars"
           >
-            <valtimo-menu-item-text [menuItem]="childMenuItem"></valtimo-menu-item-text>
-          </ibm-sidenav-item>
+            <ibm-sidenav-item
+              [href]="vars?.count ? 'javascript:return false;' : 'javascript:void(0);'"
+              *ngIf="childMenuItem.link"
+              (click)="navigateToRoute(childMenuItem.link, $event)"
+              [active]="'' + menuItem.sequence + childMenuItem.sequence === obs.closestSequence"
+            >
+              <valtimo-menu-item-text [menuItem]="childMenuItem"></valtimo-menu-item-text>
+              <ng-container
+                *ngTemplateOutlet="countTemplate; context: {count: vars.count}"
+              ></ng-container>
+            </ibm-sidenav-item>
+          </ng-container>
         </ng-container>
       </ibm-sidenav-menu>
     </ng-container>
@@ -74,4 +81,12 @@
   >
     <valtimo-menu-item-text [menuItem]="menuItem"></valtimo-menu-item-text>
   </ibm-sidenav-item>
+</ng-template>
+
+<ng-template #countTemplate let-count="count">
+  <ng-container *ngIf="count">
+    <span class="case-count">
+      {{ count | caseCount }}
+    </span>
+  </ng-container>
 </ng-template>
