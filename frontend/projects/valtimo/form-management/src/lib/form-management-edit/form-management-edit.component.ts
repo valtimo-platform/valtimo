@@ -132,7 +132,9 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
   }
 
   downloadFormDefinition() {
-    const file = new Blob([JSON.stringify(this.formDefinition.formDefinition)], {type: 'text/json'});
+    const file = new Blob([JSON.stringify(this.formDefinition.formDefinition)], {
+      type: 'text/json',
+    });
     const link = document.createElement('a');
     link.download = `form_${this.formDefinition.name}.json`;
     link.href = window.URL.createObjectURL(file);

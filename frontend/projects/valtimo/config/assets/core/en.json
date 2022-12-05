@@ -290,7 +290,8 @@
     },
     "tabs": {
       "cases": "Case Details",
-      "searchFields": "Search Fields"
+      "searchFields": "Search Fields",
+      "listColumns": "List"
     }
   },
   "serviceTaskManagement": {

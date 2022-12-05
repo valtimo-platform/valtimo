@@ -43,22 +43,32 @@
   <ul class="nav nav-tabs">
     <li class="nav-item">
       <a
-        id="test-tab"
+        id="case-tab"
         class="nav-link clickable active"
         data-toggle="tab"
-        (click)="displayBodyComponent('case')"
+        (click)="displayBodyComponent(TabEnum.CASE)"
       >
         {{ 'dossierManagement.tabs.cases' | translate }}
       </a>
     </li>
     <li class="nav-item">
       <a
-        id="test-tab-1"
+        id="search-tab"
         class="nav-link clickable"
         data-toggle="tab"
-        (click)="displayBodyComponent('search')"
+        (click)="displayBodyComponent(TabEnum.SEARCH)"
       >
         {{ 'dossierManagement.tabs.searchFields' | translate }}
+      </a>
+    </li>
+    <li class="nav-item" *ngIf="caseListColumn">
+      <a
+        id="list-tab"
+        class="nav-link clickable"
+        data-toggle="tab"
+        (click)="displayBodyComponent(TabEnum.LIST)"
+      >
+        {{ 'dossierManagement.tabs.listColumns' | translate }}
       </a>
     </li>
   </ul>
@@ -66,11 +76,14 @@
 
 <ng-template #tabContent>
   <div class="pt-3 bg-white position-relative tab-container">
-    <div *ngIf="isCase">
+    <div *ngIf="currentTab && currentTab === TabEnum.CASE">
       <valtimo-dossier-management-detail></valtimo-dossier-management-detail>
     </div>
-    <div *ngIf="!isCase">
+    <div *ngIf="currentTab && currentTab === TabEnum.SEARCH">
       <valtimo-dossier-management-search-fields></valtimo-dossier-management-search-fields>
+    </div>
+    <div *ngIf="currentTab && currentTab === TabEnum.LIST">
+      <valtimo-dossier-management-list-columns></valtimo-dossier-management-list-columns>
     </div>
   </div>
 </ng-template>

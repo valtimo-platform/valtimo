@@ -14,18 +14,26 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentService} from '@valtimo/document';
-import {filter, map, Observable, switchMap} from 'rxjs';
+import {filter, map, Observable, Subscription, switchMap} from 'rxjs';
+import {ConfigService} from '@valtimo/config';
+import {TabService} from '../tab.service';
+import {TabEnum} from '../tab.enum';
 
 @Component({
   selector: 'valtimo-dossier-management-detail-container',
   templateUrl: './dossier-management-detail-container.component.html',
   styleUrls: ['./dossier-management-detail-container.component.css'],
 })
-export class DossierManagementDetailContainerComponent {
-  public isCase = true;
+export class DossierManagementDetailContainerComponent implements OnInit, OnDestroy {
+  public currentTab: TabEnum;
+  public caseListColumn!: boolean;
+
+  private tabSubscription: Subscription;
+
+  readonly TabEnum = TabEnum;
 
   readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
     map(params => params.name || ''),
@@ -38,9 +46,30 @@ export class DossierManagementDetailContainerComponent {
     )
   );
 
-  constructor(private documentService: DocumentService, private route: ActivatedRoute) {}
+  constructor(
+    private readonly documentService: DocumentService,
+    private readonly route: ActivatedRoute,
+    private readonly configService: ConfigService,
+    private readonly tabService: TabService
+  ) {
+    this.caseListColumn = this.configService.config.featureToggles.caseListColumn;
+  }
 
-  displayBodyComponent(tab: string): void {
-    this.isCase = tab === 'case';
+  ngOnInit(): void {
+    this.openCurrentTabSubscription();
+  }
+
+  displayBodyComponent(tab: TabEnum): void {
+    this.tabService.currentTab = tab;
+  }
+
+  openCurrentTabSubscription(): void {
+    this.tabSubscription = this.tabService.currentTab$.subscribe(
+      value => (this.currentTab = value)
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.tabSubscription?.unsubscribe();
   }
 }

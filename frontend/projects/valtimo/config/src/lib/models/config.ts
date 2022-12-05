@@ -105,6 +105,7 @@ export interface ValtimoConfig {
     showUserNameInTopBar?: boolean;
     experimentalDmnEditing?: boolean;
     caseSearchFields?: boolean;
+    caseListColumn?: boolean;
   };
   visibleTaskListTabs?: Array<TaskListTab>;
   visibleDossierListTabs?: Array<DossierListTab>;

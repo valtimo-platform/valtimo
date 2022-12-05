@@ -40,6 +40,7 @@ import {ParagraphModule, SelectModule, InputModule, FormModule} from '@valtimo/u
 import {DossierManagementSearchFieldsComponent} from './dossier-management-detail-container/tabs/dossier-management-search-fields/dossier-management-search-fields.component';
 import {DossierManagementDetailContainerComponent} from './dossier-management-detail-container/dossier-management-detail-container.component';
 import {DossierManagementAssigneeComponent} from './dossier-management-assignee/dossier-management-assignee.component';
+import {DossierManagementListColumnsComponent} from './dossier-management-detail-container/tabs/dossier-management-list-columns/dossier-management-list-columns.component';
 
 @NgModule({
   declarations: [
@@ -53,6 +54,7 @@ import {DossierManagementAssigneeComponent} from './dossier-management-assignee/
     DossierManagementSearchFieldsComponent,
     DossierManagementDetailContainerComponent,
     DossierManagementAssigneeComponent,
+    DossierManagementListColumnsComponent,
   ],
   imports: [
     CommonModule,
