@@ -182,6 +182,8 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     this.userProviderService.getEmailNotificationSettings().subscribe(results => {
       if (results) {
         this.emailNotificationSettings$.next(results);
+      } else {
+        this.emailNotificationSettings$.next(this.settingsForm.value);
       }
     });
   }

@@ -148,6 +148,8 @@
     display: inline-flex;
     flex-direction: column;
     border: none;
+    min-width: 100%;
+    padding-right: 0.5rem !important;
 
     .cds--tag {
       margin: 0;
