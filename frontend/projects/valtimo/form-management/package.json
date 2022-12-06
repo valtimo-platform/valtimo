@@ -1,7 +1,7 @@
 {
   "name": "@valtimo/form-management",
   "license": "EUPL-1.2",
-  "version": "10.0.0",
+  "version": "10.0.0-3.RC",
   "peerDependencies": {
     "@angular/common": "^14.2.5",
     "@angular/core": "^14.2.5"
