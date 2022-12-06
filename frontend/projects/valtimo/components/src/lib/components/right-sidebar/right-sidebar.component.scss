@@ -142,3 +142,17 @@
     }
   }
 }
+
+.account-information {
+  .cds--structured-list-td {
+    display: inline-flex;
+    flex-direction: column;
+    border: none;
+
+    .cds--tag {
+      margin: 0;
+      margin-top: 0.25rem;
+      width: fit-content;
+    }
+  }
+}

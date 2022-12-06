@@ -104,8 +104,6 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   readonly userContexts$ = this.contextService.getUserContexts();
   readonly activeContext$ = this.contextService.getUserContextActive();
 
-  readonly frontendVersion!: string;
-
   private formSubscription!: Subscription;
 
   constructor(

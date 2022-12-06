@@ -44,7 +44,15 @@ import {
   UploadProcessLink,
 } from './models';
 import {DocumentSearchRequest} from './document-search-request';
-import {AssigneeFilter, ConfigService, SearchField, SearchFilter, SearchFilterRange, SearchOperator, User,} from '@valtimo/config';
+import {
+  AssigneeFilter,
+  ConfigService,
+  SearchField,
+  SearchFilter,
+  SearchFilterRange,
+  SearchOperator,
+  User,
+} from '@valtimo/config';
 import {AdvancedDocumentSearchRequest} from './advanced-document-search-request';
 
 @Injectable({

@@ -144,6 +144,14 @@
   display: block;
 }
 
+::ng-deep .cds--side-nav__item--empty {
+  pointer-events: none;
+
+  .menu-item-icon-container {
+    display: none;
+  }
+}
+
 ::ng-deep .cds--side-nav__link[href*='javascript:return false;'] {
   padding-right: 3rem !important;
 }

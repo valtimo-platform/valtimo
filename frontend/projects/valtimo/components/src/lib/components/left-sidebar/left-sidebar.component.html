@@ -45,12 +45,17 @@
             *ngIf="{count: childMenuItem?.count$ && (childMenuItem?.count$ | async)} as vars"
           >
             <ibm-sidenav-item
+              [ngClass]="{
+                'cds--side-nav__item--empty': !childMenuItem.link
+              }"
               [href]="vars?.count ? 'javascript:return false;' : 'javascript:void(0);'"
-              *ngIf="childMenuItem.link"
               (click)="navigateToRoute(childMenuItem.link, $event)"
               [active]="'' + menuItem.sequence + childMenuItem.sequence === obs.closestSequence"
             >
-              <valtimo-menu-item-text [menuItem]="childMenuItem"></valtimo-menu-item-text>
+              <valtimo-menu-item-text
+                [menuItem]="childMenuItem"
+                [accent]="!childMenuItem.link"
+              ></valtimo-menu-item-text>
               <ng-container
                 *ngTemplateOutlet="countTemplate; context: {count: vars.count}"
               ></ng-container>

@@ -43,6 +43,7 @@ body {
 
 .page-head-title {
   margin-top: 0 !important;
+  font-size: 1.8rem !important;
 }
 
 .list-header-title {
@@ -92,5 +93,26 @@ h4 {
 }
 
 h5 {
-  font-size: 14px;
+  font-size: 13px;
+}
+
+.accordion-button {
+  font-size: 1rem !important;
+}
+
+.form-control {
+  font-size: 1rem;
+  height: 3rem;
+}
+
+label {
+  margin-bottom: 8px;
+}
+
+.dropdown-item {
+  font-size: 0.8rem;
+}
+
+.col-form-label {
+  padding-bottom: 6px;
 }

@@ -150,7 +150,6 @@
       <strong>{{
         'list.currentPage' | translate: {current: pagination.page, total: getTotalPageCount()}
       }}</strong>
-      <br />
       {{
         pagination.collectionSize === 1
           ? ('list.showingResult' | translate: {number: (items | listFilter: searchModel).length})

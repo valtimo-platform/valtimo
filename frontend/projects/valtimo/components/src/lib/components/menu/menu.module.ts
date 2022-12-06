@@ -21,10 +21,18 @@ import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateModule} from '@ngx-translate/core';
 import {MenuItemTextComponent} from './menu-item-text.component';
 import {ComponentsPipesModule} from '../../pipes';
+import {LinkModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [MenuItemTextComponent],
-  imports: [CommonModule, RouterModule, NgbTooltipModule, TranslateModule, ComponentsPipesModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    NgbTooltipModule,
+    TranslateModule,
+    ComponentsPipesModule,
+    LinkModule,
+  ],
   exports: [MenuItemTextComponent],
 })
 export class MenuModule {}

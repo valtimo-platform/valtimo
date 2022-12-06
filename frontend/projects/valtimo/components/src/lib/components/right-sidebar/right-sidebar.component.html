@@ -59,19 +59,25 @@
 </ng-template>
 
 <ng-template #accountInformationTableTemplate>
-  <div class="information-table">
+  <div class="information-table account-information">
     <ibm-structured-list *ngIf="userSubject$ | async as userSubject">
       <ibm-list-row>
-        <ibm-list-column>{{ 'interface.email' | translate }}</ibm-list-column>
-        <ibm-list-column>{{ userSubject.email }}</ibm-list-column>
+        <ibm-list-column
+          >{{ 'interface.email' | translate }}
+          <ibm-tag type="blue">{{ userSubject.email }}</ibm-tag>
+        </ibm-list-column>
       </ibm-list-row>
       <ibm-list-row>
-        <ibm-list-column>{{ 'interface.username' | translate }}</ibm-list-column>
-        <ibm-list-column>{{ userSubject.username }}</ibm-list-column>
+        <ibm-list-column
+          >{{ 'interface.username' | translate }}
+          <ibm-tag type="blue">{{ userSubject.username }}</ibm-tag>
+        </ibm-list-column>
       </ibm-list-row>
       <ibm-list-row>
-        <ibm-list-column>{{ 'interface.name' | translate }}</ibm-list-column>
-        <ibm-list-column>{{ userSubject.firstName + ' ' + userSubject.lastName }}</ibm-list-column>
+        <ibm-list-column
+          >{{ 'interface.name' | translate }}
+          <ibm-tag type="blue">{{ userSubject.firstName + ' ' + userSubject.lastName }}</ibm-tag>
+        </ibm-list-column>
       </ibm-list-row>
     </ibm-structured-list>
   </div>

@@ -24,4 +24,5 @@ import {MenuItem} from '@valtimo/config';
 })
 export class MenuItemTextComponent {
   @Input() menuItem: MenuItem;
+  @Input() accent = false;
 }
