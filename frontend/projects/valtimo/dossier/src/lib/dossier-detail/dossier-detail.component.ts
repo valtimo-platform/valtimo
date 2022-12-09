@@ -29,7 +29,7 @@ import {Location} from '@angular/common';
 import {TabService} from '../tab.service';
 import {ProcessService} from '@valtimo/process';
 import {DossierSupportingProcessStartModalComponent} from '../dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService, DossierListTab} from '@valtimo/config';
 import moment from 'moment';
 import {
   BehaviorSubject,
@@ -45,7 +45,6 @@ import {
 } from 'rxjs';
 import {KeycloakService} from 'keycloak-angular';
 import {NGXLogger} from 'ngx-logger';
-import {DossierListTab} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-dossier-detail',
@@ -113,6 +112,17 @@ export class DossierDetailComponent implements OnInit {
   ]).pipe(
     map(([assigneeId, userId]) => assigneeId && userId && assigneeId === userId),
     startWith(true)
+  );
+
+  readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
+    map(params => params.documentDefinitionName || '')
+  );
+
+  readonly canHaveAssignee$: Observable<boolean> = this.documentDefinitionName$.pipe(
+    switchMap(documentDefinitionName =>
+      this.documentService.getCaseSettings(documentDefinitionName)
+    ),
+    map(caseSettings => caseSettings?.canHaveAssignee)
   );
 
   constructor(

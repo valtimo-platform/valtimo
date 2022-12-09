@@ -87,6 +87,13 @@ export class DossierListComponent implements OnInit {
     })
   );
 
+  readonly canHaveAssignee$: Observable<boolean> = this.documentDefinitionName$.pipe(
+    switchMap(documentDefinitionName =>
+      this.documentService.getCaseSettings(documentDefinitionName)
+    ),
+    map(caseSettings => caseSettings?.canHaveAssignee)
+  );
+
   readonly documentSearchFields$: Observable<Array<SearchField> | null> =
     this.documentDefinitionName$.pipe(
       distinctUntilChanged(),
@@ -131,19 +138,41 @@ export class DossierListComponent implements OnInit {
       )
     );
 
+  private readonly ASSIGNEE_KEY = 'assigneeFullName';
+
   readonly fields$: Observable<Array<ListField>> = combineLatest([
     this.columns$,
+    this.canHaveAssignee$,
     this.translateService.stream('key'),
   ]).pipe(
-    map(([columns]) =>
-      columns.map((column, index) => ({
-        key: column.propertyName,
-        label: this.translateService.instant(`fieldLabels.${column.translationKey}`),
-        sortable: column.sortable,
-        ...(column.viewType && {viewType: column.viewType}),
-        ...(column.enum && {enum: column.enum}),
-      }))
-    )
+    map(([columns, canHaveAssignee]) => [
+      ...columns
+        .map(column => ({
+          key: column.propertyName,
+          label: this.translateService.instant(`fieldLabels.${column.translationKey}`),
+          sortable: column.sortable,
+          ...(column.viewType && {viewType: column.viewType}),
+          ...(column.enum && {enum: column.enum}),
+        }))
+        // Filter out assignee column if the case type can not have an assignee
+        .filter(column => {
+          if (column?.key === this.ASSIGNEE_KEY && !canHaveAssignee) {
+            return false;
+          }
+          return true;
+        }),
+      // If the case type can have an assignee, and the assignee column is not present in the case column definition, add an assignee column at the end
+      ...(canHaveAssignee && !columns.find(column => column.propertyName === this.ASSIGNEE_KEY)
+        ? [
+            {
+              key: this.ASSIGNEE_KEY,
+              label: this.translateService.instant(`fieldLabels.${this.ASSIGNEE_KEY}`),
+              sortable: true,
+              viewType: 'string',
+            },
+          ]
+        : []),
+    ])
   );
 
   private readonly DEFAULT_PAGINATION: Pagination = {
