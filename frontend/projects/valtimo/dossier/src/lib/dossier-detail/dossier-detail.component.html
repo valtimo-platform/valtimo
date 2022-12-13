@@ -19,9 +19,14 @@
     <div class="col-12 px-0 mb-5">
       <valtimo-widget>
         <div class="card-header bg-light card-header-divider pb-2">
-          <div class="row">
+          <div class="row" *ngIf="{canHaveAssignee: canHaveAssignee$ | async} as obs">
             <div class="col">
-              <ng-container *ngTemplateOutlet="caseDetailHeader"></ng-container>
+              <ng-container
+                *ngTemplateOutlet="
+                  caseDetailHeader;
+                  context: {canHaveAssignee: obs.canHaveAssignee}
+                "
+              ></ng-container>
             </div>
             <div class="btn-group mt-m3px mb-3 col-auto">
               <valtimo-extension
@@ -29,7 +34,9 @@
                 page="dossier-detail"
                 section="card-header"
               ></valtimo-extension>
-              <ng-container *ngTemplateOutlet="claimButton"></ng-container>
+              <ng-container
+                *ngTemplateOutlet="claimButton; context: {canHaveAssignee: obs.canHaveAssignee}"
+              ></ng-container>
               <div class="dropdown">
                 <button
                   class="btn btn-primary dropdown-toggle"
@@ -88,7 +95,7 @@
   </div>
 </div>
 
-<ng-template #caseDetailHeader>
+<ng-template #caseDetailHeader let-canHaveAssignee="canHaveAssignee">
   <div class="row" *ngIf="customDossierHeaderItems.length > 0; else defaultTitle">
     <span
       class="mb-0 mt-0 pb-2 align-self-end col-xl-{{ item.columnSize }} col-lg-{{
@@ -108,15 +115,17 @@
       <strong>{{ item.value }}</strong>
     </span>
   </div>
-  <ng-container *ngTemplateOutlet="caseDetailAssignee"></ng-container>
+  <ng-container
+    *ngTemplateOutlet="caseDetailAssignee; context: {canHaveAssignee: canHaveAssignee}"
+  ></ng-container>
 </ng-template>
 
 <ng-template #defaultTitle>
   <div class="row ml-0 mr-0">{{ documentDefinitionNameTitle?.trim() }}</div>
 </ng-template>
 
-<ng-template #caseDetailAssignee>
-  <div class="row ml-0 mr-0 mt-1 mb-1" *ngIf="document$ | async as document">
+<ng-template #caseDetailAssignee let-canHaveAssignee="canHaveAssignee">
+  <div class="row ml-0 mr-0 mt-1 mb-1" *ngIf="canHaveAssignee && (document$ | async) as document">
     <valtimo-dossier-assign-user
       [documentId]="document.id"
       [assigneeId]="document.assigneeId"
@@ -126,8 +135,8 @@
   </div>
 </ng-template>
 
-<ng-template #claimButton>
-  <div class="user-full-name">
+<ng-template #claimButton let-canHaveAssignee="canHaveAssignee">
+  <div class="user-full-name" *ngIf="canHaveAssignee">
     <button
       class="btn btn-space btn-primary mr-1"
       type="button"
