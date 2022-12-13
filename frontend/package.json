@@ -311,7 +311,6 @@
     "zone.js": "~0.11.6"
   },
   "devDependencies": {
-    "@angular-devkit/architect": "^0.1500.3",
     "@angular-devkit/build-angular": "~13.3.9",
     "@angular/compiler-cli": "~13.3.0",
     "@valtimo/account": "file:dist/valtimo/account",
