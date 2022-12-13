@@ -115,10 +115,6 @@ export class DossierSupportingProcessStartModalComponent {
       );
   }
 
-  public get modalTitle() {
-    return `Start - ${this.processName}`;
-  }
-
   openModal(processDocumentDefinition: ProcessDocumentDefinition, documentId: string) {
     this.documentId = documentId;
     this.documentDefinitionName = processDocumentDefinition.id.documentDefinitionId.name;

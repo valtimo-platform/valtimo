@@ -62,7 +62,9 @@
                     href="#"
                     (click)="startProcess(processDocumentDefinition)"
                   >
-                    {{ processDocumentDefinition.processName }}
+                    {{ (processDocumentDefinition?.id?.processDefinitionKey | translate) !== processDocumentDefinition?.id?.processDefinitionKey
+                    ? (processDocumentDefinition.id.processDefinitionKey | translate)
+                    : processDocumentDefinition.processName }}
                   </button>
                 </div>
               </div>

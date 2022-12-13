@@ -17,7 +17,7 @@
 <valtimo-modal
   #supportingProcessStartModal
   elementId="supportingProcessStartModal"
-  [title]="modalTitle"
+  [title]="(processDefinitionKey | translate) !== processDefinitionKey ? (processDefinitionKey | translate) : processName"
 >
   <div body *ngIf="formDefinition">
     <valtimo-form-io
