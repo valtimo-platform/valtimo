@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {ConfigService, MenuConfig, MenuIncludeService, MenuItem} from '@valtimo/config';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, Observable, Subject, timer} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subject, take, timer} from 'rxjs';
 import {DocumentDefinitions, DocumentService} from '@valtimo/document';
 import {UserProviderService} from '@valtimo/security';
 import {NavigationEnd, Router} from '@angular/router';
@@ -32,6 +32,8 @@ export class MenuService {
   private _menuItems$ = new BehaviorSubject<MenuItem[]>(undefined);
   private menuConfig: MenuConfig;
 
+  private readonly disableCaseCount!: boolean;
+
   constructor(
     private readonly configService: ConfigService,
     private readonly documentService: DocumentService,
@@ -40,7 +42,9 @@ export class MenuService {
     private readonly menuIncludeService: MenuIncludeService,
     private readonly router: Router
   ) {
-    this.menuConfig = configService.config.menu;
+    const config = configService?.config;
+    this.menuConfig = config?.menu;
+    this.disableCaseCount = config?.featureToggles?.disableCaseCount;
   }
 
   init(): void {
@@ -138,30 +142,45 @@ export class MenuService {
     return new Observable(subscriber => {
       this.logger.debug('appendDossierSubMenuItems');
       this.documentService.getAllDefinitions().subscribe(definitions => {
-        const openDocumentCountMap = this.getOpenDocumentCountMap(definitions);
+        combineLatest([
+          ...definitions.content.map(definition =>
+            this.documentService.getCaseSettings(definition?.id?.name)
+          ),
+        ])
+          .pipe(take(1))
+          .subscribe(allCaseSettings => {
+            const openDocumentCountMap =
+              !this.disableCaseCount && this.getOpenDocumentCountMap(definitions);
 
-        const dossierMenuItems: MenuItem[] = definitions.content.map(
-          (definition, index) =>
-            ({
-              link: ['/dossiers/' + definition.id.name],
-              title: definition.schema.title,
-              iconClass: 'icon mdi mdi-dot-circle',
-              sequence: index,
-              show: true,
-              count$: openDocumentCountMap.get(definition.id.name),
-            } as MenuItem)
-        );
-        this.logger.debug('found dossierMenuItems', dossierMenuItems);
-        const menuItemIndex = menuItems.findIndex(({title}) => title === 'Dossiers');
-        if (menuItemIndex > 0) {
-          const dossierMenu = menuItems[menuItemIndex];
-          this.logger.debug('updating dossierMenu', dossierMenu);
-          dossierMenu.children = dossierMenuItems;
-          menuItems[menuItemIndex] = dossierMenu;
-        }
-        subscriber.next(menuItems);
-        this.dossierItemsAppended$.next(true);
-        this.logger.debug('appendDossierSubMenuItems finished');
+            const dossierMenuItems: MenuItem[] = definitions.content.map((definition, index) => {
+              const caseSettings = allCaseSettings?.find(
+                setting => setting.name === definition.id.name
+              );
+
+              return {
+                link: ['/dossiers/' + definition.id.name],
+                title: definition.schema.title,
+                iconClass: 'icon mdi mdi-dot-circle',
+                sequence: index,
+                show: true,
+                ...(!this.disableCaseCount &&
+                  caseSettings?.canHaveAssignee && {
+                    count$: openDocumentCountMap.get(definition.id.name),
+                  }),
+              } as MenuItem;
+            });
+            this.logger.debug('found dossierMenuItems', dossierMenuItems);
+            const menuItemIndex = menuItems.findIndex(({title}) => title === 'Dossiers');
+            if (menuItemIndex > 0) {
+              const dossierMenu = menuItems[menuItemIndex];
+              this.logger.debug('updating dossierMenu', dossierMenu);
+              dossierMenu.children = dossierMenuItems;
+              menuItems[menuItemIndex] = dossierMenu;
+            }
+            subscriber.next(menuItems);
+            this.dossierItemsAppended$.next(true);
+            this.logger.debug('appendDossierSubMenuItems finished');
+          });
       });
     });
   }
@@ -203,12 +222,6 @@ export class MenuService {
   }
 
   private determineRoleAccess(menuItem: MenuItem, roles: string[]): boolean {
-    if (!menuItem.roles) {
-      return true;
-    } else if (menuItem.roles.some(role => roles.includes(role))) {
-      return true;
-    } else {
-      return false;
-    }
+    return !menuItem.roles || menuItem.roles.some(role => roles.includes(role));
   }
 }

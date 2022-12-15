@@ -39,6 +39,8 @@ interface SearchFieldValues {
 
 type SearchOperator = 'AND' | 'OR';
 
+type AssigneeFilter = 'OPEN' | 'MINE' | 'ALL';
+
 interface SearchFilter {
   key: string;
   values: Array<string>;
@@ -49,8 +51,6 @@ interface SearchFilterRange {
   rangeFrom: string;
   rangeTo: string;
 }
-
-type AssigneeFilter = 'OPEN' | 'MINE' | 'ALL';
 
 export {
   SearchFieldDataType,
