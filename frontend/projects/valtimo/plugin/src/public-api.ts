@@ -62,3 +62,7 @@ export * from './lib/plugins/objecten-api/components/objecten-api-configuration/
 export * from './lib/plugins/catalogi-api/catalogi-api-plugin-module';
 export * from './lib/plugins/catalogi-api/catalogi-api-plugin.specification';
 export * from './lib/plugins/catalogi-api/components/catalogi-api-configuration/catalogi-api-configuration.component';
+/* notificaties api plugin */
+export * from './lib/plugins/notificaties-api/notificaties-api-plugin-module';
+export * from './lib/plugins/notificaties-api/notificaties-api-plugin.specification';
+export * from './lib/plugins/notificaties-api/components/notificaties-api-configuration/notificaties-api-configuration.component';
