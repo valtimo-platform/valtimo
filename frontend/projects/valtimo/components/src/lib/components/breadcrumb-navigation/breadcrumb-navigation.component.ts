@@ -18,6 +18,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, NavigationEnd, PRIMARY_OUTLET, Router} from '@angular/router';
 import {filter, map} from 'rxjs/operators';
 import {Subscription} from 'rxjs';
+import {ConfigService} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-breadcrumb-navigation',
@@ -26,10 +27,14 @@ import {Subscription} from 'rxjs';
 })
 export class BreadcrumbNavigationComponent implements OnInit, OnDestroy {
   public breadcrumbs: Array<any> = [];
-  public appTitle = 'Valtimo';
+  public appTitle = this.configService?.config?.applicationTitle || 'Valtimo';
   private routerSub = Subscription.EMPTY;
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private readonly configService: ConfigService
+  ) {}
 
   ngOnInit() {
     this.setBreadcrumbs(this.route);

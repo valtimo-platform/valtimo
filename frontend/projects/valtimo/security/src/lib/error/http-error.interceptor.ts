@@ -49,13 +49,20 @@ export class HttpErrorInterceptor implements HttpInterceptor {
             // server-side error
             if (error?.error?.errors) {
               errorMessage = error?.error?.errors;
+            } else if (error?.error?.title && error?.error?.referenceId) {
+              errorMessage = `${error?.error?.title}. Reference ID: ${error?.error?.referenceId}`;
+            } else if (error?.error?.title && error?.error?.detail) {
+              errorMessage = `${error?.error?.title}. Details: </br>${error?.error?.detail}`;
             } else if (error?.error?.message) {
               errorMessage = error?.error?.message;
             } else {
-              errorMessage = `Error Code: ${error?.status}\nMessage: ${error?.message}`;
+              errorMessage = `Error Code: ${error?.status} </br>Message: ${error?.message}`;
             }
           }
-          this.toastr.warning(`An unexpected error occurred...${errorMessage}`);
+          this.toastr.warning(`${errorMessage}`, `An unexpected error occurred`, {
+            enableHtml: true,
+            tapToDismiss: false,
+          });
           return throwError(errorMessage);
         })
       );

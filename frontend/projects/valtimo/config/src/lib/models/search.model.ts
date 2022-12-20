@@ -12,6 +12,7 @@ type TextValueSingle = string;
 type TextValueMultiple = Array<TextValueSingle>;
 
 type NumberValueSingle = number;
+
 interface NumberValueRange {
   start: NumberValueSingle;
   end: NumberValueSingle;
@@ -61,7 +62,7 @@ export {
   SearchFieldWithValue,
   SearchFieldValues,
   SearchOperator,
-  AssigneeFilter,
   SearchFilter,
   SearchFilterRange,
+  AssigneeFilter,
 };

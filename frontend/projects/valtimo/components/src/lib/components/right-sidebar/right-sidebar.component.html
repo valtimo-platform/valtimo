@@ -14,202 +14,222 @@
   ~ limitations under the License.
   -->
 
-<nav class="be-right-sidebar">
-  <div class="sb-content">
-    <div class="tab-navigation">
-      <ul class="nav nav-tabs nav-justified" role="tablist">
-        <li class="nav-item" role="presentation">
-          <a
-            class="nav-link active"
-            href="#account"
-            aria-controls="account"
-            role="tab"
-            data-toggle="tab"
-            translate="account.title"
-          ></a>
-        </li>
-        <li class="nav-item" role="presentation">
-          <a
-            class="nav-link"
-            (click)="loadUserSettingsTab()"
-            href="#settings"
-            aria-controls="settings"
-            role="tab"
-            data-toggle="tab"
-            translate="settings.title"
-          ></a>
-        </li>
-      </ul>
-    </div>
-    <div class="tab-panel">
-      <div class="tab-content">
-        <!-- account -->
-        <div class="tab-pane tab-account active" id="account" role="tabpanel">
-          <div class="p-3 be-scroller-settings" *ngIf="userIdentity">
-            <div class="content">
-              <div class="category-title border-0 m-0">
-                <div class="p-0 text-muted">
-                  <dl class="row mb-0">
-                    <dt class="col-sm-3">Email</dt>
-                    <dd class="col-sm-9 mb-0 text-bold">{{ userIdentity.email }}</dd>
-                    <ng-container *ngIf="userIdentity.username">
-                      <dt class="col-sm-3">Username</dt>
-                      <dd class="col-sm-9 mb-0 text-bold">{{ userIdentity.username }}</dd>
-                    </ng-container>
-                    <dt class="col-sm-3">Name</dt>
-                    <dd class="col-sm-9 mb-0 text-bold">
-                      {{ userIdentity.firstName + ' ' + userIdentity.lastName }}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-              <!-- context switch -->
-              <ul class="settings-list" *ngIf="userContexts?.length > 1">
-                <li ngbTooltip="{{ 'settings.context.title' | translate }}">
-                  <select
-                    class="form-control"
-                    #contextSelect
-                    (change)="setUserContext(+contextSelect.value)"
-                  >
-                    <option
-                      *ngFor="let context of userContexts"
-                      [value]="context.id"
-                      [selected]="context.id === userContextActive.id"
-                    >
-                      {{ context.name }}
-                    </option>
-                  </select>
-                </li>
-              </ul>
-              <ul class="list-group list-group-flush m-0">
-                <li class="bg-transparent list-group-item px-0">
-                  <a
-                    href="https://docs.valtimo.nl"
-                    target="_blank"
-                    class="d-block"
-                    translate="account.links.help"
-                  ></a>
-                </li>
-                <li class="bg-transparent list-group-item px-0">
-                  <a
-                    href="https://www.valtimo.nl/feedback/"
-                    target="_blank"
-                    class="d-block"
-                    translate="account.links.feedback"
-                  ></a>
-                </li>
-                <li class="bg-transparent list-group-item px-0">
-                  <a
-                    href="https://forum.valtimo.nl"
-                    target="_blank"
-                    class="d-block"
-                    translate="account.links.forum"
-                  ></a>
-                </li>
-                <li class="bg-transparent list-group-item px-0">
-                  <a
-                    href="javascript:void(0)"
-                    class="d-block"
-                    (click)="logout()"
-                    translate="account.links.signOut"
-                  ></a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <!-- settings -->
-        <div class="tab-pane tab-settings" id="settings" role="tabpanel">
-          <div class="p-3 be-scroller-settings">
-            <div class="content">
-              <span class="category-title" translate="settings.language.title"></span>
-              <ul class="settings-list">
-                <li>
-                  <select
-                    class="form-control"
-                    #langSelect
-                    (change)="updateUserLanguage(langSelect.value)"
-                  >
-                    <option
-                      *ngFor="let lang of translate.getLangs()"
-                      [value]="lang"
-                      [selected]="lang === translate.currentLang"
-                    >
-                      {{ 'settings.language.options.' + lang | translate }}
-                    </option>
-                  </select>
-                </li>
-              </ul>
-
-              <form [formGroup]="settingsForm">
-                <span class="category-title" translate="settings.notification.title"></span>
-                <ul class="settings-list m-0">
-                  <li>
-                    <div class="switch-button switch-button-sm switch-button-success">
-                      <input
-                        type="checkbox"
-                        formControlName="taskNotifications"
-                        id="taskNotifications"
-                        (ngModelChange)="onSettingsSubmit()"
-                      /><span> <label for="taskNotifications"></label></span>
-                    </div>
-                    <span class="name" translate="settings.notification.taskNotifications"></span>
-                    <div
-                      class="text-muted info-text"
-                      translate="settings.notification.taskNotificationsIntro"
-                    ></div>
-                  </li>
-
-                  <li>
-                    <div class="switch-button switch-button-sm switch-button-success">
-                      <input
-                        type="checkbox"
-                        formControlName="emailNotifications"
-                        id="emailNotifications"
-                        (ngModelChange)="onSettingsSubmit()"
-                      /><span> <label for="emailNotifications"></label></span>
-                    </div>
-                    <span class="name" translate="settings.notification.emailNotifications"></span>
-                    <div
-                      class="text-muted info-text"
-                      translate="settings.notification.emailNotificationsIntro"
-                    ></div>
-                  </li>
-                </ul>
-
-                <div *ngIf="settingsForm.value.emailNotifications">
-                  <ul class="settings-list">
-                    <li *ngFor="let frequency of frequencies">
-                      <div class="switch-button switch-button-sm switch-button-success">
-                        <input
-                          type="checkbox"
-                          formControlName="{{ frequency }}"
-                          id="{{ frequency }}"
-                          (ngModelChange)="onSettingsSubmit()"
-                        /><span> <label for="{{ frequency }}"></label></span>
-                      </div>
-                      <span class="name">{{
-                        'settings.notification.' + frequency | translate
-                      }}</span>
-                    </li>
-                  </ul>
-                </div>
-              </form>
-
-              <div class="version-holder">
-                <span class="category-title" translate="settings.version.title"></span>
-                <ul class="settings-list">
-                  <li *ngIf="build">
-                    <div class="name">{{ build.title }}</div>
-                    <div class="text-muted">{{ build.version }}</div>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
+<div class="right-sidebar-menu">
+  <ibm-panel [expanded]="panelExpanded$ | async">
+    <div ibmGrid [condensed]="true">
+      <div ibmRow>
+        <div ibmCol [columnNumbers]="{lg: 16}" class="menu-tabs">
+          <ibm-tabs class="cds--tab--list--full-width">
+            <ibm-tab [heading]="'account.title' | translate">
+              <ng-container *ngTemplateOutlet="accountTabTemplate"></ng-container>
+            </ibm-tab>
+            <ibm-tab [heading]="'settings.title' | translate">
+              <ng-container *ngTemplateOutlet="settingsTabTemplate"></ng-container>
+            </ibm-tab>
+          </ibm-tabs>
         </div>
       </div>
     </div>
+  </ibm-panel>
+</div>
+
+<ng-template #accountTabTemplate>
+  <ng-container *ngTemplateOutlet="accountInformationTemplate"></ng-container>
+  <ng-container *ngTemplateOutlet="contextTemplate"></ng-container>
+  <ng-container *ngTemplateOutlet="linksTemplate"></ng-container>
+</ng-template>
+
+<ng-template #settingsTabTemplate>
+  <ng-container *ngTemplateOutlet="languageSettingsTemplate"></ng-container>
+  <ng-container *ngTemplateOutlet="notificationSettingsTemplate"></ng-container>
+  <ng-container *ngTemplateOutlet="versionTemplate"></ng-container>
+</ng-template>
+
+<ng-template #accountInformationTemplate>
+  <ibm-structured-list>
+    <ibm-list-header>
+      <ibm-list-column>{{ 'account.informationTitle' | translate }}</ibm-list-column>
+    </ibm-list-header>
+    <ibm-list-row>
+      <ibm-list-column>
+        <ng-container *ngTemplateOutlet="accountInformationTableTemplate"></ng-container>
+      </ibm-list-column>
+    </ibm-list-row>
+  </ibm-structured-list>
+</ng-template>
+
+<ng-template #accountInformationTableTemplate>
+  <div class="information-table account-information">
+    <ibm-structured-list *ngIf="userSubject$ | async as userSubject">
+      <ibm-list-row>
+        <ibm-list-column
+          >{{ 'interface.email' | translate }}
+          <ibm-tag type="blue">{{ userSubject.email }}</ibm-tag>
+        </ibm-list-column>
+      </ibm-list-row>
+      <ibm-list-row>
+        <ibm-list-column
+          >{{ 'interface.username' | translate }}
+          <ibm-tag type="blue">{{ userSubject.username }}</ibm-tag>
+        </ibm-list-column>
+      </ibm-list-row>
+      <ibm-list-row>
+        <ibm-list-column
+          >{{ 'interface.name' | translate }}
+          <ibm-tag type="blue">{{ userSubject.firstName + ' ' + userSubject.lastName }}</ibm-tag>
+        </ibm-list-column>
+      </ibm-list-row>
+    </ibm-structured-list>
   </div>
-</nav>
+</ng-template>
+
+<ng-template #contextTemplate>
+  <ng-container
+    *ngIf="{userContexts: userContexts$ | async, activeContext: activeContext$ | async} as obs"
+  >
+    <ibm-structured-list *ngIf="obs.userContexts?.length > 1 && obs.activeContext?.id">
+      <ibm-list-header>
+        <ibm-list-column>{{ 'settings.context.title' | translate }}</ibm-list-column>
+      </ibm-list-header>
+      <ibm-list-row>
+        <ibm-list-column>
+          <ibm-select [ngModel]="obs.activeContext?.id" (ngModelChange)="setUserContext($event)">
+            <option *ngFor="let context of obs.userContexts" [value]="context.id">
+              {{ context.name }}
+            </option>
+          </ibm-select>
+        </ibm-list-column>
+      </ibm-list-row>
+    </ibm-structured-list>
+  </ng-container>
+</ng-template>
+
+<ng-template #linksTemplate>
+  <ibm-structured-list>
+    <ibm-list-header>
+      <ibm-list-column>{{ 'account.quickLinks' | translate }}</ibm-list-column>
+    </ibm-list-header>
+    <ibm-list-row>
+      <ibm-list-column>
+        <ng-container *ngTemplateOutlet="linksTableTemplate"></ng-container>
+      </ibm-list-column>
+    </ibm-list-row>
+  </ibm-structured-list>
+</ng-template>
+
+<ng-template #linksTableTemplate>
+  <div class="information-table">
+    <ibm-structured-list>
+      <ibm-list-row>
+        <ibm-list-column
+          ><a href="https://docs.valtimo.nl" target="_blank" ibmLink>{{
+            'account.links.help' | translate
+          }}</a></ibm-list-column
+        >
+      </ibm-list-row>
+      <ibm-list-row>
+        <ibm-list-column
+          ><a href="https://www.valtimo.nl/feedback" target="_blank" ibmLink>{{
+            'account.links.feedback' | translate
+          }}</a></ibm-list-column
+        >
+      </ibm-list-row>
+      <ibm-list-row>
+        <ibm-list-column
+          ><a href="https://forum.valtimo.nl" target="_blank" ibmLink>{{
+            'account.links.forum' | translate
+          }}</a></ibm-list-column
+        >
+      </ibm-list-row>
+      <ibm-list-row>
+        <ibm-list-column
+          ><a href="javascript:void(0)" ibmLink (click)="logout()">{{
+            'account.links.signOut' | translate
+          }}</a></ibm-list-column
+        >
+      </ibm-list-row>
+    </ibm-structured-list>
+  </div>
+</ng-template>
+
+<ng-template #languageSettingsTemplate>
+  <ibm-structured-list>
+    <ibm-list-header>
+      <ibm-list-column>{{ 'settings.language.title' | translate }}</ibm-list-column>
+    </ibm-list-header>
+    <ibm-list-row>
+      <ibm-list-column>
+        <ibm-select
+          [ngModel]="selectedLanguage$ | async"
+          (ngModelChange)="updateUserLanguage($event)"
+        >
+          <option *ngFor="let lang of languageOptions$ | async" [value]="lang">
+            {{ 'settings.language.options.' + lang | translate }}
+          </option>
+        </ibm-select>
+      </ibm-list-column>
+    </ibm-list-row>
+  </ibm-structured-list>
+</ng-template>
+
+<ng-template #notificationSettingsTemplate>
+  <ibm-structured-list *ngIf="emailNotificationSettingsWithSideEffects$ | async">
+    <ibm-list-header>
+      <ibm-list-column>{{ 'settings.notification.title' | translate }}</ibm-list-column>
+    </ibm-list-header>
+    <ibm-list-row>
+      <ibm-list-column>
+        <form [formGroup]="settingsForm" class="toggle-group">
+          <ibm-toggle
+            [label]="'settings.notification.taskNotifications' | translate"
+            [onText]="'interface.on' | translate"
+            [offText]="'interface.off' | translate"
+            formControlName="taskNotifications"
+            [disabled]="updatingSettings$ | async"
+          >
+          </ibm-toggle>
+          <span class="description">{{
+            'settings.notification.emailNotificationsIntro' | translate
+          }}</span>
+        </form>
+      </ibm-list-column>
+    </ibm-list-row>
+    <ibm-list-row>
+      <ibm-list-column>
+        <form [formGroup]="settingsForm" class="toggle-group">
+          <ibm-toggle
+            [label]="'settings.notification.emailNotifications' | translate"
+            [onText]="'interface.on' | translate"
+            [offText]="'interface.off' | translate"
+            formControlName="emailNotifications"
+            [disabled]="updatingSettings$ | async"
+          >
+          </ibm-toggle>
+          <span class="description">{{
+            'settings.notification.taskNotificationsIntro' | translate
+          }}</span>
+        </form>
+      </ibm-list-column>
+    </ibm-list-row>
+  </ibm-structured-list>
+</ng-template>
+
+<ng-template #versionTemplate>
+  <ng-container *ngIf="{backendVersion: backendVersion$ | async} as obs">
+    <ibm-structured-list *ngIf="obs.backendVersion">
+      <ibm-list-header>
+        <ibm-list-column>{{ 'settings.version.title' | translate }}</ibm-list-column>
+      </ibm-list-header>
+      <ibm-list-row>
+        <ibm-list-column>
+          <div class="build-information" *ngIf="obs.backendVersion">
+            <span class="build-title">{{
+              'interface.builds.' + obs.backendVersion.title | translate
+            }}</span>
+            <ibm-tag type="blue">{{ obs.backendVersion.version }}</ibm-tag>
+          </div>
+        </ibm-list-column>
+      </ibm-list-row>
+    </ibm-structured-list>
+  </ng-container>
+</ng-template>

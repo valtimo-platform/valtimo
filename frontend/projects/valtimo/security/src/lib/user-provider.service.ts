@@ -75,7 +75,7 @@ export class UserProviderService implements UserService, EmailNotificationServic
   public getEmailNotificationSettings(): Observable<EmailNotificationSettings> {
     this.logger.debug('getEmailNotificationSettings');
     return this.http.get<EmailNotificationSettings>(
-      `${this.valtimoApiConfig.endpointUri}email-notification-settings`
+      `${this.valtimoApiConfig.endpointUri}v1/email-notification-settings`
     );
   }
 
@@ -84,7 +84,7 @@ export class UserProviderService implements UserService, EmailNotificationServic
   ): Observable<EmailNotificationSettings> {
     this.logger.debug('updateEmailNotificationSettings', settings);
     return this.http.put<EmailNotificationSettings>(
-      `${this.valtimoApiConfig.endpointUri}email-notification-settings`,
+      `${this.valtimoApiConfig.endpointUri}v1/email-notification-settings`,
       settings
     );
   }

@@ -31,50 +31,50 @@ export class ContextService {
   }
 
   public query(params?: any): Observable<HttpResponse<Context[]>> {
-    return this.http.get<Context[]>(`${this.valtimoApiConfig.endpointUri}contexts`, {
+    return this.http.get<Context[]>(`${this.valtimoApiConfig.endpointUri}v1/contexts`, {
       observe: 'response',
       params,
     });
   }
 
   public get(contextId: number): Observable<Context> {
-    return this.http.get<Context>(`${this.valtimoApiConfig.endpointUri}contexts/${contextId}`);
+    return this.http.get<Context>(`${this.valtimoApiConfig.endpointUri}v1/contexts/${contextId}`);
   }
 
   public create(context: Context) {
-    return this.http.post(`${this.valtimoApiConfig.endpointUri}contexts`, context);
+    return this.http.post(`${this.valtimoApiConfig.endpointUri}v1/contexts`, context);
   }
 
   public update(context: Context) {
-    return this.http.put(`${this.valtimoApiConfig.endpointUri}contexts`, context);
+    return this.http.put(`${this.valtimoApiConfig.endpointUri}v1/contexts`, context);
   }
 
   public delete(contextId: number) {
-    return this.http.delete(`${this.valtimoApiConfig.endpointUri}contexts/${contextId}`);
+    return this.http.delete(`${this.valtimoApiConfig.endpointUri}v1/contexts/${contextId}`);
   }
 
   public getUserContexts(): Observable<Context[]> {
-    return this.http.get<Context[]>(`${this.valtimoApiConfig.endpointUri}user/contexts`);
+    return this.http.get<Context[]>(`${this.valtimoApiConfig.endpointUri}v1/user/contexts`);
   }
 
   public getUserContextActive(): Observable<Context> {
-    return this.http.get<Context>(`${this.valtimoApiConfig.endpointUri}user/context`);
+    return this.http.get<Context>(`${this.valtimoApiConfig.endpointUri}v1/user/context`);
   }
 
   public getUserContextProceses(): Observable<ContextProcess[]> {
     return this.http.get<ContextProcess[]>(
-      `${this.valtimoApiConfig.endpointUri}user/context/processes`
+      `${this.valtimoApiConfig.endpointUri}v1/user/context/processes`
     );
   }
 
   public getUserContextProcessesActive(): Observable<UserContextActiveProcess[]> {
     return this.http.get<UserContextActiveProcess[]>(
-      `${this.valtimoApiConfig.endpointUri}context/process/user/active`
+      `${this.valtimoApiConfig.endpointUri}v1/context/process/user/active`
     );
   }
 
   public setUserContext(contextId: number) {
-    return this.http.post(`${this.valtimoApiConfig.endpointUri}user/context`, {
+    return this.http.post(`${this.valtimoApiConfig.endpointUri}v1/user/context`, {
       contextId,
     });
   }

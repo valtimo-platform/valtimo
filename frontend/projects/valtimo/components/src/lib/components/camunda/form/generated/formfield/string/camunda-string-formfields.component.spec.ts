@@ -16,9 +16,9 @@
 
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
   FormsModule,
   ReactiveFormsModule,
   Validators,
@@ -31,12 +31,12 @@ describe('CamundaStringFormfieldComponent', () => {
   let component: CamundaStringFormfieldComponent;
   let fixture: ComponentFixture<CamundaStringFormfieldComponent>;
 
-  let formGroup: FormGroup;
+  let formGroup: UntypedFormGroup;
 
   @Component({selector: 'valtimo-camunda-formfield-validation', template: ''})
   class CamundaFormFieldValidationComponent {
     @Input() formField: FormField;
-    @Input() formGroup: FormGroup;
+    @Input() formGroup: UntypedFormGroup;
   }
 
   beforeEach(async(() => {
@@ -71,10 +71,10 @@ describe('CamundaStringFormfieldComponent', () => {
 
   it('should create string formfield', () => {
     const formField = getFormField([]);
-    formGroup = new FormBuilder().group({});
+    formGroup = new UntypedFormBuilder().group({});
     formGroup.addControl(
       formField.id,
-      new FormControl(formField.defaultValue, Validators.required)
+      new UntypedFormControl(formField.defaultValue, Validators.required)
     );
 
     component.formField = formField;

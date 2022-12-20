@@ -14,23 +14,12 @@
   ~ limitations under the License.
   -->
 
-<div class="be-wrapper be-fixed-sidebar be-collapsible-sidebar" #wrapper>
-  <valtimo-topbar></valtimo-topbar>
-  <valtimo-left-sidebar
-    [hidden]="layoutService.isFullscreen"
-    [menuIsOpen]="menuOpen$ | async"
-    (menuWidthChanged)="menuWidthChanged($event)"
-  ></valtimo-left-sidebar>
-  <div
-    [ngClass]="{'be-content': !layoutService.isFullscreen}"
-    [style.marginLeft.px]="
-      (menuOpen$ | async) && !layoutService.isFullscreen ? (menuWidth$ | async) : null
-    "
-  >
-    <valtimo-alert></valtimo-alert>
-    <valtimo-page-header [hidden]="layoutService.isFullscreen"></valtimo-page-header>
-    <router-outlet></router-outlet>
-  </div>
+<valtimo-topbar></valtimo-topbar>
+<main class="cds--content" [ngClass]="{'cds--content--sidebar': sideBarExpanded$ | async}">
+  <valtimo-left-sidebar [hidden]="layoutService.isFullscreen"></valtimo-left-sidebar>
+  <valtimo-alert></valtimo-alert>
+  <valtimo-page-header [hidden]="layoutService.isFullscreen"></valtimo-page-header>
+  <router-outlet></router-outlet>
   <valtimo-right-sidebar></valtimo-right-sidebar>
   <v-prompt></v-prompt>
-</div>
+</main>

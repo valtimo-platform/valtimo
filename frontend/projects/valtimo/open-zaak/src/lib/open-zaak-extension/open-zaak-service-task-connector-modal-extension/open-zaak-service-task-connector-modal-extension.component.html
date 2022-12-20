@@ -18,7 +18,7 @@
   #openZaakServiceTaskConnectorModal
   elementId="openZaakServiceTaskConnectorModal"
   [title]="selectedElement?.type + ' ' + selectedElement?.id"
-  [subtitle]="'serviceTaskManagement.subtitle' | translate: {selectedElement: selectedElement?.id}"
+  [subtitle]="'serviceTaskManagement.subtitle' | translate : {selectedElement: selectedElement?.id}"
   [showFooter]="true"
 >
   <div body *ngIf="selectedElement">

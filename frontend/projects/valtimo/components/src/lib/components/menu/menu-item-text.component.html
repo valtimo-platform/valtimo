@@ -1,0 +1,8 @@
+<ng-container *ngIf="{titleTranslation: menuItem | menuItemTranslate | async} as obs">
+  <span [ngClass]="{'cds--link empty-menu-icon-text': accent}">
+    <div class="menu-item-icon-container">
+      <i class="{{ menuItem.iconClass }}"></i>
+    </div>
+    {{ obs.titleTranslation + (accent ? ' >' : '') }}
+  </span>
+</ng-container>

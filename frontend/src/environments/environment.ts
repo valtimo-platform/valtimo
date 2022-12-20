@@ -33,6 +33,7 @@ import {
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
 import {emailExtensionInitializer, openZaakExtensionInitializer} from '@valtimo/open-zaak';
 import {connectorLinkExtensionInitializer} from '@valtimo/connector-management';
+import {LOGO_BASE_64} from './logo';
 
 const defaultDefinitionColumns: Array<DefinitionColumn> = [
   {
@@ -66,6 +67,8 @@ const defaultDefinitionColumns: Array<DefinitionColumn> = [
 ];
 
 export const environment: ValtimoConfig = {
+  logoSvgBase64: LOGO_BASE_64,
+  applicationTitle: '',
   production: false,
   initializers: [
     openZaakExtensionInitializer,
@@ -127,7 +130,7 @@ export const environment: ValtimoConfig = {
           {link: ['/form-links'], title: 'Form links', sequence: 8},
           {link: ['/process-links'], title: 'Form links Plugin', sequence: 9},
           {title: 'A&E', textClass: 'text-dark font-weight-bold c-default', sequence: 10},
-          {link: ['/contexts'], title: 'Contexts', sequence: 12},
+          {link: ['/contexts'], title: 'Contexts', sequence: 11},
           {link: ['/users'], title: 'Users', sequence: 12},
           {link: ['/entitlements'], title: 'Entitlements', sequence: 13},
           {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 14},
@@ -155,7 +158,7 @@ export const environment: ValtimoConfig = {
     endpointUri: '/api/',
   },
   swagger: {
-    endpointUri: '/v2/api-docs',
+    endpointUri: '/v3/api-docs',
   },
   logger: {
     level: NgxLoggerLevel.TRACE,

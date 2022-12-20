@@ -23,6 +23,7 @@ import {Extension, ExtensionLoader, ExtensionPoint, VALTIMO_CONFIG, ValtimoConfi
 export class ConfigService {
   private readonly extensionLoader: ExtensionLoader;
   private readonly extensions: Array<Extension> = [];
+  private readonly DEFAULT_APPLICATION_TITLE = 'Valtimo';
 
   constructor(
     @Inject(VALTIMO_CONFIG) private valtimoConfig: ValtimoConfig,
@@ -53,11 +54,11 @@ export class ConfigService {
         endpointUri: this.formatUrlTrailingSlash(config.valtimoApi.endpointUri, true),
       },
       ...(translationResourcesConfig && {
-        translationResources: translationResourcesConfig.map(resource => ({
-          prefix: this.formatUrlTrailingSlash(resource.prefix, true),
-          suffix: resource.suffix,
-        })),
+        translationResources: translationResourcesConfig.map(resource =>
+          this.formatUrlTrailingSlash(resource, true)
+        ),
       }),
+      applicationTitle: config.applicationTitle || this.DEFAULT_APPLICATION_TITLE,
     };
   }
 

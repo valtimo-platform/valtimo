@@ -32,12 +32,6 @@ export class DossierService {
     return this.definitions.dossiers.find(definition => definition.name === name);
   }
 
-  getDefinitionColumns(definitionNameId: string): Array<DefinitionColumn> {
-    const config = this.configService.config;
-    const customDefinitionTable = config.customDefinitionTables[definitionNameId];
-    return customDefinitionTable || config.defaultDefinitionTable;
-  }
-
   getInitialSortState(columns: Array<DefinitionColumn>): SortState {
     const defaultColumn = columns.find(column => column.default);
     const isSorting = defaultColumn.default === 'ASC' || defaultColumn.default === 'DESC';

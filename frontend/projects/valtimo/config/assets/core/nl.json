@@ -28,9 +28,9 @@
       "custom-dossier": "Custom dossier",
       "custom-maps": "Custom maps",
       "zaakobjecten": "Zaakobjecten",
-      "MINE": "Mijn dossier",
-      "OPEN": "Niet toegewezen dossier",
-      "ALL": "Alle dossier"
+      "MINE": "Mijn dossiers",
+      "OPEN": "Niet-toegewezen dossiers",
+      "ALL": "Alle dossiers"
     },
     "forms": {
       "globalSearchPlaceHolder": "Alles",
@@ -191,6 +191,8 @@
   },
   "account": {
     "title": "Account",
+    "informationTitle": "Gegevens",
+    "quickLinks": "Snelkoppelingen",
     "links": {
       "profile": "Profiel",
       "password": "Wachtwoord",
@@ -220,7 +222,7 @@
       },
       "taskNotifications": "Taakmeldingen",
       "taskNotificationsIntro": "Ontvang een e-mail wanneer een taak aan jou is toegewezen",
-      "emailNotifications": "Dagelijks taak overzicht",
+      "emailNotifications": "Dagelijks taakoverzicht",
       "emailNotificationsIntro": "Persoonlijke overzicht van je open taken",
       "emailNotificationOnMonday": "Maandag",
       "emailNotificationOnTuesday": "Dinsdag",
@@ -231,7 +233,7 @@
       "emailNotificationOnSunday": "Zondag"
     },
     "version": {
-      "title": "Versie informatie"
+      "title": "Versie-informatie"
     }
   },
   "decisions": {
@@ -473,7 +475,16 @@
     "next": "Volgende >",
     "previous": "< Vorige",
     "addRow": "Rij toevoegen",
-    "deleteRow": "Rij verwijderen"
+    "deleteRow": "Rij verwijderen",
+    "on": "Aan",
+    "off": "Uit",
+    "builds": {
+      "valtimo-backend-libraries": "Valtimo back-end",
+      "valtimo-frontend-libraries": "Valtimo front-end"
+    },
+    "email": "E-mail",
+    "username": "Gebruikersnaam",
+    "name": "Naam"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",
@@ -879,5 +890,26 @@
     "dataType": "Het datatype bepaalt welke invoer aan de gebruiker wordt getoond. Voor het datatype 'Datum' wordt bijvoorbeeld een datumkiezer getoond.",
     "fieldType": "Het veldtype bepaalt de waarden die de gebruiker kan invoeren. Voor de optie 'Enkel' kan de gebruiker slechts één waarde invoeren. Bij de optie 'Reeks' kan de gebruiker twee waarden invoeren. Naar deze waarden, en alle waarden daartussen, wordt vervolgens gezocht.",
     "matchType": "De overeenkomst bepaalt hoe waarden in de database worden gekoppeld aan de zoekwaarden. Voor het zoektype 'Exact' zou de waarde '1' alleen overeenkomen met de waarde '1'. Voor het zoektype 'Bevat' zou de waarde '1' overeenkomen met de waarde '1', '123' en alle andere waarden die '1' bevatten."
+  },
+  "listColumn": {
+    "title": "Titel",
+    "key": "Sleutel",
+    "path": "Pad",
+    "displayType": "Weergavetype",
+    "displayTypeParameters": "Parameters",
+    "sortable": "Sorteerbaar",
+    "defaultSort": "Standaard sorteren",
+    "sortableYes": "Ja",
+    "sortableNo": "Nee",
+    "sortableAsc": "Oplopend",
+    "sortableDesc": "Aflopend"
+  },
+  "listColumnDisplayType": {
+    "string": "Tekst",
+    "date": "Datum",
+    "boolean": "Ja/nee",
+    "enum": "Opsomming",
+    "arrayCount": "Hoeveelheid",
+    "underscoresToSpaces": "Lage streepjes naar spaties"
   }
 }

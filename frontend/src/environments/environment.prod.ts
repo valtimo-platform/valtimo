@@ -16,6 +16,7 @@
 
 import {NgxLoggerLevel} from 'ngx-logger';
 import {
+  Language,
   ROLE_ADMIN,
   ROLE_DEVELOPER,
   ROLE_USER,
@@ -23,8 +24,9 @@ import {
   ValtimoConfig,
   Language,
 } from '@valtimo/config';
-import {authenticationAuth0} from './auth/auth0-config.prod';
+import {authenticationKeycloak} from './auth/keycloak-config.prod';
 import {openZaakExtensionInitializer} from '@valtimo/open-zaak';
+import {LOGO_BASE_64} from './logo';
 
 const defaultDefinitionColumns = [
   {
@@ -53,9 +55,11 @@ const defaultDefinitionColumns = [
 ];
 
 export const environment: ValtimoConfig = {
+  logoSvgBase64: LOGO_BASE_64,
+  applicationTitle: 'Valtimo',
   production: true,
   initializers: [openZaakExtensionInitializer],
-  authentication: authenticationAuth0,
+  authentication: authenticationKeycloak,
   menu: {
     menuItems: [
       {
@@ -122,7 +126,7 @@ export const environment: ValtimoConfig = {
   whitelistedDomains: [],
   langKey: Language.NL,
   swagger: {
-    endpointUri: '/v2/api-docs',
+    endpointUri: '/v3/api-docs',
   },
   mockApi: {
     endpointUri: '/mock-api/',

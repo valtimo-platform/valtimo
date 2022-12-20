@@ -11,7 +11,7 @@
     "logLevel": "debug",
     "changeOrigin": true
   },
-  "/v2/*": {
+  "/v3/*": {
     "target": "http://localhost:8080",
     "secure": false,
     "logLevel": "debug",

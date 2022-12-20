@@ -191,6 +191,8 @@
   },
   "account": {
     "title": "Account",
+    "informationTitle": "Informationen",
+    "quickLinks": "Verknüpfungen",
     "links": {
       "profile": "Profile",
       "password": "Passwort",
@@ -473,7 +475,16 @@
     "next": "Nächste >",
     "previous": "< Vorherige",
     "addRow": "Zeile hinzufügen",
-    "deleteRow": "Zeile löschen"
+    "deleteRow": "Zeile löschen",
+    "on": "Ein",
+    "off": "Aus",
+    "builds": {
+      "valtimo-backend-libraries": "Valtimo back-end",
+      "valtimo-frontend-libraries": "Valtimo front-end"
+    },
+    "email": "Email",
+    "username": "Nutzername",
+    "name": "Name"
   },
   "taskDetail": {
     "taskCreated": "Erstellt",
@@ -879,5 +890,26 @@
     "dataType": "Der Datentyp bestimmt, welche Eingaben dem Benutzer angezeigt werden. Beispielsweise wird für den Datentyp 'Datum' eine Datumsauswahl angezeigt.",
     "fieldType": "Der Feldtyp bestimmt die Werte, die der Benutzer eingeben kann. Die Option 'Nur' ermöglicht dem Benutzer, nur einen Wert einzugeben. Die Option 'Serie' ermöglicht dem Benutzer die Eingabe von zwei Werten. Nach diesen Werten und allen Werten dazwischen wird dann gesucht.",
     "matchType": "Die Übereinstimmen legt fest, wie Werte in der Datenbank mit den Suchwerten verknüpft werden. Beim Übereinstimmungstyp 'Genau' würde der Wert '1' nur mit dem Wert '1' übereinstimmen. Für den Übereinstimmungstyp 'Enthält' würde der Wert '1' mit dem Wert '1', '123' und allen anderen Werten übereinstimmen, die '1' enthalten."
+  },
+  "listColumn": {
+    "title": "Titel",
+    "key": "Schlüssel",
+    "path": "Pfad",
+    "displayType": "Anzeigetyp",
+    "displayTypeParameters": "Parameters",
+    "sortable": "Sortierbar",
+    "defaultSort": "Standardsortierung",
+    "sortableYes": "Ja",
+    "sortableNo": "Nein",
+    "sortableAsc": "Aufsteigend",
+    "sortableDesc": "Absteigend"
+  },
+  "listColumnDisplayType": {
+    "string": "Text",
+    "date": "Datum",
+    "boolean": "Ja/nein",
+    "enum": "Zusammenfassung",
+    "arrayCount": "Quantität",
+    "underscoresToSpaces": "Unterstriche zu Leerzeichen"
   }
 }

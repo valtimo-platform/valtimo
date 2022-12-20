@@ -30,19 +30,19 @@ export class ZaakobjectenService {
 
   getDocumentObjectTypes(documentId: string): Observable<Array<ZaakObjectType>> {
     return this.http.get<Array<ZaakObjectType>>(
-      `${this.VALTIMO_API_ENDPOINT_URI}document/${documentId}/zaak/objecttype`
+      `${this.VALTIMO_API_ENDPOINT_URI}v1/document/${documentId}/zaak/objecttype`
     );
   }
 
   getDocumentObjectsOfType(documentId: string, typeUrl: string): Observable<Array<ZaakObject>> {
     return this.http.get<Array<ZaakObject>>(
-      `${this.VALTIMO_API_ENDPOINT_URI}document/${documentId}/zaak/object?typeUrl=${typeUrl}`
+      `${this.VALTIMO_API_ENDPOINT_URI}v1/document/${documentId}/zaak/object?typeUrl=${typeUrl}`
     );
   }
 
   getObjectTypeForm(documentId: string, objectUrl: string): Observable<ZaakobjectFormResponse> {
     return this.http.get<ZaakobjectFormResponse>(
-      `${this.VALTIMO_API_ENDPOINT_URI}document/${documentId}/zaak/object/form?objectUrl=${objectUrl}`
+      `${this.VALTIMO_API_ENDPOINT_URI}v1/document/${documentId}/zaak/object/form?objectUrl=${objectUrl}`
     );
   }
 }

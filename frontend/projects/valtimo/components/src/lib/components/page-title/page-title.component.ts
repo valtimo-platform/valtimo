@@ -15,12 +15,12 @@
  */
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {Title} from '@angular/platform-browser';
-import {filter} from 'rxjs/operators';
 import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 import {NGXLogger} from 'ngx-logger';
+import {ConfigService} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-page-title',
@@ -28,16 +28,17 @@ import {NGXLogger} from 'ngx-logger';
   styleUrls: ['./page-title.component.css'],
 })
 export class PageTitleComponent implements OnInit, OnDestroy {
-  public appTitle = 'Valtimo';
+  public appTitle = this.configService?.config?.applicationTitle || 'Valtimo';
   readonly translatedTitle$ = new BehaviorSubject<string>('');
   private routerTranslateSubscription!: Subscription;
 
   constructor(
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
-    private titleService: Title,
-    private translateService: TranslateService,
-    private logger: NGXLogger
+    private readonly router: Router,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly titleService: Title,
+    private readonly translateService: TranslateService,
+    private readonly logger: NGXLogger,
+    private readonly configService: ConfigService
   ) {}
 
   ngOnInit() {

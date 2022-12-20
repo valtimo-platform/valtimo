@@ -1,6 +1,8 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
@@ -9,7 +11,7 @@
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "importHelpers": true,
-    "target": "es5",
+    "target": "es2020",
     "typeRoots": ["node_modules/@types"],
     "lib": ["es2018", "dom"],
     "allowSyntheticDefaultImports": true,
@@ -17,8 +19,6 @@
       "@angular/*": ["./node_modules/@angular/*"],
       "@valtimo/layout": ["dist/valtimo/layout"],
       "@valtimo/layout/*": ["dist/valtimo/layout/*"],
-      "@valtimo/auth0": ["dist/valtimo/auth0"],
-      "@valtimo/auth0/*": ["dist/valtimo/auth0/*"],
       "@valtimo/components": ["dist/valtimo/components"],
       "@valtimo/components/*": ["dist/valtimo/components/*"],
       "@valtimo/task": ["dist/valtimo/task"],
@@ -112,12 +112,6 @@
     },
     {
       "path": "./projects/valtimo/layout/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/valtimo/auth0/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/valtimo/auth0/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/components/tsconfig.lib.json"

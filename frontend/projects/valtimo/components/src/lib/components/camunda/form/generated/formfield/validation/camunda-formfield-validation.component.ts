@@ -15,7 +15,7 @@
  */
 
 import {Component, Input, OnInit} from '@angular/core';
-import {FormGroup} from '@angular/forms';
+import {UntypedFormGroup} from '@angular/forms';
 import {FormField} from '../formfield.model';
 
 @Component({
@@ -23,7 +23,7 @@ import {FormField} from '../formfield.model';
   templateUrl: './camunda-formfield-validation.component.html',
 })
 export class CamundaFormfieldValidationComponent implements OnInit {
-  @Input() public formGroup: FormGroup;
+  @Input() public formGroup: UntypedFormGroup;
   @Input() public formField: FormField;
 
   formControl: any;

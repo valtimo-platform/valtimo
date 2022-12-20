@@ -343,8 +343,8 @@
   --v-input-password-icon-spacing: var(--v-spacing-inline-sm);
   --v-input-required-asterisk-color: var(--v-color-accent-3);
   /* page */
-  --v-page-padding-inline: var(--v-spacing-inline-3xl);
-  --v-page-padding-block: var(--v-spacing-block-5xl);
+  --v-page-padding-inline: 0;
+  --v-page-padding-block: 0;
   --v-page-header-introduction-padding-inline: var(--v-spacing-inline-8xl);
   --v-page-header-margin-block: var(--v-spacing-block-3xl);
   /* paragraph */

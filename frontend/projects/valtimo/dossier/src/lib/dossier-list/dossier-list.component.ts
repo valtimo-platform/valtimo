@@ -54,6 +54,7 @@ import {DossierService} from '../dossier.service';
 import {ListField, Pagination} from '@valtimo/components';
 import {NGXLogger} from 'ngx-logger';
 import {NgbNavChangeEvent} from '@ng-bootstrap/ng-bootstrap';
+import {DossierColumnService} from '../services';
 
 // eslint-disable-next-line no-var
 declare var $;
@@ -133,8 +134,8 @@ export class DossierListComponent implements OnInit {
 
   private readonly columns$: Observable<Array<DefinitionColumn>> =
     this.documentDefinitionName$.pipe(
-      map(documentDefinitionName =>
-        this.dossierService.getDefinitionColumns(documentDefinitionName)
+      switchMap(documentDefinitionName =>
+        this.dossierColumnService.getDefinitionColumns(documentDefinitionName)
       )
     );
 
@@ -147,13 +148,19 @@ export class DossierListComponent implements OnInit {
   ]).pipe(
     map(([columns, canHaveAssignee]) => [
       ...columns
-        .map(column => ({
-          key: column.propertyName,
-          label: this.translateService.instant(`fieldLabels.${column.translationKey}`),
-          sortable: column.sortable,
-          ...(column.viewType && {viewType: column.viewType}),
-          ...(column.enum && {enum: column.enum}),
-        }))
+        .map(column => {
+          const translationKey = `fieldLabels.${column.translationKey}`;
+          const translation = this.translateService.instant(translationKey);
+          const validTranslation = translation !== translationKey && translation;
+
+          return {
+            key: column.propertyName,
+            label: column.title || validTranslation || column.translationKey,
+            sortable: column.sortable,
+            ...(column.viewType && {viewType: column.viewType}),
+            ...(column.enum && {enum: column.enum}),
+          };
+        })
         // Filter out assignee column if the case type can not have an assignee
         .filter(column => {
           if (column?.key === this.ASSIGNEE_KEY && !canHaveAssignee) {
@@ -267,7 +274,8 @@ export class DossierListComponent implements OnInit {
     private readonly translateService: TranslateService,
     private readonly dossierService: DossierService,
     private readonly logger: NGXLogger,
-    private configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly dossierColumnService: DossierColumnService
   ) {
     this.dossierVisibleTabs = this.configService.config?.visibleDossierListTabs || null;
   }

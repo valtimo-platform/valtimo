@@ -16,17 +16,23 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {MenuComponent} from './menu.component';
 import {RouterModule} from '@angular/router';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateModule} from '@ngx-translate/core';
 import {MenuItemTextComponent} from './menu-item-text.component';
-import {SubmenuItemTextComponent} from './submenu-item-text.component';
+import {ComponentsPipesModule} from '../../pipes';
+import {LinkModule} from 'carbon-components-angular';
 
 @NgModule({
-  declarations: [MenuComponent, MenuItemTextComponent, SubmenuItemTextComponent],
-  imports: [CommonModule, RouterModule, NgbTooltipModule, TranslateModule],
-  exports: [MenuComponent],
-  providers: [],
+  declarations: [MenuItemTextComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    NgbTooltipModule,
+    TranslateModule,
+    ComponentsPipesModule,
+    LinkModule,
+  ],
+  exports: [MenuItemTextComponent],
 })
 export class MenuModule {}

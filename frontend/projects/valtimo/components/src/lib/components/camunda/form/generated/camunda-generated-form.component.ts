@@ -15,7 +15,7 @@
  */
 
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FormBuilder, FormControl, FormGroup} from '@angular/forms';
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms';
 import {FormField} from './formfield/formfield.model';
 import {CamundaFormfieldService} from './formfield/camunda-formfield.service';
 import {Location} from '@angular/common';
@@ -27,10 +27,10 @@ import {Location} from '@angular/common';
 export class CamundaGeneratedFormComponent implements OnInit {
   @Output() submitted: EventEmitter<any> = new EventEmitter<any>();
   @Input() formFields: FormField[] = [];
-  public formGroup: FormGroup;
+  public formGroup: UntypedFormGroup;
 
   constructor(
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private camundaFormFieldService: CamundaFormfieldService,
     private location: Location
   ) {}
@@ -42,7 +42,7 @@ export class CamundaGeneratedFormComponent implements OnInit {
   private createFormGroup() {
     const group = this.formBuilder.group({});
     this.formFields.forEach(formField => {
-      const control = new FormControl(
+      const control = new UntypedFormControl(
         {
           value: formField.defaultValue,
           disabled: this.camundaFormFieldService.isFormFieldDisabled(formField),

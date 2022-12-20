@@ -1,0 +1,21 @@
+94f4eb8 - Updated version to 10.0.0
+753b1d9 - Fixed failed merge
+b6a6f19 - Merged major 5 code before major 10 release.
+337801a - Updated version to 10.0.0-3.RC-SNAPSHOT
+55fb396 - fix right sidebar empty settings and layout (#295)
+ecc8bfa - feat: address carbon feedback (#294)
+784628d - feat: merge dev in major 10 (#293)
+bddd11d - change endpoints (#288)
+6ac1b87 - revert attempted fixes, remove fe version
+907f131 - another attempt build fix
+40ffb9c - attempt build fix
+a40c130 - feat: add carbon (#239)
+bc6b624 - feat: remove auth-0 (#276)
+f001afe - Switched to new openapi endpoint to get OpenAPI spec (#264)
+11fb39a - adjust api endpoints (#267)
+7a47538 - Updated version to 10.0.0 (#261)
+a1b0e9d - revert popperjs
+457da13 - feat: dependency upgrades major 10 (#253)
+7105a48 - revert node upgrade
+0c6d4ff - feat: upgrade to angular 14 (#235)
+c1774e5 - feat: upgrade node (#234)

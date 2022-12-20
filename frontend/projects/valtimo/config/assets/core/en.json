@@ -191,6 +191,8 @@
   },
   "account": {
     "title": "Account",
+    "informationTitle": "Information",
+    "quickLinks": "Quick links",
     "links": {
       "profile": "Profile",
       "password": "Password",
@@ -879,5 +881,26 @@
     "dataType": "The data type decides what input is shown to the user. For example, for the data type 'Date', a date picker is shown.",
     "fieldType": "The field type decides the values the user can input. For the option 'Single', the user can only input a single value. For the option 'Range', the user may input two values, and these values, and all the values in between, are searched for.",
     "matchType": "The match type decides how values in the database are matched to the search values. For the match type 'Exact', the value '1' would only be matched to the value '1'. For the match type 'Contains', the value '1' would be matched to the value '1', '123', and all other values containing '1'."
+  },
+  "listColumn": {
+    "title": "Title",
+    "key": "Key",
+    "path": "Path",
+    "displayType": "Display Type",
+    "displayTypeParameters": "Parameters",
+    "sortable": "Sortable",
+    "defaultSort": "Default Sort",
+    "sortableYes": "Yes",
+    "sortableNo": "No",
+    "sortableAsc": "Ascending",
+    "sortableDesc": "Descending"
+  },
+  "listColumnDisplayType": {
+    "string": "Text",
+    "date": "Date",
+    "boolean": "Yes/no",
+    "enum": "Enumeration",
+    "arrayCount": "Count",
+    "underscoresToSpaces": "Underscores to spaces"
   }
 }

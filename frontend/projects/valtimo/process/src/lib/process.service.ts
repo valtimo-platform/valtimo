@@ -37,24 +37,26 @@ export class ProcessService {
   }
 
   getProcessDefinitions(): Observable<ProcessDefinition[]> {
-    return this.http.get<ProcessDefinition[]>(`${this.valtimoEndpointUri}process/definition`);
+    return this.http.get<ProcessDefinition[]>(`${this.valtimoEndpointUri}v1/process/definition`);
   }
 
   getProcessDefinitionVersions(key: string): Observable<ProcessDefinition[]> {
     return this.http.get<ProcessDefinition[]>(
-      `${this.valtimoEndpointUri}process/definition/${key}/versions`
+      `${this.valtimoEndpointUri}v1/process/definition/${key}/versions`
     );
   }
 
   getProcessDefinition(key: string): Observable<ProcessDefinition> {
-    return this.http.get<ProcessDefinition>(`${this.valtimoEndpointUri}process/definition/${key}`);
+    return this.http.get<ProcessDefinition>(
+      `${this.valtimoEndpointUri}v1/process/definition/${key}`
+    );
   }
 
   getProcessDefinitionStartFormData(
     processDefinitionKey: string
   ): Observable<ProcessDefinitionStartForm> {
     return this.http.get<ProcessDefinitionStartForm>(
-      `${this.valtimoEndpointUri}process/definition/${processDefinitionKey}/start-form`
+      `${this.valtimoEndpointUri}v1/process/definition/${processDefinitionKey}/start-form`
     );
   }
 
@@ -64,21 +66,23 @@ export class ProcessService {
     variables: Map<string, any>
   ): Observable<any> {
     return this.http.post<ProcessStart>(
-      `${this.valtimoEndpointUri}process/definition/${key}/${businessKey}/start`,
+      `${this.valtimoEndpointUri}v1/process/definition/${key}/${businessKey}/start`,
       variables
     );
   }
 
   getProcessDefinitionXml(processDefinitionId: string): Observable<any> {
-    return this.http.get(`${this.valtimoEndpointUri}process/definition/${processDefinitionId}/xml`);
+    return this.http.get(
+      `${this.valtimoEndpointUri}v1/process/definition/${processDefinitionId}/xml`
+    );
   }
 
   getProcessXml(id: string): Observable<any> {
-    return this.http.get(`${this.valtimoEndpointUri}process/${id}/xml`);
+    return this.http.get(`${this.valtimoEndpointUri}v1/process/${id}/xml`);
   }
 
   getProcessCount(id: string): Observable<any> {
-    return this.http.post(`${this.valtimoEndpointUri}v2/process/definition/${id}/count`, {
+    return this.http.post(`${this.valtimoEndpointUri}v1/v2/process/definition/${id}/count`, {
       key: id,
       processVariables: [{'@type': 'boolean', name: 'active', value: true}],
     });
@@ -86,13 +90,13 @@ export class ProcessService {
 
   getProcessHeatmapCount(processDefinition: ProcessDefinition): Observable<any[]> {
     return this.http.get<any[]>(
-      `${this.valtimoEndpointUri}process/definition/${processDefinition.key}/heatmap/count?version=${processDefinition.version}`
+      `${this.valtimoEndpointUri}v1/process/definition/${processDefinition.key}/heatmap/count?version=${processDefinition.version}`
     );
   }
 
   getProcessHeatmapDuration(processDefinition: ProcessDefinition): Observable<any[]> {
     return this.http.get<any[]>(
-      `${this.valtimoEndpointUri}process/definition/${processDefinition.key}/heatmap/duration?version=${processDefinition.version}`
+      `${this.valtimoEndpointUri}v1/process/definition/${processDefinition.key}/heatmap/duration?version=${processDefinition.version}`
     );
   }
 
@@ -103,7 +107,7 @@ export class ProcessService {
       .set('sort', sort);
 
     return this.http.post<ProcessInstance>(
-      `${this.valtimoEndpointUri}v2/process/${key}/search`,
+      `${this.valtimoEndpointUri}v1/v2/process/${key}/search`,
       {},
       {params}
     );
@@ -111,21 +115,21 @@ export class ProcessService {
 
   getProcessInstance(processInstanceId: string): Observable<ProcessInstance> {
     return this.http.get<ProcessInstance>(
-      `${this.valtimoEndpointUri}process/${processInstanceId}`,
+      `${this.valtimoEndpointUri}v1/process/${processInstanceId}`,
       {}
     );
   }
 
   getProcessInstanceTasks(id: string): Observable<ProcessInstanceTask[]> {
     return this.http.get<ProcessInstanceTask[]>(
-      `${this.valtimoEndpointUri}process/${id}/tasks`,
+      `${this.valtimoEndpointUri}v1/process/${id}/tasks`,
       {}
     );
   }
 
   getProcessInstanceVariables(id: string, variableNames: Array<any>): Observable<any> {
     return this.http.post(
-      `${this.valtimoEndpointUri}process-instance/${id}/variables`,
+      `${this.valtimoEndpointUri}v1/process-instance/${id}/variables`,
       variableNames
     );
   }
@@ -156,7 +160,7 @@ export class ProcessService {
     params.set('fromDate', fromDate);
     params.set('toDate', toDate);
     params.set('processFilter', processFilter);
-    return this.http.get<any[]>(`${this.valtimoEndpointUri}reporting/instancesstatistics`, {
+    return this.http.get<any[]>(`${this.valtimoEndpointUri}v1/reporting/instancesstatistics`, {
       params,
     });
   }
@@ -166,10 +170,7 @@ export class ProcessService {
     formData.append('file', new File([processXml], 'process.bpmn'));
     formData.append('deployment-name', 'valtimoConsoleApp');
     formData.append('deployment-source', 'process application');
-    return this.http.post(
-      `${this.valtimoEndpointUri}camunda-rest/engine/default/deployment/create`,
-      formData
-    );
+    return this.http.post(`${this.valtimoEndpointUri}v1/process/definition/deployment`, formData);
   }
 
   migrateProcess(
@@ -178,7 +179,7 @@ export class ProcessService {
     params: any
   ): Observable<any> {
     return this.http.post(
-      `${this.valtimoEndpointUri}process/definition/${processDefinition1Id}/${processDefinition2Id}/migrate`,
+      `${this.valtimoEndpointUri}v1/process/definition/${processDefinition1Id}/${processDefinition2Id}/migrate`,
       params
     );
   }

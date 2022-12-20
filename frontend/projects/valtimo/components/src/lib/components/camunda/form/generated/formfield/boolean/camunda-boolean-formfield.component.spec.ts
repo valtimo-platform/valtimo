@@ -17,9 +17,9 @@
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {CamundaBooleanFormfieldComponent} from './camunda-boolean-formfield.component';
 import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
   FormsModule,
   ReactiveFormsModule,
   Validators,
@@ -31,12 +31,12 @@ describe('CamundaBooleanFormfieldComponent', () => {
   let component: CamundaBooleanFormfieldComponent;
   let fixture: ComponentFixture<CamundaBooleanFormfieldComponent>;
 
-  let formGroup: FormGroup;
+  let formGroup: UntypedFormGroup;
 
   @Component({selector: 'valtimo-camunda-formfield-validation', template: ''})
   class CamundaFormFieldValidationComponent {
     @Input() formField: FormField;
-    @Input() formGroup: FormGroup;
+    @Input() formGroup: UntypedFormGroup;
   }
 
   beforeEach(async(() => {
@@ -71,10 +71,10 @@ describe('CamundaBooleanFormfieldComponent', () => {
 
   it('should create boolean formfield', () => {
     const formField = getFormField([]);
-    formGroup = new FormBuilder().group({});
+    formGroup = new UntypedFormBuilder().group({});
     formGroup.addControl(
       formField.id,
-      new FormControl(formField.defaultValue, Validators.required)
+      new UntypedFormControl(formField.defaultValue, Validators.required)
     );
 
     component.formField = formField;

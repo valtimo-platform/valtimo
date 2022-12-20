@@ -31,10 +31,10 @@ export class ContactMomentService {
   }
 
   getContactMoments(): Observable<Contactmoment[]> {
-    return this.http.get<Contactmoment[]>(`${this.valtimoEndpointUri}contactmoment`);
+    return this.http.get<Contactmoment[]>(`${this.valtimoEndpointUri}v1/contactmoment`);
   }
 
   saveContactMoment(contactMomentRequest: CreateContactMomentRequest): Observable<Contactmoment> {
-    return this.http.post(`${this.valtimoEndpointUri}contactmoment`, contactMomentRequest);
+    return this.http.post(`${this.valtimoEndpointUri}v1/contactmoment`, contactMomentRequest);
   }
 }

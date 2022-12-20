@@ -13,3 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+.timeline-activity {
+  font-size: 100%;
+}
+
+.timeline-summary p {
+  font-size: 0.8rem;
+}

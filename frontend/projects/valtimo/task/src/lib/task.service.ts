@@ -29,31 +29,31 @@ export class TaskService {
   }
 
   queryTasks(params?: any): Observable<any> {
-    return this.http.get(`${this.valtimoEndpointUri}task`, {observe: 'response', params});
+    return this.http.get(`${this.valtimoEndpointUri}v1/task`, {observe: 'response', params});
   }
 
   getTasks(): Observable<Task[]> {
-    return this.http.get<Task[]>(`${this.valtimoEndpointUri}task?filter=all`);
+    return this.http.get<Task[]>(`${this.valtimoEndpointUri}v1/task?filter=all`);
   }
 
   getTask(id: string): Observable<any> {
-    return this.http.get(this.valtimoEndpointUri + 'task/' + id);
+    return this.http.get(this.valtimoEndpointUri + 'v1/task/' + id);
   }
 
   getCandidateUsers(id: string): Observable<User[]> {
-    return this.http.get<User[]>(this.valtimoEndpointUri + 'task/' + id + '/candidate-user');
+    return this.http.get<User[]>(this.valtimoEndpointUri + 'v1/task/' + id + '/candidate-user');
   }
 
   assignTask(id: string, assigneeRequest: AssigneeRequest): Observable<any> {
-    return this.http.post(this.valtimoEndpointUri + 'task/' + id + '/assign', assigneeRequest);
+    return this.http.post(this.valtimoEndpointUri + 'v1/task/' + id + '/assign', assigneeRequest);
   }
 
   unassignTask(id: string): Observable<any> {
-    return this.http.post(this.valtimoEndpointUri + 'task/' + id + '/unassign', null);
+    return this.http.post(this.valtimoEndpointUri + 'v1/task/' + id + '/unassign', null);
   }
 
   completeTask(id: string, variables: Map<string, any>): Observable<any> {
-    return this.http.post(this.valtimoEndpointUri + 'task/' + id + '/complete', {
+    return this.http.post(this.valtimoEndpointUri + 'v1/task/' + id + '/complete', {
       variables,
       filesToDelete: [],
     });
@@ -61,7 +61,7 @@ export class TaskService {
 
   getTaskProcessLink(taskId: string): Observable<TaskProcessLinkResult> {
     return this.http.get<TaskProcessLinkResult>(
-      `${this.valtimoEndpointUri}process-link/task/${taskId}`
+      `${this.valtimoEndpointUri}v1/process-link/task/${taskId}`
     );
   }
 

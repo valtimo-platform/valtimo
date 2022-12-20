@@ -22,10 +22,20 @@ export class BooleanTypeConverter implements TypeConverter {
   }
 
   convert(value: any, definition: any): string {
-    if (!definition.enum) {
-      return value ? 'Yes' : 'No';
+    const enumeration = definition?.enum;
+
+    if (enumeration && Array.isArray(enumeration) && enumeration.length > 1) {
+      return value ? enumeration[0] || 'Yes' : enumeration[1] || 'No';
+    } else if (
+      enumeration &&
+      typeof enumeration === 'object' &&
+      Object.keys(enumeration).length > 1
+    ) {
+      return value
+        ? enumeration[Object.keys(enumeration)[0]] || 'Yes'
+        : enumeration[Object.keys(enumeration)[1]] || 'No';
     } else {
-      return value ? definition.enum[0] || 'Yes' : definition.enum[1] || 'No';
+      return value ? 'Yes' : 'No';
     }
   }
 }

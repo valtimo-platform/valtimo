@@ -54,6 +54,12 @@
 
 .page-count {
   margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+
+  strong:first-child {
+    margin-bottom: 6px;
+  }
 }
 
 th:first-child,

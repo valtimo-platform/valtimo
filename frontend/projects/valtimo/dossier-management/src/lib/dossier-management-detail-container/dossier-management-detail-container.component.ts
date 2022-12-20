@@ -70,6 +70,7 @@ export class DossierManagementDetailContainerComponent implements OnInit, OnDest
   }
 
   ngOnDestroy(): void {
+    this.tabService.currentTab = TabEnum.CASE;
     this.tabSubscription?.unsubscribe();
   }
 }

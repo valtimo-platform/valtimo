@@ -113,7 +113,6 @@ body {
   color: #404040;
   text-align: left;
   background-color: #eeeeee;
-  overflow-y: scroll;
 }
 
 [tabindex='-1']:focus:not(:focus-visible) {

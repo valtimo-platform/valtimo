@@ -14,4 +14,29 @@
   ~ limitations under the License.
   -->
 
-<p>dossier-management-list-columns works!</p>
+<ng-container
+  *ngIf="{
+    caseListColumn: caseListColumns$ | async,
+    fields: fields$ | async,
+    documentDefinitionName: documentDefinitionName$ | async
+  } as obs"
+>
+  <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
+</ng-container>
+
+<ng-template #list let-obs="obs">
+  <valtimo-list
+    [items]="obs.caseListColumn"
+    [fields]="obs.fields"
+    [viewMode]="false"
+    [header]="false"
+    *ngIf="obs.caseListColumn; else loading"
+  >
+  </valtimo-list>
+</ng-template>
+
+<ng-template #loading>
+  <div class="mb-3">
+    <valtimo-spinner></valtimo-spinner>
+  </div>
+</ng-template>

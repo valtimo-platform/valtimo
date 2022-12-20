@@ -1,0 +1,150 @@
+/*
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.be-scroller-settings {
+  padding-bottom: 150px !important;
+}
+.version-holder {
+  position: fixed;
+  bottom: 0;
+  width: 259px;
+  background-color: #f8f9fa;
+}
+.info-text {
+  line-height: 1em !important;
+  padding-right: 70px;
+  margin-bottom: 15px;
+}
+.right-sidebar-menu {
+  .cds--tab--list {
+    width: 100%;
+  }
+
+  .menu-tabs {
+    .cds--tabs--scrollable__nav-item {
+      width: 12rem;
+
+      button {
+        width: 100%;
+      }
+    }
+
+    .cds--tab--overflow-nav-button {
+      display: none;
+    }
+  }
+
+  .cds--header-panel {
+    width: 20rem;
+    height: calc(100% - 3rem);
+    transition: transform 110ms cubic-bezier(0.2, 0, 1, 0.9);
+    transform: translateX(100%);
+  }
+
+  .cds--header-panel--expanded {
+    transform: translateX(0);
+  }
+
+  .cds--panel--overlay {
+    padding-top: 0;
+  }
+
+  .cds--tab-content {
+    padding: 0;
+    outline: 0;
+  }
+
+  .cds--structured-list-td {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .toggle-group {
+    display: flex;
+    flex-direction: column;
+
+    .description {
+      margin-top: 1rem;
+    }
+  }
+
+  ibm-structured-list:last-child {
+    .cds--structured-list-row:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  .cds--grid,
+  .cds--row,
+  .menu-tabs {
+    height: 100%;
+  }
+
+  .cds--tab--list--full-width {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  ibm-tab {
+    overflow: auto;
+  }
+
+  .build-information {
+    display: inline-flex;
+    flex-direction: column;
+
+    &:not(:last-child) {
+      margin-bottom: 1rem;
+    }
+  }
+
+  .information-table {
+    ibm-list-row:first-child {
+      ibm-list-column {
+        border-top: 0;
+        padding-top: 0;
+      }
+    }
+
+    ibm-list-row:last-child {
+      ibm-list-column {
+        padding-bottom: 0;
+      }
+    }
+
+    ibm-list-row {
+      ibm-list-column:first-child {
+        padding-left: 0 !important;
+      }
+    }
+  }
+}
+
+.account-information {
+  .cds--structured-list-td {
+    display: inline-flex;
+    flex-direction: column;
+    border: none;
+    min-width: 100%;
+
+    .cds--tag {
+      margin: 0;
+      margin-top: 0.25rem;
+      width: fit-content;
+    }
+  }
+}

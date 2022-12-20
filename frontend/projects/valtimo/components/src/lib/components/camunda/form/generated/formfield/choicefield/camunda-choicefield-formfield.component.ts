@@ -15,7 +15,7 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {FormGroup} from '@angular/forms';
+import {UntypedFormGroup} from '@angular/forms';
 import {FormField} from '../formfield.model';
 import {ChoicefieldService} from '@valtimo/choicefield';
 
@@ -24,7 +24,7 @@ import {ChoicefieldService} from '@valtimo/choicefield';
   templateUrl: './camunda-choicefield-formfield.component.html',
 })
 export class CamundaChoicefieldFormfieldComponent implements OnInit {
-  public formGroup: FormGroup;
+  public formGroup: UntypedFormGroup;
   public formField: FormField;
   public choicefieldValues: Array<any> = [];
 

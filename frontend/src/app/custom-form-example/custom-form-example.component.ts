@@ -15,7 +15,7 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {FormBuilder, FormGroup, FormControl} from '@angular/forms';
+import {UntypedFormBuilder, UntypedFormGroup, UntypedFormControl} from '@angular/forms';
 import {TaskService} from '@valtimo/task';
 import {ActivatedRoute} from '@angular/router';
 import {ToastrService} from 'ngx-toastr';
@@ -27,14 +27,14 @@ import {Location} from '@angular/common';
   styleUrls: ['./custom-form-example.component.scss'],
 })
 export class CustomFormExampleComponent implements OnInit {
-  public customForm: FormGroup;
+  public customForm: UntypedFormGroup;
   public task: any;
   public id: string;
 
   constructor(
     private route: ActivatedRoute,
     private taskService: TaskService,
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private toastr: ToastrService,
     private _location: Location
   ) {
@@ -54,12 +54,12 @@ export class CustomFormExampleComponent implements OnInit {
 
   private createFormGroup() {
     const group = this.formBuilder.group({
-      inputText: new FormControl(''),
-      inputPassword: new FormControl(''),
-      inputPlaceholder: new FormControl(''),
-      inputDisabled: new FormControl({value: '', disabled: true}),
-      inputReadonly: new FormControl('Readonly input text'),
-      inputTextarea: new FormControl(''),
+      inputText: new UntypedFormControl(''),
+      inputPassword: new UntypedFormControl(''),
+      inputPlaceholder: new UntypedFormControl(''),
+      inputDisabled: new UntypedFormControl({value: '', disabled: true}),
+      inputReadonly: new UntypedFormControl('Readonly input text'),
+      inputTextarea: new UntypedFormControl(''),
     });
     return group;
   }

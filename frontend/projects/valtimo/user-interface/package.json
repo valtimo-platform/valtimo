@@ -1,18 +1,18 @@
 {
   "name": "@valtimo/user-interface",
   "license": "EUPL-1.2",
-  "version": "5.14.0",
+  "version": "10.0.0",
   "peerDependencies": {
-    "@angular/common": "^13.2.3",
-    "@angular/core": "^13.2.3",
-    "@angular/cdk": "^13.3.2"
+    "@angular/common": "^14.2.5",
+    "@angular/core": "^14.2.5",
+    "@angular/cdk": "^14.2.4"
   },
   "dependencies": {
     "ngx-skeleton-loader": "^6.0.0",
-    "@ng-select/ng-select": "^8.1.1",
-    "@mdi/font": "^6.5.95",
+    "@ng-select/ng-select": "^9.0.2",
+    "@mdi/font": "^7.0.96",
     "tslib": "^2.0.0",
-    "uuid": "^3.4.0",
+    "uuid": "^9.0.0",
     "flatpickr": "^4.6.13"
   }
 }

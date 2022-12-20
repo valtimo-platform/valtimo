@@ -17,9 +17,11 @@
 import {Injectable} from '@angular/core';
 import {ConfigService, MenuConfig, MenuIncludeService, MenuItem} from '@valtimo/config';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, Observable, Subject, take, timer} from 'rxjs';
-import {DocumentDefinitions, DocumentService} from '@valtimo/document';
 import {UserProviderService} from '@valtimo/security';
+import {NavigationEnd, Router} from '@angular/router';
+import {BehaviorSubject, combineLatest, Observable, Subject, timer} from 'rxjs';
+import {DocumentDefinitions, DocumentService} from '@valtimo/document';
+import {filter, map, take} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -37,7 +39,8 @@ export class MenuService {
     private readonly documentService: DocumentService,
     private readonly userProviderService: UserProviderService,
     private readonly logger: NGXLogger,
-    private readonly menuIncludeService: MenuIncludeService
+    private readonly menuIncludeService: MenuIncludeService,
+    private readonly router: Router
   ) {
     const config = configService?.config;
     this.menuConfig = config?.menu;
@@ -47,6 +50,62 @@ export class MenuService {
   init(): void {
     this.reload();
     this.logger.debug('Menu initialized');
+  }
+
+  private readonly currentRoute$ = this.router.events.pipe(
+    filter(event => event instanceof NavigationEnd),
+    map(event => (event as NavigationEnd)?.url)
+  );
+
+  private readonly dossierItemsAppended$ = new BehaviorSubject<boolean>(false);
+
+  // Find out which menu item sequence number matches the current url the closest
+  public get closestSequence$(): Observable<string> {
+    return combineLatest([this.dossierItemsAppended$, this.currentRoute$, this.menuItems$]).pipe(
+      filter(([dossierItemsAppended]) => dossierItemsAppended),
+      map(([dossierItemsAppended, currentRoute, menuItems]) => {
+        let closestSequence = '0';
+        let highestDifference = 0;
+
+        // recursive function to check how closely each item matches to the current url
+        const checkItemMatch = (stringUrl: string, sequence: string): void => {
+          // length of the current full url
+          const currentRouteUrlLength = currentRoute.length;
+          // length of the current full url with the item's url substracted
+          const currentRouteSubstractLength = currentRoute.replace(stringUrl, '').length;
+          // the amount of characters that could be substracted
+          const difference = currentRouteUrlLength - currentRouteSubstractLength;
+
+          // the larger the amount of characters that could be substracted, the more closely the menu item url matches the current url
+          if (difference > highestDifference) {
+            highestDifference = difference;
+            closestSequence = sequence;
+          }
+        };
+
+        // check how closely each menu item (and child menu item) matches the current url using a recursive function
+        menuItems.forEach(item => {
+          checkItemMatch(item.link?.join('') || '', `${item.sequence}`);
+
+          if (item.children) {
+            item.children.forEach(childItem => {
+              if (Array.isArray(childItem.link)) {
+                checkItemMatch(
+                  Array.isArray(item.link)
+                    ? [...item.link, ...childItem.link].join('')
+                    : childItem.link.join(''),
+                  `${item.sequence}${childItem.sequence}`
+                );
+              }
+            });
+          }
+        });
+
+        // returns the closest sequence number (each menu item has a sequence number)
+
+        return closestSequence;
+      })
+    );
   }
 
   public get menuItems$(): Observable<MenuItem[]> {
@@ -119,6 +178,7 @@ export class MenuService {
               menuItems[menuItemIndex] = dossierMenu;
             }
             subscriber.next(menuItems);
+            this.dossierItemsAppended$.next(true);
             this.logger.debug('appendDossierSubMenuItems finished');
           });
       });

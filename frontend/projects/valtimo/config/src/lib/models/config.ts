@@ -17,7 +17,6 @@
 import {InjectionToken, Injector} from '@angular/core';
 import {Auth} from './security.config';
 import {MenuConfig} from './menu.config';
-import {ITranslationResource} from 'ngx-translate-multi-http-loader';
 
 export const VALTIMO_CONFIG = new InjectionToken<ValtimoConfig>('valtimoConfig');
 
@@ -31,7 +30,9 @@ export interface DefinitionColumn {
   sortable?: boolean;
   viewType?: string;
   default?: boolean | string;
-  enum?: Array<string>;
+  enum?: Array<string> | {[key: string]: string};
+  title?: string;
+  format?: string;
 }
 
 export interface CustomDossierHeaderItem {
@@ -67,7 +68,10 @@ export interface SortState {
 
 export interface ValtimoConfig {
   // eslint-disable-next-line @typescript-eslint/ban-types
-  initializers: ((injector: Injector) => Function)[];
+  logoSvgBase64?: string;
+  logoPngBase64?: string;
+  applicationTitle?: string;
+  initializers: ((injector: Injector) => () => void)[];
   menu: MenuConfig;
   authentication: Auth;
   production: boolean;
@@ -98,15 +102,15 @@ export interface ValtimoConfig {
   customDossierHeader?: {
     [definitionNameId: string]: Array<CustomDossierHeaderItem>;
   };
-  translationResources?: Array<ITranslationResource>;
+  translationResources?: Array<string>;
   featureToggles?: {
     disableFormFlow?: boolean;
     enableHackathonCasesPage?: boolean;
     showUserNameInTopBar?: boolean;
     experimentalDmnEditing?: boolean;
+    disableCaseCount?: boolean;
     caseSearchFields?: boolean;
     caseListColumn?: boolean;
-    disableCaseCount?: boolean;
   };
   visibleTaskListTabs?: Array<TaskListTab>;
   visibleDossierListTabs?: Array<DossierListTab>;

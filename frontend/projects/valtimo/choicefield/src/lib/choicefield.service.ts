@@ -29,26 +29,26 @@ export class ChoicefieldService {
   }
 
   getChoiceFields(): Observable<any> {
-    return this.http.get(this.valtimoEndpointUri + 'choice-fields');
+    return this.http.get(this.valtimoEndpointUri + 'v1/choice-fields');
   }
 
   getChoiceFieldByName(name: string): Observable<any> {
-    return this.http.get(this.valtimoEndpointUri + 'choice-fields/name/' + name);
+    return this.http.get(this.valtimoEndpointUri + 'v1/choice-fields/name/' + name);
   }
 
   getChoiceFieldValuesByName(name: string): Observable<ChoicefieldValue[]> {
     return this.http.get<ChoicefieldValue[]>(
-      this.valtimoEndpointUri + 'choice-field-values/' + name + '/values'
+      this.valtimoEndpointUri + 'v1/choice-field-values/' + name + '/values'
     );
   }
 
   getChoiceFieldValueByNameAndValue(name: string, value: string): Observable<any> {
     return this.http.get(
-      this.valtimoEndpointUri + 'choice-field-values/choice-field/' + name + '/value/' + value
+      this.valtimoEndpointUri + 'v1/choice-field-values/choice-field/' + name + '/value/' + value
     );
   }
 
   getChoiceFieldValueById(id: number): Observable<any> {
-    return this.http.get(this.valtimoEndpointUri + 'choice-field-values/' + id);
+    return this.http.get(this.valtimoEndpointUri + 'v1/choice-field-values/' + id);
   }
 }
