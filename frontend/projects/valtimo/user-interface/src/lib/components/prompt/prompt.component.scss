@@ -98,6 +98,16 @@
   box-sizing: content-box;
 }
 
+.v-prompt__close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding-block-start: var(--v-prompt-border-radius);
+  padding-block-end: var(--v-prompt-border-radius);
+  padding-inline-start: var(--v-prompt-padding-inline);
+  padding-inline-end: var(--v-prompt-padding-inline);
+}
+
 .v-prompt__footer {
   display: flex;
   flex-shrink: 0;

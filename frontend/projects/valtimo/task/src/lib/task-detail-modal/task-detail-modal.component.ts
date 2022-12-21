@@ -43,6 +43,7 @@ import {BehaviorSubject, Observable} from 'rxjs';
 import {UserProviderService} from '@valtimo/security';
 import {DocumentService} from '@valtimo/document';
 import {TranslateService} from '@ngx-translate/core';
+import {PromptService} from '@valtimo/user-interface';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -86,7 +87,8 @@ export class TaskDetailModalComponent {
     private readonly userProviderService: UserProviderService,
     private readonly modalService: ValtimoModalService,
     private readonly documentService: DocumentService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly promptService: PromptService
   ) {
     this.formioOptions = new FormioOptionsImpl();
     this.formioOptions.disableAlerts = true;
@@ -180,12 +182,35 @@ export class TaskDetailModalComponent {
             errors => this.form.showErrors(errors)
           );
       } else if (submission.data['back']) {
-        this.formFlowService.back(this.formFlowInstanceId).subscribe(
+        this.openPromptSaveData(submission)
+      }
+    }
+  }
+
+  private openPromptSaveData(submission: FormioSubmission): void {
+    this.promptService.openPrompt({
+      headerText: this.translateService.instant('taskDetail.formFlow.backConfirmation.title'),
+      bodyText: this.translateService.instant('taskDetail.formFlow.backConfirmation.description'),
+      cancelButtonText: this.translateService.instant('taskDetail.formFlow.backConfirmation.no'),
+      confirmButtonText: this.translateService.instant('taskDetail.formFlow.backConfirmation.yes'),
+      cancelMdiIcon: 'close',
+      confirmMdiIcon: 'check',
+      closeOnConfirm: true,
+      closeOnCancel: true,
+      closeButtonVisible: true,
+      cancelCallbackFunction: () => {
+        this.formFlowService.back(this.formFlowInstanceId, {}).subscribe(
           (result: FormFlowInstance) => this.handleFormFlowStep(result),
           errors => this.form.showErrors(errors)
         );
-      }
-    }
+      },
+      confirmCallBackFunction: () => {
+        this.formFlowService.back(this.formFlowInstanceId, submission.data).subscribe(
+          (result: FormFlowInstance) => this.handleFormFlowStep(result),
+          errors => this.form.showErrors(errors)
+        );
+      },
+    });
   }
 
   private resetFormDefinition(): void {

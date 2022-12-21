@@ -38,6 +38,7 @@ export class PromptService {
   private readonly _confirmButtonType$ = new BehaviorSubject<ButtonType>('primary');
   private readonly _closeOnConfirm$ = new BehaviorSubject<boolean>(false);
   private readonly _closeOnCancel$ = new BehaviorSubject<boolean>(false);
+  private readonly _closeButtonVisible$ = new BehaviorSubject<boolean>(false);
   private readonly _cancelCallbackFunction$ = new BehaviorSubject<() => void>(() => {});
   private readonly _confirmCallbackFunction$ = new BehaviorSubject<() => void>(() => {});
 
@@ -97,6 +98,10 @@ export class PromptService {
     return this._confirmButtonType$.asObservable();
   }
 
+  get closeButtonVisible$(): Observable<boolean> {
+    return this._closeButtonVisible$.asObservable();
+  }
+
   openPrompt(promptParameters: {
     identifier?: string;
     headerText: string;
@@ -109,6 +114,7 @@ export class PromptService {
     confirmButtonType?: ButtonType;
     closeOnConfirm?: boolean;
     closeOnCancel?: boolean;
+    closeButtonVisible?: boolean;
     cancelCallbackFunction?: () => void;
     confirmCallBackFunction?: () => void;
   }): void {
@@ -127,6 +133,8 @@ export class PromptService {
     if (promptParameters.closeOnConfirm)
       this._closeOnConfirm$.next(promptParameters.closeOnConfirm);
     if (promptParameters.closeOnCancel) this._closeOnCancel$.next(promptParameters.closeOnCancel);
+    if (promptParameters.closeButtonVisible)
+      this._closeButtonVisible$.next(promptParameters.closeButtonVisible);
     if (promptParameters.cancelCallbackFunction)
       this._cancelCallbackFunction$.next(promptParameters.cancelCallbackFunction);
     if (promptParameters.confirmCallBackFunction)
@@ -165,6 +173,16 @@ export class PromptService {
           this.closePrompt(cancelCallback);
         } else if (cancelCallback) {
           cancelCallback();
+        }
+      });
+  }
+
+  close(): void {
+    this._closeButtonVisible$
+      .pipe(take(1))
+      .subscribe((closeButtonVisible) => {
+        if (closeButtonVisible) {
+          this.closePrompt();
         }
       });
   }

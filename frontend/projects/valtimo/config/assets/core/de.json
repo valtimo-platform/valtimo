@@ -488,7 +488,15 @@
   },
   "taskDetail": {
     "taskCreated": "Erstellt",
-    "taskCompleted": "erfolgreich abgeschlossen"
+    "taskCompleted": "erfolgreich abgeschlossen",
+    "formFlow": {
+      "backConfirmation": {
+        "title": "Nicht gespeicherte Änderungen",
+        "description": "Sie versuchen, das Formular zu verlassen. Möchtest du deine Änderungen speichern?",
+        "yes": "Jah",
+        "no": "Nein"
+      }
+    }
   },
   "assignTask": {
     "assignedTo": "User-Zuordnung: ",
