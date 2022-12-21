@@ -15,7 +15,7 @@
  */
 
 import {PluginSpecification} from '../../models';
-import {NotificatiesApiConfigurationComponent} from './components/Notificaties-api-configuration/Notificaties-api-configuration.component';
+import {NotificatiesApiConfigurationComponent} from './components/notificaties-api-configuration/notificaties-api-configuration.component';
 import {NOTIFICATIES_API_PLUGIN_LOGO_BASE64} from './assets/notificaties-api-plugin-logo';
 
 const notificatiesApiPluginSpecification: PluginSpecification = {
