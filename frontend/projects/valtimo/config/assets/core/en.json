@@ -893,7 +893,9 @@
     "sortableYes": "Yes",
     "sortableNo": "No",
     "sortableAsc": "Ascending",
-    "sortableDesc": "Descending"
+    "sortableDesc": "Descending",
+    "hasEnvConfigWarningTitle": "Case type already has a column configuration",
+    "hasEnvConfigWarning": "This case type already has a column configuration available in the environment configuration of the application. In order to enable configuring the columns for this case type through the user interface, remove this environment configuration."
   },
   "listColumnDisplayType": {
     "string": "Text",

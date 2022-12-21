@@ -391,10 +391,13 @@ export class DocumentService {
     );
   }
 
-  putCaseList(documentDefinitionName: string, request: CaseListColumn): Observable<CaseListColumn> {
-    return this.http.put<CaseListColumn>(
+  putCaseList(
+    documentDefinitionName: string,
+    request: Array<CaseListColumn>
+  ): Observable<Array<CaseListColumn>> {
+    return this.http.put<Array<CaseListColumn>>(
       `${this.valtimoEndpointUri}v1/case/${documentDefinitionName}/list-column`,
-      {...request}
+      [...request]
     );
   }
 

@@ -902,7 +902,9 @@
     "sortableYes": "Ja",
     "sortableNo": "Nein",
     "sortableAsc": "Aufsteigend",
-    "sortableDesc": "Absteigend"
+    "sortableDesc": "Absteigend",
+    "hasEnvConfigWarningTitle": "Dieser Dossiertyp hat bereits eine Spaltenkonfiguration",
+    "hasEnvConfigWarning": "Für diesen Dossiertyp ist bereits eine Spaltenkonfiguration in der Umgebungskonfiguration der Anwendung verfügbar. Um die Konfiguration der Spalten für diesen Dossiertyp über die Benutzeroberfläche zu ermöglichen, muss diese Umgebungskonfiguration entfernt werden."
   },
   "listColumnDisplayType": {
     "string": "Text",

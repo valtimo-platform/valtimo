@@ -16,13 +16,37 @@
 
 <ng-container
   *ngIf="{
-    caseListColumn: caseListColumns$ | async,
+    caseListColumn: translatedCaseListColumns$ | async,
     fields: fields$ | async,
-    documentDefinitionName: documentDefinitionName$ | async
+    documentDefinitionName: documentDefinitionName$ | async,
+    hasEnvironmentConfig: hasEnvironmentConfig$ | async
   } as obs"
 >
-  <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
+  <ng-container *ngIf="!obs.hasEnvironmentConfig; else environmentConfigWarning">
+    <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
+  </ng-container>
 </ng-container>
+
+<ng-template #moveRowButtons let-index="index" let-length="length">
+  <div
+    class="move-row-buttons"
+    *ngIf="{
+      disableInput: disableInput$ | async,
+      documentDefinitionName: documentDefinitionName$ | async
+    } as obs"
+  >
+    <i
+      class="mdi mdi-arrow-up-bold btn btn-outline-primary mr-1"
+      (click)="moveRow(index, true, $event, obs.documentDefinitionName)"
+      [ngClass]="{'disabled disabled-move-row-button': index === 0 || obs.disableInput}"
+    ></i>
+    <i
+      class="mdi mdi-arrow-down-bold btn btn-outline-secondary"
+      (click)="moveRow(index, false, $event, obs.documentDefinitionName)"
+      [ngClass]="{'disabled disabled-move-row-button': index === length - 1 || obs.disableInput}"
+    ></i>
+  </div>
+</ng-template>
 
 <ng-template #list let-obs="obs">
   <valtimo-list
@@ -31,6 +55,7 @@
     [viewMode]="false"
     [header]="false"
     *ngIf="obs.caseListColumn; else loading"
+    [lastColumnTemplate]="moveRowButtonsTemplateRef"
   >
   </valtimo-list>
 </ng-template>
@@ -38,5 +63,19 @@
 <ng-template #loading>
   <div class="mb-3">
     <valtimo-spinner></valtimo-spinner>
+  </div>
+</ng-template>
+
+<ng-template #environmentConfigWarning>
+  <div class="pl-2 pr-2 pb-2">
+    <ibm-notification
+      [notificationObj]="{
+        type: 'warning',
+        title: 'listColumn.hasEnvConfigWarningTitle' | translate,
+        message: 'listColumn.hasEnvConfigWarning' | translate,
+        showClose: false
+      }"
+    >
+    </ibm-notification>
   </div>
 </ng-template>
