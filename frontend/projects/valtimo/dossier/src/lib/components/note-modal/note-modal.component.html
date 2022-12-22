@@ -1,0 +1,53 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<v-modal #addNoteModal  *ngIf="{ disabled: disabled$ | async, valid: valid$ | async} as obs">
+  <div role="header">
+    <div class="add-note-title">
+      <v-title [margin]="false">{{ 'dossier.notes.addNote' | translate }}</v-title>
+    </div>
+  </div>
+  <div role="content">
+    <ng-container *ngTemplateOutlet="addForm"></ng-container>
+  </div>
+  <div role="footer">
+    <div class="buttons">
+      <v-button (clickEvent)="cancel()" [disabled]="obs.disabled" type="secondary">
+        {{ 'document.cancel' | translate }}
+      </v-button>
+      <v-button (clickEvent)="save()" [disabled]="obs.disabled || !obs.valid" mdiIcon="plus" type="success">
+        {{ 'dossier.notes.addNote' | translate }}
+      </v-button>
+    </div>
+  </div>
+</v-modal>
+
+<ng-template #addForm>
+  <ng-container *ngIf="showForm$ | async">
+    <v-form (valueChange)="formValueChange($event)">
+      <v-input
+              type="textarea"
+              [margin]="true"
+              [required]="true"
+              [title]="'dossier.notes.input.content' | translate"
+              name="content"
+              [fullWidth]="true"
+              [rows]="10"
+      >
+      </v-input>
+    </v-form>
+  </ng-container>
+</ng-template>

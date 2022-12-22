@@ -28,6 +28,7 @@
       "custom-dossier": "Custom dossier",
       "custom-maps": "Custom maps",
       "zaakobjecten": "Zaakobjecten",
+      "notes": "Notities",
       "MINE": "Mijn dossiers",
       "OPEN": "Niet-toegewezen dossiers",
       "ALL": "Alle dossiers"
@@ -63,6 +64,13 @@
       "noObjectType": "Geen objecten gevonden voor dit objecttype.",
       "objectType": {
         "viewObject": "Object bekijken"
+      }
+    },
+    "notes": {
+      "addNote": "Notitie toevoegen",
+      "tableItemsText": "Notities",
+      "input": {
+        "content": "Notitie"
       }
     },
     "documenten": {

@@ -28,6 +28,7 @@
       "custom-dossier": "Kunden-Dossier",
       "custom-maps": "Kunden-Karten",
       "zaakobjecten": "Zaak-Objecte",
+      "notes": "Notizen",
       "MINE": "Meine Cases",
       "OPEN": "Nicht zugeordnete Cases",
       "ALL": "Alle Cases"
@@ -63,6 +64,13 @@
       "noObjectType": "Keine Objekte für diesen Objekttyp gefunden.",
       "objectType": {
         "viewObject": "Objekt ansehen"
+      }
+    },
+    "notes": {
+      "addNote": "Notiz hinzufügen",
+      "tableItemsText": "Notizen",
+      "input": {
+        "content": "Notiz"
       }
     },
     "documenten": {

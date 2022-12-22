@@ -17,6 +17,7 @@
 <div class="v-input-container">
   <ng-container *ngTemplateOutlet="inputTitle"></ng-container>
   <ng-container *ngTemplateOutlet="textInput"></ng-container>
+  <ng-container *ngTemplateOutlet="textareaInput"></ng-container>
   <ng-container *ngTemplateOutlet="passwordInput"></ng-container>
   <ng-container *ngTemplateOutlet="numberInput"></ng-container>
   <ng-container *ngTemplateOutlet="digitOnlyInput"></ng-container>
@@ -53,6 +54,23 @@
     [name]="name"
     [maxLength]="maxLength"
   />
+</ng-template>
+
+<ng-template #textareaInput>
+  <textarea
+          *ngIf="isTextarea"
+          class="v-input"
+          [ngClass]="{
+      'v-input--full-width': fullWidth,
+      'v-input--margin': margin
+    }"
+          [style.width.px]="widthPx"
+          [disabled]="disabled"
+          [ngModel]="inputValue$ | async"
+          (ngModelChange)="onValueChange($event)"
+          [rows]="rows"
+          [name]="name"
+  ></textarea>
 </ng-template>
 
 <ng-template #passwordInput>

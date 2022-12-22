@@ -1,0 +1,61 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<div class="notes" *ngIf="{
+    notes: notes$ | async,
+    pagination: pagination$ | async,
+    loading: loading$ | async
+  } as obs">
+
+  <button
+          class="btn btn-space btn-primary mr-1 add-note"
+          type="button"
+          aria-haspopup="true"
+          aria-expanded="false"
+          (click)="showAddModal()"
+          [disabled]="obs.loading"
+  >
+    <span>{{ 'dossier.notes.addNote' | translate }}</span>
+    <i class="ml-1 icon mdi mdi-plus"></i>
+  </button>
+
+  <div *ngIf="timelineItems">
+    <valtimo-timeline [items]="timelineItems"></valtimo-timeline>
+  </div>
+
+  <valtimo-spinner
+          [useBootstrapSpinner]="false"
+          name="auditSpinner"
+          bdColor="rgba(125, 125, 125, 0.35)"
+          color="#264251"
+          type="square-jelly-box"
+  >
+  </valtimo-spinner>
+
+  <div class="d-flex justify-content-end row mr-0 ml-0" *ngIf="obs.pagination">
+      <ngb-pagination
+              *ngIf="obs.pagination.collectionSize > obs.pagination.size"
+              [collectionSize]="obs.pagination.collectionSize"
+              [(page)]="obs.pagination.page"
+              [pageSize]="obs.pagination.size"
+              [maxSize]="obs.pagination.size"
+              [rotate]="true"
+              (pageChange)="paginationClicked($event)"
+      ></ngb-pagination>
+  </div>
+
+</div>
+
+<valtimo-note-modal (createNoteEvent)="createNewNote($event)"></valtimo-note-modal>

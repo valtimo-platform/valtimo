@@ -14,6 +14,17 @@
  * limitations under the License.
  */
 
-type InputType = 'text' | 'textarea' | 'number' | 'password' | 'digitOnly';
+interface Note {
+  id: string;
+  createdByUserId: string;
+  createdByUserFullName: string;
+  createdDate: string;
+  content: string;
+  documentId: string;
+}
 
-export {InputType};
+interface NoteCreateRequest {
+  content: string
+}
+
+export {Note, NoteCreateRequest};

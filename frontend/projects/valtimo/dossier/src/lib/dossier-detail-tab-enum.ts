@@ -21,4 +21,5 @@ export enum DefaultTabs {
   documents = 'documents',
   contactMoments = 'contact-moments',
   zaakobjecten = 'zaakobjecten',
+  notes = 'notes'
 }

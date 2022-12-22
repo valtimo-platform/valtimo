@@ -28,6 +28,7 @@
       "custom-dossier": "Custom dossier",
       "custom-maps": "Custom maps",
       "zaakobjecten": "Zaak objects",
+      "notes": "Notes",
       "MINE": "My cases",
       "OPEN": "Unassigned cases",
       "ALL": "All cases"
@@ -63,6 +64,13 @@
       "noObjectType": "No objects found for this object type.",
       "objectType": {
         "viewObject": "View object"
+      }
+    },
+    "notes": {
+      "addNote": "Add note",
+      "tableItemsText": "Notes",
+      "input": {
+        "content": "Note"
       }
     },
     "documenten": {
