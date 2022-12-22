@@ -30,6 +30,7 @@ import {ResourceModule} from '@valtimo/resource';
 import {RouterModule} from '@angular/router';
 import {DocumentenApiUploaderComponent} from './documenten-api-uploader/documenten-api-uploader.component';
 import {DocumentenApiMetadataModalModule} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.module';
+import {FormIoCurrentUserComponent} from './form-io-current-user/form-io-current-user.component';
 
 @NgModule({
   imports: [
@@ -48,12 +49,14 @@ import {DocumentenApiMetadataModalModule} from '../documenten-api-metadata-modal
     FormioBuilderComponent,
     FormIoUploaderComponent,
     DocumentenApiUploaderComponent,
+    FormIoCurrentUserComponent
   ],
   exports: [
     FormioComponent,
     FormioBuilderComponent,
     FormIoUploaderComponent,
     DocumentenApiUploaderComponent,
+    FormIoCurrentUserComponent,
   ],
   providers: [FormIoDomService, {provide: FormioAppConfig, useValue: AppConfig}],
 })
