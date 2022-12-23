@@ -114,16 +114,20 @@ export class DossierAssignUserComponent implements OnInit, OnChanges, OnDestroy 
       )
       .subscribe();
   }
-
+  
   mapUsersForDropdown(users: User[]): DropdownItem[] {
     return (
       users &&
       users
-        .sort((a, b) => a.lastName.localeCompare(b.lastName))
+        .sort((a, b) => {
+          if (a.lastName && b.lastName) {
+            return a.lastName.localeCompare(b.lastName)
+          }
+        })
         .map(user => ({text: `${user.firstName} ${user.lastName}`, id: user.id}))
     );
   }
-
+  
   private clear(): void {
     this.assignedIdOnServer$.next(null);
     this.userIdToAssign = null;
