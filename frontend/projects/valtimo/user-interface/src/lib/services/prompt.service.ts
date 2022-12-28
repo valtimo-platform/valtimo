@@ -41,6 +41,7 @@ export class PromptService {
   private readonly _closeButtonVisible$ = new BehaviorSubject<boolean>(false);
   private readonly _cancelCallbackFunction$ = new BehaviorSubject<() => void>(() => {});
   private readonly _confirmCallbackFunction$ = new BehaviorSubject<() => void>(() => {});
+  private readonly _closeCallbackFunction$ = new BehaviorSubject<() => void>(() => {});
 
   get promptVisible$() {
     return this._promptVisible$.asObservable();
@@ -117,6 +118,7 @@ export class PromptService {
     closeButtonVisible?: boolean;
     cancelCallbackFunction?: () => void;
     confirmCallBackFunction?: () => void;
+    closeCallBackFunction?: () => void;
   }): void {
     if (promptParameters.identifier) this._identifier$.next(promptParameters.identifier);
     this._headerText$.next(promptParameters.headerText);
@@ -139,6 +141,8 @@ export class PromptService {
       this._cancelCallbackFunction$.next(promptParameters.cancelCallbackFunction);
     if (promptParameters.confirmCallBackFunction)
       this._confirmCallbackFunction$.next(promptParameters.confirmCallBackFunction);
+    if (promptParameters.closeCallBackFunction)
+      this._closeCallbackFunction$.next(promptParameters.closeCallBackFunction);
 
     this._promptVisible$.next(true);
     this._appearing$.next(true);
@@ -178,11 +182,11 @@ export class PromptService {
   }
 
   close(): void {
-    this._closeButtonVisible$
+    combineLatest([this._closeButtonVisible$, this._closeCallbackFunction$])
       .pipe(take(1))
-      .subscribe((closeButtonVisible) => {
+      .subscribe(([closeButtonVisible, cancelCallback]) => {
         if (closeButtonVisible) {
-          this.closePrompt();
+          this.closePrompt(cancelCallback);
         }
       });
   }
@@ -227,5 +231,6 @@ export class PromptService {
     this._closeOnConfirm$.next(false);
     this._cancelCallbackFunction$.next(() => {});
     this._confirmCallbackFunction$.next(() => {});
+    this._closeCallbackFunction$.next(() => {});
   }
 }

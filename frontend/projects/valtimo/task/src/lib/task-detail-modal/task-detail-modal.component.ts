@@ -210,6 +210,9 @@ export class TaskDetailModalComponent {
           errors => this.form.showErrors(errors)
         );
       },
+      closeCallBackFunction: () => {
+        this.openTaskDetails(this.task);
+      },
     });
   }
 
