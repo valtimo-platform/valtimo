@@ -18585,17 +18585,6 @@ li.L9 {
   line-height: 16px;
 }
 
-.timeline-time {
-  float: right;
-  color: #ababab;
-}
-
-.timeline-variant .timeline-time {
-  float: none;
-  display: block;
-  line-height: 21px;
-}
-
 .timeline-summary {
   color: #8a8a8a;
   margin-top: 4px;
@@ -18693,9 +18682,6 @@ li.L9 {
 /*------------------------------------------------------------------
   [Detailed items content like gallery & blockquote]
 */
-.timeline-item-detailed .timeline-time {
-  line-height: 21px;
-}
 
 .timeline-item-detailed .timeline-header {
   line-height: 21px;
