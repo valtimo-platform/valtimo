@@ -35,7 +35,7 @@ export class ExactPluginService {
     clientSecret: string,
     code: string
   ): Observable<ExactRefreshToken> {
-    return this.http.post<ExactRefreshToken>(`${this.valtimoEndpointUri}plugin/exact/exchange`, {
+    return this.http.post<ExactRefreshToken>(`${this.valtimoEndpointUri}v1/plugin/exact/exchange`, {
       clientId,
       clientSecret,
       code,
