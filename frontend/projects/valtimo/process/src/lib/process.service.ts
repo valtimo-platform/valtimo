@@ -82,7 +82,7 @@ export class ProcessService {
   }
 
   getProcessCount(id: string): Observable<any> {
-    return this.http.post(`${this.valtimoEndpointUri}v1/v2/process/definition/${id}/count`, {
+    return this.http.post(`${this.valtimoEndpointUri}v1/process/definition/${id}/count`, {
       key: id,
       processVariables: [{'@type': 'boolean', name: 'active', value: true}],
     });
@@ -107,7 +107,7 @@ export class ProcessService {
       .set('sort', sort);
 
     return this.http.post<ProcessInstance>(
-      `${this.valtimoEndpointUri}v1/v2/process/${key}/search`,
+      `${this.valtimoEndpointUri}v1/process/${key}/search`,
       {},
       {params}
     );
