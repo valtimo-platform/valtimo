@@ -207,8 +207,10 @@
       "help": "Hilfe",
       "forum": "Forum",
       "feedback": "Feedback",
-      "signOut": "Abmeldung"
-    }
+      "signOut": "Abmeldung",
+      "plantATree": "Einen Baum pflanzen"
+    },
+    "plantATreeMailBody": "subject=Pflanze einen Baum für Valtimo&body=Hallo Valtimo-Benutzer,%0D%0DBindem wir diese E-Mail senden, werden wir sofort damit beginnen, einen Baum zu pflanzen. Diese%0D kompensiert daher teilweise die CO2-Emissionen Ihrer Valtimo-Nutzung.%0D%0DMit grünem Gruß,%0D%0DDas Valtimo-Team%0D%0D*Diese Baumpflanzaktion kann von jedem registrierten Valtimo-Benutzer 1 Mal verwendet werden.%0D %0D** Ritense pflanzt auch jährlich Bäume für alle verwendeten Valtimo-Installationen."
   },
   "settings": {
     "title": "Einstellungen",

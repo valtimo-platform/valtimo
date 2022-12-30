@@ -107,6 +107,7 @@ export interface ValtimoConfig {
     disableFormFlow?: boolean;
     enableHackathonCasesPage?: boolean;
     showUserNameInTopBar?: boolean;
+    showPlantATreeButton?: boolean;
     experimentalDmnEditing?: boolean;
     disableCaseCount?: boolean;
     caseSearchFields?: boolean;

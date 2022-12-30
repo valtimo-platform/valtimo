@@ -207,8 +207,10 @@
       "help": "Help",
       "forum": "Forum",
       "feedback": "Feedback",
-      "signOut": "Afmelden"
-    }
+      "signOut": "Afmelden",
+      "plantATree": "Plant een boom"
+    },
+    "plantATreeMailBody": "subject=Plant een boom voor Valtimo&body=Hallo Valtimo gebruiker,%0D%0DMet het versturen van deze e-mail gaan we gelijk aan de slag om een boom te planten. Hiermee%0Dcompenseren dus voor een deel de CO2 uitstoot van je Valtimo gebruik.%0D%0DMet Groene Groet,%0D%0DHet Valtimo team%0D%0D*Deze bomen plant actie kan 1 keer ingezet worden door elke geregistreerde Valtimo gebruiker.%0D%0D** Ritense plant ook jaarlijks ook bomen voor alle Valtimo installaties die in gebruik zijn."
   },
   "settings": {
     "title": "Instellingen",

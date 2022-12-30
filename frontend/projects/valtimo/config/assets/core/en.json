@@ -207,8 +207,10 @@
       "help": "Help",
       "forum": "Forum",
       "feedback": "Feedback",
-      "signOut": "Sign out"
-    }
+      "signOut": "Sign out",
+      "plantATree": "Plant a tree"
+    },
+    "plantATreeMailBody": "subject=Plant a tree for Valtimo&body=Hello Valtimo user,%0D%0DBy sending this e-mail we will immediately start planting a tree. This%0D therefore partly compensates for the CO2 emissions of your Valtimo use.%0D%0DWith Green Greeting,%0D%0DThe Valtimo team%0D%0D*This tree planting action can be used 1 time by each registered Valtimo user.%0D %0D** Ritense also annually plants trees for all Valtimo installations in use."
   },
   "settings": {
     "title": "Settings",

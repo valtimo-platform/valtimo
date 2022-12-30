@@ -27,7 +27,7 @@ import {FormBuilder, FormControl, FormGroup} from '@angular/forms';
 import {TranslateService} from '@ngx-translate/core';
 import {ContextService} from '@valtimo/context';
 import {ValtimoVersion} from '../../models';
-import {EmailNotificationSettings, UserIdentity} from '@valtimo/config';
+import {EmailNotificationSettings, UserIdentity, ConfigService} from '@valtimo/config';
 import {UserProviderService} from '@valtimo/security';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
@@ -116,13 +116,19 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     private readonly logger: NGXLogger,
     private readonly shellService: ShellService,
 
-    private readonly elementRef: ElementRef
+    private readonly elementRef: ElementRef,
+
+    private readonly configService: ConfigService,
   ) {}
+
+  showPlantATreeButton: boolean;
 
   ngOnInit(): void {
     this.setLanguage();
     this.loadEmailNotificationSettings();
     this.openFormSubscription();
+    this.showPlantATreeButton =
+      this.configService.config.featureToggles?.showPlantATreeButton;
   }
 
   ngOnDestroy(): void {
