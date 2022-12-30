@@ -114,7 +114,7 @@ export class DossierAssignUserComponent implements OnInit, OnChanges, OnDestroy 
       )
       .subscribe();
   }
-  
+
   mapUsersForDropdown(users: User[]): DropdownItem[] {
     return (
       users &&
@@ -127,7 +127,7 @@ export class DossierAssignUserComponent implements OnInit, OnChanges, OnDestroy 
         .map(user => ({text: `${user.firstName} ${user.lastName}`, id: user.id}))
     );
   }
-  
+
   private clear(): void {
     this.assignedIdOnServer$.next(null);
     this.userIdToAssign = null;

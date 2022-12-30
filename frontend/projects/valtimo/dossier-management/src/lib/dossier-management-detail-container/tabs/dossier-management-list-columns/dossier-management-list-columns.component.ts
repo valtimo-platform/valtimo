@@ -206,6 +206,7 @@ export class DossierManagementListColumnsComponent {
     this.documentService.putCaseList(documentDefinitionName, newCaseListColumns).subscribe(
       () => {
         this.refreshCaseListColumns();
+        localStorage.setItem(`list-search-${documentDefinitionName}`, null)
       },
       () => {
         this.enableInput();
