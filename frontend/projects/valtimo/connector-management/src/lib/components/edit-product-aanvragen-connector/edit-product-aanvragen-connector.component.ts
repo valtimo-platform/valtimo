@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output} from '@angular/core';
 import {editProductAanvragenConnectorForm} from './edit-product-aanvragen-connector.form';
 import {FormMappingService, FormTranslationService} from '@valtimo/form';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
@@ -34,7 +34,7 @@ import {ConnectorManagementStateService} from '../../services/connector-manageme
   templateUrl: './edit-product-aanvragen-connector.component.html',
   styleUrls: ['./edit-product-aanvragen-connector.component.scss'],
 })
-export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy {
+export class EditProductAanvragenConnectorComponent implements OnInit, OnChanges, OnDestroy {
   @Input() properties: ConnectorProperties;
   @Input() defaultName!: string;
   @Input() showDeleteButton = false;
@@ -75,6 +75,12 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnDestroy
     this.loadConnectorNames();
     this.loadDefinitions();
     this.stateService.hideModalSaveButton();
+  }
+
+  ngOnChanges(): void {
+    this.formDefinition$.next(editProductAanvragenConnectorForm);
+    this.loadConnectorNames();
+    this.loadDefinitions();
   }
 
   ngOnDestroy(): void {
