@@ -63,6 +63,10 @@ export * from './lib/plugins/catalogi-api/catalogi-api-plugin-module';
 export * from './lib/plugins/catalogi-api/catalogi-api-plugin.specification';
 export * from './lib/plugins/catalogi-api/components/catalogi-api-configuration/catalogi-api-configuration.component';
 /* notificaties api plugin */
-export * from './lib/plugins/notificaties-api/notificaties-api-plugin-module';
+export * from './lib/plugins/notificaties-api/notificaties-api-plugin.module';
 export * from './lib/plugins/notificaties-api/notificaties-api-plugin.specification';
 export * from './lib/plugins/notificaties-api/components/notificaties-api-configuration/notificaties-api-configuration.component';
+/* notificaties api authentication plugin */
+export * from './lib/plugins/notificaties-api-authentication/open-notificaties-plugin.module';
+export * from './lib/plugins/notificaties-api-authentication/open-notificaties-plugin.specification';
+export * from './lib/plugins/notificaties-api-authentication/components/open-notificaties-configuration/open-notificaties-configuration.component';

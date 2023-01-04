@@ -27,35 +27,32 @@
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
+    [widthPx]="350"
     [required]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate : pluginId | async"
-    [widthPx]="350"
   >
   </v-input>
   <v-input
-    name="url"
-    [title]="'url' | pluginTranslate : pluginId | async"
-    [fullWidth]="true"
+    name="clientId"
+    [title]="'clientId' | pluginTranslate : pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
-    [defaultValue]="obs.prefill?.url"
+    [defaultValue]="obs.prefill?.clientId"
+    [widthPx]="350"
     [required]="true"
-    [tooltip]="'urlTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'clientIdTooltip' | pluginTranslate : pluginId | async"
   >
   </v-input>
-  <ng-container
-    *ngIf="{authenticationPluginSelectItems: authenticationPluginSelectItems$ | async} as authObs"
+  <v-input
+    name="clientSecret"
+    type="password"
+    [title]="'clientSecret' | pluginTranslate : pluginId | async"
+    [margin]="true"
+    [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.clientSecret"
+    [required]="true"
+    [fullWidth]="true"
+    [tooltip]="'clientSecretTooltip' | pluginTranslate : pluginId | async"
   >
-    <v-select
-      [items]="authObs.authenticationPluginSelectItems"
-      [margin]="true"
-      [widthInPx]="350"
-      name="authenticationPluginConfiguration"
-      [title]="'authenticationPluginConfiguration' | pluginTranslate : pluginId | async"
-      [disabled]="obs.disabled"
-      [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"
-      [required]="true"
-      [loading]="!authObs.authenticationPluginSelectItems"
-    ></v-select>
-  </ng-container>
+  </v-input>
 </v-form>
