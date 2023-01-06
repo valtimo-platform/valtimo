@@ -16,16 +16,39 @@
 
 <ng-container
   *ngIf="{
-    caseListColumn: translatedCaseListColumns$ | async,
+    caseListColumns: translatedCaseListColumns$ | async,
     fields: fields$ | async,
+    downloadUrl: downloadUrl$ | async,
+    downloadName: downloadName$ | async,
     documentDefinitionName: documentDefinitionName$ | async,
     hasEnvironmentConfig: hasEnvironmentConfig$ | async
   } as obs"
 >
   <ng-container *ngIf="!obs.hasEnvironmentConfig; else environmentConfigWarning">
+    <ng-container *ngTemplateOutlet="buttons; context: {obs: obs}"></ng-container>
     <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
   </ng-container>
 </ng-container>
+
+<ng-template #buttons let-obs="obs">
+  <div class="btn-group mt-m3px mb-3 pr-2 float-right">
+    <a
+      class="btn btn-secondary btn-space"
+      [href]="obs.downloadUrl"
+      [download]="obs.downloadName"
+      [ngClass]="{
+        disabled:
+          !obs.downloadUrl ||
+          !obs.downloadName ||
+          obs.caseListColumns.length <= 0 ||
+          obs.disableInput
+      }"
+    >
+      <i class="icon mdi mdi-download mr-1"></i>
+      {{ 'listColumn.downloadButtonText' | translate }}
+    </a>
+  </div>
+</ng-template>
 
 <ng-template #moveRowButtons let-index="index" let-length="length">
   <div
@@ -50,11 +73,11 @@
 
 <ng-template #list let-obs="obs">
   <valtimo-list
-    [items]="obs.caseListColumn"
+    [items]="obs.caseListColumns"
     [fields]="obs.fields"
     [viewMode]="false"
     [header]="false"
-    *ngIf="obs.caseListColumn; else loading"
+    *ngIf="obs.caseListColumns; else loading"
     [lastColumnTemplate]="moveRowButtonsTemplateRef"
   >
   </valtimo-list>

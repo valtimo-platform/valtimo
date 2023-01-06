@@ -17,7 +17,7 @@
 import {Component, TemplateRef, ViewChild} from '@angular/core';
 import {ListField} from '@valtimo/components';
 import {ConfigService, DefinitionColumn} from '@valtimo/config';
-import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, take, tap} from 'rxjs';
 import {
   CaseListColumn,
   CaseListColumnView,
@@ -26,6 +26,7 @@ import {
 } from '@valtimo/document';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
+import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
 
 @Component({
   selector: 'valtimo-dossier-management-list-columns',
@@ -34,6 +35,8 @@ import {TranslateService} from '@ngx-translate/core';
 })
 export class DossierManagementListColumnsComponent {
   @ViewChild('moveRowButtons') public moveRowButtonsTemplateRef: TemplateRef<any>;
+  readonly downloadName$ = new BehaviorSubject<string>('');
+  readonly downloadUrl$ = new BehaviorSubject<SafeUrl>(undefined);
 
   private readonly COLUMNS: Array<DefinitionColumn> = [
     {
@@ -120,6 +123,13 @@ export class DossierManagementListColumnsComponent {
       this.documentService.getCaseList(documentDefinitionName)
     ),
     tap(caseListColumns => {
+      this.documentDefinitionName$.pipe(take(1)).subscribe(documentDefinitionName => {
+        if (caseListColumns && Array.isArray(caseListColumns) && caseListColumns.length > 0) {
+          this.setDownload(documentDefinitionName, caseListColumns);
+        }
+      });
+    }),
+    tap(caseListColumns => {
       this.cachedCaseListColumns = caseListColumns;
       this.loadingCaseListColumns = false;
       this.enableInput();
@@ -157,7 +167,8 @@ export class DossierManagementListColumnsComponent {
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly sanitizer: DomSanitizer
   ) {}
 
   moveRow(
@@ -206,7 +217,7 @@ export class DossierManagementListColumnsComponent {
     this.documentService.putCaseList(documentDefinitionName, newCaseListColumns).subscribe(
       () => {
         this.refreshCaseListColumns();
-        localStorage.setItem(`list-search-${documentDefinitionName}`, null)
+        localStorage.setItem(`list-search-${documentDefinitionName}`, null);
       },
       () => {
         this.enableInput();
@@ -229,6 +240,19 @@ export class DossierManagementListColumnsComponent {
     } else {
       return '-';
     }
+  }
+
+  private setDownload(
+    documentDefinitionName: string,
+    caseListColumns: Array<CaseListColumn>
+  ): void {
+    this.downloadName$.next(`${documentDefinitionName}.json`);
+    this.downloadUrl$.next(
+      this.sanitizer.bypassSecurityTrustUrl(
+        'data:text/json;charset=UTF-8,' +
+          encodeURIComponent(JSON.stringify(caseListColumns, null, 2))
+      )
+    );
   }
 
   private disableInput(): void {

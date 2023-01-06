@@ -922,7 +922,8 @@
     "sortableAsc": "Oplopend",
     "sortableDesc": "Aflopend",
     "hasEnvConfigWarningTitle": "Dit dossiertype heeft al een kolomconfiguratie",
-    "hasEnvConfigWarning": "Dit dossiertype heeft al een kolomconfiguratie beschikbaar in de omgevingsconfiguratie van de applicatie. Om het configureren van de kolommen voor dit dossiertype via de gebruikersinterface mogelijk te maken, moet deze omgevingsconfiguratie verwijderd worden."
+    "hasEnvConfigWarning": "Dit dossiertype heeft al een kolomconfiguratie beschikbaar in de omgevingsconfiguratie van de applicatie. Om het configureren van de kolommen voor dit dossiertype via de gebruikersinterface mogelijk te maken, moet deze omgevingsconfiguratie verwijderd worden.",
+    "downloadButtonText": "Download de kolomconfiguratie van de dossierlijst"
   },
   "listColumnDisplayType": {
     "string": "Tekst",
