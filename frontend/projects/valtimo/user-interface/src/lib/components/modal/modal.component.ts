@@ -51,6 +51,10 @@ export class ModalComponent implements OnInit {
     this.modalService.closeModal();
   }
 
+  stopPropagation(event: Event): void {
+    event.stopPropagation();
+  }
+
   modalMouseEnter(): void {
     this.mouseInsideModal$.next(true);
   }

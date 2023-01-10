@@ -21,6 +21,7 @@
   <ng-container *ngTemplateOutlet="passwordInput"></ng-container>
   <ng-container *ngTemplateOutlet="numberInput"></ng-container>
   <ng-container *ngTemplateOutlet="digitOnlyInput"></ng-container>
+  <ng-container *ngTemplateOutlet="checkboxInput"></ng-container>
 </div>
 
 <ng-template #inputTitle>
@@ -148,5 +149,16 @@
     [name]="name"
     [maxLength]="maxLength"
     digitOnly
+  />
+</ng-template>
+
+<ng-template #checkboxInput>
+  <input
+    *ngIf="isCheckbox"
+    class="v-input--checkbox"
+    type="checkbox"
+    [ngModel]="inputValue$ | async"
+    (ngModelChange)="onValueChange($event)"
+    [name]="name"
   />
 </ng-template>

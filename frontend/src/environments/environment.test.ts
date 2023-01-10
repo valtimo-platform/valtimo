@@ -24,7 +24,6 @@ import {
   ROLE_USER,
   UploadProvider,
   ValtimoConfig,
-  Language,
 } from '@valtimo/config';
 import {LOGO_BASE_64} from './logo';
 

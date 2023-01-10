@@ -14,6 +14,21 @@
  * limitations under the License.
  */
 
-type InputType = 'text' | 'textarea' | 'number' | 'password' | 'digitOnly' | 'checkbox';
+import {Injectable} from '@angular/core';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {TabEnum} from './tab.enum';
 
-export {InputType};
+@Injectable({
+  providedIn: 'root',
+})
+export class TabService {
+  private _currentTab$ = new BehaviorSubject<TabEnum>(TabEnum.GENERAL);
+
+  public get currentTab$(): Observable<TabEnum> {
+    return this._currentTab$.asObservable();
+  }
+
+  public set currentTab(tab: TabEnum) {
+    this._currentTab$.next(tab);
+  }
+}

@@ -108,6 +108,7 @@ import {
   ZakenApiPluginModule,
   zakenApiPluginSpecification,
 } from '@valtimo/plugin';
+import {ObjectManagementModule} from '../../projects/valtimo/object-management/src/lib/object-management.module';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -198,7 +199,8 @@ export function tabsFactory() {
         useFactory: MultiTranslateHttpLoaderFactory,
         deps: [HttpBackend, ConfigService],
       },
-    })
+    }),
+    ObjectManagementModule
   ],
   providers: [
     FormioComponent,

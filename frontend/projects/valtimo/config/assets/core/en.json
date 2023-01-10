@@ -935,5 +935,32 @@
     "enum": "Enumeration",
     "arrayCount": "Count",
     "underscoresToSpaces": "Underscores to spaces"
+  },
+  "objectManagement": {
+    "title": "Objecttypes",
+    "createObjecttype": "Create new objecttype",
+    "labels": {
+      "title": "Title",
+      "objects": "Objects API plugin configuration",
+      "objecttypes": "Objecttypen API plugin configuration",
+      "objecttypeUrl": "Objecttype URL",
+      "formDefinitionView": "View form definition",
+      "formDefinitionEdit": "Edit form definition",
+      "showInDataMenu": "Show in menu"
+    },
+    "tooltips": {
+      "title": "The name of this configuration. Under this name, this configuration can be found in the rest of the application.",
+      "objecttypeUrl": "A URL to the location of the objecttype.",
+      "formDefinitionView": "The name of the form IO definition that will be used to display the object.",
+      "formDefinitionEdit": "The name of the form IO definition that will be used to edit the object.",
+      "showInDataMenu": "Indicates whether the object type is visible in the menu"
+    },
+    "cancel": "Cancel",
+    "add": "Add object",
+    "download": "Download",
+    "visibleInMenu": "Visible in menu",
+    "tabs": {
+      "general": "General"
+    }
   }
 }

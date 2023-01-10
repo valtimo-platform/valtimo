@@ -112,6 +112,7 @@ export interface ValtimoConfig {
     disableCaseCount?: boolean;
     caseSearchFields?: boolean;
     caseListColumn?: boolean;
+    enableObjectManagement?: boolean;
   };
   visibleTaskListTabs?: Array<TaskListTab>;
   visibleDossierListTabs?: Array<DossierListTab>;

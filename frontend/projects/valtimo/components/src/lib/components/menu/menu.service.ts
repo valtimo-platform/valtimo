@@ -33,6 +33,7 @@ export class MenuService {
   private menuConfig: MenuConfig;
 
   private readonly disableCaseCount!: boolean;
+  private readonly enableObjectManagement!: boolean;
 
   constructor(
     private readonly configService: ConfigService,
@@ -45,6 +46,7 @@ export class MenuService {
     const config = configService?.config;
     this.menuConfig = config?.menu;
     this.disableCaseCount = config?.featureToggles?.disableCaseCount;
+    this.enableObjectManagement = config?.featureToggles?.enableObjectManagement;
   }
 
   init(): void {
@@ -119,6 +121,7 @@ export class MenuService {
   private loadMenuItems(): MenuItem[] {
     let menuItems: MenuItem[] = [];
     this.menuConfig.menuItems.forEach((menuItem: MenuItem) => {
+
       if (menuItem.includeFunction !== undefined) {
         this.includeFunctionObservables[menuItem.title] =
           this.menuIncludeService.getIncludeFunction(menuItem.includeFunction);

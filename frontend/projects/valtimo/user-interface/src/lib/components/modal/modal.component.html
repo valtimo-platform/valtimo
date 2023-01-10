@@ -46,6 +46,7 @@
     class="v-modal"
     (mouseenter)="modalMouseEnter()"
     (mouseleave)="modalMouseLeave()"
+    (click)="stopPropagation($event)"
     [style.max-width.px]="maxWidthPx"
   >
     <ng-container

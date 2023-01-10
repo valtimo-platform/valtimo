@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
-type InputType = 'text' | 'textarea' | 'number' | 'password' | 'digitOnly' | 'checkbox';
+/*
+ * Public API Surface of object-management
+ */
 
-export {InputType};
+export * from './lib/models/object-management.model'
+export * from './lib/services/object-management.service'
+export * from './lib/object-management.module';
+

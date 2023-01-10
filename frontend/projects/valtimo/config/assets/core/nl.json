@@ -941,7 +941,34 @@
     "date": "Datum",
     "boolean": "Ja/nee",
     "enum": "Opsomming",
-    "arrayCount": "Hoeveelheid",
+    "arrayCount": "Hoeveelheid"
+  },
+  "objectManagement": {
+    "title": "Objecttypes",
+    "createObjecttype": "Maak nieuwe objecttype",
+    "labels": {
+      "title": "Titel",
+      "objects": "Objecten API plugin configuratie",
+      "objecttypes": "Objecttypen API plugin configuratie",
+      "objecttypeUrl": "Objecttype URL",
+      "formDefinitionView": "View formulier definitie",
+      "formDefinitionEdit": "Wijzig formulier definitie",
+      "showInDataMenu": "Toon in menu"
+    },
+    "tooltips": {
+      "title": "De naam van deze configuratie. Onder deze naam is deze configuratie terug te vinden in de rest van de applicatie.",
+      "objecttypeUrl": "Een URL naar de locatie van het objecttype",
+      "formDefinitionView": "De naam van de formio IO definitie die wordt gebruikt om het object weer te geven.",
+      "formDefinitionEdit": "De naam van de formio IO definitie die wordt gebruikt om het object te bewerken.",
+      "showInDataMenu": "Geeft aan of het objecttype in het menu zichtbaar is"
+    },
+    "cancel": "Annuleren",
+    "add": "Object toevoegen",
+    "download": "Download",
+    "visibleInMenu": "Zichtbaar in het menu",
+    "tabs": {
+      "general": "Algemeen"
+    },
     "underscoresToSpaces": "Lage streepjes naar spaties",
     "select": "Selecteer een weergavetype"
   }
