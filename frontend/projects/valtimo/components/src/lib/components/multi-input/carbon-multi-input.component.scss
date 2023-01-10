@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dossier-management
- */
+.v-multi-input--margin {
+  margin-block-end: var(--v-input-margin);
+}
 
-export * from './lib/dossier-management.module';
-export * from './lib/dossier-management-list/dossier-management-list.component';
-export * from './lib/models';
+.v-multi-input__row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-block-end: var(--v-multi-input-row-spacing-block);
+}
+
+.v-multi-input__input {
+  margin-inline-end: var(--v-multi-input-input-spacing-inline);
+}

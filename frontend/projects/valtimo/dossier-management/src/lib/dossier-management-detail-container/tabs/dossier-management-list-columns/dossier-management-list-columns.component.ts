@@ -17,7 +17,16 @@
 import {Component, TemplateRef, ViewChild} from '@angular/core';
 import {ListField} from '@valtimo/components';
 import {ConfigService, DefinitionColumn} from '@valtimo/config';
-import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, take, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {
   CaseListColumn,
   CaseListColumnView,
@@ -26,6 +35,10 @@ import {
 } from '@valtimo/document';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
+import {ListColumnModal} from '../../../models';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
+import {take} from 'rxjs/operators';
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
 
 @Component({
@@ -163,6 +176,128 @@ export class DossierManagementListColumnsComponent {
     )
   );
 
+  readonly currentModalType$ = new BehaviorSubject<ListColumnModal>('create');
+
+  readonly showModal$ = new BehaviorSubject<boolean>(false);
+
+  readonly INVALID_KEY = 'invalid';
+
+  readonly formGroup = new FormGroup({
+    title: new FormControl(''),
+    key: new FormControl('', Validators.required),
+    path: new FormControl('', Validators.required),
+    dateFormat: new FormControl(''),
+    displayType: new FormControl({
+      key: this.INVALID_KEY,
+    }),
+    sortable: new FormControl(false),
+    defaultSort: new FormControl({
+      key: this.INVALID_KEY,
+    }),
+    enum: new FormControl([]),
+  });
+
+  readonly hasDefaultSort$ = this.formGroup.valueChanges.pipe(
+    map(() => this.cachedCaseListColumns.find(column => !!column.defaultSort)),
+    startWith(false)
+  );
+
+  readonly DISPLAY_TYPES: Array<string> = [
+    'string',
+    'date',
+    'boolean',
+    'enum',
+    'arrayCount',
+    'underscoresToSpaces',
+  ];
+
+  readonly showDateFormat$ = this.formGroup.valueChanges.pipe(
+    map(formValues => !!(formValues.displayType?.key === this.DISPLAY_TYPES[1])),
+    tap(showDateFormat => {
+      if (showDateFormat === false && !!this.formGroup.value.dateFormat) {
+        this.formGroup.patchValue({dateFormat: ''});
+      }
+    }),
+    startWith(false)
+  );
+
+  readonly showEnum$ = this.formGroup.valueChanges.pipe(
+    map(
+      formValues =>
+        !!(
+          formValues.displayType?.key === this.DISPLAY_TYPES[3] ||
+          formValues.displayType?.key === this.DISPLAY_TYPES[2]
+        )
+    ),
+    tap(showEnum => {
+      const enumValue = this.formGroup.value.enum;
+      if (showEnum === false && Array.isArray(enumValue) && enumValue.length > 0) {
+        this.formGroup.patchValue({enum: []});
+      }
+    }),
+    startWith(false)
+  );
+
+  readonly isYesNo$ = this.formGroup.valueChanges.pipe(
+    map(formValues => !!(formValues.displayType?.key === this.DISPLAY_TYPES[2]))
+  );
+
+  readonly viewTypeItems$: Observable<Array<ListItem>> = this.translateService.stream('key').pipe(
+    map(() => [
+      {
+        content: this.translateService.instant(`listColumnDisplayType.select`),
+        key: this.INVALID_KEY,
+        selected: true,
+      },
+      ...this.DISPLAY_TYPES.map(type => ({
+        content: this.translateService.instant(`listColumnDisplayType.${type}`),
+        key: type,
+        selected: false,
+      })),
+    ])
+  );
+
+  readonly sortItems$: Observable<Array<ListItem>> = this.translateService.stream('key').pipe(
+    map(() => [
+      {
+        content: this.translateService.instant(`listColumn.selectDefaultSort`),
+        key: this.INVALID_KEY,
+        selected: true,
+      },
+      {
+        content: this.translateService.instant(`listColumn.sortableAsc`),
+        key: 'ASC',
+        selected: false,
+      },
+      {
+        content: this.translateService.instant(`listColumn.sortableDesc`),
+        key: 'DESC',
+        selected: false,
+      },
+    ])
+  );
+
+  readonly validKey$ = this.formGroup.valueChanges.pipe(
+    map(formValues => {
+      const existingKeys = this.cachedCaseListColumns.map(column => column.key);
+      return !existingKeys.includes(formValues.key);
+    }),
+    startWith(false)
+  );
+
+  readonly valid$ = combineLatest([this.formGroup.valueChanges, this.validKey$]).pipe(
+    map(
+      ([formValues, validKey]) =>
+        !!(
+          formValues.displayType?.key !== this.INVALID_KEY &&
+          formValues.path &&
+          validKey &&
+          (formValues.displayType.key === 'enum' ? formValues.enum?.length > 0 : true)
+        )
+    ),
+    startWith(false)
+  );
+
   constructor(
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
@@ -170,6 +305,18 @@ export class DossierManagementListColumnsComponent {
     private readonly configService: ConfigService,
     private readonly sanitizer: DomSanitizer
   ) {}
+  openModal(modalType: ListColumnModal): void {
+    this.showModal$.next(true);
+    this.currentModalType$.next(modalType);
+
+    if (modalType === 'create') {
+      this.resetFormGroup();
+    }
+  }
+
+  closeModal(): void {
+    this.showModal$.next(false);
+  }
 
   moveRow(
     caseListColumnRowIndex: number,
@@ -206,6 +353,51 @@ export class DossierManagementListColumnsComponent {
       filteredCaseListColumns.splice(caseListColumnAfterIndex + 1, 0, foundCaseListColumn);
       this.updateCaseListColumns(documentDefinitionName, filteredCaseListColumns);
     }
+  }
+
+  saveCasListColumns(): void {
+    const formValue = this.formGroup.value;
+
+    this.disableInput();
+
+    this.documentDefinitionName$.pipe(take(1)).subscribe(docDefName => {
+      this.documentService
+        .postCaseList(docDefName, {
+          key: formValue.key,
+          sortable: formValue.sortable,
+          ...(formValue.defaultSort?.key !== this.INVALID_KEY && {
+            defaultSort: formValue.defaultSort?.key,
+          }),
+          title: formValue.title || '',
+          path: formValue.path,
+          displayType: {
+            type: formValue.displayType?.key,
+            displayTypeParameters: {
+              ...(formValue.dateFormat && {dateFormat: formValue.dateFormat}),
+              ...(Array.isArray(formValue.enum) &&
+                formValue.enum.length > 0 && {
+                  enum: formValue.enum.reduce(
+                    (acc, curr) => ({...acc, [curr.key]: curr.value}),
+                    {}
+                  ),
+                }),
+            },
+          },
+        })
+        .subscribe(
+          () => {
+            this.closeModal();
+            this.refreshCaseListColumns();
+          },
+          () => {
+            this.enableInput();
+          }
+        );
+    });
+  }
+
+  enumValueChange(value: Array<{[key: string]: string}>): void {
+    this.formGroup.patchValue({enum: value});
   }
 
   private updateCaseListColumns(
@@ -257,13 +449,27 @@ export class DossierManagementListColumnsComponent {
 
   private disableInput(): void {
     this.disableInput$.next(true);
+    this.formGroup.disable();
   }
 
   private enableInput(): void {
     this.disableInput$.next(false);
+    this.formGroup.enable();
   }
 
   private refreshCaseListColumns(): void {
     this.refreshCaseListcolumns$.next(null);
+  }
+
+  private resetFormGroup(): void {
+    this.formGroup.reset();
+    combineLatest([this.sortItems$, this.viewTypeItems$])
+      .pipe(take(1))
+      .subscribe(([sortItems, viewTypeItems]) => {
+        // @ts-ignore
+        this.formGroup.patchValue({displayType: viewTypeItems[0]});
+        // @ts-ignore
+        this.formGroup.patchValue({defaultSort: sortItems[0]});
+      });
   }
 }

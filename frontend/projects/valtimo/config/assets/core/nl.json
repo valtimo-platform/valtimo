@@ -911,19 +911,38 @@
   },
   "listColumn": {
     "title": "Titel",
+    "titleTitle": "Titel (optioneel)",
+    "titleTooltip": "Als dit veld is ingevuld, wordt deze titel weergegeven als de kolomkop, met prioriteit boven eventueel beschikbare vertalingen.",
     "key": "Sleutel",
+    "keyTooltip": "Een unieke sleutel waarmee de kolom wordt geïdentificeerd. Als de sleutel niet uniek is, kan de kolom niet worden opgeslagen.",
     "path": "Pad",
+    "pathTooltip": "Een pad dat leidt naar de eigenschap die u wilt weergeven. Volg dit voorbeeld voor het JSON-schema van het document: 'doc:customer.firstName'. Volg deze voorbeelden voor documenteigenschappen: 'case:createdBy', of 'case:sequence', of 'case:assigneeFullName'. Let op: wanneer er speciale tekens in een eigenschap zitten, moet de eigenschap binnen aanhalingstekens staan. Bijvoorbeeld: case:\"loan-accepted\".",
     "displayType": "Weergavetype",
     "displayTypeParameters": "Parameters",
     "sortable": "Sorteerbaar",
     "defaultSort": "Standaard sorteren",
+    "defaultSortTitle": "Standaard sortering (optioneel)",
+    "defaultSortTooltip": "Als dit veld een waarde heeft, wordt de tabel standaard gesorteerd op deze eigenschap, in de opgegeven richting. Slechts één kolom tegelijk kan deze eigenschap hebben. Als voor een andere kolom al een standaardsortering is opgegeven, is dit invoerveld uitgeschakeld.",
+    "selectDefaultSort": "Selecteer een standaard sortering",
     "sortableYes": "Ja",
     "sortableNo": "Nee",
     "sortableAsc": "Oplopend",
     "sortableDesc": "Aflopend",
     "hasEnvConfigWarningTitle": "Dit dossiertype heeft al een kolomconfiguratie",
     "hasEnvConfigWarning": "Dit dossiertype heeft al een kolomconfiguratie beschikbaar in de omgevingsconfiguratie van de applicatie. Om het configureren van de kolommen voor dit dossiertype via de gebruikersinterface mogelijk te maken, moet deze omgevingsconfiguratie verwijderd worden.",
-    "downloadButtonText": "Download de kolomconfiguratie van de dossierlijst"
+    "noConfigWarningTitle": "Geen kolommen geconfigureerd",
+    "noConfigWarning": "Er zijn geen kolommen geconfigureerd voor dit dossiertype. Klik op de knop hierboven om een kolom toe te voegen.",
+    "addButtonText": "Kolom toevoegen",
+    "editColumnTitle": "Kolom bewerken",
+    "close": "Sluiten",
+    "save": "Kolom opslaan",
+    "dateFormat": "Datumnotatie (optioneel)",
+    "dateFormatTooltip": "Een datumnotatie die ondersteund wordt door Moment.js (https://momentjs.com/docs/).",
+    "uniqueKeyWarning": "De sleutel voor deze kolom moet uniek zijn.",
+    "enumTitle": "Opsommingswaarden",
+    "enumTitleOptional": "Opsommingswaarden (optioneel)",
+    "enumTooltip": "De sleutels en waarden die gebruikt worden om weergavedata om te zetten in de tabel.",
+    "downloadButtonText": "Download configuratie"
   },
   "listColumnDisplayType": {
     "string": "Tekst",
@@ -931,6 +950,7 @@
     "boolean": "Ja/nee",
     "enum": "Opsomming",
     "arrayCount": "Hoeveelheid",
-    "underscoresToSpaces": "Lage streepjes naar spaties"
+    "underscoresToSpaces": "Lage streepjes naar spaties",
+    "select": "Selecteer een weergavetype"
   }
 }

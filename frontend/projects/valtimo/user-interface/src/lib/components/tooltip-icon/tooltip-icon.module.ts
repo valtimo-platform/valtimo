@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dossier-management
- */
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {TooltipIconComponent} from './tooltip-icon.component';
+import {TranslateModule} from '@ngx-translate/core';
+import {TooltipModule} from '../../directives';
 
-export * from './lib/dossier-management.module';
-export * from './lib/dossier-management-list/dossier-management-list.component';
-export * from './lib/models';
+@NgModule({
+  declarations: [TooltipIconComponent],
+  imports: [CommonModule, TranslateModule, FormsModule, TooltipModule],
+  exports: [TooltipIconComponent],
+})
+export class TooltipIconModule {}

@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dossier-management
- */
+import {Component, Input} from '@angular/core';
 
-export * from './lib/dossier-management.module';
-export * from './lib/dossier-management-list/dossier-management-list.component';
-export * from './lib/models';
+@Component({
+  selector: 'v-tooltip-icon',
+  templateUrl: './tooltip-icon.component.html',
+  styleUrls: ['./tooltip-icon.component.scss'],
+})
+export class TooltipIconComponent {
+  @Input() tooltip = '';
+  @Input() disabled = false;
+}

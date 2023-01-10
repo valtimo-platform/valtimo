@@ -139,3 +139,6 @@ export * from './lib/components/documenten-api-metadata-modal/documenten-api-met
 
 export * from './lib/components/search-fields/search-fields.module';
 export * from './lib/components/search-fields/search-fields.component';
+
+export * from './lib/components/multi-input/carbon-multi-input.module';
+export * from './lib/components/multi-input/carbon-multi-input.component';

@@ -84,3 +84,6 @@ export * from './lib/services/prompt.service';
 // Date picker
 export * from './lib/components/date-picker/date-picker.module';
 export * from './lib/components/date-picker/date-picker.component';
+// Tooltip icon
+export * from './lib/components/tooltip-icon/tooltip-icon.module';
+export * from './lib/components/tooltip-icon/tooltip-icon.component';

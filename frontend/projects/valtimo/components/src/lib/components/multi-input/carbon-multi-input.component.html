@@ -1,0 +1,108 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="v-multi-input"
+  [ngClass]="{'v-multi-input--margin': margin}"
+  *ngIf="{
+    addRowText:
+      addRowText || addRowTranslationKey
+        ? addRowTranslationKey
+          ? (addRowTranslationKey | translate)
+          : addRowText
+        : ('interface.addRow' | translate),
+    deleteRowText:
+      deleteRowText || deleteRowTranslationKey
+        ? deleteRowTranslationKey
+          ? (deleteRowTranslationKey | translate)
+          : deleteRowText
+        : ('interface.deleteRow' | translate)
+  } as vars"
+>
+  <v-input-label
+    *ngIf="title || titleTranslationKey"
+    [title]="title"
+    [titleTranslationKey]="titleTranslationKey"
+    [name]="name"
+    [tooltip]="tooltip"
+    [required]="required"
+  >
+  </v-input-label>
+  <div class="v-multi-input__rows">
+    <div
+      class="v-multi-input__row"
+      *ngFor="let value of values$ | async as values; trackBy: trackByFn"
+    >
+      <ng-container *ngIf="type === 'value'">
+        <ng-container *ngTemplateOutlet="singleValue; context: {value: value}"></ng-container>
+      </ng-container>
+      <ng-container *ngIf="type === 'keyValue'">
+        <ng-container *ngTemplateOutlet="keyValue; context: {value: value}"></ng-container>
+      </ng-container>
+      <button
+        [disabled]="values?.length <= this.minimumAmountOfRows || disabled"
+        ibmButton="danger"
+        size="md"
+        [iconOnly]="true"
+        (click)="deleteRow(value.uuid)"
+        [title]="vars.deleteRowText"
+      >
+        <svg class="cds--btn__icon" ibmIcon="trash-can" size="16"></svg>
+      </button>
+    </div>
+    <div class="v-multi-input__add-button">
+      <button
+        (click)="addRow()"
+        ibmButton="primary"
+        size="md"
+        [disabled]="(addRowEnabled$ | async) === false || disabled"
+      >
+        {{ vars.addRowText }}
+        <svg class="cds--btn__icon" ibmIcon="add" size="16"></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<ng-template #singleValue let-value="value">
+  <div class="v-multi-input__input">
+    <input
+      ibmText
+      (change)="onValueChange(value, $event, 'value')"
+      [disabled]="disabled"
+      [defaultValue]="value.value"
+    />
+  </div>
+</ng-template>
+
+<ng-template #keyValue let-value="value">
+  <div class="v-multi-input__input">
+    <input
+      ibmText
+      (input)="onValueChange(value, $event.target.value, 'key')"
+      [disabled]="disabled"
+      [defaultValue]="value.key"
+    />
+  </div>
+  <div class="v-multi-input__input">
+    <input
+      ibmText
+      (input)="onValueChange(value, $event.target.value, 'value')"
+      [disabled]="disabled"
+      [defaultValue]="value.value"
+    />
+  </div>
+</ng-template>
