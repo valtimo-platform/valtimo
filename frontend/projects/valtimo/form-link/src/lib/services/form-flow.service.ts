@@ -59,4 +59,11 @@ export class FormFlowService {
       submissionData
     );
   }
+
+  save(formFlowInstanceId: string, submissionData: any): Observable<null> {
+    return this.http.post<null>(
+      `${this.valtimoEndpointUri}v1/form-flow/${formFlowInstanceId}/save`,
+      submissionData
+    );
+  }
 }

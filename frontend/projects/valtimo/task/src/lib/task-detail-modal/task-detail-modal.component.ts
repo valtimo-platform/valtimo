@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Output, ViewChild, ViewEncapsulation} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  OnDestroy,
+  Output,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {
   FormioComponent,
@@ -39,11 +47,10 @@ import {NGXLogger} from 'ngx-logger';
 import {ToastrService} from 'ngx-toastr';
 import {map, take} from 'rxjs/operators';
 import {TaskService} from '../task.service';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {BehaviorSubject, distinctUntilChanged, Observable, Subscription, tap} from 'rxjs';
 import {UserProviderService} from '@valtimo/security';
 import {DocumentService} from '@valtimo/document';
 import {TranslateService} from '@ngx-translate/core';
-import {PromptService} from '@valtimo/user-interface';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -53,7 +60,7 @@ moment.locale(localStorage.getItem('langKey') || '');
   styleUrls: ['./task-detail-modal.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class TaskDetailModalComponent {
+export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
   @ViewChild('form') form: FormioComponent;
   @ViewChild('taskDetailModal') modal: ModalComponent;
   @Output() formSubmit = new EventEmitter();
@@ -75,6 +82,8 @@ export class TaskDetailModalComponent {
   processLinkIsFormFlow$ = this.taskProcessLinkType$.pipe(map(type => type === 'form-flow'));
   private formFlowStepType$ = new BehaviorSubject<FormFlowStepType | null>(null);
   formFlowStepTypeIsForm$ = this.formFlowStepType$.pipe(map(type => type === 'form'));
+  private formIoFormData$ = new BehaviorSubject<any>(null);
+  private _subscriptions = new Subscription();
 
   constructor(
     private readonly toastr: ToastrService,
@@ -87,11 +96,35 @@ export class TaskDetailModalComponent {
     private readonly userProviderService: UserProviderService,
     private readonly modalService: ValtimoModalService,
     private readonly documentService: DocumentService,
-    private readonly translateService: TranslateService,
-    private readonly promptService: PromptService
+    private readonly translateService: TranslateService
   ) {
     this.formioOptions = new FormioOptionsImpl();
     this.formioOptions.disableAlerts = true;
+  }
+
+  ngAfterViewInit() {
+    this._subscriptions.add(
+      this.modal.modalShowing$
+        .pipe(
+          distinctUntilChanged(),
+          tap(modalShowing => {
+            const formIoFormData = this.formIoFormData$.getValue();
+            if (!modalShowing && formIoFormData) {
+              if (this.taskProcessLinkType$.getValue() === 'form-flow') {
+                this.formFlowService.save(this.formFlowInstanceId, formIoFormData).subscribe(
+                  () => null,
+                  errors => this.form.showErrors(errors)
+                );
+              }
+            }
+          })
+        )
+        .subscribe()
+    );
+  }
+
+  ngOnDestroy() {
+    this._subscriptions.unsubscribe();
   }
 
   openTaskDetails(task: Task) {
@@ -153,7 +186,16 @@ export class TaskDetailModalComponent {
     this.router.navigate(['form-links']);
   }
 
+  public onChange(event: any): void {
+    if (event.data) {
+      this.formIoFormData$.next(event.data);
+    }
+  }
+
   public onSubmit(submission: FormioSubmission): void {
+    if (submission.data) {
+      this.formIoFormData$.next(submission.data);
+    }
     if (this.taskProcessLinkType$.getValue() === 'form') {
       this.formLinkService
         .onSubmit(
@@ -182,38 +224,12 @@ export class TaskDetailModalComponent {
             errors => this.form.showErrors(errors)
           );
       } else if (submission.data['back']) {
-        this.openPromptSaveData(submission)
-      }
-    }
-  }
-
-  private openPromptSaveData(submission: FormioSubmission): void {
-    this.promptService.openPrompt({
-      headerText: this.translateService.instant('taskDetail.formFlow.backConfirmation.title'),
-      bodyText: this.translateService.instant('taskDetail.formFlow.backConfirmation.description'),
-      cancelButtonText: this.translateService.instant('taskDetail.formFlow.backConfirmation.no'),
-      confirmButtonText: this.translateService.instant('taskDetail.formFlow.backConfirmation.yes'),
-      cancelMdiIcon: 'close',
-      confirmMdiIcon: 'check',
-      closeOnConfirm: true,
-      closeOnCancel: true,
-      closeButtonVisible: true,
-      cancelCallbackFunction: () => {
-        this.formFlowService.back(this.formFlowInstanceId, {}).subscribe(
-          (result: FormFlowInstance) => this.handleFormFlowStep(result),
-          errors => this.form.showErrors(errors)
-        );
-      },
-      confirmCallBackFunction: () => {
         this.formFlowService.back(this.formFlowInstanceId, submission.data).subscribe(
           (result: FormFlowInstance) => this.handleFormFlowStep(result),
           errors => this.form.showErrors(errors)
         );
-      },
-      closeCallBackFunction: () => {
-        this.openTaskDetails(this.task);
-      },
-    });
+      }
+    }
   }
 
   private resetFormDefinition(): void {
