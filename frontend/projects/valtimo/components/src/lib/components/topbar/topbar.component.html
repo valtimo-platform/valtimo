@@ -15,7 +15,13 @@
   -->
 
 <ibm-header [useRouter]="false" (mouseenter)="mouseEnter()" (mouseleave)="mouseLeave()">
-  <a *ngIf="logoBase64" class="logo-link" [routerLink]="['/']" [title]="applicationTitle">
+  <a
+    *ngIf="logoBase64"
+    class="logo-link"
+    [ngClass]="{'logo-link--large-margin': largeLogoMargin}"
+    [routerLink]="['/']"
+    [title]="applicationTitle"
+  >
     <img [src]="logoBase64" class="logo-image" />
   </a>
   <ibm-hamburger

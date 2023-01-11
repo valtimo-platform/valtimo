@@ -238,7 +238,8 @@ export const environment: ValtimoConfig = {
     showUserNameInTopBar: true,
     showPlantATreeButton: true,
     experimentalDmnEditing: true,
-    caseListColumn: true
+    caseListColumn: true,
+    largeLogoMargin: true,
   },
   customDossierHeader: {
     leningen: [
