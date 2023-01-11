@@ -61,6 +61,10 @@ body {
   background-color: colors.$gray-10;
 }
 
+.cds--link--disabled {
+  pointer-events: none;
+}
+
 /*
 - Appendix
 

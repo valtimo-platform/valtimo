@@ -41,6 +41,7 @@
 
 .select-label {
   padding-bottom: 0.5rem;
+  width: 250px;
 }
 
 .loading-icon {
@@ -53,4 +54,11 @@
 .center-link {
   display: flex;
   align-items: center;
+}
+
+::ng-deep .move-row-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-right: 13px;
 }

@@ -20,6 +20,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   CarbonMultiInputModule,
+  ConfirmationModalModule,
   DropzoneModule,
   ListModule,
   ModalModule,
@@ -104,6 +105,7 @@ import {
     CarbonMultiInputModule,
     LoadingModule,
     LinkModule,
+    ConfirmationModalModule,
   ],
   exports: [],
 })

@@ -494,7 +494,10 @@
     },
     "email": "E-mail",
     "username": "Gebruikersnaam",
-    "name": "Naam"
+    "name": "Naam",
+    "delete": "Verwijderen",
+    "deleteConfirmation": "Weet u zeker dat u wilt verwijderen?",
+    "cancel": "Annuleren"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",
@@ -910,11 +913,12 @@
     "path": "Pad",
     "pathTooltip": "Een pad dat leidt naar de eigenschap die u wilt weergeven. Volg dit voorbeeld voor het JSON-schema van het document: 'doc:customer.firstName'. Volg deze voorbeelden voor documenteigenschappen: 'case:createdBy', of 'case:sequence', of 'case:assigneeFullName'. Let op: wanneer er speciale tekens in een eigenschap zitten, moet de eigenschap binnen aanhalingstekens staan. Bijvoorbeeld: case:\"loan-accepted\".",
     "displayType": "Weergavetype",
+    "displayTypeTooltip": "Deze optie bepaalt hoe de gegevens uiteindelijk in de tabel worden weergegeven.",
     "displayTypeParameters": "Parameters",
     "sortable": "Sorteerbaar",
     "defaultSort": "Standaard sorteren",
     "defaultSortTitle": "Standaard sortering (optioneel)",
-    "defaultSortTooltip": "Als dit veld een waarde heeft, wordt de tabel standaard gesorteerd op deze eigenschap, in de opgegeven richting. Slechts één kolom tegelijk kan deze eigenschap hebben. Als voor een andere kolom al een standaardsortering is opgegeven, is dit invoerveld uitgeschakeld.",
+    "defaultSortTooltip": "Als dit veld een waarde heeft, wordt de tabel standaard gesorteerd op deze eigenschap, in de opgegeven richting. Slechts één kolom tegelijk kan deze eigenschap hebben. Bij het aanmaken van een nieuwe kolom, als voor een andere kolom al een standaardsortering is opgegeven, is dit invoerveld uitgeschakeld.",
     "selectDefaultSort": "Selecteer een standaard sortering",
     "sortableYes": "Ja",
     "sortableNo": "Nee",
@@ -934,7 +938,9 @@
     "enumTitle": "Opsommingswaarden",
     "enumTitleOptional": "Opsommingswaarden (optioneel)",
     "enumTooltip": "De sleutels en waarden die gebruikt worden om weergavedata om te zetten in de tabel.",
-    "downloadButtonText": "Download configuratie"
+    "downloadButtonText": "Download configuratie",
+    "deleteColumn": "Kolom verwijderen",
+    "deleteColumnConfirmation": "Weet u zeker dat u deze kolom wilt verwijderen?"
   },
   "listColumnDisplayType": {
     "string": "Tekst",

@@ -142,3 +142,6 @@ export * from './lib/components/search-fields/search-fields.component';
 
 export * from './lib/components/multi-input/carbon-multi-input.module';
 export * from './lib/components/multi-input/carbon-multi-input.component';
+
+export * from './lib/components/confirmation-modal/confirmation-modal.module';
+export * from './lib/components/confirmation-modal/confirmation-modal.component';

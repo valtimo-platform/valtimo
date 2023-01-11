@@ -485,7 +485,14 @@
     "next": "Next >",
     "previous": "< Previous",
     "addRow": "Add row",
-    "deleteRow": "Delete row"
+    "deleteRow": "Delete row",
+    "delete": "Delete",
+    "deleteConfirmation": "Are you sure you want to delete?",
+    "cancel": "Cancel",
+    "builds": {
+      "valtimo-backend-libraries": "Valtimo back-end",
+      "valtimo-frontend-libraries": "Valtimo front-end"
+    }
   },
   "taskDetail": {
     "taskCreated": "Created",
@@ -901,11 +908,12 @@
     "path": "Path",
     "pathTooltip": "A path which leads to the property you want to show. For the document's JSON schema, follow this example: 'doc:customer.firstName'. For document properties, follow these examples: 'case:createdBy', or 'case:sequence', or 'case:assigneeFullName'. Note: When there are special characters in a property, the property must be enclosed in quotes. For example: case:\"loan-accepted\".",
     "displayType": "Display Type",
+    "displayTypeTooltip": "This option decides how the data is eventually displayed in the table.",
     "displayTypeParameters": "Parameters",
     "sortable": "Sortable",
     "defaultSort": "Default Sort",
     "defaultSortTitle": "Default Sort (optional)",
-    "defaultSortTooltip": "If this field has a value, the table will be sorted by default on this property, in the direction specified. Only one column at a time can have this property. If another column already has a default sort specified, this input field will be disabled.",
+    "defaultSortTooltip": "If this field has a value, the table will be sorted by default on this property, in the direction specified. Only one column at a time can have this property. On creating a new column, if another column already has a default sort specified, this input field will be disabled.",
     "selectDefaultSort": "Select a default sort",
     "sortableYes": "Yes",
     "sortableNo": "No",
@@ -923,9 +931,11 @@
     "dateFormatTooltip": "A date format supported by Moment.js (https://momentjs.com/docs/).",
     "uniqueKeyWarning": "The key for this column must be unique.",
     "enumTitle": "Enumeration values",
-    "enumTitle": "Enumeration values (optional)",
+    "enumTitleOptional": "Enumeration values (optional)",
     "enumTooltip": "The keys and values used to transform display data in the table.",
-    "downloadButtonText": "Download configuration"
+    "downloadButtonText": "Download configuration",
+    "deleteColumn": "Delete column",
+    "deleteColumnConfirmation": "Are you sure you want to delete this column?"
   },
   "listColumnDisplayType": {
     "select": "Select a display type",
