@@ -946,11 +946,13 @@
     "deleteColumnConfirmation": "Weet u zeker dat u deze kolom wilt verwijderen?"
   },
   "listColumnDisplayType": {
+    "select": "Selecteer een weergavetype",
     "string": "Tekst",
     "date": "Datum",
     "boolean": "Ja/nee",
     "enum": "Opsomming",
-    "arrayCount": "Hoeveelheid"
+    "arrayCount": "Hoeveelheid",
+    "underscoresToSpaces": "Lage strepen naar spaties"
   },
   "objectManagement": {
     "title": "Objecttypes",

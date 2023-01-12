@@ -486,13 +486,18 @@
     "previous": "< Previous",
     "addRow": "Add row",
     "deleteRow": "Delete row",
-    "delete": "Delete",
-    "deleteConfirmation": "Are you sure you want to delete?",
-    "cancel": "Cancel",
+    "on": "On",
+    "off": "Off",
     "builds": {
       "valtimo-backend-libraries": "Valtimo back-end",
       "valtimo-frontend-libraries": "Valtimo front-end"
-    }
+    },
+    "email": "E-mail",
+    "username": "Username",
+    "name": "Name",
+    "delete": "Delete",
+    "deleteConfirmation": "Are you sure you want to delete?",
+    "cancel": "Cancel"
   },
   "taskDetail": {
     "taskCreated": "Created",

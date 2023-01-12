@@ -946,11 +946,13 @@
     "deleteColumnConfirmation": "Möchten Sie diese Spalte wirklich löschen?"
   },
   "listColumnDisplayType": {
+    "select": "Wählen Sie einen Anzeigetyp aus",
     "string": "Text",
     "date": "Datum",
     "boolean": "Ja/nein",
     "enum": "Aufzählung",
-    "arrayCount": "Quantität"
+    "arrayCount": "Quantität",
+    "underscoresToSpaces": "Unterstriche zu Leerzeichen"
   },
   "objectManagement": {
     "title": "Objekttypen",
