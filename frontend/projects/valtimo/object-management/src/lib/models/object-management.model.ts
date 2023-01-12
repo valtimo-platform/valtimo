@@ -1,4 +1,4 @@
-interface ObjectManagement {
+interface Objecttype {
   id: string;
   title: string;
   objecttypenApiPluginConfigurationId: string;
@@ -9,4 +9,6 @@ interface ObjectManagement {
   formDefinitionEdit?: string;
 }
 
-export  {ObjectManagement}
+type ObjecttypeKeys = keyof Objecttype;
+
+export  {Objecttype, ObjecttypeKeys}

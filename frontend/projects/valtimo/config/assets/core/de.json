@@ -522,13 +522,16 @@
     "maxFileSize": "Maximale Datei-Größe: ",
     "jsonDocDef": "Die Case-Definition muss im JSON-Format sein",
     "formJsonDocDef": "Die Formular-Definition muss im JSON-Format sein",
+    "objecttypeDef": "Die Objekttypdefinition muss im JSON-Format sein",
     "error": {
       "tooBig": "Die Datei ist zu groß",
       "wrongType": "Der Dokumenten-Typ wird nicht unterstützt",
       "generic": "Etwas ist schief gelaufen. Bitte erneut versuchen.",
       "invalidDocDef": "Die Case-Definition konnte nicht hochgeladen werden. Bitte erneut versuchen.",
       "invalidFormDef": "Die Formular-Definition ist ungültig. Bitte erneut versuchen.",
-      "invalidJson": "Es gibt ein Fehler in der Datei. Bitte überprüfen ob es einen gültigen JSON-Wert enthält."
+      "invalidJson": "Es gibt ein Fehler in der Datei. Bitte überprüfen ob es einen gültigen JSON-Wert enthält.",
+      "invalidObjecttypeDef": "Die Objekttypdefinition ist ungültig. Bitte versuche es erneut.",
+      "objecttypeAlreadyExists": "Die JSON-Datei enthält einen bereits vorhandenen Objekttyp."
     }
   },
   "fieldLabels": {
@@ -951,7 +954,8 @@
   },
   "objectManagement": {
     "title": "Objekttypen",
-    "createObjecttype": "neue Objekttypen erstellen",
+    "createObjecttype": "Objekttypen erstellen",
+    "uploadObjecttype": "Upload Objekttypen",
     "labels": {
       "title": "Titel",
       "objects": "Objects-API-Plugin-Konfiguration",

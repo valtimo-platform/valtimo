@@ -18,6 +18,10 @@
   <div class="container-fluid">
     <div class="col-12 px-0 mb-5">
       <div class="text-right mt-m3px mb-3">
+        <button (click)="showUploadModal()" class="btn btn-secondary btn-space">
+          <i class="icon mdi mdi-upload mr-1"></i>
+          {{ 'objectManagement.uploadObjecttype' | translate }}
+        </button>
         <button (click)="showAddModal()" type="button" class="btn btn-space btn-primary mr-0">
           <i class="icon mdi mdi-plus mr-1"></i>
           {{ 'objectManagement.createObjecttype' | translate }}
@@ -54,6 +58,7 @@
     </ng-container>
 </ng-template>
 
+<valtimo-object-management-upload-modal [objecttypes]="objecttypesInstances$ | async"></valtimo-object-management-upload-modal>
 <valtimo-object-management-add-modal></valtimo-object-management-add-modal>
 
 

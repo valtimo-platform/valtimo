@@ -517,13 +517,16 @@
     "maxFileSize": "Maximum file size: ",
     "jsonDocDef": "The case definition must be in the JSON format",
     "formJsonDocDef": "The form definition must be in the JSON format",
+    "objecttypeDef": "The objecttype definition must be in JSON format",
     "error": {
       "tooBig": "The file you tried to submit is too large",
       "wrongType": "The filetype of the file you tried to submit is not supported",
       "generic": "Something went wrong. Please try again.",
       "invalidDocDef": "The case definition could not be uploaded. Please try again.",
       "invalidFormDef": "The form definition is not valid. Please try again.",
-      "invalidJson": "The file contains an error. Please make sure it contains a valid JSON value."
+      "invalidJson": "The file contains an error. Please make sure it contains a valid JSON value.",
+      "invalidObjecttypeDef": "The objecttype definition is not valid. Please try again.",
+      "objecttypeAlreadyExists": "The JSON file contains an object type that already exists."
     }
   },
   "fieldLabels": {
@@ -948,7 +951,8 @@
   },
   "objectManagement": {
     "title": "Objecttypes",
-    "createObjecttype": "Create new objecttype",
+    "createObjecttype": "Create objecttype",
+    "uploadObjecttype": "Upload objecttype",
     "labels": {
       "title": "Title",
       "objects": "Objects API plugin configuration",

@@ -522,13 +522,16 @@
     "maxFileSize": "Maximale bestandsgrootte: ",
     "jsonDocDef": "De dossier-definitie moet in het JSON-formaat zijn",
     "formJsonDocDef": "De formulier-definitie moet in het JSON-formaat zijn",
+    "objecttypeDef": "De objecttype-definitie moet in JSON-formaat zjn",
     "error": {
       "tooBig": "Het opgegeven bestand is te groot",
       "wrongType": "Het bestandstype van het opgegeven bestand wordt niet ondersteund",
       "generic": "Er ging iets mis. Probeer het opnieuw.",
       "invalidDocDef": "Uw dossier-definitie kon niet geüpload worden. Probeer het opnieuw.",
       "invalidFormDef": "Uw formulier-definitie is niet geldig. Probeer het opnieuw.",
-      "invalidJson": "Het opgegeven bestand bevat een fout. Controleer of de inhoud een geldige JSON-waarde is."
+      "invalidJson": "Het opgegeven bestand bevat een fout. Controleer of de inhoud een geldige JSON-waarde is.",
+      "invalidObjecttypeDef": "Uw objecttype-definitie kon niet geüpload worden. Probeer het opnieuw.",
+      "objecttypeAlreadyExists": "Het opgegeven JSON bestand bevat een objecttype die al reeds bestaat."
     }
   },
   "fieldLabels": {
@@ -951,7 +954,8 @@
   },
   "objectManagement": {
     "title": "Objecttypes",
-    "createObjecttype": "Maak nieuwe objecttype",
+    "createObjecttype": "Maak objecttype",
+    "uploadObjecttype": "Upload objecttype",
     "labels": {
       "title": "Titel",
       "objects": "Objecten API plugin configuratie",

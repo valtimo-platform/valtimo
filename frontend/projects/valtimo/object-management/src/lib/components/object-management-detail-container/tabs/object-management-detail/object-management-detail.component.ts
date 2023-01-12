@@ -15,7 +15,7 @@
  */
 
 import {Component, Input} from '@angular/core';
-import {ObjectManagement} from '../../../../models/object-management.model';
+import {Objecttype} from '../../../../models/object-management.model';
 
 @Component({
   selector: 'valtimo-object-management-detail',
@@ -23,7 +23,7 @@ import {ObjectManagement} from '../../../../models/object-management.model';
   styleUrls: ['./object-management-detail.component.scss'],
 })
 export class ObjectManagementDetailComponent {
-  @Input() object: ObjectManagement
+  @Input() object: Objecttype
 
   constructor() {}
 

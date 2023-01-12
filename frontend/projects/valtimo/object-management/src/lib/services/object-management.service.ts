@@ -18,7 +18,7 @@ import { Injectable } from '@angular/core';
 import {Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
-import {ObjectManagement} from '../models/object-management.model';
+import {Objecttype} from '../models/object-management.model';
 
 @Injectable({
   providedIn: 'root'
@@ -31,15 +31,15 @@ export class ObjectManagementService {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
-  public getAllObjects(): Observable<ObjectManagement[]> {
-    return this.http.get<ObjectManagement[]>(`${this.valtimoEndpointUri}v1/object/management/configuration`);
+  public getAllObjects(): Observable<Objecttype[]> {
+    return this.http.get<Objecttype[]>(`${this.valtimoEndpointUri}v1/object/management/configuration`);
   }
 
-  public getObjectById(id: string): Observable<ObjectManagement> {
-    return this.http.get<ObjectManagement>(`${this.valtimoEndpointUri}v1/object/management/configuration/${id}`);
+  public getObjectById(id: string): Observable<Objecttype> {
+    return this.http.get<Objecttype>(`${this.valtimoEndpointUri}v1/object/management/configuration/${id}`);
   }
 
-  public createObject(payload: ObjectManagement): Observable<ObjectManagement> {
-    return this.http.post<ObjectManagement>(`${this.valtimoEndpointUri}v1/object/management/configuration`, payload);
+  public createObject(payload: Objecttype): Observable<Objecttype> {
+    return this.http.post<Objecttype>(`${this.valtimoEndpointUri}v1/object/management/configuration`, payload);
   }
 }

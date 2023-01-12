@@ -19,7 +19,7 @@ import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {switchMap, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {ObjectManagementService} from '../../services/object-management.service';
-import {ObjectManagement} from '../../models/object-management.model';
+import {Objecttype} from '../../models/object-management.model';
 import {ObjectManagementStateService} from '../../services/object-management-state.service';
 import {Router} from '@angular/router';
 
@@ -33,7 +33,7 @@ export class ObjectManagementListComponent {
 
   readonly fields$ = new BehaviorSubject<Array<{key: string; label: string}>>([]);
 
-  readonly objecttypesInstances$: Observable<Array<ObjectManagement>> = combineLatest([
+  readonly objecttypesInstances$: Observable<Array<Objecttype>> = combineLatest([
     this.translateService.stream('key'),
     this.objectManagementState.refresh$
   ]).pipe(
@@ -56,7 +56,12 @@ export class ObjectManagementListComponent {
     this.objectManagementState.showModal();
   }
 
-  redirectToDetails(objectManagement: ObjectManagement) {
+  showUploadModal(): void {
+    this.objectManagementState.setModalType('upload');
+    this.objectManagementState.showModal();
+  }
+
+  redirectToDetails(objectManagement: Objecttype) {
     this.router.navigate(['/object-management/object', objectManagement.id]);
   }
 
