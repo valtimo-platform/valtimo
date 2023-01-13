@@ -42,4 +42,8 @@ export class ObjectManagementService {
   public createObject(payload: Objecttype): Observable<Objecttype> {
     return this.http.post<Objecttype>(`${this.valtimoEndpointUri}v1/object/management/configuration`, payload);
   }
+
+  public editObject(payload: Objecttype): Observable<Objecttype> {
+    return this.http.put<Objecttype>(`${this.valtimoEndpointUri}v1/object/management/configuration`, payload);
+  }
 }

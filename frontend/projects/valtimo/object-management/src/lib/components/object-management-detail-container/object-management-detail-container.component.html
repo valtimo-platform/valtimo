@@ -43,12 +43,22 @@
   <ul class="nav nav-tabs">
     <li class="nav-item">
       <a
-        id="case-tab"
+        id="general-tab"
         class="nav-link clickable active"
         data-toggle="tab"
         (click)="displayBodyComponent(TabEnum.GENERAL)"
       >
         {{ 'objectManagement.tabs.general' | translate }}
+      </a>
+    </li>
+    <li class="nav-item" *ngIf="caseListColumn">
+      <a
+        id="list-tab"
+        class="nav-link clickable"
+        data-toggle="tab"
+        (click)="displayBodyComponent(TabEnum.LIST)"
+      >
+        {{ 'objectManagement.tabs.list' | translate }}
       </a>
     </li>
   </ul>
@@ -57,7 +67,10 @@
 <ng-template #tabContent>
   <div class="pt-3 bg-white position-relative tab-container">
     <div *ngIf="currentTab && currentTab === TabEnum.GENERAL">
-      <valtimo-object-management-detail [object]="object$ | async"></valtimo-object-management-detail>
+      <valtimo-object-management-detail [object$]="object$"></valtimo-object-management-detail>
+    </div>
+    <div *ngIf="currentTab && currentTab === TabEnum.LIST">
+      <valtimo-object-management-list-tab></valtimo-object-management-list-tab>
     </div>
   </div>
 </ng-template>

@@ -1,3 +1,4 @@
 export enum TabEnum {
-  GENERAL = 'general'
+  GENERAL = 'general',
+  LIST = 'list'
 }

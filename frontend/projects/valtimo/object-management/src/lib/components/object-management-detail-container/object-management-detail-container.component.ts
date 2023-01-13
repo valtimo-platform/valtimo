@@ -16,11 +16,12 @@
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {filter, map, Observable, Subscription, switchMap} from 'rxjs';
+import {combineLatest, filter, map, Observable, Subscription, switchMap} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
 import {TabService} from '../../services/tab.service';
 import {TabEnum} from '../../services/tab.enum';
 import {ObjectManagementService} from '../../services/object-management.service';
+import {ObjectManagementStateService} from '../../services/object-management-state.service';
 
 @Component({
   selector: 'valtimo-object-management-detail-container',
@@ -40,13 +41,14 @@ export class ObjectManagementDetailContainerComponent implements OnInit, OnDestr
     filter(id => !!id)
   );
 
-  readonly object$ = this.objectId$.pipe(
-    switchMap(object =>
+  readonly object$ = combineLatest([this.objectId$, this.objectManagementState.refresh$]).pipe(
+    switchMap(([object]) =>
       this.objectManagementService.getObjectById(object)
     )
   );
 
   constructor(
+    private readonly objectManagementState: ObjectManagementStateService,
     private readonly objectManagementService: ObjectManagementService,
     private readonly route: ActivatedRoute,
     private readonly configService: ConfigService,

@@ -87,4 +87,6 @@
 .v-input--checkbox {
   width: 20px;
   height: 20px;
+
+  margin-block-end: var(--v-input-margin);
 }

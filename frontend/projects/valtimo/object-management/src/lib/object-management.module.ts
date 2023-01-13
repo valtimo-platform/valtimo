@@ -23,15 +23,17 @@ import {ButtonModule, FormModule, InputModule, ModalModule, SelectModule, TitleM
 import {ObjectManagementDetailContainerComponent} from './components/object-management-detail-container/object-management-detail-container.component';
 import {ObjectManagementDetailComponent} from './components/object-management-detail-container/tabs/object-management-detail/object-management-detail.component';
 import {ObjectManagementListComponent} from './components/object-management-list/object-management-list.component';
-import {ObjectManagementAddModalComponent} from './components/object-management-add-modal/object-management-add-modal.component';
 import {ObjectManagementUploadModalComponent} from './components/object-management-upload-modal/object-management-upload-modal.component';
+import {ObjectManagementModalComponent} from './components/object-management-modal/object-management-modal.component';
+import {ObjectManagementListTabComponent} from './components/object-management-detail-container/tabs/object-management-list-tab/object-management-list-tab.component';
 
 @NgModule({
   declarations: [
     ObjectManagementListComponent,
     ObjectManagementDetailContainerComponent,
     ObjectManagementDetailComponent,
-    ObjectManagementAddModalComponent,
+    ObjectManagementListTabComponent,
+    ObjectManagementModalComponent,
     ObjectManagementUploadModalComponent
   ],
   imports: [

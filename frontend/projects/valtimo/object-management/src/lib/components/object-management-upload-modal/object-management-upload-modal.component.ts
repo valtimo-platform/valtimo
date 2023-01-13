@@ -33,7 +33,6 @@ import {Objecttype, ObjecttypeKeys} from '../../models/object-management.model';
 export class ObjectManagementUploadModalComponent implements AfterViewInit, OnDestroy {
   @ViewChild('objectManagementUploadModal') objectManagementUploadModal: vModalComponent;
   @Input() objecttypes?: Objecttype[];
-  @Output() createNoteEvent: EventEmitter<any> = new EventEmitter();
 
   readonly clear$ = new Subject();
   readonly jsonString$ = new BehaviorSubject<string>('');

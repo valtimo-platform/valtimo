@@ -1,0 +1,133 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<v-modal #objectManagementModal *ngIf="{
+    disabled: disabled$ | async,
+    valid: valid$ | async,
+    modalType: modalType$ | async,
+    prefillObject: prefillObject$ | async
+  } as obs">
+  <div role="header">
+    <div class="add-title">
+      <v-title [margin]="false">{{ (obs.modalType === 'add' ? 'objectManagement.createObjecttype' : 'objectManagement.editObjecttype') | translate }}</v-title>
+    </div>
+  </div>
+  <div role="content">
+    <ng-container *ngTemplateOutlet="form; context: {prefillObject: obs.prefillObject, modalType: obs.modalType}"></ng-container>
+  </div>
+  <div role="footer">
+    <div class="buttons">
+      <v-button (clickEvent)="cancel()" [disabled]="obs.disabled" type="secondary">
+        {{ 'objectManagement.cancel' | translate }}
+      </v-button>
+      <v-button (clickEvent)="save()" [disabled]="obs.disabled || !obs.valid" mdiIcon="plus" type="success">
+        {{ (obs.modalType === 'add' ? 'objectManagement.add' : 'objectManagement.edit') | translate }}
+      </v-button>
+    </div>
+  </div>
+</v-modal>
+
+<ng-template #form let-prefillObject="prefillObject" let-modalType="modalType">
+  <ng-container *ngIf="showForm$ | async">
+    <v-form (valueChange)="formValueChange($event)">
+      <v-input *ngIf="modalType === 'edit'"
+        hidden
+        [disabled]="true"
+        [defaultValue]="prefillObject?.id"
+        name="id"
+      ></v-input>
+
+      <v-input
+        [margin]="true"
+        [required]="true"
+        [title]="'objectManagement.labels.title' | translate"
+        [tooltip]="'objectManagement.tooltips.title' | translate"
+        [widthPx]="350"
+        [defaultValue]="prefillObject?.title"
+        name="title"
+      ></v-input>
+
+      <ng-container *ngIf="{
+        connectionInstances: configurationInstances$ | async,
+        objectsApiConfigurations: objectsApiConfigurations$ | async,
+        objecttypesApiConfigurations: objecttypesApiConfigurations$ | async
+        } as objectObs"
+      >
+        <v-select
+          [items]="objectObs.objectsApiConfigurations"
+          [margin]="true"
+          [widthInPx]="350"
+          name="objectenApiPluginConfigurationId"
+          [title]="'objectManagement.labels.objects' | translate"
+          [defaultSelectionId]="prefillObject?.objectenApiPluginConfigurationId"
+          [required]="true"
+        ></v-select>
+
+        <v-select
+          [items]="objectObs.objecttypesApiConfigurations"
+          [margin]="true"
+          [widthInPx]="350"
+          name="objecttypenApiPluginConfigurationId"
+          [title]="'objectManagement.labels.objecttypes' | translate"
+          [defaultSelectionId]="prefillObject?.objecttypenApiPluginConfigurationId"
+          [required]="true"
+          (selectedChange)="selectObjectType($event)"
+        ></v-select>
+      </ng-container>
+
+        <v-input
+          [margin]="true"
+          [required]="true"
+          [title]="'objectManagement.labels.objecttypeId' | translate"
+          [tooltip]="'objectManagement.tooltips.objecttypeId' | translate"
+          [widthPx]="350"
+          [defaultValue]="prefillObject?.objecttypeId"
+          name="objecttypeId"
+        ></v-input>
+
+      <ng-container *ngIf="{formDefinitions: formDefinitions$ | async} as formObs">
+        <v-select
+          [items]="formObs.formDefinitions"
+          [margin]="true"
+          [widthInPx]="350"
+          name="formDefinitionView"
+          [title]="'objectManagement.labels.formDefinitionView' | translate"
+          [tooltip]="'objectManagement.tooltips.formDefinitionView' | translate"
+          [defaultSelectionId]="prefillObject?.formDefinitionView"
+        ></v-select>
+
+        <v-select
+          [items]="formObs.formDefinitions"
+          [margin]="true"
+          [widthInPx]="350"
+          name="formDefinitionEdit"
+          [title]="'objectManagement.labels.formDefinitionEdit' | translate"
+          [tooltip]="'objectManagement.tooltips.formDefinitionEdit' | translate"
+          [defaultSelectionId]="prefillObject?.formDefinitionEdit"
+        ></v-select>
+      </ng-container>
+
+      <v-input
+        [margin]="true"
+        type="checkbox"
+        [title]="'objectManagement.labels.showInDataMenu' | translate"
+        [tooltip]="'objectManagement.tooltips.showInDataMenu' | translate"
+        name="showInDataMenu"
+        [defaultValue]="prefillObject?.showInDataMenu"
+      ></v-input>
+    </v-form>
+  </ng-container>
+</ng-template>

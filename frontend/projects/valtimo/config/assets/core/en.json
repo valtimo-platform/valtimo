@@ -957,29 +957,32 @@
   "objectManagement": {
     "title": "Objecttypes",
     "createObjecttype": "Create objecttype",
+    "editObjecttype": "Edit objecttype",
     "uploadObjecttype": "Upload objecttype",
     "labels": {
       "title": "Title",
       "objects": "Objects API plugin configuration",
       "objecttypes": "Objecttypen API plugin configuration",
-      "objecttypeUrl": "Objecttype URL",
+      "objecttypeId": "Objecttype ID",
       "formDefinitionView": "View form definition",
       "formDefinitionEdit": "Edit form definition",
       "showInDataMenu": "Show in menu"
     },
     "tooltips": {
       "title": "The name of this configuration. Under this name, this configuration can be found in the rest of the application.",
-      "objecttypeUrl": "A URL to the location of the objecttype.",
+      "objecttypeId": "The ID of the object type",
       "formDefinitionView": "The name of the form IO definition that will be used to display the object.",
       "formDefinitionEdit": "The name of the form IO definition that will be used to edit the object.",
       "showInDataMenu": "Indicates whether the object type is visible in the menu"
     },
     "cancel": "Cancel",
     "add": "Add object",
+    "edit": "Change object",
     "download": "Download",
     "visibleInMenu": "Visible in menu",
     "tabs": {
-      "general": "General"
+      "general": "General",
+      "list": "List"
     }
   }
 }

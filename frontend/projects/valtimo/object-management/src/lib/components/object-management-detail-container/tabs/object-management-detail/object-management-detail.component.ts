@@ -16,6 +16,9 @@
 
 import {Component, Input} from '@angular/core';
 import {Objecttype} from '../../../../models/object-management.model';
+import {ObjectManagementService} from '../../../../services/object-management.service';
+import {ObjectManagementStateService} from '../../../../services/object-management-state.service';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'valtimo-object-management-detail',
@@ -23,21 +26,29 @@ import {Objecttype} from '../../../../models/object-management.model';
   styleUrls: ['./object-management-detail.component.scss'],
 })
 export class ObjectManagementDetailComponent {
-  @Input() object: Objecttype
+  @Input() object$: Observable<Objecttype>;
 
-  constructor() {}
+  constructor(
+    private readonly objectManagementService: ObjectManagementService,
+    private readonly objectManagementState: ObjectManagementStateService
+  ) {}
 
-  downloadDefinition(): void {
+  downloadDefinition(object): void {
     const dataString =
       'data:text/json;charset=utf-8,' +
-      encodeURIComponent(JSON.stringify(this.object, null, 2));
+      encodeURIComponent(JSON.stringify(object, null, 2));
     console.log(dataString)
     const downloadAnchorElement = document.getElementById('downloadAnchorElement');
     downloadAnchorElement.setAttribute('href', dataString);
     downloadAnchorElement.setAttribute(
       'download',
-      `${this.object.id}.json`
+      `${object.id}.json`
     );
     downloadAnchorElement.click();
+  }
+
+  showEditModal(): void {
+    this.objectManagementState.setModalType('edit');
+    this.objectManagementState.showModal();
   }
 }

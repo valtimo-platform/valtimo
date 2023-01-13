@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-.buttons,
-.add-note-title {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-}
+import {Component, Input} from '@angular/core';
+import {Objecttype} from '../../../../models/object-management.model';
+import {Observable} from 'rxjs';
 
-.add-note-title {
-  justify-content: center;
+@Component({
+  selector: 'valtimo-object-management-list-tab',
+  templateUrl: './object-management-list-tab.component.html',
+  styleUrls: ['./object-management-list-tab.component.scss'],
+})
+export class ObjectManagementListTabComponent {
+  @Input() object$: Observable<Objecttype>;
+
+  constructor() {}
 }
