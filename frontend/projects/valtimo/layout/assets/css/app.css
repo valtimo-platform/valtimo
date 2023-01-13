@@ -18382,19 +18382,7 @@ li.L9 {
 }
 
 .timeline-item:nth-child(4n + 1):before {
-  border-color: #ff5800;
-}
-
-.timeline-item:nth-child(4n + 2):before {
-  border-color: #fbbc05;
-}
-
-.timeline-item:nth-child(4n + 3):before {
-  border-color: #34a853;
-}
-
-.timeline-item:nth-child(4n + 4):before {
-  border-color: #ea4335;
+  border-color: #cccccc;
 }
 
 .timeline-variant .timeline-item {
