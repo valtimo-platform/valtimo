@@ -34,6 +34,7 @@ import {
   DocumentService,
   ProcessDocumentDefinition,
   SortState,
+  SpecifiedDocuments,
 } from '@valtimo/document';
 import moment from 'moment';
 import {
@@ -88,6 +89,13 @@ export class DossierListComponent implements OnInit {
     })
   );
 
+  readonly hasEnvColumnConfig$: Observable<boolean> = this.route.params.pipe(
+    map(params => params.documentDefinitionName || ''),
+    map(documentDefinitionName =>
+      this.dossierColumnService.hasEnvironmentConfig(documentDefinitionName)
+    )
+  );
+
   readonly canHaveAssignee$: Observable<boolean> = this.documentDefinitionName$.pipe(
     switchMap(documentDefinitionName =>
       this.documentService.getCaseSettings(documentDefinitionName)
@@ -132,11 +140,17 @@ export class DossierListComponent implements OnInit {
     map(storedSearchRequestKey => localStorage.getItem(storedSearchRequestKey) !== null)
   );
 
+  private readonly hasApiColumnConfig$ = new BehaviorSubject<boolean>(false);
+
   private readonly columns$: Observable<Array<DefinitionColumn>> =
     this.documentDefinitionName$.pipe(
       switchMap(documentDefinitionName =>
         this.dossierColumnService.getDefinitionColumns(documentDefinitionName)
-      )
+      ),
+      map(res => {
+        this.hasApiColumnConfig$.next(res.hasApiConfig);
+        return res.columns;
+      })
     );
 
   private readonly ASSIGNEE_KEY = 'assigneeFullName';
@@ -144,17 +158,20 @@ export class DossierListComponent implements OnInit {
   readonly fields$: Observable<Array<ListField>> = combineLatest([
     this.columns$,
     this.canHaveAssignee$,
+    this.hasEnvColumnConfig$,
     this.translateService.stream('key'),
   ]).pipe(
-    map(([columns, canHaveAssignee]) => [
+    map(([columns, canHaveAssignee, hasEnvConfig]) => [
       ...columns
         .map(column => {
           const translationKey = `fieldLabels.${column.translationKey}`;
           const translation = this.translateService.instant(translationKey);
           const validTranslation = translation !== translationKey && translation;
 
+          console.log('column', column);
+
           return {
-            key: column.propertyName,
+            key: hasEnvConfig ? column.propertyName : column.translationKey,
             label: column.title || validTranslation || column.translationKey,
             sortable: column.sortable,
             ...(column.viewType && {viewType: column.viewType}),
@@ -214,10 +231,12 @@ export class DossierListComponent implements OnInit {
 
   private readonly assigneeFilter$ = new BehaviorSubject<AssigneeFilter>('ALL');
 
-  private readonly documentsRequest$: Observable<Documents> = combineLatest([
+  private readonly documentsRequest$: Observable<Documents | SpecifiedDocuments> = combineLatest([
     this.documentSearchRequest$,
     this.searchFieldValues$,
     this.assigneeFilter$,
+    this.hasEnvColumnConfig$,
+    this.hasApiColumnConfig$,
   ]).pipe(
     distinctUntilChanged(
       (
@@ -235,35 +254,69 @@ export class DossierListComponent implements OnInit {
         localStorage.setItem(storedSearchRequestKey, JSON.stringify(documentSearchRequest));
       });
     }),
-    switchMap(([documentSearchRequest, searchValues, assigneeFilter]) => {
-      if ((Object.keys(searchValues) || []).length > 0) {
-        return this.documentService.getDocumentsSearch(
-          documentSearchRequest,
-          'AND',
-          assigneeFilter,
-          this.mapSearchValuesToFilters(searchValues)
-        );
-      } else {
-        return this.documentService.getDocumentsSearch(
-          documentSearchRequest,
-          'AND',
-          assigneeFilter
-        );
+    switchMap(
+      ([
+        documentSearchRequest,
+        searchValues,
+        assigneeFilter,
+        hasEnvColumnConfig,
+        hasApiColumnConfig,
+      ]) => {
+        if ((Object.keys(searchValues) || []).length > 0) {
+          return hasEnvColumnConfig || !hasApiColumnConfig
+            ? this.documentService.getDocumentsSearch(
+                documentSearchRequest,
+                'AND',
+                assigneeFilter,
+                this.mapSearchValuesToFilters(searchValues)
+              )
+            : this.documentService.getSpecifiedDocumentsSearch(
+                documentSearchRequest,
+                'AND',
+                assigneeFilter,
+                this.mapSearchValuesToFilters(searchValues)
+              );
+        } else {
+          return hasEnvColumnConfig || !hasApiColumnConfig
+            ? this.documentService.getDocumentsSearch(documentSearchRequest, 'AND', assigneeFilter)
+            : this.documentService.getSpecifiedDocumentsSearch(
+                documentSearchRequest,
+                'AND',
+                assigneeFilter
+              );
+        }
       }
-    }),
+    ),
     tap(documents => {
       this.setCollectionSize(documents);
       this.checkPage(documents);
     })
   );
 
-  readonly documentItems$ = this.documentsRequest$.pipe(
-    map(documents =>
-      documents.content.map(document => {
-        const {content, ...others} = document;
-        return {...content, ...others};
-      })
-    ),
+  readonly documentItems$ = combineLatest([
+    this.documentsRequest$,
+    this.hasEnvColumnConfig$,
+    this.hasApiColumnConfig$,
+  ]).pipe(
+    map(([documents, hasEnvColumnConfig, hasApiColumnConfig]) => {
+      if (hasEnvColumnConfig || !hasApiColumnConfig) {
+        const docsToMap = documents as Documents;
+        return documents.content.map(document => {
+          const {content, ...others} = document;
+          return {...content, ...others};
+        });
+      } else {
+        const docsToMap = documents as SpecifiedDocuments;
+        return docsToMap.content.reduce((acc, curr) => {
+          const propsObject = {};
+          curr.items.forEach(item => {
+            propsObject[item.key] = item.value;
+          });
+          return [...acc, propsObject];
+        }, []);
+      }
+    }),
+    tap(returnValue => console.log(returnValue)),
     tap(() => this.loading$.next(false))
   );
 
@@ -421,7 +474,7 @@ export class DossierListComponent implements OnInit {
     );
   }
 
-  private setCollectionSize(documents: Documents): void {
+  private setCollectionSize(documents: Documents | SpecifiedDocuments): void {
     this.pagination$.pipe(take(1)).subscribe(pagination => {
       if (pagination.collectionSize !== documents.totalElements) {
         this.pagination$.next({...pagination, collectionSize: documents.totalElements});
@@ -436,7 +489,7 @@ export class DossierListComponent implements OnInit {
     }
   }
 
-  private checkPage(documents: Documents): void {
+  private checkPage(documents: Documents | SpecifiedDocuments): void {
     this.pagination$.pipe(take(1)).subscribe(pagination => {
       const amountOfItems = documents.totalElements;
       const amountOfPages = Math.ceil(amountOfItems / pagination.size);
