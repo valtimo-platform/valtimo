@@ -475,7 +475,16 @@
     "next": "Next >",
     "previous": "< Previous",
     "addRow": "Add row",
-    "deleteRow": "Delete row"
+    "deleteRow": "Delete row",
+    "on": "On",
+    "off": "Off",
+    "builds": {
+      "valtimo-backend-libraries": "Valtimo back-end",
+      "valtimo-frontend-libraries": "Valtimo front-end"
+    },
+    "email": "Email",
+    "username": "User name",
+    "name": "Name"
   },
   "taskDetail": {
     "taskCreated": "Created",
