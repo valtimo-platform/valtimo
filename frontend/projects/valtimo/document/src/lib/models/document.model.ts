@@ -80,7 +80,7 @@ export interface Documents {
 }
 
 export type SpecifiedDocuments = Omit<Documents, 'content'> & {
-  content: Array<{items: Array<{key: string; value: string}>}>;
+  content: Array<{id: string; items: Array<{key: string; value: string}>}>;
 };
 
 export interface RelatedFile {

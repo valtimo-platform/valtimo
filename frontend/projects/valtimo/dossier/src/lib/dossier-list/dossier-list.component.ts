@@ -167,9 +167,6 @@ export class DossierListComponent implements OnInit {
           const translationKey = `fieldLabels.${column.translationKey}`;
           const translation = this.translateService.instant(translationKey);
           const validTranslation = translation !== translationKey && translation;
-
-          console.log('column', column);
-
           return {
             key: hasEnvConfig ? column.propertyName : column.translationKey,
             label: column.title || validTranslation || column.translationKey,
@@ -308,7 +305,7 @@ export class DossierListComponent implements OnInit {
       } else {
         const docsToMap = documents as SpecifiedDocuments;
         return docsToMap.content.reduce((acc, curr) => {
-          const propsObject = {};
+          const propsObject = {id: curr.id};
           curr.items.forEach(item => {
             propsObject[item.key] = item.value;
           });
@@ -316,7 +313,6 @@ export class DossierListComponent implements OnInit {
         }, []);
       }
     }),
-    tap(returnValue => console.log(returnValue)),
     tap(() => this.loading$.next(false))
   );
 
