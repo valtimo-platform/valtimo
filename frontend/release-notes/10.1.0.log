@@ -14,4 +14,24 @@ c40c135 - feat: feature toggle for disabling case count (#296)
 d755022 - Updated version to 10.1.0
 8cfaaf4 - Added release notes file
 cb1872e - Merge branch 'rc/10.1.0-127.RC'
+8003e52 - Updated version to 10.1.07717276 - Merge branch 'rc/10.1.0-127.RC'
+c78f469 - Updated version to 10.1.0
+e88b8db - Added release notes file
+f6d4d94 - Merge branch 'rc/10.1.0-127.RC'
+d755022 - Updated version to 10.1.0
+8cfaaf4 - Added release notes file
+cb1872e - Merge branch 'rc/10.1.0-127.RC'
 8003e52 - Updated version to 10.1.0
+c57ef17 - Added release notes file
+5d383b5 - Updated version to 10.1.0
+7f543a2 - Merge remote-tracking branch 'origin/main' into rc/10.1.0-127.RC
+c51c676 - fix: /v1/ in urls (#321)
+fe36df3 - Updated version to 10.1.0-127.RC-SNAPSHOT
+c7c57e2 - Made import lower case (#311)
+490b8e2 - feat: 46692 notificaties api plugin base (#309)
+9a6ebd6 - Merged in major 10 changes (#308)
+bed74d1 - Add ability to translate the subprocess name under the start menu. If no translation exsits it will display the default process name (#301)
+8f3939a - feat: only show assignee functionality and open case count if relevant (#300)
+c40c135 - feat: feature toggle for disabling case count (#296)
+78b9f5e - feat: tab list columns (#291)
+6047c2f - Download only the actual formdefinition instead of the form definition entity. (#290)
