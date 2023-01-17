@@ -70,3 +70,7 @@ export * from './lib/plugins/notificaties-api/components/notificaties-api-config
 export * from './lib/plugins/notificaties-api-authentication/open-notificaties-plugin.module';
 export * from './lib/plugins/notificaties-api-authentication/open-notificaties-plugin.specification';
 export * from './lib/plugins/notificaties-api-authentication/components/open-notificaties-configuration/open-notificaties-configuration.component';
+/* portaaltaak plugin */
+export * from './lib/plugins/portaaltaak/portaaltaak-plugin.module';
+export * from './lib/plugins/portaaltaak/portaaltaak-plugin.specification';
+export * from './lib/plugins/portaaltaak/components/portaaltaak-configuration/portaaltaak-configuration.component';
