@@ -123,17 +123,25 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     )
   );
 
+  readonly dataTypeIsBoolean$ = new BehaviorSubject<boolean>(false);
   private readonly FIELD_TYPES: Array<SearchFieldFieldType> = ['single', 'range'];
-  readonly fieldTypeItems$: Observable<Array<SelectItem>> = this.translateService
-    .stream('key')
-    .pipe(
-      map(() =>
-        this.FIELD_TYPES.map(fieldType => ({
+  private readonly OTHER_FIELD_TYPES: Array<SearchFieldFieldType> = ['single'];
+  readonly fieldTypeItems$: Observable<Array<SelectItem>> = combineLatest([
+    this.dataTypeIsBoolean$,
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([dataTypeIsBoolean]) =>
+      dataTypeIsBoolean
+        ? this.OTHER_FIELD_TYPES.map(fieldType => ({
           id: fieldType,
           text: this.translateService.instant(`searchFieldsOverview.${fieldType}`),
         }))
-      )
-    );
+        : this.FIELD_TYPES.map(fieldType => ({
+          id: fieldType,
+          text: this.translateService.instant(`searchFieldsOverview.${fieldType}`),
+        }))
+    )
+  );
 
   private readonly MATCH_TYPES: Array<SearchFieldMatchType> = ['exact', 'like'];
   readonly matchTypeItems$: Observable<Array<SelectItem>> = this.translateService
@@ -206,6 +214,8 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     )
   );
 
+  readonly dataTypeIsText$ = new BehaviorSubject<boolean>(false);
+
   constructor(
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
@@ -241,14 +251,16 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     const containsAllValues = !!(
       data.key &&
       data.dataType &&
-      data.fieldType &&
-      data.matchType &&
+      (data.dataType !== 'boolean' ? data.fieldType : true) &&
+      (data.dataType === 'text' ? data.matchType : true) &&
       data.path
     );
     const keyIsUnique =
       !this.searchFieldActionTypeIsAdd ||
       this.cachedSearchFields.findIndex(field => field.key === data.key) === -1;
 
+    this.dataTypeIsText$.next(data.dataType === 'text');
+    this.dataTypeIsBoolean$.next(data.dataType === 'boolean');
     this.formData$.next(data);
     this.valid$.next(containsAllValues && keyIsUnique);
   }
@@ -310,8 +322,14 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     this.disableInput();
 
     this.formData$.pipe(take(1)).subscribe(formData => {
+      const mappedFormData: SearchField = {
+        ...formData,
+        matchType: formData.dataType === 'text' ? formData.matchType : 'exact',
+        fieldType: formData.dataType !== 'boolean' ? formData.fieldType : 'single',
+      };
+
       if (this.searchFieldActionTypeIsAdd) {
-        this.documentService.postDocumentSearch(documentDefinitionName, formData).subscribe(
+        this.documentService.postDocumentSearch(documentDefinitionName, mappedFormData).subscribe(
           () => {
             this.enableInput();
             this.hideModal();
@@ -323,10 +341,10 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
         );
       } else {
         const newFields = [...this.cachedSearchFields];
-        const indexToReplace = newFields.findIndex(field => field.key === formData.key);
-        const filteredFields = newFields.filter(field => field.key !== formData.key);
+        const indexToReplace = newFields.findIndex(field => field.key === mappedFormData.key);
+        const filteredFields = newFields.filter(field => field.key !== mappedFormData.key);
 
-        filteredFields.splice(indexToReplace, 0, formData);
+        filteredFields.splice(indexToReplace, 0, mappedFormData);
         this.updateSearchFields(documentDefinitionName, filteredFields);
       }
     });

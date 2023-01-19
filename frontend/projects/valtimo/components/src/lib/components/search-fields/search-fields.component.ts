@@ -88,7 +88,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
 
   singleValueChange(searchFieldKey: string, value: any, isDateTime?: boolean): void {
     this.values$.pipe(take(1)).subscribe(values => {
-      if (value) {
+      if (value || Number.isInteger(value)) {
         this.values$.next({...values, [searchFieldKey]: this.getSingleValue(value, isDateTime)});
       } else if (Object.keys(values).includes(searchFieldKey)) {
         const valuesCopy = {...values};
