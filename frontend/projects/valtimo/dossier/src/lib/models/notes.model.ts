@@ -24,7 +24,7 @@ interface Note {
 }
 
 interface NoteCreateRequest {
-  content: string
+  content: string;
 }
 
 export {Note, NoteCreateRequest};

@@ -14,11 +14,14 @@
   ~ limitations under the License.
   -->
 
-<v-modal #objectManagementUploadModal *ngIf="{
-  disabled: disabled$ | async,
-  jsonString: jsonString$ | async,
-  error: error$ | async
-} as obs">
+<v-modal
+  #objectManagementUploadModal
+  *ngIf="{
+    disabled: disabled$ | async,
+    jsonString: jsonString$ | async,
+    error: error$ | async
+  } as obs"
+>
   <div role="header">
     <div class="add-title">
       <v-title [margin]="false">{{ 'objectManagement.uploadObjecttype' | translate }}</v-title>
@@ -32,22 +35,27 @@
       <v-button (clickEvent)="cancel()" [disabled]="obs.disabled" type="secondary">
         {{ 'objectManagement.cancel' | translate }}
       </v-button>
-        <v-button (clickEvent)="uploadDefinition()" [disabled]="obs.jsonString === '' || obs.disabled" mdiIcon="plus" type="success">
-          {{ 'Upload' | translate }}
-        </v-button>
+      <v-button
+        (clickEvent)="uploadDefinition()"
+        [disabled]="obs.jsonString === '' || obs.disabled"
+        mdiIcon="plus"
+        type="success"
+      >
+        {{ 'Upload' | translate }}
+      </v-button>
     </div>
   </div>
 </v-modal>
 
 <ng-template #uploadForm>
   <ng-container *ngIf="showForm$ | async">
-      <valtimo-dropzone
-              [clear$]="clear$"
-              (fileSelected)="setFile($event)"
-              [disabled]="disabled$ | async"
-              [subtitle]="'dropzone.objecttypeDef' | translate"
-              [externalError$]="error$"
-              [maxFiles]="1"
-      ></valtimo-dropzone>
+    <valtimo-dropzone
+      [clear$]="clear$"
+      (fileSelected)="setFile($event)"
+      [disabled]="disabled$ | async"
+      [subtitle]="'dropzone.objecttypeDef' | translate"
+      [externalError$]="error$"
+      [maxFiles]="1"
+    ></valtimo-dropzone>
   </ng-container>
 </ng-template>

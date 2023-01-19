@@ -203,7 +203,7 @@ export function tabsFactory() {
         deps: [HttpBackend, ConfigService],
       },
     }),
-    ObjectManagementModule
+    ObjectManagementModule,
   ],
   providers: [
     FormioComponent,

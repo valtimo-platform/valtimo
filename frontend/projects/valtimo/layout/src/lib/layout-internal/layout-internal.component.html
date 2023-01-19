@@ -15,7 +15,11 @@
   -->
 
 <valtimo-topbar></valtimo-topbar>
-<main class="cds--content" [ngClass]="{'cds--content--sidebar': sideBarExpanded$ | async}">
+<main
+  class="cds--content"
+  [ngClass]="{'cds--content--sidebar': sideBarExpanded$ | async}"
+  #mainContent
+>
   <valtimo-left-sidebar [hidden]="layoutService.isFullscreen"></valtimo-left-sidebar>
   <valtimo-alert></valtimo-alert>
   <valtimo-page-header [hidden]="layoutService.isFullscreen"></valtimo-page-header>

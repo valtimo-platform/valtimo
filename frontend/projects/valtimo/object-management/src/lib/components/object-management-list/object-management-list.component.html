@@ -33,32 +33,32 @@
 </div>
 
 <ng-template #list let-obs="obs">
-    <ng-container *ngIf="fields$ | async as fields">
-      <ng-container *ngIf="objecttypesInstances$ | async as objecttypesInstances">
-        <valtimo-widget *ngIf="obs.loading === false">
-          <valtimo-list
-                  [items]="objecttypesInstances"
-                  [fields]="fields"
-                  [viewMode]="true"
-                  [header]="true"
-                  paginationIdentifier="objecttypesList"
-                  (rowClicked)="redirectToDetails($event)"
-          >
-            <div header>
-              <h3 class="list-header-title">
-                {{ 'objectManagement.title' | translate }}
-                <sup class="ml-1 badge badge-pill badge-primary">{{
-                  objecttypesInstances?.length || 0
-                  }}</sup>
-              </h3>
-            </div>
-          </valtimo-list>
-        </valtimo-widget>
-      </ng-container>
+  <ng-container *ngIf="fields$ | async as fields">
+    <ng-container *ngIf="objecttypesInstances$ | async as objecttypesInstances">
+      <valtimo-widget *ngIf="obs.loading === false">
+        <valtimo-list
+          [items]="objecttypesInstances"
+          [fields]="fields"
+          [viewMode]="true"
+          [header]="true"
+          paginationIdentifier="objecttypesList"
+          (rowClicked)="redirectToDetails($event)"
+        >
+          <div header>
+            <h3 class="list-header-title">
+              {{ 'objectManagement.title' | translate }}
+              <sup class="ml-1 badge badge-pill badge-primary">{{
+                objecttypesInstances?.length || 0
+              }}</sup>
+            </h3>
+          </div>
+        </valtimo-list>
+      </valtimo-widget>
     </ng-container>
+  </ng-container>
 </ng-template>
 
-<valtimo-object-management-upload-modal [objecttypes]="objecttypesInstances$ | async"></valtimo-object-management-upload-modal>
+<valtimo-object-management-upload-modal
+  [objecttypes]="objecttypesInstances$ | async"
+></valtimo-object-management-upload-modal>
 <valtimo-object-management-modal></valtimo-object-management-modal>
-
-

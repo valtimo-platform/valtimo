@@ -59,11 +59,14 @@ export class DossierDetailTabNotesComponent implements OnInit {
   readonly notes$: Observable<Array<Note>> = combineLatest([
     this.documentId$,
     this.currentPageAndSize$,
-    this.notesService.refresh$
+    this.notesService.refresh$,
   ]).pipe(
-    tap(() => this.timelineItems = []),
+    tap(() => (this.timelineItems = [])),
     switchMap(([documentId, currentPage]) =>
-      this.notesService.getDocumentNotes(documentId, {page: currentPage.page, size: currentPage.size})
+      this.notesService.getDocumentNotes(documentId, {
+        page: currentPage.page,
+        size: currentPage.size,
+      })
     ),
     tap((res: Page<Note>) => {
       this.timelineItems = [];
@@ -71,7 +74,7 @@ export class DossierDetailTabNotesComponent implements OnInit {
         this.pageSizes$.next({...sizes, collectionSize: res.totalElements});
       });
     }),
-    map((res) =>
+    map(res =>
       res.content.map((note: Note) => {
         const noteCreatedDate = moment(note.createdDate).locale(this.translateService.currentLang);
         this.timelineItems.push(
@@ -83,10 +86,10 @@ export class DossierDetailTabNotesComponent implements OnInit {
             note.content,
             {}
           )
-        )
-        return ({
-          ...note
-        })
+        );
+        return {
+          ...note,
+        };
       })
     ),
     tap(() => this.loading$.next(false))
@@ -96,8 +99,7 @@ export class DossierDetailTabNotesComponent implements OnInit {
     private readonly route: ActivatedRoute,
     private notesService: NotesService,
     private translateService: TranslateService
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
     this.translateService.onLangChange.subscribe(() => {
@@ -121,11 +123,10 @@ export class DossierDetailTabNotesComponent implements OnInit {
       .pipe(take(1))
       .pipe(
         tap(documentId => {
-          this.notesService.createDocumentNote(documentId, content)
-            .subscribe(() => {
-              this.notesService.refresh();
-              this.notesService.hideModal();
-            });
+          this.notesService.createDocumentNote(documentId, content).subscribe(() => {
+            this.notesService.refresh();
+            this.notesService.hideModal();
+          });
         })
       )
       .subscribe();

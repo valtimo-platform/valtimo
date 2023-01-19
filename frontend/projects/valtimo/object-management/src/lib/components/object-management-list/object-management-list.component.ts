@@ -35,12 +35,10 @@ export class ObjectManagementListComponent {
 
   readonly objecttypesInstances$: Observable<Array<Objecttype>> = combineLatest([
     this.translateService.stream('key'),
-    this.objectManagementState.refresh$
+    this.objectManagementState.refresh$,
   ]).pipe(
     tap(() => this.setFields()),
-    switchMap(() =>
-      this.objectManagementService.getAllObjects()
-    ),
+    switchMap(() => this.objectManagementService.getAllObjects()),
     tap(() => this.loading$.next(false))
   );
 
@@ -67,6 +65,11 @@ export class ObjectManagementListComponent {
 
   private setFields(): void {
     const keys: Array<string> = ['title'];
-    this.fields$.next(keys.map(key => ({label: `${this.translateService.instant(`objectManagement.labels.${key}`)}`, key})));
+    this.fields$.next(
+      keys.map(key => ({
+        label: `${this.translateService.instant(`objectManagement.labels.${key}`)}`,
+        key,
+      }))
+    );
   }
 }

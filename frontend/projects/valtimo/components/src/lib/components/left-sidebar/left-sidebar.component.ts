@@ -85,6 +85,9 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.openBreakpointSubscription();
+    this.shellService.setSidenavElement(
+      this.elementRef.nativeElement.querySelector('.cds--side-nav')
+    );
   }
 
   ngOnDestroy(): void {

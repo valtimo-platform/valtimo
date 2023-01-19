@@ -100,9 +100,6 @@ export class NoteModalComponent implements AfterViewInit, OnDestroy {
   }
 
   private setValid(data: any): void {
-    this.valid$.next(
-      !!data.content
-    );
+    this.valid$.next(!!data.content);
   }
-
 }

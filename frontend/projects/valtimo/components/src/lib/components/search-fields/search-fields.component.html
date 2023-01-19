@@ -255,7 +255,8 @@
       (valueChange)="multipleValueChange(searchField.key, $event)"
       className="multiple-search-fields"
     >
-      <v-input name="start" [fullWidth]="true" [clear$]="clear$" (keyup.enter)="search()"> </v-input>
+      <v-input name="start" [fullWidth]="true" [clear$]="clear$" (keyup.enter)="search()">
+      </v-input>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-input name="end" [fullWidth]="true" [clear$]="clear$" (keyup.enter)="search()"> </v-input>
     </v-form>
@@ -319,9 +320,19 @@
       (valueChange)="multipleValueChange(searchField.key, $event)"
       className="multiple-search-fields"
     >
-      <v-date-picker name="start" fullWidth="true" [clear$]="clear$" (keyup.enter)="search()"></v-date-picker>
+      <v-date-picker
+        name="start"
+        fullWidth="true"
+        [clear$]="clear$"
+        (keyup.enter)="search()"
+      ></v-date-picker>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
-      <v-date-picker name="end" fullWidth="true" [clear$]="clear$" (keyup.enter)="search()"></v-date-picker>
+      <v-date-picker
+        name="end"
+        fullWidth="true"
+        [clear$]="clear$"
+        (keyup.enter)="search()"
+      ></v-date-picker>
     </v-form>
   </ng-container>
 </ng-template>

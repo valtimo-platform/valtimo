@@ -59,18 +59,18 @@
 
 <ng-template #textareaInput>
   <textarea
-          *ngIf="isTextarea"
-          class="v-input"
-          [ngClass]="{
+    *ngIf="isTextarea"
+    class="v-input"
+    [ngClass]="{
       'v-input--full-width': fullWidth,
       'v-input--margin': margin
     }"
-          [style.width.px]="widthPx"
-          [disabled]="disabled"
-          [ngModel]="inputValue$ | async"
-          (ngModelChange)="onValueChange($event)"
-          [rows]="rows"
-          [name]="name"
+    [style.width.px]="widthPx"
+    [disabled]="disabled"
+    [ngModel]="inputValue$ | async"
+    (ngModelChange)="onValueChange($event)"
+    [rows]="rows"
+    [name]="name"
   ></textarea>
 </ng-template>
 

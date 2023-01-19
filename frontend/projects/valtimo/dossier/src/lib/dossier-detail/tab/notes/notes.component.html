@@ -13,19 +13,21 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<div class="notes" *ngIf="{
+<div
+  class="notes"
+  *ngIf="{
     notes: notes$ | async,
     pagination: pagination$ | async,
     loading: loading$ | async
-  } as obs">
-
+  } as obs"
+>
   <button
-          class="btn btn-space btn-primary mr-1 add-note"
-          type="button"
-          aria-haspopup="true"
-          aria-expanded="false"
-          (click)="showAddModal()"
-          [disabled]="obs.loading"
+    class="btn btn-space btn-primary mr-1 add-note"
+    type="button"
+    aria-haspopup="true"
+    aria-expanded="false"
+    (click)="showAddModal()"
+    [disabled]="obs.loading"
   >
     <span>{{ 'dossier.notes.addNote' | translate }}</span>
     <i class="ml-1 icon mdi mdi-plus"></i>
@@ -36,26 +38,25 @@
   </div>
 
   <valtimo-spinner
-          [useBootstrapSpinner]="false"
-          name="auditSpinner"
-          bdColor="rgba(125, 125, 125, 0.35)"
-          color="#264251"
-          type="square-jelly-box"
+    [useBootstrapSpinner]="false"
+    name="auditSpinner"
+    bdColor="rgba(125, 125, 125, 0.35)"
+    color="#264251"
+    type="square-jelly-box"
   >
   </valtimo-spinner>
 
   <div class="d-flex justify-content-end row mr-0 ml-0" *ngIf="obs.pagination">
-      <ngb-pagination
-              *ngIf="obs.pagination.collectionSize > obs.pagination.size"
-              [collectionSize]="obs.pagination.collectionSize"
-              [(page)]="obs.pagination.page"
-              [pageSize]="obs.pagination.size"
-              [maxSize]="obs.pagination.size"
-              [rotate]="true"
-              (pageChange)="paginationClicked($event)"
-      ></ngb-pagination>
+    <ngb-pagination
+      *ngIf="obs.pagination.collectionSize > obs.pagination.size"
+      [collectionSize]="obs.pagination.collectionSize"
+      [(page)]="obs.pagination.page"
+      [pageSize]="obs.pagination.size"
+      [maxSize]="obs.pagination.size"
+      [rotate]="true"
+      (pageChange)="paginationClicked($event)"
+    ></ngb-pagination>
   </div>
-
 </div>
 
 <valtimo-note-modal (createNoteEvent)="createNewNote($event)"></valtimo-note-modal>

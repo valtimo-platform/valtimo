@@ -19,7 +19,10 @@
     <div class="col-12 px-0 mb-5">
       <valtimo-widget>
         <div class="card-header bg-light card-header-divider pb-2">
-          <div class="row" *ngIf="{canHaveAssignee: canHaveAssignee$ | async, document: document$ | async} as obs">
+          <div
+            class="row"
+            *ngIf="{canHaveAssignee: canHaveAssignee$ | async, document: document$ | async} as obs"
+          >
             <div class="col">
               <ng-container
                 *ngTemplateOutlet="
@@ -62,9 +65,12 @@
                     href="#"
                     (click)="startProcess(processDocumentDefinition)"
                   >
-                    {{ (processDocumentDefinition?.id?.processDefinitionKey | translate) !== processDocumentDefinition?.id?.processDefinitionKey
-                    ? (processDocumentDefinition.id.processDefinitionKey | translate)
-                    : processDocumentDefinition.processName }}
+                    {{
+                      (processDocumentDefinition?.id?.processDefinitionKey | translate) !==
+                      processDocumentDefinition?.id?.processDefinitionKey
+                        ? (processDocumentDefinition.id.processDefinitionKey | translate)
+                        : processDocumentDefinition.processName
+                    }}
                   </button>
                 </div>
               </div>
@@ -118,7 +124,10 @@
     </span>
   </div>
   <ng-container
-    *ngTemplateOutlet="caseDetailAssignee; context: {canHaveAssignee: canHaveAssignee, document: document}"
+    *ngTemplateOutlet="
+      caseDetailAssignee;
+      context: {canHaveAssignee: canHaveAssignee, document: document}
+    "
   ></ng-container>
 </ng-template>
 

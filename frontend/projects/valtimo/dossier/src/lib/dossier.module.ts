@@ -71,7 +71,7 @@ import {
   TitleModule,
   PageModule,
   InputModule,
-  FormModule as VFormModule
+  FormModule as VFormModule,
 } from '@valtimo/user-interface';
 import {DossierDetailTabObjectTypeComponent} from './dossier-detail/tab/object-type/object-type.component';
 import {DossierDetailTabDocumentenApiDocumentsComponent} from './dossier-detail/tab/documenten-api-documents/documenten-api-documents.component';
@@ -100,7 +100,7 @@ export type TabsFactory = () => Map<string, object>;
     DossierDetailTabDocumentenApiDocumentsComponent,
     DossierDetailTabS3DocumentsComponent,
     DossierAssignUserComponent,
-    NoteModalComponent
+    NoteModalComponent,
   ],
   imports: [
     CommonModule,
@@ -147,7 +147,7 @@ export type TabsFactory = () => Map<string, object>;
     FormModule,
     InputModule,
     VFormModule,
-    NgbModule
+    NgbModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

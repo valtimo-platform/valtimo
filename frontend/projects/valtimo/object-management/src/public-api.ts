@@ -18,7 +18,6 @@
  * Public API Surface of object-management
  */
 
-export * from './lib/models/object-management.model'
-export * from './lib/services/object-management.service'
+export * from './lib/models/object-management.model';
+export * from './lib/services/object-management.service';
 export * from './lib/object-management.module';
-

@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-import { NgModule } from '@angular/core';
+import {NgModule} from '@angular/core';
 import {ObjectManagementRoutingModule} from './object-management-routing.module';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {DropzoneModule, WidgetModule, ListModule} from '@valtimo/components'
-import {ButtonModule, FormModule, InputModule, ModalModule, SelectModule, TitleModule} from '@valtimo/user-interface';
+import {DropzoneModule, WidgetModule, ListModule} from '@valtimo/components';
+import {
+  ButtonModule,
+  FormModule,
+  InputModule,
+  ModalModule,
+  SelectModule,
+  TitleModule,
+} from '@valtimo/user-interface';
 import {ObjectManagementDetailContainerComponent} from './components/object-management-detail-container/object-management-detail-container.component';
 import {ObjectManagementDetailComponent} from './components/object-management-detail-container/tabs/object-management-detail/object-management-detail.component';
 import {ObjectManagementListComponent} from './components/object-management-list/object-management-list.component';
@@ -34,7 +41,7 @@ import {ObjectManagementListTabComponent} from './components/object-management-d
     ObjectManagementDetailComponent,
     ObjectManagementListTabComponent,
     ObjectManagementModalComponent,
-    ObjectManagementUploadModalComponent
+    ObjectManagementUploadModalComponent,
   ],
   imports: [
     CommonModule,
@@ -48,8 +55,8 @@ import {ObjectManagementListTabComponent} from './components/object-management-d
     ButtonModule,
     FormModule,
     InputModule,
-    SelectModule
+    SelectModule,
   ],
-  exports: []
+  exports: [],
 })
-export class ObjectManagementModule { }
+export class ObjectManagementModule {}

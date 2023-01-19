@@ -50,21 +50,24 @@
   fill: dimgray;
 }
 
-.resize-border {
+::ng-deep .resize-border {
   position: absolute;
   width: 3px;
   height: 100%;
   top: 0;
   right: 0;
-  margin-right: -3px;
   cursor: col-resize;
-  background-color: #ff5800;
+  background-color: var(--cds-border-strong);
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.11s cubic-bezier(0.2, 0, 1, 0.9);
 }
 
-.resize-hover {
-  opacity: 0.7;
+::ng-deep .resize-hover {
+  opacity: 1;
+}
+
+::ng-deep .resize-border--invisible {
+  display: none;
 }
 
 .no-transition {
@@ -127,11 +130,11 @@
 .menu-item-icon-container {
   position: relative;
   top: 8px;
-  left: 17px;
+  left: 13px;
   height: 0;
 
   i {
-    width: 16px;
+    width: 0px;
     height: 16px;
   }
 }
@@ -169,4 +172,12 @@
   letter-spacing: 0.1px;
   line-height: 1.25rem;
   font-weight: 500 !important;
+}
+
+::ng-deep .cds--side-nav__icon {
+  margin-left: -16px;
+}
+
+::ng-deep .cds--side-nav__item.cds--side-nav__item--icon a.cds--side-nav__link {
+  padding-left: 3.5rem;
 }

@@ -11,4 +11,4 @@ interface Objecttype {
 
 type ObjecttypeKeys = keyof Objecttype;
 
-export  {Objecttype, ObjecttypeKeys}
+export {Objecttype, ObjecttypeKeys};

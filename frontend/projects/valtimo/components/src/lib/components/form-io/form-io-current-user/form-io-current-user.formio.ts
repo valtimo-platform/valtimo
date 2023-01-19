@@ -15,10 +15,7 @@
  */
 
 import {Injector} from '@angular/core';
-import {
-  FormioCustomComponentInfo,
-  registerCustomFormioComponent,
-} from '@formio/angular';
+import {FormioCustomComponentInfo, registerCustomFormioComponent} from '@formio/angular';
 import {formIoCurrentUserEditForm} from './form-io-current-user-edit-form';
 import {FormIoCurrentUserComponent} from './form-io-current-user.component';
 
@@ -32,7 +29,7 @@ const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
   schema: {
     label: 'Valtimo Current User',
     tableView: true,
-  }
+  },
 };
 
 export function registerFormioCurrentUserComponent(injector: Injector) {

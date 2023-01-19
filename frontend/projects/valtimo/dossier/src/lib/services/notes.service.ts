@@ -63,7 +63,6 @@ export class NotesService {
     return this._modalType$.asObservable();
   }
 
-
   showModal(): void {
     this._showModal$.next(null);
   }

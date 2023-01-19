@@ -49,7 +49,7 @@ import {FormIoCurrentUserComponent} from './form-io-current-user/form-io-current
     FormioBuilderComponent,
     FormIoUploaderComponent,
     DocumentenApiUploaderComponent,
-    FormIoCurrentUserComponent
+    FormIoCurrentUserComponent,
   ],
   exports: [
     FormioComponent,

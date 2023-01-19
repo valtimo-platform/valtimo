@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import {ModalComponent as vModalComponent, ModalService} from '@valtimo/user-interface';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
@@ -46,42 +54,43 @@ export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy 
 
   readonly formDefinitions$: Observable<Array<{id: string; text: string}>> =
     this.formManagementService.queryFormDefinitions().pipe(
-      map((results) =>
+      map(results =>
         results?.body?.content.map(configuration => ({
           id: configuration.id,
-          text: configuration.name
+          text: configuration.name,
         }))
       )
     );
 
   readonly configurationInstances$: Observable<Array<PluginConfiguration>> =
-    this.pluginManagementService.getAllPluginConfigurations().pipe(
-      map((configurations) => configurations
-      )
-    );
+    this.pluginManagementService
+      .getAllPluginConfigurations()
+      .pipe(map(configurations => configurations));
 
   readonly objectsApiConfigurations$: Observable<any> = this.configurationInstances$.pipe(
-    map((configurations) => {
-      const filteredObjectsApiConfigurations = configurations.filter(configuration => configuration?.pluginDefinition?.key === 'objectenapi');
+    map(configurations => {
+      const filteredObjectsApiConfigurations = configurations.filter(
+        configuration => configuration?.pluginDefinition?.key === 'objectenapi'
+      );
       return filteredObjectsApiConfigurations.map(configuration => ({
         id: configuration.id,
         text: configuration.title,
-      }))
-      }
-    )
-  )
+      }));
+    })
+  );
 
   readonly objecttypesApiConfigurations$: Observable<any> = this.configurationInstances$.pipe(
-    map((configurations) => {
-        const filteredObjecttypesApiConfigurations = configurations.filter(configuration => configuration?.pluginDefinition?.key === 'objecttypenapi');
-        return filteredObjecttypesApiConfigurations.map(configuration => ({
-          id: configuration.id,
-          text: configuration.title,
-          properties: configuration.properties
-        }))
-      }
-    )
-  )
+    map(configurations => {
+      const filteredObjecttypesApiConfigurations = configurations.filter(
+        configuration => configuration?.pluginDefinition?.key === 'objecttypenapi'
+      );
+      return filteredObjecttypesApiConfigurations.map(configuration => ({
+        id: configuration.id,
+        text: configuration.title,
+        properties: configuration.properties,
+      }));
+    })
+  );
 
   constructor(
     private readonly objectManagementState: ObjectManagementStateService,
@@ -89,9 +98,7 @@ export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy 
     private readonly formManagementService: FormManagementService,
     private readonly pluginManagementService: PluginManagementService,
     private readonly modalService: ModalService
-  ) {
-
-  }
+  ) {}
 
   ngAfterViewInit(): void {
     this.openShowSubscription();
@@ -122,12 +129,12 @@ export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy 
             this.objectManagementService.createObject({...formData}).subscribe(() => {
               this.objectManagementState.refresh();
               this.objectManagementState.hideModal();
-            })
+            });
           } else if (modalType === 'edit') {
             this.objectManagementService.editObject({...formData}).subscribe(() => {
               this.objectManagementState.refresh();
               this.objectManagementState.hideModal();
-            })
+            });
           }
         }
       });
@@ -175,5 +182,4 @@ export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy 
   selectObjectType(objecttype): void {
     this.selectedObjecttype$.next(objecttype);
   }
-
 }

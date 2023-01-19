@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
 import {Objecttype} from '../models/object-management.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ObjectManagementService {
-
   private valtimoEndpointUri: string;
 
   constructor(private http: HttpClient, configService: ConfigService) {
@@ -32,18 +31,28 @@ export class ObjectManagementService {
   }
 
   public getAllObjects(): Observable<Objecttype[]> {
-    return this.http.get<Objecttype[]>(`${this.valtimoEndpointUri}v1/object/management/configuration`);
+    return this.http.get<Objecttype[]>(
+      `${this.valtimoEndpointUri}v1/object/management/configuration`
+    );
   }
 
   public getObjectById(id: string): Observable<Objecttype> {
-    return this.http.get<Objecttype>(`${this.valtimoEndpointUri}v1/object/management/configuration/${id}`);
+    return this.http.get<Objecttype>(
+      `${this.valtimoEndpointUri}v1/object/management/configuration/${id}`
+    );
   }
 
   public createObject(payload: Objecttype): Observable<Objecttype> {
-    return this.http.post<Objecttype>(`${this.valtimoEndpointUri}v1/object/management/configuration`, payload);
+    return this.http.post<Objecttype>(
+      `${this.valtimoEndpointUri}v1/object/management/configuration`,
+      payload
+    );
   }
 
   public editObject(payload: Objecttype): Observable<Objecttype> {
-    return this.http.put<Objecttype>(`${this.valtimoEndpointUri}v1/object/management/configuration`, payload);
+    return this.http.put<Objecttype>(
+      `${this.valtimoEndpointUri}v1/object/management/configuration`,
+      payload
+    );
   }
 }

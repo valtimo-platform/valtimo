@@ -22,18 +22,15 @@ import {KeycloakProfile} from 'keycloak-js';
 @Component({
   selector: 'valtimo-formio-current-user',
   template: '{{ this.value?.firstName }} {{ this.value?.lastName }}<br />{{ this.value?.email }}',
-  styles: []
+  styles: [],
 })
-
 export class FormIoCurrentUserComponent implements FormioCustomComponent<any> {
   @Input() value: any;
   @Input() disabled: boolean;
   @Output() valueChange = new EventEmitter<any>();
 
-  constructor(
-    private readonly keycloakService: KeycloakService,
-  ) {
-    this.keycloakService.loadUserProfile().then((profile:KeycloakProfile) => {
+  constructor(private readonly keycloakService: KeycloakService) {
+    this.keycloakService.loadUserProfile().then((profile: KeycloakProfile) => {
       this.value = profile;
       this.valueChange.emit();
     });

@@ -42,9 +42,7 @@ export class ObjectManagementDetailContainerComponent implements OnInit, OnDestr
   );
 
   readonly object$ = combineLatest([this.objectId$, this.objectManagementState.refresh$]).pipe(
-    switchMap(([object]) =>
-      this.objectManagementService.getObjectById(object)
-    )
+    switchMap(([object]) => this.objectManagementService.getObjectById(object))
   );
 
   constructor(

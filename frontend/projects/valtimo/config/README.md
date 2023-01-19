@@ -13,13 +13,13 @@ also use `ng generate directive|pipe|service|class|guard|interface|enum|module -
 
 ## Build
 
-Run `ng build @valtimo/config` to build the project. The build artifacts will be stored in the `dist/`
-directory.
+Run `ng build @valtimo/config` to build the project. The build artifacts will be stored in the
+`dist/` directory.
 
 ## Publishing
 
-After building your library with `ng build @valtimo/config`, go to the dist folder `cd dist/config` and run
-`npm publish`.
+After building your library with `ng build @valtimo/config`, go to the dist folder `cd dist/config`
+and run `npm publish`.
 
 ## Running unit tests
 

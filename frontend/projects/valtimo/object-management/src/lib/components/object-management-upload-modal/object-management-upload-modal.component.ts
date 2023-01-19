@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import {ModalComponent as vModalComponent, ModalService} from '@valtimo/user-interface';
 import {BehaviorSubject, Observable, Subject, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
@@ -84,11 +92,13 @@ export class ObjectManagementUploadModalComponent implements AfterViewInit, OnDe
   uploadDefinition(): void {
     this.disable();
 
-    this.jsonString$.pipe(take(1)).subscribe((objecttypeDefinition) => {
-      this.objectManagementService.createObject({...JSON.parse(objecttypeDefinition)}).subscribe(() => {
-        this.objectManagementState.refresh();
-        this.objectManagementState.hideModal();
-      })
+    this.jsonString$.pipe(take(1)).subscribe(objecttypeDefinition => {
+      this.objectManagementService
+        .createObject({...JSON.parse(objecttypeDefinition)})
+        .subscribe(() => {
+          this.objectManagementState.refresh();
+          this.objectManagementState.hideModal();
+        });
       this.closeErrorSubscription();
       this.clearError();
       this.enable();
@@ -168,17 +178,22 @@ export class ObjectManagementUploadModalComponent implements AfterViewInit, OnDe
 
   private isValidJsonObjecttype(string: string) {
     const jsonObjecttype = JSON.parse(string);
-    const isValid = this.validateObject(
-      jsonObjecttype,
-      ['title', 'objecttypenApiPluginConfigurationId', 'objecttypeId', 'objectenApiPluginConfigurationId', 'showInDataMenu']
+    const isValid = this.validateObject(jsonObjecttype, [
+      'title',
+      'objecttypenApiPluginConfigurationId',
+      'objecttypeId',
+      'objectenApiPluginConfigurationId',
+      'showInDataMenu',
+    ]);
+    const isObjecttypeTitleUnique = !this.objecttypes?.find(
+      objecttype => objecttype.title === jsonObjecttype.title
     );
-    const isObjecttypeTitleUnique = !this.objecttypes?.find(objecttype => objecttype.title === jsonObjecttype.title);
     if (isValid && isObjecttypeTitleUnique) {
       return true;
     } else if (isValid && !isObjecttypeTitleUnique) {
       this.clearDropzone();
       this.openErrorSubscription('dropzone.error.objecttypeAlreadyExists');
-      return false
+      return false;
     } else if (!isValid && isObjecttypeTitleUnique) {
       this.clearDropzone();
       this.openErrorSubscription('dropzone.error.invalidObjecttypeDef');
@@ -190,7 +205,6 @@ export class ObjectManagementUploadModalComponent implements AfterViewInit, OnDe
     const objKeys = Object.keys(obj);
     return requiredKeys.every(key => objKeys.includes(key));
   }
-
 
   private disable(): void {
     this.disabled$.next(true);

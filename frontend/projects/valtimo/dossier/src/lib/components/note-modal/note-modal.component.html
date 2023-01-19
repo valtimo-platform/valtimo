@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<v-modal #addNoteModal  *ngIf="{ disabled: disabled$ | async, valid: valid$ | async} as obs">
+<v-modal #addNoteModal *ngIf="{disabled: disabled$ | async, valid: valid$ | async} as obs">
   <div role="header">
     <div class="add-note-title">
       <v-title [margin]="false">{{ 'dossier.notes.addNote' | translate }}</v-title>
@@ -28,7 +28,12 @@
       <v-button (clickEvent)="cancel()" [disabled]="obs.disabled" type="secondary">
         {{ 'document.cancel' | translate }}
       </v-button>
-      <v-button (clickEvent)="save()" [disabled]="obs.disabled || !obs.valid" mdiIcon="plus" type="success">
+      <v-button
+        (clickEvent)="save()"
+        [disabled]="obs.disabled || !obs.valid"
+        mdiIcon="plus"
+        type="success"
+      >
         {{ 'dossier.notes.addNote' | translate }}
       </v-button>
     </div>
@@ -39,13 +44,13 @@
   <ng-container *ngIf="showForm$ | async">
     <v-form (valueChange)="formValueChange($event)">
       <v-input
-              type="textarea"
-              [margin]="true"
-              [required]="true"
-              [title]="'dossier.notes.input.content' | translate"
-              name="content"
-              [fullWidth]="true"
-              [rows]="10"
+        type="textarea"
+        [margin]="true"
+        [required]="true"
+        [title]="'dossier.notes.input.content' | translate"
+        name="content"
+        [fullWidth]="true"
+        [rows]="10"
       >
       </v-input>
     </v-form>

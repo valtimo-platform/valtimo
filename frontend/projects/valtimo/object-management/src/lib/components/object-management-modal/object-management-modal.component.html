@@ -14,27 +14,47 @@
   ~ limitations under the License.
   -->
 
-<v-modal #objectManagementModal *ngIf="{
+<v-modal
+  #objectManagementModal
+  *ngIf="{
     disabled: disabled$ | async,
     valid: valid$ | async,
     modalType: modalType$ | async,
     prefillObject: prefillObject$ | async
-  } as obs">
+  } as obs"
+>
   <div role="header">
     <div class="add-title">
-      <v-title [margin]="false">{{ (obs.modalType === 'add' ? 'objectManagement.createObjecttype' : 'objectManagement.editObjecttype') | translate }}</v-title>
+      <v-title [margin]="false">{{
+        (obs.modalType === 'add'
+          ? 'objectManagement.createObjecttype'
+          : 'objectManagement.editObjecttype'
+        ) | translate
+      }}</v-title>
     </div>
   </div>
   <div role="content">
-    <ng-container *ngTemplateOutlet="form; context: {prefillObject: obs.prefillObject, modalType: obs.modalType}"></ng-container>
+    <ng-container
+      *ngTemplateOutlet="
+        form;
+        context: {prefillObject: obs.prefillObject, modalType: obs.modalType}
+      "
+    ></ng-container>
   </div>
   <div role="footer">
     <div class="buttons">
       <v-button (clickEvent)="cancel()" [disabled]="obs.disabled" type="secondary">
         {{ 'objectManagement.cancel' | translate }}
       </v-button>
-      <v-button (clickEvent)="save()" [disabled]="obs.disabled || !obs.valid" mdiIcon="plus" type="success">
-        {{ (obs.modalType === 'add' ? 'objectManagement.add' : 'objectManagement.edit') | translate }}
+      <v-button
+        (clickEvent)="save()"
+        [disabled]="obs.disabled || !obs.valid"
+        mdiIcon="plus"
+        type="success"
+      >
+        {{
+          (obs.modalType === 'add' ? 'objectManagement.add' : 'objectManagement.edit') | translate
+        }}
       </v-button>
     </div>
   </div>
@@ -43,7 +63,8 @@
 <ng-template #form let-prefillObject="prefillObject" let-modalType="modalType">
   <ng-container *ngIf="showForm$ | async">
     <v-form (valueChange)="formValueChange($event)">
-      <v-input *ngIf="modalType === 'edit'"
+      <v-input
+        *ngIf="modalType === 'edit'"
         hidden
         [disabled]="true"
         [defaultValue]="prefillObject?.id"
@@ -60,10 +81,11 @@
         name="title"
       ></v-input>
 
-      <ng-container *ngIf="{
-        connectionInstances: configurationInstances$ | async,
-        objectsApiConfigurations: objectsApiConfigurations$ | async,
-        objecttypesApiConfigurations: objecttypesApiConfigurations$ | async
+      <ng-container
+        *ngIf="{
+          connectionInstances: configurationInstances$ | async,
+          objectsApiConfigurations: objectsApiConfigurations$ | async,
+          objecttypesApiConfigurations: objecttypesApiConfigurations$ | async
         } as objectObs"
       >
         <v-select
@@ -88,15 +110,15 @@
         ></v-select>
       </ng-container>
 
-        <v-input
-          [margin]="true"
-          [required]="true"
-          [title]="'objectManagement.labels.objecttypeId' | translate"
-          [tooltip]="'objectManagement.tooltips.objecttypeId' | translate"
-          [widthPx]="350"
-          [defaultValue]="prefillObject?.objecttypeId"
-          name="objecttypeId"
-        ></v-input>
+      <v-input
+        [margin]="true"
+        [required]="true"
+        [title]="'objectManagement.labels.objecttypeId' | translate"
+        [tooltip]="'objectManagement.tooltips.objecttypeId' | translate"
+        [widthPx]="350"
+        [defaultValue]="prefillObject?.objecttypeId"
+        name="objecttypeId"
+      ></v-input>
 
       <ng-container *ngIf="{formDefinitions: formDefinitions$ | async} as formObs">
         <v-select

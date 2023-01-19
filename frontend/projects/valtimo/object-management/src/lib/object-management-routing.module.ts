@@ -34,7 +34,7 @@ const routes: Routes = [
     canActivate: [AuthGuardService],
     component: ObjectManagementDetailContainerComponent,
     data: {title: 'Object', roles: [ROLE_ADMIN]},
-  }
+  },
 ];
 
 @NgModule({

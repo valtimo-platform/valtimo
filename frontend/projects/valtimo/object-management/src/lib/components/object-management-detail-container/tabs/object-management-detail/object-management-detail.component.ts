@@ -35,15 +35,11 @@ export class ObjectManagementDetailComponent {
 
   downloadDefinition(object): void {
     const dataString =
-      'data:text/json;charset=utf-8,' +
-      encodeURIComponent(JSON.stringify(object, null, 2));
-    console.log(dataString)
+      'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(object, null, 2));
+    console.log(dataString);
     const downloadAnchorElement = document.getElementById('downloadAnchorElement');
     downloadAnchorElement.setAttribute('href', dataString);
-    downloadAnchorElement.setAttribute(
-      'download',
-      `${object.id}.json`
-    );
+    downloadAnchorElement.setAttribute('download', `${object.id}.json`);
     downloadAnchorElement.click();
   }
 

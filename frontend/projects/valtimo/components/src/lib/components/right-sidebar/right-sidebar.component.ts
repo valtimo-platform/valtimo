@@ -118,7 +118,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
 
     private readonly elementRef: ElementRef,
 
-    private readonly configService: ConfigService,
+    private readonly configService: ConfigService
   ) {}
 
   showPlantATreeButton: boolean;
@@ -127,8 +127,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     this.setLanguage();
     this.loadEmailNotificationSettings();
     this.openFormSubscription();
-    this.showPlantATreeButton =
-      this.configService.config.featureToggles?.showPlantATreeButton;
+    this.showPlantATreeButton = this.configService.config.featureToggles?.showPlantATreeButton;
   }
 
   ngOnDestroy(): void {

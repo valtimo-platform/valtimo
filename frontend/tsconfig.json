@@ -70,9 +70,7 @@
       "@valtimo/milestone": ["dist/valtimo/milestone"],
       "@valtimo/milestone/*": ["dist/valtimo/milestone/*"],
       "@valtimo/form-management": ["dist/valtimo/form-management"],
-      "@valtimo/form-management/*": [
-        "dist/valtimo/form-management/*"
-      ],
+      "@valtimo/form-management/*": ["dist/valtimo/form-management/*"],
       "@valtimo/object-management": ["dist/valtimo/object-management"],
       "@valtimo/object-management/*": ["dist/valtimo/object-management/*"],
       "@valtimo/form-link": ["dist/valtimo/form-link"],

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, Renderer2} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Renderer2, ViewChild} from '@angular/core';
 import {LayoutService} from '../layout.service';
 import {UserInterfaceService} from '@valtimo/user-interface';
 import {ShellService} from '@valtimo/components';
@@ -28,12 +28,14 @@ declare var App;
   styleUrls: ['./layout-internal.component.scss'],
 })
 export class LayoutInternalComponent implements AfterViewInit {
+  @ViewChild('mainContent') mainContentRef: ElementRef;
+
   readonly showPageHeader$ = this.userInterfaceService.showPageHeader$;
   readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
 
   constructor(
     public layoutService: LayoutService,
-    private renderer: Renderer2,
+    private readonly renderer: Renderer2,
     private readonly userInterfaceService: UserInterfaceService,
     private readonly shellService: ShellService
   ) {
@@ -42,5 +44,6 @@ export class LayoutInternalComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     App.init();
+    this.shellService.setContentElement(this.mainContentRef.nativeElement);
   }
 }

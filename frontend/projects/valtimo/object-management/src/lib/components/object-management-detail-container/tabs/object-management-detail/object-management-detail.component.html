@@ -13,12 +13,16 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<div id="object-datail-content" class="pt-0" *ngIf="{
-  object: object$ | async
-} as obs">
+<div
+  id="object-datail-content"
+  class="pt-0"
+  *ngIf="{
+    object: object$ | async
+  } as obs"
+>
   <ng-container *ngTemplateOutlet="buttons; context: {object: obs.object}"></ng-container>
   <div class="clearfix"></div>
-  <ng-container *ngTemplateOutlet="widget ; context: {object: obs.object}"></ng-container>
+  <ng-container *ngTemplateOutlet="widget; context: {object: obs.object}"></ng-container>
 </div>
 
 <ng-template #buttons let-object="object">

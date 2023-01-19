@@ -121,7 +121,6 @@ export class MenuService {
   private loadMenuItems(): MenuItem[] {
     let menuItems: MenuItem[] = [];
     this.menuConfig.menuItems.forEach((menuItem: MenuItem) => {
-
       if (menuItem.includeFunction !== undefined) {
         this.includeFunctionObservables[menuItem.title] =
           this.menuIncludeService.getIncludeFunction(menuItem.includeFunction);
