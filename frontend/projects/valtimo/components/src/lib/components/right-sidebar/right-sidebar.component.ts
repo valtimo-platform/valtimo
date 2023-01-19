@@ -122,12 +122,14 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   ) {}
 
   showPlantATreeButton: boolean;
+  resetUrl: string
 
   ngOnInit(): void {
     this.setLanguage();
     this.loadEmailNotificationSettings();
     this.openFormSubscription();
     this.showPlantATreeButton = this.configService.config.featureToggles?.showPlantATreeButton;
+    this.resetUrl = this.configService.config.changePasswordUrl?.endpointUri;
   }
 
   ngOnDestroy(): void {
