@@ -155,6 +155,7 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
 
     if (processDefinitionId) {
       this.processDefinitionId = processDefinitionId;
+      this.loadProcessDefinitionXml(this.processDefinitionId);
     }
 
     this.version = +version;
