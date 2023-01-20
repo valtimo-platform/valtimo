@@ -19,7 +19,7 @@ form.dropzone {
 
   h2 {
     text-align: center;
-    font-size: 2rem;
+    font-size: 1.69rem;
   }
 
   &.disabled {
@@ -93,5 +93,11 @@ form.dropzone .message {
 }
 
 .large-icon {
-  line-height: 4.615rem;
+  line-height: 60px;
+  font-size: 60px;
+
+  .mdi {
+    line-height: 60px;
+    font-size: 60px;
+  }
 }
