@@ -119,6 +119,12 @@ export class ShellService implements OnDestroy {
         this._isResizing$.next(true);
         this.renderer.setStyle(document.body, 'user-select', 'none');
         this.renderer.setStyle(document.body, 'cursor', 'col-resize');
+        this.renderer.setStyle(
+          document.querySelector('.cds--side-nav__navigation'),
+          'pointer-events',
+          'none'
+        );
+        this.renderer.setStyle(document.querySelector('.main-content'), 'pointer-events', 'none');
       });
     });
   }
@@ -159,8 +165,6 @@ export class ShellService implements OnDestroy {
     this.mouseXSubscription = combineLatest([this._mouseX$, this._isResizing$])
       .pipe(debounceTime(3))
       .subscribe(([x, isResizing]) => {
-        const menuOpen = this.sideBarExpanded$;
-
         if (isResizing) {
           const offSetWidth = this.xOnClick - x;
           const newSidenavWidth = this.sidenavWidthOnClick - offSetWidth;
@@ -181,6 +185,11 @@ export class ShellService implements OnDestroy {
     this.renderer.removeStyle(document.body, 'cursor');
     this._isResizing$.next(false);
     this.renderer.removeClass(this._resizeBorderElement$.getValue(), 'resize-hover');
+    this.renderer.removeStyle(
+      document.querySelector('.cds--side-nav__navigation'),
+      'pointer-events'
+    );
+    this.renderer.removeStyle(document.querySelector('.main-content'), 'pointer-events');
     localStorage.setItem('sidenavWidth', this._sidenavWidth$.getValue().toString());
   }
 
