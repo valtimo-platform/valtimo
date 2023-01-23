@@ -81,7 +81,7 @@ export interface ValtimoConfig {
   valtimoApi: {
     endpointUri: string;
   };
-  changePasswordUrl: {
+  changePasswordUrl?: {
     endpointUri: string,
   },
   swagger: {
