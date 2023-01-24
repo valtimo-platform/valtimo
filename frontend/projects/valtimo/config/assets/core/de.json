@@ -270,11 +270,13 @@
     "gotoFormLinksButton": "Jetzt konfigurieren",
     "name": "Name",
     "nameIsRequired": "Name ist erforderlich",
+    "nameIsInUse": "Name wird bereits verwendet",
     "back": "Geh zurück",
     "reset": "Zurücksetzen",
     "submit": "Einreichen",
     "delete": "Löschen",
     "deploy": "Deploy",
+    "duplicate": "Duplizieren",
     "readOnly": "Schreibgeschützt"
   },
   "dossierManagement": {

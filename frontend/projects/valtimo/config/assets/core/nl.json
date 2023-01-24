@@ -270,11 +270,13 @@
     "gotoFormLinksButton": "Configureer nu",
     "name": "Naam",
     "nameIsRequired": "Naam is vereist",
+    "nameIsInUse": "Naam is al in gebruik",
     "back": "Ga terug",
     "reset": "Resetten",
     "submit": "Indienen",
     "delete": "Verwijderen",
     "deploy": "Deploy",
+    "duplicate": "Dupliceren",
     "readOnly": "Alleen-lezen"
   },
   "dossierManagement": {

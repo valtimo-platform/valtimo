@@ -21,7 +21,7 @@ import {
   DropzoneModule,
   FormIoModule,
   ListModule,
-  ModalModule,
+  ModalModule as vcModalModule,
   WidgetModule,
 } from '@valtimo/components';
 import {CommonModule} from '@angular/common';
@@ -32,6 +32,15 @@ import {FormManagementEditComponent} from './form-management-edit/form-managemen
 import {TranslateModule} from '@ngx-translate/core';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {FormManagementUploadComponent} from './form-management-upload/form-management-upload.component';
+import {FormManagementDuplicateComponent} from './form-management-duplicate/form-management-duplicate.component';
+import {
+  ButtonModule,
+  FormModule,
+  InputModule as vInputModule,
+  ModalModule as vModalModule,
+  TitleModule,
+} from '@valtimo/user-interface';
+import {InputModule, ModalModule, PlaceholderModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [
@@ -40,6 +49,7 @@ import {FormManagementUploadComponent} from './form-management-upload/form-manag
     FormManagementListComponent,
     FormManagementEditComponent,
     FormManagementUploadComponent,
+    FormManagementDuplicateComponent,
   ],
   imports: [
     FormManagementRoutingModule,
@@ -53,6 +63,16 @@ import {FormManagementUploadComponent} from './form-management-upload/form-manag
     NgbTooltipModule,
     DropzoneModule,
     ModalModule,
+    vModalModule,
+    vcModalModule,
+    vInputModule,
+    TitleModule,
+    ButtonModule,
+    InputModule,
+    FormModule,
+    ModalModule,
+    InputModule,
+    PlaceholderModule,
   ],
   exports: [FormManagementComponent],
 })

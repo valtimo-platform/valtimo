@@ -22,6 +22,7 @@ import {FormManagementService} from '../form-management.service';
 import {CreateFormDefinitionRequest} from '../models';
 import {combineLatest} from 'rxjs';
 import {take} from 'rxjs/operators';
+import {noDuplicateFormValidator} from '../validators/no-duplicate-form.validator';
 
 @Component({
   selector: 'valtimo-form-management-create',
@@ -45,7 +46,9 @@ export class FormManagementCreateComponent implements OnInit {
 
   ngOnInit() {
     this.form = this.formBuilder.group({
-      name: new FormControl('', Validators.required),
+      name: new FormControl('', Validators.required, [
+        noDuplicateFormValidator(this.formManagementService),
+      ]),
     });
   }
 

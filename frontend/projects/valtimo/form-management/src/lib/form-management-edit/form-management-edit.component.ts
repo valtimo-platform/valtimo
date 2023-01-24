@@ -22,6 +22,8 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {first, take} from 'rxjs/operators';
 import {BehaviorSubject, Subscription} from 'rxjs';
 import {FormioForm} from '@formio/angular';
+import {FormManagementDuplicateComponent} from '../form-management-duplicate/form-management-duplicate.component';
+import {ModalService} from 'carbon-components-angular';
 
 @Component({
   selector: 'valtimo-form-management-edit',
@@ -41,7 +43,8 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
     private formManagementService: FormManagementService,
     private alertService: AlertService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private modalService: ModalService
   ) {}
 
   ngOnInit() {
@@ -143,8 +146,17 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
     link.remove();
   }
 
-  showModal() {
+  showUploadModal() {
     this.showModal$.next(true);
+  }
+
+  showDuplicateModal() {
+    this.modalService.create({
+      component: FormManagementDuplicateComponent,
+      inputs: {
+        formToDuplicate: this.formDefinition,
+      },
+    });
   }
 
   setFormDefinition(formDefinition: any) {
@@ -164,7 +176,7 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
   private checkToOpenUploadModal(): void {
     this.route.queryParams.pipe(take(1)).subscribe(params => {
       if (params?.upload === 'true') {
-        this.showModal();
+        this.showUploadModal();
       }
     });
   }

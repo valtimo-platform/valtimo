@@ -44,6 +44,9 @@
                   <div *ngIf="formControls.name.errors.required">
                     {{ 'formManagement.nameIsRequired' | translate }}
                   </div>
+                  <div *ngIf="formControls.name.errors.duplicate">
+                    {{ 'formManagement.nameIsInUse' | translate }}
+                  </div>
                 </div>
               </div>
             </div>

@@ -36,6 +36,12 @@ export class FormManagementService {
     );
   }
 
+  existsFormDefinition(formDefinitionName: string): Observable<boolean> {
+    return this.http.get<boolean>(
+      `${this.valtimoApiConfig.endpointUri}v1/form-management/exists/${formDefinitionName}`
+    );
+  }
+
   queryFormDefinitions(params?: any): Observable<any> {
     return this.http.get(`${this.valtimoApiConfig.endpointUri}v1/form-management`, {
       observe: 'response',
