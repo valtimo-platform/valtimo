@@ -62,6 +62,10 @@ body {
 
 .main-content,
 .modal-content {
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+
   .list-header-title {
     margin-top: 20px;
     margin-bottom: 10px;
@@ -133,10 +137,6 @@ body {
     font-size: 0.8rem;
   }
 
-  .col-form-label {
-    padding-bottom: 6px;
-  }
-
   dd {
     margin-bottom: 0.5rem;
     margin-left: 0;
@@ -155,8 +155,6 @@ body {
   }
 
   .modal-body {
-    padding: 20px;
-
     p[ref='html'] {
       margin-bottom: 1rem;
     }

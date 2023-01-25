@@ -185,3 +185,15 @@
 ::ng-deep .cds--side-nav__submenu-title {
   padding-right: 1.5rem;
 }
+
+::ng-deep .cds--side-nav__items {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: visible !important;
+}
+
+::ng-deep .cds--side-nav__navigation {
+  height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
