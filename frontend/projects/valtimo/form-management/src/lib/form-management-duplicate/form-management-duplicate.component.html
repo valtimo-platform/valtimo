@@ -36,11 +36,12 @@
     </div>
   </section>
   <ibm-modal-footer>
-    <button class="bx--btn bx--btn--secondary" (click)="closeModal()">
+    <button ibmButton="secondary" (click)="closeModal()">
       {{ 'interface.cancel' | translate }}
     </button>
     <button
-      class="bx--btn bx--btn--primary"
+      ibmButton="primary"
+      [attr.modal-primary-focus]="true"
       modal-primary-focus
       (click)="duplicate()"
       [disabled]="duplicateForm.invalid"
