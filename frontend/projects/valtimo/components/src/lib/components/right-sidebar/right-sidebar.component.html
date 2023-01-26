@@ -143,7 +143,7 @@
       </ibm-list-row>
       <ibm-list-row *ngIf="resetUrl">
         <ibm-list-column>
-          <a href="javascript:void(0)" ibmLink (click)="logout()">{{
+          <a [href]="resetUrl" ibmLink>{{
             'account.links.resetPassword' | translate
             }}</a>
         </ibm-list-column>
