@@ -49,6 +49,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
 
   private componentValuesSubscription!: Subscription;
   private changesSubscription!: Subscription;
+  private prevValuesObject?: FormOutput = undefined;
 
   ngAfterContentInit(): void {
     this.openChangesSubscription();
@@ -99,7 +100,10 @@ export class FormComponent implements AfterContentInit, OnDestroy {
             valuesObject[component.name] = inputValues[index];
           });
 
-          this.valueChange.emit(valuesObject);
+          if (JSON.stringify(this.prevValuesObject) !== JSON.stringify(inputValues)) {
+            this.prevValuesObject = inputValues;
+            this.valueChange.emit(valuesObject);
+          }
         })
       )
       .subscribe();

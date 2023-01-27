@@ -1,6 +1,11 @@
 type SearchFieldDataType = 'text' | 'number' | 'date' | 'datetime' | 'boolean';
 
-type SearchFieldFieldType = 'single' | 'multiple' | 'range';
+type SearchFieldFieldType =
+  | 'single'
+  | 'multiple'
+  | 'range'
+  | 'single-select-dropdown'
+  | 'multi-select-dropdown';
 
 type SearchFieldMatchType = 'exact' | 'like';
 
@@ -9,7 +14,9 @@ type SearchFieldBoolean = 'booleanPositive' | 'booleanNegative';
 type BooleanValueSingle = boolean;
 
 type TextValueSingle = string;
-type TextValueMultiple = Array<TextValueSingle>;
+type ValueMultiple = Array<
+  BooleanValueSingle | TextValueSingle | NumberValueSingle | NumberValueRange
+>;
 
 type NumberValueSingle = number;
 
@@ -18,7 +25,12 @@ interface NumberValueRange {
   end: NumberValueSingle;
 }
 
-type SearchFieldValue = BooleanValueSingle | TextValueSingle | NumberValueSingle | NumberValueRange;
+type SearchFieldValue =
+  | BooleanValueSingle
+  | TextValueSingle
+  | ValueMultiple
+  | NumberValueSingle
+  | NumberValueRange;
 
 interface SearchField {
   title?: string;
@@ -27,6 +39,7 @@ interface SearchField {
   dataType: SearchFieldDataType;
   fieldType: SearchFieldFieldType;
   matchType: SearchFieldMatchType;
+  dropdownDataProvider?: string;
 }
 
 interface SearchFieldWithValue extends SearchField {

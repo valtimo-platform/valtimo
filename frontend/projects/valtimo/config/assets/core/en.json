@@ -896,11 +896,20 @@
     "like": "Contains",
     "single": "Single",
     "multiple": "Multiple",
+    "single-select-dropdown": "Single select dropdown",
+    "multi-select-dropdown": "Multi select dropdown",
     "range": "Range",
     "submit": "Submit",
     "delete": "Delete",
     "addRow": "Add search field",
-    "searchFieldPlaceholder": "Select a type..."
+    "searchFieldPlaceholder": "Select a type...",
+    "dropdownDataProvider": "Dropdown data source",
+    "dropdownDatabaseDataProvider": "Fixed value",
+    "dropdownJsonFileDataProvider": "Config file",
+    "configFile": "Config file",
+    "setValue": "Set value",
+    "id": "ID",
+    "text": "Text"
   },
   "searchFieldsOverviewTooltips": {
     "title": "The title is an optional field that appears as a label for the current search field. When the title is not set, the default value will be the search field key translation (if there is no translation available, the original key value will be displayed).",
@@ -908,7 +917,10 @@
     "path": "A path which leads to the property you want to search on. For searching in the document's JSON schema, follow this example: 'doc:customer.firstName'. For searching in the document properties, follow these examples: 'case:createdBy', or 'case:sequence', or 'case:assigneeFullName'. Note: When there are special characters in a property, the property must be enclosed in quotes. For example: case:\"loan-accepted\".",
     "dataType": "The data type decides what input is shown to the user. For example, for the data type 'Date', a date picker is shown.",
     "fieldType": "The field type decides the values the user can input. For the option 'Single', the user can only input a single value. For the option 'Range', the user may input two values, and these values, and all the values in between, are searched for.",
-    "matchType": "The match type decides how values in the database are matched to the search values. For the match type 'Exact', the value '1' would only be matched to the value '1'. For the match type 'Contains', the value '1' would be matched to the value '1', '123', and all other values containing '1'."
+    "matchType": "The match type decides how values in the database are matched to the search values. For the match type 'Exact', the value '1' would only be matched to the value '1'. For the match type 'Contains', the value '1' would be matched to the value '1', '123', and all other values containing '1'.",
+    "dropdownDataProvider": "The dropdown data source determines where the data for the dropdown comes from.",
+    "configFile": "Use a config file with dropdown values.",
+    "setValue": "Set custom values for the dropdown."
   },
   "listColumn": {
     "title": "Title",

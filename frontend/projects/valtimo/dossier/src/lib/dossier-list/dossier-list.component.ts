@@ -408,6 +408,8 @@ export class DossierListComponent implements OnInit {
       const searchValue = values[valueKey] as any;
       if (searchValue.start) {
         filters.push({key: valueKey, rangeFrom: searchValue.start, rangeTo: searchValue.end});
+      } else if (Array.isArray(searchValue)) {
+        filters.push({key: valueKey, values: searchValue});
       } else {
         filters.push({key: valueKey, values: [searchValue]});
       }

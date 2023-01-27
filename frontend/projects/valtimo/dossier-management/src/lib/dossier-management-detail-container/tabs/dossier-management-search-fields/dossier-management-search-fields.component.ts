@@ -27,9 +27,11 @@ import {DocumentService} from '@valtimo/document';
 import {
   BehaviorSubject,
   combineLatest,
+  distinctUntilChanged,
   filter,
   map,
   Observable,
+  of,
   Subscription,
   switchMap,
   take,
@@ -46,7 +48,7 @@ import {
   SearchFieldMatchType,
 } from '@valtimo/config';
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
-import {SelectItem} from '@valtimo/user-interface';
+import {MultiInputOutput, MultiInputValues, SelectItem, TableColumn} from '@valtimo/user-interface';
 
 @Component({
   selector: 'valtimo-dossier-management-search-fields',
@@ -99,13 +101,18 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
       propertyName: 'fieldType',
       translationKey: 'fieldType',
     },
-    {
-      viewType: 'string',
-      sortable: false,
-      propertyName: 'matchType',
-      translationKey: 'matchType',
-    },
   ];
+
+  readonly dropdownColumns$ = new BehaviorSubject<Array<TableColumn>>([
+    {
+      labelTranslationKey: 'searchFieldsOverview.id',
+      dataKey: 'key',
+    },
+    {
+      labelTranslationKey: 'searchFieldsOverview.text',
+      dataKey: 'value',
+    },
+  ]);
 
   private readonly DATA_TYPES: Array<SearchFieldDataType> = [
     'text',
@@ -124,23 +131,38 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
   );
 
   readonly dataTypeIsBoolean$ = new BehaviorSubject<boolean>(false);
-  private readonly FIELD_TYPES: Array<SearchFieldFieldType> = ['single', 'range'];
-  private readonly OTHER_FIELD_TYPES: Array<SearchFieldFieldType> = ['single'];
+  private readonly dataTypeIsText$ = new BehaviorSubject<boolean>(false);
+  private readonly ALL_FIELD_TYPES: Array<SearchFieldFieldType> = [
+    'single',
+    'range',
+    'single-select-dropdown',
+    'multi-select-dropdown',
+  ];
+  private readonly NON_TEXT_FIELD_TYPES: Array<SearchFieldFieldType> = ['single', 'range'];
+  private readonly BOOLEAN_FIELD_TYPES: Array<SearchFieldFieldType> = ['single'];
   readonly fieldTypeItems$: Observable<Array<SelectItem>> = combineLatest([
     this.dataTypeIsBoolean$,
+    this.dataTypeIsText$,
     this.translateService.stream('key'),
   ]).pipe(
-    map(([dataTypeIsBoolean]) =>
-      dataTypeIsBoolean
-        ? this.OTHER_FIELD_TYPES.map(fieldType => ({
+    map(([dataTypeIsBoolean, dataTypeIsText]) => {
+      if (dataTypeIsBoolean) {
+        return this.BOOLEAN_FIELD_TYPES.map(fieldType => ({
           id: fieldType,
           text: this.translateService.instant(`searchFieldsOverview.${fieldType}`),
-        }))
-        : this.FIELD_TYPES.map(fieldType => ({
+        }));
+      } else if (!dataTypeIsText) {
+        return this.NON_TEXT_FIELD_TYPES.map(fieldType => ({
           id: fieldType,
           text: this.translateService.instant(`searchFieldsOverview.${fieldType}`),
-        }))
-    )
+        }));
+      } else {
+        return this.ALL_FIELD_TYPES.map(fieldType => ({
+          id: fieldType,
+          text: this.translateService.instant(`searchFieldsOverview.${fieldType}`),
+        }));
+      }
+    })
   );
 
   private readonly MATCH_TYPES: Array<SearchFieldMatchType> = ['exact', 'like'];
@@ -214,7 +236,81 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     )
   );
 
-  readonly dataTypeIsText$ = new BehaviorSubject<boolean>(false);
+  readonly fieldTypeIsDropdown$ = new BehaviorSubject<boolean>(false);
+
+  readonly dropdownDataProviderNames$: Observable<Array<SelectItem>> = combineLatest([
+    this.documentService.getDropdownDataProviders(),
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([providers]) =>
+      providers.map(provider => ({
+        id: provider,
+        text: this.translateService.instant(`searchFieldsOverview.${provider}`),
+      }))
+    )
+  );
+
+  private readonly dropdownProviderSupportsUpdates$ = new BehaviorSubject<boolean>(false);
+  private readonly modifiedDropdownValues$ = new BehaviorSubject<MultiInputValues>([]);
+
+  readonly initialDropdownValues$: Observable<MultiInputValues> = combineLatest([
+    this.documentDefinitionName$,
+    this.formData$,
+  ]).pipe(
+    distinctUntilChanged(
+      ([prevDocumentDefinitionName, prevFormData], [currDocumentDefinitionName, currFormData]) =>
+        prevDocumentDefinitionName === currDocumentDefinitionName &&
+        prevFormData?.dropdownDataProvider === currFormData?.dropdownDataProvider &&
+        prevFormData?.key === currFormData?.key
+    ),
+    switchMap(([documentDefinitionName, formData]) => {
+      if (!formData || !formData.dropdownDataProvider) {
+        return of([]);
+      } else {
+        return this.documentService
+          .getDropdownData(formData.dropdownDataProvider, documentDefinitionName, formData.key)
+          .pipe(
+            map(dropdownData => {
+              if (dropdownData) {
+                return Object.keys(dropdownData).map(dropdownFieldKey => ({
+                  key: dropdownFieldKey,
+                  value: dropdownData[dropdownFieldKey],
+                }));
+              } else {
+                return [];
+              }
+            })
+          );
+      }
+    })
+  );
+
+  readonly showMatchTypes$: Observable<boolean> = combineLatest([
+    this.dataTypeIsText$,
+    this.fieldTypeIsDropdown$,
+  ]).pipe(map(([dataTypeIsText, fieldTypeIsDropdown]) => dataTypeIsText && !fieldTypeIsDropdown));
+
+  readonly showReadonlyDropdownTable$: Observable<boolean> = combineLatest([
+    this.dataTypeIsText$,
+    this.fieldTypeIsDropdown$,
+    this.dropdownProviderSupportsUpdates$,
+  ]).pipe(
+    map(
+      ([dataTypeIsText, fieldTypeIsDropdown, dropdownProviderSupportsUpdates]) =>
+        dataTypeIsText && fieldTypeIsDropdown && !dropdownProviderSupportsUpdates
+    )
+  );
+
+  readonly showInputDropdownTable$: Observable<boolean> = combineLatest([
+    this.dataTypeIsText$,
+    this.fieldTypeIsDropdown$,
+    this.dropdownProviderSupportsUpdates$,
+  ]).pipe(
+    map(
+      ([dataTypeIsText, fieldTypeIsDropdown, dropdownProviderSupportsUpdates]) =>
+        dataTypeIsText && fieldTypeIsDropdown && dropdownProviderSupportsUpdates
+    )
+  );
 
   constructor(
     private readonly documentService: DocumentService,
@@ -248,21 +344,21 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
   }
 
   formValueChange(data: SearchField): void {
-    const containsAllValues = !!(
-      data.key &&
-      data.dataType &&
-      (data.dataType !== 'boolean' ? data.fieldType : true) &&
-      (data.dataType === 'text' ? data.matchType : true) &&
-      data.path
-    );
-    const keyIsUnique =
-      !this.searchFieldActionTypeIsAdd ||
-      this.cachedSearchFields.findIndex(field => field.key === data.key) === -1;
+    setTimeout(() => {
+      this.nextIfChanged(this.dataTypeIsText$, data.dataType === 'text');
+      this.nextIfChanged(this.dataTypeIsBoolean$, data.dataType === 'boolean');
+      this.nextIfChanged(this.fieldTypeIsDropdown$, this.isFieldTypeDropdown(data.fieldType));
+      this.nextIfChanged(
+        this.dropdownProviderSupportsUpdates$,
+        data.dropdownDataProvider === 'dropdownDatabaseDataProvider'
+      );
+      this.nextIfChanged(this.formData$, data);
+      this.nextIfChanged(this.valid$, this.isValid(data));
+    }, 0);
+  }
 
-    this.dataTypeIsText$.next(data.dataType === 'text');
-    this.dataTypeIsBoolean$.next(data.dataType === 'boolean');
-    this.formData$.next(data);
-    this.valid$.next(containsAllValues && keyIsUnique);
+  dropdownDatalistChange(data: MultiInputOutput): void {
+    this.modifiedDropdownValues$.next(data as MultiInputValues);
   }
 
   moveRow(
@@ -304,6 +400,16 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
   ): void {
     this.disableInput();
 
+    if (this.dropdownDataProviderSupportsUpdates(selectedSearchField?.dropdownDataProvider)) {
+      this.documentService
+        .deleteDropdownData(
+          selectedSearchField.dropdownDataProvider,
+          documentDefinitionName,
+          selectedSearchField.key
+        )
+        .subscribe();
+    }
+
     this.documentService
       .deleteDocumentSearch(documentDefinitionName, selectedSearchField.key)
       .subscribe(
@@ -324,9 +430,42 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     this.formData$.pipe(take(1)).subscribe(formData => {
       const mappedFormData: SearchField = {
         ...formData,
-        matchType: formData.dataType === 'text' ? formData.matchType : 'exact',
+        matchType:
+          !this.isFieldTypeDropdown(formData.fieldType) && formData.dataType === 'text'
+            ? formData.matchType
+            : 'exact',
         fieldType: formData.dataType !== 'boolean' ? formData.fieldType : 'single',
       };
+
+      const prevFormData = this.selectedSearchField$.value;
+      if (
+        this.dropdownDataProviderSupportsUpdates(prevFormData?.dropdownDataProvider) &&
+        prevFormData.dropdownDataProvider !== mappedFormData?.dropdownDataProvider
+      ) {
+        this.documentService
+          .deleteDropdownData(
+            prevFormData.dropdownDataProvider,
+            documentDefinitionName,
+            prevFormData.key
+          )
+          .subscribe();
+      }
+      if (this.dropdownDataProviderSupportsUpdates(mappedFormData.dropdownDataProvider)) {
+        this.modifiedDropdownValues$.pipe(take(1)).subscribe(dropdownValues => {
+          const request = dropdownValues.reduce(
+            (acc, keyValue) => ({...acc, [keyValue.key]: keyValue.value}),
+            {}
+          );
+          this.documentService
+            .postDropdownData(
+              mappedFormData.dropdownDataProvider,
+              documentDefinitionName,
+              mappedFormData.key,
+              request
+            )
+            .subscribe();
+        });
+      }
 
       if (this.searchFieldActionTypeIsAdd) {
         this.documentService.postDocumentSearch(documentDefinitionName, mappedFormData).subscribe(
@@ -365,6 +504,40 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     );
   }
 
+  private nextIfChanged(behaviourSubject$: BehaviorSubject<any>, value: any) {
+    if (JSON.stringify(behaviourSubject$.value) !== JSON.stringify(value)) {
+      behaviourSubject$.next(value);
+    }
+  }
+
+  private isValid(data: SearchField): boolean {
+    const validMatchType =
+      data.dataType === 'text' && !this.isFieldTypeDropdown(data.fieldType) ? data.matchType : true;
+    const validDropdownDataProvider = this.isFieldTypeDropdown(data.fieldType)
+      ? data.dropdownDataProvider
+      : true;
+    const containsAllValues = !!(
+      data.key &&
+      data.dataType &&
+      validMatchType &&
+      validDropdownDataProvider &&
+      data.path
+    );
+    const keyIsUnique =
+      !this.searchFieldActionTypeIsAdd ||
+      this.cachedSearchFields.findIndex(field => field.key === data.key) === -1;
+
+    return containsAllValues && keyIsUnique;
+  }
+
+  private isFieldTypeDropdown(fieldType?: SearchFieldFieldType): boolean {
+    return fieldType === 'single-select-dropdown' || fieldType === 'multi-select-dropdown';
+  }
+
+  private dropdownDataProviderSupportsUpdates(dropdownDataProvider?: string): boolean {
+    return dropdownDataProvider === 'dropdownDatabaseDataProvider';
+  }
+
   private openSelectedSearchFieldSubscription(): void {
     this.subscriptions.add(
       this.selectedSearchField$.subscribe(() => {
@@ -377,7 +550,9 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     this.subscriptions.add(
       this.modal.modalShowing$.subscribe(modalShowing => {
         if (modalShowing) {
-          this.showSearchFieldsForm = true;
+          setTimeout(() => {
+            this.showSearchFieldsForm = true;
+          }, 0);
         } else {
           setTimeout(() => {
             this.showSearchFieldsForm = false;

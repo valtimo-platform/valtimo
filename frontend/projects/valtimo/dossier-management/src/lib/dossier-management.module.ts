@@ -41,8 +41,10 @@ import {DossierManagementLinkProcessComponent} from './dossier-management-link-p
 import {
   FormModule,
   InputModule,
+  MultiInputModule,
   ParagraphModule,
   SelectModule,
+  TableModule,
   TooltipIconModule,
 } from '@valtimo/user-interface';
 import {DossierManagementSearchFieldsComponent} from './dossier-management-detail-container/tabs/dossier-management-search-fields/dossier-management-search-fields.component';
@@ -106,6 +108,8 @@ import {
     LoadingModule,
     LinkModule,
     ConfirmationModalModule,
+    MultiInputModule,
+    TableModule,
   ],
   exports: [],
 })

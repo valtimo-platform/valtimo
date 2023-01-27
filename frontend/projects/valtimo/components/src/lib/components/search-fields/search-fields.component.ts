@@ -16,9 +16,10 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {SearchField, SearchFieldBoolean, SearchFieldValues} from '@valtimo/config';
-import {BehaviorSubject, map, Observable, Subject, Subscription, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subject, Subscription, take} from 'rxjs';
 import {SelectItem} from '@valtimo/user-interface';
 import {TranslateService} from '@ngx-translate/core';
+import {DocumentService} from '@valtimo/document';
 
 @Component({
   selector: 'valtimo-search-fields',
@@ -62,6 +63,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   readonly clear$ = new Subject<null>();
 
   private documentDefinitionNameSubscription!: Subscription;
+  private dropdownSubscription!: Subscription;
 
   private readonly BOOLEAN_POSITIVE: SearchFieldBoolean = 'booleanPositive';
   private readonly BOOLEAN_NEGATIVE: SearchFieldBoolean = 'booleanNegative';
@@ -76,14 +78,21 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
     )
   );
 
-  constructor(private readonly translateService: TranslateService) {}
+  readonly dropdownSelectItemsMap: Map<string, Array<SelectItem>> = new Map();
+
+  constructor(
+    private readonly documentService: DocumentService,
+    private readonly translateService: TranslateService
+  ) {}
 
   ngOnInit() {
     this.openDocumentDefinitionNameSubscription();
+    this.openDropdownSubscription();
   }
 
   ngOnDestroy(): void {
     this.documentDefinitionNameSubscription?.unsubscribe();
+    this.dropdownSubscription?.unsubscribe();
   }
 
   singleValueChange(searchFieldKey: string, value: any, isDateTime?: boolean): void {
@@ -107,6 +116,11 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
             start: this.getSingleValue(value.start, isDateTime),
             end: this.getSingleValue(value.end, isDateTime),
           },
+        });
+      } else if (Array.isArray(value) && value.length > 0) {
+        this.values$.next({
+          ...values,
+          [searchFieldKey]: value.map(v => this.getSingleValue(v, isDateTime)),
         });
       } else if (values[searchFieldKey]) {
         const valuesCopy = {...values};
@@ -152,6 +166,37 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
       this.collapse();
       this.clear();
     });
+  }
+
+  private openDropdownSubscription(): void {
+    this.dropdownSubscription = combineLatest([this.documentDefinitionName$, this.searchFields$])
+      .pipe(
+        map(([documentDefinitionName, searchFields]) =>
+          searchFields
+            ?.filter(searchField => searchField.dropdownDataProvider)
+            .map(searchField =>
+              this.documentService
+                .getDropdownData(
+                  searchField.dropdownDataProvider,
+                  documentDefinitionName,
+                  searchField.key
+                )
+                .subscribe(dropdownData => {
+                  if (dropdownData) {
+                    this.dropdownSelectItemsMap[searchField.key] = Object.keys(dropdownData).map(
+                      dropdownFieldKey => ({
+                        id: dropdownFieldKey,
+                        text: dropdownData[dropdownFieldKey],
+                      })
+                    );
+                  } else {
+                    this.dropdownSelectItemsMap[searchField.key] = [];
+                  }
+                })
+            )
+        )
+      )
+      .subscribe();
   }
 
   private collapse(): void {

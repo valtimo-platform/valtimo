@@ -198,6 +198,45 @@ export class DocumentService {
     );
   }
 
+  getDropdownDataProviders(): Observable<Array<string>> {
+    return this.http.get<Array<string>>(`${this.valtimoEndpointUri}v1/data/dropdown-list/provider`);
+  }
+
+  getDropdownData(
+    provider: string,
+    documentDefinitionName: string,
+    fieldKey: string
+  ): Observable<object> {
+    const dropdownListKey = encodeURI(documentDefinitionName + '_' + fieldKey);
+    return this.http.get<object>(
+      `${this.valtimoEndpointUri}v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`
+    );
+  }
+
+  postDropdownData(
+    provider: string,
+    documentDefinitionName: string,
+    fieldKey: string,
+    dropdownData: object
+  ): Observable<object> {
+    const dropdownListKey = encodeURI(documentDefinitionName + '_' + fieldKey);
+    return this.http.post<object>(
+      `${this.valtimoEndpointUri}v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`,
+      dropdownData
+    );
+  }
+
+  deleteDropdownData(
+    provider: string,
+    documentDefinitionName: string,
+    fieldKey: string
+  ): Observable<object> {
+    const dropdownListKey = encodeURI(documentDefinitionName + '_' + fieldKey);
+    return this.http.delete<object>(
+      `${this.valtimoEndpointUri}v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`
+    );
+  }
+
   public getDocumentRoles(documentDefinitionName: string): Observable<Array<string>> {
     return this.http.get<Array<string>>(
       `${this.valtimoEndpointUri}v1/document-definition/${documentDefinitionName}/roles`

@@ -5,7 +5,8 @@ import {map, Observable} from 'rxjs';
 export function noDuplicateFormValidator(
   formManagementService: FormManagementService
 ): AsyncValidatorFn {
-  return (control: AbstractControl): Observable<ValidationErrors> => formManagementService
+  return (control: AbstractControl): Observable<ValidationErrors> =>
+    formManagementService
       .existsFormDefinition(control.value.toString())
       .pipe(map((result: boolean) => (result ? {duplicate: true} : null)));
 }

@@ -171,6 +171,28 @@
         }
       "
     ></ng-container>
+    <ng-container
+      *ngTemplateOutlet="
+        searchFieldTemplateSingleSelectDropdown;
+        context: {
+          searchField: searchField,
+          tooltipKey: vars.tooltipKey,
+          tooltip: vars.tooltip,
+          title: vars.title
+        }
+      "
+    ></ng-container>
+    <ng-container
+      *ngTemplateOutlet="
+        searchFieldTemplateMultiSelectDropdown;
+        context: {
+          searchField: searchField,
+          tooltipKey: vars.tooltipKey,
+          tooltip: vars.tooltip,
+          title: vars.title
+        }
+      "
+    ></ng-container>
   </ng-container>
 </ng-template>
 
@@ -418,6 +440,65 @@
         (keyup.enter)="search()"
       ></v-date-picker>
     </v-form>
+  </ng-container>
+</ng-template>
+
+<ng-template
+  #searchFieldTemplateSingleSelectDropdown
+  let-searchField="searchField"
+  let-tooltip="tooltip"
+  let-tooltipKey="tooltipKey"
+  let-title="title"
+>
+  <ng-container
+    *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'single-select-dropdown'"
+  >
+    <v-input-label
+      [title]="title"
+      [tooltip]="tooltip !== tooltipKey && tooltip"
+      [small]="true"
+    ></v-input-label>
+    <v-select
+      *ngIf="dropdownSelectItemsMap[searchField.key] as searchFieldSelectItems"
+      [items]="searchFieldSelectItems"
+      [margin]="false"
+      [required]="false"
+      [widthInPx]="200"
+      [name]="searchField.key"
+      [clearSelectionSubject$]="clear$"
+      (selectedChange)="singleValueChange(searchField.key, $event)"
+      (keyup.enter)="search()"
+    ></v-select>
+  </ng-container>
+</ng-template>
+
+<ng-template
+  #searchFieldTemplateMultiSelectDropdown
+  let-searchField="searchField"
+  let-tooltip="tooltip"
+  let-tooltipKey="tooltipKey"
+  let-title="title"
+>
+  <ng-container
+    *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'multi-select-dropdown'"
+  >
+    <v-input-label
+      [title]="title"
+      [tooltip]="tooltip !== tooltipKey && tooltip"
+      [small]="true"
+    ></v-input-label>
+    <v-select
+      *ngIf="dropdownSelectItemsMap[searchField.key] as searchFieldSelectItems"
+      [items]="searchFieldSelectItems"
+      [margin]="false"
+      [multiple]="true"
+      [required]="false"
+      [widthInPx]="200"
+      [name]="searchField.key"
+      [clearSelectionSubject$]="clear$"
+      (selectedChange)="multipleValueChange(searchField.key, $event)"
+      (keyup.enter)="search()"
+    ></v-select>
   </ng-container>
 </ng-template>
 

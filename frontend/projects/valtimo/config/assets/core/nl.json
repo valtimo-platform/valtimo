@@ -896,11 +896,20 @@
     "like": "Bevat",
     "single": "Enkel",
     "multiple": "Meerdere",
+    "single-select-dropdown": "Single select dropdown",
+    "multi-select-dropdown": "Multi select dropdown",
     "range": "Reeks",
     "submit": "Indienen",
     "delete": "Verwijderen",
     "addRow": "Zoekveld toevoegen",
-    "searchFieldPlaceholder": "Kies een type..."
+    "searchFieldPlaceholder": "Kies een type...",
+    "dropdownDataProvider": "Dropdown-databron",
+    "dropdownDatabaseDataProvider": "Zet waarde",
+    "dropdownJsonFileDataProvider": "Configuratiebestand",
+    "configFile": "Configuratiebestand",
+    "setValue": "Vastgestelde waarde",
+    "id": "ID",
+    "text": "Text"
   },
   "searchFieldsOverviewTooltips": {
     "title": "De titel is een optioneel veld dat wordt weergegeven als een label voor het huidige zoekveld. Als de titel niet is ingesteld, is de standaardwaarde de sleutelvertaling van het zoekveld (als er geen vertaling beschikbaar is, wordt de oorspronkelijke sleutelwaarde weergegeven).",
@@ -908,7 +917,10 @@
     "path": "Een pad dat leidt naar de eigenschap waarop u wilt zoeken. Volg dit voorbeeld om te zoeken in het JSON-schema van het document: 'doc:customer.firstName'. Volg deze voorbeelden om te zoeken in de documenteigenschappen: 'case:createdBy', of 'case:sequence', of 'case:assigneeFullName'. Let op: wanneer er speciale tekens in een eigenschap zitten, moet de eigenschap binnen aanhalingstekens staan. Bijvoorbeeld: case:\"loan-accepted\".",
     "dataType": "Het datatype bepaalt welke invoer aan de gebruiker wordt getoond. Voor het datatype 'Datum' wordt bijvoorbeeld een datumkiezer getoond.",
     "fieldType": "Het veldtype bepaalt de waarden die de gebruiker kan invoeren. Voor de optie 'Enkel' kan de gebruiker slechts één waarde invoeren. Bij de optie 'Reeks' kan de gebruiker twee waarden invoeren. Naar deze waarden, en alle waarden daartussen, wordt vervolgens gezocht.",
-    "matchType": "De overeenkomst bepaalt hoe waarden in de database worden gekoppeld aan de zoekwaarden. Voor het zoektype 'Exact' zou de waarde '1' alleen overeenkomen met de waarde '1'. Voor het zoektype 'Bevat' zou de waarde '1' overeenkomen met de waarde '1', '123' en alle andere waarden die '1' bevatten."
+    "matchType": "De overeenkomst bepaalt hoe waarden in de database worden gekoppeld aan de zoekwaarden. Voor het zoektype 'Exact' zou de waarde '1' alleen overeenkomen met de waarde '1'. Voor het zoektype 'Bevat' zou de waarde '1' overeenkomen met de waarde '1', '123' en alle andere waarden die '1' bevatten.",
+    "dropdownDataProvider": "De dropdown-databron bepaalt waar de data voor de dropdown lijst vandaan komt.",
+    "configFile": "Gebruik een configuratiebestand met dropdown-waarden",
+    "setValue": "Stel aangepaste waarden in voor de dropdown lijst."
   },
   "listColumn": {
     "title": "Titel",
