@@ -12,7 +12,9 @@ export class DossierColumnService {
     private readonly documentService: DocumentService
   ) {}
 
-  getDefinitionColumns(documentDefinitionName: string): Observable<Array<DefinitionColumn>> {
+  getDefinitionColumns(
+    documentDefinitionName: string
+  ): Observable<{columns: Array<DefinitionColumn>; hasApiConfig: boolean}> {
     const config = this.configService.config;
     const customDefinitionTable = config.customDefinitionTables[documentDefinitionName];
     const defaultDefinitionTable = config.defaultDefinitionTable;
@@ -26,9 +28,16 @@ export class DossierColumnService {
           caseListColumns.length > 0 &&
           this.mapCaseListColumnsToDefinitionColumns(caseListColumns);
 
-        return customDefinitionTable || apiCaseListColumns || defaultDefinitionTable;
+        return {
+          columns: customDefinitionTable || apiCaseListColumns || defaultDefinitionTable,
+          hasApiConfig: !!apiCaseListColumns,
+        };
       })
     );
+  }
+
+  hasEnvironmentConfig(documentDefinitionName: string): boolean {
+    return !!this.configService.config?.customDefinitionTables[documentDefinitionName];
   }
 
   private mapCaseListColumnsToDefinitionColumns(

@@ -41,6 +41,7 @@ export class TopbarComponent implements OnInit {
   );
 
   readonly applicationTitle = this.configService.config.applicationTitle;
+  readonly largeLogoMargin = this.configService.config.featureToggles?.largeLogoMargin;
   readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
   readonly largeScreen$ = this.shellService.largeScreen$;
   readonly panelExpanded$ = this.shellService.panelExpanded$;

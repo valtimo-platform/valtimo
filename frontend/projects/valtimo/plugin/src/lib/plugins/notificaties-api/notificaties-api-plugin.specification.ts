@@ -27,8 +27,7 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       title: 'Notificaties API',
       url: 'Notificaties API URL',
       urlTooltip: 'Een URL naar de REST API van Notificaties',
-      description:
-        'Een API om een notificatierouteringscomponent te benaderen.',
+      description: 'Een API om een notificatierouteringscomponent te benaderen.',
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
         'De naam van de huidige plugin-configuratie. Onder deze naam kan de configuratie in de rest van de applicatie teruggevonden worden.',
@@ -38,8 +37,7 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       title: 'Notificaties API',
       url: 'Notificaties API URL',
       urlTooltip: 'A URL to the REST API of Notificaties',
-      description:
-        'An API to access a notification routing component.',
+      description: 'An API to access a notification routing component.',
       configurationTitle: 'Configuration name',
       configurationTitleTooltip:
         'The name of the current plugin configuration. Under this name, the configuration can be found in the rest of the application.',
@@ -49,8 +47,7 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       title: 'Notificaties API',
       url: 'Notificaties API URL',
       urlTooltip: 'Die URL zur REST API von Notificaties',
-      description:
-        'Eine API für den Zugriff auf eine Komponente für das Benachrichtigungsrouting.',
+      description: 'Eine API für den Zugriff auf eine Komponente für das Benachrichtigungsrouting.',
       configurationTitle: 'Konfigurationsname',
       configurationTitleTooltip:
         'Der Name der aktuellen Plugin-Konfiguration. Unter diesem Namen ist die Konfiguration im Rest der Anwendung zu finden.',

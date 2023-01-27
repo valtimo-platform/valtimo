@@ -21,10 +21,11 @@
       <li class="timeline-item status-done" *ngFor="let item of items">
         <div class="timeline-date">
           <span>{{ item.date }}</span>
+          <br/>
+          <span>{{ item.time }}</span>
         </div>
         <div class="timeline-content mt-1">
           <div class="timeline-header p-0">
-            <span class="timeline-time">{{ item.time }}</span>
             <span class="timeline-author">{{ item.user }}</span>
             <br />
             <p class="timeline-activity">{{ item.activity }}</p>

@@ -1,0 +1,11 @@
+{
+  "name": "@valtimo/object-management",
+  "version": "10.2.0-129.RC",
+  "peerDependencies": {
+    "@angular/common": "^14.2.5",
+    "@angular/core": "^14.2.5"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  }
+}

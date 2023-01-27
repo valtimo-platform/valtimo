@@ -16,7 +16,7 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {PluginConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} from 'rxjs';
 import {NotificatiesApiConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
@@ -34,7 +34,25 @@ export class NotificatiesApiConfigurationComponent
   @Input() pluginId: string;
   @Input() prefillConfiguration$: Observable<NotificatiesApiConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<NotificatiesApiConfig> = new EventEmitter<NotificatiesApiConfig>();
+  @Output() configuration: EventEmitter<NotificatiesApiConfig> =
+    new EventEmitter<NotificatiesApiConfig>();
+  readonly authenticationPluginSelectItems$: Observable<Array<{id: string; text: string}>> =
+    combineLatest([
+      this.pluginManagementService.getPluginConfigurationsByCategory(
+        'notificaties-api-authentication'
+      ),
+      this.translateService.stream('key'),
+    ]).pipe(
+      map(([configurations]) =>
+        configurations.map(configuration => ({
+          id: configuration.id,
+          text: `${configuration.title} - ${this.pluginTranslationService.instant(
+            'title',
+            configuration.pluginDefinition.key
+          )}`,
+        }))
+      )
+    );
   private saveSubscription!: Subscription;
   private readonly formValue$ = new BehaviorSubject<NotificatiesApiConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
@@ -59,10 +77,7 @@ export class NotificatiesApiConfigurationComponent
   }
 
   private handleValid(formValue: NotificatiesApiConfig): void {
-    const valid = !!(
-      formValue.configurationTitle &&
-      formValue.url
-    );
+    const valid = !!(formValue.configurationTitle && formValue.url);
 
     this.valid$.next(valid);
     this.valid.emit(valid);

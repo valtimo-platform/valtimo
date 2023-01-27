@@ -43,6 +43,7 @@ export class PromptComponent implements OnInit {
   readonly confirmMdiIcon$ = this.promptService.confirmMdiIcon$;
   readonly cancelButtonType$ = this.promptService.cancelButtonType$;
   readonly confirmButtonType$ = this.promptService.confirmButtonType$;
+  readonly closeButtonVisible$ = this.promptService.closeButtonVisible$;
 
   constructor(private readonly promptService: PromptService) {}
 
@@ -56,6 +57,10 @@ export class PromptComponent implements OnInit {
 
   confirm(): void {
     this.promptService.confirm();
+  }
+
+  close(): void {
+    this.promptService.close();
   }
 
   private setAppearingDelayInService(): void {

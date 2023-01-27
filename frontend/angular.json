@@ -174,15 +174,23 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.spec.json",
             "karmaConfig": "src/karma.conf.js",
-            "styles": ["src/styles.scss"],
+            "styles": [
+              "src/styles.scss"
+            ],
             "scripts": [],
-            "assets": ["src/favicon.ico", "src/assets"]
+            "assets": [
+              "src/favicon.ico",
+              "src/assets"
+            ]
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
           }
         },
         "cypress-run": {
@@ -2888,23 +2896,23 @@
         }
       }
     },
-    "@valtimo/exact-plugin": {
+    "@valtimo/object-management": {
       "projectType": "library",
-      "root": "projects/valtimo/exact-plugin",
-      "sourceRoot": "projects/valtimo/exact-plugin/src",
+      "root": "projects/valtimo/object-management",
+      "sourceRoot": "projects/valtimo/object-management/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "project": "projects/valtimo/exact-plugin/ng-package.json"
+            "project": "projects/valtimo/object-management/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/valtimo/exact-plugin/tsconfig.lib.prod.json"
+              "tsConfig": "projects/valtimo/object-management/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/valtimo/exact-plugin/tsconfig.lib.json"
+              "tsConfig": "projects/valtimo/object-management/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -2912,57 +2920,17 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/exact-plugin/src/test.ts",
-            "tsConfig": "projects/valtimo/exact-plugin/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/exact-plugin/karma.conf.js"
+            "main": "projects/valtimo/object-management/src/test.ts",
+            "tsConfig": "projects/valtimo/object-management/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/object-management/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/valtimo/exact-plugin/**/*.ts",
-              "projects/valtimo/exact-plugin/**/*.html"
-            ]
-          }
-        }
-      }
-    },
-    "@valtimo/exact-plugin": {
-      "projectType": "library",
-      "root": "projects/valtimo/exact-plugin",
-      "sourceRoot": "projects/valtimo/exact-plugin/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "project": "projects/valtimo/exact-plugin/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/valtimo/exact-plugin/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/valtimo/exact-plugin/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "projects/valtimo/exact-plugin/src/test.ts",
-            "tsConfig": "projects/valtimo/exact-plugin/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/exact-plugin/karma.conf.js"
-          }
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/exact-plugin/**/*.ts",
-              "projects/valtimo/exact-plugin/**/*.html"
+              "projects/valtimo/object-management/**/*.ts",
+              "projects/valtimo/object-management/**/*.html"
             ]
           }
         }
@@ -2970,6 +2938,9 @@
     }
   },
   "cli": {
-    "schematicCollections": ["@angular-eslint/schematics"]
+    "schematicCollections": [
+      "@angular-eslint/schematics"
+    ],
+    "analytics": false
   }
 }

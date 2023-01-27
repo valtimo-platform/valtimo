@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output} from '@angular/core';
 import {editTaakConnectorForm} from './edit-taak-connector.form';
 import {FormMappingService, FormTranslationService} from '@valtimo/form';
 import {BehaviorSubject, combineLatest, Subject, Subscription, timer} from 'rxjs';
@@ -32,7 +32,7 @@ import {ConnectorManagementStateService} from '../../services/connector-manageme
   templateUrl: './edit-taak-connector.component.html',
   styleUrls: ['./edit-taak-connector.component.scss'],
 })
-export class EditTaakConnectorComponent implements OnInit, OnDestroy {
+export class EditTaakConnectorComponent implements OnInit, OnChanges, OnDestroy {
   @Input() properties: ConnectorProperties;
   @Input() defaultName!: string;
   @Input() showDeleteButton = false;
@@ -69,6 +69,12 @@ export class EditTaakConnectorComponent implements OnInit, OnDestroy {
     this.loadConnectorNames();
     this.prefillForm();
     this.stateService.hideModalSaveButton();
+  }
+
+  ngOnChanges(): void {
+    this.formDefinition$.next(editTaakConnectorForm);
+    this.loadConnectorNames();
+    this.prefillForm();
   }
 
   ngOnDestroy(): void {

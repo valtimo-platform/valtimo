@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-type InputType = 'text' | 'number' | 'password' | 'digitOnly';
+type InputType = 'text' | 'textarea' | 'number' | 'password' | 'digitOnly' | 'checkbox';
 
 export {InputType};

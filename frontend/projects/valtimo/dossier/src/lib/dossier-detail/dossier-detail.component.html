@@ -19,12 +19,12 @@
     <div class="col-12 px-0 mb-5">
       <valtimo-widget>
         <div class="card-header bg-light card-header-divider pb-2">
-          <div class="row" *ngIf="{canHaveAssignee: canHaveAssignee$ | async} as obs">
+          <div class="row" *ngIf="{canHaveAssignee: canHaveAssignee$ | async, document: document$ | async} as obs">
             <div class="col">
               <ng-container
                 *ngTemplateOutlet="
                   caseDetailHeader;
-                  context: {canHaveAssignee: obs.canHaveAssignee}
+                  context: {canHaveAssignee: obs.canHaveAssignee, document: obs.document}
                 "
               ></ng-container>
             </div>
@@ -97,7 +97,7 @@
   </div>
 </div>
 
-<ng-template #caseDetailHeader let-canHaveAssignee="canHaveAssignee">
+<ng-template #caseDetailHeader let-canHaveAssignee="canHaveAssignee" let-document="document">
   <div class="row" *ngIf="customDossierHeaderItems.length > 0; else defaultTitle">
     <span
       class="mb-0 mt-0 pb-2 align-self-end col-xl-{{ item.columnSize }} col-lg-{{
@@ -118,7 +118,7 @@
     </span>
   </div>
   <ng-container
-    *ngTemplateOutlet="caseDetailAssignee; context: {canHaveAssignee: canHaveAssignee}"
+    *ngTemplateOutlet="caseDetailAssignee; context: {canHaveAssignee: canHaveAssignee, document: document}"
   ></ng-container>
 </ng-template>
 
@@ -126,8 +126,8 @@
   <div class="row ml-0 mr-0">{{ documentDefinitionNameTitle?.trim() }}</div>
 </ng-template>
 
-<ng-template #caseDetailAssignee let-canHaveAssignee="canHaveAssignee">
-  <div class="row ml-0 mr-0 mt-1 mb-1" *ngIf="canHaveAssignee && (document$ | async) as document">
+<ng-template #caseDetailAssignee let-canHaveAssignee="canHaveAssignee" let-document="document">
+  <div class="row ml-0 mr-0 mt-1 mb-1" *ngIf="canHaveAssignee && document">
     <valtimo-dossier-assign-user
       [documentId]="document.id"
       [assigneeId]="document.assigneeId"

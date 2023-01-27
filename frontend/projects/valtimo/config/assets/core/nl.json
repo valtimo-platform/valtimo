@@ -4,8 +4,8 @@
     "TaskAssignedEvent": "Taak toegewezen > {{taskName}}",
     "JsonSchemaDocumentCreatedEvent": "Dossier aangemaakt",
     "JsonSchemaDocumentModifiedEvent": "Dossier aangepast",
-    "ProcessStartedEvent": "Proces gestart",
-    "ProcessEndedEvent": "Proces afgerond",
+    "ProcessStartedEvent": "Proces gestart: {{processDefinitionKey}}",
+    "ProcessEndedEvent": "Proces afgerond: {{processDefinitionKey}}",
     "DossierDocumentGeneratedEvent": "Dossier document gegenereerd",
     "DocumentRelatedFileAddedEvent": "Gerelateerd bestand toegevoegd",
     "DocumentRelatedFileRemovedEvent": "Gerelateerd bestand verwijderd",
@@ -28,6 +28,7 @@
       "custom-dossier": "Custom dossier",
       "custom-maps": "Custom maps",
       "zaakobjecten": "Zaakobjecten",
+      "notes": "Notities",
       "MINE": "Mijn dossiers",
       "OPEN": "Niet-toegewezen dossiers",
       "ALL": "Alle dossiers"
@@ -63,6 +64,13 @@
       "noObjectType": "Geen objecten gevonden voor dit objecttype.",
       "objectType": {
         "viewObject": "Object bekijken"
+      }
+    },
+    "notes": {
+      "addNote": "Notitie toevoegen",
+      "tableItemsText": "Notities",
+      "input": {
+        "content": "Notitie"
       }
     },
     "documenten": {
@@ -199,8 +207,10 @@
       "help": "Help",
       "forum": "Forum",
       "feedback": "Feedback",
-      "signOut": "Afmelden"
-    }
+      "signOut": "Afmelden",
+      "plantATree": "Plant een boom"
+    },
+    "plantATreeMailBody": "subject=Plant een boom voor Valtimo&body=Hallo Valtimo gebruiker,%0D%0DMet het versturen van deze e-mail gaan we gelijk aan de slag om een boom te planten. Hiermee%0Dcompenseren dus voor een deel de CO2 uitstoot van je Valtimo gebruik.%0D%0DMet Groene Groet,%0D%0DHet Valtimo team%0D%0D*Deze bomen plant actie kan 1 keer ingezet worden door elke geregistreerde Valtimo gebruiker.%0D%0D** Ritense plant ook jaarlijks ook bomen voor alle Valtimo installaties die in gebruik zijn."
   },
   "settings": {
     "title": "Instellingen",
@@ -484,7 +494,10 @@
     },
     "email": "E-mail",
     "username": "Gebruikersnaam",
-    "name": "Naam"
+    "name": "Naam",
+    "delete": "Verwijderen",
+    "deleteConfirmation": "Weet u zeker dat u wilt verwijderen?",
+    "cancel": "Annuleren"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",
@@ -509,13 +522,16 @@
     "maxFileSize": "Maximale bestandsgrootte: ",
     "jsonDocDef": "De dossier-definitie moet in het JSON-formaat zijn",
     "formJsonDocDef": "De formulier-definitie moet in het JSON-formaat zijn",
+    "objecttypeDef": "De objecttype-definitie moet in JSON-formaat zjn",
     "error": {
       "tooBig": "Het opgegeven bestand is te groot",
       "wrongType": "Het bestandstype van het opgegeven bestand wordt niet ondersteund",
       "generic": "Er ging iets mis. Probeer het opnieuw.",
       "invalidDocDef": "Uw dossier-definitie kon niet geüpload worden. Probeer het opnieuw.",
       "invalidFormDef": "Uw formulier-definitie is niet geldig. Probeer het opnieuw.",
-      "invalidJson": "Het opgegeven bestand bevat een fout. Controleer of de inhoud een geldige JSON-waarde is."
+      "invalidJson": "Het opgegeven bestand bevat een fout. Controleer of de inhoud een geldige JSON-waarde is.",
+      "invalidObjecttypeDef": "Uw objecttype-definitie kon niet geüpload worden. Probeer het opnieuw.",
+      "objecttypeAlreadyExists": "Het opgegeven JSON bestand bevat een objecttype die al reeds bestaat."
     }
   },
   "fieldLabels": {
@@ -893,23 +909,82 @@
   },
   "listColumn": {
     "title": "Titel",
+    "titleTitle": "Titel (optioneel)",
+    "titleTooltip": "Als dit veld is ingevuld, wordt deze titel weergegeven als de kolomkop, met prioriteit boven eventueel beschikbare vertalingen.",
     "key": "Sleutel",
+    "keyTooltip": "Een unieke sleutel waarmee de kolom wordt geïdentificeerd. Als de sleutel niet uniek is, kan de kolom niet worden opgeslagen.",
     "path": "Pad",
+    "pathTooltip": "Een pad dat leidt naar de eigenschap die u wilt weergeven. Volg dit voorbeeld voor het JSON-schema van het document: 'doc:customer.firstName'. Volg deze voorbeelden voor documenteigenschappen: 'case:createdBy', of 'case:sequence', of 'case:assigneeFullName'. Let op: wanneer er speciale tekens in een eigenschap zitten, moet de eigenschap binnen aanhalingstekens staan. Bijvoorbeeld: case:\"loan-accepted\".",
     "displayType": "Weergavetype",
+    "displayTypeTooltip": "Deze optie bepaalt hoe de gegevens uiteindelijk in de tabel worden weergegeven.",
     "displayTypeParameters": "Parameters",
     "sortable": "Sorteerbaar",
     "defaultSort": "Standaard sorteren",
+    "defaultSortTitle": "Standaard sortering (optioneel)",
+    "defaultSortTooltip": "Als dit veld een waarde heeft, wordt de tabel standaard gesorteerd op deze eigenschap, in de opgegeven richting. Slechts één kolom tegelijk kan deze eigenschap hebben. Bij het aanmaken van een nieuwe kolom, als voor een andere kolom al een standaardsortering is opgegeven, is dit invoerveld uitgeschakeld.",
+    "selectDefaultSort": "Selecteer een standaard sortering",
     "sortableYes": "Ja",
     "sortableNo": "Nee",
     "sortableAsc": "Oplopend",
-    "sortableDesc": "Aflopend"
+    "sortableDesc": "Aflopend",
+    "hasEnvConfigWarningTitle": "Dit dossiertype heeft al een kolomconfiguratie",
+    "hasEnvConfigWarning": "Dit dossiertype heeft al een kolomconfiguratie beschikbaar in de omgevingsconfiguratie van de applicatie. Om het configureren van de kolommen voor dit dossiertype via de gebruikersinterface mogelijk te maken, moet deze omgevingsconfiguratie verwijderd worden.",
+    "noConfigWarningTitle": "Geen kolommen geconfigureerd",
+    "noConfigWarning": "Er zijn geen kolommen geconfigureerd voor dit dossiertype. Klik op de knop hierboven om een kolom toe te voegen.",
+    "addButtonText": "Kolom toevoegen",
+    "editColumnTitle": "Kolom bewerken",
+    "close": "Sluiten",
+    "save": "Kolom opslaan",
+    "dateFormat": "Datumnotatie (optioneel)",
+    "dateFormatTooltip": "Een datumnotatie die ondersteund wordt door Moment.js (https://momentjs.com/docs/).",
+    "uniqueKeyWarning": "De sleutel voor deze kolom moet uniek zijn.",
+    "enumTitle": "Opsommingswaarden",
+    "enumTitleOptional": "Opsommingswaarden (optioneel)",
+    "enumTooltip": "De sleutels en waarden die gebruikt worden om weergavedata om te zetten in de tabel.",
+    "downloadButtonText": "Download configuratie",
+    "deleteColumn": "Kolom verwijderen",
+    "deleteColumnConfirmation": "Weet u zeker dat u deze kolom wilt verwijderen?"
   },
   "listColumnDisplayType": {
+    "select": "Selecteer een weergavetype",
     "string": "Tekst",
     "date": "Datum",
     "boolean": "Ja/nee",
     "enum": "Opsomming",
     "arrayCount": "Hoeveelheid",
-    "underscoresToSpaces": "Lage streepjes naar spaties"
+    "underscoresToSpaces": "Lage strepen naar spaties"
+  },
+  "objectManagement": {
+    "title": "Objecttypes",
+    "createObjecttype": "Maak objecttype",
+    "editObjecttype": "Wijzig objecttype",
+    "uploadObjecttype": "Upload objecttype",
+    "labels": {
+      "title": "Titel",
+      "objects": "Objecten API plugin configuratie",
+      "objecttypes": "Objecttypen API plugin configuratie",
+      "objecttypeUrl": "Objecttype ID",
+      "formDefinitionView": "View formulier definitie",
+      "formDefinitionEdit": "Wijzig formulier definitie",
+      "showInDataMenu": "Toon in menu"
+    },
+    "tooltips": {
+      "title": "De naam van deze configuratie. Onder deze naam is deze configuratie terug te vinden in de rest van de applicatie.",
+      "objecttypeId": "Het id van van het objecttype",
+      "formDefinitionView": "De naam van de formio IO definitie die wordt gebruikt om het object weer te geven.",
+      "formDefinitionEdit": "De naam van de formio IO definitie die wordt gebruikt om het object te bewerken.",
+      "showInDataMenu": "Geeft aan of het objecttype in het menu zichtbaar is"
+    },
+    "cancel": "Annuleren",
+    "add": "Object toevoegen",
+    "edit": "Object wijzigen",
+    "download": "Download",
+    "visibleInMenu": "Zichtbaar in het menu",
+    "tabs": {
+      "general": "Algemeen",
+      "list": "Lijst"
+    },
+    "underscoresToSpaces": "Lage streepjes naar spaties",
+    "select": "Selecteer een weergavetype"
   }
 }

@@ -30,6 +30,7 @@ import {
   FormIoModule,
   MenuModule,
   registerDocumentenApiFormioUploadComponent,
+  registerFormioCurrentUserComponent,
   registerFormioFileSelectorComponent,
   registerFormioUploadComponent,
   UploaderModule,
@@ -41,6 +42,7 @@ import {
   DossierDetailTabAuditComponent,
   DossierDetailTabContactMomentsComponent,
   DossierDetailTabDocumentsComponent,
+  DossierDetailTabNotesComponent,
   DossierDetailTabProgressComponent,
   DossierDetailTabSummaryComponent,
   DossierDetailTabZaakobjectenComponent,
@@ -87,7 +89,11 @@ import {
   CatalogiApiPluginModule,
   catalogiApiPluginSpecification,
   DocumentenApiPluginModule,
-  documentenApiPluginSpecification, NotificatiesApiPluginModule, notificatiesApiPluginSpecification,
+  documentenApiPluginSpecification,
+  NotificatiesApiPluginModule,
+  notificatiesApiPluginSpecification,
+  OpenNotificatiesPluginModule,
+  openNotificatiesPluginSpecification,
   ObjectenApiPluginModule,
   objectenApiPluginSpecification,
   ObjectTokenAuthenticationPluginModule,
@@ -102,6 +108,7 @@ import {
   ZakenApiPluginModule,
   zakenApiPluginSpecification,
 } from '@valtimo/plugin';
+import {ObjectManagementModule} from '../../projects/valtimo/object-management/src/lib/object-management.module';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -111,6 +118,7 @@ export function tabsFactory() {
     [DefaultTabs.documents, DossierDetailTabDocumentsComponent],
     [DefaultTabs.contactMoments, DossierDetailTabContactMomentsComponent],
     [DefaultTabs.zaakobjecten, DossierDetailTabZaakobjectenComponent],
+    [DefaultTabs.notes, DossierDetailTabNotesComponent],
     ['custom-maps', CustomMapsTabComponent],
     ['custom-dossier', CustomDossierTabComponent],
   ]);
@@ -124,7 +132,7 @@ export function tabsFactory() {
     FormioComponent,
     UploadShowcaseComponent,
     CustomDossierTabComponent,
-    CustomMapsTabComponent,
+    CustomMapsTabComponent
   ],
   imports: [
     HttpClientModule,
@@ -176,6 +184,7 @@ export function tabsFactory() {
     PluginManagementModule,
     NotificatiesApiPluginModule,
     ObjectTokenAuthenticationPluginModule,
+    OpenNotificatiesPluginModule,
     OpenZaakPluginModule,
     SmartDocumentsPluginModule,
     DocumentenApiPluginModule,
@@ -191,6 +200,7 @@ export function tabsFactory() {
         deps: [HttpBackend, ConfigService],
       },
     }),
+    ObjectManagementModule
   ],
   providers: [
     FormioComponent,
@@ -203,6 +213,7 @@ export function tabsFactory() {
         objectenApiPluginSpecification,
         objectTokenAuthenticationPluginSpecification,
         objecttypenApiPluginSpecification,
+        openNotificatiesPluginSpecification,
         openZaakPluginSpecification,
         smartDocumentsPluginSpecification,
         zakenApiPluginSpecification,
@@ -213,6 +224,7 @@ export function tabsFactory() {
 })
 export class AppModule {
   constructor(injector: Injector) {
+    registerFormioCurrentUserComponent(injector);
     registerFormioUploadComponent(injector);
     registerFormioFileSelectorComponent(injector);
     registerDocumentenApiFormioUploadComponent(injector);

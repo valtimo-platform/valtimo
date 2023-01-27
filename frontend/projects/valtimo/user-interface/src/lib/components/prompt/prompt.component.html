@@ -54,6 +54,11 @@
   <div class="v-prompt__header">
     <v-title [margin]="false" type="h2">{{ headerText$ | async }}</v-title>
   </div>
+  <div class="v-prompt__close" *ngIf="closeButtonVisible$ | async">
+    <button type="button" class="close" aria-label="Close" (click)="close()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
 </ng-template>
 
 <ng-template #modalContent>

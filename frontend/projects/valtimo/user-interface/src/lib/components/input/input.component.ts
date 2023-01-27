@@ -49,6 +49,7 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   @Input() required = false;
   @Input() hideNumberSpinBox = false;
   @Input() smallLabel = false;
+  @Input() rows!: number;
   @Input() clear$!: Observable<null>;
 
   @Output() valueChange: EventEmitter<any> = new EventEmitter();
@@ -56,9 +57,11 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   inputValue$ = new BehaviorSubject<any>(undefined);
 
   isText!: boolean;
+  isTextarea!: boolean;
   isNumber!: boolean;
   isPassword!: boolean;
   isDigitOnly!: boolean;
+  isCheckbox! : boolean;
 
   readonly showPassword$ = new BehaviorSubject<boolean>(false);
 
@@ -104,6 +107,9 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
       case 'text':
         this.isText = true;
         break;
+      case 'textarea':
+        this.isTextarea = true;
+        break;
       case 'number':
         this.isNumber = true;
         break;
@@ -112,6 +118,10 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
         break;
       case 'digitOnly':
         this.isDigitOnly = true;
+        break;
+      case 'checkbox':
+        this.isCheckbox = true;
+        break;
     }
   }
 

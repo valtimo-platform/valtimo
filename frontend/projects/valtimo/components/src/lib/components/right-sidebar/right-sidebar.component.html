@@ -121,32 +121,44 @@
   <div class="information-table">
     <ibm-structured-list>
       <ibm-list-row>
-        <ibm-list-column
-          ><a href="https://docs.valtimo.nl" target="_blank" ibmLink>{{
+        <ibm-list-column>
+          <a href="https://docs.valtimo.nl" target="_blank" ibmLink>{{
             'account.links.help' | translate
-          }}</a></ibm-list-column
-        >
+          }}</a>
+        </ibm-list-column>
       </ibm-list-row>
       <ibm-list-row>
-        <ibm-list-column
-          ><a href="https://www.valtimo.nl/feedback" target="_blank" ibmLink>{{
+        <ibm-list-column>
+          <a href="https://www.valtimo.nl/feedback" target="_blank" ibmLink>{{
             'account.links.feedback' | translate
-          }}</a></ibm-list-column
-        >
+          }}</a>
+        </ibm-list-column>
       </ibm-list-row>
       <ibm-list-row>
-        <ibm-list-column
-          ><a href="https://forum.valtimo.nl" target="_blank" ibmLink>{{
+        <ibm-list-column>
+          <a href="https://forum.valtimo.nl" target="_blank" ibmLink>{{
             'account.links.forum' | translate
-          }}</a></ibm-list-column
-        >
+          }}</a>
+        </ibm-list-column>
       </ibm-list-row>
       <ibm-list-row>
-        <ibm-list-column
-          ><a href="javascript:void(0)" ibmLink (click)="logout()">{{
+        <ibm-list-column>
+          <a href="javascript:void(0)" ibmLink (click)="logout()">{{
             'account.links.signOut' | translate
-          }}</a></ibm-list-column
-        >
+          }}</a>
+        </ibm-list-column>
+      </ibm-list-row>
+      <ibm-list-row *ngIf="showPlantATreeButton">
+        <ibm-list-column>
+          <a
+            class="text-success"
+            href="mailto:valtimo@ritense.com?subject=Plant een boom voor Valtimo&body=Hallo Valtimo gebruiker,%0D%0DMet het versturen van deze e-mail gaan we gelijk aan de slag om een boom te planten. Hiermee compenseren we voor een deel de CO2 uitstoot van je Valtimo gebruik.%0D%0DMet Groene Groet,%0D%0DHet Valtimo team%0D%0D*Deze bomenplantactie kan 1 keer ingezet worden door elke geregistreerde Valtimo gebruiker.%0D%0D** Ritense plant ook jaarlijks bomen voor alle Valtimo installaties die in gebruik zijn."
+            target="_blank"
+            ibmLink
+          >
+            {{ 'account.links.plantATree' | translate }}
+          </a>
+        </ibm-list-column>
       </ibm-list-row>
     </ibm-structured-list>
   </div>

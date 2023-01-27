@@ -16,9 +16,11 @@
 
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {
+  CarbonMultiInputModule,
+  ConfirmationModalModule,
   DropzoneModule,
   ListModule,
   ModalModule,
@@ -36,11 +38,28 @@ import {DossierManagementRemoveModalComponent} from './dossier-management-remove
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {DossierManagementRolesComponent} from './dossier-management-roles/dossier-management-roles.component';
 import {DossierManagementLinkProcessComponent} from './dossier-management-link-process/dossier-management-link-process.component';
-import {ParagraphModule, SelectModule, InputModule, FormModule} from '@valtimo/user-interface';
+import {
+  FormModule,
+  InputModule,
+  ParagraphModule,
+  SelectModule,
+  TooltipIconModule,
+} from '@valtimo/user-interface';
 import {DossierManagementSearchFieldsComponent} from './dossier-management-detail-container/tabs/dossier-management-search-fields/dossier-management-search-fields.component';
 import {DossierManagementDetailContainerComponent} from './dossier-management-detail-container/dossier-management-detail-container.component';
 import {DossierManagementAssigneeComponent} from './dossier-management-assignee/dossier-management-assignee.component';
 import {DossierManagementListColumnsComponent} from './dossier-management-detail-container/tabs/dossier-management-list-columns/dossier-management-list-columns.component';
+import {
+  ButtonModule,
+  CheckboxModule,
+  DropdownModule,
+  IconModule,
+  InputModule as CarbonInputModule,
+  LinkModule,
+  LoadingModule,
+  ModalModule as CarbonModalModule,
+  NotificationModule,
+} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [
@@ -74,6 +93,19 @@ import {DossierManagementListColumnsComponent} from './dossier-management-detail
     InputModule,
     SelectModule,
     FormModule,
+    NotificationModule,
+    ButtonModule,
+    IconModule,
+    CarbonModalModule,
+    CarbonInputModule,
+    ReactiveFormsModule,
+    DropdownModule,
+    CheckboxModule,
+    TooltipIconModule,
+    CarbonMultiInputModule,
+    LoadingModule,
+    LinkModule,
+    ConfirmationModalModule,
   ],
   exports: [],
 })

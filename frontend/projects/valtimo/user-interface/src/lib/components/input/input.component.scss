@@ -83,3 +83,10 @@
 .v-input--hide-spinbox {
   -moz-appearance: textfield;
 }
+
+.v-input--checkbox {
+  width: 20px;
+  height: 20px;
+
+  margin-block-end: var(--v-input-margin);
+}

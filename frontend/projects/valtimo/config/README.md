@@ -13,17 +13,17 @@ also use `ng generate directive|pipe|service|class|guard|interface|enum|module -
 
 ## Build
 
-Run `ng build config` to build the project. The build artifacts will be stored in the `dist/`
+Run `ng build @valtimo/config` to build the project. The build artifacts will be stored in the `dist/`
 directory.
 
 ## Publishing
 
-After building your library with `ng build config`, go to the dist folder `cd dist/config` and run
+After building your library with `ng build @valtimo/config`, go to the dist folder `cd dist/config` and run
 `npm publish`.
 
 ## Running unit tests
 
-Run `ng test config` to execute the unit tests via [Karma](https://karma-runner.github.io).
+Run `ng test @valtimo/config` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
 ## Further help
 

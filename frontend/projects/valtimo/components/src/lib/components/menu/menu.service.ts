@@ -22,6 +22,7 @@ import {NavigationEnd, Router} from '@angular/router';
 import {BehaviorSubject, combineLatest, Observable, Subject, timer} from 'rxjs';
 import {DocumentDefinitions, DocumentService} from '@valtimo/document';
 import {filter, map, take} from 'rxjs/operators';
+import {KeycloakService} from 'keycloak-angular';
 
 @Injectable({
   providedIn: 'root',
@@ -33,6 +34,7 @@ export class MenuService {
   private menuConfig: MenuConfig;
 
   private readonly disableCaseCount!: boolean;
+  private readonly enableObjectManagement!: boolean;
 
   constructor(
     private readonly configService: ConfigService,
@@ -40,11 +42,13 @@ export class MenuService {
     private readonly userProviderService: UserProviderService,
     private readonly logger: NGXLogger,
     private readonly menuIncludeService: MenuIncludeService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly keycloakService: KeycloakService
   ) {
     const config = configService?.config;
     this.menuConfig = config?.menu;
     this.disableCaseCount = config?.featureToggles?.disableCaseCount;
+    this.enableObjectManagement = config?.featureToggles?.enableObjectManagement;
   }
 
   init(): void {
@@ -113,19 +117,24 @@ export class MenuService {
   }
 
   public reload(): void {
-    return this._menuItems$.next(this.loadMenuItems());
+    const roles = this.keycloakService.getUserRoles(true);
+    return this._menuItems$.next(this.loadMenuItems(roles));
   }
 
-  private loadMenuItems(): MenuItem[] {
+  private loadMenuItems(userRoles: Array<string>): MenuItem[] {
     let menuItems: MenuItem[] = [];
     this.menuConfig.menuItems.forEach((menuItem: MenuItem) => {
+
       if (menuItem.includeFunction !== undefined) {
         this.includeFunctionObservables[menuItem.title] =
           this.menuIncludeService.getIncludeFunction(menuItem.includeFunction);
       }
 
       menuItem.show = true;
-      menuItems.push(menuItem);
+
+      if (userRoles.find(userRole => menuItem.roles.includes(userRole))) {
+        menuItems.push(menuItem);
+      }
     });
     menuItems = this.sortMenuItems(menuItems);
     this.appendDossierSubMenuItems(menuItems).subscribe(

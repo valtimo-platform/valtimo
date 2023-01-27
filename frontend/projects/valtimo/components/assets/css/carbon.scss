@@ -54,9 +54,15 @@ $ritense-blue-10: #f1f4f6;
 );
 
 @use '@carbon/styles';
+@use '@carbon/grid';
+@include grid.flex-grid();
 
 body {
   background-color: colors.$gray-10;
+}
+
+.cds--link--disabled {
+  pointer-events: none;
 }
 
 /*

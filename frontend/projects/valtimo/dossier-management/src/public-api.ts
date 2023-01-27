@@ -20,3 +20,4 @@
 
 export * from './lib/dossier-management.module';
 export * from './lib/dossier-management-list/dossier-management-list.component';
+export * from './lib/models';

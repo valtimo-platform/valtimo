@@ -69,11 +69,16 @@ import {
   SelectModule,
   TableModule,
   TitleModule,
+  PageModule,
+  InputModule,
+  FormModule as VFormModule
 } from '@valtimo/user-interface';
 import {DossierDetailTabObjectTypeComponent} from './dossier-detail/tab/object-type/object-type.component';
 import {DossierDetailTabDocumentenApiDocumentsComponent} from './dossier-detail/tab/documenten-api-documents/documenten-api-documents.component';
 import {DossierDetailTabS3DocumentsComponent} from './dossier-detail/tab/s3-documents/s3-documents.component';
 import {DossierAssignUserComponent} from './dossier-assign-user/dossier-assign-user.component';
+import {DossierDetailTabNotesComponent} from './dossier-detail/tab/notes/notes.component';
+import {NoteModalComponent} from './components/note-modal/note-modal.component';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -87,6 +92,7 @@ export type TabsFactory = () => Map<string, object>;
     DossierDetailTabDocumentsComponent,
     DossierDetailTabContactMomentsComponent,
     DossierDetailTabZaakobjectenComponent,
+    DossierDetailTabNotesComponent,
     DossierUpdateComponent,
     DossierProcessStartModalComponent,
     DossierSupportingProcessStartModalComponent,
@@ -94,6 +100,7 @@ export type TabsFactory = () => Map<string, object>;
     DossierDetailTabDocumentenApiDocumentsComponent,
     DossierDetailTabS3DocumentsComponent,
     DossierAssignUserComponent,
+    NoteModalComponent
   ],
   imports: [
     CommonModule,
@@ -136,7 +143,11 @@ export type TabsFactory = () => Map<string, object>;
     DocumentenApiMetadataModalModule,
     SearchableDropdownSelectModule,
     SearchFieldsModule,
-    NgbModule,
+    PageModule,
+    FormModule,
+    InputModule,
+    VFormModule,
+    NgbModule
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

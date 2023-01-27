@@ -115,6 +115,9 @@ export * from './lib/components/form-io/form-io-uploader/form-io-uploader.formio
 export * from './lib/components/form-io/documenten-api-uploader/documenten-api-uploader.component';
 export * from './lib/components/form-io/documenten-api-uploader/documenten-api-uploader.formio';
 
+export * from './lib/components/form-io/form-io-current-user/form-io-current-user.component';
+export * from './lib/components/form-io/form-io-current-user/form-io-current-user.formio';
+
 export * from './lib/components/form-io/form-io-resource-selector/form-io-resource-selector.formio';
 
 export * from './lib/components/form-io/services/form-io-state.service';
@@ -136,3 +139,9 @@ export * from './lib/components/documenten-api-metadata-modal/documenten-api-met
 
 export * from './lib/components/search-fields/search-fields.module';
 export * from './lib/components/search-fields/search-fields.component';
+
+export * from './lib/components/multi-input/carbon-multi-input.module';
+export * from './lib/components/multi-input/carbon-multi-input.component';
+
+export * from './lib/components/confirmation-modal/confirmation-modal.module';
+export * from './lib/components/confirmation-modal/confirmation-modal.component';

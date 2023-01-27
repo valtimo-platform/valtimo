@@ -41,6 +41,7 @@ import {
   ProcessDocumentDefinition,
   ProcessDocumentDefinitionRequest,
   ProcessDocumentInstance,
+  SpecifiedDocuments,
   UndeployDocumentDefinitionResult,
   UploadProcessLink,
 } from './models';
@@ -116,6 +117,33 @@ export class DocumentService {
 
     return this.http.post<Documents>(
       `${this.valtimoEndpointUri}v1/document-definition/${documentSearchRequest.definitionName}/search`,
+      body,
+      {params: documentSearchRequest.asHttpParams()}
+    );
+  }
+
+  getSpecifiedDocumentsSearch(
+    documentSearchRequest: AdvancedDocumentSearchRequest,
+    searchOperator?: SearchOperator,
+    assigneeFilter?: AssigneeFilter,
+    otherFilters?: Array<SearchFilter | SearchFilterRange>
+  ): Observable<SpecifiedDocuments> {
+    const body = documentSearchRequest.asHttpBody();
+
+    if (searchOperator) {
+      body.searchOperator = searchOperator;
+    }
+
+    if (assigneeFilter) {
+      body.assigneeFilter = assigneeFilter;
+    }
+
+    if (otherFilters) {
+      body.otherFilters = otherFilters;
+    }
+
+    return this.http.post<SpecifiedDocuments>(
+      `${this.valtimoEndpointUri}v1/case/${documentSearchRequest.definitionName}/search`,
       body,
       {params: documentSearchRequest.asHttpParams()}
     );
@@ -391,10 +419,13 @@ export class DocumentService {
     );
   }
 
-  putCaseList(documentDefinitionName: string, request: CaseListColumn): Observable<CaseListColumn> {
-    return this.http.put<CaseListColumn>(
+  putCaseList(
+    documentDefinitionName: string,
+    request: Array<CaseListColumn>
+  ): Observable<Array<CaseListColumn>> {
+    return this.http.put<Array<CaseListColumn>>(
       `${this.valtimoEndpointUri}v1/case/${documentDefinitionName}/list-column`,
-      {...request}
+      [...request]
     );
   }
 

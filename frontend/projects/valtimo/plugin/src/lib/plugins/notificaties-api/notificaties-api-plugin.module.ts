@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 import {NgModule} from '@angular/core';
 import {NotificatiesApiConfigurationComponent} from './components/notificaties-api-configuration/notificaties-api-configuration.component';
 import {PluginTranslatePipeModule} from '../../pipes';
@@ -33,5 +32,4 @@ import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/u
   ],
   exports: [NotificatiesApiConfigurationComponent],
 })
-export class NotificatiesApiPluginModule {
-}
+export class NotificatiesApiPluginModule {}

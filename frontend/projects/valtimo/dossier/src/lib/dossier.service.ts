@@ -34,9 +34,9 @@ export class DossierService {
 
   getInitialSortState(columns: Array<DefinitionColumn>): SortState {
     const defaultColumn = columns.find(column => column.default);
-    const isSorting = defaultColumn.default === 'ASC' || defaultColumn.default === 'DESC';
+    const isSorting = defaultColumn?.default === 'ASC' || defaultColumn?.default === 'DESC';
     const direction: Direction =
-      typeof defaultColumn.default === 'boolean'
+      typeof !defaultColumn || defaultColumn.default === 'boolean'
         ? 'DESC'
         : (defaultColumn.default as any as Direction);
 
