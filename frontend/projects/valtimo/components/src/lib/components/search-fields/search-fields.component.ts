@@ -38,6 +38,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
       }
     });
   }
+  @Input() setValuesSubject$: Observable<SearchFieldValues>;
   @Output() doSearch: EventEmitter<SearchFieldValues> = new EventEmitter<SearchFieldValues>();
 
   readonly documentDefinitionName$ = new BehaviorSubject<string>('');
@@ -64,6 +65,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
 
   private documentDefinitionNameSubscription!: Subscription;
   private dropdownSubscription!: Subscription;
+  private valuesSubjectSubscription!: Subscription;
 
   private readonly BOOLEAN_POSITIVE: SearchFieldBoolean = 'booleanPositive';
   private readonly BOOLEAN_NEGATIVE: SearchFieldBoolean = 'booleanNegative';
@@ -87,11 +89,13 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.openDocumentDefinitionNameSubscription();
+    this.openValuesSubjectSubscription();
     this.openDropdownSubscription();
   }
 
   ngOnDestroy(): void {
     this.documentDefinitionNameSubscription?.unsubscribe();
+    this.valuesSubjectSubscription?.unsubscribe();
     this.dropdownSubscription?.unsubscribe();
   }
 
@@ -147,6 +151,17 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
     this.doSearch.emit({});
   }
 
+  getDefaultBooleanSelectionId(values: SearchFieldValues, searchFieldKey: string): string | null {
+    const searchFieldValue = values[searchFieldKey];
+
+    if (searchFieldValue === true) {
+      return this.BOOLEAN_POSITIVE;
+    } else if (searchFieldValue === false) {
+      return this.BOOLEAN_NEGATIVE;
+    }
+    return null;
+  }
+
   private getSingleValue(value: any, isDateTime?: boolean): any {
     if (isDateTime) {
       return new Date(value).toISOString();
@@ -166,6 +181,18 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
       this.collapse();
       this.clear();
     });
+  }
+
+  private openValuesSubjectSubscription(): void {
+    if (this.setValuesSubject$) {
+      this.valuesSubjectSubscription = this.setValuesSubject$.subscribe(values => {
+        if (Object.keys(values || {}).length > 0) {
+          this.values$.next(values);
+          this.search();
+          this.expand();
+        }
+      });
+    }
   }
 
   private openDropdownSubscription(): void {
@@ -201,5 +228,9 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
 
   private collapse(): void {
     this.expanded$.next(false);
+  }
+
+  private expand(): void {
+    this.expanded$.next(true);
   }
 }

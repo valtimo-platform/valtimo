@@ -40,7 +40,12 @@ import {
   ModalModule as vModalModule,
   TitleModule,
 } from '@valtimo/user-interface';
-import {ButtonModule as cButtonModule, InputModule, ModalModule, PlaceholderModule} from 'carbon-components-angular';
+import {
+  ButtonModule as cButtonModule,
+  InputModule,
+  ModalModule,
+  PlaceholderModule,
+} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [

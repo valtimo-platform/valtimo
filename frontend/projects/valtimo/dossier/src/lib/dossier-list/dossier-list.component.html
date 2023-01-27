@@ -91,6 +91,7 @@
       [searchFields]="documentSearchFields$ | async"
       (doSearch)="search($event)"
       [documentDefinitionName]="documentDefinitionName$ | async"
+      [setValuesSubject$]="setSearchFieldValuesSubject$"
     ></valtimo-search-fields>
   </div>
 </ng-template>

@@ -45,6 +45,7 @@ import {
   map,
   Observable,
   of,
+  Subject,
   switchMap,
   take,
   tap,
@@ -55,7 +56,7 @@ import {DossierService} from '../dossier.service';
 import {ListField, Pagination} from '@valtimo/components';
 import {NGXLogger} from 'ngx-logger';
 import {NgbNavChangeEvent} from '@ng-bootstrap/ng-bootstrap';
-import {DossierColumnService} from '../services';
+import {DossierColumnService, DossierParameterService} from '../services';
 
 // eslint-disable-next-line no-var
 declare var $;
@@ -207,7 +208,8 @@ export class DossierListComponent implements OnInit {
   private readonly pagination$ = new BehaviorSubject<Pagination | undefined>(undefined);
 
   readonly paginationCopy$ = this.pagination$.pipe(
-    map(pagination => pagination && JSON.parse(JSON.stringify(pagination)))
+    map(pagination => pagination && JSON.parse(JSON.stringify(pagination))),
+    tap(pagination => this.dossierParameterService.setPaginationParameters(pagination))
   );
 
   private readonly documentSearchRequest$: Observable<AdvancedDocumentSearchRequest> =
@@ -225,7 +227,6 @@ export class DossierListComponent implements OnInit {
     );
 
   private readonly searchFieldValues$ = new BehaviorSubject<SearchFieldValues>({});
-
   private readonly assigneeFilter$ = new BehaviorSubject<AssigneeFilter>('ALL');
 
   private readonly documentsRequest$: Observable<Documents | SpecifiedDocuments> = combineLatest([
@@ -316,6 +317,8 @@ export class DossierListComponent implements OnInit {
     tap(() => this.loading$.next(false))
   );
 
+  readonly setSearchFieldValuesSubject$ = new Subject<SearchFieldValues>();
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
@@ -324,13 +327,15 @@ export class DossierListComponent implements OnInit {
     private readonly dossierService: DossierService,
     private readonly logger: NGXLogger,
     private readonly configService: ConfigService,
-    private readonly dossierColumnService: DossierColumnService
+    private readonly dossierColumnService: DossierColumnService,
+    private readonly dossierParameterService: DossierParameterService
   ) {
     this.dossierVisibleTabs = this.configService.config?.visibleDossierListTabs || null;
   }
 
   ngOnInit(): void {
     this.modalListenerAdded = false;
+    this.setSearchFieldParametersInComponent();
   }
 
   pageChange(newPage: number): void {
@@ -397,6 +402,14 @@ export class DossierListComponent implements OnInit {
 
   search(searchFieldValues: SearchFieldValues): void {
     this.searchFieldValues$.next(searchFieldValues || {});
+    this.dossierParameterService.setSearchParameters(searchFieldValues);
+  }
+
+  tabChange(tab: NgbNavChangeEvent<any>): void {
+    this.pagination$.pipe(take(1)).subscribe(pagination => {
+      this.pagination$.next({...pagination, page: 1});
+    });
+    this.assigneeFilter$.next(tab.nextId.toUpperCase());
   }
 
   private mapSearchValuesToFilters(
@@ -430,20 +443,26 @@ export class DossierListComponent implements OnInit {
   }
 
   private setPagination(documentDefinitionName: string): void {
-    combineLatest([this.hasStoredSearchRequest$, this.storedSearchRequestKey$, this.columns$])
+    combineLatest([
+      this.hasStoredSearchRequest$,
+      this.storedSearchRequestKey$,
+      this.columns$,
+      this.dossierParameterService.queryPaginationParams$,
+    ])
       .pipe(take(1))
-      .subscribe(([hasStoredSearchRequest, storedSearchRequestKey, columns]) => {
-        const defaultPagination: Pagination = this.getDefaultPagination(columns);
-        const storedPagination: Pagination = this.getStoredPagination(
-          hasStoredSearchRequest,
-          storedSearchRequestKey
-        );
+      .subscribe(
+        ([hasStoredSearchRequest, storedSearchRequestKey, columns, queryPaginationParams]) => {
+          const defaultPagination: Pagination = this.getDefaultPagination(columns);
+          const storedPagination: Pagination = this.getStoredPagination(
+            hasStoredSearchRequest,
+            storedSearchRequestKey
+          );
+          const paginationToUse = queryPaginationParams || storedPagination || defaultPagination;
 
-        this.logger.debug(
-          `Set pagination: ${JSON.stringify(storedPagination || defaultPagination)}`
-        );
-        this.pagination$.next(storedPagination || defaultPagination);
-      });
+          this.logger.debug(`Set pagination: ${JSON.stringify(paginationToUse)}`);
+          this.pagination$.next(paginationToUse);
+        }
+      );
   }
 
   private getDefaultPagination(columns: Array<DefinitionColumn>): Pagination {
@@ -499,10 +518,13 @@ export class DossierListComponent implements OnInit {
     });
   }
 
-  tabChange(tab: NgbNavChangeEvent<any>): void {
-    this.pagination$.pipe(take(1)).subscribe(pagination => {
-      this.pagination$.next({...pagination, page: 1});
+  private setSearchFieldParametersInComponent(): void {
+    this.dossierParameterService.querySearchParams$.pipe(take(1)).subscribe(values => {
+      if (Object.keys(values || {}).length > 0) {
+        setTimeout(() => {
+          this.setSearchFieldValuesSubject$.next(values);
+        });
+      }
     });
-    this.assigneeFilter$.next(tab.nextId.toUpperCase());
   }
 }

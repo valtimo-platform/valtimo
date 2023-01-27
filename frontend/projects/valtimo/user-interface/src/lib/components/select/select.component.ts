@@ -36,6 +36,7 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   @Input() items: Array<SelectItem> = [];
   @Input() defaultSelection!: SelectItem;
   @Input() defaultSelectionId!: string;
+  @Input() defaultSelectionIds!: Array<string>;
   @Input() clearable = true;
   @Input() disabled = false;
   @Input() multiple = false;
@@ -88,10 +89,14 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
 
   private setDefaultSelection(): void {
     const itemsIds = this.items?.map(item => item.id);
+    const defaultSelectionIds = this.defaultSelectionIds;
     const defaultSelectionId = this.defaultSelection?.id || this.defaultSelectionId;
 
-    if (defaultSelectionId && itemsIds?.includes(defaultSelectionId)) {
+    if (this.multiple && this.defaultSelectionIds) {
+      this.setSelectedValue([...defaultSelectionIds]);
+    } else if (defaultSelectionId && itemsIds?.includes(defaultSelectionId)) {
       if (this.multiple) {
+        this.setSelectedValue([defaultSelectionId]);
         this.setSelectedValue([defaultSelectionId]);
       } else {
         this.setSelectedValue(defaultSelectionId);
