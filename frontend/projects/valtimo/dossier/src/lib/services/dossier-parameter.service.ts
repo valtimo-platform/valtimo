@@ -18,6 +18,7 @@ import {Injectable, OnDestroy} from '@angular/core';
 import {DossierParameters} from '../models';
 import {
   BehaviorSubject,
+  combineLatest,
   distinctUntilChanged,
   filter,
   map,
@@ -131,8 +132,22 @@ export class DossierParameterService implements OnDestroy {
   }
 
   private openDossierParametersSubscription(): void {
-    this.dossierParametersSubscription = this.dossierParameters$.subscribe(queryParams => {
-      this.router.navigate([this.getUrlWithoutParams()], {queryParams});
+    this.dossierParametersSubscription = combineLatest([
+      this.dossierParameters$,
+      this.route.queryParams,
+    ]).subscribe(([dossierParams, queryParams]) => {
+      let paramsToUse = {};
+
+      if (
+        Object.keys(queryParams || {}).length > 0 &&
+        Object.keys(dossierParams || {}).length === 0
+      ) {
+        paramsToUse = queryParams;
+      } else {
+        paramsToUse = dossierParams;
+      }
+
+      this.router.navigate([this.getUrlWithoutParams()], {queryParams: paramsToUse});
     });
   }
 
