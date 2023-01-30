@@ -311,6 +311,7 @@
     "@valtimo/management": "file:dist/valtimo/management",
     "@valtimo/migration": "file:dist/valtimo/migration",
     "@valtimo/milestone": "file:dist/valtimo/milestone",
+    "@valtimo/object-management": "file:dist/valtimo/object-management",
     "@valtimo/open-zaak": "file:dist/valtimo/open-zaak",
     "@valtimo/plugin": "file:dist/valtimo/plugin",
     "@valtimo/plugin-management": "file:dist/valtimo/plugin-management",
@@ -323,7 +324,6 @@
     "@valtimo/user-interface": "file:dist/valtimo/user-interface",
     "@valtimo/user-management": "file:dist/valtimo/user-management",
     "@valtimo/view-configurator": "file:dist/valtimo/view-configurator",
-    "@valtimo/object-management": "file:dist/valtimo/object-management",
     "cypress": "latest",
     "deepmerge-ts": "^4.2.2",
     "sass": "^1.56.1"

@@ -43,6 +43,17 @@
     [tooltip]="'urlTooltip' | pluginTranslate : pluginId | async"
   >
   </v-input>
+  <v-input
+    name="callbackUrl"
+    [title]="'callbackUrl' | pluginTranslate : pluginId | async"
+    [fullWidth]="true"
+    [margin]="true"
+    [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.callbackUrl"
+    [required]="true"
+    [tooltip]="'callbackUrlTooltip' | pluginTranslate : pluginId | async"
+  >
+  </v-input>
   <ng-container
     *ngIf="{authenticationPluginSelectItems: authenticationPluginSelectItems$ | async} as authObs"
   >

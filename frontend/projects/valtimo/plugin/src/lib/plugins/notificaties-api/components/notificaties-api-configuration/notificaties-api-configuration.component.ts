@@ -77,7 +77,7 @@ export class NotificatiesApiConfigurationComponent
   }
 
   private handleValid(formValue: NotificatiesApiConfig): void {
-    const valid = !!(formValue.configurationTitle && formValue.url);
+    const valid = !!(formValue.configurationTitle && formValue.url && formValue.callbackUrl);
 
     this.valid$.next(valid);
     this.valid.emit(valid);

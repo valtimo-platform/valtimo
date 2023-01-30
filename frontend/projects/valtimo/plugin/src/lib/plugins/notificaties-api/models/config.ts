@@ -18,6 +18,7 @@ import {PluginConfigurationData} from '../../../models';
 
 interface NotificatiesApiConfig extends PluginConfigurationData {
   url: string;
+  callbackUrl: string;
 }
 
 export {NotificatiesApiConfig};

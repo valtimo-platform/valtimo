@@ -27,6 +27,8 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       title: 'Notificaties API',
       url: 'Notificaties API URL',
       urlTooltip: 'Een URL naar de REST API van Notificaties',
+      callbackUrl: 'Callback URL',
+      callbackUrlTooltip: 'Het GZAC API-endpoint waar notificaties naartoe moeten worden gestuurd.',
       description: 'Een API om een notificatierouteringscomponent te benaderen.',
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
@@ -37,6 +39,8 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       title: 'Notificaties API',
       url: 'Notificaties API URL',
       urlTooltip: 'A URL to the REST API of Notificaties',
+      callbackUrl: 'Callback URL',
+      callbackUrlTooltip: 'The GZAC API-endpoint where notifications should be sent.',
       description: 'An API to access a notification routing component.',
       configurationTitle: 'Configuration name',
       configurationTitleTooltip:
@@ -47,6 +51,8 @@ const notificatiesApiPluginSpecification: PluginSpecification = {
       title: 'Notificaties API',
       url: 'Notificaties API URL',
       urlTooltip: 'Die URL zur REST API von Notificaties',
+      callbackUrl: 'Callback URL',
+      callbackUrlTooltip: 'Der GZAC-API-endpoint, an den Benachrichtigungen gesendet werden sollen.',
       description: 'Eine API für den Zugriff auf eine Komponente für das Benachrichtigungsrouting.',
       configurationTitle: 'Konfigurationsname',
       configurationTitleTooltip:
