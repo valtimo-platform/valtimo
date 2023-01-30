@@ -59,6 +59,14 @@ export class PluginManagementService {
     );
   }
 
+  getPluginConfigurationsByPluginDefinitionKey(
+    pluginDefinitionKey: string
+  ): Observable<Array<PluginConfiguration>> {
+    return this.http.get<Array<PluginConfiguration>>(
+      `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/configuration?pluginDefinitionKey=${pluginDefinitionKey}`
+    );
+  }
+
   getPluginConfigurationsByCategory(categoryId: string): Observable<Array<PluginConfiguration>> {
     return this.http.get<Array<PluginConfiguration>>(
       `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/configuration?category=${categoryId}`

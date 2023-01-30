@@ -18,6 +18,7 @@ import {PluginConfigurationData} from '../../../models';
 
 interface PortaaltaakConfig extends PluginConfigurationData {
   notificatiesApiPluginConfiguration: string;
+  objectManagementConfigurationId: string;
 }
 
 export {PortaaltaakConfig};

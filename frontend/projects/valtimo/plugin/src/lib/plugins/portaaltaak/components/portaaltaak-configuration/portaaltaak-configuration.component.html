@@ -33,10 +33,10 @@
   >
   </v-input>
   <ng-container
-    *ngIf="{notificatiesApiPluginSelectItems: notificatiesApiPluginSelectItems$ | async} as authObs"
+    *ngIf="notificatiesApiPluginSelectItems$ | async as notificatiesApiPluginSelectItems"
   >
     <v-select
-      [items]="authObs.notificatiesApiPluginSelectItems"
+      [items]="notificatiesApiPluginSelectItems"
       [margin]="true"
       [widthInPx]="350"
       name="notificatiesApiPluginConfiguration"
@@ -44,8 +44,24 @@
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.notificatiesApiPluginConfiguration"
       [required]="true"
-      [loading]="!authObs.notificatiesApiPluginSelectItems"
+      [loading]="!notificatiesApiPluginSelectItems"
       [tooltip]="'notificatiesApiPluginConfigurationTooltip' | pluginTranslate : pluginId | async"
+    ></v-select>
+  </ng-container>
+  <ng-container
+    *ngIf="objectManagementConfigurationItems$ | async as objectManagementConfigurationItems"
+  >
+    <v-select
+      [items]="objectManagementConfigurationItems"
+      [margin]="true"
+      [widthInPx]="350"
+      name="objectManagementConfigurationId"
+      [title]="'objectManagementConfiguration' | pluginTranslate : pluginId | async"
+      [disabled]="obs.disabled"
+      [defaultSelectionId]="obs.prefill?.objectManagementConfigurationId"
+      [required]="true"
+      [loading]="!objectManagementConfigurationItems"
+      [tooltip]="'objectManagementConfigurationTooltip' | pluginTranslate : pluginId | async"
     ></v-select>
   </ng-container>
 </v-form>

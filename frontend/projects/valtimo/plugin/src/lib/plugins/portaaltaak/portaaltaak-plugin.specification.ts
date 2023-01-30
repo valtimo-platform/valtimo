@@ -31,7 +31,10 @@ const portaaltaakPluginSpecification: PluginSpecification = {
         'De naam van de huidige plugin-configuratie. Onder deze naam kan de configuratie in de rest van de applicatie teruggevonden worden.',
       notificatiesApiPluginConfiguration: 'Notificaties API plugin',
       notificatiesApiPluginConfigurationTooltip:
-        'Selecteer de Notificaties API plugin. Wanneer de selectiebox leeg blijft zal de notificatie API plugin eerst aangemaakt moeten worden',
+        'Selecteer de Notificaties API plugin. Wanneer de selectiebox leeg us, zal de notificatie API plugin eerst aangemaakt moeten worden.',
+      objectManagementConfiguration: 'Object management configuratie',
+      objectManagementConfigurationTooltip:
+        'Selecteer de gewenste object management configuratie. Wanneer de selectiebox leeg is, zal de object management configuratie eerst aangemaakt moeten worden.',
     },
     en: {
       title: 'Portal task',
@@ -41,7 +44,10 @@ const portaaltaakPluginSpecification: PluginSpecification = {
         'The name of the current plugin configuration. Under this name, the configuration can be found in the rest of the application.',
       notificatiesApiPluginConfiguration: 'Notification API plugin',
       notificatiesApiPluginConfigurationTooltip:
-        'Select the Notifications API plugin. If the selection box remains empty, the Notifications API plugin will first have to be created',
+        'Select the Notifications API plugin. If the selection box remains empty, the Notifications API plugin will first have to be created.',
+      objectManagementConfiguration: 'Object management configuration',
+      objectManagementConfigurationTooltip:
+        'Select the object management configuration. If the selection box remains empty, the object management configuration will first have to be created.',
     },
     de: {
       title: 'Portalaufgabe',
@@ -53,6 +59,9 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       notificatiesApiPluginConfiguration: 'Benachrichtigungs-API plugin',
       notificatiesApiPluginConfigurationTooltip:
         'Wählen Sie das Benachrichtigungs-API-Plugin aus. Bleibt das Auswahlfeld leer, muss das Benachrichtigungs-API-Plugin erst erstellt werden',
+      objectManagementConfiguration: 'Objektverwaltungskonfiguration',
+      objectManagementConfigurationTooltip:
+        'Wählen Sie die Objektverwaltungskonfiguration aus. Bleibt das Auswahlfeld leer, muss zunächst die Objektverwaltungskonfiguration erstellt werden.',
     },
   },
 };

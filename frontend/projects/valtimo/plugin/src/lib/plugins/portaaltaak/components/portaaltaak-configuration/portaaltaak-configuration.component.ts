@@ -20,6 +20,8 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {PortaaltaakConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
+import {SelectItem} from '@valtimo/user-interface';
+import {ObjectManagementService} from '@valtimo/object-management';
 
 @Component({
   selector: 'valtimo-portaaltaak-configuration',
@@ -35,27 +37,38 @@ export class PortaaltaakConfigurationComponent
   @Input() prefillConfiguration$: Observable<PortaaltaakConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<PortaaltaakConfig> = new EventEmitter<PortaaltaakConfig>();
-  readonly notificatiesApiPluginSelectItems$: Observable<Array<{id: string; text: string}>> =
-    combineLatest([
-      this.pluginManagementService.getPluginConfigurationsByCategory('notificaties-api-plugin'),
-      this.translateService.stream('key'),
-    ]).pipe(
-      map(([configurations]) =>
-        configurations.map(configuration => ({
-          id: configuration.id,
-          text: `${configuration.title} - ${this.pluginTranslationService.instant(
-            'title',
-            configuration.pluginDefinition.key
-          )}`,
-        }))
-      )
-    );
+  readonly notificatiesApiPluginSelectItems$: Observable<Array<SelectItem>> = combineLatest([
+    this.pluginManagementService.getPluginConfigurationsByPluginDefinitionKey('notificatiesapi'),
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([configurations]) =>
+      configurations.map(configuration => ({
+        id: configuration.id,
+        text: `${configuration.title} - ${this.pluginTranslationService.instant(
+          'title',
+          configuration.pluginDefinition.key
+        )}`,
+      }))
+    )
+  );
+  readonly objectManagementConfigurationItems$: Observable<Array<SelectItem>> = combineLatest([
+    this.objectManagementService.getAllObjects(),
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([objectManagementConfigurations]) =>
+      objectManagementConfigurations.map(configuration => ({
+        id: configuration.id,
+        text: `${configuration.title}`,
+      }))
+    )
+  );
   private saveSubscription!: Subscription;
   private readonly formValue$ = new BehaviorSubject<PortaaltaakConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private readonly pluginManagementService: PluginManagementService,
+    private readonly objectManagementService: ObjectManagementService,
     private readonly translateService: TranslateService,
     private readonly pluginTranslationService: PluginTranslationService
   ) {}
@@ -74,7 +87,11 @@ export class PortaaltaakConfigurationComponent
   }
 
   private handleValid(formValue: PortaaltaakConfig): void {
-    const valid = !!(formValue.configurationTitle && formValue.notificatiesApiPluginConfiguration);
+    const valid = !!(
+      formValue.configurationTitle &&
+      formValue.notificatiesApiPluginConfiguration &&
+      formValue.objectManagementConfigurationId
+    );
 
     this.valid$.next(valid);
     this.valid.emit(valid);
