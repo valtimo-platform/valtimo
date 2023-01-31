@@ -14,5 +14,17 @@
  * limitations under the License.
  */
 
-export * from './config';
-export * from './object';
+interface Objecttype {
+  id: string;
+  title: string;
+  objecttypenApiPluginConfigurationId: string;
+  objecttypeId: string;
+  objectenApiPluginConfigurationId: string;
+  showInDataMenu: boolean;
+  formDefinitionView?: string;
+  formDefinitionEdit?: string;
+}
+
+type ObjecttypeKeys = keyof Objecttype;
+
+export {Objecttype, ObjecttypeKeys};

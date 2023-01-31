@@ -21,7 +21,7 @@ import {PortaaltaakConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {SelectItem} from '@valtimo/user-interface';
-import {ObjectManagementService} from '@valtimo/object-management';
+import {ObjectService} from '../../services';
 
 @Component({
   selector: 'valtimo-portaaltaak-configuration',
@@ -68,7 +68,7 @@ export class PortaaltaakConfigurationComponent
 
   constructor(
     private readonly pluginManagementService: PluginManagementService,
-    private readonly objectManagementService: ObjectManagementService,
+    private readonly objectManagementService: ObjectService,
     private readonly translateService: TranslateService,
     private readonly pluginTranslationService: PluginTranslationService
   ) {}
