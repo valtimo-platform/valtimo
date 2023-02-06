@@ -21,4 +21,22 @@ interface PortaaltaakConfig extends PluginConfigurationData {
   objectManagementConfigurationId: string;
 }
 
-export {PortaaltaakConfig};
+type FormType = 'definition' | 'url';
+
+type Receiver = 'zaakInitiator' | 'other';
+
+type OtherReceiver = 'kvk' | 'bsn';
+
+interface CreatePortalTaskConfig {
+  formType: FormType;
+  formTypeId?: string;
+  formTypeUrl?: string;
+  sendData: Array<{key: string; value: string}>;
+  receiveData: Array<{key: string; value: string}>;
+  receiver: Receiver;
+  otherReceiver?: OtherReceiver;
+  kvk?: string;
+  bsn?: string;
+}
+
+export {PortaaltaakConfig, CreatePortalTaskConfig, FormType, Receiver, OtherReceiver};

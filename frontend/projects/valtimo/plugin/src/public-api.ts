@@ -74,3 +74,4 @@ export * from './lib/plugins/notificaties-api-authentication/components/open-not
 export * from './lib/plugins/portaaltaak/portaaltaak-plugin.module';
 export * from './lib/plugins/portaaltaak/portaaltaak-plugin.specification';
 export * from './lib/plugins/portaaltaak/components/portaaltaak-configuration/portaaltaak-configuration.component';
+export * from './lib/plugins/portaaltaak/components/create-portal-task/create-portal-task.component';

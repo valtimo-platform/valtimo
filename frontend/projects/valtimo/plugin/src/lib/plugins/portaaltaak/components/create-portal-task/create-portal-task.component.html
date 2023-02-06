@@ -1,0 +1,124 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<v-form
+  (valueChange)="formValueChange($event)"
+  *ngIf="{
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+    formTypeIsUrl: formTypeIsUrl$ | async,
+    receiverIsOther: receiverIsOther$ | async,
+    otherReceiverIsBsn: otherReceiverIsBsn$ | async
+  } as obs"
+>
+  <v-select
+    [items]="formTypeSelectItems$ | async"
+    [margin]="true"
+    [widthInPx]="250"
+    name="formType"
+    [title]="'formType' | pluginTranslate : pluginId | async"
+    [disabled]="obs.disabled"
+    [defaultSelectionId]="obs.prefill?.formType || FORM_TYPE_ITEMS[0]"
+    [tooltip]="'formTypeTooltip' | pluginTranslate : pluginId | async"
+    [required]="true"
+    [clearable]="false"
+  ></v-select>
+  <v-input
+    *ngIf="obs.formTypeIsUrl === false"
+    name="formTypeId"
+    [title]="'formTypeId' | pluginTranslate : pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.formTypeId"
+    [disabled]="obs.disabled"
+    [tooltip]="'formTypeIdTooltip' | pluginTranslate : pluginId | async"
+    [required]="true"
+  ></v-input>
+  <v-input
+    *ngIf="obs.formTypeIsUrl"
+    name="formTypeUrl"
+    [title]="'formTypeUrl' | pluginTranslate : pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.formTypeUrl"
+    [disabled]="obs.disabled"
+    [tooltip]="'formTypeUrlTooltip' | pluginTranslate : pluginId | async"
+    [required]="true"
+  ></v-input>
+  <v-multi-input
+    name="sendData"
+    [title]="'sendData' | pluginTranslate : pluginId | async"
+    type="keyValue"
+    [disabled]="obs.disabled"
+    [defaultValues]="obs.prefill?.sendData"
+    [margin]="true"
+    [required]="true"
+    [tooltip]="'sendDataTooltip' | pluginTranslate : pluginId | async"
+  ></v-multi-input>
+  <v-multi-input
+    name="receiveData"
+    [title]="'receiveData' | pluginTranslate : pluginId | async"
+    type="keyValue"
+    [disabled]="obs.disabled"
+    [defaultValues]="obs.prefill?.receiveData"
+    [margin]="true"
+    [required]="true"
+    [tooltip]="'receiveDataTooltip' | pluginTranslate : pluginId | async"
+  ></v-multi-input>
+  <v-select
+    [items]="receiverSelectItems$ | async"
+    [margin]="true"
+    [widthInPx]="250"
+    name="receiver"
+    [title]="'receiver' | pluginTranslate : pluginId | async"
+    [disabled]="obs.disabled"
+    [defaultSelectionId]="obs.prefill?.receiver || RECEIVER_ITEMS[0]"
+    [tooltip]="'receiverTooltip' | pluginTranslate : pluginId | async"
+    [required]="true"
+    [clearable]="false"
+  ></v-select>
+  <v-select
+    *ngIf="obs.receiverIsOther"
+    [items]="otherReceiverSelectItems$ | async"
+    [margin]="true"
+    [widthInPx]="250"
+    name="otherReceiver"
+    [title]="'otherReceiver' | pluginTranslate : pluginId | async"
+    [disabled]="obs.disabled"
+    [defaultSelectionId]="obs.prefill?.otherReceiver || OTHER_RECEIVER_ITEMS[0]"
+    [tooltip]="'otherReceiverTooltip' | pluginTranslate : pluginId | async"
+    [required]="true"
+    [clearable]="false"
+  ></v-select>
+  <v-input
+    *ngIf="obs.receiverIsOther && obs.otherReceiverIsBsn"
+    name="bsn"
+    [title]="'bsn' | pluginTranslate : pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.bsn"
+    [disabled]="obs.disabled"
+    [tooltip]="'bsnTooltip' | pluginTranslate : pluginId | async"
+    [required]="true"
+  ></v-input>
+  <v-input
+    *ngIf="obs.receiverIsOther && !obs.otherReceiverIsBsn"
+    name="kvk"
+    [title]="'kvk' | pluginTranslate : pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.kvk"
+    [disabled]="obs.disabled"
+    [tooltip]="'kvkTooltip' | pluginTranslate : pluginId | async"
+    [required]="true"
+  ></v-input>
+</v-form>
