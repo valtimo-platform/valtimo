@@ -182,6 +182,7 @@ export class ObjectManagementUploadModalComponent implements AfterViewInit, OnDe
       'title',
       'objecttypenApiPluginConfigurationId',
       'objecttypeId',
+      'objecttypeVersion',
       'objectenApiPluginConfigurationId',
       'showInDataMenu',
     ]);

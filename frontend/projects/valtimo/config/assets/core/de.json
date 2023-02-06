@@ -978,7 +978,8 @@
       "title": "Titel",
       "objects": "Objects-API-Plugin-Konfiguration",
       "objecttypes": "Objecttypen-API-Plugin-Konfiguration",
-      "objecttypeUrl": "Objekttyp-ID",
+      "objecttypeId": "Objekttyp-ID",
+      "objecttypeVersion": "Objekttyp-Version",
       "formDefinitionView": "Formulardefinition anzeigen",
       "formDefinitionEdit": "Formulardefinition bearbeiten",
       "showInDataMenu": "Im Menü anzeigen"
@@ -986,6 +987,7 @@
     "tooltips": {
       "title": "Der Name dieser Konfiguration. Unter diesem Namen ist diese Konfiguration im Rest der Anwendung zu finden.\n",
       "objecttypeId": "Die ID des Objekttyps",
+      "objecttypeVersion": "Die Version des Objekttyps",
       "formDefinitionView": "Der Name der formio IO-Definition, die zur Darstellung des Objekts verwendet wird.",
       "formDefinitionEdit": "Der Name der formio IO-Definition, die zum Bearbeiten des Objekts verwendet wird.\n",
       "showInDataMenu": "Gibt an, ob der Objekttyp im Menü sichtbar ist"

@@ -174,7 +174,8 @@ export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy 
         data.title &&
         data.objectenApiPluginConfigurationId &&
         data.objecttypenApiPluginConfigurationId &&
-        data.objecttypeId
+        data.objecttypeId,
+        data.objecttypeVersion
       )
     );
   }

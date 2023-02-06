@@ -979,6 +979,7 @@
       "objects": "Objects API plugin configuration",
       "objecttypes": "Objecttypen API plugin configuration",
       "objecttypeId": "Objecttype ID",
+      "objecttypeVersion": "Objecttype version",
       "formDefinitionView": "View form definition",
       "formDefinitionEdit": "Edit form definition",
       "showInDataMenu": "Show in menu"
@@ -986,6 +987,7 @@
     "tooltips": {
       "title": "The name of this configuration. Under this name, this configuration can be found in the rest of the application.",
       "objecttypeId": "The ID of the object type",
+      "objecttypeVersion": "The version of the object type",
       "formDefinitionView": "The name of the form IO definition that will be used to display the object.",
       "formDefinitionEdit": "The name of the form IO definition that will be used to edit the object.",
       "showInDataMenu": "Indicates whether the object type is visible in the menu"
