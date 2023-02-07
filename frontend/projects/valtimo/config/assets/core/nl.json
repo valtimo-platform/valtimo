@@ -907,7 +907,7 @@
     "dropdownDatabaseDataProvider": "Zet waarde",
     "dropdownJsonFileDataProvider": "Configuratiebestand",
     "configFile": "Configuratiebestand",
-    "setValue": "Vastgestelde waarde",
+    "dropdownListValues": "Dropdown lijst waarden",
     "id": "ID",
     "text": "Text"
   },
@@ -920,7 +920,7 @@
     "matchType": "De overeenkomst bepaalt hoe waarden in de database worden gekoppeld aan de zoekwaarden. Voor het zoektype 'Exact' zou de waarde '1' alleen overeenkomen met de waarde '1'. Voor het zoektype 'Bevat' zou de waarde '1' overeenkomen met de waarde '1', '123' en alle andere waarden die '1' bevatten.",
     "dropdownDataProvider": "De dropdown-databron bepaalt waar de data voor de dropdown lijst vandaan komt.",
     "configFile": "Gebruik een configuratiebestand met dropdown-waarden",
-    "setValue": "Stel aangepaste waarden in voor de dropdown lijst."
+    "dropdownListValues": "Stel aangepaste waarden in voor de dropdown lijst. De waarde die in de dropdown lijst wordt weergegeven, moet in het rechter tekstveld worden ingevoerd. Het linker tekstveld moet de id van die waarde bevatten."
   },
   "listColumn": {
     "title": "Titel",

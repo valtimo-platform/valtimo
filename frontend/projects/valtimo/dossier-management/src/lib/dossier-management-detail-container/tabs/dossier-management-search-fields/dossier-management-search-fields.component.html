@@ -199,13 +199,13 @@
             (initialDropdownValues$ | async) as initialDropdownValues
           "
           name="dropdownValues"
-          [title]="'searchFieldsOverview.setValue' | translate"
+          [title]="'searchFieldsOverview.dropdownListValues' | translate"
           type="keyValue"
           [disabled]="obs.disableInput"
           [defaultValues]="initialDropdownValues"
           [margin]="true"
           [required]="false"
-          [tooltip]="'searchFieldsOverviewTooltips.setValue' | translate"
+          [tooltip]="'searchFieldsOverviewTooltips.dropdownListValues' | translate"
           (valueChange)="dropdownDatalistChange($event)"
         >
         </v-multi-input>

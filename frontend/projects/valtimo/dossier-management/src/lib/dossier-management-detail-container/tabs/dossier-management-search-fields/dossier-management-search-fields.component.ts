@@ -250,7 +250,6 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     )
   );
 
-  private readonly dropdownProviderSupportsUpdates$ = new BehaviorSubject<boolean>(false);
   private readonly modifiedDropdownValues$ = new BehaviorSubject<MultiInputValues>([]);
 
   readonly initialDropdownValues$: Observable<MultiInputValues> = combineLatest([
@@ -293,22 +292,28 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
   readonly showReadonlyDropdownTable$: Observable<boolean> = combineLatest([
     this.dataTypeIsText$,
     this.fieldTypeIsDropdown$,
-    this.dropdownProviderSupportsUpdates$,
+    this.formData$,
   ]).pipe(
     map(
-      ([dataTypeIsText, fieldTypeIsDropdown, dropdownProviderSupportsUpdates]) =>
-        dataTypeIsText && fieldTypeIsDropdown && !dropdownProviderSupportsUpdates
+      ([dataTypeIsText, fieldTypeIsDropdown, formData]) =>
+        dataTypeIsText &&
+        fieldTypeIsDropdown &&
+        formData?.dropdownDataProvider &&
+        !this.dropdownDataProviderSupportsUpdates(formData?.dropdownDataProvider)
     )
   );
 
   readonly showInputDropdownTable$: Observable<boolean> = combineLatest([
     this.dataTypeIsText$,
     this.fieldTypeIsDropdown$,
-    this.dropdownProviderSupportsUpdates$,
+    this.formData$,
   ]).pipe(
     map(
-      ([dataTypeIsText, fieldTypeIsDropdown, dropdownProviderSupportsUpdates]) =>
-        dataTypeIsText && fieldTypeIsDropdown && dropdownProviderSupportsUpdates
+      ([dataTypeIsText, fieldTypeIsDropdown, formData]) =>
+        dataTypeIsText &&
+        fieldTypeIsDropdown &&
+        formData?.dropdownDataProvider &&
+        this.dropdownDataProviderSupportsUpdates(formData?.dropdownDataProvider)
     )
   );
 
@@ -348,10 +353,6 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
       this.nextIfChanged(this.dataTypeIsText$, data.dataType === 'text');
       this.nextIfChanged(this.dataTypeIsBoolean$, data.dataType === 'boolean');
       this.nextIfChanged(this.fieldTypeIsDropdown$, this.isFieldTypeDropdown(data.fieldType));
-      this.nextIfChanged(
-        this.dropdownProviderSupportsUpdates$,
-        data.dropdownDataProvider === 'dropdownDatabaseDataProvider'
-      );
       this.nextIfChanged(this.formData$, data);
       this.nextIfChanged(this.valid$, this.isValid(data));
     }, 0);

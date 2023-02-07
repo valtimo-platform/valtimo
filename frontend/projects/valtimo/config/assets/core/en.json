@@ -907,7 +907,7 @@
     "dropdownDatabaseDataProvider": "Fixed value",
     "dropdownJsonFileDataProvider": "Config file",
     "configFile": "Config file",
-    "setValue": "Set value",
+    "dropdownListValues": "Dropdown list values",
     "id": "ID",
     "text": "Text"
   },
@@ -919,8 +919,8 @@
     "fieldType": "The field type decides the values the user can input. For the option 'Single', the user can only input a single value. For the option 'Range', the user may input two values, and these values, and all the values in between, are searched for.",
     "matchType": "The match type decides how values in the database are matched to the search values. For the match type 'Exact', the value '1' would only be matched to the value '1'. For the match type 'Contains', the value '1' would be matched to the value '1', '123', and all other values containing '1'.",
     "dropdownDataProvider": "The dropdown data source determines where the data for the dropdown comes from.",
-    "configFile": "Use a config file with dropdown values.",
-    "setValue": "Set custom values for the dropdown."
+    "configFile": "Use a config file with dropdown values. The config value must be present on the server",
+    "dropdownListValues": "Set custom values for the dropdown list. The value shown in the dropdown list should be entered in the right text-field. The left text-field should contain the id of that value."
   },
   "listColumn": {
     "title": "Title",

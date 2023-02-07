@@ -907,7 +907,7 @@
     "dropdownDatabaseDataProvider": "Werte festlegen",
     "dropdownJsonFileDataProvider": "Konfigurationsdatei",
     "configFile": "Konfigurationsdatei",
-    "setValue": "Fester Wert",
+    "dropdownListValues": "Dropdown-Listenwerte",
     "id": "ID",
     "text": "Text"
   },
@@ -920,7 +920,7 @@
     "matchType": "Die Übereinstimmen legt fest, wie Werte in der Datenbank mit den Suchwerten verknüpft werden. Beim Übereinstimmungstyp 'Genau' würde der Wert '1' nur mit dem Wert '1' übereinstimmen. Für den Übereinstimmungstyp 'Enthält' würde der Wert '1' mit dem Wert '1', '123' und allen anderen Werten übereinstimmen, die '1' enthalten.",
     "dropdownDataProvider": "Die Dropdown-Datenquelle bestimmt, woher die Daten für die Dropdown-Liste stammen.",
     "configFile": "Eine Konfigurationsdatei mit Dropdown-Werten verwenden.",
-    "setValue": "Benutzerdefinierte Werte für das Dropdown-Menü festlegen."
+    "dropdownListValues": "Legen Sie benutzerdefinierte Werte für die Dropdown-Liste fest. Der in der Dropdown-Liste angezeigte Wert sollte in das rechte Textfeld eingegeben werden. Das linke Textfeld sollte die ID dieses Werts enthalten."
   },
   "listColumn": {
     "title": "Titel",
