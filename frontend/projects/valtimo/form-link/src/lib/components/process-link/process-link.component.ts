@@ -128,7 +128,7 @@ export class ProcessLinkComponent {
         const processLinkRequest: SaveProcessLinkRequest = {
           actionProperties: configuration,
           activityId: modalData?.element?.id,
-          activityType: activityType,
+          activityType,
           pluginConfigurationId: selectedConfiguration.id,
           processDefinitionId: modalData?.processDefinitionId,
           pluginActionDefinitionKey: selectedFunction.key,
