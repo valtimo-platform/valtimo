@@ -21,7 +21,7 @@ interface PortaaltaakConfig extends PluginConfigurationData {
   objectManagementConfigurationId: string;
 }
 
-type FormType = 'definition' | 'url';
+type FormType = 'id' | 'url';
 
 type Receiver = 'zaakInitiator' | 'other';
 

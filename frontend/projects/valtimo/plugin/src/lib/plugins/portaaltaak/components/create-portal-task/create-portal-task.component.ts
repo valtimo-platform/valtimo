@@ -37,7 +37,7 @@ export class CreatePortalTaskComponent
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<CreatePortalTaskConfig> =
     new EventEmitter<CreatePortalTaskConfig>();
-  readonly FORM_TYPE_ITEMS: Array<FormType> = ['definition', 'url'];
+  readonly FORM_TYPE_ITEMS: Array<FormType> = ['id', 'url'];
   readonly formTypeSelectItems$ = this.selectItemsToTranslatedItems(this.FORM_TYPE_ITEMS);
 
   readonly RECEIVER_ITEMS: Array<Receiver> = ['zaakInitiator', 'other'];
@@ -81,7 +81,7 @@ export class CreatePortalTaskComponent
     const valid =
       !!formValue.formType &&
       (!!(formValue.formType === 'url' && formValue.formTypeUrl) ||
-        !!(formValue.formType === 'definition' && formValue.formTypeId)) &&
+        !!(formValue.formType === 'id' && formValue.formTypeId)) &&
       !!(formValue.sendData?.length > 0) &&
       !!(formValue.receiveData?.length > 0) &&
       !!formValue?.receiver &&

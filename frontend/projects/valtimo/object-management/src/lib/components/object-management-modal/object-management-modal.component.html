@@ -121,15 +121,15 @@
       ></v-input>
 
       <v-input
-              [margin]="true"
-              [required]="true"
-              [title]="'objectManagement.labels.objecttypeVersion' | translate"
-              [tooltip]="'objectManagement.tooltips.objecttypeVersion' | translate"
-              [widthPx]="350"
-              [defaultValue]="prefillObject?.objecttypeVersion"
-              [min]="1"
-              type="number"
-              name="objecttypeVersion"
+        [margin]="true"
+        [required]="true"
+        [title]="'objectManagement.labels.objecttypeVersion' | translate"
+        [tooltip]="'objectManagement.tooltips.objecttypeVersion' | translate"
+        [widthPx]="350"
+        [defaultValue]="prefillObject?.objecttypeVersion"
+        [min]="1"
+        type="number"
+        name="objecttypeVersion"
       ></v-input>
 
       <ng-container *ngIf="{formDefinitions: formDefinitions$ | async} as formObs">

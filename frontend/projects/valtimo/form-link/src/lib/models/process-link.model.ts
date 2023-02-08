@@ -17,6 +17,7 @@
 interface SaveProcessLinkRequest {
   processDefinitionId: string;
   activityId: string;
+  activityType: string;
   pluginConfigurationId: string;
   pluginActionDefinitionKey: string;
   actionProperties: {

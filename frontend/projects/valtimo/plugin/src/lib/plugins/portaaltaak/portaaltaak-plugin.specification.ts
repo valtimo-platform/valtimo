@@ -24,7 +24,7 @@ const portaaltaakPluginSpecification: PluginSpecification = {
   pluginConfigurationComponent: PortaaltaakConfigurationComponent,
   pluginLogoBase64: PORTAALTAAK_PLUGIN_LOGO_BASE64,
   functionConfigurationComponents: {
-    'create-portal-task': CreatePortalTaskComponent,
+    'create-portaaltaak': CreatePortalTaskComponent,
   },
   pluginTranslations: {
     nl: {
@@ -39,11 +39,11 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       objectManagementConfiguration: 'Object management configuratie',
       objectManagementConfigurationTooltip:
         'Selecteer de gewenste object management configuratie. Wanneer de selectiebox leeg is, zal de object management configuratie eerst aangemaakt moeten worden.',
-      'create-portal-task': 'Portaaltaak aanmaken',
+      'create-portaaltaak': 'Portaaltaak aanmaken',
       formType: 'Formuliertype',
       formTypeTooltip:
         'Kies hier of het te tonen formulier afomstig moet zijn van een ingestelde definitie, of van een externe URL.',
-      definition: 'Formulierdefinitie',
+      id: 'Formulierdefinitie',
       url: 'URL',
       formTypeId: 'Formulier ID',
       formTypeIdTooltip: 'Het ID van het formulier dat getoond moet worden',
@@ -79,11 +79,11 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       objectManagementConfiguration: 'Object management configuration',
       objectManagementConfigurationTooltip:
         'Select the object management configuration. If the selection box remains empty, the object management configuration will first have to be created.',
-      'create-portal-task': 'Create portal task',
+      'create-portaaltaak': 'Create portal task',
       formType: 'Form type',
       formTypeTooltip:
         'Choose here whether the form to be displayed should come from a set definition or from an external URL.',
-      definition: 'Form definition',
+      id: 'Form definition',
       url: 'URL',
       formTypeId: 'Formulier ID',
       formTypeIdTooltip: 'Het ID van het formulier dat getoond moet worden',
@@ -120,11 +120,11 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       objectManagementConfiguration: 'Objektverwaltungskonfiguration',
       objectManagementConfigurationTooltip:
         'Wählen Sie die Objektverwaltungskonfiguration aus. Bleibt das Auswahlfeld leer, muss zunächst die Objektverwaltungskonfiguration erstellt werden.',
-      'create-portal-task': 'Portalaufgabe erstellen',
+      'create-portaaltaak': 'Portalaufgabe erstellen',
       formType: 'Formulartyp',
       formTypeTooltip:
         'Wählen Sie hier aus, ob das anzuzeigende Formular aus einer Set-Definition oder von einer externen URL stammen soll.',
-      definition: 'Formulardefinition',
+      id: 'Formulardefinition',
       url: 'URL',
       sendData: 'Senden von Daten an die Objecten API',
       sendDataTooltip:
