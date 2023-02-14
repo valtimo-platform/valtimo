@@ -887,6 +887,7 @@
   "searchFieldsOverview": {
     "title": "Titel",
     "key": "Schlüssel",
+    "add": "Suchfeld hinzufügen",
     "edit": "Suchfeld bearbeiten",
     "path": "Pfad",
     "dataType": "Datentyp",
@@ -900,9 +901,15 @@
     "multi-select-dropdown": "Multi select dropdown",
     "range": "Serie",
     "submit": "Einreichen",
+    "close": "schließen",
+    "save": "speichern",
     "delete": "Löschen",
+    "download": "Download ",
     "addRow": "Suchfeld hinzufügen",
     "searchFieldPlaceholder": "Wählen Sie einen Typ...",
+    "noSearchFieldsConfiguredWarningTitle": "Keine Suchfelder konfiguriert",
+    "deleteSearchField": "Suchfeld löschen",
+    "deleteSearchFieldConfirmation": "Möchten Sie dieses Suchfeld wirklich löschen?",
     "dropdownDataProvider": "Dropdown-Datenquelle",
     "dropdownDatabaseDataProvider": "Werte festlegen",
     "dropdownJsonFileDataProvider": "Konfigurationsdatei",
@@ -921,6 +928,12 @@
     "dropdownDataProvider": "Die Dropdown-Datenquelle bestimmt, woher die Daten für die Dropdown-Liste stammen.",
     "configFile": "Eine Konfigurationsdatei mit Dropdown-Werten verwenden.",
     "dropdownListValues": "Legen Sie benutzerdefinierte Werte für die Dropdown-Liste fest. Der in der Dropdown-Liste angezeigte Wert sollte in das rechte Textfeld eingegeben werden. Das linke Textfeld sollte die ID dieses Werts enthalten."
+  },
+  "searchFieldDataType": {
+    "select": "Wählen Sie einen Datentyp aus"
+  },
+  "searchFieldFieldType": {
+    "select": "Wählen Sie einen Feldtyp aus"
   },
   "listColumn": {
     "title": "Titel",
@@ -999,6 +1012,7 @@
     "visibleInMenu": "Im Menü sichtbar",
     "tabs": {
       "general": "Allgemein",
+      "searchFields": "Suchfelder",
       "list": "Aufführen"
     },
     "underscoresToSpaces": "Unterstriche zu Leerzeichen",

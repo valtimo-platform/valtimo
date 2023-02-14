@@ -33,12 +33,14 @@ type SearchFieldValue =
   | NumberValueRange;
 
 interface SearchField {
+  ownerId?: string;
   title?: string;
   key: string;
   path?: string;
+  order?: number;
   dataType: SearchFieldDataType;
   fieldType: SearchFieldFieldType;
-  matchType: SearchFieldMatchType;
+  matchType?: SearchFieldMatchType;
   dropdownDataProvider?: string;
 }
 
@@ -48,6 +50,14 @@ interface SearchFieldWithValue extends SearchField {
 
 interface SearchFieldValues {
   [searchFieldKey: string]: SearchFieldValue;
+}
+
+interface SearchFieldColumnView {
+  title: string;
+  key: string;
+  path: string;
+  dataType: string;
+  fieldType: string;
 }
 
 type SearchOperator = 'AND' | 'OR';
@@ -74,6 +84,7 @@ export {
   SearchFieldValue,
   SearchFieldWithValue,
   SearchFieldValues,
+  SearchFieldColumnView,
   SearchOperator,
   SearchFilter,
   SearchFilterRange,

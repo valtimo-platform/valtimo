@@ -1,0 +1,305 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<ng-container
+        *ngIf="{
+    listColumn: translatedObjectManagementListColumns$ | async,
+    fields: objectManagementFields$ | async,
+    objectId: objectId$ | async,
+    downloadUrl: downloadUrl$ | async,
+    downloadName: downloadName$ | async,
+    loading: loading$ | async
+  } as obs"
+>
+  <div class="container-fluid pr-0 pl-0">
+    <div class="text-right">
+      <div class="btn-group mt-m3px mb-3 mr-2">
+        <ng-container *ngTemplateOutlet="buttons; context: {obs: obs}"></ng-container>
+      </div>
+    </div>
+    <ng-container *ngIf="!obs.loading; else loading">
+      <ng-container *ngIf="obs.listColumn?.length > 0; else noConfigWarning">
+        <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
+      </ng-container>
+    </ng-container>
+    <ng-container *ngTemplateOutlet="createEditModal"></ng-container>
+    <ng-container *ngTemplateOutlet="deleteModal"></ng-container>
+  </div>
+</ng-container>
+
+<ng-template #buttons let-obs="obs">
+  <a
+          ibmLink
+          class="center-link"
+          [href]="obs.downloadUrl"
+          [download]="obs.downloadName"
+          [disabled]="
+      !obs.downloadUrl ||
+      !obs.downloadName ||
+      obs.listColumn?.length < 1 ||
+      obs.disableInput ||
+      obs.loading
+    "
+  >
+    {{ 'listColumn.downloadButtonText' | translate }}
+  </a>
+  <button
+          (click)="openModal('create')"
+          ibmButton="primary"
+          size="md"
+          [disabled]="obs.loading"
+          class="ml-3"
+  >
+    {{ 'listColumn.addButtonText' | translate }}
+    <svg class="cds--btn__icon" ibmIcon="add" size="16"></svg>
+  </button>
+</ng-template>
+
+<ng-template #moveRowButtons let-index="index" let-length="length">
+  <div
+          class="move-row-buttons"
+          *ngIf="{
+      disableInput: disableInput$ | async,
+      objectId: objectId$ | async
+    } as obs"
+  >
+    <i
+            class="mdi mdi-delete btn btn-outline-danger mr-1"
+            (click)="deleteRow(index, $event)"
+            [ngClass]="{'disabled disabled-move-row-button': obs.disableInput}"
+    ></i>
+    <i
+            class="mdi mdi-arrow-up-bold btn btn-outline-primary mr-1"
+            (click)="moveRow(index, true, $event, obs.objectId)"
+            [ngClass]="{'disabled disabled-move-row-button': index === 0 || obs.disableInput}"
+    ></i>
+    <i
+            class="mdi mdi-arrow-down-bold btn btn-outline-secondary"
+            (click)="moveRow(index, false, $event, obs.objectId)"
+            [ngClass]="{'disabled disabled-move-row-button': index === length - 1 || obs.disableInput}"
+    ></i>
+  </div>
+</ng-template>
+
+<ng-template #list let-obs="obs">
+  <valtimo-list
+          [items]="obs.listColumn"
+          [fields]="obs.fields"
+          [viewMode]="false"
+          [header]="false"
+          *ngIf="obs.listColumn; else loading"
+          [lastColumnTemplate]="moveRowButtonsTemplateRef"
+          (rowClicked)="columnRowClicked($event)"
+  >
+  </valtimo-list>
+</ng-template>
+
+<ng-template #createEditModal>
+  <ibm-modal
+          *ngIf="{
+      type: currentModalType$ | async,
+      show: showModal$ | async,
+      valid: valid$ | async,
+      disableInput: disableInput$ | async,
+      validKey: validKey$ | async,
+      disableDefaultSort: disableDefaultSort$ | async,
+      showEnum: showEnum$ | async,
+      isYesNo: isYesNo$ | async
+    } as modalObs"
+          [open]="modalObs.show"
+  >
+    <ibm-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+      <h3 ibmModalHeaderHeading>
+        {{
+        modalObs.type === 'create'
+                ? ('listColumn.addButtonText' | translate)
+                : ('listColumn.editColumnTitle' | translate)
+        }}
+      </h3>
+    </ibm-modal-header>
+    <section ibmModalContent>
+      <ng-container *ngTemplateOutlet="modalContent; context: {modalObs: modalObs}"></ng-container>
+    </section>
+    <ng-container *ngTemplateOutlet="modalFooter; context: {modalObs: modalObs}"></ng-container>
+  </ibm-modal>
+</ng-template>
+
+<ng-template #modalContent let-modalObs="modalObs">
+  <form [formGroup]="formGroup" class="list-column-form">
+    <div class="cds--text-input__field-wrapper">
+      <ibm-label [disabled]="modalObs.disableInput">
+        <span class="label-with-tooltip">
+          {{ 'listColumn.titleTitle' | translate }}
+          <v-tooltip-icon
+                  [tooltip]="'listColumn.titleTooltip' | translate"
+                  [disabled]="modalObs.disableInput"
+          ></v-tooltip-icon>
+        </span>
+        <input ibmText formControlName="title" />
+      </ibm-label>
+    </div>
+    <div class="cds--text-input__field-wrapper">
+      <ibm-label
+              [disabled]="modalObs.disableInput || modalObs.type === 'edit'"
+              [invalid]="modalObs.validKey === false"
+              [invalidText]="'listColumn.uniqueKeyWarning' | translate"
+      >
+        <span class="label-with-tooltip">
+          {{ 'listColumn.key' | translate }}
+          <v-tooltip-icon
+                  [tooltip]="'listColumn.keyTooltip' | translate"
+                  [disabled]="modalObs.disableInput"
+          ></v-tooltip-icon>
+        </span>
+        <input ibmText formControlName="key" [invalid]="modalObs.validKey === false" />
+      </ibm-label>
+    </div>
+    <div class="cds--text-input__field-wrapper">
+      <ibm-label [disabled]="modalObs.disableInput">
+        <span class="label-with-tooltip">
+          {{ 'listColumn.path' | translate }}
+          <v-tooltip-icon
+                  [tooltip]="'listColumn.pathTooltip' | translate"
+                  [disabled]="modalObs.disableInput"
+          ></v-tooltip-icon>
+        </span>
+        <input ibmText formControlName="path" />
+      </ibm-label>
+    </div>
+    <div class="cds--text-input__field-wrapper">
+      <ibm-label [disabled]="modalObs.disableInput">
+        <span class="label-with-tooltip select-label">
+          {{ 'listColumn.displayType' | translate }}
+          <v-tooltip-icon
+                  [tooltip]="'listColumn.displayTypeTooltip' | translate"
+                  [disabled]="modalObs.disableInput"
+          ></v-tooltip-icon>
+        </span>
+        <ibm-dropdown formControlName="displayType" [disabled]="modalObs.disableInput">
+          <ibm-dropdown-list [items]="viewTypeItems$ | async"></ibm-dropdown-list>
+        </ibm-dropdown>
+      </ibm-label>
+    </div>
+    <div class="cds--text-input__field-wrapper" *ngIf="showDateFormat$ | async">
+      <ibm-label [disabled]="modalObs.disableInput">
+        <span class="label-with-tooltip">
+          {{ 'listColumn.dateFormat' | translate }}
+          <v-tooltip-icon
+                  [tooltip]="'listColumn.dateFormatTooltip' | translate"
+                  [disabled]="modalObs.disableInput"
+          ></v-tooltip-icon>
+        </span>
+        <input ibmText formControlName="dateFormat" />
+      </ibm-label>
+    </div>
+    <div class="cds--text-input__field-wrapper" *ngIf="modalObs.showEnum || modalObs.isYesNo">
+      <ibm-label [disabled]="modalObs.disableInput">
+        <span class="label-with-tooltip select-label">
+          {{
+          modalObs.isYesNo
+                  ? ('listColumn.enumTitleOptional' | translate)
+                  : ('listColumn.enumTitle' | translate)
+          }}
+          <v-tooltip-icon
+                  [tooltip]="'listColumn.enumTooltip' | translate"
+                  [disabled]="modalObs.disableInput"
+          ></v-tooltip-icon>
+        </span>
+        <valtimo-carbon-multi-input
+                *ngIf="(showModal$ | async) || (modalShowing$ | async)"
+                type="keyValue"
+                (valueChange)="enumValueChange($event)"
+                [defaultValues]="defaultEnumValues$ | async"
+        ></valtimo-carbon-multi-input>
+      </ibm-label>
+    </div>
+    <div class="cds--text-input__field-wrapper">
+      <ibm-checkbox formControlName="sortable"
+      >{{ 'listColumn.sortable' | translate }}
+      </ibm-checkbox>
+    </div>
+    <div class="cds--text-input__field-wrapper">
+      <ibm-label [disabled]="modalObs.disableInput || modalObs.disableDefaultSort">
+        <span class="label-with-tooltip select-label">
+          {{ 'listColumn.defaultSortTitle' | translate }}
+          <v-tooltip-icon
+                  [tooltip]="'listColumn.defaultSortTooltip' | translate"
+                  [disabled]="modalObs.disableInput"
+          ></v-tooltip-icon>
+        </span>
+        <ibm-dropdown
+                formControlName="defaultSort"
+                [disabled]="modalObs.disableInput || modalObs.disableDefaultSort"
+        >
+          <ibm-dropdown-list [items]="sortItems$ | async"></ibm-dropdown-list>
+        </ibm-dropdown>
+      </ibm-label>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #modalFooter let-modalObs="modalObs">
+  <ibm-modal-footer>
+    <ng-container>
+      <button
+              ibmButton="secondary"
+              [attr.modal-primary-focus]="true"
+              (click)="closeModal()"
+              [disabled]="modalObs.disableInput"
+      >
+        {{ 'listColumn.close' | translate }}
+      </button>
+      <button
+              ibmButton="primary"
+              [attr.modal-primary-focus]="true"
+              [disabled]="modalObs.valid === false"
+              (click)="saveCasListColumns()"
+              [disabled]="
+          modalObs.disableInput || modalObs.valid === false || modalObs.validKey === false
+        "
+      >
+        {{ 'listColumn.save' | translate }}
+      </button>
+    </ng-container>
+  </ibm-modal-footer>
+</ng-template>
+
+<ng-template #deleteModal>
+  <valtimo-confirmation-modal
+          [showModalSubject$]="showDeleteModal$"
+          [outputOnConfirm]="deleteRowIndex$ | async"
+          (confirmEvent)="deleteRowConfirmation($event)"
+          confirmButtonTextTranslationKey="listColumn.deleteColumn"
+          titleTranslationKey="listColumn.deleteColumn"
+          contentTranslationKey="listColumn.deleteColumnConfirmation"
+  ></valtimo-confirmation-modal>
+</ng-template>
+
+<ng-template #noConfigWarning>
+  <div class="pl-2 pr-2 pb-2">
+    <ibm-notification
+            [notificationObj]="{
+        type: 'info',
+        title: 'listColumn.noConfigWarningTitle' | translate,
+        showClose: false
+      }"
+    >
+    </ibm-notification>
+  </div>
+</ng-template>
+
+<ng-template #loading>
+  <div class="loading-icon"><ibm-loading></ibm-loading></div>
+</ng-template>

@@ -887,6 +887,7 @@
   "searchFieldsOverview": {
     "title": "Title",
     "key": "Key",
+    "add": "Add search field",
     "edit": "Edit search field",
     "path": "Path",
     "dataType": "Data type",
@@ -900,9 +901,15 @@
     "multi-select-dropdown": "Multi select dropdown",
     "range": "Range",
     "submit": "Submit",
+    "close": "Close",
+    "save": "save",
     "delete": "Delete",
+    "download": "Download",
     "addRow": "Add search field",
     "searchFieldPlaceholder": "Select a type...",
+    "noSearchFieldsConfiguredWarningTitle": "No search fields configured",
+    "deleteSearchField": "Delete search field",
+    "deleteSearchFieldConfirmation": "Are you sure you want to delete this search field?",
     "dropdownDataProvider": "Dropdown data source",
     "dropdownDatabaseDataProvider": "Fixed value",
     "dropdownJsonFileDataProvider": "Config file",
@@ -921,6 +928,12 @@
     "dropdownDataProvider": "The dropdown data source determines where the data for the dropdown comes from.",
     "configFile": "Use a config file with dropdown values. The config value must be present on the server",
     "dropdownListValues": "Set custom values for the dropdown list. The value shown in the dropdown list should be entered in the right text-field. The left text-field should contain the id of that value."
+  },
+  "searchFieldDataType": {
+    "select": "Select a data type"
+  },
+  "searchFieldFieldType": {
+    "select": "Select a field type"
   },
   "listColumn": {
     "title": "Title",
@@ -999,7 +1012,8 @@
     "visibleInMenu": "Visible in menu",
     "tabs": {
       "general": "General",
-      "list": "List"
+      "list": "List",
+      "searchFields": "Search Fields"
     }
   }
 }

@@ -17,24 +17,37 @@
   id="object-datail-content"
   class="pt-0"
   *ngIf="{
-    object: object$ | async
+    object: object$ | async,
+    loading: loading$ | async
   } as obs"
 >
-  <ng-container *ngTemplateOutlet="buttons; context: {object: obs.object}"></ng-container>
+  <ng-container *ngTemplateOutlet="buttons; context: {object: obs.object, loading: obs.loading}"></ng-container>
   <div class="clearfix"></div>
-  <ng-container *ngTemplateOutlet="widget; context: {object: obs.object}"></ng-container>
+  <ng-container *ngTemplateOutlet="widget; context: {object: obs.object, loading: obs.loading}"></ng-container>
 </div>
 
-<ng-template #buttons let-object="object">
+<ng-template #buttons let-object="object" let-loading="loading">
   <div class="btn-group mt-m3px mb-3 pr-2 float-right">
-    <button (click)="downloadDefinition(object)" class="btn btn-primary btn-space">
-      <i class="icon mdi mdi-download mr-1"></i>
+    <button
+            (click)="downloadDefinition(object)"
+            ibmButton="secondary"
+            size="md"
+            [disabled]="loading"
+            class="ml-3"
+    >
       {{ 'objectManagement.download' | translate }}
+      <svg class="cds--btn__icon" ibmIcon="download" size="16"></svg>
     </button>
     <a id="downloadAnchorElement" class="d-none"></a>
-    <button (click)="showEditModal()" class="btn btn-secondary btn-space">
-      <i class="icon mdi mdi-pencil mr-1"></i>
+    <button
+            (click)="showEditModal()"
+            ibmButton="primary"
+            size="md"
+            [disabled]="loading"
+            class="ml-3"
+    >
       {{ 'objectManagement.editObjecttype' | translate }}
+      <svg class="cds--btn__icon" ibmIcon="edit" size="16"></svg>
     </button>
   </div>
 </ng-template>

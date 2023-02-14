@@ -887,6 +887,7 @@
   "searchFieldsOverview": {
     "title": "Titel",
     "key": "Sleutel",
+    "add": "Zoekveld toevoegen",
     "edit": "Zoekveld bewerken",
     "path": "Pad",
     "dataType": "Datatype",
@@ -901,8 +902,14 @@
     "range": "Reeks",
     "submit": "Indienen",
     "delete": "Verwijderen",
+    "close": "Sluiten",
+    "save": "Opslaan",
+    "download": "Download",
     "addRow": "Zoekveld toevoegen",
     "searchFieldPlaceholder": "Kies een type...",
+    "noSearchFieldsConfiguredWarningTitle": "Geen zoekvelden geconfigureerd",
+    "deleteSearchField": "Zoekveld verwijderen",
+    "deleteSearchFieldConfirmation": "Weet u zeker dat u deze zoekveld wilt verwijderen?",
     "dropdownDataProvider": "Dropdown-databron",
     "dropdownDatabaseDataProvider": "Zet waarde",
     "dropdownJsonFileDataProvider": "Configuratiebestand",
@@ -921,6 +928,12 @@
     "dropdownDataProvider": "De dropdown-databron bepaalt waar de data voor de dropdown lijst vandaan komt.",
     "configFile": "Gebruik een configuratiebestand met dropdown-waarden",
     "dropdownListValues": "Stel aangepaste waarden in voor de dropdown lijst. De waarde die in de dropdown lijst wordt weergegeven, moet in het rechter tekstveld worden ingevoerd. Het linker tekstveld moet de id van die waarde bevatten."
+  },
+  "searchFieldDataType": {
+    "select": "Selecteer een datatype"
+  },
+  "searchFieldFieldType": {
+    "select": "Selecteer een veldtype"
   },
   "listColumn": {
     "title": "Titel",
@@ -999,6 +1012,7 @@
     "visibleInMenu": "Zichtbaar in het menu",
     "tabs": {
       "general": "Algemeen",
+      "searchFields": "Zoekvelden",
       "list": "Lijst"
     },
     "underscoresToSpaces": "Lage streepjes naar spaties",

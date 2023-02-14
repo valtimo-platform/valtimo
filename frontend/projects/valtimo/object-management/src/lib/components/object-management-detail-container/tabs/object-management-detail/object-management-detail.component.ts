@@ -18,7 +18,7 @@ import {Component, Input} from '@angular/core';
 import {Objecttype} from '../../../../models/object-management.model';
 import {ObjectManagementService} from '../../../../services/object-management.service';
 import {ObjectManagementStateService} from '../../../../services/object-management-state.service';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 
 @Component({
   selector: 'valtimo-object-management-detail',
@@ -27,13 +27,16 @@ import {Observable} from 'rxjs';
 })
 export class ObjectManagementDetailComponent {
   @Input() object$: Observable<Objecttype>;
+  readonly loading$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private readonly objectManagementService: ObjectManagementService,
     private readonly objectManagementState: ObjectManagementStateService
-  ) {}
+  ) {
+  }
 
   downloadDefinition(object): void {
+    this.loading$.next(true);
     const dataString =
       'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(object, null, 2));
     console.log(dataString);
@@ -41,10 +44,13 @@ export class ObjectManagementDetailComponent {
     downloadAnchorElement.setAttribute('href', dataString);
     downloadAnchorElement.setAttribute('download', `${object.id}.json`);
     downloadAnchorElement.click();
+    this.loading$.next(false);
   }
 
   showEditModal(): void {
+    this.loading$.next(true);
     this.objectManagementState.setModalType('edit');
     this.objectManagementState.showModal();
+    this.loading$.next(false);
   }
 }
