@@ -1,0 +1,185 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<v-form
+  (valueChange)="formValueChange($event)"
+  *ngIf="{
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+  } as obs"
+>
+  <v-input
+    name="configurationTitle"
+    [title]="'configurationTitle' | pluginTranslate : pluginId | async"
+    [margin]="true"
+    [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.configurationTitle"
+    [required]="true"
+    [tooltip]="'configurationTitleTooltip' | pluginTranslate : pluginId | async"
+    [widthPx]="350"
+  >
+  </v-input>
+  <ng-container
+    *ngIf="{notificatiePluginSelectItems: notificatiePluginSelectItems$ | async} as vars"
+  >
+    <v-select
+      [items]="vars.notificatiePluginSelectItems"
+      [margin]="true"
+      [widthInPx]="350"
+      name="notificatiesApiPluginConfiguration"
+      [title]="'notificatiesApiPluginConfiguration' | pluginTranslate : pluginId | async"
+      [disabled]="obs.disabled"
+      [defaultSelectionId]="obs.prefill?.notificatiesApiPluginConfiguration"
+      [required]="true"
+      [loading]="!vars.notificatiePluginSelectItems"
+      [tooltip]="'notificatiesApiPluginConfigurationTooltip' | pluginTranslate : pluginId | async"
+    ></v-select>
+  </ng-container>
+  <ng-container *ngIf="{objectManagementSelectItems: objectManagementSelectItems$ | async} as vars">
+    <v-select
+      [items]="vars.objectManagementSelectItems"
+      [margin]="true"
+      [widthInPx]="350"
+      name="objectManagementId"
+      [title]="'objectManagementId' | pluginTranslate : pluginId | async"
+      [disabled]="obs.disabled"
+      [defaultSelectionId]="obs.prefill?.objectManagementId"
+      [required]="true"
+      [loading]="!vars.objectManagementSelectItems"
+      [tooltip]="'objectManagementIdTooltip' | pluginTranslate : pluginId | async"
+    ></v-select>
+  </ng-container>
+  <ng-container *ngIf="{processSelectItems: processSelectItems$ | async} as vars">
+    <v-select
+      [items]="vars.processSelectItems"
+      [margin]="true"
+      [widthInPx]="350"
+      name="processToStart"
+      [title]="'processToStart' | pluginTranslate : pluginId | async"
+      [disabled]="obs.disabled"
+      [defaultSelectionId]="obs.prefill?.processToStart"
+      [required]="true"
+      [loading]="!vars.processSelectItems"
+      [tooltip]="'processToStartTooltip' | pluginTranslate : pluginId | async"
+    ></v-select>
+  </ng-container>
+  <v-input
+    name="rsin"
+    [title]="'rsin' | pluginTranslate : pluginId | async"
+    [margin]="true"
+    [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.rsin"
+    [required]="true"
+    [tooltip]="'rsinTooltip' | pluginTranslate : pluginId | async"
+    [widthPx]="350"
+  >
+  </v-input>
+  <v-multi-input-form
+    name="verzoekProperties"
+    [title]="'verzoekProperties' | pluginTranslate : pluginId | async"
+    [formTemplate]="mappingForm"
+    [addRowText]="'addVerzoekType' | pluginTranslate : pluginId | async"
+    [required]="false"
+    [tooltip]="'verzoekPropertiesTooltip' | pluginTranslate : pluginId | async"
+    (deleteRowEvent)="deleteRow($event)"
+    [initialAmountOfRows]="0"
+    [minimumAmountOfRows]="0"
+    [defaultValues]="obs.prefill?.verzoekProperties"
+  >
+  </v-multi-input-form>
+</v-form>
+
+<ng-template
+  #mappingForm
+  let-index="index"
+  let-uuid="uuid"
+  let-changeFunction="changeFunction"
+  let-prefill="prefill"
+>
+  <v-form
+    (valueChange)="changeFunction($event, uuid); verzoekTypeFormChange($event, uuid)"
+    *ngIf="{
+      disabled: disabled$ | async
+    } as obs"
+  >
+    <v-input
+      name="type"
+      [title]="'type' | pluginTranslate : pluginId | async"
+      [margin]="false"
+      [disabled]="obs.disabled"
+      [defaultValue]="prefill?.type"
+      [required]="true"
+      [tooltip]="'typeTooltip' | pluginTranslate : pluginId | async"
+      [widthPx]="350"
+      [smallMargin]="true"
+    >
+    </v-input>
+    <ng-container *ngIf="{documentSelectItems: documentSelectItems$ | async} as vars">
+      <v-select
+        [items]="vars.documentSelectItems"
+        [margin]="true"
+        [widthInPx]="350"
+        name="caseDefinitionName"
+        [title]="'caseDefinitionName' | pluginTranslate : pluginId | async"
+        [disabled]="obs.disabled"
+        [defaultSelectionId]="prefill?.caseDefinitionName"
+        [required]="true"
+        [loading]="!vars.documentSelectItems"
+        [tooltip]="'caseDefinitionNameTooltip' | pluginTranslate : pluginId | async"
+      ></v-select>
+    </ng-container>
+    <v-select
+      [items]="
+        rolTypeSelectItemsObservables[uuid]?.caseDefinitionName &&
+        (rolTypeSelectItemsObservables[uuid].items | async)
+      "
+      [margin]="true"
+      [widthInPx]="350"
+      name="initiatorRoltypeUrl"
+      [title]="'initiatorRoltypeUrl' | pluginTranslate : pluginId | async"
+      [disabled]="obs.disabled || !rolTypeSelectItemsObservables[uuid]?.caseDefinitionName"
+      [defaultSelectionId]="prefill?.initiatorRoltypeUrl"
+      [required]="true"
+      [tooltip]="'initiatorRoltypeUrlTooltip' | pluginTranslate : pluginId | async"
+    ></v-select>
+    <v-input
+      name="initiatorRolDescription"
+      [title]="'initiatorRolDescription' | pluginTranslate : pluginId | async"
+      [margin]="false"
+      [disabled]="obs.disabled"
+      [defaultValue]="prefill?.initiatorRolDescription || 'Initiator'"
+      [required]="true"
+      [tooltip]="'initiatorRolDescriptionTooltip' | pluginTranslate : pluginId | async"
+      [widthPx]="350"
+      [smallMargin]="true"
+    >
+    </v-input>
+    <ng-container *ngIf="{processSelectItems: processSelectItems$ | async} as vars">
+      <v-select
+        [items]="vars.processSelectItems"
+        [margin]="true"
+        [widthInPx]="350"
+        name="processDefinitionKey"
+        [title]="'processDefinitionKey' | pluginTranslate : pluginId | async"
+        [disabled]="obs.disabled"
+        [defaultSelectionId]="prefill?.processDefinitionKey"
+        [required]="true"
+        [loading]="!vars.processSelectItems"
+        [tooltip]="'processDefinitionKeyTooltip' | pluginTranslate : pluginId | async"
+      ></v-select>
+    </ng-container>
+  </v-form>
+</ng-template>

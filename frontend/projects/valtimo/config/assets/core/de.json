@@ -500,7 +500,9 @@
     "name": "Name",
     "delete": "Löschen",
     "deleteConfirmation": "Sind Sie sicher, dass Sie löschen möchten?",
-    "cancel": "Absagen"
+    "cancel": "Absagen",
+    "collapse": "Kollaps",
+    "expand": "Expandieren"
   },
   "taskDetail": {
     "taskCreated": "Erstellt",

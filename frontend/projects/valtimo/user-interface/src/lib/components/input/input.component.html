@@ -44,7 +44,9 @@
     class="v-input"
     [ngClass]="{
       'v-input--full-width': fullWidth,
-      'v-input--margin': margin
+      'v-input--margin': margin,
+                  'v-input--small-margin': smallMargin
+
     }"
     [style.width.px]="widthPx"
     [disabled]="disabled"
@@ -63,7 +65,9 @@
     class="v-input"
     [ngClass]="{
       'v-input--full-width': fullWidth,
-      'v-input--margin': margin
+      'v-input--margin': margin,
+                  'v-input--small-margin': smallMargin
+
     }"
     [style.width.px]="widthPx"
     [disabled]="disabled"
@@ -81,7 +85,9 @@
       *ngIf="{showPassword: showPassword$ | async} as obs"
       [ngClass]="{
         'v-input--full-width': fullWidth,
-        'v-input--margin': margin
+        'v-input--margin': margin,
+                    'v-input--small-margin': smallMargin
+
       }"
     >
       <input
@@ -118,6 +124,7 @@
     [ngClass]="{
       'v-input--full-width': fullWidth,
       'v-input--margin': margin,
+      'v-input--small-margin': smallMargin,
       'v-input--hide-spinbox': hideNumberSpinBox
     }"
     [style.width.px]="widthPx"
@@ -138,7 +145,9 @@
     class="v-input"
     [ngClass]="{
       'v-input--full-width': fullWidth,
-      'v-input--margin': margin
+      'v-input--margin': margin,
+                  'v-input--small-margin': smallMargin
+
     }"
     [style.width.px]="widthPx"
     [disabled]="disabled"

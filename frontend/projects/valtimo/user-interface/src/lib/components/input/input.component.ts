@@ -41,6 +41,7 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   @Input() widthPx!: number;
   @Input() fullWidth = false;
   @Input() margin = false;
+  @Input() smallMargin = false;
   @Input() disabled = false;
   @Input() step!: number;
   @Input() min!: number;

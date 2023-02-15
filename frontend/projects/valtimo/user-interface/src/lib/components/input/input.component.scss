@@ -64,6 +64,10 @@
   margin-block-end: var(--v-input-margin);
 }
 
+.v-input--small-margin {
+  margin-block-end: var(--v-input-small-margin);
+}
+
 .v-input__password-container {
   display: flex;
   flex-direction: row;

@@ -71,6 +71,7 @@
     align-items: center;
     padding-left: 10px;
     font-weight: var(--v-select-value-font-weight);
+    font-size: var(--v-input-font-size);
   }
   [dir='rtl'] .ng-select .ng-select-container .ng-value-container {
     padding-right: 10px;
@@ -331,6 +332,7 @@
     background-color: var(--v-select-background-color);
     color: var(--v-select-font-color);
     padding: 8px 10px;
+    font-size: var(--v-input-font-size);
   }
   .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-selected,
   .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-selected.ng-option-marked {

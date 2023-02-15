@@ -14,33 +14,22 @@
  * limitations under the License.
  */
 
-import {FormOutput} from './form';
-
-type MultiInputType = 'keyValue' | 'value';
-
-interface MultiInputKeyValue {
-  uuid?: string;
-  key: string;
-  value: string;
+interface Objecttype {
+  id: string;
+  title: string;
+  objecttypenApiPluginConfigurationId: string;
+  objecttypeId: string;
+  objectenApiPluginConfigurationId: string;
+  showInDataMenu: boolean;
+  formDefinitionView?: string;
+  formDefinitionEdit?: string;
 }
 
-interface MultiInputFormValue {
-  uuid?: string;
-  value: FormOutput | object;
-  expanded?: boolean;
+type ObjecttypeKeys = keyof Objecttype;
+
+interface Roltype {
+  name: string;
+  url: string;
 }
 
-type MultiInputValues = Array<MultiInputKeyValue>;
-
-type MultiInputFormsValues = Array<MultiInputFormValue>;
-
-type MultiInputOutput = MultiInputValues | Array<string>;
-
-export {
-  MultiInputType,
-  MultiInputValues,
-  MultiInputKeyValue,
-  MultiInputOutput,
-  MultiInputFormValue,
-  MultiInputFormsValues,
-};
+export {Objecttype, ObjecttypeKeys, Roltype};

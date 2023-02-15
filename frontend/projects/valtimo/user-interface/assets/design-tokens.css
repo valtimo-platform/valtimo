@@ -335,7 +335,8 @@
   --v-input-title-margin: var(--v-spacing-block-md);
   --v-input-title-margin-large: var(--v-spacing-block-2xl);
   --v-input-default-width: 200px;
-  --v-input-margin: var(--v-spacing-block-4xl);
+  --v-input-margin: var(--v-spacing-block-2xl);
+  --v-input-small-margin: var(--v-spacing-block-l);
   --v-input-disabled-cursor: var(--v-cursor-disabled);
   --v-input-tooltip-icon-size: var(--v-font-size-default);
   --v-input-tooltip-icon-margin: var(--v-spacing-inline-sm);
@@ -398,4 +399,9 @@
   --v-prompt-footer-border: 1px solid var(--v-color-grey-6);
   --v-prompt-content-padding-block-start: var(--v-spacing-block-2xl);
   --v-prompt-content-padding-block-end: var(--v-spacing-block-xl);
+  /* multi input form */
+  --v-multi-input-form-border: var(--v-border-medium);
+  --v-multi-input-padding: var(--v-spacing-inline-l);
+  --v-multi-input-button-spacing: var(--v-spacing-inline-sm);
+  --v-multi-input-form-bg-color: var(--v-color-white);
 }

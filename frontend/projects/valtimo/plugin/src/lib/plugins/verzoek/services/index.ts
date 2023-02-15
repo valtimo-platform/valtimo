@@ -14,33 +14,4 @@
  * limitations under the License.
  */
 
-import {FormOutput} from './form';
-
-type MultiInputType = 'keyValue' | 'value';
-
-interface MultiInputKeyValue {
-  uuid?: string;
-  key: string;
-  value: string;
-}
-
-interface MultiInputFormValue {
-  uuid?: string;
-  value: FormOutput | object;
-  expanded?: boolean;
-}
-
-type MultiInputValues = Array<MultiInputKeyValue>;
-
-type MultiInputFormsValues = Array<MultiInputFormValue>;
-
-type MultiInputOutput = MultiInputValues | Array<string>;
-
-export {
-  MultiInputType,
-  MultiInputValues,
-  MultiInputKeyValue,
-  MultiInputOutput,
-  MultiInputFormValue,
-  MultiInputFormsValues,
-};
+export * from './verzoek-plugin.service';

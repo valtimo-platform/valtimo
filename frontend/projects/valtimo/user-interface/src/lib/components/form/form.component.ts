@@ -31,6 +31,7 @@ import {FormOutput} from '../../models';
 import {SelectComponent} from '../select/select.component';
 import {MultiInputComponent} from '../multi-input/multi-input.component';
 import {DatePickerComponent} from '../date-picker/date-picker.component';
+import {MultiInputFormComponent} from '../multi-input-form/multi-input-form.component';
 
 @Component({
   selector: 'v-form',
@@ -42,6 +43,8 @@ export class FormComponent implements AfterContentInit, OnDestroy {
   @ContentChildren(SelectComponent) selectComponents!: QueryList<SelectComponent>;
   @ContentChildren(MultiInputComponent) multiInputComponents!: QueryList<MultiInputComponent>;
   @ContentChildren(DatePickerComponent) datePickerComponents!: QueryList<DatePickerComponent>;
+  @ContentChildren(MultiInputFormComponent)
+  multiInputFormComponents!: QueryList<MultiInputFormComponent>;
 
   @Input() className = '';
 
@@ -70,6 +73,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
       ...this.selectComponents?.toArray(),
       ...this.multiInputComponents?.toArray(),
       ...this.datePickerComponents?.toArray(),
+      ...this.multiInputFormComponents?.toArray(),
     ];
 
     this.componentValuesSubscription = combineLatest(
@@ -78,6 +82,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
         const selectComponent = component as SelectComponent;
         const multiInputComponent = component as MultiInputComponent;
         const datePickerComponent = component as DatePickerComponent;
+        const multiInputFormComponent = component as MultiInputFormComponent;
 
         if (inputComponent?.inputValue$) {
           return inputComponent.inputValue$.asObservable();
@@ -85,6 +90,8 @@ export class FormComponent implements AfterContentInit, OnDestroy {
           return selectComponent.selected$.asObservable();
         } else if (multiInputComponent?.mappedValues$) {
           return multiInputComponent.mappedValues$;
+        } else if (multiInputFormComponent?.mappedValues$) {
+          return multiInputFormComponent.mappedValues$;
         } else if (datePickerComponent?.dateValue$) {
           return datePickerComponent.dateValue$;
         } else {
@@ -119,6 +126,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
       this.selectComponents.changes.pipe(startWith(null)),
       this.multiInputComponents.changes.pipe(startWith(null)),
       this.datePickerComponents.changes.pipe(startWith(null)),
+      this.multiInputFormComponents.changes.pipe(startWith(null)),
     ]).subscribe(() => {
       this.closeComponentValuesSubscription();
       this.openComponentValuesSubscription();

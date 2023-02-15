@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Injectable} from '@angular/core';
+import {Injectable, Renderer2, RendererFactory2, RendererStyleFlags2} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {map, take, tap} from 'rxjs/operators';
 import {ModalComponent} from '../components/modal/modal.component';
@@ -30,6 +30,8 @@ export class ModalService {
   private readonly _disappearing$ = new BehaviorSubject<boolean>(false);
   private readonly _appearingDelayMs$ = new BehaviorSubject<number>(140);
   private readonly _modalData$ = new BehaviorSubject<ModalData>({});
+
+  private renderer!: Renderer2;
 
   get modalUuid$() {
     return this._modalUuid$.asObservable();
@@ -59,6 +61,10 @@ export class ModalService {
     return this._modalData$.asObservable();
   }
 
+  constructor(public rendererFactory2: RendererFactory2) {
+    this.renderer = rendererFactory2.createRenderer(null, null);
+  }
+
   setCurrentModal(modalComponent: ModalComponent): void {
     this._modalUuid$.next(modalComponent.uuid);
   }
@@ -73,6 +79,7 @@ export class ModalService {
 
   openModal(modalComponent?: ModalComponent, modalData?: ModalData): void {
     this._modalVisible$.next(true);
+    this.disablePageScroll();
 
     if (modalComponent) {
       this._modalUuid$.pipe(take(1)).subscribe(currentModalUuid => {
@@ -91,6 +98,7 @@ export class ModalService {
     this._disappearing$.next(true);
     this.setDisappearingTimeout();
     this._modalVisible$.next(false);
+    this.enablePageScroll();
 
     if (callBackFunction) {
       setTimeout(() => {
@@ -134,5 +142,18 @@ export class ModalService {
         this.clearModalData();
       }, appearingDelayMs);
     });
+  }
+
+  private disablePageScroll(): void {
+    this.renderer.setStyle(
+      document.getElementsByTagName('html')[0],
+      'overflow',
+      'hidden',
+      RendererStyleFlags2.Important
+    );
+  }
+
+  private enablePageScroll(): void {
+    this.renderer.removeStyle(document.getElementsByTagName('html')[0], 'overflow');
   }
 }

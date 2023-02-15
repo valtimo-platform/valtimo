@@ -87,3 +87,6 @@ export * from './lib/components/date-picker/date-picker.component';
 // Tooltip icon
 export * from './lib/components/tooltip-icon/tooltip-icon.module';
 export * from './lib/components/tooltip-icon/tooltip-icon.component';
+// Multi input form
+export * from './lib/components/multi-input-form/multi-input-form.component';
+export * from './lib/components/multi-input-form/multi-input-form.module';

@@ -500,7 +500,9 @@
     "name": "Naam",
     "delete": "Verwijderen",
     "deleteConfirmation": "Weet u zeker dat u wilt verwijderen?",
-    "cancel": "Annuleren"
+    "cancel": "Annuleren",
+    "collapse": "Inklappen",
+    "expand": "Uitklappen"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",

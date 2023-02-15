@@ -500,7 +500,10 @@
     "name": "Name",
     "delete": "Delete",
     "deleteConfirmation": "Are you sure you want to delete?",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "collapse": "Collapse",
+    "expand": "Expand"
+
   },
   "taskDetail": {
     "taskCreated": "Created",

@@ -14,33 +14,22 @@
  * limitations under the License.
  */
 
-import {FormOutput} from './form';
+import {PluginConfigurationData} from '../../../models';
 
-type MultiInputType = 'keyValue' | 'value';
-
-interface MultiInputKeyValue {
-  uuid?: string;
-  key: string;
-  value: string;
+interface VerzoekType {
+  caseDefinitionName: string;
+  processDefinitionKey: string;
+  initiatorRolDescription: string;
+  initiatorRoltypeUrl: string;
+  type: string;
 }
 
-interface MultiInputFormValue {
-  uuid?: string;
-  value: FormOutput | object;
-  expanded?: boolean;
+interface VerzoekConfig extends PluginConfigurationData {
+  notificatiesApiPluginConfiguration: string;
+  objectManagementId: string;
+  processToStart: string;
+  rsin: string;
+  verzoekProperties: Array<VerzoekType>;
 }
 
-type MultiInputValues = Array<MultiInputKeyValue>;
-
-type MultiInputFormsValues = Array<MultiInputFormValue>;
-
-type MultiInputOutput = MultiInputValues | Array<string>;
-
-export {
-  MultiInputType,
-  MultiInputValues,
-  MultiInputKeyValue,
-  MultiInputOutput,
-  MultiInputFormValue,
-  MultiInputFormsValues,
-};
+export {VerzoekConfig, VerzoekType};

@@ -181,15 +181,21 @@ export class ShellService implements OnDestroy {
   }
 
   private stopResizing(): void {
+    const mainContent = document.querySelector('.main-content');
+    const sideNav = document.querySelector('.cds--side-nav__navigation');
+
     this.renderer.removeStyle(document.body, 'user-select');
     this.renderer.removeStyle(document.body, 'cursor');
     this._isResizing$.next(false);
     this.renderer.removeClass(this._resizeBorderElement$.getValue(), 'resize-hover');
-    this.renderer.removeStyle(
-      document.querySelector('.cds--side-nav__navigation'),
-      'pointer-events'
-    );
-    this.renderer.removeStyle(document.querySelector('.main-content'), 'pointer-events');
+
+    if (sideNav) {
+      this.renderer.removeStyle(sideNav, 'pointer-events');
+    }
+
+    if (mainContent) {
+      this.renderer.removeStyle(mainContent, 'pointer-events');
+    }
     localStorage.setItem('sidenavWidth', this._sidenavWidth$.getValue().toString());
   }
 
