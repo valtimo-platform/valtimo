@@ -19,6 +19,7 @@ import {ZAKEN_API_PLUGIN_LOGO_BASE64} from './assets';
 import {LinkDocumentToZaakConfigurationComponent} from './components/link-document-to-zaak/link-document-to-zaak-configuration.component';
 import {ZakenApiConfigurationComponent} from './components/zaken-api-configuration/zaken-api-configuration.component';
 import {LinkUploadedDocumentToZaakConfigurationComponent} from './components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
+import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -27,6 +28,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
   functionConfigurationComponents: {
     'link-document-to-zaak': LinkDocumentToZaakConfigurationComponent,
     'link-uploaded-document-to-zaak': LinkUploadedDocumentToZaakConfigurationComponent,
+    'create-zaak': CreateZaakConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -57,6 +59,16 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'Selecteer de plugin die de authenticatie kan afhandelen. Wanneer de selectiebox leeg blijft zal de authenticatie plugin (bv. OpenZaak) eerst aangemaakt moeten worden',
       linkDocumentInformation:
         'Deze actie koppelt een document uit de Documenten API aan de zaak die bij het dossier hoort.',
+      'create-zaak': 'Zaak aanmaken',
+      createZaakInformation:
+        'Deze actie creëert een zaak in de Zaken API en koppeld de nieuwe zaak aan het dossier.',
+      rsin: 'RSIN',
+      rsinTooltip: 'Rechtspersonen en Samenwerkingsverbanden Informatienummer',
+      zaakType: 'Zaaktype',
+      zaakTypeTooltip: 'In dit veld moet de verwijzing komen naar de type zaak.',
+      inputTypeZaakTypeToggle: 'Invoertype Zaaktype-URL',
+      text: 'Tekst',
+      selection: 'Selectie',
     },
     en: {
       title: 'Zaken API',
@@ -86,6 +98,16 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'Select the plugin that can handle the authentication. If the selection box remains empty, the authentication plugin (e.g. OpenZaak) will have to be created first',
       linkDocumentInformation:
         'This action links a document from the Documents API to the zaak associated with the case.',
+      'create-zaak': 'Create zaak',
+      createZaakInformation:
+        'This action creates a zaak in the Zaken API and links the new zaak with the case.',
+      rsin: 'RSIN',
+      rsinTooltip: 'Legal Entities and Partnerships Information Number',
+      zaakType: 'Zaaktype',
+      zaakTypeTooltip: 'In this field the reference must be made to the type of the zaak.',
+      inputTypeZaakTypeToggle: 'Input type Zaaktype-URL',
+      text: 'Text',
+      selection: 'Selection',
     },
     de: {
       title: 'Zaken API',
@@ -115,6 +137,16 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'Wählen Sie das Plugin aus, das die Authentifizierung verarbeiten kann. Bleibt das Auswahlfeld leer, muss zunächst das Authentifizierungs-Plugin (z. B. OpenZaak) erstellt werden',
       linkDocumentInformation:
         'Diese Aktion verknüpft ein Dokument aus der Dokumenten-API mit dem mit dem Fall verknüpften Zaak.',
+      'create-zaak': 'Zaak erschaffen',
+      createZaakInformation:
+        'Diese Aktion hat einen zaak in der Zaken-API definiert und den neuen zaak mit dem Fall verknüpft.',
+      rsin: 'RSIN',
+      rsinTooltip: 'Informationsnummer für juristische Personen und Partnerschaften.',
+      zaakType: 'Zaaktype',
+      zaakTypeTooltip: 'In diesem Feld muss auf die zaaktype verwiesen werden.',
+      inputTypeZaakTypeToggle: 'Eingabetyp Zaaktype-URL',
+      text: 'Text',
+      selection: 'Auswahl',
     },
   },
 };

@@ -14,23 +14,6 @@
  * limitations under the License.
  */
 
-import {PluginConfigurationData} from '../../../models';
-
-interface ZakenApiConfig extends PluginConfigurationData {
-  url: string;
-  authenticationPluginConfiguration: string;
+.v-toggle--margin {
+  margin-block-end: var(--v-input-margin);
 }
-
-interface LinkDocumentToZaakConfig {
-  documentUrl: string;
-  titel: string;
-  beschrijving: string;
-}
-
-interface CreateZaakConfig {
-  rsin: string;
-  manualZaakTypeUrl: boolean;
-  zaaktypeUrl: string;
-}
-
-export {ZakenApiConfig, LinkDocumentToZaakConfig, CreateZaakConfig};

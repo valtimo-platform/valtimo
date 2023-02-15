@@ -1,0 +1,82 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<v-paragraph [margin]="true" [italic]="true">
+  {{ 'createZaakInformation' | pluginTranslate : pluginId | async }}
+</v-paragraph>
+<v-form
+  (valueChange)="formValueChange($event)"
+  *ngIf="{
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+  } as obs"
+>
+  <v-input
+    name="rsin"
+    [title]="'rsin' | pluginTranslate : pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.rsin"
+    [disabled]="obs.disabled"
+    [required]="true"
+    [tooltip]="'rsinTooltip' | pluginTranslate : pluginId | async"
+    [widthPx]="350"
+  >
+  </v-input>
+  <div [ngClass]="'v-toggle--margin'">
+    <v-input-label
+      [title]="'inputTypeZaakTypeToggle' | pluginTranslate : pluginId | async"
+      [name]="'inputTypeZaakTypeToggle'"
+      [required]="false"
+    >
+    </v-input-label>
+    <ibm-toggle
+      [onText]="'text' | pluginTranslate : pluginId | async"
+      [offText]="'selection' | pluginTranslate : pluginId | async"
+      [disabled]="obs.disabled"
+      [checked]="false"
+      (checkedChange)="toggleInputTypeZaakType()"
+    >
+    </ibm-toggle>
+  </div>
+  <v-input
+    *ngIf="inputTypeTextZaakType"
+    name="zaaktypeUrl"
+    [title]="'zaakType' | pluginTranslate : pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.zaaktypeUrl"
+    [disabled]="obs.disabled || !inputTypeTextZaakType"
+    [required]="true"
+    [tooltip]="'zaakTypeTooltip' | pluginTranslate : pluginId | async"
+    [fullWidth]="true"
+  >
+  </v-input>
+  <ng-container
+    *ngIf="!inputTypeTextZaakType && {zaakTypeSelectItems: zaakTypeSelectItems$ | async} as vars"
+  >
+    <v-select
+      [items]="vars.zaakTypeSelectItems"
+      [margin]="true"
+      [widthInPx]="350"
+      name="zaaktypeUrl"
+      [title]="'zaakType' | pluginTranslate : pluginId | async"
+      [disabled]="obs.disabled || inputTypeTextZaakType"
+      [defaultSelectionId]="obs.prefill?.zaaktypeUrl"
+      [required]="true"
+      [loading]="!vars.zaakTypeSelectItems"
+      [tooltip]="'zaakTypeTooltip' | pluginTranslate : pluginId | async"
+    ></v-select>
+  </ng-container>
+</v-form>
