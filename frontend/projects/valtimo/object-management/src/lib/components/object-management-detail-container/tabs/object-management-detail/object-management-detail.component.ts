@@ -32,8 +32,7 @@ export class ObjectManagementDetailComponent {
   constructor(
     private readonly objectManagementService: ObjectManagementService,
     private readonly objectManagementState: ObjectManagementStateService
-  ) {
-  }
+  ) {}
 
   downloadDefinition(object): void {
     this.loading$.next(true);

@@ -21,6 +21,7 @@ import {PortaaltaakConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {SelectItem} from '@valtimo/user-interface';
+import {ProcessService} from '@valtimo/process';
 import {ObjectService} from '../../services';
 
 @Component({
@@ -62,6 +63,18 @@ export class PortaaltaakConfigurationComponent
       }))
     )
   );
+
+  readonly processSelectItems$: Observable<Array<SelectItem>> = this.processService
+    .getProcessDefinitions()
+    .pipe(
+      map(processDefinitions =>
+        processDefinitions.map(processDefinition => ({
+          id: processDefinition.key,
+          text: processDefinition.name,
+        }))
+      )
+    );
+
   private saveSubscription!: Subscription;
   private readonly formValue$ = new BehaviorSubject<PortaaltaakConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
@@ -70,7 +83,8 @@ export class PortaaltaakConfigurationComponent
     private readonly pluginManagementService: PluginManagementService,
     private readonly objectManagementService: ObjectService,
     private readonly translateService: TranslateService,
-    private readonly pluginTranslationService: PluginTranslationService
+    private readonly pluginTranslationService: PluginTranslationService,
+    private readonly processService: ProcessService
   ) {}
 
   ngOnInit(): void {

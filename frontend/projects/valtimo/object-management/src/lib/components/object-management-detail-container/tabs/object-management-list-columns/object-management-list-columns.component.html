@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 <ng-container
-        *ngIf="{
+  *ngIf="{
     listColumn: translatedObjectManagementListColumns$ | async,
     fields: objectManagementFields$ | async,
     objectId: objectId$ | async,
@@ -41,11 +41,11 @@
 
 <ng-template #buttons let-obs="obs">
   <a
-          ibmLink
-          class="center-link"
-          [href]="obs.downloadUrl"
-          [download]="obs.downloadName"
-          [disabled]="
+    ibmLink
+    class="center-link"
+    [href]="obs.downloadUrl"
+    [download]="obs.downloadName"
+    [disabled]="
       !obs.downloadUrl ||
       !obs.downloadName ||
       obs.listColumn?.length < 1 ||
@@ -56,11 +56,11 @@
     {{ 'listColumn.downloadButtonText' | translate }}
   </a>
   <button
-          (click)="openModal('create')"
-          ibmButton="primary"
-          size="md"
-          [disabled]="obs.loading"
-          class="ml-3"
+    (click)="openModal('create')"
+    ibmButton="primary"
+    size="md"
+    [disabled]="obs.loading"
+    class="ml-3"
   >
     {{ 'listColumn.addButtonText' | translate }}
     <svg class="cds--btn__icon" ibmIcon="add" size="16"></svg>
@@ -69,46 +69,46 @@
 
 <ng-template #moveRowButtons let-index="index" let-length="length">
   <div
-          class="move-row-buttons"
-          *ngIf="{
+    class="move-row-buttons"
+    *ngIf="{
       disableInput: disableInput$ | async,
       objectId: objectId$ | async
     } as obs"
   >
     <i
-            class="mdi mdi-delete btn btn-outline-danger mr-1"
-            (click)="deleteRow(index, $event)"
-            [ngClass]="{'disabled disabled-move-row-button': obs.disableInput}"
+      class="mdi mdi-delete btn btn-outline-danger mr-1"
+      (click)="deleteRow(index, $event)"
+      [ngClass]="{'disabled disabled-move-row-button': obs.disableInput}"
     ></i>
     <i
-            class="mdi mdi-arrow-up-bold btn btn-outline-primary mr-1"
-            (click)="moveRow(index, true, $event, obs.objectId)"
-            [ngClass]="{'disabled disabled-move-row-button': index === 0 || obs.disableInput}"
+      class="mdi mdi-arrow-up-bold btn btn-outline-primary mr-1"
+      (click)="moveRow(index, true, $event, obs.objectId)"
+      [ngClass]="{'disabled disabled-move-row-button': index === 0 || obs.disableInput}"
     ></i>
     <i
-            class="mdi mdi-arrow-down-bold btn btn-outline-secondary"
-            (click)="moveRow(index, false, $event, obs.objectId)"
-            [ngClass]="{'disabled disabled-move-row-button': index === length - 1 || obs.disableInput}"
+      class="mdi mdi-arrow-down-bold btn btn-outline-secondary"
+      (click)="moveRow(index, false, $event, obs.objectId)"
+      [ngClass]="{'disabled disabled-move-row-button': index === length - 1 || obs.disableInput}"
     ></i>
   </div>
 </ng-template>
 
 <ng-template #list let-obs="obs">
   <valtimo-list
-          [items]="obs.listColumn"
-          [fields]="obs.fields"
-          [viewMode]="false"
-          [header]="false"
-          *ngIf="obs.listColumn; else loading"
-          [lastColumnTemplate]="moveRowButtonsTemplateRef"
-          (rowClicked)="columnRowClicked($event)"
+    [items]="obs.listColumn"
+    [fields]="obs.fields"
+    [viewMode]="false"
+    [header]="false"
+    *ngIf="obs.listColumn; else loading"
+    [lastColumnTemplate]="moveRowButtonsTemplateRef"
+    (rowClicked)="columnRowClicked($event)"
   >
   </valtimo-list>
 </ng-template>
 
 <ng-template #createEditModal>
   <ibm-modal
-          *ngIf="{
+    *ngIf="{
       type: currentModalType$ | async,
       show: showModal$ | async,
       valid: valid$ | async,
@@ -118,14 +118,14 @@
       showEnum: showEnum$ | async,
       isYesNo: isYesNo$ | async
     } as modalObs"
-          [open]="modalObs.show"
+    [open]="modalObs.show"
   >
     <ibm-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
       <h3 ibmModalHeaderHeading>
         {{
-        modalObs.type === 'create'
-                ? ('listColumn.addButtonText' | translate)
-                : ('listColumn.editColumnTitle' | translate)
+          modalObs.type === 'create'
+            ? ('listColumn.addButtonText' | translate)
+            : ('listColumn.editColumnTitle' | translate)
         }}
       </h3>
     </ibm-modal-header>
@@ -143,8 +143,8 @@
         <span class="label-with-tooltip">
           {{ 'listColumn.titleTitle' | translate }}
           <v-tooltip-icon
-                  [tooltip]="'listColumn.titleTooltip' | translate"
-                  [disabled]="modalObs.disableInput"
+            [tooltip]="'listColumn.titleTooltip' | translate"
+            [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
         <input ibmText formControlName="title" />
@@ -152,15 +152,15 @@
     </div>
     <div class="cds--text-input__field-wrapper">
       <ibm-label
-              [disabled]="modalObs.disableInput || modalObs.type === 'edit'"
-              [invalid]="modalObs.validKey === false"
-              [invalidText]="'listColumn.uniqueKeyWarning' | translate"
+        [disabled]="modalObs.disableInput || modalObs.type === 'edit'"
+        [invalid]="modalObs.validKey === false"
+        [invalidText]="'listColumn.uniqueKeyWarning' | translate"
       >
         <span class="label-with-tooltip">
           {{ 'listColumn.key' | translate }}
           <v-tooltip-icon
-                  [tooltip]="'listColumn.keyTooltip' | translate"
-                  [disabled]="modalObs.disableInput"
+            [tooltip]="'listColumn.keyTooltip' | translate"
+            [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
         <input ibmText formControlName="key" [invalid]="modalObs.validKey === false" />
@@ -171,8 +171,8 @@
         <span class="label-with-tooltip">
           {{ 'listColumn.path' | translate }}
           <v-tooltip-icon
-                  [tooltip]="'listColumn.pathTooltip' | translate"
-                  [disabled]="modalObs.disableInput"
+            [tooltip]="'listColumn.pathTooltip' | translate"
+            [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
         <input ibmText formControlName="path" />
@@ -183,8 +183,8 @@
         <span class="label-with-tooltip select-label">
           {{ 'listColumn.displayType' | translate }}
           <v-tooltip-icon
-                  [tooltip]="'listColumn.displayTypeTooltip' | translate"
-                  [disabled]="modalObs.disableInput"
+            [tooltip]="'listColumn.displayTypeTooltip' | translate"
+            [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
         <ibm-dropdown formControlName="displayType" [disabled]="modalObs.disableInput">
@@ -197,8 +197,8 @@
         <span class="label-with-tooltip">
           {{ 'listColumn.dateFormat' | translate }}
           <v-tooltip-icon
-                  [tooltip]="'listColumn.dateFormatTooltip' | translate"
-                  [disabled]="modalObs.disableInput"
+            [tooltip]="'listColumn.dateFormatTooltip' | translate"
+            [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
         <input ibmText formControlName="dateFormat" />
@@ -208,26 +208,26 @@
       <ibm-label [disabled]="modalObs.disableInput">
         <span class="label-with-tooltip select-label">
           {{
-          modalObs.isYesNo
-                  ? ('listColumn.enumTitleOptional' | translate)
-                  : ('listColumn.enumTitle' | translate)
+            modalObs.isYesNo
+              ? ('listColumn.enumTitleOptional' | translate)
+              : ('listColumn.enumTitle' | translate)
           }}
           <v-tooltip-icon
-                  [tooltip]="'listColumn.enumTooltip' | translate"
-                  [disabled]="modalObs.disableInput"
+            [tooltip]="'listColumn.enumTooltip' | translate"
+            [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
         <valtimo-carbon-multi-input
-                *ngIf="(showModal$ | async) || (modalShowing$ | async)"
-                type="keyValue"
-                (valueChange)="enumValueChange($event)"
-                [defaultValues]="defaultEnumValues$ | async"
+          *ngIf="(showModal$ | async) || (modalShowing$ | async)"
+          type="keyValue"
+          (valueChange)="enumValueChange($event)"
+          [defaultValues]="defaultEnumValues$ | async"
         ></valtimo-carbon-multi-input>
       </ibm-label>
     </div>
     <div class="cds--text-input__field-wrapper">
       <ibm-checkbox formControlName="sortable"
-      >{{ 'listColumn.sortable' | translate }}
+        >{{ 'listColumn.sortable' | translate }}
       </ibm-checkbox>
     </div>
     <div class="cds--text-input__field-wrapper">
@@ -235,13 +235,13 @@
         <span class="label-with-tooltip select-label">
           {{ 'listColumn.defaultSortTitle' | translate }}
           <v-tooltip-icon
-                  [tooltip]="'listColumn.defaultSortTooltip' | translate"
-                  [disabled]="modalObs.disableInput"
+            [tooltip]="'listColumn.defaultSortTooltip' | translate"
+            [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
         <ibm-dropdown
-                formControlName="defaultSort"
-                [disabled]="modalObs.disableInput || modalObs.disableDefaultSort"
+          formControlName="defaultSort"
+          [disabled]="modalObs.disableInput || modalObs.disableDefaultSort"
         >
           <ibm-dropdown-list [items]="sortItems$ | async"></ibm-dropdown-list>
         </ibm-dropdown>
@@ -254,19 +254,19 @@
   <ibm-modal-footer>
     <ng-container>
       <button
-              ibmButton="secondary"
-              [attr.modal-primary-focus]="true"
-              (click)="closeModal()"
-              [disabled]="modalObs.disableInput"
+        ibmButton="secondary"
+        [attr.modal-primary-focus]="true"
+        (click)="closeModal()"
+        [disabled]="modalObs.disableInput"
       >
         {{ 'listColumn.close' | translate }}
       </button>
       <button
-              ibmButton="primary"
-              [attr.modal-primary-focus]="true"
-              [disabled]="modalObs.valid === false"
-              (click)="saveCasListColumns()"
-              [disabled]="
+        ibmButton="primary"
+        [attr.modal-primary-focus]="true"
+        [disabled]="modalObs.valid === false"
+        (click)="saveCasListColumns()"
+        [disabled]="
           modalObs.disableInput || modalObs.valid === false || modalObs.validKey === false
         "
       >
@@ -278,19 +278,19 @@
 
 <ng-template #deleteModal>
   <valtimo-confirmation-modal
-          [showModalSubject$]="showDeleteModal$"
-          [outputOnConfirm]="deleteRowIndex$ | async"
-          (confirmEvent)="deleteRowConfirmation($event)"
-          confirmButtonTextTranslationKey="listColumn.deleteColumn"
-          titleTranslationKey="listColumn.deleteColumn"
-          contentTranslationKey="listColumn.deleteColumnConfirmation"
+    [showModalSubject$]="showDeleteModal$"
+    [outputOnConfirm]="deleteRowIndex$ | async"
+    (confirmEvent)="deleteRowConfirmation($event)"
+    confirmButtonTextTranslationKey="listColumn.deleteColumn"
+    titleTranslationKey="listColumn.deleteColumn"
+    contentTranslationKey="listColumn.deleteColumnConfirmation"
   ></valtimo-confirmation-modal>
 </ng-template>
 
 <ng-template #noConfigWarning>
   <div class="pl-2 pr-2 pb-2">
     <ibm-notification
-            [notificationObj]="{
+      [notificationObj]="{
         type: 'info',
         title: 'listColumn.noConfigWarningTitle' | translate,
         showClose: false

@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 <ng-container
-        *ngIf="{
+  *ngIf="{
     searchFields: translatedObjectManagementListSearchFields$ | async,
     fields: objectManagementFields$ | async,
     objectId: objectId$ | async,
@@ -41,11 +41,11 @@
 
 <ng-template #buttons let-obs="obs">
   <a
-          ibmLink
-          class="center-link"
-          [href]="obs.downloadUrl"
-          [download]="obs.downloadName"
-          [disabled]="
+    ibmLink
+    class="center-link"
+    [href]="obs.downloadUrl"
+    [download]="obs.downloadName"
+    [disabled]="
       !obs.downloadUrl ||
       !obs.downloadName ||
       obs.searchFields?.length < 1 ||
@@ -56,11 +56,11 @@
     {{ 'searchFieldsOverview.download' | translate }}
   </a>
   <button
-          (click)="openModal('create')"
-          ibmButton="primary"
-          size="md"
-          [disabled]="obs.loading"
-          class="ml-3"
+    (click)="openModal('create')"
+    ibmButton="primary"
+    size="md"
+    [disabled]="obs.loading"
+    class="ml-3"
   >
     {{ 'searchFieldsOverview.add' | translate }}
     <svg class="cds--btn__icon" ibmIcon="add" size="16"></svg>
@@ -69,60 +69,60 @@
 
 <ng-template #moveRowButtons let-index="index" let-length="length">
   <div
-          class="move-row-buttons"
-          *ngIf="{
+    class="move-row-buttons"
+    *ngIf="{
       disableInput: disableInput$ | async,
       objectId: objectId$ | async
     } as obs"
   >
     <i
-            class="mdi mdi-delete btn btn-outline-danger mr-1"
-            (click)="deleteRow(index, $event)"
-            [ngClass]="{'disabled disabled-move-row-button': obs.disableInput}"
+      class="mdi mdi-delete btn btn-outline-danger mr-1"
+      (click)="deleteRow(index, $event)"
+      [ngClass]="{'disabled disabled-move-row-button': obs.disableInput}"
     ></i>
     <i
-            class="mdi mdi-arrow-up-bold btn btn-outline-primary mr-1"
-            (click)="moveRow(index, true, $event, obs.objectId)"
-            [ngClass]="{'disabled disabled-move-row-button': index === 0 || obs.disableInput}"
+      class="mdi mdi-arrow-up-bold btn btn-outline-primary mr-1"
+      (click)="moveRow(index, true, $event, obs.objectId)"
+      [ngClass]="{'disabled disabled-move-row-button': index === 0 || obs.disableInput}"
     ></i>
     <i
-            class="mdi mdi-arrow-down-bold btn btn-outline-secondary"
-            (click)="moveRow(index, false, $event, obs.objectId)"
-            [ngClass]="{'disabled disabled-move-row-button': index === length - 1 || obs.disableInput}"
+      class="mdi mdi-arrow-down-bold btn btn-outline-secondary"
+      (click)="moveRow(index, false, $event, obs.objectId)"
+      [ngClass]="{'disabled disabled-move-row-button': index === length - 1 || obs.disableInput}"
     ></i>
   </div>
 </ng-template>
 
 <ng-template #list let-obs="obs">
   <valtimo-list
-          [items]="obs.searchFields"
-          [fields]="obs.fields"
-          [viewMode]="false"
-          [header]="false"
-          *ngIf="obs.searchFields; else loading"
-          [lastColumnTemplate]="moveRowButtonsTemplateRef"
-          (rowClicked)="columnRowClicked($event)"
+    [items]="obs.searchFields"
+    [fields]="obs.fields"
+    [viewMode]="false"
+    [header]="false"
+    *ngIf="obs.searchFields; else loading"
+    [lastColumnTemplate]="moveRowButtonsTemplateRef"
+    (rowClicked)="columnRowClicked($event)"
   >
   </valtimo-list>
 </ng-template>
 
 <ng-template #createEditModal>
   <ibm-modal
-          *ngIf="{
+    *ngIf="{
       type: currentModalType$ | async,
       show: showModal$ | async,
       valid: valid$ | async,
       disableInput: disableInput$ | async,
       validKey: validKey$ | async
     } as modalObs"
-          [open]="modalObs.show"
+    [open]="modalObs.show"
   >
     <ibm-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
       <h3 ibmModalHeaderHeading>
         {{
-        modalObs.type === 'create'
-                ? ('searchFieldsOverview.add' | translate)
-                : ('searchFieldsOverview.edit' | translate)
+          modalObs.type === 'create'
+            ? ('searchFieldsOverview.add' | translate)
+            : ('searchFieldsOverview.edit' | translate)
         }}
       </h3>
     </ibm-modal-header>
@@ -140,8 +140,8 @@
         <span class="label-with-tooltip">
           {{ 'searchFieldsOverview.title' | translate }}
           <v-tooltip-icon
-                  [tooltip]="'searchFieldsOverviewTooltips.title' | translate"
-                  [disabled]="modalObs.disableInput"
+            [tooltip]="'searchFieldsOverviewTooltips.title' | translate"
+            [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
         <input ibmText formControlName="title" />
@@ -149,15 +149,15 @@
     </div>
     <div class="cds--text-input__field-wrapper">
       <ibm-label
-              [disabled]="modalObs.disableInput || modalObs.type === 'edit'"
-              [invalid]="modalObs.validKey === false"
-              [invalidText]="'searchFieldsOverview.uniqueKeyWarning' | translate"
+        [disabled]="modalObs.disableInput || modalObs.type === 'edit'"
+        [invalid]="modalObs.validKey === false"
+        [invalidText]="'searchFieldsOverview.uniqueKeyWarning' | translate"
       >
         <span class="label-with-tooltip">
           {{ 'searchFieldsOverview.key' | translate }}
           <v-tooltip-icon
-                  [tooltip]="'searchFieldsOverviewTooltips.key' | translate"
-                  [disabled]="modalObs.disableInput"
+            [tooltip]="'searchFieldsOverviewTooltips.key' | translate"
+            [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
         <input ibmText formControlName="key" [invalid]="modalObs.validKey === false" />
@@ -168,8 +168,8 @@
         <span class="label-with-tooltip">
           {{ 'searchFieldsOverview.path' | translate }}
           <v-tooltip-icon
-                  [tooltip]="'searchFieldsOverviewTooltips.path' | translate"
-                  [disabled]="modalObs.disableInput"
+            [tooltip]="'searchFieldsOverviewTooltips.path' | translate"
+            [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
         <input ibmText formControlName="path" />
@@ -180,8 +180,8 @@
         <span class="label-with-tooltip select-label">
           {{ 'searchFieldsOverview.dataType' | translate }}
           <v-tooltip-icon
-                  [tooltip]="'searchFieldsOverviewTooltips.dataType' | translate"
-                  [disabled]="modalObs.disableInput"
+            [tooltip]="'searchFieldsOverviewTooltips.dataType' | translate"
+            [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
         <ibm-dropdown formControlName="dataType" [disabled]="modalObs.disableInput">
@@ -194,8 +194,8 @@
         <span class="label-with-tooltip select-label">
           {{ 'searchFieldsOverview.fieldType' | translate }}
           <v-tooltip-icon
-                  [tooltip]="'searchFieldsOverviewTooltips.fieldType' | translate"
-                  [disabled]="modalObs.disableInput"
+            [tooltip]="'searchFieldsOverviewTooltips.fieldType' | translate"
+            [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
         <ibm-dropdown formControlName="fieldType" [disabled]="modalObs.disableInput">
@@ -210,19 +210,19 @@
   <ibm-modal-footer>
     <ng-container>
       <button
-              ibmButton="secondary"
-              [attr.modal-primary-focus]="true"
-              (click)="closeModal()"
-              [disabled]="modalObs.disableInput"
+        ibmButton="secondary"
+        [attr.modal-primary-focus]="true"
+        (click)="closeModal()"
+        [disabled]="modalObs.disableInput"
       >
         {{ 'searchFieldsOverview.close' | translate }}
       </button>
       <button
-              ibmButton="primary"
-              [attr.modal-primary-focus]="true"
-              [disabled]="modalObs.valid === false"
-              (click)="saveListSearchFields()"
-              [disabled]="
+        ibmButton="primary"
+        [attr.modal-primary-focus]="true"
+        [disabled]="modalObs.valid === false"
+        (click)="saveListSearchFields()"
+        [disabled]="
           modalObs.disableInput || modalObs.valid === false || modalObs.validKey === false
         "
       >
@@ -234,19 +234,19 @@
 
 <ng-template #deleteModal>
   <valtimo-confirmation-modal
-          [showModalSubject$]="showDeleteModal$"
-          [outputOnConfirm]="deleteRowIndex$ | async"
-          (confirmEvent)="deleteRowConfirmation($event)"
-          confirmButtonTextTranslationKey="searchFieldsOverview.deleteSearchField"
-          titleTranslationKey="searchFieldsOverview.searchField"
-          contentTranslationKey="searchFieldsOverview.deleteSearchFieldConfirmation"
+    [showModalSubject$]="showDeleteModal$"
+    [outputOnConfirm]="deleteRowIndex$ | async"
+    (confirmEvent)="deleteRowConfirmation($event)"
+    confirmButtonTextTranslationKey="searchFieldsOverview.deleteSearchField"
+    titleTranslationKey="searchFieldsOverview.searchField"
+    contentTranslationKey="searchFieldsOverview.deleteSearchFieldConfirmation"
   ></valtimo-confirmation-modal>
 </ng-template>
 
 <ng-template #noConfigWarning>
   <div class="pl-2 pr-2 pb-2">
     <ibm-notification
-            [notificationObj]="{
+      [notificationObj]="{
         type: 'info',
         title: 'searchFieldsOverview.noSearchFieldsConfiguredWarningTitle' | translate,
         showClose: false

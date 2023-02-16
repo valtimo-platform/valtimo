@@ -15,7 +15,18 @@
  */
 
 import {Component, TemplateRef, ViewChild} from '@angular/core';
-import {BehaviorSubject, combineLatest, filter, map, Observable, of, startWith, Subject, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  of,
+  startWith,
+  Subject,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
 import {
   ConfigService,
@@ -23,7 +34,7 @@ import {
   SearchField,
   SearchFieldColumnView,
   SearchFieldDataType,
-  SearchFieldFieldType
+  SearchFieldFieldType,
 } from '@valtimo/config';
 import {ListField} from '@valtimo/components';
 import {catchError, take} from 'rxjs/operators';
@@ -91,7 +102,7 @@ export class ObjectManagementListSearchFieldsComponent {
       sortable: false,
       propertyName: 'fieldType',
       translationKey: 'fieldType',
-    }
+    },
   ];
   readonly DATA_TYPES: Array<SearchFieldDataType> = [
     'text',
@@ -104,16 +115,18 @@ export class ObjectManagementListSearchFieldsComponent {
   private cachedObjectManagementListSearchFields: Array<SearchField> = [];
   private readonly refreshObjectManagementListSearchFields$ = new BehaviorSubject<null>(null);
 
-  readonly objectManagementFields$: Observable<Array<ListField>> = this.translateService.stream('key').pipe(
-    map(() =>
-      this.COLUMNS.map(column => ({
-        key: column.propertyName,
-        label: this.translateService.instant(`searchFieldsOverview.${column.translationKey}`),
-        sortable: column.sortable,
-        ...(column.viewType && {viewType: column.viewType}),
-      }))
-    )
-  );
+  readonly objectManagementFields$: Observable<Array<ListField>> = this.translateService
+    .stream('key')
+    .pipe(
+      map(() =>
+        this.COLUMNS.map(column => ({
+          key: column.propertyName,
+          label: this.translateService.instant(`searchFieldsOverview.${column.translationKey}`),
+          sortable: column.sortable,
+          ...(column.viewType && {viewType: column.viewType}),
+        }))
+      )
+    );
 
   readonly objectId$: Observable<string> = this.route.params.pipe(
     map(params => params.id || ''),
@@ -124,12 +137,14 @@ export class ObjectManagementListSearchFieldsComponent {
     this.objectId$,
     this.refreshObjectManagementListSearchFields$,
   ]).pipe(
-    switchMap(([objectId]) =>
-      this.objectManagementService.getSearchField(objectId)
-    ),
+    switchMap(([objectId]) => this.objectManagementService.getSearchField(objectId)),
     tap(objectManagementListSearchFields => {
       this.objectId$.pipe(take(1)).subscribe(objectId => {
-        if (objectManagementListSearchFields && Array.isArray(objectManagementListSearchFields) && objectManagementListSearchFields.length > 0) {
+        if (
+          objectManagementListSearchFields &&
+          Array.isArray(objectManagementListSearchFields) &&
+          objectManagementListSearchFields.length > 0
+        ) {
           this.setDownload(objectId, objectManagementListSearchFields);
         }
       });
@@ -141,22 +156,24 @@ export class ObjectManagementListSearchFieldsComponent {
     })
   );
 
-  readonly translatedObjectManagementListSearchFields$: Observable<Array<SearchFieldColumnView>> = combineLatest([
-    this.objectManagementListSearchFields$,
-    this.translateService.stream('key'),
-  ]).pipe(
-    map(([columns]) => columns.map(column => ({
-        ...column,
-        title: column.title || '-',
-        dataType: this.translateService.instant(
-          `searchFields.${column?.dataType?.toLowerCase()}`
-        ),
-        fieldType: this.translateService.instant(
-          `searchFieldsOverview.${column?.fieldType?.toLowerCase()}`
-        ),
-      }))
-    )
-  );
+  readonly translatedObjectManagementListSearchFields$: Observable<Array<SearchFieldColumnView>> =
+    combineLatest([
+      this.objectManagementListSearchFields$,
+      this.translateService.stream('key'),
+    ]).pipe(
+      map(([columns]) =>
+        columns.map(column => ({
+          ...column,
+          title: column.title || '-',
+          dataType: this.translateService.instant(
+            `searchFields.${column?.dataType?.toLowerCase()}`
+          ),
+          fieldType: this.translateService.instant(
+            `searchFieldsOverview.${column?.fieldType?.toLowerCase()}`
+          ),
+        }))
+      )
+    );
 
   readonly selectedDataTypeItemIndex$ = new BehaviorSubject<number>(0);
 
@@ -212,13 +229,7 @@ export class ObjectManagementListSearchFieldsComponent {
   );
 
   readonly valid$ = combineLatest([this.formGroup.valueChanges, this.validKey$]).pipe(
-    map(
-      ([formValues, validKey]) =>
-        !!(
-          formValues.path &&
-          validKey
-        )
-    ),
+    map(([formValues, validKey]) => !!(formValues.path && validKey)),
     startWith(false)
   );
 
@@ -259,15 +270,19 @@ export class ObjectManagementListSearchFieldsComponent {
     if (columnKey) {
       this.disableInput();
 
-      this.objectId$.pipe(
-        take(1),
-        switchMap(objectId => this.objectManagementService.deleteSearchField(objectId, columnKey)),
-        tap(() => this.refreshObjectManagementListSearchFields()),
-        catchError(() => {
-          this.enableInput();
-          return of(null);
-        })
-      ).subscribe();
+      this.objectId$
+        .pipe(
+          take(1),
+          switchMap(objectId =>
+            this.objectManagementService.deleteSearchField(objectId, columnKey)
+          ),
+          tap(() => this.refreshObjectManagementListSearchFields()),
+          catchError(() => {
+            this.enableInput();
+            return of(null);
+          })
+        )
+        .subscribe();
     }
   }
 
@@ -308,7 +323,7 @@ export class ObjectManagementListSearchFieldsComponent {
         const column = this.cachedObjectManagementListSearchFields.find(
           cachedColumn => cachedColumn.key === row.key
         );
-        console.log(dataTypeItems)
+        console.log(dataTypeItems);
         const dataTypeItem = dataTypeItems.find(item => item.key === column.dataType);
         const dataTypeItemIndex = dataTypeItems.findIndex(item => item.key === column.dataType);
 
@@ -317,7 +332,6 @@ export class ObjectManagementListSearchFieldsComponent {
 
         this.selectedDataTypeItemIndex$.next(dataTypeItemIndex);
         this.selectedFieldTypeItemIndex$.next(fieldTypeItemIndex);
-
 
         this.formGroup.patchValue({
           key: column.key,
@@ -333,65 +347,76 @@ export class ObjectManagementListSearchFieldsComponent {
       });
   }
 
-  private updateObjectManagementListSearchField(
-    objectId: string,
-    searchField: SearchField
-  ): void {
-
+  private updateObjectManagementListSearchField(objectId: string, searchField: SearchField): void {
     this.disableInput();
-    this.objectManagementService.putSearchField(objectId, this.formGroup.value.key, searchField).pipe(
-      tap(() => {
-        this.refreshObjectManagementListSearchFields();
-        localStorage.setItem(`list-search-fields${objectId}`, null);
-      }),
-      catchError(() => {
-        this.enableInput();
-        return of(null);
-      })
-    ).subscribe();
+    this.objectManagementService
+      .putSearchField(objectId, this.formGroup.value.key, searchField)
+      .pipe(
+        tap(() => {
+          this.refreshObjectManagementListSearchFields();
+          localStorage.setItem(`list-search-fields${objectId}`, null);
+        }),
+        catchError(() => {
+          this.enableInput();
+          return of(null);
+        })
+      )
+      .subscribe();
   }
 
   private addSearchField(): void {
     const formValue = this.formGroup.value;
 
-    this.objectId$.pipe(
-      take(1),
-      switchMap(objectId => this.objectManagementService.postSearchField(objectId, this.mapFormValuesToColumn(formValue))),
-      tap(() => {
-        this.closeModal();
-        this.refreshObjectManagementListSearchFields();
-      }),
-      catchError(() => {
-        this.enableInput();
-        return of(null);
-      })
-    ).subscribe();
+    this.objectId$
+      .pipe(
+        take(1),
+        switchMap(objectId =>
+          this.objectManagementService.postSearchField(
+            objectId,
+            this.mapFormValuesToColumn(formValue)
+          )
+        ),
+        tap(() => {
+          this.closeModal();
+          this.refreshObjectManagementListSearchFields();
+        }),
+        catchError(() => {
+          this.enableInput();
+          return of(null);
+        })
+      )
+      .subscribe();
   }
 
   private updateSearchField(): void {
-    this.objectId$.pipe(
-      take(1),
-      switchMap(objectId => this.objectManagementService.putSearchField(objectId, this.formGroup.value.key, this.mapFormValuesToColumn(this.formGroup.value))),
-      tap(() => {
-        this.closeModal();
-        this.refreshObjectManagementListSearchFields();
-      }),
-      catchError(() => {
-        this.enableInput();
-        return of(null);
-      })
-    ).subscribe();
+    this.objectId$
+      .pipe(
+        take(1),
+        switchMap(objectId =>
+          this.objectManagementService.putSearchField(
+            objectId,
+            this.formGroup.value.key,
+            this.mapFormValuesToColumn(this.formGroup.value)
+          )
+        ),
+        tap(() => {
+          this.closeModal();
+          this.refreshObjectManagementListSearchFields();
+        }),
+        catchError(() => {
+          this.enableInput();
+          return of(null);
+        })
+      )
+      .subscribe();
   }
 
-  private setDownload(
-    objectId: string,
-    ObjectManagementSearchFields: Array<SearchField>
-  ): void {
+  private setDownload(objectId: string, ObjectManagementSearchFields: Array<SearchField>): void {
     this.downloadName$.next(`${objectId}.json`);
     this.downloadUrl$.next(
       this.sanitizer.bypassSecurityTrustUrl(
         'data:text/json;charset=UTF-8,' +
-        encodeURIComponent(JSON.stringify(ObjectManagementSearchFields, null, 2))
+          encodeURIComponent(JSON.stringify(ObjectManagementSearchFields, null, 2))
       )
     );
   }
@@ -422,7 +447,7 @@ export class ObjectManagementListSearchFieldsComponent {
       title: formValue.title || '',
       path: formValue.path,
       dataType: formValue.dataType.key,
-      fieldType: formValue.fieldType.key
+      fieldType: formValue.fieldType.key,
     };
   }
 }

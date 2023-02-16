@@ -18,6 +18,7 @@ import {PluginSpecification} from '../../models';
 import {PortaaltaakConfigurationComponent} from './components/portaaltaak-configuration/portaaltaak-configuration.component';
 import {PORTAALTAAK_PLUGIN_LOGO_BASE64} from './assets/portaaltaak-plugin-logo';
 import {CreatePortalTaskComponent} from './components/create-portal-task/create-portal-task.component';
+import {CompletePortalTaskComponent} from './components/complete-portal-task/complete-portal-task.component';
 
 const portaaltaakPluginSpecification: PluginSpecification = {
   pluginId: 'portaaltaak',
@@ -25,6 +26,7 @@ const portaaltaakPluginSpecification: PluginSpecification = {
   pluginLogoBase64: PORTAALTAAK_PLUGIN_LOGO_BASE64,
   functionConfigurationComponents: {
     'create-portaaltaak': CreatePortalTaskComponent,
+    'complete-portaaltaak': CompletePortalTaskComponent,
   },
   pluginTranslations: {
     nl: {
@@ -40,6 +42,7 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       objectManagementConfigurationTooltip:
         'Selecteer de gewenste object management configuratie. Wanneer de selectiebox leeg is, zal de object management configuratie eerst aangemaakt moeten worden.',
       'create-portaaltaak': 'Portaaltaak aanmaken',
+      'complete-portaaltaak': 'Portaaltaak afronden',
       formType: 'Formuliertype',
       formTypeTooltip:
         'Kies hier of het te tonen formulier afomstig moet zijn van een ingestelde definitie, of van een externe URL.',
@@ -66,6 +69,9 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       bsn: 'Burgerservicenummer (BSN)',
       kvkTooltip: 'Het KVK-nummer van de gewenste ontvanger.',
       bsnTooltip: 'Het Burgerservicenummer (BSN) van de gewenste ontvanger.',
+      uploadedDocumentsHandlerProcess: 'Geüploade documentverwerkingsproces',
+      uploadedDocumentsHandlerProcessTooltip:
+        'Het proces dat de geüploade documenten in de portal moet afhandelen.',
     },
     en: {
       title: 'Portal task',
@@ -80,6 +86,7 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       objectManagementConfigurationTooltip:
         'Select the object management configuration. If the selection box remains empty, the object management configuration will first have to be created.',
       'create-portaaltaak': 'Create portal task',
+      'complete-portaaltaak': 'Complete portal task',
       formType: 'Form type',
       formTypeTooltip:
         'Choose here whether the form to be displayed should come from a set definition or from an external URL.',
@@ -106,6 +113,9 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       bsn: 'Citizen service number (BSN)',
       kvkTooltip: 'The KVK number of the desired receiver.',
       bsnTooltip: 'The Citizen service number (BSN) of the desired receiver',
+      uploadedDocumentsHandlerProcess: 'Uploaded documents handler process',
+      uploadedDocumentsHandlerProcessTooltip:
+        'The process that should handle the uploaded documents in the portal.',
     },
     de: {
       title: 'Portalaufgabe',
@@ -121,6 +131,7 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       objectManagementConfigurationTooltip:
         'Wählen Sie die Objektverwaltungskonfiguration aus. Bleibt das Auswahlfeld leer, muss zunächst die Objektverwaltungskonfiguration erstellt werden.',
       'create-portaaltaak': 'Portalaufgabe erstellen',
+      'complete-portaaltaak': 'Portaaltaak komplett',
       formType: 'Formulartyp',
       formTypeTooltip:
         'Wählen Sie hier aus, ob das anzuzeigende Formular aus einer Set-Definition oder von einer externen URL stammen soll.',
@@ -144,6 +155,9 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       bsn: 'Bürgerservicenummer (BSN)',
       kvkTooltip: 'Die KVK-Nummer des gewünschten Empfängers.',
       bsnTooltip: 'Die Bürgerservicenummer (BSN) des gewünschten Empfängers.',
+      uploadedDocumentsHandlerProcess: 'Handhabungsprozess für hochgeladene Dokumente',
+      uploadedDocumentsHandlerProcessTooltip:
+        'Der Prozess, der die hochgeladenen Dokumente im Portal handhaben soll.',
     },
   },
 };

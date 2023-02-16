@@ -24,9 +24,18 @@ import {
   WidgetModule,
   ListModule,
   ConfirmationModalModule,
-  SpinnerModule, ModalModule
+  SpinnerModule,
+  ModalModule,
 } from '@valtimo/components';
-import {ButtonModule, FormModule, InputModule as InputModule, ModalModule as VModalModule, SelectModule, TitleModule, TooltipIconModule} from '@valtimo/user-interface';
+import {
+  ButtonModule,
+  FormModule,
+  InputModule as InputModule,
+  ModalModule as VModalModule,
+  SelectModule,
+  TitleModule,
+  TooltipIconModule,
+} from '@valtimo/user-interface';
 import {ObjectManagementDetailContainerComponent} from './components/object-management-detail-container/object-management-detail-container.component';
 import {ObjectManagementDetailComponent} from './components/object-management-detail-container/tabs/object-management-detail/object-management-detail.component';
 import {ObjectManagementListComponent} from './components/object-management-list/object-management-list.component';
@@ -45,9 +54,7 @@ import {
   NotificationModule,
 } from 'carbon-components-angular';
 import {ReactiveFormsModule} from '@angular/forms';
-import {
-  ObjectManagementListSearchFieldsComponent
-} from './components/object-management-detail-container/tabs/object-management-list-search-fields/object-management-list-search-fields.component';
+import {ObjectManagementListSearchFieldsComponent} from './components/object-management-detail-container/tabs/object-management-list-search-fields/object-management-list-search-fields.component';
 
 @NgModule({
   declarations: [
@@ -86,7 +93,7 @@ import {
     ReactiveFormsModule,
     ConfirmationModalModule,
     SpinnerModule,
-    ModalModule
+    ModalModule,
   ],
   exports: [],
 })

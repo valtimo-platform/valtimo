@@ -15,7 +15,19 @@
  */
 
 import {Component, TemplateRef, ViewChild} from '@angular/core';
-import {BehaviorSubject, combineLatest, delay, filter, map, Observable, of, startWith, Subject, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  delay,
+  filter,
+  map,
+  Observable,
+  of,
+  startWith,
+  Subject,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
 import {ConfigService, DefinitionColumn} from '@valtimo/config';
 import {ListField} from '@valtimo/components';
@@ -27,7 +39,11 @@ import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {ListColumnModal} from '@valtimo/dossier-management';
 import {ObjectManagementService} from '../../../../services/object-management.service';
-import {DisplayTypeParameters, SearchListColumn, SearchListColumnView} from '../../../../models/object-management.model';
+import {
+  DisplayTypeParameters,
+  SearchListColumn,
+  SearchListColumnView,
+} from '../../../../models/object-management.model';
 
 @Component({
   selector: 'valtimo-object-management-list-columns',
@@ -118,17 +134,19 @@ export class ObjectManagementListColumnsComponent {
   private cachedObjectManagementListColumns: Array<SearchListColumn> = [];
   private readonly refreshObjectManagementListColumns$ = new BehaviorSubject<null>(null);
 
-  readonly objectManagementFields$: Observable<Array<ListField>> = this.translateService.stream('key').pipe(
-    map(() =>
-      this.COLUMNS.map(column => ({
-        key: column.propertyName,
-        label: this.translateService.instant(`listColumn.${column.translationKey}`),
-        sortable: column.sortable,
-        ...(column.viewType && {viewType: column.viewType}),
-        ...(column.enum && {enum: column.enum}),
-      }))
-    )
-  );
+  readonly objectManagementFields$: Observable<Array<ListField>> = this.translateService
+    .stream('key')
+    .pipe(
+      map(() =>
+        this.COLUMNS.map(column => ({
+          key: column.propertyName,
+          label: this.translateService.instant(`listColumn.${column.translationKey}`),
+          sortable: column.sortable,
+          ...(column.viewType && {viewType: column.viewType}),
+          ...(column.enum && {enum: column.enum}),
+        }))
+      )
+    );
 
   readonly objectId$: Observable<string> = this.route.params.pipe(
     map(params => params.id || ''),
@@ -139,12 +157,14 @@ export class ObjectManagementListColumnsComponent {
     this.objectId$,
     this.refreshObjectManagementListColumns$,
   ]).pipe(
-    switchMap(([objectId]) =>
-      this.objectManagementService.getSearchList(objectId)
-    ),
+    switchMap(([objectId]) => this.objectManagementService.getSearchList(objectId)),
     tap(objectManagementListColumns => {
       this.objectId$.pipe(take(1)).subscribe(objectId => {
-        if (objectManagementListColumns && Array.isArray(objectManagementListColumns) && objectManagementListColumns.length > 0) {
+        if (
+          objectManagementListColumns &&
+          Array.isArray(objectManagementListColumns) &&
+          objectManagementListColumns.length > 0
+        ) {
           this.setDownload(objectId, objectManagementListColumns);
         }
       });
@@ -156,32 +176,30 @@ export class ObjectManagementListColumnsComponent {
     })
   );
 
-  readonly translatedObjectManagementListColumns$: Observable<Array<SearchListColumnView>> = combineLatest([
-    this.objectManagementListColumns$,
-    this.translateService.stream('key'),
-  ]).pipe(
-    map(([columns]) =>
-      columns.map(column => ({
-        ...column,
-        title: column.title || '-',
-        sortable: column.sortable
-          ? this.translateService.instant('listColumn.sortableYes')
-          : this.translateService.instant('listColumn.sortableNo'),
-        defaultSort:
-          (column.defaultSort === 'ASC' &&
-            this.translateService.instant('listColumn.sortableAsc')) ||
-          (column.defaultSort === 'DESC' &&
-            this.translateService.instant('listColumn.sortableDesc')) ||
-          '-',
-        displayType: this.translateService.instant(
-          `listColumnDisplayType.${column?.displayType?.type}`
-        ),
-        displayTypeParameters: this.getDisplayTypeParametersView(
-          column.displayType.displayTypeParameters
-        ),
-      }))
-    )
-  );
+  readonly translatedObjectManagementListColumns$: Observable<Array<SearchListColumnView>> =
+    combineLatest([this.objectManagementListColumns$, this.translateService.stream('key')]).pipe(
+      map(([columns]) =>
+        columns.map(column => ({
+          ...column,
+          title: column.title || '-',
+          sortable: column.sortable
+            ? this.translateService.instant('listColumn.sortableYes')
+            : this.translateService.instant('listColumn.sortableNo'),
+          defaultSort:
+            (column.defaultSort === 'ASC' &&
+              this.translateService.instant('listColumn.sortableAsc')) ||
+            (column.defaultSort === 'DESC' &&
+              this.translateService.instant('listColumn.sortableDesc')) ||
+            '-',
+          displayType: this.translateService.instant(
+            `listColumnDisplayType.${column?.displayType?.type}`
+          ),
+          displayTypeParameters: this.getDisplayTypeParametersView(
+            column.displayType.displayTypeParameters
+          ),
+        }))
+      )
+    );
 
   readonly disableDefaultSort$ = combineLatest([
     this.currentModalType$,
@@ -196,7 +214,7 @@ export class ObjectManagementListColumnsComponent {
   );
 
   readonly showDateFormat$ = this.formGroup.valueChanges.pipe(
-    map(formValues => (formValues.displayType?.key === this.DISPLAY_TYPES[1])),
+    map(formValues => formValues.displayType?.key === this.DISPLAY_TYPES[1]),
     tap(showDateFormat => {
       if (showDateFormat === false && !!this.formGroup.value.dateFormat) {
         this.formGroup.patchValue({dateFormat: ''});
@@ -223,7 +241,7 @@ export class ObjectManagementListColumnsComponent {
   );
 
   readonly isYesNo$ = this.formGroup.valueChanges.pipe(
-    map(formValues => (formValues.displayType?.key === this.DISPLAY_TYPES[2]))
+    map(formValues => formValues.displayType?.key === this.DISPLAY_TYPES[2])
   );
 
   readonly selectedViewTypeItemIndex$ = new BehaviorSubject<number>(0);
@@ -334,15 +352,17 @@ export class ObjectManagementListColumnsComponent {
     if (columnKey) {
       this.disableInput();
 
-      this.objectId$.pipe(
-        take(1),
-        switchMap(objectId => this.objectManagementService.deleteSearchList(objectId, columnKey)),
-        tap(() => this.refreshObjectManagementListColumns()),
-        catchError(() => {
-          this.enableInput();
-          return of(null);
-        })
-      ).subscribe();
+      this.objectId$
+        .pipe(
+          take(1),
+          switchMap(objectId => this.objectManagementService.deleteSearchList(objectId, columnKey)),
+          tap(() => this.refreshObjectManagementListColumns()),
+          catchError(() => {
+            this.enableInput();
+            return of(null);
+          })
+        )
+        .subscribe();
     }
   }
 
@@ -432,39 +452,45 @@ export class ObjectManagementListColumnsComponent {
       });
   }
 
-  private updateObjectManagementListColumn(
-    objectId: string,
-    listColumn: SearchListColumn
-  ): void {
-
+  private updateObjectManagementListColumn(objectId: string, listColumn: SearchListColumn): void {
     this.disableInput();
-    this.objectManagementService.putSearchList(objectId, this.formGroup.value.key, listColumn).pipe(
-      tap(() => {
-        this.refreshObjectManagementListColumns();
-        localStorage.setItem(`list-search-${objectId}`, null);
-      }),
-      catchError(() => {
-        this.enableInput();
-        return of(null);
-      })
-    ).subscribe();
+    this.objectManagementService
+      .putSearchList(objectId, this.formGroup.value.key, listColumn)
+      .pipe(
+        tap(() => {
+          this.refreshObjectManagementListColumns();
+          localStorage.setItem(`list-search-${objectId}`, null);
+        }),
+        catchError(() => {
+          this.enableInput();
+          return of(null);
+        })
+      )
+      .subscribe();
   }
 
   private addColumn(): void {
     const formValue = this.formGroup.value;
 
-    this.objectId$.pipe(
-      take(1),
-      switchMap(objectId => this.objectManagementService.postSearchList(objectId, this.mapFormValuesToColumn(formValue))),
-      tap(() => {
-        this.closeModal();
-        this.refreshObjectManagementListColumns();
-      }),
-      catchError(() => {
-        this.enableInput();
-        return of(null);
-      })
-    ).subscribe();
+    this.objectId$
+      .pipe(
+        take(1),
+        switchMap(objectId =>
+          this.objectManagementService.postSearchList(
+            objectId,
+            this.mapFormValuesToColumn(formValue)
+          )
+        ),
+        tap(() => {
+          this.closeModal();
+          this.refreshObjectManagementListColumns();
+        }),
+        catchError(() => {
+          this.enableInput();
+          return of(null);
+        })
+      )
+      .subscribe();
   }
 
   private getDisplayTypeParametersView(displayTypeParameters: DisplayTypeParameters): string {
@@ -485,18 +511,26 @@ export class ObjectManagementListColumnsComponent {
   }
 
   private updateColumn(): void {
-    this.objectId$.pipe(
-      take(1),
-      switchMap(objectId => this.objectManagementService.putSearchList(objectId, this.formGroup.value.key, this.mapFormValuesToColumn(this.formGroup.value))),
-      tap(() => {
-        this.closeModal();
-        this.refreshObjectManagementListColumns();
-      }),
-      catchError(() => {
-        this.enableInput();
-        return of(null);
-      })
-    ).subscribe();
+    this.objectId$
+      .pipe(
+        take(1),
+        switchMap(objectId =>
+          this.objectManagementService.putSearchList(
+            objectId,
+            this.formGroup.value.key,
+            this.mapFormValuesToColumn(this.formGroup.value)
+          )
+        ),
+        tap(() => {
+          this.closeModal();
+          this.refreshObjectManagementListColumns();
+        }),
+        catchError(() => {
+          this.enableInput();
+          return of(null);
+        })
+      )
+      .subscribe();
   }
 
   private setDownload(
@@ -507,7 +541,7 @@ export class ObjectManagementListColumnsComponent {
     this.downloadUrl$.next(
       this.sanitizer.bypassSecurityTrustUrl(
         'data:text/json;charset=UTF-8,' +
-        encodeURIComponent(JSON.stringify(ObjectManagementListColumns, null, 2))
+          encodeURIComponent(JSON.stringify(ObjectManagementListColumns, null, 2))
       )
     );
   }

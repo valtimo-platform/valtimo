@@ -62,10 +62,7 @@ export class ObjectManagementService {
     );
   }
 
-  postSearchList(
-    ownerId: string,
-    request: SearchListColumn
-  ): Observable<SearchListColumn> {
+  postSearchList(ownerId: string, request: SearchListColumn): Observable<SearchListColumn> {
     return this.http.post<SearchListColumn>(
       `${this.valtimoEndpointUri}v1/search/list-column/${ownerId}`,
       {...request, ownerId}
@@ -95,14 +92,11 @@ export class ObjectManagementService {
     );
   }
 
-  postSearchField(
-    ownerId: string,
-    request: SearchField
-  ): Observable<SearchField> {
-    return this.http.post<SearchField>(
-      `${this.valtimoEndpointUri}v1/search/field/${ownerId}`,
-      {...request, ownerId}
-    );
+  postSearchField(ownerId: string, request: SearchField): Observable<SearchField> {
+    return this.http.post<SearchField>(`${this.valtimoEndpointUri}v1/search/field/${ownerId}`, {
+      ...request,
+      ownerId,
+    });
   }
 
   putSearchField(
@@ -121,5 +115,4 @@ export class ObjectManagementService {
       `${this.valtimoEndpointUri}v1/search/field/${ownerId}/${key}`
     );
   }
-
 }

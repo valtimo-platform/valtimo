@@ -53,10 +53,10 @@
     </li>
     <li class="nav-item">
       <a
-              id="search-tab"
-              class="nav-link clickable"
-              data-toggle="tab"
-              (click)="displayBodyComponent(TabEnum.SEARCH)"
+        id="search-tab"
+        class="nav-link clickable"
+        data-toggle="tab"
+        (click)="displayBodyComponent(TabEnum.SEARCH)"
       >
         {{ 'objectManagement.tabs.searchFields' | translate }}
       </a>
@@ -85,6 +85,5 @@
     <div *ngIf="currentTab && currentTab === TabEnum.LIST">
       <valtimo-object-management-list-columns></valtimo-object-management-list-columns>
     </div>
-
   </div>
 </ng-template>

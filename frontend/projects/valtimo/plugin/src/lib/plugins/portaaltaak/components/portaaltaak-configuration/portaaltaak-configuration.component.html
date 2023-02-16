@@ -64,4 +64,18 @@
       [tooltip]="'objectManagementConfigurationTooltip' | pluginTranslate : pluginId | async"
     ></v-select>
   </ng-container>
+  <ng-container *ngIf="{processSelectItems: processSelectItems$ | async} as vars">
+    <v-select
+      [items]="vars.processSelectItems"
+      [margin]="true"
+      [widthInPx]="350"
+      name="uploadedDocumentsHandlerProcess"
+      [title]="'uploadedDocumentsHandlerProcess' | pluginTranslate : pluginId | async"
+      [disabled]="obs.disabled"
+      [defaultSelectionId]="obs.prefill?.uploadedDocumentsHandlerProcess"
+      [required]="true"
+      [loading]="!vars.processSelectItems"
+      [tooltip]="'uploadedDocumentsHandlerProcessTooltip' | pluginTranslate : pluginId | async"
+    ></v-select>
+  </ng-container>
 </v-form>
