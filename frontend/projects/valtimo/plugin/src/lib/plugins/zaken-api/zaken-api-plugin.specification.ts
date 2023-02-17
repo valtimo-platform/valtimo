@@ -19,6 +19,7 @@ import {ZAKEN_API_PLUGIN_LOGO_BASE64} from './assets';
 import {LinkDocumentToZaakConfigurationComponent} from './components/link-document-to-zaak/link-document-to-zaak-configuration.component';
 import {ZakenApiConfigurationComponent} from './components/zaken-api-configuration/zaken-api-configuration.component';
 import {LinkUploadedDocumentToZaakConfigurationComponent} from './components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
+import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
@@ -29,6 +30,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'link-document-to-zaak': LinkDocumentToZaakConfigurationComponent,
     'link-uploaded-document-to-zaak': LinkUploadedDocumentToZaakConfigurationComponent,
     'create-zaak': CreateZaakConfigurationComponent,
+    'create-natuurlijk-persoon-zaak-rol': CreateNatuurlijkPersoonZaakRolComponent,
   },
   pluginTranslations: {
     nl: {
@@ -69,6 +71,18 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inputTypeZaakTypeToggle: 'Invoertype Zaaktype-URL',
       text: 'Tekst',
       selection: 'Selectie',
+      'create-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - natuurlijk persoon',
+      roltypeUrl: 'Roltype URL',
+      rolToelichting: 'Roltoelichting',
+      inpBsn: 'Initiator BSN',
+      anpIdentificatie: 'Ander natuurlijk persoon identificatie',
+      inpA_nummer: 'Administratienummer persoon',
+      roltypeUrlTooltip: 'URL naar een roltype binnen het Zaaktype van een Zaak',
+      rolToelichtingTooltip: 'Omschrijving van de aard van de rol',
+      inpBsnTooltip: 'Het burgerservicenummer van de initiator',
+      anpIdentificatieTooltip:
+        'Het door de gemeente uitgegeven unieke nummer voor een ander natuurlijk persoon',
+      inpA_nummerTooltip: 'Het administratienummer van de persoon, bedoeld in de Wet BRP',
     },
     en: {
       title: 'Zaken API',
@@ -108,6 +122,18 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inputTypeZaakTypeToggle: 'Input type Zaaktype-URL',
       text: 'Text',
       selection: 'Selection',
+      'create-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - natural person',
+      roltypeUrl: 'Role type URL',
+      rolToelichting: 'Role explanation',
+      inpBsn: 'Initiator BSN',
+      anpIdentificatie: 'Other natural person identification',
+      inpA_nummer: 'Administration number person',
+      roltypeUrlTooltip: 'URL to a role type within the Zaaktype of a Zaak',
+      rolToelichtingTooltip: 'Description of the nature of the role',
+      inpBsnTooltip: "The initiator's social security number",
+      anpIdentificatieTooltip:
+        'The unique number issued by the municipality for another natural person',
+      inpA_nummerTooltip: 'The administration number of the person, as referred to in the Wet BRP',
     },
     de: {
       title: 'Zaken API',
@@ -147,6 +173,18 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inputTypeZaakTypeToggle: 'Eingabetyp Zaaktype-URL',
       text: 'Text',
       selection: 'Auswahl',
+      'create-natuurlijk-persoon-zaak-rol': 'Zaakrol erstellen – natürliche Person',
+      roltypeUrl: 'Rollentyp-URL',
+      rolToelichting: 'Rollenerklärung',
+      inpBsn: 'Initiator BSN',
+      anpIdentificatie: 'Andere Identifizierung natürlicher Personen',
+      inpA_nummer: 'Verwaltungsnummer Person',
+      roltypeUrlTooltip: 'URL zu einem Rollentyp innerhalb des Zaaktypes eines Zaaks',
+      rolToelichtingTooltip: 'Beschreibung der Art der Rolle',
+      inpBsnTooltip: 'Die Sozialversicherungsnummer des Initiators',
+      anpIdentificatieTooltip:
+        'Die eindeutige Nummer, die von der Gemeinde für eine andere natürliche Person vergeben wird',
+      inpA_nummerTooltip: 'Die Verwaltungsnummer der Person im Sinne des Wet BRP',
     },
   },
 };

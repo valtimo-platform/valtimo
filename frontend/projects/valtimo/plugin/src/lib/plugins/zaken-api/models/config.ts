@@ -27,10 +27,18 @@ interface LinkDocumentToZaakConfig {
   beschrijving: string;
 }
 
+interface CreateNatuurlijkePersoonZaakRolConfig {
+  roltypeUrl: string;
+  rolToelichting: string;
+  inpBsn: string;
+  anpIdentificatie: string;
+  inpA_nummer: string;
+}
+
 interface CreateZaakConfig {
   rsin: string;
   manualZaakTypeUrl: boolean;
   zaaktypeUrl: string;
 }
 
-export {ZakenApiConfig, LinkDocumentToZaakConfig, CreateZaakConfig};
+export {ZakenApiConfig, LinkDocumentToZaakConfig, CreateZaakConfig, CreateNatuurlijkePersoonZaakRolConfig};

@@ -54,6 +54,7 @@ export * from './lib/plugins/zaken-api/zaken-api-plugin.specification';
 export * from './lib/plugins/zaken-api/components/zaken-api-configuration/zaken-api-configuration.component';
 export * from './lib/plugins/zaken-api/components/link-document-to-zaak/link-document-to-zaak-configuration.component';
 export * from './lib/plugins/zaken-api/components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
+export * from './lib/plugins/zaken-api/components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
 export * from './lib/plugins/zaken-api/components/create-zaak/create-zaak-configuration.component';
 /* objecten api plugin */
 export * from './lib/plugins/objecten-api/objecten-api-plugin-module';
