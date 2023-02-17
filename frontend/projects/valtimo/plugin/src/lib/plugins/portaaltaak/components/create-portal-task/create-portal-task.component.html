@@ -20,8 +20,7 @@
     disabled: disabled$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
     formTypeIsUrl: formTypeIsUrl$ | async,
-    receiverIsOther: receiverIsOther$ | async,
-    otherReceiverIsBsn: otherReceiverIsBsn$ | async
+    receiverIsOther: receiverIsOther$ | async
   } as obs"
 >
   <v-select
@@ -92,37 +91,24 @@
     [required]="true"
     [clearable]="false"
   ></v-select>
-  <v-select
-    *ngIf="obs.receiverIsOther"
-    [items]="otherReceiverSelectItems$ | async"
-    [margin]="true"
-    [widthInPx]="250"
-    name="otherReceiver"
-    [title]="'otherReceiver' | pluginTranslate : pluginId | async"
-    [disabled]="obs.disabled"
-    [defaultSelectionId]="obs.prefill?.otherReceiver || OTHER_RECEIVER_ITEMS[0]"
-    [tooltip]="'otherReceiverTooltip' | pluginTranslate : pluginId | async"
-    [required]="true"
-    [clearable]="false"
-  ></v-select>
   <v-input
-    *ngIf="obs.receiverIsOther && obs.otherReceiverIsBsn"
-    name="bsn"
-    [title]="'bsn' | pluginTranslate : pluginId | async"
+    *ngIf="obs.receiverIsOther"
+    name="identificationKey"
+    [title]="'identificationKey' | pluginTranslate : pluginId | async"
     [margin]="true"
-    [defaultValue]="obs.prefill?.bsn"
+    [defaultValue]="obs.prefill?.identificationKey"
     [disabled]="obs.disabled"
-    [tooltip]="'bsnTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'identificationKeyTooltip' | pluginTranslate : pluginId | async"
     [required]="true"
   ></v-input>
   <v-input
-    *ngIf="obs.receiverIsOther && !obs.otherReceiverIsBsn"
-    name="kvk"
-    [title]="'kvk' | pluginTranslate : pluginId | async"
+    *ngIf="obs.receiverIsOther"
+    name="identificationValue"
+    [title]="'identificationValue' | pluginTranslate : pluginId | async"
     [margin]="true"
-    [defaultValue]="obs.prefill?.kvk"
+    [defaultValue]="obs.prefill?.identificationValue"
     [disabled]="obs.disabled"
-    [tooltip]="'kvkTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'identificationValueTooltip' | pluginTranslate : pluginId | async"
     [required]="true"
   ></v-input>
 </v-form>

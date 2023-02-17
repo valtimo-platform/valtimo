@@ -72,6 +72,12 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       uploadedDocumentsHandlerProcess: 'Geüploade documentverwerkingsproces',
       uploadedDocumentsHandlerProcessTooltip:
         'Het proces dat de geüploade documenten in de portal moet afhandelen.',
+      identificationKey: 'Identificatiesleutel',
+      identificationKeyTooltip:
+        "De ingevoerde sleutel bepaalt hoe de ontvanger wordt geïdentificeerd. Geldige voorbeelden zijn 'bsn' of 'kvk'.",
+      identificationValue: 'Identificatiewaarde',
+      identificationValueTooltip:
+        "De waarde waarmee de ontvanger wordt geïdentificeerd. Wanneer er bijvoorbeeld in het veld 'Identificatiesleutel' de waarde 'bsn' is ingevoerd, kan er in dit veld een burgerservicenummer worden ingevoerd (bijvoorbeeld 558099476).",
     },
     en: {
       title: 'Portal task',
@@ -116,6 +122,12 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       uploadedDocumentsHandlerProcess: 'Uploaded documents handler process',
       uploadedDocumentsHandlerProcessTooltip:
         'The process that should handle the uploaded documents in the portal.',
+      identificationKey: 'Identification key',
+      identificationKeyTooltip:
+        "The key entered determines how the recipient is identified. Valid examples are 'bsn' or 'kvk'.",
+      identificationValue: 'Identification value',
+      identificationValueTooltip:
+        "The value that identifies the recipient. For example, if the value 'bsn' is entered in the 'Identification key' field, a citizen service number can be entered in this field (for example 558099476).",
     },
     de: {
       title: 'Portalaufgabe',
@@ -158,6 +170,12 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       uploadedDocumentsHandlerProcess: 'Handhabungsprozess für hochgeladene Dokumente',
       uploadedDocumentsHandlerProcessTooltip:
         'Der Prozess, der die hochgeladenen Dokumente im Portal handhaben soll.',
+      identificationKey: 'Identifikationsschlüssel',
+      identificationKeyTooltip:
+        "Der eingegebene Schlüssel bestimmt, wie der Empfänger identifiziert wird. Gültige Beispiele sind 'bsn' oder 'kvk'.",
+      identificationValue: 'Identifikationswert',
+      identificationValueTooltip:
+        "Der Wert, der den Empfänger identifiziert. Wird beispielsweise im Feld 'Identifikationsschlüssel' der Wert 'bsn' eingetragen, kann in diesem Feld eine Sozialversicherungsnummer eingetragen werden (z. B. 558099476).",
     },
   },
 };

@@ -34,9 +34,8 @@ interface CreatePortalTaskConfig {
   sendData: Array<{key: string; value: string}>;
   receiveData: Array<{key: string; value: string}>;
   receiver: Receiver;
-  otherReceiver?: OtherReceiver;
-  kvk?: string;
-  bsn?: string;
+  identificationKey?: string;
+  identificationValue?: string;
 }
 
 export {PortaaltaakConfig, CreatePortalTaskConfig, FormType, Receiver, OtherReceiver};
