@@ -120,7 +120,7 @@ export class MultiInputComponent implements OnInit, OnDestroy {
     const minimumRows = this.minimumAmountOfRows;
     const initialRows = this.initialAmountOfRows;
     const amountOfInitalRows =
-      minimumRows > initialRows ? minimumRows : initialRows > 1 ? initialRows : 1;
+      minimumRows > initialRows ? minimumRows : initialRows > 1 ? initialRows : 0;
 
     if (!this.defaultValues) {
       return new Array(amountOfInitalRows).fill(this.getEmptyValue());

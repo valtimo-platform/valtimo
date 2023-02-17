@@ -63,8 +63,10 @@
     [disabled]="obs.disabled"
     [defaultValues]="obs.prefill?.sendData"
     [margin]="true"
-    [required]="true"
+    [required]="false"
     [tooltip]="'sendDataTooltip' | pluginTranslate : pluginId | async"
+    [minimumAmountOfRows]="0"
+    [initialAmountOfRows]="0"
   ></v-multi-input>
   <v-multi-input
     name="receiveData"
@@ -73,8 +75,10 @@
     [disabled]="obs.disabled"
     [defaultValues]="obs.prefill?.receiveData"
     [margin]="true"
-    [required]="true"
+    [required]="false"
     [tooltip]="'receiveDataTooltip' | pluginTranslate : pluginId | async"
+    [minimumAmountOfRows]="0"
+    [initialAmountOfRows]="0"
   ></v-multi-input>
   <v-select
     [items]="receiverSelectItems$ | async"

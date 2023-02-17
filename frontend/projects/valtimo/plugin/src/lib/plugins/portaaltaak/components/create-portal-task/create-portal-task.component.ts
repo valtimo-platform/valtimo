@@ -82,8 +82,6 @@ export class CreatePortalTaskComponent
       !!formValue.formType &&
       (!!(formValue.formType === 'url' && formValue.formTypeUrl) ||
         !!(formValue.formType === 'id' && formValue.formTypeId)) &&
-      !!(formValue.sendData?.length > 0) &&
-      !!(formValue.receiveData?.length > 0) &&
       !!formValue?.receiver &&
       (formValue.receiver === 'other'
         ? !!(formValue.otherReceiver === 'kvk' && formValue.kvk) ||

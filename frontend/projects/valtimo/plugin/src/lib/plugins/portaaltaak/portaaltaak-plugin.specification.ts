@@ -52,10 +52,10 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       formTypeIdTooltip: 'Het ID van het formulier dat getoond moet worden',
       formTypeUrl: 'Formulier URL',
       formTypeUrlTooltip: 'Een URL die wijst naar het formulier dat getoond moet worden',
-      sendData: 'Data versturen naar Objecten API',
+      sendData: 'Taakgegevens voor de ontvanger',
       sendDataTooltip:
         "Voor hier sleutels en waarden in voor data die verstuurd moet worden naar de Objecten API. De sleutel is hier de sleutel van het Form.IO-veld dat gevuld moet worden (bijvoorbeeld 'firstName'). De waarde wijst naar de data waarmee dit veld gevuld moet worden (bijvoorbeeld 'doc:/customer/firstName').",
-      receiveData: 'Data ontvangen van de Objecten API',
+      receiveData: 'Ingevulde gegevens door de ontvanger',
       receiveDataTooltip:
         "Voor hier sleutels en waarden in voor data die ontvangen moet worden van de Objecten API. De sleutel is hier de locatie waar de data opgeslagen moet worden (bijvoorbeeld 'doc:/customer/signedAgreement'). De waarde wijst naar de sleutel van het Form.IO-veld waar de data vandaan moet komen (bijvoorbeeld '/signedAgreement').",
       receiver: 'Ontvanger',
@@ -96,10 +96,10 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       formTypeIdTooltip: 'Het ID van het formulier dat getoond moet worden',
       formTypeUrl: 'Formulier URL',
       formTypeUrlTooltip: 'Een URL die wijst naar het formulier dat getoond moet worden',
-      sendData: 'Send data to Objecten API',
+      sendData: 'Task data for the recipient',
       sendDataTooltip:
         "Enter keys and values here for data to be sent to the Objecten API. The key here is the key of the Form.IO field to be populated (e.g. 'firstName'). The value points to the data with which this field must be filled (e.g. 'doc:/customer/firstName').",
-      receiveData: 'Receive data from the Objecten API',
+      receiveData: 'Information entered by the recipient',
       receiveDataTooltip:
         "Enter keys and values here for data to be received from the Objecten API. The key here is the location where the data should be stored (e.g. 'doc:/customer/signedAgreement'). The value points to the key of the Form.IO field where the data should come from (e.g. '/signedAgreement').",
       receiver: 'Receiver',
@@ -137,10 +137,10 @@ const portaaltaakPluginSpecification: PluginSpecification = {
         'Wählen Sie hier aus, ob das anzuzeigende Formular aus einer Set-Definition oder von einer externen URL stammen soll.',
       id: 'Formulardefinition',
       url: 'URL',
-      sendData: 'Senden von Daten an die Objecten API',
+      sendData: 'Auftragsdaten für den Empfänger',
       sendDataTooltip:
         "Geben Sie hier Schlüssel und Werte für Daten ein, die an die Objecten API gesendet werden sollen. Der Schlüssel hier ist der Schlüssel des Form.IO-Felds, das gefüllt werden soll (z. B. 'firstName‘). Der Wert zeigt auf die Daten, mit denen dieses Feld gefüllt wird muss ausgefüllt werden (z.B. 'doc:/customer/firstName').",
-      receiveData: 'Daten von der Objecten API empfangen',
+      receiveData: 'Vom Empfänger eingegebene Informationen',
       receiveDataTooltip:
         "Geben Sie hier Schlüssel und Werte für Daten ein, die von der Objecten API empfangen werden sollen. Der Schlüssel hier ist der Ort, an dem die Daten gespeichert werden sollen (z. B. 'doc:/customer/signedAgreement'). Der Wert zeigt auf den Schlüssel des Form.IO-Feld, aus dem die Daten stammen sollen (z. B. '/signedAgreement').",
       receiver: 'Empfänger',
