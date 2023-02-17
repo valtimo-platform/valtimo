@@ -1,0 +1,29 @@
+0024c48e - Updated version to 10.3.0
+eda3fd96 - Updated version to 10.3.0-129.RC-SNAPSHOT
+dbea4551 - fix build fix (#374)
+82c0930e - feat: 47126 notificaties api plugin changes (#361)
+95efe92c - #51629 Portaaltaak plugin - property to select object_management_configuration (#372)
+05a05aaf - fix (#373)
+a184b83e - feat: support case search parameters in url (#365)
+96046837 - Merge branch 'main' into development
+600c6b0c - Merge pull request #367 from valtimo-platform/feature/development
+52a20ba5 - Resolved merge conflicts
+d03411b0 - #47348 Case search - dropdown based on 'fixed values' (#358)
+ed6168ea - Changed url of back button. (#363)
+1fb21e38 - tp-35799 fixed button layout for modal (#362)
+c1d53ec0 - fix: url of reset password button (#360)
+ced26ee9 - feat: address front-end feedback (#357)
+39e56944 - tp-35799 duplicate form (#348)
+6fdee19f - fix (#356)
+f40414f2 - TG-46030 - Ability to override the feedback menu item in the right sidebar for a mailTo item where the content of the email is set with a property in the translation file (#355)
+8a7059d3 - fix break on error (#351)
+5e167756 - fix: change password url not being optional (#354)
+519117d1 - fix: process xml not changing when selecting diffrent version (#353)
+b3e68026 - role support for menu (#352)
+63a9b9b7 - address feedback (#350)
+398d5823 - fixes (#349)
+79acd5c9 - feat: added reset pass button with url check (#344)
+664f1058 - Feature/43171 business logic search fields (#347)
+2209d49e - feat: resize left side navigation (#346)
+3da287ad - feature/story_46943_Portal_Task_plugin (#343)
+6b73cd68 - fix navigation (#342)
