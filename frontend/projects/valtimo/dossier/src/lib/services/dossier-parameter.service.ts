@@ -31,9 +31,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Direction, SearchFieldValues} from '@valtimo/config';
 import {Pagination} from '@valtimo/components';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class DossierParameterService implements OnDestroy {
   private readonly _dossierParameters$ = new BehaviorSubject<DossierParameters>(undefined);
 

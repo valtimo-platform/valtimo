@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {ConfigService, MenuConfig, MenuIncludeService, MenuItem} from '@valtimo/config';
 import {NGXLogger} from 'ngx-logger';
 import {UserProviderService} from '@valtimo/security';
-import {NavigationEnd, Router} from '@angular/router';
+import {NavigationEnd, NavigationStart, ResolveEnd, Router} from '@angular/router';
 import {BehaviorSubject, combineLatest, Observable, Subject, timer} from 'rxjs';
 import {DocumentDefinitions, DocumentService} from '@valtimo/document';
 import {filter, map, take} from 'rxjs/operators';
@@ -57,8 +57,14 @@ export class MenuService {
   }
 
   private readonly currentRoute$ = this.router.events.pipe(
-    filter(event => event instanceof NavigationEnd),
-    map(event => (event as NavigationEnd)?.url)
+    filter(
+      event =>
+        event instanceof NavigationEnd ||
+        event instanceof NavigationStart ||
+        event instanceof ResolveEnd
+    ),
+    map(event => (event as NavigationEnd)?.url),
+    filter(url => !!url)
   );
 
   private readonly dossierItemsAppended$ = new BehaviorSubject<boolean>(false);
