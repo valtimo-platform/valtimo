@@ -74,6 +74,7 @@ export class DossierListComponent implements OnInit {
 
   public dossierVisibleTabs: Array<DossierListTab> | null = null;
 
+  private readonly defaultAssigneeFilter = 'ALL';
   private selectedProcessDocumentDefinition: ProcessDocumentDefinition | null = null;
   private modalListenerAdded = false;
   private readonly settingPaginationForDocName$ = new BehaviorSubject<string | undefined>(
@@ -131,7 +132,10 @@ export class DossierListComponent implements OnInit {
     switchMap(documentDefinitionName =>
       this.documentService.getDocumentDefinition(documentDefinitionName)
     ),
-    map(documentDefinition => documentDefinition?.schema)
+    map(documentDefinition => documentDefinition?.schema),
+    tap(() => {
+      this.assigneeFilter$.next(this.defaultAssigneeFilter);
+    })
   );
 
   private readonly storedSearchRequestKey$: Observable<string> = this.documentDefinitionName$.pipe(
@@ -228,7 +232,7 @@ export class DossierListComponent implements OnInit {
     );
 
   private readonly searchFieldValues$ = new BehaviorSubject<SearchFieldValues>({});
-  private readonly assigneeFilter$ = new BehaviorSubject<AssigneeFilter>('ALL');
+  private readonly assigneeFilter$ = new BehaviorSubject<AssigneeFilter>(this.defaultAssigneeFilter);
 
   private readonly documentsRequest$: Observable<Documents | SpecifiedDocuments> = combineLatest([
     this.documentSearchRequest$,
