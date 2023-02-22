@@ -118,6 +118,7 @@ export interface ValtimoConfig {
     caseListColumn?: boolean;
     enableObjectManagement?: boolean;
     largeLogoMargin?: boolean;
+    sortFilesByDate?: boolean;
   };
   visibleTaskListTabs?: Array<TaskListTab>;
   visibleDossierListTabs?: Array<DossierListTab>;

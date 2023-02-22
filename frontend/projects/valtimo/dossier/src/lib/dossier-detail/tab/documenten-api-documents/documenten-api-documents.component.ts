@@ -26,6 +26,7 @@ import {ConfigService} from '@valtimo/config';
 import {DocumentenApiMetadata} from '@valtimo/components';
 import {UserProviderService} from '@valtimo/security';
 import {PromptService} from '@valtimo/user-interface';
+import {FileSortService} from '../../../services';
 
 @Component({
   selector: 'valtimo-dossier-detail-tab-documenten-api-documents',
@@ -79,7 +80,8 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
       }));
 
       return translatedFiles || [];
-    })
+    }),
+    map(relatedFiles => this.fileSortService.sortRelatedFilesByDateDescending(relatedFiles))
   );
 
   constructor(
@@ -91,7 +93,8 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
     private readonly promptService: PromptService,
     private readonly translateService: TranslateService,
     private readonly configService: ConfigService,
-    private readonly userProviderService: UserProviderService
+    private readonly userProviderService: UserProviderService,
+    private readonly fileSortService: FileSortService
   ) {
     const snapshot = this.route.snapshot.paramMap;
     this.documentId = snapshot.get('documentId') || '';
