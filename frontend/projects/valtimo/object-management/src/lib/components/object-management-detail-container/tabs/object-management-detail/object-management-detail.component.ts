@@ -38,7 +38,6 @@ export class ObjectManagementDetailComponent {
     this.loading$.next(true);
     const dataString =
       'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(object, null, 2));
-    console.log(dataString);
     const downloadAnchorElement = document.getElementById('downloadAnchorElement');
     downloadAnchorElement.setAttribute('href', dataString);
     downloadAnchorElement.setAttribute('download', `${object.id}.json`);

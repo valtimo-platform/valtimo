@@ -112,7 +112,8 @@ import {
   ZakenApiPluginModule,
   zakenApiPluginSpecification,
 } from '@valtimo/plugin';
-import {ObjectManagementModule} from '../../projects/valtimo/object-management/src/lib/object-management.module';
+import {ObjectManagementModule} from '@valtimo/object-management';
+import {ObjectModule} from '@valtimo/object';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -206,6 +207,7 @@ export function tabsFactory() {
         deps: [HttpBackend, ConfigService],
       },
     }),
+    ObjectModule,
     ObjectManagementModule,
   ],
   providers: [

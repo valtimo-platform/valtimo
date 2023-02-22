@@ -35,6 +35,8 @@ export class MenuIncludeService {
     switch (includeFunction) {
       case IncludeFunction.HaalcentraalConnectorConfigured:
         return this.isHaalCentraalConnectorConfigured();
+      case IncludeFunction.ObjectManagementEnabled:
+        return of(!!this.valtimoConfig?.featureToggles?.enableObjectManagement);
       default:
         return of(true);
     }

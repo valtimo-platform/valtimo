@@ -14,24 +14,9 @@
  * limitations under the License.
  */
 
-import {Subject} from 'rxjs';
+/*
+ * Public API Surface of object
+ */
 
-enum IncludeFunction {
-  HaalcentraalConnectorConfigured,
-  ObjectManagementEnabled,
-}
-
-interface MenuItem {
-  title: string;
-  sequence: number;
-  link?: string[] | null;
-  textClass?: string;
-  iconClass?: string;
-  children?: MenuItem[];
-  roles?: string[];
-  show?: boolean;
-  count$?: Subject<number>;
-  includeFunction?: IncludeFunction;
-}
-
-export {MenuItem, IncludeFunction};
+export * from './lib/services/object.service';
+export * from './lib/object.module';

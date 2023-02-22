@@ -436,6 +436,7 @@
   "Select options for the selected process": "Select options for the selected process",
   "Save": "Save",
   "Customers": "Customers",
+  "Objects": "Objects",
   "processManagement": {
     "download": "Download",
     "clear": "Clear",
@@ -983,6 +984,33 @@
     "enum": "Enumeration",
     "arrayCount": "Count",
     "underscoresToSpaces": "Underscores to spaces"
+  },
+  "object": {
+    "title": "Objects",
+    "createObject": "New object",
+    "editObject": "Edit object",
+    "deleteObject": "Delete object",
+    "labels": {
+      "recordIndex": "Record index",
+      "objectUrl": "Object URL"
+    },
+    "header": "Object details",
+    "tabs": {
+      "general": "General"
+    },
+    "close": "Close",
+    "save": "Save object",
+    "delete": "Delete object",
+    "deleteObjectConfirmation": "Are you sure you want to delete this object",
+    "messages": {
+      "objectCreated": "Object created successfully",
+      "objectCreationError": "An error occurred while creating the object",
+      "objectUpdated": "Object updated successfully",
+      "objectUpdateError": "An error occurred while updating the object",
+      "objectDeleted": "Object deleted successfully",
+      "objectDeleteError": "An error occurred while deleting the object",
+      "objectRetrievingFormError": "An error occurred while retrieving the form definition"
+    }
   },
   "objectManagement": {
     "title": "Objecttypes",

@@ -1,0 +1,132 @@
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<ng-container
+  *ngIf="{
+    loading: loading$ | async,
+    pagination: pagination$ | async,
+    disableInput: disableInput$ | async,
+    fields: fields$ | async,
+    objectConfiguration: objectConfiguration$ | async
+  } as obs"
+>
+  <div class="main-content pt-0">
+    <div class="container-fluid pr-0 pl-0">
+      <div class="text-right">
+        <div class="btn-group mt-m3px mb-3 mr-0">
+          <ng-container *ngTemplateOutlet="buttons; context: {obs: obs}"></ng-container>
+        </div>
+      </div>
+      <ng-container *ngIf="obs.loading === false; else loading">
+        <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
+      </ng-container>
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="createNewModal"></ng-container>
+</ng-container>
+
+<ng-template #buttons let-obs="obs">
+  <button
+    (click)="openModal()"
+    ibmButton="primary"
+    size="md"
+    class="ml-3"
+    [disabled]="obs.disableInput || obs.loading"
+  >
+    {{ 'object.createObject' | translate }}
+    <svg class="cds--btn__icon" ibmIcon="add" size="16"></svg>
+  </button>
+</ng-template>
+
+<ng-template #list let-obs="obs">
+  <valtimo-widget>
+    <valtimo-list
+      [items]="obs.objectConfiguration"
+      [fields]="obs.fields"
+      [viewMode]="true"
+      [header]="true"
+      [pagination]="obs.pagination"
+      paginationIdentifier="objectConfigurationList"
+      (paginationClicked)="paginationClicked($event)"
+      (paginationSet)="paginationSet($event)"
+      (rowClicked)="redirectToDetails($event)"
+    >
+      <div header>
+        <h3 class="list-header-title">
+          {{ 'object.title' | translate }}
+          <sup class="ml-1 badge badge-pill badge-primary">{{
+            obs.objectConfiguration?.length || 0
+          }}</sup>
+        </h3>
+      </div>
+    </valtimo-list>
+  </valtimo-widget>
+</ng-template>
+
+<ng-template #createNewModal>
+  <ibm-modal
+    *ngIf="{
+      show: showModal$ | async,
+      formValid: formValid$ | async,
+      formDefinition: formDefinition$ | async,
+      disableInput: disableInput$ | async
+    } as modalObs"
+    [open]="modalObs.show"
+  >
+    <ibm-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+      <h3 ibmModalHeaderHeading>
+        {{ 'object.createObject' | translate }}
+      </h3>
+    </ibm-modal-header>
+    <section ibmModalContent>
+      <ng-container *ngTemplateOutlet="modalContent; context: {modalObs: modalObs}"></ng-container>
+    </section>
+    <ng-container *ngTemplateOutlet="modalFooter; context: {modalObs: modalObs}"></ng-container>
+  </ibm-modal>
+</ng-template>
+
+<ng-template #modalContent let-modalObs="modalObs">
+  <valtimo-form-io
+    [form]="modalObs.formDefinition"
+    (change)="onFormioChange($event)"
+  ></valtimo-form-io>
+</ng-template>
+
+<ng-template #modalFooter let-modalObs="modalObs">
+  <ibm-modal-footer>
+    <ng-container>
+      <button
+        ibmButton="secondary"
+        [attr.modal-primary-focus]="true"
+        (click)="closeModal()"
+        [disabled]="modalObs.disableInput"
+      >
+        {{ 'object.close' | translate }}
+      </button>
+      <button
+        ibmButton="primary"
+        [attr.modal-primary-focus]="true"
+        (click)="addObject()"
+        [disabled]="modalObs.disableInput || modalObs.formValid === false"
+      >
+        {{ 'object.save' | translate }}
+      </button>
+    </ng-container>
+  </ibm-modal-footer>
+</ng-template>
+
+<ng-template #loading>
+  <div class="loading-icon"><ibm-loading></ibm-loading></div>
+</ng-template>

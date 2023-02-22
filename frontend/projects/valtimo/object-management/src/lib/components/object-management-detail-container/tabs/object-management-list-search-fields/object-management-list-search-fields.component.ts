@@ -323,7 +323,6 @@ export class ObjectManagementListSearchFieldsComponent {
         const column = this.cachedObjectManagementListSearchFields.find(
           cachedColumn => cachedColumn.key === row.key
         );
-        console.log(dataTypeItems);
         const dataTypeItem = dataTypeItems.find(item => item.key === column.dataType);
         const dataTypeItemIndex = dataTypeItems.findIndex(item => item.key === column.dataType);
 

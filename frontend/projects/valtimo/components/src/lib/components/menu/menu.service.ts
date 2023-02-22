@@ -23,6 +23,7 @@ import {BehaviorSubject, combineLatest, Observable, Subject, timer} from 'rxjs';
 import {DocumentDefinitions, DocumentService} from '@valtimo/document';
 import {filter, map, take} from 'rxjs/operators';
 import {KeycloakService} from 'keycloak-angular';
+import {HttpClient} from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -43,7 +44,8 @@ export class MenuService {
     private readonly logger: NGXLogger,
     private readonly menuIncludeService: MenuIncludeService,
     private readonly router: Router,
-    private readonly keycloakService: KeycloakService
+    private readonly keycloakService: KeycloakService,
+    private http: HttpClient
   ) {
     const config = configService?.config;
     this.menuConfig = config?.menu;
@@ -68,12 +70,21 @@ export class MenuService {
   );
 
   private readonly dossierItemsAppended$ = new BehaviorSubject<boolean>(false);
+  private readonly objectsItemsAppended$ = new BehaviorSubject<boolean>(false);
 
   // Find out which menu item sequence number matches the current url the closest
   public get closestSequence$(): Observable<string> {
-    return combineLatest([this.dossierItemsAppended$, this.currentRoute$, this.menuItems$]).pipe(
-      filter(([dossierItemsAppended]) => dossierItemsAppended),
-      map(([dossierItemsAppended, currentRoute, menuItems]) => {
+    return combineLatest([
+      this.dossierItemsAppended$,
+      this.objectsItemsAppended$,
+      this.currentRoute$,
+      this.menuItems$,
+    ]).pipe(
+      filter(
+        ([dossierItemsAppended, objectsItemsAppended]) =>
+          dossierItemsAppended || objectsItemsAppended
+      ),
+      map(([dossierItemsAppended, objectsItemsAppended, currentRoute, menuItems]) => {
         let closestSequence = '0';
         let highestDifference = 0;
 
@@ -145,6 +156,12 @@ export class MenuService {
     this.appendDossierSubMenuItems(menuItems).subscribe(
       value => (menuItems = this.applyMenuRoleSecurity(value))
     );
+
+    if (this.enableObjectManagement) {
+      this.appendObjectsSubMenuItems(menuItems).subscribe(
+        value => (menuItems = this.applyMenuRoleSecurity(value))
+      );
+    }
     return menuItems;
   }
 
@@ -199,6 +216,35 @@ export class MenuService {
     });
   }
 
+  private appendObjectsSubMenuItems(menuItems: MenuItem[]): Observable<MenuItem[]> {
+    return new Observable(subscriber => {
+      this.logger.debug('appendObjectManagementSubMenuItems');
+      this.getAllObjects().subscribe(objects => {
+        const visibleObjects = objects.filter(object => object?.showInDataMenu !== false)
+        if (visibleObjects?.length > 0) {
+          const objectsMenuItems: MenuItem[] = visibleObjects.map((object, index) => ({
+            link: ['/objects/' + object.id],
+            title: object.title,
+            iconClass: 'icon mdi mdi-dot-circle',
+            sequence: index,
+            show: true,
+          } as MenuItem));
+          this.logger.debug('found objectsMenuItems', objectsMenuItems);
+          const menuItemIndex = menuItems.findIndex(({title}) => title === 'Objects');
+          if (menuItemIndex > 0) {
+            const objectsMenu = menuItems[menuItemIndex];
+            this.logger.debug('updating objectsMenu', objectsMenu);
+            objectsMenu.children = objectsMenuItems;
+            menuItems[menuItemIndex] = objectsMenu;
+          }
+          subscriber.next(menuItems);
+          this.objectsItemsAppended$.next(true);
+          this.logger.debug('appendObjectsSubMenuItems finished');
+        }
+      });
+    });
+  }
+
   private getOpenDocumentCountMap(definitions: DocumentDefinitions): Map<string, Subject<number>> {
     const countMap = new Map<string, Subject<number>>();
     definitions.content.forEach(definition =>
@@ -237,5 +283,11 @@ export class MenuService {
 
   private determineRoleAccess(menuItem: MenuItem, roles: string[]): boolean {
     return !menuItem.roles || menuItem.roles.some(role => roles.includes(role));
+  }
+
+  private getAllObjects(): Observable<any> {
+    return this.http.get(
+      `${this.configService.config.valtimoApi.endpointUri}v1/object/management/configuration`
+    );
   }
 }

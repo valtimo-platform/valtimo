@@ -436,6 +436,7 @@
   "Select options for the selected process": "Optionen für gewählten Prozess auswählen",
   "Save": "Speichern",
   "Customers": "Kunden",
+  "Objects": "Objekte",
   "processManagement": {
     "download": "Herunterladen",
     "clear": "Löschen",
@@ -983,6 +984,33 @@
     "enum": "Aufzählung",
     "arrayCount": "Quantität",
     "underscoresToSpaces": "Unterstriche zu Leerzeichen"
+  },
+  "object": {
+    "title": "Objekte",
+    "createObject": "Objekt erstellen",
+    "editObject": "Objekt bearbeiten",
+    "deleteObject": "Objekt Löschen",
+    "labels": {
+      "recordIndex": "Rekordindex",
+      "objectUrl": "Objekt-URL"
+    },
+    "header": "Objektdetails",
+    "tabs": {
+      "general": "Allgemein"
+    },
+    "close": "Nahe",
+    "save": "Objekt speichern",
+    "delete": "Objekt löschen",
+    "deleteObjectConfirmation": "Möchten Sie dieses Objekt wirklich löschen?",
+    "messages": {
+      "objectCreated": "Objekt erfolgreich erstellt",
+      "objectCreationError": "Beim Erstellen des Objekts ist ein Fehler aufgetreten",
+      "objectUpdated": "Objekt erfolgreich aktualisiert",
+      "objectUpdateError": "Beim Aktualisieren des Objekts ist ein Fehler aufgetreten",
+      "objectDeleted": "Objekt erfolgreich gelöscht",
+      "objectDeleteError": "Beim Löschen des Objekts ist ein Fehler aufgetreten",
+      "objectRetrievingFormError": "Beim Abrufen der Formulardefinition ist ein Fehler aufgetreten"
+    }
   },
   "objectManagement": {
     "title": "Objekttypen",

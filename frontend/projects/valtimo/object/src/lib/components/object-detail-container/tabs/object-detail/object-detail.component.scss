@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,24 +14,14 @@
  * limitations under the License.
  */
 
-import {Subject} from 'rxjs';
-
-enum IncludeFunction {
-  HaalcentraalConnectorConfigured,
-  ObjectManagementEnabled,
+.row {
+  margin: 0;
 }
 
-interface MenuItem {
-  title: string;
-  sequence: number;
-  link?: string[] | null;
-  textClass?: string;
-  iconClass?: string;
-  children?: MenuItem[];
-  roles?: string[];
-  show?: boolean;
-  count$?: Subject<number>;
-  includeFunction?: IncludeFunction;
+.object-schema {
+  resize: none;
 }
 
-export {MenuItem, IncludeFunction};
+valtimo-widget::ng-deep .card-border.card-full-default {
+  border: none;
+}

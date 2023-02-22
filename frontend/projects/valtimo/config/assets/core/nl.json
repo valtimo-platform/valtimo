@@ -436,6 +436,7 @@
   "Select options for the selected process": "Kies opties voor het geselecteerde proces",
   "Save": "Opslaan",
   "Customers": "Klanten",
+  "Objects": "Objecten",
   "processManagement": {
     "download": "Downloaden",
     "clear": "Wissen",
@@ -983,6 +984,33 @@
     "enum": "Opsomming",
     "arrayCount": "Hoeveelheid",
     "underscoresToSpaces": "Lage strepen naar spaties"
+  },
+  "object": {
+    "title": "Objects",
+    "createObject": "Nieuw object",
+    "editObject": "Wijzig object",
+    "deleteObject": "Verwijder object",
+    "labels": {
+      "recordIndex": "Record index",
+      "objectUrl": "Object URL"
+    },
+    "header": "Object informatie",
+    "tabs": {
+      "general": "Algemeen"
+    },
+    "close": "Sluiten",
+    "save": "Object opslaan",
+    "delete": "Object verwijderen",
+    "deleteObjectConfirmation": "Weet u zeker dat u dit object wilt verwijderen?",
+    "messages": {
+      "objectCreated": "Object succesvol aangemaakt",
+      "objectCreationError": "Er is een fout opgetreden tijdens het maken van het object",
+      "objectUpdated": "Object succesvol geupdate",
+      "objectUpdateError": "Er is een fout opgetreden tijdens het update van het object",
+      "objectDeleted": "Object succesvol verwijderd",
+      "objectDeleteError": "Er is een fout opgetreden tijdens het delete van het object",
+      "objectRetrievingFormError": "Er is een fout opgetreden bij het ophalen van de formulierdefinitie"
+    }
   },
   "objectManagement": {
     "title": "Objecttypes",

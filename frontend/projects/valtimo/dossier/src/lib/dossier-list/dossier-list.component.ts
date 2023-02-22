@@ -232,7 +232,9 @@ export class DossierListComponent implements OnInit {
     );
 
   private readonly searchFieldValues$ = new BehaviorSubject<SearchFieldValues>({});
-  private readonly assigneeFilter$ = new BehaviorSubject<AssigneeFilter>(this.defaultAssigneeFilter);
+  private readonly assigneeFilter$ = new BehaviorSubject<AssigneeFilter>(
+    this.defaultAssigneeFilter
+  );
 
   private readonly documentsRequest$: Observable<Documents | SpecifiedDocuments> = combineLatest([
     this.documentSearchRequest$,

@@ -14,24 +14,21 @@
  * limitations under the License.
  */
 
-import {Subject} from 'rxjs';
+import {Injectable} from '@angular/core';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {TabEnum} from './tab.enum';
 
-enum IncludeFunction {
-  HaalcentraalConnectorConfigured,
-  ObjectManagementEnabled,
+@Injectable({
+  providedIn: 'root',
+})
+export class TabService {
+  private _currentTab$ = new BehaviorSubject<TabEnum>(TabEnum.GENERAL);
+
+  public get currentTab$(): Observable<TabEnum> {
+    return this._currentTab$.asObservable();
+  }
+
+  public set currentTab(tab: TabEnum) {
+    this._currentTab$.next(tab);
+  }
 }
-
-interface MenuItem {
-  title: string;
-  sequence: number;
-  link?: string[] | null;
-  textClass?: string;
-  iconClass?: string;
-  children?: MenuItem[];
-  roles?: string[];
-  show?: boolean;
-  count$?: Subject<number>;
-  includeFunction?: IncludeFunction;
-}
-
-export {MenuItem, IncludeFunction};

@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-import {Subject} from 'rxjs';
-
-enum IncludeFunction {
-  HaalcentraalConnectorConfigured,
-  ObjectManagementEnabled,
+interface ObjectConfiguration {
+  content: ObjectConfigurationItem[];
 }
 
-interface MenuItem {
-  title: string;
-  sequence: number;
-  link?: string[] | null;
-  textClass?: string;
-  iconClass?: string;
-  children?: MenuItem[];
-  roles?: string[];
-  show?: boolean;
-  count$?: Subject<number>;
-  includeFunction?: IncludeFunction;
+interface ObjectConfigurationItem {
+  id: string;
+  items: Item[];
 }
 
-export {MenuItem, IncludeFunction};
+interface Item {
+  key: string;
+  value: string;
+}
+
+enum FormType {
+  SUMMARY = 'SUMMARY',
+  EDITFORM = 'EDITFORM',
+}
+
+export {ObjectConfiguration, ObjectConfigurationItem, Item, FormType};

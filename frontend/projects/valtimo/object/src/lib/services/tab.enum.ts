@@ -14,24 +14,6 @@
  * limitations under the License.
  */
 
-import {Subject} from 'rxjs';
-
-enum IncludeFunction {
-  HaalcentraalConnectorConfigured,
-  ObjectManagementEnabled,
+export enum TabEnum {
+  GENERAL = 'general',
 }
-
-interface MenuItem {
-  title: string;
-  sequence: number;
-  link?: string[] | null;
-  textClass?: string;
-  iconClass?: string;
-  children?: MenuItem[];
-  roles?: string[];
-  show?: boolean;
-  count$?: Subject<number>;
-  includeFunction?: IncludeFunction;
-}
-
-export {MenuItem, IncludeFunction};
