@@ -340,7 +340,9 @@
       "created": "Erstellt am",
       "name": "Name",
       "valtimoAssignee.fullName": "Eigentümer",
-      "due": "Geburtstermin"
+      "due": "Geburtstermin",
+      "context": "Context",
+      "case": "Case"
     },
     "mine": {
       "title": "Meine Aufgaben",
@@ -353,7 +355,8 @@
     "all": {
       "title": "Alle Aufgaben",
       "description": "Überblick alle Aufgaben"
-    }
+    },
+    "goToCase": "Gehen Sie zum Fall"
   },
   "Task": "Aufgabe",
   "Tasks": "Aufgaben",

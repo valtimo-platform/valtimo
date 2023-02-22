@@ -340,7 +340,9 @@
       "created": "Aanmaakdatum",
       "name": "Naam",
       "valtimoAssignee.fullName": "Eigenaar",
-      "due": "Opleveringsdatum"
+      "due": "Opleveringsdatum",
+      "context": "Context",
+      "case": "Dossier"
     },
     "mine": {
       "title": "Mijn taken",
@@ -353,7 +355,8 @@
     "all": {
       "title": "Alle taken",
       "description": "Overzicht van alle taken"
-    }
+    },
+    "goToCase": "Ga naar zaak"
   },
   "Task": "Taak",
   "Tasks": "Taken",

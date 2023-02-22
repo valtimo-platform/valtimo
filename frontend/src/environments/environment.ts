@@ -225,6 +225,10 @@ export const environment: ValtimoConfig = {
         propertyName: 'assignee',
         translationKey: 'valtimoAssignee.fullName',
       },
+      {
+        propertyName: 'context',
+        translationKey: 'context',
+      },
     ],
     defaultSortedColumn: {
       isSorting: true,

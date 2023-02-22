@@ -100,10 +100,16 @@ export interface Document {
   createdBy: string;
   sequence: number;
   definitionName: string;
+  definitionId: DocumentDefinitionId | null;
   relations: string[];
   relatedFiles: RelatedFile[];
   assigneeFullName: string;
   assigneeId: string;
+}
+
+export interface DocumentDefinitionId {
+  name: string;
+  version: number;
 }
 
 export interface ProcessDocumentDefinitionId {

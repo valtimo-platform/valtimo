@@ -27,9 +27,9 @@ import {
   ListModule,
   ModalModule,
   PageHeaderModule,
+  SearchableDropdownSelectModule,
   SpinnerModule,
   WidgetModule,
-  SearchableDropdownSelectModule,
 } from '@valtimo/components';
 import {HttpLoaderFactory} from '@valtimo/config';
 import {ToastrModule} from 'ngx-toastr';
@@ -37,6 +37,7 @@ import {TaskDetailModalComponent} from './task-detail-modal/task-detail-modal.co
 import {TaskListComponent} from './task-list/task-list.component';
 import {TaskRoutingModule} from './task-routing.module';
 import {AssignUserToTaskComponent} from './assign-user-to-task/assign-user-to-task.component';
+import {LinkModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [TaskListComponent, TaskDetailModalComponent, AssignUserToTaskComponent],
@@ -65,6 +66,7 @@ import {AssignUserToTaskComponent} from './assign-user-to-task/assign-user-to-ta
     NgbModule,
     FormIoModule,
     ModalModule,
+    LinkModule,
   ],
   exports: [TaskListComponent, TaskDetailModalComponent, AssignUserToTaskComponent],
 })

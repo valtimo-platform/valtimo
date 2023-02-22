@@ -29,6 +29,7 @@
         [header]="true"
         (rowClicked)="rowOpenTaskClick($event)"
         (sortChanged)="sortChanged($event)"
+        [lastColumnTemplate]="caseLink"
       >
         <div header>
           <h3 class="list-header-title">{{ listTitle }}</h3>
@@ -73,4 +74,10 @@
       <a ngbNavLink>{{ 'task-list.' + tab + '.title' | translate }}</a>
     </li>
   </ul>
+</ng-template>
+
+<ng-template #caseLink let-index="index">
+  <a ibmLink href="javascript:void(0)" (click)="openRelatedCase($event, index)">
+    {{ 'task-list.goToCase' | translate }}
+  </a>
 </ng-template>
