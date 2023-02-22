@@ -41,6 +41,7 @@ import {
   ProcessDocumentDefinition,
   ProcessDocumentDefinitionRequest,
   ProcessDocumentInstance,
+  RelatedFile,
   SpecifiedDocuments,
   UndeployDocumentDefinitionResult,
   UploadProcessLink,
@@ -488,6 +489,12 @@ export class DocumentService {
   deleteCaseList(documentDefinitionName: string, columnKey: string): Observable<CaseListColumn> {
     return this.http.delete<CaseListColumn>(
       `${this.valtimoEndpointUri}v1/case/${documentDefinitionName}/list-column/${columnKey}`
+    );
+  }
+
+  getZakenApiDocuments(documentId: string): Observable<Array<RelatedFile>> {
+    return this.http.get<Array<RelatedFile>>(
+      `${this.valtimoEndpointUri}v1/zaken-api/document/${documentId}/files`
     );
   }
 }

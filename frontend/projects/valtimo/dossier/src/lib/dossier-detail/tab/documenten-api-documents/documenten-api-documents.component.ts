@@ -68,13 +68,12 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
   public relatedFiles$: Observable<Array<RelatedFile>> = this.refetch$.pipe(
     switchMap(() =>
       combineLatest([
-        this.documentService.getDocument(this.documentId),
+        this.documentService.getZakenApiDocuments(this.documentId),
         this.translateService.stream('key'),
       ])
     ),
-    map(([document]) => {
-      const relatedFiles = document?.relatedFiles || [];
-      const translatedFiles = relatedFiles.map(file => ({
+    map(([relatedFiles]) => {
+      const translatedFiles = relatedFiles?.map(file => ({
         ...file,
         createdBy: file.createdBy || this.translateService.instant('list.automaticallyGenerated'),
       }));
