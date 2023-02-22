@@ -56,7 +56,7 @@ export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy 
     this.formManagementService.queryFormDefinitions().pipe(
       map(results =>
         results?.body?.content.map(configuration => ({
-          id: configuration.id,
+          id: configuration.name,
           text: configuration.name,
         }))
       )
@@ -173,8 +173,8 @@ export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy 
       !!(data.title &&
         data.objectenApiPluginConfigurationId &&
         data.objecttypenApiPluginConfigurationId &&
-        data.objecttypeId,
-      data.objecttypeVersion)
+        data.objecttypeId &&
+        data.objecttypeVersion)
     );
   }
 
