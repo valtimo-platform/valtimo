@@ -145,3 +145,6 @@ export * from './lib/components/multi-input/carbon-multi-input.component';
 
 export * from './lib/components/confirmation-modal/confirmation-modal.module';
 export * from './lib/components/confirmation-modal/confirmation-modal.component';
+
+export * from './lib/components/expansion-panel/expansion-panel.module';
+export * from './lib/components/expansion-panel/expansion-panel.component';
