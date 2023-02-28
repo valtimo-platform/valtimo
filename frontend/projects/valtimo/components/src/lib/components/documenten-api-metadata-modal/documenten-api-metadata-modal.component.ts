@@ -243,7 +243,9 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
         data.creationDate &&
         data.status &&
         data.language &&
-        data.informatieobjecttype
+        data.informatieobjecttype &&
+        data.description &&
+        data.confidentialityLevel
       )
     );
   }
