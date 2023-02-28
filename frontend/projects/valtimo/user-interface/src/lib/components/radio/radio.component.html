@@ -1,0 +1,52 @@
+<!--
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="v-input-container"
+  [ngClass]="{
+    'v-input--margin': margin,
+    'v-input--small-margin': smallMargin
+  }"
+>
+  <ng-container *ngTemplateOutlet="inputTitle"></ng-container>
+  <ng-container *ngTemplateOutlet="radioInput"></ng-container>
+</div>
+
+<ng-template #inputTitle>
+  <v-input-label
+    *ngIf="title || titleTranslationKey"
+    [title]="title"
+    [titleTranslationKey]="titleTranslationKey"
+    [name]="name"
+    [tooltip]="tooltip"
+    [required]="required"
+    [small]="smallLabel"
+  >
+  </v-input-label>
+</ng-template>
+
+<ng-template #radioInput>
+  <ibm-radio-group
+    [name]="name"
+    [disabled]="disabled"
+    [ngModel]="radioValue$ | async"
+    (ngModelChange)="onValueChange($event)"
+  >
+    <ibm-radio *ngFor="let radio of radioValues" [value]="radio.value" [disabled]="radio.disabled">
+      {{ radio.titleTranslationKey ? (radio.titleTranslationKey | translate) : radio.title }}
+    </ibm-radio>
+  </ibm-radio-group>
+</ng-template>

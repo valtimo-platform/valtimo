@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, Input, OnDestroy, ViewChild} from '@angular/core';
-import {ModalComponent} from '@valtimo/components';
+import {AfterViewInit, Component, OnDestroy, ViewChild} from '@angular/core';
 import {ModalComponent as vModalComponent, ModalService} from '@valtimo/user-interface';
-import {BehaviorSubject, Observable, Subject, Subscription} from 'rxjs';
-import {ConnectorModal, ConnectorType} from '@valtimo/config';
+import {Observable, Subject, Subscription} from 'rxjs';
+import {ConnectorType} from '@valtimo/config';
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
 import {take} from 'rxjs/operators';
 

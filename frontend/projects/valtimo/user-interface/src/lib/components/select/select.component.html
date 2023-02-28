@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<div [ngClass]="{'ng-select--margin': margin}">
+<div [ngClass]="{'ng-select--margin': margin, 'ng-select--small-margin': smallMargin}">
   <v-input-label
     *ngIf="title || titleTranslationKey"
     [title]="title"

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {PluginConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, map, Observable, of, Subscription, take} from 'rxjs';
-import {VerzoekConfig, VerzoekType} from '../../models';
+import {CopyStrategy, VerzoekConfig, VerzoekType} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
-import {SelectItem} from '@valtimo/user-interface';
+import {MultiInputValues, RadioValue, SelectItem} from '@valtimo/user-interface';
 import {VerzoekPluginService} from '../../services';
 import {ProcessService} from '@valtimo/process';
 import {DocumentService} from '@valtimo/document';
@@ -88,9 +88,28 @@ export class VerzoekConfigurationComponent
       )
     );
 
-  rolTypeSelectItemsObservables: {
+  readonly RADIO_ITEMS: Array<CopyStrategy> = ['full', 'specified'];
+  readonly radioItems$: Observable<Array<RadioValue>> = this.translateService.stream('key').pipe(
+    map(() =>
+      this.RADIO_ITEMS.map(radioItem => ({
+        value: radioItem,
+        title: this.pluginTranslationService.instant(radioItem, this.pluginId),
+      }))
+    )
+  );
+
+  readonly rolTypeSelectItemsObservables: {
     [uuid: string]: {caseDefinitionName: string; items: Observable<Array<SelectItem>>};
   } = {};
+
+  readonly showMappingButtons: {[uuid: string]: boolean} = {};
+
+  readonly showMappingModals: {[uuid: string]: boolean} = {};
+  readonly showMappingModalsDelay: {[uuid: string]: boolean} = {};
+
+  readonly tempMappings: {[uuid: string]: MultiInputValues} = {};
+
+  readonly mappings: {[uuid: string]: MultiInputValues} = {};
 
   private saveSubscription!: Subscription;
 
@@ -123,6 +142,8 @@ export class VerzoekConfigurationComponent
     const caseDefinitionName = formValue?.caseDefinitionName;
     const rolTypeSelectItemsObservables = this.rolTypeSelectItemsObservables;
 
+    this.showMappingButtons[uuid] = formValue.copyStrategy === 'specified';
+
     if (caseDefinitionName) {
       if (
         !rolTypeSelectItemsObservables[uuid] ||
@@ -145,8 +166,31 @@ export class VerzoekConfigurationComponent
     }
   }
 
-  deleteRow(uuid: string) {
+  deleteRow(uuid: string): void {
     delete this.rolTypeSelectItemsObservables[uuid];
+  }
+
+  openMappingModal(uuid: string): void {
+    this.showMappingModals[uuid] = true;
+    this.showMappingModalsDelay[uuid] = true;
+  }
+
+  closeMappingModal(uuid: string): void {
+    this.showMappingModals[uuid] = false;
+
+    setTimeout(() => {
+      this.showMappingModalsDelay[uuid] = false;
+    }, 250);
+  }
+
+  mappingValueChange(newValue: MultiInputValues, uuid: string): void {
+    this.tempMappings[uuid] = newValue;
+  }
+
+  saveMapping(uuid: string): void {
+    this.mappings[uuid] = [...this.tempMappings[uuid]];
+    this.tempMappings[uuid] = [];
+    this.closeMappingModal(uuid);
   }
 
   private handleValid(formValue: VerzoekConfig): void {
@@ -178,8 +222,21 @@ export class VerzoekConfigurationComponent
       combineLatest([this.formValue$, this.valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
+          const formValueToSave: VerzoekConfig = {
+            ...formValue,
+            verzoekProperties: formValue.verzoekProperties.map(verzoek => {
+              const verzoekToReturn: VerzoekType = {...verzoek};
+              delete verzoekToReturn.uuid;
+
+              if (this.mappings[verzoek.uuid] && verzoek.copyStrategy === 'specified') {
+                verzoekToReturn.mapping = this.mappings[verzoek.uuid];
+              }
+
+              return verzoekToReturn;
+            }),
+          };
           if (valid) {
-            this.configuration.emit(formValue);
+            this.configuration.emit(formValueToSave);
           }
         });
     });

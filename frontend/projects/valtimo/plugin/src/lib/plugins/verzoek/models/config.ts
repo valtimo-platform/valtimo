@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,22 @@
 
 import {PluginConfigurationData} from '../../../models';
 
+type CopyStrategy = 'full' | 'specified';
+
+interface Mapping {
+  key: string;
+  value: string;
+}
+
 interface VerzoekType {
+  uuid?: string;
   caseDefinitionName: string;
   processDefinitionKey: string;
   initiatorRolDescription: string;
   initiatorRoltypeUrl: string;
   type: string;
+  copyStrategy: CopyStrategy;
+  mapping?: Array<Mapping>;
 }
 
 interface VerzoekConfig extends PluginConfigurationData {
@@ -32,4 +42,4 @@ interface VerzoekConfig extends PluginConfigurationData {
   verzoekProperties: Array<VerzoekType>;
 }
 
-export {VerzoekConfig, VerzoekType};
+export {VerzoekConfig, VerzoekType, CopyStrategy};

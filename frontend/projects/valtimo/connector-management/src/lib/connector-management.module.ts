@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,13 @@ import {NgModule} from '@angular/core';
 import {ConnectorManagementRoutingModule} from './connector-management-routing';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {ListModule, ModalModule, SpinnerModule, WidgetModule} from '@valtimo/components';
+import {
+  FormIoModule,
+  ListModule,
+  ModalModule,
+  SpinnerModule,
+  WidgetModule,
+} from '@valtimo/components';
 import {ConnectorManagementStateService} from './services/connector-management-state/connector-management-state.service';
 import {ConnectorManagementComponent} from './components/connector-management/connector-management.component';
 import {ConnectorLinkExtensionModalComponent} from './components/connector-link-extension-modal/connector-link-extension-modal.component';
@@ -29,19 +35,18 @@ import {EditConnectorPropertiesComponent} from './components/edit-connector-prop
 import {ConnectorLinkExtensionComponent} from './components/connector-link-extension/connector-link-extension.component';
 import {MultiValueConnectorPropertyComponent} from './components/multi-value-connector-property/multi-value-connector-property.component';
 import {EditProductAanvragenConnectorComponent} from './components/edit-product-aanvragen-connector/edit-product-aanvragen-connector.component';
-import {FormIoModule} from '@valtimo/components';
 import {EditConnectorFormComponent} from './components/edit-connector-form/edit-connector-form.component';
 import {EditTaakConnectorComponent} from './components/edit-taak-connector/edit-taak-connector.component';
 import {
   ButtonModule,
-  TableModule,
-  ModalModule as VModalModule,
-  StepperModule,
   CardModule,
-  TitleModule,
   InputModule,
+  ModalModule as VModalModule,
   PageModule,
   ParagraphModule,
+  StepperModule,
+  TableModule,
+  TitleModule,
 } from '@valtimo/user-interface';
 import {FlexLayoutModule} from '@angular/flex-layout';
 import {AddConnectorConfigureComponent} from './components/add-connector-configure/add-connector-configure.component';

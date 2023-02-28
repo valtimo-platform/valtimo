@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 
 import {NGXLogger} from 'ngx-logger';
-import {ConfigService} from '@valtimo/config';
-import {BasicExtensionPoint, Extension} from '@valtimo/config';
+import {BasicExtensionPoint, ConfigService, Extension} from '@valtimo/config';
 import {Injector} from '@angular/core';
 import {ConnectorLinkExtensionComponent} from '../components/connector-link-extension/connector-link-extension.component';
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2021 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,3 +90,6 @@ export * from './lib/components/tooltip-icon/tooltip-icon.component';
 // Multi input form
 export * from './lib/components/multi-input-form/multi-input-form.component';
 export * from './lib/components/multi-input-form/multi-input-form.module';
+// Radio
+export * from './lib/components/radio/radio.component';
+export * from './lib/components/radio/radio.module';

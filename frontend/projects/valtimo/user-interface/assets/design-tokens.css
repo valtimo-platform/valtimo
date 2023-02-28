@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,6 +109,7 @@
   --v-transition-backdrop-medium: backdrop-filter 0.14s ease-in;
   --v-transition-opacity-medium: opacity 0.14s ease-in;
   --v-transition-transform-medium: transform 0.14s ease-in;
+  --v-transition-right-medium: right 0.14s ease-in;
   /* cursors */
   --v-cursor-default: default;
   --v-cursor-clickable: pointer;
@@ -227,7 +228,7 @@
   --v-modal-min-height: 150px;
   --v-modal-box-shadow: var(--v-box-shadow-medium);
   --v-modal-background-color: var(--v-color-grey-7);
-  --v-modal-transition: var(--v-transition-opacity-medium), var(--v-transition-transform-medium);
+  --v-modal-transition: var(--v-transition-opacity-medium), var(--v-transition-right-medium);
   --v-modal-cursor: var(--v-cursor-default);
   --v-modal-border-radius: var(--v-border-radius-lg);
   --v-modal-padding-inline: var(--v-spacing-inline-2xl);

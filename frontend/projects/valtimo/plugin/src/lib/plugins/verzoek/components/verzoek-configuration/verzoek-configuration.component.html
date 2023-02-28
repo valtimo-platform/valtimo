@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -109,77 +109,144 @@
   let-changeFunction="changeFunction"
   let-prefill="prefill"
 >
-  <v-form
-    (valueChange)="changeFunction($event, uuid); verzoekTypeFormChange($event, uuid)"
+  <ng-container
     *ngIf="{
       disabled: disabled$ | async
     } as obs"
   >
-    <v-input
-      name="type"
-      [title]="'type' | pluginTranslate : pluginId | async"
-      [margin]="false"
-      [disabled]="obs.disabled"
-      [defaultValue]="prefill?.type"
-      [required]="true"
-      [tooltip]="'typeTooltip' | pluginTranslate : pluginId | async"
-      [widthPx]="350"
-      [smallMargin]="true"
-    >
-    </v-input>
-    <ng-container *ngIf="{documentSelectItems: documentSelectItems$ | async} as vars">
-      <v-select
-        [items]="vars.documentSelectItems"
-        [margin]="true"
-        [widthInPx]="350"
-        name="caseDefinitionName"
-        [title]="'caseDefinitionName' | pluginTranslate : pluginId | async"
+    <v-form (valueChange)="changeFunction($event, uuid); verzoekTypeFormChange($event, uuid)">
+      <v-input
+        name="type"
+        [title]="'type' | pluginTranslate : pluginId | async"
+        [margin]="false"
         [disabled]="obs.disabled"
-        [defaultSelectionId]="prefill?.caseDefinitionName"
+        [defaultValue]="prefill?.type"
         [required]="true"
-        [loading]="!vars.documentSelectItems"
-        [tooltip]="'caseDefinitionNameTooltip' | pluginTranslate : pluginId | async"
-      ></v-select>
-    </ng-container>
-    <v-select
-      [items]="
-        rolTypeSelectItemsObservables[uuid]?.caseDefinitionName &&
-        (rolTypeSelectItemsObservables[uuid].items | async)
-      "
-      [margin]="true"
-      [widthInPx]="350"
-      name="initiatorRoltypeUrl"
-      [title]="'initiatorRoltypeUrl' | pluginTranslate : pluginId | async"
-      [disabled]="obs.disabled || !rolTypeSelectItemsObservables[uuid]?.caseDefinitionName"
-      [defaultSelectionId]="prefill?.initiatorRoltypeUrl"
-      [required]="true"
-      [tooltip]="'initiatorRoltypeUrlTooltip' | pluginTranslate : pluginId | async"
-    ></v-select>
-    <v-input
-      name="initiatorRolDescription"
-      [title]="'initiatorRolDescription' | pluginTranslate : pluginId | async"
-      [margin]="false"
-      [disabled]="obs.disabled"
-      [defaultValue]="prefill?.initiatorRolDescription || 'Initiator'"
-      [required]="true"
-      [tooltip]="'initiatorRolDescriptionTooltip' | pluginTranslate : pluginId | async"
-      [widthPx]="350"
-      [smallMargin]="true"
-    >
-    </v-input>
-    <ng-container *ngIf="{processSelectItems: processSelectItems$ | async} as vars">
+        [tooltip]="'typeTooltip' | pluginTranslate : pluginId | async"
+        [widthPx]="350"
+        [smallMargin]="true"
+      >
+      </v-input>
+      <ng-container *ngIf="{documentSelectItems: documentSelectItems$ | async} as vars">
+        <v-select
+          [items]="vars.documentSelectItems"
+          [smallMargin]="true"
+          [widthInPx]="350"
+          name="caseDefinitionName"
+          [title]="'caseDefinitionName' | pluginTranslate : pluginId | async"
+          [disabled]="obs.disabled"
+          [defaultSelectionId]="prefill?.caseDefinitionName"
+          [required]="true"
+          [loading]="!vars.documentSelectItems"
+          [tooltip]="'caseDefinitionNameTooltip' | pluginTranslate : pluginId | async"
+        ></v-select>
+      </ng-container>
       <v-select
-        [items]="vars.processSelectItems"
-        [margin]="true"
+        [items]="
+          rolTypeSelectItemsObservables[uuid]?.caseDefinitionName &&
+          (rolTypeSelectItemsObservables[uuid].items | async)
+        "
+        [smallMargin]="true"
         [widthInPx]="350"
-        name="processDefinitionKey"
-        [title]="'processDefinitionKey' | pluginTranslate : pluginId | async"
-        [disabled]="obs.disabled"
-        [defaultSelectionId]="prefill?.processDefinitionKey"
+        name="initiatorRoltypeUrl"
+        [title]="'initiatorRoltypeUrl' | pluginTranslate : pluginId | async"
+        [disabled]="obs.disabled || !rolTypeSelectItemsObservables[uuid]?.caseDefinitionName"
+        [defaultSelectionId]="prefill?.initiatorRoltypeUrl"
         [required]="true"
-        [loading]="!vars.processSelectItems"
-        [tooltip]="'processDefinitionKeyTooltip' | pluginTranslate : pluginId | async"
+        [tooltip]="'initiatorRoltypeUrlTooltip' | pluginTranslate : pluginId | async"
       ></v-select>
-    </ng-container>
-  </v-form>
+      <v-input
+        name="initiatorRolDescription"
+        [title]="'initiatorRolDescription' | pluginTranslate : pluginId | async"
+        [margin]="false"
+        [disabled]="obs.disabled"
+        [defaultValue]="prefill?.initiatorRolDescription || 'Initiator'"
+        [required]="true"
+        [tooltip]="'initiatorRolDescriptionTooltip' | pluginTranslate : pluginId | async"
+        [widthPx]="350"
+        [smallMargin]="true"
+      >
+      </v-input>
+      <ng-container *ngIf="{processSelectItems: processSelectItems$ | async} as vars">
+        <v-select
+          [items]="vars.processSelectItems"
+          [smallMargin]="true"
+          [widthInPx]="350"
+          name="processDefinitionKey"
+          [title]="'processDefinitionKey' | pluginTranslate : pluginId | async"
+          [disabled]="obs.disabled"
+          [defaultSelectionId]="prefill?.processDefinitionKey"
+          [required]="true"
+          [loading]="!vars.processSelectItems"
+          [tooltip]="'processDefinitionKeyTooltip' | pluginTranslate : pluginId | async"
+        ></v-select>
+      </ng-container>
+      <v-radio
+        name="copyStrategy"
+        [disabled]="obs.disabled"
+        [title]="'copyStrategy' | pluginTranslate : pluginId | async"
+        [tooltip]="'copyStrategyTooltip' | pluginTranslate : pluginId | async"
+        [radioValues]="radioItems$ | async"
+        [smallMargin]="true"
+        [defaultValue]="prefill?.copyStrategy || 'full'"
+      >
+      </v-radio>
+      <ng-container *ngIf="showMappingButtons[uuid]">
+        <v-input-label
+          [title]="'mapping' | pluginTranslate : pluginId | async"
+          [tooltip]="'mappingTooltip' | pluginTranslate : pluginId | async"
+        >
+        </v-input-label>
+        <v-button (clickEvent)="openMappingModal(uuid)" mdiIcon="table"
+          >{{ 'setMapping' | pluginTranslate : pluginId | async }}
+        </v-button>
+      </ng-container>
+      <v-input class="hidden-input" name="uuid" [defaultValue]="uuid"> </v-input>
+    </v-form>
+    <ibm-modal [open]="showMappingModals[uuid]">
+      <ibm-modal-header [showCloseButton]="true" (closeSelect)="closeMappingModal(uuid)">
+        <h3 ibmModalHeaderHeading>{{ 'setMapping' | pluginTranslate : pluginId | async }}</h3>
+      </ibm-modal-header>
+      <section ibmModalContent>
+        <div class="cds--text-input__field-wrapper">
+          <ibm-label [disabled]="obs.disabled">
+            <span class="label-with-tooltip select-label">
+              {{ 'mapping' | pluginTranslate : pluginId | async }}
+              <v-tooltip-icon
+                [tooltip]="'mappingTooltip' | pluginTranslate : pluginId | async"
+                [disabled]="obs.disabled"
+              ></v-tooltip-icon>
+            </span>
+            <valtimo-carbon-multi-input
+              *ngIf="showMappingModalsDelay[uuid]"
+              type="keyValue"
+              (valueChange)="mappingValueChange($event, uuid)"
+              [defaultValues]="mappings[uuid] || prefill?.mapping"
+            ></valtimo-carbon-multi-input>
+          </ibm-label>
+        </div>
+      </section>
+      <ibm-modal-footer>
+        <ng-container>
+          <button
+            ibmButton="secondary"
+            [attr.modal-primary-focus]="true"
+            (click)="closeMappingModal(uuid)"
+            [disabled]="obs.disabled"
+          >
+            {{ 'close' | pluginTranslate : pluginId | async }}
+          </button>
+          <button
+            ibmButton="primary"
+            [attr.modal-primary-focus]="true"
+            [disabled]="obs.disabled"
+            (click)="saveMapping(uuid)"
+            [disabled]="obs.disabled"
+          >
+            {{ 'save' | pluginTranslate : pluginId | async }}
+          </button>
+        </ng-container>
+      </ibm-modal-footer>
+    </ibm-modal>
+  </ng-container>
 </ng-template>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   @Input() loading = false;
   @Input() loadingText = '';
   @Input() placeholder = '';
+  @Input() smallMargin = false;
 
   @Output() selectedChange: EventEmitter<SelectedValue> = new EventEmitter();
   @Output() clear: EventEmitter<any> = new EventEmitter();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ import {HttpClient} from '@angular/common/http';
 import {
   ConfigService,
   ConnectorInstance,
-  ConnectorType,
   ConnectorInstanceCreateRequest,
   ConnectorInstanceUpdateRequest,
+  ConnectorType,
 } from '@valtimo/config';
 import {Observable} from 'rxjs';
 import {Page} from '@valtimo/document';

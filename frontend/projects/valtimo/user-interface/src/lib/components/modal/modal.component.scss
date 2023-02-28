@@ -1,5 +1,5 @@
-/*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+/*!
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,13 +40,14 @@
 }
 
 .v-modal {
+  position: relative;
+  right: -100%;
   background-color: var(--v-modal-background-color);
   height: 100%;
   min-height: var(--v-modal-min-height);
   max-height: 100%;
   width: 100%;
   max-width: var(--v-modal-max-width);
-  transform: translateX(100%);
   opacity: 0;
   transition: var(--v-modal-transition);
   cursor: var(--v-modal-cursor);
@@ -63,7 +64,7 @@
   backdrop-filter: var(--v-modal-backdrop-filter);
 
   .v-modal {
-    transform: translateY(0);
+    right: 0;
     opacity: 1;
   }
 

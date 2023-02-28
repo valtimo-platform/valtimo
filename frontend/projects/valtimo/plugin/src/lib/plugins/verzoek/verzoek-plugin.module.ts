@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,22 @@ import {VerzoekConfigurationComponent} from './components/verzoek-configuration/
 import {PluginTranslatePipeModule} from '../../pipes';
 import {CommonModule} from '@angular/common';
 import {
+  ButtonModule,
   FormModule,
+  InputLabelModule,
   InputModule,
   MultiInputFormModule,
   ParagraphModule,
+  RadioModule,
   SelectModule,
+  TooltipIconModule,
 } from '@valtimo/user-interface';
+import {
+  ButtonModule as CarbonButtonModule,
+  InputModule as CarbonInputModule,
+  ModalModule,
+} from 'carbon-components-angular';
+import {CarbonMultiInputModule} from '@valtimo/components';
 
 @NgModule({
   declarations: [VerzoekConfigurationComponent],
@@ -36,6 +46,14 @@ import {
     SelectModule,
     ParagraphModule,
     MultiInputFormModule,
+    RadioModule,
+    InputLabelModule,
+    ButtonModule,
+    ModalModule,
+    CarbonInputModule,
+    TooltipIconModule,
+    CarbonMultiInputModule,
+    CarbonButtonModule,
   ],
   exports: [VerzoekConfigurationComponent],
 })

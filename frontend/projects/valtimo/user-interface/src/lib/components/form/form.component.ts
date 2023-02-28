@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import {SelectComponent} from '../select/select.component';
 import {MultiInputComponent} from '../multi-input/multi-input.component';
 import {DatePickerComponent} from '../date-picker/date-picker.component';
 import {MultiInputFormComponent} from '../multi-input-form/multi-input-form.component';
+import {RadioComponent} from '../radio/radio.component';
 
 @Component({
   selector: 'v-form',
@@ -45,6 +46,8 @@ export class FormComponent implements AfterContentInit, OnDestroy {
   @ContentChildren(DatePickerComponent) datePickerComponents!: QueryList<DatePickerComponent>;
   @ContentChildren(MultiInputFormComponent)
   multiInputFormComponents!: QueryList<MultiInputFormComponent>;
+  @ContentChildren(RadioComponent)
+  radioComponents!: QueryList<RadioComponent>;
 
   @Input() className = '';
 
@@ -74,6 +77,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
       ...this.multiInputComponents?.toArray(),
       ...this.datePickerComponents?.toArray(),
       ...this.multiInputFormComponents?.toArray(),
+      ...this.radioComponents?.toArray(),
     ];
 
     this.componentValuesSubscription = combineLatest(
@@ -83,6 +87,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
         const multiInputComponent = component as MultiInputComponent;
         const datePickerComponent = component as DatePickerComponent;
         const multiInputFormComponent = component as MultiInputFormComponent;
+        const radioComponent = component as RadioComponent;
 
         if (inputComponent?.inputValue$) {
           return inputComponent.inputValue$.asObservable();
@@ -94,6 +99,8 @@ export class FormComponent implements AfterContentInit, OnDestroy {
           return multiInputFormComponent.mappedValues$;
         } else if (datePickerComponent?.dateValue$) {
           return datePickerComponent.dateValue$;
+        } else if (radioComponent?.radioValue$) {
+          return radioComponent.radioValue$;
         } else {
           return of(null);
         }
@@ -127,6 +134,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
       this.multiInputComponents.changes.pipe(startWith(null)),
       this.datePickerComponents.changes.pipe(startWith(null)),
       this.multiInputFormComponents.changes.pipe(startWith(null)),
+      this.radioComponents.changes.pipe(startWith(null)),
     ]).subscribe(() => {
       this.closeComponentValuesSubscription();
       this.openComponentValuesSubscription();

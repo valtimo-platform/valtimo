@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
  */
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
-import {ConnectorProperties, ConnectorType} from '@valtimo/config';
-import {take} from 'rxjs/operators';
-import {AlertService} from '@valtimo/components';
+import {combineLatest, Subscription} from 'rxjs';
+import {ConnectorType} from '@valtimo/config';
 import {TranslateService} from '@ngx-translate/core';
 import {ConnectorManagementService} from '../../services/connector-management/connector-management.service';
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';

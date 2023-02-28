@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,6 +59,17 @@ const verzoekPluginSpecification: PluginSpecification = {
         'Een beschrijving van het roltype van de aanvrager die wordt opgeslagen wanneer er een verzoek binnenkomt.',
       processDefinitionKeyTooltip:
         'Selecteer hier het proces dat gestart moet worden wanneer het eerder geselecteerde systeemproces afgerond is.',
+      copyStrategy: 'Kopieerstrategie',
+      copyStrategyTooltip:
+        'Met deze optie wordt bepaald of het volledige Verzoek-object in het document terecht komt, of slechts de gespecifieerde velden.',
+      full: 'Volledig',
+      specified: 'Gespecifieerde velden',
+      mapping: 'Mapping',
+      setMapping: 'Mapping instellen',
+      mappingTooltip:
+        "Stel hier de velden in die gekopieerd moeten worden van het Verzoek-object naar het document. Bijvoorbeeld: 'doc:/voorletters-machtiginggever' -> '/voorletters'.",
+      close: 'Sluiten',
+      save: 'Opslaan',
     },
     en: {
       title: 'Verzoek',
@@ -94,6 +105,17 @@ const verzoekPluginSpecification: PluginSpecification = {
         "A description of the requester's role type that is saved when a verzoek comes in.",
       processDefinitionKeyTooltip:
         'Select the process that should be started when the previously selected system process has finished.',
+      copyStrategy: 'Copy strategy',
+      copyStrategyTooltip:
+        'This option determines whether the entire Verzoek object is included in the document, or only the defined fields.',
+      full: 'Complete',
+      specified: 'Specified fields',
+      mapping: 'Mapping',
+      setMapping: 'Set mapping',
+      mappingTooltip:
+        "Set the fields to be copied from the Verzoek object to the document. For example: 'doc:/voorletters-machtiginggever' -> '/voorletters'.",
+      close: 'Close',
+      save: 'Save',
     },
     de: {
       title: 'Verzoek',
@@ -132,6 +154,17 @@ const verzoekPluginSpecification: PluginSpecification = {
         'Eine Beschreibung des Rollentyps des Anforderers, die gespeichert wird, wenn eine Verzoek eingeht.',
       processDefinitionKeyTooltip:
         'Wählen Sie hier den Prozess aus, der gestartet werden soll, wenn der zuvor ausgewählte Systemprozess beendet ist.',
+      copyStrategy: 'Kopierstrategie',
+      copyStrategyTooltip:
+        'Diese Option legt fest, ob das gesamte Verzoek-Objekt in das Dokument aufgenommen wird oder nur die definierten Felder.',
+      full: 'Vollständig',
+      specified: 'Angegebene Felder',
+      mapping: 'Mapping',
+      setMapping: 'Mapping festlegen',
+      mappingTooltip:
+        "Legen Sie hier die Felder fest, die vom Request-Objekt in das Dokument kopiert werden sollen. Zum Beispiel: 'doc:/voorletters-machtiginggever' -> '/voorletters'.",
+      close: 'Schließen',
+      save: 'Speichern',
     },
   },
 };
