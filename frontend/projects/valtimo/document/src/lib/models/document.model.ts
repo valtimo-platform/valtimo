@@ -91,6 +91,8 @@ export interface RelatedFile {
   createdBy: string;
 }
 
+export type RelatedFileListItem = Omit<RelatedFile, 'createdOn'> & {createdOn: string};
+
 export interface Document {
   id: string;
   content: object;

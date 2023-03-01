@@ -16,7 +16,7 @@
 
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {DocumentService, RelatedFile} from '@valtimo/document';
+import {DocumentService, RelatedFile, RelatedFileListItem} from '@valtimo/document';
 import {DownloadService, ResourceDto, UploadProviderService} from '@valtimo/resource';
 import {ToastrService} from 'ngx-toastr';
 import {map, switchMap, take, tap} from 'rxjs/operators';
@@ -27,6 +27,7 @@ import {DocumentenApiMetadata} from '@valtimo/components';
 import {UserProviderService} from '@valtimo/security';
 import {PromptService} from '@valtimo/user-interface';
 import {FileSortService} from '../../../services';
+import moment from 'moment';
 
 @Component({
   selector: 'valtimo-dossier-detail-tab-documenten-api-documents',
@@ -42,7 +43,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
   public fields = [
     {key: 'fileName', label: 'File name'},
     {key: 'sizeInBytes', label: 'Size in bytes'},
-    {key: 'createdOn', label: 'Created on', viewType: 'date'},
+    {key: 'createdOn', label: 'Created on'},
     {key: 'createdBy', label: 'Created by'},
   ];
   public actions = [
@@ -66,7 +67,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
   readonly modalDisabled$ = new BehaviorSubject<boolean>(false);
   readonly fileToBeUploaded$ = new BehaviorSubject<File | null>(null);
   private readonly refetch$ = new BehaviorSubject<null>(null);
-  public relatedFiles$: Observable<Array<RelatedFile>> = this.refetch$.pipe(
+  public relatedFiles$: Observable<Array<RelatedFileListItem>> = this.refetch$.pipe(
     switchMap(() =>
       combineLatest([
         this.documentService.getZakenApiDocuments(this.documentId),
@@ -81,7 +82,15 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
 
       return translatedFiles || [];
     }),
-    map(relatedFiles => this.fileSortService.sortRelatedFilesByDateDescending(relatedFiles))
+    map(relatedFiles => this.fileSortService.sortRelatedFilesByDateDescending(relatedFiles)),
+    map(relatedFiles => {
+      moment.locale(this.translateService.currentLang);
+
+      return relatedFiles.map(file => ({
+        ...file,
+        createdOn: moment(new Date(file.createdOn)).format('L'),
+      }));
+    })
   );
 
   constructor(
