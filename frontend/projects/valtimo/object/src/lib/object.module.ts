@@ -21,7 +21,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {AsyncPipe, CommonModule} from '@angular/common';
 import {
   ConfirmationModalModule,
-  ListModule,
+  ListModule, SearchFieldsModule,
   SpinnerModule,
   WidgetModule,
 } from '@valtimo/components';
@@ -57,6 +57,7 @@ import {FormIoModule} from '@valtimo/components';
     InputModule,
     TooltipIconModule,
     ConfirmationModalModule,
+    SearchFieldsModule,
   ],
   exports: [],
 })

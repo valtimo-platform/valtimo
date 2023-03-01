@@ -33,4 +33,9 @@ enum FormType {
   EDITFORM = 'EDITFORM',
 }
 
-export {ObjectConfiguration, ObjectConfigurationItem, Item, FormType};
+enum ColumnType {
+  DEFAULT = 'DEFAULT',
+  CUSTOM = 'CUSTOM'
+}
+
+export {ObjectConfiguration, ObjectConfigurationItem, Item, FormType, ColumnType};

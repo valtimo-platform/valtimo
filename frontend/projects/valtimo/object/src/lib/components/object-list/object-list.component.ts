@@ -15,14 +15,17 @@
  */
 
 import {Component} from '@angular/core';
-import {BehaviorSubject, combineLatest, map, Observable, of, startWith, throwError} from 'rxjs';
+import {BehaviorSubject, combineLatest, distinctUntilChanged, map, Observable, of, startWith, throwError} from 'rxjs';
 import {catchError, finalize, switchMap, take, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ObjectService} from '../../services/object.service';
-import {Pagination} from '@valtimo/components';
-import {FormType} from '../../models/object.model';
+import {ListField, Pagination} from '@valtimo/components';
+import {ColumnType, FormType} from '../../models/object.model';
 import {ToastrService} from 'ngx-toastr';
+import {ObjectColumnService} from '../../services/object-column.service';
+import {ObjectManagementService, SearchColumn} from '@valtimo/object-management';
+import {SearchField, SearchFieldValues, SearchFilter, SearchFilterRange} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-object-list',
@@ -36,8 +39,8 @@ export class ObjectListComponent {
   readonly showModal$ = new BehaviorSubject<boolean>(false);
   readonly disableInput$ = new BehaviorSubject<boolean>(false);
   readonly clearForm$ = new BehaviorSubject<boolean>(false);
+  readonly columnType$ = new BehaviorSubject<ColumnType>(ColumnType.DEFAULT)
 
-  readonly fields$ = new BehaviorSubject<Array<{key: string; label: string}>>([]);
   readonly objectManagementId$: Observable<string> = this.route.params.pipe(
     map(params => params.objectManagementId)
   );
@@ -78,20 +81,50 @@ export class ObjectListComponent {
     }
   }
 
+  private readonly searchFieldValues$ = new BehaviorSubject<SearchFieldValues>({});
+  readonly objectSearchFields$: Observable<Array<SearchField> | null> =
+    this.objectManagementId$.pipe(
+      distinctUntilChanged(),
+      switchMap(objectManagementId =>
+        this.objectManagementService.getSearchField(objectManagementId)
+      ),
+      map(searchFields => searchFields.map(searchField => {
+        // @ts-ignore
+        searchField.dataType = searchField.dataType.toLowerCase();
+        // @ts-ignore
+        searchField.fieldType = searchField.fieldType.toLowerCase();
+        return searchField
+      })
+    ));
+
   readonly objectConfiguration$: Observable<Array<any>> = combineLatest([
     this.objectManagementId$,
     this.currentPageAndSize$,
+    this.columnType$,
+    this.searchFieldValues$,
     this.translateService.stream('key'),
     this.refreshObjectList$,
   ]).pipe(
-    tap(() => {
-      this.setFields();
-    }),
-    switchMap(([objectManagementId, currentPage]) =>
-      this.objectService.getObjectsByObjectManagementId(objectManagementId, {
-        page: currentPage.page,
-        size: currentPage.size,
-      })
+    switchMap(([objectManagementId, currentPage, columnType, searchFieldValues]) => {
+        if (columnType === ColumnType.CUSTOM) {
+          return this.objectService.postObjectsByObjectManagementId(
+            objectManagementId,
+            {
+              page: currentPage.page,
+              size: currentPage.size,
+            },
+            Object.keys(searchFieldValues).length > 0 ? {otherFilters: this.mapSearchValuesToFilters(searchFieldValues)} : {}
+          )
+        } else {
+          return this.objectService.getObjectsByObjectManagementId(
+            objectManagementId,
+            {
+              page: currentPage.page,
+              size: currentPage.size,
+            }
+          )
+        }
+      }
     ),
     tap(instanceRes => {
       this.pageSizes$.pipe(take(1)).subscribe(sizes => {
@@ -99,10 +132,9 @@ export class ObjectListComponent {
         this.pageSizes$.next({...sizes, collectionSize: instanceRes.totalElements});
       });
     }),
-    map(res => res.content.map(record => ({
-        objectUrl: record.items[0].value,
-        recordIndex: record.items[1].value,
-      }))),
+    map(res => res.content.map(record => record?.items?.reduce(
+      (obj, item) => Object.assign(obj, { [item.key]: item.value }), {})
+    )),
     tap(() => this.loading$.next(false))
   );
 
@@ -132,8 +164,48 @@ export class ObjectListComponent {
     finalize(() => this.loading$.next(false))
   );
 
+  private readonly columns$: Observable<Array<SearchColumn>> =
+    this.objectManagementId$.pipe(
+      switchMap(objectManagementId =>
+        this.objectColumnService.getObjectColumns(objectManagementId)
+      ),
+      map(res => res)
+    );
+
+  readonly fields$: Observable<Array<ListField>> = combineLatest([
+    this.columns$,
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([columns]) => {
+      if (columns?.length > 0) {
+        this.columnType$.next(ColumnType.CUSTOM);
+        return [
+          ...columns
+            .map(column => {
+              const translationKey = `fieldLabels.${column.translationKey}`;
+              const translation = this.translateService.instant(translationKey);
+              const validTranslation = translation !== translationKey && translation;
+              return {
+                key: column.translationKey,
+                label: column.title || validTranslation || column.translationKey,
+                sortable: column.sortable,
+                ...(column.viewType && {viewType: column.viewType}),
+                ...(column.enum && {enum: column.enum}),
+              };
+            })
+        ]
+      } else {
+        this.columnType$.next(ColumnType.DEFAULT);
+        return this.setDefaultFields();
+      }
+
+    })
+  );
+
   constructor(
     private readonly objectService: ObjectService,
+    private readonly objectColumnService: ObjectColumnService,
+    private readonly objectManagementService: ObjectManagementService,
     private readonly translateService: TranslateService,
     private router: Router,
     private route: ActivatedRoute,
@@ -190,6 +262,10 @@ export class ObjectListComponent {
     });
   }
 
+  search(searchFieldValues: SearchFieldValues): void {
+    this.searchFieldValues$.next(searchFieldValues || {});
+  }
+
   private refreshObjectList(): void {
     this.refreshObjectList$.next(null);
   }
@@ -202,11 +278,16 @@ export class ObjectListComponent {
     this.disableInput$.next(false);
   }
 
-  private setFields(): void {
+  private setDefaultFields() {
     const keys: Array<string> = ['recordIndex', 'objectUrl'];
-    this.fields$.next(
-      keys.map(key => ({label: `${this.translateService.instant(`object.labels.${key}`)}`, key}))
-    );
+    return keys.map(key => (
+      {
+        label: `${this.translateService.instant(`object.labels.${key}`)}`,
+        key,
+        sortable: true,
+        viewType: 'string'
+      }
+      ))
   }
 
   private handleRetrievingFormError(error: any) {
@@ -218,5 +299,25 @@ export class ObjectListComponent {
     this.closeModal();
     this.toastr.error(this.translate.instant('object.messages.objectCreationError'));
     return throwError(error);
+  }
+
+  private mapSearchValuesToFilters(
+    values: SearchFieldValues
+  ): Array<SearchFilter | SearchFilterRange> {
+    const filters: Array<SearchFilter | SearchFilterRange> = [];
+
+    Object.keys(values).forEach(valueKey => {
+      const searchValue = values[valueKey] as any;
+      if (searchValue.start) {
+        filters.push({key: valueKey, rangeFrom: searchValue.start, rangeTo: searchValue.end});
+      } else if (Array.isArray(searchValue)) {
+        filters.push({key: valueKey, values: searchValue});
+      } else {
+        // @ts-ignore
+        filters.push({key: valueKey, values: [{value: searchValue}]});
+      }
+    });
+
+    return filters;
   }
 }

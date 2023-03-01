@@ -41,6 +41,16 @@ export class ObjectService {
     );
   }
 
+  public postObjectsByObjectManagementId(
+    objectManagementId: string,
+    params?: any,
+    payload?: any
+  ): Observable<ObjectConfiguration> {
+    return this.http.post<ObjectConfiguration>(
+      `${this.valtimoEndpointUri}v1/object/management/configuration/${objectManagementId}/object`, payload, {params}
+    );
+  }
+
   public createObject(params: {objectManagementId: string}, payload: object): Observable<any> {
     return this.http.post<any>(`${this.valtimoEndpointUri}v1/object`, payload, {params});
   }

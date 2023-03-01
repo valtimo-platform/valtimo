@@ -36,6 +36,19 @@ export interface SearchListColumn {
   defaultSort: string;
 }
 
+export interface SearchColumn {
+  propertyName: string;
+  translationKey: string;
+  sortable?: boolean;
+  viewType?: string;
+  default?: boolean | string;
+  enum?: Array<string> | {[key: string]: string};
+  title?: string;
+  format?: string;
+  key?: string;
+}
+
+
 export interface SearchListColumnView {
   title: string;
   key: string;

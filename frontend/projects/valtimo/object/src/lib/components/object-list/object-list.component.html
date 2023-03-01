@@ -30,6 +30,7 @@
         </div>
       </div>
       <ng-container *ngIf="obs.loading === false; else loading">
+        <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
         <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
       </ng-container>
     </div>
@@ -48,6 +49,18 @@
     {{ 'object.createObject' | translate }}
     <svg class="cds--btn__icon" ibmIcon="add" size="16"></svg>
   </button>
+</ng-template>
+
+<ng-template #searchFields let-obs="obs">
+  <div class="mb-3">
+    <valtimo-search-fields
+            [loading]="obs.loading"
+            [searchFields]="objectSearchFields$ | async"
+            (doSearch)="search($event)"
+            [documentDefinitionName]="objectManagementId$ | async"
+            [setValuesSubject$]="null"
+    ></valtimo-search-fields>
+  </div>
 </ng-template>
 
 <ng-template #list let-obs="obs">
