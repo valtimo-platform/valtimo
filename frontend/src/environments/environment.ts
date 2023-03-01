@@ -132,7 +132,7 @@ export const environment: ValtimoConfig = {
           {link: ['/form-management'], title: 'Forms', sequence: 3},
           {link: ['/decision-tables'], title: 'Decision tables', sequence: 4},
           {link: ['/dossier-management'], title: 'Dossiers', sequence: 5},
-          {link: ['/object-management'], title: 'Objects', sequence: 6},
+          {link: ['/object-management'], title: 'Objects', sequence: 6, includeFunction: IncludeFunction.ObjectManagementEnabled},
           {link: ['/connectors'], title: 'Connectors', sequence: 7},
           {link: ['/plugins'], title: 'Plugins', sequence: 8},
           {link: ['/form-links'], title: 'Form links', sequence: 9},
