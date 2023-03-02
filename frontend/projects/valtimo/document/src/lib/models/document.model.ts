@@ -89,6 +89,7 @@ export interface RelatedFile {
   sizeInBytes: number;
   createdOn: Date;
   createdBy: string;
+  pluginConfigurationId?: string;
 }
 
 export type RelatedFileListItem = Omit<RelatedFile, 'createdOn'> & {createdOn: string};

@@ -17,7 +17,7 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentService, RelatedFile, RelatedFileListItem} from '@valtimo/document';
-import {DownloadService, ResourceDto, UploadProviderService} from '@valtimo/resource';
+import {DownloadService, UploadProviderService} from '@valtimo/resource';
 import {ToastrService} from 'ngx-toastr';
 import {map, switchMap, take, tap} from 'rxjs/operators';
 import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
@@ -51,11 +51,6 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
       columnName: '',
       iconClass: 'mdi mdi-open-in-new',
       callback: this.downloadDocument.bind(this),
-    },
-    {
-      columnName: '',
-      iconClass: 'mdi mdi-delete',
-      callback: this.removeRelatedFile.bind(this),
     },
   ];
   public isAdmin: boolean;
@@ -122,37 +117,10 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
   }
 
   downloadDocument(relatedFile: RelatedFile): void {
-    this.uploadProviderService
-      .getResource(relatedFile.fileId)
-      .subscribe((resource: ResourceDto) => {
-        this.downloadService.downloadFile(resource.url, resource.resource.name);
-      });
-  }
-
-  removeRelatedFile(relatedFile: RelatedFile) {
-    this.promptService.openPrompt({
-      headerText: this.translateService.instant('dossier.deleteConfirmation.title'),
-      bodyText: this.translateService.instant('dossier.deleteConfirmation.description'),
-      cancelButtonText: this.translateService.instant('dossier.deleteConfirmation.cancel'),
-      confirmButtonText: this.translateService.instant('dossier.deleteConfirmation.delete'),
-      cancelMdiIcon: 'cancel',
-      confirmMdiIcon: 'delete',
-      cancelButtonType: 'secondary',
-      confirmButtonType: 'primary',
-      closeOnConfirm: true,
-      closeOnCancel: true,
-      confirmCallBackFunction: () => {
-        this.documentService.removeResource(this.documentId, relatedFile.fileId).subscribe(
-          () => {
-            this.toastrService.success('Successfully removed document from dossier');
-            this.refetchDocuments();
-          },
-          () => {
-            this.toastrService.error('Failed to remove document from dossier');
-          }
-        );
-      },
-    });
+    this.downloadService.downloadFile(
+      `/api/v1/documenten-api/${relatedFile.pluginConfigurationId}/files/${relatedFile.fileId}/download`,
+      relatedFile.fileName
+    );
   }
 
   metadataSet(metadata: DocumentenApiMetadata): void {
