@@ -14,15 +14,7 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of keycloak
- */
-
-export * from './lib/models';
-export * from './lib/keycloak.module';
-export * from './lib/services/keycloak-auth-guard.service';
-export * from './lib/services/keycloak-user.service';
-export * from './lib/keycloak.init';
-export * from './lib/services/keycloak-options.service';
-export * from './lib/callback.component';
-export * from './lib/constants';
+export * from './keycloak-auth-guard.service';
+export * from './keycloak-options.service';
+export * from './keycloak-user.service';
+export * from './keycloak-storage.service';

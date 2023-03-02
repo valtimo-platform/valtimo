@@ -17,7 +17,8 @@
 import {Component} from '@angular/core';
 import {Router} from '@angular/router';
 import {NGXLogger} from 'ngx-logger';
-import {KeycloakOptionsService} from './keycloak-options.service';
+import {KeycloakOptionsService, KeycloakStorageService} from './services';
+import {STORAGE_KEYS} from './constants';
 
 @Component({
   selector: 'valtimo-keycloak-callback',
@@ -27,17 +28,21 @@ export class CallbackComponent {
   constructor(
     private router: Router,
     private keycloakOptionsService: KeycloakOptionsService,
-    private logger: NGXLogger
+    private logger: NGXLogger,
+    private readonly keycloakStorageService: KeycloakStorageService
   ) {
     logger.debug('callback');
-    const savedRedirectTo = window.sessionStorage.getItem('redirectTo');
-    const savedRedirectToParams = window.sessionStorage.getItem('redirectToParams');
+    const savedRedirectTo = window.sessionStorage.getItem(STORAGE_KEYS.redirectTo);
+    const savedRedirectToParams = window.sessionStorage.getItem(STORAGE_KEYS.redirectToParams);
     const parsedSavedRedirectToParams =
-      typeof savedRedirectToParams === 'string' &&
-      savedRedirectToParams.length > 2 &&
-      JSON.parse(savedRedirectToParams);
+      this.keycloakStorageService.parseSavedParams(savedRedirectToParams);
+
+    const urlBeforeExpiration = sessionStorage.getItem(STORAGE_KEYS.urlBeforeExpiration);
+    const paramsBeforeExpiration = sessionStorage.getItem(STORAGE_KEYS.urlBeforeExpirationParams);
+    const parsedParamsBeforeExpiration =
+      this.keycloakStorageService.parseSavedParams(paramsBeforeExpiration);
+
     let redirectTo!: string;
-    let redirectToParams!: object;
 
     if (savedRedirectTo) {
       redirectTo = savedRedirectTo;
@@ -45,13 +50,15 @@ export class CallbackComponent {
       redirectTo = '/';
     }
 
-    if (savedRedirectToParams && parsedSavedRedirectToParams) {
-      redirectToParams = parsedSavedRedirectToParams;
-    }
-
     logger.debug('keycloak callback redirect =', redirectTo);
     logger.debug('keycloak callback redirect params =', savedRedirectToParams);
 
-    this.router.navigate([redirectTo], {queryParams: redirectToParams || {}});
+    if (STORAGE_KEYS.urlBeforeExpiration in sessionStorage) {
+      this.router.navigate([urlBeforeExpiration], {queryParams: parsedParamsBeforeExpiration});
+      sessionStorage.removeItem(STORAGE_KEYS.urlBeforeExpiration);
+      sessionStorage.removeItem(STORAGE_KEYS.urlBeforeExpirationParams);
+    } else {
+      this.router.navigate([redirectTo], {queryParams: parsedSavedRedirectToParams});
+    }
   }
 }

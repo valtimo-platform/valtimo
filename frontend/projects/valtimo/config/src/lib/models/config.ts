@@ -119,6 +119,7 @@ export interface ValtimoConfig {
     enableObjectManagement?: boolean;
     largeLogoMargin?: boolean;
     sortFilesByDate?: boolean;
+    returnToLastUrlAfterTokenExpiration?: boolean;
   };
   visibleTaskListTabs?: Array<TaskListTab>;
   visibleDossierListTabs?: Array<DossierListTab>;

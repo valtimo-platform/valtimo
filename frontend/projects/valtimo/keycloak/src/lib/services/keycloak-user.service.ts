@@ -18,13 +18,16 @@ import {Injectable, OnDestroy} from '@angular/core';
 import {combineLatest, map, ReplaySubject, Subject, Subscription, switchMap, timer} from 'rxjs';
 import {NGXLogger} from 'ngx-logger';
 import {KeycloakEventType, KeycloakService} from 'keycloak-angular';
-import {UserIdentity, UserService, ValtimoUserIdentity} from '@valtimo/config';
+import {ConfigService, UserIdentity, UserService, ValtimoUserIdentity} from '@valtimo/config';
 import {KeycloakOptionsService} from './keycloak-options.service';
 import jwt_decode from 'jwt-decode';
 import {PromptService} from '@valtimo/user-interface';
 import {TranslateService} from '@ngx-translate/core';
 import {DatePipe} from '@angular/common';
 import {take} from 'rxjs/operators';
+import {Router} from '@angular/router';
+import {STORAGE_KEYS} from '../constants';
+import {KeycloakStorageService} from './keycloak-storage.service';
 
 @Injectable({
   providedIn: 'root',
@@ -51,7 +54,10 @@ export class KeycloakUserService implements UserService, OnDestroy {
     private readonly logger: NGXLogger,
     private readonly promptService: PromptService,
     private readonly translateService: TranslateService,
-    private readonly datePipe: DatePipe
+    private readonly datePipe: DatePipe,
+    private readonly configService: ConfigService,
+    private readonly router: Router,
+    private readonly keycloakStorageService: KeycloakStorageService
   ) {
     this.openTokenRefreshSubscription();
     this.openRefreshTokenSubscription();
@@ -159,24 +165,7 @@ export class KeycloakUserService implements UserService, OnDestroy {
             (!promptVisible || identifier !== this.EXPIRE_TOKEN_CONFIRMATION) &&
             this._expiryTimeMs <= this.FIVE_MINUTES_MS
           ) {
-            this.promptService.openPrompt({
-              identifier: this.EXPIRE_TOKEN_CONFIRMATION,
-              headerText,
-              bodyText,
-              cancelButtonText,
-              confirmButtonText,
-              cancelMdiIcon: 'logout',
-              confirmMdiIcon: 'check',
-              closeOnConfirm: true,
-              closeOnCancel: false,
-              cancelCallbackFunction: () => {
-                this.keycloakService.logout();
-              },
-              confirmCallBackFunction: () => {
-                this.closeExpiryTimerSubscription();
-                this.updateToken(20);
-              },
-            });
+            this.openConfirmationPrompt(headerText, bodyText, cancelButtonText, confirmButtonText);
           }
 
           if (promptVisible && identifier === this.EXPIRE_TOKEN_CONFIRMATION) {
@@ -185,6 +174,7 @@ export class KeycloakUserService implements UserService, OnDestroy {
         });
 
         if (this._expiryTimeMs < 2000) {
+          this.saveUrl();
           this.logout();
         }
       });
@@ -192,5 +182,47 @@ export class KeycloakUserService implements UserService, OnDestroy {
 
   private closeExpiryTimerSubscription(): void {
     this.expiryTimerSubscription?.unsubscribe();
+  }
+
+  private openConfirmationPrompt(
+    headerText: string,
+    bodyText: string,
+    cancelButtonText: string,
+    confirmButtonText: string
+  ): void {
+    this.promptService.openPrompt({
+      identifier: this.EXPIRE_TOKEN_CONFIRMATION,
+      headerText,
+      bodyText,
+      cancelButtonText,
+      confirmButtonText,
+      cancelMdiIcon: 'logout',
+      confirmMdiIcon: 'check',
+      closeOnConfirm: true,
+      closeOnCancel: false,
+      cancelCallbackFunction: () => {
+        this.keycloakService.logout();
+      },
+      confirmCallBackFunction: () => {
+        this.closeExpiryTimerSubscription();
+        this.updateToken(20);
+      },
+    });
+  }
+
+  private saveUrl(): void {
+    const returnToLastUrlAfterTokenExpiration =
+      this.configService?.config?.featureToggles?.returnToLastUrlAfterTokenExpiration;
+
+    if (returnToLastUrlAfterTokenExpiration) {
+      sessionStorage.setItem(
+        STORAGE_KEYS.urlBeforeExpiration,
+        this.keycloakStorageService.getCurrentUrl()
+      );
+      sessionStorage.setItem(
+        STORAGE_KEYS.urlBeforeExpirationParams,
+        this.keycloakStorageService.getCurrentUrlParams()
+      );
+    }
   }
 }

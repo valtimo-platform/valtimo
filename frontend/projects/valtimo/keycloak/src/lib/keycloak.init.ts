@@ -15,15 +15,16 @@
  */
 
 import {KeycloakService} from 'keycloak-angular';
-import {KeycloakOptionsService} from './keycloak-options.service';
+import {KeycloakOptionsService, KeycloakStorageService, KeycloakUserService} from './services';
 import {Injector} from '@angular/core';
 import {NGXLogger} from 'ngx-logger';
-import {KeycloakUserService} from './keycloak-user.service';
+import {STORAGE_KEYS} from './constants';
 
 export function keycloakInitializer(injector: Injector): () => Promise<any> {
   const keycloakService = injector.get<KeycloakService>(KeycloakService);
   const keycloakUserService = injector.get<KeycloakUserService>(KeycloakUserService);
   const optionsService = injector.get<KeycloakOptionsService>(KeycloakOptionsService); // TODO possible removal of abstraction
+  const storageService = injector.get<KeycloakStorageService>(KeycloakStorageService);
   const logger = injector.get<NGXLogger>(NGXLogger);
 
   return async (): Promise<any> => {
@@ -34,12 +35,13 @@ export function keycloakInitializer(injector: Injector): () => Promise<any> {
       const currentUrl = window.location.href.split('#')[0];
 
       if (keycloakOptions.initOptions.redirectUri !== currentUrl) {
-        const redirectTo = window.location.pathname;
-        const urlSearchParams = new URLSearchParams(window.location.search);
-        const params = Object.fromEntries(urlSearchParams.entries());
+        const redirectTo = storageService.getCurrentUrl();
         logger.debug('Setting redirectTo =', redirectTo);
-        window.sessionStorage.setItem('redirectTo', redirectTo);
-        window.sessionStorage.setItem('redirectToParams', JSON.stringify(params));
+        window.sessionStorage.setItem(STORAGE_KEYS.redirectTo, redirectTo);
+        window.sessionStorage.setItem(
+          STORAGE_KEYS.redirectToParams,
+          storageService.getCurrentUrlParams()
+        );
       }
 
       const initResult = await keycloakService.init(keycloakOptions);
