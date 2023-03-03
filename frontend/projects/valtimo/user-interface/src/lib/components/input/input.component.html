@@ -160,6 +160,7 @@
 <ng-template #checkboxInput>
   <div *ngIf="isCheckbox" (click)="stopCheckboxEventPropagation($event)">
     <ibm-checkbox
+      [disabled]="disabled"
       [ngModel]="inputValue$ | async"
       (ngModelChange)="onValueChange($event)"
       [name]="name"
