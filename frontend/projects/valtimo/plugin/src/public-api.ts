@@ -60,6 +60,7 @@ export * from './lib/plugins/zaken-api/components/create-zaak/create-zaak-config
 export * from './lib/plugins/objecten-api/objecten-api-plugin-module';
 export * from './lib/plugins/objecten-api/objecten-api-plugin.specification';
 export * from './lib/plugins/objecten-api/components/objecten-api-configuration/objecten-api-configuration.component';
+export * from './lib/plugins/objecten-api/components/delete-object/delete-object.component';
 /* catalogi api plugin */
 export * from './lib/plugins/catalogi-api/catalogi-api-plugin-module';
 export * from './lib/plugins/catalogi-api/catalogi-api-plugin.specification';

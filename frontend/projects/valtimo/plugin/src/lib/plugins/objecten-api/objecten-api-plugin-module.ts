@@ -19,9 +19,10 @@ import {ObjectenApiConfigurationComponent} from './components/objecten-api-confi
 import {CommonModule} from '@angular/common';
 import {PluginTranslatePipeModule} from '../../pipes';
 import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/user-interface';
+import {DeleteObjectComponent} from './components/delete-object/delete-object.component';
 
 @NgModule({
-  declarations: [ObjectenApiConfigurationComponent],
+  declarations: [ObjectenApiConfigurationComponent, DeleteObjectComponent],
   imports: [
     CommonModule,
     PluginTranslatePipeModule,
@@ -30,6 +31,6 @@ import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/u
     SelectModule,
     ParagraphModule,
   ],
-  exports: [ObjectenApiConfigurationComponent],
+  exports: [ObjectenApiConfigurationComponent, DeleteObjectComponent],
 })
 export class ObjectenApiPluginModule {}

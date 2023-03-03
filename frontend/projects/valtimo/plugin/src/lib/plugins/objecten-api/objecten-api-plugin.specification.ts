@@ -17,12 +17,15 @@
 import {PluginSpecification} from '../../models';
 import {ObjectenApiConfigurationComponent} from './components/objecten-api-configuration/objecten-api-configuration.component';
 import {OBJECTEN_API_PLUGIN_LOGO_BASE64} from './assets';
+import {DeleteObjectComponent} from './components/delete-object/delete-object.component';
 
 const objectenApiPluginSpecification: PluginSpecification = {
   pluginId: 'objectenapi',
   pluginConfigurationComponent: ObjectenApiConfigurationComponent,
   pluginLogoBase64: OBJECTEN_API_PLUGIN_LOGO_BASE64,
-
+  functionConfigurationComponents: {
+    'delete-object': DeleteObjectComponent,
+  },
   pluginTranslations: {
     nl: {
       title: 'Objecten API',
@@ -34,6 +37,12 @@ const objectenApiPluginSpecification: PluginSpecification = {
       configurationTitleTooltip:
         'Onder deze naam zal de plug-in te herkennen zijn in de rest van de applicatie',
       authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
+      'delete-object': 'Object verwijderen',
+      deleteObjectWarning:
+        'Waarschuwing: de objecten die met deze actie verwijderd worden mogen niet gekoppeld zijn aan een Zaak.',
+      objectUrl: 'Object URL',
+      objectUrlTooltip:
+        "De URL van het object dat verwijderd moet worden uit de Objecten API. De ingevoerde waarde mag een procesvariable zijn, bijvoorbeeld: 'pv:object'.",
     },
     en: {
       title: 'Objects API',
@@ -45,6 +54,12 @@ const objectenApiPluginSpecification: PluginSpecification = {
       configurationTitleTooltip:
         'With this name the plugin will be recognizable in the rest of the application',
       authenticationPluginConfiguration: 'Authentication plugin configuration',
+      'delete-object': 'Delete object',
+      deleteObjectWarning:
+        'Warning: the objects that are deleted with this action must not be linked to a Zaak.',
+      objectUrl: 'Object URL',
+      objectUrlTooltip:
+        "The URL of the object to be removed from the Objecten API. The value entered may be a process variable, for example: 'pv:object'.",
     },
     de: {
       title: 'Objecten API',
@@ -56,6 +71,12 @@ const objectenApiPluginSpecification: PluginSpecification = {
       configurationTitleTooltip:
         'An diesem Namen wird das Plugin im Rest der Anwendung erkennbar sein',
       authenticationPluginConfiguration: 'Authentifizierungs-Plugin-Konfiguration',
+      'delete-object': 'Objekt löschen',
+      deleteObjectWarning:
+        'Achtung: Die Objekte, die mit dieser Aktion gelöscht werden, dürfen nicht mit einem Zaak verknüpft werden.',
+      objectUrl: 'Objekt URL',
+      objectUrlTooltip:
+        "Die URL des Objekts, das aus der Objecten API entfernt werden soll. Der eingegebene Wert kann eine Prozessvariable sein, zum Beispiel: 'pv:object'.",
     },
   },
 };
