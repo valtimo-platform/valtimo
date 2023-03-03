@@ -22,10 +22,18 @@ import {TranslateModule} from '@ngx-translate/core';
 import {InputLabelModule} from '../input-label/input-label.module';
 import {ButtonModule} from '../button/button.module';
 import {DigitOnlyDirective} from '../../directives';
+import {CheckboxModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [InputComponent, DigitOnlyDirective],
-  imports: [CommonModule, TranslateModule, FormsModule, InputLabelModule, ButtonModule],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    FormsModule,
+    InputLabelModule,
+    ButtonModule,
+    CheckboxModule,
+  ],
   exports: [InputComponent],
 })
 export class InputModule {}

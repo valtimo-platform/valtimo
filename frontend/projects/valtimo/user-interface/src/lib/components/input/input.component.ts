@@ -99,6 +99,10 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
     });
   }
 
+  stopCheckboxEventPropagation(event: MouseEvent): void {
+    event.stopPropagation();
+  }
+
   private setDefaultValue(value: any): void {
     this.inputValue$.next(value);
   }

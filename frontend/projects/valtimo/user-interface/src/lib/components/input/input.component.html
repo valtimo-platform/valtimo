@@ -158,12 +158,12 @@
 </ng-template>
 
 <ng-template #checkboxInput>
-  <input
-    *ngIf="isCheckbox"
-    class="v-input--checkbox"
-    type="checkbox"
-    [ngModel]="inputValue$ | async"
-    (ngModelChange)="onValueChange($event)"
-    [name]="name"
-  />
+  <div *ngIf="isCheckbox" (click)="stopCheckboxEventPropagation($event)">
+    <ibm-checkbox
+      [ngModel]="inputValue$ | async"
+      (ngModelChange)="onValueChange($event)"
+      [name]="name"
+    >
+    </ibm-checkbox>
+  </div>
 </ng-template>
