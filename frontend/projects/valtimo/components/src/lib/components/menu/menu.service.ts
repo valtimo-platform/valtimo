@@ -220,15 +220,18 @@ export class MenuService {
     return new Observable(subscriber => {
       this.logger.debug('appendObjectManagementSubMenuItems');
       this.getAllObjects().subscribe(objects => {
-        const visibleObjects = objects.filter(object => object?.showInDataMenu !== false)
+        const visibleObjects = objects.filter(object => object?.showInDataMenu !== false);
         if (visibleObjects?.length > 0) {
-          const objectsMenuItems: MenuItem[] = visibleObjects.map((object, index) => ({
-            link: ['/objects/' + object.id],
-            title: object.title,
-            iconClass: 'icon mdi mdi-dot-circle',
-            sequence: index,
-            show: true,
-          } as MenuItem));
+          const objectsMenuItems: MenuItem[] = visibleObjects.map(
+            (object, index) =>
+              ({
+                link: ['/objects/' + object.id],
+                title: object.title,
+                iconClass: 'icon mdi mdi-dot-circle',
+                sequence: index,
+                show: true,
+              } as MenuItem)
+          );
           this.logger.debug('found objectsMenuItems', objectsMenuItems);
           const menuItemIndex = menuItems.findIndex(({title}) => title === 'Objects');
           if (menuItemIndex > 0) {

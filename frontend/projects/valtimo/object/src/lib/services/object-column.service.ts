@@ -13,13 +13,17 @@ export class ObjectColumnService {
   ) {}
 
   getObjectColumns(configurationId: string): Observable<Array<SearchColumn>> {
-    return this.objectManagementService.getSearchList(configurationId).pipe(
-      map(objectListColumns => objectListColumns &&
-          Array.isArray(objectListColumns) &&
-          objectListColumns.length > 0 &&
-          this.mapObjectListColumnsToSearchColumns(objectListColumns)
-      )
-    );
+    return this.objectManagementService
+      .getSearchList(configurationId)
+      .pipe(
+        map(
+          objectListColumns =>
+            objectListColumns &&
+            Array.isArray(objectListColumns) &&
+            objectListColumns.length > 0 &&
+            this.mapObjectListColumnsToSearchColumns(objectListColumns)
+        )
+      );
   }
 
   private mapObjectListColumnsToSearchColumns(

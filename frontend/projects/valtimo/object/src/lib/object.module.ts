@@ -21,7 +21,8 @@ import {TranslateModule} from '@ngx-translate/core';
 import {AsyncPipe, CommonModule} from '@angular/common';
 import {
   ConfirmationModalModule,
-  ListModule, SearchFieldsModule,
+  ListModule,
+  SearchFieldsModule,
   SpinnerModule,
   WidgetModule,
 } from '@valtimo/components';

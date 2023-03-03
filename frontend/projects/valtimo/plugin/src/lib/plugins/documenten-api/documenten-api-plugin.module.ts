@@ -21,12 +21,14 @@ import {PluginTranslatePipeModule} from '../../pipes';
 import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/user-interface';
 import {StoreTempDocumentConfigurationComponent} from './components/store-temp-document/store-temp-document-configuration.component';
 import {StoreUploadedDocumentConfigurationComponent} from './components/store-uploaded-document/store-uploaded-document-configuration.component';
+import {DownloadDocumentConfigurationComponent} from './components/download-document/download-document-configuration.component';
 
 @NgModule({
   declarations: [
     DocumentenApiConfigurationComponent,
     StoreTempDocumentConfigurationComponent,
     StoreUploadedDocumentConfigurationComponent,
+    DownloadDocumentConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -40,6 +42,7 @@ import {StoreUploadedDocumentConfigurationComponent} from './components/store-up
     DocumentenApiConfigurationComponent,
     StoreTempDocumentConfigurationComponent,
     StoreUploadedDocumentConfigurationComponent,
+    DownloadDocumentConfigurationComponent,
   ],
 })
 export class DocumentenApiPluginModule {}

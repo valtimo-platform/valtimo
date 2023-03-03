@@ -54,11 +54,11 @@
 <ng-template #searchFields let-obs="obs">
   <div class="mb-3">
     <valtimo-search-fields
-            [loading]="obs.loading"
-            [searchFields]="objectSearchFields$ | async"
-            (doSearch)="search($event)"
-            [documentDefinitionName]="objectManagementId$ | async"
-            [setValuesSubject$]="null"
+      [loading]="obs.loading"
+      [searchFields]="objectSearchFields$ | async"
+      (doSearch)="search($event)"
+      [documentDefinitionName]="objectManagementId$ | async"
+      [setValuesSubject$]="null"
     ></valtimo-search-fields>
   </div>
 </ng-template>

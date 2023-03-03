@@ -19,6 +19,7 @@ import {StoreTempDocumentConfigurationComponent} from './components/store-temp-d
 import {DOCUMENTEN_API_PLUGIN_LOGO_BASE64} from './assets';
 import {DocumentenApiConfigurationComponent} from './components/documenten-api-configuration/documenten-api-configuration.component';
 import {StoreUploadedDocumentConfigurationComponent} from './components/store-uploaded-document/store-uploaded-document-configuration.component';
+import {DownloadDocumentConfigurationComponent} from './components/download-document/download-document-configuration.component';
 
 const documentenApiPluginSpecification: PluginSpecification = {
   pluginId: 'documentenapi',
@@ -27,6 +28,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
   functionConfigurationComponents: {
     'store-temp-document': StoreTempDocumentConfigurationComponent,
     'store-uploaded-document': StoreUploadedDocumentConfigurationComponent,
+    'download-document': DownloadDocumentConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -34,6 +36,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
       description: 'API voor opslag en ontsluiting van documenten en daarbij behorende metadata.',
       'store-temp-document': 'Document opslaan',
       'store-uploaded-document': 'Geupload document opslaan',
+      'download-document': 'Download document',
       storeUploadedDocumentMessage:
         'Het opslaan van een geupload document heeft geen configuratie nodig.',
       configurationTitle: 'Configuratienaam',
@@ -82,12 +85,15 @@ const documentenApiPluginSpecification: PluginSpecification = {
       authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
       authenticationPluginConfigurationTooltip:
         'Selecteer de plugin die de authenticatie kan afhandelen. Wanneer de selectiebox leeg blijft zal de authenticatie plugin (bv. OpenZaak) eerst aangemaakt moeten worden',
+      downloadDocumentMessage:
+        'Het downloaden van een document vanuit de Documenten API vereist geen configuratie.',
     },
     en: {
       title: 'Documenten API',
       description: 'API for storing and accessing documents and associated metadata.',
       'store-temp-document': 'Save document',
       'store-uploaded-document': 'Save uploaded document',
+      'download-document': 'Download document',
       storeUploadedDocumentMessage:
         'Saving an uploaded document does not require any configuration.',
       configurationTitle: 'Configuration name',
@@ -136,12 +142,15 @@ const documentenApiPluginSpecification: PluginSpecification = {
       authenticationPluginConfiguration: 'Authentication plugin configuration',
       authenticationPluginConfigurationTooltip:
         'Select the plugin that can handle the authentication. If the selection box remains empty, the authentication plugin (e.g. OpenZaak) will have to be created first',
+      downloadDocumentMessage:
+        'Downloading a document form the Documenten API does not require any configuration.',
     },
     de: {
       title: 'Documenten API',
       description: 'API zum Speichern und Zugreifen auf Dokumente und zugehörige Metadaten.',
       'store-temp-document': 'Dokument speichern',
       'store-uploaded-document': 'Hochgeladenes Dokument speichern',
+      'download-document': 'Dokument herunterladen',
       storeUploadedDocumentMessage:
         'Das Speichern eines hochgeladenen Dokuments erfordert keine Konfiguration.',
       configurationTitle: 'Konfigurationsname',
@@ -190,6 +199,8 @@ const documentenApiPluginSpecification: PluginSpecification = {
       authenticationPluginConfiguration: 'Authentifizierungs-Plugin-Konfiguration',
       authenticationPluginConfigurationTooltip:
         'Wählen Sie das Plugin aus, das die Authentifizierung verarbeiten kann. Bleibt das Auswahlfeld leer, muss zunächst das Authentifizierungs-Plugin (z. B. OpenZaak) erstellt werden',
+      downloadDocumentMessage:
+        'Das Herunterladen eines Dokuments aus der Documenten-API erfordert keine Konfiguration.',
     },
   },
 };

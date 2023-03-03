@@ -170,11 +170,13 @@ export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy 
 
   private setValid(data: any): void {
     this.valid$.next(
-      !!(data.title &&
+      !!(
+        data.title &&
         data.objectenApiPluginConfigurationId &&
         data.objecttypenApiPluginConfigurationId &&
         data.objecttypeId &&
-        data.objecttypeVersion)
+        data.objecttypeVersion
+      )
     );
   }
 

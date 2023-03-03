@@ -154,9 +154,14 @@ export class TaskListComponent implements OnDestroy {
     const currentTask = tasks && tasks[index];
 
     if (currentTask) {
-      this.documentService.getDocument(currentTask.businessKey).pipe(take(1)).subscribe((document) => {
-        this.router.navigate([`/dossiers/${document.definitionId.name}/document/${currentTask.businessKey}/summary`]);
-      });
+      this.documentService
+        .getDocument(currentTask.businessKey)
+        .pipe(take(1))
+        .subscribe(document => {
+          this.router.navigate([
+            `/dossiers/${document.definitionId.name}/document/${currentTask.businessKey}/summary`,
+          ]);
+        });
     }
   }
 

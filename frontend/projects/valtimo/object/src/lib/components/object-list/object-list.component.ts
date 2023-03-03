@@ -15,7 +15,16 @@
  */
 
 import {Component} from '@angular/core';
-import {BehaviorSubject, combineLatest, distinctUntilChanged, map, Observable, of, startWith, throwError} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  map,
+  Observable,
+  of,
+  startWith,
+  throwError,
+} from 'rxjs';
 import {catchError, finalize, switchMap, take, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {ActivatedRoute, Router} from '@angular/router';
@@ -39,7 +48,7 @@ export class ObjectListComponent {
   readonly showModal$ = new BehaviorSubject<boolean>(false);
   readonly disableInput$ = new BehaviorSubject<boolean>(false);
   readonly clearForm$ = new BehaviorSubject<boolean>(false);
-  readonly columnType$ = new BehaviorSubject<ColumnType>(ColumnType.DEFAULT)
+  readonly columnType$ = new BehaviorSubject<ColumnType>(ColumnType.DEFAULT);
 
   readonly objectManagementId$: Observable<string> = this.route.params.pipe(
     map(params => params.objectManagementId)
@@ -88,14 +97,16 @@ export class ObjectListComponent {
       switchMap(objectManagementId =>
         this.objectManagementService.getSearchField(objectManagementId)
       ),
-      map(searchFields => searchFields.map(searchField => {
-        // @ts-ignore
-        searchField.dataType = searchField.dataType.toLowerCase();
-        // @ts-ignore
-        searchField.fieldType = searchField.fieldType.toLowerCase();
-        return searchField
-      })
-    ));
+      map(searchFields =>
+        searchFields.map(searchField => {
+          // @ts-ignore
+          searchField.dataType = searchField.dataType.toLowerCase();
+          // @ts-ignore
+          searchField.fieldType = searchField.fieldType.toLowerCase();
+          return searchField;
+        })
+      )
+    );
 
   readonly objectConfiguration$: Observable<Array<any>> = combineLatest([
     this.objectManagementId$,
@@ -106,26 +117,24 @@ export class ObjectListComponent {
     this.refreshObjectList$,
   ]).pipe(
     switchMap(([objectManagementId, currentPage, columnType, searchFieldValues]) => {
-        if (columnType === ColumnType.CUSTOM) {
-          return this.objectService.postObjectsByObjectManagementId(
-            objectManagementId,
-            {
-              page: currentPage.page,
-              size: currentPage.size,
-            },
-            Object.keys(searchFieldValues).length > 0 ? {otherFilters: this.mapSearchValuesToFilters(searchFieldValues)} : {}
-          )
-        } else {
-          return this.objectService.getObjectsByObjectManagementId(
-            objectManagementId,
-            {
-              page: currentPage.page,
-              size: currentPage.size,
-            }
-          )
-        }
+      if (columnType === ColumnType.CUSTOM) {
+        return this.objectService.postObjectsByObjectManagementId(
+          objectManagementId,
+          {
+            page: currentPage.page,
+            size: currentPage.size,
+          },
+          Object.keys(searchFieldValues).length > 0
+            ? {otherFilters: this.mapSearchValuesToFilters(searchFieldValues)}
+            : {}
+        );
+      } else {
+        return this.objectService.getObjectsByObjectManagementId(objectManagementId, {
+          page: currentPage.page,
+          size: currentPage.size,
+        });
       }
-    ),
+    }),
     tap(instanceRes => {
       this.pageSizes$.pipe(take(1)).subscribe(sizes => {
         // @ts-ignore
@@ -164,13 +173,10 @@ export class ObjectListComponent {
     finalize(() => this.loading$.next(false))
   );
 
-  private readonly columns$: Observable<Array<SearchColumn>> =
-    this.objectManagementId$.pipe(
-      switchMap(objectManagementId =>
-        this.objectColumnService.getObjectColumns(objectManagementId)
-      ),
-      map(res => res)
-    );
+  private readonly columns$: Observable<Array<SearchColumn>> = this.objectManagementId$.pipe(
+    switchMap(objectManagementId => this.objectColumnService.getObjectColumns(objectManagementId)),
+    map(res => res)
+  );
 
   readonly fields$: Observable<Array<ListField>> = combineLatest([
     this.columns$,
@@ -181,25 +187,23 @@ export class ObjectListComponent {
         this.columnType$.next(ColumnType.CUSTOM);
 
         return [
-          ...columns
-            .map(column => {
-              const translationKey = `fieldLabels.${column.translationKey}`;
-              const translation = this.translateService.instant(translationKey);
-              const validTranslation = translation !== translationKey && translation;
-              return {
-                key: column.translationKey,
-                label: column.title || validTranslation || column.translationKey,
-                sortable: column.sortable,
-                ...(column.viewType && {viewType: column.viewType}),
-                ...(column.enum && {enum: column.enum}),
-              };
-            })
-        ]
+          ...columns.map(column => {
+            const translationKey = `fieldLabels.${column.translationKey}`;
+            const translation = this.translateService.instant(translationKey);
+            const validTranslation = translation !== translationKey && translation;
+            return {
+              key: column.translationKey,
+              label: column.title || validTranslation || column.translationKey,
+              sortable: column.sortable,
+              ...(column.viewType && {viewType: column.viewType}),
+              ...(column.enum && {enum: column.enum}),
+            };
+          }),
+        ];
       } else {
         this.columnType$.next(ColumnType.DEFAULT);
         return this.setDefaultFields();
       }
-
     })
   );
 
@@ -281,14 +285,12 @@ export class ObjectListComponent {
 
   private setDefaultFields() {
     const keys: Array<string> = ['recordIndex', 'objectUrl'];
-    return keys.map(key => (
-      {
-        label: `${this.translateService.instant(`object.labels.${key}`)}`,
-        key,
-        sortable: true,
-        viewType: 'string'
-      }
-      ))
+    return keys.map(key => ({
+      label: `${this.translateService.instant(`object.labels.${key}`)}`,
+      key,
+      sortable: true,
+      viewType: 'string',
+    }));
   }
 
   private handleRetrievingFormError(error: any) {

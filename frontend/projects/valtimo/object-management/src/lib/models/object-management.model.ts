@@ -48,7 +48,6 @@ export interface SearchColumn {
   key?: string;
 }
 
-
 export interface SearchListColumnView {
   title: string;
   key: string;

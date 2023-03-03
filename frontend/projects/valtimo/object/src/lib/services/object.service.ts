@@ -47,7 +47,9 @@ export class ObjectService {
     payload?: any
   ): Observable<ObjectConfiguration> {
     return this.http.post<ObjectConfiguration>(
-      `${this.valtimoEndpointUri}v1/object/management/configuration/${objectManagementId}/object`, payload, {params}
+      `${this.valtimoEndpointUri}v1/object/management/configuration/${objectManagementId}/object`,
+      payload,
+      {params}
     );
   }
 

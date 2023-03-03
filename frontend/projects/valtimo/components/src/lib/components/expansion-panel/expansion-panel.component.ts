@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import {Component, HostListener, Input} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
 

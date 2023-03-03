@@ -41,4 +41,9 @@ interface CreateZaakConfig {
   zaaktypeUrl: string;
 }
 
-export {ZakenApiConfig, LinkDocumentToZaakConfig, CreateZaakConfig, CreateNatuurlijkePersoonZaakRolConfig};
+export {
+  ZakenApiConfig,
+  LinkDocumentToZaakConfig,
+  CreateZaakConfig,
+  CreateNatuurlijkePersoonZaakRolConfig,
+};

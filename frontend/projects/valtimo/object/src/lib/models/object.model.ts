@@ -35,7 +35,7 @@ enum FormType {
 
 enum ColumnType {
   DEFAULT = 'DEFAULT',
-  CUSTOM = 'CUSTOM'
+  CUSTOM = 'CUSTOM',
 }
 
 export {ObjectConfiguration, ObjectConfigurationItem, Item, FormType, ColumnType};
