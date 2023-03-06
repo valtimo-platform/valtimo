@@ -259,10 +259,13 @@ export class VerzoekConfigurationComponent
         ...prefill,
         verzoekProperties: prefill.verzoekProperties.map(verzoekType => ({
           ...verzoekType,
-          mapping: verzoekType.mapping.map(mapping => ({
-            key: mapping.source,
-            value: mapping.target,
-          })),
+          ...(verzoekType.mapping &&
+            Array.isArray(verzoekType.mapping) && {
+              mapping: verzoekType.mapping.map(mapping => ({
+                key: mapping.source,
+                value: mapping.target,
+              })),
+            }),
         })),
       }))
     );
