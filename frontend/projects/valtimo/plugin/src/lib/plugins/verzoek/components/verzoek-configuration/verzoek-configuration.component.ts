@@ -40,6 +40,8 @@ export class VerzoekConfigurationComponent
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<VerzoekConfig> = new EventEmitter<VerzoekConfig>();
 
+  mappedPrefill$: Observable<VerzoekConfig>;
+
   readonly notificatiePluginSelectItems$: Observable<Array<SelectItem>> = combineLatest([
     this.pluginManagementService.getPluginConfigurationsByPluginDefinitionKey('notificatiesapi'),
     this.translateService.stream('key'),
@@ -127,6 +129,7 @@ export class VerzoekConfigurationComponent
 
   ngOnInit(): void {
     this.openSaveSubscription();
+    this.setMappedPrefill();
   }
 
   ngOnDestroy() {
@@ -248,5 +251,20 @@ export class VerzoekConfigurationComponent
           }
         });
     });
+  }
+
+  private setMappedPrefill(): void {
+    this.mappedPrefill$ = this.prefillConfiguration$.pipe(
+      map(prefill => ({
+        ...prefill,
+        verzoekProperties: prefill.verzoekProperties.map(verzoekType => ({
+          ...verzoekType,
+          mapping: verzoekType.mapping.map(mapping => ({
+            key: mapping.source,
+            value: mapping.target,
+          })),
+        })),
+      }))
+    );
   }
 }

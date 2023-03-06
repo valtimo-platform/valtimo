@@ -19,8 +19,10 @@ import {PluginConfigurationData} from '../../../models';
 type CopyStrategy = 'full' | 'specified';
 
 interface Mapping {
-  key: string;
-  value: string;
+  source?: string;
+  target?: string;
+  key?: string;
+  value?: string;
 }
 
 interface VerzoekType {
