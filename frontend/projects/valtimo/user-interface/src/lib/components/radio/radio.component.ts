@@ -79,6 +79,10 @@ export class RadioComponent implements OnInit, OnChanges, OnDestroy {
     this.clearSubscription?.unsubscribe();
   }
 
+  stopRadioEventPropagation(event: MouseEvent): void {
+    event.stopPropagation();
+  }
+
   private setDefaultValue(value: any): void {
     this.radioValue$.next(value);
   }

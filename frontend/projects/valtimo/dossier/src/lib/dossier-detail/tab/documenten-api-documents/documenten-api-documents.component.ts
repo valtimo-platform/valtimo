@@ -19,8 +19,8 @@ import {ActivatedRoute} from '@angular/router';
 import {DocumentService, RelatedFile, RelatedFileListItem} from '@valtimo/document';
 import {DownloadService, UploadProviderService} from '@valtimo/resource';
 import {ToastrService} from 'ngx-toastr';
-import {map, switchMap, take, tap} from 'rxjs/operators';
-import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
+import {catchError, map, switchMap, take, tap} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, Observable, of, Subject} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 import {ConfigService} from '@valtimo/config';
 import {DocumentenApiMetadata} from '@valtimo/components';
@@ -53,6 +53,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
       callback: this.downloadDocument.bind(this),
     },
   ];
+  public showZaakLinkWarning: boolean;
   public isAdmin: boolean;
   public uploadProcessLinkedSet = false;
   public uploadProcessLinked!: boolean;
@@ -61,7 +62,9 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
   readonly hideModal$ = new Subject<null>();
   readonly modalDisabled$ = new BehaviorSubject<boolean>(false);
   readonly fileToBeUploaded$ = new BehaviorSubject<File | null>(null);
+  readonly loading$ = new BehaviorSubject<boolean>(true);
   private readonly refetch$ = new BehaviorSubject<null>(null);
+
   public relatedFiles$: Observable<Array<RelatedFileListItem>> = this.refetch$.pipe(
     switchMap(() =>
       combineLatest([
@@ -85,6 +88,11 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
         ...file,
         createdOn: moment(new Date(file.createdOn)).format('L'),
       }));
+    }),
+    tap(() => this.loading$.next(false)),
+    catchError(() => {
+      this.showZaakLinkWarning = true;
+      return of([]);
     })
   );
 

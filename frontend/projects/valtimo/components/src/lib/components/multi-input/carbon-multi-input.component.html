@@ -44,13 +44,15 @@
   <div class="v-multi-input__rows">
     <div
       class="v-multi-input__row"
-      *ngFor="let value of values$ | async as values; trackBy: trackByFn"
+      *ngFor="let value of values$ | async as values; trackBy: trackByFn; index as i"
     >
       <ng-container *ngIf="type === 'value'">
         <ng-container *ngTemplateOutlet="singleValue; context: {value: value}"></ng-container>
       </ng-container>
       <ng-container *ngIf="type === 'keyValue'">
-        <ng-container *ngTemplateOutlet="keyValue; context: {value: value}"></ng-container>
+        <ng-container
+          *ngTemplateOutlet="keyValue; context: {value: value, index: i}"
+        ></ng-container>
       </ng-container>
       <button
         [disabled]="values?.length <= this.minimumAmountOfRows || disabled"
@@ -88,8 +90,11 @@
   </div>
 </ng-template>
 
-<ng-template #keyValue let-value="value">
+<ng-template #keyValue let-value="value" let-index="index">
   <div class="v-multi-input__input">
+    <ibm-label *ngIf="index === 0 && keyColumnTitle && valueColumnTitle">{{
+      keyColumnTitle
+    }}</ibm-label>
     <input
       ibmText
       (input)="onValueChange(value, $event.target.value, 'key')"
@@ -98,6 +103,9 @@
     />
   </div>
   <div class="v-multi-input__input">
+    <ibm-label *ngIf="index === 0 && keyColumnTitle && valueColumnTitle">{{
+      valueColumnTitle
+    }}</ibm-label>
     <input
       ibmText
       (input)="onValueChange(value, $event.target.value, 'value')"

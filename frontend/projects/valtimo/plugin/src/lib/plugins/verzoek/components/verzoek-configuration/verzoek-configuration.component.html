@@ -222,6 +222,8 @@
               type="keyValue"
               (valueChange)="mappingValueChange($event, uuid)"
               [defaultValues]="mappings[uuid] || prefill?.mapping"
+              [valueColumnTitle]="'target' | pluginTranslate : pluginId | async"
+              [keyColumnTitle]="'source' | pluginTranslate : pluginId | async"
             ></valtimo-carbon-multi-input>
           </ibm-label>
         </div>

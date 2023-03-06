@@ -63,15 +63,15 @@ import {DossierSupportingProcessStartModalComponent} from './dossier-supporting-
 import {DossierDetailTabZaakobjectenComponent} from './dossier-detail/tab/zaakobjecten/zaakobjecten.component';
 import {
   ButtonModule,
+  FormModule as VFormModule,
   InputLabelModule,
+  InputModule,
   ModalModule as VModalModule,
+  PageModule,
   ParagraphModule,
   SelectModule,
   TableModule,
   TitleModule,
-  PageModule,
-  InputModule,
-  FormModule as VFormModule,
 } from '@valtimo/user-interface';
 import {DossierDetailTabObjectTypeComponent} from './dossier-detail/tab/object-type/object-type.component';
 import {DossierDetailTabDocumentenApiDocumentsComponent} from './dossier-detail/tab/documenten-api-documents/documenten-api-documents.component';
@@ -79,6 +79,7 @@ import {DossierDetailTabS3DocumentsComponent} from './dossier-detail/tab/s3-docu
 import {DossierAssignUserComponent} from './dossier-assign-user/dossier-assign-user.component';
 import {DossierDetailTabNotesComponent} from './dossier-detail/tab/notes/notes.component';
 import {NoteModalComponent} from './components/note-modal/note-modal.component';
+import {LoadingModule} from 'carbon-components-angular';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -148,6 +149,7 @@ export type TabsFactory = () => Map<string, object>;
     InputModule,
     VFormModule,
     NgbModule,
+    LoadingModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

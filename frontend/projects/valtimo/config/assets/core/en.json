@@ -77,7 +77,8 @@
       "noProcessLinked": {
         "regularUser": "The document upload is not available for this case. Please contact an administrator",
         "adminRole": "The process for uploading documents has not been configured. Please configure this process on the case management page"
-      }
+      },
+      "noZaakFound": "No files could be retrieved because no Zaak was for found for this case."
     },
     "startSubProcess": "Start",
     "claimAssigneeCase": "Claim",

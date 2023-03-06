@@ -232,7 +232,15 @@ export class VerzoekConfigurationComponent
                 verzoekToReturn.mapping = this.mappings[verzoek.uuid];
               }
 
-              return verzoekToReturn;
+              return {
+                ...verzoekToReturn,
+                ...(verzoekToReturn.mapping && {
+                  mapping: verzoekToReturn.mapping.map(verzoekMapping => ({
+                    source: verzoekMapping.key,
+                    target: verzoekMapping.value,
+                  })) as Array<any>,
+                }),
+              };
             }),
           };
           if (valid) {

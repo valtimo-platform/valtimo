@@ -20,6 +20,7 @@
     'v-input--margin': margin,
     'v-input--small-margin': smallMargin
   }"
+  (click)="stopRadioEventPropagation($event)"
 >
   <ng-container *ngTemplateOutlet="inputTitle"></ng-container>
   <ng-container *ngTemplateOutlet="radioInput"></ng-container>

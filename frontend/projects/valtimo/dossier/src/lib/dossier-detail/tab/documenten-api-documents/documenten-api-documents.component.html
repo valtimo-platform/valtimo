@@ -13,49 +13,60 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<div *ngIf="uploadProcessLinkedSet && !uploadProcessLinked">
-  <div
-    *ngIf="isAdmin"
-    [translate]="'dossier.documenten.noProcessLinked.adminRole'"
-    class="bg-warning text-black mb-2 p-3 text-center"
-  ></div>
-  <div
-    *ngIf="!isAdmin"
-    [translate]="'dossier.documenten.noProcessLinked.regularUser'"
-    class="bg-warning text-black mb-2 p-3 text-center"
-  ></div>
-</div>
 
-<valtimo-dropzone
-  (fileSelected)="fileSelected($event)"
-  [acceptedFiles]="acceptedFiles"
-  [camera]="false"
-  [disabled]="!uploadProcessLinkedSet || !uploadProcessLinked"
-  [hideFilePreview]="true"
-  [hideTitle]="true"
-  [maxFileSize]="maxFileSize"
-  [maxFiles]="1"
-  [showMaxFileSize]="true"
-  [uploading]="uploading$ | async"
-></valtimo-dropzone>
+<ng-container *ngIf="{loading: loading$ | async} as obs">
+  <div *ngIf="uploadProcessLinkedSet && !uploadProcessLinked">
+    <div
+      *ngIf="isAdmin"
+      [translate]="'dossier.documenten.noProcessLinked.adminRole'"
+      class="bg-warning text-black mb-2 p-3 text-center"
+    ></div>
+    <div
+      *ngIf="!isAdmin"
+      [translate]="'dossier.documenten.noProcessLinked.regularUser'"
+      class="bg-warning text-black mb-2 p-3 text-center"
+    ></div>
+  </div>
+  <div *ngIf="showZaakLinkWarning">
+    <div
+      [translate]="'dossier.documenten.noZaakFound'"
+      class="bg-warning text-black mb-2 p-3 text-center"
+    ></div>
+  </div>
 
-<valtimo-widget>
-  <valtimo-list
-    [actions]="actions"
-    [fields]="fields"
-    [header]="true"
-    [isSearchable]="true"
-    [items]="relatedFiles$ | async"
-    [viewMode]="true"
-  >
-    <div header>
-      <h3 class="list-header-title">{{ 'Related documents' | translate }}</h3>
-      <h5 class="list-header-description">
-        {{ 'Overview of all documents in this dossier' | translate }}
-      </h5>
-    </div>
-  </valtimo-list>
-</valtimo-widget>
+  <valtimo-dropzone
+    (fileSelected)="fileSelected($event)"
+    [acceptedFiles]="acceptedFiles"
+    [camera]="false"
+    [disabled]="
+      !uploadProcessLinkedSet || !uploadProcessLinked || obs.loading || showZaakLinkWarning
+    "
+    [hideFilePreview]="true"
+    [hideTitle]="true"
+    [maxFileSize]="maxFileSize"
+    [maxFiles]="1"
+    [showMaxFileSize]="true"
+    [uploading]="uploading$ | async"
+  ></valtimo-dropzone>
+
+  <valtimo-widget>
+    <valtimo-list
+      [actions]="actions"
+      [fields]="fields"
+      [header]="true"
+      [isSearchable]="true"
+      [items]="relatedFiles$ | async"
+      [viewMode]="true"
+    >
+      <div header>
+        <h3 class="list-header-title">{{ 'Related documents' | translate }}</h3>
+        <h5 class="list-header-description">
+          {{ 'Overview of all documents in this dossier' | translate }}
+        </h5>
+      </div>
+    </valtimo-list>
+  </valtimo-widget>
+</ng-container>
 
 <valtimo-documenten-api-metadata-modal
   (metadata)="metadataSet($event)"

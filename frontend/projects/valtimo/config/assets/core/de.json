@@ -77,7 +77,8 @@
       "noProcessLinked": {
         "regularUser": "Der Dokumenten-Upload steht für diesen Fall nicht zur Verfügung. Bitte wenden Sie sich an einen Administrator",
         "adminRole": "Der Prozess zum Hochladen von Dokumenten wurde nicht konfiguriert. Bitte konfigurieren Sie diesen Prozess auf der Fallverwaltungsseite"
-      }
+      },
+      "noZaakFound": "Es konnten keine Dateien abgerufen werden, da für diese Zaak kein Fall gefunden wurde."
     },
     "startSubProcess": "Starten",
     "claimAssigneeCase": "Anmaßen",

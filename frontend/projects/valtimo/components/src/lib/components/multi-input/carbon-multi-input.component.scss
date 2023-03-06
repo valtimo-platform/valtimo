@@ -21,7 +21,7 @@
 .v-multi-input__row {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-end;
   margin-block-end: var(--v-multi-input-row-spacing-block);
 }
 

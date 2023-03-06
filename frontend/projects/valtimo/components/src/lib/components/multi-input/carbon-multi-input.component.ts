@@ -47,6 +47,8 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   @Input() margin = false;
   @Input() tooltip = '';
   @Input() required = false;
+  @Input() keyColumnTitle = '';
+  @Input() valueColumnTitle = '';
 
   @Output() valueChange: EventEmitter<MultiInputOutput> = new EventEmitter();
 
