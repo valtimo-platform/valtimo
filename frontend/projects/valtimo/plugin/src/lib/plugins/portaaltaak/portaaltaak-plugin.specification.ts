@@ -119,7 +119,7 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       bsn: 'Citizen service number (BSN)',
       kvkTooltip: 'The KVK number of the desired receiver.',
       bsnTooltip: 'The Citizen service number (BSN) of the desired receiver',
-      uploadedDocumentsHandlerProcess: 'Uploaded documents handler process',
+      uploadedDocumentsHandlerProcess: 'Process to complete Portaaltaak',
       uploadedDocumentsHandlerProcessTooltip:
         'The process that should handle the uploaded documents in the portal.',
       identificationKey: 'Identification key',
