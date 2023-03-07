@@ -16,7 +16,17 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {PluginConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, map, Observable, of, Subscription, take} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  of,
+  Subscription,
+  take,
+  tap,
+} from 'rxjs';
 import {CopyStrategy, VerzoekConfig, VerzoekType} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
@@ -41,6 +51,8 @@ export class VerzoekConfigurationComponent
   @Output() configuration: EventEmitter<VerzoekConfig> = new EventEmitter<VerzoekConfig>();
 
   mappedPrefill$: Observable<VerzoekConfig>;
+
+  private mappingSet!: boolean;
 
   readonly notificatiePluginSelectItems$: Observable<Array<SelectItem>> = combineLatest([
     this.pluginManagementService.getPluginConfigurationsByPluginDefinitionKey('notificatiesapi'),
@@ -255,6 +267,7 @@ export class VerzoekConfigurationComponent
 
   private setMappedPrefill(): void {
     this.mappedPrefill$ = this.prefillConfiguration$.pipe(
+      filter(prefill => !!prefill),
       map(prefill => ({
         ...prefill,
         verzoekProperties: prefill.verzoekProperties.map(verzoekType => ({
@@ -267,7 +280,28 @@ export class VerzoekConfigurationComponent
               })),
             }),
         })),
-      }))
+      })),
+      tap(prefill => {
+        setTimeout(() => {
+          this.formValue$.pipe(take(1)).subscribe(formValue => {
+            if (!this.mappingSet) {
+              const prefillVerzoeken = prefill?.verzoekProperties;
+              const formValueVerzoeken = formValue?.verzoekProperties;
+
+              prefillVerzoeken.forEach((verzoek, index) => {
+                const mappingForVerzoek = verzoek?.mapping;
+                const uuidForMapping = formValueVerzoeken[index].uuid;
+
+                if (mappingForVerzoek && uuidForMapping) {
+                  this.mappings[uuidForMapping] = mappingForVerzoek;
+                }
+              });
+
+              this.mappingSet = true;
+            }
+          });
+        }, 250);
+      })
     );
   }
 }
