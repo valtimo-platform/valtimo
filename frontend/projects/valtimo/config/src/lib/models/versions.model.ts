@@ -14,16 +14,8 @@
  * limitations under the License.
  */
 
-export * from './config';
-export * from './email-notification-settings.model';
-export * from './menu-item.model';
-export * from './menu.config';
-export * from './security.config';
-export * from './extension.model';
-export * from './http-loader';
-export * from './roles';
-export * from './user-management.model';
-export * from './page';
-export * from './connector.model';
-export * from './search.model';
-export * from './versions.model';
+interface Versions {
+  frontendLibraries: string;
+}
+
+export {Versions};

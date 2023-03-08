@@ -28,10 +28,11 @@ import {TranslateService} from '@ngx-translate/core';
 import {ContextService} from '@valtimo/context';
 import {ValtimoVersion} from '../../models';
 import {
-  EmailNotificationSettings,
-  UserIdentity,
   ConfigService,
+  EmailNotificationSettings,
   FeedbackMailTo,
+  UserIdentity,
+  VERSIONS,
 } from '@valtimo/config';
 import {UserProviderService} from '@valtimo/security';
 import {NGXLogger} from 'ngx-logger';
@@ -110,6 +111,8 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   readonly userContexts$ = this.contextService.getUserContexts();
   readonly activeContext$ = this.contextService.getUserContextActive();
 
+  readonly frontendVersion!: string;
+
   private formSubscription!: Subscription;
 
   constructor(
@@ -123,7 +126,9 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     private readonly shellService: ShellService,
     private readonly elementRef: ElementRef,
     private readonly configService: ConfigService
-  ) {}
+  ) {
+    this.frontendVersion = VERSIONS?.frontendLibraries;
+  }
 
   showPlantATreeButton: boolean;
   resetUrl: string;

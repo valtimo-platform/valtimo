@@ -115,6 +115,14 @@
     &:not(:last-child) {
       margin-bottom: 1rem;
     }
+
+    .tag-container {
+      .cds--tag {
+        margin-left: 0;
+        margin-right: 0;
+        margin-bottom: 0;
+      }
+    }
   }
 
   .information-table {
