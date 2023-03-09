@@ -1049,5 +1049,13 @@
       "list": "List",
       "searchFields": "Search Fields"
     }
+  },
+  "formioTranslations": {
+    "Submit" : "Submit",
+    "Save": "Save",
+    "Cancel": "Cancel",
+    "Remove": "Remove",
+    "Next": "Next",
+    "Previous": "Previous"
   }
 }

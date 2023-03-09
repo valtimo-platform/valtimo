@@ -15,5 +15,10 @@
   -->
 
 <div>
-  <form-builder [form]="form" (change)="onChange($event)"></form-builder>
+  <form-builder
+    [form]="form"
+    [rebuild]="triggerRebuild"
+    [options]="formioOptions$ | async"
+    (change)="onChange($event)"
+  ></form-builder>
 </div>

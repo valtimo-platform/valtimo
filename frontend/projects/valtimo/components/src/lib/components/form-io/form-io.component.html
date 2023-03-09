@@ -23,13 +23,16 @@
     </ol>
   </div>
   <formio
-    *ngIf="currentLanguage$ | async as currentLanguage"
+    *ngIf="{
+      currentLanguage: currentLanguage$ | async,
+      formioOptions: formioOptions$ | async
+    } as obs"
     [submission]="submission"
     [form]="formDefinition"
     [refresh]="refreshForm"
-    [options]="options"
+    [options]="obs.formioOptions || options"
     [readOnly]="readOnly"
-    [language]="currentLanguage"
+    [language]="obs.currentLanguage"
     (submit)="onSubmit($event)"
     (ready)="formReady($event)"
     (change)="onChange($event)"

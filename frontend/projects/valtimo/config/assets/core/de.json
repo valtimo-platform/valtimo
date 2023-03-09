@@ -1051,5 +1051,13 @@
     },
     "underscoresToSpaces": "Unterstriche zu Leerzeichen",
     "select": "Wählen Sie einen Anzeigetyp aus"
+  },
+  "formioTranslations": {
+    "Submit" : "Einreichen",
+    "Save": "Speichern",
+    "Cancel": "Stornieren",
+    "Remove": "Entfernen",
+    "Next": "Nächste",
+    "Previous": "Vorherige"
   }
 }

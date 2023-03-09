@@ -52,6 +52,7 @@ export class FormioOptionsImpl implements ValtimoFormioOptions {
   errors?: ErrorsOptions;
   alerts?: AlertsOptions;
   disableAlerts?: boolean;
+  language?: string;
   i18n?: object;
   fileService?: object;
   hooks?: FormioHookOptions;
