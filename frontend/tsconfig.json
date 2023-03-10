@@ -88,6 +88,8 @@
       "@valtimo/open-zaak": ["dist/valtimo/open-zaak/valtimo-openzaak", "dist/valtimo/open-zaak"],
       "@valtimo/resource": ["dist/valtimo/resource"],
       "@valtimo/resource/*": ["dist/valtimo/resource/*"],
+      "@valtimo/sse": ["dist/valtimo/sse"],
+      "@valtimo/sse/*": ["dist/valtimo/sse/*"],
       "@valtimo/user-interface": ["dist/valtimo/user-interface"],
       "@valtimo/user-interface/*": ["dist/valtimo/user-interface/*"],
       "@valtimo/customer": ["dist/valtimo/customer"],

@@ -260,7 +260,7 @@ export const environment: ValtimoConfig = {
     caseListColumn: true,
     largeLogoMargin: true,
     sortFilesByDate: true,
-    disableCaseCount: true,
+    disableCaseCount: false,
     enableObjectManagement: true,
     returnToLastUrlAfterTokenExpiration: true,
   },
