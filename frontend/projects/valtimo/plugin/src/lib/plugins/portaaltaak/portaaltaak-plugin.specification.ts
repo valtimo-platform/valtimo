@@ -69,8 +69,8 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       bsn: 'Burgerservicenummer (BSN)',
       kvkTooltip: 'Het KVK-nummer van de gewenste ontvanger.',
       bsnTooltip: 'Het Burgerservicenummer (BSN) van de gewenste ontvanger.',
-      uploadedDocumentsHandlerProcess: 'Geüploade documentverwerkingsproces',
-      uploadedDocumentsHandlerProcessTooltip:
+      completeTaakProcess: 'Geüploade documentverwerkingsproces',
+      completeTaakProcessTooltip:
         'Het proces dat de geüploade documenten in de portal moet afhandelen.',
       identificationKey: 'Identificatiesleutel',
       identificationKeyTooltip:
@@ -119,8 +119,8 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       bsn: 'Citizen service number (BSN)',
       kvkTooltip: 'The KVK number of the desired receiver.',
       bsnTooltip: 'The Citizen service number (BSN) of the desired receiver',
-      uploadedDocumentsHandlerProcess: 'Process to complete Portaaltaak',
-      uploadedDocumentsHandlerProcessTooltip:
+      completeTaakProcess: 'Process to complete Portaaltaak',
+      completeTaakProcessTooltip:
         'The process that should handle the uploaded documents in the portal.',
       identificationKey: 'Identification key',
       identificationKeyTooltip:
@@ -167,8 +167,8 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       bsn: 'Bürgerservicenummer (BSN)',
       kvkTooltip: 'Die KVK-Nummer des gewünschten Empfängers.',
       bsnTooltip: 'Die Bürgerservicenummer (BSN) des gewünschten Empfängers.',
-      uploadedDocumentsHandlerProcess: 'Handhabungsprozess für hochgeladene Dokumente',
-      uploadedDocumentsHandlerProcessTooltip:
+      completeTaakProcess: 'Handhabungsprozess für hochgeladene Dokumente',
+      completeTaakProcessTooltip:
         'Der Prozess, der die hochgeladenen Dokumente im Portal handhaben soll.',
       identificationKey: 'Identifikationsschlüssel',
       identificationKeyTooltip:
