@@ -27,7 +27,8 @@ export class DownloadService {
   downloadFile(url: string, name: string) {
     if (
       url.startsWith(this.configService.config.valtimoApi.endpointUri) ||
-      url.startsWith(window.location.origin)
+      url.startsWith(window.location.origin) ||
+      url.startsWith('/api/')
     ) {
       // if download url is on backend use angular to get the content so access token is used
       this.http.get(url, {responseType: 'blob'}).subscribe(content => {
