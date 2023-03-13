@@ -158,9 +158,11 @@ export class ListComponent implements OnChanges, OnInit, AfterViewInit {
     const key = definitionKey.includes(customPropString)
       ? definitionKey.split(customPropString)[1]
       : definitionKey;
-    const resolvedObjValue = key.split('.').reduce(function (prev, curr) {
-      return prev ? prev[curr] : null;
-    }, obj || self);
+    const resolvedObjValue = obj[key] != null
+      ? obj[key]
+      : key.split('.').reduce(function (prev, curr) {
+        return prev ? prev[curr] : null;
+      }, obj || self);
     return this.viewContentService.get(resolvedObjValue, definition);
   }
 
