@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 
-import {Injectable, OnDestroy} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {ConfigService, MenuConfig, MenuIncludeService, MenuItem} from '@valtimo/config';
 import {NGXLogger} from 'ngx-logger';
 import {UserProviderService} from '@valtimo/security';
 import {NavigationEnd, NavigationStart, ResolveEnd, Router} from '@angular/router';
-import {BehaviorSubject, combineLatest, Observable, Subject, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subject, timer} from 'rxjs';
 import {DocumentDefinitions, DocumentService} from '@valtimo/document';
 import {filter, map, take} from 'rxjs/operators';
 import {KeycloakService} from 'keycloak-angular';
 import {HttpClient} from '@angular/common/http';
-import {SseService} from '@valtimo/sse';
 
 @Injectable({
   providedIn: 'root',
 })
-export class MenuService implements OnDestroy {
+export class MenuService {
   public includeFunctionObservables: {[key: string]: Observable<boolean>} = {};
 
   private _menuItems$ = new BehaviorSubject<MenuItem[]>(undefined);
@@ -37,10 +36,6 @@ export class MenuService implements OnDestroy {
 
   private readonly disableCaseCount!: boolean;
   private readonly enableObjectManagement!: boolean;
-
-  private sseMessagesSubscription!: Subscription;
-
-  private readonly refreshCount$ = new BehaviorSubject<null>(null);
 
   constructor(
     private readonly configService: ConfigService,
@@ -50,14 +45,12 @@ export class MenuService implements OnDestroy {
     private readonly menuIncludeService: MenuIncludeService,
     private readonly router: Router,
     private readonly keycloakService: KeycloakService,
-    private readonly sseService: SseService,
     private http: HttpClient
   ) {
     const config = configService?.config;
     this.menuConfig = config?.menu;
     this.disableCaseCount = config?.featureToggles?.disableCaseCount;
     this.enableObjectManagement = config?.featureToggles?.enableObjectManagement;
-    this.openSseMessagesSubscription();
   }
 
   private readonly currentRoute$ = this.router.events.pipe(
@@ -138,10 +131,6 @@ export class MenuService implements OnDestroy {
   init(): void {
     this.reload();
     this.logger.debug('Menu initialized');
-  }
-
-  ngOnDestroy() {
-    this.sseMessagesSubscription?.unsubscribe();
   }
 
   public reload(): void {
@@ -265,7 +254,7 @@ export class MenuService implements OnDestroy {
       countMap.set(definition.id.name, new Subject<number>())
     );
 
-    this.refreshCount$.subscribe(() => {
+    timer(0, 5000).subscribe(() => {
       this.documentService.getOpenDocumentCount().subscribe(openDocumentCountList => {
         openDocumentCountList.forEach(openDocumentCount =>
           countMap
@@ -303,13 +292,5 @@ export class MenuService implements OnDestroy {
     return this.http.get(
       `${this.configService.config.valtimoApi.endpointUri}v1/object/management/configuration`
     );
-  }
-
-  private openSseMessagesSubscription(): void {
-    this.sseService
-      .getSseMessagesObservableByEventType(['CASE_UNASSIGNED', 'CASE_ASSIGNED', 'CASE_CREATED'])
-      .subscribe(() => {
-        this.refreshCount$.next(null);
-      });
   }
 }
