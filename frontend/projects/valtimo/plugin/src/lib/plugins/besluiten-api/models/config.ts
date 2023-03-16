@@ -22,4 +22,18 @@ interface BesluitenApiConfig extends PluginConfigurationData {
   authenticationPluginConfiguration: string;
 }
 
-export {BesluitenApiConfig};
+type Vervalredenen = 'tijdelijk' | 'ingetrokken_overheid' | 'ingetrokken_belanghebbende';
+
+interface CreateZaakBesluitConfig {
+  besluittypeUrl: string;
+  toelichting: string;
+  ingangsdatum: string;
+  vervaldatum: string;
+  vervalreden: Vervalredenen;
+  publicatiedatum: string;
+  verzenddatum: string;
+  uiterlijkeReactieDatum: string;
+  createdBesluitUrl: string;
+}
+
+export {BesluitenApiConfig, CreateZaakBesluitConfig, Vervalredenen};

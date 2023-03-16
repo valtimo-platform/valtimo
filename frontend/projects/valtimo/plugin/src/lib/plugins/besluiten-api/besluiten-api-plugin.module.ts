@@ -18,18 +18,26 @@ import {NgModule} from '@angular/core';
 import {BesluitenApiConfigurationComponent} from './components/besluiten-api-configuration/besluiten-api-configuration.component';
 import {CommonModule} from '@angular/common';
 import {PluginTranslatePipeModule} from '../../pipes';
-import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/user-interface';
+import {
+  DatePickerModule,
+  FormModule,
+  InputModule,
+  ParagraphModule,
+  SelectModule,
+} from '@valtimo/user-interface';
+import {CreateZaakBesluitConfigurationComponent} from './components/create-zaak-besluit/create-zaak-besluit-configuration.component';
 
 @NgModule({
-  declarations: [BesluitenApiConfigurationComponent],
+  declarations: [BesluitenApiConfigurationComponent, CreateZaakBesluitConfigurationComponent],
   imports: [
     CommonModule,
     PluginTranslatePipeModule,
     FormModule,
     InputModule,
     SelectModule,
+    DatePickerModule,
     ParagraphModule,
   ],
-  exports: [BesluitenApiConfigurationComponent],
+  exports: [BesluitenApiConfigurationComponent, CreateZaakBesluitConfigurationComponent],
 })
 export class BesluitenApiPluginModule {}

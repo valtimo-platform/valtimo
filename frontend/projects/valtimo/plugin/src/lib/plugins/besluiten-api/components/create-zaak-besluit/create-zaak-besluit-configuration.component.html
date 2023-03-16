@@ -1,0 +1,121 @@
+<!--
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<v-paragraph [margin]="true" [italic]="true">
+  {{ 'createZaakBesluitInformation' | pluginTranslate : pluginId | async }}
+</v-paragraph>
+<v-form
+  (valueChange)="formValueChange($event)"
+  *ngIf="{
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+  } as obs"
+>
+  <v-input
+    name="besluittypeUrl"
+    [title]="'besluittypeUrl' | pluginTranslate : pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.besluittypeUrl"
+    [disabled]="obs.disabled"
+    [required]="true"
+    [tooltip]="'besluittypeUrlTooltip' | pluginTranslate : pluginId | async"
+    [widthPx]="350"
+  >
+  </v-input>
+  <v-input
+    name="toelichting"
+    [title]="'toelichting' | pluginTranslate : pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.toelichting"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [tooltip]="'toelichtingTooltip' | pluginTranslate : pluginId | async"
+    [widthPx]="350"
+  >
+  </v-input>
+  <v-date-picker
+    name="ingangsdatum"
+    [title]="'ingangsdatum' | pluginTranslate : pluginId | async"
+    [defaultDate]="obs.prefill?.ingangsdatum"
+    [disabled]="obs.disabled"
+    [required]="true"
+    [tooltip]="'ingangsdatumTooltip' | pluginTranslate : pluginId | async"
+    [widthPx]="100"
+    [margin]="true"
+  ></v-date-picker>
+  <v-date-picker
+    name="vervaldatum"
+    [title]="'vervaldatum' | pluginTranslate : pluginId | async"
+    [defaultDate]="obs.prefill?.vervaldatum"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [tooltip]="'vervaldatumTooltip' | pluginTranslate : pluginId | async"
+    [widthPx]="100"
+    [margin]="true"
+  ></v-date-picker>
+  <v-select
+    name="vervalreden"
+    [title]="'vervalreden' | pluginTranslate : pluginId | async"
+    [items]="vervalredenenSelectItems$ | async"
+    [defaultSelectionId]="obs.prefill?.vervalreden"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [tooltip]="'vervalredenTooltip' | pluginTranslate : pluginId | async"
+    [widthInPx]="350"
+    [margin]="true"
+  ></v-select>
+  <v-date-picker
+    name="publicatiedatum"
+    [title]="'publicatiedatum' | pluginTranslate : pluginId | async"
+    [defaultDate]="obs.prefill?.publicatiedatum"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [tooltip]="'publicatiedatumTooltip' | pluginTranslate : pluginId | async"
+    [widthPx]="100"
+    [margin]="true"
+  ></v-date-picker>
+  <v-date-picker
+    name="verzenddatum"
+    [title]="'verzenddatum' | pluginTranslate : pluginId | async"
+    [defaultDate]="obs.prefill?.verzenddatum"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [tooltip]="'verzenddatumTooltip' | pluginTranslate : pluginId | async"
+    [widthPx]="100"
+    [margin]="true"
+  ></v-date-picker>
+  <v-date-picker
+    name="uiterlijkeReactieDatum"
+    [title]="'uiterlijkeReactieDatum' | pluginTranslate : pluginId | async"
+    [defaultDate]="obs.prefill?.uiterlijkeReactieDatum"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [tooltip]="'uiterlijkeReactieDatumTooltip' | pluginTranslate : pluginId | async"
+    [widthPx]="100"
+    [margin]="true"
+  ></v-date-picker>
+  <v-input
+    name="createdBesluitUrl"
+    [title]="'besluitUrlProcessVariable' | pluginTranslate : pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.createdBesluitUrl"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [tooltip]="'besluitUrlProcessVariableTooltip' | pluginTranslate : pluginId | async"
+    [widthPx]="350"
+  >
+  </v-input>
+</v-form>
