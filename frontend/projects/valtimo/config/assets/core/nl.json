@@ -1053,7 +1053,7 @@
     "select": "Selecteer een weergavetype"
   },
   "formioTranslations": {
-    "Submit" : "Versturen",
+    "Submit": "Versturen",
     "Send": "Versturen",
     "Save": "Opslaan",
     "Cancel": "Annuleren",

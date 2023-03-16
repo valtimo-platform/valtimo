@@ -28,6 +28,7 @@ import {ZakenApiConfigurationComponent} from './components/zaken-api-configurati
 import {LinkDocumentToZaakConfigurationComponent} from './components/link-document-to-zaak/link-document-to-zaak-configuration.component';
 import {LinkUploadedDocumentToZaakConfigurationComponent} from './components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
 import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
+import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 import {ToggleModule} from 'carbon-components-angular';
 
@@ -37,6 +38,7 @@ import {ToggleModule} from 'carbon-components-angular';
     LinkDocumentToZaakConfigurationComponent,
     LinkUploadedDocumentToZaakConfigurationComponent,
     CreateNatuurlijkPersoonZaakRolComponent,
+    CreateNietNatuurlijkPersoonZaakRolComponent,
     CreateZaakConfigurationComponent,
   ],
   imports: [
@@ -55,6 +57,7 @@ import {ToggleModule} from 'carbon-components-angular';
     LinkUploadedDocumentToZaakConfigurationComponent,
     CreateZaakConfigurationComponent,
     CreateNatuurlijkPersoonZaakRolComponent,
+    CreateNietNatuurlijkPersoonZaakRolComponent,
   ],
 })
 export class ZakenApiPluginModule {}

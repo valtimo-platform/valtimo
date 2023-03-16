@@ -20,6 +20,7 @@ import {LinkDocumentToZaakConfigurationComponent} from './components/link-docume
 import {ZakenApiConfigurationComponent} from './components/zaken-api-configuration/zaken-api-configuration.component';
 import {LinkUploadedDocumentToZaakConfigurationComponent} from './components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
 import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
+import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
@@ -31,6 +32,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'link-uploaded-document-to-zaak': LinkUploadedDocumentToZaakConfigurationComponent,
     'create-zaak': CreateZaakConfigurationComponent,
     'create-natuurlijk-persoon-zaak-rol': CreateNatuurlijkPersoonZaakRolComponent,
+    'create-niet-natuurlijk-persoon-zaak-rol': CreateNietNatuurlijkPersoonZaakRolComponent,
   },
   pluginTranslations: {
     nl: {
@@ -72,11 +74,18 @@ const zakenApiPluginSpecification: PluginSpecification = {
       text: 'Tekst',
       selection: 'Selectie',
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - natuurlijk persoon',
+      'create-niet-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - niet natuurlijk persoon',
       roltypeUrl: 'Roltype URL',
       rolToelichting: 'Roltoelichting',
       inpBsn: 'Initiator BSN',
       anpIdentificatie: 'Ander natuurlijk persoon identificatie',
+      annIdentificatie: 'Ander niet natuurlijk persoon identificatie',
+      annIdentificatieTooltip:
+        'Het door de gemeente uitgegeven unieke nummer voor een ander niet-natuurlijk persoon (annIdentificatie).',
       inpA_nummer: 'Administratienummer persoon',
+      innNnpId: 'Niet natuurlijk persoonsnummer',
+      innNnpIdTooltip:
+        'Het door een kamer toegekend uniek nummer voor de ingeschreven niet-natuurlijk persoon (innNnpId).',
       roltypeUrlTooltip: 'URL naar een roltype binnen het Zaaktype van een Zaak',
       rolToelichtingTooltip: 'Omschrijving van de aard van de rol',
       inpBsnTooltip: 'Het burgerservicenummer van de initiator',
@@ -123,11 +132,18 @@ const zakenApiPluginSpecification: PluginSpecification = {
       text: 'Text',
       selection: 'Selection',
       'create-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - natural person',
+      'create-niet-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - not a natural person',
       roltypeUrl: 'Role type URL',
       rolToelichting: 'Role explanation',
       inpBsn: 'Initiator BSN',
       anpIdentificatie: 'Other natural person identification',
+      annIdentificatie: 'Other not natural person identification',
+      annIdentificatieTooltip:
+        'The unique number issued by the municipality for another non-natural person (annIdentificatie).',
       inpA_nummer: 'Administration number person',
+      innNnpId: 'Not a natural personal number',
+      innNnpIdTooltip:
+        'The unique number assigned by the government for the registered non-natural person (innNnpId).',
       roltypeUrlTooltip: 'URL to a role type within the Zaaktype of a Zaak',
       rolToelichtingTooltip: 'Description of the nature of the role',
       inpBsnTooltip: "The initiator's social security number",
@@ -174,11 +190,18 @@ const zakenApiPluginSpecification: PluginSpecification = {
       text: 'Text',
       selection: 'Auswahl',
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol erstellen – natürliche Person',
+      'create-niet-natuurlijk-persoon-zaak-rol': 'Zaakrol erstellen – keine natürliche Person',
       roltypeUrl: 'Rollentyp-URL',
       rolToelichting: 'Rollenerklärung',
       inpBsn: 'Initiator BSN',
       anpIdentificatie: 'Andere Identifizierung natürlicher Personen',
+      annIdentificatie: 'Andere Identifizierung keine natürlicher Personen',
+      annIdentificatieTooltip:
+        'Die eindeutige Nummer, die von der Gemeinde für eine andere nicht natürliche Person vergeben wird (annIdentificatie).',
       inpA_nummer: 'Verwaltungsnummer Person',
+      innNnpId: 'Keine natürliche Personennummer',
+      innNnpIdTooltip:
+        'Die von der Regierung vergebene eindeutige Nummer für die registrierte nicht natürliche Person (innNnpId).',
       roltypeUrlTooltip: 'URL zu einem Rollentyp innerhalb des Zaaktypes eines Zaaks',
       rolToelichtingTooltip: 'Beschreibung der Art der Rolle',
       inpBsnTooltip: 'Die Sozialversicherungsnummer des Initiators',

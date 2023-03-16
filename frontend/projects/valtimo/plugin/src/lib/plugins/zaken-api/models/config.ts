@@ -35,6 +35,13 @@ interface CreateNatuurlijkePersoonZaakRolConfig {
   inpA_nummer: string;
 }
 
+interface CreateNietNatuurlijkePersoonZaakRolConfig {
+  roltypeUrl: string;
+  rolToelichting: string;
+  innNnpId: string;
+  annIdentificatie: string;
+}
+
 interface CreateZaakConfig {
   rsin: string;
   manualZaakTypeUrl: boolean;
@@ -46,4 +53,5 @@ export {
   LinkDocumentToZaakConfig,
   CreateZaakConfig,
   CreateNatuurlijkePersoonZaakRolConfig,
+  CreateNietNatuurlijkePersoonZaakRolConfig,
 };

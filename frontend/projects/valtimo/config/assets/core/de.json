@@ -1053,7 +1053,7 @@
     "select": "Wählen Sie einen Anzeigetyp aus"
   },
   "formioTranslations": {
-    "Submit" : "Einreichen",
+    "Submit": "Einreichen",
     "Save": "Speichern",
     "Cancel": "Stornieren",
     "Remove": "Entfernen",
