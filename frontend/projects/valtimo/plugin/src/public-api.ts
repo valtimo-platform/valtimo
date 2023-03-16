@@ -87,3 +87,7 @@ export * from './lib/plugins/portaaltaak/components/complete-portal-task/complet
 export * from './lib/plugins/verzoek/verzoek-plugin.module';
 export * from './lib/plugins/verzoek/verzoek-plugin.specification';
 export * from './lib/plugins/verzoek/components/verzoek-configuration/verzoek-configuration.component';
+/* besluiten plugin */
+export * from './lib/plugins/besluiten-api/besluiten-api-plugin.module';
+export * from './lib/plugins/besluiten-api/besluiten-api-plugin.specification';
+export * from './lib/plugins/besluiten-api/components/besluiten-api-configuration/besluiten-api-configuration.component';

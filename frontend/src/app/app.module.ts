@@ -86,6 +86,8 @@ import {ConnectorManagementModule} from '@valtimo/connector-management';
 import {CustomerModule} from '@valtimo/customer';
 import {PluginManagementModule} from '@valtimo/plugin-management';
 import {
+  BesluitenApiPluginModule,
+  besluitenApiPluginSpecification,
   CatalogiApiPluginModule,
   catalogiApiPluginSpecification,
   DocumentenApiPluginModule,
@@ -197,6 +199,7 @@ export function tabsFactory() {
     ObjecttypenApiPluginModule,
     ZakenApiPluginModule,
     ObjectenApiPluginModule,
+    BesluitenApiPluginModule,
     CatalogiApiPluginModule,
     VerzoekPluginModule,
     HttpClientModule,
@@ -215,6 +218,7 @@ export function tabsFactory() {
     {
       provide: PLUGINS_TOKEN,
       useValue: [
+        besluitenApiPluginSpecification,
         catalogiApiPluginSpecification,
         documentenApiPluginSpecification,
         notificatiesApiPluginSpecification,
