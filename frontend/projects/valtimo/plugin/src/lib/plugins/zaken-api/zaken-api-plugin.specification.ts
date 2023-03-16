@@ -19,6 +19,8 @@ import {ZAKEN_API_PLUGIN_LOGO_BASE64} from './assets';
 import {LinkDocumentToZaakConfigurationComponent} from './components/link-document-to-zaak/link-document-to-zaak-configuration.component';
 import {ZakenApiConfigurationComponent} from './components/zaken-api-configuration/zaken-api-configuration.component';
 import {LinkUploadedDocumentToZaakConfigurationComponent} from './components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
+import {SetZaakStatusConfigurationComponent} from './components/set-zaak-status/set-zaak-status-configuration.component';
+import {CreateZaakResultaatConfigurationComponent} from './components/create-zaak-resultaat/create-zaak-resultaat-configuration.component';
 import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
 import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
@@ -30,6 +32,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
   functionConfigurationComponents: {
     'link-document-to-zaak': LinkDocumentToZaakConfigurationComponent,
     'link-uploaded-document-to-zaak': LinkUploadedDocumentToZaakConfigurationComponent,
+    'set-zaakstatus': SetZaakStatusConfigurationComponent,
+    'create-zaakresultaat': CreateZaakResultaatConfigurationComponent,
     'create-zaak': CreateZaakConfigurationComponent,
     'create-natuurlijk-persoon-zaak-rol': CreateNatuurlijkPersoonZaakRolComponent,
     'create-niet-natuurlijk-persoon-zaak-rol': CreateNietNatuurlijkPersoonZaakRolComponent,
@@ -92,6 +96,17 @@ const zakenApiPluginSpecification: PluginSpecification = {
       anpIdentificatieTooltip:
         'Het door de gemeente uitgegeven unieke nummer voor een ander natuurlijk persoon',
       inpA_nummerTooltip: 'Het administratienummer van de persoon, bedoeld in de Wet BRP',
+      'set-zaakstatus': 'Zaakstatus aanmaken',
+      statustypeUrl: 'Zaakstatus type URL',
+      statustypeUrlTooltip: 'URL-referentie naar het statustype.',
+      statustoelichting: 'Zaakstatus toelichting',
+      statustoelichtingTooltip:
+        'Een, voor de initiator van de zaak relevante, toelichting op de status van een zaak.',
+      'create-zaakresultaat': 'Zaakresultaat aanmaken',
+      resultaattypeUrl: 'Zaakresultaat type URL',
+      resultaattypeUrlTooltip: 'URL-referentie naar het resultaattype.',
+      resultaattoelichting: 'Zaakresultaat toelichting',
+      resultaattoelichtingTooltip: 'Een toelichting op wat het resultaat van de zaak inhoudt.',
     },
     en: {
       title: 'Zaken API',
@@ -150,6 +165,17 @@ const zakenApiPluginSpecification: PluginSpecification = {
       anpIdentificatieTooltip:
         'The unique number issued by the municipality for another natural person',
       inpA_nummerTooltip: 'The administration number of the person, as referred to in the Wet BRP',
+      'set-zaakstatus': 'Create case status',
+      statustypeUrl: 'Zaakstatus type URL',
+      statustypeUrlTooltip: 'URL reference to the status type.',
+      statustoelichting: 'Zaakstatus explanation',
+      statustoelichtingTooltip:
+        'An explanation of the status of a zaak that is relevant to the initiator of the zaak.',
+      'create-zaakresultaat': 'Create Zaakresultaat',
+      resultaattypeUrl: 'Zaakresultaat type URL',
+      resultaattypeUrlTooltip: 'URL reference to the resultaat type.',
+      resultaattoelichting: 'Zaakresultaat explanation',
+      resultaattoelichtingTooltip: 'An explanation of what the result of the zaak means.',
     },
     de: {
       title: 'Zaken API',
@@ -208,6 +234,17 @@ const zakenApiPluginSpecification: PluginSpecification = {
       anpIdentificatieTooltip:
         'Die eindeutige Nummer, die von der Gemeinde für eine andere natürliche Person vergeben wird',
       inpA_nummerTooltip: 'Die Verwaltungsnummer der Person im Sinne des Wet BRP',
+      'set-zaakstatus': 'Fallstatus erstellen',
+      statustypeUrl: 'URL des Zaakstatustyps',
+      statustypeUrlTooltip: 'URL-Referenz zum Statustyp.',
+      statustoelichting: 'Erklärung des Zaakstatus',
+      statustoelichtingTooltip:
+        'Eine Erklärung des Status eines zaak, die für den Initiator des Zaak relevant ist.',
+      'create-zaakresultaat': 'Zaakgebnis erstellen',
+      resultaattypeUrl: 'URL des Zaakgebnistyps',
+      resultaattypeUrlTooltip: 'URL-Verweis auf den Ergebnistyp.',
+      resultaattoelichting: 'Geschäftsergebniserklärung',
+      resultaattoelichtingTooltip: 'Eine Erklärung, was das Ergebnis des Zaak beinhaltet.',
     },
   },
 };
