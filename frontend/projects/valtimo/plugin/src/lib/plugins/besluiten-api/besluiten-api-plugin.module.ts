@@ -26,9 +26,14 @@ import {
   SelectModule,
 } from '@valtimo/user-interface';
 import {CreateZaakBesluitConfigurationComponent} from './components/create-zaak-besluit/create-zaak-besluit-configuration.component';
+import {LinkDocumentToBesluitConfigurationComponent} from './components/link-document-to-besluit/link-document-to-besluit-configuration.component';
 
 @NgModule({
-  declarations: [BesluitenApiConfigurationComponent, CreateZaakBesluitConfigurationComponent],
+  declarations: [
+    BesluitenApiConfigurationComponent,
+    CreateZaakBesluitConfigurationComponent,
+    LinkDocumentToBesluitConfigurationComponent,
+  ],
   imports: [
     CommonModule,
     PluginTranslatePipeModule,
@@ -38,6 +43,10 @@ import {CreateZaakBesluitConfigurationComponent} from './components/create-zaak-
     DatePickerModule,
     ParagraphModule,
   ],
-  exports: [BesluitenApiConfigurationComponent, CreateZaakBesluitConfigurationComponent],
+  exports: [
+    BesluitenApiConfigurationComponent,
+    CreateZaakBesluitConfigurationComponent,
+    LinkDocumentToBesluitConfigurationComponent,
+  ],
 })
 export class BesluitenApiPluginModule {}

@@ -27,6 +27,7 @@ type Vervalredenen = 'tijdelijk' | 'ingetrokken_overheid' | 'ingetrokken_belangh
 interface CreateZaakBesluitConfig {
   besluittypeUrl: string;
   toelichting: string;
+  bestuursorgaan: string;
   ingangsdatum: string;
   vervaldatum: string;
   vervalreden: Vervalredenen;
@@ -35,5 +36,9 @@ interface CreateZaakBesluitConfig {
   uiterlijkeReactieDatum: string;
   createdBesluitUrl: string;
 }
+interface LinkDocumentToBesluitConfig {
+  besluitUrl: string;
+  documentUrl: string;
+}
 
-export {BesluitenApiConfig, CreateZaakBesluitConfig, Vervalredenen};
+export {BesluitenApiConfig, CreateZaakBesluitConfig, Vervalredenen, LinkDocumentToBesluitConfig};

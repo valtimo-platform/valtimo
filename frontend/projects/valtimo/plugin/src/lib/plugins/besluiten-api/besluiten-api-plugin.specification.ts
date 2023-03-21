@@ -18,6 +18,7 @@ import {PluginSpecification} from '../../models';
 import {BesluitenApiConfigurationComponent} from './components/besluiten-api-configuration/besluiten-api-configuration.component';
 import {BESLUITEN_API_PLUGIN_LOGO_BASE64} from './assets';
 import {CreateZaakBesluitConfigurationComponent} from './components/create-zaak-besluit/create-zaak-besluit-configuration.component';
+import {LinkDocumentToBesluitConfigurationComponent} from './components/link-document-to-besluit/link-document-to-besluit-configuration.component';
 
 const besluitenApiPluginSpecification: PluginSpecification = {
   pluginId: 'besluitenapi',
@@ -25,6 +26,7 @@ const besluitenApiPluginSpecification: PluginSpecification = {
   pluginLogoBase64: BESLUITEN_API_PLUGIN_LOGO_BASE64,
   functionConfigurationComponents: {
     'create-besluit': CreateZaakBesluitConfigurationComponent,
+    'link-document-to-besluit': LinkDocumentToBesluitConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -39,11 +41,13 @@ const besluitenApiPluginSpecification: PluginSpecification = {
         'De naam van de huidige plugin-configuratie. Onder deze naam kan de configuratie in de rest van de applicatie teruggevonden worden.',
       authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
       'create-besluit': 'Zaakbesluit aanmaken',
-      createZaakBesluitInformation: 'Deze actie creëert een zaakbesluit in de Zaken API.',
+      createZaakBesluitInformation: 'Deze actie creëert een zaakbesluit in de Besluiten API.',
       besluittypeUrl: 'Besluittype',
       besluittypeUrlTooltip: 'URL-referentie naar het besluittype',
       toelichting: 'Toelichting',
       toelichtingTooltip: 'Toelichting bij het besluit.',
+      bestuursorgaan: 'Toelichting',
+      bestuursorgaanTooltip: 'Een orgaan van een rechtspersoon krachtens publiekrecht ingesteld of een persoon of college, met enig openbaar gezag bekleed onder wiens verantwoordelijkheid het besluit vastgesteld is.',
       ingangsdatum: 'Ingangsdatum',
       ingangsdatumTooltip: 'Ingangsdatum van de werkingsperiode van het besluit.',
       vervaldatum: 'Vervaldatum',
@@ -63,6 +67,13 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       besluitUrlProcessVariable: 'Naam procesvariabele met besluit URL',
       besluitUrlProcessVariableTooltip:
         'Hier moet de naam van de procesvariabele ingevuld worden waarin de besluit URL lokaal staat opgeslagen',
+      'link-document-to-besluit': 'Link Document aan Besluit',
+      linkDocumentToBesluitInformation:
+        'Deze actie linkt een document aan een zaakbesluit in de Besluiten API.',
+      besluitUrl: 'Besluit URL',
+      besluitUrlTooltip: 'URL-referentie naar het besluit',
+      documentUrl: 'Document URL',
+      documentUrlTooltip: 'URL-referentie naar het document',
     },
     en: {
       title: 'Besluiten API',
@@ -76,11 +87,13 @@ const besluitenApiPluginSpecification: PluginSpecification = {
         'The name of the current plugin configuration. Under this name, the configuration can be found in the rest of the application.',
       authenticationPluginConfiguration: 'Authentication plugin configuration',
       'create-besluit': 'Create Zaakbesluit',
-      createZaakBesluitInformation: 'This action creates a Zaakbesluit in the Zaken API.',
+      createZaakBesluitInformation: 'This action creates a Zaakbesluit in the Besluiten API.',
       besluittypeUrl: 'Besluit type',
       besluittypeUrlTooltip: 'URL reference to the besluit type',
       toelichting: 'Explanation',
       toelichtingTooltip: 'Explanation to the besluit.',
+      bestuursorgaan: 'Governing body',
+      bestuursorgaanTooltip: 'A body of a legal person established under public law or a person or body with any public authority under whose responsibility the decision has been adopted.',
       ingangsdatum: 'Starting date',
       ingangsdatumTooltip: 'Commencement date of the effective period of the besluit.',
       vervaldatum: 'Expiration date',
@@ -101,6 +114,13 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       besluitUrlProcessVariable: 'Process variable name with besluit URL',
       besluitUrlProcessVariableTooltip:
         'Here must be entered the name of the process variable in which the besluit URL is stored locally',
+      'link-document-to-besluit': 'Link Document to Besluit',
+      linkDocumentToBesluitInformation:
+        'This action links a document to a zaakbesluit in the Besluiten API.',
+      besluitUrl: 'Besluit URL',
+      besluitUrlTooltip: 'URL reference to the besluit',
+      documentUrl: 'Document URL',
+      documentUrlTooltip: 'URL reference to the document',
     },
     de: {
       title: 'Besluiten API',
@@ -115,11 +135,13 @@ const besluitenApiPluginSpecification: PluginSpecification = {
         'Der Name der aktuellen Plugin-Konfiguration. Unter diesem Namen ist die Konfiguration im Rest der Anwendung zu finden.',
       authenticationPluginConfiguration: 'Authentifizierungs-Plugin-Konfiguration',
       'create-besluit': 'Zaakbesluit erstellen',
-      createZaakBesluitInformation: 'Diese Aktion erstellt eine Zaakbesluit in der Zaken-API.',
+      createZaakBesluitInformation: 'Diese Aktion erstellt eine Zaakbesluit in der Besluiten-API.',
       besluittypeUrl: 'Entscheidungstyp',
       besluittypeUrlTooltip: 'URL-Referenz zum Entscheidungstyp',
       toelichting: 'Erläuterung',
       toelichtingTooltip: 'Begründung der Entscheidung.',
+      bestuursorgaan: 'Leitungsgremium',
+      bestuursorgaanTooltip: 'Eine Körperschaft einer juristischen Person des öffentlichen Rechts oder eine Person oder Körperschaft einer öffentlichen Behörde, unter deren Verantwortung die Entscheidung getroffen wurde.',
       ingangsdatum: 'Anfangsdatum',
       ingangsdatumTooltip: 'Datum des Beginns der Geltungsdauer der Entscheidung.',
       vervaldatum: 'Verfallsdatum',
@@ -140,6 +162,13 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       besluitUrlProcessVariable: 'Prozessvariablenname mit Entscheidungs-URL',
       besluitUrlProcessVariableTooltip:
         'Hier muss der Name der Prozessvariable eingetragen werden, in der die Entscheidungs-URL lokal gespeichert wird',
+      'link-document-to-besluit': 'Verknüpf Document zum Besluit',
+      linkDocumentToBesluitInformation:
+        'Diese Aktion verknüpft ein Dokument mit einer Fallentscheidung in der Besluiten API.',
+      besluitUrl: 'Besluit URL',
+      besluitUrlTooltip: 'URL-Referenz zum besluit',
+      documentUrl: 'Document URL',
+      documentUrlTooltip: 'URL-Referenz zum document',
     },
   },
 };

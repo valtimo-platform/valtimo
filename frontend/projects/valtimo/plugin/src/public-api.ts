@@ -92,3 +92,4 @@ export * from './lib/plugins/besluiten-api/besluiten-api-plugin.module';
 export * from './lib/plugins/besluiten-api/besluiten-api-plugin.specification';
 export * from './lib/plugins/besluiten-api/components/besluiten-api-configuration/besluiten-api-configuration.component';
 export * from './lib/plugins/besluiten-api/components/create-zaak-besluit/create-zaak-besluit-configuration.component';
+export * from './lib/plugins/besluiten-api/components/link-document-to-besluit/link-document-to-besluit-configuration.component';

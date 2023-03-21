@@ -46,6 +46,17 @@
     [widthPx]="350"
   >
   </v-input>
+  <v-input
+    name="bestuursorgaan"
+    [title]="'bestuursorgaan' | pluginTranslate : pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.bestuursorgaan"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [tooltip]="'bestuursorgaanTooltip' | pluginTranslate : pluginId | async"
+    [widthPx]="350"
+  >
+  </v-input>
   <v-date-picker
     name="ingangsdatum"
     [title]="'ingangsdatum' | pluginTranslate : pluginId | async"
