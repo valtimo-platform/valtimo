@@ -165,7 +165,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       anpIdentificatieTooltip:
         'The unique number issued by the municipality for another natural person',
       inpA_nummerTooltip: 'The administration number of the person, as referred to in the Wet BRP',
-      'set-zaakstatus': 'Create case status',
+      'set-zaakstatus': 'Create zaakstatus',
       statustypeUrl: 'Zaakstatus type URL',
       statustypeUrlTooltip: 'URL reference to the status type.',
       statustoelichting: 'Zaakstatus explanation',

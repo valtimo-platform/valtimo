@@ -39,7 +39,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       url: 'Catalogi API URL',
       urlTooltip: 'A URL to the REST API of Catalogi',
       description:
-        'API for storage and retrieval of case type catalogs, case types and child types.',
+        'API for storage and retrieval of zaaktype catalogs, zaaktypes and child types.',
       configurationTitle: 'Configuration name',
       configurationTitleTooltip:
         'The name of the current plugin configuration. Under this name, the configuration can be found in the rest of the application.',

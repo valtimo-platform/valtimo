@@ -45,8 +45,8 @@ const objectenApiPluginSpecification: PluginSpecification = {
         "De URL van het object dat verwijderd moet worden uit de Objecten API. De ingevoerde waarde mag een procesvariable zijn, bijvoorbeeld: 'pv:object'.",
     },
     en: {
-      title: 'Objects API',
-      url: 'Objects API URL',
+      title: 'Objecten API',
+      url: 'Objecten API URL',
       urlTooltip: 'A URL to the REST API of Objects',
       description:
         'With the Other Objects Registration API specifications (Objects), municipalities can unambiguously register, store and access objects.',

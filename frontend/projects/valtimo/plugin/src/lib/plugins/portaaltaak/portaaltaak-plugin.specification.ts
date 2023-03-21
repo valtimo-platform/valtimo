@@ -85,9 +85,9 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       configurationTitle: 'Configuration name',
       configurationTitleTooltip:
         'The name of the current plugin configuration. Under this name, the configuration can be found in the rest of the application.',
-      notificatiesApiPluginConfiguration: 'Notification API plugin',
+      notificatiesApiPluginConfiguration: 'Notificaties API plugin',
       notificatiesApiPluginConfigurationTooltip:
-        'Select the Notifications API plugin. If the selection box remains empty, the Notifications API plugin will first have to be created.',
+        'Select the Notificaties API plugin. If the selection box remains empty, the Notificaties API plugin will first have to be created.',
       objectManagementConfiguration: 'Object management configuration',
       objectManagementConfigurationTooltip:
         'Select the object management configuration. If the selection box remains empty, the object management configuration will first have to be created.',

@@ -37,7 +37,7 @@ const objectTokenAuthenticationPluginSpecification: PluginSpecification = {
     },
     en: {
       title: 'Object token authentication',
-      description: 'Authentication using tokens for use by the Objects API and Object Types API.',
+      description: 'Authentication using tokens for use by the Objecten API and Objecttypen API.',
       configurationTitle: 'Configuration name',
       configurationTitleTooltip:
         'With this name the plugin will be recognizable in the rest of the application',
@@ -48,7 +48,7 @@ const objectTokenAuthenticationPluginSpecification: PluginSpecification = {
     de: {
       title: 'Object Token-Authentifizierung',
       description:
-        'Authentifizierung mit Token zur Verwendung durch die Objects-API und die Object Types-API.',
+        'Authentifizierung mit Token zur Verwendung durch die Objecten API und die Objecttypen API.',
       configurationTitle: 'Konfigurationsname',
       configurationTitleTooltip:
         'An diesem Namen wird das Plugin im Rest der Anwendung erkennbar sein',

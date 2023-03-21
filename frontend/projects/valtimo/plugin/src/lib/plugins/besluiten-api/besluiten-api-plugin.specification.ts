@@ -46,7 +46,7 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       besluittypeUrlTooltip: 'URL-referentie naar het besluittype',
       toelichting: 'Toelichting',
       toelichtingTooltip: 'Toelichting bij het besluit.',
-      bestuursorgaan: 'Toelichting',
+      bestuursorgaan: 'Bestuursorgaan',
       bestuursorgaanTooltip: 'Een orgaan van een rechtspersoon krachtens publiekrecht ingesteld of een persoon of college, met enig openbaar gezag bekleed onder wiens verantwoordelijkheid het besluit vastgesteld is.',
       ingangsdatum: 'Ingangsdatum',
       ingangsdatumTooltip: 'Ingangsdatum van de werkingsperiode van het besluit.',
