@@ -1,7 +1,7 @@
 {
   "name": "@valtimo/swagger",
   "license": "EUPL-1.2",
-  "version": "10.4.0",
+  "version": "10.5.0-138.RC",
   "peerDependencies": {
     "@angular/common": "^14.2.5",
     "@angular/core": "^14.2.5"

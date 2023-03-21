@@ -1,6 +1,6 @@
 {
   "name": "@valtimo/sse",
-  "version": "10.2.1",
+  "version": "10.5.0-138.RC",
   "peerDependencies": {
     "@angular/common": "^14.2.0",
     "@angular/core": "^14.2.0"
