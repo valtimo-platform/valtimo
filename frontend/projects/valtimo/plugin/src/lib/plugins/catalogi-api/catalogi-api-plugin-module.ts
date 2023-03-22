@@ -20,9 +20,16 @@ import {CommonModule} from '@angular/common';
 import {PluginTranslatePipeModule} from '../../pipes';
 import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/user-interface';
 import {GetStatustypeConfigurationComponent} from './components/get-statustype/get-statustype-configuration.component';
+import {GetBesluittypeConfigurationComponent} from './components/get-besluittype/get-besluittype-configuration.component';
+import {GetResultaattypeConfigurationComponent} from './components/get-resultaattype/get-resultaattype-configuration.component';
 
 @NgModule({
-  declarations: [CatalogiApiConfigurationComponent, GetStatustypeConfigurationComponent],
+  declarations: [
+    CatalogiApiConfigurationComponent,
+    GetBesluittypeConfigurationComponent,
+    GetResultaattypeConfigurationComponent,
+    GetStatustypeConfigurationComponent,
+  ],
   imports: [
     CommonModule,
     PluginTranslatePipeModule,
@@ -31,6 +38,11 @@ import {GetStatustypeConfigurationComponent} from './components/get-statustype/g
     SelectModule,
     ParagraphModule,
   ],
-  exports: [CatalogiApiConfigurationComponent, GetStatustypeConfigurationComponent],
+  exports: [
+    CatalogiApiConfigurationComponent,
+    GetBesluittypeConfigurationComponent,
+    GetResultaattypeConfigurationComponent,
+    GetStatustypeConfigurationComponent,
+  ],
 })
 export class CatalogiApiPluginModule {}

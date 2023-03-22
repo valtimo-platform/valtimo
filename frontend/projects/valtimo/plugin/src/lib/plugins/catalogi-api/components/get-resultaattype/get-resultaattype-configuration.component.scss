@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,27 +13,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {PluginConfigurationData} from '../../../models';
-
-interface CatalogiApiConfig extends PluginConfigurationData {
-  url: string;
-  authenticationPluginConfiguration: string;
-}
-
-interface GetBesluittypeConfig {
-  besluittype: string;
-  processVariable: string;
-}
-
-interface GetResultaattypeConfig {
-  resultaattype: string;
-  processVariable: string;
-}
-
-interface GetStatustypeConfig {
-  statustype: string;
-  processVariable: string;
-}
-
-export {CatalogiApiConfig, GetBesluittypeConfig, GetResultaattypeConfig, GetStatustypeConfig};
