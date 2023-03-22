@@ -13,3 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+.hidden {
+  display: none;
+}
+
+.loading-container {
+  padding: var(--cds-grid-margin);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.download-button-container {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 32px;
+}

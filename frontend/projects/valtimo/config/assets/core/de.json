@@ -507,7 +507,8 @@
     "deleteConfirmation": "Sind Sie sicher, dass Sie löschen möchten?",
     "cancel": "Absagen",
     "collapse": "Kollaps",
-    "expand": "Expandieren"
+    "expand": "Expandieren",
+    "download": "Herunterladen"
   },
   "taskDetail": {
     "taskCreated": "Erstellt",

@@ -17,6 +17,7 @@
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
+import {Observable, Subject} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +25,9 @@ import {HttpClient} from '@angular/common/http';
 export class DownloadService {
   constructor(private http: HttpClient, private configService: ConfigService) {}
 
-  downloadFile(url: string, name: string) {
+  downloadFile(url: string, name: string): Observable<null> {
+    const finishedSubject$ = new Subject<null>();
+
     if (
       url.startsWith(this.configService.config.valtimoApi.endpointUri) ||
       url.startsWith(window.location.origin) ||
@@ -38,11 +41,15 @@ export class DownloadService {
         } else {
           this.openDownloadLink(downloadUrl, name);
         }
+        finishedSubject$.next(null);
       });
     } else {
       // download links to external services (like amazon s3) open in a new window
       this.openDownloadLink(url, name);
+      finishedSubject$.next(null);
     }
+
+    return finishedSubject$;
   }
 
   /**

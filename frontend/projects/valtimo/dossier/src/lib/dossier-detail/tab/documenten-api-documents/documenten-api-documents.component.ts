@@ -46,13 +46,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
     {key: 'createdOn', label: 'Created on'},
     {key: 'createdBy', label: 'Created by'},
   ];
-  public actions = [
-    {
-      columnName: '',
-      iconClass: 'mdi mdi-open-in-new',
-      callback: this.downloadDocument.bind(this),
-    },
-  ];
+
   public showZaakLinkWarning: boolean;
   public isAdmin: boolean;
   public uploadProcessLinkedSet = false;
@@ -96,6 +90,8 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
     })
   );
 
+  readonly downloadingFileIndexes$ = new BehaviorSubject<Array<number>>([]);
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly documentService: DocumentService,
@@ -124,11 +120,21 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
     this.showModal$.next(null);
   }
 
-  downloadDocument(relatedFile: RelatedFile): void {
-    this.downloadService.downloadFile(
-      `/api/v1/documenten-api/${relatedFile.pluginConfigurationId}/files/${relatedFile.fileId}/download`,
-      relatedFile.fileName
-    );
+  downloadDocument(relatedFile: RelatedFile, index: number): void {
+    this.downloadingFileIndexes$.pipe(take(1)).subscribe(indexes => {
+      this.downloadingFileIndexes$.next([...indexes, index]);
+
+      const finished$: Observable<null> = this.downloadService.downloadFile(
+        `/api/v1/documenten-api/${relatedFile.pluginConfigurationId}/files/${relatedFile.fileId}/download`,
+        relatedFile.fileName
+      );
+
+      finished$.pipe(take(1)).subscribe(() => {
+        this.downloadingFileIndexes$.next(
+          this.downloadingFileIndexes$.getValue().filter(downloadIndex => downloadIndex !== index)
+        );
+      });
+    });
   }
 
   metadataSet(metadata: DocumentenApiMetadata): void {
@@ -149,6 +155,10 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
         })
       )
       .subscribe();
+  }
+
+  indexesIncludeIndex(indexes: Array<number>, index: number): boolean {
+    return indexes.includes(index);
   }
 
   public isUserAdmin() {

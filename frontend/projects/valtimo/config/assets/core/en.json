@@ -507,7 +507,8 @@
     "deleteConfirmation": "Are you sure you want to delete?",
     "cancel": "Cancel",
     "collapse": "Collapse",
-    "expand": "Expand"
+    "expand": "Expand",
+    "download": "Download"
   },
   "taskDetail": {
     "taskCreated": "Created",

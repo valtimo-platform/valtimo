@@ -79,7 +79,11 @@ import {DossierDetailTabS3DocumentsComponent} from './dossier-detail/tab/s3-docu
 import {DossierAssignUserComponent} from './dossier-assign-user/dossier-assign-user.component';
 import {DossierDetailTabNotesComponent} from './dossier-detail/tab/notes/notes.component';
 import {NoteModalComponent} from './components/note-modal/note-modal.component';
-import {LoadingModule} from 'carbon-components-angular';
+import {
+  ButtonModule as CarbonButtonModule,
+  IconModule,
+  LoadingModule,
+} from 'carbon-components-angular';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -150,6 +154,8 @@ export type TabsFactory = () => Map<string, object>;
     VFormModule,
     NgbModule,
     LoadingModule,
+    CarbonButtonModule,
+    IconModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

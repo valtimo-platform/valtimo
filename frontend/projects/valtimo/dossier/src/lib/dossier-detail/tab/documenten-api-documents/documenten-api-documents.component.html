@@ -35,6 +35,7 @@
   </div>
 
   <valtimo-dropzone
+    *ngIf="!obs.loading"
     (fileSelected)="fileSelected($event)"
     [acceptedFiles]="acceptedFiles"
     [camera]="false"
@@ -51,12 +52,13 @@
 
   <valtimo-widget>
     <valtimo-list
-      [actions]="actions"
+      [ngClass]="{hidden: obs.loading}"
       [fields]="fields"
       [header]="true"
       [isSearchable]="true"
       [items]="relatedFiles$ | async"
       [viewMode]="true"
+      [lastColumnTemplate]="downloadButton"
     >
       <div header>
         <h3 class="list-header-title">{{ 'Related documents' | translate }}</h3>
@@ -65,6 +67,7 @@
         </h5>
       </div>
     </valtimo-list>
+    <ng-container *ngTemplateOutlet="loading; context: {loading: obs.loading}"></ng-container>
   </valtimo-widget>
 </ng-container>
 
@@ -75,3 +78,27 @@
   [hide$]="hideModal$"
   [show$]="showModal$"
 ></valtimo-documenten-api-metadata-modal>
+
+<ng-template #loading let-loading="loading">
+  <div *ngIf="loading" class="loading-container">
+    <ibm-loading></ibm-loading>
+  </div>
+</ng-template>
+
+<ng-template #downloadButton let-item="item" let-index="index">
+  <div
+    class="download-button-container"
+    *ngIf="{isDownloading: indexesIncludeIndex(downloadingFileIndexes$ | async, index)} as vars"
+  >
+    <button
+      *ngIf="!vars.isDownloading"
+      ibmButton="primary"
+      size="sm"
+      (click)="downloadDocument(item, index)"
+    >
+      {{ 'interface.download' | translate
+      }}<svg class="cds--btn__icon" ibmIcon="download" size="16"></svg>
+    </button>
+    <ibm-loading size="sm" *ngIf="vars.isDownloading"></ibm-loading>
+  </div>
+</ng-template>

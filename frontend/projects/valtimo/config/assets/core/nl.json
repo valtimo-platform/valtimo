@@ -507,7 +507,8 @@
     "deleteConfirmation": "Weet u zeker dat u wilt verwijderen?",
     "cancel": "Annuleren",
     "collapse": "Inklappen",
-    "expand": "Uitklappen"
+    "expand": "Uitklappen",
+    "download": "Download"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",
