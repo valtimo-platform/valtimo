@@ -69,6 +69,7 @@ export * from './lib/plugins/objecten-api/components/delete-object/delete-object
 export * from './lib/plugins/catalogi-api/catalogi-api-plugin-module';
 export * from './lib/plugins/catalogi-api/catalogi-api-plugin.specification';
 export * from './lib/plugins/catalogi-api/components/catalogi-api-configuration/catalogi-api-configuration.component';
+export * from './lib/plugins/catalogi-api/components/get-statustype/get-statustype-configuration.component';
 /* notificaties api plugin */
 export * from './lib/plugins/notificaties-api/notificaties-api-plugin.module';
 export * from './lib/plugins/notificaties-api/notificaties-api-plugin.specification';

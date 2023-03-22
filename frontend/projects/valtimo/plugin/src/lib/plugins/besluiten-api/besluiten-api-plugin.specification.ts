@@ -47,7 +47,8 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       toelichting: 'Toelichting',
       toelichtingTooltip: 'Toelichting bij het besluit.',
       bestuursorgaan: 'Bestuursorgaan',
-      bestuursorgaanTooltip: 'Een orgaan van een rechtspersoon krachtens publiekrecht ingesteld of een persoon of college, met enig openbaar gezag bekleed onder wiens verantwoordelijkheid het besluit vastgesteld is.',
+      bestuursorgaanTooltip:
+        'Een orgaan van een rechtspersoon krachtens publiekrecht ingesteld of een persoon of college, met enig openbaar gezag bekleed onder wiens verantwoordelijkheid het besluit vastgesteld is.',
       ingangsdatum: 'Ingangsdatum',
       ingangsdatumTooltip: 'Ingangsdatum van de werkingsperiode van het besluit.',
       vervaldatum: 'Vervaldatum',
@@ -93,7 +94,8 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       toelichting: 'Explanation',
       toelichtingTooltip: 'Explanation to the besluit.',
       bestuursorgaan: 'Governing body',
-      bestuursorgaanTooltip: 'A body of a legal person established under public law or a person or body with any public authority under whose responsibility the decision has been adopted.',
+      bestuursorgaanTooltip:
+        'A body of a legal person established under public law or a person or body with any public authority under whose responsibility the decision has been adopted.',
       ingangsdatum: 'Starting date',
       ingangsdatumTooltip: 'Commencement date of the effective period of the besluit.',
       vervaldatum: 'Expiration date',
@@ -141,7 +143,8 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       toelichting: 'Erläuterung',
       toelichtingTooltip: 'Begründung der Entscheidung.',
       bestuursorgaan: 'Leitungsgremium',
-      bestuursorgaanTooltip: 'Eine Körperschaft einer juristischen Person des öffentlichen Rechts oder eine Person oder Körperschaft einer öffentlichen Behörde, unter deren Verantwortung die Entscheidung getroffen wurde.',
+      bestuursorgaanTooltip:
+        'Eine Körperschaft einer juristischen Person des öffentlichen Rechts oder eine Person oder Körperschaft einer öffentlichen Behörde, unter deren Verantwortung die Entscheidung getroffen wurde.',
       ingangsdatum: 'Anfangsdatum',
       ingangsdatumTooltip: 'Datum des Beginns der Geltungsdauer der Entscheidung.',
       vervaldatum: 'Verfallsdatum',

@@ -38,7 +38,7 @@ export class SelectPluginConfigurationComponent {
         combineLatest([
           modalData?.element?.type
             ? this.pluginManagementService.getAllPluginConfigurationsWithLogos(
-                modalData?.element?.type
+                modalData?.element?.activityListenerType
               )
             : of(undefined),
           this.pluginService.availablePluginIds$,

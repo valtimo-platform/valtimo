@@ -19,9 +19,10 @@ import {CatalogiApiConfigurationComponent} from './components/catalogi-api-confi
 import {CommonModule} from '@angular/common';
 import {PluginTranslatePipeModule} from '../../pipes';
 import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/user-interface';
+import {GetStatustypeConfigurationComponent} from './components/get-statustype/get-statustype-configuration.component';
 
 @NgModule({
-  declarations: [CatalogiApiConfigurationComponent],
+  declarations: [CatalogiApiConfigurationComponent, GetStatustypeConfigurationComponent],
   imports: [
     CommonModule,
     PluginTranslatePipeModule,
@@ -30,6 +31,6 @@ import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/u
     SelectModule,
     ParagraphModule,
   ],
-  exports: [CatalogiApiConfigurationComponent],
+  exports: [CatalogiApiConfigurationComponent, GetStatustypeConfigurationComponent],
 })
 export class CatalogiApiPluginModule {}
