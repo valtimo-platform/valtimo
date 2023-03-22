@@ -20,6 +20,7 @@ import {
   OnDestroy,
   OnInit,
   Renderer2,
+  SecurityContext,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -34,6 +35,7 @@ import {FormioForm} from '@formio/angular';
 import {UserProviderService} from '@valtimo/security';
 import {Subscription} from 'rxjs';
 import {ExtendedComponentSchema} from 'formiojs';
+import {DomSanitizer} from '@angular/platform-browser';
 import {decode} from 'html-entities';
 
 moment.locale(localStorage.getItem('langKey') || '');
@@ -69,7 +71,8 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly formService: FormService,
     private readonly userProviderService: UserProviderService,
-    private readonly formMappingService: FormMappingService
+    private readonly formMappingService: FormMappingService,
+    private readonly sanitizer: DomSanitizer
   ) {
     this.snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this.snapshot.get('documentDefinitionName') || '';
@@ -162,7 +165,10 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
     component: ExtendedComponentSchema
   ): ExtendedComponentSchema => {
     if (component.defaultValue) {
-      return {...component, defaultValue: decode(component.defaultValue)};
+      return {
+        ...component,
+        defaultValue: this.sanitizer.sanitize(SecurityContext.HTML, decode(component.defaultValue)),
+      };
     }
 
     return component;
