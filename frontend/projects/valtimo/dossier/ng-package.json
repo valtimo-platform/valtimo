@@ -9,7 +9,6 @@
     "ngx-toastr",
     "moment",
     "@ngx-translate/core",
-    "@ngx-translate/http-loader",
-    "html-entities"
+    "@ngx-translate/http-loader"
   ]
 }

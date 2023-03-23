@@ -20,7 +20,6 @@ import {
   OnDestroy,
   OnInit,
   Renderer2,
-  SecurityContext,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -28,15 +27,12 @@ import {ProcessInstanceTask, ProcessService} from '@valtimo/process';
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
 import {Document, DocumentService, ProcessDocumentInstance} from '@valtimo/document';
 import {TaskDetailModalComponent, TaskService} from '@valtimo/task';
-import {FormMappingService, FormService} from '@valtimo/form';
+import {FormService} from '@valtimo/form';
 import {FormioOptionsImpl, ValtimoFormioOptions} from '@valtimo/components';
 import moment from 'moment';
 import {FormioForm} from '@formio/angular';
 import {UserProviderService} from '@valtimo/security';
 import {Subscription} from 'rxjs';
-import {ExtendedComponentSchema} from 'formiojs';
-import {DomSanitizer} from '@angular/platform-browser';
-import {decode} from 'html-entities';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -70,9 +66,7 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
     private readonly renderer: Renderer2,
     private readonly route: ActivatedRoute,
     private readonly formService: FormService,
-    private readonly userProviderService: UserProviderService,
-    private readonly formMappingService: FormMappingService,
-    private readonly sanitizer: DomSanitizer
+    private readonly userProviderService: UserProviderService
   ) {
     this.snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this.snapshot.get('documentDefinitionName') || '';
@@ -101,10 +95,7 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
       this.formService
         .getFormDefinitionByNamePreFilled(`${this.documentDefinitionName}.summary`, this.documentId)
         .subscribe(formDefinition => {
-          this.formDefinition = this.formMappingService.mapComponents(
-            formDefinition,
-            this.unescapeComponentDefaultValue
-          );
+          this.formDefinition = formDefinition;
         })
     );
 
@@ -160,17 +151,4 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
   public rowTaskClick(task: any) {
     this.taskDetail.openTaskDetails(task);
   }
-
-  private unescapeComponentDefaultValue = (
-    component: ExtendedComponentSchema
-  ): ExtendedComponentSchema => {
-    if (component.defaultValue) {
-      return {
-        ...component,
-        defaultValue: this.sanitizer.sanitize(SecurityContext.HTML, decode(component.defaultValue)),
-      };
-    }
-
-    return component;
-  };
 }
