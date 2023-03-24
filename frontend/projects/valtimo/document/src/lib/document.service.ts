@@ -274,6 +274,14 @@ export class DocumentService {
     );
   }
 
+  findProcessDocumentDefinitionsByProcessDefinitionKey(
+    processDefinitionKey: string
+  ): Observable<ProcessDocumentDefinition[]> {
+    return this.http.get<ProcessDocumentDefinition[]>(
+      `${this.valtimoEndpointUri}v1/process-document/definition/process/${processDefinitionKey}`
+    );
+  }
+
   findProcessDocumentInstances(documentId: string): Observable<ProcessDocumentInstance[]> {
     return this.http.get<ProcessDocumentInstance[]>(
       `${this.valtimoEndpointUri}v1/process-document/instance/document/${documentId}`

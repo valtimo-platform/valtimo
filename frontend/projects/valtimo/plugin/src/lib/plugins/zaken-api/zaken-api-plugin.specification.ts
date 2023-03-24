@@ -73,7 +73,10 @@ const zakenApiPluginSpecification: PluginSpecification = {
       rsin: 'RSIN',
       rsinTooltip: 'Rechtspersonen en Samenwerkingsverbanden Informatienummer',
       zaakType: 'Zaaktype',
+      zaakTypeUrl: 'Zaaktype-URL',
       zaakTypeTooltip: 'In dit veld moet de verwijzing komen naar de type zaak.',
+      zaakTypeSelectTooltip:
+        'In dit veld moet de verwijzing komen naar de type zaak. Als er slechts één zaaktype beschikbaar is, wordt deze standaard geselecteerd.',
       inputTypeZaakTypeToggle: 'Invoertype Zaaktype-URL',
       text: 'Tekst',
       selection: 'Selectie',
@@ -142,7 +145,10 @@ const zakenApiPluginSpecification: PluginSpecification = {
       rsin: 'RSIN',
       rsinTooltip: 'Legal Entities and Partnerships Information Number',
       zaakType: 'Zaaktype',
+      zaakTypeUrl: 'Zaaktype URL',
       zaakTypeTooltip: 'In this field the reference must be made to the type of the zaak.',
+      zaakTypeSelectTooltip:
+        'In this field the reference must be made to the type of the zaak. If only one zaaktype is available, it will be selected by default.',
       inputTypeZaakTypeToggle: 'Input type Zaaktype-URL',
       text: 'Text',
       selection: 'Selection',
@@ -211,7 +217,10 @@ const zakenApiPluginSpecification: PluginSpecification = {
       rsin: 'RSIN',
       rsinTooltip: 'Informationsnummer für juristische Personen und Partnerschaften.',
       zaakType: 'Zaaktype',
+      zaakTypeUrl: 'Zaaktype-URL',
       zaakTypeTooltip: 'In diesem Feld muss auf die zaaktype verwiesen werden.',
+      zaakTypeSelectTooltip:
+        'In diesem Feld muss auf die zaaktype verwiesen werden. Wenn nur ein Zaaktyp verfügbar ist, wird dieser standardmäßig ausgewählt.',
       inputTypeZaakTypeToggle: 'Eingabetyp Zaaktype-URL',
       text: 'Text',
       selection: 'Auswahl',

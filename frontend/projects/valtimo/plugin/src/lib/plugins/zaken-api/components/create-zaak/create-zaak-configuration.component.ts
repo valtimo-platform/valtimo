@@ -16,19 +16,11 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
-import {
-  BehaviorSubject,
-  combineLatest,
-  forkJoin,
-  map,
-  Observable,
-  Subscription,
-  switchMap,
-  take,
-} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
 import {CreateZaakConfig} from '../../models';
-import {OpenZaakService} from '@valtimo/resource';
+import {OpenZaakService, ZaakType, ZaakTypeLink} from '@valtimo/resource';
 import {DocumentService} from '@valtimo/document';
+import {ModalService, SelectItem} from '@valtimo/user-interface';
 
 @Component({
   selector: 'valtimo-create-zaak-configuration',
@@ -51,36 +43,41 @@ export class CreateZaakConfigurationComponent
   private readonly formValue$ = new BehaviorSubject<CreateZaakConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
 
-  readonly zaakTypeSelectItems$: Observable<Array<{id: string; text: string}>> = combineLatest([
-    this.documentService.getAllDefinitions(),
-  ]).pipe(
-    map(([definitions]) =>
-      forkJoin(
-        definitions.content.map(definition =>
-          this.openZaakService.getZaakTypeLink(definition.id.name)
-        )
-      ).pipe(
-        map(zaakTypeLinks => zaakTypeLinks.filter(this.isNonNull)),
-        map(zaakTypeLinks => this.distinct(zaakTypeLinks, zaakTypeLink => zaakTypeLink.zaakTypeUrl))
+  readonly zaakTypeItems$: Observable<Array<SelectItem>> = this.modalService.modalData$.pipe(
+    switchMap(params =>
+      this.documentService.findProcessDocumentDefinitionsByProcessDefinitionKey(
+        params?.processDefinitionKey
       )
     ),
-    switchMap(zaakTypeLinksObs =>
-      combineLatest([zaakTypeLinksObs, this.openZaakService.getZaakTypes()]).pipe(
-        map(([zaakTypeLinks, zaakTypes]) =>
-          zaakTypeLinks.map(zaakTypeLink => ({
-            id: zaakTypeLink.zaakTypeUrl,
-            text:
-              zaakTypes.find(zaakType => zaakType.url === zaakTypeLink.zaakTypeUrl)?.omschrijving ||
-              zaakTypeLink.zaakTypeUrl,
-          }))
-        )
-      )
-    )
+    switchMap(processDocumentDefinitions =>
+      combineLatest([
+        this.openZaakService.getZaakTypes(),
+        ...processDocumentDefinitions.map(processDocumentDefinition =>
+          this.openZaakService.getZaakTypeLink(
+            processDocumentDefinition.id.documentDefinitionId.name
+          )
+        ),
+      ])
+    ),
+    map(results => {
+      const zaakTypes = results[0] as Array<ZaakType>;
+      const zaakTypeLinks = results.filter((result, index) => index !== 0) as Array<ZaakTypeLink>;
+
+      return zaakTypeLinks
+        .filter(zaakTypeLink => !!zaakTypeLink?.zaakTypeUrl)
+        .map(zaakTypeLink => ({
+          id: zaakTypeLink.zaakTypeUrl,
+          text:
+            zaakTypes.find(zaakType => zaakType.url === zaakTypeLink.zaakTypeUrl)?.omschrijving ||
+            zaakTypeLink.zaakTypeUrl,
+        }));
+    })
   );
 
   constructor(
     private readonly openZaakService: OpenZaakService,
-    private readonly documentService: DocumentService
+    private readonly documentService: DocumentService,
+    private readonly modalService: ModalService
   ) {}
 
   ngOnInit(): void {
@@ -100,6 +97,14 @@ export class CreateZaakConfigurationComponent
     this.inputTypeTextZaakType = !this.inputTypeTextZaakType;
   }
 
+  oneSelectItem(selectItems: Array<SelectItem>): boolean {
+    if (Array.isArray(selectItems)) {
+      return selectItems.length === 1;
+    }
+
+    return false;
+  }
+
   private handleValid(formValue: CreateZaakConfig): void {
     const valid = !!(formValue.rsin && formValue.zaaktypeUrl);
 
@@ -117,16 +122,5 @@ export class CreateZaakConfigurationComponent
           }
         });
     });
-  }
-
-  private isNonNull<T>(value: T): value is NonNullable<T> {
-    return value != null;
-  }
-
-  private distinct<T>(array: T[], callbackFn: (prop: any) => any): T[] {
-    return array.filter(
-      (value, index) =>
-        index === array.findIndex(value2 => callbackFn(value) === callbackFn(value2))
-    );
   }
 }
