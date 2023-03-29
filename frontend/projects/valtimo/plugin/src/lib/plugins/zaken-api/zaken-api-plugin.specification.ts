@@ -110,6 +110,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultaattypeUrlTooltip: 'URL-referentie naar het resultaattype.',
       resultaattoelichting: 'Zaakresultaat toelichting',
       resultaattoelichtingTooltip: 'Een toelichting op wat het resultaat van de zaak inhoudt.',
+      caseDefinition: 'Dossierdefinitie',
+      caseDefinitionTooltip:
+        'Selecteer de dossierdefinitie waarvan u een Zaakstatus-type wilt selecteren. Als er slechts één statustype beschikbaar is, wordt deze standaard geselecteerd.',
+      statustypeUrlSelect: 'Zaakstatus',
+      statustypeUrlSelectTooltip: 'Selecteer het statustype.',
+      inputTypeZaakStatusToggle: 'Invoertype Zaakstatus-URL',
     },
     en: {
       title: 'Zaken API',
@@ -182,6 +188,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultaattypeUrlTooltip: 'URL reference to the resultaat type.',
       resultaattoelichting: 'Zaakresultaat explanation',
       resultaattoelichtingTooltip: 'An explanation of what the result of the zaak means.',
+      caseDefinition: 'Case definition',
+      caseDefinitionTooltip:
+        'Select the case definition from which you want to select a Zaakstatus type. If only one status type is available, it will be selected by default.',
+      statustypeUrlSelect: 'Zaakstatus',
+      statustypeUrlSelectTooltip: 'Select the status type.',
+      inputTypeZaakStatusToggle: 'Input type Zaakstatus-URL',
     },
     de: {
       title: 'Zaken API',
@@ -254,6 +266,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultaattypeUrlTooltip: 'URL-Verweis auf den Ergebnistyp.',
       resultaattoelichting: 'Geschäftsergebniserklärung',
       resultaattoelichtingTooltip: 'Eine Erklärung, was das Ergebnis des Zaak beinhaltet.',
+      caseDefinition: 'Falltyp',
+      caseDefinitionTooltip:
+        'Wählen Sie die Falltyp aus, aus der Sie einen Zaakstatus-typ auswählen möchten. Wenn nur ein Statustyp verfügbar ist, wird dieser standardmäßig ausgewählt.',
+      statustypeUrlSelect: 'Zaakstatus',
+      statustypeUrlSelectTooltip: 'Wählen Sie den Statustyp aus.',
+      inputTypeZaakStatusToggle: 'Eingabetyp Zaakstatus-URL',
     },
   },
 };

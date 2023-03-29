@@ -22,17 +22,6 @@
   } as obs"
 >
   <v-input
-    name="statustypeUrl"
-    [title]="'statustypeUrl' | pluginTranslate : pluginId | async"
-    [margin]="true"
-    [defaultValue]="obs.prefill?.statustypeUrl"
-    [disabled]="obs.disabled"
-    [required]="true"
-    [tooltip]="'statustypeUrlTooltip' | pluginTranslate : pluginId | async"
-    [fullWidth]="true"
-  >
-  </v-input>
-  <v-input
     name="statustoelichting"
     [title]="'statustoelichting' | pluginTranslate : pluginId | async"
     [margin]="true"
@@ -43,4 +32,78 @@
     [fullWidth]="true"
   >
   </v-input>
+  <div class="v-toggle--margin">
+    <v-input-label
+      [title]="'inputTypeZaakStatusToggle' | pluginTranslate : pluginId | async"
+      [name]="'inputTypeZaakStatusToggle'"
+      [required]="false"
+    >
+    </v-input-label>
+    <ibm-toggle
+      [onText]="'text' | pluginTranslate : pluginId | async"
+      [offText]="'selection' | pluginTranslate : pluginId | async"
+      [disabled]="obs.disabled"
+      [checked]="inputTypeZaakStatusToggle"
+      (click)="toggleInputZaakStatus()"
+    >
+    </ibm-toggle>
+  </div>
+  <v-input
+    *ngIf="inputTypeZaakStatusToggle"
+    name="statustypeUrl"
+    [title]="'statustypeUrl' | pluginTranslate : pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.statustypeUrl"
+    [disabled]="obs.disabled"
+    [required]="true"
+    [tooltip]="'statustypeUrlTooltip' | pluginTranslate : pluginId | async"
+    [fullWidth]="true"
+  >
+  </v-input>
+  <ng-container
+    *ngIf="
+      !inputTypeZaakStatusToggle && {
+        caseDefinitionItems: caseDefinitionSelectItems$ | async,
+        statusTypeItems: statusTypeSelectItems$ | async,
+        selectedCaseDefinitionId: selectedCaseDefinitionId$ | async
+      } as vars
+    "
+  >
+    <v-select
+      [items]="vars.caseDefinitionItems"
+      [margin]="true"
+      [widthInPx]="350"
+      name="caseDefinition"
+      [title]="'caseDefinition' | pluginTranslate : pluginId | async"
+      [disabled]="
+        obs.disabled ||
+        inputTypeZaakStatusToggle ||
+        !vars.caseDefinitionItems ||
+        oneSelectItem(vars.caseDefinitionItems)
+      "
+      [required]="true"
+      [loading]="!vars.caseDefinitionItems"
+      [tooltip]="'caseDefinitionTooltip' | pluginTranslate : pluginId | async"
+      (selectedChange)="selectCaseDefinition($event)"
+      [defaultSelectionId]="vars?.selectedCaseDefinitionId"
+    ></v-select>
+    <v-select
+      [items]="vars.statusTypeItems && vars.statusTypeItems[vars.selectedCaseDefinitionId]"
+      [margin]="true"
+      [widthInPx]="350"
+      name="statustypeUrl"
+      [title]="'statustypeUrlSelect' | pluginTranslate : pluginId | async"
+      [disabled]="
+        obs.disabled ||
+        inputTypeZaakStatusToggle ||
+        !vars.statusTypeItems ||
+        !vars.statusTypeItems[vars.selectedCaseDefinitionId]
+      "
+      [defaultSelectionId]="obs.prefill?.statustypeUrl"
+      [required]="true"
+      [loading]="!vars.statusTypeItems"
+      [tooltip]="'statustypeUrlSelectTooltip' | pluginTranslate : pluginId | async"
+      [clearSelectionSubject$]="clearStatusSelection$"
+    ></v-select>
+  </ng-container>
 </v-form>

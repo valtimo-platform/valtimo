@@ -16,8 +16,22 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  Observable,
+  of,
+  Subject,
+  Subscription,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {SetZaakStatusConfig} from '../../models';
+import {ModalService, SelectItem} from '@valtimo/user-interface';
+import {DocumentService} from '@valtimo/document';
+import {map} from 'rxjs/operators';
+import {ZakenApiService} from '../../services';
 
 @Component({
   selector: 'valtimo-set-zaak-status-configuration',
@@ -35,10 +49,88 @@ export class SetZaakStatusConfigurationComponent
   @Output() configuration: EventEmitter<SetZaakStatusConfig> =
     new EventEmitter<SetZaakStatusConfig>();
 
+  public inputTypeZaakStatusToggle: boolean;
+
+  readonly caseDefinitionSelectItems$ = new BehaviorSubject<Array<SelectItem>>(null);
+  readonly selectedCaseDefinitionId$ = new BehaviorSubject<string>('');
+  readonly clearStatusSelection$ = new Subject<void>();
+
+  readonly statusTypeSelectItems$: Observable<{[caseDefinitionId: string]: Array<SelectItem>}> =
+    this.modalService.modalData$.pipe(
+      switchMap(params =>
+        this.documentService.findProcessDocumentDefinitionsByProcessDefinitionKey(
+          params?.processDefinitionKey
+        )
+      ),
+      tap(processDocumentDefinitions => {
+        const caseDefSelectItems = processDocumentDefinitions.map(processDocDef => ({
+          text: processDocDef.id.documentDefinitionId.name,
+          id: processDocDef.id.documentDefinitionId.name,
+        }));
+
+        this.caseDefinitionSelectItems$.next(caseDefSelectItems);
+
+        if (this.oneSelectItem(caseDefSelectItems)) {
+          this.selectedCaseDefinitionId$.next(caseDefSelectItems[0].id);
+        }
+      }),
+      switchMap(processDocumentDefinitions =>
+        combineLatest([
+          of(processDocumentDefinitions.map(processDoc => processDoc.id.documentDefinitionId.name)),
+          ...processDocumentDefinitions.map(processDocDef =>
+            this.zakenApiService.getStatusTypesByCaseDefinition(
+              processDocDef.id.documentDefinitionId.name
+            )
+          ),
+        ])
+      ),
+      map(res => {
+        const caseDefinitionIds = res[0];
+        const statusTypes = res.filter((curr, index) => index !== 0);
+        const selectObject = {};
+
+        caseDefinitionIds.forEach((caseDefinitionId, index) => {
+          selectObject[caseDefinitionId] = statusTypes[index].map(statusType => ({
+            id: statusType.url,
+            text: statusType.name,
+          }));
+        });
+
+        return selectObject;
+      }),
+      tap(selectObject => {
+        this.prefillConfiguration$.pipe(take(1)).subscribe(prefillConfig => {
+          const statusTypeUrl = prefillConfig?.statustypeUrl;
+
+          if (statusTypeUrl) {
+            let selectedCaseDefinitionId!: string;
+
+            Object.keys(selectObject).forEach(caseDefinitionId => {
+              if (selectObject[caseDefinitionId].find(item => item.id === statusTypeUrl)) {
+                selectedCaseDefinitionId = caseDefinitionId;
+              }
+
+              if (selectedCaseDefinitionId) {
+                this.selectedCaseDefinitionId$.next(selectedCaseDefinitionId);
+              } else {
+                this.inputTypeZaakStatusToggle = true;
+              }
+            });
+          }
+        });
+      })
+    );
+
   private saveSubscription!: Subscription;
 
   private readonly formValue$ = new BehaviorSubject<SetZaakStatusConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
+
+  constructor(
+    private readonly modalService: ModalService,
+    private readonly documentService: DocumentService,
+    private readonly zakenApiService: ZakenApiService
+  ) {}
 
   ngOnInit(): void {
     this.openSaveSubscription();
@@ -51,6 +143,23 @@ export class SetZaakStatusConfigurationComponent
   formValueChange(formValue: SetZaakStatusConfig): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
+  }
+
+  toggleInputZaakStatus(): void {
+    this.inputTypeZaakStatusToggle = !this.inputTypeZaakStatusToggle;
+  }
+
+  selectCaseDefinition(caseDefinitionId: string): void {
+    this.selectedCaseDefinitionId$.next(caseDefinitionId);
+    this.clearStatusSelection$.next();
+  }
+
+  oneSelectItem(selectItems: Array<SelectItem>): boolean {
+    if (Array.isArray(selectItems)) {
+      return selectItems.length === 1;
+    }
+
+    return false;
   }
 
   private handleValid(formValue: SetZaakStatusConfig): void {

@@ -14,5 +14,9 @@
  * limitations under the License.
  */
 
-export * from './config';
-export * from './status';
+interface StatusType {
+  name: string;
+  url: string;
+}
+
+export {StatusType};

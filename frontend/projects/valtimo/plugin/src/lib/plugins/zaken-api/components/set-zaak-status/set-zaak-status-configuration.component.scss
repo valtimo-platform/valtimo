@@ -13,3 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+.v-toggle--margin {
+  margin-block-end: var(--v-input-margin);
+}

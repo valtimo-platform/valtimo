@@ -74,7 +74,12 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes?.items?.currentValue) {
+    if (
+      changes?.items?.currentValue ||
+      changes?.defaultSelectionId?.currentValue ||
+      changes?.defaultSelection?.currentValue ||
+      changes?.defaultSelectionIds?.currentValue
+    ) {
       this.setDefaultSelection();
     }
   }
