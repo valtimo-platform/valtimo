@@ -300,6 +300,30 @@ export class ObjectManagementListSearchFieldsComponent {
     const listSearchFieldRow = objectManagementListSearchFields[listSearchFieldRowIndex];
 
     clickEvent.stopPropagation();
+    const listSearchFieldIndex = objectManagementListSearchFields.findIndex(
+      field => field.key === listSearchFieldRow.key
+    );
+    const foundListSearchField = {...objectManagementListSearchFields[listSearchFieldIndex]};
+    const filteredListSearchField = objectManagementListSearchFields.filter(
+      field => field.key !== listSearchFieldRow.key
+    );
+    const multipleListSearchFields = objectManagementListSearchFields.length > 1;
+
+    if (multipleListSearchFields && moveUp && listSearchFieldIndex > 0) {
+      const listSearchFieldBeforeKey = `${objectManagementListSearchFields[listSearchFieldIndex - 1].key}`;
+      const listSearchFieldBeforeIndex = filteredListSearchField.findIndex(
+        field => field.key === listSearchFieldBeforeKey
+      );
+      filteredListSearchField.splice(listSearchFieldBeforeIndex, 0, foundListSearchField);
+      this.updateObjectManagementListSearchField(objectId, filteredListSearchField);
+    } else if (multipleListSearchFields && !moveUp && listSearchFieldIndex < objectManagementListSearchFields.length) {
+      const caseListColumnAfterKey = `${objectManagementListSearchFields[listSearchFieldIndex + 1].key}`;
+      const caseListColumnAfterIndex = filteredListSearchField.findIndex(
+        field => field.key === caseListColumnAfterKey
+      );
+      filteredListSearchField.splice(caseListColumnAfterIndex + 1, 0, foundListSearchField);
+      this.updateObjectManagementListSearchField(objectId, filteredListSearchField);
+    }
   }
 
   saveListSearchFields(): void {
@@ -346,10 +370,10 @@ export class ObjectManagementListSearchFieldsComponent {
       });
   }
 
-  private updateObjectManagementListSearchField(objectId: string, searchField: SearchField): void {
+  private updateObjectManagementListSearchField(objectId: string, searchField: Array<SearchField>): void {
     this.disableInput();
     this.objectManagementService
-      .putSearchField(objectId, this.formGroup.value.key, searchField)
+      .putSearchFields(objectId, searchField)
       .pipe(
         tap(() => {
           this.refreshObjectManagementListSearchFields();

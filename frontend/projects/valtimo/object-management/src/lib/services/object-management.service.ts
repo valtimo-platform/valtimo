@@ -80,6 +80,16 @@ export class ObjectManagementService {
     );
   }
 
+  putSearchListColumns(
+    ownerId: string,
+    request: Array<SearchListColumn>
+  ): Observable<Array<SearchListColumn>> {
+    return this.http.put<Array<SearchListColumn>>(
+      `${this.valtimoEndpointUri}v1/search/list-column/${ownerId}/search-list-columns`,
+      [...request]
+    );
+  }
+
   deleteSearchList(ownerId: string, columnKey: string): Observable<SearchListColumn> {
     return this.http.delete<SearchListColumn>(
       `${this.valtimoEndpointUri}v1/search/list-column/${ownerId}/${columnKey}`
@@ -110,9 +120,21 @@ export class ObjectManagementService {
     );
   }
 
+  putSearchFields(
+    ownerId: string,
+    request: Array<SearchField>
+  ): Observable<Array<SearchField>> {
+    return this.http.put<Array<SearchField>>(
+      `${this.valtimoEndpointUri}v1/search/field/${ownerId}/fields`,
+      [...request]
+    );
+  }
+
   deleteSearchField(ownerId: string, key: string): Observable<SearchField> {
     return this.http.delete<SearchField>(
       `${this.valtimoEndpointUri}v1/search/field/${ownerId}/${key}`
     );
   }
+
+
 }

@@ -380,8 +380,30 @@ export class ObjectManagementListColumnsComponent {
     const searchListColumnRow = objectManagementListColumns[searchListColumnRowIndex];
 
     clickEvent.stopPropagation();
+    const searchListColumnIndex = objectManagementListColumns.findIndex(
+      field => field.key === searchListColumnRow.key
+    );
+    const foundSearchListColumn = {...objectManagementListColumns[searchListColumnIndex]};
+    const filteredSearchListColumns = objectManagementListColumns.filter(
+      field => field.key !== searchListColumnRow.key
+    );
+    const multipleSearchListColumns = objectManagementListColumns.length > 1;
 
-    // TODO:
+    if (multipleSearchListColumns && moveUp && searchListColumnIndex > 0) {
+      const searchListColumnBeforeKey = `${objectManagementListColumns[searchListColumnIndex - 1].key}`;
+      const searchListColumnBeforeIndex = filteredSearchListColumns.findIndex(
+        field => field.key === searchListColumnBeforeKey
+      );
+      filteredSearchListColumns.splice(searchListColumnBeforeIndex, 0, foundSearchListColumn);
+      this.updateObjectManagementListColumn(objectId, filteredSearchListColumns);
+    } else if (multipleSearchListColumns && !moveUp && searchListColumnIndex < objectManagementListColumns.length) {
+      const caseListColumnAfterKey = `${objectManagementListColumns[searchListColumnIndex + 1].key}`;
+      const caseListColumnAfterIndex = filteredSearchListColumns.findIndex(
+        field => field.key === caseListColumnAfterKey
+      );
+      filteredSearchListColumns.splice(caseListColumnAfterIndex + 1, 0, foundSearchListColumn);
+      this.updateObjectManagementListColumn(objectId, filteredSearchListColumns);
+    }
   }
 
   saveCasListColumns(): void {
@@ -452,10 +474,10 @@ export class ObjectManagementListColumnsComponent {
       });
   }
 
-  private updateObjectManagementListColumn(objectId: string, listColumn: SearchListColumn): void {
+  private updateObjectManagementListColumn(objectId: string, listColumn: Array<SearchListColumn>): void {
     this.disableInput();
     this.objectManagementService
-      .putSearchList(objectId, this.formGroup.value.key, listColumn)
+      .putSearchListColumns(objectId, listColumn)
       .pipe(
         tap(() => {
           this.refreshObjectManagementListColumns();
