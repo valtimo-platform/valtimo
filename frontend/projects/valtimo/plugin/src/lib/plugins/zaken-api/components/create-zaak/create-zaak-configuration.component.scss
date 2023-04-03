@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
-.v-toggle--margin {
-  margin-block-end: var(--v-input-margin);
+.loading-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  align-items: center;
 }

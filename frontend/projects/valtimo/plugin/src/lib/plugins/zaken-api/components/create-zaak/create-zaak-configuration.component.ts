@@ -16,32 +16,64 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
-import {CreateZaakConfig} from '../../models';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
+import {CreateZaakConfig, InputOption} from '../../models';
 import {OpenZaakService, ZaakType, ZaakTypeLink} from '@valtimo/resource';
 import {DocumentService} from '@valtimo/document';
-import {ModalService, SelectItem} from '@valtimo/user-interface';
+import {ModalService, RadioValue, SelectItem} from '@valtimo/user-interface';
+import {PluginTranslatePipe} from '../../../../pipes';
 
 @Component({
   selector: 'valtimo-create-zaak-configuration',
   templateUrl: './create-zaak-configuration.component.html',
   styleUrls: ['./create-zaak-configuration.component.scss'],
+  providers: [PluginTranslatePipe],
 })
 export class CreateZaakConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
-  @Input() pluginId: string;
+  @Input() set pluginId(value: string) {
+    this.pluginId$.next(value);
+  }
   @Input() prefillConfiguration$: Observable<CreateZaakConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<CreateZaakConfig> = new EventEmitter<CreateZaakConfig>();
 
-  public inputTypeTextZaakType: boolean;
+  readonly pluginId$ = new BehaviorSubject<string>('');
+  readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
+
+  readonly inputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
+    filter(pluginId => !!pluginId),
+    switchMap(pluginId =>
+      combineLatest([
+        this.pluginTranslatePipe.transform('selection', pluginId),
+        this.pluginTranslatePipe.transform('text', pluginId),
+      ])
+    ),
+    map(([selectionTranslation, textTranslation]) => [
+      {value: 'selection', title: selectionTranslation},
+      {value: 'text', title: textTranslation},
+    ])
+  );
+
   private saveSubscription!: Subscription;
 
   private readonly formValue$ = new BehaviorSubject<CreateZaakConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
+
+  readonly loading$ = new BehaviorSubject<boolean>(true);
 
   readonly zaakTypeItems$: Observable<Array<SelectItem>> = this.modalService.modalData$.pipe(
     switchMap(params =>
@@ -71,13 +103,29 @@ export class CreateZaakConfigurationComponent
             zaakTypes.find(zaakType => zaakType.url === zaakTypeLink.zaakTypeUrl)?.omschrijving ||
             zaakTypeLink.zaakTypeUrl,
         }));
+    }),
+    tap(zaakTypeSelectItems => {
+      this.prefillConfiguration$.pipe(take(1)).subscribe(prefillConfig => {
+        const zaakTypeUrl = prefillConfig?.zaaktypeUrl;
+
+        if (
+          zaakTypeUrl &&
+          !((zaakTypeSelectItems as Array<SelectItem>) || []).find(item => item.id === zaakTypeUrl)
+        ) {
+          this.selectedInputOption$.next('text');
+        }
+      });
+    }),
+    tap(() => {
+      this.loading$.next(false);
     })
   );
 
   constructor(
     private readonly openZaakService: OpenZaakService,
     private readonly documentService: DocumentService,
-    private readonly modalService: ModalService
+    private readonly modalService: ModalService,
+    private readonly pluginTranslatePipe: PluginTranslatePipe
   ) {}
 
   ngOnInit(): void {
@@ -89,17 +137,26 @@ export class CreateZaakConfigurationComponent
   }
 
   formValueChange(formValue: CreateZaakConfig): void {
+    const inputTypeZaakTypeToggle = formValue.inputTypeZaakTypeToggle;
     this.formValue$.next(formValue);
     this.handleValid(formValue);
-  }
 
-  toggleInputTypeZaakType() {
-    this.inputTypeTextZaakType = !this.inputTypeTextZaakType;
+    if (inputTypeZaakTypeToggle) {
+      this.selectedInputOption$.next(inputTypeZaakTypeToggle);
+    }
   }
 
   oneSelectItem(selectItems: Array<SelectItem>): boolean {
     if (Array.isArray(selectItems)) {
       return selectItems.length === 1;
+    }
+
+    return false;
+  }
+
+  selectItemsIncludeId(selectItems: Array<SelectItem>, id: string): boolean {
+    if (Array.isArray(selectItems)) {
+      return !!selectItems.find(item => item.id === id);
     }
 
     return false;
@@ -118,7 +175,11 @@ export class CreateZaakConfigurationComponent
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
           if (valid) {
-            this.configuration.emit(formValue);
+            this.configuration.emit({
+              rsin: formValue.rsin,
+              zaaktypeUrl: formValue.zaaktypeUrl,
+              manualZaakTypeUrl: formValue.manualZaakTypeUrl,
+            });
           }
         });
     });

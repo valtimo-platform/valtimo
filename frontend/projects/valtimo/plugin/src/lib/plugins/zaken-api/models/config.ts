@@ -15,6 +15,7 @@
  */
 
 import {PluginConfigurationData} from '../../../models';
+import {InputOption} from './input';
 
 interface ZakenApiConfig extends PluginConfigurationData {
   url: string;
@@ -30,11 +31,13 @@ interface LinkDocumentToZaakConfig {
 interface SetZaakStatusConfig {
   statustypeUrl: string;
   statustoelichting: string;
+  inputTypeZaakStatusToggle?: InputOption;
 }
 
 interface CreateZaakResultaatConfig {
   resultaattypeUrl: string;
   toelichting: string;
+  inputTypeZaakResultaatToggle?: InputOption;
 }
 
 interface CreateNatuurlijkePersoonZaakRolConfig {
@@ -56,6 +59,7 @@ interface CreateZaakConfig {
   rsin: string;
   manualZaakTypeUrl: boolean;
   zaaktypeUrl: string;
+  inputTypeZaakTypeToggle?: InputOption;
 }
 
 export {

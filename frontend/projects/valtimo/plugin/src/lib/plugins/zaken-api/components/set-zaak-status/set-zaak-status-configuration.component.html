@@ -18,92 +18,91 @@
   (valueChange)="formValueChange($event)"
   *ngIf="{
     disabled: disabled$ | async,
-    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+    pluginId: pluginId$ | async,
+    selectedInputOption: selectedInputOption$ | async,
+    loading: loading$ | async,
+    caseDefinitionItems: caseDefinitionSelectItems$ | async,
+    statusTypeItems: statusTypeSelectItems$ | async,
+    selectedCaseDefinitionId: selectedCaseDefinitionId$ | async
   } as obs"
 >
-  <v-input
-    name="statustoelichting"
-    [title]="'statustoelichting' | pluginTranslate : pluginId | async"
-    [margin]="true"
-    [defaultValue]="obs.prefill?.statustoelichting"
-    [disabled]="obs.disabled"
-    [required]="false"
-    [tooltip]="'statustoelichtingTooltip' | pluginTranslate : pluginId | async"
-    [fullWidth]="true"
-  >
-  </v-input>
-  <div class="v-toggle--margin">
-    <v-input-label
-      [title]="'inputTypeZaakStatusToggle' | pluginTranslate : pluginId | async"
-      [name]="'inputTypeZaakStatusToggle'"
-      [required]="false"
-    >
-    </v-input-label>
-    <ibm-toggle
-      [onText]="'text' | pluginTranslate : pluginId | async"
-      [offText]="'selection' | pluginTranslate : pluginId | async"
+  <ng-container *ngIf="obs.loading === false; else loading">
+    <v-input
+      name="statustoelichting"
+      [title]="'statustoelichting' | pluginTranslate : obs.pluginId | async"
+      [margin]="true"
+      [defaultValue]="obs.prefill?.statustoelichting"
       [disabled]="obs.disabled"
-      [checked]="inputTypeZaakStatusToggle"
-      (click)="toggleInputZaakStatus()"
+      [required]="false"
+      [tooltip]="'statustoelichtingTooltip' | pluginTranslate : obs.pluginId | async"
+      [fullWidth]="true"
     >
-    </ibm-toggle>
-  </div>
-  <v-input
-    *ngIf="inputTypeZaakStatusToggle"
-    name="statustypeUrl"
-    [title]="'statustypeUrl' | pluginTranslate : pluginId | async"
-    [margin]="true"
-    [defaultValue]="obs.prefill?.statustypeUrl"
-    [disabled]="obs.disabled"
-    [required]="true"
-    [tooltip]="'statustypeUrlTooltip' | pluginTranslate : pluginId | async"
-    [fullWidth]="true"
-  >
-  </v-input>
-  <ng-container
-    *ngIf="
-      !inputTypeZaakStatusToggle && {
-        caseDefinitionItems: caseDefinitionSelectItems$ | async,
-        statusTypeItems: statusTypeSelectItems$ | async,
-        selectedCaseDefinitionId: selectedCaseDefinitionId$ | async
-      } as vars
-    "
-  >
-    <v-select
-      [items]="vars.caseDefinitionItems"
+    </v-input>
+    <v-radio
+      name="inputTypeZaakStatusToggle"
+      [disabled]="obs.disabled"
+      [title]="'inputTypeZaakStatusToggle' | pluginTranslate : obs.pluginId | async"
+      [radioValues]="inputTypeOptions$ | async"
+      [defaultValue]="selectedInputOption$ | async"
       [margin]="true"
-      [widthInPx]="350"
-      name="caseDefinition"
-      [title]="'caseDefinition' | pluginTranslate : pluginId | async"
-      [disabled]="
-        obs.disabled ||
-        inputTypeZaakStatusToggle ||
-        !vars.caseDefinitionItems ||
-        oneSelectItem(vars.caseDefinitionItems)
-      "
-      [required]="true"
-      [loading]="!vars.caseDefinitionItems"
-      [tooltip]="'caseDefinitionTooltip' | pluginTranslate : pluginId | async"
-      (selectedChange)="selectCaseDefinition($event)"
-      [defaultSelectionId]="vars?.selectedCaseDefinitionId"
-    ></v-select>
-    <v-select
-      [items]="vars.statusTypeItems && vars.statusTypeItems[vars.selectedCaseDefinitionId]"
-      [margin]="true"
-      [widthInPx]="350"
+    >
+    </v-radio>
+    <v-input
+      *ngIf="obs.selectedInputOption === 'text'"
       name="statustypeUrl"
-      [title]="'statustypeUrlSelect' | pluginTranslate : pluginId | async"
-      [disabled]="
-        obs.disabled ||
-        inputTypeZaakStatusToggle ||
-        !vars.statusTypeItems ||
-        !vars.statusTypeItems[vars.selectedCaseDefinitionId]
-      "
-      [defaultSelectionId]="obs.prefill?.statustypeUrl"
+      [title]="'statustypeUrl' | pluginTranslate : obs.pluginId | async"
+      [margin]="true"
+      [defaultValue]="obs.prefill?.statustypeUrl"
+      [disabled]="obs.disabled"
       [required]="true"
-      [loading]="!vars.statusTypeItems"
-      [tooltip]="'statustypeUrlSelectTooltip' | pluginTranslate : pluginId | async"
-      [clearSelectionSubject$]="clearStatusSelection$"
-    ></v-select>
+      [tooltip]="'statustypeUrlTooltip' | pluginTranslate : obs.pluginId | async"
+      [fullWidth]="true"
+    >
+    </v-input>
+    <ng-container *ngIf="obs.selectedInputOption === 'selection'">
+      <v-select
+        [items]="obs.caseDefinitionItems"
+        [margin]="true"
+        [widthInPx]="350"
+        name="caseDefinition"
+        [title]="'caseDefinition' | pluginTranslate : obs.pluginId | async"
+        [disabled]="
+          obs.disabled ||
+          obs.selectedInputOption === 'text' ||
+          !obs.caseDefinitionItems ||
+          oneSelectItem(obs.caseDefinitionItems)
+        "
+        [required]="true"
+        [loading]="!obs.caseDefinitionItems"
+        [tooltip]="'caseDefinitionTooltip' | pluginTranslate : obs.pluginId | async"
+        (selectedChange)="selectCaseDefinition($event)"
+        [defaultSelectionId]="obs?.selectedCaseDefinitionId"
+      ></v-select>
+      <v-select
+        [items]="obs.statusTypeItems && obs.statusTypeItems[obs.selectedCaseDefinitionId]"
+        [margin]="true"
+        [widthInPx]="350"
+        name="statustypeUrl"
+        [title]="'statustypeUrlSelect' | pluginTranslate : obs.pluginId | async"
+        [disabled]="
+          obs.disabled ||
+          obs.selectedInputOption === 'text' ||
+          !obs.statusTypeItems ||
+          !obs.statusTypeItems[obs.selectedCaseDefinitionId]
+        "
+        [defaultSelectionId]="obs.prefill?.statustypeUrl"
+        [required]="true"
+        [loading]="!obs.statusTypeItems"
+        [tooltip]="'statustypeUrlSelectTooltip' | pluginTranslate : obs.pluginId | async"
+        [clearSelectionSubject$]="clearStatusSelection$"
+      ></v-select>
+    </ng-container>
   </ng-container>
 </v-form>
+
+<ng-template #loading>
+  <div class="loading-container">
+    <ibm-loading></ibm-loading>
+  </div>
+</ng-template>

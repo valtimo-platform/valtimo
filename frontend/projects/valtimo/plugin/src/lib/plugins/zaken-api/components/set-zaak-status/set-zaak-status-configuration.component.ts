@@ -19,6 +19,7 @@ import {FunctionConfigurationComponent} from '../../../../models';
 import {
   BehaviorSubject,
   combineLatest,
+  filter,
   Observable,
   of,
   Subject,
@@ -27,33 +28,37 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {SetZaakStatusConfig} from '../../models';
-import {ModalService, SelectItem} from '@valtimo/user-interface';
+import {InputOption, SetZaakStatusConfig} from '../../models';
+import {ModalService, RadioValue, SelectItem} from '@valtimo/user-interface';
 import {DocumentService} from '@valtimo/document';
 import {map} from 'rxjs/operators';
 import {ZakenApiService} from '../../services';
+import {PluginTranslatePipe} from '../../../../pipes';
 
 @Component({
   selector: 'valtimo-set-zaak-status-configuration',
   templateUrl: './set-zaak-status-configuration.component.html',
   styleUrls: ['./set-zaak-status-configuration.component.scss'],
+  providers: [PluginTranslatePipe],
 })
 export class SetZaakStatusConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
-  @Input() pluginId: string;
+  @Input() set pluginId(value: string) {
+    this.pluginId$.next(value);
+  }
   @Input() prefillConfiguration$: Observable<SetZaakStatusConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<SetZaakStatusConfig> =
     new EventEmitter<SetZaakStatusConfig>();
 
-  public inputTypeZaakStatusToggle: boolean;
-
   readonly caseDefinitionSelectItems$ = new BehaviorSubject<Array<SelectItem>>(null);
   readonly selectedCaseDefinitionId$ = new BehaviorSubject<string>('');
   readonly clearStatusSelection$ = new Subject<void>();
+
+  readonly loading$ = new BehaviorSubject<boolean>(true);
 
   readonly statusTypeSelectItems$: Observable<{[caseDefinitionId: string]: Array<SelectItem>}> =
     this.modalService.modalData$.pipe(
@@ -113,13 +118,34 @@ export class SetZaakStatusConfigurationComponent
               if (selectedCaseDefinitionId) {
                 this.selectedCaseDefinitionId$.next(selectedCaseDefinitionId);
               } else {
-                this.inputTypeZaakStatusToggle = true;
+                this.selectedInputOption$.next('text');
               }
             });
           }
         });
+      }),
+      tap(() => {
+        this.loading$.next(false);
       })
     );
+
+  readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
+
+  readonly pluginId$ = new BehaviorSubject<string>('');
+
+  readonly inputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
+    filter(pluginId => !!pluginId),
+    switchMap(pluginId =>
+      combineLatest([
+        this.pluginTranslatePipe.transform('selection', pluginId),
+        this.pluginTranslatePipe.transform('text', pluginId),
+      ])
+    ),
+    map(([selectionTranslation, textTranslation]) => [
+      {value: 'selection', title: selectionTranslation},
+      {value: 'text', title: textTranslation},
+    ])
+  );
 
   private saveSubscription!: Subscription;
 
@@ -129,7 +155,8 @@ export class SetZaakStatusConfigurationComponent
   constructor(
     private readonly modalService: ModalService,
     private readonly documentService: DocumentService,
-    private readonly zakenApiService: ZakenApiService
+    private readonly zakenApiService: ZakenApiService,
+    private readonly pluginTranslatePipe: PluginTranslatePipe
   ) {}
 
   ngOnInit(): void {
@@ -143,10 +170,10 @@ export class SetZaakStatusConfigurationComponent
   formValueChange(formValue: SetZaakStatusConfig): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
-  }
 
-  toggleInputZaakStatus(): void {
-    this.inputTypeZaakStatusToggle = !this.inputTypeZaakStatusToggle;
+    if (formValue.inputTypeZaakStatusToggle) {
+      this.selectedInputOption$.next(formValue.inputTypeZaakStatusToggle);
+    }
   }
 
   selectCaseDefinition(caseDefinitionId: string): void {
@@ -175,7 +202,10 @@ export class SetZaakStatusConfigurationComponent
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
           if (valid) {
-            this.configuration.emit(formValue);
+            this.configuration.emit({
+              statustoelichting: formValue.statustoelichting,
+              statustypeUrl: formValue.statustypeUrl,
+            });
           }
         });
     });

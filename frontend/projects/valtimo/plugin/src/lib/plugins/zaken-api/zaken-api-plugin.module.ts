@@ -22,6 +22,7 @@ import {
   InputLabelModule,
   InputModule,
   ParagraphModule,
+  RadioModule,
   SelectModule,
 } from '@valtimo/user-interface';
 import {ZakenApiConfigurationComponent} from './components/zaken-api-configuration/zaken-api-configuration.component';
@@ -32,7 +33,7 @@ import {CreateZaakResultaatConfigurationComponent} from './components/create-zaa
 import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
 import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
-import {ToggleModule} from 'carbon-components-angular';
+import {LoadingModule, ToggleModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [
@@ -54,6 +55,8 @@ import {ToggleModule} from 'carbon-components-angular';
     ParagraphModule,
     ToggleModule,
     InputLabelModule,
+    RadioModule,
+    LoadingModule,
   ],
   exports: [
     ZakenApiConfigurationComponent,

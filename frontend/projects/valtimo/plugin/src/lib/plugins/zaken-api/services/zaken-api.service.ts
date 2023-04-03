@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
-import {StatusType} from '../models';
+import {ResultaatType, StatusType} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -33,6 +33,14 @@ export class ZakenApiService {
   public getStatusTypesByCaseDefinition(caseDefinitionId: string): Observable<Array<StatusType>> {
     return this.http.get<Array<StatusType>>(
       `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionId}/zaaktype/statustype`
+    );
+  }
+
+  public getResultaatTypesByCaseDefinition(
+    caseDefinitionId: string
+  ): Observable<Array<ResultaatType>> {
+    return this.http.get<Array<ResultaatType>>(
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionId}/zaaktype/resultaattype`
     );
   }
 }

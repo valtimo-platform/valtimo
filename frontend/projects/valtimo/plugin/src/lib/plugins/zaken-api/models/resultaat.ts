@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-.loading-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  height: 100%;
-  width: 100%;
-  align-items: center;
+interface ResultaatType {
+  name: string;
+  url: string;
 }
+
+export {ResultaatType};
