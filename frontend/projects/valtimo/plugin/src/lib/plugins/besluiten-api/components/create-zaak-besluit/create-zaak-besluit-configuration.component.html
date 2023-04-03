@@ -14,119 +14,182 @@
   ~ limitations under the License.
   -->
 
-<v-paragraph [margin]="true" [italic]="true">
-  {{ 'createZaakBesluitInformation' | pluginTranslate : pluginId | async }}
-</v-paragraph>
-<v-form
-  (valueChange)="formValueChange($event)"
+<ng-container
   *ngIf="{
     disabled: disabled$ | async,
-    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+    besluitTypeItems: besluitTypeSelectItems$ | async,
+    selectedInputOption: selectedInputOption$ | async,
+    caseDefinitionItems: caseDefinitionSelectItems$ | async,
+    pluginId: pluginId$ | async,
+    selectedCaseDefinitionId: selectedCaseDefinitionId$ | async,
+    loading: loading$ | async
   } as obs"
 >
-  <v-input
-    name="besluittypeUrl"
-    [title]="'besluittypeUrl' | pluginTranslate : pluginId | async"
-    [margin]="true"
-    [defaultValue]="obs.prefill?.besluittypeUrl"
-    [disabled]="obs.disabled"
-    [required]="true"
-    [tooltip]="'besluittypeUrlTooltip' | pluginTranslate : pluginId | async"
-    [widthPx]="350"
-  >
-  </v-input>
-  <v-input
-    name="toelichting"
-    [title]="'toelichting' | pluginTranslate : pluginId | async"
-    [margin]="true"
-    [defaultValue]="obs.prefill?.toelichting"
-    [disabled]="obs.disabled"
-    [required]="false"
-    [tooltip]="'toelichtingTooltip' | pluginTranslate : pluginId | async"
-    [widthPx]="350"
-  >
-  </v-input>
-  <v-input
-    name="bestuursorgaan"
-    [title]="'bestuursorgaan' | pluginTranslate : pluginId | async"
-    [margin]="true"
-    [defaultValue]="obs.prefill?.bestuursorgaan"
-    [disabled]="obs.disabled"
-    [required]="false"
-    [tooltip]="'bestuursorgaanTooltip' | pluginTranslate : pluginId | async"
-    [widthPx]="350"
-  >
-  </v-input>
-  <v-date-picker
-    name="ingangsdatum"
-    [title]="'ingangsdatum' | pluginTranslate : pluginId | async"
-    [defaultDate]="obs.prefill?.ingangsdatum"
-    [disabled]="obs.disabled"
-    [required]="true"
-    [tooltip]="'ingangsdatumTooltip' | pluginTranslate : pluginId | async"
-    [widthPx]="100"
-    [margin]="true"
-  ></v-date-picker>
-  <v-date-picker
-    name="vervaldatum"
-    [title]="'vervaldatum' | pluginTranslate : pluginId | async"
-    [defaultDate]="obs.prefill?.vervaldatum"
-    [disabled]="obs.disabled"
-    [required]="false"
-    [tooltip]="'vervaldatumTooltip' | pluginTranslate : pluginId | async"
-    [widthPx]="100"
-    [margin]="true"
-  ></v-date-picker>
-  <v-select
-    name="vervalreden"
-    [title]="'vervalreden' | pluginTranslate : pluginId | async"
-    [items]="vervalredenenSelectItems$ | async"
-    [defaultSelectionId]="obs.prefill?.vervalreden"
-    [disabled]="obs.disabled"
-    [required]="false"
-    [tooltip]="'vervalredenTooltip' | pluginTranslate : pluginId | async"
-    [widthInPx]="350"
-    [margin]="true"
-  ></v-select>
-  <v-date-picker
-    name="publicatiedatum"
-    [title]="'publicatiedatum' | pluginTranslate : pluginId | async"
-    [defaultDate]="obs.prefill?.publicatiedatum"
-    [disabled]="obs.disabled"
-    [required]="false"
-    [tooltip]="'publicatiedatumTooltip' | pluginTranslate : pluginId | async"
-    [widthPx]="100"
-    [margin]="true"
-  ></v-date-picker>
-  <v-date-picker
-    name="verzenddatum"
-    [title]="'verzenddatum' | pluginTranslate : pluginId | async"
-    [defaultDate]="obs.prefill?.verzenddatum"
-    [disabled]="obs.disabled"
-    [required]="false"
-    [tooltip]="'verzenddatumTooltip' | pluginTranslate : pluginId | async"
-    [widthPx]="100"
-    [margin]="true"
-  ></v-date-picker>
-  <v-date-picker
-    name="uiterlijkeReactieDatum"
-    [title]="'uiterlijkeReactieDatum' | pluginTranslate : pluginId | async"
-    [defaultDate]="obs.prefill?.uiterlijkeReactieDatum"
-    [disabled]="obs.disabled"
-    [required]="false"
-    [tooltip]="'uiterlijkeReactieDatumTooltip' | pluginTranslate : pluginId | async"
-    [widthPx]="100"
-    [margin]="true"
-  ></v-date-picker>
-  <v-input
-    name="createdBesluitUrl"
-    [title]="'besluitUrlProcessVariable' | pluginTranslate : pluginId | async"
-    [margin]="true"
-    [defaultValue]="obs.prefill?.createdBesluitUrl"
-    [disabled]="obs.disabled"
-    [required]="false"
-    [tooltip]="'besluitUrlProcessVariableTooltip' | pluginTranslate : pluginId | async"
-    [widthPx]="350"
-  >
-  </v-input>
-</v-form>
+  <ng-container *ngIf="obs.loading === false; else loading">
+    <v-paragraph [margin]="true" [italic]="true">
+      {{ 'createZaakBesluitInformation' | pluginTranslate : obs.pluginId | async }}
+    </v-paragraph>
+    <v-form (valueChange)="formValueChange($event)">
+      <v-radio
+        name="inputTypeBesluitToggle"
+        [disabled]="obs.disabled"
+        [title]="'inputTypeBesluitToggle' | pluginTranslate : obs.pluginId | async"
+        [radioValues]="inputTypeOptions$ | async"
+        [defaultValue]="selectedInputOption$ | async"
+        [margin]="true"
+      >
+      </v-radio>
+      <v-input
+        *ngIf="obs.selectedInputOption === 'text'"
+        name="besluittypeUrl"
+        [title]="'besluittypeUrl' | pluginTranslate : obs.pluginId | async"
+        [margin]="true"
+        [defaultValue]="obs.prefill?.besluittypeUrl"
+        [disabled]="obs.disabled"
+        [required]="true"
+        [tooltip]="'besluittypeUrlTooltip' | pluginTranslate : obs.pluginId | async"
+        [widthPx]="350"
+      >
+      </v-input>
+      <ng-container *ngIf="obs.selectedInputOption === 'selection'">
+        <v-select
+          [items]="obs.caseDefinitionItems"
+          [margin]="true"
+          [widthInPx]="350"
+          name="caseDefinition"
+          [title]="'caseDefinition' | pluginTranslate : obs.pluginId | async"
+          [disabled]="
+            obs.disabled ||
+            obs.selectedInputOption === 'text' ||
+            !obs.caseDefinitionItems ||
+            oneSelectItem(obs.caseDefinitionItems)
+          "
+          [required]="true"
+          [loading]="!obs.caseDefinitionItems"
+          [tooltip]="'caseDefinitionTooltip' | pluginTranslate : obs.pluginId | async"
+          (selectedChange)="selectCaseDefinition($event)"
+          [defaultSelectionId]="obs?.selectedCaseDefinitionId"
+        ></v-select>
+        <v-select
+          [items]="obs.besluitTypeItems && obs.besluitTypeItems[obs.selectedCaseDefinitionId]"
+          [margin]="true"
+          [widthInPx]="350"
+          name="besluittypeUrl"
+          [title]="'besluittypeUrlSelect' | pluginTranslate : obs.pluginId | async"
+          [disabled]="
+            obs.disabled ||
+            obs.selectedInputOption === 'text' ||
+            !obs.besluitTypeItems ||
+            !obs.besluitTypeItems[obs.selectedCaseDefinitionId]
+          "
+          [defaultSelectionId]="obs.prefill?.besluittypeUrl"
+          [required]="true"
+          [loading]="!obs.besluitTypeItems"
+          [tooltip]="'besluittypeUrlSelectTooltip' | pluginTranslate : obs.pluginId | async"
+          [clearSelectionSubject$]="clearBesluitSelection$"
+        ></v-select>
+      </ng-container>
+      <v-input
+        name="toelichting"
+        [title]="'toelichting' | pluginTranslate : obs.pluginId | async"
+        [margin]="true"
+        [defaultValue]="obs.prefill?.toelichting"
+        [disabled]="obs.disabled"
+        [required]="false"
+        [tooltip]="'toelichtingTooltip' | pluginTranslate : obs.pluginId | async"
+        [widthPx]="350"
+      >
+      </v-input>
+      <v-input
+        name="bestuursorgaan"
+        [title]="'bestuursorgaan' | pluginTranslate : obs.pluginId | async"
+        [margin]="true"
+        [defaultValue]="obs.prefill?.bestuursorgaan"
+        [disabled]="obs.disabled"
+        [required]="false"
+        [tooltip]="'bestuursorgaanTooltip' | pluginTranslate : obs.pluginId | async"
+        [widthPx]="350"
+      >
+      </v-input>
+      <v-date-picker
+        name="ingangsdatum"
+        [title]="'ingangsdatum' | pluginTranslate : obs.pluginId | async"
+        [defaultDate]="obs.prefill?.ingangsdatum"
+        [disabled]="obs.disabled"
+        [required]="true"
+        [tooltip]="'ingangsdatumTooltip' | pluginTranslate : obs.pluginId | async"
+        [widthPx]="100"
+        [margin]="true"
+      ></v-date-picker>
+      <v-date-picker
+        name="vervaldatum"
+        [title]="'vervaldatum' | pluginTranslate : obs.pluginId | async"
+        [defaultDate]="obs.prefill?.vervaldatum"
+        [disabled]="obs.disabled"
+        [required]="false"
+        [tooltip]="'vervaldatumTooltip' | pluginTranslate : obs.pluginId | async"
+        [widthPx]="100"
+        [margin]="true"
+      ></v-date-picker>
+      <v-select
+        name="vervalreden"
+        [title]="'vervalreden' | pluginTranslate : obs.pluginId | async"
+        [items]="vervalredenenSelectItems$ | async"
+        [defaultSelectionId]="obs.prefill?.vervalreden"
+        [disabled]="obs.disabled"
+        [required]="false"
+        [tooltip]="'vervalredenTooltip' | pluginTranslate : obs.pluginId | async"
+        [widthInPx]="350"
+        [margin]="true"
+      ></v-select>
+      <v-date-picker
+        name="publicatiedatum"
+        [title]="'publicatiedatum' | pluginTranslate : obs.pluginId | async"
+        [defaultDate]="obs.prefill?.publicatiedatum"
+        [disabled]="obs.disabled"
+        [required]="false"
+        [tooltip]="'publicatiedatumTooltip' | pluginTranslate : obs.pluginId | async"
+        [widthPx]="100"
+        [margin]="true"
+      ></v-date-picker>
+      <v-date-picker
+        name="verzenddatum"
+        [title]="'verzenddatum' | pluginTranslate : obs.pluginId | async"
+        [defaultDate]="obs.prefill?.verzenddatum"
+        [disabled]="obs.disabled"
+        [required]="false"
+        [tooltip]="'verzenddatumTooltip' | pluginTranslate : obs.pluginId | async"
+        [widthPx]="100"
+        [margin]="true"
+      ></v-date-picker>
+      <v-date-picker
+        name="uiterlijkeReactieDatum"
+        [title]="'uiterlijkeReactieDatum' | pluginTranslate : obs.pluginId | async"
+        [defaultDate]="obs.prefill?.uiterlijkeReactieDatum"
+        [disabled]="obs.disabled"
+        [required]="false"
+        [tooltip]="'uiterlijkeReactieDatumTooltip' | pluginTranslate : obs.pluginId | async"
+        [widthPx]="100"
+        [margin]="true"
+      ></v-date-picker>
+      <v-input
+        name="createdBesluitUrl"
+        [title]="'besluitUrlProcessVariable' | pluginTranslate : obs.pluginId | async"
+        [margin]="true"
+        [defaultValue]="obs.prefill?.createdBesluitUrl"
+        [disabled]="obs.disabled"
+        [required]="false"
+        [tooltip]="'besluitUrlProcessVariableTooltip' | pluginTranslate : obs.pluginId | async"
+        [widthPx]="350"
+      >
+      </v-input>
+    </v-form>
+  </ng-container>
+</ng-container>
+
+<ng-template #loading>
+  <div class="loading-container">
+    <ibm-loading></ibm-loading>
+  </div>
+</ng-template>

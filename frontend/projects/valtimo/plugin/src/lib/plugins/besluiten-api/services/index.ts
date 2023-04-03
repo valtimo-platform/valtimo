@@ -14,5 +14,4 @@
  * limitations under the License.
  */
 
-export * from './config';
-export * from './input';
+export * from './besluiten-api.service';

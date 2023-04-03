@@ -13,3 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+.loading-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+}

@@ -23,10 +23,12 @@ import {
   FormModule,
   InputModule,
   ParagraphModule,
+  RadioModule,
   SelectModule,
 } from '@valtimo/user-interface';
 import {CreateZaakBesluitConfigurationComponent} from './components/create-zaak-besluit/create-zaak-besluit-configuration.component';
 import {LinkDocumentToBesluitConfigurationComponent} from './components/link-document-to-besluit/link-document-to-besluit-configuration.component';
+import {LoadingModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [
@@ -42,6 +44,8 @@ import {LinkDocumentToBesluitConfigurationComponent} from './components/link-doc
     SelectModule,
     DatePickerModule,
     ParagraphModule,
+    RadioModule,
+    LoadingModule,
   ],
   exports: [
     BesluitenApiConfigurationComponent,

@@ -15,6 +15,7 @@
  */
 
 import {PluginConfigurationData} from '../../../models';
+import {InputOption} from './input';
 
 interface BesluitenApiConfig extends PluginConfigurationData {
   rsin: string;
@@ -35,6 +36,7 @@ interface CreateZaakBesluitConfig {
   verzenddatum: string;
   uiterlijkeReactieDatum: string;
   createdBesluitUrl: string;
+  inputTypeBesluitToggle?: InputOption;
 }
 interface LinkDocumentToBesluitConfig {
   besluitUrl: string;
