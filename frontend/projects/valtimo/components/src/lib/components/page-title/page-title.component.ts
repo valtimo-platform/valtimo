@@ -30,6 +30,7 @@ import {ConfigService} from '@valtimo/config';
 export class PageTitleComponent implements OnInit, OnDestroy {
   public appTitle = this.configService?.config?.applicationTitle || 'Valtimo';
   readonly translatedTitle$ = new BehaviorSubject<string>('');
+  private appTitleAsSuffix = this.configService?.config?.featureToggles?.applicationTitleAsSuffix || false;
   private routerTranslateSubscription!: Subscription;
 
   constructor(
@@ -73,7 +74,11 @@ export class PageTitleComponent implements OnInit, OnDestroy {
       if (translatedRouteTitle) {
         this.logger.debug('PageTitle: setTitle translated async', translatedRouteTitle);
         this.translatedTitle$.next(translatedRouteTitle);
-        this.titleService.setTitle(this.appTitle + ' - ' + translatedRouteTitle);
+        if (this.appTitleAsSuffix) {
+          this.titleService.setTitle(translatedRouteTitle + ' - ' + this.appTitle);
+        } else {
+          this.titleService.setTitle(this.appTitle + ' - ' + translatedRouteTitle);
+        }
       } else {
         this.logger.debug('PageTitle: setTitle default', this.appTitle);
         this.translatedTitle$.next('');

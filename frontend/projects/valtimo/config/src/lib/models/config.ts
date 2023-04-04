@@ -108,6 +108,7 @@ export interface ValtimoConfig {
   };
   translationResources?: Array<string>;
   featureToggles?: {
+    applicationTitleAsSuffix?: boolean;
     disableFormFlow?: boolean;
     enableHackathonCasesPage?: boolean;
     showUserNameInTopBar?: boolean;
