@@ -15,7 +15,8 @@
   -->
 <ng-container
   *ngIf="{
-    formioFormSummary: formioFormSummary$ | async
+    formioFormSummary: formioFormSummary$ | async,
+    disableInput: disableInput$ | async
   } as obs"
 >
   <div class="container-fluid pr-0 pl-0">
@@ -37,7 +38,7 @@
 </ng-container>
 
 <ng-template #buttons let-obs="obs">
-  <button (click)="openModal()" ibmButton="primary" size="md">
+  <button [disabled]="obs.disableInput" (click)="openModal()" ibmButton="primary" size="md">
     {{ 'object.editObject' | translate }}
     <svg class="cds--btn__icon" ibmIcon="add" size="16"></svg>
   </button>
@@ -49,7 +50,7 @@
 </ng-template>
 
 <ng-template #widget let-obs="obs">
-  <valtimo-form-io [form]="obs.formioFormSummary" [readOnly]="true"></valtimo-form-io>
+  <valtimo-form-io *ngIf="obs.formioFormSummary" [form]="obs.formioFormSummary" [readOnly]="true"></valtimo-form-io>
 </ng-template>
 
 <ng-template #createEditModal>
