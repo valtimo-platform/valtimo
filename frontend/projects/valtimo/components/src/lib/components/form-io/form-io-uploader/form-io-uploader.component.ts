@@ -17,14 +17,13 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {FormioCustomComponent} from '@formio/angular';
 import {BehaviorSubject} from 'rxjs';
-import {ResourceDto, ResourceFile} from '@valtimo/resource';
+import {DownloadService, ResourceDto, ResourceFile, UploadProviderService} from '@valtimo/resource';
 import {FormIoStateService} from '../services/form-io-state.service';
 import {take} from 'rxjs/operators';
 import {FormIoDomService} from '../services/form-io-dom.service';
-import {DownloadService, UploadProviderService} from '@valtimo/resource';
 
 @Component({
-  selector: 'valtimo-formio-uploader',
+  selector: 'valtimo-form-io-uploader',
   templateUrl: './form-io-uploader.component.html',
   styleUrls: ['./form-io-uploader.component.scss'],
 })
