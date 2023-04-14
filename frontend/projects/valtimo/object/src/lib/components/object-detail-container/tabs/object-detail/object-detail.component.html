@@ -50,7 +50,11 @@
 </ng-template>
 
 <ng-template #widget let-obs="obs">
-  <valtimo-form-io *ngIf="obs.formioFormSummary" [form]="obs.formioFormSummary" [readOnly]="true"></valtimo-form-io>
+  <valtimo-form-io
+    *ngIf="obs.formioFormSummary"
+    [form]="obs.formioFormSummary"
+    [readOnly]="true"
+  ></valtimo-form-io>
 </ng-template>
 
 <ng-template #createEditModal>

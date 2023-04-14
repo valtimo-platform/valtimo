@@ -41,7 +41,8 @@ import {
   BehaviorSubject,
   combineLatest,
   distinctUntilChanged,
-  filter, first,
+  filter,
+  first,
   map,
   Observable,
   of,
@@ -244,15 +245,33 @@ export class DossierListComponent implements OnInit {
     this.assigneeFilter$,
     this.hasEnvColumnConfig$,
     this.hasApiColumnConfig$,
-    this.searchSwitch$
+    this.searchSwitch$,
   ]).pipe(
     distinctUntilChanged(
       (
-        [prevSearchRequest, prevSearchValues, prevAssigneeFilter, prevHasEnvColumnConfig, prevHasApiColumnConfig, prevSearchSwitch],
-        [currSearchRequest, currSearchValues, currAssigneeFilter, currHasEnvColumnConfig, currHasApiColumnConfig, currSearchSwitch]
+        [
+          prevSearchRequest,
+          prevSearchValues,
+          prevAssigneeFilter,
+          prevHasEnvColumnConfig,
+          prevHasApiColumnConfig,
+          prevSearchSwitch,
+        ],
+        [
+          currSearchRequest,
+          currSearchValues,
+          currAssigneeFilter,
+          currHasEnvColumnConfig,
+          currHasApiColumnConfig,
+          currSearchSwitch,
+        ]
       ) =>
-        JSON.stringify({...prevSearchRequest, ...prevSearchValues}) + prevAssigneeFilter + prevSearchSwitch ===
-        JSON.stringify({...currSearchRequest, ...currSearchValues}) + currAssigneeFilter + currSearchSwitch
+        JSON.stringify({...prevSearchRequest, ...prevSearchValues}) +
+          prevAssigneeFilter +
+          prevSearchSwitch ===
+        JSON.stringify({...currSearchRequest, ...currSearchValues}) +
+          currAssigneeFilter +
+          currSearchSwitch
     ),
     tap(([documentSearchRequest]) => {
       this.storedSearchRequestKey$.pipe(take(1)).subscribe(storedSearchRequestKey => {
@@ -413,10 +432,12 @@ export class DossierListComponent implements OnInit {
   search(searchFieldValues: SearchFieldValues): void {
     this.searchFieldValues$.next(searchFieldValues || {});
     this.dossierParameterService.setSearchParameters(searchFieldValues);
-    this.searchSwitch$.pipe(
-      first(),
-      tap(switchValue => this.searchSwitch$.next(!switchValue))
-    ).subscribe();
+    this.searchSwitch$
+      .pipe(
+        first(),
+        tap(switchValue => this.searchSwitch$.next(!switchValue))
+      )
+      .subscribe();
   }
 
   tabChange(tab: NgbNavChangeEvent<any>): void {

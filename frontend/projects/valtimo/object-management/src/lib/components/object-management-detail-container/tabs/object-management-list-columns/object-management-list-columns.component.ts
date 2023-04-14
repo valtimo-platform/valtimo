@@ -390,14 +390,22 @@ export class ObjectManagementListColumnsComponent {
     const multipleSearchListColumns = objectManagementListColumns.length > 1;
 
     if (multipleSearchListColumns && moveUp && searchListColumnIndex > 0) {
-      const searchListColumnBeforeKey = `${objectManagementListColumns[searchListColumnIndex - 1].key}`;
+      const searchListColumnBeforeKey = `${
+        objectManagementListColumns[searchListColumnIndex - 1].key
+      }`;
       const searchListColumnBeforeIndex = filteredSearchListColumns.findIndex(
         field => field.key === searchListColumnBeforeKey
       );
       filteredSearchListColumns.splice(searchListColumnBeforeIndex, 0, foundSearchListColumn);
       this.updateObjectManagementListColumn(objectId, filteredSearchListColumns);
-    } else if (multipleSearchListColumns && !moveUp && searchListColumnIndex < objectManagementListColumns.length) {
-      const caseListColumnAfterKey = `${objectManagementListColumns[searchListColumnIndex + 1].key}`;
+    } else if (
+      multipleSearchListColumns &&
+      !moveUp &&
+      searchListColumnIndex < objectManagementListColumns.length
+    ) {
+      const caseListColumnAfterKey = `${
+        objectManagementListColumns[searchListColumnIndex + 1].key
+      }`;
       const caseListColumnAfterIndex = filteredSearchListColumns.findIndex(
         field => field.key === caseListColumnAfterKey
       );
@@ -474,7 +482,10 @@ export class ObjectManagementListColumnsComponent {
       });
   }
 
-  private updateObjectManagementListColumn(objectId: string, listColumn: Array<SearchListColumn>): void {
+  private updateObjectManagementListColumn(
+    objectId: string,
+    listColumn: Array<SearchListColumn>
+  ): void {
     this.disableInput();
     this.objectManagementService
       .putSearchListColumns(objectId, listColumn)

@@ -30,7 +30,8 @@ import {ConfigService} from '@valtimo/config';
 export class PageTitleComponent implements OnInit, OnDestroy {
   public appTitle = this.configService?.config?.applicationTitle || 'Valtimo';
   readonly translatedTitle$ = new BehaviorSubject<string>('');
-  private appTitleAsSuffix = this.configService?.config?.featureToggles?.applicationTitleAsSuffix || false;
+  private appTitleAsSuffix =
+    this.configService?.config?.featureToggles?.applicationTitleAsSuffix || false;
   private routerTranslateSubscription!: Subscription;
 
   constructor(

@@ -71,10 +71,12 @@ export class ObjectDetailComponent {
           objectId,
           formType: FormType.EDITFORM,
         })
-        .pipe(catchError(() => {
-          this.disableInput();
-          return this.handleRetrievingFormError();
-        }))
+        .pipe(
+          catchError(() => {
+            this.disableInput();
+            return this.handleRetrievingFormError();
+          })
+        )
     ),
     map(res => res?.formDefinition),
     tap(() => this.loading$.next(false))

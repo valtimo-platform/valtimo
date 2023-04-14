@@ -310,14 +310,22 @@ export class ObjectManagementListSearchFieldsComponent {
     const multipleListSearchFields = objectManagementListSearchFields.length > 1;
 
     if (multipleListSearchFields && moveUp && listSearchFieldIndex > 0) {
-      const listSearchFieldBeforeKey = `${objectManagementListSearchFields[listSearchFieldIndex - 1].key}`;
+      const listSearchFieldBeforeKey = `${
+        objectManagementListSearchFields[listSearchFieldIndex - 1].key
+      }`;
       const listSearchFieldBeforeIndex = filteredListSearchField.findIndex(
         field => field.key === listSearchFieldBeforeKey
       );
       filteredListSearchField.splice(listSearchFieldBeforeIndex, 0, foundListSearchField);
       this.updateObjectManagementListSearchField(objectId, filteredListSearchField);
-    } else if (multipleListSearchFields && !moveUp && listSearchFieldIndex < objectManagementListSearchFields.length) {
-      const caseListColumnAfterKey = `${objectManagementListSearchFields[listSearchFieldIndex + 1].key}`;
+    } else if (
+      multipleListSearchFields &&
+      !moveUp &&
+      listSearchFieldIndex < objectManagementListSearchFields.length
+    ) {
+      const caseListColumnAfterKey = `${
+        objectManagementListSearchFields[listSearchFieldIndex + 1].key
+      }`;
       const caseListColumnAfterIndex = filteredListSearchField.findIndex(
         field => field.key === caseListColumnAfterKey
       );
@@ -370,7 +378,10 @@ export class ObjectManagementListSearchFieldsComponent {
       });
   }
 
-  private updateObjectManagementListSearchField(objectId: string, searchField: Array<SearchField>): void {
+  private updateObjectManagementListSearchField(
+    objectId: string,
+    searchField: Array<SearchField>
+  ): void {
     this.disableInput();
     this.objectManagementService
       .putSearchFields(objectId, searchField)

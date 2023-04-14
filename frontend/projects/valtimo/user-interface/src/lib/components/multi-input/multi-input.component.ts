@@ -32,7 +32,7 @@ export class MultiInputComponent implements OnInit, OnDestroy {
   @Input() type: MultiInputType = 'value';
   @Input() initialAmountOfRows = 1;
   @Input() minimumAmountOfRows = 1;
-  @Input() maxRows = 20;
+  @Input() maxRows = null;
   @Input() addRowText = '';
   @Input() addRowTranslationKey = '';
   @Input() deleteRowText = '';
@@ -59,7 +59,7 @@ export class MultiInputComponent implements OnInit, OnDestroy {
     )
   );
   readonly addRowEnabled$: Observable<boolean> = this.values$.pipe(
-    map(values => !!(values.length < this.maxRows))
+    map(values => !!(this.maxRows === null || values.length < this.maxRows))
   );
 
   private valuesSubscription!: Subscription;

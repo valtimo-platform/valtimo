@@ -120,10 +120,7 @@ export class ObjectManagementService {
     );
   }
 
-  putSearchFields(
-    ownerId: string,
-    request: Array<SearchField>
-  ): Observable<Array<SearchField>> {
+  putSearchFields(ownerId: string, request: Array<SearchField>): Observable<Array<SearchField>> {
     return this.http.put<Array<SearchField>>(
       `${this.valtimoEndpointUri}v1/search/field/${ownerId}/fields`,
       [...request]
@@ -135,6 +132,4 @@ export class ObjectManagementService {
       `${this.valtimoEndpointUri}v1/search/field/${ownerId}/${key}`
     );
   }
-
-
 }
