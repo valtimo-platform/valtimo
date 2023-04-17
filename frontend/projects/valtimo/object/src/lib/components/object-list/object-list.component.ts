@@ -214,6 +214,7 @@ export class ObjectListComponent {
               sortable: column.sortable,
               ...(column.viewType && {viewType: column.viewType}),
               ...(column.enum && {enum: column.enum}),
+              ...(column.format && {format: column.format}),
             };
           }),
         ];
