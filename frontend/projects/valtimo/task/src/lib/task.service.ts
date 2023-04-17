@@ -61,6 +61,12 @@ export class TaskService {
 
   getTaskProcessLink(taskId: string): Observable<TaskProcessLinkResult> {
     return this.http.get<TaskProcessLinkResult>(
+      `${this.valtimoEndpointUri}v2/process-link/task/${taskId}`
+    );
+  }
+
+  getTaskProcessLinkV1(taskId: string): Observable<TaskProcessLinkResult> {
+    return this.http.get<TaskProcessLinkResult>(
       `${this.valtimoEndpointUri}v1/process-link/task/${taskId}`
     );
   }

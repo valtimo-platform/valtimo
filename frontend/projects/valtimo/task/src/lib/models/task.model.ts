@@ -64,5 +64,7 @@ export interface TaskProcessLinkResult {
     formLinkId?: string;
     formFlowId?: string;
     formFlowInstanceId?: string;
+    formDefinitionId?: string;
+    prefilledForm?: any;
   };
 }
