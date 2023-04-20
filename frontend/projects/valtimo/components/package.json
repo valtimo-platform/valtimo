@@ -5,7 +5,8 @@
   "peerDependencies": {
     "@angular/common": "^14.2.5",
     "@angular/core": "^14.2.5",
-    "@angular/elements": "^14.2.5"
+    "@angular/elements": "^14.2.5",
+    "@carbon/styles": "^1.27.0"
   },
   "dependencies": {
     "@foxythemes/bootstrap-datetime-picker-bs4": "^2.3.5",
@@ -24,7 +25,6 @@
     "ng-multiselect-dropdown": "^1.0.0-beta.19",
     "@carbon/icons": "^11.9.0",
     "@carbon/grid": "^11.9.0",
-    "carbon-components": "^11.17.0",
     "carbon-components-angular": "^5.2.1"
   },
   "devDependencies": {
