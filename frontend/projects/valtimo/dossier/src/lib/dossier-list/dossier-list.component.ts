@@ -37,6 +37,7 @@ import {
   DossierParameterService,
 } from '../services';
 import {
+  AssigneeFilter,
   ConfigService,
   DefinitionColumn,
   Direction,
@@ -97,7 +98,8 @@ export class DossierListComponent implements OnInit, OnDestroy {
   );
 
   public readonly searchFieldValues$ = this.parameterService.searchFieldValues$;
-  public readonly assigneeFilter$ = this.assigneeService.assigneeFilter$;
+  public readonly assigneeFilter$: Observable<AssigneeFilter> =
+    this.assigneeService.assigneeFilter$;
   private readonly _pagination$ = this.paginationService.pagination$.pipe(
     tap(pagination => {
       this.pagination = pagination;
