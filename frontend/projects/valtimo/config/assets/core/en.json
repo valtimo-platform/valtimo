@@ -975,8 +975,9 @@
     "dateFormatTooltip": "A date format supported by Moment.js (https://momentjs.com/docs/).",
     "uniqueKeyWarning": "The key for this column must be unique.",
     "enumTitle": "Enumeration values",
-    "enumTitleOptional": "Enumeration values (optional)",
+    "enumTitleOptional": "Values (optioneel)",
     "enumTooltip": "The keys and values used to transform display data in the table.",
+    "enumTooltipOptional": "The values used to transform display data in the table.",
     "downloadButtonText": "Download configuration",
     "deleteColumn": "Delete column",
     "deleteColumnConfirmation": "Are you sure you want to delete this column?"
@@ -1058,5 +1059,9 @@
     "Remove": "Remove",
     "Next": "Next",
     "Previous": "Previous"
+  },
+  "viewTypeConverter": {
+    "Yes": "Yes",
+    "No": "No"
   }
 }

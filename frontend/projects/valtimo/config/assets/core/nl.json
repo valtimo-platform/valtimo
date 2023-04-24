@@ -975,8 +975,9 @@
     "dateFormatTooltip": "Een datumnotatie die ondersteund wordt door Moment.js (https://momentjs.com/docs/).",
     "uniqueKeyWarning": "De sleutel voor deze kolom moet uniek zijn.",
     "enumTitle": "Opsommingswaarden",
-    "enumTitleOptional": "Opsommingswaarden (optioneel)",
+    "enumTitleOptional": "Waarden (optioneel)",
     "enumTooltip": "De sleutels en waarden die gebruikt worden om weergavedata om te zetten in de tabel.",
+    "enumTooltipOptional": "De waarden die gebruikt worden om weergavedata om te zetten in de tabel.",
     "downloadButtonText": "Download configuratie",
     "deleteColumn": "Kolom verwijderen",
     "deleteColumnConfirmation": "Weet u zeker dat u deze kolom wilt verwijderen?"
@@ -1061,5 +1062,9 @@
     "Remove": "Verwijderen",
     "Next": "Volgende",
     "Previous": "Vorige"
+  },
+  "viewTypeConverter": {
+    "Yes": "Ja",
+    "No": "Nee"
   }
 }

@@ -20,23 +20,26 @@ import {
   BehaviorSubject,
   combineLatest,
   distinctUntilChanged,
-  filter,
   map,
   Observable,
-  startWith,
   Subscription,
   take,
 } from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
-import {Direction, SearchFieldValues} from '@valtimo/config';
+import {AssigneeFilter, Direction, SearchFieldValues} from '@valtimo/config';
 import {Pagination} from '@valtimo/components';
 
 @Injectable()
 export class DossierParameterService implements OnDestroy {
   private readonly _dossierParameters$ = new BehaviorSubject<DossierParameters>(undefined);
+  private readonly _searchFieldValues$ = new BehaviorSubject<SearchFieldValues>({});
 
   get dossierParameters$(): Observable<DossierParameters> {
     return this._dossierParameters$.asObservable();
+  }
+
+  get searchFieldValues$(): Observable<SearchFieldValues> {
+    return this._searchFieldValues$.asObservable();
   }
 
   get querySearchParams$(): Observable<SearchFieldValues> {
@@ -55,7 +58,6 @@ export class DossierParameterService implements OnDestroy {
 
   get queryPaginationParams$(): Observable<Pagination | null> {
     return this.route.queryParams.pipe(
-      filter(params => params.collectionSize),
       map(params => {
         const paramsCopy = {...params} as any as DossierParameters;
 
@@ -63,35 +65,54 @@ export class DossierParameterService implements OnDestroy {
           delete paramsCopy.search;
         }
 
-        return {
-          collectionSize: Number(paramsCopy.collectionSize),
-          page: Number(paramsCopy.page),
-          size: Number(paramsCopy.size),
-          maxPaginationItemSize: Number(paramsCopy.maxPaginationItemSize),
-          ...(paramsCopy.isSorting === 'true' && {
-            isSorting: !!(paramsCopy.isSorting === 'true'),
-            state: {
-              name: paramsCopy.sortStateName,
-              direction: paramsCopy.sortStateDirection as Direction,
-            },
-          }),
-        };
+        return paramsCopy.collectionSize
+          ? {
+              collectionSize: Number(paramsCopy.collectionSize),
+              page: Number(paramsCopy.page),
+              size: Number(paramsCopy.size),
+              maxPaginationItemSize: Number(paramsCopy.maxPaginationItemSize),
+              ...(paramsCopy.isSorting === 'true' && {
+                sort: {
+                  isSorting: !!(paramsCopy.isSorting === 'true'),
+                  state: {
+                    name: paramsCopy.sortStateName,
+                    direction: paramsCopy.sortStateDirection as Direction,
+                  },
+                },
+              }),
+            }
+          : null;
       }),
       distinctUntilChanged(
         (prevParams, currParams) => JSON.stringify(prevParams) === JSON.stringify(currParams)
-      ),
-      startWith(null)
+      )
+    );
+  }
+
+  get queryAssigneeParam$(): Observable<AssigneeFilter> {
+    return this.route.queryParams.pipe(
+      map(params => {
+        if (params?.assignee) {
+          return params?.assignee?.toUpperCase();
+        }
+        return '';
+      }),
+      distinctUntilChanged((prevParams, currParams) => prevParams === currParams)
     );
   }
 
   dossierParametersSubscription!: Subscription;
 
   constructor(private readonly router: Router, private readonly route: ActivatedRoute) {
-    this.openDossierParametersSubscription();
+    this.setDossierParameters();
   }
 
   ngOnDestroy(): void {
     this.dossierParametersSubscription?.unsubscribe();
+  }
+
+  setSearchFieldValues(searchFieldValues: SearchFieldValues): void {
+    this._searchFieldValues$.next(searchFieldValues);
   }
 
   setSearchParameters(searchParameters: SearchFieldValues): void {
@@ -129,23 +150,27 @@ export class DossierParameterService implements OnDestroy {
     }
   }
 
+  setAssigneeParameter(assigneeFilter: AssigneeFilter): void {
+    this._dossierParameters$.pipe(take(1)).subscribe(dossierParameters => {
+      this._dossierParameters$.next({
+        ...dossierParameters,
+        assignee: assigneeFilter.toLowerCase(),
+      });
+    });
+  }
+
+  clearSearchFieldValues(): void {
+    this._searchFieldValues$.next({});
+  }
+
+  clearParameters(): void {
+    this._dossierParameters$.next(undefined);
+    this.router.navigate([this.getUrlWithoutParams()]);
+  }
+
   private openDossierParametersSubscription(): void {
-    this.dossierParametersSubscription = combineLatest([
-      this.dossierParameters$,
-      this.route.queryParams,
-    ]).subscribe(([dossierParams, queryParams]) => {
-      let paramsToUse = {};
-
-      if (
-        Object.keys(queryParams || {}).length > 0 &&
-        Object.keys(dossierParams || {}).length === 0
-      ) {
-        paramsToUse = queryParams;
-      } else {
-        paramsToUse = dossierParams;
-      }
-
-      this.router.navigate([this.getUrlWithoutParams()], {queryParams: paramsToUse});
+    this.dossierParametersSubscription = this.dossierParameters$.subscribe(dossierParams => {
+      this.router.navigate([this.getUrlWithoutParams()], {queryParams: dossierParams});
     });
   }
 
@@ -158,5 +183,24 @@ export class DossierParameterService implements OnDestroy {
     urlTree.queryParams = {};
     urlTree.fragment = null;
     return urlTree.toString();
+  }
+
+  private setDossierParameters(): void {
+    combineLatest([this.queryPaginationParams$, this.querySearchParams$, this.queryAssigneeParam$])
+      .pipe(take(1))
+      .subscribe(([paginationParams, searchParams, assigneeParams]) => {
+        if (paginationParams) {
+          this.setPaginationParameters(paginationParams);
+        }
+        if (searchParams) {
+          this.setSearchParameters(searchParams);
+          this.setSearchFieldValues(searchParams);
+        }
+        if (assigneeParams) {
+          this.setAssigneeParameter(assigneeParams);
+        }
+
+        this.openDossierParametersSubscription();
+      });
   }
 }

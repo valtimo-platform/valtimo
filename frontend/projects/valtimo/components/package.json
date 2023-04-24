@@ -5,7 +5,7 @@
   "peerDependencies": {
     "@angular/common": "^14.2.5",
     "@angular/core": "^14.2.5",
-    "@angular/elements": "^14.2.5",
+    "@angular/elements": "^14.2.5"
   },
   "dependencies": {
     "@foxythemes/bootstrap-datetime-picker-bs4": "^2.3.5",

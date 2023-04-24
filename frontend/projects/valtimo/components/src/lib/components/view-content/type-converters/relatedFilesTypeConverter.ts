@@ -22,6 +22,6 @@ export class RelatedFilesTypeConverter implements TypeConverter {
   }
 
   convert(value: any, definition: any): string {
-    return value.length || '-';
+    return value?.length || '-';
   }
 }

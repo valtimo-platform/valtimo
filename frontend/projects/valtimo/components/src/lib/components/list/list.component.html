@@ -88,8 +88,21 @@
             (click)="onClickRow(item)"
           >
             <td class="align-top" *ngFor="let listItemField of item.listItemFields">
-              <ng-container *ngIf="listItemField.type === ''">
-                {{ listItemField.value || '-' }}
+              <ng-container
+                *ngIf="
+                  listItemField.type === '' && {
+                    valueTranslationKey: 'viewTypeConverter.' + listItemField.value,
+                    valueTranslation: 'viewTypeConverter.' + listItemField.value | translate
+                  } as vars
+                "
+              >
+                {{
+                  listItemField.value
+                    ? vars.valueTranslation !== vars.valueTranslationKey
+                      ? vars.valueTranslation
+                      : listItemField.value
+                    : '-'
+                }}
               </ng-container>
 
               <ng-container
@@ -151,7 +164,9 @@
   >
     <div class="float-left page-count col-4">
       <strong>{{
-        'list.currentPage' | translate : {current: pagination.page, total: getTotalPageCount()}
+        'list.currentPage'
+          | translate
+            : {current: pagination.page > 0 ? pagination.page : 1, total: getTotalPageCount()}
       }}</strong>
       {{
         pagination.collectionSize === 1

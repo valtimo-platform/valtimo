@@ -19,6 +19,7 @@ interface ListField {
   label: string;
   sortable: boolean;
   viewType: string;
+  default?: string | boolean;
 }
 
 export {ListField};

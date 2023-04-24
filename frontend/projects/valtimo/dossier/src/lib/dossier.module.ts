@@ -84,12 +84,14 @@ import {
   IconModule,
   LoadingModule,
 } from 'carbon-components-angular';
+import {DossierListActionsComponent} from './dossier-list-actions/dossier-list-actions.component';
 
 export type TabsFactory = () => Map<string, object>;
 
 @NgModule({
   declarations: [
     DossierListComponent,
+    DossierListActionsComponent,
     DossierDetailComponent,
     DossierDetailTabSummaryComponent,
     DossierDetailTabProgressComponent,

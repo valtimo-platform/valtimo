@@ -26,14 +26,10 @@ export class BooleanTypeConverter implements TypeConverter {
 
     if (enumeration && Array.isArray(enumeration) && enumeration.length > 1) {
       return value ? enumeration[0] || 'Yes' : enumeration[1] || 'No';
-    } else if (
-      enumeration &&
-      typeof enumeration === 'object' &&
-      Object.keys(enumeration).length > 1
-    ) {
+    } else if (enumeration && typeof enumeration === 'object') {
       return value
-        ? enumeration[Object.keys(enumeration)[0]] || 'Yes'
-        : enumeration[Object.keys(enumeration)[1]] || 'No';
+        ? Object.keys(enumeration)[0] || 'Yes'
+        : enumeration[Object.keys(enumeration)[0]] || 'No';
     } else {
       return value ? 'Yes' : 'No';
     }

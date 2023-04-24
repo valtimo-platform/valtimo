@@ -975,8 +975,9 @@
     "dateFormatTooltip": "Ein Datumsformat, das von Moment.js (https://momentjs.com/docs/) unterstützt wird.",
     "uniqueKeyWarning": "Der Schlüssel für diese Spalte muss eindeutig sein.",
     "enumTitle": "Aufzählungswerte",
-    "enumTitleOptional": "Aufzählungswerte (optional)",
+    "enumTitleOptional": "Werte (optional)",
     "enumTooltip": "Die Schlüssel und Werte, die verwendet werden, um Anzeigedaten in die Tabelle umzuwandeln.",
+    "enumTooltipOptional": "Die Werte, die verwendet werden, um Anzeigedaten in die Tabelle umzuwandeln.",
     "downloadButtonText": "Konfiguration herunterladen",
     "deleteColumn": "Spalte löschen",
     "deleteColumnConfirmation": "Möchten Sie diese Spalte wirklich löschen?"
@@ -1060,5 +1061,9 @@
     "Remove": "Entfernen",
     "Next": "Nächste",
     "Previous": "Vorherige"
+  },
+  "viewTypeConverter": {
+    "Yes": "Ja",
+    "No": "Nein"
   }
 }
