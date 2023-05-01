@@ -20,6 +20,7 @@ import {Observable} from 'rxjs';
 import {
   GetProcessLinkRequest,
   GetProcessLinkResponse,
+  ProcessLinkType,
   SaveProcessLinkRequest,
   UpdateProcessLinkRequest,
 } from '../models';
@@ -73,5 +74,11 @@ export class ProcessLinkService {
 
   deleteProcessLink(id: string): Observable<null> {
     return this.http.delete<null>(`${this.VALTIMO_ENDPOINT_URI}v1/process-link/${id}`);
+  }
+
+  getProcessLinkCandidates(activityType: string): Observable<Array<ProcessLinkType>> {
+    return this.http.get<Array<ProcessLinkType>>(
+      `${this.VALTIMO_ENDPOINT_URI}v1/process-link/types?activityType=${activityType}`
+    );
   }
 }

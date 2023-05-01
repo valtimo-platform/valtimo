@@ -218,6 +218,7 @@
     "@bpmn-io/dmn-migrate": "^0.4.3",
     "@carbon/grid": "^11.9.0",
     "@carbon/icons": "^11.9.0",
+    "@carbon/icons-angular": "^11.2.2",
     "@carbon/styles": "^1.27.0",
     "@formio/angular": "^5.2.2",
     "@foxythemes/bootstrap-datetime-picker-bs4": "^2.3.5",

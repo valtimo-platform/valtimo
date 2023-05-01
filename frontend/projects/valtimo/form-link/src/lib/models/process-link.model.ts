@@ -47,6 +47,20 @@ interface UpdateProcessLinkRequest {
 
 type ProcessLinkModalType = 'edit' | 'create';
 
+interface ProcessLinkType {
+  enabled: boolean;
+  processLinkType: string;
+}
+
+type ProcessLinkConfigurationStep =
+  | 'chooseProcessLinkType'
+  | 'choosePluginConfiguration'
+  | 'choosePluginAction'
+  | 'configurePluginAction'
+  | 'selectForm'
+  | 'selectFormFlow'
+  | 'empty';
+
 export {
   SaveProcessLinkRequest,
   GetProcessLinkRequest,
@@ -54,4 +68,6 @@ export {
   GetProcessLinkResponse,
   UpdateProcessLinkRequest,
   ProcessLinkModalType,
+  ProcessLinkType,
+  ProcessLinkConfigurationStep,
 };

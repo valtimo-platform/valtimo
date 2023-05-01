@@ -1065,5 +1065,24 @@
   "viewTypeConverter": {
     "Yes": "Ja",
     "No": "Nein"
+  },
+  "processLinkConfiguration": {
+    "configureStep": "Prozessschritt konfigurieren",
+    "modalTitle": "Prozessschritt: {{processStepName}}",
+    "chooseProcessLinkTypeDescription": "Ein Prozessschritt kann mehrere Aktionen ausführen. Wählen Sie unten aus, mit welcher Art von Aktion Sie diesen Schritt verknüpfen möchten."
+  },
+  "processLinkType": {
+    "plugin": "Plugin",
+    "form": "Formular",
+    "form-flow": "FormFlow"
+  },
+  "processLinkSteps": {
+    "chooseProcessLinkType": "Linktyp wählen",
+    "empty": "........"
+  },
+  "processLinkTypeDisabledTooltip": {
+    "plugin": "Es sind keine Plugin-Konfigurationen verfügbar. Erstellen Sie eine Plugin-Konfiguration, um sie mit einem Prozessschritt verknüpfen zu können.",
+    "form": "Es sind keine Formulare vorhanden. Erstellen Sie ein Formular, um es mit einem Prozessschritt verknüpfen zu können.",
+    "form-flow": "Es sind keine FormFlows verfügbar. Erstellen Sie einen FormFlow, um ihn mit einem Prozessschritt verknüpfen zu können."
   }
 }

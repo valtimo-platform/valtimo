@@ -25,30 +25,42 @@ import {ModalModule, SearchableDropdownSelectModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {ProcessLinkComponent} from './components/process-link/process-link.component';
 import {
-  StepperModule,
-  ModalModule as VModalModule,
-  CardModule,
-  ParagraphModule,
   ButtonModule,
+  CardModule,
+  ModalModule as VModalModule,
+  ParagraphModule,
+  StepperModule,
   TitleModule,
+  TooltipModule,
 } from '@valtimo/user-interface';
 import {SelectPluginComponent} from './components/select-plugin/select-plugin.component';
 import {SelectPluginConfigurationComponent} from './components/select-plugin-configuration/select-plugin-configuration.component';
 import {SelectPluginFunctionComponent} from './components/select-plugin-function/select-plugin-function.component';
 import {FlexLayoutModule} from '@angular/flex-layout';
-import {PluginTranslatePipeModule, PluginConfigurationContainerModule} from '@valtimo/plugin';
+import {PluginConfigurationContainerModule, PluginTranslatePipeModule} from '@valtimo/plugin';
 import {PluginFunctionConfigurationComponent} from './components/plugin-function-configuration/plugin-function-configuration.component';
+import {ProcessLink2Component} from './components/process-link-2/process-link-2.component';
+import {ProcessLinkModalComponent} from './components/process-link-modal/process-link-modal.component';
+import {
+  ButtonModule as CarbonButtonModule,
+  IconModule,
+  ModalModule as CarbonModalModule,
+  ProgressIndicatorModule,
+} from 'carbon-components-angular';
+import {FlowDataModule, LinkModule, ReceiptModule} from '@carbon/icons-angular';
 
 @NgModule({
   declarations: [
     FormLinkComponent,
     ProcessLinkComponent,
+    ProcessLink2Component,
     FormLinkProcessDiagramComponent,
     FormLinkModalComponent,
     SelectPluginComponent,
     SelectPluginConfigurationComponent,
     SelectPluginFunctionComponent,
     PluginFunctionConfigurationComponent,
+    ProcessLinkModalComponent,
   ],
   imports: [
     CommonModule,
@@ -66,14 +78,24 @@ import {PluginFunctionConfigurationComponent} from './components/plugin-function
     PluginConfigurationContainerModule,
     ButtonModule,
     TitleModule,
+    CarbonModalModule,
+    ProgressIndicatorModule,
+    CarbonButtonModule,
+    IconModule,
+    LinkModule,
+    ReceiptModule,
+    FlowDataModule,
+    TooltipModule,
   ],
   exports: [
     FormLinkComponent,
     ProcessLinkComponent,
+    ProcessLink2Component,
     SelectPluginComponent,
     SelectPluginConfigurationComponent,
     SelectPluginFunctionComponent,
     PluginFunctionConfigurationComponent,
+    ProcessLinkModalComponent,
   ],
 })
 export class FormLinkModule {}

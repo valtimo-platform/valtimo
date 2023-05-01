@@ -1063,5 +1063,24 @@
   "viewTypeConverter": {
     "Yes": "Yes",
     "No": "No"
+  },
+  "processLinkConfiguration": {
+    "configureStep": "Configure process step",
+    "modalTitle": "Process step: {{processStepName}}",
+    "chooseProcessLinkTypeDescription": "A proces step can perform a variety of actions. Choose below to what type of action you would like to link this step."
+  },
+  "processLinkType": {
+    "plugin": "Plugin",
+    "form": "Form",
+    "form-flow": "FormFlow"
+  },
+  "processLinkSteps": {
+    "chooseProcessLinkType": "Choose link type",
+    "empty": "........"
+  },
+  "processLinkTypeDisabledTooltip": {
+    "plugin": "No plugin configurations are available. Create a plugin configuration to be able to link it to a process step.",
+    "form": "There are no forms available. Create a form to be able to link it to a process step.",
+    "form-flow": "There are no FormFlows available. Create a FormFlow to be able to link it to a process step."
   }
 }

@@ -54,6 +54,8 @@ interface FormSubmissionResult {
 interface BpmnElement {
   id: string;
   type: string;
+  activityListenerType?: string;
+  name?: string;
 }
 
 interface FormFlowDefinition {

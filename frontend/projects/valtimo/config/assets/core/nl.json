@@ -1066,5 +1066,24 @@
   "viewTypeConverter": {
     "Yes": "Ja",
     "No": "Nee"
+  },
+  "processLinkConfiguration": {
+    "configureStep": "Processtap configureren",
+    "modalTitle": "Processtap: {{processStepName}}",
+    "chooseProcessLinkTypeDescription": "Een processtap kan verschillende acties uitvoeren. Kies hieronder aan welk type actie je deze stap wilt koppelen."
+  },
+  "processLinkType": {
+    "plugin": "Plugin",
+    "form": "Formulier",
+    "form-flow": "FormFlow"
+  },
+  "processLinkSteps": {
+    "chooseProcessLinkType": "Kies soort koppeling",
+    "empty": "........"
+  },
+  "processLinkTypeDisabledTooltip": {
+    "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een pluginconfiguratie aan om deze te kunnen koppelen aan een processtap.",
+    "form": "Er zijn geen formulieren beschikbaar. Maak een formulier aan om deze te kunnen koppelen aan een processtap.",
+    "form-flow": "Er zijn geen FormFlows beschikbaar. Maak een FormFlow aan om deze te kunnen koppelen aan een processtap."
   }
 }

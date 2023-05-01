@@ -3,5 +3,6 @@
   "dest": "../../../dist/valtimo/form-link",
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "allowedNonPeerDependencies": ["@carbon/icons-angular"]
 }
