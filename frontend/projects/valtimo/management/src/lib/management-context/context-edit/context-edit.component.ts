@@ -59,6 +59,8 @@ export class ContextEditComponent implements OnInit {
     this.processService.getProcessDefinitions().subscribe(results => {
       this.processDefinitions = results;
     });
+
+    this.reset();
   }
 
   private loadAuthorities() {
@@ -67,6 +69,8 @@ export class ContextEditComponent implements OnInit {
         this.authorities = results.body;
       }
     });
+
+    this.reset();
   }
 
   public get formControls() {
