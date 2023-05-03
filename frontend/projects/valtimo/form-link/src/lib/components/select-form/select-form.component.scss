@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of form
- */
+.step-description {
+  margin-top: 40px;
+}
 
-export * from './lib/form.service';
-export * from './lib/form.module';
-export * from './lib/services/form-mapping/form-mapping.service';
-export * from './lib/services/form-translation/form-translation.service';
-export * from './lib/models';
+.label-with-tooltip {
+  display: flex;
+  align-items: center;
+}
+
+.select-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 24px;
+}

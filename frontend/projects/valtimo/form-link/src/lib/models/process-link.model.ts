@@ -61,6 +61,14 @@ type ProcessLinkConfigurationStep =
   | 'selectFormFlow'
   | 'empty';
 
+interface FormProcessLinkCreateRequestDto {
+  processDefinitionId: string;
+  activityId: string;
+  activityType: string;
+  processLinkType: string;
+  formDefinitionId: string;
+}
+
 export {
   SaveProcessLinkRequest,
   GetProcessLinkRequest,
@@ -70,4 +78,5 @@ export {
   ProcessLinkModalType,
   ProcessLinkType,
   ProcessLinkConfigurationStep,
+  FormProcessLinkCreateRequestDto,
 };

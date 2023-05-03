@@ -128,7 +128,7 @@ export class ProcessLinkComponent {
           pluginActionDefinitionKey: selectedFunction.key,
         };
 
-        this.processLinkService.saveProcessLink(processLinkRequest).subscribe(
+        this.processLinkService.saveProcessLink(processLinkRequest as any).subscribe(
           response => {
             this.hide();
           },

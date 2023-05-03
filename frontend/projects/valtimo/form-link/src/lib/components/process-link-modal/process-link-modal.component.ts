@@ -28,15 +28,30 @@ export class ProcessLinkModalComponent {
   public readonly steps$ = this.processLinkStepService.steps$;
   public readonly currentStepIndex$ = this.processLinkStepService.currentStepIndex$;
   public readonly currentStepId$ = this.processLinkStepService.currentStepId$;
-  public readonly availableProcessLinkTypes$ =
-    this.processLinkState2Service.availableProcessLinkTypes$;
+  public readonly showSaveButton$ = this.processLinkState2Service.showSaveButton$;
+  public readonly enableSaveButton$ = this.processLinkState2Service.enableSaveButton$;
+  public readonly showBackButton$ = this.processLinkState2Service.showBackButton$;
+  public readonly hasOneOption$ = this.processLinkState2Service.hasOneOption$;
+  public readonly saving$ = this.processLinkState2Service.saving$;
 
   constructor(
     private readonly processLinkState2Service: ProcessLinkState2Service,
     private readonly processLinkStepService: ProcessLinkStepService
   ) {}
 
+  selectProcessLinkType(processLinkTypeId: string): void {
+    this.processLinkState2Service.selectProcessLinkType(processLinkTypeId);
+  }
+
   closeModal(): void {
     this.processLinkState2Service.closeModal();
+  }
+
+  backButtonClick(): void {
+    this.processLinkState2Service.clickBackButton();
+  }
+
+  saveButtonClick(): void {
+    this.processLinkState2Service.clickSaveButton();
   }
 }

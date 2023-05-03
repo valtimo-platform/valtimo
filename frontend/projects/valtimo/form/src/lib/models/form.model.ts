@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of form
- */
+interface FormDefinitionOption {
+  id: string;
+  name: string;
+}
 
-export * from './lib/form.service';
-export * from './lib/form.module';
-export * from './lib/services/form-mapping/form-mapping.service';
-export * from './lib/services/form-translation/form-translation.service';
-export * from './lib/models';
+export {FormDefinitionOption};

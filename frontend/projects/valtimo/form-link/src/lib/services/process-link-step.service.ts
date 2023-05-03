@@ -23,20 +23,23 @@ import {TranslateService} from '@ngx-translate/core';
 @Injectable()
 export class ProcessLinkStepService {
   private readonly _steps$ = new BehaviorSubject<Array<Step>>(undefined);
-
   private readonly _currentStepIndex$ = new BehaviorSubject<number>(0);
+  private readonly _disableSteps$ = new BehaviorSubject<boolean>(false);
 
   get steps$(): Observable<Array<Step>> {
-    return combineLatest([this._steps$, this.translateService.stream('key')]).pipe(
+    return combineLatest([
+      this._steps$,
+      this._disableSteps$,
+      this.translateService.stream('key'),
+    ]).pipe(
       filter(([steps]) => !!steps),
-      map(([steps]) =>
+      map(([steps, disableSteps]) =>
         steps.map(step => ({
           ...step,
+          disabled: disableSteps,
           label: this.translateService.instant(`processLinkSteps.${step.label}`),
           ...(step.secondaryLabel && {
-            secondaryLabel: this.translateService.instant(
-              `processLinkSteps.${step.secondaryLabel}`
-            ),
+            secondaryLabel: this.translateService.instant(step.secondaryLabel),
           }),
         }))
       )
@@ -49,8 +52,11 @@ export class ProcessLinkStepService {
 
   get currentStepId$(): Observable<string> {
     return combineLatest([this._steps$, this.currentStepIndex$]).pipe(
-      filter(([steps]) => !!steps),
-      map(([steps, currentStepIndex]) => steps[currentStepIndex].label)
+      filter(
+        ([steps, currentStepIndex]) =>
+          !!steps && typeof currentStepIndex === 'number' && steps.length > 0
+      ),
+      map(([steps, currentStepIndex]) => steps[currentStepIndex]?.label)
     );
   }
 
@@ -67,12 +73,33 @@ export class ProcessLinkStepService {
     }
   }
 
-  private setChoiceSteps(): void {
+  setFormSteps(): void {
+    this._steps$.next([
+      {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.form'},
+      {label: 'selectForm'},
+    ]);
+    this._currentStepIndex$.next(1);
+  }
+
+  setSingleFormStep(): void {
+    this._steps$.next([{label: 'selectForm'}]);
     this._currentStepIndex$.next(0);
+  }
+
+  disableSteps(): void {
+    this._disableSteps$.next(true);
+  }
+
+  enableSteps(): void {
+    this._disableSteps$.next(false);
+  }
+
+  private setChoiceSteps(): void {
     this._steps$.next([
       {label: 'chooseProcessLinkType'},
       {label: 'empty', disabled: true},
       {label: 'empty', disabled: true},
     ]);
+    this._currentStepIndex$.next(0);
   }
 }

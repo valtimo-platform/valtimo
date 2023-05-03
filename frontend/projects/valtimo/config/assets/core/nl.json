@@ -508,7 +508,8 @@
     "cancel": "Annuleren",
     "collapse": "Inklappen",
     "expand": "Uitklappen",
-    "download": "Download"
+    "download": "Download",
+    "typeToSearch": "Typ om te zoeken..."
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",
@@ -1070,7 +1071,12 @@
   "processLinkConfiguration": {
     "configureStep": "Processtap configureren",
     "modalTitle": "Processtap: {{processStepName}}",
-    "chooseProcessLinkTypeDescription": "Een processtap kan verschillende acties uitvoeren. Kies hieronder aan welk type actie je deze stap wilt koppelen."
+    "chooseProcessLinkTypeDescription": "Een processtap kan verschillende acties uitvoeren. Kies hieronder aan welk type actie je deze stap wilt koppelen.",
+    "chooseFormDescription": "Kies hier het formulier dat je aan de processtap wilt koppelen.",
+    "chooseForm": "Selecteer formulier",
+    "cancel": "Annuleren",
+    "complete": "Voltooien",
+    "back": "Terug"
   },
   "processLinkType": {
     "plugin": "Plugin",
@@ -1079,7 +1085,8 @@
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Kies soort koppeling",
-    "empty": "........"
+    "empty": "........",
+    "selectForm": "Selecteer je formulier"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een pluginconfiguratie aan om deze te kunnen koppelen aan een processtap.",

@@ -14,31 +14,30 @@
  * limitations under the License.
  */
 
-.process-link-type-button {
-  width: 100%;
-}
-
-.process-link-grid {
-  margin-top: 24px;
-  display: flex;
-  justify-content: flex-start;
-  width: 100%;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.process-link-item {
-  flex-basis: calc(33.3% - (16px / 3));
-}
-
-.choose-process-link-type-description {
+.step-description {
   margin-top: 40px;
 }
 
 ::ng-deep .process-link-modal-container .cds--modal-container {
   max-width: 960px;
+  min-height: 70%;
 }
 
 ::ng-deep .process-link-modal-container .cds--modal-footer {
   justify-content: flex-start;
+}
+
+.ibm-loading-container {
+  position: absolute;
+  top: 50px;
+  padding-bottom: 50px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 50px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--cds-layer);
+  z-index: 99;
+  box-sizing: border-box;
 }

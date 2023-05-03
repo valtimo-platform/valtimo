@@ -14,12 +14,4 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of form
- */
-
-export * from './lib/form.service';
-export * from './lib/form.module';
-export * from './lib/services/form-mapping/form-mapping.service';
-export * from './lib/services/form-translation/form-translation.service';
-export * from './lib/models';
+export * from './choose-process-link-type.component';

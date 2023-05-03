@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {ListItem} from 'carbon-components-angular';
+
 interface FormAssociation {
   className: string;
   id: string;
@@ -86,6 +88,10 @@ interface ModalParams {
   processDefinitionId: string;
 }
 
+interface FormDefinitionListItem extends ListItem {
+  id: string;
+}
+
 export {
   FormAssociation,
   FormLinkRequest,
@@ -99,4 +105,5 @@ export {
   FormFlowStep,
   FormTypeProperties,
   ModalParams,
+  FormDefinitionListItem,
 };

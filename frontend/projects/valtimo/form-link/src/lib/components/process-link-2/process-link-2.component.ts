@@ -36,6 +36,7 @@ export class ProcessLink2Component {
     if (activityType) {
       this.processLinkService.getProcessLinkCandidates(activityType).subscribe(processLinkTypes => {
         this.processLinkState2Service.setAvailableProcessLinkTypes(processLinkTypes);
+        this.processLinkState2Service.setModalParams(params);
         this.processLinkState2Service.setElementName(params?.element?.name);
         this.processLinkState2Service.showModal();
       });

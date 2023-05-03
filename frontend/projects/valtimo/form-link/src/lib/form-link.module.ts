@@ -31,6 +31,7 @@ import {
   ParagraphModule,
   StepperModule,
   TitleModule,
+  TooltipIconModule,
   TooltipModule,
 } from '@valtimo/user-interface';
 import {SelectPluginComponent} from './components/select-plugin/select-plugin.component';
@@ -43,11 +44,16 @@ import {ProcessLink2Component} from './components/process-link-2/process-link-2.
 import {ProcessLinkModalComponent} from './components/process-link-modal/process-link-modal.component';
 import {
   ButtonModule as CarbonButtonModule,
+  ComboBoxModule,
   IconModule,
+  InputModule,
+  LoadingModule,
   ModalModule as CarbonModalModule,
   ProgressIndicatorModule,
 } from 'carbon-components-angular';
 import {FlowDataModule, LinkModule, ReceiptModule} from '@carbon/icons-angular';
+import {ChooseProcessLinkTypeComponent} from './components/choose-process-link-type';
+import {SelectFormComponent} from './components/select-form';
 
 @NgModule({
   declarations: [
@@ -61,6 +67,8 @@ import {FlowDataModule, LinkModule, ReceiptModule} from '@carbon/icons-angular';
     SelectPluginFunctionComponent,
     PluginFunctionConfigurationComponent,
     ProcessLinkModalComponent,
+    ChooseProcessLinkTypeComponent,
+    SelectFormComponent,
   ],
   imports: [
     CommonModule,
@@ -86,6 +94,10 @@ import {FlowDataModule, LinkModule, ReceiptModule} from '@carbon/icons-angular';
     ReceiptModule,
     FlowDataModule,
     TooltipModule,
+    ComboBoxModule,
+    InputModule,
+    TooltipIconModule,
+    LoadingModule,
   ],
   exports: [
     FormLinkComponent,

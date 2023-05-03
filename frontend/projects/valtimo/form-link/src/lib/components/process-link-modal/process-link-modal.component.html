@@ -22,7 +22,11 @@
     steps: steps$ | async,
     currentStepIndex: currentStepIndex$ | async,
     currentStepId: currentStepId$ | async,
-    availableProcessLinkTypes: availableProcessLinkTypes$ | async
+    showSaveButton: showSaveButton$ | async,
+    enableSaveButton: enableSaveButton$ | async,
+    showBackButton: showBackButton$ | async,
+    hasOneOption: hasOneOption$ | async,
+    saving: saving$ | async
   } as obs"
 >
   <ibm-modal [open]="obs.showModal" size="lg">
@@ -30,7 +34,8 @@
       <h2 ibmModalHeaderLabel>{{ 'processLinkConfiguration.configureStep' | translate }}</h2>
       <h3 ibmModalHeaderHeading>
         {{
-          'processLinkConfiguration.modalTitle' | translate : {processStepName: obs.processStepName}
+          'processLinkConfiguration.modalTitle'
+            | translate : {processStepName: obs.processStepName || '-'}
         }}
       </h3>
     </ibm-modal-header>
@@ -38,13 +43,13 @@
       <ng-container *ngTemplateOutlet="progressIndicator; context: {obs: obs}"></ng-container>
       <ng-container *ngTemplateOutlet="stepContent; context: {obs: obs}"></ng-container>
     </section>
-    <ng-template *ngTemplateOutlet="footer"></ng-template>
+    <ng-template *ngTemplateOutlet="footer; context: {obs: obs}"></ng-template>
   </ibm-modal>
 </div>
 
 <ng-template #progressIndicator let-obs="obs">
   <ibm-progress-indicator
-    *ngIf="obs.steps"
+    *ngIf="obs.steps && !obs.hasOneOption"
     [steps]="obs.steps"
     [current]="obs.currentStepIndex"
     spacing="equal"
@@ -52,58 +57,36 @@
 </ng-template>
 
 <ng-template #stepContent let-obs="obs">
+  <div class="ibm-loading-container" *ngIf="obs.saving">
+    <ibm-loading></ibm-loading>
+  </div>
   <ng-container *ngIf="obs.currentStepId === 'chooseProcessLinkType'">
-    <ng-container *ngTemplateOutlet="chooseProcessLinkType; context: {obs: obs}"></ng-container>
+    <valtimo-choose-process-link-type></valtimo-choose-process-link-type>
+  </ng-container>
+  <ng-container *ngIf="obs.currentStepId === 'selectForm'">
+    <valtimo-select-form></valtimo-select-form>
   </ng-container>
 </ng-template>
 
-<ng-template #chooseProcessLinkType let-obs="obs">
-  <p class="choose-process-link-type-description">
-    {{ 'processLinkConfiguration.chooseProcessLinkTypeDescription' | translate }}
-  </p>
-  <div class="process-link-grid">
-    <div
-      class="process-link-item"
-      *ngFor="let availableProcessLinkType of obs.availableProcessLinkTypes"
+<ng-template #footer let-obs="obs">
+  <ibm-modal-footer *ngIf="!obs.saving">
+    <button ibmButton="ghost" (click)="closeModal()" [disabled]="obs.disabled">
+      {{ 'processLinkConfiguration.cancel' | translate }}
+    </button>
+    <button
+      *ngIf="obs.showBackButton && !obs.saving"
+      ibmButton="secondary"
+      (click)="backButtonClick()"
     >
-      <ng-container *ngIf="availableProcessLinkType.processLinkType as processLinkTypeId">
-        <button
-          ibmButton="secondary"
-          class="process-link-type-button"
-          [disabled]="!availableProcessLinkType.enabled"
-          [vTooltip]="'processLinkTypeDisabledTooltip.' + processLinkTypeId | translate"
-          [onBottom]="true"
-          [disabled]="availableProcessLinkType.enabled"
-        >
-          {{ 'processLinkType.' + processLinkTypeId | translate }}
-          <svg
-            *ngIf="processLinkTypeId === 'plugin'"
-            class="cds--btn__icon"
-            ibmIconLink
-            size="16"
-          ></svg>
-          <svg
-            *ngIf="processLinkTypeId === 'form'"
-            class="cds--btn__icon"
-            ibmIconReceipt
-            size="16"
-          ></svg>
-          <svg
-            *ngIf="processLinkTypeId === 'form-flow'"
-            class="cds--btn__icon"
-            ibmIconFlowData
-            size="16"
-          ></svg>
-        </button>
-      </ng-container>
-    </div>
-  </div>
-</ng-template>
-
-<ng-template #footer>
-  <ibm-modal-footer>
-    <button ibmButton="ghost" (click)="closeModal()">
-      {{ 'object.close' | translate }}
+      {{ 'processLinkConfiguration.back' | translate }}
+    </button>
+    <button
+      ibmButton="primary"
+      *ngIf="obs.showSaveButton && !obs.saving"
+      [disabled]="obs.enableSaveButton === false"
+      (click)="saveButtonClick()"
+    >
+      {{ 'processLinkConfiguration.complete' | translate }}
     </button>
   </ibm-modal-footer>
 </ng-template>

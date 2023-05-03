@@ -508,7 +508,8 @@
     "cancel": "Absagen",
     "collapse": "Kollaps",
     "expand": "Expandieren",
-    "download": "Herunterladen"
+    "download": "Herunterladen",
+    "typeToSearch": "Tippe um zu suchen..."
   },
   "taskDetail": {
     "taskCreated": "Erstellt",
@@ -1069,7 +1070,12 @@
   "processLinkConfiguration": {
     "configureStep": "Prozessschritt konfigurieren",
     "modalTitle": "Prozessschritt: {{processStepName}}",
-    "chooseProcessLinkTypeDescription": "Ein Prozessschritt kann mehrere Aktionen ausführen. Wählen Sie unten aus, mit welcher Art von Aktion Sie diesen Schritt verknüpfen möchten."
+    "chooseProcessLinkTypeDescription": "Ein Prozessschritt kann mehrere Aktionen ausführen. Wählen Sie unten aus, mit welcher Art von Aktion Sie diesen Schritt verknüpfen möchten.",
+    "chooseFormDescription": "Wählen Sie hier das Formular aus, das Sie mit dem Prozessschritt verknüpfen möchten.",
+    "chooseForm": "Form wählen",
+    "cancel": "Stornieren",
+    "complete": "Vervollständigen",
+    "back": "Zurück"
   },
   "processLinkType": {
     "plugin": "Plugin",
@@ -1078,7 +1084,8 @@
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Linktyp wählen",
-    "empty": "........"
+    "empty": "........",
+    "selectForm": "Wählen Sie Ihr Formular"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "Es sind keine Plugin-Konfigurationen verfügbar. Erstellen Sie eine Plugin-Konfiguration, um sie mit einem Prozessschritt verknüpfen zu können.",
