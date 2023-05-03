@@ -21,7 +21,7 @@ import {CommonModule} from '@angular/common';
 import {FormLinkRoutingModule} from './form-link-routing.module';
 import {FormsModule} from '@angular/forms';
 import {FormLinkModalComponent} from './components/form-link-modal/form-link-modal.component';
-import {ModalModule, SearchableDropdownSelectModule} from '@valtimo/components';
+import {FormIoModule, ModalModule, SearchableDropdownSelectModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {ProcessLinkComponent} from './components/process-link/process-link.component';
 import {
@@ -54,6 +54,7 @@ import {
 import {FlowDataModule, LinkModule, ReceiptModule} from '@carbon/icons-angular';
 import {ChooseProcessLinkTypeComponent} from './components/choose-process-link-type';
 import {SelectFormComponent} from './components/select-form';
+import {FormFlowComponent} from './components/form-flow/form-flow.component';
 
 @NgModule({
   declarations: [
@@ -69,6 +70,7 @@ import {SelectFormComponent} from './components/select-form';
     ProcessLinkModalComponent,
     ChooseProcessLinkTypeComponent,
     SelectFormComponent,
+    FormFlowComponent
   ],
   imports: [
     CommonModule,
@@ -98,6 +100,7 @@ import {SelectFormComponent} from './components/select-form';
     InputModule,
     TooltipIconModule,
     LoadingModule,
+    FormIoModule,
   ],
   exports: [
     FormLinkComponent,
@@ -108,6 +111,7 @@ import {SelectFormComponent} from './components/select-form';
     SelectPluginFunctionComponent,
     PluginFunctionConfigurationComponent,
     ProcessLinkModalComponent,
+    FormFlowComponent,
   ],
 })
 export class FormLinkModule {}

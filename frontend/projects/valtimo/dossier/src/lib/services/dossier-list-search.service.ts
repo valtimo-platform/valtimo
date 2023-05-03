@@ -51,6 +51,10 @@ export class DossierListSearchService {
     this._searchSwitch$.next(!this._searchSwitch$.getValue());
   }
 
+  refresh(): void {
+    this._searchSwitch$.next(!this._searchSwitch$.getValue());
+  }
+
   mapSearchValuesToFilters(values: SearchFieldValues): Array<SearchFilter | SearchFilterRange> {
     const filters: Array<SearchFilter | SearchFilterRange> = [];
 

@@ -21,10 +21,7 @@
   [subtitle]="page?.subtitle"
   [templateBelowSubtitle]="assignUserToTask"
 >
-  <div
-    body
-    *ngIf="formDefinition && ((processLinkIsForm$ | async) || (formFlowStepTypeIsForm$ | async))"
-  >
+  <div body *ngIf="formDefinition && (processLinkIsForm$ | async)">
     <valtimo-form-io
       #form
       [form]="formDefinition"
@@ -33,7 +30,15 @@
       [options]="formioOptions"
     ></valtimo-form-io>
   </div>
-  <div body *ngIf="!formDefinition && !errorMessage">
+  <div body *ngIf="processLinkIsFormFlow$ | async">
+    <valtimo-form-flow
+      #formFlow
+      [formIoFormData]="formIoFormData$"
+      [formFlowInstanceId]="formFlowInstanceId"
+      (formFlowComplete)="completeTask()"
+    ></valtimo-form-flow>
+  </div>
+  <div body *ngIf="!formDefinition && !formFlowInstanceId && !errorMessage">
     <div class="bg-warning text-black mb-0 p-3 text-center">
       {{
         (isAdmin$ | async)

@@ -330,6 +330,10 @@ export class DossierListComponent implements OnInit, OnDestroy {
     this.assigneeService.setAssigneeFilter(tab.nextId.toUpperCase());
   }
 
+  refresh(): void {
+    this.searchService.refresh();
+  }
+
   private openDocumentDefinitionNameSubscription(): void {
     this._documentDefinitionNameSubscription = this.route.params
       .pipe(

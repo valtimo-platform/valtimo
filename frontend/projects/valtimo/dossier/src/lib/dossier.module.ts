@@ -59,6 +59,7 @@ import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {HttpClient} from '@angular/common/http';
 import {TabService} from './tab.service';
 import {TaskModule} from '@valtimo/task';
+import {FormLinkModule} from '@valtimo/form-link'
 import {DossierSupportingProcessStartModalComponent} from './dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
 import {DossierDetailTabZaakobjectenComponent} from './dossier-detail/tab/zaakobjecten/zaakobjecten.component';
 import {
@@ -158,6 +159,7 @@ export type TabsFactory = () => Map<string, object>;
     LoadingModule,
     CarbonButtonModule,
     IconModule,
+    FormLinkModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

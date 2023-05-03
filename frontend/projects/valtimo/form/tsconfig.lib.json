@@ -4,7 +4,6 @@
     "forceConsistentCasingInFileNames": true,
     "declarationMap": true,
     "noImplicitReturns": true,
-    "strict": true,
     "noUnusedLocals": false,
     "outDir": "../../../out-tsc/lib",
     "target": "es2020",

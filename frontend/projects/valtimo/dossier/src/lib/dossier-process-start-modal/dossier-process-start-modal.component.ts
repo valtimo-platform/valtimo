@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-import {Component, OnInit, ViewChild, ViewEncapsulation} from '@angular/core';
+import {Component, EventEmitter, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
-import {FormAssociation, FormLinkService, FormSubmissionResult} from '@valtimo/form-link';
+import {
+  FormAssociation,
+  FormFlowService,
+  FormLinkService,
+  FormSubmissionResult,
+} from '@valtimo/form-link';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ProcessService} from '@valtimo/process';
 import {
@@ -30,6 +35,7 @@ import {FormioBeforeSubmit} from '@formio/angular/formio.common';
 import {FormioForm} from '@formio/angular';
 import {NGXLogger} from 'ngx-logger';
 import {UserProviderService} from '@valtimo/security';
+import {take} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-dossier-process-start-modal',
@@ -39,15 +45,18 @@ import {UserProviderService} from '@valtimo/security';
 })
 export class DossierProcessStartModalComponent implements OnInit {
   public processDefinitionKey: string;
+  public processDefinitionId: string;
   public documentDefinitionName: string;
   public processName: string;
   public formDefinition: FormioForm;
+  public formFlowInstanceId: string;
   public formioSubmission: FormioSubmission;
   private formAssociation: FormAssociation;
   public options: ValtimoFormioOptions;
   public isAdmin: boolean;
   @ViewChild('form', {static: false}) form: FormioComponent;
   @ViewChild('processStartModal', {static: false}) modal: ModalComponent;
+  @Output() formFlowComplete = new EventEmitter();
 
   constructor(
     private route: ActivatedRoute,
@@ -55,6 +64,7 @@ export class DossierProcessStartModalComponent implements OnInit {
     private processService: ProcessService,
     private documentService: DocumentService,
     private formLinkService: FormLinkService,
+    private formFlowService: FormFlowService,
     private userProviderService: UserProviderService,
     private logger: NGXLogger
   ) {}
@@ -63,37 +73,72 @@ export class DossierProcessStartModalComponent implements OnInit {
     this.isUserAdmin();
   }
 
-  private loadFormDefinition() {
+  private loadProcessLink() {
     this.formDefinition = null;
-    this.formLinkService
-      .getStartEventFormDefinitionByProcessDefinitionKey(this.processDefinitionKey)
-      .subscribe(
-        formDefinition => {
-          this.formAssociation = formDefinition.formAssociation;
-          const className = this.formAssociation.formLink.className.split('.');
-          const linkType = className[className.length - 1];
-          switch (linkType) {
-            case 'BpmnElementFormIdLink':
-              this.formDefinition = formDefinition;
-              this.modal.show();
+    this.formFlowInstanceId = null;
+    this.processService
+      .getProcessDefinitionStartProcessLink(this.processDefinitionId)
+      .pipe(take(1))
+      .subscribe(startProcessResult => {
+        if (startProcessResult) {
+          switch (startProcessResult.type) {
+            case 'form':
+              this.formDefinition = startProcessResult.properties.prefilledForm;
               break;
-            case 'BpmnElementUrlLink':
-              const url = this.router.serializeUrl(
-                this.router.createUrlTree([formDefinition.formAssociation.formLink.url])
-              );
-              window.open(url, '_blank');
+            case 'form-flow':
+              this.formFlowInstanceId = startProcessResult.properties.formFlowInstanceId;
               break;
-            case 'BpmnElementAngularStateUrlLink':
-              this.router.navigate([formDefinition.formAssociation.formLink.url]);
-              break;
-            default:
-              this.logger.fatal('Unsupported class name');
           }
-        },
-        errors => {
           this.modal.show();
+        } else {
+          // backwards compatibility for form associations
+          this.formLinkService
+            .getStartEventFormDefinitionByProcessDefinitionKey(this.processDefinitionKey, null)
+            .pipe(take(1))
+            .subscribe({
+              next: formDefinitionWithFormAssociation =>
+                this.openFormAssociation(formDefinitionWithFormAssociation),
+              error: error => {
+                this.modal.show();
+              },
+            });
         }
-      );
+      });
+  }
+
+  private openFormAssociation(formDefinitionWithFormAssociation: any) {
+    this.formAssociation = formDefinitionWithFormAssociation.formAssociation;
+    const className = this.formAssociation.formLink.className.split('.');
+    const linkType = className[className.length - 1];
+    switch (linkType) {
+      case 'BpmnElementFormIdLink':
+        this.formDefinition = formDefinitionWithFormAssociation;
+        this.modal.show();
+        break;
+      case 'BpmnElementFormFlowIdLink':
+        this.formFlowService
+          .createInstanceForNewProcess(this.processDefinitionKey, {documentId: null})
+          .subscribe(result => (this.formFlowInstanceId = result.formFlowInstanceId));
+        this.modal.show();
+        break;
+      case 'BpmnElementUrlLink':
+        const url = this.router.serializeUrl(
+          this.router.createUrlTree([this.formAssociation.formLink.url])
+        );
+        window.open(url, '_blank');
+        break;
+      case 'BpmnElementAngularStateUrlLink':
+        this.route.params.pipe(take(1)).subscribe(params => {
+          const documentId = params?.documentId;
+
+          this.router.navigate([this.formAssociation.formLink.url], {
+            state: {...(documentId && {documentId})},
+          });
+        });
+        break;
+      default:
+        this.logger.fatal('Unsupported class name');
+    }
   }
 
   public gotoFormLinkScreen() {
@@ -107,6 +152,7 @@ export class DossierProcessStartModalComponent implements OnInit {
 
   openModal(processDocumentDefinition: ProcessDocumentDefinition) {
     this.processDefinitionKey = processDocumentDefinition.id.processDefinitionKey;
+    this.processDefinitionId = processDocumentDefinition.latestVersionId;
     this.documentDefinitionName = processDocumentDefinition.id.documentDefinitionId.name;
     this.processName = processDocumentDefinition.processName;
     this.options = new FormioOptionsImpl();
@@ -115,7 +161,7 @@ export class DossierProcessStartModalComponent implements OnInit {
       callback(null, submission);
     };
     this.options.setHooks(formioBeforeSubmit);
-    this.loadFormDefinition();
+    this.loadProcessLink();
   }
 
   public onSubmit(submission: FormioSubmission) {
@@ -137,6 +183,11 @@ export class DossierProcessStartModalComponent implements OnInit {
           this.form.showErrors(errors);
         }
       );
+  }
+
+  public formFlowSubmitted(): void {
+    this.formFlowComplete.emit(null);
+    this.modal.hide();
   }
 
   public isUserAdmin(): void {

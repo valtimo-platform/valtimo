@@ -31,7 +31,10 @@
   <div class="main-content pt-0">
     <div class="container-fluid">
       <div class="col-12 px-0 mb-5">
-        <valtimo-dossier-list-actions [loading]="!obs.loaded"></valtimo-dossier-list-actions>
+        <valtimo-dossier-list-actions
+          [loading]="!obs.loaded"
+          (formFlowComplete)="refresh()"
+        ></valtimo-dossier-list-actions>
         <ng-container *ngIf="obs.loaded; else loading">
           <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
           <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>

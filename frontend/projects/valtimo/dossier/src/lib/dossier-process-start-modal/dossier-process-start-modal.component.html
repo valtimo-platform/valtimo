@@ -19,7 +19,13 @@
     <valtimo-form-io #form [form]="formDefinition" [options]="options" (submit)="onSubmit($event)">
     </valtimo-form-io>
   </div>
-  <div body *ngIf="!formDefinition && isAdmin">
+  <div body *ngIf="formFlowInstanceId">
+    <valtimo-form-flow
+      [formFlowInstanceId]="formFlowInstanceId"
+      (formFlowComplete)="formFlowSubmitted()"
+    ></valtimo-form-flow>
+  </div>
+  <div body *ngIf="!formFlowInstanceId && !formDefinition && isAdmin">
     <div
       class="bg-warning text-black mb-0 p-3 text-center"
       [translate]="'formManagement.noFormDefinitionFoundAdmin'"
@@ -35,7 +41,7 @@
       </button>
     </div>
   </div>
-  <div body *ngIf="!formDefinition && !isAdmin">
+  <div body *ngIf="!formFlowInstanceId && !formDefinition && !isAdmin">
     <div
       class="bg-warning text-black mb-0 p-3 text-center"
       [translate]="'formManagement.noFormDefinitionFoundUser'"

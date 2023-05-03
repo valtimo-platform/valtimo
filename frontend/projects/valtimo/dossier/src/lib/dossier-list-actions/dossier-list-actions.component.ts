@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, Input, OnInit, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {map, Observable, of, switchMap, tap} from 'rxjs';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
 import {DossierProcessStartModalComponent} from '../dossier-process-start-modal/dossier-process-start-modal.component';
@@ -32,6 +32,8 @@ export class DossierListActionsComponent implements OnInit {
   @ViewChild('processStartModal') processStart: DossierProcessStartModalComponent;
 
   @Input() loading!: boolean;
+
+  @Output() formFlowComplete = new EventEmitter();
 
   private selectedProcessDocumentDefinition: ProcessDocumentDefinition | null = null;
 
@@ -83,6 +85,10 @@ export class DossierListActionsComponent implements OnInit {
     }
     this.selectedProcessDocumentDefinition = processDocumentDefinition;
     modal.modal('hide');
+  }
+
+  onFormFlowComplete() {
+    this.formFlowComplete.emit(null);
   }
 
   private showStartProcessModal(): void {

@@ -31,3 +31,4 @@ export * from './lib/models';
 export * from './lib/components/process-link-2/process-link-2.component';
 export * from './lib/components/process-link-modal/process-link-modal.component';
 export * from './lib/components/choose-process-link-type/choose-process-link-type.component';
+export * from './lib/components/form-flow/form-flow.component';

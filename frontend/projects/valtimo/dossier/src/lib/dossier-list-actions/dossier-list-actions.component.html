@@ -69,4 +69,7 @@
   </div>
 </div>
 
-<valtimo-dossier-process-start-modal #processStartModal></valtimo-dossier-process-start-modal>
+<valtimo-dossier-process-start-modal
+  #processStartModal
+  (formFlowComplete)="onFormFlowComplete()"
+></valtimo-dossier-process-start-modal>

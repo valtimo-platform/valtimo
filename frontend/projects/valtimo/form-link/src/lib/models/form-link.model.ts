@@ -70,6 +70,14 @@ interface FormFlowInstance {
   step?: FormFlowStep;
 }
 
+interface FormFlowCreateRequest {
+  documentId: string | null;
+}
+
+interface FormFlowCreateResult {
+  formFlowInstanceId: string;
+}
+
 type FormFlowStepType = 'form';
 
 interface FormFlowStep {
@@ -104,6 +112,8 @@ export {
   FormFlowStepType,
   FormFlowStep,
   FormTypeProperties,
+  FormFlowCreateResult,
+  FormFlowCreateRequest,
   ModalParams,
   FormDefinitionListItem,
 };

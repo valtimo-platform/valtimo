@@ -33,7 +33,14 @@
     >
     </valtimo-form-io>
   </div>
-  <div body *ngIf="!formDefinition">
+  <div body *ngIf="formFlowInstanceId">
+    <valtimo-form-flow
+      #formFlow
+      [formFlowInstanceId]="formFlowInstanceId"
+      (formFlowComplete)="formSubmitted()"
+    ></valtimo-form-flow>
+  </div>
+  <div body *ngIf="!formDefinition && !formFlowInstanceId">
     <div class="bg-warning text-black mb-0 p-3 text-center">
       {{
         (isAdmin$ | async)
