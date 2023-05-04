@@ -976,7 +976,7 @@
     "dateFormatTooltip": "A date format supported by Moment.js (https://momentjs.com/docs/).",
     "uniqueKeyWarning": "The key for this column must be unique.",
     "enumTitle": "Enumeration values",
-    "enumTitleOptional": "Values (optioneel)",
+    "enumTitleOptional": "Values (optional)",
     "enumTooltip": "The keys and values used to transform display data in the table.",
     "enumTooltipOptional": "The values used to transform display data in the table.",
     "downloadButtonText": "Download configuration",
