@@ -69,6 +69,14 @@ interface FormProcessLinkCreateRequestDto {
   formDefinitionId: string;
 }
 
+interface FormFlowProcessLinkCreateRequestDto {
+  processDefinitionId: string;
+  activityId: string;
+  activityType: string;
+  processLinkType: string;
+  formFlowDefinitionId: string;
+}
+
 export {
   SaveProcessLinkRequest,
   GetProcessLinkRequest,
@@ -79,4 +87,5 @@ export {
   ProcessLinkType,
   ProcessLinkConfigurationStep,
   FormProcessLinkCreateRequestDto,
+  FormFlowProcessLinkCreateRequestDto,
 };

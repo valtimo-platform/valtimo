@@ -55,6 +55,7 @@ import {FlowDataModule, LinkModule, ReceiptModule} from '@carbon/icons-angular';
 import {ChooseProcessLinkTypeComponent} from './components/choose-process-link-type';
 import {SelectFormComponent} from './components/select-form';
 import {FormFlowComponent} from './components/form-flow/form-flow.component';
+import {SelectFormFlowComponent} from './components/select-form-flow';
 
 @NgModule({
   declarations: [
@@ -70,7 +71,8 @@ import {FormFlowComponent} from './components/form-flow/form-flow.component';
     ProcessLinkModalComponent,
     ChooseProcessLinkTypeComponent,
     SelectFormComponent,
-    FormFlowComponent
+    FormFlowComponent,
+    SelectFormFlowComponent,
   ],
   imports: [
     CommonModule,

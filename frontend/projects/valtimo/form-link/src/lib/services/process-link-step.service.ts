@@ -86,6 +86,19 @@ export class ProcessLinkStepService {
     this._currentStepIndex$.next(0);
   }
 
+  setFormFlowSteps(): void {
+    this._steps$.next([
+      {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.form-flow'},
+      {label: 'selectFormFlow'},
+    ]);
+    this._currentStepIndex$.next(1);
+  }
+
+  setSingleFormFlowStep(): void {
+    this._steps$.next([{label: 'selectFormFlow'}]);
+    this._currentStepIndex$.next(0);
+  }
+
   disableSteps(): void {
     this._disableSteps$.next(true);
   }

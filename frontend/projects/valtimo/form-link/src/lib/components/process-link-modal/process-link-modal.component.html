@@ -66,6 +66,9 @@
   <ng-container *ngIf="obs.currentStepId === 'selectForm'">
     <valtimo-select-form></valtimo-select-form>
   </ng-container>
+  <ng-container *ngIf="obs.currentStepId === 'selectFormFlow'">
+    <valtimo-select-form-flow></valtimo-select-form-flow>
+  </ng-container>
 </ng-template>
 
 <ng-template #footer let-obs="obs">

@@ -204,6 +204,17 @@ export class ProcessLinkState2Service implements OnDestroy {
           this.showBackButton();
         }
         break;
+      case 'form-flow':
+        if (hasOneOption) {
+          this.processLinkStepService.setSingleFormFlowStep();
+          this.hideSaveButton();
+          this.hideBackButton();
+        } else {
+          this.processLinkStepService.setFormFlowSteps();
+          this.showSaveButton();
+          this.showBackButton();
+        }
+        break;
     }
   }
 }
