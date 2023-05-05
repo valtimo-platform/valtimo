@@ -109,7 +109,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
           distinctUntilChanged(),
           tap(modalShowing => {
             const formIoFormData = this.formIoFormData$.getValue();
-            if (!modalShowing && formIoFormData) {
+            if (!modalShowing && formIoFormData && this.formFlowInstanceId) {
               if (this.taskProcessLinkType$.getValue() === 'form-flow') {
                 this.formFlowService.save(this.formFlowInstanceId, formIoFormData).subscribe(
                   () => null,
