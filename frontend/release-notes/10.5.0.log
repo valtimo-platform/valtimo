@@ -1,0 +1,51 @@
+2f896181 - Updated version to 10.5.0
+971abd4f - Merge pull request #473 from valtimo-platform/fix/form-flow-instance-id-null
+d431352c - FormFlowInstanceId check.
+89948363 - Merge pull request #470 from valtimo-platform/cherry-pick-uploader-fix
+f2de206b - partial fxi (#453)
+d5ae4572 - Updated version to 10.5.0-138.RC-SNAPSHOT
+6143e4c7 - #50580 plugin action Link Document to Besluit (#435)
+3ff3b8ed - #50562 Besluiten API plugin - new plugin action 'Create Zaakbesluit' (#434)
+0227c163 - #50266 Besluiten API plugin - Configuration components (#433)
+6d7e9033 - #50041 Zaken Api plugin - new plugin action 'Set Zaakstatus' (#432)
+40048638 - #52875 Zaken Api plugin - new plugin action 'Create Niet-natuurlijk Persoon Zaakrol' (#431)
+7e3ba931 - #58370 Remove server send events from menu (#430)
+188500ad - #57189 Download Document gives 'forbidden' error (#427)
+6da7308e - Merge pull request #426 from valtimo-platform/bugfix/dossier-list-custom-columns
+e452ebea - added support for custom colum keys with dots in the name
+f9a94cb8 - include custom format if specified
+4aa5817f - Renamed variable in portaaltaak plugin (#425)
+42ed2d15 - SSE Service for async updates (#383)
+55e5ae39 - Enabled the option to tranlate formio forms with minimal translations (#423)
+679bcbff - adjust script (#424)
+b1e397a7 - log copied version
+76eed0d2 - front end version in sidebar with script (#422)
+03a69238 - revert
+6742c408 - add version number (#421)
+574ca4f0 - updated translation to more accurately reflect the current situation (#420)
+192a04b3 - fix mapping (#419)
+768febb3 - fix mapping (#418)
+222fdd27 - fix mapping prefill (#417)
+3ed32325 - feat: verzoek mapping feedback (#416)
+23c242e1 - pass disabled
+1def8e69 - fix: dropdown in productaanvragen connector (#415)
+196e1d1d - #53752 Download document plugin action (#410)
+252fdc2d - add action (#412)
+2e87ec3a - Update redirect function to support custom columns as well (#413)
+7d34c071 - build(deps): bump @braintree/sanitize-url and swagger-ui (#404)
+57dfd88f - download using plugin (#409)
+cdfd757a - finish (#407)
+d10e3841 - Enabled includeFunction on child level (#405)
+e00f4ebc - Use either the defaultColumns or custom columns (#403)
+312a7be4 - Merge branch 'main' into development
+56585906 - fix: process definition name not showing (#408)
+c93349d8 - hide times (#406)
+21e6d6fd - feat: add mapping to verzoek plugin (#394)
+c4bb16cf - make description & conf. level required (#402)
+46ad6b25 - feature Expansion Panel (#396)
+91200111 - Added context column and link to task list. (#399)
+369756db - Form definition uuid value is replaced by the actual string value (#401)
+aeebe59e - Feature/object module (#398)
+8cd5e281 - feat: sort related file by date (#400)
+9242eea1 - implement new endpoint (#395)
+ba3dc607 - Bugfix/story 52982 (#393)
