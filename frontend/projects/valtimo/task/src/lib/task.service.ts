@@ -19,6 +19,7 @@ import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {AssigneeRequest, Task, TaskProcessLinkResult} from './models';
 import {ConfigService, CustomTaskList, User} from '@valtimo/config';
+import {InterceptorSkip} from '@valtimo/security';
 
 @Injectable({providedIn: 'root'})
 export class TaskService {
@@ -61,7 +62,10 @@ export class TaskService {
 
   getTaskProcessLink(taskId: string): Observable<TaskProcessLinkResult> {
     return this.http.get<TaskProcessLinkResult>(
-      `${this.valtimoEndpointUri}v2/process-link/task/${taskId}`
+      `${this.valtimoEndpointUri}v2/process-link/task/${taskId}`,
+      {
+        headers: {[InterceptorSkip]: ''},
+      }
     );
   }
 
