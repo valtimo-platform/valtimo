@@ -108,8 +108,12 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.formDefinition = changes.form.currentValue;
-    this.reloadForm();
+    const currentForm = changes?.form?.currentValue;
+
+    if (currentForm) {
+      this.formDefinition = currentForm;
+      this.reloadForm();
+    }
 
     this.setInitialToken();
 
