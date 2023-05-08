@@ -29,7 +29,7 @@
     saving: saving$ | async
   } as obs"
 >
-  <ibm-modal [open]="obs.showModal" size="lg">
+  <ibm-modal valtimoIbmModal [open]="obs.showModal" size="lg">
     <ibm-modal-header (closeSelect)="closeModal()">
       <h2 ibmModalHeaderLabel>{{ 'processLinkConfiguration.configureStep' | translate }}</h2>
       <h3 ibmModalHeaderHeading>
@@ -73,23 +73,27 @@
 
 <ng-template #footer let-obs="obs">
   <ibm-modal-footer *ngIf="!obs.saving">
-    <button ibmButton="ghost" (click)="closeModal()" [disabled]="obs.disabled">
-      {{ 'processLinkConfiguration.cancel' | translate }}
-    </button>
-    <button
-      *ngIf="obs.showBackButton && !obs.saving"
-      ibmButton="secondary"
-      (click)="backButtonClick()"
-    >
-      {{ 'processLinkConfiguration.back' | translate }}
-    </button>
-    <button
-      ibmButton="primary"
-      *ngIf="obs.showSaveButton && !obs.saving"
-      [disabled]="obs.enableSaveButton === false"
-      (click)="saveButtonClick()"
-    >
-      {{ 'processLinkConfiguration.complete' | translate }}
-    </button>
+    <div class="cancel-button">
+      <button ibmButton="ghost" (click)="closeModal()" [disabled]="obs.disabled">
+        {{ 'processLinkConfiguration.cancel' | translate }}
+      </button>
+    </div>
+    <div class="navigation-buttons">
+      <button
+        *ngIf="obs.showBackButton && !obs.saving"
+        ibmButton="secondary"
+        (click)="backButtonClick()"
+      >
+        {{ 'processLinkConfiguration.back' | translate }}
+      </button>
+      <button
+        ibmButton="primary"
+        *ngIf="obs.showSaveButton && !obs.saving"
+        [disabled]="obs.enableSaveButton === false"
+        (click)="saveButtonClick()"
+      >
+        {{ 'processLinkConfiguration.complete' | translate }}
+      </button>
+    </div>
   </ibm-modal-footer>
 </ng-template>

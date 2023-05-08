@@ -21,9 +21,11 @@ import {TranslateModule} from '@ngx-translate/core';
 import {AsyncPipe, CommonModule} from '@angular/common';
 import {
   ConfirmationModalModule,
+  FormIoModule,
   ListModule,
   SearchFieldsModule,
   SpinnerModule,
+  ValtimoIbmModalDirectiveModule,
   WidgetModule,
 } from '@valtimo/components';
 import {ObjectDetailContainerComponent} from './components/object-detail-container/object-detail-container.component';
@@ -37,7 +39,6 @@ import {
 } from 'carbon-components-angular';
 import {ReactiveFormsModule} from '@angular/forms';
 import {TooltipIconModule} from '@valtimo/user-interface';
-import {FormIoModule} from '@valtimo/components';
 
 @NgModule({
   declarations: [ObjectListComponent, ObjectDetailContainerComponent, ObjectDetailComponent],
@@ -59,6 +60,7 @@ import {FormIoModule} from '@valtimo/components';
     TooltipIconModule,
     ConfirmationModalModule,
     SearchFieldsModule,
+    ValtimoIbmModalDirectiveModule,
   ],
   exports: [],
 })

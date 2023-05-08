@@ -203,7 +203,7 @@
       </ng-container>
       <v-input class="hidden-input" name="uuid" [defaultValue]="uuid"> </v-input>
     </v-form>
-    <ibm-modal [open]="showMappingModals[uuid]">
+    <ibm-modal valtimoIbmModal [open]="showMappingModals[uuid]">
       <ibm-modal-header [showCloseButton]="true" (closeSelect)="closeMappingModal(uuid)">
         <h3 ibmModalHeaderHeading>{{ 'setMapping' | pluginTranslate : pluginId | async }}</h3>
       </ibm-modal-header>

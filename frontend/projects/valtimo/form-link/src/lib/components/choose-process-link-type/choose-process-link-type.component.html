@@ -31,11 +31,12 @@
         <button
           (click)="selectProcessLinkType(processLinkTypeId)"
           ibmButton="secondary"
+          size="xl"
           class="process-link-type-button"
           [disabled]="!availableProcessLinkType.enabled"
           [vTooltip]="'processLinkTypeDisabledTooltip.' + processLinkTypeId | translate"
           [onBottom]="true"
-          [disabled]="availableProcessLinkType.enabled"
+          [tooltipDisabled]="availableProcessLinkType.enabled"
         >
           {{ 'processLinkType.' + processLinkTypeId | translate }}
           <svg

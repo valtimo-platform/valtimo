@@ -16,20 +16,11 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {ConfirmationModalComponent} from './confirmation-modal.component';
-import {ButtonModule, ModalModule} from 'carbon-components-angular';
-import {TranslateModule} from '@ngx-translate/core';
-import {ValtimoIbmModalDirectiveModule} from '../../directives';
+import {ValtimoIbmModalDirective} from './valtimo-ibm-modal.directive';
 
 @NgModule({
-  declarations: [ConfirmationModalComponent],
-  imports: [
-    CommonModule,
-    ModalModule,
-    TranslateModule,
-    ButtonModule,
-    ValtimoIbmModalDirectiveModule,
-  ],
-  exports: [ConfirmationModalComponent],
+  declarations: [ValtimoIbmModalDirective],
+  imports: [CommonModule],
+  exports: [ValtimoIbmModalDirective],
 })
-export class ConfirmationModalModule {}
+export class ValtimoIbmModalDirectiveModule {}

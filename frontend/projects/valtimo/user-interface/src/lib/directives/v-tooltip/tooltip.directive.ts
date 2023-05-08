@@ -23,7 +23,7 @@ import {TooltipComponent} from './tooltip.component';
 export class TooltipDirective implements OnInit {
   @Input('vTooltip') text = '';
   @Input() onBottom = false;
-  @Input() disabled = false;
+  @Input() tooltipDisabled = false;
 
   private overlayRef!: OverlayRef;
 
@@ -52,7 +52,7 @@ export class TooltipDirective implements OnInit {
 
   @HostListener('mouseenter')
   show() {
-    if (!this.disabled) {
+    if (!this.tooltipDisabled) {
       const tooltipRef: ComponentRef<TooltipComponent> = this.overlayRef.attach(
         new ComponentPortal(TooltipComponent)
       );
