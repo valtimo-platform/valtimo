@@ -342,7 +342,7 @@ export class ObjectListComponent {
         filters.push({key: valueKey, values: searchValue});
       } else {
         // @ts-ignore
-        filters.push({key: valueKey, values: [{value: searchValue}]});
+        filters.push({key: valueKey, values: [searchValue]});
       }
     });
 
