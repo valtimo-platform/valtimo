@@ -72,6 +72,7 @@ interface FormFlowInstance {
 
 interface FormFlowCreateRequest {
   documentId: string | null;
+  documentDefinitionName: string | null;
 }
 
 interface FormFlowCreateResult {

@@ -55,14 +55,18 @@ export class FormLinkService {
     processDefinitionKey: string,
     documentId: string
   ): Observable<any> {
+    const params = {
+      processDefinitionKey,
+    };
+    if (documentId != null) {
+      params['documentId'] = documentId;
+    }
+
     return this.http.get(
       `${this.valtimoApiConfig.endpointUri}v1/form-association/form-definition`,
       {
         headers: InterceptorSkipHeader.set('Content-Type', 'application/json'),
-        params: {
-          processDefinitionKey,
-          documentId,
-        },
+        params,
       }
     );
   }
