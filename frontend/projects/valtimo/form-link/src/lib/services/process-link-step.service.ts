@@ -17,14 +17,19 @@
 import {Injectable} from '@angular/core';
 import {Step} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable} from 'rxjs';
-import {ProcessLinkType} from '../models';
+import {ProcessLinkConfigurationStep, ProcessLinkType} from '../models';
 import {TranslateService} from '@ngx-translate/core';
+import {ProcessLinkButtonService} from './process-link-button.service';
+import {take} from 'rxjs/operators';
+import {PluginStateService} from './plugin-state.service';
+import {PluginTranslationService} from '@valtimo/plugin';
 
 @Injectable()
 export class ProcessLinkStepService {
   private readonly _steps$ = new BehaviorSubject<Array<Step>>(undefined);
   private readonly _currentStepIndex$ = new BehaviorSubject<number>(0);
   private readonly _disableSteps$ = new BehaviorSubject<boolean>(false);
+  private readonly _hasOneProcessLinkType$ = new BehaviorSubject<boolean>(false);
 
   get steps$(): Observable<Array<Step>> {
     return combineLatest([
@@ -50,17 +55,25 @@ export class ProcessLinkStepService {
     return this._currentStepIndex$.asObservable();
   }
 
-  get currentStepId$(): Observable<string> {
+  get currentStepId$(): Observable<ProcessLinkConfigurationStep | ''> {
     return combineLatest([this._steps$, this.currentStepIndex$]).pipe(
-      filter(
-        ([steps, currentStepIndex]) =>
-          !!steps && typeof currentStepIndex === 'number' && steps.length > 0
-      ),
-      map(([steps, currentStepIndex]) => steps[currentStepIndex]?.label)
+      filter(([steps, currentStepIndex]) => !!steps && typeof currentStepIndex === 'number'),
+      map(([steps, currentStepIndex]) =>
+        steps.length > 0 ? (steps[currentStepIndex]?.label as ProcessLinkConfigurationStep) : ''
+      )
     );
   }
 
-  constructor(private readonly translateService: TranslateService) {}
+  get hasOneProcessLinkType$(): Observable<boolean> {
+    return this._hasOneProcessLinkType$.asObservable();
+  }
+
+  constructor(
+    private readonly translateService: TranslateService,
+    private readonly buttonService: ProcessLinkButtonService,
+    private readonly pluginStateService: PluginStateService,
+    private readonly pluginTranslateService: PluginTranslationService
+  ) {}
 
   reset(): void {
     this._currentStepIndex$.next(0);
@@ -99,12 +112,144 @@ export class ProcessLinkStepService {
     this._currentStepIndex$.next(0);
   }
 
+  setChoosePluginConfigurationSteps(): void {
+    this._steps$.next([
+      {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.plugin'},
+      {label: 'choosePluginConfiguration'},
+      {label: 'choosePluginAction', disabled: true},
+      {label: 'configurePluginAction', disabled: true},
+    ]);
+    this._currentStepIndex$.next(1);
+  }
+
+  setSingleChoosePluginConfigurationSteps(): void {
+    this._steps$.next([
+      {label: 'choosePluginConfiguration'},
+      {label: 'choosePluginAction', disabled: true},
+      {label: 'configurePluginAction', disabled: true},
+    ]);
+    this._currentStepIndex$.next(0);
+  }
+
+  setChoosePluginActionSteps(): void {
+    combineLatest([
+      this._hasOneProcessLinkType$,
+      this.pluginStateService.selectedPluginConfiguration$,
+    ])
+      .pipe(take(1))
+      .subscribe(([hasOneType, selectedConfiguration]) => {
+        if (hasOneType) {
+          this._steps$.next([
+            {label: 'choosePluginConfiguration', secondaryLabel: selectedConfiguration.title},
+            {label: 'choosePluginAction'},
+            {label: 'configurePluginAction', disabled: true},
+          ]);
+          this._currentStepIndex$.next(1);
+          this.buttonService.showNextButton();
+          this.buttonService.showBackButton();
+          this.buttonService.hideSaveButton();
+          this.buttonService.disableNextButton();
+        } else {
+          this._steps$.next([
+            {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.plugin'},
+            {label: 'choosePluginConfiguration', secondaryLabel: selectedConfiguration.title},
+            {label: 'choosePluginAction'},
+            {label: 'configurePluginAction', disabled: true},
+          ]);
+          this._currentStepIndex$.next(2);
+          this.buttonService.showNextButton();
+          this.buttonService.showBackButton();
+
+          this.buttonService.hideSaveButton();
+          this.buttonService.disableNextButton();
+        }
+      });
+  }
+
+  setConfigurePluginActionSteps(): void {
+    combineLatest([
+      this._hasOneProcessLinkType$,
+      this.pluginStateService.selectedPluginConfiguration$,
+      this.pluginStateService.selectedPluginFunction$,
+    ])
+      .pipe(take(1))
+      .subscribe(([hasOneType, selectedConfiguration, selectedFunction]) => {
+        const selectedFunctionTranslation = this.pluginTranslateService.instant(
+          selectedFunction.key,
+          selectedConfiguration.pluginDefinition.key
+        );
+
+        if (hasOneType) {
+          this._steps$.next([
+            {label: 'choosePluginConfiguration', secondaryLabel: selectedConfiguration.title},
+            {label: 'choosePluginAction', secondaryLabel: selectedFunctionTranslation},
+            {label: 'configurePluginAction'},
+          ]);
+          this._currentStepIndex$.next(2);
+          this.buttonService.hideNextButton();
+          this.buttonService.showSaveButton();
+        } else {
+          this._steps$.next([
+            {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.plugin'},
+            {label: 'choosePluginConfiguration', secondaryLabel: selectedConfiguration.title},
+            {label: 'choosePluginAction', secondaryLabel: selectedFunctionTranslation},
+            {label: 'configurePluginAction'},
+          ]);
+          this._currentStepIndex$.next(3);
+          this.buttonService.hideNextButton();
+          this.buttonService.showSaveButton();
+        }
+      });
+  }
+
   disableSteps(): void {
     this._disableSteps$.next(true);
   }
 
   enableSteps(): void {
     this._disableSteps$.next(false);
+  }
+
+  setHasOneProcessLinkType(hasOne: boolean): void {
+    this._hasOneProcessLinkType$.next(hasOne);
+  }
+
+  setProcessLinkTypeSteps(processLinkTypeId: string, hasOneOption?: boolean): void {
+    switch (processLinkTypeId) {
+      case 'form':
+        if (hasOneOption) {
+          this.setSingleFormStep();
+          this.buttonService.hideSaveButton();
+          this.buttonService.hideBackButton();
+        } else {
+          this.setFormSteps();
+          this.buttonService.showSaveButton();
+          this.buttonService.showBackButton();
+        }
+        break;
+      case 'form-flow':
+        if (hasOneOption) {
+          this.setSingleFormFlowStep();
+          this.buttonService.hideSaveButton();
+          this.buttonService.hideBackButton();
+        } else {
+          this.setFormFlowSteps();
+          this.buttonService.showSaveButton();
+          this.buttonService.showBackButton();
+        }
+        break;
+      case 'plugin':
+        if (hasOneOption) {
+          this.setSingleChoosePluginConfigurationSteps();
+          this.buttonService.hideBackButton();
+          this.buttonService.showNextButton();
+        } else {
+          this.setChoosePluginConfigurationSteps();
+          this.buttonService.showBackButton();
+          this.buttonService.showNextButton();
+        }
+        break;
+    }
   }
 
   private setChoiceSteps(): void {

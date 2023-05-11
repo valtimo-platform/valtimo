@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-.step-description {
-  margin-top: 40px;
-}
-
 ::ng-deep .process-link-modal-container .cds--modal-container {
   max-width: 960px;
   min-height: 70%;
@@ -42,6 +38,10 @@
   box-sizing: border-box;
 }
 
+.navigation-buttons {
+  justify-content: flex-end;
+}
+
 .navigation-buttons,
 .cancel-button {
   max-width: 50%;
@@ -60,4 +60,14 @@
   button {
     min-width: 100%;
   }
+}
+
+.process-link-progress {
+  width: 100%;
+  margin-top: 32px;
+  margin-bottom: 40px;
+}
+
+.hidden {
+  visibility: hidden;
 }
