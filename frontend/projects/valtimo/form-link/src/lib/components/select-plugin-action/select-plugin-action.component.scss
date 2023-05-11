@@ -38,3 +38,37 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  flex-direction: row;
+}
+
+.action-tiles {
+  margin-top: 24px;
+}
+
+::ng-deep .choose-plugin-action ibm-selection-tile {
+  display: flex;
+  width: calc(33.3% - (16px / 3));
+}
+
+::ng-deep .choose-plugin-action .cds--tile {
+  width: 100%;
+}
+
+::ng-deep .choose-plugin-action ibm-tile-group {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+::ng-deep .choose-plugin-action ibm-selection-tile:not(:nth-child(4n)):not(:first-child) {
+  margin-left: 8px;
+}
+
+::ng-deep .choose-plugin-action ibm-selection-tile:nth-child(n + 4) {
+  margin-top: 8px;
+}

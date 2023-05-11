@@ -16,9 +16,13 @@
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormService} from '@valtimo/form';
-import {combineLatest, map, Observable, Subscription, switchMap} from 'rxjs';
-import {ProcessLinkService, ProcessLinkState2Service} from '../../services';
-import {FormDefinitionListItem} from '../../models';
+import {combineLatest, map, Observable, Subscription, switchMap, tap} from 'rxjs';
+import {
+  ProcessLinkButtonService,
+  ProcessLinkService,
+  ProcessLinkStateService,
+} from '../../services';
+import {FormDefinitionListItem, FormProcessLinkUpdateRequestDto} from '../../models';
 import {take} from 'rxjs/operators';
 
 @Component({
@@ -30,14 +34,23 @@ export class SelectFormComponent implements OnInit, OnDestroy {
   public readonly saving$ = this.stateService.saving$;
   private readonly formDefinitions$ = this.formService.getAllFormDefinitions();
   public readonly formDefinitionListItems$: Observable<Array<FormDefinitionListItem>> =
-    this.formDefinitions$.pipe(
-      map(formDefinitions =>
+    combineLatest([this.stateService.selectedProcessLink$, this.formDefinitions$]).pipe(
+      map(([selectedProcessLink, formDefinitions]) =>
         formDefinitions.map(definition => ({
           content: definition.name,
           id: definition.id,
-          selected: false,
+          selected: selectedProcessLink
+            ? selectedProcessLink.formDefinitionId === definition.id
+            : false,
         }))
-      )
+      ),
+      tap(formDefinitionListItems => {
+        const selectedItem = formDefinitionListItems.find(item => item.selected);
+
+        if (selectedItem) {
+          this.selectFormDefinition(selectedItem);
+        }
+      })
     );
 
   private _selectedFormDefinition!: FormDefinitionListItem;
@@ -45,8 +58,9 @@ export class SelectFormComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly formService: FormService,
-    private readonly stateService: ProcessLinkState2Service,
-    private readonly processLinkService: ProcessLinkService
+    private readonly stateService: ProcessLinkStateService,
+    private readonly processLinkService: ProcessLinkService,
+    private readonly buttonService: ProcessLinkButtonService
   ) {}
 
   ngOnInit(): void {
@@ -61,16 +75,16 @@ export class SelectFormComponent implements OnInit, OnDestroy {
   selectFormDefinition(formDefinition: FormDefinitionListItem): void {
     if (typeof formDefinition === 'object' && formDefinition.id) {
       this._selectedFormDefinition = formDefinition;
-      this.stateService.enableSaveButton();
+      this.buttonService.enableSaveButton();
     } else {
       this._selectedFormDefinition = null;
-      this.stateService.disableSaveButton();
+      this.buttonService.disableSaveButton();
     }
   }
 
   private openBackButtonSubscription(): void {
     this._subscriptions.add(
-      this.stateService.backButtonClick$.subscribe(() => {
+      this.buttonService.backButtonClick$.subscribe(() => {
         this.stateService.setInitial();
       })
     );
@@ -78,7 +92,7 @@ export class SelectFormComponent implements OnInit, OnDestroy {
 
   private openSaveButtonSubscription(): void {
     this._subscriptions.add(
-      this.stateService.saveButtonClick$.subscribe(() => {
+      this.buttonService.saveButtonClick$.subscribe(() => {
         this.stateService.startSaving();
         this.saveFormLink();
       })
@@ -86,6 +100,34 @@ export class SelectFormComponent implements OnInit, OnDestroy {
   }
 
   private saveFormLink(): void {
+    this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
+      if (selectedProcessLink) {
+        this.updateProcessLink();
+      } else {
+        this.saveNewProcessLink();
+      }
+    });
+  }
+
+  private updateProcessLink(): void {
+    this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
+      const updateProcessLinkRequest: FormProcessLinkUpdateRequestDto = {
+        id: selectedProcessLink.id,
+        formDefinitionId: this._selectedFormDefinition.id,
+      };
+
+      this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
+        () => {
+          this.stateService.closeModal();
+        },
+        () => {
+          this.stateService.stopSaving();
+        }
+      );
+    });
+  }
+
+  private saveNewProcessLink(): void {
     combineLatest([this.stateService.modalParams$, this.stateService.selectedProcessLinkTypeId$])
       .pipe(
         take(1),

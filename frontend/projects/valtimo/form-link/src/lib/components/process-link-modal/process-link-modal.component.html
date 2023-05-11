@@ -25,8 +25,11 @@
     showSaveButton: showSaveButton$ | async,
     enableSaveButton: enableSaveButton$ | async,
     showBackButton: showBackButton$ | async,
-    hasOneOption: hasOneOption$ | async,
-    saving: saving$ | async
+    showNextButton: showNextButton$ | async,
+    enableNextButton: enableNextButton$ | async,
+    saving: saving$ | async,
+    hideProgressIndicator: hideProgressIndicator$ | async,
+    typeOfSelectedProgressLink: typeOfSelectedProcessLink$ | async
   } as obs"
 >
   <ibm-modal valtimoIbmModal [open]="obs.showModal" size="lg">
@@ -38,9 +41,11 @@
             | translate : {processStepName: obs.processStepName || '-'}
         }}
       </h3>
+      <div class="process-link-progress" *ngIf="!obs.typeOfSelectedProgressLink">
+        <ng-container *ngTemplateOutlet="progressIndicator; context: {obs: obs}"></ng-container>
+      </div>
     </ibm-modal-header>
     <section ibmModalContent>
-      <ng-container *ngTemplateOutlet="progressIndicator; context: {obs: obs}"></ng-container>
       <ng-container *ngTemplateOutlet="stepContent; context: {obs: obs}"></ng-container>
     </section>
     <ng-template *ngTemplateOutlet="footer; context: {obs: obs}"></ng-template>
@@ -49,7 +54,7 @@
 
 <ng-template #progressIndicator let-obs="obs">
   <ibm-progress-indicator
-    *ngIf="obs.steps && !obs.hasOneOption"
+    *ngIf="obs.steps && !obs.hideProgressIndicator"
     [steps]="obs.steps"
     [current]="obs.currentStepIndex"
     spacing="equal"
@@ -60,15 +65,39 @@
   <div class="ibm-loading-container" *ngIf="obs.saving">
     <ibm-loading></ibm-loading>
   </div>
-  <ng-container *ngIf="obs.currentStepId === 'chooseProcessLinkType'">
-    <valtimo-choose-process-link-type></valtimo-choose-process-link-type>
-  </ng-container>
-  <ng-container *ngIf="obs.currentStepId === 'selectForm'">
-    <valtimo-select-form></valtimo-select-form>
-  </ng-container>
-  <ng-container *ngIf="obs.currentStepId === 'selectFormFlow'">
-    <valtimo-select-form-flow></valtimo-select-form-flow>
-  </ng-container>
+  <div [ngClass]="{hidden: obs.saving}">
+    <ng-container>
+      <ng-container *ngIf="obs.currentStepId === 'chooseProcessLinkType'">
+        <valtimo-choose-process-link-type></valtimo-choose-process-link-type>
+      </ng-container>
+      <ng-container
+        *ngIf="obs.currentStepId === 'selectForm' || obs.typeOfSelectedProgressLink === 'form'"
+      >
+        <valtimo-select-form></valtimo-select-form>
+      </ng-container>
+      <ng-container
+        *ngIf="
+          obs.currentStepId === 'selectFormFlow' || obs.typeOfSelectedProgressLink === 'form-flow'
+        "
+      >
+        <valtimo-select-form-flow></valtimo-select-form-flow>
+      </ng-container>
+      <ng-container *ngIf="obs.currentStepId === 'choosePluginConfiguration'">
+        <valtimo-select-plugin-configuration></valtimo-select-plugin-configuration>
+      </ng-container>
+      <ng-container *ngIf="obs.currentStepId === 'choosePluginAction'">
+        <valtimo-select-plugin-action></valtimo-select-plugin-action>
+      </ng-container>
+      <ng-container
+        *ngIf="
+          obs.currentStepId === 'configurePluginAction' ||
+          obs.typeOfSelectedProgressLink === 'plugin'
+        "
+      >
+        <valtimo-plugin-action-configuration></valtimo-plugin-action-configuration>
+      </ng-container>
+    </ng-container>
+  </div>
 </ng-template>
 
 <ng-template #footer let-obs="obs">
@@ -88,7 +117,22 @@
       </button>
       <button
         ibmButton="primary"
-        *ngIf="obs.showSaveButton && !obs.saving"
+        *ngIf="obs.showNextButton && !obs.saving"
+        [disabled]="obs.enableNextButton === false"
+        (click)="nextButtonClick()"
+      >
+        {{ 'processLinkConfiguration.next' | translate }}
+      </button>
+      <button
+        ibmButton="danger--primary"
+        *ngIf="obs.typeOfSelectedProgressLink"
+        (click)="unlinkButtonClick()"
+      >
+        {{ 'processLinkConfiguration.unlink' | translate }}
+      </button>
+      <button
+        ibmButton="primary"
+        *ngIf="(obs.showSaveButton && !obs.saving) || obs.typeOfSelectedProgressLink"
         [disabled]="obs.enableSaveButton === false"
         (click)="saveButtonClick()"
       >

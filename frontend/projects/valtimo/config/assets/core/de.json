@@ -1073,10 +1073,15 @@
     "chooseProcessLinkTypeDescription": "Ein Prozessschritt kann mehrere Aktionen ausführen. Wählen Sie unten aus, mit welcher Art von Aktion Sie diesen Schritt verknüpfen möchten.",
     "chooseFormDescription": "Wählen Sie hier das Formular aus, das Sie mit dem Prozessschritt verknüpfen möchten.",
     "chooseFormFlowDescription": "Wählen Sie hier das FormFlow aus, das Sie mit dem Prozessschritt verknüpfen möchten.",
+    "choosePluginConfigurationDescription": "Wählen Sie hier die Plugin-Konfiguration aus, die Sie mit dem Prozessschritt verknüpfen möchten.",
+    "choosePluginActionDescription": "Wählen Sie die Aktion aus, die Sie mit dem Plugin ausführen möchten.",
     "chooseForm": "Form wählen",
     "cancel": "Stornieren",
     "complete": "Vervollständigen",
-    "back": "Zurück"
+    "back": "Zurück",
+    "next": "Nächste",
+    "pluginDescription": "Plugin-Beschreibung",
+    "unlink": "Verknüpfung aufheben"
   },
   "processLinkType": {
     "plugin": "Plugin",
@@ -1087,7 +1092,10 @@
     "chooseProcessLinkType": "Linktyp wählen",
     "empty": "........",
     "selectForm": "Wählen Sie Ihr Formular",
-    "selectFormFlow": "Wählen Sie Ihr FormFlow"
+    "selectFormFlow": "Wählen Sie Ihr FormFlow",
+    "choosePluginConfiguration": "Plugin-Konfiguration wählen",
+    "choosePluginAction": "Wählen Sie Ihre Aktion",
+    "configurePluginAction": "Konfigurieren Sie Ihre Aktion"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "Es sind keine Plugin-Konfigurationen verfügbar. Erstellen Sie eine Plugin-Konfiguration, um sie mit einem Prozessschritt verknüpfen zu können.",

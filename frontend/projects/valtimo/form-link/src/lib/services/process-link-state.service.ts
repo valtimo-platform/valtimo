@@ -14,174 +14,156 @@
  * limitations under the License.
  */
 
-import {Injectable} from '@angular/core';
-import {BehaviorSubject, combineLatest, Observable, Subject, switchMap} from 'rxjs';
-import {map} from 'rxjs/operators';
-import {
-  PluginService,
-  PluginSpecification,
-  PluginConfiguration,
-  PluginDefinition,
-  PluginFunction,
-  PluginConfigurationWithLogo,
-  PluginManagementService,
-} from '@valtimo/plugin';
-import {ProcessLink, ProcessLinkModalType} from '../models';
+import {Injectable, OnDestroy} from '@angular/core';
+import {BehaviorSubject, map, Observable, Subscription} from 'rxjs';
+import {ModalParams, ProcessLink, ProcessLinkType} from '../models';
+import {ProcessLinkStepService} from './process-link-step.service';
+import {ProcessLinkButtonService} from './process-link-button.service';
+import {PluginStateService} from './plugin-state.service';
 
-@Injectable({
-  providedIn: 'root',
-})
-export class ProcessLinkStateService {
-  private readonly _selectedPluginDefinition$ = new BehaviorSubject<PluginDefinition>(undefined);
-  private readonly _selectedPluginConfiguration$ = new BehaviorSubject<PluginConfiguration>(
-    undefined
-  );
-  private readonly _selectedPluginFunction$ = new BehaviorSubject<PluginFunction>(undefined);
+@Injectable()
+export class ProcessLinkStateService implements OnDestroy {
+  private readonly _showModal$ = new BehaviorSubject<boolean>(false);
+  private readonly _availableProcessLinkTypes$ = new BehaviorSubject<Array<ProcessLinkType>>([]);
+  private readonly _elementName$ = new BehaviorSubject<string>('');
+  private readonly _selectedProcessLinkTypeId$ = new BehaviorSubject<string>('');
+  private readonly _saving$ = new BehaviorSubject<boolean>(false);
+  private readonly _modalParams$ = new BehaviorSubject<ModalParams>(undefined);
   private readonly _selectedProcessLink$ = new BehaviorSubject<ProcessLink>(undefined);
-  private readonly _inputDisabled$ = new BehaviorSubject<boolean>(false);
-  private readonly _save$ = new Subject<null>();
-  private readonly _saveModify$ = new Subject<null>();
-  private readonly _modalType$ = new BehaviorSubject<ProcessLinkModalType>('create');
 
-  constructor(
-    private readonly pluginManagementService: PluginManagementService,
-    private readonly pluginService: PluginService
-  ) {}
+  private _availableProcessLinkTypesSubscription!: Subscription;
 
-  get selectedPluginDefinition$(): Observable<PluginDefinition> {
-    return this._selectedPluginDefinition$.asObservable();
+  get showModal$(): Observable<boolean> {
+    return this._showModal$.asObservable();
   }
-
-  get selectedPluginConfiguration$(): Observable<PluginConfiguration> {
-    return this._selectedPluginConfiguration$.asObservable();
+  get elementName$(): Observable<string> {
+    return this._elementName$.asObservable();
   }
-
-  get selectedPluginFunction$(): Observable<PluginFunction> {
-    return this._selectedPluginFunction$.asObservable();
+  get availableProcessLinkTypes$(): Observable<Array<ProcessLinkType>> {
+    return this._availableProcessLinkTypes$.asObservable();
   }
-
-  get inputDisabled$(): Observable<boolean> {
-    return this._inputDisabled$.asObservable();
+  get hideProgressIndicator$(): Observable<boolean> {
+    return this._availableProcessLinkTypes$
+      .asObservable()
+      .pipe(
+        map(
+          availableTypes =>
+            (availableTypes.length === 1 && availableTypes[0].processLinkType === 'form') ||
+            availableTypes[0].processLinkType === 'form-flow'
+        )
+      );
   }
-
-  get isCreateModal$(): Observable<boolean> {
-    return this._modalType$.pipe(map(modalType => modalType === 'create'));
+  get selectedProcessLinkTypeId$(): Observable<string> {
+    return this._selectedProcessLinkTypeId$.asObservable();
   }
-
-  get isEditModal$(): Observable<boolean> {
-    return this._modalType$.pipe(map(modalType => modalType === 'edit'));
+  get saving$(): Observable<boolean> {
+    return this._saving$.asObservable();
   }
-
-  get save$(): Observable<any> {
-    return this.isCreateModal$.pipe(
-      switchMap(isCreateModal =>
-        isCreateModal ? this._save$.asObservable() : this._saveModify$.asObservable()
-      )
-    );
+  get modalParams$(): Observable<ModalParams> {
+    return this._modalParams$.asObservable();
   }
 
   get selectedProcessLink$(): Observable<ProcessLink> {
     return this._selectedProcessLink$.asObservable();
   }
 
-  get modalType$(): Observable<ProcessLinkModalType> {
-    return this._modalType$.asObservable();
+  get typeOfSelectedProcessLink$(): Observable<string> {
+    return this.selectedProcessLink$.pipe(map(processLink => processLink?.processLinkType || ''));
   }
 
-  get functionKey$(): Observable<string> {
-    return this.isCreateModal$.pipe(
-      switchMap(isCreateModal =>
-        isCreateModal
-          ? this._selectedPluginFunction$.pipe(map(pluginFunction => pluginFunction?.key))
-          : this._selectedProcessLink$.pipe(
-              map(processLink => processLink?.pluginActionDefinitionKey)
-            )
-      )
-    );
+  constructor(
+    private readonly processLinkStepService: ProcessLinkStepService,
+    private readonly buttonService: ProcessLinkButtonService,
+    private readonly pluginStateService: PluginStateService
+  ) {
+    this.openAvailableProcessLinkTypesSubscription();
   }
 
-  get pluginDefinitionKey$(): Observable<string> {
-    return this.isCreateModal$.pipe(
-      switchMap(isCreateModal =>
-        isCreateModal
-          ? this._selectedPluginConfiguration$.pipe(
-              map(configuration => configuration?.pluginDefinition.key)
-            )
-          : combineLatest([
-              this._selectedProcessLink$,
-              this.pluginService.pluginSpecifications$,
-            ]).pipe(
-              map(([processLink, pluginSpecifications]) => {
-                const pluginSpecification = pluginSpecifications.find(specification => {
-                  const functionKeys =
-                    specification?.functionConfigurationComponents &&
-                    Object.keys(specification.functionConfigurationComponents);
-                  return functionKeys?.includes(processLink?.pluginActionDefinitionKey);
-                });
-
-                return pluginSpecification?.pluginId;
-              })
-            )
-      )
-    );
+  ngOnDestroy(): void {
+    this._availableProcessLinkTypesSubscription?.unsubscribe();
   }
 
-  selectPluginDefinition(definition: PluginDefinition): void {
-    this._selectedPluginDefinition$.next(definition);
+  setAvailableProcessLinkTypes(processLinkTypes: Array<ProcessLinkType>): void {
+    const hasOneOption = processLinkTypes.length === 1;
+    this._availableProcessLinkTypes$.next(processLinkTypes);
+    this.processLinkStepService.setHasOneProcessLinkType(hasOneOption);
+
+    if (hasOneOption) {
+      this.selectProcessLinkType(processLinkTypes[0].processLinkType, hasOneOption);
+    }
   }
 
-  selectPluginConfiguration(configuration: PluginConfiguration): void {
-    this._selectedPluginConfiguration$.next(configuration);
+  setElementName(name: string): void {
+    this._elementName$.next(name);
   }
 
-  selectPluginFunction(pluginFunction: PluginFunction): void {
-    this._selectedPluginFunction$.next(pluginFunction);
+  showModal(): void {
+    this._showModal$.next(true);
+  }
+
+  closeModal(): void {
+    this._showModal$.next(false);
+
+    setTimeout(() => {
+      this.reset();
+    }, 240);
+  }
+
+  selectProcessLinkType(processLinkTypeId: string, hasOneOption?: boolean): void {
+    this._selectedProcessLinkTypeId$.next(processLinkTypeId);
+    this.processLinkStepService.setProcessLinkTypeSteps(processLinkTypeId, hasOneOption);
+  }
+
+  clearSelectedProcessLinkType(): void {
+    this._selectedProcessLinkTypeId$.next('');
+  }
+
+  startSaving(): void {
+    this._saving$.next(true);
+    this.processLinkStepService.disableSteps();
+  }
+
+  stopSaving(): void {
+    this._saving$.next(false);
+    this.processLinkStepService.enableSteps();
+  }
+
+  setInitial(): void {
+    const availableTypes = this._availableProcessLinkTypes$.getValue();
+    this.buttonService.resetButtons();
+    this.processLinkStepService.setInitialSteps(availableTypes);
+  }
+
+  setModalParams(params: ModalParams): void {
+    this._modalParams$.next(params);
   }
 
   selectProcessLink(processLink: ProcessLink): void {
     this._selectedProcessLink$.next(processLink);
-  }
-
-  deselectPluginDefinition(): void {
-    this._selectedPluginDefinition$.next(undefined);
-  }
-
-  deselectPluginConfiguration(): void {
-    this._selectedPluginConfiguration$.next(undefined);
-  }
-
-  deselectPluginFunction(): void {
-    this._selectedPluginFunction$.next(undefined);
+    this.pluginStateService.selectProcessLink(processLink);
   }
 
   deselectProcessLink(): void {
     this._selectedProcessLink$.next(undefined);
+    this.pluginStateService.deselectProcessLink();
   }
 
-  disableInput(): void {
-    this._inputDisabled$.next(true);
+  private openAvailableProcessLinkTypesSubscription(): void {
+    this._availableProcessLinkTypesSubscription = this._availableProcessLinkTypes$.subscribe(
+      availableProcessLinkTypes => {
+        if (availableProcessLinkTypes.length > 1) {
+          this.setInitial();
+        }
+      }
+    );
   }
 
-  enableInput(): void {
-    this._inputDisabled$.next(false);
-  }
-
-  save(): void {
-    this._save$.next(null);
-  }
-
-  saveModify(): void {
-    this._saveModify$.next(null);
-  }
-
-  setModalType(type: ProcessLinkModalType): void {
-    this._modalType$.next(type);
-  }
-
-  clear(): void {
-    this.deselectPluginDefinition();
-    this.deselectPluginConfiguration();
-    this.deselectPluginFunction();
+  private reset(): void {
+    this.setAvailableProcessLinkTypes([]);
+    this.processLinkStepService.reset();
+    this.stopSaving();
+    this.buttonService.resetButtons();
+    this.clearSelectedProcessLinkType();
     this.deselectProcessLink();
   }
 }

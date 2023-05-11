@@ -14,26 +14,30 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {map, switchMap} from 'rxjs/operators';
-import {ProcessLinkStateService} from '../../services/process-link-state.service';
-import {combineLatest, Observable, of} from 'rxjs';
+import {PluginStateService} from '../../services/plugin-state.service';
+import {combineLatest, Observable, of, Subscription} from 'rxjs';
 import {
   PluginConfiguration,
   PluginConfigurationWithLogo,
   PluginManagementService,
   PluginService,
 } from '@valtimo/plugin';
-import {ModalService} from '@valtimo/user-interface';
+import {
+  ProcessLinkButtonService,
+  ProcessLinkStateService,
+  ProcessLinkStepService,
+} from '../../services';
 
 @Component({
   selector: 'valtimo-select-plugin-configuration',
   templateUrl: './select-plugin-configuration.component.html',
   styleUrls: ['./select-plugin-configuration.component.scss'],
 })
-export class SelectPluginConfigurationComponent {
+export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
   readonly pluginConfigurations$: Observable<Array<PluginConfigurationWithLogo>> =
-    this.modalService.modalData$.pipe(
+    this.stateService.modalParams$.pipe(
       switchMap(modalData =>
         combineLatest([
           modalData?.element?.type
@@ -52,22 +56,51 @@ export class SelectPluginConfigurationComponent {
       )
     );
 
-  readonly selectedPluginConfiguration$ = this.processLinkStateService.selectedPluginConfiguration$;
+  readonly selectedPluginConfiguration$ = this.pluginStateService.selectedPluginConfiguration$;
+
+  private _subscriptions = new Subscription();
 
   constructor(
     private readonly pluginManagementService: PluginManagementService,
-    private readonly processLinkStateService: ProcessLinkStateService,
+    private readonly pluginStateService: PluginStateService,
     private readonly pluginService: PluginService,
-    private readonly modalService: ModalService
+    private readonly stateService: ProcessLinkStateService,
+    private readonly buttonService: ProcessLinkButtonService,
+    private readonly stepService: ProcessLinkStepService
   ) {}
 
-  selectConfiguration(configuration: PluginConfiguration): void {
-    this.processLinkStateService.selectPluginDefinition({key: configuration.pluginDefinition.key});
-    this.processLinkStateService.selectPluginConfiguration(configuration);
+  ngOnInit(): void {
+    this.openBackButtonSubscription();
+    this.openNextButtonSubscription();
   }
 
-  deselectConfiguration(): void {
-    this.processLinkStateService.deselectPluginDefinition();
-    this.processLinkStateService.deselectPluginConfiguration();
+  ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
+
+  selected(event: {value: PluginConfiguration}): void {
+    this.selectConfiguration(event.value);
+    this.buttonService.enableNextButton();
+  }
+
+  private selectConfiguration(configuration: PluginConfiguration): void {
+    this.pluginStateService.selectPluginDefinition({key: configuration.pluginDefinition.key});
+    this.pluginStateService.selectPluginConfiguration(configuration);
+  }
+
+  private openBackButtonSubscription(): void {
+    this._subscriptions.add(
+      this.buttonService.backButtonClick$.subscribe(() => {
+        this.stateService.setInitial();
+      })
+    );
+  }
+
+  private openNextButtonSubscription(): void {
+    this._subscriptions.add(
+      this.buttonService.nextButtonClick$.subscribe(() => {
+        this.stepService.setChoosePluginActionSteps();
+      })
+    );
   }
 }
