@@ -3,15 +3,15 @@
   "license": "EUPL-1.2",
   "version": "10.4.0",
   "peerDependencies": {
-    "@angular/common": "^14.2.5",
-    "@angular/core": "^14.2.5",
-    "@angular/cdk": "^14.2.4"
+    "@angular/common": "^14.3.0",
+    "@angular/core": "^14.3.0",
+    "@angular/cdk": "^14.2.7"
   },
   "dependencies": {
     "ngx-skeleton-loader": "^6.0.0",
-    "@ng-select/ng-select": "^9.0.2",
-    "@mdi/font": "^7.0.96",
-    "tslib": "^2.0.0",
+    "@ng-select/ng-select": "^9.1.0",
+    "@mdi/font": "^7.2.96",
+    "tslib": "^2.5.0",
     "uuid": "^9.0.0",
     "flatpickr": "^4.6.13"
   }
