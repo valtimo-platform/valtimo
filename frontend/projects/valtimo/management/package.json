@@ -3,17 +3,17 @@
   "license": "EUPL-1.2",
   "version": "10.4.0",
   "peerDependencies": {
-    "@angular/common": "^14.3.0",
-    "@angular/core": "^14.3.0",
-    "@angular/elements": "^14.3.0"
+    "@angular/common": "^14.2.5",
+    "@angular/core": "^14.2.5",
+    "@angular/elements": "^14.2.5"
   },
   "dependencies": {
-    "jquery": "3.6.4",
+    "jquery": "3.6.0",
     "moment": "^2.29.4",
     "@ngx-translate/core": "^14.0.0",
     "@ngx-translate/http-loader": "7.0.0",
-    "@ng-bootstrap/ng-bootstrap": "^11.0.1",
-    "tslib": "^2.5.0"
+    "@ng-bootstrap/ng-bootstrap": "^11.0.0",
+    "tslib": "^2.0.0"
   },
   "devDependencies": {
     "karma-moment": "^0.1.0"

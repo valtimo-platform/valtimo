@@ -3,11 +3,11 @@
   "license": "EUPL-1.2",
   "version": "10.4.0",
   "peerDependencies": {
-    "@angular/common": "^14.3.0",
-    "@angular/core": "^14.3.0",
-    "@angular/flex-layout": "^14.0.0-beta.41"
+    "@angular/common": "^14.2.5",
+    "@angular/core": "^14.2.5",
+    "@angular/flex-layout": "^14.0.0-beta.40"
   },
   "dependencies": {
-    "tslib": "^2.5.0"
+    "tslib": "^2.0.0"
   }
 }

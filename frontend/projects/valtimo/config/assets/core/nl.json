@@ -1074,15 +1074,10 @@
     "chooseProcessLinkTypeDescription": "Een processtap kan verschillende acties uitvoeren. Kies hieronder aan welk type actie je deze stap wilt koppelen.",
     "chooseFormDescription": "Kies hier het formulier dat je aan de processtap wilt koppelen.",
     "chooseFormFlowDescription": "Kies hier de FormFlow die je aan de processtap wilt koppelen.",
-    "choosePluginConfigurationDescription": "Kies hier de pluginconfiguratie die je aan de processtap wilt koppelen.",
-    "choosePluginActionDescription": "Kies de actie die je met de plugin wilt uitvoeren.",
     "chooseForm": "Selecteer formulier",
     "cancel": "Annuleren",
     "complete": "Voltooien",
-    "back": "Terug",
-    "next": "Volgende",
-    "pluginDescription": "Plugin-omschrijving",
-    "unlink": "Ontkoppelen"
+    "back": "Terug"
   },
   "processLinkType": {
     "plugin": "Plugin",
@@ -1093,10 +1088,7 @@
     "chooseProcessLinkType": "Kies soort koppeling",
     "empty": "........",
     "selectForm": "Selecteer je formulier",
-    "selectFormFlow": "Selecteer je FormFlow",
-    "choosePluginConfiguration": "Kies pluginconfiguratie",
-    "choosePluginAction": "Kies je actie",
-    "configurePluginAction": "Configureer je actie"
+    "selectFormFlow": "Selecteer je FormFlow"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een pluginconfiguratie aan om deze te kunnen koppelen aan een processtap.",

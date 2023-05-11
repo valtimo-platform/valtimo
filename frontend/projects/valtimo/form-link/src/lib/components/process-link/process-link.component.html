@@ -19,7 +19,96 @@
     <valtimo-form-link-process-diagram
       (bpmnElementModalOpen)="openModal($event)"
     ></valtimo-form-link-process-diagram>
+    <valtimo-form-link-modal #formLinkModal></valtimo-form-link-modal>
+    <ng-template #extension></ng-template>
   </div>
 </div>
 
-<valtimo-process-link-modal></valtimo-process-link-modal>
+<v-stepper-container
+  (completeEvent)="complete()"
+  (cancelClickEvent)="hide()"
+  [disabled]="inputDisabled$ | async"
+  [returnToFirstStepSubject$]="returnToFirstStepSubject$"
+>
+  <v-modal #createProcessLink (closeEvent)="hide()" [maxWidthPx]="750">
+    <div role="header">
+      <v-stepper-header></v-stepper-header>
+    </div>
+    <div role="content">
+      <v-stepper-content>
+        <v-stepper-step titleTranslationKey="pluginSteps.step1">
+          <valtimo-select-plugin-configuration></valtimo-select-plugin-configuration>
+        </v-stepper-step>
+        <v-stepper-step titleTranslationKey="pluginSteps.step2">
+          <valtimo-select-plugin-function></valtimo-select-plugin-function>
+        </v-stepper-step>
+        <v-stepper-step titleTranslationKey="pluginSteps.step3">
+          <valtimo-plugin-function-configuration
+            *ngIf="isCreateModal$ | async"
+            (valid)="onValid($event)"
+            (configuration)="onConfiguration($event)"
+          ></valtimo-plugin-function-configuration>
+        </v-stepper-step>
+      </v-stepper-content>
+    </div>
+    <div role="footer">
+      <v-stepper-footer>
+        <v-stepper-footer-step
+          nextButtonTranslationKey="pluginSteps.step2"
+          [nextButtonEnabled]="(selectedPluginConfiguration$ | async) !== undefined"
+        ></v-stepper-footer-step>
+        <v-stepper-footer-step
+          nextButtonTranslationKey="pluginSteps.step3"
+          [nextButtonEnabled]="(selectedPluginFunction$ | async) !== undefined"
+        ></v-stepper-footer-step>
+        <v-stepper-footer-step
+          completeButtonTranslationKey="pluginSteps.complete"
+          [completeButtonEnabled]="functionConfigurationValid$ | async"
+        ></v-stepper-footer-step>
+      </v-stepper-footer>
+    </div>
+  </v-modal>
+</v-stepper-container>
+
+<v-modal #editProcessLink (closeEvent)="hide()">
+  <div role="header">
+    <div
+      class="edit-function-title"
+      *ngIf="{
+        pluginDefinitionKey: pluginDefinitionKey$ | async,
+        functionKey: functionKey$ | async
+      } as obs"
+    >
+      <v-title [margin]="false" type="h2">{{
+        ('title' | pluginTranslate : obs.pluginDefinitionKey | async) +
+          ' - ' +
+          (obs.functionKey | pluginTranslate : obs.pluginDefinitionKey | async)
+      }}</v-title>
+    </div>
+  </div>
+  <div role="content">
+    <valtimo-plugin-function-configuration
+      *ngIf="(selectedProcessLink$ | async) && (isEditModal$ | async)"
+      (valid)="onValid($event)"
+      (configuration)="onModifyConfiguration($event)"
+    ></valtimo-plugin-function-configuration>
+  </div>
+  <div role="footer">
+    <div class="edit-function-buttons">
+      <v-button
+        [disabled]="inputDisabled$ | async"
+        (clickEvent)="unlink()"
+        [mdiIcon]="'link-variant-minus'"
+        type="danger"
+        >{{ 'processLink.unlink' | translate }}</v-button
+      >
+      <v-button
+        [disabled]="(functionConfigurationValid$ | async) === false || (inputDisabled$ | async)"
+        (clickEvent)="completeModify()"
+        [mdiIcon]="'check'"
+        type="success"
+        >{{ 'processLink.saveChanges' | translate }}</v-button
+      >
+    </div>
+  </div>
+</v-modal>

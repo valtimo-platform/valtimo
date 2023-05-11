@@ -28,6 +28,7 @@ import {
   ValtimoIbmModalDirectiveModule,
 } from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
+import {ProcessLinkComponent} from './components/process-link/process-link.component';
 import {
   ButtonModule,
   CardModule,
@@ -38,12 +39,13 @@ import {
   TooltipIconModule,
   TooltipModule,
 } from '@valtimo/user-interface';
+import {SelectPluginComponent} from './components/select-plugin/select-plugin.component';
 import {SelectPluginConfigurationComponent} from './components/select-plugin-configuration/select-plugin-configuration.component';
-import {SelectPluginActionComponent} from './components/select-plugin-action/select-plugin-action.component';
+import {SelectPluginFunctionComponent} from './components/select-plugin-function/select-plugin-function.component';
 import {FlexLayoutModule} from '@angular/flex-layout';
 import {PluginConfigurationContainerModule, PluginTranslatePipeModule} from '@valtimo/plugin';
-import {PluginActionConfigurationComponent} from './components/plugin-action-configuration/plugin-action-configuration.component';
-import {ProcessLinkComponent} from './components/process-link/process-link.component';
+import {PluginFunctionConfigurationComponent} from './components/plugin-function-configuration/plugin-function-configuration.component';
+import {ProcessLink2Component} from './components/process-link-2/process-link-2.component';
 import {ProcessLinkModalComponent} from './components/process-link-modal/process-link-modal.component';
 import {
   ButtonModule as CarbonButtonModule,
@@ -53,8 +55,6 @@ import {
   LoadingModule,
   ModalModule as CarbonModalModule,
   ProgressIndicatorModule,
-  StructuredListModule,
-  TilesModule,
 } from 'carbon-components-angular';
 import {FlowDataModule, LinkModule, ReceiptModule} from '@carbon/icons-angular';
 import {ChooseProcessLinkTypeComponent} from './components/choose-process-link-type';
@@ -66,11 +66,13 @@ import {SelectFormFlowComponent} from './components/select-form-flow';
   declarations: [
     FormLinkComponent,
     ProcessLinkComponent,
+    ProcessLink2Component,
     FormLinkProcessDiagramComponent,
     FormLinkModalComponent,
+    SelectPluginComponent,
     SelectPluginConfigurationComponent,
-    SelectPluginActionComponent,
-    PluginActionConfigurationComponent,
+    SelectPluginFunctionComponent,
+    PluginFunctionConfigurationComponent,
     ProcessLinkModalComponent,
     ChooseProcessLinkTypeComponent,
     SelectFormComponent,
@@ -107,15 +109,15 @@ import {SelectFormFlowComponent} from './components/select-form-flow';
     LoadingModule,
     FormIoModule,
     ValtimoIbmModalDirectiveModule,
-    StructuredListModule,
-    TilesModule,
   ],
   exports: [
     FormLinkComponent,
     ProcessLinkComponent,
+    ProcessLink2Component,
+    SelectPluginComponent,
     SelectPluginConfigurationComponent,
-    SelectPluginActionComponent,
-    PluginActionConfigurationComponent,
+    SelectPluginFunctionComponent,
+    PluginFunctionConfigurationComponent,
     ProcessLinkModalComponent,
     FormFlowComponent,
   ],

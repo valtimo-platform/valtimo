@@ -19,7 +19,7 @@ import {RouterModule, Routes} from '@angular/router';
 import {AuthGuardService} from '@valtimo/security';
 import {FormLinkComponent} from './components/form-link/form-link.component';
 import {ROLE_ADMIN} from '@valtimo/config';
-import {ProcessLinkComponent} from './components/process-link/process-link.component';
+import {ProcessLink2Component} from './components/process-link-2/process-link-2.component';
 
 const routes: Routes = [
   {
@@ -30,7 +30,7 @@ const routes: Routes = [
   },
   {
     path: 'process-links',
-    component: ProcessLinkComponent,
+    component: ProcessLink2Component,
     canActivate: [AuthGuardService],
     data: {title: 'Form links Plugin', roles: [ROLE_ADMIN]},
   },

@@ -75,7 +75,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       authenticationPluginConfiguration: 'Authentication plugin configuration',
       'get-statustype': 'Retrieve statustype',
       getStatustypeInformation:
-        'The statustype is retrieved and then stored in a process variable.',
+        'DeThe statustype is retrieved and then stored in a process variable.',
       statustype: 'Statustype',
       statustypeTooltip: 'Generic indication of the nature of a status.',
       processVariable: 'Process variable name',

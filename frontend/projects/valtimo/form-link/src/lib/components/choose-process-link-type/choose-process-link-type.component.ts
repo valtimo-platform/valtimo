@@ -15,7 +15,7 @@
  */
 
 import {Component} from '@angular/core';
-import {ProcessLinkStateService} from '../../services';
+import {ProcessLinkState2Service} from '../../services';
 
 @Component({
   selector: 'valtimo-choose-process-link-type',
@@ -24,11 +24,11 @@ import {ProcessLinkStateService} from '../../services';
 })
 export class ChooseProcessLinkTypeComponent {
   public readonly availableProcessLinkTypes$ =
-    this.processLinkStateService.availableProcessLinkTypes$;
+    this.processLinkState2Service.availableProcessLinkTypes$;
 
-  constructor(private readonly processLinkStateService: ProcessLinkStateService) {}
+  constructor(private readonly processLinkState2Service: ProcessLinkState2Service) {}
 
   selectProcessLinkType(processLinkTypeId: string): void {
-    this.processLinkStateService.selectProcessLinkType(processLinkTypeId);
+    this.processLinkState2Service.selectProcessLinkType(processLinkTypeId);
   }
 }

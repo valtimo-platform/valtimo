@@ -14,13 +14,12 @@
   ~ limitations under the License.
   -->
 
-<valtimo-plugin-configuration-container
-  [pluginDefinitionKey]="pluginDefinitionKey$ | async"
-  [functionKey]="functionKey$ | async"
-  [save$]="save$"
-  [disabled$]="saving$"
-  [prefillConfiguration$]="prefillConfiguration$"
-  (valid)="onValid($event)"
-  (configuration)="onConfiguration($event)"
-  type="function"
-></valtimo-plugin-configuration-container>
+<div class="main-content">
+  <div class="container-fluid">
+    <valtimo-form-link-process-diagram
+      (bpmnElementModalOpen)="openModal($event)"
+    ></valtimo-form-link-process-diagram>
+  </div>
+</div>
+
+<valtimo-process-link-modal></valtimo-process-link-modal>

@@ -3,15 +3,15 @@
   "license": "EUPL-1.2",
   "version": "10.4.0",
   "peerDependencies": {
-    "@angular/common": "^14.3.0",
-    "@angular/core": "^14.3.0"
+    "@angular/common": "^14.2.5",
+    "@angular/core": "^14.2.5"
   },
   "dependencies": {
-    "ngx-csv": "^0.3.2",
-    "ngx-toastr": "^15.2.2",
+    "ngx-csv": "^0.3.1",
+    "ngx-toastr": "^15.2.1",
     "moment": "^2.29.4",
     "@ngx-translate/core": "^14.0.0",
     "@ngx-translate/http-loader": "7.0.0",
-    "tslib": "^2.5.0"
+    "tslib": "^2.0.0"
   }
 }

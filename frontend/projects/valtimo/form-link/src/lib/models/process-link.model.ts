@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-interface ProcessLink {
-  id: string;
+interface SaveProcessLinkRequest {
   processDefinitionId: string;
   activityId: string;
   activityType: string;
-  processLinkType: string;
-  pluginConfigurationId?: string;
-  pluginActionDefinitionKey?: string;
-  actionProperties?: {
+  pluginConfigurationId: string;
+  pluginActionDefinitionKey: string;
+  actionProperties: {
     [key: string]: any;
   };
-  formDefinitionId?: string;
-  formFlowDefinitionId?: string;
+}
+
+interface ProcessLink extends SaveProcessLinkRequest {
+  id: string;
 }
 
 type GetProcessLinkResponse = Array<ProcessLink>;
@@ -35,6 +35,17 @@ interface GetProcessLinkRequest {
   activityId: string;
   processDefinitionId: string;
 }
+
+interface UpdateProcessLinkRequest {
+  id: string;
+  pluginConfigurationId: string;
+  pluginActionDefinitionKey: string;
+  actionProperties: {
+    [key: string]: any;
+  };
+}
+
+type ProcessLinkModalType = 'edit' | 'create';
 
 interface ProcessLinkType {
   enabled: boolean;
@@ -66,45 +77,15 @@ interface FormFlowProcessLinkCreateRequestDto {
   formFlowDefinitionId: string;
 }
 
-interface PluginProcessLinkCreateDto {
-  processDefinitionId: string;
-  activityId: string;
-  activityType: string;
-  processLinkType: string;
-  pluginConfigurationId: string;
-  pluginActionDefinitionKey: string;
-  actionProperties: object;
-}
-
-interface PluginProcessLinkUpdateDto {
-  id: string;
-  pluginConfigurationId: string;
-  pluginActionDefinitionKey: string;
-  actionProperties: {
-    [key: string]: any;
-  };
-}
-
-interface FormFlowProcessLinkUpdateRequestDto {
-  id: string;
-  formFlowDefinitionId: string;
-}
-
-interface FormProcessLinkUpdateRequestDto {
-  id: string;
-  formDefinitionId: string;
-}
-
 export {
+  SaveProcessLinkRequest,
   GetProcessLinkRequest,
   ProcessLink,
   GetProcessLinkResponse,
-  PluginProcessLinkUpdateDto,
+  UpdateProcessLinkRequest,
+  ProcessLinkModalType,
   ProcessLinkType,
   ProcessLinkConfigurationStep,
   FormProcessLinkCreateRequestDto,
   FormFlowProcessLinkCreateRequestDto,
-  PluginProcessLinkCreateDto,
-  FormFlowProcessLinkUpdateRequestDto,
-  FormProcessLinkUpdateRequestDto,
 };
