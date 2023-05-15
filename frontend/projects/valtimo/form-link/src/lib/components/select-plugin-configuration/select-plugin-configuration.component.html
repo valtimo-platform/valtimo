@@ -37,7 +37,7 @@
           <div *ngIf="pluginConfiguration.pluginLogoBase64">
             <img
               class="plugin-configuration-logo"
-              [title]="'title' | pluginTranslate : pluginConfiguration.key | async"
+              [title]="'title' | pluginTranslate : pluginConfiguration.pluginDefinition.key | async"
               [src]="pluginConfiguration.pluginLogoBase64"
             /></div
         ></ibm-list-column>
