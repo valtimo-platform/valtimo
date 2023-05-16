@@ -72,3 +72,11 @@
 ::ng-deep .choose-plugin-action ibm-selection-tile:nth-child(n + 4) {
   margin-top: 8px;
 }
+
+::ng-deep .action-tiles .cds--tile {
+  background-color: var(--cds-layer-02, #ffffff);
+
+  &:hover {
+    background: var(--cds-layer-hover);
+  }
+}
