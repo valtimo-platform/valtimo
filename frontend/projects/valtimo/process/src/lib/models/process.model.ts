@@ -63,6 +63,7 @@ export interface ProcessDefinitionStartForm {
 export type StartProcessLinkType = 'form' | 'form-flow';
 
 export interface ProcessDefinitionStartProcessLink {
+  processLinkId: string;
   type: StartProcessLinkType;
   properties: {
     formFlowInstanceId?: string;

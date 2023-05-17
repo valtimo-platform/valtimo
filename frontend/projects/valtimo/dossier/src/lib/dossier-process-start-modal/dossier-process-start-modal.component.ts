@@ -21,6 +21,7 @@ import {
   FormFlowService,
   FormLinkService,
   FormSubmissionResult,
+  ProcessLinkService,
 } from '@valtimo/form-link';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ProcessService} from '@valtimo/process';
@@ -52,6 +53,7 @@ export class DossierProcessStartModalComponent implements OnInit {
   public formFlowInstanceId: string;
   public formioSubmission: FormioSubmission;
   private formAssociation: FormAssociation;
+  private processLinkId: string;
   public options: ValtimoFormioOptions;
   public isAdmin: boolean;
   @ViewChild('form', {static: false}) form: FormioComponent;
@@ -64,6 +66,7 @@ export class DossierProcessStartModalComponent implements OnInit {
     private processService: ProcessService,
     private documentService: DocumentService,
     private formLinkService: FormLinkService,
+    private processLinkService: ProcessLinkService,
     private formFlowService: FormFlowService,
     private userProviderService: UserProviderService,
     private logger: NGXLogger
@@ -74,6 +77,8 @@ export class DossierProcessStartModalComponent implements OnInit {
   }
 
   private loadProcessLink() {
+    this.formAssociation = null;
+    this.processLinkId = null;
     this.formDefinition = null;
     this.formFlowInstanceId = null;
     this.processService
@@ -88,6 +93,7 @@ export class DossierProcessStartModalComponent implements OnInit {
           switch (startProcessResult.type) {
             case 'form':
               this.formDefinition = startProcessResult.properties.prefilledForm;
+              this.processLinkId = startProcessResult.processLinkId;
               break;
             case 'form-flow':
               this.formFlowInstanceId = startProcessResult.properties.formFlowInstanceId;
@@ -173,23 +179,28 @@ export class DossierProcessStartModalComponent implements OnInit {
 
   public onSubmit(submission: FormioSubmission) {
     this.formioSubmission = submission;
-    this.formLinkService
-      .onSubmit(this.processDefinitionKey, this.formAssociation.formLink.id, submission.data)
-      .subscribe(
-        (formSubmissionResult: FormSubmissionResult) => {
-          this.modal.hide();
-          this.router.navigate([
-            'dossiers',
-            this.documentDefinitionName,
-            'document',
-            formSubmissionResult.documentId,
-            'summary',
-          ]);
+
+    if (this.processLinkId) {
+      this.processLinkService.submitForm(this.processLinkId, submission.data).subscribe({
+        next: (formSubmissionResult: FormSubmissionResult) => {
+          this.submitCompleted(formSubmissionResult);
         },
-        errors => {
+        error: errors => {
           this.form.showErrors(errors);
-        }
-      );
+        },
+      });
+    } else {
+      this.formLinkService
+        .onSubmit(this.processDefinitionKey, this.formAssociation.formLink.id, submission.data)
+        .subscribe(
+          (formSubmissionResult: FormSubmissionResult) => {
+            this.submitCompleted(formSubmissionResult);
+          },
+          errors => {
+            this.form.showErrors(errors);
+          }
+        );
+    }
   }
 
   public formFlowSubmitted(): void {
@@ -206,5 +217,16 @@ export class DossierProcessStartModalComponent implements OnInit {
         this.isAdmin = false;
       }
     );
+  }
+
+  private submitCompleted(formSubmissionResult: FormSubmissionResult): void {
+    this.modal.hide();
+    this.router.navigate([
+      'dossiers',
+      this.documentDefinitionName,
+      'document',
+      formSubmissionResult.documentId,
+      'summary',
+    ]);
   }
 }

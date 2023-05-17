@@ -22,13 +22,14 @@ import {
   FormFlowProcessLinkUpdateRequestDto,
   FormProcessLinkCreateRequestDto,
   FormProcessLinkUpdateRequestDto,
+  FormSubmissionResult,
   GetProcessLinkRequest,
   GetProcessLinkResponse,
   PluginProcessLinkCreateDto,
   PluginProcessLinkUpdateDto,
   ProcessLinkType,
 } from '../models';
-import {HttpClient, HttpParams} from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -90,6 +91,32 @@ export class ProcessLinkService {
   getProcessLinkCandidates(activityType: string): Observable<Array<ProcessLinkType>> {
     return this.http.get<Array<ProcessLinkType>>(
       `${this.VALTIMO_ENDPOINT_URI}v1/process-link/types?activityType=${activityType}`
+    );
+  }
+
+  submitForm(
+    processLinkId: string,
+    formData: object,
+    documentId?: string,
+    taskInstanceId?: string
+  ): Observable<FormSubmissionResult> {
+    let params = new HttpParams();
+
+    if (documentId) {
+      params = params.set('documentId', documentId);
+    }
+    if (taskInstanceId) {
+      params = params.set('taskInstanceId', taskInstanceId);
+    }
+
+    const httpOptions = {
+      headers: new HttpHeaders().set('Content-Type', 'application/json'),
+      params,
+    };
+    return this.http.post<FormSubmissionResult>(
+      `${this.VALTIMO_ENDPOINT_URI}v1/process-link/${processLinkId}/form/submission`,
+      formData,
+      httpOptions
     );
   }
 }

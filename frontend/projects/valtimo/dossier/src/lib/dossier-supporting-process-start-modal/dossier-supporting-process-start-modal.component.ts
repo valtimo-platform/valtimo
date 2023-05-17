@@ -31,6 +31,7 @@ import {
   FormFlowService,
   FormLinkService,
   FormSubmissionResult,
+  ProcessLinkService,
 } from '@valtimo/form-link';
 import {NGXLogger} from 'ngx-logger';
 import {noop, Observable} from 'rxjs';
@@ -50,6 +51,7 @@ export class DossierSupportingProcessStartModalComponent {
   public formDefinition: FormioForm;
   public formioSubmission: FormioSubmission;
   private formAssociation: FormAssociation;
+  private processLinkId: string;
   public options: ValtimoFormioOptions;
   public submission: object;
   public processDefinitionId: string;
@@ -69,6 +71,7 @@ export class DossierSupportingProcessStartModalComponent {
     private route: ActivatedRoute,
     private router: Router,
     private processService: ProcessService,
+    private processLinkService: ProcessLinkService,
     private documentService: DocumentService,
     private formLinkService: FormLinkService,
     private formFlowService: FormFlowService,
@@ -77,6 +80,8 @@ export class DossierSupportingProcessStartModalComponent {
   ) {}
 
   private loadProcessLink() {
+    this.formAssociation = null;
+    this.processLinkId = null;
     this.formDefinition = null;
     this.formFlowInstanceId = null;
     this.processService
@@ -87,6 +92,7 @@ export class DossierSupportingProcessStartModalComponent {
           switch (startProcessResult.type) {
             case 'form':
               this.formDefinition = startProcessResult.properties.prefilledForm;
+              this.processLinkId = startProcessResult.processLinkId;
               break;
             case 'form-flow':
               this.formFlowInstanceId = startProcessResult.properties.formFlowInstanceId;
@@ -175,21 +181,34 @@ export class DossierSupportingProcessStartModalComponent {
 
   public onSubmit(submission: FormioSubmission) {
     this.formioSubmission = submission;
-    this.formLinkService
-      .onSubmit(
-        this.processDefinitionKey,
-        this.formAssociation.formLink.id,
-        submission.data,
-        this.documentId
-      )
-      .subscribe(
-        (formSubmissionResult: FormSubmissionResult) => {
-          this.formSubmitted();
-        },
-        errors => {
-          this.form.showErrors(errors);
-        }
-      );
+    if (this.processLinkId) {
+      this.processLinkService
+        .submitForm(this.processLinkId, submission.data, this.documentId)
+        .subscribe({
+          next: (formSubmissionResult: FormSubmissionResult) => {
+            this.formSubmitted();
+          },
+          error: errors => {
+            this.form.showErrors(errors);
+          },
+        });
+    } else {
+      this.formLinkService
+        .onSubmit(
+          this.processDefinitionKey,
+          this.formAssociation.formLink.id,
+          submission.data,
+          this.documentId
+        )
+        .subscribe(
+          (formSubmissionResult: FormSubmissionResult) => {
+            this.formSubmitted();
+          },
+          errors => {
+            this.form.showErrors(errors);
+          }
+        );
+    }
   }
 
   public formSubmitted() {
