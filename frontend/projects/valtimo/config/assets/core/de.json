@@ -246,6 +246,10 @@
     },
     "version": {
       "title": "Versions-Information"
+    },
+    "interface": {
+      "title": "Interface",
+      "collapsibleMenu": "Navigationsleiste immer einklappbar"
     }
   },
   "decisions": {

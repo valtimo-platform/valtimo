@@ -17,7 +17,10 @@
 <valtimo-topbar></valtimo-topbar>
 <main
   class="cds--content"
-  [ngClass]="{'cds--content--sidebar': sideBarExpanded$ | async}"
+  [ngClass]="{
+    'cds--content--sidebar':
+      (sideBarExpanded$ | async) && (collapsibleWidescreenMenu$ | async) === false
+  }"
   #mainContent
 >
   <valtimo-left-sidebar [hidden]="layoutService.isFullscreen"></valtimo-left-sidebar>

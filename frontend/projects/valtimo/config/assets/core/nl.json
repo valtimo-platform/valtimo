@@ -246,6 +246,10 @@
     },
     "version": {
       "title": "Versie-informatie"
+    },
+    "interface": {
+      "title": "Interface",
+      "collapsibleMenu": "Navigatiebalk altijd inklapbaar"
     }
   },
   "decisions": {

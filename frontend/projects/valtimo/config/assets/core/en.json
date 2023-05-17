@@ -246,6 +246,10 @@
     },
     "version": {
       "title": "Version information"
+    },
+    "interface": {
+      "title": "Interface",
+      "collapsibleMenu": "Navigation bar always collapsible"
     }
   },
   "decisions": {

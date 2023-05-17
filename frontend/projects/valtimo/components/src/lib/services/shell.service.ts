@@ -36,6 +36,7 @@ export class ShellService implements OnDestroy {
     map((e: MouseEvent) => e.pageX)
   );
   private readonly _isResizing$ = new BehaviorSubject<boolean>(false);
+  private readonly _collapsibleWidescreenMenu$ = new BehaviorSubject<boolean>(false);
   private sidenavWidthOnClick!: number;
   private xOnClick!: number;
   private sidenavSizeSubscription!: Subscription;
@@ -61,6 +62,10 @@ export class ShellService implements OnDestroy {
     return this._sidenavWidth$.asObservable();
   }
 
+  get collapsibleWidescreenMenu$(): Observable<boolean> {
+    return this._collapsibleWidescreenMenu$.asObservable();
+  }
+
   constructor(
     private readonly rendererFactory2: RendererFactory2,
     private readonly configService: ConfigService
@@ -78,6 +83,10 @@ export class ShellService implements OnDestroy {
   toggleSideBar(): void {
     const isExpanded = this._sideBarExpanded$.getValue();
     this._sideBarExpanded$.next(!isExpanded);
+  }
+
+  collapseSideBar(): void {
+    this._sideBarExpanded$.next(false);
   }
 
   togglePanel(): void {
@@ -108,6 +117,14 @@ export class ShellService implements OnDestroy {
 
   setContentElement(element: HTMLElement): void {
     this._contentElement$.next(element);
+  }
+
+  setCollapsibleWidescreenMenu(collapsible: boolean) {
+    this._collapsibleWidescreenMenu$.next(collapsible);
+
+    if (collapsible) {
+      this.collapseSideBar();
+    }
   }
 
   private createResizeBorderElement(sidenavElement: HTMLElement): void {
@@ -152,9 +169,22 @@ export class ShellService implements OnDestroy {
       this._sidenavElement$,
       this._contentElement$,
       this._resizeBorderElement$,
+      this._collapsibleWidescreenMenu$,
     ]).subscribe(
-      ([largeScreen, sidenavWidth, sidenavElement, contentElement, resizeBorderElement]) => {
-        if (!largeScreen && sidenavElement && contentElement && resizeBorderElement) {
+      ([
+        largeScreen,
+        sidenavWidth,
+        sidenavElement,
+        contentElement,
+        resizeBorderElement,
+        collapsibleWidescreenMenu,
+      ]) => {
+        if (
+          (!largeScreen || collapsibleWidescreenMenu) &&
+          sidenavElement &&
+          contentElement &&
+          resizeBorderElement
+        ) {
           this.renderer.removeStyle(sidenavElement, 'min-width');
           this.renderer.removeStyle(sidenavElement, 'width');
           this.renderer.removeStyle(sidenavElement, 'transition');

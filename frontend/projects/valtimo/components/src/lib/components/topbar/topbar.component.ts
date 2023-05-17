@@ -45,6 +45,7 @@ export class TopbarComponent implements OnInit {
   readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
   readonly largeScreen$ = this.shellService.largeScreen$;
   readonly panelExpanded$ = this.shellService.panelExpanded$;
+  readonly collapsibleWidescreenMenu$ = this.shellService.collapsibleWidescreenMenu$;
 
   constructor(
     private readonly keyCloakService: KeycloakService,

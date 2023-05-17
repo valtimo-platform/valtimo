@@ -127,6 +127,8 @@
 
   .information-table {
     ibm-list-row:first-child {
+      border-top: 0;
+
       ibm-list-column {
         border-top: 0;
         padding-top: 0;

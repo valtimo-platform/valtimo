@@ -31,3 +31,4 @@ export * from './lib/extension/extension.component';
 export * from './lib/translation/multi-translate-http-loader-factory';
 
 export * from './lib/constants';
+export * from './lib/services/user-settings.service';

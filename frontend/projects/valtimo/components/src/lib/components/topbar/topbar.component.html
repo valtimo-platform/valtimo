@@ -25,7 +25,7 @@
     <img [src]="logoBase64" class="logo-image" />
   </a>
   <ibm-hamburger
-    *ngIf="(largeScreen$ | async) === false"
+    *ngIf="(largeScreen$ | async) === false || (collapsibleWidescreenMenu$ | async)"
     [active]="sideBarExpanded$ | async"
     (selected)="toggleSideBar()"
   ></ibm-hamburger>
