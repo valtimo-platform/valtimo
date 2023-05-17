@@ -23,9 +23,10 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {of, switchMap, tap} from 'rxjs';
+import {ModalService} from '@valtimo/user-interface';
 
 @Component({
-  selector: 'valtimo-process-link-2',
+  selector: 'valtimo-process-link',
   templateUrl: './process-link.component.html',
   styleUrls: ['./process-link.component.scss'],
   providers: [ProcessLinkStateService, ProcessLinkStepService, ProcessLinkButtonService],
@@ -33,11 +34,14 @@ import {of, switchMap, tap} from 'rxjs';
 export class ProcessLinkComponent {
   constructor(
     private readonly processLinkService: ProcessLinkService,
-    private readonly stateService: ProcessLinkStateService
+    private readonly stateService: ProcessLinkStateService,
+    private readonly modalService: ModalService
   ) {}
 
   openModal(params: ModalParams): void {
     const activityType = params?.element?.activityListenerType;
+
+    this.modalService.setModalData(params);
 
     if (activityType) {
       this.processLinkService
