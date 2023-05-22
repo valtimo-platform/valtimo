@@ -21,7 +21,9 @@
     "formiojs",
     "@carbon/icons",
     "@carbon/grid",
+    "@carbon/styles",
     "carbon-components",
-    "carbon-components-angular"
+    "carbon-components-angular",
+    "@carbon/icons-angular"
   ]
 }

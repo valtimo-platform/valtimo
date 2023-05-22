@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,27 +14,5 @@
  * limitations under the License.
  */
 
-.btn-back {
-  position: absolute;
-}
-
-.cards-container {
-  display: flex;
-  flex-flow: row wrap;
-  width: 100%;
-}
-
-.card {
-  width: calc(33.3% - 20px);
-  margin-right: 30px;
-
-  &:nth-child(3n + 3) {
-    margin-right: 0;
-  }
-}
-
-.card-header {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+export * from './valtimo-ibm-modal.directive';
+export * from './valtimo-ibm-modal-directive.module';

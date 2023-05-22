@@ -15,62 +15,43 @@
   -->
 
 <ng-container *ngIf="pluginConfigurations$ | async as pluginConfigurations; else loading">
-  <div fxLayout="row wrap" fxLayoutGap="22px grid">
-    <ng-container
-      *ngTemplateOutlet="
-        pluginConfigurationsTemplate;
-        context: {pluginConfigurations: pluginConfigurations}
-      "
-    ></ng-container>
-    <ng-container
-      *ngTemplateOutlet="
-        noPluginConfigurationsTemplate;
-        context: {pluginConfigurations: pluginConfigurations}
-      "
-    ></ng-container>
+  <p class="step-description">
+    {{ 'processLinkConfiguration.choosePluginConfigurationDescription' | translate }}
+  </p>
+  <div class="list-container">
+    <ibm-structured-list selection="true" (selected)="selected($event)">
+      <ibm-list-header>
+        <ibm-list-column nowrap="true"></ibm-list-column>
+        <ibm-list-column nowrap="true">{{
+          'pluginManagement.labels.configurationName' | translate
+        }}</ibm-list-column>
+        <ibm-list-column>{{
+          'processLinkConfiguration.pluginDescription' | translate
+        }}</ibm-list-column>
+      </ibm-list-header>
+      <ibm-list-row
+        *ngFor="let pluginConfiguration of pluginConfigurations"
+        [value]="pluginConfiguration"
+      >
+        <ibm-list-column>
+          <div *ngIf="pluginConfiguration.pluginLogoBase64">
+            <img
+              class="plugin-configuration-logo"
+              [title]="'title' | pluginTranslate : pluginConfiguration.pluginDefinition.key | async"
+              [src]="pluginConfiguration.pluginLogoBase64"
+            /></div
+        ></ibm-list-column>
+        <ibm-list-column>{{ pluginConfiguration.title }}</ibm-list-column>
+        <ibm-list-column>
+          {{ 'description' | pluginTranslate : pluginConfiguration.pluginDefinition.key | async }}
+        </ibm-list-column>
+      </ibm-list-row>
+    </ibm-structured-list>
   </div>
 </ng-container>
 
-<ng-template #noPluginConfigurationsTemplate let-pluginConfigurations="pluginConfigurations">
-  <div fxFlex="100%" *ngIf="pluginConfigurations?.length === 0">
-    <v-paragraph [center]="true" [fullWidth]="true">{{
-      'formLink.noPluginConfigurations' | translate
-    }}</v-paragraph>
-  </div>
-</ng-template>
-
-<ng-template #pluginConfigurationsTemplate let-pluginConfigurations="pluginConfigurations">
-  <div fxFlex="33.3%" *ngFor="let pluginConfiguration of pluginConfigurations">
-    <v-card
-      [title]="pluginConfiguration.title"
-      [description]="'title' | pluginTranslate : pluginConfiguration.pluginDefinition.key | async"
-      [selectable]="true"
-      [selected]="(selectedPluginConfiguration$ | async)?.id === pluginConfiguration.id"
-      [fullHeight]="true"
-      (selectEvent)="selectConfiguration(pluginConfiguration)"
-      (deselectEvent)="deselectConfiguration()"
-    >
-      <div *ngIf="pluginConfiguration.pluginLogoBase64" role="header">
-        <img
-          class="plugin-configuration-logo"
-          [title]="'title' | pluginTranslate : pluginConfiguration.key | async"
-          [src]="pluginConfiguration.pluginLogoBase64"
-        />
-      </div>
-    </v-card>
-  </div>
-</ng-template>
-
 <ng-template #loading>
-  <div fxLayout="row wrap" fxLayoutGap="22px grid">
-    <ng-container *ngTemplateOutlet="loadingCard"></ng-container>
-    <ng-container *ngTemplateOutlet="loadingCard"></ng-container>
-    <ng-container *ngTemplateOutlet="loadingCard"></ng-container>
-  </div>
-</ng-template>
-
-<ng-template #loadingCard>
-  <div fxFlex="33.3%">
-    <v-card [loading]="true" [loadingDescription]="false" [loadingTitle]="true"></v-card>
+  <div class="loading-container">
+    <ibm-loading></ibm-loading>
   </div>
 </ng-template>

@@ -43,4 +43,21 @@
   object-fit: contain;
   height: 60px;
   width: 100%;
+  margin-bottom: -0.5rem;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  flex-direction: row;
+}
+
+.list-container {
+  margin-top: 32px;
+  margin-bottom: 32px;
+}
+
+::ng-deep .list-container .cds--structured-list-td {
+  vertical-align: top;
 }

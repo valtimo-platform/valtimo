@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-interface SaveProcessLinkRequest {
+interface ProcessLink {
+  id: string;
   processDefinitionId: string;
   activityId: string;
   activityType: string;
-  pluginConfigurationId: string;
-  pluginActionDefinitionKey: string;
-  actionProperties: {
+  processLinkType: string;
+  pluginConfigurationId?: string;
+  pluginActionDefinitionKey?: string;
+  actionProperties?: {
     [key: string]: any;
   };
-}
-
-interface ProcessLink extends SaveProcessLinkRequest {
-  id: string;
+  formDefinitionId?: string;
+  formFlowDefinitionId?: string;
 }
 
 type GetProcessLinkResponse = Array<ProcessLink>;
@@ -36,7 +36,47 @@ interface GetProcessLinkRequest {
   processDefinitionId: string;
 }
 
-interface UpdateProcessLinkRequest {
+interface ProcessLinkType {
+  enabled: boolean;
+  processLinkType: string;
+}
+
+type ProcessLinkConfigurationStep =
+  | 'chooseProcessLinkType'
+  | 'choosePluginConfiguration'
+  | 'choosePluginAction'
+  | 'configurePluginAction'
+  | 'selectForm'
+  | 'selectFormFlow'
+  | 'empty';
+
+interface FormProcessLinkCreateRequestDto {
+  processDefinitionId: string;
+  activityId: string;
+  activityType: string;
+  processLinkType: string;
+  formDefinitionId: string;
+}
+
+interface FormFlowProcessLinkCreateRequestDto {
+  processDefinitionId: string;
+  activityId: string;
+  activityType: string;
+  processLinkType: string;
+  formFlowDefinitionId: string;
+}
+
+interface PluginProcessLinkCreateDto {
+  processDefinitionId: string;
+  activityId: string;
+  activityType: string;
+  processLinkType: string;
+  pluginConfigurationId: string;
+  pluginActionDefinitionKey: string;
+  actionProperties: object;
+}
+
+interface PluginProcessLinkUpdateDto {
   id: string;
   pluginConfigurationId: string;
   pluginActionDefinitionKey: string;
@@ -45,13 +85,26 @@ interface UpdateProcessLinkRequest {
   };
 }
 
-type ProcessLinkModalType = 'edit' | 'create';
+interface FormFlowProcessLinkUpdateRequestDto {
+  id: string;
+  formFlowDefinitionId: string;
+}
+
+interface FormProcessLinkUpdateRequestDto {
+  id: string;
+  formDefinitionId: string;
+}
 
 export {
-  SaveProcessLinkRequest,
   GetProcessLinkRequest,
   ProcessLink,
   GetProcessLinkResponse,
-  UpdateProcessLinkRequest,
-  ProcessLinkModalType,
+  PluginProcessLinkUpdateDto,
+  ProcessLinkType,
+  ProcessLinkConfigurationStep,
+  FormProcessLinkCreateRequestDto,
+  FormFlowProcessLinkCreateRequestDto,
+  PluginProcessLinkCreateDto,
+  FormFlowProcessLinkUpdateRequestDto,
+  FormProcessLinkUpdateRequestDto,
 };

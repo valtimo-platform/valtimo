@@ -51,14 +51,22 @@ export class FormLinkService {
     );
   }
 
-  getStartEventFormDefinitionByProcessDefinitionKey(processDefinitionKey: string): Observable<any> {
+  getStartEventFormDefinitionByProcessDefinitionKey(
+    processDefinitionKey: string,
+    documentId: string
+  ): Observable<any> {
+    const params = {
+      processDefinitionKey,
+    };
+    if (documentId != null) {
+      params['documentId'] = documentId;
+    }
+
     return this.http.get(
       `${this.valtimoApiConfig.endpointUri}v1/form-association/form-definition`,
       {
         headers: InterceptorSkipHeader.set('Content-Type', 'application/json'),
-        params: {
-          processDefinitionKey,
-        },
+        params,
       }
     );
   }

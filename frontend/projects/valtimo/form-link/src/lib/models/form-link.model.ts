@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {ListItem} from 'carbon-components-angular';
+
 interface FormAssociation {
   className: string;
   id: string;
@@ -54,6 +56,8 @@ interface FormSubmissionResult {
 interface BpmnElement {
   id: string;
   type: string;
+  activityListenerType?: string;
+  name?: string;
 }
 
 interface FormFlowDefinition {
@@ -64,6 +68,15 @@ interface FormFlowDefinition {
 interface FormFlowInstance {
   id: string;
   step?: FormFlowStep;
+}
+
+interface FormFlowCreateRequest {
+  documentId: string | null;
+  documentDefinitionName: string | null;
+}
+
+interface FormFlowCreateResult {
+  formFlowInstanceId: string;
 }
 
 type FormFlowStepType = 'form';
@@ -84,6 +97,10 @@ interface ModalParams {
   processDefinitionId: string;
 }
 
+interface FormDefinitionListItem extends ListItem {
+  id: string;
+}
+
 export {
   FormAssociation,
   FormLinkRequest,
@@ -96,5 +113,8 @@ export {
   FormFlowStepType,
   FormFlowStep,
   FormTypeProperties,
+  FormFlowCreateResult,
+  FormFlowCreateRequest,
   ModalParams,
+  FormDefinitionListItem,
 };

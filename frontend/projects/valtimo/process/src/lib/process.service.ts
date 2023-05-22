@@ -20,6 +20,7 @@ import {Observable} from 'rxjs';
 import {
   ProcessDefinition,
   ProcessDefinitionStartForm,
+  ProcessDefinitionStartProcessLink,
   ProcessInstance,
   ProcessInstanceTask,
   ProcessStart,
@@ -57,6 +58,27 @@ export class ProcessService {
   ): Observable<ProcessDefinitionStartForm> {
     return this.http.get<ProcessDefinitionStartForm>(
       `${this.valtimoEndpointUri}v1/process/definition/${processDefinitionKey}/start-form`
+    );
+  }
+
+  getProcessDefinitionStartProcessLink(
+    processDefinitionId: string,
+    documentId: string,
+    documentDefinitionName: string
+  ): Observable<ProcessDefinitionStartProcessLink> {
+    const params = {};
+    if (documentId != null) {
+      params['documentId'] = documentId;
+    }
+    if (documentDefinitionName != null) {
+      params['documentDefinitionName'] = documentDefinitionName;
+    }
+
+    return this.http.get<ProcessDefinitionStartProcessLink>(
+      `${this.valtimoEndpointUri}v1/process-definition/${processDefinitionId}/start-form`,
+      {
+        params,
+      }
     );
   }
 

@@ -18,14 +18,15 @@ import {Injectable} from '@angular/core';
 import {ConfigService, DefinitionColumn} from '@valtimo/config';
 import {map, Observable} from 'rxjs';
 import {CaseListColumn, DocumentService} from '@valtimo/document';
+import {ListField} from '@valtimo/components';
+import {TranslateService} from '@ngx-translate/core';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class DossierColumnService {
   constructor(
     private readonly configService: ConfigService,
-    private readonly documentService: DocumentService
+    private readonly documentService: DocumentService,
+    private readonly translateService: TranslateService
   ) {}
 
   getDefinitionColumns(
@@ -54,6 +55,26 @@ export class DossierColumnService {
 
   hasEnvironmentConfig(documentDefinitionName: string): boolean {
     return !!this.configService.config?.customDefinitionTables[documentDefinitionName];
+  }
+
+  mapDefinitionColumnsToListFields(
+    columns: Array<DefinitionColumn>,
+    hasEnvConfig: boolean
+  ): Array<ListField> {
+    return columns.map(column => {
+      const translationKey = `fieldLabels.${column.translationKey}`;
+      const translation = this.translateService.instant(translationKey);
+      const validTranslation = translation !== translationKey && translation;
+      return {
+        key: hasEnvConfig ? column.propertyName : column.translationKey,
+        label: column.title || validTranslation || column.translationKey,
+        sortable: column.sortable,
+        ...(column.viewType && {viewType: column.viewType}),
+        ...(column.enum && {enum: column.enum}),
+        ...(column.format && {format: column.format}),
+        ...(column.default && {default: column.default}),
+      };
+    });
   }
 
   private mapCaseListColumnsToDefinitionColumns(

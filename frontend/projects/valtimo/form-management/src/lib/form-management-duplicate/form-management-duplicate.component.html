@@ -13,7 +13,12 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<ibm-modal [open]="open" (overlaySelected)="closeModal()" [formGroup]="duplicateForm">
+<ibm-modal
+  valtimoIbmModal
+  [open]="open"
+  (overlaySelected)="closeModal()"
+  [formGroup]="duplicateForm"
+>
   <ibm-modal-header (closeSelect)="closeModal()">{{
     'formManagement.duplicate' | translate
   }}</ibm-modal-header>

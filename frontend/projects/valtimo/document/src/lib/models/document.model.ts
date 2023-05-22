@@ -125,6 +125,7 @@ export interface ProcessDocumentDefinition {
   processName: string;
   canInitializeDocument: boolean;
   startableByUser: boolean;
+  latestVersionId: string;
 }
 
 export interface ProcessDocumentInstanceId {

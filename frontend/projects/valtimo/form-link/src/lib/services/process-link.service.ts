@@ -18,12 +18,18 @@ import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
 import {Observable} from 'rxjs';
 import {
+  FormFlowProcessLinkCreateRequestDto,
+  FormFlowProcessLinkUpdateRequestDto,
+  FormProcessLinkCreateRequestDto,
+  FormProcessLinkUpdateRequestDto,
+  FormSubmissionResult,
   GetProcessLinkRequest,
   GetProcessLinkResponse,
-  SaveProcessLinkRequest,
-  UpdateProcessLinkRequest,
+  PluginProcessLinkCreateDto,
+  PluginProcessLinkUpdateDto,
+  ProcessLinkType,
 } from '../models';
-import {HttpClient, HttpParams} from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -45,12 +51,20 @@ export class ProcessLinkService {
     });
   }
 
-  updateProcessLink(updateProcessLinkRequest: UpdateProcessLinkRequest): Observable<null> {
-    Object.keys(updateProcessLinkRequest.actionProperties).forEach(key => {
-      if (updateProcessLinkRequest.actionProperties[key] === '') {
-        updateProcessLinkRequest.actionProperties[key] = null;
-      }
-    });
+  updateProcessLink(
+    updateProcessLinkRequest:
+      | PluginProcessLinkUpdateDto
+      | FormFlowProcessLinkUpdateRequestDto
+      | FormProcessLinkUpdateRequestDto
+  ): Observable<null> {
+    const pluginUpdateRequest = updateProcessLinkRequest as PluginProcessLinkUpdateDto;
+    if (pluginUpdateRequest.actionProperties) {
+      Object.keys(pluginUpdateRequest.actionProperties).forEach(key => {
+        if (pluginUpdateRequest.actionProperties[key] === '') {
+          pluginUpdateRequest.actionProperties[key] = null;
+        }
+      });
+    }
 
     return this.http.put<null>(
       `${this.VALTIMO_ENDPOINT_URI}v1/process-link`,
@@ -58,13 +72,12 @@ export class ProcessLinkService {
     );
   }
 
-  saveProcessLink(saveProcessLinkRequest: SaveProcessLinkRequest): Observable<null> {
-    Object.keys(saveProcessLinkRequest.actionProperties).forEach(key => {
-      if (saveProcessLinkRequest.actionProperties[key] === '') {
-        saveProcessLinkRequest.actionProperties[key] = null;
-      }
-    });
-
+  saveProcessLink(
+    saveProcessLinkRequest:
+      | FormProcessLinkCreateRequestDto
+      | FormFlowProcessLinkCreateRequestDto
+      | PluginProcessLinkCreateDto
+  ): Observable<null> {
     return this.http.post<null>(
       `${this.VALTIMO_ENDPOINT_URI}v1/process-link`,
       saveProcessLinkRequest
@@ -73,5 +86,37 @@ export class ProcessLinkService {
 
   deleteProcessLink(id: string): Observable<null> {
     return this.http.delete<null>(`${this.VALTIMO_ENDPOINT_URI}v1/process-link/${id}`);
+  }
+
+  getProcessLinkCandidates(activityType: string): Observable<Array<ProcessLinkType>> {
+    return this.http.get<Array<ProcessLinkType>>(
+      `${this.VALTIMO_ENDPOINT_URI}v1/process-link/types?activityType=${activityType}`
+    );
+  }
+
+  submitForm(
+    processLinkId: string,
+    formData: object,
+    documentId?: string,
+    taskInstanceId?: string
+  ): Observable<FormSubmissionResult> {
+    let params = new HttpParams();
+
+    if (documentId) {
+      params = params.set('documentId', documentId);
+    }
+    if (taskInstanceId) {
+      params = params.set('taskInstanceId', taskInstanceId);
+    }
+
+    const httpOptions = {
+      headers: new HttpHeaders().set('Content-Type', 'application/json'),
+      params,
+    };
+    return this.http.post<FormSubmissionResult>(
+      `${this.VALTIMO_ENDPOINT_URI}v1/process-link/${processLinkId}/form/submission`,
+      formData,
+      httpOptions
+    );
   }
 }

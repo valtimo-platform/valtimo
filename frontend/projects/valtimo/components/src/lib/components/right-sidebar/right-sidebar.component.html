@@ -41,6 +41,7 @@
 
 <ng-template #settingsTabTemplate>
   <ng-container *ngTemplateOutlet="languageSettingsTemplate"></ng-container>
+  <ng-container *ngTemplateOutlet="interfaceSettingsTemplate"></ng-container>
   <ng-container *ngTemplateOutlet="notificationSettingsTemplate"></ng-container>
   <ng-container *ngTemplateOutlet="versionTemplate"></ng-container>
 </ng-template>
@@ -177,6 +178,7 @@
     <ibm-list-row>
       <ibm-list-column>
         <ibm-select
+          [disabled]="updatingUserSettings$ | async"
           [ngModel]="selectedLanguage$ | async"
           (ngModelChange)="updateUserLanguage($event)"
         >
@@ -226,6 +228,27 @@
             'settings.notification.taskNotificationsIntro' | translate
           }}</span>
         </form>
+      </ibm-list-column>
+    </ibm-list-row>
+  </ibm-structured-list>
+</ng-template>
+
+<ng-template #interfaceSettingsTemplate>
+  <ibm-structured-list>
+    <ibm-list-header>
+      <ibm-list-column>{{ 'settings.interface.title' | translate }}</ibm-list-column>
+    </ibm-list-header>
+    <ibm-list-row>
+      <ibm-list-column>
+        <ibm-toggle
+          [label]="'settings.interface.collapsibleMenu' | translate"
+          [onText]="'interface.on' | translate"
+          [offText]="'interface.off' | translate"
+          [disabled]="updatingUserSettings$ | async"
+          [ngModel]="collapsibleWidescreenMenu$ | async"
+          (ngModelChange)="setCollapsibleWidescreenMenu($event)"
+        >
+        </ibm-toggle>
       </ibm-list-column>
     </ibm-list-row>
   </ibm-structured-list>

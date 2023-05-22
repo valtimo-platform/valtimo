@@ -246,6 +246,10 @@
     },
     "version": {
       "title": "Versie-informatie"
+    },
+    "interface": {
+      "title": "Interface",
+      "collapsibleMenu": "Navigatiebalk altijd inklapbaar"
     }
   },
   "decisions": {
@@ -508,7 +512,8 @@
     "cancel": "Annuleren",
     "collapse": "Inklappen",
     "expand": "Uitklappen",
-    "download": "Download"
+    "download": "Download",
+    "typeToSearch": "Typ om te zoeken..."
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",
@@ -930,6 +935,7 @@
     "title": "De titel is een optioneel veld dat wordt weergegeven als een label voor het huidige zoekveld. Als de titel niet is ingesteld, is de standaardwaarde de sleutelvertaling van het zoekveld (als er geen vertaling beschikbaar is, wordt de oorspronkelijke sleutelwaarde weergegeven).",
     "key": "Een unieke sleutel waarmee het zoekveld wordt geïdentificeerd. Als de sleutel niet uniek is, kan het zoekveld niet worden opgeslagen.",
     "path": "Een pad dat leidt naar de eigenschap waarop u wilt zoeken. Volg dit voorbeeld om te zoeken in het JSON-schema van het document: 'doc:customer.firstName'. Volg deze voorbeelden om te zoeken in de documenteigenschappen: 'case:createdBy', of 'case:sequence', of 'case:assigneeFullName'. Let op: wanneer er speciale tekens in een eigenschap zitten, moet de eigenschap binnen aanhalingstekens staan. Bijvoorbeeld: case:\"loan-accepted\".",
+    "objectsApiPath": "Een pad dat leidt naar het object waarop u wilt zoeken. Voor het zoeken in de objecten API JSON volgt u dit voorbeeld: 'object:/customer/firstName'.",
     "dataType": "Het datatype bepaalt welke invoer aan de gebruiker wordt getoond. Voor het datatype 'Datum' wordt bijvoorbeeld een datumkiezer getoond.",
     "fieldType": "Het veldtype bepaalt de waarden die de gebruiker kan invoeren. Voor de optie 'Enkel' kan de gebruiker slechts één waarde invoeren. Bij de optie 'Reeks' kan de gebruiker twee waarden invoeren. Naar deze waarden, en alle waarden daartussen, wordt vervolgens gezocht.",
     "matchType": "De overeenkomst bepaalt hoe waarden in de database worden gekoppeld aan de zoekwaarden. Voor het zoektype 'Exact' zou de waarde '1' alleen overeenkomen met de waarde '1'. Voor het zoektype 'Bevat' zou de waarde '1' overeenkomen met de waarde '1', '123' en alle andere waarden die '1' bevatten.",
@@ -951,6 +957,7 @@
     "keyTooltip": "Een unieke sleutel waarmee de kolom wordt geïdentificeerd. Als de sleutel niet uniek is, kan de kolom niet worden opgeslagen.",
     "path": "Pad",
     "pathTooltip": "Een pad dat leidt naar de eigenschap die u wilt weergeven. Volg dit voorbeeld voor het JSON-schema van het document: 'doc:customer.firstName'. Volg deze voorbeelden voor documenteigenschappen: 'case:createdBy', of 'case:sequence', of 'case:assigneeFullName'. Let op: wanneer er speciale tekens in een eigenschap zitten, moet de eigenschap binnen aanhalingstekens staan. Bijvoorbeeld: case:\"loan-accepted\".",
+    "objectsApiPathTooltip": "Een pad dat leidt naar het object waarop u wilt zoeken. Voor het zoeken in de objecten API JSON volgt u dit voorbeeld: 'object:/customer/firstName'.",
     "displayType": "Weergavetype",
     "displayTypeTooltip": "Deze optie bepaalt hoe de gegevens uiteindelijk in de tabel worden weergegeven.",
     "displayTypeParameters": "Parameters",
@@ -975,8 +982,9 @@
     "dateFormatTooltip": "Een datumnotatie die ondersteund wordt door Moment.js (https://momentjs.com/docs/).",
     "uniqueKeyWarning": "De sleutel voor deze kolom moet uniek zijn.",
     "enumTitle": "Opsommingswaarden",
-    "enumTitleOptional": "Opsommingswaarden (optioneel)",
+    "enumTitleOptional": "Waarden (optioneel)",
     "enumTooltip": "De sleutels en waarden die gebruikt worden om weergavedata om te zetten in de tabel.",
+    "enumTooltipOptional": "De waarden die gebruikt worden om weergavedata om te zetten in de tabel.",
     "downloadButtonText": "Download configuratie",
     "deleteColumn": "Kolom verwijderen",
     "deleteColumnConfirmation": "Weet u zeker dat u deze kolom wilt verwijderen?"
@@ -1061,5 +1069,44 @@
     "Remove": "Verwijderen",
     "Next": "Volgende",
     "Previous": "Vorige"
+  },
+  "viewTypeConverter": {
+    "Yes": "Ja",
+    "No": "Nee"
+  },
+  "processLinkConfiguration": {
+    "configureStep": "Processtap configureren",
+    "modalTitle": "Processtap: {{processStepName}}",
+    "chooseProcessLinkTypeDescription": "Een processtap kan verschillende acties uitvoeren. Kies hieronder aan welk type actie je deze stap wilt koppelen.",
+    "chooseFormDescription": "Kies hier het formulier dat je aan de processtap wilt koppelen.",
+    "chooseFormFlowDescription": "Kies hier de FormFlow die je aan de processtap wilt koppelen.",
+    "choosePluginConfigurationDescription": "Kies hier de pluginconfiguratie die je aan de processtap wilt koppelen.",
+    "choosePluginActionDescription": "Kies de actie die je met de plugin wilt uitvoeren.",
+    "chooseForm": "Selecteer formulier",
+    "cancel": "Annuleren",
+    "complete": "Voltooien",
+    "back": "Terug",
+    "next": "Volgende",
+    "pluginDescription": "Plugin-omschrijving",
+    "unlink": "Ontkoppelen"
+  },
+  "processLinkType": {
+    "plugin": "Plugin",
+    "form": "Formulier",
+    "form-flow": "FormFlow"
+  },
+  "processLinkSteps": {
+    "chooseProcessLinkType": "Kies soort koppeling",
+    "empty": "........",
+    "selectForm": "Selecteer je formulier",
+    "selectFormFlow": "Selecteer je FormFlow",
+    "choosePluginConfiguration": "Kies pluginconfiguratie",
+    "choosePluginAction": "Kies je actie",
+    "configurePluginAction": "Configureer je actie"
+  },
+  "processLinkTypeDisabledTooltip": {
+    "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een pluginconfiguratie aan om deze te kunnen koppelen aan een processtap.",
+    "form": "Er zijn geen formulieren beschikbaar. Maak een formulier aan om deze te kunnen koppelen aan een processtap.",
+    "form-flow": "Er zijn geen FormFlows beschikbaar. Maak een FormFlow aan om deze te kunnen koppelen aan een processtap."
   }
 }

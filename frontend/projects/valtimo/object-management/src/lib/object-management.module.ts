@@ -20,12 +20,13 @@ import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   CarbonMultiInputModule,
-  DropzoneModule,
-  WidgetModule,
-  ListModule,
   ConfirmationModalModule,
-  SpinnerModule,
+  DropzoneModule,
+  ListModule,
   ModalModule,
+  SpinnerModule,
+  ValtimoIbmModalDirectiveModule,
+  WidgetModule,
 } from '@valtimo/components';
 import {
   ButtonModule,
@@ -94,6 +95,7 @@ import {ObjectManagementListSearchFieldsComponent} from './components/object-man
     ConfirmationModalModule,
     SpinnerModule,
     ModalModule,
+    ValtimoIbmModalDirectiveModule,
   ],
   exports: [],
 })

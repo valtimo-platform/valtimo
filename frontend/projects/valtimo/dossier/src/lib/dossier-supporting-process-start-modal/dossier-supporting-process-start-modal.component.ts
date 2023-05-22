@@ -18,17 +18,22 @@ import {Component, EventEmitter, Output, ViewChild, ViewEncapsulation} from '@an
 import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
 import {
   FormioComponent,
-  ModalComponent,
   FormioOptionsImpl,
   FormioSubmission,
+  ModalComponent,
   ValtimoFormioOptions,
 } from '@valtimo/components';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ProcessService} from '@valtimo/process';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
-import {FormLinkService} from '@valtimo/form-link';
+import {
+  FormAssociation,
+  FormFlowService,
+  FormLinkService,
+  FormSubmissionResult,
+  ProcessLinkService,
+} from '@valtimo/form-link';
 import {NGXLogger} from 'ngx-logger';
-import {FormAssociation, FormSubmissionResult} from '@valtimo/form-link';
 import {noop, Observable} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {UserProviderService} from '@valtimo/security';
@@ -46,8 +51,11 @@ export class DossierSupportingProcessStartModalComponent {
   public formDefinition: FormioForm;
   public formioSubmission: FormioSubmission;
   private formAssociation: FormAssociation;
+  private processLinkId: string;
   public options: ValtimoFormioOptions;
   public submission: object;
+  public processDefinitionId: string;
+  public formFlowInstanceId: string;
 
   readonly isAdmin$: Observable<boolean> = this.userProviderService
     .getUserSubject()
@@ -55,70 +63,112 @@ export class DossierSupportingProcessStartModalComponent {
 
   @ViewChild('form', {static: false}) form: FormioComponent;
   @ViewChild('supportingProcessStartModal', {static: false}) modal: ModalComponent;
-  private documentId: string;
   @Output() formSubmit = new EventEmitter();
+
+  private documentId: string;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private processService: ProcessService,
+    private processLinkService: ProcessLinkService,
     private documentService: DocumentService,
     private formLinkService: FormLinkService,
+    private formFlowService: FormFlowService,
     private logger: NGXLogger,
     private readonly userProviderService: UserProviderService
   ) {}
 
-  private loadFormDefinition() {
+  private loadProcessLink() {
+    this.formAssociation = null;
+    this.processLinkId = null;
     this.formDefinition = null;
-    this.formLinkService
-      .getStartEventFormDefinitionByProcessDefinitionKey(this.processDefinitionKey)
-      .subscribe(
-        formDefinition => {
-          this.formAssociation = formDefinition.formAssociation;
-          const className = this.formAssociation.formLink.className.split('.');
-          const linkType = className[className.length - 1];
-          switch (linkType) {
-            case 'BpmnElementFormIdLink':
-              this.formDefinition = formDefinition;
-              this.documentService.getDocument(this.documentId).subscribe(
-                document => {
-                  this.submission = {
-                    data: document.content,
-                  };
-                },
-                () => noop()
-              );
-              this.modal.show();
+    this.formFlowInstanceId = null;
+    this.processService
+      .getProcessDefinitionStartProcessLink(this.processDefinitionId, this.documentId, null)
+      .pipe(take(1))
+      .subscribe(startProcessResult => {
+        if (startProcessResult) {
+          switch (startProcessResult.type) {
+            case 'form':
+              this.formDefinition = startProcessResult.properties.prefilledForm;
+              this.processLinkId = startProcessResult.processLinkId;
               break;
-            case 'BpmnElementUrlLink':
-              const url = this.router.serializeUrl(
-                this.router.createUrlTree([formDefinition.formAssociation.formLink.url])
-              );
-              window.open(url, '_blank');
+            case 'form-flow':
+              this.formFlowInstanceId = startProcessResult.properties.formFlowInstanceId;
               break;
-            case 'BpmnElementAngularStateUrlLink':
-              this.route.params.pipe(take(1)).subscribe(params => {
-                const documentId = params?.documentId;
-
-                this.router.navigate([formDefinition.formAssociation.formLink.url], {
-                  state: {...(documentId && {documentId})},
-                });
-              });
-              break;
-            default:
-              this.logger.fatal('Unsupported class name');
           }
-        },
-        errors => {
           this.modal.show();
+        } else {
+          // backwards compatibility for form associations
+          this.formLinkService
+            .getStartEventFormDefinitionByProcessDefinitionKey(
+              this.processDefinitionKey,
+              this.documentId
+            )
+            .pipe(take(1))
+            .subscribe({
+              next: formDefinitionWithFormAssociation =>
+                this.openFormAssociation(formDefinitionWithFormAssociation),
+              error: error => {
+                this.modal.show();
+              },
+            });
         }
-      );
+      });
+  }
+
+  private openFormAssociation(formDefinitionWithFormAssociation: any) {
+    this.formAssociation = formDefinitionWithFormAssociation.formAssociation;
+    const className = this.formAssociation.formLink.className.split('.');
+    const linkType = className[className.length - 1];
+    switch (linkType) {
+      case 'BpmnElementFormIdLink':
+        this.formDefinition = formDefinitionWithFormAssociation;
+        this.documentService.getDocument(this.documentId).subscribe(
+          document => {
+            this.submission = {
+              data: document.content,
+            };
+          },
+          () => noop()
+        );
+        this.modal.show();
+        break;
+      case 'BpmnElementFormFlowIdLink':
+        this.formFlowService
+          .createInstanceForNewProcess(this.processDefinitionKey, {
+            documentId: this.documentId,
+            documentDefinitionName: null,
+          })
+          .subscribe(result => (this.formFlowInstanceId = result.formFlowInstanceId));
+        this.modal.show();
+        break;
+      case 'BpmnElementUrlLink':
+        const url = this.router.serializeUrl(
+          this.router.createUrlTree([this.formAssociation.formLink.url])
+        );
+        window.open(url, '_blank');
+        break;
+      case 'BpmnElementAngularStateUrlLink':
+        this.route.params.pipe(take(1)).subscribe(params => {
+          const documentId = params?.documentId;
+
+          this.router.navigate([this.formAssociation.formLink.url], {
+            state: {...(documentId && {documentId})},
+          });
+        });
+        break;
+      default:
+        this.logger.fatal('Unsupported class name');
+    }
   }
 
   openModal(processDocumentDefinition: ProcessDocumentDefinition, documentId: string) {
     this.documentId = documentId;
     this.documentDefinitionName = processDocumentDefinition.id.documentDefinitionId.name;
     this.processDefinitionKey = processDocumentDefinition.id.processDefinitionKey;
+    this.processDefinitionId = processDocumentDefinition.latestVersionId;
     this.processName = processDocumentDefinition.processName;
     this.options = new FormioOptionsImpl();
     this.options.disableAlerts = true;
@@ -126,27 +176,44 @@ export class DossierSupportingProcessStartModalComponent {
       callback(null, submission);
     };
     this.options.setHooks(formioBeforeSubmit);
-    this.loadFormDefinition();
+    this.loadProcessLink();
   }
 
   public onSubmit(submission: FormioSubmission) {
     this.formioSubmission = submission;
-    this.formLinkService
-      .onSubmit(
-        this.processDefinitionKey,
-        this.formAssociation.formLink.id,
-        submission.data,
-        this.documentId
-      )
-      .subscribe(
-        (formSubmissionResult: FormSubmissionResult) => {
-          this.modal.hide();
-          this.formSubmit.emit();
-        },
-        errors => {
-          this.form.showErrors(errors);
-        }
-      );
+    if (this.processLinkId) {
+      this.processLinkService
+        .submitForm(this.processLinkId, submission.data, this.documentId)
+        .subscribe({
+          next: (formSubmissionResult: FormSubmissionResult) => {
+            this.formSubmitted();
+          },
+          error: errors => {
+            this.form.showErrors(errors);
+          },
+        });
+    } else {
+      this.formLinkService
+        .onSubmit(
+          this.processDefinitionKey,
+          this.formAssociation.formLink.id,
+          submission.data,
+          this.documentId
+        )
+        .subscribe(
+          (formSubmissionResult: FormSubmissionResult) => {
+            this.formSubmitted();
+          },
+          errors => {
+            this.form.showErrors(errors);
+          }
+        );
+    }
+  }
+
+  public formSubmitted() {
+    this.modal.hide();
+    this.formSubmit.emit();
   }
 
   public gotoFormLinkScreen() {

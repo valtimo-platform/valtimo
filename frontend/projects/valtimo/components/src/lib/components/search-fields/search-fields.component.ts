@@ -39,6 +39,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
     });
   }
   @Input() setValuesSubject$: Observable<SearchFieldValues>;
+  @Input() defaultValues: SearchFieldValues;
   @Output() doSearch: EventEmitter<SearchFieldValues> = new EventEmitter<SearchFieldValues>();
 
   readonly documentDefinitionName$ = new BehaviorSubject<string>('');
@@ -91,6 +92,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
     this.openDocumentDefinitionNameSubscription();
     this.openValuesSubjectSubscription();
     this.openDropdownSubscription();
+    this.setDefaultValues();
   }
 
   ngOnDestroy(): void {
@@ -232,5 +234,17 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
 
   private expand(): void {
     this.expanded$.next(true);
+  }
+
+  private setDefaultValues(): void {
+    if (
+      this.defaultValues &&
+      typeof this.defaultValues === 'object' &&
+      Object.keys(this.defaultValues).length > 0
+    ) {
+      this.values$.next(this.defaultValues);
+      this.search();
+      this.expand();
+    }
   }
 }

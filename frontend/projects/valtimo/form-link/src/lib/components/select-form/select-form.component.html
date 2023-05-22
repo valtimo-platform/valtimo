@@ -14,13 +14,23 @@
   ~ limitations under the License.
   -->
 
-<valtimo-plugin-configuration-container
-  [pluginDefinitionKey]="pluginDefinitionKey$ | async"
-  [functionKey]="functionKey$ | async"
-  [save$]="save$"
-  [disabled$]="disabled$"
-  [prefillConfiguration$]="prefillConfiguration$"
-  (valid)="onValid($event)"
-  (configuration)="onConfiguration($event)"
-  type="function"
-></valtimo-plugin-configuration-container>
+<ng-container
+  *ngIf="{
+    formDefinitions: formDefinitionListItems$ | async,
+    saving: saving$ | async
+  } as obs"
+>
+  <p class="step-description">
+    {{ 'processLinkConfiguration.chooseFormDescription' | translate }}
+  </p>
+  <div class="select-form">
+    <ibm-combo-box
+      [disabled]="!obs.formDefinitions || obs.saving"
+      [items]="obs.formDefinitions || []"
+      [placeholder]="'interface.typeToSearch' | translate"
+      (selected)="selectFormDefinition($event)"
+      [label]="'processLinkSteps.selectForm' | translate"
+      ><ibm-dropdown-list></ibm-dropdown-list
+    ></ibm-combo-box>
+  </div>
+</ng-container>

@@ -45,13 +45,14 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
       this.shellService.sideBarExpanded$,
       this.shellService.mouseOnTopBar$,
       this.shellService.largeScreen$,
+      this.shellService.collapsibleWidescreenMenu$,
     ])
       .pipe(take(1))
-      .subscribe(([sideBarExpanded, mouseOnTopBar, largeScreen]) => {
+      .subscribe(([sideBarExpanded, mouseOnTopBar, largeScreen, collapsibleWidescreenMenu]) => {
         const clickedInside =
           this.elementRef.nativeElement.contains(targetElement) || mouseOnTopBar;
 
-        if (!clickedInside && !largeScreen && sideBarExpanded) {
+        if (!clickedInside && (!largeScreen || collapsibleWidescreenMenu) && sideBarExpanded) {
           this.shellService.setSideBarExpanded(false);
         }
       });
@@ -99,10 +100,14 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
 
     this.router.navigate(route);
 
-    combineLatest([this.shellService.sideBarExpanded$, this.shellService.largeScreen$])
+    combineLatest([
+      this.shellService.sideBarExpanded$,
+      this.shellService.largeScreen$,
+      this.shellService.collapsibleWidescreenMenu$,
+    ])
       .pipe(take(1))
-      .subscribe(([sideBarExpanded, largeScreen]) => {
-        if (!largeScreen && sideBarExpanded) {
+      .subscribe(([sideBarExpanded, largeScreen, collapsibleWidescreenMenu]) => {
+        if ((!largeScreen || collapsibleWidescreenMenu) && sideBarExpanded) {
           this.shellService.setSideBarExpanded(false);
         }
       });
@@ -112,30 +117,37 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
     this.breakpointObserver
       .observe(['(max-width: 1055px)', '(min-width: 1056px)'])
       .subscribe(state => {
-        this.shellService.sideBarExpanded$.pipe(take(1)).subscribe(sideBarExpanded => {
-          const breakpoints = state.breakpoints;
-          const breakpointKeys = Object.keys(breakpoints);
-          const smallScreen = breakpoints[breakpointKeys[0]];
-          const largeScreen = breakpoints[breakpointKeys[1]];
+        combineLatest([
+          this.shellService.sideBarExpanded$,
+          this.shellService.collapsibleWidescreenMenu$,
+        ])
+          .pipe(take(1))
+          .subscribe(([sideBarExpanded, collapsibleWidescreenMenu]) => {
+            const breakpoints = state.breakpoints;
+            const breakpointKeys = Object.keys(breakpoints);
+            const smallScreen = breakpoints[breakpointKeys[0]];
+            const largeScreen = breakpoints[breakpointKeys[1]];
 
-          if (!this.breakpointsInitialized) {
-            if (smallScreen) {
-              this.shellService.toggleSideBar();
+            if (!this.breakpointsInitialized) {
+              if (smallScreen || collapsibleWidescreenMenu) {
+                this.shellService.collapseSideBar();
+              }
+              this.breakpointsInitialized = true;
             }
-            this.breakpointsInitialized = true;
-          }
 
-          if (
-            (this.lastSmallScreen && largeScreen && !sideBarExpanded) ||
-            (this.lastLargeScreen && smallScreen && sideBarExpanded)
-          ) {
-            this.shellService.toggleSideBar();
-          }
+            if (!collapsibleWidescreenMenu) {
+              if (
+                (this.lastSmallScreen && largeScreen && !sideBarExpanded) ||
+                (this.lastLargeScreen && smallScreen && sideBarExpanded)
+              ) {
+                this.shellService.toggleSideBar();
+              }
+            }
 
-          this.lastSmallScreen = smallScreen;
-          this.lastLargeScreen = largeScreen;
-          this.shellService.setLargeScreen(largeScreen);
-        });
+            this.lastSmallScreen = smallScreen;
+            this.lastLargeScreen = largeScreen;
+            this.shellService.setLargeScreen(largeScreen);
+          });
       });
   }
 }

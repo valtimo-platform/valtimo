@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-import {
-  AfterViewInit,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  Output,
-  ViewChild,
-} from '@angular/core';
+import {AfterViewInit, Component, Input, OnDestroy, ViewChild} from '@angular/core';
 import {ModalComponent as vModalComponent, ModalService} from '@valtimo/user-interface';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {ObjectManagementStateService} from '../../services/object-management-state.service';
-import {FormManagementService} from '@valtimo/form-management';
 import {PluginConfiguration, PluginManagementService} from '@valtimo/plugin';
 import {ObjectManagementService} from '../../services/object-management.service';
 import {Objecttype} from '../../models/object-management.model';
+import {FormService} from '@valtimo/form';
 
 @Component({
   selector: 'valtimo-object-management-modal',
@@ -52,10 +44,11 @@ export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy 
 
   readonly selectedObjecttype$ = new BehaviorSubject<string | null>(null);
 
-  readonly formDefinitions$: Observable<Array<{id: string; text: string}>> =
-    this.formManagementService.queryFormDefinitions().pipe(
+  readonly formDefinitions$: Observable<Array<{id: string; text: string}>> = this.formService
+    .getAllFormDefinitions()
+    .pipe(
       map(results =>
-        results?.body?.content.map(configuration => ({
+        results?.map(configuration => ({
           id: configuration.name,
           text: configuration.name,
         }))
@@ -95,7 +88,7 @@ export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy 
   constructor(
     private readonly objectManagementState: ObjectManagementStateService,
     private readonly objectManagementService: ObjectManagementService,
-    private readonly formManagementService: FormManagementService,
+    private readonly formService: FormService,
     private readonly pluginManagementService: PluginManagementService,
     private readonly modalService: ModalService
   ) {}

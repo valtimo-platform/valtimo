@@ -22,3 +22,4 @@ export * from './lib/form.service';
 export * from './lib/form.module';
 export * from './lib/services/form-mapping/form-mapping.service';
 export * from './lib/services/form-translation/form-translation.service';
+export * from './lib/models';

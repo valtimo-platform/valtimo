@@ -14,152 +14,118 @@
   ~ limitations under the License.
   -->
 
-<div class="main-content pt-0" *ngIf="{loading: loading$ | async} as obs">
-  <div class="container-fluid">
-    <div class="col-12 px-0 mb-5">
-      <div
-        *ngIf="
-          associatedProcessDocumentDefinitions$ | async as associatedProcessDocumentDefinitions
-        "
-      >
-        <div class="text-right mt-m3px mb-3">
-          <button
-            type="button"
-            class="btn btn-space btn-primary mr-0"
-            (click)="startDossier()"
-            [ngbTooltip]="associatedProcessDocumentDefinitions.length === 0 ? 'No action' : null"
-            placement="bottom"
-            [disabled]="associatedProcessDocumentDefinitions.length === 0 || obs.loading"
-          >
-            <i class="icon mdi mdi-plus mr-1"></i>
-            {{ 'Start Dossier' | translate }}
-          </button>
-        </div>
-
-        <div
-          class="modal fade"
-          id="startProcess"
-          tabindex="-1"
-          role="dialog"
-          aria-labelledby="startProcessLabel"
-          aria-hidden="true"
-        >
-          <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h3 class="modal-title" id="startProcessLabel">
-                  {{ 'dashboard.startProcess.title' | translate }}
-                </h3>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                <div class="table-responsive">
-                  <table class="table m-0">
-                    <tr
-                      *ngFor="let processDocumentDefinition of associatedProcessDocumentDefinitions"
-                      (click)="selectProcess(processDocumentDefinition)"
-                      style="cursor: pointer"
-                    >
-                      <td>{{ processDocumentDefinition.processName }}</td>
-                    </tr>
-                  </table>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                  {{ 'cta.close' | translate }}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+<ng-container
+  *ngIf="{
+    fields: fields$ | async,
+    documentItems: documentItems$ | async,
+    searchFields: searchFields$ | async,
+    schema: schema$ | async,
+    loaded:
+      !loadingFields &&
+      !loadingPagination &&
+      !loadingSearchFields &&
+      !loadingAssigneeFilter &&
+      !loadingDocumentItems
+  } as obs"
+>
+  <div class="main-content pt-0">
+    <div class="container-fluid">
+      <div class="col-12 px-0 mb-5">
+        <valtimo-dossier-list-actions
+          [loading]="!obs.loaded"
+          (formFlowComplete)="refresh()"
+        ></valtimo-dossier-list-actions>
+        <ng-container *ngIf="obs.loaded; else loading">
+          <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
+          <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
+        </ng-container>
       </div>
-      <valtimo-spinner *ngIf="obs.loading"></valtimo-spinner>
-      <ng-container *ngTemplateOutlet="searchFields"></ng-container>
-      <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
     </div>
   </div>
-  <valtimo-dossier-process-start-modal #processStartModal></valtimo-dossier-process-start-modal>
-</div>
+</ng-container>
 
-<ng-template #searchFields>
+<ng-template #searchFields let-obs="obs">
   <div class="mb-3">
     <valtimo-search-fields
-      [loading]="loadingDocumentSearchFields$ | async"
-      [searchFields]="documentSearchFields$ | async"
+      [searchFields]="obs.searchFields"
       (doSearch)="search($event)"
       [documentDefinitionName]="documentDefinitionName$ | async"
-      [setValuesSubject$]="setSearchFieldValuesSubject$"
+      [defaultValues]="searchFieldValues$ | async"
     ></valtimo-search-fields>
   </div>
 </ng-template>
 
 <ng-template #list let-obs="obs">
-  <ng-container *ngIf="paginationCopy$ | async as pagination">
-    <ng-container *ngIf="fields$ | async as fields">
-      <ng-container *ngIf="documentItems$ | async as documentItems">
-        <valtimo-widget *ngIf="obs.loading === false">
-          <valtimo-list
-            [items]="documentItems"
-            [fields]="fields"
-            (rowClicked)="rowClick($event)"
-            [pagination]="pagination"
-            [viewMode]="true"
-            [header]="true"
-            paginationIdentifier="dossierList"
-            (paginationClicked)="pageChange($event)"
-            (paginationSet)="pageSizeChange($event)"
-            [initialSortState]="pagination.sort"
-            (sortChanged)="sortChanged($event)"
-          >
-            <div header>
-              <h3 class="list-header-title">
-                {{ (schema$ | async)?.title }}
-                <sup class="ml-1 badge badge-pill badge-primary">{{
-                  pagination?.collectionSize || 0
-                }}</sup>
-              </h3>
-            </div>
-            <div tabs *ngIf="canHaveAssignee$ | async">
-              <ng-container *ngTemplateOutlet="tabs"></ng-container>
-            </div>
-          </valtimo-list>
-        </valtimo-widget>
-      </ng-container>
-    </ng-container>
+  <valtimo-widget>
+    <valtimo-list
+      [items]="obs.documentItems"
+      [fields]="obs.fields"
+      (rowClicked)="rowClick($event)"
+      [pagination]="pagination"
+      [viewMode]="true"
+      [header]="true"
+      paginationIdentifier="dossierList"
+      (paginationClicked)="pageChange($event)"
+      (paginationSet)="pageSizeChange($event)"
+      [initialSortState]="pagination.sort"
+      (sortChanged)="sortChanged($event)"
+    >
+      <div header>
+        <h3 class="list-header-title">
+          {{ obs.schema?.title }}
+          <sup class="ml-1 badge badge-pill badge-primary">{{
+            pagination?.collectionSize || 0
+          }}</sup>
+        </h3>
+      </div>
+      <div tabs *ngIf="canHaveAssignee">
+        <ng-container *ngTemplateOutlet="tabs"></ng-container>
+      </div>
+    </valtimo-list>
+  </valtimo-widget>
+</ng-template>
+
+<ng-template #tabs>
+  <ng-container *ngIf="assigneeFilter$ | async as assigneeFilter">
+    <ul
+      *ngIf="visibleDossierTabs === null; else configuredTabs"
+      ngbNav
+      [destroyOnHide]="false"
+      (navChange)="tabChange($event)"
+      class="nav-tabs"
+      [activeId]="assigneeFilter"
+    >
+      <li ngbNavItem="ALL" [title]="'dossier.tabs.ALL' | translate">
+        <a ngbNavLink>{{ 'dossier.tabs.ALL' | translate }}</a>
+      </li>
+      <li ngbNavItem="MINE" [title]="'dossier.tabs.MINE' | translate">
+        <a ngbNavLink>{{ 'dossier.tabs.MINE' | translate }}</a>
+      </li>
+      <li ngbNavItem="OPEN" [title]="'dossier.tabs.OPEN' | translate">
+        <a ngbNavLink>{{ 'dossier.tabs.OPEN' | translate }}</a>
+      </li>
+    </ul>
   </ng-container>
 </ng-template>
 
 <ng-template #configuredTabs>
-  <ul ngbNav [destroyOnHide]="false" (navChange)="tabChange($event)" class="nav-tabs">
-    <li
-      *ngFor="let tab of dossierVisibleTabs"
-      [ngbNavItem]="tab"
-      [title]="'dossier.tabs.' + tab | translate"
+  <ng-container *ngIf="assigneeFilter$ | async as assigneeFilter">
+    <ul
+      ngbNav
+      [destroyOnHide]="false"
+      (navChange)="tabChange($event)"
+      class="nav-tabs"
+      [activeId]="assigneeFilter"
     >
-      <a ngbNavLink>{{ 'dossier.tabs.' + tab | translate }}</a>
-    </li>
-  </ul>
+      <li
+        *ngFor="let tab of visibleDossierTabs"
+        [ngbNavItem]="tab"
+        [title]="'dossier.tabs.' + tab | translate"
+      >
+        <a ngbNavLink>{{ 'dossier.tabs.' + tab | translate }}</a>
+      </li>
+    </ul>
+  </ng-container>
 </ng-template>
 
-<ng-template #tabs>
-  <ul
-    *ngIf="dossierVisibleTabs === null; else configuredTabs"
-    ngbNav
-    [destroyOnHide]="false"
-    (navChange)="tabChange($event)"
-    class="nav-tabs"
-  >
-    <li ngbNavItem="all" [title]="'dossier.tabs.ALL' | translate">
-      <a ngbNavLink>{{ 'dossier.tabs.ALL' | translate }}</a>
-    </li>
-    <li ngbNavItem="mine" [title]="'dossier.tabs.MINE' | translate">
-      <a ngbNavLink>{{ 'dossier.tabs.MINE' | translate }}</a>
-    </li>
-    <li ngbNavItem="open" [title]="'dossier.tabs.OPEN' | translate">
-      <a ngbNavLink>{{ 'dossier.tabs.OPEN' | translate }}</a>
-    </li>
-  </ul>
-</ng-template>
+<ng-template #loading><valtimo-spinner></valtimo-spinner></ng-template>

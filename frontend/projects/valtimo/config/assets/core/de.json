@@ -246,6 +246,10 @@
     },
     "version": {
       "title": "Versions-Information"
+    },
+    "interface": {
+      "title": "Interface",
+      "collapsibleMenu": "Navigationsleiste immer einklappbar"
     }
   },
   "decisions": {
@@ -508,7 +512,8 @@
     "cancel": "Absagen",
     "collapse": "Kollaps",
     "expand": "Expandieren",
-    "download": "Herunterladen"
+    "download": "Herunterladen",
+    "typeToSearch": "Tippe um zu suchen..."
   },
   "taskDetail": {
     "taskCreated": "Erstellt",
@@ -930,6 +935,7 @@
     "title": "Der Titel ist ein optionales Feld, das als Bezeichnung für das aktuelle Suchfeld erscheint. Wenn der Titel nicht festgelegt ist, ist der Standardwert die Übersetzung des Suchfeldschlüssels (wenn keine Übersetzung verfügbar ist, wird der ursprüngliche Schlüsselwert angezeigt).",
     "key": "Ein eindeutiger Schlüssel, der das Suchfeld identifiziert. Wenn der Schlüssel nicht eindeutig ist, kann das Suchfeld nicht gespeichert werden.",
     "path": "Ein Pfad, der zu der Eigenschaft führt, die Sie durchsuchen möchten. Um im JSON-Schema des Dokuments zu suchen, folgen Sie diesem Beispiel: 'doc:customer.firstName'. Folgen Sie für die Suche in den Dokumenteigenschaften diesen Beispielen: 'case:createdBy', oder 'case:sequence', oder 'case:assigneeFullName'. Hinweis: Wenn eine Eigenschaft Sonderzeichen enthält, muss die Eigenschaft in Anführungszeichen gesetzt werden. Zum Beispiel: case:\"loan-accepted\".",
+    "objectsApiPath": "Ein Pfad, der zu der Immobilie führt, nach der Sie suchen möchten. Befolgen Sie für die Suche im Objekt-API-JSON dieses Beispiel: 'object:/customer/firstName'.",
     "dataType": "Der Datentyp bestimmt, welche Eingaben dem Benutzer angezeigt werden. Beispielsweise wird für den Datentyp 'Datum' eine Datumsauswahl angezeigt.",
     "fieldType": "Der Feldtyp bestimmt die Werte, die der Benutzer eingeben kann. Die Option 'Nur' ermöglicht dem Benutzer, nur einen Wert einzugeben. Die Option 'Serie' ermöglicht dem Benutzer die Eingabe von zwei Werten. Nach diesen Werten und allen Werten dazwischen wird dann gesucht.",
     "matchType": "Die Übereinstimmen legt fest, wie Werte in der Datenbank mit den Suchwerten verknüpft werden. Beim Übereinstimmungstyp 'Genau' würde der Wert '1' nur mit dem Wert '1' übereinstimmen. Für den Übereinstimmungstyp 'Enthält' würde der Wert '1' mit dem Wert '1', '123' und allen anderen Werten übereinstimmen, die '1' enthalten.",
@@ -951,6 +957,7 @@
     "keyTooltip": "Ein eindeutiger Schlüssel, der die Spalte identifiziert. Wenn der Schlüssel nicht eindeutig ist, kann die Spalte nicht gespeichert werden.",
     "path": "Pfad",
     "pathTooltip": "Ein Pfad, der zu der Eigenschaft führt, die Sie zeigen möchten. Folgen Sie für das JSON-Schema des Dokuments diesem Beispiel: 'doc:customer.firstName'. Befolgen Sie für Dokumenteigenschaften die folgenden Beispiele: 'case:createdBy', oder 'case:sequence', oder 'case:assigneeFullName'. Hinweis: Wenn eine Eigenschaft Sonderzeichen enthält, muss die Eigenschaft in Anführungszeichen gesetzt werden. Zum Beispiel: case:\"loan-accepted\".",
+    "objectsApiPathTooltip": "Ein Pfad, der zu der Immobilie führt, nach der Sie suchen möchten. Befolgen Sie für die Suche im Objekt-API-JSON dieses Beispiel: 'object:/customer/firstName'.",
     "displayType": "Anzeigetyp",
     "displayTypeTooltip": "Diese Option bestimmt, wie die Daten letztendlich in der Tabelle angezeigt werden.",
     "displayTypeParameters": "Parameters",
@@ -975,8 +982,9 @@
     "dateFormatTooltip": "Ein Datumsformat, das von Moment.js (https://momentjs.com/docs/) unterstützt wird.",
     "uniqueKeyWarning": "Der Schlüssel für diese Spalte muss eindeutig sein.",
     "enumTitle": "Aufzählungswerte",
-    "enumTitleOptional": "Aufzählungswerte (optional)",
+    "enumTitleOptional": "Werte (optional)",
     "enumTooltip": "Die Schlüssel und Werte, die verwendet werden, um Anzeigedaten in die Tabelle umzuwandeln.",
+    "enumTooltipOptional": "Die Werte, die verwendet werden, um Anzeigedaten in die Tabelle umzuwandeln.",
     "downloadButtonText": "Konfiguration herunterladen",
     "deleteColumn": "Spalte löschen",
     "deleteColumnConfirmation": "Möchten Sie diese Spalte wirklich löschen?"
@@ -1060,5 +1068,44 @@
     "Remove": "Entfernen",
     "Next": "Nächste",
     "Previous": "Vorherige"
+  },
+  "viewTypeConverter": {
+    "Yes": "Ja",
+    "No": "Nein"
+  },
+  "processLinkConfiguration": {
+    "configureStep": "Prozessschritt konfigurieren",
+    "modalTitle": "Prozessschritt: {{processStepName}}",
+    "chooseProcessLinkTypeDescription": "Ein Prozessschritt kann mehrere Aktionen ausführen. Wählen Sie unten aus, mit welcher Art von Aktion Sie diesen Schritt verknüpfen möchten.",
+    "chooseFormDescription": "Wählen Sie hier das Formular aus, das Sie mit dem Prozessschritt verknüpfen möchten.",
+    "chooseFormFlowDescription": "Wählen Sie hier das FormFlow aus, das Sie mit dem Prozessschritt verknüpfen möchten.",
+    "choosePluginConfigurationDescription": "Wählen Sie hier die Plugin-Konfiguration aus, die Sie mit dem Prozessschritt verknüpfen möchten.",
+    "choosePluginActionDescription": "Wählen Sie die Aktion aus, die Sie mit dem Plugin ausführen möchten.",
+    "chooseForm": "Form wählen",
+    "cancel": "Stornieren",
+    "complete": "Vervollständigen",
+    "back": "Zurück",
+    "next": "Nächste",
+    "pluginDescription": "Plugin-Beschreibung",
+    "unlink": "Verknüpfung aufheben"
+  },
+  "processLinkType": {
+    "plugin": "Plugin",
+    "form": "Formular",
+    "form-flow": "FormFlow"
+  },
+  "processLinkSteps": {
+    "chooseProcessLinkType": "Linktyp wählen",
+    "empty": "........",
+    "selectForm": "Wählen Sie Ihr Formular",
+    "selectFormFlow": "Wählen Sie Ihr FormFlow",
+    "choosePluginConfiguration": "Plugin-Konfiguration wählen",
+    "choosePluginAction": "Wählen Sie Ihre Aktion",
+    "configurePluginAction": "Konfigurieren Sie Ihre Aktion"
+  },
+  "processLinkTypeDisabledTooltip": {
+    "plugin": "Es sind keine Plugin-Konfigurationen verfügbar. Erstellen Sie eine Plugin-Konfiguration, um sie mit einem Prozessschritt verknüpfen zu können.",
+    "form": "Es sind keine Formulare vorhanden. Erstellen Sie ein Formular, um es mit einem Prozessschritt verknüpfen zu können.",
+    "form-flow": "Es sind keine FormFlows verfügbar. Erstellen Sie einen FormFlow, um ihn mit einem Prozessschritt verknüpfen zu können."
   }
 }

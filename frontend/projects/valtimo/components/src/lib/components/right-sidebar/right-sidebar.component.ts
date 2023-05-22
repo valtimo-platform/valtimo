@@ -32,11 +32,13 @@ import {
   EmailNotificationSettings,
   FeedbackMailTo,
   UserIdentity,
+  UserSettings,
+  UserSettingsService,
   VERSIONS,
 } from '@valtimo/config';
 import {UserProviderService} from '@valtimo/security';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription, switchMap, take} from 'rxjs';
 import {VersionService} from '../version/version.service';
 import {ShellService} from '../../services/shell.service';
 import {tap} from 'rxjs/operators';
@@ -94,6 +96,8 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
 
   readonly updatingSettings$ = new BehaviorSubject<boolean>(true);
 
+  readonly updatingUserSettings$ = new BehaviorSubject<boolean>(true);
+
   private readonly emailNotificationSettings$ = new BehaviorSubject<EmailNotificationSettings>(
     undefined
   );
@@ -111,6 +115,8 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   readonly userContexts$ = this.contextService.getUserContexts();
   readonly activeContext$ = this.contextService.getUserContextActive();
 
+  readonly collapsibleWidescreenMenu$ = this.shellService.collapsibleWidescreenMenu$;
+
   readonly frontendVersion!: string;
 
   private formSubscription!: Subscription;
@@ -125,7 +131,8 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     private readonly logger: NGXLogger,
     private readonly shellService: ShellService,
     private readonly elementRef: ElementRef,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly userSettingsService: UserSettingsService
   ) {
     this.frontendVersion = VERSIONS?.frontendLibraries;
   }
@@ -141,6 +148,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     this.resetUrl = this.configService.config.changePasswordUrl?.endpointUri;
     this.overrideFeedbackMenuItemToMailTo =
       this.configService.config?.overrideFeedbackMenuItemToMailTo;
+    this.getUserSettings();
   }
 
   ngOnDestroy(): void {
@@ -152,13 +160,26 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     location.href = '/';
   }
 
-  updateUserLanguage(langKey: string): void {
+  updateUserLanguage(langKey: string, saveSettings = true): void {
     this.translate
       .use(langKey)
       .pipe(take(1))
       .subscribe(() => {
         localStorage.setItem('langKey', langKey);
+        this.selectedLanguage$.next(langKey);
+
+        if (saveSettings) {
+          this.saveUserSettings();
+        }
       });
+  }
+
+  setCollapsibleWidescreenMenu(collapsible: boolean, saveSettings = true): void {
+    this.shellService.setCollapsibleWidescreenMenu(collapsible);
+
+    if (saveSettings) {
+      this.saveUserSettings();
+    }
   }
 
   logout(): void {
@@ -221,5 +242,41 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
         }),
         {}
       );
+  }
+
+  private getUserSettings(): void {
+    this.userSettingsService.getUserSettings().subscribe(settings => {
+      this.updatingUserSettings$.next(false);
+
+      if (!settings?.languageCode) {
+        this.saveUserSettings();
+      } else {
+        this.setUserSettings(settings);
+      }
+    });
+  }
+
+  private saveUserSettings(): void {
+    this.updatingUserSettings$.next(true);
+
+    combineLatest([this.selectedLanguage$, this.collapsibleWidescreenMenu$])
+      .pipe(
+        take(1),
+        switchMap(([languageCode, collapsibleWidescreenMenu]) =>
+          this.userSettingsService.saveUserSettings({
+            collapsibleWidescreenMenu,
+            languageCode,
+          })
+        )
+      )
+      .subscribe(() => {
+        this.updatingUserSettings$.next(false);
+      });
+  }
+
+  private setUserSettings(settings: UserSettings): void {
+    this.selectedLanguage$.next(settings.languageCode);
+    this.updateUserLanguage(settings.languageCode, false);
+    this.setCollapsibleWidescreenMenu(settings.collapsibleWidescreenMenu, false);
   }
 }

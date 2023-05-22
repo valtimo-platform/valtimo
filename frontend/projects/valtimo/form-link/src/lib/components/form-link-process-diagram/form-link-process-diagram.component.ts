@@ -23,7 +23,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {ProcessService, ProcessDefinition} from '@valtimo/process';
+import {ProcessDefinition, ProcessService} from '@valtimo/process';
 
 import BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
 import {ActivatedRoute} from '@angular/router';
@@ -102,6 +102,7 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
                   id: e.element.businessObject.id,
                   type: e.element.businessObject.$type,
                   activityListenerType,
+                  name: e.element?.businessObject?.name,
                 },
                 processDefinitionKey: this.processDefinitionKey,
                 processDefinitionId: this.processDefinitionId,

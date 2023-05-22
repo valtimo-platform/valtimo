@@ -60,6 +60,18 @@ export interface ProcessDefinitionStartForm {
   genericForm: boolean;
 }
 
+export type StartProcessLinkType = 'form' | 'form-flow';
+
+export interface ProcessDefinitionStartProcessLink {
+  processLinkId: string;
+  type: StartProcessLinkType;
+  properties: {
+    formFlowInstanceId?: string;
+    formDefinitionId?: string;
+    prefilledForm?: any;
+  };
+}
+
 export interface ProcessInstance {
   id: string;
   businessKey: string;

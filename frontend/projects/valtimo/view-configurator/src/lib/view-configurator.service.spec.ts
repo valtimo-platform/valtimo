@@ -17,6 +17,8 @@
 import {TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {ViewConfiguratorService} from './view-configurator.service';
+import {VALTIMO_CONFIG} from '@valtimo/config';
+import {environment} from '../../../../../src/environments/environment';
 
 describe('ViewConfiguratorService', () => {
   let mockConfig;
@@ -28,7 +30,13 @@ describe('ViewConfiguratorService', () => {
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [ViewConfiguratorService],
+      providers: [
+        ViewConfiguratorService,
+        {
+          provide: VALTIMO_CONFIG,
+          useValue: environment,
+        },
+      ],
     });
 
     httpTestingController = TestBed.inject(HttpTestingController);
@@ -43,7 +51,7 @@ describe('ViewConfiguratorService', () => {
     it('should call request method get with the correct url', () => {
       service.getViewConfig('some-processDefinitionId').subscribe();
       const req = httpTestingController.expectOne(
-        mockConfig.endpointUri + 'viewconfig/some-processDefinitionId'
+        mockConfig.endpointUri + 'v1/viewconfig/some-processDefinitionId'
       );
       expect(req.request.method).toBe('GET');
       req.flush({

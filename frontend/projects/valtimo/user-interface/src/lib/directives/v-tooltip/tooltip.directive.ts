@@ -22,6 +22,9 @@ import {TooltipComponent} from './tooltip.component';
 @Directive({selector: '[vTooltip]'})
 export class TooltipDirective implements OnInit {
   @Input('vTooltip') text = '';
+  @Input() onBottom = false;
+  @Input() tooltipDisabled = false;
+
   private overlayRef!: OverlayRef;
 
   constructor(
@@ -31,15 +34,16 @@ export class TooltipDirective implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    const onBottom = this.onBottom;
     const positionStrategy = this.overlayPositionBuilder
       .flexibleConnectedTo(this.elementRef)
       .withPositions([
         {
           originX: 'center',
-          originY: 'top',
+          originY: onBottom ? 'bottom' : 'top',
           overlayX: 'center',
-          overlayY: 'bottom',
-          offsetY: -8,
+          overlayY: onBottom ? 'top' : 'bottom',
+          offsetY: onBottom ? 8 : -8,
         },
       ]);
 
@@ -48,10 +52,12 @@ export class TooltipDirective implements OnInit {
 
   @HostListener('mouseenter')
   show() {
-    const tooltipRef: ComponentRef<TooltipComponent> = this.overlayRef.attach(
-      new ComponentPortal(TooltipComponent)
-    );
-    tooltipRef.instance.text = this.text;
+    if (!this.tooltipDisabled) {
+      const tooltipRef: ComponentRef<TooltipComponent> = this.overlayRef.attach(
+        new ComponentPortal(TooltipComponent)
+      );
+      tooltipRef.instance.text = this.text;
+    }
   }
 
   @HostListener('mouseout')

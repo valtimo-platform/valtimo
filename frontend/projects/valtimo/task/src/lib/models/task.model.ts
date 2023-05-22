@@ -59,6 +59,7 @@ export interface AssigneeRequest {
 export type TaskProcessLinkType = 'form' | 'form-flow';
 
 export interface TaskProcessLinkResult {
+  processLinkId: string;
   type: TaskProcessLinkType;
   properties: {
     formLinkId?: string;

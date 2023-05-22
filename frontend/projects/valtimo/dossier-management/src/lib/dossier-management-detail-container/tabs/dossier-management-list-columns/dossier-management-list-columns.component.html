@@ -146,6 +146,7 @@
 
 <ng-template #createEditModal>
   <ibm-modal
+    valtimoIbmModal
     *ngIf="{
       type: currentModalType$ | async,
       show: showModal$ | async,
@@ -242,7 +243,11 @@
         <input ibmText formControlName="dateFormat" />
       </ibm-label>
     </div>
-    <div class="cds--text-input__field-wrapper" *ngIf="modalObs.showEnum || modalObs.isYesNo">
+    <div
+      class="cds--text-input__field-wrapper"
+      *ngIf="modalObs.showEnum || modalObs.isYesNo"
+      [ngClass]="{'no-margin': modalObs.isYesNo}"
+    >
       <ibm-label [disabled]="modalObs.disableInput">
         <span class="label-with-tooltip select-label">
           {{
@@ -251,7 +256,11 @@
               : ('listColumn.enumTitle' | translate)
           }}
           <v-tooltip-icon
-            [tooltip]="'listColumn.enumTooltip' | translate"
+            [tooltip]="
+              modalObs.isYesNo
+                ? ('listColumn.enumTooltipOptional' | translate)
+                : ('listColumn.enumTooltip' | translate)
+            "
             [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
@@ -260,6 +269,11 @@
           type="keyValue"
           (valueChange)="enumValueChange($event)"
           [defaultValues]="defaultEnumValues$ | async"
+          [hideAddButton]="modalObs.isYesNo"
+          [hideDeleteButton]="modalObs.isYesNo"
+          [maxRows]="modalObs.isYesNo ? 1 : null"
+          [keyColumnTitle]="modalObs.isYesNo && ('viewTypeConverter.Yes' | translate)"
+          [valueColumnTitle]="modalObs.isYesNo && ('viewTypeConverter.No' | translate)"
         ></valtimo-carbon-multi-input>
       </ibm-label>
     </div>

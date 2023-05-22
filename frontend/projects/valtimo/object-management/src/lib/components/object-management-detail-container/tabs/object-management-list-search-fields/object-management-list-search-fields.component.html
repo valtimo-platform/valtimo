@@ -108,6 +108,7 @@
 
 <ng-template #createEditModal>
   <ibm-modal
+    valtimoIbmModal
     *ngIf="{
       type: currentModalType$ | async,
       show: showModal$ | async,
@@ -168,7 +169,7 @@
         <span class="label-with-tooltip">
           {{ 'searchFieldsOverview.path' | translate }}
           <v-tooltip-icon
-            [tooltip]="'searchFieldsOverviewTooltips.path' | translate"
+            [tooltip]="'searchFieldsOverviewTooltips.objectsApiPath' | translate"
             [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>

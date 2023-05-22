@@ -35,11 +35,11 @@ import {
 import {Task, TaskProcessLinkType} from '../models';
 import {
   FormAssociation,
-  FormFlowInstance,
+  FormFlowComponent,
   FormFlowService,
-  FormFlowStepType,
   FormLinkService,
   FormSubmissionResult,
+  ProcessLinkService,
 } from '@valtimo/form-link';
 import {FormioForm} from '@formio/angular';
 import moment from 'moment';
@@ -62,6 +62,7 @@ moment.locale(localStorage.getItem('langKey') || '');
 })
 export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
   @ViewChild('form') form: FormioComponent;
+  @ViewChild('formFlow') formFlow: FormFlowComponent;
   @ViewChild('taskDetailModal') modal: ModalComponent;
   @Output() formSubmit = new EventEmitter();
   @Output() assignmentOfTaskChanged = new EventEmitter();
@@ -69,7 +70,6 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
   public task: Task | null = null;
   public formDefinition: FormioForm;
   public formFlowInstanceId: string;
-  public formFlowStepInstanceId?: string;
   public page: any = null;
   public formioOptions: ValtimoFormioOptions;
   public errorMessage: string = null;
@@ -77,17 +77,17 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     .getUserSubject()
     .pipe(map(userIdentity => userIdentity?.roles?.includes('ROLE_ADMIN')));
   private formAssociation: FormAssociation;
+  private processLinkId: string;
   private taskProcessLinkType$ = new BehaviorSubject<TaskProcessLinkType | null>(null);
   processLinkIsForm$ = this.taskProcessLinkType$.pipe(map(type => type === 'form'));
   processLinkIsFormFlow$ = this.taskProcessLinkType$.pipe(map(type => type === 'form-flow'));
-  private formFlowStepType$ = new BehaviorSubject<FormFlowStepType | null>(null);
-  formFlowStepTypeIsForm$ = this.formFlowStepType$.pipe(map(type => type === 'form'));
-  private formIoFormData$ = new BehaviorSubject<any>(null);
+  formIoFormData$ = new BehaviorSubject<any>(null);
   private _subscriptions = new Subscription();
 
   constructor(
     private readonly toastr: ToastrService,
     private readonly formLinkService: FormLinkService,
+    private readonly processLinkService: ProcessLinkService,
     private readonly formFlowService: FormFlowService,
     private readonly router: Router,
     private readonly logger: NGXLogger,
@@ -108,13 +108,9 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
         .pipe(
           distinctUntilChanged(),
           tap(modalShowing => {
-            const formIoFormData = this.formIoFormData$.getValue();
-            if (!modalShowing && formIoFormData && this.formFlowInstanceId) {
-              if (this.taskProcessLinkType$.getValue() === 'form-flow') {
-                this.formFlowService.save(this.formFlowInstanceId, formIoFormData).subscribe(
-                  () => null,
-                  errors => this.form.showErrors(errors)
-                );
+            if (!modalShowing) {
+              if (this.formFlow) {
+                this.formFlow.saveData();
               }
             }
           })
@@ -139,46 +135,50 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
       subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task.created}`,
     };
 
-    this.formLinkService
-      .getPreFilledFormDefinitionByFormLinkId(
-        task.processDefinitionKey,
-        task.businessKey,
-        task.taskDefinitionKey,
-        task.id // taskInstanceId
-      )
-      .subscribe(
-        formDefinition => {
-          this.formAssociation = formDefinition.formAssociation;
+    //only load from formlink when process link failed for backwards compatibility
+    if (!this.taskProcessLinkType$.getValue()) {
+      this.formLinkService
+        .getPreFilledFormDefinitionByFormLinkId(
+          task.processDefinitionKey,
+          task.businessKey,
+          task.taskDefinitionKey,
+          task.id // taskInstanceId
+        )
+        .subscribe(
+          formDefinition => {
+            this.formAssociation = formDefinition.formAssociation;
 
-          const className = this.formAssociation.formLink.className.split('.');
-          const linkType = className[className.length - 1];
+            const className = this.formAssociation.formLink.className.split('.');
+            const linkType = className[className.length - 1];
 
-          switch (linkType) {
-            case 'BpmnElementFormIdLink':
-              this.setFormDefinitionAndOpenModal(formDefinition);
-              break;
-            case 'BpmnElementFormFlowIdLink':
-              // We can't use the formDefinition here because the form definition is provided per form flow step
-              // I'm still leaving this in here in case we want to add form flow specific code.
-              break;
-            case 'BpmnElementUrlLink':
-              this.openUrlLink(formDefinition);
-              break;
-            case 'BpmnElementAngularStateUrlLink':
-              this.openAngularStateUrlLink(task, formDefinition);
-              break;
-            default:
-              this.logger.fatal('Unsupported class name');
+            switch (linkType) {
+              case 'BpmnElementFormIdLink':
+                this.setFormDefinitionAndOpenModal(formDefinition);
+                break;
+              case 'BpmnElementFormFlowIdLink':
+                // We can't use the formDefinition here because the form definition is provided per form flow step
+                // I'm still leaving this in here in case we want to add form flow specific code.
+                this.modal.show();
+                break;
+              case 'BpmnElementUrlLink':
+                this.openUrlLink(formDefinition);
+                break;
+              case 'BpmnElementAngularStateUrlLink':
+                this.openAngularStateUrlLink(task, formDefinition);
+                break;
+              default:
+                this.logger.fatal('Unsupported class name');
+            }
+          },
+          errors => {
+            if (errors?.error?.detail) {
+              this.errorMessage = errors.error.detail;
+            }
+
+            this.modal.show();
           }
-        },
-        errors => {
-          if (errors?.error?.detail) {
-            this.errorMessage = errors.error.detail;
-          }
-
-          this.modal.show();
-        }
-      );
+        );
+    }
   }
 
   public gotoFormLinkScreen(): void {
@@ -197,37 +197,34 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
       this.formIoFormData$.next(submission.data);
     }
     if (this.taskProcessLinkType$.getValue() === 'form') {
-      this.formLinkService
-        .onSubmit(
-          this.task.processDefinitionKey,
-          this.formAssociation.formLink.id,
-          submission.data,
-          this.task.businessKey,
-          this.task.id
-        )
-        .subscribe(
-          (_: FormSubmissionResult) => {
-            this.completeTask();
-          },
-          errors => {
-            this.form.showErrors(errors);
-          }
-        );
-    }
-
-    if (this.taskProcessLinkType$.getValue() === 'form-flow') {
-      if (submission.data.submit) {
-        this.formFlowService
-          .submitStep(this.formFlowInstanceId, this.formFlowStepInstanceId, submission.data)
+      if (this.processLinkId) {
+        this.processLinkService
+          .submitForm(this.processLinkId, submission.data, this.task.businessKey, this.task.id)
+          .subscribe({
+            next: (_: FormSubmissionResult) => {
+              this.completeTask();
+            },
+            error: errors => {
+              this.form.showErrors(errors);
+            },
+          });
+      } else {
+        this.formLinkService
+          .onSubmit(
+            this.task.processDefinitionKey,
+            this.formAssociation.formLink.id,
+            submission.data,
+            this.task.businessKey,
+            this.task.id
+          )
           .subscribe(
-            (result: FormFlowInstance) => this.handleFormFlowStep(result),
-            errors => this.form.showErrors(errors)
+            (_: FormSubmissionResult) => {
+              this.completeTask();
+            },
+            errors => {
+              this.form.showErrors(errors);
+            }
           );
-      } else if (submission.data['back']) {
-        this.formFlowService.back(this.formFlowInstanceId, submission.data).subscribe(
-          (result: FormFlowInstance) => this.handleFormFlowStep(result),
-          errors => this.form.showErrors(errors)
-        );
       }
     }
   }
@@ -237,58 +234,31 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
   }
 
   private getTaskProcessLink(taskId: string): void {
-    this.taskService.getTaskProcessLink(taskId).subscribe(res => {
-      if (res != null) {
-        switch (res?.type) {
-          case 'form':
-            this.taskProcessLinkType$.next('form');
-            this.setFormDefinitionAndOpenModal(res.properties.prefilledForm);
-            break;
-          case 'form-flow':
-            this.taskProcessLinkType$.next('form-flow');
-            this.getFormFlowStep(res?.properties.formFlowInstanceId);
-            break;
-        }
-      } else {
-        this.taskService.getTaskProcessLinkV1(taskId).subscribe(resV1 => {
-          switch (resV1?.type) {
+    this.taskService.getTaskProcessLink(taskId).subscribe({
+      next: res => {
+        if (res != null) {
+          switch (res?.type) {
             case 'form':
               this.taskProcessLinkType$.next('form');
+              this.processLinkId = res.processLinkId;
+              this.setFormDefinitionAndOpenModal(res.properties.prefilledForm);
               break;
             case 'form-flow':
               this.taskProcessLinkType$.next('form-flow');
-              this.getFormFlowStep(resV1?.properties.formFlowInstanceId);
+              this.formFlowInstanceId = res.properties.formFlowInstanceId;
               break;
           }
-        });
-      }
+        } else {
+          this.getLegacyTaskProcessLink(taskId);
+        }
+      },
+      error: _ => {
+        this.getLegacyTaskProcessLink(taskId);
+      },
     });
   }
 
-  private getFormFlowStep(formFlowInstanceId: string): void {
-    this.formFlowService
-      .getFormFlowStep(formFlowInstanceId)
-      .subscribe((result: FormFlowInstance) => {
-        this.handleFormFlowStep(result);
-      });
-  }
-
-  private handleFormFlowStep(formFlowInstance: FormFlowInstance) {
-    if (formFlowInstance.step === null) {
-      this.formFlowStepType$.next(null);
-      this.formFlowInstanceId = null;
-      this.formFlowStepInstanceId = null;
-      this.completeTask();
-    } else {
-      this.modalService.scrollToTop();
-      this.formFlowStepType$.next(formFlowInstance.step.type);
-      this.formFlowInstanceId = formFlowInstance.id;
-      this.formFlowStepInstanceId = formFlowInstance.step.id;
-      this.setFormDefinitionAndOpenModal(formFlowInstance.step.typeProperties.definition);
-    }
-  }
-
-  private completeTask() {
+  completeTask() {
     this.toastr.success(
       `${this.task.name} ${this.translateService.instant('taskDetail.taskCompleted')}`
     );
@@ -297,11 +267,28 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     this.formSubmit.emit();
   }
 
+  private getLegacyTaskProcessLink(taskId: string): void {
+    this.taskService.getTaskProcessLinkV1(taskId).subscribe(resV1 => {
+      switch (resV1?.type) {
+        case 'form':
+          this.taskProcessLinkType$.next('form');
+          break;
+        case 'form-flow':
+          this.taskProcessLinkType$.next('form-flow');
+          this.formFlowInstanceId = resV1.properties.formFlowInstanceId;
+          break;
+      }
+    });
+  }
+
   private resetTaskProcessLinkType(): void {
     this.taskProcessLinkType$.next(null);
+    this.processLinkId = null;
+    this.formAssociation = null;
   }
 
   private setFormDefinitionAndOpenModal(formDefinition: any): void {
+    this.taskProcessLinkType$.next('form');
     this.formDefinition = formDefinition;
     this.modal.show();
   }

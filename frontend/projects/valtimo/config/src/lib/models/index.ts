@@ -27,3 +27,4 @@ export * from './page';
 export * from './connector.model';
 export * from './search.model';
 export * from './versions.model';
+export * from './user-settings.model';

@@ -32,6 +32,7 @@ export class LayoutInternalComponent implements AfterViewInit {
 
   readonly showPageHeader$ = this.userInterfaceService.showPageHeader$;
   readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
+  readonly collapsibleWidescreenMenu$ = this.shellService.collapsibleWidescreenMenu$;
 
   constructor(
     public layoutService: LayoutService,

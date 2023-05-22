@@ -17,7 +17,12 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {FormFlowDefinition, FormFlowInstance} from '../models';
+import {
+  FormFlowCreateRequest,
+  FormFlowCreateResult,
+  FormFlowDefinition,
+  FormFlowInstance,
+} from '../models';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
@@ -33,6 +38,16 @@ export class FormFlowService {
   getFormFlowDefinitions(): Observable<FormFlowDefinition[]> {
     return this.http.get<FormFlowDefinition[]>(
       `${this.valtimoEndpointUri}v1/process-link/form-flow-definition`
+    );
+  }
+
+  createInstanceForNewProcess(
+    processDefinitionKey: string,
+    request: FormFlowCreateRequest
+  ): Observable<FormFlowCreateResult> {
+    return this.http.post<FormFlowCreateResult>(
+      `${this.valtimoEndpointUri}v1/process-definition/${processDefinitionKey}/form-flow`,
+      request
     );
   }
 

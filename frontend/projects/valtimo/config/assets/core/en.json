@@ -246,6 +246,10 @@
     },
     "version": {
       "title": "Version information"
+    },
+    "interface": {
+      "title": "Interface",
+      "collapsibleMenu": "Navigation bar always collapsible"
     }
   },
   "decisions": {
@@ -508,7 +512,8 @@
     "cancel": "Cancel",
     "collapse": "Collapse",
     "expand": "Expand",
-    "download": "Download"
+    "download": "Download",
+    "typeToSearch": "Type to search..."
   },
   "taskDetail": {
     "taskCreated": "Created",
@@ -930,6 +935,7 @@
     "title": "The title is an optional field that appears as a label for the current search field. When the title is not set, the default value will be the search field key translation (if there is no translation available, the original key value will be displayed).",
     "key": "A unique key by which the search field is identified. If the key is not unique, you will not be able to save the search field.",
     "path": "A path which leads to the property you want to search on. For searching in the document's JSON schema, follow this example: 'doc:customer.firstName'. For searching in the document properties, follow these examples: 'case:createdBy', or 'case:sequence', or 'case:assigneeFullName'. Note: When there are special characters in a property, the property must be enclosed in quotes. For example: case:\"loan-accepted\".",
+    "objectsApiPath": "A path which leads to the property you want to search on. For searching in the objects API JSON, follow this example: 'object:/customer/firstName'.",
     "dataType": "The data type decides what input is shown to the user. For example, for the data type 'Date', a date picker is shown.",
     "fieldType": "The field type decides the values the user can input. For the option 'Single', the user can only input a single value. For the option 'Range', the user may input two values, and these values, and all the values in between, are searched for.",
     "matchType": "The match type decides how values in the database are matched to the search values. For the match type 'Exact', the value '1' would only be matched to the value '1'. For the match type 'Contains', the value '1' would be matched to the value '1', '123', and all other values containing '1'.",
@@ -951,6 +957,7 @@
     "keyTooltip": "A unique key by which the column is identified. If the key is not unique, you will not be able to save the column.",
     "path": "Path",
     "pathTooltip": "A path which leads to the property you want to show. For the document's JSON schema, follow this example: 'doc:customer.firstName'. For document properties, follow these examples: 'case:createdBy', or 'case:sequence', or 'case:assigneeFullName'. Note: When there are special characters in a property, the property must be enclosed in quotes. For example: case:\"loan-accepted\".",
+    "objectsApiPathTooltip": "A path which leads to the property you want to search on. For searching in the objects API JSON, follow this example: 'object:/customer/firstName'.",
     "displayType": "Display Type",
     "displayTypeTooltip": "This option decides how the data is eventually displayed in the table.",
     "displayTypeParameters": "Parameters",
@@ -975,8 +982,9 @@
     "dateFormatTooltip": "A date format supported by Moment.js (https://momentjs.com/docs/).",
     "uniqueKeyWarning": "The key for this column must be unique.",
     "enumTitle": "Enumeration values",
-    "enumTitleOptional": "Enumeration values (optional)",
+    "enumTitleOptional": "Values (optional)",
     "enumTooltip": "The keys and values used to transform display data in the table.",
+    "enumTooltipOptional": "The values used to transform display data in the table.",
     "downloadButtonText": "Download configuration",
     "deleteColumn": "Delete column",
     "deleteColumnConfirmation": "Are you sure you want to delete this column?"
@@ -1058,5 +1066,44 @@
     "Remove": "Remove",
     "Next": "Next",
     "Previous": "Previous"
+  },
+  "viewTypeConverter": {
+    "Yes": "Yes",
+    "No": "No"
+  },
+  "processLinkConfiguration": {
+    "configureStep": "Configure process step",
+    "modalTitle": "Process step: {{processStepName}}",
+    "chooseProcessLinkTypeDescription": "A process step can perform a variety of actions. Choose below to what type of action you would like to link this step.",
+    "chooseFormDescription": "Choose the form that you want to link to the process step.",
+    "chooseFormFlowDescription": "Choose the FormFlow that you want to link to the process step.",
+    "choosePluginConfigurationDescription": "Choose the plugin configuration you want to link to the process step.",
+    "choosePluginActionDescription": "Choose the action you want to perform with the plugin.",
+    "chooseForm": "Choose form",
+    "cancel": "Cancel",
+    "complete": "Complete",
+    "back": "Go back",
+    "next": "Next",
+    "pluginDescription": "Plugin description",
+    "unlink": "Unlink"
+  },
+  "processLinkType": {
+    "plugin": "Plugin",
+    "form": "Form",
+    "form-flow": "FormFlow"
+  },
+  "processLinkSteps": {
+    "chooseProcessLinkType": "Choose link type",
+    "empty": "........",
+    "selectForm": "Select your form",
+    "selectFormFlow": "Select your FormFlow",
+    "choosePluginConfiguration": "Select plugin configuration",
+    "choosePluginAction": "Choose your action",
+    "configurePluginAction": "Configure your action"
+  },
+  "processLinkTypeDisabledTooltip": {
+    "plugin": "No plugin configurations are available. Create a plugin configuration to be able to link it to a process step.",
+    "form": "There are no forms available. Create a form to be able to link it to a process step.",
+    "form-flow": "There are no FormFlows available. Create a FormFlow to be able to link it to a process step."
   }
 }
