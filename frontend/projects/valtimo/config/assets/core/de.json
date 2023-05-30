@@ -68,9 +68,15 @@
     },
     "notes": {
       "addNote": "Notiz hinzufügen",
+      "modifyNote": "Notiz bearbeiten",
       "tableItemsText": "Notizen",
       "input": {
         "content": "Notiz"
+      },
+      "deleteConfirmation": {
+        "title": "Notiz löschen",
+        "description": "Möchten Sie diese Notiz wirklich löschen?",
+        "deletedMessage": "Die Notiz wurde erfolgreich gelöscht."
       }
     },
     "documenten": {

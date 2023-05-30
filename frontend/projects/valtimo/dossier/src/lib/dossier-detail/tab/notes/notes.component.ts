@@ -24,6 +24,8 @@ import {Pagination, TimelineItem, TimelineItemImpl} from '@valtimo/components';
 import {Page} from '@valtimo/config';
 import moment from 'moment';
 import {LangChangeEvent, TranslateService} from '@ngx-translate/core';
+import {PromptService} from '@valtimo/user-interface';
+import {ToastrService} from 'ngx-toastr';
 
 @Component({
   selector: 'valtimo-dossier-detail-tab-notes',
@@ -32,8 +34,21 @@ import {LangChangeEvent, TranslateService} from '@ngx-translate/core';
 })
 export class DossierDetailTabNotesComponent implements OnInit {
   public timelineItems: TimelineItem[] = [];
+  public actions: any[] = [
+    {
+      label: 'Edit',
+      icon: 'mdi-pencil',
+      callback: this.editNote.bind(this)
+    },
+    {
+      label: 'Delete',
+      icon: 'mdi-delete',
+      callback: this.deleteNote.bind(this)
+    }
+  ];
   readonly loading$ = new BehaviorSubject<boolean>(true);
   readonly fields$ = new BehaviorSubject<Array<{key: string; label: string}>>([]);
+  readonly customData$ = new BehaviorSubject<object>({});
   private readonly documentId$ = this.route.params.pipe(map(params => params.documentId));
 
   readonly currentPageAndSize$ = new BehaviorSubject<Partial<Pagination>>({
@@ -60,6 +75,7 @@ export class DossierDetailTabNotesComponent implements OnInit {
     this.documentId$,
     this.currentPageAndSize$,
     this.notesService.refresh$,
+    this.notesService.refresh$,
   ]).pipe(
     tap(() => (this.timelineItems = [])),
     switchMap(([documentId, currentPage]) =>
@@ -84,7 +100,8 @@ export class DossierDetailTabNotesComponent implements OnInit {
             note.createdByUserFullName,
             noteCreatedDate.fromNow(),
             note.content,
-            {}
+            {},
+            {id : note.id}
           )
         );
         return {
@@ -98,7 +115,9 @@ export class DossierDetailTabNotesComponent implements OnInit {
   constructor(
     private readonly route: ActivatedRoute,
     private notesService: NotesService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private promptService: PromptService,
+    private toastrService: ToastrService
   ) {}
 
   ngOnInit() {
@@ -114,6 +133,7 @@ export class DossierDetailTabNotesComponent implements OnInit {
   }
 
   showAddModal(): void {
+    this.customData$.next(null);
     this.notesService.setModalType('add');
     this.notesService.showModal();
   }
@@ -130,5 +150,39 @@ export class DossierDetailTabNotesComponent implements OnInit {
         })
       )
       .subscribe();
+  }
+
+  editNoteEvent(content){
+    this.notesService.updateNote(content.data.customData.id, content.formData).subscribe(() => {
+      this.notesService.refresh();
+      this.notesService.hideModal();
+    });
+  }
+
+  editNote(data){
+    this.customData$.next(data);
+    this.notesService.setModalType('modify');
+    this.notesService.showModal();
+  }
+
+  deleteNote(data){
+    this.promptService.openPrompt({
+      headerText: this.translateService.instant('dossier.notes.deleteConfirmation.title'),
+      bodyText: this.translateService.instant('dossier.notes.deleteConfirmation.description'),
+      cancelButtonText: this.translateService.instant('dossier.deleteConfirmation.cancel'),
+      confirmButtonText: this.translateService.instant('dossier.deleteConfirmation.delete'),
+      cancelMdiIcon: 'cancel',
+      confirmMdiIcon: 'delete',
+      cancelButtonType: 'secondary',
+      confirmButtonType: 'primary',
+      closeOnConfirm: true,
+      closeOnCancel: true,
+      confirmCallBackFunction: () => {
+        this.notesService.deleteNote(data.customData.id).subscribe(() => {
+          this.notesService.refresh();
+          this.toastrService.success(this.translateService.instant('dossier.notes.deleteConfirmation.deletedMessage'))
+        });
+      },
+    });
   }
 }

@@ -68,9 +68,15 @@
     },
     "notes": {
       "addNote": "Add note",
+      "modifyNote": "Edit note",
       "tableItemsText": "Notes",
       "input": {
         "content": "Note"
+      },
+      "deleteConfirmation": {
+        "title": "Delete note",
+        "description": "Are you sure you want to delete this note?",
+        "deletedMessage": "The note was deleted successfully."
       }
     },
     "documenten": {

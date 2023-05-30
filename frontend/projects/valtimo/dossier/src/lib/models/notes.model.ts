@@ -27,4 +27,8 @@ interface NoteCreateRequest {
   content: string;
 }
 
-export {Note, NoteCreateRequest};
+interface NoteUpdateRequest {
+  content: string;
+}
+
+export {Note, NoteCreateRequest, NoteUpdateRequest};

@@ -34,7 +34,7 @@
   </button>
 
   <div *ngIf="timelineItems">
-    <valtimo-timeline [items]="timelineItems"></valtimo-timeline>
+    <valtimo-timeline [actions]="actions" [items]="timelineItems"></valtimo-timeline>
   </div>
 
   <valtimo-spinner
@@ -42,7 +42,7 @@
     name="auditSpinner"
     bdColor="rgba(125, 125, 125, 0.35)"
     color="#264251"
-    type="square-jelly-box"
+    type="square-jelly-boxx"
   >
   </valtimo-spinner>
 
@@ -59,4 +59,4 @@
   </div>
 </div>
 
-<valtimo-note-modal (createNoteEvent)="createNewNote($event)"></valtimo-note-modal>
+<valtimo-note-modal [customData]="customData$ | async" (editNoteEvent)="editNoteEvent($event)" (createNoteEvent)="createNewNote($event)"></valtimo-note-modal>

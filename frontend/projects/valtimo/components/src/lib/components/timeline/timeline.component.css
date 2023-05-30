@@ -21,3 +21,9 @@
 .timeline-summary p {
   font-size: 0.8rem;
 }
+
+.actions-dropdown{
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
