@@ -23,7 +23,7 @@ import {ActivatedRoute} from '@angular/router';
 import {Pagination, TimelineItem, TimelineItemImpl} from '@valtimo/components';
 import {Page} from '@valtimo/config';
 import moment from 'moment';
-import {LangChangeEvent, TranslateService} from '@ngx-translate/core';
+import {TranslateService} from '@ngx-translate/core';
 import {PromptService} from '@valtimo/user-interface';
 import {ToastrService} from 'ngx-toastr';
 
@@ -38,13 +38,13 @@ export class DossierDetailTabNotesComponent implements OnInit {
     {
       label: 'Edit',
       icon: 'mdi-pencil',
-      callback: this.editNote.bind(this)
+      callback: this.editNote.bind(this),
     },
     {
       label: 'Delete',
       icon: 'mdi-delete',
-      callback: this.deleteNote.bind(this)
-    }
+      callback: this.deleteNote.bind(this),
+    },
   ];
   readonly loading$ = new BehaviorSubject<boolean>(true);
   readonly fields$ = new BehaviorSubject<Array<{key: string; label: string}>>([]);
@@ -101,7 +101,7 @@ export class DossierDetailTabNotesComponent implements OnInit {
             noteCreatedDate.fromNow(),
             note.content,
             {},
-            {id : note.id}
+            {id: note.id}
           )
         );
         return {
@@ -152,21 +152,21 @@ export class DossierDetailTabNotesComponent implements OnInit {
       .subscribe();
   }
 
-  editNoteEvent(content){
+  editNoteEvent(content) {
     this.notesService.updateNote(content.data.customData.id, content.formData).subscribe(() => {
       this.notesService.refresh();
       this.notesService.hideModal();
-      this.toastrService.success(this.translateService.instant('dossier.notes.editedMessage'))
+      this.toastrService.success(this.translateService.instant('dossier.notes.editedMessage'));
     });
   }
 
-  editNote(data){
+  editNote(data) {
     this.customData$.next(data);
     this.notesService.setModalType('modify');
     this.notesService.showModal();
   }
 
-  deleteNote(data){
+  deleteNote(data) {
     this.promptService.openPrompt({
       headerText: this.translateService.instant('dossier.notes.deleteConfirmation.title'),
       bodyText: this.translateService.instant('dossier.notes.deleteConfirmation.description'),
@@ -181,7 +181,9 @@ export class DossierDetailTabNotesComponent implements OnInit {
       confirmCallBackFunction: () => {
         this.notesService.deleteNote(data.customData.id).subscribe(() => {
           this.notesService.refresh();
-          this.toastrService.success(this.translateService.instant('dossier.notes.deleteConfirmation.deletedMessage'))
+          this.toastrService.success(
+            this.translateService.instant('dossier.notes.deleteConfirmation.deletedMessage')
+          );
         });
       },
     });

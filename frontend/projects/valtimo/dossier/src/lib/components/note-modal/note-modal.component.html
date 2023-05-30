@@ -14,10 +14,15 @@
   ~ limitations under the License.
   -->
 
-<v-modal #noteModal *ngIf="{disabled: disabled$ | async, valid: valid$ | async, modalType: modalType$ | async} as obs">
+<v-modal
+  #noteModal
+  *ngIf="{disabled: disabled$ | async, valid: valid$ | async, modalType: modalType$ | async} as obs"
+>
   <div role="header">
     <div class="add-note-title">
-      <v-title [margin]="false">{{ (obs.modalType === 'add' ? 'dossier.notes.addNote' : 'dossier.notes.modifyNote') | translate }}</v-title>
+      <v-title [margin]="false">{{
+        (obs.modalType === 'add' ? 'dossier.notes.addNote' : 'dossier.notes.modifyNote') | translate
+      }}</v-title>
     </div>
   </div>
   <div role="content">
@@ -28,7 +33,12 @@
       <v-button (clickEvent)="cancel()" [disabled]="obs.disabled" type="secondary">
         {{ 'document.cancel' | translate }}
       </v-button>
-      <ng-container *ngTemplateOutlet="obs.modalType === 'add' ? addNoteButton : editNoteButton; context: {obs:obs}"></ng-container>
+      <ng-container
+        *ngTemplateOutlet="
+          obs.modalType === 'add' ? addNoteButton : editNoteButton;
+          context: {obs: obs}
+        "
+      ></ng-container>
     </div>
   </div>
 </v-modal>

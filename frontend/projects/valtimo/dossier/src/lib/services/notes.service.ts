@@ -19,7 +19,6 @@ import {ConfigService, ConnectorModal, Page} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {Note, NoteCreateRequest, NoteUpdateRequest} from '../models/notes.model';
-import {take} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -47,17 +46,12 @@ export class NotesService {
     );
   }
 
-  updateNote(noteId: string, request: NoteUpdateRequest): Observable<Note>{
-    return this.http.put<Note>(
-      `${this.VALTIMO_API_ENDPOINT_URI}v1/note/${noteId}`,
-      request
-    );
+  updateNote(noteId: string, request: NoteUpdateRequest): Observable<Note> {
+    return this.http.put<Note>(`${this.VALTIMO_API_ENDPOINT_URI}v1/note/${noteId}`, request);
   }
 
-  deleteNote(noteId: string): Observable<Note>{
-    return this.http.delete<Note>(
-      `${this.VALTIMO_API_ENDPOINT_URI}v1/note/${noteId}`
-    );
+  deleteNote(noteId: string): Observable<Note> {
+    return this.http.delete<Note>(`${this.VALTIMO_API_ENDPOINT_URI}v1/note/${noteId}`);
   }
 
   get showModal$(): Observable<any> {

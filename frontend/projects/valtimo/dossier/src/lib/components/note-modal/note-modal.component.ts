@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import {ModalComponent as vModalComponent, ModalService} from '@valtimo/user-interface';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
@@ -77,12 +85,12 @@ export class NoteModalComponent implements AfterViewInit, OnDestroy {
       });
   }
 
-  emitNoteData() : void{
+  emitNoteData(): void {
     combineLatest([this.valid$, this.formData$, this.modalType$])
       .pipe(take(1))
       .subscribe(([valid, formData, modalType]) => {
         if (valid) {
-          if(modalType === 'add'){
+          if (modalType === 'add') {
             this.createNoteEvent.emit(formData);
           } else {
             this.editNoteEvent.emit({formData, data: this.customData});
@@ -104,7 +112,7 @@ export class NoteModalComponent implements AfterViewInit, OnDestroy {
   }
 
   private show(): void {
-    this.notesService.modalType$.pipe(take(1)).subscribe(modalType => {
+    this.notesService.modalType$.pipe(take(1)).subscribe(() => {
       this.modalService.openModal(this.noteModal);
     });
   }
