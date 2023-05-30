@@ -77,7 +77,8 @@
         "title": "Notiz löschen",
         "description": "Möchten Sie diese Notiz wirklich löschen?",
         "deletedMessage": "Die Notiz wurde erfolgreich gelöscht."
-      }
+      },
+      "editedMessage": "Die Notiz wurde erfolgreich bearbeitet."
     },
     "documenten": {
       "noProcessLinked": {

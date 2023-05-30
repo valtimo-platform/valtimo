@@ -156,6 +156,7 @@ export class DossierDetailTabNotesComponent implements OnInit {
     this.notesService.updateNote(content.data.customData.id, content.formData).subscribe(() => {
       this.notesService.refresh();
       this.notesService.hideModal();
+      this.toastrService.success(this.translateService.instant('dossier.notes.editedMessage'))
     });
   }
 
