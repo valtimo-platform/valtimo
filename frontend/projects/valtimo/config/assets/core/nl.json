@@ -304,9 +304,13 @@
       "title": "Uploadproces koppelen aan dossier",
       "description": "Kies welk proces het uploaden van bestanden moet afhandelen."
     },
-    "handleAssignee": {
+    "toggleAssignee": {
       "title": "Dossierbehandelaar",
       "checkboxDescription": "Dit type dossier kan een behandelaar hebben"
+    },
+    "toggleAutoAssignTasks": {
+      "title": "Taaktoewijzing",
+      "checkboxDescription": "Alle taken worden toegewezen aan de behandelaar"
     },
     "tabs": {
       "cases": "Zaak Details",
@@ -512,8 +516,7 @@
     "cancel": "Annuleren",
     "collapse": "Inklappen",
     "expand": "Uitklappen",
-    "download": "Download",
-    "typeToSearch": "Typ om te zoeken..."
+    "download": "Download"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",

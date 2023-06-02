@@ -304,9 +304,13 @@
       "title": "Link upload process to case",
       "description": "Choose which process should handle file uploads."
     },
-    "handleAssignee": {
+    "toggleAssignee": {
       "title": "Case handler",
       "checkboxDescription": "This case type can have a handler"
+    },
+    "toggleAutoAssignTasks": {
+      "title": "Task assignment",
+      "checkboxDescription": "Automatically assign user tasks to the case handler"
     },
     "tabs": {
       "cases": "Case Details",
@@ -512,8 +516,7 @@
     "cancel": "Cancel",
     "collapse": "Collapse",
     "expand": "Expand",
-    "download": "Download",
-    "typeToSearch": "Type to search..."
+    "download": "Download"
   },
   "taskDetail": {
     "taskCreated": "Created",
@@ -689,7 +692,7 @@
     "infoPredefined": "Choose from predefined form definitions",
     "infoFormFlowDefinition": "Choose from predefined form flow definitions",
     "infoUrl": "Enter a URL pointing to a location in the Console. Example format: '/form-links'",
-    "infoExternal": "Enter a URL pointing to an external location. Example format: 'http://www.domain.com/form1'",
+    "infoExternal": "Enter a URL pointing to an external location. Example format: 'https://www.domain.com/form1'",
     "alertRelink": "Form relinked",
     "alertRelinkError": "Failed to relink form",
     "alertLink": "Form linked",
@@ -734,7 +737,7 @@
           "tip": "Enter the URL which points to the role type in OpenZaak that is attributed to the user who starts the product request.",
           "roleTypeUrl": {
             "label": "URL to role type",
-            "tooltip": "http://api.example.org/catalogi/api/v1/roltypen/xxxx-xxxx-xxxx-xxxx-xxxx"
+            "tooltip": "https://api.example.org/catalogi/api/v1/roltypen/xxxx-xxxx-xxxx-xxxx-xxxx"
           }
         }
       },
