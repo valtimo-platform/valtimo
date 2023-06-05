@@ -27,6 +27,30 @@
         <div class="timeline-content mt-1">
           <div class="timeline-header p-0">
             <span class="timeline-author">{{ item.user }}</span>
+
+            <div class="dropdown actions-dropdown" *ngIf="actions?.length > 0">
+              <a
+                class="dropdown-toggle d-block"
+                id="dropdownMenu"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                <i class="action-icon icon mdi mdi-dots-vertical"></i>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenu">
+                <a
+                  (click)="action.callback(item, $event)"
+                  class="dropdown-item p-2"
+                  *ngFor="let action of actions"
+                >
+                  <ng-container *ngIf="action.icon !== null">
+                    <i class="icon mdi" [ngClass]="action.icon"></i>
+                  </ng-container>
+                  {{ action?.label || '-' }}
+                </a>
+              </div>
+            </div>
             <br />
             <p class="timeline-activity">{{ item.activity }}</p>
             <div class="timeline-summary">

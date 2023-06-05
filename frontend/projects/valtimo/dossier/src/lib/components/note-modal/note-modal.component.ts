@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, EventEmitter, OnDestroy, Output, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import {ModalComponent as vModalComponent, ModalService} from '@valtimo/user-interface';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
@@ -26,13 +34,16 @@ import {NotesService} from '../../services/notes.service';
   styleUrls: ['./note-modal.component.scss'],
 })
 export class NoteModalComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('addNoteModal') addNoteModal: vModalComponent;
+  @ViewChild('noteModal') noteModal: vModalComponent;
+  @Input() customData;
   @Output() createNoteEvent: EventEmitter<any> = new EventEmitter();
+  @Output() editNoteEvent: EventEmitter<any> = new EventEmitter();
 
   readonly disabled$!: Observable<boolean>;
   readonly valid$ = new BehaviorSubject<boolean>(false);
   readonly showForm$: Observable<boolean> = this.modalService.modalVisible$;
   readonly formData$ = new BehaviorSubject<any>(null);
+  readonly modalType$: Observable<string> = this.notesService.modalType$;
 
   showSubscription!: Subscription;
   hideSubscription!: Subscription;
@@ -74,6 +85,20 @@ export class NoteModalComponent implements AfterViewInit, OnDestroy {
       });
   }
 
+  emitNoteData(): void {
+    combineLatest([this.valid$, this.formData$, this.modalType$])
+      .pipe(take(1))
+      .subscribe(([valid, formData, modalType]) => {
+        if (valid) {
+          if (modalType === 'add') {
+            this.createNoteEvent.emit(formData);
+          } else {
+            this.editNoteEvent.emit({formData, data: this.customData});
+          }
+        }
+      });
+  }
+
   private openShowSubscription(): void {
     this.showSubscription = this.notesService.showModal$.subscribe(() => {
       this.show();
@@ -87,10 +112,8 @@ export class NoteModalComponent implements AfterViewInit, OnDestroy {
   }
 
   private show(): void {
-    this.notesService.modalType$.pipe(take(1)).subscribe(modalType => {
-      if (modalType === 'add') {
-        this.modalService.openModal(this.addNoteModal);
-      }
+    this.notesService.modalType$.pipe(take(1)).subscribe(() => {
+      this.modalService.openModal(this.noteModal);
     });
   }
 

@@ -21,6 +21,7 @@ export interface TimelineItem {
   activity: string;
   summaryTranslationKey: string;
   summaryTranslationParams: object;
+  customData?: object;
 }
 
 export class TimelineItemImpl implements TimelineItem {
@@ -30,6 +31,7 @@ export class TimelineItemImpl implements TimelineItem {
   private readonly _activity: string;
   private readonly _summaryTranslationKey: string;
   private readonly _summaryTranslationParams: object;
+  private readonly _customData?: object;
 
   constructor(
     date: string,
@@ -37,7 +39,8 @@ export class TimelineItemImpl implements TimelineItem {
     user: string,
     activity: string,
     summaryTranslationKey: string,
-    summaryTranslationParams: object
+    summaryTranslationParams: object,
+    customData?: object
   ) {
     this._date = date;
     this._time = time;
@@ -45,6 +48,7 @@ export class TimelineItemImpl implements TimelineItem {
     this._activity = activity;
     this._summaryTranslationKey = summaryTranslationKey;
     this._summaryTranslationParams = summaryTranslationParams;
+    this._customData = customData;
   }
 
   get date(): string {
@@ -69,5 +73,9 @@ export class TimelineItemImpl implements TimelineItem {
 
   get summaryTranslationParams(): object {
     return this._summaryTranslationParams;
+  }
+
+  get customData(): object {
+    return this._customData;
   }
 }
