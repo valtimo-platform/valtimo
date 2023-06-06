@@ -239,7 +239,7 @@
     "bpmn-js": "^6.4.2",
     "bpmn-js-properties-panel": "^0.33.1",
     "camunda-bpmn-moddle": "^4.3.0",
-    "carbon-components-angular": "^5.2.1",
+    "carbon-components-angular": "~5.2.1",
     "cli-progress": "^3.11.2",
     "components-jqueryui": "^1.12.1",
     "core-js": "^3.23.3",
