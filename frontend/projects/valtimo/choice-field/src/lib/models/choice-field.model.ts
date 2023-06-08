@@ -17,7 +17,7 @@
 export interface ChoiceField {
   id: number;
   keyName: string;
-  title: boolean;
+  title: string;
 }
 
 export interface ChoiceFieldValue {

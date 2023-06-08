@@ -23,6 +23,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {FormType} from '../../../../models/object.model';
 import {ToastrService} from 'ngx-toastr';
 import {TranslateService} from '@ngx-translate/core';
+import {PageTitleService} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-object-detail',
@@ -43,7 +44,12 @@ export class ObjectDetailComponent {
   readonly objectManagementId$: Observable<string> = this.route.params.pipe(
     map(params => params.objectManagementId)
   );
-  readonly objectId$: Observable<string> = this.route.params.pipe(map(params => params.objectId));
+  readonly objectId$: Observable<string> = this.route.params.pipe(
+    map(params => params.objectId),
+    tap(objectId => {
+      this.pageTitleService.setCustomPageTitle(objectId);
+    })
+  );
 
   readonly formioFormSummary$: Observable<any> = combineLatest([
     this.objectManagementId$,
@@ -85,10 +91,11 @@ export class ObjectDetailComponent {
   constructor(
     private readonly objectService: ObjectService,
     private readonly objectState: ObjectStateService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private translate: TranslateService,
-    private toastr: ToastrService
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly translate: TranslateService,
+    private readonly toastr: ToastrService,
+    private readonly pageTitleService: PageTitleService
   ) {}
 
   saveObject(): void {

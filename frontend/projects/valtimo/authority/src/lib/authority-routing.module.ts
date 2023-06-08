@@ -40,7 +40,7 @@ const routes: Routes = [
     path: 'entitlements/entitlement/:name',
     component: AuthorityDetailComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Entitlement details', roles: [ROLE_ADMIN]},
+    data: {title: 'Entitlement details', roles: [ROLE_ADMIN], customPageTitle: true},
   },
 ];
 

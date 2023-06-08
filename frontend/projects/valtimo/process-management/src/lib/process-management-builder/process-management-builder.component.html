@@ -49,9 +49,6 @@
         [ngClass]="{'border-bottom-0': selectedVersion !== null}"
       >
         <div class="col-md-4" *ngIf="processDefinitionVersions.length > 0">
-          <h2 class="process-title">
-            {{ processDefinitionVersions[processDefinitionVersions.length - 1].name }}
-          </h2>
           <span class="badge badge-pill badge-info mr-1" *ngIf="isReadOnlyProcess$ | async">
             {{ 'processManagement.readOnly' | translate }}
           </span>

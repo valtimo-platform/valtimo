@@ -14,86 +14,19 @@
  * limitations under the License.
  */
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute, NavigationEnd, PRIMARY_OUTLET, Router} from '@angular/router';
-import {filter, map} from 'rxjs/operators';
-import {Subscription} from 'rxjs';
-import {ConfigService} from '@valtimo/config';
+import {Component} from '@angular/core';
+import {Observable} from 'rxjs';
+import {BreadcrumbItem} from 'carbon-components-angular';
+import {BreadcrumbService} from './breadcrumb.service';
 
 @Component({
   selector: 'valtimo-breadcrumb-navigation',
   templateUrl: './breadcrumb-navigation.component.html',
   styleUrls: ['./breadcrumb-navigation.component.css'],
 })
-export class BreadcrumbNavigationComponent implements OnInit, OnDestroy {
-  public breadcrumbs: Array<any> = [];
-  public appTitle = this.configService?.config?.applicationTitle || 'Valtimo';
-  private routerSub = Subscription.EMPTY;
+export class BreadcrumbNavigationComponent {
+  public readonly breadcrumbItems$: Observable<Array<BreadcrumbItem>> =
+    this.breadcrumbService.breadcrumbItems$;
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private readonly configService: ConfigService
-  ) {}
-
-  ngOnInit() {
-    this.setBreadcrumbs(this.route);
-    this.routerSub = this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .pipe(map(() => this.route))
-      .pipe(
-        map(route => {
-          while (route.firstChild) {
-            route = route.firstChild;
-          }
-          return route;
-        })
-      )
-      .pipe(filter(route => route.outlet === PRIMARY_OUTLET))
-      .subscribe(route => {
-        this.setBreadcrumbs(route);
-      });
-  }
-
-  private setBreadcrumbs(route: ActivatedRoute) {
-    while (route.firstChild) {
-      route = route.firstChild;
-    }
-    if (route.outlet === PRIMARY_OUTLET) {
-      const snapshot = route.snapshot;
-      const activeRoute = {
-        url: snapshot.url.join('/'),
-        path: snapshot.routeConfig.path,
-        label: snapshot.data['title'],
-        params: snapshot.params,
-      };
-      this.generateBreadcrumbs(activeRoute);
-    }
-  }
-
-  private generateBreadcrumbs(activeBreadcrumb: any) {
-    this.breadcrumbs = [];
-    this.router.config.map(routerConfig => {
-      if (
-        activeBreadcrumb.path.indexOf(routerConfig.path + '/') === 0 &&
-        activeBreadcrumb.path !== routerConfig.path &&
-        routerConfig.path !== ''
-      ) {
-        const parentRoute = {
-          url: routerConfig.path.replace(/:(.+?)\b/g, (_, p1) => activeBreadcrumb.params[p1]),
-          path: routerConfig.path,
-          label: routerConfig.data['title'],
-          params: activeBreadcrumb.params,
-        };
-        const exist = this.breadcrumbs.findIndex(item => item.url === parentRoute.url);
-        if (exist === -1) {
-          this.breadcrumbs.push(parentRoute);
-        }
-      }
-    });
-  }
-
-  ngOnDestroy() {
-    this.routerSub.unsubscribe();
-  }
+  constructor(private readonly breadcrumbService: BreadcrumbService) {}
 }

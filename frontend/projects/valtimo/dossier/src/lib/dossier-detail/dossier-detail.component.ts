@@ -17,6 +17,7 @@
 import {
   Component,
   ComponentFactoryResolver,
+  OnDestroy,
   OnInit,
   ViewChild,
   ViewContainerRef,
@@ -45,13 +46,14 @@ import {
 } from 'rxjs';
 import {KeycloakService} from 'keycloak-angular';
 import {NGXLogger} from 'ngx-logger';
+import {BreadcrumbService, PageTitleService} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-dossier-detail',
   templateUrl: './dossier-detail.component.html',
   styleUrls: ['./dossier-detail.component.css'],
 })
-export class DossierDetailComponent implements OnInit {
+export class DossierDetailComponent implements OnInit, OnDestroy {
   @ViewChild('tabContainer', {read: ViewContainerRef, static: true})
   viewContainerRef: ViewContainerRef;
 
@@ -136,7 +138,9 @@ export class DossierDetailComponent implements OnInit {
     private readonly tabService: TabService,
     private readonly configService: ConfigService,
     private readonly keyCloakService: KeycloakService,
-    private readonly logger: NGXLogger
+    private readonly logger: NGXLogger,
+    private readonly breadcrumbService: BreadcrumbService,
+    private readonly pageTitleService: PageTitleService
   ) {
     this.snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this.snapshot.get('documentDefinitionName') || '';
@@ -157,10 +161,15 @@ export class DossierDetailComponent implements OnInit {
       .getDocumentDefinition(this.documentDefinitionName)
       .subscribe(definition => {
         this.documentDefinitionNameTitle = definition.schema.title;
+        this.setBreadcrumb();
       });
     this.initialTabName = this.snapshot.get('tab');
     this.tabLoader.initial(this.initialTabName);
     this.getAllAssociatedProcessDefinitions();
+  }
+
+  ngOnDestroy(): void {
+    this.breadcrumbService.clearSecondBreadcrumb();
   }
 
   public getAllAssociatedProcessDefinitions(): void {
@@ -240,5 +249,13 @@ export class DossierDetailComponent implements OnInit {
       }
     }
     return prefix + string;
+  }
+
+  private setBreadcrumb(): void {
+    this.breadcrumbService.setSecondBreadcrumb({
+      route: [`/dossiers/${this.documentDefinitionName}`],
+      content: this.documentDefinitionNameTitle,
+      href: `/dossiers/${this.documentDefinitionName}`,
+    });
   }
 }

@@ -39,7 +39,7 @@ const routes: Routes = [
     path: 'processes/process/:key',
     component: ProcessManagementBuilderComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Process details', roles: [ROLE_ADMIN]},
+    data: {title: 'Process details', roles: [ROLE_ADMIN], customPageTitle: true},
   },
 ];
 

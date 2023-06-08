@@ -17,7 +17,7 @@
 import {Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
-import {AlertService} from '@valtimo/components';
+import {AlertService, PageTitleService} from '@valtimo/components';
 import {ActivatedRoute, Router} from '@angular/router';
 import {BehaviorSubject, forkJoin, Observable} from 'rxjs';
 import {LayoutService} from '@valtimo/layout';
@@ -45,12 +45,13 @@ export class ProcessManagementBuilderComponent implements OnInit, OnDestroy {
   private elementTemplateFiles: string[] = ['mailSendTask'];
 
   constructor(
-    private http: HttpClient,
-    private processService: ProcessService,
-    public layoutService: LayoutService,
-    private alertService: AlertService,
-    private route: ActivatedRoute,
-    private router: Router
+    private readonly http: HttpClient,
+    private readonly processService: ProcessService,
+    public readonly layoutService: LayoutService,
+    private readonly alertService: AlertService,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly pageTitleService: PageTitleService
   ) {}
 
   ngOnInit() {
@@ -157,6 +158,9 @@ export class ProcessManagementBuilderComponent implements OnInit, OnDestroy {
       .getProcessDefinitionVersions(processDefinitionKey)
       .subscribe((processDefinitionVersions: ProcessDefinition[]) => {
         this.processDefinitionVersions = processDefinitionVersions;
+        this.pageTitleService.setCustomPageTitle(
+          processDefinitionVersions[processDefinitionVersions.length - 1].name
+        );
         this.setLatestVersion();
       });
   }

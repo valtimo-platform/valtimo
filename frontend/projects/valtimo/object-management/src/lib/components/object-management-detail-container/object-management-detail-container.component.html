@@ -27,16 +27,17 @@
 </div>
 
 <ng-template #title>
-  <div class="bg-light dossier-header" *ngIf="object$ | async as obs">
-    <h3 class="dossier-title">
-      {{ obs.title }}
-      <div *ngIf="obs.showInDataMenu" class="pull-right">
-        <span class="badge badge-pill badge-info increase-size">{{
-          'objectManagement.visibleInMenu' | translate
-        }}</span>
-      </div>
-    </h3>
-  </div>
+  <ng-container *ngIf="object$ | async as object">
+    <div class="bg-light dossier-header" *ngIf="object.showInDataMenu">
+      <h3 class="dossier-title">
+        <div *ngIf="object.showInDataMenu" class="pull-right">
+          <span class="badge badge-pill badge-info increase-size">{{
+            'objectManagement.visibleInMenu' | translate
+          }}</span>
+        </div>
+      </h3>
+    </div>
+  </ng-container>
 </ng-template>
 
 <ng-template #tabs>

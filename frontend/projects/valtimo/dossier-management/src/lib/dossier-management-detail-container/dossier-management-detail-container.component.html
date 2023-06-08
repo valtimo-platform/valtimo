@@ -27,16 +27,17 @@
 </div>
 
 <ng-template #title>
-  <div class="bg-light dossier-header" *ngIf="documentDefinition$ | async as documentDefinition">
-    <h3 class="dossier-title">
-      {{ documentDefinition.schema.title }}
-      <div *ngIf="documentDefinition.readOnly" class="pull-right">
-        <span class="badge badge-pill badge-info increase-size">{{
-          'dossierManagement.readonly' | translate
-        }}</span>
-      </div>
-    </h3>
-  </div>
+  <ng-container *ngIf="documentDefinition$ | async as documentDefinition">
+    <div class="bg-light dossier-header" *ngIf="documentDefinition.readOnly">
+      <h3 class="dossier-title">
+        <div class="pull-right">
+          <span class="badge badge-pill badge-info increase-size">{{
+            'dossierManagement.readonly' | translate
+          }}</span>
+        </div>
+      </h3>
+    </div>
+  </ng-container>
 </ng-template>
 
 <ng-template #tabs>

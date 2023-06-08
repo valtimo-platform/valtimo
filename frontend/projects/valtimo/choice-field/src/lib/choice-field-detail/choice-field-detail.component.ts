@@ -19,7 +19,7 @@ import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ChoiceFieldService} from '../choice-field.service';
 import {ChoiceField} from '../models';
-import {AlertService} from '@valtimo/components';
+import {AlertService, PageTitleService} from '@valtimo/components';
 import {Subscription} from 'rxjs';
 import {first} from 'rxjs/operators';
 
@@ -35,11 +35,12 @@ export class ChoiceFieldDetailComponent implements OnInit, OnDestroy {
   private alertSub: Subscription = Subscription.EMPTY;
 
   constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private formBuilder: FormBuilder,
-    private service: ChoiceFieldService,
-    private alertService: AlertService
+    private readonly router: Router,
+    private readonly route: ActivatedRoute,
+    private readonly formBuilder: FormBuilder,
+    private readonly service: ChoiceFieldService,
+    private readonly alertService: AlertService,
+    private readonly pageTitleService: PageTitleService
   ) {
     const snapshot = this.route.snapshot.paramMap;
     this.id = snapshot.get('id');
@@ -70,6 +71,7 @@ export class ChoiceFieldDetailComponent implements OnInit, OnDestroy {
       this.form.controls.id.setValue(this.choiceField.id);
       this.form.controls.keyName.setValue(this.choiceField.keyName);
       this.form.controls.title.setValue(this.choiceField.title);
+      this.pageTitleService.setCustomPageTitle(this.choiceField.title);
     }
   }
 

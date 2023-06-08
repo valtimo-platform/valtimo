@@ -13,3 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+.page-title-container {
+  .page-title {
+    font-weight: 300;
+    margin-bottom: 2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .skeleton-container {
+    margin-bottom: 2rem;
+
+    .cds--skeleton__placeholder {
+      width: 200px;
+      height: 40px;
+    }
+  }
+}

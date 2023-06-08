@@ -51,17 +51,15 @@ export class DossierManagementAssigneeComponent {
   updateCaseSettings(caseSettings: CaseSettings, documentDefinitionName: string): void {
     this.disableInput();
 
-    this.documentService
-      .patchCaseSettings(documentDefinitionName, caseSettings)
-      .subscribe(
-        () => {
-          this.enableInput();
-          this.refreshSettings();
-        },
-        () => {
-          this.enableInput();
-        }
-      );
+    this.documentService.patchCaseSettings(documentDefinitionName, caseSettings).subscribe(
+      () => {
+        this.enableInput();
+        this.refreshSettings();
+      },
+      () => {
+        this.enableInput();
+      }
+    );
   }
 
   disableInput(): void {
@@ -80,19 +78,19 @@ export class DossierManagementAssigneeComponent {
     this.updateCaseSettings(
       {
         canHaveAssignee: !currentSettings.canHaveAssignee,
-        autoAssignTasks: currentSettings.autoAssignTasks
+        autoAssignTasks: currentSettings.autoAssignTasks,
       },
       documentDefinitionName
-    )
+    );
   }
 
   toggleTaskAssignment(currentSettings: CaseSettings, documentDefinitionName: string) {
     this.updateCaseSettings(
       {
         canHaveAssignee: currentSettings.canHaveAssignee,
-        autoAssignTasks: !currentSettings.autoAssignTasks
+        autoAssignTasks: !currentSettings.autoAssignTasks,
       },
       documentDefinitionName
-    )
+    );
   }
 }

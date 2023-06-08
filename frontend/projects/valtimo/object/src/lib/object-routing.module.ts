@@ -33,7 +33,7 @@ const routes: Routes = [
     path: 'objects/:objectManagementId/:objectId',
     canActivate: [AuthGuardService],
     component: ObjectDetailContainerComponent,
-    data: {title: 'Object details', roles: [ROLE_USER]},
+    data: {title: 'Object details', roles: [ROLE_USER], customPageTitle: true},
   },
 ];
 

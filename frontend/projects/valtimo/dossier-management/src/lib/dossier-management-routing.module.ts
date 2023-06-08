@@ -32,7 +32,7 @@ const routes: Routes = [
     path: 'dossier-management/dossier/:name',
     component: DossierManagementDetailContainerComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Dossier details', roles: [ROLE_ADMIN]},
+    data: {title: 'Dossier details', roles: [ROLE_ADMIN], customPageTitle: true},
   },
 ];
 

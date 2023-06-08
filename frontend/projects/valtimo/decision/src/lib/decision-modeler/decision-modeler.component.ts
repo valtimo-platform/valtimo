@@ -35,7 +35,7 @@ import {
   tap,
 } from 'rxjs';
 import {SelectedValue, SelectItem} from '@valtimo/user-interface';
-import {AlertService} from '@valtimo/components';
+import {AlertService, PageTitleService} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 import {EMPTY_DECISION} from './empty-decision';
 
@@ -79,7 +79,10 @@ export class DecisionModelerComponent implements AfterViewInit {
   );
 
   readonly decisionTitle$: Observable<string> = this.decision$.pipe(
-    map(decision => decision?.key || '')
+    map(decision => decision?.key || ''),
+    tap(decisionTitle => {
+      this.pageTitleService.setCustomPageTitle(decisionTitle);
+    })
   );
 
   readonly createdDecisionVersionSelectItems$ = new BehaviorSubject<Array<SelectItem>>([]);
@@ -118,7 +121,8 @@ export class DecisionModelerComponent implements AfterViewInit {
     private readonly router: Router,
     private readonly alertService: AlertService,
     private readonly translateService: TranslateService,
-    public readonly layoutService: LayoutService
+    public readonly layoutService: LayoutService,
+    private readonly pageTitleService: PageTitleService
   ) {}
 
   ngAfterViewInit(): void {

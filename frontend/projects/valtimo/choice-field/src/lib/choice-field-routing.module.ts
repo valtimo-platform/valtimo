@@ -40,6 +40,7 @@ const routes: Routes = [
     data: {
       title: 'Choice field details',
       roles: [ROLE_ADMIN],
+      customPageTitle: true,
     },
     component: ChoiceFieldDetailComponent,
     canActivate: [AuthGuardService],

@@ -40,7 +40,7 @@ const routes: Routes = [
     path: 'decision-tables/edit/:id',
     component: DecisionModelerComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Edit decision table', roles: [ROLE_ADMIN]},
+    data: {title: 'Edit decision table', roles: [ROLE_ADMIN], customPageTitle: true},
   },
   {
     path: 'decision-tables/edit/create',
