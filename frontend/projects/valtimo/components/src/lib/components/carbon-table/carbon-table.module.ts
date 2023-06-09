@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+import {TranslateModule} from '@ngx-translate/core';
+import {DialogModule, PaginationModule, TableModule} from 'carbon-components-angular';
+import {CarbonTableComponent} from './carbon-table.component';
 
-export * from './alert.model';
-export * from './carbon-pagination.model';
-export * from './carbon-table.model';
-export * from './documenten-api-metadata.model';
-export * from './form-io.model';
-export * from './list.model';
-export * from './pagination.model';
-export * from './searchable-dropdown.model';
-export * from './timeline.model';
-export * from './version.model';
+@NgModule({
+  declarations: [CarbonTableComponent],
+  imports: [CommonModule, DialogModule, TranslateModule, TableModule, PaginationModule],
+  exports: [CarbonTableComponent],
+})
+export class CarbonTableModule {}

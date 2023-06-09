@@ -42,6 +42,9 @@ export * from './lib/components/right-sidebar/right-sidebar.module';
 export * from './lib/components/left-sidebar/left-sidebar.component';
 export * from './lib/components/left-sidebar/left-sidebar.module';
 
+export * from './lib/components/carbon-table/carbon-table.component';
+export * from './lib/components/carbon-table/carbon-table.module';
+
 export * from './lib/components/list/list.component';
 export * from './lib/components/list/ListFilterPipe.directive';
 export * from './lib/components/list/list.module';

@@ -32,7 +32,7 @@ import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, fromEvent} from 'rxjs';
 import {debounceTime, take} from 'rxjs/operators';
 import {ViewContentService} from '../view-content/view-content.service';
-import {get as _get} from 'lodash' ;
+import {get as _get} from 'lodash';
 
 @Component({
   selector: 'valtimo-list',

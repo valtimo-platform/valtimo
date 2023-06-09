@@ -18,6 +18,7 @@ speed-measure-plugin.json
 /.idea
 .project
 .classpath
+.vscode
 .c9/
 *.launch
 .settings/
@@ -42,6 +43,7 @@ npm-debug.log
 yarn-error.log
 testem.log
 /typings
+*.eslintrc.json
 
 # System Files
 .DS_Store
