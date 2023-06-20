@@ -55,6 +55,7 @@
     [min]="0"
     [name]="name"
     [maxLength]="maxLength"
+    (keydown)="onKeydown($event)"
   />
 </ng-template>
 
@@ -73,6 +74,7 @@
     (ngModelChange)="onValueChange($event)"
     [rows]="rows"
     [name]="name"
+    (keydown)="onKeydown($event)"
   ></textarea>
 </ng-template>
 
@@ -101,12 +103,13 @@
         [min]="0"
         [name]="name"
         [maxLength]="maxLength"
+        (keydown)="onKeydown($event)"
       />
       <div class="v-input__password-icon">
         <v-button
           [mdiIcon]="obs.showPassword ? 'eye-off' : 'eye'"
           type="icon-grey-small"
-          (click)="toggleShowPassword()"
+          (clickEvent)="toggleShowPassword()"
         ></v-button>
       </div>
     </div>
@@ -132,6 +135,7 @@
     [min]="min"
     [name]="name"
     [maxLength]="maxLength"
+    (keydown)="onKeydown($event)"
   />
 </ng-template>
 
@@ -153,6 +157,7 @@
     [min]="0"
     [name]="name"
     [maxLength]="maxLength"
+    (keydown)="onKeydown($event)"
     digitOnly
   />
 </ng-template>

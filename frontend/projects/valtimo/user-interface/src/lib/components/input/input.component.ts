@@ -93,6 +93,14 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
     this.clearSubscription?.unsubscribe();
   }
 
+  onKeydown(event: KeyboardEvent): void {
+    if (event.code !== 'Enter') {
+      return;
+    }
+
+    event.preventDefault();
+  }
+
   toggleShowPassword(): void {
     this.showPassword$.pipe(take(1)).subscribe(showPassword => {
       this.showPassword$.next(!showPassword);
