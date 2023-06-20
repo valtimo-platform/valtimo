@@ -21,14 +21,16 @@ export interface CarbonTableConfig {
 export interface ActionItem {
   actionName: string;
   callback: (_) => void;
+  type?: 'normal' | 'danger';
 }
 
 export interface ColumnConfig {
-  fieldName: string;
-  fieldLabel: string;
   columnType: ColumnType;
+  fieldName: string;
   actions?: ActionItem[];
+  fieldLabel?: string;
   template?: TemplateRef<any>;
+  translationKey?: string;
 }
 
 const defaultTableConfig: CarbonTableConfig = {

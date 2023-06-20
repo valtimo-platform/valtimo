@@ -37,6 +37,8 @@
       "@valtimo/context/*": ["dist/valtimo/context/*"],
       "@valtimo/dashboard": ["dist/valtimo/dashboard"],
       "@valtimo/dashboard/*": ["dist/valtimo/dashboard/*"],
+      "@valtimo/dashboard-management": ["dist/valtimo/dashboard-management"],
+      "@valtimo/dashboard-management/*": ["dist/valtimo/dashboard-management/*"],
       "@valtimo/document": ["dist/valtimo/document"],
       "@valtimo/document/*": ["dist/valtimo/document/*"],
       "@valtimo/account": ["dist/valtimo/account"],
@@ -172,6 +174,12 @@
     },
     {
       "path": "./projects/valtimo/dashboard/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/dashboard-management/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/dashboard-management/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/document/tsconfig.lib.json"

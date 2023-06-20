@@ -1028,6 +1028,46 @@
         }
       }
     },
+    "@valtimo/dashboard-management": {
+      "projectType": "library",
+      "root": "projects/valtimo/dashboard-management",
+      "sourceRoot": "projects/valtimo/dashboard-management/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/valtimo/dashboard-management/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/dashboard-management/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/valtimo/dashboard-management/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/valtimo/dashboard-management/src/test.ts",
+            "tsConfig": "projects/valtimo/dashboard-management/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/dashboard-management/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/dashboard-management/src/**/*.ts",
+              "projects/valtimo/dashboard-management/src/**/*.html"
+            ]
+          }
+        }
+      }
+    },
     "@valtimo/document": {
       "root": "projects/valtimo/document",
       "sourceRoot": "projects/valtimo/document/src",

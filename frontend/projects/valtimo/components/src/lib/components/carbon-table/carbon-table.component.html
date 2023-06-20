@@ -9,7 +9,7 @@
     </p>
   </ibm-table-header>
 
-  <ibm-table-toolbar [model]="tableModel">
+  <ibm-table-toolbar>
     <ibm-table-toolbar-content>
       <ibm-table-toolbar-search
         *ngIf="tableConfig.searchable"
@@ -56,6 +56,7 @@
   <ibm-overflow-menu (click)="$event.stopPropagation()">
     <ibm-overflow-menu-option
       *ngFor="let action of data.actions"
+      [type]="action.type"
       (selected)="onActionItemClick(action, data.item)"
     >
       {{ action.actionName }}

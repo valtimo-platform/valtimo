@@ -9,8 +9,8 @@ import {
   Output,
   TemplateRef,
   ViewChild,
-  ViewEncapsulation,
 } from '@angular/core';
+import {TranslateService} from '@ngx-translate/core';
 import {OverflowMenu, TableHeaderItem, TableItem, TableModel} from 'carbon-components-angular';
 import {
   ActionItem,
@@ -42,6 +42,7 @@ export class CarbonTableComponent<T> implements AfterViewInit {
     }
 
     this.tableModel.data = this.getTableItems(value);
+    this.tableData = this.getTableItems(value);
 
     if (!this.paginationConfig) {
       return;
@@ -76,7 +77,10 @@ export class CarbonTableComponent<T> implements AfterViewInit {
     );
   }
 
-  constructor(private readonly cd: ChangeDetectorRef) {}
+  constructor(
+    private readonly cd: ChangeDetectorRef,
+    private readonly translateService: TranslateService
+  ) {}
 
   public ngAfterViewInit(): void {
     this.tableModel.header = this.headerItems;
@@ -119,7 +123,13 @@ export class CarbonTableComponent<T> implements AfterViewInit {
 
   private get headerItems(): Array<TableHeaderItem> {
     return this.tableConfig.fields.map(
-      (field: ColumnConfig) => new TableHeaderItem({data: field.fieldLabel})
+      (field: ColumnConfig) =>
+        new TableHeaderItem({
+          data:
+            field.fieldLabel !== undefined
+              ? field.fieldLabel
+              : this.translateService.instant(field.translationKey ?? ''),
+        })
     );
   }
 

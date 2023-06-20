@@ -205,6 +205,30 @@
       "title": "Task"
     }
   },
+  "dashboardManagement": {
+    "addDashboard": "Add new dashboard",
+    "addModal": {
+      "descriptionPlaceholder": "Enter description here",
+      "descriptionHelperText": "*Desription is only visible in the dashboard configuration page",
+      "name": "Dashboard name",
+      "namePlaceholder": "Enter name here"
+    },
+    "assignedTo": "Assigned to",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "create": "Create",
+    "delete": "Delete",
+    "deleteModalContent": "Are you sure you want to delete this dashboard? This action cannot be undone.",
+    "description": "Description",
+    "key": "Key",
+    "name": "Name",
+    "noResults": {
+      "description": "Click <strong>Add new dashboard</strong> to start designing your dashboard",
+      "title": "No dashboards added"
+    },
+    "title": "All dashboards"
+  },
+  "cancel": "Cancel22",
   "account": {
     "title": "Account",
     "informationTitle": "Information",

@@ -1,0 +1,94 @@
+<valtimo-carbon-table
+  [data]="tableData$ | async"
+  [tableConfig]="tableConfig"
+  class="valtimo-dashboard-management__table"
+>
+  <ng-container carbonTableTitle> {{ 'dashboardManagement.title' | translate }} </ng-container>
+
+  <div carbonToolbarContent>
+    <button ibmButton="primary" (click)="openModal()">
+      {{ 'dashboardManagement.addDashboard' | translate }}
+
+      <svg class="cds--btn__icon" ibmIcon="add" size="16"></svg>
+    </button>
+  </div>
+
+  <div class="valtimo-dashboard-management-no-results" noResultsView>
+    <img alt="{{ 'interface.noResults' | translate }}" src="valtimo-layout/img/no-results.svg" />
+
+    <section class="valtimo-dashboard-management-no-results__content">
+      <div>
+        <h4 class="valtimo-dashboard-management-no-results__title">
+          {{ 'dashboardManagement.noResults.title' | translate }}
+        </h4>
+
+        <span [innerHtml]="'dashboardManagement.noResults.description' | translate"></span>
+      </div>
+
+      <button ibmButton="primary" (click)="openModal()">
+        {{ 'dashboardManagement.addDashboard' | translate }}
+
+        <svg class="cds--btn__icon" ibmIcon="add" size="16"></svg>
+      </button>
+    </section>
+  </div>
+</valtimo-carbon-table>
+
+<ibm-modal
+  [open]="openModal$ | async"
+  showFooter="true"
+  title="{{ 'dashboardManagement.addDashboard' | translate }}"
+  valtimoIbmModal
+>
+  <ibm-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    <h3 ibmModalHeaderHeading>
+      {{ 'dashboardManagement.addDashboard' | translate }}
+    </h3>
+  </ibm-modal-header>
+
+  <section ibmModalContent>
+    <form [formGroup]="form" class="valtimo-dashboard-management__form">
+      <ibm-label [invalid]="form.invalid">
+        {{ 'dashboardManagement.addModal.name' | translate }}
+
+        <input
+          formControlName="title"
+          ibmText
+          placeholder="{{ 'dashboardManagement.addModal.namePlaceholder' | translate }}"
+          [attr.modal-primary-focus]="true"
+          [invalid]="form.invalid"
+        />
+      </ibm-label>
+
+      <ibm-label [helperText]="'dashboardManagement.addModal.descriptionHelperText' | translate">
+        {{ 'dashboardManagement.description' | translate }}
+
+        <input
+          formControlName="description"
+          ibmText
+          placeholder="{{ 'dashboardManagement.addModal.descriptionPlaceholder' | translate }}"
+        />
+      </ibm-label>
+    </form>
+  </section>
+
+  <ibm-modal-footer>
+    <button ibmButton="ghost" (click)="closeModal()">
+      {{ 'dashboardManagement.cancel' | translate }}
+    </button>
+
+    <button [disabled]="this.form.invalid" (click)="createDashboard()" ibmButton="primary">
+      {{ 'dashboardManagement.create' | translate }}
+    </button>
+  </ibm-modal-footer>
+</ibm-modal>
+
+<valtimo-confirmation-modal
+  [outputOnConfirm]="deleteRowKey$ | async"
+  [showModalSubject$]="showDeleteModal$"
+  (confirmEvent)="onConfirmEvent($event)"
+  confirmButtonTextTranslationKey="dashboardManagement.deleteModal.confirm"
+  confirmButtonType="danger"
+  contentTranslationKey="dashboardManagement.deleteModalContent"
+  titleTranslationKey="dashboardManagement.delete"
+></valtimo-confirmation-modal>
