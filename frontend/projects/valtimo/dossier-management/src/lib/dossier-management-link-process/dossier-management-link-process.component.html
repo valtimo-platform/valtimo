@@ -27,6 +27,7 @@
     } as obs"
   >
     <v-select
+      *ngIf="obs.processItems"
       (selectedChange)="selectProcess($event)"
       [defaultSelectionId]="obs.defaultSelectionId"
       [disabled]="obs.disabled"
