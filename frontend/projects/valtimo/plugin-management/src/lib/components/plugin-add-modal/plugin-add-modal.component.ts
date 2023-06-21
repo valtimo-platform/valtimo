@@ -84,16 +84,15 @@ export class PluginAddModalComponent implements OnInit {
           title: configuration.configurationTitle,
           properties: pluginConfiguration,
         })
-        .subscribe(
-          response => {
+        .subscribe({
+          next: () => {
             this.stateService.refresh();
             this.hide();
           },
-          () => {
+          error: () => {
             this.logger.error('Something went wrong with saving the plugin configuration.');
-            this.hide();
-          }
-        );
+          },
+        });
     });
   }
 
