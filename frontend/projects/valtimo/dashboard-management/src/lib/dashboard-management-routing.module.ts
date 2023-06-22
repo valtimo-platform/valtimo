@@ -32,7 +32,12 @@ const routes: Routes = [
     path: 'dashboard-management/:id',
     component: DashboardDetailsComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Dashboard details', roles: [ROLE_ADMIN]},
+    data: {
+      title: 'Dashboard details',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+      customPageSubtitle: true,
+    },
   },
 ];
 

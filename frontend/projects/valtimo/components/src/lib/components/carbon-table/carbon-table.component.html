@@ -1,5 +1,5 @@
 <ibm-table-container>
-  <ibm-table-header>
+  <ibm-table-header *ngIf="!hideTableHeader">
     <h4 ibmTableHeaderTitle>
       <ng-content select="[carbonTableTitle]"></ng-content>
     </h4>
@@ -56,8 +56,8 @@
   <ibm-overflow-menu (click)="$event.stopPropagation()">
     <ibm-overflow-menu-option
       *ngFor="let action of data.actions"
-      [type]="action.type"
       (selected)="onActionItemClick(action, data.item)"
+      [type]="action.type"
     >
       {{ action.actionName }}
     </ibm-overflow-menu-option>

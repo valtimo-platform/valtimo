@@ -21,35 +21,43 @@ import {
   CarbonTableModule,
   ConfirmationModalModule,
   ListModule,
+  RenderInPageHeaderDirectiveModule,
   SpinnerModule,
 } from '@valtimo/components';
-import {
-  ButtonModule,
-  DropdownModule,
-  IconModule,
-  InputModule,
-  ModalModule,
-} from 'carbon-components-angular';
+import {ButtonModule, DropdownModule, InputModule, ModalModule} from 'carbon-components-angular';
 import {DashboardDetailsComponent} from './components/dashboard-details/dashboard-details.component';
 import {DashboardManagementComponent} from './components/dashboard-management/dashboard-management.component';
 import {DashboardManagementRoutingModule} from './dashboard-management-routing.module';
+import {
+  AddModule,
+  ArrowDownModule,
+  ArrowUpModule,
+  CopyModule,
+  EditModule,
+} from '@carbon/icons-angular';
+import {WidgetModalComponent} from './components/widget-modal/widget-modal.component';
 
 @NgModule({
-  declarations: [DashboardManagementComponent, DashboardDetailsComponent],
+  declarations: [DashboardManagementComponent, DashboardDetailsComponent, WidgetModalComponent],
   imports: [
     ButtonModule,
     CarbonTableModule,
     CommonModule,
-    TranslateModule,
-    ConfirmationModalModule,
     DashboardManagementRoutingModule,
     DropdownModule,
-    IconModule,
     InputModule,
     ListModule,
     ModalModule,
     ReactiveFormsModule,
     SpinnerModule,
+    TranslateModule,
+    ArrowUpModule,
+    ArrowDownModule,
+    AddModule,
+    RenderInPageHeaderDirectiveModule,
+    EditModule,
+    ConfirmationModalModule,
+    CopyModule,
   ],
   exports: [],
 })

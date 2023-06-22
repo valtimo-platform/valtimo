@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import {Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  ViewContainerRef,
+  ViewEncapsulation,
+} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Title} from '@angular/platform-browser';
 import {BehaviorSubject, combineLatest, Observable, startWith, Subscription, switchMap} from 'rxjs';
@@ -30,7 +38,9 @@ import {PageTitleService} from './page-title.service';
   styleUrls: ['./page-title.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class PageTitleComponent implements OnInit, OnDestroy {
+export class PageTitleComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('pageActionsVcr', {static: true, read: ViewContainerRef})
+  pageActionsVcr!: ViewContainerRef;
   public appTitle = this.configService?.config?.applicationTitle || 'Valtimo';
   public readonly hidePageTitle$: Observable<boolean> = this.router.events.pipe(
     startWith(this.router),
@@ -42,8 +52,17 @@ export class PageTitleComponent implements OnInit, OnDestroy {
     switchMap(() => this.activatedRoute.firstChild.data),
     map(data => !!data?.customPageTitle)
   );
+  public readonly hasCustomPageSubtitle$: Observable<boolean> = this.router.events.pipe(
+    startWith(this.router),
+    switchMap(() => this.activatedRoute.firstChild.data),
+    map(data => !!data?.customPageSubtitle)
+  );
   public readonly customPageTitle$ = this.pageTitleService.customPageTitle$;
   public readonly customPageTitleSet$ = this.pageTitleService.customPageTitleSet$;
+  public readonly customPageSubtitle$ = this.pageTitleService.customPageSubtitle$;
+  public readonly customPageSubtitleSet$ = this.pageTitleService.customPageSubtitleSet$;
+  public readonly hasPageActions$ = this.pageTitleService.hasPageActions$;
+
   readonly translatedTitle$ = new BehaviorSubject<string>('');
   private appTitleAsSuffix =
     this.configService?.config?.featureToggles?.applicationTitleAsSuffix || false;
@@ -61,6 +80,10 @@ export class PageTitleComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.openRouterTranslateSubscription();
+  }
+
+  ngAfterViewInit(): void {
+    this.pageTitleService.setPageActionsViewContainerRef(this.pageActionsVcr);
   }
 
   ngOnDestroy() {

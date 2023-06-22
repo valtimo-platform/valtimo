@@ -205,6 +205,36 @@
       "title": "Aufgabe"
     }
   },
+  "dashboardManagement": {
+    "widgets": {
+      "complete": "Vervollständigen",
+      "editDashboard": "Dashboard bearbeiten",
+      "editButton": "Bearbeiten",
+      "title": "Widgets",
+      "description": "Füllen Sie das Dashboard, indem Sie neue Widgets hinzufügen. Ordnen Sie diese Widgets an, indem Sie sie an die gewünschte Position in der Liste ziehen.",
+      "add": "Widget hinzufügen",
+      "edit": "Widget bearbeiten",
+      "save": "Speichern",
+      "cancel": "Stornieren",
+      "delete": "Löschen",
+      "deleteDescription": "Sind Sie sicher, dass Sie dieses Widget löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "metadata": "<b>Erstellt von</b> {{createdBy}} | <b>Erstellt am</b> {{createdOn}} | <b>Dashboard-Schlüssel</b> {{key}}",
+      "form": {
+        "title": "Widget-Titel",
+        "titleHelperText": "Der primäre Titel, der auf der Widget-Kachel angezeigt wird",
+        "key": "Widget-Schlüssel (erforderlich)",
+        "keyHelperText": "Weisen Sie diesem Widget einen eindeutigen Schlüssel zu",
+        "dataSource": "Datenquelle (erforderlich)",
+        "dataSourceHelperText": "Wählen Sie die Quelle der Daten aus, die Sie im Widget anzeigen möchten",
+        "chartType": "Diagramm Typ (erforderlich)",
+        "dataSourceField": "Datenquellenfeld (erforderlich)",
+        "dashboardTitle": "Dashboard-Name (erforderlich)",
+        "dashboardDescription": "Beschreibung (erforderlich)",
+        "dashboardDescriptionHelperText": "*Beschreibung ist nur auf der Dashboard-Konfigurationsseite sichtbar",
+        "roles": "Sichtweite"
+      }
+    }
+  },
   "account": {
     "title": "Account",
     "informationTitle": "Informationen",

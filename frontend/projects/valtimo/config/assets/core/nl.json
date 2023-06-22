@@ -205,6 +205,36 @@
       "title": "Taak"
     }
   },
+  "dashboardManagement": {
+    "widgets": {
+      "complete": "Voltooien",
+      "editDashboard": "Dashboard bewerken",
+      "editButton": "Bewerken",
+      "title": "Widgets",
+      "description": "Vul het dashboard door nieuwe widgets toe te voegen. Rangschik deze widgets door ze naar de gewenste positie in de lijst te slepen.",
+      "add": "Widget toevoegen",
+      "edit": "Widget bewerken",
+      "save": "Opslaan",
+      "cancel": "Annuleren",
+      "delete": "Verwijderen",
+      "deleteDescription": "Weet u zeker dat u deze widget wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
+      "metadata": "<b>Aangemaakt door</b> {{createdBy}} | <b>Aangemaakt op</b> {{createdOn}} | <b>Dashboard-sleutel</b> {{key}}",
+      "form": {
+        "title": "Widgettitel",
+        "titleHelperText": "De primaire titel die wordt weergegeven op de widgettegel",
+        "key": "Widgetsleutel (vereist)",
+        "keyHelperText": "Wijs een unieke sleutel toe aan deze widget",
+        "dataSource": "Databron (vereist)",
+        "dataSourceHelperText": "Selecteer de bron van de data die u in de widget wilt weergeven",
+        "chartType": "Grafiektype (vereist)",
+        "dataSourceField": "Databronveld (vereist)",
+        "dashboardTitle": "Dashboardnaam (vereist)",
+        "dashboardDescription": "Beschrijving (vereist)",
+        "dashboardDescriptionHelperText": "*Beschrijving is alleen zichtbaar op de configuratiepagina van het dashboard",
+        "roles": "Zichtbaarheid"
+      }
+    }
+  },
   "account": {
     "title": "Account",
     "informationTitle": "Gegevens",
