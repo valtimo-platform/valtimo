@@ -27,7 +27,7 @@ export class DashboardManagementService {
   }
 
   constructor(private readonly http: HttpClient, private readonly configService: ConfigService) {
-    this.valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}v1/dashboard`;
+    this.valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}management/v1/dashboard`;
   }
 
   public createDashboard(dashboard: DashboardItem): Observable<DashboardItem> {

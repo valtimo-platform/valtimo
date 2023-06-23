@@ -209,7 +209,7 @@
     "addDashboard": "Add new dashboard",
     "addModal": {
       "descriptionPlaceholder": "Enter description here",
-      "descriptionHelperText": "*Desription is only visible in the dashboard configuration page",
+      "descriptionHelperText": "*Description is only visible in the dashboard configuration page",
       "name": "Dashboard name",
       "namePlaceholder": "Enter name here"
     },

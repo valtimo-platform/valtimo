@@ -206,6 +206,26 @@
     }
   },
   "dashboardManagement": {
+    "addDashboard": "Neues Dashboard hinzufügen",
+    "addModal": {
+      "descriptionPlaceholder": "Enter description here",
+      "descriptionHelperText": "*Geben Sie hier eine Beschreibung ein",
+      "name": "Dashboard-Name",
+      "namePlaceholder": "Namen hier eingeben"
+    },
+    "assignedTo": "Zugewiesen an",
+    "cancel": "Stornieren",
+    "confirm": "Bestätigen",
+    "create": "Erstellen",
+    "delete": "Löschen",
+    "deleteModalContent": "Sind Sie sicher, dass Sie dieses Dashboard löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "description": "Beschreibung",
+    "key": "Taste",
+    "name": "Name",
+    "noResults": {
+      "description": "Klicken Sie auf <strong>Neues Dashboard hinzufügen</strong>, um mit der Gestaltung Ihres Dashboards zu beginnen",
+      "title": "Keine Dashboards hinzugefügt"
+    },
     "widgets": {
       "complete": "Vervollständigen",
       "editDashboard": "Dashboard bearbeiten",
@@ -233,7 +253,8 @@
         "dashboardDescriptionHelperText": "*Beschreibung ist nur auf der Dashboard-Konfigurationsseite sichtbar",
         "roles": "Sichtweite"
       }
-    }
+    },
+    "title": "Alle Dashboards"
   },
   "account": {
     "title": "Account",
