@@ -14,33 +14,57 @@
   ~ limitations under the License.
   -->
 
-<v-modal #addNoteModal *ngIf="{disabled: disabled$ | async, valid: valid$ | async} as obs">
+<v-modal
+  #noteModal
+  *ngIf="{disabled: disabled$ | async, valid: valid$ | async, modalType: modalType$ | async} as obs"
+>
   <div role="header">
     <div class="add-note-title">
-      <v-title [margin]="false">{{ 'dossier.notes.addNote' | translate }}</v-title>
+      <v-title [margin]="false">{{
+        (obs.modalType === 'add' ? 'dossier.notes.addNote' : 'dossier.notes.modifyNote') | translate
+      }}</v-title>
     </div>
   </div>
   <div role="content">
-    <ng-container *ngTemplateOutlet="addForm"></ng-container>
+    <ng-container *ngTemplateOutlet="form"></ng-container>
   </div>
   <div role="footer">
     <div class="buttons">
       <v-button (clickEvent)="cancel()" [disabled]="obs.disabled" type="secondary">
         {{ 'document.cancel' | translate }}
       </v-button>
-      <v-button
-        (clickEvent)="save()"
-        [disabled]="obs.disabled || !obs.valid"
-        mdiIcon="plus"
-        type="success"
-      >
-        {{ 'dossier.notes.addNote' | translate }}
-      </v-button>
+      <ng-container
+        *ngTemplateOutlet="
+          obs.modalType === 'add' ? addNoteButton : editNoteButton;
+          context: {obs: obs}
+        "
+      ></ng-container>
     </div>
   </div>
 </v-modal>
 
-<ng-template #addForm>
+<ng-template #addNoteButton let-obs="obs">
+  <v-button
+    (clickEvent)="emitNoteData()"
+    [disabled]="obs.disabled || !obs.valid"
+    mdiIcon="plus"
+    type="success"
+  >
+    {{ 'dossier.notes.addNote' | translate }}
+  </v-button>
+</ng-template>
+<ng-template #editNoteButton let-obs="obs">
+  <v-button
+    [disabled]="obs.disabled || !obs.valid"
+    (clickEvent)="emitNoteData()"
+    mdiIcon="pencil"
+    type="success"
+  >
+    {{ 'dossier.notes.modifyNote' | translate }}
+  </v-button>
+</ng-template>
+
+<ng-template #form>
   <ng-container *ngIf="showForm$ | async">
     <v-form (valueChange)="formValueChange($event)">
       <v-input
@@ -51,6 +75,7 @@
         name="content"
         [fullWidth]="true"
         [rows]="10"
+        [defaultValue]="customData?.summaryTranslationKey || ''"
       >
       </v-input>
     </v-form>

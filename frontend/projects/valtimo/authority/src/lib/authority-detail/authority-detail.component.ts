@@ -19,7 +19,7 @@ import {Authority} from '../models';
 import {AuthorityService} from '../authority.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
-import {AlertService} from '@valtimo/components';
+import {AlertService, PageTitleService} from '@valtimo/components';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {first, map, take} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
@@ -61,7 +61,8 @@ export class AuthorityDetailComponent implements OnInit, OnDestroy {
     private readonly formBuilder: FormBuilder,
     private readonly service: AuthorityService,
     private readonly alertService: AlertService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly pageTitleService: PageTitleService
   ) {
     const snapshot = this.route.snapshot.paramMap;
     this.name = snapshot.get('name');
@@ -104,6 +105,7 @@ export class AuthorityDetailComponent implements OnInit, OnDestroy {
   public reset() {
     this.form = this.createFormGroup();
     this.initData(this.name);
+    this.pageTitleService.setCustomPageTitle(this.name);
   }
 
   public delete() {

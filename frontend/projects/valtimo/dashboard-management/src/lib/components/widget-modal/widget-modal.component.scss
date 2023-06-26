@@ -1,0 +1,32 @@
+.form__row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.form__spacer {
+  width: 32px;
+}
+
+.form__element {
+  width: 100%;
+}
+
+.form__element.--with-button {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: row;
+
+  button {
+    margin-left: 16px;
+  }
+}
+
+.form__element.--readonly input {
+  background-color: transparent;
+}
+
+.form__element {
+  margin-bottom: 32px;
+}

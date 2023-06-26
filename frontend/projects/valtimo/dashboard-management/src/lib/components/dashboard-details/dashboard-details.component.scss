@@ -1,0 +1,17 @@
+.dashboard-detail-table {
+  .move-buttons-container {
+    width: 100%;
+    justify-content: flex-end;
+    display: flex;
+    flex-direction: row;
+
+    button:not(:last-child) {
+      margin-right: 8px;
+    }
+  }
+
+  td:last-child,
+  td:nth-child(2) {
+    width: 1px;
+  }
+}

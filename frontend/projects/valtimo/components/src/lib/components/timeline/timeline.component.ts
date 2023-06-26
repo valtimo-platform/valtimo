@@ -24,4 +24,5 @@ import {TimelineItem} from '../../models';
 })
 export class TimelineComponent {
   @Input() items: Array<TimelineItem>;
+  @Input() actions?: any[];
 }

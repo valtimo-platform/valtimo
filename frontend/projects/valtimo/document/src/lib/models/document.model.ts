@@ -305,6 +305,7 @@ export interface UpdateUploadProcessLinkRequest {
 export interface CaseSettings {
   name?: string;
   canHaveAssignee: boolean;
+  autoAssignTasks: boolean;
 }
 
 export interface OpenDocumentCount {

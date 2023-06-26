@@ -28,13 +28,17 @@ const routes: Routes = [
     path: 'dossiers/:documentDefinitionName',
     component: DossierListComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Dossiers', roles: [ROLE_USER]},
+    data: {title: 'Dossiers', roles: [ROLE_USER], customPageTitle: true},
   },
   {
     path: 'dossiers/:documentDefinitionName/document/:documentId/:tab',
     component: DossierDetailComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Dossiers', parentPath: 'dossiers/:documentDefinitionName', roles: [ROLE_USER]},
+    data: {
+      title: 'Dossier details',
+      parentPath: 'dossiers/:documentDefinitionName',
+      roles: [ROLE_USER],
+    },
   },
   {
     path: 'dossiers/:documentDefinitionName/document/:documentId/:tab/tasks/:taskId',

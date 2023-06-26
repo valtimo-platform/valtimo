@@ -68,10 +68,17 @@
     },
     "notes": {
       "addNote": "Notitie toevoegen",
+      "modifyNote": "Notitie bewerken",
       "tableItemsText": "Notities",
       "input": {
         "content": "Notitie"
-      }
+      },
+      "deleteConfirmation": {
+        "title": "Notitie verwijderen",
+        "description": "Weet je zeker dat je deze notitie wilt verwijderen?",
+        "deletedMessage": "De notitie is met succes verwijderd."
+      },
+      "editedMessage": "De notitie is met succes bewerkt."
     },
     "documenten": {
       "noProcessLinked": {
@@ -198,6 +205,57 @@
       "title": "Taak"
     }
   },
+  "dashboardManagement": {
+    "addDashboard": "Nieuw dashboard toevoegen",
+    "addModal": {
+      "descriptionPlaceholder": "Vul hier een omschrijving in",
+      "descriptionHelperText": "*Beschrijving is alleen zichtbaar op de dashboardconfiguratiepagina",
+      "name": "Dashboardnaam",
+      "namePlaceholder": "Vul hier de naam in"
+    },
+    "assignedTo": "Toegewezen aan",
+    "cancel": "Annuleren",
+    "confirm": "Bevestigen",
+    "create": "Creëren",
+    "delete": "Verwijderen",
+    "deleteModalContent": "Weet u zeker dat u dit dashboard wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
+    "description": "Beschrijving",
+    "key": "Sleutel",
+    "name": "Naam",
+    "noResults": {
+      "description": "Klik op <strong>Nieuw dashboard toevoegen</strong> om te beginnen met het ontwerpen van uw dashboard",
+      "title": "Geen dashboards toegevoegd"
+    },
+    "widgets": {
+      "complete": "Voltooien",
+      "editDashboard": "Dashboard bewerken",
+      "editButton": "Bewerken",
+      "title": "Widgets",
+      "description": "Vul het dashboard door nieuwe widgets toe te voegen. Rangschik deze widgets door ze naar de gewenste positie in de lijst te slepen.",
+      "add": "Widget toevoegen",
+      "edit": "Widget bewerken",
+      "save": "Opslaan",
+      "cancel": "Annuleren",
+      "delete": "Verwijderen",
+      "deleteDescription": "Weet u zeker dat u deze widget wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
+      "metadata": "<b>Aangemaakt door</b> {{createdBy}} | <b>Aangemaakt op</b> {{createdOn}} | <b>Dashboard-sleutel</b> {{key}}",
+      "form": {
+        "title": "Widgettitel",
+        "titleHelperText": "De primaire titel die wordt weergegeven op de widgettegel",
+        "key": "Widgetsleutel (vereist)",
+        "keyHelperText": "Wijs een unieke sleutel toe aan deze widget",
+        "dataSource": "Databron (vereist)",
+        "dataSourceHelperText": "Selecteer de bron van de data die u in de widget wilt weergeven",
+        "chartType": "Grafiektype (vereist)",
+        "dataSourceField": "Databronveld (vereist)",
+        "dashboardTitle": "Dashboardnaam (vereist)",
+        "dashboardDescription": "Beschrijving (vereist)",
+        "dashboardDescriptionHelperText": "*Beschrijving is alleen zichtbaar op de configuratiepagina van het dashboard",
+        "roles": "Zichtbaarheid"
+      }
+    },
+    "title": "Alle dashboards"
+  },
   "account": {
     "title": "Account",
     "informationTitle": "Gegevens",
@@ -304,9 +362,13 @@
       "title": "Uploadproces koppelen aan dossier",
       "description": "Kies welk proces het uploaden van bestanden moet afhandelen."
     },
-    "handleAssignee": {
+    "toggleAssignee": {
       "title": "Dossierbehandelaar",
       "checkboxDescription": "Dit type dossier kan een behandelaar hebben"
+    },
+    "toggleAutoAssignTasks": {
+      "title": "Taaktoewijzing",
+      "checkboxDescription": "Alle taken worden toegewezen aan de behandelaar"
     },
     "tabs": {
       "cases": "Zaak Details",
@@ -512,8 +574,7 @@
     "cancel": "Annuleren",
     "collapse": "Inklappen",
     "expand": "Uitklappen",
-    "download": "Download",
-    "typeToSearch": "Typ om te zoeken..."
+    "download": "Download"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",

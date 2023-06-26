@@ -15,10 +15,12 @@
  */
 
 export * from './alert.model';
+export * from './carbon-pagination.model';
+export * from './carbon-table.model';
+export * from './documenten-api-metadata.model';
 export * from './form-io.model';
+export * from './list.model';
 export * from './pagination.model';
 export * from './searchable-dropdown.model';
 export * from './timeline.model';
 export * from './version.model';
-export * from './list.model';
-export * from './documenten-api-metadata.model';

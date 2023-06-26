@@ -14,13 +14,8 @@
   ~ limitations under the License.
   -->
 
-<nav aria-label="breadcrumb" role="navigation">
-  <ol class="breadcrumb page-head-nav">
-    <li class="breadcrumb-item">
-      <a [routerLink]="['/']">{{ appTitle }}</a>
-    </li>
-    <li class="breadcrumb-item" *ngFor="let item of breadcrumbs">
-      <a [routerLink]="[item.url]">{{ item.label | translate }}</a>
-    </li>
-  </ol>
-</nav>
+<ng-container *ngIf="breadcrumbItems$ | async as breadcrumbItems">
+  <div class="breadcrumbs-container" *ngIf="breadcrumbItems.length > 0">
+    <ibm-breadcrumb [items]="breadcrumbItems"></ibm-breadcrumb>
+  </div>
+</ng-container>

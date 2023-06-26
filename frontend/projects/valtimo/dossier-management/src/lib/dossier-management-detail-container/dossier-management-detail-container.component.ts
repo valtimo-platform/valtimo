@@ -21,6 +21,8 @@ import {filter, map, Observable, Subscription, switchMap} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
 import {TabService} from '../tab.service';
 import {TabEnum} from '../tab.enum';
+import {PageTitleService} from '@valtimo/components';
+import {tap} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-dossier-management-detail-container',
@@ -43,14 +45,18 @@ export class DossierManagementDetailContainerComponent implements OnInit, OnDest
   readonly documentDefinition$ = this.documentDefinitionName$.pipe(
     switchMap(documentDefinitionName =>
       this.documentService.getDocumentDefinition(documentDefinitionName)
-    )
+    ),
+    tap(documentDefinition => {
+      this.pageTitleService.setCustomPageTitle(documentDefinition.schema.title);
+    })
   );
 
   constructor(
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
     private readonly configService: ConfigService,
-    private readonly tabService: TabService
+    private readonly tabService: TabService,
+    private readonly pageTitleService: PageTitleService
   ) {
     this.caseListColumn = this.configService.config.featureToggles.caseListColumn;
   }

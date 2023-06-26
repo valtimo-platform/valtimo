@@ -15,12 +15,12 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {ContextService, Context} from '@valtimo/context';
+import {Context, ContextService} from '@valtimo/context';
 import {ActivatedRoute, Router} from '@angular/router';
-import {AlertService} from '@valtimo/components';
+import {AlertService, PageTitleService} from '@valtimo/components';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
-import {ProcessService, ProcessDefinition} from '@valtimo/process';
-import {AuthorityService, Authority} from '@valtimo/authority';
+import {ProcessDefinition, ProcessService} from '@valtimo/process';
+import {Authority, AuthorityService} from '@valtimo/authority';
 
 @Component({
   selector: 'valtimo-context-edit',
@@ -36,13 +36,14 @@ export class ContextEditComponent implements OnInit {
   public menuItemForm: any;
 
   constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private contextService: ContextService,
-    private processService: ProcessService,
-    private authorityService: AuthorityService,
-    private formBuilder: FormBuilder,
-    private alertService: AlertService
+    private readonly router: Router,
+    private readonly route: ActivatedRoute,
+    private readonly contextService: ContextService,
+    private readonly processService: ProcessService,
+    private readonly authorityService: AuthorityService,
+    private readonly formBuilder: FormBuilder,
+    private readonly alertService: AlertService,
+    private readonly pageTitleService: PageTitleService
   ) {
     const snapshot = this.route.snapshot.paramMap;
     const snapshotId = snapshot.get('id') || 0;
@@ -106,6 +107,7 @@ export class ContextEditComponent implements OnInit {
       this.contextService.get(this.id).subscribe(result => {
         this.data = result;
         this.setValues();
+        this.pageTitleService.setCustomPageTitle(result.name);
       });
     }
   }

@@ -22,6 +22,8 @@ import {TabService} from '../../services/tab.service';
 import {TabEnum} from '../../services/tab.enum';
 import {ObjectManagementService} from '../../services/object-management.service';
 import {ObjectManagementStateService} from '../../services/object-management-state.service';
+import {PageTitleService} from '@valtimo/components';
+import {tap} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-object-management-detail-container',
@@ -42,7 +44,10 @@ export class ObjectManagementDetailContainerComponent implements OnInit, OnDestr
   );
 
   readonly object$ = combineLatest([this.objectId$, this.objectManagementState.refresh$]).pipe(
-    switchMap(([object]) => this.objectManagementService.getObjectById(object))
+    switchMap(([object]) => this.objectManagementService.getObjectById(object)),
+    tap(object => {
+      this.pageTitleService.setCustomPageTitle(object.title);
+    })
   );
 
   constructor(
@@ -50,7 +55,8 @@ export class ObjectManagementDetailContainerComponent implements OnInit, OnDestr
     private readonly objectManagementService: ObjectManagementService,
     private readonly route: ActivatedRoute,
     private readonly configService: ConfigService,
-    private readonly tabService: TabService
+    private readonly tabService: TabService,
+    private readonly pageTitleService: PageTitleService
   ) {
     this.caseListColumn = this.configService.config.featureToggles.caseListColumn;
   }

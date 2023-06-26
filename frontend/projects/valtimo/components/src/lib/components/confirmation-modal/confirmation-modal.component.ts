@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {ModalButtonType} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 
 @Component({
@@ -29,8 +29,10 @@ export class ConfirmationModalComponent implements OnInit, OnDestroy {
   @Input() contentTranslationKey = '';
   @Input() confirmButtonText = '';
   @Input() confirmButtonTextTranslationKey = '';
+  @Input() confirmButtonType = ModalButtonType.primary;
   @Input() cancelButtonText = '';
   @Input() cancelButtonTextTranslationKey = '';
+  @Input() cancelButtonType = ModalButtonType.secondary;
   @Input() showModalSubject$: Observable<boolean>;
   @Input() outputOnConfirm: any = {};
 

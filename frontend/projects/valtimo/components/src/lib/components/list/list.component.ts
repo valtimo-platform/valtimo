@@ -32,6 +32,7 @@ import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, fromEvent} from 'rxjs';
 import {debounceTime, take} from 'rxjs/operators';
 import {ViewContentService} from '../view-content/view-content.service';
+import {get as _get} from 'lodash';
 
 @Component({
   selector: 'valtimo-list',
@@ -158,12 +159,7 @@ export class ListComponent implements OnChanges, OnInit, AfterViewInit {
     const key = definitionKey.includes(customPropString)
       ? definitionKey.split(customPropString)[1]
       : definitionKey;
-    const resolvedObjValue =
-      obj[key] != null
-        ? obj[key]
-        : key.split('.').reduce(function (prev, curr) {
-            return prev ? prev[curr] : null;
-          }, obj || self);
+    const resolvedObjValue = _get(obj, key, null);
     return this.viewContentService.get(resolvedObjValue, definition);
   }
 

@@ -67,6 +67,12 @@ $valtimo-blue-10: #e9f6fd;
     )
 );
 
+$themeVariables: (
+  'g10': themes.$g10,
+  'g90': themes.$g90,
+  'g100': themes.$g100,
+);
+
 @use '@carbon/styles/scss/components/button/tokens' as button-tokens with (
   $button-primary-active: $valtimo-blue-80,
   $button-tertiary-active: $valtimo-blue-80,
@@ -88,6 +94,12 @@ $valtimo-blue-10: #e9f6fd;
 @use '@carbon/styles';
 @use '@carbon/grid';
 @include grid.flex-grid();
+
+@each $name, $variable in $themeVariables {
+  .carbon-theme-#{$name} {
+    @include theme.theme($variable);
+  }
+}
 
 body {
   background-color: colors.$gray-10;

@@ -68,10 +68,17 @@
     },
     "notes": {
       "addNote": "Notiz hinzufügen",
+      "modifyNote": "Notiz bearbeiten",
       "tableItemsText": "Notizen",
       "input": {
         "content": "Notiz"
-      }
+      },
+      "deleteConfirmation": {
+        "title": "Notiz löschen",
+        "description": "Möchten Sie diese Notiz wirklich löschen?",
+        "deletedMessage": "Die Notiz wurde erfolgreich gelöscht."
+      },
+      "editedMessage": "Die Notiz wurde erfolgreich bearbeitet."
     },
     "documenten": {
       "noProcessLinked": {
@@ -198,6 +205,57 @@
       "title": "Aufgabe"
     }
   },
+  "dashboardManagement": {
+    "addDashboard": "Neues Dashboard hinzufügen",
+    "addModal": {
+      "descriptionPlaceholder": "Enter description here",
+      "descriptionHelperText": "*Geben Sie hier eine Beschreibung ein",
+      "name": "Dashboard-Name",
+      "namePlaceholder": "Namen hier eingeben"
+    },
+    "assignedTo": "Zugewiesen an",
+    "cancel": "Stornieren",
+    "confirm": "Bestätigen",
+    "create": "Erstellen",
+    "delete": "Löschen",
+    "deleteModalContent": "Sind Sie sicher, dass Sie dieses Dashboard löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "description": "Beschreibung",
+    "key": "Taste",
+    "name": "Name",
+    "noResults": {
+      "description": "Klicken Sie auf <strong>Neues Dashboard hinzufügen</strong>, um mit der Gestaltung Ihres Dashboards zu beginnen",
+      "title": "Keine Dashboards hinzugefügt"
+    },
+    "widgets": {
+      "complete": "Vervollständigen",
+      "editDashboard": "Dashboard bearbeiten",
+      "editButton": "Bearbeiten",
+      "title": "Widgets",
+      "description": "Füllen Sie das Dashboard, indem Sie neue Widgets hinzufügen. Ordnen Sie diese Widgets an, indem Sie sie an die gewünschte Position in der Liste ziehen.",
+      "add": "Widget hinzufügen",
+      "edit": "Widget bearbeiten",
+      "save": "Speichern",
+      "cancel": "Stornieren",
+      "delete": "Löschen",
+      "deleteDescription": "Sind Sie sicher, dass Sie dieses Widget löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "metadata": "<b>Erstellt von</b> {{createdBy}} | <b>Erstellt am</b> {{createdOn}} | <b>Dashboard-Schlüssel</b> {{key}}",
+      "form": {
+        "title": "Widget-Titel",
+        "titleHelperText": "Der primäre Titel, der auf der Widget-Kachel angezeigt wird",
+        "key": "Widget-Schlüssel (erforderlich)",
+        "keyHelperText": "Weisen Sie diesem Widget einen eindeutigen Schlüssel zu",
+        "dataSource": "Datenquelle (erforderlich)",
+        "dataSourceHelperText": "Wählen Sie die Quelle der Daten aus, die Sie im Widget anzeigen möchten",
+        "chartType": "Diagramm Typ (erforderlich)",
+        "dataSourceField": "Datenquellenfeld (erforderlich)",
+        "dashboardTitle": "Dashboard-Name (erforderlich)",
+        "dashboardDescription": "Beschreibung (erforderlich)",
+        "dashboardDescriptionHelperText": "*Beschreibung ist nur auf der Dashboard-Konfigurationsseite sichtbar",
+        "roles": "Sichtweite"
+      }
+    },
+    "title": "Alle Dashboards"
+  },
   "account": {
     "title": "Account",
     "informationTitle": "Informationen",
@@ -304,9 +362,13 @@
       "title": "Verknüpfen Sie den Upload-Prozess mit dem Fall",
       "description": "Wählen Sie einen Prozess, der das Hochladen von Dateien handhaben soll."
     },
-    "handleAssignee": {
+    "toggleAssignee": {
       "title": "Casehandler",
       "checkboxDescription": "Dieser Casetyp kann einen Handler haben"
+    },
+    "toggleAutoAssignTasks": {
+      "title": "Aufgabenzuweisung",
+      "checkboxDescription": "Aufgaben automatisch zu Fallbearbeiter zuweisen"
     },
     "tabs": {
       "cases": "Falldetails",
@@ -512,8 +574,7 @@
     "cancel": "Absagen",
     "collapse": "Kollaps",
     "expand": "Expandieren",
-    "download": "Herunterladen",
-    "typeToSearch": "Tippe um zu suchen..."
+    "download": "Herunterladen"
   },
   "taskDetail": {
     "taskCreated": "Erstellt",

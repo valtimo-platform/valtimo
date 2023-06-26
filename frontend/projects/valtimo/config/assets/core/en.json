@@ -68,10 +68,17 @@
     },
     "notes": {
       "addNote": "Add note",
+      "modifyNote": "Edit note",
       "tableItemsText": "Notes",
       "input": {
         "content": "Note"
-      }
+      },
+      "deleteConfirmation": {
+        "title": "Delete note",
+        "description": "Are you sure you want to delete this note?",
+        "deletedMessage": "The note was deleted successfully."
+      },
+      "editedMessage": "The note was edited successfully."
     },
     "documenten": {
       "noProcessLinked": {
@@ -198,6 +205,58 @@
       "title": "Task"
     }
   },
+  "dashboardManagement": {
+    "addDashboard": "Add new dashboard",
+    "addModal": {
+      "descriptionPlaceholder": "Enter description here",
+      "descriptionHelperText": "*Description is only visible in the dashboard configuration page",
+      "name": "Dashboard name",
+      "namePlaceholder": "Enter name here"
+    },
+    "assignedTo": "Assigned to",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "create": "Create",
+    "delete": "Delete",
+    "deleteModalContent": "Are you sure you want to delete this dashboard? This action cannot be undone.",
+    "description": "Description",
+    "key": "Key",
+    "name": "Name",
+    "noResults": {
+      "description": "Click <strong>Add new dashboard</strong> to start designing your dashboard",
+      "title": "No dashboards added"
+    },
+    "title": "All dashboards",
+    "widgets": {
+      "complete": "Complete",
+      "editDashboard": "Edit dashboard",
+      "editButton": "Edit",
+      "title": "Widgets",
+      "description": "Fill the dashboard by adding new widgets. Arrange these widgets by dragging them to their desired position in the list. ",
+      "add": "Add new widget",
+      "edit": "Edit widget",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleteDescription": "Are you sure you want to delete this widget? This action cannot be undone.",
+      "metadata": "<b>Created by</b> {{createdBy}} | <b>Created on</b> {{createdOn}} | <b>Dashboard key</b> {{key}}",
+      "form": {
+        "title": "Widget title",
+        "titleHelperText": "The primary title displayed on the widget tile",
+        "key": "Widget key (required)",
+        "keyHelperText": "Assign a unique key to this widget",
+        "dataSource": "Data source (required)",
+        "dataSourceHelperText": "Select the source of the data you want to display within the widget",
+        "chartType": "Chart type (required)",
+        "dataSourceField": "Data source field (required)",
+        "dashboardTitle": "Dashboard name (required)",
+        "dashboardDescription": "Description (required)",
+        "dashboardDescriptionHelperText": "*Description is only visible in the dashboard configuration page",
+        "roles": "Set visibility"
+      }
+    }
+  },
+  "cancel": "Cancel22",
   "account": {
     "title": "Account",
     "informationTitle": "Information",
@@ -304,9 +363,13 @@
       "title": "Link upload process to case",
       "description": "Choose which process should handle file uploads."
     },
-    "handleAssignee": {
+    "toggleAssignee": {
       "title": "Case handler",
       "checkboxDescription": "This case type can have a handler"
+    },
+    "toggleAutoAssignTasks": {
+      "title": "Task assignment",
+      "checkboxDescription": "Automatically assign user tasks to the case handler"
     },
     "tabs": {
       "cases": "Case Details",
@@ -512,8 +575,7 @@
     "cancel": "Cancel",
     "collapse": "Collapse",
     "expand": "Expand",
-    "download": "Download",
-    "typeToSearch": "Type to search..."
+    "download": "Download"
   },
   "taskDetail": {
     "taskCreated": "Created",
@@ -689,7 +751,7 @@
     "infoPredefined": "Choose from predefined form definitions",
     "infoFormFlowDefinition": "Choose from predefined form flow definitions",
     "infoUrl": "Enter a URL pointing to a location in the Console. Example format: '/form-links'",
-    "infoExternal": "Enter a URL pointing to an external location. Example format: 'http://www.domain.com/form1'",
+    "infoExternal": "Enter a URL pointing to an external location. Example format: 'https://www.domain.com/form1'",
     "alertRelink": "Form relinked",
     "alertRelinkError": "Failed to relink form",
     "alertLink": "Form linked",
@@ -734,7 +796,7 @@
           "tip": "Enter the URL which points to the role type in OpenZaak that is attributed to the user who starts the product request.",
           "roleTypeUrl": {
             "label": "URL to role type",
-            "tooltip": "http://api.example.org/catalogi/api/v1/roltypen/xxxx-xxxx-xxxx-xxxx-xxxx"
+            "tooltip": "https://api.example.org/catalogi/api/v1/roltypen/xxxx-xxxx-xxxx-xxxx-xxxx"
           }
         }
       },

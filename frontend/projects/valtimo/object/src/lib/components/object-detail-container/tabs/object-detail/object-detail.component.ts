@@ -23,6 +23,8 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {FormType} from '../../../../models/object.model';
 import {ToastrService} from 'ngx-toastr';
 import {TranslateService} from '@ngx-translate/core';
+import {BreadcrumbService, PageTitleService} from '@valtimo/components';
+import {ObjectManagementService} from '@valtimo/object-management';
 
 @Component({
   selector: 'valtimo-object-detail',
@@ -41,9 +43,24 @@ export class ObjectDetailComponent {
   private readonly refreshObject$ = new BehaviorSubject<null>(null);
 
   readonly objectManagementId$: Observable<string> = this.route.params.pipe(
-    map(params => params.objectManagementId)
+    map(params => params.objectManagementId),
+    tap(objectManagementId => {
+      if (!this._settingBreadcrumb && objectManagementId) {
+        this._settingBreadcrumb = true;
+        this.objectManagementService.getObjectById(objectManagementId).subscribe(objectType => {
+          if (objectType.id && objectType.title) {
+            this.setBreadcrumb(objectType.id, objectType.title);
+          }
+        });
+      }
+    })
   );
-  readonly objectId$: Observable<string> = this.route.params.pipe(map(params => params.objectId));
+  readonly objectId$: Observable<string> = this.route.params.pipe(
+    map(params => params.objectId),
+    tap(objectId => {
+      this.pageTitleService.setCustomPageTitle(objectId);
+    })
+  );
 
   readonly formioFormSummary$: Observable<any> = combineLatest([
     this.objectManagementId$,
@@ -82,13 +99,18 @@ export class ObjectDetailComponent {
     tap(() => this.loading$.next(false))
   );
 
+  private _settingBreadcrumb = false;
+
   constructor(
     private readonly objectService: ObjectService,
     private readonly objectState: ObjectStateService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private translate: TranslateService,
-    private toastr: ToastrService
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly translate: TranslateService,
+    private readonly toastr: ToastrService,
+    private readonly pageTitleService: PageTitleService,
+    private readonly breadcrumbService: BreadcrumbService,
+    private readonly objectManagementService: ObjectManagementService
   ) {}
 
   saveObject(): void {
@@ -192,5 +214,13 @@ export class ObjectDetailComponent {
     this.closeModal();
     this.toastr.error(this.translate.instant('object.messages.objectDeleteError'));
     return throwError(error);
+  }
+
+  private setBreadcrumb(objectTypeId: string, title: string): void {
+    this.breadcrumbService.setSecondBreadcrumb({
+      route: [`/objects/${objectTypeId}`],
+      content: title,
+      href: `/objects/${objectTypeId}`,
+    });
   }
 }

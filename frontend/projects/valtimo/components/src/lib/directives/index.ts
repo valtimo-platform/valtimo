@@ -16,3 +16,5 @@
 
 export * from './valtimo-ibm-modal.directive';
 export * from './valtimo-ibm-modal-directive.module';
+export * from './render-in-page-header.directive';
+export * from './render-in-page-header-directive.module';

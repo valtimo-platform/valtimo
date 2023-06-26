@@ -29,6 +29,7 @@ import {HttpClient} from '@angular/common/http';
   providedIn: 'root',
 })
 export class MenuService {
+  private readonly _activeParentSequenceNumber$ = new BehaviorSubject<string>('');
   public includeFunctionObservables: {[key: string]: Observable<boolean>} = {};
 
   private _menuItems$ = new BehaviorSubject<MenuItem[]>(undefined);
@@ -36,6 +37,10 @@ export class MenuService {
 
   private readonly disableCaseCount!: boolean;
   private readonly enableObjectManagement!: boolean;
+
+  get activeParentSequenceNumber$(): Observable<string> {
+    return this._activeParentSequenceNumber$.asObservable();
+  }
 
   constructor(
     private readonly configService: ConfigService,
@@ -84,7 +89,11 @@ export class MenuService {
         let highestDifference = 0;
 
         // recursive function to check how closely each item matches to the current url
-        const checkItemMatch = (stringUrl: string, sequence: string): void => {
+        const checkItemMatch = (
+          stringUrl: string,
+          sequence: string,
+          parentSequence?: string
+        ): void => {
           // length of the current full url
           const currentRouteUrlLength = currentRoute.length;
           // length of the current full url with the item's url substracted
@@ -96,6 +105,12 @@ export class MenuService {
           if (difference > highestDifference) {
             highestDifference = difference;
             closestSequence = sequence;
+
+            if (parentSequence) {
+              this._activeParentSequenceNumber$.next(parentSequence);
+            } else {
+              this._activeParentSequenceNumber$.next('');
+            }
           }
         };
 
@@ -110,7 +125,8 @@ export class MenuService {
                   Array.isArray(item.link)
                     ? [...item.link, ...childItem.link].join('')
                     : childItem.link.join(''),
-                  `${item.sequence}${childItem.sequence}`
+                  `${item.sequence}${childItem.sequence}`,
+                  `${item.sequence}`
                 );
               }
             });

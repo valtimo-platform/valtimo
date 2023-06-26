@@ -14,21 +14,55 @@
  * limitations under the License.
  */
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  ViewContainerRef,
+  ViewEncapsulation,
+} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Title} from '@angular/platform-browser';
-import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, startWith, Subscription, switchMap} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 import {NGXLogger} from 'ngx-logger';
 import {ConfigService} from '@valtimo/config';
+import {map} from 'rxjs/operators';
+import {PageTitleService} from './page-title.service';
 
 @Component({
   selector: 'valtimo-page-title',
   templateUrl: './page-title.component.html',
-  styleUrls: ['./page-title.component.css'],
+  styleUrls: ['./page-title.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
-export class PageTitleComponent implements OnInit, OnDestroy {
+export class PageTitleComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('pageActionsVcr', {static: true, read: ViewContainerRef})
+  pageActionsVcr!: ViewContainerRef;
   public appTitle = this.configService?.config?.applicationTitle || 'Valtimo';
+  public readonly hidePageTitle$: Observable<boolean> = this.router.events.pipe(
+    startWith(this.router),
+    switchMap(() => this.activatedRoute.firstChild.data),
+    map(data => !!data?.hidePageTitle)
+  );
+  public readonly hasCustomPageTitle$: Observable<boolean> = this.router.events.pipe(
+    startWith(this.router),
+    switchMap(() => this.activatedRoute.firstChild.data),
+    map(data => !!data?.customPageTitle)
+  );
+  public readonly hasCustomPageSubtitle$: Observable<boolean> = this.router.events.pipe(
+    startWith(this.router),
+    switchMap(() => this.activatedRoute.firstChild.data),
+    map(data => !!data?.customPageSubtitle)
+  );
+  public readonly customPageTitle$ = this.pageTitleService.customPageTitle$;
+  public readonly customPageTitleSet$ = this.pageTitleService.customPageTitleSet$;
+  public readonly customPageSubtitle$ = this.pageTitleService.customPageSubtitle$;
+  public readonly customPageSubtitleSet$ = this.pageTitleService.customPageSubtitleSet$;
+  public readonly hasPageActions$ = this.pageTitleService.hasPageActions$;
+
   readonly translatedTitle$ = new BehaviorSubject<string>('');
   private appTitleAsSuffix =
     this.configService?.config?.featureToggles?.applicationTitleAsSuffix || false;
@@ -40,11 +74,16 @@ export class PageTitleComponent implements OnInit, OnDestroy {
     private readonly titleService: Title,
     private readonly translateService: TranslateService,
     private readonly logger: NGXLogger,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly pageTitleService: PageTitleService
   ) {}
 
   ngOnInit() {
     this.openRouterTranslateSubscription();
+  }
+
+  ngAfterViewInit(): void {
+    this.pageTitleService.setPageActionsViewContainerRef(this.pageActionsVcr);
   }
 
   ngOnDestroy() {

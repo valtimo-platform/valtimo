@@ -16,7 +16,7 @@
 
 import {Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
 import {FormManagementService} from '../form-management.service';
-import {AlertService} from '@valtimo/components';
+import {AlertService, PageTitleService} from '@valtimo/components';
 import {FormDefinition, ModifyFormDefinitionRequest} from '../models';
 import {ActivatedRoute, Router} from '@angular/router';
 import {first, take} from 'rxjs/operators';
@@ -40,11 +40,12 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
   private formDefinitionId: string | null = null;
 
   constructor(
-    private formManagementService: FormManagementService,
-    private alertService: AlertService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private modalService: ModalService
+    private readonly formManagementService: FormManagementService,
+    private readonly alertService: AlertService,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly modalService: ModalService,
+    private readonly pageTitleService: PageTitleService
   ) {}
 
   ngOnInit() {
@@ -61,6 +62,7 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
     this.formManagementService.getFormDefinition(this.formDefinitionId).subscribe(
       formDefinition => {
         this.formDefinition = formDefinition;
+        this.pageTitleService.setCustomPageTitle(formDefinition.name);
       },
       () => {
         this.alertService.error('Error retrieving Form Definition');

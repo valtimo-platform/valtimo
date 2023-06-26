@@ -1,0 +1,43 @@
+<div
+  class="dashboard-detail-table"
+  *ngIf="tableConfig && {currentDashboard: currentDashboard$ | async} as obs"
+>
+  <valtimo-carbon-table
+    [data]="widgetData$ | async"
+    [tableConfig]="tableConfig"
+    [hideTableHeader]="true"
+  >
+    <div carbonToolbarContent>
+      <button ibmButton="primary" (click)="addWidget()">
+        {{ 'dashboardManagement.widgets.add' | translate }}
+        <svg class="cds--btn__icon" ibmIconAdd size="16"></svg>
+      </button>
+    </div>
+  </valtimo-carbon-table>
+</div>
+
+<valtimo-widget-modal
+  [showModal$]="showModal$"
+  [type]="modalType"
+  [dashboard]="currentDashboard$ | async"
+></valtimo-widget-modal>
+
+<ng-template #moveButtonsTemplate>
+  <div class="move-buttons-container">
+    <button [ibmButton]="'tertiary'" [iconOnly]="true">
+      <svg class="cds--btn__icon" ibmIconArrowUp size="16"></svg>
+    </button>
+    <button [ibmButton]="'tertiary'" [iconOnly]="true">
+      <svg class="cds--btn__icon" ibmIconArrowDown size="16"></svg>
+    </button>
+  </div>
+</ng-template>
+
+<ng-container renderInPageHeader>
+  <ng-template>
+    <button ibmButton="tertiary" size="md" (click)="editDashboard()">
+      {{ 'dashboardManagement.widgets.editButton' | translate }}
+      <svg class="cds--btn__icon" ibmIconEdit size="16"></svg>
+    </button>
+  </ng-template>
+</ng-container>

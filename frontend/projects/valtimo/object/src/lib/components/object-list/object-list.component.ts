@@ -30,7 +30,7 @@ import {catchError, finalize, switchMap, take, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ObjectService} from '../../services/object.service';
-import {ListField, Pagination} from '@valtimo/components';
+import {ListField, PageTitleService, Pagination} from '@valtimo/components';
 import {ColumnType, FormType} from '../../models/object.model';
 import {ToastrService} from 'ngx-toastr';
 import {ObjectColumnService} from '../../services/object-column.service';
@@ -52,7 +52,17 @@ export class ObjectListComponent {
   readonly columnType$ = new BehaviorSubject<ColumnType>(ColumnType.DEFAULT);
 
   readonly objectManagementId$: Observable<string> = this.route.params.pipe(
-    map(params => params.objectManagementId)
+    map(params => params.objectManagementId),
+    tap(objectManagementId => {
+      if (!this._settingPageTitle && objectManagementId) {
+        this._settingPageTitle = true;
+        this.objectManagementService.getObjectById(objectManagementId).subscribe(objectType => {
+          if (objectType.title) {
+            this.pageTitleService.setCustomPageTitle(objectType.title);
+          }
+        });
+      }
+    })
   );
 
   private readonly refreshObjectList$ = new BehaviorSubject<null>(null);
@@ -225,15 +235,18 @@ export class ObjectListComponent {
     })
   );
 
+  private _settingPageTitle = false;
+
   constructor(
     private readonly objectService: ObjectService,
     private readonly objectColumnService: ObjectColumnService,
     private readonly objectManagementService: ObjectManagementService,
     private readonly translateService: TranslateService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private toastr: ToastrService,
-    private translate: TranslateService
+    private readonly router: Router,
+    private readonly route: ActivatedRoute,
+    private readonly toastr: ToastrService,
+    private readonly translate: TranslateService,
+    private readonly pageTitleService: PageTitleService
   ) {}
 
   openModal(): void {

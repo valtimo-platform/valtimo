@@ -4,10 +4,10 @@
   "version": "10.4.0",
   "peerDependencies": {
     "moment": "^2.29.4",
-    "@angular/common": "^14.2.5",
-    "@angular/core": "^14.2.5"
+    "@angular/common": "^14.3.0",
+    "@angular/core": "^14.3.0"
   },
   "dependencies": {
-    "tslib": "^2.0.0"
+    "tslib": "^2.5.0"
   }
 }

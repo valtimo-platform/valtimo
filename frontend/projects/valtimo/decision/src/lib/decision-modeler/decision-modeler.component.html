@@ -18,7 +18,8 @@
   [ngClass]="{'main-content pt-0': !layoutService.isFullscreen}"
   class="mb-5"
   *ngIf="{
-    decisionXml: decisionXml$ | async
+    decisionXml: decisionXml$ | async,
+    decisionTitle: decisionTitle$ | async
   } as obs"
 >
   <div [ngClass]="{'container-fluid': !layoutService.isFullscreen}">
@@ -70,17 +71,8 @@
 
 <ng-template #diagramHeader>
   <div class="row pt-4 pb-3 bg-light diagram-header justify-content-between">
-    <ng-container *ngTemplateOutlet="decisionTitle"></ng-container>
     <ng-container *ngTemplateOutlet="versionSelection"></ng-container>
     <ng-container *ngTemplateOutlet="fullScreenToggle"></ng-container>
-  </div>
-</ng-template>
-
-<ng-template #decisionTitle>
-  <div class="col-md-5 d-flex align-items-center">
-    <h2 class="decision-title">
-      {{ decisionTitle$ | async }}
-    </h2>
   </div>
 </ng-template>
 

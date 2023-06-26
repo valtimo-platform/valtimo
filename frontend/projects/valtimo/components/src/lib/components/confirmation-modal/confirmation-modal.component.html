@@ -45,7 +45,11 @@
   </section>
   <ibm-modal-footer>
     <ng-container>
-      <button ibmButton="secondary" [attr.modal-primary-focus]="true" (click)="closeModal()">
+      <button
+        [attr.modal-primary-focus]="true"
+        [ibmButton]="cancelButtonType"
+        (click)="closeModal()"
+      >
         {{
           (cancelButtonTextTranslationKey !== obs.cancelButtonTranslation
             ? obs.cancelButtonTranslation
@@ -54,7 +58,7 @@
             obs.cancelTranslation
         }}
       </button>
-      <button ibmButton="primary" [attr.modal-primary-focus]="true" (click)="confirm()">
+      <button [attr.modal-primary-focus]="true" [ibmButton]="confirmButtonType" (click)="confirm()">
         {{
           (confirmButtonTextTranslationKey !== obs.confirmButtonTranslation
             ? obs.confirmButtonTranslation

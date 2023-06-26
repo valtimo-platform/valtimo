@@ -39,7 +39,7 @@ const routes: Routes = [
     path: 'contexts/detail/:id',
     component: ContextEditComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Context details', roles: [ROLE_ADMIN]},
+    data: {title: 'Context details', roles: [ROLE_ADMIN], customPageTitle: true},
   },
 ];
 

@@ -19,10 +19,11 @@ import {CommonModule} from '@angular/common';
 import {RouterModule} from '@angular/router';
 import {BreadcrumbNavigationComponent} from './breadcrumb-navigation.component';
 import {TranslateModule} from '@ngx-translate/core';
+import {BreadcrumbModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [BreadcrumbNavigationComponent],
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [CommonModule, RouterModule, TranslateModule, BreadcrumbModule],
   exports: [BreadcrumbNavigationComponent],
 })
 export class BreadcrumbNavigationModule {}

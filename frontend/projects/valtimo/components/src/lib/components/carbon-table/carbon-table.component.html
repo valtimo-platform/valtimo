@@ -1,0 +1,65 @@
+<ibm-table-container>
+  <ibm-table-header *ngIf="!hideTableHeader">
+    <h4 ibmTableHeaderTitle>
+      <ng-content select="[carbonTableTitle]"></ng-content>
+    </h4>
+
+    <p ibmTableHeaderDescription>
+      <ng-content select="[carbonTableDescription]"></ng-content>
+    </p>
+  </ibm-table-header>
+
+  <ibm-table-toolbar>
+    <ibm-table-toolbar-content>
+      <ibm-table-toolbar-search
+        *ngIf="tableConfig.searchable"
+        [expandable]="true"
+        (clear)="onSearch(null)"
+        (search)="onSearch($event)"
+      >
+      </ibm-table-toolbar-search>
+
+      <ng-content select="[carbonToolbarContent]"></ng-content>
+    </ibm-table-toolbar-content>
+  </ibm-table-toolbar>
+
+  <ibm-table
+    [model]="tableModel"
+    [showSelectionColumn]="tableConfig.showSelectionColumn"
+    [size]="tableConfig.size"
+    [skeleton]="tableConfig.skeleton"
+    [sortable]="tableConfig.sortable"
+    [striped]="tableConfig.striped"
+    (rowClick)="onRowClick($event)"
+  >
+    <tbody>
+      <tr>
+        <td [attr.colspan]="tableConfig.fields.length + 1">
+          <div class="valtimo-carbon-table__no-results">
+            <ng-content select="[noResultsView]"></ng-content>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </ibm-table>
+
+  <ibm-pagination
+    *ngIf="tableModel.totalDataLength"
+    [itemsPerPageOptions]="paginationConfig.itemsPerPageOptions"
+    [model]="tableModel"
+    [showPageInput]="paginationConfig.showPageInput"
+    (selectPage)="onSelectPage($event)"
+  ></ibm-pagination>
+</ibm-table-container>
+
+<ng-template #actionsMenu let-data="data">
+  <ibm-overflow-menu (click)="$event.stopPropagation()">
+    <ibm-overflow-menu-option
+      *ngFor="let action of data.actions"
+      (selected)="onActionItemClick(action, data.item)"
+      [type]="action.type"
+    >
+      {{ action.actionName }}
+    </ibm-overflow-menu-option>
+  </ibm-overflow-menu>
+</ng-template>
