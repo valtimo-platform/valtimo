@@ -28,49 +28,49 @@ $valtimo-blue-10: #e9f6fd;
 @use '@carbon/styles/scss/themes';
 @use '@carbon/colors';
 
-@use '@carbon/styles/scss/theme' with (
-  $theme:
-    map-merge(
-      themes.$white,
-      (
-        // Blue 80
-        active-primary: $valtimo-blue-80,
-        active-tertiary: $valtimo-blue-80,
-        // Blue 70
-        link-02: $valtimo-blue-70,
-        support-04: $valtimo-blue-70,
-        hover-primary-text: $valtimo-blue-70,
-        link-secondary: $valtimo-blue-70,
-        support-info: $valtimo-blue-70,
-        link-primary-hover: $valtimo-blue-70,
-        // Blue 60
-        interactive-01: $valtimo-blue-60,
-        interactive-03: $valtimo-blue-60,
-        interactive-04: $valtimo-blue-60,
-        link-01: $valtimo-blue-60,
-        focus: $valtimo-blue-60,
-        background-brand: $valtimo-blue-60,
-        interactive: $valtimo-blue-60,
-        border-interactive: $valtimo-blue-60,
-        link-primary: $valtimo-blue-60,
-        brand-01: $valtimo-blue-60,
-        brand-03: $valtimo-blue-60,
-        // Blue 50
-        inverse-support-04: $valtimo-blue-50,
-        support-info-inverse: $valtimo-blue-50,
-        // Blue 40
-        inverse-link: $valtimo-blue-40,
-        link-inverse: $valtimo-blue-40,
-        // Blue 20
-        highlight: $valtimo-blue-20
-      )
-    )
+$lightThemeVariables: (
+  'g10': themes.$g10,
 );
 
-$themeVariables: (
-  'g10': themes.$g10,
+$darkThemeVariables: (
   'g90': themes.$g90,
   'g100': themes.$g100,
+);
+
+$lightThemeOverwriteVariables: (
+  active-primary: $valtimo-blue-80,
+  active-tertiary: $valtimo-blue-80,
+  // Blue 70
+  link-02: $valtimo-blue-70,
+  support-04: $valtimo-blue-70,
+  hover-primary-text: $valtimo-blue-70,
+  link-secondary: $valtimo-blue-70,
+  support-info: $valtimo-blue-70,
+  link-primary-hover: $valtimo-blue-70,
+  // Blue 60
+  interactive-01: $valtimo-blue-60,
+  interactive-03: $valtimo-blue-60,
+  interactive-04: $valtimo-blue-60,
+  link-01: $valtimo-blue-60,
+  focus: $valtimo-blue-60,
+  background-brand: $valtimo-blue-60,
+  interactive: $valtimo-blue-60,
+  border-interactive: $valtimo-blue-60,
+  link-primary: $valtimo-blue-60,
+  brand-01: $valtimo-blue-60,
+  brand-03: $valtimo-blue-60,
+  // Blue 50
+  inverse-support-04: $valtimo-blue-50,
+  support-info-inverse: $valtimo-blue-50,
+  // Blue 40
+  inverse-link: $valtimo-blue-40,
+  link-inverse: $valtimo-blue-40,
+  // Blue 20
+  highlight: $valtimo-blue-20,
+);
+
+@use '@carbon/styles/scss/theme' with (
+  $theme: map-merge(themes.$white, $lightThemeOverwriteVariables)
 );
 
 @use '@carbon/styles/scss/components/button/tokens' as button-tokens with (
@@ -95,8 +95,15 @@ $themeVariables: (
 @use '@carbon/grid';
 @include grid.flex-grid();
 
-@each $name, $variable in $themeVariables {
-  .carbon-theme-#{$name} {
+@each $name, $variable in $lightThemeVariables {
+  [data-carbon-theme='#{$name}'] {
+    @include theme.theme($variable, $lightThemeOverwriteVariables);
+  }
+}
+
+@each $name, $variable in $darkThemeVariables {
+  //to be enhanced with the dark theme overwrite when implementing the Dark Theme
+  [data-carbon-theme='#{$name}'] {
     @include theme.theme($variable);
   }
 }
@@ -107,4 +114,10 @@ body {
 
 .cds--link--disabled {
   pointer-events: none;
+}
+
+.cds--text-input:read-only {
+  color: theme.$text-primary;
+  border-color: theme.$border-subtle-01;
+  outline: none;
 }

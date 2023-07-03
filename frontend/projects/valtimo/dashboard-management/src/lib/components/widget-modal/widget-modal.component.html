@@ -30,24 +30,30 @@
           {{ translations.title }}
         </h3>
       </ibm-modal-header>
+
       <section ibmModalContent>
         <ng-container *ngIf="vars.isDelete">
           {{ 'dashboardManagement.widgets.deleteDescription' | translate }}</ng-container
         >
+
         <ng-container *ngIf="vars.isEdit || vars.isCreate">
           <ng-container *ngTemplateOutlet="widgetForm"></ng-container>
         </ng-container>
+
         <ng-container *ngIf="vars.isEditDashboard">
           <ng-container *ngTemplateOutlet="editDashboardFormTemplate"></ng-container>
         </ng-container>
       </section>
+
       <ibm-modal-footer>
         <ng-container *ngIf="vars.isEdit || vars.isCreate">
           <ng-container *ngTemplateOutlet="editButtons"></ng-container>
         </ng-container>
+
         <ng-container *ngIf="vars.isDelete">
           <ng-container *ngTemplateOutlet="deleteButtons"></ng-container>
         </ng-container>
+
         <ng-container *ngIf="vars.isEditDashboard">
           <ng-container *ngTemplateOutlet="editDashboardButtons"></ng-container>
         </ng-container>
@@ -60,7 +66,8 @@
   <form *ngIf="editDashboardForm" [formGroup]="editDashboardForm" class="dashboard-modal__form">
     <div class="form__element">
       <ibm-label [invalid]="dashboardTitle.dirty && dashboardTitle.invalid">
-        {{ 'dashboardManagement.widgets.form.dashboardTitle' }}
+        {{ 'dashboardManagement.widgets.form.dashboardTitle' | translate }}
+
         <input
           formControlName="title"
           ibmText
@@ -69,6 +76,7 @@
         />
       </ibm-label>
     </div>
+
     <div class="form__element">
       <ibm-label
         [invalid]="dashboardDescription.dirty && dashboardDescription.invalid"
@@ -77,7 +85,8 @@
           'dashboardManagement.widgets.form.dashboardDescriptionHelperText' | translate
         "
       >
-        {{ 'dashboardManagement.widgets.form.dashboardDescription' }}
+        {{ 'dashboardManagement.widgets.form.dashboardDescription' | translate }}
+
         <input
           formControlName="description"
           ibmText
@@ -86,8 +95,10 @@
         />
       </ibm-label>
     </div>
+
     <div class="form__element">
       <ibm-dropdown
+        data-carbon-theme="g10"
         type="multi"
         formControlName="roles"
         [invalid]="dashboardRoles.dirty && dashboardRoles.invalid"
@@ -107,6 +118,7 @@
         [helperText]="'dashboardManagement.widgets.form.titleHelperText' | translate"
       >
         {{ 'dashboardManagement.widgets.form.title' | translate }}
+
         <input
           formControlName="title"
           ibmText
@@ -115,20 +127,31 @@
         />
       </ibm-label>
     </div>
+
     <div class="form__element --with-button --readonly">
-      <ibm-label [disabled]="true" [invalid]="key.dirty && key.invalid">
+      <ibm-label [invalid]="key.dirty && key.invalid">
         {{ 'dashboardManagement.widgets.form.key' | translate }}
+
         <input
           formControlName="key"
           ibmText
+          readonly
+          tabindex="-1"
           [invalid]="key.dirty && key.invalid"
           [placeholder]="key.value"
         />
       </ibm-label>
-      <button ibmButton="ghost" (click)="copyKey()" [iconOnly]="true">
+
+      <button
+        [title]="'dashboardManagement.widgets.form.keyTitle' | translate"
+        ibmButton="ghost"
+        (click)="copyKey()"
+        [iconOnly]="true"
+      >
         <svg class="cds--btn__icon" ibmIconCopy size="16"></svg>
       </button>
     </div>
+
     <div class="form__element">
       <ibm-dropdown
         formControlName="dateSource"
@@ -141,6 +164,7 @@
         <ibm-dropdown-list [items]="dataSourceItems$ | async" type="multi"></ibm-dropdown-list>
       </ibm-dropdown>
     </div>
+
     <div class="form__row">
       <div class="form__element">
         <ibm-dropdown
@@ -152,7 +176,9 @@
           <ibm-dropdown-list [items]="dataSourceItems$ | async" type="multi"></ibm-dropdown-list>
         </ibm-dropdown>
       </div>
+
       <div class="form__spacer"></div>
+
       <div class="form__element">
         <ibm-label [invalid]="dataSourceField.dirty && dataSourceField.invalid">
           {{ 'dashboardManagement.widgets.form.dataSourceField' | translate }}
@@ -171,6 +197,7 @@
   <button ibmButton="ghost" (click)="closeModal()">
     {{ 'dashboardManagement.widgets.cancel' | translate }}
   </button>
+  
   <button (click)="save()" ibmButton="primary" [disabled]="form.invalid">
     {{ 'dashboardManagement.widgets.save' | translate }}
   </button>
@@ -180,6 +207,7 @@
   <button ibmButton="secondary" (click)="closeModal()">
     {{ 'dashboardManagement.widgets.cancel' | translate }}
   </button>
+
   <button (click)="delete()" ibmButton="danger">
     {{ 'dashboardManagement.widgets.delete' | translate }}
   </button>
@@ -189,6 +217,7 @@
   <button ibmButton="ghost" (click)="closeModal()">
     {{ 'dashboardManagement.widgets.cancel' | translate }}
   </button>
+
   <button (click)="saveDashboard()" ibmButton="primary" [disabled]="editDashboardForm.invalid">
     {{ 'dashboardManagement.widgets.complete' | translate }}
   </button>

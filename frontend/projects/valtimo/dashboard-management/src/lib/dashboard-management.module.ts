@@ -24,7 +24,13 @@ import {
   RenderInPageHeaderDirectiveModule,
   SpinnerModule,
 } from '@valtimo/components';
-import {ButtonModule, DropdownModule, InputModule, ModalModule} from 'carbon-components-angular';
+import {
+  ButtonModule,
+  DropdownModule,
+  InputModule,
+  ModalModule,
+  NotificationModule,
+} from 'carbon-components-angular';
 import {DashboardDetailsComponent} from './components/dashboard-details/dashboard-details.component';
 import {DashboardManagementComponent} from './components/dashboard-management/dashboard-management.component';
 import {DashboardManagementRoutingModule} from './dashboard-management-routing.module';
@@ -58,6 +64,7 @@ import {WidgetModalComponent} from './components/widget-modal/widget-modal.compo
     EditModule,
     ConfirmationModalModule,
     CopyModule,
+    NotificationModule,
   ],
   exports: [],
 })

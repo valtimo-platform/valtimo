@@ -244,6 +244,9 @@
         "titleHelperText": "Der primäre Titel, der auf der Widget-Kachel angezeigt wird",
         "key": "Widget-Schlüssel (erforderlich)",
         "keyHelperText": "Weisen Sie diesem Widget einen eindeutigen Schlüssel zu",
+        "keyTitle": "Schlüssel kopieren",
+        "keyCopied": "Schlüssel in die Zwischenablage kopiert",
+        "keyCopiedTitle": "Bestanden",
         "dataSource": "Datenquelle (erforderlich)",
         "dataSourceHelperText": "Wählen Sie die Quelle der Daten aus, die Sie im Widget anzeigen möchten",
         "chartType": "Diagramm Typ (erforderlich)",
@@ -252,6 +255,10 @@
         "dashboardDescription": "Beschreibung (erforderlich)",
         "dashboardDescriptionHelperText": "*Beschreibung ist nur auf der Dashboard-Konfigurationsseite sichtbar",
         "roles": "Sichtweite"
+      },
+      "noResults": {
+        "description": "Klicken Sie auf <strong>Neues Widget hinzufügen</strong>, um mit der Gestaltung Ihres Dashboards zu beginnen. <br/> Ziehen Sie Ihre Widgets an die gewünschte Position.",
+        "title": "Keine Widgets hinzugefügt"
       }
     },
     "title": "Alle Dashboards"

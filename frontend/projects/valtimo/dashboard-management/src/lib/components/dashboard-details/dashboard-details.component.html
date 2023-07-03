@@ -10,8 +10,29 @@
     <div carbonToolbarContent>
       <button ibmButton="primary" (click)="addWidget()">
         {{ 'dashboardManagement.widgets.add' | translate }}
+
         <svg class="cds--btn__icon" ibmIconAdd size="16"></svg>
       </button>
+    </div>
+
+    <div class="dashboard-detail-table-no-results" noResultsView>
+      <img alt="{{ 'interface.noResults' | translate }}" src="valtimo-layout/img/no-results.svg" />
+
+      <section class="dashboard-detail-table-no-results__content">
+        <div>
+          <h4 class="dashboard-detail-table-no-results__title">
+            {{ 'dashboardManagement.widgets.noResults.title' | translate }}
+          </h4>
+
+          <span [innerHtml]="'dashboardManagement.widgets.noResults.description' | translate"></span>
+        </div>
+
+        <button ibmButton="primary" (click)="addWidget()">
+          {{ 'dashboardManagement.widgets.add' | translate }}
+
+          <svg class="cds--btn__icon" ibmIcon="add" size="16"></svg>
+        </button>
+      </section>
     </div>
   </valtimo-carbon-table>
 </div>
@@ -27,6 +48,7 @@
     <button [ibmButton]="'tertiary'" [iconOnly]="true">
       <svg class="cds--btn__icon" ibmIconArrowUp size="16"></svg>
     </button>
+
     <button [ibmButton]="'tertiary'" [iconOnly]="true">
       <svg class="cds--btn__icon" ibmIconArrowDown size="16"></svg>
     </button>
