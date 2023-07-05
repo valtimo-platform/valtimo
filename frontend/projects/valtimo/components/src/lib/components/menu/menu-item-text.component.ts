@@ -14,15 +14,29 @@
  * limitations under the License.
  */
 
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output, ViewEncapsulation} from '@angular/core';
 import {MenuItem} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-menu-item-text',
   templateUrl: './menu-item-text.component.html',
   styleUrls: ['./menu-item-text.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class MenuItemTextComponent {
   @Input() menuItem: MenuItem;
   @Input() accent = false;
+  @Input() showOverFlowMenu = false;
+  @Output() overflowMenuClosed = new EventEmitter<any>();
+  @Output() openInNewTab = new EventEmitter<any>();
+
+  public onOpenChange(open: boolean): void {
+    if (!open) {
+      this.overflowMenuClosed.emit();
+    }
+  }
+
+  public onSelectOpenInNewTab(): void {
+    this.openInNewTab.emit();
+  }
 }

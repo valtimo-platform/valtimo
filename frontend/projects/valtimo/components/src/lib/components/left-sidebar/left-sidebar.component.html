@@ -16,8 +16,9 @@
 
 <ibm-sidenav
   *ngIf="{
-    sideBarExpanded: sideBarExpanded$ | async,
-    closestSequence: closestSequence$ | async
+    closestSequence: closestSequence$ | async,
+    overflowMenuSequence: overflowMenuSequence$ | async,
+    sideBarExpanded: sideBarExpanded$ | async
   } as obs"
   [allowExpansion]="false"
   [expanded]="obs.sideBarExpanded"
@@ -27,27 +28,38 @@
       <ng-container
         *ngTemplateOutlet="
           topMenuItem;
-          context: {menuItem: menuItem, closestSequence: obs.closestSequence}
+          context: {
+            menuItem: menuItem,
+            closestSequence: obs.closestSequence,
+            overflowMenuSequence: obs.overflowMenuSequence
+          }
         "
       ></ng-container>
     </ng-container>
+
     <ng-container *ngIf="menuItem.children">
       <ng-container
         *ngTemplateOutlet="
           topMenuItem;
-          context: {menuItem: menuItem, closestSequence: obs.closestSequence}
+          context: {
+            closestSequence: obs.closestSequence,
+            menuItem: menuItem,
+            overflowMenuSequence: obs.overflowMenuSequence
+          }
         "
       ></ng-container>
+
       <ng-container *ngTemplateOutlet="subMenuIcon; context: {menuItem: menuItem}"></ng-container>
+
       <ibm-sidenav-menu [title]="menuItem | menuItemTranslate | async">
         <ng-container *ngFor="let childMenuItem of menuItem.children">
           <ng-container
-            *ngIf="{count: childMenuItem?.count$ && (childMenuItem?.count$ | async)} as vars"
+            *ngIf="{
+              count: childMenuItem?.count$ && (childMenuItem?.count$ | async),
+              sequence: '' + menuItem.sequence + childMenuItem.sequence
+            } as vars"
           >
             <ibm-sidenav-item
-              [href]="vars?.count ? 'javascript:return false;' : 'javascript:void(0);'"
-              (click)="navigateToRoute(childMenuItem.link, $event)"
-              [active]="'' + menuItem.sequence + childMenuItem.sequence === obs.closestSequence"
               [ngClass]="{
                 'cds--side-nav__item--empty': !childMenuItem.link,
                 'menu-item--hidden': childMenuItem.includeFunction !== undefined,
@@ -55,11 +67,20 @@
                   childMenuItem.includeFunction !== undefined &&
                   (includeFunctionObservables[childMenuItem.title] | async)
               }"
+              [active]="vars.sequence === obs.closestSequence"
+              [href]="vars?.count ? 'javascript:return false;' : 'javascript:void(0);'"
+              (click)="navigateToRoute(childMenuItem.link, $event)"
+              (contextmenu)="onRightClick(vars.sequence)"
+              (ctrl-click)="openInNewTab(childMenuItem.link)"
             >
               <valtimo-menu-item-text
-                [menuItem]="childMenuItem"
                 [accent]="!childMenuItem.link"
+                [menuItem]="childMenuItem"
+                [showOverFlowMenu]="obs.overflowMenuSequence === vars.sequence"
+                (openInNewTab)="openInNewTab(childMenuItem.link)"
+                (overflowMenuClosed)="onOverflowMenuClosed(vars.sequence)"
               ></valtimo-menu-item-text>
+
               <ng-container
                 *ngTemplateOutlet="countTemplate; context: {count: vars.count}"
               ></ng-container>
@@ -75,21 +96,34 @@
   <div class="menu-item-icon-container"><i class="{{ menuItem.iconClass }}"></i></div>
 </ng-template>
 
-<ng-template #topMenuItem let-menuItem="menuItem" let-closestSequence="closestSequence">
-  <ibm-sidenav-item
-    href="javascript:void(0)"
-    (click)="navigateToRoute(menuItem.link, $event)"
-    *ngIf="!menuItem.children"
-    [active]="'' + menuItem.sequence === closestSequence"
-    [ngClass]="{
-      'menu-item--hidden': menuItem.includeFunction !== undefined,
-      'menu-item--visible':
-        menuItem.includeFunction !== undefined &&
-        (includeFunctionObservables[menuItem.title] | async)
-    }"
-  >
-    <valtimo-menu-item-text [menuItem]="menuItem"></valtimo-menu-item-text>
-  </ibm-sidenav-item>
+<ng-template
+  #topMenuItem
+  let-closestSequence="closestSequence"
+  let-menuItem="menuItem"
+  let-overflowMenuSequence="overflowMenuSequence"
+>
+  <ng-container *ngIf="{sequence: '' + menuItem.sequence} as vars"
+    ><ibm-sidenav-item
+      *ngIf="!menuItem.children"
+      [ngClass]="{
+        'menu-item--hidden': menuItem.includeFunction !== undefined,
+        'menu-item--visible':
+          menuItem.includeFunction !== undefined &&
+          (includeFunctionObservables[menuItem.title] | async)
+      }"
+      [active]="vars.sequence === closestSequence"
+      (click)="navigateToRoute(menuItem.link, $event)"
+      (contextmenu)="onRightClick(vars.sequence)"
+      (ctrl-click)="openInNewTab(menuItem.link.link)"
+      href="javascript:void(0)"
+    >
+      <valtimo-menu-item-text
+        [menuItem]="menuItem"
+        [showOverFlowMenu]="overflowMenuSequence === vars.sequence"
+        (openInNewTab)="openInNewTab(menuItem.link.link)"
+        (overflowMenuClosed)="onOverflowMenuClosed(vars.sequence)"
+      ></valtimo-menu-item-text> </ibm-sidenav-item
+  ></ng-container>
 </ng-template>
 
 <ng-template #countTemplate let-count="count">

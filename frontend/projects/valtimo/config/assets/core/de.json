@@ -581,7 +581,8 @@
     "cancel": "Absagen",
     "collapse": "Kollaps",
     "expand": "Expandieren",
-    "download": "Herunterladen"
+    "download": "Herunterladen",
+    "openInNewTab": "In neuem Tab öffnen"
   },
   "taskDetail": {
     "taskCreated": "Erstellt",

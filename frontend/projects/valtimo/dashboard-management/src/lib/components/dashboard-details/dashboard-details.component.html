@@ -24,7 +24,9 @@
             {{ 'dashboardManagement.widgets.noResults.title' | translate }}
           </h4>
 
-          <span [innerHtml]="'dashboardManagement.widgets.noResults.description' | translate"></span>
+          <span
+            [innerHtml]="'dashboardManagement.widgets.noResults.description' | translate"
+          ></span>
         </div>
 
         <button ibmButton="primary" (click)="addWidget()">

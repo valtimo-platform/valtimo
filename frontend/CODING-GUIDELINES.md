@@ -7,17 +7,20 @@ In order to contribute to this project, please follow the below code formatting 
 ### Attribute sorting
 
 On an element inside your template code, keep to the following sorting of attributes
+
 - Structural directives like `*ngIf` and `*ngFor`
+- Angular directives such as `ngStyle` and `ngClass`
 - Inputs sorted alphabetically
 - Outputs sorted alphabetically
 - Other attributes like `class`, `tabIndex` etc. - sorted alphabetically
 
 ### Whitespace between siblings
 
-If two elements are on the same level in the DOM hierarchy, put whitespace between these elements, in order to improve
-readability.
+If two elements are on the same level in the DOM hierarchy, put whitespace between these elements,
+in order to improve readability.
 
 #### **`test.component.html`**
+
 ```angular2html
 <div>
   <p>test</p>
@@ -50,8 +53,8 @@ All properties and methods in a class should be marked with access modifiers.
 
 #### Private
 
-Any properties not used outside of a component, should be marked as private.
-The property name should be prefixed with an underscore: `private _testProperty: string;`.
+Any properties not used outside of a component, should be marked as private. The property name
+should be prefixed with an underscore: `private _testProperty: string;`.
 
 #### Readonly
 
@@ -60,11 +63,13 @@ Any properties with a constant reference, should be marked as readonly. For exam
 
 #### Constants
 
-All constant properties should be written in screaming snake case: `public readonly MY_VALUE = 'my value';`
+All constant properties should be written in screaming snake case:
+`public readonly MY_VALUE = 'my value';`
 
 ### Property typing
 
-Unless initialized with a primitive or an explicit constructor, all properties and methods should have a return type specified:
+Unless initialized with a primitive or an explicit constructor, all properties and methods should
+have a return type specified:
 
 #### **`test.component.ts`**
 
@@ -112,13 +117,16 @@ As much possible, please keep to the following ordering of properties in Angular
 - Public methods
 - Private methods
 
-#### Sort properties by domain and alphabetically
+#### Sorting properties
 
-Properties and methods belonging to a certain logical domain should be bundled together within a class. The bundle itself should be sorted alphabetically.
-This is a recommended way of organizing a class, and can be deviated from if another way is more practical.
+Properties and methods belonging to a certain logical domain should be bundled together within a
+class. The bundle itself is preferably sorted alphabetically. This is a recommended way of
+organizing a class, and can be deviated from if another way is more practical.
 
-We recommend that logical grouping of methods takes precedence over grouping by access modifiers, since it is more likely that a developer will want to have easy access to methods relating to a certain domain, rather than methods with the same access modifier.
-Sorting by access modifier takes precedence over alphabetical sorting.
+We recommend that logical grouping of methods takes precedence over grouping by access modifiers,
+since it is more likely that a developer will want to have easy access to methods relating to a
+certain domain, rather than methods with the same access modifier. Sorting by access modifier takes
+precedence over optional alphabetical sorting.
 
 #### **`test.component.ts`**
 

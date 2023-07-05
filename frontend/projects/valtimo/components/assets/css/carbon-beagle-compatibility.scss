@@ -170,3 +170,19 @@ body {
   right: 32px;
   z-index: 10000;
 }
+
+.cds--overflow-menu-options--open {
+  z-index: 10000;
+
+  &.--hide-after:after {
+    display: none;
+  }
+
+  &.--wide {
+    width: 13rem;
+
+    .cds--overflow-menu-options__btn {
+      max-width: 100%;
+    }
+  }
+}

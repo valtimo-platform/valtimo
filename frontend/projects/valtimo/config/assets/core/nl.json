@@ -581,7 +581,8 @@
     "cancel": "Annuleren",
     "collapse": "Inklappen",
     "expand": "Uitklappen",
-    "download": "Download"
+    "download": "Download",
+    "openInNewTab": "In nieuw tabblad openen"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",

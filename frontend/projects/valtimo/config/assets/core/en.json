@@ -582,7 +582,8 @@
     "cancel": "Cancel",
     "collapse": "Collapse",
     "expand": "Expand",
-    "download": "Download"
+    "download": "Download",
+    "openInNewTab": "Open in new tab"
   },
   "taskDetail": {
     "taskCreated": "Created",

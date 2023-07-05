@@ -14,11 +14,34 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="{titleTranslation: menuItem | menuItemTranslate | async} as obs">
+<div
+  *ngIf="{titleTranslation: menuItem | menuItemTranslate | async} as obs"
+  class="menu-item-text-container"
+>
   <span [ngClass]="{'cds--link empty-menu-icon-text': accent}">
     <div class="menu-item-icon-container">
       <i class="{{ menuItem.iconClass }}"></i>
     </div>
+
     {{ obs.titleTranslation + (accent ? ' >' : '') }}
   </span>
-</ng-container>
+
+  <ng-container *ngTemplateOutlet="overflowTrigger"></ng-container>
+
+  <ibm-overflow-menu
+    [customTrigger]="overflowTrigger"
+    [open]="showOverFlowMenu"
+    [offset]="{x: 75, y: 25}"
+    placement="bottom"
+    wrapperClass="--hide-after --wide"
+    (openChange)="onOpenChange($event)"
+  >
+    <ibm-overflow-menu-option (selected)="onSelectOpenInNewTab()">{{
+      'interface.openInNewTab' | translate
+    }}</ibm-overflow-menu-option>
+  </ibm-overflow-menu>
+</div>
+
+<ng-template #overflowTrigger>
+  <div></div>
+</ng-template>
