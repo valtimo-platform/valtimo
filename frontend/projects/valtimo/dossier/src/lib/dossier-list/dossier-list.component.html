@@ -16,10 +16,10 @@
 
 <ng-container
   *ngIf="{
-    documentItems: documentItems$ | async,
     fields: fields$ | async,
-    schema: schema$ | async,
+    documentItems: documentItems$ | async,
     searchFields: searchFields$ | async,
+    schema: schema$ | async,
     loaded:
       !loadingFields &&
       !loadingPagination &&
@@ -35,10 +35,8 @@
           [loading]="!obs.loaded"
           (formFlowComplete)="refresh()"
         ></valtimo-dossier-list-actions>
-
         <ng-container *ngIf="obs.loaded; else loading">
           <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
-
           <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
         </ng-container>
       </div>
@@ -47,37 +45,38 @@
 </ng-container>
 
 <ng-template #searchFields let-obs="obs">
-  <valtimo-search-fields
-    [defaultValues]="searchFieldValues$ | async"
-    [documentDefinitionName]="documentDefinitionName$ | async"
-    [searchFields]="obs.searchFields"
-    (doSearch)="search($event)"
-  ></valtimo-search-fields>
+  <div class="mb-3">
+    <valtimo-search-fields
+      [searchFields]="obs.searchFields"
+      (doSearch)="search($event)"
+      [documentDefinitionName]="documentDefinitionName$ | async"
+      [defaultValues]="searchFieldValues$ | async"
+    ></valtimo-search-fields>
+  </div>
 </ng-template>
 
 <ng-template #list let-obs="obs">
   <valtimo-widget>
     <valtimo-list
-      [fields]="obs.fields"
-      [header]="true"
-      [initialSortState]="pagination.sort"
       [items]="obs.documentItems"
+      [fields]="obs.fields"
+      (rowClicked)="rowClick($event)"
       [pagination]="pagination"
       [viewMode]="true"
+      [header]="true"
+      paginationIdentifier="dossierList"
       (paginationClicked)="pageChange($event)"
       (paginationSet)="pageSizeChange($event)"
-      (rowClicked)="rowClick($event)"
+      [initialSortState]="pagination.sort"
       (sortChanged)="sortChanged($event)"
-      paginationIdentifier="dossierList"
     >
       <div header>
         <h3 class="list-header-title">
-          <sup class="ml-1 badge badge-pill badge-primary">
-            {{ pagination?.collectionSize || 0 }}
-          </sup>
+          <sup class="ml-1 badge badge-pill badge-primary">{{
+            pagination?.collectionSize || 0
+          }}</sup>
         </h3>
       </div>
-
       <div tabs *ngIf="canHaveAssignee">
         <ng-container *ngTemplateOutlet="tabs"></ng-container>
       </div>
@@ -89,20 +88,18 @@
   <ng-container *ngIf="assigneeFilter$ | async as assigneeFilter">
     <ul
       *ngIf="visibleDossierTabs === null; else configuredTabs"
-      [activeId]="assigneeFilter"
+      ngbNav
       [destroyOnHide]="false"
       (navChange)="tabChange($event)"
       class="nav-tabs"
-      ngbNav
+      [activeId]="assigneeFilter"
     >
       <li ngbNavItem="ALL" [title]="'dossier.tabs.ALL' | translate">
         <a ngbNavLink>{{ 'dossier.tabs.ALL' | translate }}</a>
       </li>
-
       <li ngbNavItem="MINE" [title]="'dossier.tabs.MINE' | translate">
         <a ngbNavLink>{{ 'dossier.tabs.MINE' | translate }}</a>
       </li>
-
       <li ngbNavItem="OPEN" [title]="'dossier.tabs.OPEN' | translate">
         <a ngbNavLink>{{ 'dossier.tabs.OPEN' | translate }}</a>
       </li>
@@ -113,11 +110,11 @@
 <ng-template #configuredTabs>
   <ng-container *ngIf="assigneeFilter$ | async as assigneeFilter">
     <ul
-      [activeId]="assigneeFilter"
+      ngbNav
       [destroyOnHide]="false"
       (navChange)="tabChange($event)"
       class="nav-tabs"
-      ngbNav
+      [activeId]="assigneeFilter"
     >
       <li
         *ngFor="let tab of visibleDossierTabs"

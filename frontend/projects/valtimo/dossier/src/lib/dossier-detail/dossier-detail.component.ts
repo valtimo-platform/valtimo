@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Location} from '@angular/common';
+
 import {
   Component,
   ComponentFactoryResolver,
@@ -23,14 +23,15 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
-import {TranslateService} from '@ngx-translate/core';
-import {PermissionService} from '@valtimo/access-control';
-import {BreadcrumbService} from '@valtimo/components';
-import {ConfigService, DossierListTab} from '@valtimo/config';
 import {Document, DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
-import {KeycloakService} from 'keycloak-angular';
+import {TabLoaderImpl} from '../models';
+import {TranslateService} from '@ngx-translate/core';
+import {Location} from '@angular/common';
+import {TabService} from '../tab.service';
+import {ProcessService} from '@valtimo/process';
+import {DossierSupportingProcessStartModalComponent} from '../dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
+import {ConfigService, DossierListTab} from '@valtimo/config';
 import moment from 'moment';
-import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
   combineLatest,
@@ -43,15 +44,9 @@ import {
   take,
   tap,
 } from 'rxjs';
-
-import {DossierSupportingProcessStartModalComponent} from '../dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
-import {TabLoaderImpl} from '../models';
-import {
-  CAN_ASSIGN_CASE_PERMISSION,
-  CAN_CLAIM_CASE_PERMISSION,
-  DOSSIER_DETAIL_PERMISSION_RESOURCE,
-} from '../permissions';
-import {TabService} from '../tab.service';
+import {KeycloakService} from 'keycloak-angular';
+import {NGXLogger} from 'ngx-logger';
+import {BreadcrumbService, PageTitleService} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-dossier-detail',
@@ -59,26 +54,29 @@ import {TabService} from '../tab.service';
   styleUrls: ['./dossier-detail.component.css'],
 })
 export class DossierDetailComponent implements OnInit, OnDestroy {
-  @ViewChild('supportingProcessStartModal')
-  supportingProcessStart: DossierSupportingProcessStartModalComponent;
-
   @ViewChild('tabContainer', {read: ViewContainerRef, static: true})
   viewContainerRef: ViewContainerRef;
 
-  public customDossierHeaderItems: Array<any> = [];
-  public document: Document;
   public documentDefinitionName: string;
   public documentDefinitionNameTitle: string;
   public documentId: string;
-  public dossierStatusTabs: Array<DossierListTab> | null = null;
+  public document: Document = null;
+  public tabLoader: TabLoaderImpl = null;
+  private snapshot: ParamMap;
   public processDefinitionListFields: Array<any> = [];
   public processDocumentDefinitions: ProcessDocumentDefinition[] = [];
-  public tabLoader: TabLoaderImpl;
+  private initialTabName: string;
+  public customDossierHeaderItems: Array<any> = [];
+  public dossierStatusTabs: Array<DossierListTab> | null = null;
 
-  public readonly assigneeId$ = new BehaviorSubject<string>('');
-  public readonly refreshDocument$ = new BehaviorSubject<null>(null);
+  @ViewChild('supportingProcessStartModal')
+  supportingProcessStart: DossierSupportingProcessStartModalComponent;
 
-  public readonly document$: Observable<Document | null> = this.refreshDocument$.pipe(
+  readonly refreshDocument$ = new BehaviorSubject<null>(null);
+
+  readonly assigneeId$ = new BehaviorSubject<string>('');
+
+  readonly document$: Observable<Document | null> = this.refreshDocument$.pipe(
     switchMap(() => this.route.params),
     map(params => params?.documentId),
     switchMap(documentId =>
@@ -103,60 +101,37 @@ export class DossierDetailComponent implements OnInit, OnDestroy {
     })
   );
 
-  public readonly userId$: Observable<string | undefined> = from(
-    this.keyCloakService.isLoggedIn()
-  ).pipe(
+  readonly userId$: Observable<string> = from(this.keyCloakService.isLoggedIn()).pipe(
     switchMap(() => this.keyCloakService.loadUserProfile()),
-    map(profile => profile.id)
+    map(profile => profile?.id)
   );
 
-  public readonly isAssigning$ = new BehaviorSubject<boolean>(false);
+  readonly isAssigning$ = new BehaviorSubject<boolean>(false);
 
-  public readonly isAssignedToCurrentUser$: Observable<boolean> = combineLatest([
+  readonly isAssignedToCurrentUser$: Observable<boolean> = combineLatest([
     this.assigneeId$,
     this.userId$,
   ]).pipe(
-    map(([assigneeId, userId]) => !!assigneeId && !!userId && assigneeId === userId),
+    map(([assigneeId, userId]) => assigneeId && userId && assigneeId === userId),
     startWith(true)
   );
 
-  public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
+  readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
     map(params => params.documentDefinitionName || '')
   );
 
-  public readonly canHaveAssignee$: Observable<boolean> = this.documentDefinitionName$.pipe(
+  readonly canHaveAssignee$: Observable<boolean> = this.documentDefinitionName$.pipe(
     switchMap(documentDefinitionName =>
       this.documentService.getCaseSettings(documentDefinitionName)
     ),
     map(caseSettings => caseSettings?.canHaveAssignee)
   );
 
-  public readonly canClaim$: Observable<boolean> = this.route.paramMap.pipe(
-    switchMap((params: ParamMap) =>
-      this.permissionService.requestPermission(CAN_CLAIM_CASE_PERMISSION, {
-        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.domain,
-        identifier: params.get('documentId') ?? '',
-      })
-    )
-  );
-
-  public readonly canAssign$: Observable<boolean> = this.route.paramMap.pipe(
-    switchMap((params: ParamMap) =>
-      this.permissionService.requestPermission(CAN_ASSIGN_CASE_PERMISSION, {
-        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.domain,
-        identifier: params.get('documentId') ?? '',
-      })
-    )
-  );
-
-  private _initialTabName: string;
-  private _snapshot: ParamMap;
-
   constructor(
-    private readonly permissionService: PermissionService,
     private readonly componentFactoryResolver: ComponentFactoryResolver,
     private readonly translateService: TranslateService,
     private readonly documentService: DocumentService,
+    private readonly processService: ProcessService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly location: Location,
@@ -164,15 +139,16 @@ export class DossierDetailComponent implements OnInit, OnDestroy {
     private readonly configService: ConfigService,
     private readonly keyCloakService: KeycloakService,
     private readonly logger: NGXLogger,
-    private readonly breadcrumbService: BreadcrumbService
+    private readonly breadcrumbService: BreadcrumbService,
+    private readonly pageTitleService: PageTitleService
   ) {
-    this._snapshot = this.route.snapshot.paramMap;
-    this.documentDefinitionName = this._snapshot.get('documentDefinitionName') || '';
-    this.documentId = this._snapshot.get('documentId') || '';
+    this.snapshot = this.route.snapshot.paramMap;
+    this.documentDefinitionName = this.snapshot.get('documentDefinitionName') || '';
+    this.documentId = this.snapshot.get('documentId') || '';
     this.tabService.getConfigurableTabs(this.documentDefinitionName);
   }
 
-  public ngOnInit(): void {
+  ngOnInit(): void {
     this.tabLoader = new TabLoaderImpl(
       this.tabService.getTabs(),
       this.componentFactoryResolver,
@@ -187,12 +163,12 @@ export class DossierDetailComponent implements OnInit, OnDestroy {
         this.documentDefinitionNameTitle = definition.schema.title;
         this.setBreadcrumb();
       });
-    this._initialTabName = this._snapshot.get('tab') ?? '';
-    this.tabLoader.initial(this._initialTabName);
+    this.initialTabName = this.snapshot.get('tab');
+    this.tabLoader.initial(this.initialTabName);
     this.getAllAssociatedProcessDefinitions();
   }
 
-  public ngOnDestroy(): void {
+  ngOnDestroy(): void {
     this.breadcrumbService.clearSecondBreadcrumb();
   }
 
@@ -212,11 +188,11 @@ export class DossierDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  public startProcess(processDocumentDefinition: ProcessDocumentDefinition): void {
+  startProcess(processDocumentDefinition: ProcessDocumentDefinition): void {
     this.supportingProcessStart.openModal(processDocumentDefinition, this.documentId);
   }
 
-  public claimAssignee(): void {
+  claimAssignee(): void {
     this.isAssigning$.next(true);
 
     this.userId$
@@ -224,19 +200,19 @@ export class DossierDetailComponent implements OnInit, OnDestroy {
         take(1),
         switchMap(userId => this.documentService.assignHandlerToDocument(this.documentId, userId))
       )
-      .subscribe({
-        next: (): void => {
+      .subscribe(
+        (): void => {
           this.isAssigning$.next(false);
           this.refreshDocument$.next(null);
         },
-        error: (): void => {
+        (): void => {
           this.isAssigning$.next(false);
           this.logger.debug('Something went wrong while assigning user to case');
-        },
-      });
+        }
+      );
   }
 
-  public assignmentOfDocumentChanged(): void {
+  assignmentOfDocumentChanged(): void {
     this.refreshDocument$.next(null);
   }
 

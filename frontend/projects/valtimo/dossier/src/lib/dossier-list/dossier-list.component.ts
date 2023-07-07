@@ -13,30 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute, Params, Router} from '@angular/router';
-import {NgbNavChangeEvent} from '@ng-bootstrap/ng-bootstrap';
-import {TranslateService} from '@ngx-translate/core';
-import {PermissionService} from '@valtimo/access-control';
-import {BreadcrumbService, ListField, PageTitleService, Pagination} from '@valtimo/components';
-import {
-  AssigneeFilter,
-  ConfigService,
-  DefinitionColumn,
-  Direction,
-  DossierListTab,
-  SearchField,
-  SearchFieldValues,
-  SortState,
-} from '@valtimo/config';
-import {
-  AdvancedDocumentSearchRequest,
-  AdvancedDocumentSearchRequestImpl,
-  DocumentDefinition,
-  Documents,
-  DocumentService,
-  SpecifiedDocuments,
-} from '@valtimo/document';
 import {
   BehaviorSubject,
   combineLatest,
@@ -49,8 +27,7 @@ import {
   take,
   tap,
 } from 'rxjs';
-
-import {DefaultTabs} from '../dossier-detail-tab-enum';
+import {ActivatedRoute, Router} from '@angular/router';
 import {
   DossierColumnService,
   DossierListAssigneeService,
@@ -59,6 +36,27 @@ import {
   DossierListService,
   DossierParameterService,
 } from '../services';
+import {
+  AssigneeFilter,
+  ConfigService,
+  DefinitionColumn,
+  Direction,
+  DossierListTab,
+  SearchField,
+  SearchFieldValues,
+  SortState,
+} from '@valtimo/config';
+import {BreadcrumbService, ListField, PageTitleService, Pagination} from '@valtimo/components';
+import {TranslateService} from '@ngx-translate/core';
+import {
+  AdvancedDocumentSearchRequest,
+  AdvancedDocumentSearchRequestImpl,
+  Documents,
+  DocumentService,
+  SpecifiedDocuments,
+} from '@valtimo/document';
+import {DefaultTabs} from '../dossier-detail-tab-enum';
+import {NgbNavChangeEvent} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'valtimo-dossier-list',
@@ -74,24 +72,29 @@ import {
   ],
 })
 export class DossierListComponent implements OnInit, OnDestroy {
-  public canHaveAssignee!: boolean;
-  public loadingAssigneeFilter = true;
-  public loadingDocumentItems = true;
   public loadingFields = true;
   public loadingPagination = true;
   public loadingSearchFields = true;
+  public loadingAssigneeFilter = true;
+  public loadingDocumentItems = true;
   public pagination!: Pagination;
+  public canHaveAssignee!: boolean;
   public visibleDossierTabs: Array<DossierListTab> | null = null;
 
-  public readonly assigneeFilter$: Observable<AssigneeFilter> =
-    this.assigneeService.assigneeFilter$;
+  public readonly searchFields$: Observable<Array<SearchField> | null> =
+    this.searchService.documentSearchFields$.pipe(
+      tap(searchFields => {
+        this.loadingSearchFields = false;
+      })
+    );
+
   public readonly documentDefinitionName$ = this.listService.documentDefinitionName$;
 
   public readonly schema$ = this.listService.documentDefinitionName$.pipe(
-    switchMap((documentDefinitionName: string) =>
+    switchMap(documentDefinitionName =>
       this.documentService.getDocumentDefinition(documentDefinitionName)
     ),
-    map((documentDefinition: DocumentDefinition) => documentDefinition?.schema),
+    map(documentDefinition => documentDefinition?.schema),
     tap(schema => {
       if (schema?.title) {
         this.pageTitleService.setCustomPageTitle(schema?.title, true);
@@ -99,18 +102,9 @@ export class DossierListComponent implements OnInit, OnDestroy {
     })
   );
 
-  public readonly searchFields$: Observable<Array<SearchField> | null> =
-    this.searchService.documentSearchFields$.pipe(
-      tap(() => {
-        this.loadingSearchFields = false;
-      })
-    );
-
   public readonly searchFieldValues$ = this.parameterService.searchFieldValues$;
-
-  private _previousDocumentDefinitionName!: string;
-  private _documentDefinitionNameSubscription!: Subscription;
-
+  public readonly assigneeFilter$: Observable<AssigneeFilter> =
+    this.assigneeService.assigneeFilter$;
   private readonly _pagination$ = this.paginationService.pagination$.pipe(
     tap(pagination => {
       this.pagination = pagination;
@@ -137,7 +131,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
       })
     );
 
-  public readonly fields$: Observable<Array<ListField>> = combineLatest([
+  readonly fields$: Observable<Array<ListField>> = combineLatest([
     this._canHaveAssignee$,
     this._columns$,
     this._hasEnvColumnConfig$,
@@ -163,13 +157,13 @@ export class DossierListComponent implements OnInit, OnDestroy {
 
       return fieldsToReturn;
     }),
-    tap((listFields: ListField[]) => {
+    tap(listFields => {
       const defaultListField = listFields.find(field => field.default);
 
       // set default sort state if no pagination query parameters for sorting are available
       this.parameterService.queryPaginationParams$
         .pipe(take(1))
-        .subscribe((queryPaginationParams: Pagination) => {
+        .subscribe(queryPaginationParams => {
           if (defaultListField && !queryPaginationParams?.sort?.isSorting) {
             const sortDirection =
               typeof defaultListField.default === 'string' ? defaultListField.default : 'DESC';
@@ -266,7 +260,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         }
       }
     ),
-    tap((documents: Documents | SpecifiedDocuments) => {
+    tap(documents => {
       this.paginationService.setCollectionSize(documents);
       this.paginationService.checkPage(documents);
     })
@@ -286,37 +280,40 @@ export class DossierListComponent implements OnInit, OnDestroy {
     })
   );
 
+  private _previousDocumentDefinitionName!: string;
+  private _documentDefinitionNameSubscription!: Subscription;
+
   constructor(
-    private readonly assigneeService: DossierListAssigneeService,
-    private readonly breadcrumbService: BreadcrumbService,
-    private readonly columnService: DossierColumnService,
-    private readonly configService: ConfigService,
-    private readonly documentService: DocumentService,
-    private readonly listService: DossierListService,
-    private readonly pageTitleService: PageTitleService,
-    private readonly paginationService: DossierListPaginationService,
-    private readonly parameterService: DossierParameterService,
     private readonly route: ActivatedRoute,
-    private readonly router: Router,
+    private readonly translateService: TranslateService,
+    private readonly listService: DossierListService,
+    private readonly columnService: DossierColumnService,
+    private readonly assigneeService: DossierListAssigneeService,
+    private readonly paginationService: DossierListPaginationService,
     private readonly searchService: DossierListSearchService,
-    private readonly translateService: TranslateService
+    private readonly parameterService: DossierParameterService,
+    private readonly documentService: DocumentService,
+    private readonly router: Router,
+    private readonly configService: ConfigService,
+    private readonly pageTitleService: PageTitleService,
+    private readonly breadcrumbService: BreadcrumbService
   ) {}
 
-  public ngOnInit(): void {
+  ngOnInit(): void {
     this.setVisibleTabs();
     this.openDocumentDefinitionNameSubscription();
   }
 
-  public ngOnDestroy(): void {
+  ngOnDestroy(): void {
     this._documentDefinitionNameSubscription?.unsubscribe();
     this.pageTitleService.enableReset();
   }
 
-  public search(searchFieldValues: SearchFieldValues): void {
+  search(searchFieldValues: SearchFieldValues): void {
     this.searchService.search(searchFieldValues);
   }
 
-  public rowClick(document: any): void {
+  rowClick(document: any): void {
     this.listService.documentDefinitionName$.pipe(take(1)).subscribe(documentDefinitionName => {
       this.breadcrumbService.cacheQueryParams(
         `/dossiers/${documentDefinitionName}`,
@@ -328,31 +325,31 @@ export class DossierListComponent implements OnInit, OnDestroy {
     });
   }
 
-  public pageChange(newPage: number): void {
+  pageChange(newPage: number): void {
     this.paginationService.pageChange(newPage);
   }
 
-  public pageSizeChange(newPageSize: number): void {
+  pageSizeChange(newPageSize: number): void {
     this.paginationService.pageSizeChange(newPageSize);
   }
 
-  public sortChanged(newSortState: SortState): void {
+  sortChanged(newSortState: SortState): void {
     this.paginationService.sortChanged(newSortState);
   }
 
-  public tabChange(tab: NgbNavChangeEvent<any>): void {
+  tabChange(tab: NgbNavChangeEvent<any>): void {
     this.paginationService.setPage(1);
     this.assigneeService.setAssigneeFilter(tab.nextId.toUpperCase());
   }
 
-  public refresh(): void {
+  refresh(): void {
     this.searchService.refresh();
   }
 
   private openDocumentDefinitionNameSubscription(): void {
     this._documentDefinitionNameSubscription = this.route.params
       .pipe(
-        map((params: Params) => params?.documentDefinitionName),
+        map(params => params?.documentDefinitionName),
         filter(docDefName => !!docDefName),
         distinctUntilChanged()
       )
