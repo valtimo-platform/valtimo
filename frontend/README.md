@@ -71,3 +71,7 @@ Code you can refer to
 ## Running unit tests
 
 Run `npm run libs:test:libraryName` to execute unit tests.
+
+## Contributing
+
+For contributing code, please refer to the [coding guidelines](CODING-GUIDELINES.md).

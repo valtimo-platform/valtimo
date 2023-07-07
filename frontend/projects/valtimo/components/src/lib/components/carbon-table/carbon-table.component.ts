@@ -28,7 +28,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CarbonTableComponent<T> implements AfterViewInit {
-  @HostBinding('class') public class = 'carbon-theme-g10';
+  @HostBinding('attr.data-carbon-theme') public theme = 'g10';
 
   @Input() public tableConfig: CarbonTableConfig;
   @Input() public paginationConfig: CarbonPaginationConfig = createPaginationConfig();

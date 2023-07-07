@@ -13,57 +13,73 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
-<div class="main-content">
+<div
+  class="main-content"
+  *ngIf="{
+    canAssign: canAssign$ | async,
+    canClaim: canClaim$ | async,
+    canHaveAssignee: canHaveAssignee$ | async,
+    document: document$ | async
+  } as obs"
+>
   <div class="container-fluid">
     <div class="col-12 px-0 mb-5">
       <valtimo-widget>
         <div class="card-header bg-light card-header-divider pb-2">
-          <div
-            class="row"
-            *ngIf="{canHaveAssignee: canHaveAssignee$ | async, document: document$ | async} as obs"
-          >
+          <div class="row">
             <div class="col">
               <ng-container
                 *ngTemplateOutlet="
                   caseDetailHeader;
-                  context: {canHaveAssignee: obs.canHaveAssignee, document: obs.document}
+                  context: {
+                    canHaveAssignee: obs.canHaveAssignee,
+                    document: obs.document,
+                    canAssign: obs.canAssign
+                  }
                 "
               ></ng-container>
             </div>
+
             <div class="btn-group mt-m3px mb-3 col-auto">
               <valtimo-extension
                 module="dossier"
                 page="dossier-detail"
                 section="card-header"
               ></valtimo-extension>
+
               <ng-container
-                *ngTemplateOutlet="claimButton; context: {canHaveAssignee: obs.canHaveAssignee}"
+                *ngTemplateOutlet="
+                  claimButton;
+                  context: {canClaim: obs.canClaim, canHaveAssignee: obs.canHaveAssignee}
+                "
               ></ng-container>
+
               <div class="dropdown">
                 <button
+                  [disabled]="processDocumentDefinitions.length === 0"
+                  [ngbTooltip]="processDocumentDefinitions.length === 0 ? 'No action' : null"
+                  aria-expanded="false"
+                  aria-haspopup="true"
                   class="btn btn-primary dropdown-toggle"
-                  type="button"
+                  data-toggle="dropdown"
                   id="startProcessDropdown"
                   placement="bottom"
-                  [ngbTooltip]="processDocumentDefinitions.length === 0 ? 'No action' : null"
-                  [disabled]="processDocumentDefinitions.length === 0"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
+                  type="button"
                 >
                   <span>{{ 'dossier.startSubProcess' | translate }}</span>
+
                   <i class="ml-1 mdi mdi-chevron-down"></i>
                 </button>
+
                 <div
-                  class="dropdown-menu dropdown-menu-right"
                   aria-labelledby="startProcessDropdown"
+                  class="dropdown-menu dropdown-menu-right"
                 >
                   <button
                     *ngFor="let processDocumentDefinition of processDocumentDefinitions"
+                    (click)="startProcess(processDocumentDefinition)"
                     class="dropdown-item p"
                     href="#"
-                    (click)="startProcess(processDocumentDefinition)"
                   >
                     {{
                       (processDocumentDefinition?.id?.processDefinitionKey | translate) !==
@@ -77,25 +93,29 @@
             </div>
           </div>
         </div>
+
         <ul class="nav nav-tabs">
           <li class="nav-item" *ngFor="let tab of tabLoader.tabs">
             <a
-              id="{{ tab.name }}-tab"
-              class="nav-link clickable"
               [ngClass]="{active: tab.isActive()}"
-              data-toggle="tab"
               (click)="tabLoader.load(tab)"
+              class="nav-link clickable"
+              data-toggle="tab"
+              id="{{ tab.name }}-tab"
             >
               {{ tabLoader.translateTabName(tab) }}
             </a>
           </li>
         </ul>
+
         <div class="card-body bg-white p-5 position-relative tab-container">
           <ng-template #tabContainer>Loading...</ng-template>
+
           <div class="clearfix"></div>
         </div>
       </valtimo-widget>
     </div>
+
     <valtimo-dossier-supporting-process-start-modal
       (formSubmit)="tabLoader.refreshView()"
       #supportingProcessStartModal
@@ -103,12 +123,15 @@
   </div>
 </div>
 
-<ng-template #caseDetailHeader let-canHaveAssignee="canHaveAssignee" let-document="document">
+<ng-template
+  #caseDetailHeader
+  let-canHaveAssignee="canHaveAssignee"
+  let-document="document"
+  let-canAssign="canAssign"
+>
   <div class="row" *ngIf="customDossierHeaderItems.length > 0; else defaultTitle">
     <span
-      class="mb-0 mt-0 pb-2 align-self-end col-xl-{{ item.columnSize }} col-lg-{{
-        item.columnSize * 2
-      }} {{ item.customClass }}"
+      *ngFor="let item of customDossierHeaderItems"
       [ngClass]="{
         h1: item.textSize === 'xl',
         h2: item.textSize === 'lg',
@@ -116,17 +139,22 @@
         h4: item.textSize === 'sm',
         h5: item.textSize === 'xs'
       }"
-      *ngFor="let item of customDossierHeaderItems"
+      class="mb-0 mt-0 pb-2 align-self-end col-xl-{{ item.columnSize }} col-lg-{{
+        item.columnSize * 2
+      }} {{ item.customClass }}"
     >
       <span *ngIf="item.label">{{ item.label | translate }}</span>
+
       <span *ngIf="item.label && item.value">: </span>
+
       <strong>{{ item.value }}</strong>
     </span>
   </div>
+
   <ng-container
     *ngTemplateOutlet="
       caseDetailAssignee;
-      context: {canHaveAssignee: canHaveAssignee, document: document}
+      context: {canHaveAssignee: canHaveAssignee, document: document, canAssign: canAssign}
     "
   ></ng-container>
 </ng-template>
@@ -135,28 +163,33 @@
   <div class="row ml-0 mr-0">{{ documentDefinitionNameTitle?.trim() }}</div>
 </ng-template>
 
-<ng-template #caseDetailAssignee let-canHaveAssignee="canHaveAssignee" let-document="document">
+<ng-template
+  #caseDetailAssignee
+  let-canHaveAssignee="canHaveAssignee"
+  let-document="document"
+  let-canAssign="canAssign"
+>
   <div class="row ml-0 mr-0 mt-1 mb-1" *ngIf="canHaveAssignee && document">
     <valtimo-dossier-assign-user
-      [documentId]="document.id"
-      [assigneeId]="document.assigneeId"
       [assigneeFullName]="document?.assigneeFullName"
+      [assigneeId]="document.assigneeId"
+      [documentId]="document.id"
+      [hasPermission]="canAssign"
       (assignmentOfDocumentChanged)="assignmentOfDocumentChanged()"
     ></valtimo-dossier-assign-user>
   </div>
 </ng-template>
 
-<ng-template #claimButton let-canHaveAssignee="canHaveAssignee">
-  <div class="user-full-name" *ngIf="canHaveAssignee">
+<ng-template #claimButton let-canClaim="canClaim" let-canHaveAssignee="canHaveAssignee">
+  <div class="user-full-name" *ngIf="canClaim && canHaveAssignee">
     <button
-      class="btn btn-space btn-primary mr-1"
-      type="button"
-      id=""
-      placement="bottom"
-      aria-haspopup="true"
-      aria-expanded="false"
-      (click)="claimAssignee()"
       [disabled]="(isAssigning$ | async) || (isAssignedToCurrentUser$ | async)"
+      (click)="claimAssignee()"
+      aria-expanded="false"
+      aria-haspopup="true"
+      class="btn btn-space btn-primary mr-1"
+      placement="bottom"
+      type="button"
     >
       <span>{{ 'dossier.claimAssigneeCase' | translate }}</span>
     </button>

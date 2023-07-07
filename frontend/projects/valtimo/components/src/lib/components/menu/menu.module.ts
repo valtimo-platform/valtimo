@@ -21,7 +21,7 @@ import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateModule} from '@ngx-translate/core';
 import {MenuItemTextComponent} from './menu-item-text.component';
 import {ComponentsPipesModule} from '../../pipes';
-import {LinkModule} from 'carbon-components-angular';
+import {DialogModule, LinkModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [MenuItemTextComponent],
@@ -32,6 +32,7 @@ import {LinkModule} from 'carbon-components-angular';
     TranslateModule,
     ComponentsPipesModule,
     LinkModule,
+    DialogModule,
   ],
   exports: [MenuItemTextComponent],
 })

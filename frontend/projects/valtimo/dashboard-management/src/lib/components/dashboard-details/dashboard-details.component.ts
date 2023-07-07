@@ -1,15 +1,15 @@
 import {AfterViewInit, Component, TemplateRef, ViewChild, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {BehaviorSubject, combineLatest, map, Observable, tap} from 'rxjs';
-import {DashboardItem, DashboardWidget, WidgetModalType} from '../../models';
-import {dashboardListMock, widgetListMock} from '../../mocks';
+import {TranslateService} from '@ngx-translate/core';
 import {
   CarbonTableConfig,
   ColumnType,
   createCarbonTableConfig,
   PageTitleService,
 } from '@valtimo/components';
-import {TranslateService} from '@ngx-translate/core';
+import {BehaviorSubject, combineLatest, map, Observable, tap} from 'rxjs';
+import {dashboardListMock, widgetListMock} from '../../mocks';
+import {DashboardItem, DashboardWidget, WidgetModalType} from '../../models';
 
 @Component({
   templateUrl: './dashboard-details.component.html',
@@ -21,12 +21,18 @@ export class DashboardDetailsComponent implements AfterViewInit {
 
   public modalType: WidgetModalType = 'create';
   public tableConfig!: CarbonTableConfig;
-  public readonly currentDashboard$: Observable<DashboardItem> = combineLatest([
+  public readonly currentDashboard$: Observable<DashboardItem | undefined> = combineLatest([
     this.route.params,
     this.translateService.stream('key'),
   ]).pipe(
-    map(([params]) => dashboardListMock.find(mockItem => mockItem.key === params.id)),
+    map(([params]) =>
+      dashboardListMock.find((mockItem: DashboardItem) => mockItem.key === params.id)
+    ),
     tap(currentDashboard => {
+      if (!currentDashboard) {
+        return;
+      }
+
       this.pageTitleService.setCustomPageTitle(currentDashboard.name);
       this.pageTitleService.setCustomPageSubtitle(
         this.translateService.instant('dashboardManagement.widgets.metadata', {

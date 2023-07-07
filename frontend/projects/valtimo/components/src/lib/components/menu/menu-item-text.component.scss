@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 
-.menu-item-icon-container {
-  position: absolute;
-  margin-left: -0.75rem;
-  transform: translateX(-100%);
-}
+.menu-item-text-container {
+  .menu-item-icon-container {
+    position: absolute;
+    margin-left: -0.75rem;
+    transform: translateX(-100%);
+  }
 
-.empty-menu-icon-text {
-  font-weight: 600 !important;
+  .empty-menu-icon-text {
+    font-weight: 600 !important;
+  }
+
+  .cds--overflow-menu {
+    visibility: hidden;
+    height: 0;
+    width: 0;
+  }
 }

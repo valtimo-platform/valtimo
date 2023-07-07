@@ -244,6 +244,9 @@
         "titleHelperText": "De primaire titel die wordt weergegeven op de widgettegel",
         "key": "Widgetsleutel (vereist)",
         "keyHelperText": "Wijs een unieke sleutel toe aan deze widget",
+        "keyTitle": "Sleutel kopiëren",
+        "keyCopied": "Sleutel gekopieerd naar klembord",
+        "keyCopiedTitle": "Geslaagd",
         "dataSource": "Databron (vereist)",
         "dataSourceHelperText": "Selecteer de bron van de data die u in de widget wilt weergeven",
         "chartType": "Grafiektype (vereist)",
@@ -252,6 +255,10 @@
         "dashboardDescription": "Beschrijving (vereist)",
         "dashboardDescriptionHelperText": "*Beschrijving is alleen zichtbaar op de configuratiepagina van het dashboard",
         "roles": "Zichtbaarheid"
+      },
+      "noResults": {
+        "description": "Klik op <strong>Nieuwe widget toevoegen</strong> om te beginnen met het ontwerpen van uw dashboard. <br/> Sleep uw widgets naar de gewenste positie.",
+        "title": "Geen widgets toegevoegd"
       }
     },
     "title": "Alle dashboards"
@@ -574,7 +581,8 @@
     "cancel": "Annuleren",
     "collapse": "Inklappen",
     "expand": "Uitklappen",
-    "download": "Download"
+    "download": "Download",
+    "openInNewTab": "In nieuw tabblad openen"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",

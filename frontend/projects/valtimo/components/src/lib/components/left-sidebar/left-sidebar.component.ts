@@ -23,7 +23,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
-import {combineLatest, Observable, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {ConfigService, MenuItem} from '@valtimo/config';
 import {MenuService} from '../menu/menu.service';
@@ -59,18 +59,15 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
   }
 
   public includeFunctionObservables: {[key: string]: Observable<boolean>} = {};
+  public readonly menuItems$: Observable<Array<MenuItem>> = this.menuService.menuItems$;
+  public readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
+  public readonly closestSequence$: Observable<string> = this.menuService.closestSequence$;
+  public readonly overflowMenuSequence$ = new BehaviorSubject<string>('');
 
-  private breakpointSubscription!: Subscription;
-
-  readonly menuItems$: Observable<Array<MenuItem>> = this.menuService.menuItems$;
-
-  readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
-
-  private breakpointsInitialized = false;
-  private lastSmallScreen!: boolean;
-  private lastLargeScreen!: boolean;
-
-  readonly closestSequence$: Observable<string> = this.menuService.closestSequence$;
+  private _breakpointSubscription!: Subscription;
+  private _breakpointsInitialized = false;
+  private _lastSmallScreen!: boolean;
+  private _lastLargeScreen!: boolean;
 
   constructor(
     private readonly translateService: TranslateService,
@@ -84,33 +81,55 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
     this.includeFunctionObservables = this.menuService.includeFunctionObservables;
   }
 
-  ngAfterViewInit(): void {
+  public ngAfterViewInit(): void {
     this.openBreakpointSubscription();
     this.shellService.setSidenavElement(
       this.elementRef.nativeElement.querySelector('.cds--side-nav')
     );
   }
 
-  ngOnDestroy(): void {
-    this.breakpointSubscription?.unsubscribe();
+  public ngOnDestroy(): void {
+    this._breakpointSubscription?.unsubscribe();
   }
 
-  navigateToRoute(route: Array<string>, event: MouseEvent) {
+  public navigateToRoute(route: Array<string>, event: MouseEvent) {
     event.preventDefault();
 
-    this.router.navigate(route);
+    if (!event.ctrlKey && !event.metaKey) {
+      this.router.navigate(route);
 
-    combineLatest([
-      this.shellService.sideBarExpanded$,
-      this.shellService.largeScreen$,
-      this.shellService.collapsibleWidescreenMenu$,
-    ])
-      .pipe(take(1))
-      .subscribe(([sideBarExpanded, largeScreen, collapsibleWidescreenMenu]) => {
-        if ((!largeScreen || collapsibleWidescreenMenu) && sideBarExpanded) {
-          this.shellService.setSideBarExpanded(false);
-        }
-      });
+      combineLatest([
+        this.shellService.sideBarExpanded$,
+        this.shellService.largeScreen$,
+        this.shellService.collapsibleWidescreenMenu$,
+      ])
+        .pipe(take(1))
+        .subscribe(([sideBarExpanded, largeScreen, collapsibleWidescreenMenu]) => {
+          if ((!largeScreen || collapsibleWidescreenMenu) && sideBarExpanded) {
+            this.shellService.setSideBarExpanded(false);
+          }
+        });
+    }
+  }
+
+  public onRightClick(sequence: string): boolean {
+    this.overflowMenuSequence$.next(sequence);
+
+    return false;
+  }
+
+  public onOverflowMenuClosed(sequence: string): void {
+    this.overflowMenuSequence$.pipe(take(1)).subscribe(overflowMenuSequence => {
+      if (overflowMenuSequence === sequence) {
+        this.overflowMenuSequence$.next('');
+      }
+    });
+  }
+
+  public openInNewTab(link: Array<string> | undefined): void {
+    const url = this.router.serializeUrl(this.router.createUrlTree(link || ['/']));
+
+    window.open(url, '_blank');
   }
 
   private openBreakpointSubscription(): void {
@@ -128,24 +147,24 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
             const smallScreen = breakpoints[breakpointKeys[0]];
             const largeScreen = breakpoints[breakpointKeys[1]];
 
-            if (!this.breakpointsInitialized) {
+            if (!this._breakpointsInitialized) {
               if (smallScreen || collapsibleWidescreenMenu) {
                 this.shellService.collapseSideBar();
               }
-              this.breakpointsInitialized = true;
+              this._breakpointsInitialized = true;
             }
 
             if (!collapsibleWidescreenMenu) {
               if (
-                (this.lastSmallScreen && largeScreen && !sideBarExpanded) ||
-                (this.lastLargeScreen && smallScreen && sideBarExpanded)
+                (this._lastSmallScreen && largeScreen && !sideBarExpanded) ||
+                (this._lastLargeScreen && smallScreen && sideBarExpanded)
               ) {
                 this.shellService.toggleSideBar();
               }
             }
 
-            this.lastSmallScreen = smallScreen;
-            this.lastLargeScreen = largeScreen;
+            this._lastSmallScreen = smallScreen;
+            this._lastLargeScreen = largeScreen;
             this.shellService.setLargeScreen(largeScreen);
           });
       });

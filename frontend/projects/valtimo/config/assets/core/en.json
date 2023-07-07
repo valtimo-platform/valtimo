@@ -245,6 +245,9 @@
         "titleHelperText": "The primary title displayed on the widget tile",
         "key": "Widget key (required)",
         "keyHelperText": "Assign a unique key to this widget",
+        "keyTitle": "Copy key",
+        "keyCopied": "Key copied to clipboard",
+        "keyCopiedTitle": "Success",
         "dataSource": "Data source (required)",
         "dataSourceHelperText": "Select the source of the data you want to display within the widget",
         "chartType": "Chart type (required)",
@@ -253,6 +256,10 @@
         "dashboardDescription": "Description (required)",
         "dashboardDescriptionHelperText": "*Description is only visible in the dashboard configuration page",
         "roles": "Set visibility"
+      },
+      "noResults": {
+        "description": "Click <strong>Add new widget</strong> to start designing your dashboard. <br/> Drag your widgets to the desired position.",
+        "title": "No widgets added"
       }
     }
   },
@@ -575,7 +582,8 @@
     "cancel": "Cancel",
     "collapse": "Collapse",
     "expand": "Expand",
-    "download": "Download"
+    "download": "Download",
+    "openInNewTab": "Open in new tab"
   },
   "taskDetail": {
     "taskCreated": "Created",
