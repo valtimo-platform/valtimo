@@ -4,10 +4,12 @@ import {ConfigService} from '@valtimo/config';
 import {map, Observable} from 'rxjs';
 import {
   PermissionRequest,
-  PermissionRequestCollection,
+  PermissionRequestQueue,
   PermissionResponse,
   ResolvedPermissions,
 } from '../models';
+import {getPermissionRequestKey} from '../utils/permission.utils';
+import {NGXLogger} from 'ngx-logger';
 
 @Injectable({
   providedIn: 'root',
@@ -15,16 +17,24 @@ import {
 export class PermissionApiService {
   private valtimoEndpointUri: string;
 
-  constructor(private readonly http: HttpClient, private readonly configService: ConfigService) {
+  constructor(
+    private readonly http: HttpClient,
+    private readonly configService: ConfigService,
+    private readonly logger: NGXLogger
+  ) {
     this.valtimoEndpointUri = this.configService.config.valtimoApi.endpointUri;
   }
 
-  public resolvePermissionRequestCollection(
-    permissionRequestCollection: PermissionRequestCollection
+  public resolvePermissionRequestQueue(
+    permissionRequestQueue: PermissionRequestQueue
   ): Observable<ResolvedPermissions> {
-    return this.requestPermission(Object.values(permissionRequestCollection)).pipe(
+    this.logger.debug('Permissions: request to resolve permission queue', permissionRequestQueue);
+
+    return this.requestPermission(permissionRequestQueue).pipe(
       map((res: PermissionResponse[]) => {
-        const keys: string[] = Object.keys(permissionRequestCollection);
+        const keys: string[] = permissionRequestQueue.map(permissionRequest =>
+          getPermissionRequestKey(permissionRequest)
+        );
 
         return res.reduce(
           (acc: ResolvedPermissions, curr: PermissionResponse, index: number) => ({

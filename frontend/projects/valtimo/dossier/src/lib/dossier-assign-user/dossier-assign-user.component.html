@@ -27,19 +27,20 @@
       <div class="col-12 pl-0 d-flex flex-row align-items-center">
         <ng-container *ngIf="obs.candidateUsers; else loading">
           <valtimo-searchable-dropdown-select
-            [disabled]="obs.disabled"
-            id="dossier-candidates-dropdown"
-            [style]="'underlinedText'"
-            [items]="mapUsersForDropdown(obs.candidateUsers)"
             [buttonText]="'assignDocument.header' | translate"
-            [searchText]="'interface.typeToSearch' | translate"
-            [noResultsText]="'interface.noSearchResults' | translate"
-            [selectedText]="'assignDocument.assignedTo' | translate"
-            [selectedTextValue]="assignedUserFullName$ | async"
             [clearSelectionButtonTitle]="'assignDocument.remove' | translate"
+            [disabled]="obs.disabled"
+            [hasPermission]="hasPermission"
             [hasSelection]="
               userIdToAssign === obs.idOnServer && obs.idOnServer !== null && obs.fullName
             "
+            id="dossier-candidates-dropdown"
+            [items]="mapUsersForDropdown(obs.candidateUsers)"
+            [noResultsText]="'interface.noSearchResults' | translate"
+            [searchText]="'interface.typeToSearch' | translate"
+            [selectedText]="'assignDocument.assignedTo' | translate"
+            [selectedTextValue]="assignedUserFullName$ | async"
+            [style]="'underlinedText'"
             [width]="250"
             (itemSelected)="assignDocument($event)"
             (clearSelection)="unassignDocument()"

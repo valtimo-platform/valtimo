@@ -39,6 +39,7 @@ export class DossierAssignUserComponent implements OnInit, OnChanges, OnDestroy 
   @Input() documentId: string;
   @Input() assigneeId: string;
   @Input() assigneeFullName: string;
+  @Input() hasPermission = true;
 
   @Output() assignmentOfDocumentChanged = new EventEmitter();
 

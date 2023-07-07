@@ -11,9 +11,7 @@ interface PermissionRequest {
   context?: PermissionContext;
 }
 
-interface PermissionRequestCollection {
-  [key: string]: PermissionRequest;
-}
+type PermissionRequestQueue = Array<PermissionRequest>;
 
 interface PermissionResponse {
   request: PermissionRequest;
@@ -21,19 +19,15 @@ interface PermissionResponse {
 }
 
 interface CachedResolvedPermissions {
-  [collectionKey: string]: {
-    [permissionRequestCollectionKey: string]: boolean;
-  };
+  [permissionRequestKey: string]: boolean;
 }
 
 interface PendingPermissions {
-  [collectionKey: string]: {
-    [permissionRequestCollectionKey: string]: Subject<boolean>;
-  };
+  [permissionRequestKey: string]: Subject<boolean>;
 }
 
 interface ResolvedPermissions {
-  [permissionRequestCollectionKey: string]: boolean;
+  [permissionRequestKey: string]: boolean;
 }
 
 export {
@@ -41,7 +35,7 @@ export {
   PendingPermissions,
   PermissionContext,
   PermissionRequest,
-  PermissionRequestCollection,
+  PermissionRequestQueue,
   PermissionResponse,
   ResolvedPermissions,
 };

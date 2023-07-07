@@ -13,24 +13,29 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<div class="main-content">
+<div
+  class="main-content"
+  *ngIf="{
+    canAssign: canAssign$ | async,
+    canClaim: canClaim$ | async,
+    canHaveAssignee: canHaveAssignee$ | async,
+    document: document$ | async
+  } as obs"
+>
   <div class="container-fluid">
     <div class="col-12 px-0 mb-5">
       <valtimo-widget>
         <div class="card-header bg-light card-header-divider pb-2">
-          <div
-            *ngIf="{
-              canClaim: canClaim$ | async,
-              canHaveAssignee: canHaveAssignee$ | async,
-              document: document$ | async
-            } as obs"
-            class="row"
-          >
+          <div class="row">
             <div class="col">
               <ng-container
                 *ngTemplateOutlet="
                   caseDetailHeader;
-                  context: {canHaveAssignee: obs.canHaveAssignee, document: obs.document}
+                  context: {
+                    canHaveAssignee: obs.canHaveAssignee,
+                    document: obs.document,
+                    canAssign: obs.canAssign
+                  }
                 "
               ></ng-container>
             </div>
@@ -118,7 +123,12 @@
   </div>
 </div>
 
-<ng-template #caseDetailHeader let-canHaveAssignee="canHaveAssignee" let-document="document">
+<ng-template
+  #caseDetailHeader
+  let-canHaveAssignee="canHaveAssignee"
+  let-document="document"
+  let-canAssign="canAssign"
+>
   <div class="row" *ngIf="customDossierHeaderItems.length > 0; else defaultTitle">
     <span
       *ngFor="let item of customDossierHeaderItems"
@@ -144,7 +154,7 @@
   <ng-container
     *ngTemplateOutlet="
       caseDetailAssignee;
-      context: {canHaveAssignee: canHaveAssignee, document: document}
+      context: {canHaveAssignee: canHaveAssignee, document: document, canAssign: canAssign}
     "
   ></ng-container>
 </ng-template>
@@ -153,12 +163,18 @@
   <div class="row ml-0 mr-0">{{ documentDefinitionNameTitle?.trim() }}</div>
 </ng-template>
 
-<ng-template #caseDetailAssignee let-canHaveAssignee="canHaveAssignee" let-document="document">
+<ng-template
+  #caseDetailAssignee
+  let-canHaveAssignee="canHaveAssignee"
+  let-document="document"
+  let-canAssign="canAssign"
+>
   <div class="row ml-0 mr-0 mt-1 mb-1" *ngIf="canHaveAssignee && document">
     <valtimo-dossier-assign-user
       [assigneeFullName]="document?.assigneeFullName"
       [assigneeId]="document.assigneeId"
       [documentId]="document.id"
+      [hasPermission]="canAssign"
       (assignmentOfDocumentChanged)="assignmentOfDocumentChanged()"
     ></valtimo-dossier-assign-user>
   </div>

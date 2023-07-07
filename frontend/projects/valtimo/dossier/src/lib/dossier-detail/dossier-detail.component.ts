@@ -47,9 +47,9 @@ import {
 import {DossierSupportingProcessStartModalComponent} from '../dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
 import {TabLoaderImpl} from '../models';
 import {
+  CAN_ASSIGN_CASE_PERMISSION,
+  CAN_CLAIM_CASE_PERMISSION,
   DOSSIER_DETAIL_PERMISSION_RESOURCE,
-  DOSSIER_DETAIL_PERMISSIONS,
-  DOSSIER_DETAIL_PERMISSIONS_KEYS,
 } from '../permissions';
 import {TabService} from '../tab.service';
 
@@ -133,14 +133,19 @@ export class DossierDetailComponent implements OnInit, OnDestroy {
 
   public readonly canClaim$: Observable<boolean> = this.route.paramMap.pipe(
     switchMap((params: ParamMap) =>
-      this.permissionService.requestPermission(
-        DOSSIER_DETAIL_PERMISSIONS,
-        DOSSIER_DETAIL_PERMISSIONS_KEYS.canClaimCase,
-        {
-          resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.domain,
-          identifier: params.get('documentId') ?? '',
-        }
-      )
+      this.permissionService.requestPermission(CAN_CLAIM_CASE_PERMISSION, {
+        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.domain,
+        identifier: params.get('documentId') ?? '',
+      })
+    )
+  );
+
+  public readonly canAssign$: Observable<boolean> = this.route.paramMap.pipe(
+    switchMap((params: ParamMap) =>
+      this.permissionService.requestPermission(CAN_ASSIGN_CASE_PERMISSION, {
+        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.domain,
+        identifier: params.get('documentId') ?? '',
+      })
     )
   );
 

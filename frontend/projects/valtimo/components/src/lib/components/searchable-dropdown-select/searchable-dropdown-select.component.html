@@ -14,18 +14,20 @@
   ~ limitations under the License.
   -->
 
-<valtimo-searchable-dropdown
-  *ngIf="!hasSelection; else selection"
-  [style]="style"
-  [items]="items"
-  [buttonText]="buttonText"
-  [searchText]="searchText"
-  [noResultsText]="noResultsText"
-  [disabled]="disabled"
-  [width]="width"
-  (itemSelected)="onSelect($event)"
->
-</valtimo-searchable-dropdown>
+<ng-container *ngIf="!hasSelection; else selection">
+  <valtimo-searchable-dropdown
+    *ngIf="hasPermission"
+    [buttonText]="buttonText"
+    [disabled]="disabled"
+    [items]="items"
+    [noResultsText]="noResultsText"
+    [searchText]="searchText"
+    [style]="style"
+    [width]="width"
+    (itemSelected)="onSelect($event)"
+  >
+  </valtimo-searchable-dropdown>
+</ng-container>
 
 <ng-template #selection>
   <div
@@ -36,11 +38,12 @@
       {{ selectedText }} <b>{{ selectedTextValue }}</b>
     </h5>
     <button
-      type="button"
-      class="close p-0 m-0 ml-2 d-flex text-danger"
-      aria-label="Close"
-      (click)="onClearSelection()"
+      *ngIf="hasPermission"
       [title]="clearSelectionButtonTitle"
+      (click)="onClearSelection()"
+      aria-label="Close"
+      class="close p-0 m-0 ml-2 d-flex text-danger"
+      type="button"
     >
       <i class="clear-icon mdi mdi-close text-danger"></i>
     </button>
