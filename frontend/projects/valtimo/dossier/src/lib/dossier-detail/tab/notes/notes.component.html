@@ -14,27 +14,31 @@
   ~ limitations under the License.
   -->
 <div
-  class="notes"
   *ngIf="{
+    actions: actions$ | async,
+    canAdd: canAdd$ | async,
     notes: notes$ | async,
     pagination: pagination$ | async,
     loading: loading$ | async
   } as obs"
+  class="notes"
 >
   <button
+    *ngIf="obs.canAdd"
+    [disabled]="obs.loading"
+    (click)="showAddModal()"
+    aria-expanded="false"
+    aria-haspopup="true"
     class="btn btn-space btn-primary mr-1 add-note"
     type="button"
-    aria-haspopup="true"
-    aria-expanded="false"
-    (click)="showAddModal()"
-    [disabled]="obs.loading"
   >
     <span>{{ 'dossier.notes.addNote' | translate }}</span>
+
     <i class="ml-1 icon mdi mdi-plus"></i>
   </button>
 
   <div *ngIf="timelineItems">
-    <valtimo-timeline [actions]="actions" [items]="timelineItems"></valtimo-timeline>
+    <valtimo-timeline [actions]="obs.actions" [items]="timelineItems"></valtimo-timeline>
   </div>
 
   <valtimo-spinner
@@ -46,14 +50,14 @@
   >
   </valtimo-spinner>
 
-  <div class="d-flex justify-content-end row mr-0 ml-0" *ngIf="obs.pagination">
+  <div *ngIf="obs.pagination" class="d-flex justify-content-end row mr-0 ml-0">
     <ngb-pagination
       *ngIf="obs.pagination.collectionSize > obs.pagination.size"
       [collectionSize]="obs.pagination.collectionSize"
-      [(page)]="obs.pagination.page"
-      [pageSize]="obs.pagination.size"
       [maxSize]="obs.pagination.size"
+      [pageSize]="obs.pagination.size"
       [rotate]="true"
+      [(page)]="obs.pagination.page"
       (pageChange)="paginationClicked($event)"
     ></ngb-pagination>
   </div>
@@ -61,6 +65,6 @@
 
 <valtimo-note-modal
   [customData]="customData$ | async"
-  (editNoteEvent)="editNoteEvent($event)"
   (createNoteEvent)="createNewNote($event)"
+  (editNoteEvent)="editNoteEvent($event)"
 ></valtimo-note-modal>

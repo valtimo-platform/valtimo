@@ -13,19 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Component, OnInit} from '@angular/core';
-import {NotesService} from '../../../services/notes.service';
-import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
-import {Note} from '../../../models/notes.model';
-import {switchMap, take, tap} from 'rxjs/operators';
 import {ActivatedRoute} from '@angular/router';
+import {TranslateService} from '@ngx-translate/core';
+import {PermissionService} from '@valtimo/access-control';
 import {Pagination, TimelineItem, TimelineItemImpl} from '@valtimo/components';
 import {Page} from '@valtimo/config';
-import moment from 'moment';
-import {TranslateService} from '@ngx-translate/core';
 import {PromptService} from '@valtimo/user-interface';
+import moment from 'moment';
 import {ToastrService} from 'ngx-toastr';
+import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
+import {switchMap, take, tap} from 'rxjs/operators';
+import {Note} from '../../../models/notes.model';
+import {
+  CAN_ADD_NOTE_PERMISSION,
+  CAN_DELETE_NOTE_PERMISSION,
+  CAN_EDIT_NOTE_PERMISSION,
+  DOSSIER_DETAIL_PERMISSION_RESOURCE,
+} from '../../../permissions';
+import {NotesService} from '../../../services/notes.service';
 
 @Component({
   selector: 'valtimo-dossier-detail-tab-notes',
@@ -34,44 +40,66 @@ import {ToastrService} from 'ngx-toastr';
 })
 export class DossierDetailTabNotesComponent implements OnInit {
   public timelineItems: TimelineItem[] = [];
-  public actions: any[] = [
-    {
-      label: 'Edit',
-      icon: 'mdi-pencil',
-      callback: this.editNote.bind(this),
-    },
-    {
-      label: 'Delete',
-      icon: 'mdi-delete',
-      callback: this.deleteNote.bind(this),
-    },
-  ];
-  readonly loading$ = new BehaviorSubject<boolean>(true);
-  readonly fields$ = new BehaviorSubject<Array<{key: string; label: string}>>([]);
-  readonly customData$ = new BehaviorSubject<object>({});
-  private readonly documentId$ = this.route.params.pipe(map(params => params.documentId));
 
-  readonly currentPageAndSize$ = new BehaviorSubject<Partial<Pagination>>({
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly fields$ = new BehaviorSubject<Array<{key: string; label: string}>>([]);
+  public readonly customData$ = new BehaviorSubject<object>({});
+
+  private readonly documentId$ = this.route.params.pipe(map(params => params.documentId));
+  private readonly _actions = {
+    edit: {label: 'Edit', icon: 'mdi-pencil', callback: this.editNote.bind(this)},
+    delete: {label: 'Delete', icon: 'mdi-delete', callback: this.deleteNote.bind(this)},
+  };
+
+  public readonly actions$: Observable<any[]> = this.documentId$.pipe(
+    switchMap((identifier: string) =>
+      combineLatest([
+        this.permissionService.requestPermission(CAN_DELETE_NOTE_PERMISSION, {
+          resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.note,
+          identifier,
+        }),
+        this.permissionService.requestPermission(CAN_EDIT_NOTE_PERMISSION, {
+          resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.note,
+          identifier,
+        }),
+      ])
+    ),
+    map(([canDelete, canEdit]) => [
+      ...(canEdit ? [this._actions.edit] : []),
+      ...(canDelete ? [this._actions.delete] : []),
+    ])
+  );
+
+  public readonly canAdd$: Observable<boolean> = this.documentId$.pipe(
+    switchMap((identifier: string) =>
+      this.permissionService.requestPermission(CAN_ADD_NOTE_PERMISSION, {
+        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.domain,
+        identifier,
+      })
+    )
+  );
+
+  public readonly currentPageAndSize$ = new BehaviorSubject<Partial<Pagination>>({
     page: 0,
     size: 10,
   });
 
-  readonly pageSizes$ = new BehaviorSubject<Partial<Pagination>>({
+  public readonly pageSizes$ = new BehaviorSubject<Partial<Pagination>>({
     collectionSize: 0,
     maxPaginationItemSize: 5,
   });
 
-  readonly pagination$: Observable<Pagination> = combineLatest([
+  public readonly pagination$: Observable<Pagination> = combineLatest([
     this.currentPageAndSize$,
     this.pageSizes$,
   ]).pipe(
     map(
       ([currentPage, sizes]) =>
-        ({...currentPage, ...sizes, page: currentPage.page + 1} as Pagination)
+        ({...currentPage, ...sizes, page: (currentPage.page ?? 0) + 1} as Pagination)
     )
   );
 
-  readonly notes$: Observable<Array<Note>> = combineLatest([
+  public readonly notes$: Observable<Array<Note>> = combineLatest([
     this.documentId$,
     this.currentPageAndSize$,
     this.notesService.refresh$,
@@ -90,7 +118,7 @@ export class DossierDetailTabNotesComponent implements OnInit {
         this.pageSizes$.next({...sizes, collectionSize: res.totalElements});
       });
     }),
-    map(res =>
+    map((res: Page<Note>) =>
       res.content.map((note: Note) => {
         const noteCreatedDate = moment(note.createdDate).locale(this.translateService.currentLang);
         this.timelineItems.push(
@@ -113,46 +141,45 @@ export class DossierDetailTabNotesComponent implements OnInit {
   );
 
   constructor(
+    private readonly notesService: NotesService,
+    private readonly permissionService: PermissionService,
+    private readonly promptService: PromptService,
     private readonly route: ActivatedRoute,
-    private notesService: NotesService,
-    private translateService: TranslateService,
-    private promptService: PromptService,
-    private toastrService: ToastrService
+    private readonly toastrService: ToastrService,
+    private readonly translateService: TranslateService
   ) {}
 
-  ngOnInit() {
+  public ngOnInit(): void {
     this.translateService.onLangChange.subscribe(() => {
       this.notesService.refresh();
     });
   }
 
-  paginationClicked(newPageNumber): void {
+  public paginationClicked(newPageNumber): void {
     this.currentPageAndSize$.pipe(take(1)).subscribe(currentPage => {
       this.currentPageAndSize$.next({...currentPage, page: newPageNumber - 1});
     });
   }
 
-  showAddModal(): void {
-    this.customData$.next(null);
+  public showAddModal(): void {
+    this.customData$.next({});
     this.notesService.setModalType('add');
     this.notesService.showModal();
   }
 
-  createNewNote(content) {
+  public createNewNote(content): void {
     this.documentId$
-      .pipe(take(1))
       .pipe(
-        tap(documentId => {
-          this.notesService.createDocumentNote(documentId, content).subscribe(() => {
-            this.notesService.refresh();
-            this.notesService.hideModal();
-          });
-        })
+        take(1),
+        switchMap((documentId: string) => this.notesService.createDocumentNote(documentId, content))
       )
-      .subscribe();
+      .subscribe(() => {
+        this.notesService.refresh();
+        this.notesService.hideModal();
+      });
   }
 
-  editNoteEvent(content) {
+  public editNoteEvent(content): void {
     this.notesService.updateNote(content.data.customData.id, content.formData).subscribe(() => {
       this.notesService.refresh();
       this.notesService.hideModal();
@@ -160,13 +187,13 @@ export class DossierDetailTabNotesComponent implements OnInit {
     });
   }
 
-  editNote(data) {
+  public editNote(data): void {
     this.customData$.next(data);
     this.notesService.setModalType('modify');
     this.notesService.showModal();
   }
 
-  deleteNote(data) {
+  public deleteNote(data): void {
     this.promptService.openPrompt({
       headerText: this.translateService.instant('dossier.notes.deleteConfirmation.title'),
       bodyText: this.translateService.instant('dossier.notes.deleteConfirmation.description'),

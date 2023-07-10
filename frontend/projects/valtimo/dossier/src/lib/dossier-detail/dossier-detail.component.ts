@@ -15,14 +15,14 @@
  */
 import {Location} from '@angular/common';
 import {
+  AfterViewInit,
   Component,
   ComponentFactoryResolver,
   OnDestroy,
-  OnInit,
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
-import {ActivatedRoute, ParamMap, Router} from '@angular/router';
+import {ActivatedRoute, ParamMap, Params, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {BreadcrumbService} from '@valtimo/components';
@@ -43,7 +43,6 @@ import {
   take,
   tap,
 } from 'rxjs';
-
 import {DossierSupportingProcessStartModalComponent} from '../dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
 import {TabLoaderImpl} from '../models';
 import {
@@ -58,33 +57,33 @@ import {TabService} from '../tab.service';
   templateUrl: './dossier-detail.component.html',
   styleUrls: ['./dossier-detail.component.css'],
 })
-export class DossierDetailComponent implements OnInit, OnDestroy {
+export class DossierDetailComponent implements AfterViewInit, OnDestroy {
   @ViewChild('supportingProcessStartModal')
   supportingProcessStart: DossierSupportingProcessStartModalComponent;
 
-  @ViewChild('tabContainer', {read: ViewContainerRef, static: true})
+  @ViewChild('tabContainer', {read: ViewContainerRef})
   viewContainerRef: ViewContainerRef;
 
   public customDossierHeaderItems: Array<any> = [];
-  public document: Document;
+  public document: Document | null = null;
   public documentDefinitionName: string;
   public documentDefinitionNameTitle: string;
   public documentId: string;
   public dossierStatusTabs: Array<DossierListTab> | null = null;
   public processDefinitionListFields: Array<any> = [];
   public processDocumentDefinitions: ProcessDocumentDefinition[] = [];
-  public tabLoader: TabLoaderImpl;
+  public tabLoader: TabLoaderImpl | null = null;
 
   public readonly assigneeId$ = new BehaviorSubject<string>('');
   public readonly refreshDocument$ = new BehaviorSubject<null>(null);
 
   public readonly document$: Observable<Document | null> = this.refreshDocument$.pipe(
     switchMap(() => this.route.params),
-    map(params => params?.documentId),
-    switchMap(documentId =>
+    map((params: Params) => params?.documentId),
+    switchMap((documentId: string) =>
       documentId ? this.documentService.getDocument(this.documentId) : of(null)
     ),
-    tap(document => {
+    tap((document: Document | null) => {
       if (document) {
         this.assigneeId$.next(document.assigneeId);
         this.document = document;
@@ -103,15 +102,18 @@ export class DossierDetailComponent implements OnInit, OnDestroy {
     })
   );
 
+  public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
+    map(params => params.documentDefinitionName || '')
+  );
+
   public readonly userId$: Observable<string | undefined> = from(
     this.keyCloakService.isLoggedIn()
   ).pipe(
     switchMap(() => this.keyCloakService.loadUserProfile()),
-    map(profile => profile.id)
+    map(profile => profile?.id)
   );
 
   public readonly isAssigning$ = new BehaviorSubject<boolean>(false);
-
   public readonly isAssignedToCurrentUser$: Observable<boolean> = combineLatest([
     this.assigneeId$,
     this.userId$,
@@ -120,24 +122,11 @@ export class DossierDetailComponent implements OnInit, OnDestroy {
     startWith(true)
   );
 
-  public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params.documentDefinitionName || '')
-  );
-
   public readonly canHaveAssignee$: Observable<boolean> = this.documentDefinitionName$.pipe(
     switchMap(documentDefinitionName =>
       this.documentService.getCaseSettings(documentDefinitionName)
     ),
     map(caseSettings => caseSettings?.canHaveAssignee)
-  );
-
-  public readonly canClaim$: Observable<boolean> = this.route.paramMap.pipe(
-    switchMap((params: ParamMap) =>
-      this.permissionService.requestPermission(CAN_CLAIM_CASE_PERMISSION, {
-        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.domain,
-        identifier: params.get('documentId') ?? '',
-      })
-    )
   );
 
   public readonly canAssign$: Observable<boolean> = this.route.paramMap.pipe(
@@ -149,22 +138,31 @@ export class DossierDetailComponent implements OnInit, OnDestroy {
     )
   );
 
-  private _initialTabName: string;
+  public readonly canClaim$: Observable<boolean> = this.route.paramMap.pipe(
+    switchMap((params: ParamMap) =>
+      this.permissionService.requestPermission(CAN_CLAIM_CASE_PERMISSION, {
+        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.domain,
+        identifier: params.get('documentId') ?? '',
+      })
+    )
+  );
+
   private _snapshot: ParamMap;
+  private _initialTabName: string;
 
   constructor(
-    private readonly permissionService: PermissionService,
+    private readonly breadcrumbService: BreadcrumbService,
     private readonly componentFactoryResolver: ComponentFactoryResolver,
-    private readonly translateService: TranslateService,
+    private readonly configService: ConfigService,
     private readonly documentService: DocumentService,
+    private readonly keyCloakService: KeycloakService,
+    private readonly location: Location,
+    private readonly logger: NGXLogger,
+    private readonly permissionService: PermissionService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly location: Location,
     private readonly tabService: TabService,
-    private readonly configService: ConfigService,
-    private readonly keyCloakService: KeycloakService,
-    private readonly logger: NGXLogger,
-    private readonly breadcrumbService: BreadcrumbService
+    private readonly translateService: TranslateService
   ) {
     this._snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this._snapshot.get('documentDefinitionName') || '';
@@ -172,7 +170,7 @@ export class DossierDetailComponent implements OnInit, OnDestroy {
     this.tabService.getConfigurableTabs(this.documentDefinitionName);
   }
 
-  public ngOnInit(): void {
+  public ngAfterViewInit(): void {
     this.tabLoader = new TabLoaderImpl(
       this.tabService.getTabs(),
       this.componentFactoryResolver,
@@ -181,12 +179,14 @@ export class DossierDetailComponent implements OnInit, OnDestroy {
       this.router,
       this.location
     );
+
     this.documentService
       .getDocumentDefinition(this.documentDefinitionName)
       .subscribe(definition => {
         this.documentDefinitionNameTitle = definition.schema.title;
         this.setBreadcrumb();
       });
+
     this._initialTabName = this._snapshot.get('tab') ?? '';
     this.tabLoader.initial(this._initialTabName);
     this.getAllAssociatedProcessDefinitions();
@@ -199,10 +199,11 @@ export class DossierDetailComponent implements OnInit, OnDestroy {
   public getAllAssociatedProcessDefinitions(): void {
     this.documentService
       .findProcessDocumentDefinitions(this.documentDefinitionName)
-      .subscribe(processDocumentDefinitions => {
+      .subscribe((processDocumentDefinitions: ProcessDocumentDefinition[]) => {
         this.processDocumentDefinitions = processDocumentDefinitions.filter(
           processDocumentDefinition => processDocumentDefinition.startableByUser
         );
+
         this.processDefinitionListFields = [
           {
             key: 'processName',
@@ -222,7 +223,9 @@ export class DossierDetailComponent implements OnInit, OnDestroy {
     this.userId$
       .pipe(
         take(1),
-        switchMap(userId => this.documentService.assignHandlerToDocument(this.documentId, userId))
+        switchMap((userId: string | undefined) =>
+          this.documentService.assignHandlerToDocument(this.documentId, userId ?? '')
+        )
       )
       .subscribe({
         next: (): void => {
@@ -257,7 +260,7 @@ export class DossierDetailComponent implements OnInit, OnDestroy {
   private getStringFromDocumentPath(item, path): string {
     const prefix = item['propertyPaths'].indexOf(path) > 0 ? ' ' : '';
     let string =
-      path.split('.').reduce((o, i) => o[i], this.document.content) || item['noValueText'] || '';
+      path.split('.').reduce((o, i) => o[i], this.document?.content) || item['noValueText'] || '';
     const dateFormats = [moment.ISO_8601, 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD'];
     switch (item['modifier']) {
       case 'age': {

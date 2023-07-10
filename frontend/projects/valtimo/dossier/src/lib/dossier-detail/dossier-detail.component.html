@@ -14,13 +14,13 @@
   ~ limitations under the License.
   -->
 <div
-  class="main-content"
   *ngIf="{
     canAssign: canAssign$ | async,
     canClaim: canClaim$ | async,
     canHaveAssignee: canHaveAssignee$ | async,
     document: document$ | async
   } as obs"
+  class="main-content"
 >
   <div class="container-fluid">
     <div class="col-12 px-0 mb-5">
@@ -94,7 +94,7 @@
           </div>
         </div>
 
-        <ul class="nav nav-tabs">
+        <ul *ngIf="tabLoader" class="nav nav-tabs">
           <li class="nav-item" *ngFor="let tab of tabLoader.tabs">
             <a
               [ngClass]="{active: tab.isActive()}"
