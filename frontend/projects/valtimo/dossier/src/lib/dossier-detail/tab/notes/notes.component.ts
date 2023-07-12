@@ -22,7 +22,7 @@ import {Page} from '@valtimo/config';
 import {PromptService} from '@valtimo/user-interface';
 import moment from 'moment';
 import {ToastrService} from 'ngx-toastr';
-import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, of} from 'rxjs';
 import {switchMap, take, tap} from 'rxjs/operators';
 import {Note} from '../../../models/notes.model';
 import {
@@ -46,29 +46,10 @@ export class DossierDetailTabNotesComponent implements OnInit {
   public readonly customData$ = new BehaviorSubject<object>({});
 
   private readonly documentId$ = this.route.params.pipe(map(params => params.documentId));
-  private readonly _actions = {
-    edit: {label: 'Edit', icon: 'mdi-pencil', callback: this.editNote.bind(this)},
-    delete: {label: 'Delete', icon: 'mdi-delete', callback: this.deleteNote.bind(this)},
-  };
-
-  public readonly actions$: Observable<any[]> = this.documentId$.pipe(
-    switchMap((identifier: string) =>
-      combineLatest([
-        this.permissionService.requestPermission(CAN_DELETE_NOTE_PERMISSION, {
-          resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.note,
-          identifier,
-        }),
-        this.permissionService.requestPermission(CAN_EDIT_NOTE_PERMISSION, {
-          resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.note,
-          identifier,
-        }),
-      ])
-    ),
-    map(([canDelete, canEdit]) => [
-      ...(canEdit ? [this._actions.edit] : []),
-      ...(canDelete ? [this._actions.delete] : []),
-    ])
-  );
+  public readonly actions = [
+    {id: 'edit', label: 'Edit', icon: 'mdi-pencil', callback: this.editNote.bind(this)},
+    {id: 'delete', label: 'Delete', icon: 'mdi-delete', callback: this.deleteNote.bind(this)},
+  ];
 
   public readonly canAdd$: Observable<boolean> = this.documentId$.pipe(
     switchMap((identifier: string) =>
@@ -118,8 +99,30 @@ export class DossierDetailTabNotesComponent implements OnInit {
         this.pageSizes$.next({...sizes, collectionSize: res.totalElements});
       });
     }),
-    map((res: Page<Note>) =>
-      res.content.map((note: Note) => {
+    switchMap(res =>
+      combineLatest([
+        of(res),
+        ...res.content.map(note =>
+          this.permissionService.requestPermission(CAN_DELETE_NOTE_PERMISSION, {
+            resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.note,
+            identifier: note.id,
+          })
+        ),
+        ...res.content.map(note =>
+          this.permissionService.requestPermission(CAN_EDIT_NOTE_PERMISSION, {
+            resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.note,
+            identifier: note.id,
+          })
+        ),
+      ])
+    ),
+    map(combinedResults => {
+      const permissionResults = combinedResults.filter((curr, index) => index !== 0);
+      const halfIndex = Math.ceil(permissionResults.length / 2);
+      const deletePermissions = permissionResults.slice(0, halfIndex);
+      const editPermissions = permissionResults.slice(halfIndex);
+
+      return combinedResults[0].content.map((note: Note, index) => {
         const noteCreatedDate = moment(note.createdDate).locale(this.translateService.currentLang);
         this.timelineItems.push(
           new TimelineItemImpl(
@@ -129,14 +132,18 @@ export class DossierDetailTabNotesComponent implements OnInit {
             noteCreatedDate.fromNow(),
             note.content,
             {},
-            {id: note.id}
+            {id: note.id},
+            [
+              ...(deletePermissions[index] ? ['delete'] : []),
+              ...(editPermissions[index] ? ['edit'] : []),
+            ]
           )
         );
         return {
           ...note,
         };
-      })
-    ),
+      });
+    }),
     tap(() => this.loading$.next(false))
   );
 

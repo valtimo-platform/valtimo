@@ -24,11 +24,14 @@
           <br />
           <span>{{ item.time }}</span>
         </div>
-        <div class="timeline-content mt-1">
+        <div
+          class="timeline-content mt-1"
+          *ngIf="{supportedActions: getSupportedActions(item, actions)} as vars"
+        >
           <div class="timeline-header p-0">
             <span class="timeline-author">{{ item.user }}</span>
 
-            <div class="dropdown actions-dropdown" *ngIf="actions?.length > 0">
+            <div class="dropdown actions-dropdown" *ngIf="vars.supportedActions?.length > 0">
               <a
                 class="dropdown-toggle d-block"
                 id="dropdownMenu"
@@ -40,9 +43,9 @@
               </a>
               <div class="dropdown-menu" aria-labelledby="dropdownMenu">
                 <a
+                  *ngFor="let action of vars.supportedActions"
                   (click)="action.callback(item, $event)"
                   class="dropdown-item p-2"
-                  *ngFor="let action of actions"
                 >
                   <ng-container *ngIf="action.icon !== null">
                     <i class="icon mdi" [ngClass]="action.icon"></i>

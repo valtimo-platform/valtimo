@@ -15,7 +15,6 @@
   -->
 <div
   *ngIf="{
-    actions: actions$ | async,
     canAdd: canAdd$ | async,
     notes: notes$ | async,
     pagination: pagination$ | async,
@@ -38,7 +37,7 @@
   </button>
 
   <div *ngIf="timelineItems">
-    <valtimo-timeline [actions]="obs.actions" [items]="timelineItems"></valtimo-timeline>
+    <valtimo-timeline [actions]="actions" [items]="timelineItems"></valtimo-timeline>
   </div>
 
   <valtimo-spinner

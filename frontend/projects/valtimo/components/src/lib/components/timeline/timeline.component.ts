@@ -24,4 +24,17 @@ import {TimelineItem} from '../../models';
 export class TimelineComponent {
   @Input() items: Array<TimelineItem>;
   @Input() actions?: any[];
+
+  public getSupportedActions(item: TimelineItem, actions: Array<any>): Array<any> {
+    return actions.filter(action => {
+      const actionId = action?.id;
+      const itemSupportedActions = Array.isArray(item.supportedActionIds);
+
+      if (actionId && itemSupportedActions) {
+        return item.supportedActionIds.includes(actionId);
+      }
+
+      return true;
+    });
+  }
 }
