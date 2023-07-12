@@ -1,11 +1,11 @@
 import {PermissionRequest} from '@valtimo/access-control';
 
 enum PERMISSION_ACTION {
-  add = 'CREATE',
-  assign = 'ASSIGN',
-  claim = 'CLAIM',
-  delete = 'DELETE',
-  edit = 'MODIFY',
+  add = 'create',
+  assign = 'assign',
+  claim = 'claim',
+  delete = 'delete',
+  edit = 'modify',
 }
 
 enum DOSSIER_DETAIL_PERMISSION_RESOURCE {
