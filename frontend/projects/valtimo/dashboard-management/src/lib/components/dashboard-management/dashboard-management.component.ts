@@ -48,7 +48,6 @@ export class DashboardManagementComponent implements OnInit {
         ],
       },
     ],
-    searchable: true,
   });
   public form: FormGroup;
 
@@ -67,6 +66,7 @@ export class DashboardManagementComponent implements OnInit {
 
   public closeModal(): void {
     this.openModal$.next(false);
+    this.form.reset();
   }
 
   public createDashboard(): void {
