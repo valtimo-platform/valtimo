@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard
- */
+import {Component, Input, OnInit} from '@angular/core';
+import moment from 'moment';
+import {DashboardService} from '../../services';
+import {Dashboard} from '../../models';
 
-export * from './lib/components/dashboard/dashboard.component';
-export * from './lib/components/widget-dashboard/widget-dashboard.component'
-export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component'
-export * from './lib/dashboard.module';
+@Component({
+  selector: 'valtimo-widget-dashboard-content',
+  templateUrl: './widget-dashboard-content.component.html',
+  styleUrls: ['./widget-dashboard-content.component.css'],
+})
+export class WidgetDashboardContentComponent {
+  @Input() public dashboard: Dashboard;
+}

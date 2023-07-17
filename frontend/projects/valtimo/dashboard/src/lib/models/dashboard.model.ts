@@ -14,11 +14,21 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard
- */
+interface Dashboard {
+  key: string;
+  title: string;
+  widgets: Array<DashboardWidgetConfiguration>;
+}
 
-export * from './lib/components/dashboard/dashboard.component';
-export * from './lib/components/widget-dashboard/widget-dashboard.component'
-export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component'
-export * from './lib/dashboard.module';
+interface DashboardWidgetConfiguration {
+  key: string;
+  title: string;
+  dataSourceKey: string
+  displayType: string
+  dataSourceProperties: object
+}
+
+export {
+  Dashboard,
+  DashboardWidgetConfiguration,
+};

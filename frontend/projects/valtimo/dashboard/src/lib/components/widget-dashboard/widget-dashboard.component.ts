@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard
- */
+import {Component} from '@angular/core';
+import {DashboardService} from '../../services';
+import {Dashboard} from '../../models';
+import {Observable} from 'rxjs';
 
-export * from './lib/components/dashboard/dashboard.component';
-export * from './lib/components/widget-dashboard/widget-dashboard.component'
-export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component'
-export * from './lib/dashboard.module';
+@Component({
+  selector: 'valtimo-widget-dashboard',
+  templateUrl: './widget-dashboard.component.html',
+  styleUrls: ['./widget-dashboard.component.css'],
+})
+export class WidgetDashboardComponent {
+  public dashboards$: Observable<Array<Dashboard>> = this.dashboardService.getDashboards();
+
+  constructor(private readonly dashboardService: DashboardService) {}
+}
