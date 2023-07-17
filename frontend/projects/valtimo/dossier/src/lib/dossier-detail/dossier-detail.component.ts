@@ -129,13 +129,17 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     map(caseSettings => caseSettings?.canHaveAssignee)
   );
 
+  public readonly canAssignLoaded$ = new BehaviorSubject<boolean>(false);
   public readonly canAssign$: Observable<boolean> = this.route.paramMap.pipe(
     switchMap((params: ParamMap) =>
       this.permissionService.requestPermission(CAN_ASSIGN_CASE_PERMISSION, {
         resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.domain,
         identifier: params.get('documentId') ?? '',
       })
-    )
+    ),
+    tap(() => {
+      this.canAssignLoaded$.next(true);
+    })
   );
 
   public readonly canClaim$: Observable<boolean> = this.route.paramMap.pipe(

@@ -15,6 +15,7 @@
  */
 
 import {
+  AfterViewInit,
   Component,
   EventEmitter,
   Input,
@@ -25,7 +26,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {DropdownItem} from '@valtimo/components';
-import {BehaviorSubject, Subscription} from 'rxjs';
+import {BehaviorSubject, filter, map, Observable, of, Subscription, switchMap, take} from 'rxjs';
 import {tap} from 'rxjs/operators';
 import {User} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
@@ -35,103 +36,66 @@ import {DocumentService} from '@valtimo/document';
   templateUrl: './dossier-assign-user.component.html',
   styleUrls: ['./dossier-assign-user.component.css'],
 })
-export class DossierAssignUserComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() documentId: string;
-  @Input() assigneeId: string;
-  @Input() assigneeFullName: string;
+export class DossierAssignUserComponent {
+  @Input() set documentId(value: string) {
+    this.documentId$.next(value);
+  }
+  @Input() set assigneeId(value: string) {
+    this.assigneeId$.next(value);
+  }
+  @Input() set assigneeFullName(value: string) {
+    this.assigneeFullName$.next(value);
+  }
   @Input() hasPermission = true;
-
   @Output() assignmentOfDocumentChanged = new EventEmitter();
 
-  userIdToAssign: string | null = null;
-
-  readonly candidateUsersForDocument$ = new BehaviorSubject<User[]>(undefined);
-  readonly disabled$ = new BehaviorSubject<boolean>(true);
-  readonly assignedIdOnServer$ = new BehaviorSubject<string>(null);
-  readonly assignedUserFullName$ = new BehaviorSubject<string>(null);
-
-  private _subscriptions = new Subscription();
+  public readonly disabled$ = new BehaviorSubject<boolean>(true);
+  public readonly documentId$ = new BehaviorSubject<string>('');
+  public readonly userItems$: Observable<Array<DropdownItem>> = this.documentId$.pipe(
+    filter(documentId => !!documentId),
+    switchMap(documentId =>
+      this.hasPermission ? this.documentService.getCandidateUsers(documentId) : of([])
+    ),
+    map(candidateUsers => this.mapUsersForDropdown(candidateUsers)),
+    tap(() => this.enable())
+  );
+  public readonly assigneeId$ = new BehaviorSubject<string>('');
+  public readonly assigneeFullName$ = new BehaviorSubject<string>('');
 
   constructor(private readonly documentService: DocumentService) {}
 
-  ngOnInit(): void {
-    this._subscriptions.add(
-      this.documentService.getCandidateUsers(this.documentId).subscribe(candidateUsers => {
-        this.candidateUsersForDocument$.next(candidateUsers);
-        if (this.assigneeId) {
-          this.assignedIdOnServer$.next(this.assigneeId);
-          this.userIdToAssign = this.assigneeId;
-          this.assignedUserFullName$.next(this.assigneeFullName);
-        }
+  public assignDocument(userId: string): void {
+    this.disable();
+
+    this.documentId$
+      .pipe(
+        switchMap(documentId => this.documentService.assignHandlerToDocument(documentId, userId))
+      )
+      .subscribe(() => {
+        this.emitChange();
         this.enable();
+      });
+  }
+
+  public unassignDocument(): void {
+    this.disable();
+
+    this.documentId$
+      .pipe(switchMap(documentId => this.documentService.unassignHandlerFromDocument(documentId)))
+      .subscribe(() => {
+        this.emitChange();
+        this.enable();
+      });
+  }
+
+  private mapUsersForDropdown(users: User[]): DropdownItem[] {
+    return users
+      .sort((a, b) => {
+        if (a.lastName && b.lastName) {
+          return a.lastName.localeCompare(b.lastName);
+        }
       })
-    );
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    const assigneeId = changes?.assigneeId?.currentValue;
-    const assigneeFullName = changes?.assigneeFullName?.currentValue;
-
-    if (assigneeId && assigneeFullName) {
-      this.assignedIdOnServer$.next(assigneeId || null);
-      this.userIdToAssign = assigneeId || null;
-      this.assignedUserFullName$.next(assigneeFullName);
-    } else {
-      this.clear();
-    }
-  }
-
-  ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
-  }
-
-  assignDocument(userId: string): void {
-    this.disable();
-
-    this.documentService
-      .assignHandlerToDocument(this.documentId, userId)
-      .pipe(
-        tap(() => {
-          this.userIdToAssign = userId;
-          this.assignedIdOnServer$.next(userId);
-          this.assignedUserFullName$.next(this.assigneeFullName);
-          this.emitChange();
-          this.enable();
-        })
-      )
-      .subscribe();
-  }
-
-  unassignDocument(): void {
-    this.disable();
-    this.documentService
-      .unassignHandlerFromDocument(this.documentId)
-      .pipe(
-        tap(() => {
-          this.clear();
-          this.emitChange();
-          this.enable();
-        })
-      )
-      .subscribe();
-  }
-
-  mapUsersForDropdown(users: User[]): DropdownItem[] {
-    return (
-      users &&
-      users
-        .sort((a, b) => {
-          if (a.lastName && b.lastName) {
-            return a.lastName.localeCompare(b.lastName);
-          }
-        })
-        .map(user => ({text: `${user.firstName} ${user.lastName}`, id: user.id}))
-    );
-  }
-
-  private clear(): void {
-    this.assignedIdOnServer$.next(null);
-    this.userIdToAssign = null;
+      .map(user => ({text: `${user.firstName} ${user.lastName}`, id: user.id}));
   }
 
   private emitChange(): void {
