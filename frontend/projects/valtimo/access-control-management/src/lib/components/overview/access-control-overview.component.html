@@ -1,0 +1,28 @@
+<valtimo-carbon-table [data]="roles$ | async" [tableConfig]="tableConfig">
+  <ng-container carbonTableTitle> {{ 'accessControl.roles.title' | translate }} </ng-container>
+
+  <div carbonToolbarContent>
+    <button ibmButton="primary" (click)="openAddModal()">
+      {{ 'accessControl.roles.add' | translate }}
+
+      <svg class="cds--btn__icon" ibmIcon="add" size="16"></svg>
+    </button>
+  </div>
+</valtimo-carbon-table>
+
+<valtimo-add-role-modal
+  [open]="showAddModal$ | async"
+  (close)="onAdd($event)"
+></valtimo-add-role-modal>
+
+<button (click)="showDeleteModal()">delete</button>
+
+<valtimo-confirmation-modal
+  [outputOnConfirm]="deleteRowKeys$ | async"
+  [showModalSubject$]="showDeleteModal$"
+  (confirmEvent)="onDelete($event)"
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="accessControl.roles.deleteModalContent"
+  titleTranslationKey="interface.delete"
+></valtimo-confirmation-modal>

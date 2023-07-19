@@ -8,7 +8,7 @@ import {
   PermissionResponse,
   ResolvedPermissions,
 } from '../models';
-import {getPermissionRequestKey} from '../utils/permission.utils';
+import {getPermissionRequestKey} from '../utils';
 import {NGXLogger} from 'ngx-logger';
 
 @Injectable({

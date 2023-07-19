@@ -578,6 +578,46 @@
         }
       }
     },
+    "@valtimo/access-control-management": {
+      "projectType": "library",
+      "root": "projects/valtimo/access-control-management",
+      "sourceRoot": "projects/valtimo/access-control-management/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/valtimo/access-control-management/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/access-control-management/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/valtimo/access-control-management/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/valtimo/access-control-management/src/test.ts",
+            "tsConfig": "projects/valtimo/access-control-management/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/access-control-management/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/access-control-management/src/**/*.ts",
+              "projects/valtimo/access-control-management/src/**/*.html"
+            ]
+          }
+        }
+      }
+    },
     "@valtimo/security": {
       "root": "projects/valtimo/security",
       "sourceRoot": "projects/valtimo/security/src",

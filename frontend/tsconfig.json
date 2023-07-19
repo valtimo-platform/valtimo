@@ -25,6 +25,8 @@
       "@valtimo/task/*": ["dist/valtimo/task/*"],
       "@valtimo/access-control": ["dist/valtimo/access-control"],
       "@valtimo/access-control/*": ["dist/valtimo/access-control/*"],
+      "@valtimo/access-control-management": ["dist/valtimo/access-control-management"],
+      "@valtimo/access-control-management/*": ["dist/valtimo/access-control-management/*"],
       "@valtimo/security": ["dist/valtimo/security"],
       "@valtimo/security/*": ["dist/valtimo/security/*"],
       "@valtimo/dossier": ["dist/valtimo/dossier"],
@@ -140,6 +142,12 @@
     },
     {
       "path": "./projects/valtimo/access-control/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/access-control-management/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/access-control-management/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/security/tsconfig.lib.json"

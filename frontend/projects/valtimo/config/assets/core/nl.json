@@ -582,7 +582,8 @@
     "collapse": "Inklappen",
     "expand": "Uitklappen",
     "download": "Download",
-    "openInNewTab": "In nieuw tabblad openen"
+    "openInNewTab": "In nieuw tabblad openen",
+    "create": "Aanmaken"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",
@@ -1177,5 +1178,14 @@
     "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een pluginconfiguratie aan om deze te kunnen koppelen aan een processtap.",
     "form": "Er zijn geen formulieren beschikbaar. Maak een formulier aan om deze te kunnen koppelen aan een processtap.",
     "form-flow": "Er zijn geen FormFlows beschikbaar. Maak een FormFlow aan om deze te kunnen koppelen aan een processtap."
+  },
+  "accessControl": {
+    "roles": {
+      "title": "Alle rollen",
+      "key": "Rolsleutel",
+      "add": "Nieuwe rol toevoegen",
+      "name": "Rolnaam",
+      "deleteModalContent": "Weet u zeker dat u deze rollen en alle onderliggende machtigingen wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden."
+    }
   }
 }

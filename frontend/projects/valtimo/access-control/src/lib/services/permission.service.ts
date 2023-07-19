@@ -13,7 +13,7 @@ import {
   ResolvedPermissions,
 } from '../models';
 import {PermissionApiService} from './permission-api.service';
-import {getPermissionRequestKey} from '../utils/permission.utils';
+import {getPermissionRequestKey} from '../utils';
 
 @Injectable({
   providedIn: 'root',

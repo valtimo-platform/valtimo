@@ -583,7 +583,8 @@
     "collapse": "Collapse",
     "expand": "Expand",
     "download": "Download",
-    "openInNewTab": "Open in new tab"
+    "openInNewTab": "Open in new tab",
+    "create": "Create"
   },
   "taskDetail": {
     "taskCreated": "Created",
@@ -1175,5 +1176,14 @@
     "plugin": "No plugin configurations are available. Create a plugin configuration to be able to link it to a process step.",
     "form": "There are no forms available. Create a form to be able to link it to a process step.",
     "form-flow": "There are no FormFlows available. Create a FormFlow to be able to link it to a process step."
+  },
+  "accessControl": {
+    "roles": {
+      "title": "All roles",
+      "key": "Role key",
+      "add": "Add new role",
+      "name": "Role name",
+      "deleteModalContent": "Are you sure you want to delete these roles and all underlying permissions? This action cannot be undone."
+    }
   }
 }
