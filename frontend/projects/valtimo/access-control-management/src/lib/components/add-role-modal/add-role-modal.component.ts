@@ -6,7 +6,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import {AbstractControl, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {AbstractControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {Role} from '../../models';
 
 @Component({
@@ -15,8 +15,8 @@ import {Role} from '../../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddRoleModalComponent implements OnInit {
-  @Input() open: boolean = false;
-  @Output() close: EventEmitter<Role | null> = new EventEmitter<Role | null>();
+  @Input() open = false;
+  @Output() closeEvent = new EventEmitter<Role | null>();
 
   public form: FormGroup;
 

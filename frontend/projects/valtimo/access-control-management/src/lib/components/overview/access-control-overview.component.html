@@ -12,7 +12,7 @@
 
 <valtimo-add-role-modal
   [open]="showAddModal$ | async"
-  (close)="onAdd($event)"
+  (closeEvent)="onAdd($event)"
 ></valtimo-add-role-modal>
 
 <button (click)="showDeleteModal()">delete</button>
