@@ -33,7 +33,7 @@ export class AddRoleModalComponent implements OnInit {
   }
 
   public onCancel(): void {
-    this.close.emit(null);
+    this.closeEvent.emit(null);
     this.resetForm();
   }
 
@@ -44,7 +44,7 @@ export class AddRoleModalComponent implements OnInit {
       return;
     }
 
-    this.close.emit({roleKey: nameControl.value});
+    this.closeEvent.emit({roleKey: nameControl.value});
     this.resetForm();
   }
 
