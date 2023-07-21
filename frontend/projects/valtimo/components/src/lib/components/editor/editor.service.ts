@@ -17,19 +17,19 @@ export class EditorService {
   public load(): void {
     const baseUrl = './assets' + '/monaco-editor/min/vs';
 
-    if (typeof (<WindowWithMonaco>window).monaco === 'object') {
+    if (typeof (window as WindowWithMonaco).monaco === 'object') {
       this.finishLoading();
       return;
     }
 
     const onGotAmdLoader = () => {
-      (<any>window).require.config({paths: {vs: `${baseUrl}`}});
-      (<any>window).require([`vs/editor/editor.main`], () => {
+      (window as any).require.config({paths: {vs: `${baseUrl}`}});
+      (window as any).require([`vs/editor/editor.main`], () => {
         this.finishLoading();
       });
     };
 
-    if (!(<any>window).require) {
+    if (!(window as any).require) {
       const loaderScript: HTMLScriptElement = document.createElement('script');
       loaderScript.type = 'text/javascript';
       loaderScript.src = `${baseUrl}/loader.js`;

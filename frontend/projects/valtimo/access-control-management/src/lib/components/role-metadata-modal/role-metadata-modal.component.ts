@@ -16,7 +16,7 @@ import {CARBON_CONSTANTS} from '@valtimo/components';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoleMetadataModalComponent implements OnInit {
-  @Input() open: boolean = false;
+  @Input() open = false;
   @Input() type: RoleMetadataModal = 'add';
   @Input() set defaultKeyValue(value: string) {
     this._defaultKeyValue = value;

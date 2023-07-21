@@ -30,7 +30,7 @@ import {editor} from 'monaco-editor';
 import {EditorModel} from '../../models';
 import {ShellService} from '../../services/shell.service';
 
-declare var monaco: any;
+declare const monaco: any;
 
 @Component({
   selector: 'valtimo-editor',
