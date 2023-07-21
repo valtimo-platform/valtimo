@@ -582,7 +582,15 @@
     "collapse": "Collapse",
     "expand": "Expand",
     "download": "Download",
-    "openInNewTab": "Open in new tab"
+    "openInNewTab": "Open in new tab",
+    "table": {
+      "itemsPerPage": "Items per page",
+      "multipleSelect": "{{count}} items selected",
+      "ofLastPage": "of {{last}} page",
+      "ofLastPages": "of {{last}} pages",
+      "singleSelect": "1 item selected",
+      "totalItems": "{{start}}-{{end}} of {{total}} items"
+    }
   },
   "taskDetail": {
     "taskCreated": "Created",

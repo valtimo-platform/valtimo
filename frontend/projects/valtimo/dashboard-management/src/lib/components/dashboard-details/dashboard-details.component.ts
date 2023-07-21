@@ -74,18 +74,20 @@ export class DashboardDetailsComponent implements AfterViewInit {
         {
           columnType: ColumnType.TEXT,
           fieldName: 'name',
-          fieldLabel: 'Name',
+          translationKey: 'Name',
         },
         {
           columnType: ColumnType.TEMPLATE,
           template: this.moveButtonsTemplate,
+          className: 'dashboard-detail-table__actions',
           fieldName: '',
-          fieldLabel: '',
+          translationKey: '',
         },
         {
           columnType: ColumnType.ACTION,
+          className: 'dashboard-detail-table__actions',
           fieldName: '',
-          fieldLabel: '',
+          translationKey: '',
           actions: [
             {
               actionName: 'Edit',

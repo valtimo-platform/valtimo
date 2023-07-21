@@ -1,0 +1,13 @@
+<div class="valtimo-no-results">
+  <img [src]="illustration" alt="{{ 'interface.noResults' | translate }}" />
+
+  <div class="valtimo-no-results__content">
+    <h4 class="valtimo-no-results__title">
+      {{ title }}
+    </h4>
+
+    <span [innerHtml]="description"></span>
+
+    <ng-container [ngTemplateOutlet]="action"></ng-container>
+  </div>
+</div>

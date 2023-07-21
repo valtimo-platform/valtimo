@@ -56,7 +56,6 @@ import {
   StructuredListModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {FlowDataModule, LinkModule, ReceiptModule} from '@carbon/icons-angular';
 import {ChooseProcessLinkTypeComponent} from './components/choose-process-link-type';
 import {SelectFormComponent} from './components/select-form';
 import {FormFlowComponent} from './components/form-flow/form-flow.component';
@@ -97,9 +96,6 @@ import {SelectFormFlowComponent} from './components/select-form-flow';
     ProgressIndicatorModule,
     CarbonButtonModule,
     IconModule,
-    LinkModule,
-    ReceiptModule,
-    FlowDataModule,
     TooltipModule,
     ComboBoxModule,
     InputModule,

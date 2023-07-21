@@ -23,7 +23,6 @@
     "@carbon/grid",
     "@carbon/styles",
     "carbon-components",
-    "carbon-components-angular",
-    "@carbon/icons-angular"
+    "carbon-components-angular"
   ]
 }

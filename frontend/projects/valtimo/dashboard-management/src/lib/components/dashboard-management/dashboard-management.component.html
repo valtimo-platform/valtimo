@@ -1,38 +1,23 @@
-<valtimo-carbon-table
-  [data]="tableData$ | async"
-  [tableConfig]="tableConfig"
-  class="valtimo-dashboard-management__table"
->
-  <ng-container carbonTableTitle> {{ 'dashboardManagement.title' | translate }} </ng-container>
+<ng-container *ngIf="tableData$ | async as data">
+  <valtimo-carbon-table
+    [tableConfig]="tableConfig"
+    [data]="data.items"
+    [loading]="data.loading"
+    class="valtimo-dashboard-management__table"
+  >
+    <ng-container carbonTableTitle> {{ 'dashboardManagement.title' | translate }} </ng-container>
 
-  <div carbonToolbarContent>
-    <button ibmButton="primary" (click)="openModal()">
-      {{ 'dashboardManagement.addDashboard' | translate }}
+    <div carbonToolbarContent>
+      <ng-container [ngTemplateOutlet]="addDashboardButton"></ng-container>
+    </div>
 
-      <svg class="cds--btn__icon" ibmIcon="add" size="16"></svg>
-    </button>
-  </div>
-
-  <div class="valtimo-dashboard-management-no-results" noResultsView>
-    <img alt="{{ 'interface.noResults' | translate }}" src="valtimo-layout/img/no-results.svg" />
-
-    <section class="valtimo-dashboard-management-no-results__content">
-      <div>
-        <h4 class="valtimo-dashboard-management-no-results__title">
-          {{ 'dashboardManagement.noResults.title' | translate }}
-        </h4>
-
-        <span [innerHtml]="'dashboardManagement.noResults.description' | translate"></span>
-      </div>
-
-      <button ibmButton="primary" (click)="openModal()">
-        {{ 'dashboardManagement.addDashboard' | translate }}
-
-        <svg class="cds--btn__icon" ibmIcon="add" size="16"></svg>
-      </button>
-    </section>
-  </div>
-</valtimo-carbon-table>
+    <valtimo-no-results
+      [action]="addDashboardButton"
+      description="{{ 'dashboardManagement.noResults.description' | translate }}"
+      title="{{ 'dashboardManagement.noResults.title' | translate }}"
+    ></valtimo-no-results>
+  </valtimo-carbon-table>
+</ng-container>
 
 <ibm-modal
   [open]="openModal$ | async"
@@ -92,3 +77,11 @@
   contentTranslationKey="dashboardManagement.deleteModalContent"
   titleTranslationKey="dashboardManagement.delete"
 ></valtimo-confirmation-modal>
+
+<ng-template #addDashboardButton>
+  <button cdsButton="primary" (click)="openModal()">
+    {{ 'dashboardManagement.addDashboard' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</ng-template>

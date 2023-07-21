@@ -581,7 +581,15 @@
     "collapse": "Kollaps",
     "expand": "Expandieren",
     "download": "Herunterladen",
-    "openInNewTab": "In neuem Tab öffnen"
+    "openInNewTab": "In neuem Tab öffnen",
+    "table": {
+      "itemsPerPage": "Objekte pro Seite",
+      "multipleSelect": "{{count}} Elemente ausgewählt",
+      "ofLastPage": "von {{last}} Seite",
+      "ofLastPages": "von {{last}} Seiten",
+      "singleSelect": "1 Element ausgewählt",
+      "totalItems": "{{start}}-{{end}} von {{total}} Objekte"
+    }
   },
   "taskDetail": {
     "taskCreated": "Erstellt",

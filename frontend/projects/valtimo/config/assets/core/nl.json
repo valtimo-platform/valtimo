@@ -581,7 +581,15 @@
     "collapse": "Inklappen",
     "expand": "Uitklappen",
     "download": "Download",
-    "openInNewTab": "In nieuw tabblad openen"
+    "openInNewTab": "In nieuw tabblad openen",
+    "table": {
+      "itemsPerPage": "Artikelen per pagina",
+      "multipleSelect": "{{count}} artikelen geselecteerd",
+      "ofLastPage": "van {{last}} pagina",
+      "ofLastPages": "van {{last}} pagina's",
+      "singleSelect": "1 artikel geselecteerd",
+      "totalItems": "{{start}}-{{end}} van {{total}} artikelen"
+    }
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",

@@ -3,6 +3,11 @@ export interface CarbonPaginationConfig {
   showPageInput?: boolean;
 }
 
+export interface CarbonPaginationSelection {
+  currentPage: number;
+  pageLength: number;
+}
+
 const defaultPaginationConfig: CarbonPaginationConfig = {
   itemsPerPageOptions: [10, 20, 30, 40, 50],
   showPageInput: true,

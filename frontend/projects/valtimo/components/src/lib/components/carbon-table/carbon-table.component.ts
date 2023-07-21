@@ -6,15 +6,26 @@ import {
   EventEmitter,
   HostBinding,
   Input,
+  OnDestroy,
   Output,
   TemplateRef,
   ViewChild,
+  ViewEncapsulation,
 } from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
-import {OverflowMenu, TableHeaderItem, TableItem, TableModel} from 'carbon-components-angular';
+import {
+  OverflowMenu,
+  PaginationTranslations,
+  Table,
+  TableHeaderItem,
+  TableItem,
+  TableModel,
+} from 'carbon-components-angular';
+import {combineLatest, map, Observable, of, Subscription} from 'rxjs';
 import {
   ActionItem,
   CarbonPaginationConfig,
+  CarbonPaginationSelection,
   CarbonTableConfig,
   ColumnConfig,
   ColumnType,
@@ -26,24 +37,28 @@ import {
   templateUrl: './carbon-table.component.html',
   styleUrls: ['./carbon-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
 })
-export class CarbonTableComponent<T> implements AfterViewInit {
+export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   @HostBinding('attr.data-carbon-theme') public theme = 'g10';
 
-  @Input() public tableConfig: CarbonTableConfig;
-  @Input() public paginationConfig: CarbonPaginationConfig = createPaginationConfig();
-  @Input() public hideTableHeader = false;
+  @ViewChild('actionsMenu', {static: false}) actionsMenu: TemplateRef<OverflowMenu>;
 
+  @Input() tableConfig: CarbonTableConfig;
+  @Input() paginationConfig: CarbonPaginationConfig = createPaginationConfig();
+  @Input() hideTableHeader = false;
+
+  private _tableData: TableItem[][];
   private _data: Array<T>;
-  @Input() public set data(value: Array<T>) {
+  @Input() set data(value: Array<T>) {
     this._data = value;
 
     if (!this.tableConfig) {
       return;
     }
 
-    this.tableModel.data = this.getTableItems(value);
-    this.tableData = this.getTableItems(value);
+    this._tableData = this.getTableItems(value);
+    this._tableModel.data = this._tableData;
 
     if (!this.paginationConfig) {
       return;
@@ -51,27 +66,50 @@ export class CarbonTableComponent<T> implements AfterViewInit {
 
     this.setPaginationModel();
   }
-  public get data(): Array<T> {
+  public get data(): T[] {
     return this._data;
   }
 
-  @Output() public rowClick: EventEmitter<T> = new EventEmitter();
-  @Output() public search: EventEmitter<string | null> = new EventEmitter();
+  @Input() loading = true;
 
-  @ViewChild('actionsMenu', {static: false})
-  protected actionsMenu: TemplateRef<OverflowMenu>;
+  @Output() paginationChange: EventEmitter<CarbonPaginationSelection> = new EventEmitter();
+  @Output() rowClick: EventEmitter<T> = new EventEmitter();
+  @Output() search: EventEmitter<string | null> = new EventEmitter();
 
+  public batchText$: Observable<{SINGLE: any; MULTIPLE: any}> = combineLatest([
+    this.translateService.stream('interface.table.singleSelect'),
+    this.translateService.stream('interface.table.multipleSelect'),
+  ]).pipe(map(([SINGLE, MULTIPLE]) => ({SINGLE, MULTIPLE})));
+
+  public paginationTranslations$: Observable<Partial<PaginationTranslations>> = combineLatest([
+    this.translateService.stream('interface.table.itemsPerPage'),
+    this.translateService.stream('interface.table.ofLastPage'),
+    this.translateService.stream('interface.table.ofLastPages'),
+    this.translateService.stream('interface.table.totalItems'),
+  ]).pipe(
+    map(([ITEMS_PER_PAGE, OF_LAST_PAGES, OF_LAST_PAGE, TOTAL_ITEMS]) => ({
+      ITEMS_PER_PAGE,
+      OF_LAST_PAGES,
+      OF_LAST_PAGE,
+      TOTAL_ITEMS,
+    }))
+  );
+
+  private _skeletonTableModel: TableModel = Table.skeletonModel(5, 5);
   private _tableModel: TableModel = new TableModel();
+  private _subscriptions$: Subscription = new Subscription();
+
+  public get numberOfColumns(): number | null {
+    return this.tableConfig.fields.length + (this.tableConfig.enableSingleSelect ? 0 : 1);
+  }
   public get tableModel(): TableModel {
-    return this._tableModel;
+    return this.loading ? this._skeletonTableModel : this._tableModel;
   }
 
-  private tableData: Array<Array<TableItem>>;
-
-  public get selectedItems(): Array<T> {
-    return this.tableModel.data.reduce(
-      (items: Array<T>, _, index: number) =>
-        this.tableModel.isRowSelected(index)
+  public get selectedItems(): T[] {
+    return this._tableModel.data.reduce(
+      (items: T[], _, index: number) =>
+        this._tableModel.isRowSelected(index)
           ? [...items, this.data[this.getItemInitialIndex(index)]]
           : [...items],
       []
@@ -84,12 +122,16 @@ export class CarbonTableComponent<T> implements AfterViewInit {
   ) {}
 
   public ngAfterViewInit(): void {
-    this.tableModel.header = this.headerItems;
-    this.tableData = this.getTableItems(this.data);
+    this._subscriptions$.add(this.getHeaderItems());
+    this._tableData = this.getTableItems(this.data);
+    this._tableModel.data = this._tableData;
 
-    this.tableModel.data = this.tableData;
     this.setPaginationModel();
     this.cd.detectChanges();
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions$.unsubscribe();
   }
 
   public onActionItemClick(action: ActionItem, item: T) {
@@ -111,34 +153,41 @@ export class CarbonTableComponent<T> implements AfterViewInit {
   }
 
   public onSelectPage(pageIndex: number): void {
-    this.tableModel.currentPage = pageIndex;
-    this.tableModel.data = this.tableData.slice(
-      (pageIndex - 1) * this.tableModel.pageLength,
-      pageIndex * this.tableModel.pageLength
-    );
+    this._tableModel.currentPage = pageIndex;
+    this.paginationChange.emit({
+      currentPage: pageIndex,
+      pageLength: this._tableModel.pageLength,
+    });
   }
 
   public trackByIndex(index: number): number {
     return index;
   }
 
-  private get headerItems(): Array<TableHeaderItem> {
-    return this.tableConfig.fields.map(
-      (field: ColumnConfig) =>
-        new TableHeaderItem({
-          data:
-            field.fieldLabel !== undefined
-              ? field.fieldLabel
-              : this.translateService.instant(field.translationKey ?? ''),
-        })
+  public getHeaderItems(): Subscription {
+    const fields: ColumnConfig[] = this.tableConfig.fields;
+
+    const translations = fields.map((field: ColumnConfig) =>
+      !field.translationKey ? of('') : this.translateService.stream(field.translationKey)
     );
+
+    return combineLatest(translations).subscribe((translationResults: string[]) => {
+      this._tableModel.header = translationResults.map(
+        (translation: string, index: number) =>
+          new TableHeaderItem({
+            data: translation,
+            sortable: fields[index].sortable ?? true,
+            className: fields[index].className ?? '',
+          })
+      );
+    });
   }
 
   private getItemInitialIndex(rowIndex: number): number {
-    return (this.tableModel.currentPage - 1) * this.tableModel.pageLength + rowIndex;
+    return (this._tableModel.currentPage - 1) * this._tableModel.pageLength + rowIndex;
   }
 
-  private getTableItems(items: Array<T>): Array<Array<TableItem>> {
+  private getTableItems(items: T[]): TableItem[][] {
     return !items.length
       ? []
       : items.map((item: T) =>
@@ -164,8 +213,8 @@ export class CarbonTableComponent<T> implements AfterViewInit {
   }
 
   private setPaginationModel(): void {
-    this.tableModel.totalDataLength = this.data.length;
-    this.tableModel.pageLength = !this.paginationConfig.itemsPerPageOptions
+    this._tableModel.totalDataLength = this.data.length;
+    this._tableModel.pageLength = !this.paginationConfig.itemsPerPageOptions
       ? 10
       : this.paginationConfig.itemsPerPageOptions[0] ?? 10;
     this.onSelectPage(1);

@@ -1,65 +1,67 @@
-<ibm-table-container>
-  <ibm-table-header *ngIf="!hideTableHeader">
-    <h4 ibmTableHeaderTitle>
+<cds-table-container>
+  <cds-table-header *ngIf="!hideTableHeader">
+    <h4 cdsTableHeaderTitle>
       <ng-content select="[carbonTableTitle]"></ng-content>
     </h4>
 
-    <p ibmTableHeaderDescription>
+    <p cdsTableHeaderDescription>
       <ng-content select="[carbonTableDescription]"></ng-content>
     </p>
-  </ibm-table-header>
+  </cds-table-header>
 
-  <ibm-table-toolbar>
-    <ibm-table-toolbar-content>
-      <ibm-table-toolbar-search
+  <cds-table-toolbar [model]="tableModel" [batchText]="batchText$ | async">
+    <cds-table-toolbar-actions>
+      <ng-content select="[carbonToolbarActions]"> </ng-content>
+    </cds-table-toolbar-actions>
+
+    <cds-table-toolbar-content>
+      <cds-table-toolbar-search
         *ngIf="tableConfig.searchable"
         [expandable]="true"
-        (clear)="onSearch(null)"
-        (search)="onSearch($event)"
+      ></cds-table-toolbar-search>
+
+      <ng-content select="[carbonToolbarContent]"> </ng-content>
+    </cds-table-toolbar-content>
+  </cds-table-toolbar>
+
+  <ng-template #actionsMenu let-data="data">
+    <cds-overflow-menu>
+      <cds-overflow-menu-option
+        *ngFor="let action of data.actions"
+        [type]="action.type"
+        (selected)="onActionItemClick(action, data.item)"
       >
-      </ibm-table-toolbar-search>
+        {{ action.actionName }}
+      </cds-overflow-menu-option>
+    </cds-overflow-menu>
+  </ng-template>
 
-      <ng-content select="[carbonToolbarContent]"></ng-content>
-    </ibm-table-toolbar-content>
-  </ibm-table-toolbar>
-
-  <ibm-table
+  <cds-table
+    [enableSingleSelect]="tableConfig.enableSingleSelect"
     [model]="tableModel"
-    [showSelectionColumn]="tableConfig.showSelectionColumn"
     [size]="tableConfig.size"
-    [skeleton]="tableConfig.skeleton"
+    [skeleton]="loading"
     [sortable]="tableConfig.sortable"
+    [showSelectionColumn]="tableConfig.showSelectionColumn"
     [striped]="tableConfig.striped"
     (rowClick)="onRowClick($event)"
   >
     <tbody>
       <tr>
-        <td [attr.colspan]="tableConfig.fields.length + 1">
-          <div class="valtimo-carbon-table__no-results">
-            <ng-content select="[noResultsView]"></ng-content>
-          </div>
+        <td [attr.colspan]="numberOfColumns">
+          <ng-content></ng-content>
         </td>
       </tr>
     </tbody>
-  </ibm-table>
+  </cds-table>
 
-  <ibm-pagination
-    *ngIf="tableModel.totalDataLength"
+  <cds-pagination
+    *ngIf="tableModel.totalDataLength && tableConfig.withPagination"
     [itemsPerPageOptions]="paginationConfig.itemsPerPageOptions"
     [model]="tableModel"
     [showPageInput]="paginationConfig.showPageInput"
+    [skeleton]="loading"
+    [translations]="paginationTranslations$ | async"
     (selectPage)="onSelectPage($event)"
-  ></ibm-pagination>
-</ibm-table-container>
-
-<ng-template #actionsMenu let-data="data">
-  <ibm-overflow-menu (click)="$event.stopPropagation()">
-    <ibm-overflow-menu-option
-      *ngFor="let action of data.actions"
-      (selected)="onActionItemClick(action, data.item)"
-      [type]="action.type"
-    >
-      {{ action.actionName }}
-    </ibm-overflow-menu-option>
-  </ibm-overflow-menu>
-</ng-template>
+  ></cds-pagination>
+</cds-table-container>
