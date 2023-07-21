@@ -583,7 +583,9 @@
     "expand": "Uitklappen",
     "download": "Download",
     "openInNewTab": "In nieuw tabblad openen",
-    "create": "Aanmaken"
+    "create": "Aanmaken",
+    "save": "Opslaan",
+    "more": "Meer"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",
@@ -1185,7 +1187,11 @@
       "key": "Rolsleutel",
       "add": "Nieuwe rol toevoegen",
       "name": "Rolnaam",
-      "deleteModalContent": "Weet u zeker dat u deze rollen en alle onderliggende machtigingen wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden."
+      "deleteModalContent": "Weet u zeker dat u deze rollen en alle onderliggende machtigingen wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
+      "editMetadata": "Metadata bewerken",
+      "editRole": "Rol bewerken",
+      "savedSuccessTitle": "Succesvol opgeslagen",
+      "savedSuccessTitleMessage": "{{roleKey}} is succesvol opgeslagen"
     }
   }
 }

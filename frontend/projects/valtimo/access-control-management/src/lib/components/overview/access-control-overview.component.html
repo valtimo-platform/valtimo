@@ -1,4 +1,8 @@
-<valtimo-carbon-table [data]="roles$ | async" [tableConfig]="tableConfig">
+<valtimo-carbon-table
+  [data]="roles$ | async"
+  [tableConfig]="tableConfig"
+  (rowClick)="onRowClick($event)"
+>
   <ng-container carbonTableTitle> {{ 'accessControl.roles.title' | translate }} </ng-container>
 
   <div carbonToolbarContent>
@@ -10,19 +14,16 @@
   </div>
 </valtimo-carbon-table>
 
-<valtimo-add-role-modal
+<valtimo-role-metadata-modal
   [open]="showAddModal$ | async"
   (closeEvent)="onAdd($event)"
-></valtimo-add-role-modal>
+></valtimo-role-metadata-modal>
 
 <button (click)="showDeleteModal()">delete</button>
 
-<valtimo-confirmation-modal
-  [outputOnConfirm]="deleteRowKeys$ | async"
-  [showModalSubject$]="showDeleteModal$"
-  (confirmEvent)="onDelete($event)"
-  confirmButtonTextTranslationKey="interface.delete"
-  confirmButtonType="danger"
-  contentTranslationKey="accessControl.roles.deleteModalContent"
-  titleTranslationKey="interface.delete"
-></valtimo-confirmation-modal>
+<valtimo-delete-role-modal
+  (deleteEvent)="onDelete($event)"
+  [showDeleteModal$]="showDeleteModal$"
+  [deleteRowKeys]="deleteRowKeys$ | async"
+>
+</valtimo-delete-role-modal>

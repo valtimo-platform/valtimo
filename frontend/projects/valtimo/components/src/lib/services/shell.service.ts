@@ -15,7 +15,15 @@
  */
 
 import {Injectable, OnDestroy, Renderer2, RendererFactory2} from '@angular/core';
-import {BehaviorSubject, combineLatest, fromEvent, map, Observable, Subscription} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  fromEvent,
+  map,
+  Observable,
+  Subject,
+  Subscription,
+} from 'rxjs';
 import {debounceTime, take} from 'rxjs/operators';
 import {ConfigService, ValtimoConfig} from '@valtimo/config';
 
@@ -37,6 +45,7 @@ export class ShellService implements OnDestroy {
   );
   private readonly _isResizing$ = new BehaviorSubject<boolean>(false);
   private readonly _collapsibleWidescreenMenu$ = new BehaviorSubject<boolean>(false);
+  private readonly _mainContentResized$ = new Subject<null>();
   private sidenavWidthOnClick!: number;
   private xOnClick!: number;
   private sidenavSizeSubscription!: Subscription;
@@ -64,6 +73,10 @@ export class ShellService implements OnDestroy {
 
   get collapsibleWidescreenMenu$(): Observable<boolean> {
     return this._collapsibleWidescreenMenu$.asObservable();
+  }
+
+  get mainContentResized$(): Observable<null> {
+    return this._mainContentResized$.asObservable();
   }
 
   constructor(
@@ -125,6 +138,10 @@ export class ShellService implements OnDestroy {
     if (collapsible) {
       this.collapseSideBar();
     }
+  }
+
+  onMainContentResize(): void {
+    this._mainContentResized$.next(null);
   }
 
   private createResizeBorderElement(sidenavElement: HTMLElement): void {

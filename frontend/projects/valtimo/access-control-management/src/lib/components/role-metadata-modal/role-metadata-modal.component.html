@@ -1,12 +1,19 @@
 <ibm-modal
+  *ngIf="{
+    isAdd: type === 'add'
+  } as vars"
   [open]="open"
   showFooter="true"
-  title="{{ 'accessControl.roles.add' | translate }}"
+  [title]="vars.title"
   valtimoIbmModal
 >
   <ibm-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
     <h3 ibmModalHeaderHeading>
-      {{ 'accessControl.roles.add' | translate }}
+      {{
+        vars.isAdd
+          ? ('accessControl.roles.add' | translate)
+          : ('accessControl.roles.editRole' | translate)
+      }}
     </h3>
   </ibm-modal-header>
 
@@ -32,7 +39,7 @@
     </button>
 
     <button [disabled]="this.form.invalid" (click)="onConfirm()" ibmButton="primary">
-      {{ 'interface.create' | translate }}
+      {{ vars.isAdd ? ('interface.create' | translate) : ('interface.save' | translate) }}
     </button>
   </ibm-modal-footer>
 </ibm-modal>

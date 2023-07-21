@@ -19,6 +19,7 @@ import {RouterModule, Routes} from '@angular/router';
 import {ROLE_ADMIN} from '@valtimo/config';
 import {AuthGuardService} from '@valtimo/security';
 import {AccessControlOverviewComponent} from './components/overview/access-control-overview.component';
+import {AccessControlEditorComponent} from './components/editor/access-control-editor.component';
 
 const routes: Routes = [
   {
@@ -26,6 +27,16 @@ const routes: Routes = [
     component: AccessControlOverviewComponent,
     canActivate: [AuthGuardService],
     data: {title: 'Access control', roles: [ROLE_ADMIN]},
+  },
+  {
+    path: 'access-control/:id',
+    component: AccessControlEditorComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Role details',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+    },
   },
 ];
 

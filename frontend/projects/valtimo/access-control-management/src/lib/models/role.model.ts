@@ -6,4 +6,6 @@ interface DeleteRolesRequest {
   roles: Array<string>;
 }
 
-export {Role, DeleteRolesRequest};
+type RoleMetadataModal = 'add' | 'edit';
+
+export {Role, DeleteRolesRequest, RoleMetadataModal};

@@ -1,0 +1,57 @@
+<ng-container *ngIf="model$ | async as model; else loading">
+  <valtimo-editor
+    [disabled]="editorDisabled$ | async"
+    [model]="model"
+    (validEvent)="onValid($event)"
+    (valueChangeEvent)="onValueChange($event)"
+  ></valtimo-editor>
+</ng-container>
+
+<ng-container renderInPageHeader>
+  <ng-template>
+    <div class="buttons-container">
+      <ibm-overflow-menu class="overflow-button">
+        <ibm-overflow-menu-option (selected)="showEditModal()">{{
+          'accessControl.roles.editMetadata' | translate
+        }}</ibm-overflow-menu-option>
+
+        <ibm-overflow-menu-option type="danger" (selected)="showDeleteModal()">{{
+          'interface.delete' | translate
+        }}</ibm-overflow-menu-option>
+      </ibm-overflow-menu>
+
+      <button
+        [disabled]="saveDisabled$ | async"
+        ibmButton="primary"
+        size="md"
+        (click)="updatePermissions()"
+      >
+        {{ 'interface.save' | translate }}
+
+        <svg class="cds--btn__icon" ibmIcon="save" size="16"></svg>
+      </button>
+    </div>
+  </ng-template>
+</ng-container>
+
+<ng-container *ngIf="{deleteRowKeys: deleteRowKeys$ | async} as obs">
+  <valtimo-delete-role-modal
+    [deleteRowKeys]="obs.deleteRowKeys"
+    [showDeleteModal$]="showDeleteModal$"
+    (deleteEvent)="onDelete($event)"
+  >
+  </valtimo-delete-role-modal>
+
+  <valtimo-role-metadata-modal
+    [defaultKeyValue]="obs.deleteRowKeys[0]"
+    [open]="showEditModal$ | async"
+    type="edit"
+    (closeEvent)="onEdit(obs.deleteRowKeys[0], $event)"
+  ></valtimo-role-metadata-modal>
+</ng-container>
+
+<ng-template #loading>
+  <div class="loading-container">
+    <ibm-loading></ibm-loading>
+  </div>
+</ng-template>

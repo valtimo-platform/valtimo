@@ -584,7 +584,9 @@
     "expand": "Expand",
     "download": "Download",
     "openInNewTab": "Open in new tab",
-    "create": "Create"
+    "create": "Create",
+    "save": "Save",
+    "more": "More"
   },
   "taskDetail": {
     "taskCreated": "Created",
@@ -1183,7 +1185,11 @@
       "key": "Role key",
       "add": "Add new role",
       "name": "Role name",
-      "deleteModalContent": "Are you sure you want to delete these roles and all underlying permissions? This action cannot be undone."
+      "deleteModalContent": "Are you sure you want to delete these roles and all underlying permissions? This action cannot be undone.",
+      "editMetadata": "Edit metadata",
+      "editRole": "Edit Role",
+      "savedSuccessTitle": "Saved successfully",
+      "savedSuccessTitleMessage": "{{roleKey}} was saved successfully"
     }
   }
 }

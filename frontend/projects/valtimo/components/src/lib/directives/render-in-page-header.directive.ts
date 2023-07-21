@@ -10,6 +10,7 @@ export class RenderInPageHeaderDirective implements AfterContentInit {
   ngAfterContentInit(): void {
     this.pageTitleService.pageActionsViewContainerRef$.pipe(take(1)).subscribe(pageActionsVcr => {
       if (this.templateRef) {
+        pageActionsVcr.clear();
         pageActionsVcr.createEmbeddedView(this.templateRef);
         this.pageTitleService.setHasPageActions(true);
       }

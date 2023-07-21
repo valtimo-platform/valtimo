@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, ElementRef, Renderer2, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnDestroy, Renderer2, ViewChild} from '@angular/core';
 import {LayoutService} from '../layout.service';
 import {UserInterfaceService} from '@valtimo/user-interface';
 import {ShellService} from '@valtimo/components';
@@ -27,12 +27,14 @@ declare var App;
   templateUrl: './layout-internal.component.html',
   styleUrls: ['./layout-internal.component.scss'],
 })
-export class LayoutInternalComponent implements AfterViewInit {
+export class LayoutInternalComponent implements AfterViewInit, OnDestroy {
   @ViewChild('mainContent') mainContentRef: ElementRef;
 
-  readonly showPageHeader$ = this.userInterfaceService.showPageHeader$;
-  readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
-  readonly collapsibleWidescreenMenu$ = this.shellService.collapsibleWidescreenMenu$;
+  public readonly showPageHeader$ = this.userInterfaceService.showPageHeader$;
+  public readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
+  public readonly collapsibleWidescreenMenu$ = this.shellService.collapsibleWidescreenMenu$;
+
+  private _observer!: ResizeObserver;
 
   constructor(
     public layoutService: LayoutService,
@@ -43,8 +45,16 @@ export class LayoutInternalComponent implements AfterViewInit {
     this.renderer.addClass(document.body, 'be-animate');
   }
 
-  ngAfterViewInit(): void {
+  public ngAfterViewInit(): void {
     App.init();
     this.shellService.setContentElement(this.mainContentRef.nativeElement);
+    this._observer = new ResizeObserver(() => {
+      this.shellService.onMainContentResize();
+    });
+    this._observer.observe(this.mainContentRef.nativeElement);
+  }
+
+  public ngOnDestroy(): void {
+    this._observer.disconnect();
   }
 }

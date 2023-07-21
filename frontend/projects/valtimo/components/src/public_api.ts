@@ -19,6 +19,7 @@
  */
 
 export * from './lib/models';
+export * from './lib/constants';
 export * from './lib/pipes';
 export * from './lib/directives';
 export * from './lib/services/valtimo-modal.service';
@@ -151,3 +152,6 @@ export * from './lib/components/confirmation-modal/confirmation-modal.component'
 
 export * from './lib/components/expansion-panel/expansion-panel.module';
 export * from './lib/components/expansion-panel/expansion-panel.component';
+
+export * from './lib/components/editor/editor.module';
+export * from './lib/components/editor/editor.component';

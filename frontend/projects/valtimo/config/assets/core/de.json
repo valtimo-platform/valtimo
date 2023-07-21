@@ -583,7 +583,9 @@
     "expand": "Expandieren",
     "download": "Herunterladen",
     "openInNewTab": "In neuem Tab öffnen",
-    "create": "Erstellen"
+    "create": "Erstellen",
+    "save": "Speichern",
+    "More": "Mehr"
   },
   "taskDetail": {
     "taskCreated": "Erstellt",
@@ -1184,7 +1186,11 @@
       "key": "Rollschlüssel",
       "add": "Neue Rolle hinzufügen",
       "name": "Rollenname",
-      "deleteModalContent": "Sind Sie sicher, dass Sie diese Rollen und alle untergeordneten Berechtigungen entfernen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+      "deleteModalContent": "Sind Sie sicher, dass Sie diese Rollen und alle untergeordneten Berechtigungen entfernen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "editMetadata": "Metadaten bearbeiten",
+      "editRole": "Rolle bearbeiten",
+      "savedSuccessTitle": "Erfolgreich gespeichert",
+      "savedSuccessTitleMessage": "{{roleKey}} wurde erfolgreich gespeichert"
     }
   }
 }

@@ -24,6 +24,7 @@
     "@carbon/styles",
     "carbon-components",
     "carbon-components-angular",
-    "@carbon/icons-angular"
+    "@carbon/icons-angular",
+    "monaco-editor",
   ]
 }
