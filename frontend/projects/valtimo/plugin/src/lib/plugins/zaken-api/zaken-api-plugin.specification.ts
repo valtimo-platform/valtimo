@@ -37,6 +37,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-zaak': CreateZaakConfigurationComponent,
     'create-natuurlijk-persoon-zaak-rol': CreateNatuurlijkPersoonZaakRolComponent,
     'create-niet-natuurlijk-persoon-zaak-rol': CreateNietNatuurlijkPersoonZaakRolComponent,
+    'set-zaakopschorting': SetZaakStatusConfigurationComponent
   },
   pluginTranslations: {
     nl: {
@@ -120,7 +121,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultaattypeUrlSelect: 'Zaakresultaat',
       resultaattypeUrlSelectTooltip: 'Selecteer het resultaattype.',
       inputTypeZaakStatusToggle: 'Invoertype Zaakstatus-URL',
-      inputTypeZaakResultaatToggle: 'Invoertype Zaakresultaat-URL',
+      inputTypeZaakResultaatToggle: 'Invoertype Zaakresultaat-URL'
     },
     en: {
       title: 'Zaken API',
