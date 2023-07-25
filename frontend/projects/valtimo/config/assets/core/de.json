@@ -585,7 +585,8 @@
     "openInNewTab": "In neuem Tab öffnen",
     "create": "Erstellen",
     "save": "Speichern",
-    "More": "Mehr"
+    "More": "Mehr",
+    "export": "Export"
   },
   "taskDetail": {
     "taskCreated": "Erstellt",
@@ -1190,7 +1191,9 @@
       "editMetadata": "Metadaten bearbeiten",
       "editRole": "Rolle bearbeiten",
       "savedSuccessTitle": "Erfolgreich gespeichert",
-      "savedSuccessTitleMessage": "{{roleKey}} wurde erfolgreich gespeichert"
+      "savedSuccessTitleMessage": "{{roleKey}} wurde erfolgreich gespeichert",
+      "singleExport": "Eine JSON-Datei",
+      "multipleExport": "Separate Dateien pro Rolle"
     }
   }
 }

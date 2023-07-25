@@ -37,6 +37,7 @@ import {
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {AccessControlEditorComponent} from './components/editor/access-control-editor.component';
 import {DeleteRoleModalComponent} from './components/delete-role-modal/delete-role-modal.component';
+import {ExportRoleModalComponent} from './components/export-role-modal/export-role-modal.component';
 
 @NgModule({
   declarations: [
@@ -44,6 +45,7 @@ import {DeleteRoleModalComponent} from './components/delete-role-modal/delete-ro
     RoleMetadataModalComponent,
     AccessControlEditorComponent,
     DeleteRoleModalComponent,
+    ExportRoleModalComponent,
   ],
   imports: [
     AccessControlManagementRoutingModule,

@@ -15,47 +15,46 @@
   -->
 
 <ibm-modal
-  *ngIf="{
-    isAdd: type === 'add'
-  } as vars"
+  *ngIf="{title: ('interface.export' | translate), selectedType: selectedType$ | async} as vars"
+  valtimoIbmModal
   [open]="open"
+  size="sm"
   showFooter="true"
   [title]="vars.title"
-  valtimoIbmModal
 >
   <ibm-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
     <h3 ibmModalHeaderHeading>
-      {{
-        vars.isAdd
-          ? ('accessControl.roles.add' | translate)
-          : ('accessControl.roles.editRole' | translate)
-      }}
+      {{ vars.title }}
     </h3>
   </ibm-modal-header>
 
   <section ibmModalContent>
-    <form [formGroup]="form">
-      <ibm-label [invalid]="key.dirty && key.invalid">
-        {{ 'accessControl.roles.name' | translate }}
+    <div class="export-buttons">
+      <button [disabled]="disabled" ibmButton="secondary" (click)="selectType('unified')">
+        {{ 'accessControl.roles.singleExport' | translate }}
 
-        <input
-          formControlName="key"
-          ibmText
-          placeholder="{{ 'accessControl.roles.name' | translate }}"
-          [attr.modal-primary-focus]="true"
-          [invalid]="key.dirty && key.invalid"
-        />
-      </ibm-label>
-    </form>
+        <svg class="cds--btn__icon" ibmIcon="document" size="16"></svg>
+      </button>
+
+      <button [disabled]="disabled" ibmButton="secondary" (click)="selectType('separate')">
+        {{ 'accessControl.roles.multipleExport' | translate }}
+
+        <svg class="cds--btn__icon" ibmIcon="copy--file" size="16"></svg>
+      </button>
+    </div>
   </section>
 
   <ibm-modal-footer>
-    <button ibmButton="ghost" (click)="onCancel()">
+    <button [disabled]="disabled" ibmButton="ghost" (click)="onCancel()">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button [disabled]="this.form.invalid" (click)="onConfirm()" ibmButton="primary">
-      {{ vars.isAdd ? ('interface.create' | translate) : ('interface.save' | translate) }}
+    <button
+      [disabled]="!vars.selectedType || disabled"
+      ibmButton="primary"
+      (click)="onConfirm(vars.selectedType)"
+    >
+      {{ vars.title }}
     </button>
   </ibm-modal-footer>
 </ibm-modal>

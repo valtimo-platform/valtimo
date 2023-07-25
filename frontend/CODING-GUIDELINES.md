@@ -175,6 +175,7 @@ private removeDescription(description: string): void {
 Suffix event emitters with `Event` and write them in camelCase:
 
 #### **`test.component.ts`**
+
 ```typescript
 ...
 
@@ -188,6 +189,7 @@ Suffix event emitters with `Event` and write them in camelCase:
 Prefix a method which responds to an event emitter with `on` and write them in camelCase.
 
 #### **`test.component.html`**
+
 ```angular2html
 <valtimo-delete-role-modal
   <!-- Method responding to event is prefixed with on -->
@@ -199,6 +201,7 @@ Prefix a method which responds to an event emitter with `on` and write them in c
 ```
 
 #### **`test.component.ts`**
+
 ```typescript
 ...
 
@@ -217,8 +220,8 @@ When possible, set the `changeDetection` strategy of components to `ChangeDetect
 
 #### Minimal decorator
 
-If the selector of a component is not going to be used directly (for example when the component is linked to a route and
-not used elsewhere), do not define it.
+If the selector of a component is not going to be used directly (for example when the component is
+linked to a route and not used elsewhere), do not define it.
 
-When a component does not separate styling, do not create a stylesheet for it. The `styleUrls` property is not necessary
-then.
+When a component does not separate styling, do not create a stylesheet for it. The `styleUrls`
+property is not necessary then.

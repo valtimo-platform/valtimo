@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-import {defineConfig} from 'cypress';
+.export-buttons {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 16px;
 
-export default defineConfig({
-  e2e: {
-    baseUrl: 'http://localhost:4200',
-    supportFile: false,
-  },
-});
+  button {
+    width: 100%;
+  }
+}

@@ -585,7 +585,8 @@
     "openInNewTab": "In nieuw tabblad openen",
     "create": "Aanmaken",
     "save": "Opslaan",
-    "more": "Meer"
+    "more": "Meer",
+    "export": "Exporteren"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",
@@ -1191,7 +1192,9 @@
       "editMetadata": "Metadata bewerken",
       "editRole": "Rol bewerken",
       "savedSuccessTitle": "Succesvol opgeslagen",
-      "savedSuccessTitleMessage": "{{roleKey}} is succesvol opgeslagen"
+      "savedSuccessTitleMessage": "{{roleKey}} is succesvol opgeslagen",
+      "singleExport": "Eén JSON-bestand",
+      "multipleExport": "Aparte bestanden per rol"
     }
   }
 }
