@@ -24,12 +24,12 @@
   </div>
 
   <div *ngIf="dashboards.length > 1">
-    <ibm-tabs>
-      <ibm-tab *ngFor="let dashboard of dashboards" [heading]="dashboard.title">
+    <cds-tabs>
+      <cds-tab *ngFor="let dashboard of dashboards" [heading]="dashboard.title">
         <valtimo-widget-dashboard-content
           [dashboard]="dashboard"
         ></valtimo-widget-dashboard-content>
-      </ibm-tab>
-    </ibm-tabs>
+      </cds-tab>
+    </cds-tabs>
   </div>
 </div>

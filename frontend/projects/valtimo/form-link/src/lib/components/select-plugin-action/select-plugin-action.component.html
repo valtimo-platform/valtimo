@@ -20,20 +20,20 @@
       {{ 'processLinkConfiguration.choosePluginActionDescription' | translate }}
     </p>
     <div class="action-tiles">
-      <ibm-tile-group
+      <cds-tile-group
         [multiple]="false"
         *ngIf="{selectedPluginDefinition: selectedPluginDefinition$ | async} as obs"
         (selected)="selected($event)"
       >
-        <ibm-selection-tile
+        <cds-selection-tile
           *ngFor="let pluginFunction of pluginFunctions"
           [value]="stringify(pluginFunction)"
           [selected]="false"
           >{{
             pluginFunction.key | pluginTranslate : obs.selectedPluginDefinition.key | async
-          }}</ibm-selection-tile
+          }}</cds-selection-tile
         >
-      </ibm-tile-group>
+      </cds-tile-group>
     </div>
   </div>
   <ng-container *ngIf="!pluginFunctions || pluginFunctions?.length === 0">
@@ -49,6 +49,6 @@
 
 <ng-template #loading>
   <div class="loading-container">
-    <ibm-loading></ibm-loading>
+    <cds-loading></cds-loading>
   </div>
 </ng-template>

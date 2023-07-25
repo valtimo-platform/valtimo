@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-export * from './valtimo-ibm-modal.directive';
-export * from './valtimo-ibm-modal-directive.module';
+export * from './valtimo-cds-modal.directive';
+export * from './valtimo-cds-modal-directive.module';
 export * from './render-in-page-header.directive';
 export * from './render-in-page-header-directive.module';
 export * from './command-click.directive';

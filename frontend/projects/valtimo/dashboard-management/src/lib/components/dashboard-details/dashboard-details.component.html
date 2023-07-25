@@ -27,11 +27,11 @@
 
 <ng-template #moveButtonsTemplate>
   <div class="move-buttons-container">
-    <button [ibmButton]="'tertiary'" [iconOnly]="true">
+    <button [cdsButton]="'tertiary'" [iconOnly]="true">
       <svg class="cds--btn__icon" cdsIcon="arrow--up" size="16"></svg>
     </button>
 
-    <button [ibmButton]="'tertiary'" [iconOnly]="true">
+    <button [cdsButton]="'tertiary'" [iconOnly]="true">
       <svg class="cds--btn__icon" cdsIcon="arrow--down" size="16"></svg>
     </button>
   </div>
@@ -39,7 +39,7 @@
 
 <ng-container renderInPageHeader>
   <ng-template>
-    <button ibmButton="tertiary" size="md" (click)="editDashboard()">
+    <button cdsButton="tertiary" size="md" (click)="editDashboard()">
       {{ 'dashboardManagement.widgets.editButton' | translate }}
       <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
     </button>

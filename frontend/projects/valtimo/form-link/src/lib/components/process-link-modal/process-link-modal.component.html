@@ -32,10 +32,10 @@
     typeOfSelectedProgressLink: typeOfSelectedProcessLink$ | async
   } as obs"
 >
-  <ibm-modal valtimoIbmModal [open]="obs.showModal" size="lg">
-    <ibm-modal-header (closeSelect)="closeModal()">
-      <h2 ibmModalHeaderLabel>{{ 'processLinkConfiguration.configureStep' | translate }}</h2>
-      <h3 ibmModalHeaderHeading>
+  <cds-modal valtimoCdsModal [open]="obs.showModal" size="lg">
+    <cds-modal-header (closeSelect)="closeModal()">
+      <h2 cdsModalHeaderLabel>{{ 'processLinkConfiguration.configureStep' | translate }}</h2>
+      <h3 cdsModalHeaderHeading>
         {{
           'processLinkConfiguration.modalTitle'
             | translate : {processStepName: obs.processStepName || '-'}
@@ -44,26 +44,26 @@
       <div class="process-link-progress" *ngIf="!obs.typeOfSelectedProgressLink">
         <ng-container *ngTemplateOutlet="progressIndicator; context: {obs: obs}"></ng-container>
       </div>
-    </ibm-modal-header>
-    <section ibmModalContent>
+    </cds-modal-header>
+    <section cdsModalContent>
       <ng-container *ngTemplateOutlet="stepContent; context: {obs: obs}"></ng-container>
     </section>
     <ng-template *ngTemplateOutlet="footer; context: {obs: obs}"></ng-template>
-  </ibm-modal>
+  </cds-modal>
 </div>
 
 <ng-template #progressIndicator let-obs="obs">
-  <ibm-progress-indicator
+  <cds-progress-indicator
     *ngIf="obs.steps && !obs.hideProgressIndicator"
     [steps]="obs.steps"
     [current]="obs.currentStepIndex"
     spacing="equal"
-  ></ibm-progress-indicator>
+  ></cds-progress-indicator>
 </ng-template>
 
 <ng-template #stepContent let-obs="obs">
-  <div class="ibm-loading-container" *ngIf="obs.saving">
-    <ibm-loading></ibm-loading>
+  <div class="cds-loading-container" *ngIf="obs.saving">
+    <cds-loading></cds-loading>
   </div>
   <div [ngClass]="{hidden: obs.saving}">
     <ng-container>
@@ -101,22 +101,22 @@
 </ng-template>
 
 <ng-template #footer let-obs="obs">
-  <ibm-modal-footer *ngIf="!obs.saving">
+  <cds-modal-footer *ngIf="!obs.saving">
     <div class="cancel-button">
-      <button ibmButton="ghost" (click)="closeModal()" [disabled]="obs.disabled">
+      <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled">
         {{ 'processLinkConfiguration.cancel' | translate }}
       </button>
     </div>
     <div class="navigation-buttons">
       <button
         *ngIf="obs.showBackButton && !obs.saving"
-        ibmButton="secondary"
+        cdsButton="secondary"
         (click)="backButtonClick()"
       >
         {{ 'processLinkConfiguration.back' | translate }}
       </button>
       <button
-        ibmButton="primary"
+        cdsButton="primary"
         *ngIf="obs.showNextButton && !obs.saving"
         [disabled]="obs.enableNextButton === false"
         (click)="nextButtonClick()"
@@ -124,14 +124,14 @@
         {{ 'processLinkConfiguration.next' | translate }}
       </button>
       <button
-        ibmButton="danger--primary"
+        cdsButton="danger--primary"
         *ngIf="obs.typeOfSelectedProgressLink"
         (click)="unlinkButtonClick()"
       >
         {{ 'processLinkConfiguration.unlink' | translate }}
       </button>
       <button
-        ibmButton="primary"
+        cdsButton="primary"
         *ngIf="(obs.showSaveButton && !obs.saving) || obs.typeOfSelectedProgressLink"
         [disabled]="obs.enableSaveButton === false"
         (click)="saveButtonClick()"
@@ -139,5 +139,5 @@
         {{ 'processLinkConfiguration.complete' | translate }}
       </button>
     </div>
-  </ibm-modal-footer>
+  </cds-modal-footer>
 </ng-template>

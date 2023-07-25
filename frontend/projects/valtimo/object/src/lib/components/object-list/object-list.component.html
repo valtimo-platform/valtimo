@@ -41,13 +41,13 @@
 <ng-template #buttons let-obs="obs">
   <button
     (click)="openModal()"
-    ibmButton="primary"
+    cdsButton="primary"
     size="md"
     class="ml-3"
     [disabled]="obs.disableInput || obs.loading"
   >
     {{ 'object.createObject' | translate }}
-    <svg class="cds--btn__icon" ibmIcon="add" size="16"></svg>
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
   </button>
 </ng-template>
 
@@ -89,8 +89,8 @@
 </ng-template>
 
 <ng-template #createNewModal>
-  <ibm-modal
-    valtimoIbmModal
+  <cds-modal
+    valtimoCdsModal
     *ngIf="{
       show: showModal$ | async,
       formValid: formValid$ | async,
@@ -99,16 +99,16 @@
     } as modalObs"
     [open]="modalObs.show"
   >
-    <ibm-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
-      <h3 ibmModalHeaderHeading>
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+      <h3 cdsModalHeaderHeading>
         {{ 'object.createObject' | translate }}
       </h3>
-    </ibm-modal-header>
-    <section ibmModalContent>
+    </cds-modal-header>
+    <section cdsModalContent>
       <ng-container *ngTemplateOutlet="modalContent; context: {modalObs: modalObs}"></ng-container>
     </section>
     <ng-container *ngTemplateOutlet="modalFooter; context: {modalObs: modalObs}"></ng-container>
-  </ibm-modal>
+  </cds-modal>
 </ng-template>
 
 <ng-template #modalContent let-modalObs="modalObs">
@@ -119,10 +119,10 @@
 </ng-template>
 
 <ng-template #modalFooter let-modalObs="modalObs">
-  <ibm-modal-footer>
+  <cds-modal-footer>
     <ng-container>
       <button
-        ibmButton="secondary"
+        cdsButton="secondary"
         [attr.modal-primary-focus]="true"
         (click)="closeModal()"
         [disabled]="modalObs.disableInput"
@@ -130,7 +130,7 @@
         {{ 'object.close' | translate }}
       </button>
       <button
-        ibmButton="primary"
+        cdsButton="primary"
         [attr.modal-primary-focus]="true"
         (click)="addObject()"
         [disabled]="modalObs.disableInput || modalObs.formValid === false"
@@ -138,9 +138,9 @@
         {{ 'object.save' | translate }}
       </button>
     </ng-container>
-  </ibm-modal-footer>
+  </cds-modal-footer>
 </ng-template>
 
 <ng-template #loading>
-  <div class="loading-icon"><ibm-loading></ibm-loading></div>
+  <div class="loading-icon"><cds-loading></cds-loading></div>
 </ng-template>

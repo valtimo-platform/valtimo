@@ -57,25 +57,25 @@
       <button
         *ngIf="!hideDeleteButton"
         [disabled]="values?.length <= this.minimumAmountOfRows || disabled"
-        ibmButton="danger"
+        cdsButton="danger"
         size="md"
         [iconOnly]="true"
         (click)="deleteRow(value.uuid)"
         [title]="vars.deleteRowText"
       >
-        <svg class="cds--btn__icon" ibmIcon="trash-can" size="16"></svg>
+        <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
       </button>
     </div>
     <div class="v-multi-input__add-button">
       <button
         *ngIf="!hideAddButton"
         (click)="addRow()"
-        ibmButton="primary"
+        cdsButton="primary"
         size="md"
         [disabled]="(addRowEnabled$ | async) === false || disabled"
       >
         {{ vars.addRowText }}
-        <svg class="cds--btn__icon" ibmIcon="add" size="16"></svg>
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
       </button>
     </div>
   </div>
@@ -84,7 +84,7 @@
 <ng-template #singleValue let-value="value">
   <div class="v-multi-input__input">
     <input
-      ibmText
+      cdsText
       (change)="onValueChange(value, $event, 'value')"
       [disabled]="disabled"
       [defaultValue]="value.value"
@@ -94,22 +94,22 @@
 
 <ng-template #keyValue let-value="value" let-index="index">
   <div class="v-multi-input__input">
-    <ibm-label *ngIf="index === 0 && keyColumnTitle && valueColumnTitle">{{
+    <cds-label *ngIf="index === 0 && keyColumnTitle && valueColumnTitle">{{
       keyColumnTitle
-    }}</ibm-label>
+    }}</cds-label>
     <input
-      ibmText
+      cdsText
       (input)="onValueChange(value, $event.target.value, 'key')"
       [disabled]="disabled"
       [defaultValue]="value.key"
     />
   </div>
   <div class="v-multi-input__input">
-    <ibm-label *ngIf="index === 0 && keyColumnTitle && valueColumnTitle">{{
+    <cds-label *ngIf="index === 0 && keyColumnTitle && valueColumnTitle">{{
       valueColumnTitle
-    }}</ibm-label>
+    }}</cds-label>
     <input
-      ibmText
+      cdsText
       (input)="onValueChange(value, $event.target.value, 'value')"
       [disabled]="disabled"
       [defaultValue]="value.value"

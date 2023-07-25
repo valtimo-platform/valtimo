@@ -19,54 +19,54 @@
   </valtimo-carbon-table>
 </ng-container>
 
-<ibm-modal
+<cds-modal
   [open]="openModal$ | async"
   showFooter="true"
   title="{{ 'dashboardManagement.addDashboard' | translate }}"
-  valtimoIbmModal
+  valtimoCdsModal
 >
-  <ibm-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
-    <h3 ibmModalHeaderHeading>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    <h3 cdsModalHeaderHeading>
       {{ 'dashboardManagement.addDashboard' | translate }}
     </h3>
-  </ibm-modal-header>
+  </cds-modal-header>
 
-  <section ibmModalContent>
+  <section cdsModalContent>
     <form [formGroup]="form" class="valtimo-dashboard-management__form">
-      <ibm-label [invalid]="form.invalid">
+      <cds-label [invalid]="form.invalid">
         {{ 'dashboardManagement.addModal.name' | translate }}
 
         <input
           formControlName="title"
-          ibmText
+          cdsText
           placeholder="{{ 'dashboardManagement.addModal.namePlaceholder' | translate }}"
           [attr.modal-primary-focus]="true"
           [invalid]="form.invalid"
         />
-      </ibm-label>
+      </cds-label>
 
-      <ibm-label [helperText]="'dashboardManagement.addModal.descriptionHelperText' | translate">
+      <cds-label [helperText]="'dashboardManagement.addModal.descriptionHelperText' | translate">
         {{ 'dashboardManagement.description' | translate }}
 
         <input
           formControlName="description"
-          ibmText
+          cdsText
           placeholder="{{ 'dashboardManagement.addModal.descriptionPlaceholder' | translate }}"
         />
-      </ibm-label>
+      </cds-label>
     </form>
   </section>
 
-  <ibm-modal-footer>
-    <button ibmButton="ghost" (click)="closeModal()">
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="closeModal()">
       {{ 'dashboardManagement.cancel' | translate }}
     </button>
 
-    <button [disabled]="this.form.invalid" (click)="createDashboard()" ibmButton="primary">
+    <button [disabled]="this.form.invalid" (click)="createDashboard()" cdsButton="primary">
       {{ 'dashboardManagement.create' | translate }}
     </button>
-  </ibm-modal-footer>
-</ibm-modal>
+  </cds-modal-footer>
+</cds-modal>
 
 <valtimo-confirmation-modal
   [outputOnConfirm]="deleteRowKey$ | async"

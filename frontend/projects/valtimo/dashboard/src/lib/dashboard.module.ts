@@ -20,7 +20,13 @@ import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {TranslateHttpLoader} from '@ngx-translate/http-loader';
 import {DashboardComponent} from './components/dashboard/dashboard.component';
 import {DashboardRoutingModule} from './dashboard-routing.module';
-import {AlertModule, BpmnJsDiagramModule, ListModule, SpinnerModule, WidgetModule,} from '@valtimo/components';
+import {
+  AlertModule,
+  BpmnJsDiagramModule,
+  ListModule,
+  SpinnerModule,
+  WidgetModule,
+} from '@valtimo/components';
 import {HttpClient} from '@angular/common/http';
 import {TaskModule} from '@valtimo/task';
 import {TabsModule} from 'carbon-components-angular';

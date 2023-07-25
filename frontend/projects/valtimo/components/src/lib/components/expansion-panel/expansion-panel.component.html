@@ -1,4 +1,4 @@
-<ibm-expandable-tile>
+<cds-expandable-tile>
   <div
     [hidden]="hideAboveFoldWhenExpanded && (open$ | async) === true"
     class="cds--tile-content__above-the-fold above-fold"
@@ -8,4 +8,4 @@
   <div class="cds--tile-content__below-the-fold below-fold">
     <ng-content select="[expanded]"></ng-content>
   </div>
-</ibm-expandable-tile>
+</cds-expandable-tile>

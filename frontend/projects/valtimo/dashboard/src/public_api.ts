@@ -19,6 +19,6 @@
  */
 
 export * from './lib/components/dashboard/dashboard.component';
-export * from './lib/components/widget-dashboard/widget-dashboard.component'
-export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component'
+export * from './lib/components/widget-dashboard/widget-dashboard.component';
+export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component';
 export * from './lib/dashboard.module';

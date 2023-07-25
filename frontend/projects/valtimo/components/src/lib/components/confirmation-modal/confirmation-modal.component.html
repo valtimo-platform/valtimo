@@ -14,8 +14,8 @@
   ~ limitations under the License.
   -->
 
-<ibm-modal
-  valtimoIbmModal
+<cds-modal
+  valtimoCdsModal
   [open]="modalOpen$ | async"
   *ngIf="{
     deleteTranslation: 'interface.delete' | translate,
@@ -27,27 +27,27 @@
     cancelButtonTranslation: cancelButtonTextTranslationKey | translate
   } as obs"
 >
-  <ibm-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
-    <h3 ibmModalHeaderHeading>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    <h3 cdsModalHeaderHeading>
       {{
         (titleTranslationKey !== obs.titleTranslation ? obs.titleTranslation : '') ||
           title ||
           obs.deleteTranslation
       }}
     </h3>
-  </ibm-modal-header>
-  <section ibmModalContent>
+  </cds-modal-header>
+  <section cdsModalContent>
     {{
       (contentTranslationKey !== obs.contentTranslation ? obs.contentTranslation : '') ||
         content ||
         obs.deleteConfirmationTranslation
     }}
   </section>
-  <ibm-modal-footer>
+  <cds-modal-footer>
     <ng-container>
       <button
         [attr.modal-primary-focus]="true"
-        [ibmButton]="cancelButtonType"
+        [cdsButton]="cancelButtonType"
         (click)="closeModal()"
       >
         {{
@@ -58,7 +58,7 @@
             obs.cancelTranslation
         }}
       </button>
-      <button [attr.modal-primary-focus]="true" [ibmButton]="confirmButtonType" (click)="confirm()">
+      <button [attr.modal-primary-focus]="true" [cdsButton]="confirmButtonType" (click)="confirm()">
         {{
           (confirmButtonTextTranslationKey !== obs.confirmButtonTranslation
             ? obs.confirmButtonTranslation
@@ -68,5 +68,5 @@
         }}
       </button>
     </ng-container>
-  </ibm-modal-footer>
-</ibm-modal>
+  </cds-modal-footer>
+</cds-modal>

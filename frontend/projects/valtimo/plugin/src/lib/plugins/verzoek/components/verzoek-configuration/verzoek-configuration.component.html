@@ -203,13 +203,13 @@
       </ng-container>
       <v-input class="hidden-input" name="uuid" [defaultValue]="uuid"> </v-input>
     </v-form>
-    <ibm-modal valtimoIbmModal [open]="showMappingModals[uuid]">
-      <ibm-modal-header [showCloseButton]="true" (closeSelect)="closeMappingModal(uuid)">
-        <h3 ibmModalHeaderHeading>{{ 'setMapping' | pluginTranslate : pluginId | async }}</h3>
-      </ibm-modal-header>
-      <section ibmModalContent>
+    <cds-modal valtimoCdsModal [open]="showMappingModals[uuid]">
+      <cds-modal-header [showCloseButton]="true" (closeSelect)="closeMappingModal(uuid)">
+        <h3 cdsModalHeaderHeading>{{ 'setMapping' | pluginTranslate : pluginId | async }}</h3>
+      </cds-modal-header>
+      <section cdsModalContent>
         <div class="cds--text-input__field-wrapper">
-          <ibm-label [disabled]="obs.disabled">
+          <cds-label [disabled]="obs.disabled">
             <span class="label-with-tooltip select-label">
               {{ 'mapping' | pluginTranslate : pluginId | async }}
               <v-tooltip-icon
@@ -225,13 +225,13 @@
               [valueColumnTitle]="'target' | pluginTranslate : pluginId | async"
               [keyColumnTitle]="'source' | pluginTranslate : pluginId | async"
             ></valtimo-carbon-multi-input>
-          </ibm-label>
+          </cds-label>
         </div>
       </section>
-      <ibm-modal-footer>
+      <cds-modal-footer>
         <ng-container>
           <button
-            ibmButton="secondary"
+            cdsButton="secondary"
             [attr.modal-primary-focus]="true"
             (click)="closeMappingModal(uuid)"
             [disabled]="obs.disabled"
@@ -239,7 +239,7 @@
             {{ 'close' | pluginTranslate : pluginId | async }}
           </button>
           <button
-            ibmButton="primary"
+            cdsButton="primary"
             [attr.modal-primary-focus]="true"
             [disabled]="obs.disabled"
             (click)="saveMapping(uuid)"
@@ -248,7 +248,7 @@
             {{ 'save' | pluginTranslate : pluginId | async }}
           </button>
         </ng-container>
-      </ibm-modal-footer>
-    </ibm-modal>
+      </cds-modal-footer>
+    </cds-modal>
   </ng-container>
 </ng-template>

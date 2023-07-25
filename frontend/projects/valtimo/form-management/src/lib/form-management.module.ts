@@ -22,7 +22,7 @@ import {
   FormIoModule,
   ListModule,
   ModalModule as vcModalModule,
-  ValtimoIbmModalDirectiveModule,
+  ValtimoCdsModalDirectiveModule,
   WidgetModule,
 } from '@valtimo/components';
 import {CommonModule} from '@angular/common';
@@ -80,7 +80,7 @@ import {
     InputModule,
     PlaceholderModule,
     cButtonModule,
-    ValtimoIbmModalDirectiveModule,
+    ValtimoCdsModalDirectiveModule,
   ],
   exports: [FormManagementComponent],
 })

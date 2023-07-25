@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<ibm-sidenav
+<cds-sidenav
   *ngIf="{
     closestSequence: closestSequence$ | async,
     overflowMenuSequence: overflowMenuSequence$ | async,
@@ -51,7 +51,7 @@
 
       <ng-container *ngTemplateOutlet="subMenuIcon; context: {menuItem: menuItem}"></ng-container>
 
-      <ibm-sidenav-menu [title]="menuItem | menuItemTranslate | async">
+      <cds-sidenav-menu [title]="menuItem | menuItemTranslate | async">
         <ng-container *ngFor="let childMenuItem of menuItem.children">
           <ng-container
             *ngIf="{
@@ -59,7 +59,7 @@
               sequence: '' + menuItem.sequence + childMenuItem.sequence
             } as vars"
           >
-            <ibm-sidenav-item
+            <cds-sidenav-item
               [ngClass]="{
                 'cds--side-nav__item--empty': !childMenuItem.link,
                 'menu-item--hidden': childMenuItem.includeFunction !== undefined,
@@ -84,13 +84,13 @@
               <ng-container
                 *ngTemplateOutlet="countTemplate; context: {count: vars.count}"
               ></ng-container>
-            </ibm-sidenav-item>
+            </cds-sidenav-item>
           </ng-container>
         </ng-container>
-      </ibm-sidenav-menu>
+      </cds-sidenav-menu>
     </ng-container>
   </ng-container>
-</ibm-sidenav>
+</cds-sidenav>
 
 <ng-template #subMenuIcon let-menuItem="menuItem">
   <div class="menu-item-icon-container"><i class="{{ menuItem.iconClass }}"></i></div>
@@ -103,7 +103,7 @@
   let-overflowMenuSequence="overflowMenuSequence"
 >
   <ng-container *ngIf="{sequence: '' + menuItem.sequence} as vars"
-    ><ibm-sidenav-item
+    ><cds-sidenav-item
       *ngIf="!menuItem.children"
       [ngClass]="{
         'menu-item--hidden': menuItem.includeFunction !== undefined,
@@ -122,7 +122,7 @@
         [showOverFlowMenu]="overflowMenuSequence === vars.sequence"
         (openInNewTab)="openInNewTab(menuItem.link.link)"
         (overflowMenuClosed)="onOverflowMenuClosed(vars.sequence)"
-      ></valtimo-menu-item-text> </ibm-sidenav-item
+      ></valtimo-menu-item-text> </cds-sidenav-item
   ></ng-container>
 </ng-template>
 

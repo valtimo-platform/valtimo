@@ -25,7 +25,7 @@ import {
   FormIoModule,
   ModalModule,
   SearchableDropdownSelectModule,
-  ValtimoIbmModalDirectiveModule,
+  ValtimoCdsModalDirectiveModule,
 } from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {
@@ -102,7 +102,7 @@ import {SelectFormFlowComponent} from './components/select-form-flow';
     TooltipIconModule,
     LoadingModule,
     FormIoModule,
-    ValtimoIbmModalDirectiveModule,
+    ValtimoCdsModalDirectiveModule,
     StructuredListModule,
     TilesModule,
   ],

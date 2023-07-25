@@ -25,8 +25,8 @@ import {
   RendererStyleFlags2,
 } from '@angular/core';
 
-@Directive({selector: '[valtimoIbmModal]'})
-export class ValtimoIbmModalDirective implements AfterViewInit, OnDestroy {
+@Directive({selector: '[valtimoCdsModal]'})
+export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
   private _mutationObserver: MutationObserver;
 
   constructor(

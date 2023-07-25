@@ -28,7 +28,7 @@
 
   <ng-container *ngTemplateOutlet="overflowTrigger"></ng-container>
 
-  <ibm-overflow-menu
+  <cds-overflow-menu
     [customTrigger]="overflowTrigger"
     [open]="showOverFlowMenu"
     [offset]="{x: 75, y: 25}"
@@ -36,10 +36,10 @@
     wrapperClass="--hide-after --wide"
     (openChange)="onOpenChange($event)"
   >
-    <ibm-overflow-menu-option (selected)="onSelectOpenInNewTab()">{{
+    <cds-overflow-menu-option (selected)="onSelectOpenInNewTab()">{{
       'interface.openInNewTab' | translate
-    }}</ibm-overflow-menu-option>
-  </ibm-overflow-menu>
+    }}</cds-overflow-menu-option>
+  </cds-overflow-menu>
 </div>
 
 <ng-template #overflowTrigger>

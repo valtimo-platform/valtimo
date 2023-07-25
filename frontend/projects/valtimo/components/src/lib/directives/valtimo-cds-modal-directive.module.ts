@@ -16,11 +16,11 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {ValtimoIbmModalDirective} from './valtimo-ibm-modal.directive';
+import {ValtimoCdsModalDirective} from './valtimo-cds-modal.directive';
 
 @NgModule({
-  declarations: [ValtimoIbmModalDirective],
+  declarations: [ValtimoCdsModalDirective],
   imports: [CommonModule],
-  exports: [ValtimoIbmModalDirective],
+  exports: [ValtimoCdsModalDirective],
 })
-export class ValtimoIbmModalDirectiveModule {}
+export class ValtimoCdsModalDirectiveModule {}

@@ -15,22 +15,22 @@
   -->
 
 <div class="right-sidebar-menu">
-  <ibm-panel [expanded]="panelExpanded$ | async">
-    <div ibmGrid [condensed]="true">
-      <div ibmRow>
-        <div ibmCol [columnNumbers]="{lg: 16}" class="menu-tabs">
-          <ibm-tabs class="cds--tab--list--full-width">
-            <ibm-tab [heading]="'account.title' | translate">
+  <cds-panel [expanded]="panelExpanded$ | async">
+    <div cdsGrid [condensed]="true">
+      <div cdsRow>
+        <div cdsCol [columnNumbers]="{lg: 16}" class="menu-tabs">
+          <cds-tabs class="cds--tab--list--full-width">
+            <cds-tab [heading]="'account.title' | translate">
               <ng-container *ngTemplateOutlet="accountTabTemplate"></ng-container>
-            </ibm-tab>
-            <ibm-tab [heading]="'settings.title' | translate">
+            </cds-tab>
+            <cds-tab [heading]="'settings.title' | translate">
               <ng-container *ngTemplateOutlet="settingsTabTemplate"></ng-container>
-            </ibm-tab>
-          </ibm-tabs>
+            </cds-tab>
+          </cds-tabs>
         </div>
       </div>
     </div>
-  </ibm-panel>
+  </cds-panel>
 </div>
 
 <ng-template #accountTabTemplate>
@@ -47,40 +47,40 @@
 </ng-template>
 
 <ng-template #accountInformationTemplate>
-  <ibm-structured-list>
-    <ibm-list-header>
-      <ibm-list-column>{{ 'account.informationTitle' | translate }}</ibm-list-column>
-    </ibm-list-header>
-    <ibm-list-row>
-      <ibm-list-column>
+  <cds-structured-list>
+    <cds-list-header>
+      <cds-list-column>{{ 'account.informationTitle' | translate }}</cds-list-column>
+    </cds-list-header>
+    <cds-list-row>
+      <cds-list-column>
         <ng-container *ngTemplateOutlet="accountInformationTableTemplate"></ng-container>
-      </ibm-list-column>
-    </ibm-list-row>
-  </ibm-structured-list>
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
 </ng-template>
 
 <ng-template #accountInformationTableTemplate>
   <div class="information-table account-information">
-    <ibm-structured-list *ngIf="userSubject$ | async as userSubject">
-      <ibm-list-row>
-        <ibm-list-column
+    <cds-structured-list *ngIf="userSubject$ | async as userSubject">
+      <cds-list-row>
+        <cds-list-column
           >{{ 'interface.email' | translate }}
-          <ibm-tag type="blue">{{ userSubject.email }}</ibm-tag>
-        </ibm-list-column>
-      </ibm-list-row>
-      <ibm-list-row>
-        <ibm-list-column
+          <cds-tag type="blue">{{ userSubject.email }}</cds-tag>
+        </cds-list-column>
+      </cds-list-row>
+      <cds-list-row>
+        <cds-list-column
           >{{ 'interface.username' | translate }}
-          <ibm-tag type="blue">{{ userSubject.username }}</ibm-tag>
-        </ibm-list-column>
-      </ibm-list-row>
-      <ibm-list-row>
-        <ibm-list-column
+          <cds-tag type="blue">{{ userSubject.username }}</cds-tag>
+        </cds-list-column>
+      </cds-list-row>
+      <cds-list-row>
+        <cds-list-column
           >{{ 'interface.name' | translate }}
-          <ibm-tag type="blue">{{ userSubject.firstName + ' ' + userSubject.lastName }}</ibm-tag>
-        </ibm-list-column>
-      </ibm-list-row>
-    </ibm-structured-list>
+          <cds-tag type="blue">{{ userSubject.firstName + ' ' + userSubject.lastName }}</cds-tag>
+        </cds-list-column>
+      </cds-list-row>
+    </cds-structured-list>
   </div>
 </ng-template>
 
@@ -88,89 +88,89 @@
   <ng-container
     *ngIf="{userContexts: userContexts$ | async, activeContext: activeContext$ | async} as obs"
   >
-    <ibm-structured-list *ngIf="obs.userContexts?.length > 1 && obs.activeContext?.id">
-      <ibm-list-header>
-        <ibm-list-column>{{ 'settings.context.title' | translate }}</ibm-list-column>
-      </ibm-list-header>
-      <ibm-list-row>
-        <ibm-list-column>
-          <ibm-select [ngModel]="obs.activeContext?.id" (ngModelChange)="setUserContext($event)">
+    <cds-structured-list *ngIf="obs.userContexts?.length > 1 && obs.activeContext?.id">
+      <cds-list-header>
+        <cds-list-column>{{ 'settings.context.title' | translate }}</cds-list-column>
+      </cds-list-header>
+      <cds-list-row>
+        <cds-list-column>
+          <cds-select [ngModel]="obs.activeContext?.id" (ngModelChange)="setUserContext($event)">
             <option *ngFor="let context of obs.userContexts" [value]="context.id">
               {{ context.name }}
             </option>
-          </ibm-select>
-        </ibm-list-column>
-      </ibm-list-row>
-    </ibm-structured-list>
+          </cds-select>
+        </cds-list-column>
+      </cds-list-row>
+    </cds-structured-list>
   </ng-container>
 </ng-template>
 
 <ng-template #linksTemplate>
-  <ibm-structured-list>
-    <ibm-list-header>
-      <ibm-list-column>{{ 'account.quickLinks' | translate }}</ibm-list-column>
-    </ibm-list-header>
-    <ibm-list-row>
-      <ibm-list-column>
+  <cds-structured-list>
+    <cds-list-header>
+      <cds-list-column>{{ 'account.quickLinks' | translate }}</cds-list-column>
+    </cds-list-header>
+    <cds-list-row>
+      <cds-list-column>
         <ng-container *ngTemplateOutlet="linksTableTemplate"></ng-container>
-      </ibm-list-column>
-    </ibm-list-row>
-  </ibm-structured-list>
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
 </ng-template>
 
 <ng-template #linksTableTemplate>
   <div class="information-table">
-    <ibm-structured-list>
-      <ibm-list-row>
-        <ibm-list-column>
-          <a href="https://docs.valtimo.nl" target="_blank" ibmLink>{{
+    <cds-structured-list>
+      <cds-list-row>
+        <cds-list-column>
+          <a href="https://docs.valtimo.nl" target="_blank" cdsLink>{{
             'account.links.help' | translate
           }}</a>
-        </ibm-list-column>
-      </ibm-list-row>
-      <ibm-list-row>
-        <ibm-list-column *ngIf="!overrideFeedbackMenuItemToMailTo; else feedbackMailTo">
-          <a href="https://www.valtimo.nl/feedback" target="_blank" ibmLink>{{
+        </cds-list-column>
+      </cds-list-row>
+      <cds-list-row>
+        <cds-list-column *ngIf="!overrideFeedbackMenuItemToMailTo; else feedbackMailTo">
+          <a href="https://www.valtimo.nl/feedback" target="_blank" cdsLink>{{
             'account.links.feedback' | translate
           }}</a>
-        </ibm-list-column>
-      </ibm-list-row>
-      <ibm-list-row *ngIf="resetUrl">
-        <ibm-list-column>
-          <a [href]="resetUrl" ibmLink>{{ 'account.links.resetPassword' | translate }}</a>
-        </ibm-list-column>
-      </ibm-list-row>
-      <ibm-list-row>
-        <ibm-list-column>
-          <a href="javascript:void(0)" ibmLink (click)="logout()">{{
+        </cds-list-column>
+      </cds-list-row>
+      <cds-list-row *ngIf="resetUrl">
+        <cds-list-column>
+          <a [href]="resetUrl" cdsLink>{{ 'account.links.resetPassword' | translate }}</a>
+        </cds-list-column>
+      </cds-list-row>
+      <cds-list-row>
+        <cds-list-column>
+          <a href="javascript:void(0)" cdsLink (click)="logout()">{{
             'account.links.signOut' | translate
           }}</a>
-        </ibm-list-column>
-      </ibm-list-row>
-      <ibm-list-row *ngIf="showPlantATreeButton">
-        <ibm-list-column>
+        </cds-list-column>
+      </cds-list-row>
+      <cds-list-row *ngIf="showPlantATreeButton">
+        <cds-list-column>
           <a
             class="text-success"
             href="mailto:valtimo@ritense.com?subject=Plant een boom voor Valtimo&body=Hallo Valtimo gebruiker,%0D%0DMet het versturen van deze e-mail gaan we gelijk aan de slag om een boom te planten. Hiermee compenseren we voor een deel de CO2 uitstoot van je Valtimo gebruik.%0D%0DMet Groene Groet,%0D%0DHet Valtimo team%0D%0D*Deze bomenplantactie kan 1 keer ingezet worden door elke geregistreerde Valtimo gebruiker.%0D%0D** Ritense plant ook jaarlijks bomen voor alle Valtimo installaties die in gebruik zijn."
             target="_blank"
-            ibmLink
+            cdsLink
           >
             {{ 'account.links.plantATree' | translate }}
           </a>
-        </ibm-list-column>
-      </ibm-list-row>
-    </ibm-structured-list>
+        </cds-list-column>
+      </cds-list-row>
+    </cds-structured-list>
   </div>
 </ng-template>
 
 <ng-template #languageSettingsTemplate>
-  <ibm-structured-list>
-    <ibm-list-header>
-      <ibm-list-column>{{ 'settings.language.title' | translate }}</ibm-list-column>
-    </ibm-list-header>
-    <ibm-list-row>
-      <ibm-list-column>
-        <ibm-select
+  <cds-structured-list>
+    <cds-list-header>
+      <cds-list-column>{{ 'settings.language.title' | translate }}</cds-list-column>
+    </cds-list-header>
+    <cds-list-row>
+      <cds-list-column>
+        <cds-select
           [disabled]="updatingUserSettings$ | async"
           [ngModel]="selectedLanguage$ | async"
           (ngModelChange)="updateUserLanguage($event)"
@@ -178,62 +178,62 @@
           <option *ngFor="let lang of languageOptions$ | async" [value]="lang">
             {{ 'settings.language.options.' + lang | translate }}
           </option>
-        </ibm-select>
-      </ibm-list-column>
-    </ibm-list-row>
-  </ibm-structured-list>
+        </cds-select>
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
 </ng-template>
 
 <ng-template #notificationSettingsTemplate>
-  <ibm-structured-list *ngIf="emailNotificationSettingsWithSideEffects$ | async">
-    <ibm-list-header>
-      <ibm-list-column>{{ 'settings.notification.title' | translate }}</ibm-list-column>
-    </ibm-list-header>
-    <ibm-list-row>
-      <ibm-list-column>
+  <cds-structured-list *ngIf="emailNotificationSettingsWithSideEffects$ | async">
+    <cds-list-header>
+      <cds-list-column>{{ 'settings.notification.title' | translate }}</cds-list-column>
+    </cds-list-header>
+    <cds-list-row>
+      <cds-list-column>
         <form [formGroup]="settingsForm" class="toggle-group">
-          <ibm-toggle
+          <cds-toggle
             [label]="'settings.notification.taskNotifications' | translate"
             [onText]="'interface.on' | translate"
             [offText]="'interface.off' | translate"
             formControlName="taskNotifications"
             [disabled]="updatingSettings$ | async"
           >
-          </ibm-toggle>
+          </cds-toggle>
           <span class="description">{{
             'settings.notification.emailNotificationsIntro' | translate
           }}</span>
         </form>
-      </ibm-list-column>
-    </ibm-list-row>
-    <ibm-list-row>
-      <ibm-list-column>
+      </cds-list-column>
+    </cds-list-row>
+    <cds-list-row>
+      <cds-list-column>
         <form [formGroup]="settingsForm" class="toggle-group">
-          <ibm-toggle
+          <cds-toggle
             [label]="'settings.notification.emailNotifications' | translate"
             [onText]="'interface.on' | translate"
             [offText]="'interface.off' | translate"
             formControlName="emailNotifications"
             [disabled]="updatingSettings$ | async"
           >
-          </ibm-toggle>
+          </cds-toggle>
           <span class="description">{{
             'settings.notification.taskNotificationsIntro' | translate
           }}</span>
         </form>
-      </ibm-list-column>
-    </ibm-list-row>
-  </ibm-structured-list>
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
 </ng-template>
 
 <ng-template #interfaceSettingsTemplate>
-  <ibm-structured-list>
-    <ibm-list-header>
-      <ibm-list-column>{{ 'settings.interface.title' | translate }}</ibm-list-column>
-    </ibm-list-header>
-    <ibm-list-row>
-      <ibm-list-column>
-        <ibm-toggle
+  <cds-structured-list>
+    <cds-list-header>
+      <cds-list-column>{{ 'settings.interface.title' | translate }}</cds-list-column>
+    </cds-list-header>
+    <cds-list-row>
+      <cds-list-column>
+        <cds-toggle
           [label]="'settings.interface.collapsibleMenu' | translate"
           [onText]="'interface.on' | translate"
           [offText]="'interface.off' | translate"
@@ -241,48 +241,48 @@
           [ngModel]="collapsibleWidescreenMenu$ | async"
           (ngModelChange)="setCollapsibleWidescreenMenu($event)"
         >
-        </ibm-toggle>
-      </ibm-list-column>
-    </ibm-list-row>
-  </ibm-structured-list>
+        </cds-toggle>
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
 </ng-template>
 
 <ng-template #versionTemplate>
   <ng-container *ngIf="{backendVersion: backendVersion$ | async} as obs">
-    <ibm-structured-list *ngIf="obs.backendVersion || frontendVersion">
-      <ibm-list-header>
-        <ibm-list-column>{{ 'settings.version.title' | translate }}</ibm-list-column>
-      </ibm-list-header>
-      <ibm-list-row *ngIf="obs.backendVersion">
-        <ibm-list-column>
+    <cds-structured-list *ngIf="obs.backendVersion || frontendVersion">
+      <cds-list-header>
+        <cds-list-column>{{ 'settings.version.title' | translate }}</cds-list-column>
+      </cds-list-header>
+      <cds-list-row *ngIf="obs.backendVersion">
+        <cds-list-column>
           <div class="build-information">
             <span class="build-title">{{
               'interface.builds.' + obs.backendVersion.title | translate
             }}</span>
             <div class="tag-container">
-              <ibm-tag type="blue">{{ obs.backendVersion.version }}</ibm-tag>
+              <cds-tag type="blue">{{ obs.backendVersion.version }}</cds-tag>
             </div>
           </div>
-        </ibm-list-column>
-      </ibm-list-row>
-      <ibm-list-row *ngIf="frontendVersion">
-        <ibm-list-column>
+        </cds-list-column>
+      </cds-list-row>
+      <cds-list-row *ngIf="frontendVersion">
+        <cds-list-column>
           <div class="build-information">
             <span class="build-title">{{
               'interface.builds.valtimo-frontend-libraries' | translate
             }}</span>
             <div class="tag-container">
-              <ibm-tag type="blue">{{ frontendVersion }}</ibm-tag>
+              <cds-tag type="blue">{{ frontendVersion }}</cds-tag>
             </div>
           </div>
-        </ibm-list-column>
-      </ibm-list-row>
-    </ibm-structured-list>
+        </cds-list-column>
+      </cds-list-row>
+    </cds-structured-list>
   </ng-container>
 </ng-template>
 
 <ng-template #feedbackMailTo>
-  <ibm-list-column>
+  <cds-list-column>
     <a
       [href]="
         'mailto:' +
@@ -293,9 +293,9 @@
         (overrideFeedbackMenuItemToMailTo.bodyTranslationKey | translate)
       "
       target="_blank"
-      ibmLink
+      cdsLink
     >
       {{ 'account.links.feedback' | translate }}
     </a>
-  </ibm-list-column>
+  </cds-list-column>
 </ng-template>
