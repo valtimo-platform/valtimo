@@ -7,9 +7,9 @@ import {
   createCarbonTableConfig,
   PageTitleService,
 } from '@valtimo/components';
-import {BehaviorSubject, combineLatest, map, Observable, tap} from 'rxjs';
-import {dashboardListMock, widgetListMock} from '../../mocks';
-import {DashboardItem, DashboardWidget, WidgetModalType} from '../../models';
+import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
+import {DashboardItem, WidgetModalType} from '../../models';
+import {DashboardManagementService} from '../../services/dashboard-management.service';
 
 @Component({
   templateUrl: './dashboard-details.component.html',
@@ -21,19 +21,21 @@ export class DashboardDetailsComponent implements AfterViewInit {
 
   public modalType: WidgetModalType = 'create';
   public tableConfig!: CarbonTableConfig;
+
+  private readonly dashboardKey$ = this.route.params.pipe(map(params => params.id));
   public readonly currentDashboard$: Observable<DashboardItem | undefined> = combineLatest([
-    this.route.params,
+    this.dashboardKey$,
     this.translateService.stream('key'),
   ]).pipe(
-    map(([params]) =>
-      dashboardListMock.find((mockItem: DashboardItem) => mockItem.key === params.id)
-    ),
+    switchMap(([dashboardKey]) => this.dashboardManagementService.getDashboard(dashboardKey)),
     tap(currentDashboard => {
       if (!currentDashboard) {
         return;
       }
 
-      this.pageTitleService.setCustomPageTitle(currentDashboard.name);
+      console.log('dash', currentDashboard);
+
+      this.pageTitleService.setCustomPageTitle(currentDashboard.title);
       this.pageTitleService.setCustomPageSubtitle(
         this.translateService.instant('dashboardManagement.widgets.metadata', {
           createdBy: currentDashboard.createdBy,
@@ -44,14 +46,25 @@ export class DashboardDetailsComponent implements AfterViewInit {
     })
   );
 
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
+
+  public readonly widgetData$ = this.dashboardKey$.pipe(
+    switchMap(dashboardKey =>
+      this.dashboardManagementService.getDashboardWidgetConfiguration(dashboardKey)
+    ),
+    tap(data => {
+      this.loading$.next(false);
+      console.log('widget data', data);
+    })
+  );
+
   public readonly showModal$ = new BehaviorSubject<boolean>(false);
-  private data: Array<DashboardWidget> = widgetListMock;
-  public readonly widgetData$ = new BehaviorSubject<Array<DashboardWidget>>(this.data);
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly pageTitleService: PageTitleService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly dashboardManagementService: DashboardManagementService
   ) {}
 
   public ngAfterViewInit(): void {

@@ -2,7 +2,7 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
 import {BehaviorSubject, catchError, Observable, of, switchMap, take, tap} from 'rxjs';
-import {DashboardItem} from '../models';
+import {DashboardItem, DashboardWidget} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -62,6 +62,16 @@ export class DashboardManagementService {
           console.error(error);
         },
       });
+  }
+
+  public getDashboard(dashboardKey: string): Observable<DashboardItem> {
+    return this.http.get<DashboardItem>(`${this.valtimoEndpointUri}/${dashboardKey}`);
+  }
+
+  public getDashboardWidgetConfiguration(dashboardKey: string): Observable<Array<DashboardWidget>> {
+    return this.http.get<Array<DashboardWidget>>(
+      `${this.valtimoEndpointUri}/${dashboardKey}/widget-configuration`
+    );
   }
 
   private getDashboards(): Observable<DashboardItem[]> {
