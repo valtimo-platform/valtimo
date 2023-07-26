@@ -13,23 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {
-  AfterViewInit,
-  Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-  Output,
-  SimpleChanges,
-} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {DropdownItem} from '@valtimo/components';
-import {BehaviorSubject, filter, map, Observable, of, Subscription, switchMap, take} from 'rxjs';
-import {tap} from 'rxjs/operators';
 import {User} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
+import {BehaviorSubject, filter, map, Observable, of, switchMap} from 'rxjs';
+import {tap} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-dossier-assign-user',
@@ -94,6 +83,8 @@ export class DossierAssignUserComponent {
         if (a.lastName && b.lastName) {
           return a.lastName.localeCompare(b.lastName);
         }
+
+        return 0;
       })
       .map(user => ({text: `${user.firstName} ${user.lastName}`, id: user.id}));
   }
