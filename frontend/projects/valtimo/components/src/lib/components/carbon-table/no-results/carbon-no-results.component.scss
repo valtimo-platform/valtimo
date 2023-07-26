@@ -1,0 +1,16 @@
+.valtimo-no-results {
+  display: flex;
+  justify-content: center;
+  padding: calc((100 / 16) * 1rem) 0;
+  gap: 4rem;
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+  }
+
+  &__title {
+    font-size: 1.75rem;
+  }
+}

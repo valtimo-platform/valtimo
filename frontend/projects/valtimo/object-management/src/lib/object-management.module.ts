@@ -25,7 +25,7 @@ import {
   ListModule,
   ModalModule,
   SpinnerModule,
-  ValtimoIbmModalDirectiveModule,
+  ValtimoCdsModalDirectiveModule,
   WidgetModule,
 } from '@valtimo/components';
 import {
@@ -95,7 +95,7 @@ import {ObjectManagementListSearchFieldsComponent} from './components/object-man
     ConfirmationModalModule,
     SpinnerModule,
     ModalModule,
-    ValtimoIbmModalDirectiveModule,
+    ValtimoCdsModalDirectiveModule,
   ],
   exports: [],
 })

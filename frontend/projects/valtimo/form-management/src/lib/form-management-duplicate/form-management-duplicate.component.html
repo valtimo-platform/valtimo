@@ -13,20 +13,20 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<ibm-modal
-  valtimoIbmModal
+<cds-modal
+  valtimoCdsModal
   [open]="open"
   (overlaySelected)="closeModal()"
   [formGroup]="duplicateForm"
 >
-  <ibm-modal-header (closeSelect)="closeModal()">{{
+  <cds-modal-header (closeSelect)="closeModal()">{{
     'formManagement.duplicate' | translate
-  }}</ibm-modal-header>
+  }}</cds-modal-header>
   <section class="bx--modal-content p-2">
-    <ibm-label labelState="error">
+    <cds-label labelState="error">
       {{ 'formManagement.name' | translate }}
-      <input ibmText formControlName="duplicateFormName" [invalid]="duplicateFormName.invalid" />
-    </ibm-label>
+      <input cdsText formControlName="duplicateFormName" [invalid]="duplicateFormName.invalid" />
+    </cds-label>
     <div
       *ngIf="duplicateFormName.invalid && (duplicateFormName.dirty || duplicateFormName.touched)"
       class="bg-warning text-black mb-0 p-2 pl-3 pr-3"
@@ -40,12 +40,12 @@
       </div>
     </div>
   </section>
-  <ibm-modal-footer>
-    <button ibmButton="secondary" (click)="closeModal()">
+  <cds-modal-footer>
+    <button cdsButton="secondary" (click)="closeModal()">
       {{ 'interface.cancel' | translate }}
     </button>
     <button
-      ibmButton="primary"
+      cdsButton="primary"
       [attr.modal-primary-focus]="true"
       modal-primary-focus
       (click)="duplicate()"
@@ -53,5 +53,5 @@
     >
       {{ 'formManagement.submit' | translate }}
     </button>
-  </ibm-modal-footer>
-</ibm-modal>
+  </cds-modal-footer>
+</cds-modal>

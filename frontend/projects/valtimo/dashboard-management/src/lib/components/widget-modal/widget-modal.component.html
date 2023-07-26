@@ -32,22 +32,22 @@
         vars.isEditDashboard && ('dashboardManagement.widgets.editDashboard' | translate)
     } as titles"
   >
-    <ibm-modal
+    <cds-modal
       *ngIf="{
         title: titles.edit || titles.create || titles.delete || titles.editDashboard
       } as translations"
       [open]="vars.open"
       showFooter="true"
       title="{{ translations.title }}"
-      valtimoIbmModal
+      valtimoCdsModal
     >
-      <ibm-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
-        <h3 ibmModalHeaderHeading>
+      <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+        <h3 cdsModalHeaderHeading>
           {{ translations.title }}
         </h3>
-      </ibm-modal-header>
+      </cds-modal-header>
 
-      <section ibmModalContent>
+      <section cdsModalContent>
         <ng-container *ngIf="vars.isDelete">
           {{ 'dashboardManagement.widgets.deleteDescription' | translate }}</ng-container
         >
@@ -61,7 +61,7 @@
         </ng-container>
       </section>
 
-      <ibm-modal-footer>
+      <cds-modal-footer>
         <ng-container *ngIf="vars.isEdit || vars.isCreate">
           <ng-container *ngTemplateOutlet="editButtons"></ng-container>
         </ng-container>
@@ -73,28 +73,28 @@
         <ng-container *ngIf="vars.isEditDashboard">
           <ng-container *ngTemplateOutlet="editDashboardButtons"></ng-container>
         </ng-container>
-      </ibm-modal-footer>
-    </ibm-modal>
+      </cds-modal-footer>
+    </cds-modal>
   </ng-container>
 </ng-container>
 
 <ng-template #editDashboardFormTemplate>
   <form *ngIf="editDashboardForm" [formGroup]="editDashboardForm" class="dashboard-modal__form">
     <div class="form__element">
-      <ibm-label [invalid]="dashboardTitle.dirty && dashboardTitle.invalid">
+      <cds-label [invalid]="dashboardTitle.dirty && dashboardTitle.invalid">
         {{ 'dashboardManagement.widgets.form.dashboardTitle' | translate }}
 
         <input
           formControlName="title"
-          ibmText
+          cdsText
           [attr.modal-primary-focus]="true"
           [invalid]="dashboardTitle.dirty && dashboardTitle.invalid"
         />
-      </ibm-label>
+      </cds-label>
     </div>
 
     <div class="form__element">
-      <ibm-label
+      <cds-label
         [invalid]="dashboardDescription.dirty && dashboardDescription.invalid"
         [helperText]="'dashboardManagement.widgets.form.dashboardDescriptionHelperText' | translate"
         [invalidText]="
@@ -105,23 +105,23 @@
 
         <input
           formControlName="description"
-          ibmText
+          cdsText
           [attr.modal-primary-focus]="true"
           [invalid]="dashboardDescription.dirty && dashboardDescription.invalid"
         />
-      </ibm-label>
+      </cds-label>
     </div>
 
     <div class="form__element">
-      <ibm-dropdown
+      <cds-dropdown
         data-carbon-theme="g10"
         type="multi"
         formControlName="roles"
         [invalid]="dashboardRoles.dirty && dashboardRoles.invalid"
         [label]="'dashboardManagement.widgets.form.roles' | translate"
       >
-        <ibm-dropdown-list [items]="roleItems$ | async"></ibm-dropdown-list>
-      </ibm-dropdown>
+        <cds-dropdown-list [items]="roleItems$ | async"></cds-dropdown-list>
+      </cds-dropdown>
     </div>
   </form>
 </ng-template>
@@ -129,7 +129,7 @@
 <ng-template #widgetForm>
   <form *ngIf="form" [formGroup]="form" class="dashboard-modal__form">
     <div class="form__element">
-      <ibm-label
+      <cds-label
         [invalid]="title.dirty && title.invalid"
         [helperText]="'dashboardManagement.widgets.form.titleHelperText' | translate"
       >
@@ -137,39 +137,39 @@
 
         <input
           formControlName="title"
-          ibmText
+          cdsText
           [attr.modal-primary-focus]="true"
           [invalid]="title.dirty && title.invalid"
         />
-      </ibm-label>
+      </cds-label>
     </div>
 
     <div class="form__element --with-button --readonly">
-      <ibm-label [invalid]="key.dirty && key.invalid">
+      <cds-label [invalid]="key.dirty && key.invalid">
         {{ 'dashboardManagement.widgets.form.key' | translate }}
 
         <input
           formControlName="key"
-          ibmText
+          cdsText
           readonly
           tabindex="-1"
           [invalid]="key.dirty && key.invalid"
           [placeholder]="key.value"
         />
-      </ibm-label>
+      </cds-label>
 
       <button
         [title]="'dashboardManagement.widgets.form.keyTitle' | translate"
-        ibmButton="ghost"
+        cdsButton="ghost"
         (click)="copyKey()"
         [iconOnly]="true"
       >
-        <svg class="cds--btn__icon" ibmIconCopy size="16"></svg>
+        <svg class="cds--btn__icon" cdsIcon="copy" size="16"></svg>
       </button>
     </div>
 
     <div class="form__element">
-      <ibm-dropdown
+      <cds-dropdown
         formControlName="dateSource"
         [invalid]="dataSource.dirty && dataSource.invalid"
         [label]="'dashboardManagement.widgets.form.dataSource' | translate"
@@ -177,64 +177,64 @@
         [invalidText]="'dashboardManagement.widgets.form.dateSourceHelperText' | translate"
         (selected)="dataSourceSelected($event)"
       >
-        <ibm-dropdown-list [items]="dataSourceItems$ | async" type="multi"></ibm-dropdown-list>
-      </ibm-dropdown>
+        <cds-dropdown-list [items]="dataSourceItems$ | async" type="multi"></cds-dropdown-list>
+      </cds-dropdown>
     </div>
 
     <div class="form__row">
       <div class="form__element">
-        <ibm-dropdown
+        <cds-dropdown
           formControlName="chartType"
           [invalid]="chartType.dirty && chartType.invalid"
           [label]="'dashboardManagement.widgets.form.chartType' | translate"
           (selected)="chartTypeSelected($event)"
         >
-          <ibm-dropdown-list [items]="dataSourceItems$ | async" type="multi"></ibm-dropdown-list>
-        </ibm-dropdown>
+          <cds-dropdown-list [items]="dataSourceItems$ | async" type="multi"></cds-dropdown-list>
+        </cds-dropdown>
       </div>
 
       <div class="form__spacer"></div>
 
       <div class="form__element">
-        <ibm-label [invalid]="dataSourceField.dirty && dataSourceField.invalid">
+        <cds-label [invalid]="dataSourceField.dirty && dataSourceField.invalid">
           {{ 'dashboardManagement.widgets.form.dataSourceField' | translate }}
           <input
             formControlName="dataSourceField"
-            ibmText
+            cdsText
             [invalid]="dataSourceField.dirty && dataSourceField.invalid"
           />
-        </ibm-label>
+        </cds-label>
       </div>
     </div>
   </form>
 </ng-template>
 
 <ng-template #editButtons>
-  <button ibmButton="ghost" (click)="closeModal()">
+  <button cdsButton="ghost" (click)="closeModal()">
     {{ 'dashboardManagement.widgets.cancel' | translate }}
   </button>
 
-  <button (click)="save()" ibmButton="primary" [disabled]="form.invalid">
+  <button (click)="save()" cdsButton="primary" [disabled]="form.invalid">
     {{ 'dashboardManagement.widgets.save' | translate }}
   </button>
 </ng-template>
 
 <ng-template #deleteButtons>
-  <button ibmButton="secondary" (click)="closeModal()">
+  <button cdsButton="secondary" (click)="closeModal()">
     {{ 'dashboardManagement.widgets.cancel' | translate }}
   </button>
 
-  <button (click)="delete()" ibmButton="danger">
+  <button (click)="delete()" cdsButton="danger">
     {{ 'dashboardManagement.widgets.delete' | translate }}
   </button>
 </ng-template>
 
 <ng-template #editDashboardButtons>
-  <button ibmButton="ghost" (click)="closeModal()">
+  <button cdsButton="ghost" (click)="closeModal()">
     {{ 'dashboardManagement.widgets.cancel' | translate }}
   </button>
 
-  <button (click)="saveDashboard()" ibmButton="primary" [disabled]="editDashboardForm.invalid">
+  <button (click)="saveDashboard()" cdsButton="primary" [disabled]="editDashboardForm.invalid">
     {{ 'dashboardManagement.widgets.complete' | translate }}
   </button>
 </ng-template>

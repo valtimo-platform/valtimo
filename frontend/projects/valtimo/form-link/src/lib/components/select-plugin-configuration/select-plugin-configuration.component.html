@@ -19,39 +19,39 @@
     {{ 'processLinkConfiguration.choosePluginConfigurationDescription' | translate }}
   </p>
   <div class="list-container">
-    <ibm-structured-list selection="true" (selected)="selected($event)">
-      <ibm-list-header>
-        <ibm-list-column nowrap="true"></ibm-list-column>
-        <ibm-list-column nowrap="true">{{
+    <cds-structured-list (selected)="selected($event)" selection="true">
+      <cds-list-header>
+        <cds-list-column nowrap="true"></cds-list-column>
+        <cds-list-column nowrap="true">{{
           'pluginManagement.labels.configurationName' | translate
-        }}</ibm-list-column>
-        <ibm-list-column>{{
+        }}</cds-list-column>
+        <cds-list-column>{{
           'processLinkConfiguration.pluginDescription' | translate
-        }}</ibm-list-column>
-      </ibm-list-header>
-      <ibm-list-row
+        }}</cds-list-column>
+      </cds-list-header>
+      <cds-list-row
         *ngFor="let pluginConfiguration of pluginConfigurations"
         [value]="pluginConfiguration"
       >
-        <ibm-list-column>
+        <cds-list-column>
           <div *ngIf="pluginConfiguration.pluginLogoBase64">
             <img
-              class="plugin-configuration-logo"
-              [title]="'title' | pluginTranslate : pluginConfiguration.pluginDefinition.key | async"
               [src]="pluginConfiguration.pluginLogoBase64"
+              [title]="'title' | pluginTranslate : pluginConfiguration.pluginDefinition.key | async"
+              class="plugin-configuration-logo"
             /></div
-        ></ibm-list-column>
-        <ibm-list-column>{{ pluginConfiguration.title }}</ibm-list-column>
-        <ibm-list-column>
+        ></cds-list-column>
+        <cds-list-column>{{ pluginConfiguration.title }}</cds-list-column>
+        <cds-list-column>
           {{ 'description' | pluginTranslate : pluginConfiguration.pluginDefinition.key | async }}
-        </ibm-list-column>
-      </ibm-list-row>
-    </ibm-structured-list>
+        </cds-list-column>
+      </cds-list-row>
+    </cds-structured-list>
   </div>
 </ng-container>
 
 <ng-template #loading>
   <div class="loading-container">
-    <ibm-loading></ibm-loading>
+    <cds-loading></cds-loading>
   </div>
 </ng-template>

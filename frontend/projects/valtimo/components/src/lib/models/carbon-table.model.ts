@@ -29,9 +29,9 @@ export interface CarbonTableConfig {
   searchable?: boolean;
   showSelectionColumn?: boolean;
   size?: TableRowSize;
-  skeleton?: boolean;
   sortable?: boolean;
   striped?: boolean;
+  withPagination?: boolean;
 }
 
 export interface ActionItem {
@@ -43,10 +43,11 @@ export interface ActionItem {
 export interface ColumnConfig {
   columnType: ColumnType;
   fieldName: string;
+  translationKey: string;
   actions?: ActionItem[];
-  fieldLabel?: string;
+  className?: string;
+  sortable?: boolean;
   template?: TemplateRef<any>;
-  translationKey?: string;
 }
 
 const defaultTableConfig: CarbonTableConfig = {
@@ -54,10 +55,10 @@ const defaultTableConfig: CarbonTableConfig = {
   enableSingleSelect: false,
   searchable: false,
   size: 'md',
-  showSelectionColumn: true,
+  showSelectionColumn: false,
   sortable: true,
-  skeleton: false,
   striped: false,
+  withPagination: true,
 };
 
 export const createCarbonTableConfig = (config: CarbonTableConfig): CarbonTableConfig => ({

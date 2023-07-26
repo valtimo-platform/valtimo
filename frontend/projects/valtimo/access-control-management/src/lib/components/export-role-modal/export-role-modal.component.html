@@ -14,47 +14,47 @@
   ~ limitations under the License.
   -->
 
-<ibm-modal
+<cds-modal
   *ngIf="{title: ('interface.export' | translate), selectedType: selectedType$ | async} as vars"
-  valtimoIbmModal
+  valtimoCdsModal
   [open]="open"
   size="sm"
   showFooter="true"
   [title]="vars.title"
 >
-  <ibm-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
-    <h3 ibmModalHeaderHeading>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
+    <h3 cdsModalHeaderHeading>
       {{ vars.title }}
     </h3>
-  </ibm-modal-header>
+  </cds-modal-header>
 
-  <section ibmModalContent>
+  <section cdsModalContent>
     <div class="export-buttons">
-      <button [disabled]="disabled" ibmButton="secondary" (click)="selectType('unified')">
+      <button [disabled]="disabled" cdsButton="secondary" (click)="selectType('unified')">
         {{ 'accessControl.roles.singleExport' | translate }}
 
-        <svg class="cds--btn__icon" ibmIcon="document" size="16"></svg>
+        <svg class="cds--btn__icon" cdsIcon="document" size="16"></svg>
       </button>
 
-      <button [disabled]="disabled" ibmButton="secondary" (click)="selectType('separate')">
+      <button [disabled]="disabled" cdsButton="secondary" (click)="selectType('separate')">
         {{ 'accessControl.roles.multipleExport' | translate }}
 
-        <svg class="cds--btn__icon" ibmIcon="copy--file" size="16"></svg>
+        <svg class="cds--btn__icon" cdsIcon="copy--file" size="16"></svg>
       </button>
     </div>
   </section>
 
-  <ibm-modal-footer>
-    <button [disabled]="disabled" ibmButton="ghost" (click)="onCancel()">
+  <cds-modal-footer>
+    <button [disabled]="disabled" cdsButton="ghost" (click)="onCancel()">
       {{ 'interface.cancel' | translate }}
     </button>
 
     <button
       [disabled]="!vars.selectedType || disabled"
-      ibmButton="primary"
+      cdsButton="primary"
       (click)="onConfirm(vars.selectedType)"
     >
       {{ vars.title }}
     </button>
-  </ibm-modal-footer>
-</ibm-modal>
+  </cds-modal-footer>
+</cds-modal>

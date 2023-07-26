@@ -52,33 +52,35 @@
   margin-left: -8px;
 }
 
-::ng-deep .choose-plugin-action ibm-selection-tile {
-  display: flex;
-  width: calc(33.3% - 8px);
-}
+::ng-deep {
+  .choose-plugin-action cds-selection-tile {
+    display: flex;
+    width: calc(33.3% - 8px);
+  }
 
-::ng-deep .choose-plugin-action .cds--tile {
-  width: 100%;
-}
+  .choose-plugin-action .cds--tile {
+    width: 100%;
+  }
 
-::ng-deep .choose-plugin-action ibm-tile-group {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
+  .choose-plugin-action cds-tile-group fieldset {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
 
-::ng-deep .choose-plugin-action ibm-selection-tile {
-  margin-left: 8px;
-}
+  .choose-plugin-action cds-selection-tile {
+    margin-left: 8px;
+  }
 
-::ng-deep .choose-plugin-action ibm-selection-tile:nth-child(n + 4) {
-  margin-top: 8px;
-}
+  .choose-plugin-action cds-selection-tile:nth-child(n + 4) {
+    margin-top: 8px;
+  }
 
-::ng-deep .action-tiles .cds--tile {
-  background-color: var(--cds-layer-02, #ffffff);
+  .action-tiles .cds--tile {
+    background-color: var(--cds-layer-02, #ffffff);
 
-  &:hover {
-    background: var(--cds-layer-hover);
+    &:hover {
+      background: var(--cds-layer-hover);
+    }
   }
 }

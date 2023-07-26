@@ -272,7 +272,6 @@
       "profile": "Profile",
       "password": "Password",
       "help": "Help",
-      "forum": "Forum",
       "feedback": "Feedback",
       "resetPassword": "Reset password",
       "signOut": "Sign out",
@@ -587,7 +586,15 @@
     "create": "Create",
     "save": "Save",
     "more": "More",
-    "export": "Export"
+    "export": "Export",
+    "table": {
+      "itemsPerPage": "Items per page",
+      "multipleSelect": "{{count}} items selected",
+      "ofLastPage": "of {{last}} page",
+      "ofLastPages": "of {{last}} pages",
+      "singleSelect": "1 item selected",
+      "totalItems": "{{start}}-{{end}} of {{total}} items"
+    }
   },
   "taskDetail": {
     "taskCreated": "Created",
@@ -1192,7 +1199,11 @@
       "savedSuccessTitle": "Saved successfully",
       "savedSuccessTitleMessage": "{{roleKey}} was saved successfully",
       "singleExport": "One JSON file",
-      "multipleExport": "Separate files per role"
+      "multipleExport": "Separate files per role",
+      "noResults": {
+        "description": "Click <strong>Add new role</strong> to start designing your role",
+        "title": "No roles added"
+      }
     }
   }
 }

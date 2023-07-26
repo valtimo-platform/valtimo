@@ -14,33 +14,13 @@
  * limitations under the License.
  */
 
-import {DashboardWidget} from '../models';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {ValtimoCdsModalDirective} from './valtimo-cds-modal.directive';
 
-const widgetListMock: Array<DashboardWidget> = [
-  {
-    title: 'test',
-    key: 'test',
-    displayType: 'test',
-    dataSourceKey: 'test',
-    dataSourceProperties: {
-      test: 'test',
-    },
-    order: 0,
-  },
-  {
-    title: 'test2',
-    key: 'test2',
-    displayType: 'test2',
-    dataSourceKey: 'test2',
-    dataSourceProperties: {
-      test: 'test2',
-    },
-    order: 1,
-  },
-];
-
-const widgetDataSourcesMock = ['test 1', 'test 2'];
-
-const widgetChartTypesMock = ['test 1', 'test 2'];
-
-export {widgetListMock, widgetDataSourcesMock, widgetChartTypesMock};
+@NgModule({
+  declarations: [ValtimoCdsModalDirective],
+  imports: [CommonModule],
+  exports: [ValtimoCdsModalDirective],
+})
+export class ValtimoCdsModalDirectiveModule {}

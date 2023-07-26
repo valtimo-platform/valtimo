@@ -16,12 +16,20 @@
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {DialogModule, PaginationModule, TableModule} from 'carbon-components-angular';
+import {ButtonModule, DialogModule, PaginationModule, TableModule} from 'carbon-components-angular';
 import {CarbonTableComponent} from './carbon-table.component';
+import {CarbonNoResultsComponent} from './no-results/carbon-no-results.component';
 
 @NgModule({
-  declarations: [CarbonTableComponent],
-  imports: [CommonModule, DialogModule, TranslateModule, TableModule, PaginationModule],
-  exports: [CarbonTableComponent],
+  declarations: [CarbonNoResultsComponent, CarbonTableComponent],
+  imports: [
+    CommonModule,
+    DialogModule,
+    TranslateModule,
+    TableModule,
+    PaginationModule,
+    ButtonModule,
+  ],
+  exports: [CarbonNoResultsComponent, CarbonTableComponent],
 })
 export class CarbonTableModule {}

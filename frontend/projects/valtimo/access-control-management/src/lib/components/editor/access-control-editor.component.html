@@ -29,34 +29,34 @@
       *ngIf="{model: model$ | async, moreDisabled: moreDisabled$ | async} as obs"
       class="buttons-container"
     >
-      <ibm-overflow-menu class="overflow-button">
-        <ibm-overflow-menu-option [disabled]="obs.moreDisabled" (selected)="showEditModal()">{{
+      <cds-overflow-menu class="overflow-button">
+        <cds-overflow-menu-option [disabled]="obs.moreDisabled" (selected)="showEditModal()">{{
           'accessControl.roles.editMetadata' | translate
-        }}</ibm-overflow-menu-option>
+        }}</cds-overflow-menu-option>
 
-        <ibm-overflow-menu-option
+        <cds-overflow-menu-option
           [disabled]="obs.moreDisabled"
           (selected)="exportPermissions(obs.model)"
-          >{{ 'interface.export' | translate }}</ibm-overflow-menu-option
+          >{{ 'interface.export' | translate }}</cds-overflow-menu-option
         >
 
-        <ibm-overflow-menu-option
+        <cds-overflow-menu-option
           [disabled]="obs.moreDisabled"
           type="danger"
           (selected)="showDeleteModal()"
-          >{{ 'interface.delete' | translate }}</ibm-overflow-menu-option
+          >{{ 'interface.delete' | translate }}</cds-overflow-menu-option
         >
-      </ibm-overflow-menu>
+      </cds-overflow-menu>
 
       <button
         [disabled]="saveDisabled$ | async"
-        ibmButton="primary"
+        cdsButton="primary"
         size="md"
         (click)="updatePermissions()"
       >
         {{ 'interface.save' | translate }}
 
-        <svg class="cds--btn__icon" ibmIcon="save" size="16"></svg>
+        <svg class="cds--btn__icon" cdsIcon="save" size="16"></svg>
       </button>
     </div>
   </ng-template>
@@ -80,6 +80,6 @@
 
 <ng-template #loading>
   <div class="loading-container">
-    <ibm-loading></ibm-loading>
+    <cds-loading></cds-loading>
   </div>
 </ng-template>

@@ -14,5 +14,4 @@
  * limitations under the License.
  */
 
-export * from './dashboard-list.mock';
-export * from './widget-list.mock';
+export * from './dashboard.model';

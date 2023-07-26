@@ -40,14 +40,14 @@
 </ng-template>
 
 <ng-template #radioInput>
-  <ibm-radio-group
+  <cds-radio-group
     [name]="name"
     [disabled]="disabled"
     [ngModel]="radioValue$ | async"
     (ngModelChange)="onValueChange($event)"
   >
-    <ibm-radio *ngFor="let radio of radioValues" [value]="radio.value" [disabled]="radio.disabled">
+    <cds-radio *ngFor="let radio of radioValues" [value]="radio.value" [disabled]="radio.disabled">
       {{ radio.titleTranslationKey ? (radio.titleTranslationKey | translate) : radio.title }}
-    </ibm-radio>
-  </ibm-radio-group>
+    </cds-radio>
+  </cds-radio-group>
 </ng-template>

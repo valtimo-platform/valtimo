@@ -15,28 +15,11 @@
  */
 
 .valtimo-dashboard-management {
-  &__table td:last-child {
+  &__actions {
     width: 1px;
   }
 
   &__form > *:not(:last-child) {
     margin-bottom: 32px;
-  }
-
-  &-no-results {
-    display: flex;
-    justify-content: space-around;
-    padding: calc((100 / 16) * 1rem) 0;
-    gap: 4rem;
-
-    &__title {
-      font-size: 1.75rem;
-    }
-
-    &__content {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
   }
 }

@@ -17,8 +17,8 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
-import {BehaviorSubject, catchError, Observable, of, switchMap, take} from 'rxjs';
-import {DashboardItem} from '../models';
+import {BehaviorSubject, catchError, Observable, of, switchMap, take, tap} from 'rxjs';
+import {DashboardItem, DashboardWidget} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -26,15 +26,23 @@ import {DashboardItem} from '../models';
 export class DashboardManagementService {
   private valtimoEndpointUri: string;
 
-  public dashboards$: BehaviorSubject<DashboardItem[]> = new BehaviorSubject<DashboardItem[]>([]);
+  public dashboards$ = new BehaviorSubject<{items: DashboardItem[] | null; loading: boolean}>({
+    items: null,
+    loading: true,
+  });
 
   public loadData(): void {
     this.http
       .get<DashboardItem[]>(this.valtimoEndpointUri)
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        tap(() => {
+          this.dashboards$.next({items: null, loading: true});
+        })
+      )
       .subscribe({
         next: (items: DashboardItem[]) => {
-          this.dashboards$.next(items);
+          this.dashboards$.next({items, loading: false});
         },
         error: error => {
           console.error(error);
@@ -58,15 +66,28 @@ export class DashboardManagementService {
     actionResult
       .pipe(
         switchMap(() => this.getDashboards()),
+        tap(() => {
+          this.dashboards$.next({items: null, loading: true});
+        }),
         take(1),
         catchError(error => of(error))
       )
       .subscribe({
-        next: (items: DashboardItem[]) => this.dashboards$.next(items),
+        next: (items: DashboardItem[]) => this.dashboards$.next({items, loading: false}),
         error: error => {
           console.error(error);
         },
       });
+  }
+
+  public getDashboard(dashboardKey: string): Observable<DashboardItem> {
+    return this.http.get<DashboardItem>(`${this.valtimoEndpointUri}/${dashboardKey}`);
+  }
+
+  public getDashboardWidgetConfiguration(dashboardKey: string): Observable<Array<DashboardWidget>> {
+    return this.http.get<Array<DashboardWidget>>(
+      `${this.valtimoEndpointUri}/${dashboardKey}/widget-configuration`
+    );
   }
 
   private getDashboards(): Observable<DashboardItem[]> {

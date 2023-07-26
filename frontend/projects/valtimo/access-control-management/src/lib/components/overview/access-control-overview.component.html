@@ -16,27 +16,41 @@
 
 <valtimo-carbon-table
   [data]="roles$ | async"
+  [loading]="loading$ | async"
   [tableConfig]="tableConfig"
   (rowClick)="onRowClick($event)"
 >
   <ng-container carbonTableTitle> {{ 'accessControl.roles.title' | translate }} </ng-container>
 
   <div carbonToolbarContent>
-    <button ibmButton="primary" (click)="openAddModal()">
-      {{ 'accessControl.roles.add' | translate }}
-
-      <svg class="cds--btn__icon" ibmIcon="add" size="16"></svg>
-    </button>
+    <ng-container [ngTemplateOutlet]="addRoleButton"></ng-container>
   </div>
+
+  <ng-container carbonToolbarActions>
+    <button cdsButton="primary" (click)="showDeleteModal()">
+      {{ 'interface.delete' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+    </button>
+
+    <button cdsButton="primary" (click)="showExportModal()">
+      {{ 'interface.export' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
+    </button>
+  </ng-container>
+
+  <valtimo-no-results
+    [action]="addRoleButton"
+    description="{{ 'accessControl.roles.noResults.description' | translate }}"
+    title="{{ 'accessControl.roles.noResults.title' | translate }}"
+  ></valtimo-no-results>
 </valtimo-carbon-table>
 
 <valtimo-role-metadata-modal
   [open]="showAddModal$ | async"
   (closeEvent)="onAdd($event)"
 ></valtimo-role-metadata-modal>
-
-<button (click)="showDeleteModal()">delete</button>
-<button (click)="showExportModal()">export</button>
 
 <ng-container *ngIf="{selectedRowKeys: selectedRowKeys$ | async} as obs">
   <valtimo-delete-role-modal
@@ -56,3 +70,11 @@
   >
   </valtimo-export-role-modal>
 </ng-container>
+
+<ng-template #addRoleButton>
+  <button cdsButton="primary" (click)="openAddModal()">
+    {{ 'accessControl.roles.add' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</ng-template>

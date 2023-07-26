@@ -28,6 +28,7 @@ import {AccessControlExportService} from '../../services/access-control-export.s
   templateUrl: './access-control-editor.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./access-control-editor.component.scss'],
+  providers: [NotificationService],
 })
 export class AccessControlEditorComponent implements OnInit, OnDestroy {
   public readonly model$ = new BehaviorSubject<EditorModel | null>(null);

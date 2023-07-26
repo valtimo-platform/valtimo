@@ -18,15 +18,16 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
-import {DashboardComponent} from './dashboard.component';
+import {DashboardComponent} from './components/dashboard/dashboard.component';
 import {ROLE_USER} from '@valtimo/config';
+import {WidgetDashboardComponent} from './components/widget-dashboard/widget-dashboard.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: DashboardComponent,
+    component: WidgetDashboardComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Dashboard', roles: [ROLE_USER]},
+    data: {title: 'Dashboard', roles: [ROLE_USER], hidePageTitle: true},
   },
 ];
 

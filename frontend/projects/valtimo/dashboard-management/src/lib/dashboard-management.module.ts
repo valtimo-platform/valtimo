@@ -27,6 +27,7 @@ import {
 import {
   ButtonModule,
   DropdownModule,
+  IconModule,
   InputModule,
   ModalModule,
   NotificationModule,
@@ -34,13 +35,6 @@ import {
 import {DashboardDetailsComponent} from './components/dashboard-details/dashboard-details.component';
 import {DashboardManagementComponent} from './components/dashboard-management/dashboard-management.component';
 import {DashboardManagementRoutingModule} from './dashboard-management-routing.module';
-import {
-  AddModule,
-  ArrowDownModule,
-  ArrowUpModule,
-  CopyModule,
-  EditModule,
-} from '@carbon/icons-angular';
 import {WidgetModalComponent} from './components/widget-modal/widget-modal.component';
 
 @NgModule({
@@ -57,14 +51,10 @@ import {WidgetModalComponent} from './components/widget-modal/widget-modal.compo
     ReactiveFormsModule,
     SpinnerModule,
     TranslateModule,
-    ArrowUpModule,
-    ArrowDownModule,
-    AddModule,
     RenderInPageHeaderDirectiveModule,
-    EditModule,
     ConfirmationModalModule,
-    CopyModule,
     NotificationModule,
+    IconModule,
   ],
   exports: [],
 })

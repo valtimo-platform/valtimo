@@ -14,48 +14,48 @@
   ~ limitations under the License.
   -->
 
-<ibm-modal
+<cds-modal
   *ngIf="{
     isAdd: type === 'add'
   } as vars"
   [open]="open"
   showFooter="true"
   [title]="vars.title"
-  valtimoIbmModal
+  valtimoCdsModal
 >
-  <ibm-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
-    <h3 ibmModalHeaderHeading>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
+    <h3 cdsModalHeaderHeading>
       {{
         vars.isAdd
           ? ('accessControl.roles.add' | translate)
           : ('accessControl.roles.editRole' | translate)
       }}
     </h3>
-  </ibm-modal-header>
+  </cds-modal-header>
 
-  <section ibmModalContent>
+  <section cdsModalContent>
     <form [formGroup]="form">
-      <ibm-label [invalid]="key.dirty && key.invalid">
+      <cds-label [invalid]="key.dirty && key.invalid">
         {{ 'accessControl.roles.name' | translate }}
 
         <input
           formControlName="key"
-          ibmText
+          cdsText
           placeholder="{{ 'accessControl.roles.name' | translate }}"
           [attr.modal-primary-focus]="true"
           [invalid]="key.dirty && key.invalid"
         />
-      </ibm-label>
+      </cds-label>
     </form>
   </section>
 
-  <ibm-modal-footer>
-    <button ibmButton="ghost" (click)="onCancel()">
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="onCancel()">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button [disabled]="this.form.invalid" (click)="onConfirm()" ibmButton="primary">
+    <button [disabled]="this.form.invalid" (click)="onConfirm()" cdsButton="primary">
       {{ vars.isAdd ? ('interface.create' | translate) : ('interface.save' | translate) }}
     </button>
-  </ibm-modal-footer>
-</ibm-modal>
+  </cds-modal-footer>
+</cds-modal>

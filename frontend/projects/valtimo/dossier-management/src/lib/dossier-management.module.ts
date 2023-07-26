@@ -26,7 +26,7 @@ import {
   ModalModule,
   MultiselectDropdownModule,
   SpinnerModule,
-  ValtimoIbmModalDirectiveModule,
+  ValtimoCdsModalDirectiveModule,
   WidgetModule,
 } from '@valtimo/components';
 import {ConfigModule} from '@valtimo/config';
@@ -111,7 +111,7 @@ import {
     ConfirmationModalModule,
     MultiInputModule,
     TableModule,
-    ValtimoIbmModalDirectiveModule,
+    ValtimoCdsModalDirectiveModule,
   ],
   exports: [],
 })

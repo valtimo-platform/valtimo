@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {switchMap, take} from 'rxjs/operators';
-import {PluginFunction, PluginManagementService} from '@valtimo/plugin';
-import {PluginStateService} from '../../services/plugin-state.service';
+import {PluginDefinition, PluginFunction, PluginManagementService} from '@valtimo/plugin';
 import {Observable, of, Subscription} from 'rxjs';
+import {switchMap, take} from 'rxjs/operators';
+
 import {ProcessLinkButtonService, ProcessLinkStepService} from '../../services';
+import {PluginStateService} from '../../services/plugin-state.service';
 
 @Component({
   selector: 'valtimo-select-plugin-action',
@@ -27,7 +27,7 @@ import {ProcessLinkButtonService, ProcessLinkStepService} from '../../services';
   styleUrls: ['./select-plugin-action.component.scss'],
 })
 export class SelectPluginActionComponent implements OnInit, OnDestroy {
-  readonly pluginFunctions$: Observable<Array<PluginFunction> | undefined> =
+  public readonly pluginFunctions$: Observable<Array<PluginFunction> | undefined> =
     this.stateService.selectedPluginDefinition$.pipe(
       switchMap(selectedDefinition =>
         selectedDefinition
@@ -35,48 +35,51 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
           : of(undefined)
       )
     );
-  readonly selectedPluginDefinition$ = this.stateService.selectedPluginDefinition$;
-  readonly selectedPluginFunction$ = this.stateService.selectedPluginFunction$;
+  public readonly selectedPluginDefinition$: Observable<PluginDefinition> =
+    this.stateService.selectedPluginDefinition$;
+  public readonly selectedPluginFunction$: Observable<PluginFunction> =
+    this.stateService.selectedPluginFunction$;
 
   private _subscriptions = new Subscription();
 
   constructor(
+    private readonly buttonService: ProcessLinkButtonService,
     private readonly pluginManagementService: PluginManagementService,
     private readonly stateService: PluginStateService,
-    private readonly buttonService: ProcessLinkButtonService,
     private readonly stepService: ProcessLinkStepService
   ) {}
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openBackButtonSubscription();
     this.openNextButtonSubscription();
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  selectFunction(pluginFunction: PluginFunction): void {
+  public selectFunction(pluginFunction: PluginFunction): void {
     this.stateService.selectPluginFunction(pluginFunction);
   }
 
-  selected(event: {value: string}): void {
+  public selected(event: {value: string}): void {
     this.selectFunction(JSON.parse(event.value));
     this.buttonService.enableNextButton();
   }
 
-  stringify(object: object): string {
+  public stringify(object: object): string {
     return JSON.stringify(object);
   }
 
   private openBackButtonSubscription(): void {
-    this._subscriptions.add(
-      this.buttonService.backButtonClick$.subscribe(() => {
-        this.stepService.hasOneProcessLinkType$.pipe(take(1)).subscribe(hasOneOption => {
-          this.stepService.setProcessLinkTypeSteps('plugin', hasOneOption);
-        });
-      })
-    );
+    this.buttonService.backButtonClick$
+      .pipe(
+        switchMap(() => this.stepService.hasOneProcessLinkType$),
+        take(1)
+      )
+      .subscribe((hasOneOption: boolean) => {
+        this.stepService.setProcessLinkTypeSteps('plugin', hasOneOption);
+      });
   }
 
   private openNextButtonSubscription(): void {

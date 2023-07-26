@@ -17,5 +17,10 @@
 .valtimo-carbon-table__no-results {
   display: flex;
   justify-content: center;
-  align-items: center;
+  padding: calc((100 / 16) * 1rem) 0;
+  gap: 4rem;
+
+  &__content:not(:empty) + &-text {
+    display: none;
+  }
 }

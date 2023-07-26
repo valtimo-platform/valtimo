@@ -271,7 +271,6 @@
       "profile": "Profiel",
       "password": "Wachtwoord",
       "help": "Help",
-      "forum": "Forum",
       "feedback": "Feedback",
       "resetPassword": "Wachtwoord resetten",
       "signOut": "Afmelden",
@@ -586,7 +585,15 @@
     "create": "Aanmaken",
     "save": "Opslaan",
     "more": "Meer",
-    "export": "Exporteren"
+    "export": "Exporteren",
+    "table": {
+      "itemsPerPage": "Artikelen per pagina",
+      "multipleSelect": "{{count}} artikelen geselecteerd",
+      "ofLastPage": "van {{last}} pagina",
+      "ofLastPages": "van {{last}} pagina's",
+      "singleSelect": "1 artikel geselecteerd",
+      "totalItems": "{{start}}-{{end}} van {{total}} artikelen"
+    }
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",
@@ -1194,7 +1201,11 @@
       "savedSuccessTitle": "Succesvol opgeslagen",
       "savedSuccessTitleMessage": "{{roleKey}} is succesvol opgeslagen",
       "singleExport": "Eén JSON-bestand",
-      "multipleExport": "Aparte bestanden per rol"
+      "multipleExport": "Aparte bestanden per rol",
+      "noResults": {
+        "description": "Klik op <strong>Nieuwe rol toevoegen</strong> om te beginnen met het ontwerpen van uw rol",
+        "title": "Geen rollen toegevoegd"
+      }
     }
   }
 }

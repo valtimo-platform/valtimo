@@ -20,6 +20,7 @@ import {CarbonTableConfig, ColumnType, createCarbonTableConfig} from '@valtimo/c
 import {BehaviorSubject, finalize, Observable} from 'rxjs';
 import {DashboardItem} from '../../models';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
+import {Router} from '@angular/router';
 
 @Component({
   templateUrl: './dashboard-management.component.html',
@@ -32,7 +33,7 @@ export class DashboardManagementComponent implements OnInit {
   public readonly openModal$: BehaviorSubject<boolean> = new BehaviorSubject(false);
   public readonly showDeleteModal$: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
-  public readonly tableData$: Observable<DashboardItem[]> =
+  public readonly tableData$: Observable<{items: DashboardItem[] | null; loading: boolean}> =
     this.dashboardManagementService.dashboards$;
   public tableConfig: CarbonTableConfig = createCarbonTableConfig({
     fields: [
@@ -52,9 +53,6 @@ export class DashboardManagementComponent implements OnInit {
         translationKey: 'dashboardManagement.key',
       },
       {
-        columnType: ColumnType.ACTION,
-        fieldName: '',
-        fieldLabel: '',
         actions: [
           {
             actionName: 'Delete',
@@ -62,15 +60,20 @@ export class DashboardManagementComponent implements OnInit {
             type: 'danger',
           },
         ],
+        className: 'valtimo-dashboard-management__actions',
+        columnType: ColumnType.ACTION,
+        translationKey: '',
+        fieldName: '',
+        sortable: false,
       },
     ],
-    searchable: true,
   });
   public form: FormGroup;
 
   constructor(
     private readonly dashboardManagementService: DashboardManagementService,
-    private readonly fb: FormBuilder
+    private readonly fb: FormBuilder,
+    private readonly router: Router
   ) {}
 
   public ngOnInit(): void {
@@ -83,6 +86,7 @@ export class DashboardManagementComponent implements OnInit {
 
   public closeModal(): void {
     this.openModal$.next(false);
+    this.form.reset();
   }
 
   public createDashboard(): void {
@@ -113,6 +117,10 @@ export class DashboardManagementComponent implements OnInit {
 
   public openModal(): void {
     this.openModal$.next(true);
+  }
+
+  public onRowClick(item: DashboardItem): void {
+    this.router.navigate([`/dashboard-management/${item.key}`]);
   }
 
   private deleteDashboard(dashboard: DashboardItem): void {

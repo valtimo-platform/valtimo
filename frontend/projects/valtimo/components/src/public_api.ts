@@ -43,6 +43,7 @@ export * from './lib/components/right-sidebar/right-sidebar.module';
 export * from './lib/components/left-sidebar/left-sidebar.component';
 export * from './lib/components/left-sidebar/left-sidebar.module';
 
+export * from './lib/components/carbon-table/no-results/carbon-no-results.component';
 export * from './lib/components/carbon-table/carbon-table.component';
 export * from './lib/components/carbon-table/carbon-table.module';
 

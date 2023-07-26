@@ -81,7 +81,7 @@
 
 <ng-template #loading let-loading="loading">
   <div *ngIf="loading" class="loading-container">
-    <ibm-loading></ibm-loading>
+    <cds-loading></cds-loading>
   </div>
 </ng-template>
 
@@ -92,13 +92,13 @@
   >
     <button
       *ngIf="!vars.isDownloading"
-      ibmButton="primary"
+      cdsButton="primary"
       size="sm"
       (click)="downloadDocument(item, index)"
     >
       {{ 'interface.download' | translate
-      }}<svg class="cds--btn__icon" ibmIcon="download" size="16"></svg>
+      }}<svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
     </button>
-    <ibm-loading size="sm" *ngIf="vars.isDownloading"></ibm-loading>
+    <cds-loading size="sm" *ngIf="vars.isDownloading"></cds-loading>
   </div>
 </ng-template>

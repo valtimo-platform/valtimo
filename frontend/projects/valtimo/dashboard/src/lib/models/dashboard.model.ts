@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {ValtimoIbmModalDirective} from './valtimo-ibm-modal.directive';
+interface Dashboard {
+  key: string;
+  title: string;
+  widgets: Array<DashboardWidgetConfiguration>;
+}
 
-@NgModule({
-  declarations: [ValtimoIbmModalDirective],
-  imports: [CommonModule],
-  exports: [ValtimoIbmModalDirective],
-})
-export class ValtimoIbmModalDirectiveModule {}
+interface DashboardWidgetConfiguration {
+  key: string;
+  title: string;
+  dataSourceKey: string;
+  displayType: string;
+  dataSourceProperties: object;
+}
+
+export {Dashboard, DashboardWidgetConfiguration};

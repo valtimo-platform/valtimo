@@ -173,27 +173,33 @@
   line-height: 1.25rem;
   font-weight: 500 !important;
 }
+::ng-deep {
+  .cds--side-nav__icon {
+    margin-left: -16px;
+  }
 
-::ng-deep .cds--side-nav__icon {
-  margin-left: -16px;
-}
+  .cds--side-nav__item.cds--side-nav__item--icon a.cds--side-nav__link {
+    padding-left: 3.5rem;
+  }
 
-::ng-deep .cds--side-nav__item.cds--side-nav__item--icon a.cds--side-nav__link {
-  padding-left: 3.5rem;
-}
+  .cds--side-nav__submenu-title {
+    padding-right: 1.5rem;
+  }
 
-::ng-deep .cds--side-nav__submenu-title {
-  padding-right: 1.5rem;
-}
+  .cds--side-nav__items {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: visible !important;
+  }
 
-::ng-deep .cds--side-nav__items {
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: visible !important;
-}
+  .cds--side-nav__navigation {
+    top: 3rem;
+    height: calc(100% - 3rem) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
 
-::ng-deep .cds--side-nav__navigation {
-  height: 100% !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
+    &:not(.cds--side-nav--expanded) {
+      width: 0;
+    }
+  }
 }

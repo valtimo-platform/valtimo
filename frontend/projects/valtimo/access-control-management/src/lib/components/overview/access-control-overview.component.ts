@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnInit, ViewChild} from '@angular/core';
 import {
   CARBON_CONSTANTS,
   CarbonTableConfig,
   ColumnType,
   createCarbonTableConfig,
+  CarbonTableComponent,
 } from '@valtimo/components';
 import {BehaviorSubject, delay, finalize, Observable, Subject, take, tap} from 'rxjs';
 import {ExportRoleOutput, Role} from '../../models';
@@ -32,6 +33,8 @@ import {AccessControlExportService} from '../../services/access-control-export.s
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AccessControlOverviewComponent implements OnInit {
+  @ViewChild(CarbonTableComponent) carbonTable: CarbonTableComponent<Role>;
+
   public readonly tableConfig: CarbonTableConfig = createCarbonTableConfig({
     fields: [
       {
@@ -40,9 +43,11 @@ export class AccessControlOverviewComponent implements OnInit {
         translationKey: 'accessControl.roles.key',
       },
     ],
+    showSelectionColumn: true,
   });
 
   public readonly roles$: Observable<Role[]> = this.accessControlService.roles$;
+  public readonly loading$: Observable<boolean> = this.accessControlService.loading$;
   public readonly skeleton$ = new BehaviorSubject<boolean>(false);
   public readonly showAddModal$ = new BehaviorSubject<boolean>(false);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
@@ -136,13 +141,7 @@ export class AccessControlOverviewComponent implements OnInit {
     this.skeleton$.next(false);
   }
 
-  // remove when bulk actions are implemented
   private setSelectedRoleKeys(): void {
-    this.roles$.pipe(take(1)).subscribe(roles => {
-      this.selectedRowKeys$.next([
-        roles[roles.length - 1].roleKey,
-        roles[roles.length - 2].roleKey,
-      ]);
-    });
+    this.selectedRowKeys$.next(this.carbonTable.selectedItems.map((role: Role) => role.roleKey));
   }
 }

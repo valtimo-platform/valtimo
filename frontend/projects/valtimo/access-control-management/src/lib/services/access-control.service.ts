@@ -17,12 +17,13 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
-import {BehaviorSubject, catchError, Observable, of, switchMap, take} from 'rxjs';
+import {BehaviorSubject, catchError, Observable, of, switchMap, take, tap} from 'rxjs';
 import {DeleteRolesRequest, Role} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class AccessControlService {
   public readonly roles$ = new BehaviorSubject<Role[]>([]);
+  public readonly loading$ = new BehaviorSubject<boolean>(false);
 
   private valtimoEndpointUri: string;
 
@@ -45,12 +46,18 @@ export class AccessControlService {
   public dispatchAction(actionResult: Observable<Role | null>): void {
     actionResult
       .pipe(
+        tap(() => {
+          this.loading$.next(true);
+        }),
         switchMap(() => this.roleDtos$),
         take(1),
         catchError(error => of(error))
       )
       .subscribe({
-        next: (roles: Role[]) => this.roles$.next(roles),
+        next: (roles: Role[]) => {
+          this.roles$.next(roles);
+          this.loading$.next(false);
+        },
         error: error => {
           console.error(error);
         },
@@ -58,14 +65,22 @@ export class AccessControlService {
   }
 
   public loadRoles(): void {
-    this.roleDtos$.pipe(take(1)).subscribe({
-      next: (items: Role[]) => {
-        this.roles$.next(items);
-      },
-      error: error => {
-        console.error(error);
-      },
-    });
+    this.roleDtos$
+      .pipe(
+        tap(() => {
+          this.loading$.next(true);
+        }),
+        take(1)
+      )
+      .subscribe({
+        next: (items: Role[]) => {
+          this.roles$.next(items);
+          this.loading$.next(false);
+        },
+        error: error => {
+          console.error(error);
+        },
+      });
   }
 
   public getRolePermissions(roleKey: string): Observable<Array<object>> {

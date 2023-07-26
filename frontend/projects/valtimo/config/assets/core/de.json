@@ -271,7 +271,6 @@
       "profile": "Profile",
       "password": "Passwort",
       "help": "Hilfe",
-      "forum": "Forum",
       "feedback": "Feedback",
       "resetPassword": "Passwort zurücksetzen",
       "signOut": "Abmeldung",
@@ -586,7 +585,15 @@
     "create": "Erstellen",
     "save": "Speichern",
     "More": "Mehr",
-    "export": "Export"
+    "export": "Export",
+    "table": {
+      "itemsPerPage": "Objekte pro Seite",
+      "multipleSelect": "{{count}} Elemente ausgewählt",
+      "ofLastPage": "von {{last}} Seite",
+      "ofLastPages": "von {{last}} Seiten",
+      "singleSelect": "1 Element ausgewählt",
+      "totalItems": "{{start}}-{{end}} von {{total}} Objekte"
+    }
   },
   "taskDetail": {
     "taskCreated": "Erstellt",
@@ -1193,7 +1200,11 @@
       "savedSuccessTitle": "Erfolgreich gespeichert",
       "savedSuccessTitleMessage": "{{roleKey}} wurde erfolgreich gespeichert",
       "singleExport": "Eine JSON-Datei",
-      "multipleExport": "Separate Dateien pro Rolle"
+      "multipleExport": "Separate Dateien pro Rolle",
+      "noResults": {
+        "description": "Klicken Sie auf <strong>Neue Rolle hinzufügen</strong>, um mit der Gestaltung Ihrer Rolle zu beginnen",
+        "title": "Keine Rollen hinzugefügt"
+      }
     }
   }
 }

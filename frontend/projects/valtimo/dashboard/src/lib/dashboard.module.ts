@@ -18,7 +18,7 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {TranslateHttpLoader} from '@ngx-translate/http-loader';
-import {DashboardComponent} from './dashboard.component';
+import {DashboardComponent} from './components/dashboard/dashboard.component';
 import {DashboardRoutingModule} from './dashboard-routing.module';
 import {
   AlertModule,
@@ -29,6 +29,9 @@ import {
 } from '@valtimo/components';
 import {HttpClient} from '@angular/common/http';
 import {TaskModule} from '@valtimo/task';
+import {TabsModule} from 'carbon-components-angular';
+import {WidgetDashboardComponent} from './components/widget-dashboard/widget-dashboard.component';
+import {WidgetDashboardContentComponent} from './components/widget-dashboard-content/widget-dashboard-content.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(httpClient: HttpClient) {
@@ -36,7 +39,7 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
 }
 
 @NgModule({
-  declarations: [DashboardComponent],
+  declarations: [DashboardComponent, WidgetDashboardComponent, WidgetDashboardContentComponent],
   imports: [
     CommonModule,
     DashboardRoutingModule,
@@ -53,7 +56,8 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     AlertModule,
     TaskModule,
     SpinnerModule,
+    TabsModule,
   ],
-  exports: [DashboardComponent],
+  exports: [DashboardComponent, WidgetDashboardComponent],
 })
 export class DashboardModule {}

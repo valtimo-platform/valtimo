@@ -28,7 +28,6 @@ import {DashboardItem, WidgetModalType} from '../../models';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {ListItem, NotificationService} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
-import {widgetChartTypesMock, widgetDataSourcesMock} from '../../mocks';
 import {DOCUMENT} from '@angular/common';
 
 @Component({
@@ -36,6 +35,7 @@ import {DOCUMENT} from '@angular/common';
   templateUrl: './widget-modal.component.html',
   styleUrls: ['./widget-modal.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  providers: [NotificationService],
 })
 export class WidgetModalComponent implements OnInit, OnDestroy, OnChanges {
   @Input() public showModal$: Observable<boolean>;
@@ -104,8 +104,8 @@ export class WidgetModalComponent implements OnInit, OnDestroy, OnChanges {
   constructor(
     private readonly fb: FormBuilder,
     private readonly translateService: TranslateService,
-    private readonly notificationService: NotificationService,
-    @Inject(DOCUMENT) private readonly document: Document
+    @Inject(DOCUMENT) private readonly document: Document,
+    private readonly notificationService: NotificationService
   ) {}
 
   public ngOnInit(): void {
@@ -173,13 +173,11 @@ export class WidgetModalComponent implements OnInit, OnDestroy, OnChanges {
     this.setChartTypeItems();
   }
 
-  private setDataSourceItems(): void {
-    this._dataSourceItems$.next(widgetDataSourcesMock);
-  }
+  // implement with new BE endpoints
+  private setDataSourceItems(): void {}
 
-  private setChartTypeItems(): void {
-    this._chartTypeItems$.next(widgetChartTypesMock);
-  }
+  // implement with new BE endpoints
+  private setChartTypeItems(): void {}
 
   private setForm(): void {
     this.form = this.fb.group({
