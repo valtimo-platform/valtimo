@@ -50,22 +50,26 @@
 
   <section cdsModalContent>
     <form [formGroup]="form" class="valtimo-dashboard-management__form">
-      <cds-label [invalid]="form.invalid">
+      <cds-label [invalid]="getControlInvalid('title')">
         {{ 'dashboardManagement.addModal.name' | translate }}
 
         <input
           [attr.modal-primary-focus]="true"
-          [invalid]="form.invalid"
+          [invalid]="getControlInvalid('title')"
           formControlName="title"
           cdsText
           placeholder="{{ 'dashboardManagement.addModal.namePlaceholder' | translate }}"
         />
       </cds-label>
 
-      <cds-label [helperText]="'dashboardManagement.addModal.descriptionHelperText' | translate">
+      <cds-label
+        [helperText]="'dashboardManagement.addModal.descriptionHelperText' | translate"
+        [invalid]="getControlInvalid('description')"
+      >
         {{ 'dashboardManagement.description' | translate }}
 
         <input
+          [invalid]="getControlInvalid('description')"
           formControlName="description"
           cdsText
           placeholder="{{ 'dashboardManagement.addModal.descriptionPlaceholder' | translate }}"

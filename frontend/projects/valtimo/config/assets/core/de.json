@@ -220,7 +220,7 @@
     "delete": "Löschen",
     "deleteModalContent": "Sind Sie sicher, dass Sie dieses Dashboard löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "description": "Beschreibung",
-    "key": "Taste",
+    "key": "Schlüssel",
     "name": "Name",
     "noResults": {
       "description": "Klicken Sie auf <strong>Neues Dashboard hinzufügen</strong>, um mit der Gestaltung Ihres Dashboards zu beginnen",

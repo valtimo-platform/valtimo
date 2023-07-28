@@ -89,6 +89,10 @@ export class AccessControlService {
     );
   }
 
+  public exportRolePermissions(roles: string[]): Observable<object[]> {
+    return this.http.post<object[]>(`${this.valtimoEndpointUri}v1/permissions/search`, {roles});
+  }
+
   public updateRolePermissions(roleKey: string, updatedPermission: object): Observable<object> {
     return this.http.put<object>(
       `${this.valtimoEndpointUri}v1/roles/${roleKey}/permissions`,

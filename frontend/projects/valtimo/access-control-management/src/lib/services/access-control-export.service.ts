@@ -24,22 +24,26 @@ export class AccessControlExportService {
   constructor(private readonly accessControlService: AccessControlService) {}
 
   public exportRoles(event: ExportRoleOutput): Observable<boolean> {
-    return combineLatest([
-      ...event.roleKeys.map(roleKey => this.accessControlService.getRolePermissions(roleKey)),
-    ]).pipe(
-      tap(res => {
-        if (event.type === 'unified') {
-          this.downloadJson(
-            res.reduce((acc, curr) => [...acc, ...curr], []),
-            event.type
-          );
-        } else {
-          res.forEach((permissions, index) => {
-            const roleKey = event.roleKeys[index];
-            this.downloadJson(permissions, event.type, roleKey);
-          });
-        }
-      }),
+    return (
+      event.type === 'unified'
+        ? this.accessControlService.exportRolePermissions(event.roleKeys).pipe(
+            tap(res => {
+              this.downloadJson(res, event.type);
+            })
+          )
+        : combineLatest(
+            event.roleKeys.map((roleKey: string) =>
+              this.accessControlService.exportRolePermissions([roleKey])
+            )
+          ).pipe(
+            tap(res => {
+              res.forEach((permissions, index) => {
+                const roleKey = event.roleKeys[index];
+                this.downloadJson(permissions, event.type, roleKey);
+              });
+            })
+          )
+    ).pipe(
       map(() => true),
       catchError(() => of(false))
     );
