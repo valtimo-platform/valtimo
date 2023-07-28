@@ -21,7 +21,7 @@ import {
   TableItem,
   TableModel,
 } from 'carbon-components-angular';
-import {combineLatest, map, Observable, of, Subscription} from 'rxjs';
+import {combineLatest, map, Observable, of, startWith, Subscription} from 'rxjs';
 import {
   ActionItem,
   CarbonPaginationConfig,
@@ -53,7 +53,7 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   @Input() set data(value: Array<T>) {
     this._data = value;
 
-    if (!this.tableConfig) {
+    if (!this.tableConfig || !value) {
       return;
     }
 
@@ -79,7 +79,13 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   public batchText$: Observable<{SINGLE: any; MULTIPLE: any}> = combineLatest([
     this.translateService.stream('interface.table.singleSelect'),
     this.translateService.stream('interface.table.multipleSelect'),
-  ]).pipe(map(([SINGLE, MULTIPLE]) => ({SINGLE, MULTIPLE})));
+  ]).pipe(
+    map(([SINGLE, MULTIPLE]) => ({SINGLE, MULTIPLE})),
+    startWith({
+      SINGLE: this.translateService.instant('interface.table.singleSelect'),
+      MULTIPLE: this.translateService.instant('interface.table.multipleSelect'),
+    })
+  );
 
   public paginationTranslations$: Observable<Partial<PaginationTranslations>> = combineLatest([
     this.translateService.stream('interface.table.itemsPerPage'),
@@ -123,10 +129,18 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
 
   public ngAfterViewInit(): void {
     this._subscriptions$.add(this.getHeaderItems());
+
+    if (!this.data) {
+      return;
+    }
+
     this._tableData = this.getTableItems(this.data);
     this._tableModel.data = this._tableData;
 
-    this.setPaginationModel();
+    if (this.tableConfig.withPagination) {
+      this.setPaginationModel();
+    }
+
     this.cd.detectChanges();
   }
 

@@ -1,5 +1,7 @@
+import {DatePipe} from '@angular/common';
 import {AfterViewInit, Component, TemplateRef, ViewChild, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
+import {ArrowDown16, ArrowUp16, Edit16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {
   CarbonTableConfig,
@@ -7,7 +9,8 @@ import {
   createCarbonTableConfig,
   PageTitleService,
 } from '@valtimo/components';
-import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
+import {IconService} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
 import {DashboardItem, WidgetModalType} from '../../models';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
 
@@ -28,18 +31,16 @@ export class DashboardDetailsComponent implements AfterViewInit {
     this.translateService.stream('key'),
   ]).pipe(
     switchMap(([dashboardKey]) => this.dashboardManagementService.getDashboard(dashboardKey)),
-    tap(currentDashboard => {
+    tap((currentDashboard: DashboardItem) => {
       if (!currentDashboard) {
         return;
       }
-
-      console.log('dash', currentDashboard);
 
       this.pageTitleService.setCustomPageTitle(currentDashboard.title);
       this.pageTitleService.setCustomPageSubtitle(
         this.translateService.instant('dashboardManagement.widgets.metadata', {
           createdBy: currentDashboard.createdBy,
-          createdOn: currentDashboard.createdOn,
+          createdOn: this.datePipe.transform(currentDashboard.createdOn ?? '', 'd/M/yy, H:mm'),
           key: currentDashboard.key,
         })
       );
@@ -61,13 +62,16 @@ export class DashboardDetailsComponent implements AfterViewInit {
   public readonly showModal$ = new BehaviorSubject<boolean>(false);
 
   constructor(
-    private readonly route: ActivatedRoute,
+    private readonly dashboardManagementService: DashboardManagementService,
+    private readonly datePipe: DatePipe,
+    private readonly iconService: IconService,
     private readonly pageTitleService: PageTitleService,
-    private readonly translateService: TranslateService,
-    private readonly dashboardManagementService: DashboardManagementService
+    private readonly route: ActivatedRoute,
+    private readonly translateService: TranslateService
   ) {}
 
   public ngAfterViewInit(): void {
+    this.iconService.registerAll([ArrowDown16, ArrowUp16, Edit16]);
     this.setTableConfig();
   }
 
@@ -114,8 +118,6 @@ export class DashboardDetailsComponent implements AfterViewInit {
           ],
         },
       ],
-      searchable: true,
-      showSelectionColumn: false,
     });
   }
 

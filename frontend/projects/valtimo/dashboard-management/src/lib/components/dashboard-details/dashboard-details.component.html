@@ -2,7 +2,7 @@
   <div class="dashboard-detail-table">
     <valtimo-carbon-table
       [data]="widgetData$ | async"
-       [hideTableHeader]="true"
+      [hideTableHeader]="true"
       [loading]="loading$ | async"
       [tableConfig]="tableConfig"
     >
@@ -27,12 +27,12 @@
 
 <ng-template #moveButtonsTemplate>
   <div class="move-buttons-container">
-    <button [cdsButton]="'tertiary'" [iconOnly]="true">
-      <svg class="cds--btn__icon" cdsIcon="arrow--up" size="16"></svg>
+    <button cdsButton="tertiary" [iconOnly]="true">
+      <svg cdsIcon="arrow--up" size="16" class="cds--btn__icon"></svg>
     </button>
 
-    <button [cdsButton]="'tertiary'" [iconOnly]="true">
-      <svg class="cds--btn__icon" cdsIcon="arrow--down" size="16"></svg>
+    <button cdsButton="tertiary" [iconOnly]="true">
+      <svg cdsIcon="arrow--down" size="16" class="cds--btn__icon"></svg>
     </button>
   </div>
 </ng-template>
@@ -41,6 +41,7 @@
   <ng-template>
     <button cdsButton="tertiary" size="md" (click)="editDashboard()">
       {{ 'dashboardManagement.widgets.editButton' | translate }}
+
       <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
     </button>
   </ng-template>

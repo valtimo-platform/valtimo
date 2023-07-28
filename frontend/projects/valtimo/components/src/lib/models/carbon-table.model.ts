@@ -42,7 +42,7 @@ const defaultTableConfig: CarbonTableConfig = {
   showSelectionColumn: false,
   sortable: true,
   striped: false,
-  withPagination: true,
+  withPagination: false,
 };
 
 export const createCarbonTableConfig = (config: CarbonTableConfig): CarbonTableConfig => ({

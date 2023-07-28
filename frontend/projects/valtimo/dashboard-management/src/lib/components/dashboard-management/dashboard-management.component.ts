@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, OnInit, ViewEncapsulation} from '@angular/core';
-import {AbstractControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {AbstractControl, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {CarbonTableConfig, ColumnType, createCarbonTableConfig} from '@valtimo/components';
 import {BehaviorSubject, finalize, Observable} from 'rxjs';
 import {DashboardItem} from '../../models';
@@ -63,7 +63,7 @@ export class DashboardManagementComponent implements OnInit {
   public ngOnInit(): void {
     this.dashboardManagementService.loadData();
     this.form = this.fb.group({
-      description: this.fb.control(''),
+      description: this.fb.control('', [Validators.required]),
       title: this.fb.control('', [Validators.required]),
     });
   }
@@ -97,6 +97,16 @@ export class DashboardManagementComponent implements OnInit {
         })
       )
     );
+  }
+
+  public getControlInvalid(controlKey: string): boolean {
+    const control: AbstractControl | null = this.form.get(controlKey);
+
+    if (!control) {
+      return true;
+    }
+
+    return !control.valid && !control.pristine;
   }
 
   public openModal(): void {
