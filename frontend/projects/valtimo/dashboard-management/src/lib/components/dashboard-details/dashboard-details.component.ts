@@ -90,7 +90,7 @@ export class DashboardDetailsComponent implements AfterViewInit {
       fields: [
         {
           columnType: ColumnType.TEXT,
-          fieldName: 'name',
+          fieldName: 'title',
           translationKey: 'Name',
         },
         {
