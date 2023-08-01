@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
-import {DashboardService} from '../../services';
+import {Component, ViewEncapsulation} from '@angular/core';
+import {DashboardService, WidgetService} from '../../services';
 import {Dashboard} from '../../models';
 import {Observable} from 'rxjs';
 
 @Component({
   selector: 'valtimo-widget-dashboard',
   templateUrl: './widget-dashboard.component.html',
-  styleUrls: ['./widget-dashboard.component.css'],
+  styleUrls: ['./widget-dashboard.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class WidgetDashboardComponent {
   public dashboards$: Observable<Array<Dashboard>> = this.dashboardService.getDashboards();
 
-  constructor(private readonly dashboardService: DashboardService) {}
+  constructor(
+    private readonly dashboardService: DashboardService,
+    private readonly widgetService: WidgetService
+  ) {}
 }

@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard
- */
+import {InjectionToken} from '@angular/core';
+import {DisplayTypeSpecification} from '../models';
 
-export * from './lib/components/dashboard/dashboard.component';
-export * from './lib/components/widget-dashboard/widget-dashboard.component';
-export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component';
-export * from './lib/dashboard.module';
-export * from './lib/display-types';
-export * from './lib/constants';
+const DISPLAY_TYPE_TOKEN = new InjectionToken<DisplayTypeSpecification | null>(
+  'Supported display types'
+);
+
+export {DISPLAY_TYPE_TOKEN};

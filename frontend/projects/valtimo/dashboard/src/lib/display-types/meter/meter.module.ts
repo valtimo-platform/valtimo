@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard
- */
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {MeterDisplayComponent} from './components/meter-display/meter-display.component';
+import {DISPLAY_TYPE_TOKEN} from '../../constants';
+import {meterSpecification} from './meter.specification';
 
-export * from './lib/components/dashboard/dashboard.component';
-export * from './lib/components/widget-dashboard/widget-dashboard.component';
-export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component';
-export * from './lib/dashboard.module';
-export * from './lib/display-types';
-export * from './lib/constants';
+@NgModule({
+  declarations: [MeterDisplayComponent],
+  imports: [CommonModule],
+  exports: [MeterDisplayComponent],
+  providers: [{provide: DISPLAY_TYPE_TOKEN, useValue: meterSpecification, multi: true}],
+})
+export class MeterModule {}

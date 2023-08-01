@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard
- */
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {BigNumberDisplayComponent} from './components/big-number-display/big-number-display.component';
+import {DISPLAY_TYPE_TOKEN} from '../../constants';
+import {bigNumberSpecification} from './big-number.specification';
 
-export * from './lib/components/dashboard/dashboard.component';
-export * from './lib/components/widget-dashboard/widget-dashboard.component';
-export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component';
-export * from './lib/dashboard.module';
-export * from './lib/display-types';
-export * from './lib/constants';
+@NgModule({
+  declarations: [BigNumberDisplayComponent],
+  imports: [CommonModule],
+  exports: [BigNumberDisplayComponent],
+  providers: [{provide: DISPLAY_TYPE_TOKEN, useValue: bigNumberSpecification, multi: true}],
+})
+export class BigNumberModule {}

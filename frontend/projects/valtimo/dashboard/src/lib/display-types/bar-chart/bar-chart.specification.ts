@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard
- */
+import {DisplayTypeSpecification} from '../../models';
+import {BarChartDisplayComponent} from './components/bar-chart-display/bar-chart-display.component';
 
-export * from './lib/components/dashboard/dashboard.component';
-export * from './lib/components/widget-dashboard/widget-dashboard.component';
-export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component';
-export * from './lib/dashboard.module';
-export * from './lib/display-types';
-export * from './lib/constants';
+export const barChartSpecification: DisplayTypeSpecification = {
+  displayTypeKey: 'bar-chart',
+  displayComponent: BarChartDisplayComponent,
+  width: 1,
+  height: 2,
+  translations: {},
+};

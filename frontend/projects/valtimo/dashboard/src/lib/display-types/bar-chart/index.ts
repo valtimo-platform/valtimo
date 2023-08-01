@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard
- */
-
-export * from './lib/components/dashboard/dashboard.component';
-export * from './lib/components/widget-dashboard/widget-dashboard.component';
-export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component';
-export * from './lib/dashboard.module';
-export * from './lib/display-types';
-export * from './lib/constants';
+export * from './models';
+export * from './components';
+export * from './bar-chart.specification';
+export * from './bar-chart.module';

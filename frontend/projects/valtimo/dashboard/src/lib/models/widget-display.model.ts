@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard
- */
+enum WidgetSeverity {
+  BLACK = 'valtimo-severity__black',
+  GREEN = 'valtimo-severity__green',
+  YELLOW = 'valtimo-severity__yellow',
+  ORANGE = 'valtimo-severity__orange',
+  RED = 'valtimo-severity__red',
+}
 
-export * from './lib/components/dashboard/dashboard.component';
-export * from './lib/components/widget-dashboard/widget-dashboard.component';
-export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component';
-export * from './lib/dashboard.module';
-export * from './lib/display-types';
-export * from './lib/constants';
+export {WidgetSeverity};

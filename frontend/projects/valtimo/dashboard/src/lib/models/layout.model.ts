@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard
- */
+interface WidgetConfigurationBin {
+  configurationKey: string;
+  width: number;
+  height: number;
+}
 
-export * from './lib/components/dashboard/dashboard.component';
-export * from './lib/components/widget-dashboard/widget-dashboard.component';
-export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component';
-export * from './lib/dashboard.module';
-export * from './lib/display-types';
-export * from './lib/constants';
+interface PackResult {
+  height: number;
+  width: number;
+  items: Array<{width: number; height: number; x: number; y: number; item: WidgetConfigurationBin}>;
+}
+
+export {WidgetConfigurationBin, PackResult};

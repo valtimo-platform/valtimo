@@ -26,6 +26,7 @@ interface DashboardWidgetConfiguration {
   dataSourceKey: string;
   displayType: string;
   dataSourceProperties: object;
+  displayTypeProperties: object;
 }
 
 export {Dashboard, DashboardWidgetConfiguration};

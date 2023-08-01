@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard
- */
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {DisplayComponent} from '../../../../models';
+import {MeterData, MeterDisplayTypeProperties} from '../../models';
 
-export * from './lib/components/dashboard/dashboard.component';
-export * from './lib/components/widget-dashboard/widget-dashboard.component';
-export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component';
-export * from './lib/dashboard.module';
-export * from './lib/display-types';
-export * from './lib/constants';
+@Component({
+  selector: 'valtimo-meter-display',
+  templateUrl: './meter-display.component.html',
+  styleUrls: ['./meter-display.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class MeterDisplayComponent implements DisplayComponent {
+  @Input() displayTypeKey: string;
+  @Input() data: MeterData;
+  @Input() displayTypeProperties: MeterDisplayTypeProperties;
+}

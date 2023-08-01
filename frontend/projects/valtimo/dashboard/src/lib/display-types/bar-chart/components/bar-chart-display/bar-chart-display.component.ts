@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard
- */
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {DisplayComponent} from '../../../../models';
+import {BarChartData, BarChartDisplayTypeProperties} from '../../models';
 
-export * from './lib/components/dashboard/dashboard.component';
-export * from './lib/components/widget-dashboard/widget-dashboard.component';
-export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component';
-export * from './lib/dashboard.module';
-export * from './lib/display-types';
-export * from './lib/constants';
+@Component({
+  selector: 'valtimo-bar-chart-display',
+  templateUrl: './bar-chart-display.component.html',
+  styleUrls: ['./bar-chart-display.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class BarChartDisplayComponent implements DisplayComponent {
+  @Input() displayTypeKey: string;
+  @Input() data: BarChartData;
+  @Input() displayTypeProperties: BarChartDisplayTypeProperties;
+}

@@ -14,13 +14,27 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard
- */
+import {Observable} from 'rxjs';
+import {EventEmitter} from '@angular/core';
 
-export * from './lib/components/dashboard/dashboard.component';
-export * from './lib/components/widget-dashboard/widget-dashboard.component';
-export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component';
-export * from './lib/dashboard.module';
-export * from './lib/display-types';
-export * from './lib/constants';
+interface ConfigurationComponent {
+  save$: Observable<void>;
+  disabled$: Observable<boolean>;
+  valid: EventEmitter<boolean>;
+  prefillConfiguration$?: Observable<object>;
+  configuration: EventEmitter<object>;
+}
+
+interface DisplayTypeConfigurationComponent extends ConfigurationComponent {
+  displayTypeKey: string;
+}
+
+interface DataSourceConfigurationComponent extends ConfigurationComponent {
+  dataSourceKey: string;
+}
+
+export {
+  ConfigurationComponent,
+  DisplayTypeConfigurationComponent,
+  DataSourceConfigurationComponent,
+};

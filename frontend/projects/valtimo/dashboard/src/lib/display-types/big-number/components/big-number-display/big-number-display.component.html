@@ -14,22 +14,16 @@
   ~ limitations under the License.
   -->
 
-<div *ngIf="dashboards$ | async as dashboards" class="dashboards-container">
-  <div *ngIf="dashboards.length === 1">
-    <h4>{{ dashboards[0].title }}</h4>
+<section class="valtimo-big-number-widget__header">
+  <h3 class="valtimo-big-number-widget__title">{{ displayTypeProperties.title }}</h3>
 
-    <valtimo-widget-dashboard-content
-      [dashboard]="dashboards[0]"
-    ></valtimo-widget-dashboard-content>
-  </div>
+  <span class="valtimo-big-number-widget__subtitle"> {{ displayTypeProperties.subtitle }} </span>
+</section>
 
-  <div *ngIf="dashboards.length > 1">
-    <cds-tabs>
-      <cds-tab *ngFor="let dashboard of dashboards" [heading]="dashboard.title">
-        <valtimo-widget-dashboard-content
-          [dashboard]="dashboard"
-        ></valtimo-widget-dashboard-content>
-      </cds-tab>
-    </cds-tabs>
-  </div>
-</div>
+<section class="valtimo-big-number-widget__content">
+  <span [class]="['valtimo-big-number-widget__number', severityClass]">{{ data?.value }}</span>
+
+  <span *ngIf="displayTypeProperties" class="valtimo-big-number-widget__label">
+    {{ displayTypeProperties.label }}
+  </span>
+</section>

@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard
- */
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {BarChartDisplayComponent} from './components/bar-chart-display/bar-chart-display.component';
+import {DISPLAY_TYPE_TOKEN} from '../../constants';
+import {barChartSpecification} from './bar-chart.specification';
 
-export * from './lib/components/dashboard/dashboard.component';
-export * from './lib/components/widget-dashboard/widget-dashboard.component';
-export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component';
-export * from './lib/dashboard.module';
-export * from './lib/display-types';
-export * from './lib/constants';
+@NgModule({
+  declarations: [BarChartDisplayComponent],
+  imports: [CommonModule],
+  exports: [BarChartDisplayComponent],
+  providers: [{provide: DISPLAY_TYPE_TOKEN, useValue: barChartSpecification, multi: true}],
+})
+export class BarChartModule {}

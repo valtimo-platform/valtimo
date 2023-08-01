@@ -14,13 +14,26 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of dashboard
- */
+import {Type} from '@angular/core';
+import {DisplayTypeConfigurationComponent} from './configuration.model';
 
-export * from './lib/components/dashboard/dashboard.component';
-export * from './lib/components/widget-dashboard/widget-dashboard.component';
-export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component';
-export * from './lib/dashboard.module';
-export * from './lib/display-types';
-export * from './lib/constants';
+interface DisplayComponent {
+  displayTypeKey: string;
+  displayTypeProperties: object;
+  data: object;
+}
+
+interface DisplayTypeSpecification {
+  displayTypeKey: string;
+  displayComponent: Type<DisplayComponent>;
+  configurationComponent?: Type<DisplayTypeConfigurationComponent>;
+  width: number;
+  height: number;
+  translations: {
+    [langKey: string]: {
+      [translationKey: string]: string;
+    };
+  };
+}
+
+export {DisplayComponent, DisplayTypeSpecification};

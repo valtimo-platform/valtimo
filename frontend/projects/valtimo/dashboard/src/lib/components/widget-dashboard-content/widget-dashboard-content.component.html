@@ -14,8 +14,14 @@
   ~ limitations under the License.
   -->
 
-<div>
-  <pre>
-    {{ dashboard | json }}
-  </pre>
+<div #widgetContainer class="widget-container">
+  <ng-container *ngIf="widgetConfigurations$ | async as widgetConfigurations">
+    <ng-container *ngFor="let config of widgetConfigurations">
+      <div #widgetConfiguration class="widget-configuration" [id]="config.key">
+        <div class="widget-configuration-content">
+          <ng-container #widgetConfigurationContent></ng-container>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
 </div>
