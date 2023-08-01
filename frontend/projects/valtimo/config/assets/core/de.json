@@ -203,7 +203,8 @@
     },
     "task": {
       "title": "Aufgabe"
-    }
+    },
+    "noWidgets": "Für dieses Dashboard wurden keine Widgets konfiguriert."
   },
   "dashboardManagement": {
     "addDashboard": "Neues Dashboard hinzufügen",

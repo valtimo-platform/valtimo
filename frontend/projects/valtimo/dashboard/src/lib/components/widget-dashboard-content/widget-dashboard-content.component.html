@@ -23,5 +23,9 @@
         </div>
       </div>
     </ng-container>
+
+    <div *ngIf="widgetConfigurations.length === 0" class="no-widgets-message">
+      {{ 'dashboard.noWidgets' | translate }}
+    </div>
   </ng-container>
 </div>

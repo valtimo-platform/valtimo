@@ -20,7 +20,7 @@ import {MeterDisplayComponent} from './components/meter-display/meter-display.co
 export const meterSpecification: DisplayTypeSpecification = {
   displayTypeKey: 'meter',
   displayComponent: MeterDisplayComponent,
-  width: 1,
-  height: 2,
+  width: 2,
+  height: 1,
   translations: {},
 };

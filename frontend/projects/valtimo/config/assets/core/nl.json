@@ -203,7 +203,8 @@
     },
     "task": {
       "title": "Taak"
-    }
+    },
+    "noWidgets": "Er zijn geen widgets geconfigureerd voor dit dashboard."
   },
   "dashboardManagement": {
     "addDashboard": "Nieuw dashboard toevoegen",

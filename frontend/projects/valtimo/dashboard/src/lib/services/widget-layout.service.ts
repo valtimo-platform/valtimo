@@ -80,21 +80,53 @@ export class WidgetLayoutService implements OnDestroy {
       this.widgetContainerWidth$,
       this.widgetConfigurationBins$,
     ]).subscribe(([widgetContainerWidth, configurationBins]) => {
-      const widget1xWidth = this.getWidget1xWidth(widgetContainerWidth);
+      const amountOfMinWidthColumns = this.getAmountOfMinWidthColumns(widgetContainerWidth);
+      const widget1xWidth = this.getWidget1xWidth(widgetContainerWidth, amountOfMinWidthColumns);
       const binsToFit = configurationBins.map(configurationBin => ({
         ...configurationBin,
         width: configurationBin.width * widget1xWidth,
         height: configurationBin.height * WIDGET_1X_HEIGHT,
       }));
-      const result: PackResult = pack(binsToFit, {maxWidth: widgetContainerWidth});
-      const resultWithMaxWidth = this.getResultWithMaxWidth(result, widgetContainerWidth);
+      const heightConstraint = this.getHeightConstraint(configurationBins, amountOfMinWidthColumns);
+      const resultWithoutHeightConstraint = this.getPackResult(binsToFit, widgetContainerWidth);
+      const resultWithHeightConstraint = this.getPackResult(
+        binsToFit,
+        widgetContainerWidth,
+        heightConstraint
+      );
+      const resultWithHeightConstraintExceedsBoundary = this.checkIfPackResultExceedsBoundary(
+        resultWithHeightConstraint,
+        widgetContainerWidth
+      );
+      const resultToUse = resultWithHeightConstraintExceedsBoundary
+        ? resultWithoutHeightConstraint
+        : resultWithHeightConstraint;
+      const resultWithMaxWidth = this.getResultWithMaxWidth(resultToUse, widgetContainerWidth);
 
       this._widgetPackResult$.next(resultWithMaxWidth);
     });
   }
 
-  private getWidget1xWidth(containerWidth: number): number {
-    const amountOfMinWidthColumns = Math.floor(containerWidth / WIDGET_1X_MIN_WIDTH);
+  private getPackResult(
+    binsToFit: Array<WidgetConfigurationBin>,
+    maxWidth: number,
+    maxHeight?: number
+  ): PackResult {
+    return pack(binsToFit, {
+      maxWidth,
+      ...(maxHeight && {maxHeight}),
+    });
+  }
+
+  private checkIfPackResultExceedsBoundary(result: PackResult, maxWidth: number): boolean {
+    return !!result.items.find(item => item.width + item.x > maxWidth);
+  }
+
+  private getAmountOfMinWidthColumns(containerWidth: number): number {
+    return Math.floor(containerWidth / WIDGET_1X_MIN_WIDTH);
+  }
+
+  private getWidget1xWidth(containerWidth: number, amountOfMinWidthColumns: number): number {
     const widget1xWidth = Math.floor(containerWidth / (amountOfMinWidthColumns || 1));
 
     return widget1xWidth;
@@ -108,5 +140,25 @@ export class WidgetLayoutService implements OnDestroy {
         width: item.width > containerWidth ? containerWidth : item.width,
       })),
     };
+  }
+
+  private getHeightConstraint(
+    binsToFit: Array<WidgetConfigurationBin>,
+    amountOfMinWidthColumns: number
+  ): number {
+    const amountOfSpacesNeeded = binsToFit.reduce((acc, curr) => {
+      return acc + curr.height * curr.width;
+    }, 0);
+    const minAmountOfRowsNeeded = Math.ceil(amountOfSpacesNeeded / amountOfMinWidthColumns);
+    const tallestWidgetHeightSpace = binsToFit.reduce(
+      (acc, curr) => (curr.height > acc ? curr.height : acc),
+      0
+    );
+    const amountOfRowsNeeded =
+      minAmountOfRowsNeeded < tallestWidgetHeightSpace
+        ? tallestWidgetHeightSpace
+        : minAmountOfRowsNeeded;
+
+    return amountOfRowsNeeded * WIDGET_1X_HEIGHT;
   }
 }
