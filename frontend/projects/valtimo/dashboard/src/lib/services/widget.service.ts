@@ -16,27 +16,36 @@
 
 import {Inject, Injectable} from '@angular/core';
 import {DISPLAY_TYPE_TOKEN} from '../constants';
-import {DisplayTypeSpecification} from '../models';
+import {DisplayTypeSpecification, WidgetData} from '../models';
 import {BehaviorSubject, filter, Observable} from 'rxjs';
+import {ConfigService} from '@valtimo/config';
+import {HttpClient} from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
 })
 export class WidgetService {
+  private _endpointUri: string;
+
   private readonly _supportedDisplayTypes$ =
     new BehaviorSubject<Array<DisplayTypeSpecification> | null>(null);
 
   public get supportedDisplayTypes$(): Observable<Array<DisplayTypeSpecification>> {
-    return this._supportedDisplayTypes$
-      .asObservable()
-      .pipe(filter(specifications => !!specifications));
+    return this._supportedDisplayTypes$.pipe(filter(specifications => !!specifications));
   }
 
   constructor(
     @Inject(DISPLAY_TYPE_TOKEN)
-    private readonly supportedDisplayTypes: Array<DisplayTypeSpecification | null>
+    private readonly supportedDisplayTypes: Array<DisplayTypeSpecification | null>,
+    private readonly configService: ConfigService,
+    private readonly http: HttpClient
   ) {
-    this.setSupportedDisplayTypes(supportedDisplayTypes);
+    this._endpointUri = `${this.configService.config.valtimoApi.endpointUri}/v1/dashboard`;
+    this.setSupportedDisplayTypes(this.supportedDisplayTypes);
+  }
+
+  public getWidgetData(dashboardKey: string): Observable<WidgetData[]> {
+    return this.http.get<WidgetData[]>(`${this._endpointUri}/${dashboardKey}/data`);
   }
 
   private setSupportedDisplayTypes(

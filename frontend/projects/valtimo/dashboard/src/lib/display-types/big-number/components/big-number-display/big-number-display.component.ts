@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {DisplayComponent, WidgetSeverity} from '../../../../models';
 import {BigNumberData, BigNumberDisplayTypeProperties} from '../../models';
@@ -45,5 +44,13 @@ export class BigNumberDisplayComponent implements DisplayComponent {
     }
 
     return WidgetSeverity.RED;
+  }
+
+  public get numberFontSize(): number {
+    if (!this.data) {
+      return 122;
+    }
+
+    return Math.floor(122 / this.data.value.toString().length) + 20;
   }
 }

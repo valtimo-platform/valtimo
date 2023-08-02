@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Component, ViewEncapsulation} from '@angular/core';
+import {BehaviorSubject, Observable, take, tap} from 'rxjs';
+import {Dashboard, WidgetData} from '../../models';
 import {DashboardService, WidgetService} from '../../services';
-import {Dashboard} from '../../models';
-import {Observable} from 'rxjs';
 
 @Component({
   selector: 'valtimo-widget-dashboard',
@@ -27,9 +26,29 @@ import {Observable} from 'rxjs';
 })
 export class WidgetDashboardComponent {
   public dashboards$: Observable<Array<Dashboard>> = this.dashboardService.getDashboards();
+  public readonly activeWidgetData$ = new BehaviorSubject<{data: WidgetData[]; loading: boolean}>({
+    data: [],
+    loading: true,
+  });
 
   constructor(
     private readonly dashboardService: DashboardService,
     private readonly widgetService: WidgetService
   ) {}
+
+  public onTabSelected(dashboardKey: string): void {
+    this.widgetService
+      .getWidgetData(dashboardKey)
+      .pipe(
+        tap(() => {
+          this.activeWidgetData$.next({data: [], loading: true});
+        }),
+        take(1)
+      )
+      .subscribe((data: WidgetData[]) => this.activeWidgetData$.next({data, loading: false}));
+  }
+
+  public trackByIndex(index: number): number {
+    return index;
+  }
 }

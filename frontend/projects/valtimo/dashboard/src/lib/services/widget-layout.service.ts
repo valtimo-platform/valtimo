@@ -146,9 +146,7 @@ export class WidgetLayoutService implements OnDestroy {
     binsToFit: Array<WidgetConfigurationBin>,
     amountOfMinWidthColumns: number
   ): number {
-    const amountOfSpacesNeeded = binsToFit.reduce((acc, curr) => {
-      return acc + curr.height * curr.width;
-    }, 0);
+    const amountOfSpacesNeeded = binsToFit.reduce((acc, curr) => acc + curr.height * curr.width, 0);
     const minAmountOfRowsNeeded = Math.ceil(amountOfSpacesNeeded / amountOfMinWidthColumns);
     const tallestWidgetHeightSpace = binsToFit.reduce(
       (acc, curr) => (curr.height > acc ? curr.height : acc),

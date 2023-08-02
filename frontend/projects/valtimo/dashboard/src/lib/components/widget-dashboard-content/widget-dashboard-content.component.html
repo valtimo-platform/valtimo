@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<div #widgetContainer class="widget-container">
+<div #widgetContainer [class.loading]="isLoading$ | async" class="widget-container">
   <ng-container *ngIf="widgetConfigurations$ | async as widgetConfigurations">
     <ng-container *ngFor="let config of widgetConfigurations">
       <div #widgetConfiguration class="widget-configuration" [id]="config.key">
@@ -29,3 +29,5 @@
     </div>
   </ng-container>
 </div>
+
+<cds-loading *ngIf="isLoading$ | async" class="widget-loader"></cds-loading>

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   AfterViewInit,
   Component,
@@ -27,11 +26,12 @@ import {
   ViewChildren,
   ViewContainerRef,
 } from '@angular/core';
-import {Dashboard, DashboardWidgetConfiguration, DisplayComponent} from '../../models';
-import {WidgetLayoutService} from '../../services/widget-layout.service';
 import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
+
+import {Dashboard, DashboardWidgetConfiguration, DisplayComponent, WidgetData} from '../../models';
 import {WidgetService} from '../../services';
+import {WidgetLayoutService} from '../../services/widget-layout.service';
 
 @Component({
   selector: 'valtimo-widget-dashboard-content',
@@ -48,6 +48,13 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
 
   @ViewChild('widgetContainer') private _widgetContainerRef: ElementRef<HTMLDivElement>;
 
+  public readonly isLoading$ = new BehaviorSubject<boolean>(true);
+  private _widgetData$ = new BehaviorSubject<WidgetData[]>([]);
+  @Input() set widgetData(value: {data: WidgetData[]; loading: boolean}) {
+    this.isLoading$.next(value.loading);
+    this._widgetData$.next(value.data);
+  }
+
   @Input() set dashboard(value: Dashboard) {
     this.setWidgetConfigurations(value);
   }
@@ -56,7 +63,7 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
     new BehaviorSubject<Array<DashboardWidgetConfiguration> | null>(null);
 
   private _observer!: ResizeObserver;
-  private _packResultSubscription!: Subscription;
+  private _subscriptions = new Subscription();
 
   constructor(
     private readonly layoutService: WidgetLayoutService,
@@ -75,7 +82,7 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
 
   public ngOnDestroy(): void {
     this._observer?.disconnect();
-    this._packResultSubscription?.unsubscribe();
+    this._subscriptions?.unsubscribe();
   }
 
   private setWidgetConfigurations(dashboard: Dashboard): void {
@@ -100,50 +107,59 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
   }
 
   private openPackResultSubscription(): void {
-    this._packResultSubscription = this.layoutService.widgetPackResult$.subscribe(packResult => {
-      this.renderer.setStyle(
-        this._widgetContainerRef.nativeElement,
-        'height',
-        `${packResult.height}px`
-      );
-
-      this._widgetConfigurationRefs.toArray().forEach(widgetConfigurationRef => {
-        const nativeElement = widgetConfigurationRef.nativeElement;
-        const configPackResult = packResult.items.find(
-          result => result.item.configurationKey === nativeElement.id
+    this._subscriptions.add(
+      this.layoutService.widgetPackResult$.subscribe(packResult => {
+        this.renderer.setStyle(
+          this._widgetContainerRef.nativeElement,
+          'height',
+          `${packResult.height}px`
         );
-        this.renderer.setStyle(nativeElement, 'height', `${configPackResult.height}px`);
-        this.renderer.setStyle(nativeElement, 'width', `${configPackResult.width}px`);
-        this.renderer.setStyle(nativeElement, 'left', `${configPackResult.x}px`);
-        this.renderer.setStyle(nativeElement, 'top', `${configPackResult.y}px`);
-      });
-    });
+
+        this._widgetConfigurationRefs.toArray().forEach(widgetConfigurationRef => {
+          const nativeElement = widgetConfigurationRef.nativeElement;
+          const configPackResult = packResult.items.find(
+            result => result.item.configurationKey === nativeElement.id
+          );
+          this.renderer.setStyle(nativeElement, 'height', `${configPackResult?.height}px`);
+          this.renderer.setStyle(nativeElement, 'width', `${configPackResult?.width}px`);
+          this.renderer.setStyle(nativeElement, 'left', `${configPackResult?.x}px`);
+          this.renderer.setStyle(nativeElement, 'top', `${configPackResult?.y}px`);
+        });
+      })
+    );
   }
 
   private renderWidgets(): void {
-    combineLatest([this.widgetConfigurations$, this.widgetService.supportedDisplayTypes$])
-      .pipe(take(1))
-      .subscribe(([configurations, displayTypes]) => {
-        configurations.forEach((configuration, index) => {
+    this._subscriptions.add(
+      combineLatest([
+        this.widgetConfigurations$,
+        this.widgetService.supportedDisplayTypes$,
+        this._widgetData$,
+      ]).subscribe(([configurations, displayTypes, data]) => {
+        configurations?.forEach((configuration, index) => {
           const displayType = displayTypes.find(
             type => type.displayTypeKey === configuration.displayType
           );
           const vcRef = this._widgetConfigurationContentVcRefs.toArray()[index];
 
-          if (displayType) {
+          if (displayType && data) {
             vcRef.clear();
             const componentInstance: ComponentRef<DisplayComponent> = vcRef.createComponent(
               displayType.displayComponent
             );
             componentInstance.setInput('displayTypeKey', configuration.displayType);
+            componentInstance.setInput('displayTypeProperties', {
+              ...configuration.displayTypeProperties,
+              title: configuration.title,
+            });
+
             componentInstance.setInput(
-              'displayTypeProperties',
-              configuration.displayTypeProperties
+              'data',
+              data.find(dataItem => dataItem.key === configuration.key)?.data
             );
-            // mock value, implement real data source
-            componentInstance.setInput('data', {value: 8});
           }
         });
-      });
+      })
+    );
   }
 }

@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-export * from './dashboard.model';
-export * from './widget-display.model';
 export * from './configuration.model';
+export * from './dashboard.model';
 export * from './display-type.model';
 export * from './layout.model';
+export * from './widget-data.model';
+export * from './widget-display.model';

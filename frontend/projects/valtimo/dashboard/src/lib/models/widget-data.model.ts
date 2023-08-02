@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,38 +14,9 @@
  * limitations under the License.
  */
 
-.widget-container {
-  margin-top: 16px;
-  width: calc(100% + 16px);
-  margin-left: -8px;
-  position: relative;
+interface WidgetData {
+  key: string;
+  data: object;
 }
 
-.widget-configuration {
-  position: absolute;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.widget-configuration-content {
-  width: calc(100% - 16px);
-  height: calc(100% - 16px);
-  background-color: white;
-}
-
-.no-widgets-message {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-.widget-loader {
-  display: flex;
-  justify-content: center;
-  padding-top: 32px;
-}
-
-.loading {
-  display: none;
-}
+export {WidgetData};

@@ -21,7 +21,11 @@
 </section>
 
 <section class="valtimo-big-number-widget__content">
-  <span [class]="['valtimo-big-number-widget__number', severityClass]">{{ data?.value }}</span>
+  <span
+    [class]="['valtimo-big-number-widget__number', severityClass]"
+    [style.fontSize.px]="numberFontSize"
+    >{{ data?.value }}</span
+  >
 
   <span *ngIf="displayTypeProperties" class="valtimo-big-number-widget__label">
     {{ displayTypeProperties.label }}
