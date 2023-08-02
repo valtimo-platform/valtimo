@@ -40,7 +40,7 @@ export class WidgetService {
     private readonly configService: ConfigService,
     private readonly http: HttpClient
   ) {
-    this._endpointUri = `${this.configService.config.valtimoApi.endpointUri}/v1/dashboard`;
+    this._endpointUri = `${this.configService.config.valtimoApi.endpointUri}v1/dashboard`;
     this.setSupportedDisplayTypes(this.supportedDisplayTypes);
   }
 
