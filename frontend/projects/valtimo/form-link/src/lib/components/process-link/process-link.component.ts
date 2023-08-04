@@ -53,9 +53,9 @@ export class ProcessLinkComponent {
           switchMap(processLinks => {
             if (processLinks.length > 0) {
               return of({processLink: processLinks[0]});
-            } else {
-              return this.processLinkService.getProcessLinkCandidates(activityType);
             }
+
+            return this.processLinkService.getProcessLinkCandidates(activityType);
           }),
           tap(res => {
             const result = res as any;

@@ -16,6 +16,7 @@
 
 export * from './configuration.model';
 export * from './dashboard.model';
+export * from './data-source.model';
 export * from './display-type.model';
 export * from './layout.model';
 export * from './widget-data.model';

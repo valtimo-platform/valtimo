@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export * from './models';
 export * from './components';
-export * from './meter.specification';
 export * from './meter.module';
+export * from './meter.specification';
+export * from './models';

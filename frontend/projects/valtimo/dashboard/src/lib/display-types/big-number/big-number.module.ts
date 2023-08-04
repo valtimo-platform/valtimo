@@ -16,13 +16,22 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {BigNumberDisplayComponent} from './components/big-number-display/big-number-display.component';
 import {DISPLAY_TYPE_TOKEN} from '../../constants';
 import {bigNumberSpecification} from './big-number.specification';
+import {ReactiveFormsModule} from '@angular/forms';
+import {WidgetTranslatePipeModule} from '../../pipes';
+import {CheckboxModule, InputModule} from 'carbon-components-angular';
+import {BigNumberConfigurationComponent, BigNumberDisplayComponent} from './components';
 
 @NgModule({
-  declarations: [BigNumberDisplayComponent],
-  imports: [CommonModule],
+  declarations: [BigNumberDisplayComponent, BigNumberConfigurationComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    WidgetTranslatePipeModule,
+    InputModule,
+    CheckboxModule,
+  ],
   exports: [BigNumberDisplayComponent],
   providers: [{provide: DISPLAY_TYPE_TOKEN, useValue: bigNumberSpecification, multi: true}],
 })

@@ -1,18 +1,38 @@
 import {
   Component,
+  EventEmitter,
   Inject,
   Input,
-  OnChanges,
   OnDestroy,
   OnInit,
+  Output,
   ViewEncapsulation,
 } from '@angular/core';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription} from 'rxjs';
-import {DashboardItem, WidgetModalType} from '../../models';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
+import {DashboardItem, WidgetDataSource, WidgetModalType} from '../../models';
+import {FormBuilder, Validators} from '@angular/forms';
 import {ListItem, NotificationService} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
 import {DOCUMENT} from '@angular/common';
+import {DashboardManagementService} from '../../services/dashboard-management.service';
+import {CARBON_CONSTANTS} from '@valtimo/components';
+import {
+  ConfigurationOutput,
+  DashboardWidgetConfiguration,
+  DisplayTypeSpecification,
+  WidgetService,
+  WidgetTranslationService,
+} from '@valtimo/dashboard';
 
 @Component({
   selector: 'valtimo-widget-modal',
@@ -21,39 +41,106 @@ import {DOCUMENT} from '@angular/common';
   encapsulation: ViewEncapsulation.None,
   providers: [NotificationService],
 })
-export class WidgetModalComponent implements OnInit, OnDestroy, OnChanges {
+export class WidgetModalComponent implements OnInit, OnDestroy {
   @Input() public showModal$: Observable<boolean>;
   @Input() public type: WidgetModalType;
   @Input() public dashboard: DashboardItem;
+  @Input() public widgetKey!: string;
+  @Input() public set editWidgetConfiguration(configuration: DashboardWidgetConfiguration) {
+    if (configuration) {
+      this.title.setValue(configuration.title);
+      this.dataSourceSelected({item: {key: configuration.dataSourceKey}} as any);
+      this.displayTypeSelected({item: {key: configuration.displayType}} as any);
+      this.dataSourcePrefillConfig$.next(configuration.dataSourceProperties);
+      this.displayTypePrefillConfig$.next(configuration.displayTypeProperties);
+    } else {
+      this.dataSourcePrefillConfig$.next(null);
+      this.displayTypePrefillConfig$.next(null);
+    }
+  }
+  @Output() public saveEvent = new EventEmitter<ConfigurationOutput>();
 
-  public form!: FormGroup;
-  public editDashboardForm!: FormGroup;
+  public readonly form = this.fb.group({
+    title: this.fb.control('', [Validators.required]),
+    dataSource: this.fb.control(null, [Validators.required]),
+    displayType: this.fb.control(null, [Validators.required]),
+  });
 
   public readonly open$ = new BehaviorSubject<boolean>(false);
+  public readonly selectedDataSourceKey$ = new BehaviorSubject<string>('');
+  public readonly selectedDisplayTypeKey$ = new BehaviorSubject<string>('');
 
-  private readonly _dataSourceItems$ = new BehaviorSubject<Array<string>>([]);
   public readonly dataSourceItems$: Observable<Array<ListItem>> = combineLatest([
-    this._dataSourceItems$,
+    this.dashboardManagementService.getDataSources(),
+    this.selectedDataSourceKey$,
     this.translateService.stream('key'),
   ]).pipe(
-    map(([dataSourceItems]) =>
-      dataSourceItems.map(mockItem => ({content: mockItem, selected: false}))
+    filter(([dataSources]) => !!dataSources),
+    tap(([dataSources, selectedDataSourceKey]) => {
+      if (selectedDataSourceKey) {
+        this.setCompatibleDisplayTypes(dataSources, selectedDataSourceKey);
+      } else {
+        this.resetCompatibleDisplayTypes();
+      }
+    }),
+    map(([dataSources, selectedDataSourceKey]) =>
+      dataSources.map(dataSource => ({
+        content: this.widgetTranslationService.instant('title', dataSource.key),
+        selected: selectedDataSourceKey === dataSource.key,
+        key: dataSource.key,
+      }))
     )
   );
-  private readonly _chartTypeItems$ = new BehaviorSubject<Array<string>>([]);
-  public readonly chartTypeItems$: Observable<Array<ListItem>> = combineLatest([
-    this._dataSourceItems$,
+
+  public readonly dataSourcePrefillConfig$ = new BehaviorSubject<object | null>(null);
+  public readonly displayTypePrefillConfig$ = new BehaviorSubject<object | null>(null);
+
+  private readonly _compatibleDisplayTypes$ = new BehaviorSubject<Array<DisplayTypeSpecification>>(
+    []
+  );
+
+  public readonly displayTypeItems$: Observable<Array<ListItem>> = combineLatest([
+    this._compatibleDisplayTypes$,
+    this.selectedDisplayTypeKey$,
     this.translateService.stream('key'),
   ]).pipe(
-    map(([chartTypeItems]) =>
-      chartTypeItems.map(mockItem => ({content: mockItem, selected: false}))
+    map(([compatibleDisplayTypes, selectedDisplayTypeKey]) =>
+      compatibleDisplayTypes.map(displayType => ({
+        content: this.widgetTranslationService.instant('title', displayType.displayTypeKey),
+        selected: displayType.displayTypeKey === selectedDisplayTypeKey,
+        key: displayType.displayTypeKey,
+      }))
     )
   );
-  public readonly roleItems$ = new BehaviorSubject<Array<ListItem>>([
-    {content: 'ROLE_ADMIN', selected: false},
-    {content: 'ROLE_USER', selected: false},
-    {content: 'ROLE_DEVELOPER', selected: false},
-  ]);
+
+  public readonly displayTypeDropdownDisabled$: Observable<boolean> = combineLatest([
+    this._compatibleDisplayTypes$,
+    this.selectedDataSourceKey$,
+  ]).pipe(
+    map(
+      ([compatibleDisplayTypes, selectedDataSourceKey]) =>
+        compatibleDisplayTypes?.length === 0 || !selectedDataSourceKey
+    ),
+    tap(displayTypeDropdownDisabled => {
+      if (displayTypeDropdownDisabled) {
+        this.displayType?.disable();
+      } else {
+        this.displayType?.enable();
+      }
+    })
+  );
+
+  public readonly dataSourceConfiguration$ = new BehaviorSubject<ConfigurationOutput>({
+    valid: false,
+    data: {},
+  });
+  public readonly displayTypeConfiguration$ = new BehaviorSubject<ConfigurationOutput>({
+    valid: false,
+    data: {},
+  });
+
+  public readonly disabled$ = new BehaviorSubject<boolean>(false);
+
   private _openSubscription!: Subscription;
 
   public get title() {
@@ -65,43 +152,23 @@ export class WidgetModalComponent implements OnInit, OnDestroy, OnChanges {
   public get dataSource() {
     return this.form.get('dataSource');
   }
-  public get chartType() {
-    return this.form.get('chartType');
-  }
 
-  public get dataSourceField() {
-    return this.form.get('dataSourceField');
-  }
-
-  public get dashboardTitle() {
-    return this.editDashboardForm.get('title');
-  }
-
-  public get dashboardDescription() {
-    return this.editDashboardForm.get('description');
-  }
-
-  public get dashboardRoles() {
-    return this.editDashboardForm.get('roles');
+  public get displayType() {
+    return this.form.get('displayType');
   }
 
   constructor(
+    @Inject(DOCUMENT) private readonly document: Document,
     private readonly fb: FormBuilder,
     private readonly translateService: TranslateService,
-    @Inject(DOCUMENT) private readonly document: Document,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly dashboardManagementService: DashboardManagementService,
+    private readonly widgetService: WidgetService,
+    private readonly widgetTranslationService: WidgetTranslationService
   ) {}
 
   public ngOnInit(): void {
-    this.setDropdownData();
     this.openOpenSubscription();
-    this.setForm();
-    this.setEditDashboardForm();
-  }
-
-  public ngOnChanges(): void {
-    this.setForm();
-    this.setEditDashboardForm();
   }
 
   public ngOnDestroy(): void {
@@ -110,86 +177,140 @@ export class WidgetModalComponent implements OnInit, OnDestroy, OnChanges {
 
   public closeModal(): void {
     this.open$.next(false);
-    this.form.reset();
-    this.editDashboardForm.reset();
-    this.setDropdownData();
+
+    setTimeout(() => {
+      this.enable();
+      this.form.reset();
+      this.selectedDataSourceKey$.next('');
+      this.selectedDisplayTypeKey$.next('');
+    }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
-  public save(): void {}
+  public save(): void {
+    this.disable();
 
-  public delete(): void {}
+    combineLatest([
+      this.selectedDataSourceKey$,
+      this.selectedDisplayTypeKey$,
+      this.displayTypeConfiguration$,
+      this.dataSourceConfiguration$,
+    ])
+      .pipe(
+        take(1),
+        map(
+          ([
+            selectedDataSourceKey,
+            selectedDisplayTypeKey,
+            displayTypeConfiguration,
+            dataSourceConfiguration,
+          ]) => ({
+            title: this.title.value,
+            displayType: selectedDisplayTypeKey,
+            dataSourceKey: selectedDataSourceKey,
+            dataSourceProperties: {...dataSourceConfiguration.data},
+            displayTypeProperties: {...displayTypeConfiguration.data},
+          })
+        ),
+        switchMap(widgetUpdateObject =>
+          this.type === 'create'
+            ? this.dashboardManagementService.createDashboardWidgetConfiguration(
+                this.dashboard.key,
+                widgetUpdateObject
+              )
+            : this.dashboardManagementService.updateDashboardWidgetConfigurations(
+                this.dashboard.key,
+                [{...widgetUpdateObject, key: this.widgetKey}]
+              )
+        )
+      )
+      .subscribe({
+        complete: () => {
+          this.saveEvent.emit();
+          this.closeModal();
+        },
+        error: () => {
+          this.enable();
+        },
+      });
+  }
 
-  public saveDashboard(): void {}
+  public delete(): void {
+    this.disable();
 
-  public dataSourceSelected(dataSource: any): void {
-    if (!this.dataSource) {
+    this.dashboardManagementService
+      .deleteDashboardWidgetConfiguration(this.dashboard.key, this.widgetKey)
+      .subscribe({
+        complete: () => {
+          this.saveEvent.emit();
+          this.closeModal();
+        },
+        error: () => {
+          this.enable();
+        },
+      });
+  }
+
+  public dataSourceSelected(dataSource: ListItem): void {
+    if (!dataSource) {
       return;
     }
 
-    this.dataSource.setValue(dataSource?.item?.content);
+    this.selectedDataSourceKey$.next(dataSource?.item?.key);
+    this.dataSource.setValue(dataSource?.item?.key);
   }
 
-  public chartTypeSelected(chartType: any): void {
-    if (!this.dataSource) {
+  public displayTypeSelected(displayType: ListItem): void {
+    if (!displayType) {
       return;
     }
 
-    this.dataSource.setValue(chartType?.item?.content);
+    this.selectedDisplayTypeKey$.next(displayType?.item?.key);
+    this.displayType.setValue(displayType?.item?.key);
   }
 
-  public copyKey(): void {
-    if (!this.key || !this.document.defaultView) {
-      return;
-    }
-
-    this.document.defaultView.navigator.clipboard.writeText(this.key.value);
-    this.notificationService.showToast({
-      caption: this.translateService.instant('dashboardManagement.widgets.form.keyCopied'),
-      type: 'success',
-      duration: 4000,
-      showClose: true,
-      title: this.translateService.instant('dashboardManagement.widgets.form.keyCopiedTitle'),
-    });
+  public dataSourceConfiguration(configuration: ConfigurationOutput): void {
+    this.dataSourceConfiguration$.next(configuration);
   }
 
-  private setDropdownData(): void {
-    this.setDataSourceItems();
-    this.setChartTypeItems();
-  }
-
-  // implement with new BE endpoints
-  private setDataSourceItems(): void {}
-
-  // implement with new BE endpoints
-  private setChartTypeItems(): void {}
-
-  private setForm(): void {
-    this.form = this.fb.group({
-      title: this.fb.control(''),
-      key: this.fb.control('', [Validators.required]),
-      dataSource: this.fb.control('', [Validators.required]),
-      chartType: this.fb.control('', [Validators.required]),
-      dataSourceField: this.fb.control('', [Validators.required]),
-    });
-
-    this.key?.setValue('test-key');
-  }
-
-  private setEditDashboardForm(): void {
-    this.editDashboardForm = this.fb.group({
-      title: this.fb.control('', [Validators.required]),
-      description: this.fb.control('', [Validators.required]),
-      roles: this.fb.control([], [Validators.required]),
-    });
-
-    this.dashboardTitle?.setValue(this.dashboard.title);
-    this.dashboardDescription?.setValue(this.dashboard.description);
-    this.dashboardRoles?.setValue(this.dashboard.roles);
+  public displayTypeConfiguration(configuration: ConfigurationOutput): void {
+    this.displayTypeConfiguration$.next(configuration);
   }
 
   private openOpenSubscription(): void {
     this._openSubscription = this.showModal$.subscribe(show => {
       this.open$.next(show);
     });
+  }
+
+  private resetCompatibleDisplayTypes(): void {
+    this._compatibleDisplayTypes$.next([]);
+  }
+
+  private setCompatibleDisplayTypes(
+    dataSources: Array<WidgetDataSource>,
+    selectedDataSourceKey: string
+  ): void {
+    this.widgetService.supportedDisplayTypes$.pipe(take(1)).subscribe(supportedDisplayTypes => {
+      const selectedDataSource = dataSources.find(source => source.key === selectedDataSourceKey);
+      const availableDataFeatures = selectedDataSource?.dataFeatures;
+      const compatibleDisplayTypes = supportedDisplayTypes.filter(displayType => {
+        const supportedDataFeatures = displayType.requiredDataFeatures.filter(feature =>
+          availableDataFeatures?.includes(feature)
+        );
+        return supportedDataFeatures.length === displayType.requiredDataFeatures.length;
+      });
+
+      this._compatibleDisplayTypes$.next(compatibleDisplayTypes);
+    });
+  }
+
+  private disable(): void {
+    this.disabled$.next(true);
+    this.form.disable();
+  }
+
+  private enable(): void {
+    this.disabled$.next(false);
+    this.form.enable();
   }
 }

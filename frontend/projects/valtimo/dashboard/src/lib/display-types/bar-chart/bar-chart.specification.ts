@@ -22,5 +22,16 @@ export const barChartSpecification: DisplayTypeSpecification = {
   displayComponent: BarChartDisplayComponent,
   width: 1,
   height: 2,
-  translations: {},
+  translations: {
+    nl: {
+      title: 'Staafdiagram',
+    },
+    en: {
+      title: 'Bar chart',
+    },
+    de: {
+      title: 'Balkendiagramm',
+    },
+  },
+  requiredDataFeatures: [],
 };

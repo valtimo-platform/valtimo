@@ -15,10 +15,14 @@
  */
 
 import {InjectionToken} from '@angular/core';
-import {DisplayTypeSpecification} from '../models';
+import {DataSourceSpecification, DisplayTypeSpecification} from '../models';
 
 const DISPLAY_TYPE_TOKEN = new InjectionToken<DisplayTypeSpecification | null>(
   'Supported display types'
 );
 
-export {DISPLAY_TYPE_TOKEN};
+const DATA_SOURCE_TOKEN = new InjectionToken<DataSourceSpecification | null>(
+  'Supported data sources'
+);
+
+export {DISPLAY_TYPE_TOKEN, DATA_SOURCE_TOKEN};

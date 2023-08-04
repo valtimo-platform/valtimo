@@ -22,7 +22,7 @@
   justify-content: space-between;
   width: 100%;
   height: 100%;
-  padding: 20px 20px 4px 20px;
+  padding: 20px;
 }
 
 .valtimo-big-number-widget {
@@ -38,17 +38,18 @@
   &__number {
     font-weight: lighter;
     font-size: 122px;
+    line-height: 0.75em;
   }
 
   &__label {
     font-size: 12px;
-    margin-bottom: 16px;
     margin-left: 12px;
+    margin-bottom: -1px;
   }
 
   &__content {
     display: flex;
-    align-items: baseline;
+    align-items: flex-end;
   }
 }
 

@@ -28,7 +28,6 @@ import {
 } from '@angular/core';
 import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
-
 import {Dashboard, DashboardWidgetConfiguration, DisplayComponent, WidgetData} from '../../models';
 import {WidgetService} from '../../services';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
@@ -45,16 +44,15 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
   >;
   @ViewChildren('widgetConfigurationContent', {read: ViewContainerRef})
   private _widgetConfigurationContentVcRefs: QueryList<ViewContainerRef>;
-
   @ViewChild('widgetContainer') private _widgetContainerRef: ElementRef<HTMLDivElement>;
 
   public readonly isLoading$ = new BehaviorSubject<boolean>(true);
   private _widgetData$ = new BehaviorSubject<WidgetData[]>([]);
+
   @Input() set widgetData(value: {data: WidgetData[]; loading: boolean}) {
     this.isLoading$.next(value.loading);
     this._widgetData$.next(value.data);
   }
-
   @Input() set dashboard(value: Dashboard) {
     this.setWidgetConfigurations(value);
   }
@@ -150,7 +148,6 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
             componentInstance.setInput('displayTypeKey', configuration.displayType);
             componentInstance.setInput('displayTypeProperties', {
               ...configuration.displayTypeProperties,
-              title: configuration.title,
             });
 
             componentInstance.setInput(

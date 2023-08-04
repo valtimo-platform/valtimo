@@ -16,7 +16,8 @@
 import {Component, ViewEncapsulation} from '@angular/core';
 import {BehaviorSubject, Observable, take, tap} from 'rxjs';
 import {Dashboard, WidgetData} from '../../models';
-import {DashboardService, WidgetService} from '../../services';
+import {DashboardService} from '../../services';
+import {WidgetApiService} from '../../services/widget-api.service';
 
 @Component({
   selector: 'valtimo-widget-dashboard',
@@ -25,7 +26,13 @@ import {DashboardService, WidgetService} from '../../services';
   encapsulation: ViewEncapsulation.None,
 })
 export class WidgetDashboardComponent {
-  public dashboards$: Observable<Array<Dashboard>> = this.dashboardService.getDashboards();
+  public dashboards$: Observable<Array<Dashboard>> = this.dashboardService.getDashboards().pipe(
+    tap(dashboards => {
+      if (dashboards.length === 1) {
+        this.onTabSelected(dashboards[0].key);
+      }
+    })
+  );
   public readonly activeWidgetData$ = new BehaviorSubject<{data: WidgetData[]; loading: boolean}>({
     data: [],
     loading: true,
@@ -33,11 +40,11 @@ export class WidgetDashboardComponent {
 
   constructor(
     private readonly dashboardService: DashboardService,
-    private readonly widgetService: WidgetService
+    private readonly widgetApiService: WidgetApiService
   ) {}
 
   public onTabSelected(dashboardKey: string): void {
-    this.widgetService
+    this.widgetApiService
       .getWidgetData(dashboardKey)
       .pipe(
         tap(() => {

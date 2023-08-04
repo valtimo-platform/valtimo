@@ -30,8 +30,9 @@ import {LoadingModule, TabsModule, ThemeModule} from 'carbon-components-angular'
 import {DashboardComponent} from './components/dashboard/dashboard.component';
 import {WidgetDashboardContentComponent} from './components/widget-dashboard-content/widget-dashboard-content.component';
 import {WidgetDashboardComponent} from './components/widget-dashboard/widget-dashboard.component';
-import {DISPLAY_TYPE_TOKEN} from './constants';
 import {DashboardRoutingModule} from './dashboard-routing.module';
+import {DATA_SOURCE_TOKEN, DISPLAY_TYPE_TOKEN} from './constants';
+import {WidgetTranslatePipeModule} from './pipes';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(httpClient: HttpClient) {
@@ -58,9 +59,13 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     SpinnerModule,
     TabsModule,
     ThemeModule,
-    LoadingModule
+    WidgetTranslatePipeModule,
+    LoadingModule,
   ],
   exports: [DashboardComponent, WidgetDashboardComponent],
-  providers: [{provide: DISPLAY_TYPE_TOKEN, useValue: null, multi: true}],
+  providers: [
+    {provide: DISPLAY_TYPE_TOKEN, useValue: null, multi: true},
+    {provide: DATA_SOURCE_TOKEN, useValue: null, multi: true},
+  ],
 })
 export class DashboardModule {}

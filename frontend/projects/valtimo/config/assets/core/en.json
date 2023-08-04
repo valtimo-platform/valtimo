@@ -242,8 +242,8 @@
       "deleteDescription": "Are you sure you want to delete this widget? This action cannot be undone.",
       "metadata": "<b>Created by</b> {{createdBy}} | <b>Created on</b> {{createdOn}} | <b>Dashboard key</b> {{key}}",
       "form": {
-        "title": "Widget title",
-        "titleHelperText": "The primary title displayed on the widget tile",
+        "title": "Widget title (required)",
+        "titleHelperText": "The name of the widget configuration",
         "key": "Widget key (required)",
         "keyHelperText": "Assign a unique key to this widget",
         "keyTitle": "Copy key",
@@ -256,7 +256,9 @@
         "dashboardTitle": "Dashboard name (required)",
         "dashboardDescription": "Description (required)",
         "dashboardDescriptionHelperText": "*Description is only visible in the dashboard configuration page",
-        "roles": "Set visibility"
+        "roles": "Set visibility",
+        "displayType": "Display type",
+        "displayTypeHelperText": "Select the way the data of your widget should be displayed"
       },
       "noResults": {
         "description": "Click <strong>Add new widget</strong> to start designing your dashboard. <br/> Drag your widgets to the desired position.",

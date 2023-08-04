@@ -22,9 +22,9 @@ export class CaseCountPipe implements PipeTransform {
     if (typeof caseCount === 'number') {
       if (caseCount > 99) {
         return '99+';
-      } else {
-        return `${caseCount}`;
       }
+
+      return `${caseCount}`;
     }
 
     return '';

@@ -241,8 +241,8 @@
       "deleteDescription": "Weet u zeker dat u deze widget wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
       "metadata": "<b>Aangemaakt door</b> {{createdBy}} | <b>Aangemaakt op</b> {{createdOn}} | <b>Dashboard-sleutel</b> {{key}}",
       "form": {
-        "title": "Widgettitel",
-        "titleHelperText": "De primaire titel die wordt weergegeven op de widgettegel",
+        "title": "Widgettitel (vereist)",
+        "titleHelperText": "De naam van de widgetconfiguratie",
         "key": "Widgetsleutel (vereist)",
         "keyHelperText": "Wijs een unieke sleutel toe aan deze widget",
         "keyTitle": "Sleutel kopiëren",
@@ -255,7 +255,9 @@
         "dashboardTitle": "Dashboardnaam (vereist)",
         "dashboardDescription": "Beschrijving (vereist)",
         "dashboardDescriptionHelperText": "*Beschrijving is alleen zichtbaar op de configuratiepagina van het dashboard",
-        "roles": "Zichtbaarheid"
+        "roles": "Zichtbaarheid",
+        "displayType": "Weergavetype",
+        "displayTypeHelperText": "Selecteer de manier waarop de gegevens van uw widget moeten worden weergegeven"
       },
       "noResults": {
         "description": "Klik op <strong>Nieuwe widget toevoegen</strong> om te beginnen met het ontwerpen van uw dashboard. <br/> Sleep uw widgets naar de gewenste positie.",

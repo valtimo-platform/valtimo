@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export * from './models';
-export * from './components';
-export * from './big-number.specification';
 export * from './big-number.module';
+export * from './big-number.specification';
+export * from './components';
+export * from './models';

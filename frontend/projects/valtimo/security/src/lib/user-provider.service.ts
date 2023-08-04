@@ -18,13 +18,13 @@ import {Injectable, Injector} from '@angular/core';
 import {Observable, ReplaySubject} from 'rxjs';
 import {NGXLogger} from 'ngx-logger';
 import {
+  ConfigService,
   EmailNotificationService,
   EmailNotificationSettings,
   UserIdentity,
   UserService,
 } from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
-import {ConfigService} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',
@@ -67,9 +67,9 @@ export class UserProviderService implements UserService, EmailNotificationServic
     this.logger.debug('Delegating UserProviderService::updateToken');
     if (this.userService.updateToken) {
       return this.userService.updateToken(minValidity);
-    } else {
-      return new Promise(resolve => resolve(true));
     }
+
+    return new Promise(resolve => resolve(true));
   }
 
   public getEmailNotificationSettings(): Observable<EmailNotificationSettings> {

@@ -124,9 +124,9 @@ export class MultiInputComponent implements OnInit, OnDestroy {
 
     if (!this.defaultValues) {
       return new Array(amountOfInitalRows).fill(this.getEmptyValue());
-    } else {
-      return this.defaultValues.map(defaultValue => ({...defaultValue, uuid: uuidv4()}));
     }
+
+    return this.defaultValues.map(defaultValue => ({...defaultValue, uuid: uuidv4()}));
   }
 
   private getEmptyValue(): MultiInputKeyValue {
@@ -140,9 +140,9 @@ export class MultiInputComponent implements OnInit, OnDestroy {
   private getMappedValue(valueToMap: MultiInputKeyValue): MultiInputKeyValue | string {
     if (this.type === 'keyValue') {
       return {key: valueToMap.key, value: valueToMap.value};
-    } else {
-      return valueToMap.value;
     }
+
+    return valueToMap.value;
   }
 
   private openValuesSubscription(): void {

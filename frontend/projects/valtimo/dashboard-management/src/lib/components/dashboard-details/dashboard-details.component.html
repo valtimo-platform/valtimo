@@ -1,4 +1,11 @@
-<ng-container *ngIf="tableConfig && {currentDashboard: currentDashboard$ | async} as obs">
+<ng-container
+  *ngIf="
+    tableConfig && {
+      currentDashboard: currentDashboard$ | async,
+      editWidgetConfiguration: editWidgetConfiguration$ | async
+    } as obs
+  "
+>
   <div class="dashboard-detail-table">
     <valtimo-carbon-table
       [data]="widgetData$ | async"
@@ -20,9 +27,19 @@
 
   <valtimo-widget-modal
     [dashboard]="obs.currentDashboard"
+    [editWidgetConfiguration]="obs.editWidgetConfiguration"
     [showModal$]="showModal$"
     [type]="modalType"
+    [widgetKey]="obs.editWidgetConfiguration?.key"
+    (saveEvent)="refreshWidgets()"
   ></valtimo-widget-modal>
+
+  <valtimo-edit-dashboard-modal
+    [dashboard]="obs.currentDashboard"
+    [showModal$]="showEditDashboardModal$"
+    (saveEvent)="refreshDashboard()"
+  >
+  </valtimo-edit-dashboard-modal>
 </ng-container>
 
 <ng-template #moveButtonsTemplate>

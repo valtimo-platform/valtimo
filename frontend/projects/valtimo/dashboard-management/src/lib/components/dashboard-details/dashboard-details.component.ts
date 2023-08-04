@@ -10,9 +10,10 @@ import {
   PageTitleService,
 } from '@valtimo/components';
 import {IconService} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
 import {DashboardItem, WidgetModalType} from '../../models';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
+import {DashboardWidgetConfiguration} from '@valtimo/dashboard';
 
 @Component({
   templateUrl: './dashboard-details.component.html',
@@ -25,10 +26,12 @@ export class DashboardDetailsComponent implements AfterViewInit {
   public modalType: WidgetModalType = 'create';
   public tableConfig!: CarbonTableConfig;
 
-  private readonly dashboardKey$ = this.route.params.pipe(map(params => params.id));
+  private readonly _dashboardKey$ = this.route.params.pipe(map(params => params.id));
+  private readonly _refreshDashboardSubject$ = new BehaviorSubject<null>(null);
   public readonly currentDashboard$: Observable<DashboardItem | undefined> = combineLatest([
-    this.dashboardKey$,
+    this._dashboardKey$,
     this.translateService.stream('key'),
+    this._refreshDashboardSubject$,
   ]).pipe(
     switchMap(([dashboardKey]) => this.dashboardManagementService.getDashboard(dashboardKey)),
     tap((currentDashboard: DashboardItem) => {
@@ -49,17 +52,25 @@ export class DashboardDetailsComponent implements AfterViewInit {
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  public readonly widgetData$ = this.dashboardKey$.pipe(
-    switchMap(dashboardKey =>
+  private readonly _refreshWidgetsSubject$ = new BehaviorSubject<null>(null);
+
+  public readonly widgetData$ = combineLatest([
+    this._dashboardKey$,
+    this._refreshWidgetsSubject$,
+  ]).pipe(
+    switchMap(([dashboardKey]) =>
       this.dashboardManagementService.getDashboardWidgetConfiguration(dashboardKey)
     ),
-    tap(data => {
+    tap(() => {
       this.loading$.next(false);
-      console.log('widget data', data);
     })
   );
 
   public readonly showModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showEditDashboardModal$ = new BehaviorSubject<boolean>(false);
+
+  public readonly editWidgetConfiguration$ =
+    new BehaviorSubject<DashboardWidgetConfiguration | null>(null);
 
   constructor(
     private readonly dashboardManagementService: DashboardManagementService,
@@ -76,13 +87,21 @@ export class DashboardDetailsComponent implements AfterViewInit {
   }
 
   public addWidget(): void {
+    this.editWidgetConfiguration$.next(null);
     this.modalType = 'create';
     this.showModal();
   }
 
   public editDashboard(): void {
-    this.modalType = 'editDashboard';
-    this.showModal();
+    this.showEditDashboardModal();
+  }
+
+  public refreshWidgets(): void {
+    this._refreshWidgetsSubject$.next(null);
+  }
+
+  public refreshDashboard(): void {
+    this._refreshDashboardSubject$.next(null);
   }
 
   private setTableConfig(): void {
@@ -121,17 +140,23 @@ export class DashboardDetailsComponent implements AfterViewInit {
     });
   }
 
-  private editWidget(): void {
+  private editWidget(event: DashboardWidgetConfiguration): void {
+    this.editWidgetConfiguration$.next({...event});
     this.modalType = 'edit';
     this.showModal();
   }
 
-  private deleteWidget(): void {
+  private deleteWidget(event: DashboardWidgetConfiguration): void {
+    this.editWidgetConfiguration$.next({...event});
     this.modalType = 'delete';
     this.showModal();
   }
 
   private showModal(): void {
     this.showModal$.next(true);
+  }
+
+  private showEditDashboardModal(): void {
+    this.showEditDashboardModal$.next(true);
   }
 }

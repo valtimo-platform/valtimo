@@ -17,7 +17,7 @@
 <div #widgetContainer [class.loading]="isLoading$ | async" class="widget-container">
   <ng-container *ngIf="widgetConfigurations$ | async as widgetConfigurations">
     <ng-container *ngFor="let config of widgetConfigurations">
-      <div #widgetConfiguration class="widget-configuration" [id]="config.key">
+      <div #widgetConfiguration [id]="config.key" class="widget-configuration">
         <div class="widget-configuration-content">
           <ng-container #widgetConfigurationContent></ng-container>
         </div>

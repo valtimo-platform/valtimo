@@ -15,42 +15,55 @@
  */
 
 import {Inject, Injectable} from '@angular/core';
-import {DISPLAY_TYPE_TOKEN} from '../constants';
-import {DisplayTypeSpecification, WidgetData} from '../models';
+import {DATA_SOURCE_TOKEN, DISPLAY_TYPE_TOKEN} from '../constants';
+import {DataSourceSpecification, DisplayTypeSpecification} from '../models';
 import {BehaviorSubject, filter, Observable} from 'rxjs';
-import {ConfigService} from '@valtimo/config';
-import {HttpClient} from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
 })
 export class WidgetService {
-  private _endpointUri: string;
-
   private readonly _supportedDisplayTypes$ =
     new BehaviorSubject<Array<DisplayTypeSpecification> | null>(null);
+
+  private readonly _supportedDataSources$ =
+    new BehaviorSubject<Array<DataSourceSpecification> | null>(null);
 
   public get supportedDisplayTypes$(): Observable<Array<DisplayTypeSpecification>> {
     return this._supportedDisplayTypes$.pipe(filter(specifications => !!specifications));
   }
 
-  constructor(
-    @Inject(DISPLAY_TYPE_TOKEN)
-    private readonly supportedDisplayTypes: Array<DisplayTypeSpecification | null>,
-    private readonly configService: ConfigService,
-    private readonly http: HttpClient
-  ) {
-    this._endpointUri = `${this.configService.config.valtimoApi.endpointUri}v1/dashboard`;
-    this.setSupportedDisplayTypes(this.supportedDisplayTypes);
+  public get supportedDataSources$(): Observable<Array<DataSourceSpecification>> {
+    return this._supportedDataSources$.pipe(filter(specifications => !!specifications));
   }
 
-  public getWidgetData(dashboardKey: string): Observable<WidgetData[]> {
-    return this.http.get<WidgetData[]>(`${this._endpointUri}/${dashboardKey}/data`);
+  public get supportedDisplayTypes(): Array<DisplayTypeSpecification> {
+    return this._supportedDisplayTypes$.getValue() || [];
+  }
+
+  public get supportedDataSources(): Array<DataSourceSpecification> {
+    return this._supportedDataSources$.getValue() || [];
+  }
+
+  constructor(
+    @Inject(DISPLAY_TYPE_TOKEN)
+    private readonly supportedDisplayTypesFromToken: Array<DisplayTypeSpecification | null>,
+    @Inject(DATA_SOURCE_TOKEN)
+    private readonly supportedDataSourcesFromToken: Array<DataSourceSpecification | null>
+  ) {
+    this.setSupportedDisplayTypes(supportedDisplayTypesFromToken);
+    this.setSupportedDataSources(supportedDataSourcesFromToken);
   }
 
   private setSupportedDisplayTypes(
     supportedDisplayTypes: Array<DisplayTypeSpecification | null>
   ): void {
     this._supportedDisplayTypes$.next(supportedDisplayTypes.filter(displayType => !!displayType));
+  }
+
+  private setSupportedDataSources(
+    supportedDataSources: Array<DataSourceSpecification | null>
+  ): void {
+    this._supportedDataSources$.next(supportedDataSources.filter(dataSource => !!dataSource));
   }
 }

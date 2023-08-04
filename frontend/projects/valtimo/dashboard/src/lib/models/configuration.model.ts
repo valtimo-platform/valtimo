@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-import {Observable} from 'rxjs';
 import {EventEmitter} from '@angular/core';
 
+interface ConfigurationOutput {
+  valid: boolean;
+  data: object;
+}
+
 interface ConfigurationComponent {
-  save$: Observable<void>;
-  disabled$: Observable<boolean>;
-  valid: EventEmitter<boolean>;
-  prefillConfiguration$?: Observable<object>;
-  configuration: EventEmitter<object>;
+  disabled: boolean;
+  prefillConfiguration?: object;
+  configurationEvent: EventEmitter<ConfigurationOutput>;
 }
 
 interface DisplayTypeConfigurationComponent extends ConfigurationComponent {
@@ -37,4 +39,5 @@ export {
   ConfigurationComponent,
   DisplayTypeConfigurationComponent,
   DataSourceConfigurationComponent,
+  ConfigurationOutput,
 };

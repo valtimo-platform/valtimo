@@ -22,5 +22,16 @@ export const meterSpecification: DisplayTypeSpecification = {
   displayComponent: MeterDisplayComponent,
   width: 2,
   height: 1,
-  translations: {},
+  translations: {
+    nl: {
+      title: 'Meter',
+    },
+    en: {
+      title: 'Meter',
+    },
+    de: {
+      title: 'Meter',
+    },
+  },
+  requiredDataFeatures: [],
 };

@@ -14,5 +14,6 @@
  * limitations under the License.
  */
 
+export * from './data-features.constants';
 export * from './injection-tokens';
 export * from './layout.constants';
