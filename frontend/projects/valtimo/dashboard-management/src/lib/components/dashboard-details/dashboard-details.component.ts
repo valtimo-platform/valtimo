@@ -9,11 +9,11 @@ import {
   createCarbonTableConfig,
   PageTitleService,
 } from '@valtimo/components';
+import {DashboardWidgetConfiguration} from '@valtimo/dashboard';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
-import {DashboardItem, WidgetModalType} from '../../models';
+import {DashboardItem, DashboardWidget, WidgetModalType} from '../../models';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
-import {DashboardWidgetConfiguration} from '@valtimo/dashboard';
 
 @Component({
   templateUrl: './dashboard-details.component.html',
@@ -50,18 +50,37 @@ export class DashboardDetailsComponent implements AfterViewInit {
     })
   );
 
+  public readonly lastItemIndex$ = new BehaviorSubject<number>(0);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  private readonly _refreshWidgetsSubject$ = new BehaviorSubject<null>(null);
+  public readonly _refreshWidgetsSubject$ = new BehaviorSubject<{
+    direction: 'UP' | 'DOWN';
+    index: number;
+  } | null>(null);
 
-  public readonly widgetData$ = combineLatest([
+  private _widgetData: DashboardWidget[] | null = null;
+  public readonly widgetData$: Observable<DashboardWidget[]> = combineLatest([
     this._dashboardKey$,
     this._refreshWidgetsSubject$,
   ]).pipe(
-    switchMap(([dashboardKey]) =>
-      this.dashboardManagementService.getDashboardWidgetConfiguration(dashboardKey)
-    ),
-    tap(() => {
+    switchMap(([dashboardKey, refreshWidgets]) => {
+      this.loading$.next(true);
+      if (!this._widgetData || !refreshWidgets) {
+        return this.dashboardManagementService.getDashboardWidgetConfiguration(dashboardKey);
+      }
+
+      const {direction, index} = refreshWidgets;
+
+      return this.dashboardManagementService.updateDashboardWidgetConfigurations(
+        dashboardKey,
+        direction === 'UP'
+          ? this.swapWidgets(this._widgetData, index - 1, index)
+          : this.swapWidgets(this._widgetData, index, index + 1)
+      );
+    }),
+    tap((data: DashboardWidget[]) => {
+      this._widgetData = data;
+      this.lastItemIndex$.next(data.length - 1);
       this.loading$.next(false);
     })
   );
@@ -102,6 +121,14 @@ export class DashboardDetailsComponent implements AfterViewInit {
 
   public refreshDashboard(): void {
     this._refreshDashboardSubject$.next(null);
+  }
+
+  public onArrowDownClick(data: {item: DashboardWidget; index: number}): void {
+    this._refreshWidgetsSubject$.next({direction: 'DOWN', index: data.index});
+  }
+
+  public onArrowUpClick(data: {item: DashboardWidget; index: number}): void {
+    this._refreshWidgetsSubject$.next({direction: 'UP', index: data.index});
   }
 
   private setTableConfig(): void {
@@ -158,5 +185,16 @@ export class DashboardDetailsComponent implements AfterViewInit {
 
   private showEditDashboardModal(): void {
     this.showEditDashboardModal$.next(true);
+  }
+
+  private swapWidgets(
+    dashboardWidgets: DashboardWidget[],
+    index1: number,
+    index2: number
+  ): DashboardWidget[] {
+    const temp = [...dashboardWidgets];
+    temp[index1] = temp.splice(index2, 1, temp[index1])[0];
+
+    return temp;
   }
 }
