@@ -102,6 +102,16 @@ export class DashboardManagementService {
     );
   }
 
+  public updateDashboardWidgetConfiguration(
+    dashboardKey: string,
+    widgetConfiguration: DashboardWidget
+  ): Observable<DashboardWidget> {
+    return this.http.put<DashboardWidget>(
+      `${this.valtimoEndpointUri}/${dashboardKey}/widget-configuration/${widgetConfiguration.key}`,
+      widgetConfiguration
+    );
+  }
+
   public deleteDashboardWidgetConfiguration(
     dashboardKey: string,
     widgetKey: string
