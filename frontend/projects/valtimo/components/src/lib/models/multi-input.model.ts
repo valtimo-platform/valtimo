@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {FormOutput} from './form';
+import {FormOutput} from '@valtimo/user-interface';
 import {ListItem} from 'carbon-components-angular';
 
 type MultiInputType = 'keyValue' | 'value' | 'keyDropdownValue';

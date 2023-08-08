@@ -15,3 +15,4 @@
  */
 
 export * from './test';
+export * from './case-count';

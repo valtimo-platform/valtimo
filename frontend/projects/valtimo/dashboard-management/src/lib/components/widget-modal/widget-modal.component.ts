@@ -73,6 +73,7 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
   public readonly dataSourceItems$: Observable<Array<ListItem>> = combineLatest([
     this.dashboardManagementService.getDataSources(),
     this.selectedDataSourceKey$,
+    this.widgetService.supportedDataSources$,
     this.translateService.stream('key'),
   ]).pipe(
     filter(([dataSources]) => !!dataSources),
@@ -83,12 +84,18 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
         this.resetCompatibleDisplayTypes();
       }
     }),
-    map(([dataSources, selectedDataSourceKey]) =>
-      dataSources.map(dataSource => ({
-        content: this.widgetTranslationService.instant('title', dataSource.key),
-        selected: selectedDataSourceKey === dataSource.key,
-        key: dataSource.key,
-      }))
+    map(([dataSources, selectedDataSourceKey, supportedDataSources]) =>
+      dataSources
+        .filter(dataSource =>
+          supportedDataSources.find(
+            supportedDataSource => supportedDataSource.dataSourceKey === dataSource.key
+          )
+        )
+        .map(dataSource => ({
+          content: this.widgetTranslationService.instant('title', dataSource.key),
+          selected: selectedDataSourceKey === dataSource.key,
+          key: dataSource.key,
+        }))
     )
   );
 

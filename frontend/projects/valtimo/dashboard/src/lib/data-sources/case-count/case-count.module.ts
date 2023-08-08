@@ -16,29 +16,27 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {CarbonMultiInputComponent} from './carbon-multi-input.component';
-import {ButtonModule, InputLabelModule, InputModule} from '@valtimo/user-interface';
-import {TranslateModule} from '@ngx-translate/core';
-import {
-  ButtonModule as CarbonButtonModule,
-  DropdownModule,
-  IconModule,
-  InputModule as CarbonInputModule,
-} from 'carbon-components-angular';
+import {DATA_SOURCE_TOKEN} from '../../constants';
+import {caseCountDataSourceSpecification} from './case-count.specification';
+import {CaseCountConfigurationComponent} from './components';
+import {ReactiveFormsModule} from '@angular/forms';
+import {WidgetTranslatePipeModule} from '../../pipes';
+import {DropdownModule, InputModule} from 'carbon-components-angular';
+import {CarbonMultiInputModule} from '@valtimo/components';
 
 @NgModule({
-  declarations: [CarbonMultiInputComponent],
+  declarations: [CaseCountConfigurationComponent],
   imports: [
     CommonModule,
-    InputLabelModule,
+    ReactiveFormsModule,
+    WidgetTranslatePipeModule,
     InputModule,
-    ButtonModule,
-    TranslateModule,
-    CarbonButtonModule,
-    IconModule,
-    CarbonInputModule,
     DropdownModule,
+    CarbonMultiInputModule,
   ],
-  exports: [CarbonMultiInputComponent],
+  exports: [CaseCountConfigurationComponent],
+  providers: [
+    {provide: DATA_SOURCE_TOKEN, useValue: caseCountDataSourceSpecification, multi: true},
+  ],
 })
-export class CarbonMultiInputModule {}
+export class CaseCountDataSourceModule {}

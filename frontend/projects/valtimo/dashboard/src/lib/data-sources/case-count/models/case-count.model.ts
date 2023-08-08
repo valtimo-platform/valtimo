@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,21 +14,24 @@
  * limitations under the License.
  */
 
-.v-multi-input--margin {
-  margin-block-end: var(--v-input-margin);
+interface QueryCondition {
+  queryPath: string;
+  queryOperator: string;
+  queryValue: string;
 }
 
-.v-multi-input__row {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  margin-block-end: var(--v-multi-input-row-spacing-block);
+interface CaseCountConfiguration {
+  documentDefinition: string;
+  conditions: Array<QueryCondition>;
 }
 
-.v-multi-input__input {
-  margin-inline-end: var(--v-multi-input-input-spacing-inline);
-
-  &.--full-width {
-    width: 100%;
-  }
+enum Operator {
+  NOT_EQUAL_TO = '!=',
+  EQUAL_TO = '==',
+  GREATER_THAN = '>',
+  GREATER_THAN_OR_EQUAL_TO = '>=',
+  LESS_THAN = '<',
+  LESS_THAN_OR_EQUAL_TO = '<=',
 }
+
+export {CaseCountConfiguration, QueryCondition, Operator};

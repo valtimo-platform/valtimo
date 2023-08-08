@@ -57,6 +57,7 @@ import {ContextModule} from '@valtimo/context';
 import {
   BarChartModule,
   BigNumberModule,
+  CaseCountDataSourceModule,
   DashboardModule,
   MeterModule,
   TestDataSourceModule,
@@ -224,6 +225,7 @@ export function tabsFactory() {
     BarChartModule,
     MeterModule,
     TestDataSourceModule,
+    CaseCountDataSourceModule,
   ],
   providers: [
     FormioComponent,
