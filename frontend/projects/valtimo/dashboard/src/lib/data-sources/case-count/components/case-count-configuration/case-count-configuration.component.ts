@@ -36,6 +36,7 @@ import {WidgetTranslationService} from '../../../../services';
 @Component({
   templateUrl: './case-count-configuration.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrls: ['./case-count-configuration.component.scss'],
 })
 export class CaseCountConfigurationComponent
   implements OnInit, OnDestroy, DataSourceConfigurationComponent
@@ -44,7 +45,7 @@ export class CaseCountConfigurationComponent
 
   public readonly form = this.fb.group({
     documentDefinition: this.fb.control(null, [Validators.required]),
-    conditions: this.fb.control(null, [Validators.required]),
+    conditions: this.fb.control(null),
   });
 
   @Input() public set disabled(disabledValue: boolean) {

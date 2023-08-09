@@ -32,12 +32,20 @@
   </div>
 
   <div class="form__element">
+    <cds-label
+      [helperText]="'conditionsHelperText' | widgetTranslate : dataSourceKey | async"
+      class="conditions-label"
+      >{{ 'conditions' | widgetTranslate : dataSourceKey | async }}</cds-label
+    >
     <valtimo-carbon-multi-input
+      [addRowText]="'addCondition' | widgetTranslate : dataSourceKey | async"
       [defaultValues]="defaultConditionValues$ | async"
       [dropdownColumnTitle]="'operator' | widgetTranslate : dataSourceKey | async"
       [dropdownItems]="operatorItems$ | async"
       [fullWidth]="true"
+      [initialAmountOfRows]="0"
       [keyColumnTitle]="'path' | widgetTranslate : dataSourceKey | async"
+      [minimumAmountOfRows]="0"
       [valueColumnTitle]="'value' | widgetTranslate : dataSourceKey | async"
       type="keyDropdownValue"
       (valueChange)="conditionsValueChange($event)"

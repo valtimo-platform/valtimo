@@ -33,7 +33,11 @@ export const caseCountDataSourceSpecification: DataSourceSpecification = {
       '<=': 'Gleich oder kleiner als',
       path: 'Pfad',
       operator: 'Operator',
-      value: 'Wert in Wochen',
+      value: 'Wert',
+      conditions: 'Bedingungen',
+      conditionsHelperText:
+        "Geben Sie optionale Bedingungen zum Abrufen der Anzahl der Fälle für den ausgewählten Falltyp an. Zum Beispiel: 'case:createdBy', 'Gleich', 'test@test.com'.",
+      addCondition: 'Bedingung hinzufügen',
     },
     en: {
       title: 'Case count',
@@ -47,7 +51,11 @@ export const caseCountDataSourceSpecification: DataSourceSpecification = {
       '<=': 'Less than or equal to',
       path: 'Path (required)',
       operator: 'Operator',
-      value: 'Value in weeks',
+      value: 'Value',
+      conditions: 'Conditions',
+      conditionsHelperText:
+        "Specify optional conditions for retrieving the number of cases for the selected case type. For example: 'case:createdBy', 'Equal to', 'test@test.com'.",
+      addCondition: 'Add condition',
     },
     nl: {
       title: 'Aantal dossiers',
@@ -61,7 +69,11 @@ export const caseCountDataSourceSpecification: DataSourceSpecification = {
       '<=': 'Minder dan of gelijk aan',
       path: 'Pad',
       operator: 'Operator',
-      value: 'Waarde in weken',
+      value: 'Waarde',
+      conditions: 'Condities',
+      conditionsHelperText:
+        "Geef optionele condities op voor het ophalen van het aantal zaken voor het geselecteerde zaaktype. Bijvoorbeeld: 'case:createdBy', 'Gelijk aan', 'test@test.com'.",
+      addCondition: 'Conditie toevoegen',
     },
   },
 };
