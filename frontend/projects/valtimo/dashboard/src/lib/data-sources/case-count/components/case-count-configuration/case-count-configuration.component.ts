@@ -45,7 +45,7 @@ export class CaseCountConfigurationComponent
 
   public readonly form = this.fb.group({
     documentDefinition: this.fb.control(null, [Validators.required]),
-    conditions: this.fb.control(null),
+    queryConditions: this.fb.control(null),
   });
 
   @Input() public set disabled(disabledValue: boolean) {
@@ -97,8 +97,8 @@ export class CaseCountConfigurationComponent
     return this.form.get('documentDefinition');
   }
 
-  public get conditions() {
-    return this.form.get('conditions');
+  public get queryConditions() {
+    return this.form.get('queryConditions');
   }
 
   @Input() set prefillConfiguration(configurationValue: CaseCountConfiguration) {
@@ -109,7 +109,7 @@ export class CaseCountConfigurationComponent
         },
       } as any);
       this.defaultConditionValues$.next(
-        configurationValue.conditions.map(condition => ({
+        configurationValue.queryConditions.map(condition => ({
           key: condition.queryPath,
           dropdown: condition.queryOperator,
           value: condition.queryValue,
@@ -148,9 +148,9 @@ export class CaseCountConfigurationComponent
 
   public conditionsValueChange(values: Array<MultiInputKeyValue>): void {
     if (values.length === 0) {
-      this.conditions.setValue(null);
+      this.queryConditions.setValue(null);
     } else {
-      this.conditions.setValue(
+      this.queryConditions.setValue(
         values.map(value => ({
           queryPath: value.key,
           queryOperator: value.dropdown,

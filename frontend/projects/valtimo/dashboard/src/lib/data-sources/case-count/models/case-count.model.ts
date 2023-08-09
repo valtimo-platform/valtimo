@@ -22,7 +22,7 @@ interface QueryCondition {
 
 interface CaseCountConfiguration {
   documentDefinition: string;
-  conditions: Array<QueryCondition>;
+  queryConditions: Array<QueryCondition>;
 }
 
 enum Operator {
