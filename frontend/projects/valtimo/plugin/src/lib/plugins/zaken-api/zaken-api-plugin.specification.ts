@@ -24,6 +24,8 @@ import {CreateZaakResultaatConfigurationComponent} from './components/create-zaa
 import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
 import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
+import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
+
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -37,7 +39,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-zaak': CreateZaakConfigurationComponent,
     'create-natuurlijk-persoon-zaak-rol': CreateNatuurlijkPersoonZaakRolComponent,
     'create-niet-natuurlijk-persoon-zaak-rol': CreateNietNatuurlijkPersoonZaakRolComponent,
-    'set-zaakopschorting': SetZaakStatusConfigurationComponent
+    'set-zaakopschorting': SetZaakopschortingComponent
   },
   pluginTranslations: {
     nl: {

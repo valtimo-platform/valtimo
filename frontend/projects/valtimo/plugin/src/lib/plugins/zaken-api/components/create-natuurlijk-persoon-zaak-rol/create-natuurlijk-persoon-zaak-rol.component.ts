@@ -47,7 +47,7 @@ export class CreateNatuurlijkPersoonZaakRolComponent
   }
 
   ngOnDestroy() {
-    this.saveSubscription?.unsubscribe();
+    this.saveSubscription?.unsubscribe()
   }
 
   formValueChange(formValue: CreateNatuurlijkePersoonZaakRolConfig): void {
