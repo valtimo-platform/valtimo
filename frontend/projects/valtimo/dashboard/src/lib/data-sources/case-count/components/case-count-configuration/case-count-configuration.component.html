@@ -48,6 +48,7 @@
       [minimumAmountOfRows]="0"
       [valueColumnTitle]="'value' | widgetTranslate : dataSourceKey | async"
       type="keyDropdownValue"
+      (allValuesValidEvent)="onAllConditionsValid($event)"
       (valueChange)="conditionsValueChange($event)"
     ></valtimo-carbon-multi-input>
   </div>

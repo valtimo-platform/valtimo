@@ -60,6 +60,7 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   @Input() public fullWidth = false;
 
   @Output() public valueChange: EventEmitter<MultiInputOutput> = new EventEmitter();
+  @Output() public allValuesValidEvent: EventEmitter<boolean> = new EventEmitter();
 
   public readonly values$ = new BehaviorSubject<MultiInputValues>([]);
   public readonly mappedValues$: Observable<MultiInputOutput> = this.values$.pipe(
@@ -161,8 +162,7 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   private getInitialRows(): MultiInputValues {
     const minimumRows = this.minimumAmountOfRows;
     const initialRows = this.initialAmountOfRows;
-    const amountOfInitalRows =
-      minimumRows > initialRows ? minimumRows : initialRows > 1 ? initialRows : 1;
+    const amountOfInitalRows = Math.max(minimumRows, initialRows);
 
     if (!this.defaultValues) {
       return new Array(amountOfInitalRows).fill(this.getEmptyValue());
@@ -191,8 +191,11 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   }
 
   private openValuesSubscription(): void {
-    this._valuesSubscription = this.mappedValues$.subscribe(values => {
-      this.valueChange.emit(values);
-    });
+    this._valuesSubscription = combineLatest([this.values$, this.mappedValues$]).subscribe(
+      ([values, mappedValues]) => {
+        this.valueChange.emit(mappedValues);
+        this.allValuesValidEvent.emit(values.length === mappedValues.length);
+      }
+    );
   }
 }

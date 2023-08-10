@@ -92,6 +92,7 @@ export class CaseCountConfigurationComponent
     );
 
   public readonly defaultConditionValues$ = new BehaviorSubject<MultiInputValues | null>(null);
+  public readonly allConditionsValid$ = new BehaviorSubject<boolean>(true);
 
   public get documentDefinition() {
     return this.form.get('documentDefinition');
@@ -160,10 +161,20 @@ export class CaseCountConfigurationComponent
     }
   }
 
+  onAllConditionsValid(allConditionsValid: boolean): void {
+    this.allConditionsValid$.next(allConditionsValid);
+  }
+
   private openFormSubscription(): void {
     this._subscriptions.add(
-      this.form.valueChanges.pipe(startWith(this.form.value)).subscribe(formValue => {
-        this.configurationEvent.emit({valid: this.form.valid, data: formValue});
+      combineLatest([
+        this.form.valueChanges.pipe(startWith(this.form.value)),
+        this.allConditionsValid$,
+      ]).subscribe(([formValue, allConditionsValid]) => {
+        this.configurationEvent.emit({
+          valid: this.form.valid && allConditionsValid,
+          data: formValue,
+        });
       })
     );
   }
