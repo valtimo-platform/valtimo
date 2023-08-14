@@ -273,7 +273,7 @@
     "keycloak-js": "^19.0.3",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
-    "ng-multiselect-dropdown": "^1.0.0-beta.19",
+    "ng-multiselect-dropdown": "1.0.0-beta.19",
     "ng-packagr": "^14.2.2",
     "ngx-color-picker": "^13.0.0",
     "ngx-csv": "^0.3.2",
