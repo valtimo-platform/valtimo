@@ -107,10 +107,10 @@ export class DigitOnlyDirective implements OnChanges {
         // has two or more decimal points
         e.preventDefault();
         return;
-      } else {
-        this.hasDecimalPoint = newValue.indexOf(this.decimalSeparator) > -1;
-        return; // Allow: only one decimal point
       }
+
+      this.hasDecimalPoint = newValue.indexOf(this.decimalSeparator) > -1;
+      return; // Allow: only one decimal point
     }
 
     if (e.key === this.negativeSign && this.allowNegatives) {
@@ -121,10 +121,10 @@ export class DigitOnlyDirective implements OnChanges {
       ) {
         e.preventDefault();
         return;
-      } else {
-        this.hasNegativeSign = newValue.split(this.negativeSign).length > -1;
-        return;
       }
+
+      this.hasNegativeSign = newValue.split(this.negativeSign).length > -1;
+      return;
     }
 
     // Ensure that it is a number and stop the keypress
@@ -265,17 +265,18 @@ export class DigitOnlyDirective implements OnChanges {
   }
 
   private isValidDecimal(string: string): boolean {
+    const selectedText = this.getSelection();
+
     if (!this.hasDecimalPoint) {
       return string.split(this.decimalSeparator).length <= 2;
-    } else {
-      // the input element already has a decimal separator
-      const selectedText = this.getSelection();
-      if (selectedText && selectedText?.indexOf(this.decimalSeparator) > -1) {
-        return string.split(this.decimalSeparator).length <= 2;
-      } else {
-        return string?.indexOf(this.decimalSeparator) < 0;
-      }
     }
+
+    // the input element already has a decimal separator
+    if (selectedText && selectedText?.indexOf(this.decimalSeparator) > -1) {
+      return string.split(this.decimalSeparator).length <= 2;
+    }
+
+    return string?.indexOf(this.decimalSeparator) < 0;
   }
 
   private getSelection(): string {

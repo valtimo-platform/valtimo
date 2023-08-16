@@ -25,3 +25,4 @@ export * from './searchable-dropdown.model';
 export * from './timeline.model';
 export * from './version.model';
 export * from './editor.model';
+export * from './multi-input.model';

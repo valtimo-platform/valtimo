@@ -13,17 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {TranslateService} from '@ngx-translate/core';
-import {ContextService} from '@valtimo/context';
-import {ActivatedRoute, Router} from '@angular/router';
-import {TaskDetailModalComponent, TaskService} from '@valtimo/task';
+import {ActivatedRoute} from '@angular/router';
+import {Task, TaskDetailModalComponent, TaskService} from '@valtimo/task';
 import moment from 'moment';
-import {take} from 'rxjs/operators';
-import {Task} from '@valtimo/task';
 import {BehaviorSubject} from 'rxjs';
-import {NgxSpinnerService} from 'ngx-spinner';
+import {take} from 'rxjs/operators';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -54,13 +49,7 @@ export class DashboardComponent implements OnInit {
 
   loading$ = new BehaviorSubject<boolean>(true);
 
-  constructor(
-    private router: Router,
-    private contextService: ContextService,
-    private taskService: TaskService,
-    private readonly route: ActivatedRoute,
-    public translate: TranslateService
-  ) {}
+  constructor(private readonly taskService: TaskService, private readonly route: ActivatedRoute) {}
 
   ngOnInit() {
     this.getOpenTasks();

@@ -249,15 +249,15 @@ export class DossierListComponent implements OnInit, OnDestroy {
                 assigneeFilter,
                 this.searchService.mapSearchValuesToFilters(searchValues)
               );
-        } else {
-          return hasEnvColumnConfig || !hasApiColumnConfig
-            ? this.documentService.getDocumentsSearch(documentSearchRequest, 'AND', assigneeFilter)
-            : this.documentService.getSpecifiedDocumentsSearch(
-                documentSearchRequest,
-                'AND',
-                assigneeFilter
-              );
         }
+
+        return hasEnvColumnConfig || !hasApiColumnConfig
+          ? this.documentService.getDocumentsSearch(documentSearchRequest, 'AND', assigneeFilter)
+          : this.documentService.getSpecifiedDocumentsSearch(
+              documentSearchRequest,
+              'AND',
+              assigneeFilter
+            );
       }
     ),
     tap(documents => {

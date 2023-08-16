@@ -62,9 +62,9 @@ export class UploadProviderService implements UploadService {
   checkUploadProcessLink(caseDefinitionKey: string): Observable<boolean> {
     if (this.uploadService.checkUploadProcessLink) {
       return this.uploadService.checkUploadProcessLink(caseDefinitionKey);
-    } else {
-      return of(false);
     }
+
+    return of(false);
   }
 
   uploadFileWithMetadata(
@@ -74,9 +74,9 @@ export class UploadProviderService implements UploadService {
   ): Observable<void> {
     if (this.uploadService.uploadFileWithMetadata) {
       return this.uploadService.uploadFileWithMetadata(file, documentId, metadata);
-    } else {
-      return of(null);
     }
+
+    return of(null);
   }
 
   uploadTempFileWithMetadata(
@@ -85,8 +85,8 @@ export class UploadProviderService implements UploadService {
   ): Observable<DocumentenApiFileReference> {
     if (this.uploadService.uploadTempFileWithMetadata) {
       return this.uploadService.uploadTempFileWithMetadata(file, metadata);
-    } else {
-      return of(null);
     }
+
+    return of(null);
   }
 }

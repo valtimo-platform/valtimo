@@ -14,39 +14,34 @@
  * limitations under the License.
  */
 
-.form__row {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-
-.form__spacer {
-  width: 32px;
-}
-
-.form__element {
-  width: 100%;
-}
-
-.form__element.--with-button {
-  display: flex;
-  align-items: flex-end;
-  flex-direction: row;
-
-  button {
-    margin-left: 16px;
+.widget-modal .form {
+  &__row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
   }
-}
 
-.form__element.--readonly input {
-  background-color: transparent;
-}
+  &__spacer {
+    width: 32px;
+  }
 
-.form__element {
-  margin-bottom: 32px;
-}
+  &__element {
+    width: 100%;
+    margin-bottom: 32px;
+  }
 
-.cds00text-input:disabled {
-  color: red !important;
+  &__element.--with-button {
+    display: flex;
+    align-items: flex-end;
+    flex-direction: row;
+
+    button {
+      margin-left: 16px;
+    }
+  }
+
+  &__element.--readonly input {
+    background-color: transparent;
+  }
 }

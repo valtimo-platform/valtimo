@@ -146,14 +146,14 @@ export class ObjectListComponent {
               : {}
           )
           .pipe(catchError(() => handleError()));
-      } else {
-        return this.objectService
-          .getObjectsByObjectManagementId(objectManagementId, {
-            page: currentPage.page,
-            size: currentPage.size,
-          })
-          .pipe(catchError(() => handleError()));
       }
+
+      return this.objectService
+        .getObjectsByObjectManagementId(objectManagementId, {
+          page: currentPage.page,
+          size: currentPage.size,
+        })
+        .pipe(catchError(() => handleError()));
     }),
     tap(instanceRes => {
       if (instanceRes != null) {
@@ -228,10 +228,10 @@ export class ObjectListComponent {
             };
           }),
         ];
-      } else {
-        this.columnType$.next(ColumnType.DEFAULT);
-        return this.setDefaultFields();
       }
+
+      this.columnType$.next(ColumnType.DEFAULT);
+      return this.setDefaultFields();
     })
   );
 

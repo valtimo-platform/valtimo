@@ -15,3 +15,5 @@
  */
 
 export * from './dashboard.service';
+export * from './widget-translation.service';
+export * from './widget.service';

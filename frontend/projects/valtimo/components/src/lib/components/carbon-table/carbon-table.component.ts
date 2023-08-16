@@ -220,7 +220,7 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   private getTableItems(items: T[]): TableItem[][] {
     return !items.length
       ? []
-      : items.map((item: T) =>
+      : items.map((item: T, index: number) =>
           this.tableConfig.fields.map((column: ColumnConfig) => {
             switch (column.columnType) {
               case ColumnType.TEXT:
@@ -232,7 +232,7 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
                 });
               case ColumnType.TEMPLATE:
                 return new TableItem({
-                  data: item,
+                  data: {item, index},
                   template: column.template,
                 });
               default:

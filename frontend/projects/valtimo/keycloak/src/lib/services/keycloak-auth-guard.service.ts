@@ -44,14 +44,15 @@ export class KeycloakAuthGuardService extends KeycloakAuthGuard implements CanAc
       }
 
       const requiredRoles: string[] = route.data.roles;
+
       if (!requiredRoles || requiredRoles.length === 0) {
         return resolve(true);
-      } else {
-        if (!this.roles || this.roles.length === 0) {
-          resolve(false);
-        }
-        resolve(requiredRoles.some(role => this.roles.includes(role)));
       }
+
+      if (!this.roles || this.roles.length === 0) {
+        resolve(false);
+      }
+      resolve(requiredRoles.some(role => this.roles.includes(role)));
     });
   }
 }

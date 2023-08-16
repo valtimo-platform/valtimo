@@ -20,6 +20,10 @@
   flex-direction: row;
   align-items: flex-end;
 
+  &.--no-margin {
+    margin-bottom: 0;
+  }
+
   .page-title {
     font-weight: 300;
     white-space: nowrap;

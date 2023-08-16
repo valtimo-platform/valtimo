@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {Component, NgZone, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, NgZone, OnInit, ViewChild} from '@angular/core';
 import {NgbModal, NgbModalOptions} from '@ng-bootstrap/ng-bootstrap';
-import {FormManagementService, FormDefinition} from '@valtimo/form-management';
+import {FormDefinition, FormManagementService} from '@valtimo/form-management';
 import {
   BpmnElement,
   CreateFormAssociationRequest,
@@ -25,12 +25,7 @@ import {
   ModifyFormAssociationRequest,
 } from '../../models';
 import {FormLinkService} from '../../services/form-link.service';
-import {
-  AlertService,
-  ModalComponent,
-  SearchableDropdownComponent,
-  DropdownItem,
-} from '@valtimo/components';
+import {AlertService, DropdownItem, ModalComponent} from '@valtimo/components';
 import {NGXLogger} from 'ngx-logger';
 import {TranslateService} from '@ngx-translate/core';
 import {FormFlowService} from '../../services/form-flow.service';
@@ -114,9 +109,9 @@ export class FormLinkModalComponent implements OnInit {
       return 'angular-state';
     } else if (this.isCustomUrlSelected) {
       return 'custom-url';
-    } else {
-      return null;
     }
+
+    return null;
   }
 
   private addCollapseListeners(

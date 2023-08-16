@@ -27,4 +27,8 @@
 
 .v-multi-input__input {
   margin-inline-end: var(--v-multi-input-input-spacing-inline);
+
+  &.--full-width {
+    width: 100%;
+  }
 }

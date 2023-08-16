@@ -78,12 +78,12 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
           return tooBig;
         } else if (dropzoneError.includes(strings.wrongType)) {
           return wrongType;
-        } else {
-          return generic;
         }
-      } else {
-        return '';
+
+        return generic;
       }
+
+      return '';
     })
   );
 

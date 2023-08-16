@@ -9,6 +9,7 @@
     "d3",
     "d3-shape",
     "@ngx-translate/core",
-    "@ngx-translate/http-loader"
+    "@ngx-translate/http-loader",
+    "bin-pack-with-constraints"
   ]
 }

@@ -203,7 +203,8 @@
     },
     "task": {
       "title": "Aufgabe"
-    }
+    },
+    "noWidgets": "Für dieses Dashboard wurden keine Widgets konfiguriert."
   },
   "dashboardManagement": {
     "addDashboard": "Neues Dashboard hinzufügen",
@@ -240,8 +241,8 @@
       "deleteDescription": "Sind Sie sicher, dass Sie dieses Widget löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
       "metadata": "<b>Erstellt von</b> {{createdBy}} | <b>Erstellt am</b> {{createdOn}} | <b>Dashboard-Schlüssel</b> {{key}}",
       "form": {
-        "title": "Widget-Titel",
-        "titleHelperText": "Der primäre Titel, der auf der Widget-Kachel angezeigt wird",
+        "title": "Widget-Titel (erforderlich)",
+        "titleHelperText": "Der Name der Widget-Konfiguration",
         "key": "Widget-Schlüssel (erforderlich)",
         "keyHelperText": "Weisen Sie diesem Widget einen eindeutigen Schlüssel zu",
         "keyTitle": "Schlüssel kopieren",
@@ -254,7 +255,9 @@
         "dashboardTitle": "Dashboard-Name (erforderlich)",
         "dashboardDescription": "Beschreibung (erforderlich)",
         "dashboardDescriptionHelperText": "*Beschreibung ist nur auf der Dashboard-Konfigurationsseite sichtbar",
-        "roles": "Sichtweite"
+        "roles": "Sichtweite",
+        "displayType": "Anzeigetyp",
+        "displayTypeHelperText": "Wählen Sie aus, wie die Daten Ihres Widgets angezeigt werden sollen"
       },
       "noResults": {
         "description": "Klicken Sie auf <strong>Neues Widget hinzufügen</strong>, um mit der Gestaltung Ihres Dashboards zu beginnen. <br/> Ziehen Sie Ihre Widgets an die gewünschte Position.",

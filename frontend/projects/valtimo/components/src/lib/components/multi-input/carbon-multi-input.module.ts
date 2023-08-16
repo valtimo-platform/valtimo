@@ -21,6 +21,7 @@ import {ButtonModule, InputLabelModule, InputModule} from '@valtimo/user-interfa
 import {TranslateModule} from '@ngx-translate/core';
 import {
   ButtonModule as CarbonButtonModule,
+  DropdownModule,
   IconModule,
   InputModule as CarbonInputModule,
 } from 'carbon-components-angular';
@@ -36,6 +37,7 @@ import {
     CarbonButtonModule,
     IconModule,
     CarbonInputModule,
+    DropdownModule,
   ],
   exports: [CarbonMultiInputComponent],
 })

@@ -528,13 +528,13 @@ export class DossierManagementListColumnsComponent {
         const keyValuePairString = `${curr}: ${displayTypeParameters.enum[curr]}`;
         if (!acc) {
           return `${keyValuePairString}`;
-        } else {
-          return `${acc}, ${keyValuePairString}`;
         }
+
+        return `${acc}, ${keyValuePairString}`;
       }, '');
-    } else {
-      return '-';
     }
+
+    return '-';
   }
 
   private updateColumn(): void {

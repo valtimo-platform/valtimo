@@ -14,12 +14,21 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="tableConfig && {currentDashboard: currentDashboard$ | async} as obs">
+<ng-container
+  *ngIf="
+    tableConfig && {
+      currentDashboard: currentDashboard$ | async,
+      editWidgetConfiguration: editWidgetConfiguration$ | async,
+      loading: loading$ | async,
+      widgetData: widgetData$ | async
+    } as obs
+  "
+>
   <div class="dashboard-detail-table">
     <valtimo-carbon-table
-      [data]="widgetData$ | async"
+      [data]="obs.widgetData"
       [hideTableHeader]="true"
-      [loading]="loading$ | async"
+      [loading]="obs.loading"
       [tableConfig]="tableConfig"
     >
       <div carbonToolbarContent>
@@ -36,18 +45,38 @@
 
   <valtimo-widget-modal
     [dashboard]="obs.currentDashboard"
+    [editWidgetConfiguration]="obs.editWidgetConfiguration"
     [showModal$]="showModal$"
     [type]="modalType"
+    [widgetKey]="obs.editWidgetConfiguration?.key"
+    (saveEvent)="refreshWidgets()"
   ></valtimo-widget-modal>
+
+  <valtimo-edit-dashboard-modal
+    [dashboard]="obs.currentDashboard"
+    [showModal$]="showEditDashboardModal$"
+    (saveEvent)="refreshDashboard()"
+  >
+  </valtimo-edit-dashboard-modal>
 </ng-container>
 
-<ng-template #moveButtonsTemplate>
+<ng-template #moveButtonsTemplate let-data="data">
   <div class="move-buttons-container">
-    <button cdsButton="tertiary" [iconOnly]="true">
+    <button
+      cdsButton="tertiary"
+      [disabled]="data.index === 0"
+      [iconOnly]="true"
+      (click)="onArrowUpClick(data)"
+    >
       <svg cdsIcon="arrow--up" size="16" class="cds--btn__icon"></svg>
     </button>
 
-    <button cdsButton="tertiary" [iconOnly]="true">
+    <button
+      cdsButton="tertiary"
+      [disabled]="(lastItemIndex$ | async) === data.index"
+      [iconOnly]="true"
+      (click)="onArrowDownClick(data)"
+    >
       <svg cdsIcon="arrow--down" size="16" class="cds--btn__icon"></svg>
     </button>
   </div>
@@ -64,7 +93,7 @@
 </ng-container>
 
 <ng-template #addWidgetButton>
-  <button cdsButton="primary" (click)="addWidget()">
+  <button cdsButton="primary" [disabled]="loading$ | async" (click)="addWidget()">
     {{ 'dashboardManagement.widgets.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

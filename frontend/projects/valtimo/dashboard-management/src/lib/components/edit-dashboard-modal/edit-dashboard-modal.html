@@ -1,0 +1,91 @@
+<!--
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal
+  *ngIf="{disabled: disabled$ | async} as obs"
+  valtimoCdsModal
+  [open]="open$ | async"
+  showFooter="true"
+  title="{{ 'dashboardManagement.widgets.editDashboard' | translate }}"
+  class="edit-dashboard-modal"
+>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    <h3 cdsModalHeaderHeading>{{ 'dashboardManagement.widgets.editDashboard' | translate }}</h3>
+  </cds-modal-header>
+
+  <section cdsModalContent>
+    <ng-container *ngTemplateOutlet="editDashboardFormTemplate;context:{obs: obs}"></ng-container>
+  </section>
+
+  <cds-modal-footer>
+    <ng-container *ngTemplateOutlet="editDashboardButtons;context:{obs: obs}"></ng-container>
+  </cds-modal-footer>
+</cds-modal>
+
+<ng-template #editDashboardFormTemplate let-obs="obs">
+  <form *ngIf="editDashboardForm" [formGroup]="editDashboardForm" class="dashboard-modal__form">
+    <div class="form__element">
+      <cds-label
+        [disabled]="obs.disabled"
+        [invalid]="dashboardTitle.dirty && dashboardTitle.invalid"
+      >
+        {{ 'dashboardManagement.widgets.form.dashboardTitle' | translate }}
+
+        <input
+          cdsText
+          [disabled]="obs.disabled"
+          [invalid]="dashboardTitle.dirty && dashboardTitle.invalid"
+          formControlName="title"
+          [attr.modal-primary-focus]="true"
+        />
+      </cds-label>
+    </div>
+
+    <div class="form__element">
+      <cds-label
+        [disabled]="obs.disabled"
+        [helperText]="'dashboardManagement.widgets.form.dashboardDescriptionHelperText' | translate"
+        [invalid]="dashboardDescription.dirty && dashboardDescription.invalid"
+        [invalidText]="
+          'dashboardManagement.widgets.form.dashboardDescriptionHelperText' | translate
+        "
+      >
+        {{ 'dashboardManagement.widgets.form.dashboardDescription' | translate }}
+
+        <input
+          cdsText
+          [disabled]="obs.disabled"
+          [invalid]="dashboardDescription.dirty && dashboardDescription.invalid"
+          formControlName="description"
+        />
+      </cds-label>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #editDashboardButtons let-obs="obs">
+  <button cdsButton="ghost" [disabled]="obs.disabled" (click)="closeModal()">
+    {{ 'dashboardManagement.widgets.cancel' | translate }}
+  </button>
+
+  <button
+    cdsButton="primary"
+    [disabled]="editDashboardForm.invalid || obs.disabled"
+    (click)="saveDashboard()"
+  >
+    {{ 'dashboardManagement.widgets.complete' | translate }}
+  </button>
+</ng-template>
