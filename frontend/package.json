@@ -268,7 +268,6 @@
     "karma-coverage-istanbul-reporter": "^3.0.3",
     "karma-jasmine": "^5.1.0",
     "karma-jasmine-html-reporter": "^2.0.0",
-    "karma-moment": "^0.1.0",
     "keycloak-angular": "^12.2.0",
     "keycloak-js": "^19.0.3",
     "lodash": "^4.17.21",
