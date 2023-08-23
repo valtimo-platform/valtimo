@@ -28,11 +28,10 @@ import {
 } from '@angular/core';
 import {PluginService} from '../../services';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
-import {map, take, tap} from 'rxjs/operators';
+import {tap} from 'rxjs/operators';
 import {
   ConfigurationComponentType,
   FunctionConfigurationComponent,
-  FunctionConfigurationData,
   PluginConfigurationComponent,
   PluginConfigurationData,
 } from '../../models';
@@ -153,7 +152,7 @@ export class PluginConfigurationContainerComponent
         });
 
         this.configurationSubscription = instance.configuration.subscribe(configuration => {
-          this.configuration.emit(configuration);
+          this.configuration.emit(configuration as any as PluginConfigurationData);
         });
       }
     });

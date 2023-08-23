@@ -40,7 +40,6 @@ import {
 } from '@valtimo/user-interface';
 import {SelectPluginConfigurationComponent} from './components/select-plugin-configuration/select-plugin-configuration.component';
 import {SelectPluginActionComponent} from './components/select-plugin-action/select-plugin-action.component';
-import {FlexLayoutModule} from '@angular/flex-layout';
 import {PluginConfigurationContainerModule, PluginTranslatePipeModule} from '@valtimo/plugin';
 import {PluginActionConfigurationComponent} from './components/plugin-action-configuration/plugin-action-configuration.component';
 import {ProcessLinkComponent} from './components/process-link/process-link.component';
@@ -86,7 +85,6 @@ import {SelectFormFlowComponent} from './components/select-form-flow';
     StepperModule,
     VModalModule,
     CardModule,
-    FlexLayoutModule,
     PluginTranslatePipeModule,
     ParagraphModule,
     PluginConfigurationContainerModule,

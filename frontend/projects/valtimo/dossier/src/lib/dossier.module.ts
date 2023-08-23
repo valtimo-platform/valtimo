@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ANALYZE_FOR_ENTRY_COMPONENTS, ModuleWithProviders, NgModule} from '@angular/core';
+import {ModuleWithProviders, NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DossierRoutingModule} from './dossier-routing.module';
 import {DossierListComponent} from './dossier-list/dossier-list.component';
@@ -173,11 +173,6 @@ export class DossierModule {
         {
           provide: TAB_MAP,
           useFactory: tabsFactory,
-        },
-        {
-          provide: ANALYZE_FOR_ENTRY_COMPONENTS,
-          useValue: Array.from(tabsFactory().values()),
-          multi: true,
         },
       ],
     };

@@ -18,13 +18,7 @@ import {NgModule} from '@angular/core';
 import {ConnectorManagementRoutingModule} from './connector-management-routing';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {
-  FormIoModule,
-  ListModule,
-  ModalModule,
-  SpinnerModule,
-  WidgetModule,
-} from '@valtimo/components';
+import {FormIoModule, ListModule, ModalModule, SpinnerModule, WidgetModule,} from '@valtimo/components';
 import {ConnectorManagementStateService} from './services/connector-management-state/connector-management-state.service';
 import {ConnectorManagementComponent} from './components/connector-management/connector-management.component';
 import {ConnectorLinkExtensionModalComponent} from './components/connector-link-extension-modal/connector-link-extension-modal.component';
@@ -48,7 +42,6 @@ import {
   TableModule,
   TitleModule,
 } from '@valtimo/user-interface';
-import {FlexLayoutModule} from '@angular/flex-layout';
 import {AddConnectorConfigureComponent} from './components/add-connector-configure/add-connector-configure.component';
 
 @NgModule({
@@ -81,7 +74,6 @@ import {AddConnectorConfigureComponent} from './components/add-connector-configu
     VModalModule,
     StepperModule,
     CardModule,
-    FlexLayoutModule,
     TitleModule,
     InputModule,
     PageModule,

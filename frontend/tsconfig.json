@@ -11,10 +11,12 @@
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "importHelpers": true,
+    // left at es2020 instead of es2022. es2022 gives build errors when buildings libs sequentially for unknown reasons
     "target": "es2020",
     "typeRoots": ["node_modules/@types"],
-    "lib": ["es2018", "dom"],
+    "lib": ["es2020", "dom", "dom.iterable"],
     "allowSyntheticDefaultImports": true,
+    "useDefineForClassFields": false,
     "paths": {
       "@angular/*": ["./node_modules/@angular/*"],
       "@valtimo/layout": ["dist/valtimo/layout"],

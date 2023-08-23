@@ -3,12 +3,12 @@
   "license": "EUPL-1.2",
   "version": "10.4.0",
   "peerDependencies": {
-    "@angular/common": "^14.3.0",
-    "@angular/core": "^14.3.0"
+    "@angular/common": "^16.2.0",
+    "@angular/core": "^16.2.0"
   },
   "dependencies": {
-    "keycloak-angular": "^12.2.0",
-    "keycloak-js": "^19.0.3",
-    "tslib": "^2.5.0"
+    "keycloak-angular": "14.0.0",
+    "keycloak-js": "22.0.1",
+    "tslib": "2.6.2"
   }
 }

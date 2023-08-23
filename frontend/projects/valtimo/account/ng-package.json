@@ -3,5 +3,6 @@
   "dest": "../../../dist/valtimo/account",
   "lib": {
     "entryFile": "src/public_api.ts"
-  }
+  },
+  "allowedNonPeerDependencies": ["moment"]
 }

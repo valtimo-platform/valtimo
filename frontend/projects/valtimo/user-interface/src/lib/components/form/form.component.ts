@@ -89,10 +89,6 @@ export class FormComponent implements AfterContentInit, OnDestroy {
         const multiInputFormComponent = component as MultiInputFormComponent;
         const radioComponent = component as RadioComponent;
 
-        if (!inputComponent?.inputValue$) {
-          return of(null);
-        }
-
         if (selectComponent?.selected$) {
           return selectComponent.selected$.asObservable();
         } else if (multiInputComponent?.mappedValues$) {
@@ -103,9 +99,11 @@ export class FormComponent implements AfterContentInit, OnDestroy {
           return datePickerComponent.dateValue$;
         } else if (radioComponent?.radioValue$) {
           return radioComponent.radioValue$;
+        } else if (inputComponent.inputValue$) {
+          return inputComponent.inputValue$.asObservable();
+        } else {
+          return of(null);
         }
-
-        return inputComponent.inputValue$.asObservable();
       })
     )
       .pipe(

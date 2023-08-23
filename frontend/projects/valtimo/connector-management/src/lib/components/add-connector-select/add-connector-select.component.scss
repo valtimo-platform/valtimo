@@ -38,3 +38,17 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.connector-type__grid {
+  flex-flow: wrap;
+  box-sizing: border-box;
+  display: flex;
+  margin: 0px -22px -22px 0px;
+}
+
+.connector-type__item {
+  flex: 1 1 33.3%;
+  box-sizing: border-box;
+  max-width: 33.3%;
+  padding: 0px 22px 22px 0px;
+}

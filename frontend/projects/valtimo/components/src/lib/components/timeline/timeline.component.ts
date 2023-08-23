@@ -26,15 +26,17 @@ export class TimelineComponent {
   @Input() actions?: any[];
 
   public getSupportedActions(item: TimelineItem, actions: Array<any>): Array<any> {
-    return actions.filter(action => {
-      const actionId = action?.id;
-      const itemSupportedActions = Array.isArray(item.supportedActionIds);
+    return (
+      actions?.filter(action => {
+        const actionId = action?.id;
+        const itemSupportedActions = Array.isArray(item.supportedActionIds);
 
-      if (actionId && itemSupportedActions) {
-        return item.supportedActionIds.includes(actionId);
-      }
+        if (actionId && itemSupportedActions) {
+          return item.supportedActionIds.includes(actionId);
+        }
 
-      return true;
-    });
+        return true;
+      }) || []
+    );
   }
 }

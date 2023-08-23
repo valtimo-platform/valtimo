@@ -3,11 +3,11 @@
   "license": "EUPL-1.2",
   "version": "10.4.0",
   "peerDependencies": {
-    "@angular/common": "^14.3.0",
-    "@angular/core": "^14.3.0"
+    "@angular/common": "^16.2.0",
+    "@angular/core": "^16.2.0"
   },
   "dependencies": {
-    "ngx-toastr": "^15.2.2",
-    "tslib": "^2.5.0"
+    "ngx-toastr": "17.0.2",
+    "tslib": "2.6.2"
   }
 }

@@ -15,7 +15,7 @@
   -->
 
 <ng-container *ngIf="pluginDefinitionsWithLogos$ | async as pluginDefinitions; else loading">
-  <div fxLayout="row wrap" fxLayoutGap="22px grid">
+  <div class="plugin-definition__grid">
     <ng-container
       *ngTemplateOutlet="pluginDefinitionsTemplate; context: {pluginDefinitions: pluginDefinitions}"
     ></ng-container>
@@ -29,7 +29,7 @@
 </ng-container>
 
 <ng-template #noPluginDefinitionsTemplate let-pluginDefinitions="pluginDefinitions">
-  <div fxFlex="100%" *ngIf="pluginDefinitions?.length === 0">
+  <div *ngIf="pluginDefinitions?.length === 0" class="plugin-definition__no-results">
     <v-paragraph [center]="true" [fullWidth]="true">{{
       'pluginManagement.noDefinitions' | translate
     }}</v-paragraph>
@@ -37,7 +37,7 @@
 </ng-template>
 
 <ng-template #pluginDefinitionsTemplate let-pluginDefinitions="pluginDefinitions">
-  <div fxFlex="33.3%" *ngFor="let pluginDefinition of pluginDefinitions">
+  <div *ngFor="let pluginDefinition of pluginDefinitions" class="plugin-definition__item">
     <v-card
       [title]="'title' | pluginTranslate : pluginDefinition.key | async"
       [description]="'description' | pluginTranslate : pluginDefinition.key | async"
@@ -59,7 +59,7 @@
 </ng-template>
 
 <ng-template #loading>
-  <div fxLayout="row wrap" fxLayoutGap="22px grid">
+  <div class="plugin-definition__grid">
     <ng-container *ngTemplateOutlet="loadingCard"></ng-container>
     <ng-container *ngTemplateOutlet="loadingCard"></ng-container>
     <ng-container *ngTemplateOutlet="loadingCard"></ng-container>
@@ -67,7 +67,7 @@
 </ng-template>
 
 <ng-template #loadingCard>
-  <div fxFlex="33.3%">
+  <div class="plugin-definition__item">
     <v-card [loading]="true" [loadingDescription]="true" [loadingTitle]="true"></v-card>
   </div>
 </ng-template>

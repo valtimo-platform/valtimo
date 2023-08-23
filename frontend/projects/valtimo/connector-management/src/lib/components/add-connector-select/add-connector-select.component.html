@@ -15,8 +15,8 @@
   -->
 
 <ng-container *ngIf="connectorTypes$ | async as connectorTypes; else loading">
-  <div fxLayout="row wrap" fxLayoutGap="22px grid">
-    <div fxFlex="33.3%" *ngFor="let connectorType of connectorTypes">
+  <div class="connector-type__grid">
+    <div class="connector-type__item" *ngFor="let connectorType of connectorTypes">
       <v-card
         [titleTranslationKey]="'connector.' + connectorType.name + '.title'"
         [descriptionTranslationKey]="'connector.' + connectorType.name + '.description'"
@@ -31,7 +31,7 @@
 </ng-container>
 
 <ng-template #loading>
-  <div fxLayout="row wrap" fxLayoutGap="22px grid">
+  <div class="connector-type__grid">
     <ng-container *ngTemplateOutlet="loadingCard"></ng-container>
     <ng-container *ngTemplateOutlet="loadingCard"></ng-container>
     <ng-container *ngTemplateOutlet="loadingCard"></ng-container>
@@ -39,7 +39,7 @@
 </ng-template>
 
 <ng-template #loadingCard>
-  <div fxFlex="33.3%">
+  <div class="connector-type__item">
     <v-card [loading]="true" [loadingDescription]="true" [loadingTitle]="true"></v-card>
   </div>
 </ng-template>
