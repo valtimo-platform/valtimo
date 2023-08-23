@@ -24,13 +24,13 @@
     {{ 'processLinkConfiguration.chooseFormFlowDescription' | translate }}
   </p>
   <div class="select-form-flow">
-    <ibm-combo-box
+    <cds-combo-box
       [disabled]="!obs.formFlowDefinitions || obs.saving"
       [items]="obs.formFlowDefinitions || []"
       [placeholder]="'interface.typeToSearch' | translate"
       (selected)="selectFormFlowDefinition($event)"
       [label]="'processLinkSteps.selectFormFlow' | translate"
-      ><ibm-dropdown-list></ibm-dropdown-list
-    ></ibm-combo-box>
+      ><cds-dropdown-list></cds-dropdown-list
+    ></cds-combo-box>
   </div>
 </ng-container>

@@ -30,8 +30,8 @@ export class BooleanTypeConverter implements TypeConverter {
       return value
         ? Object.keys(enumeration)[0] || 'Yes'
         : enumeration[Object.keys(enumeration)[0]] || 'No';
-    } else {
-      return value ? 'Yes' : 'No';
     }
+
+    return value ? 'Yes' : 'No';
   }
 }

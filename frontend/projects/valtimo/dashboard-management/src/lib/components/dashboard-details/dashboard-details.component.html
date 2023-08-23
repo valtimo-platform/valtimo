@@ -1,53 +1,83 @@
-<div
-  class="dashboard-detail-table"
-  *ngIf="tableConfig && {currentDashboard: currentDashboard$ | async} as obs"
+<ng-container
+  *ngIf="
+    tableConfig && {
+      currentDashboard: currentDashboard$ | async,
+      editWidgetConfiguration: editWidgetConfiguration$ | async,
+      loading: loading$ | async,
+      widgetData: widgetData$ | async
+    } as obs
+  "
 >
-  <valtimo-carbon-table
-    [data]="widgetData$ | async"
-    [tableConfig]="tableConfig"
-    [hideTableHeader]="true"
+  <div class="dashboard-detail-table">
+    <valtimo-carbon-table
+      [data]="obs.widgetData"
+      [hideTableHeader]="true"
+      [loading]="obs.loading"
+      [tableConfig]="tableConfig"
+    >
+      <div carbonToolbarContent>
+        <ng-container [ngTemplateOutlet]="addWidgetButton"></ng-container>
+      </div>
+
+      <valtimo-no-results
+        [action]="addWidgetButton"
+        description="{{ 'dashboardManagement.widgets.noResults.description' | translate }}"
+        title="{{ 'dashboardManagement.widgets.noResults.title' | translate }}"
+      ></valtimo-no-results>
+    </valtimo-carbon-table>
+  </div>
+
+  <valtimo-widget-modal
+    [dashboard]="obs.currentDashboard"
+    [editWidgetConfiguration]="obs.editWidgetConfiguration"
+    [showModal$]="showModal$"
+    [type]="modalType"
+    [widgetKey]="obs.editWidgetConfiguration?.key"
+    (saveEvent)="refreshWidgets()"
+  ></valtimo-widget-modal>
+
+  <valtimo-edit-dashboard-modal
+    [dashboard]="obs.currentDashboard"
+    [showModal$]="showEditDashboardModal$"
+    (saveEvent)="refreshDashboard()"
   >
-    <div carbonToolbarContent>
-      <ng-container [ngTemplateOutlet]="addWidgetButton"></ng-container>
-    </div>
+  </valtimo-edit-dashboard-modal>
+</ng-container>
 
-    <valtimo-no-results
-      [action]="addWidgetButton"
-      description="{{ 'dashboardManagement.widgets.noResults.description' | translate }}"
-      title="{{ 'dashboardManagement.widgets.noResults.title' | translate }}"
-    ></valtimo-no-results>
-  </valtimo-carbon-table>
-</div>
-
-<valtimo-widget-modal
-  [showModal$]="showModal$"
-  [type]="modalType"
-  [dashboard]="currentDashboard$ | async"
-></valtimo-widget-modal>
-
-<ng-template #moveButtonsTemplate>
+<ng-template #moveButtonsTemplate let-data="data">
   <div class="move-buttons-container">
-    <button [ibmButton]="'tertiary'" [iconOnly]="true">
-      <svg class="cds--btn__icon" cdsIcon="arrow--up" size="16"></svg>
+    <button
+      cdsButton="tertiary"
+      [disabled]="data.index === 0"
+      [iconOnly]="true"
+      (click)="onArrowUpClick(data)"
+    >
+      <svg cdsIcon="arrow--up" size="16" class="cds--btn__icon"></svg>
     </button>
 
-    <button [ibmButton]="'tertiary'" [iconOnly]="true">
-      <svg class="cds--btn__icon" cdsIcon="arrow--down" size="16"></svg>
+    <button
+      cdsButton="tertiary"
+      [disabled]="(lastItemIndex$ | async) === data.index"
+      [iconOnly]="true"
+      (click)="onArrowDownClick(data)"
+    >
+      <svg cdsIcon="arrow--down" size="16" class="cds--btn__icon"></svg>
     </button>
   </div>
 </ng-template>
 
 <ng-container renderInPageHeader>
   <ng-template>
-    <button ibmButton="tertiary" size="md" (click)="editDashboard()">
+    <button cdsButton="tertiary" size="md" (click)="editDashboard()">
       {{ 'dashboardManagement.widgets.editButton' | translate }}
+
       <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
     </button>
   </ng-template>
 </ng-container>
 
 <ng-template #addWidgetButton>
-  <button cdsButton="primary" (click)="addWidget()">
+  <button cdsButton="primary" [disabled]="loading$ | async" (click)="addWidget()">
     {{ 'dashboardManagement.widgets.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

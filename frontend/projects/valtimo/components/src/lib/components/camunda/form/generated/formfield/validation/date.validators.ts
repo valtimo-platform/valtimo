@@ -35,9 +35,9 @@ export function minDate(minDateIn: string): ValidatorFn {
           actual: controlDate.format(DATE_FORMAT),
         },
       };
-    } else {
-      return null;
     }
+
+    return null;
   };
 }
 
@@ -56,8 +56,8 @@ export function maxDate(maxDateIn: string): ValidatorFn {
           actual: controlDate.format(DATE_FORMAT),
         },
       };
-    } else {
-      return null;
     }
+
+    return null;
   };
 }

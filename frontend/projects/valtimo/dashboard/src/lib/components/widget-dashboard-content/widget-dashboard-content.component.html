@@ -14,8 +14,20 @@
   ~ limitations under the License.
   -->
 
-<div>
-  <pre>
-    {{dashboard | json}}
-  </pre>
+<div #widgetContainer [class.loading]="isLoading$ | async" class="widget-container">
+  <ng-container *ngIf="widgetConfigurations$ | async as widgetConfigurations">
+    <ng-container *ngFor="let config of widgetConfigurations">
+      <div #widgetConfiguration [id]="config.key" class="widget-configuration">
+        <div class="widget-configuration-content">
+          <ng-container #widgetConfigurationContent></ng-container>
+        </div>
+      </div>
+    </ng-container>
+
+    <div *ngIf="widgetConfigurations.length === 0" class="no-widgets-message">
+      {{ 'dashboard.noWidgets' | translate }}
+    </div>
+  </ng-container>
 </div>
+
+<cds-loading *ngIf="isLoading$ | async" class="widget-loader"></cds-loading>

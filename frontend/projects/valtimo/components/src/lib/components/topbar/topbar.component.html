@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<ibm-header [useRouter]="false" (mouseenter)="mouseEnter()" (mouseleave)="mouseLeave()">
+<cds-header [useRouter]="false" (mouseenter)="mouseEnter()" (mouseleave)="mouseLeave()">
   <a
     *ngIf="logoBase64"
     class="logo-link"
@@ -24,22 +24,22 @@
   >
     <img [src]="logoBase64" class="logo-image" />
   </a>
-  <ibm-hamburger
+  <cds-hamburger
     *ngIf="(largeScreen$ | async) === false || (collapsibleWidescreenMenu$ | async)"
     [active]="sideBarExpanded$ | async"
     (selected)="toggleSideBar()"
-  ></ibm-hamburger>
-  <ibm-header-global>
+  ></cds-hamburger>
+  <cds-header-global>
     <ng-container *ngTemplateOutlet="userFullName"></ng-container>
-    <ibm-header-action
+    <cds-header-action
       title="action"
       [active]="panelExpanded$ | async"
       (activeChange)="setPanelExpanded($event)"
     >
-      <svg ibmIcon="user" size="20"></svg>
-    </ibm-header-action>
-  </ibm-header-global>
-</ibm-header>
+      <svg cdsIcon="user" size="20"></svg>
+    </cds-header-action>
+  </cds-header-global>
+</cds-header>
 
 <ng-template #userFullName>
   <div

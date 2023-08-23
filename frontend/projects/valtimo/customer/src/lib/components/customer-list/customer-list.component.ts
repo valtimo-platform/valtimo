@@ -17,7 +17,7 @@
 import {Component} from '@angular/core';
 import {CustomerService} from '../../services/customer.service';
 import {BehaviorSubject, combineLatest, Observable, of} from 'rxjs';
-import {map, tap, switchMap, debounceTime, catchError} from 'rxjs/operators';
+import {catchError, debounceTime, map, switchMap, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {
   Customer,
@@ -104,9 +104,9 @@ export class CustomerListComponent {
         return this.customerService
           .getCustomers(searchParameters as CustomerSearchRequest)
           .pipe(catchError(() => of([])));
-      } else {
-        return of([]);
       }
+
+      return of([]);
     }),
     map(customers =>
       (customers as Array<Customer>).map(customer => ({

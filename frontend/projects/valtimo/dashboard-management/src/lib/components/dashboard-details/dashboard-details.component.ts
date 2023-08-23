@@ -1,5 +1,7 @@
+import {DatePipe} from '@angular/common';
 import {AfterViewInit, Component, TemplateRef, ViewChild, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
+import {ArrowDown16, ArrowUp16, Edit16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {
   CarbonTableConfig,
@@ -7,9 +9,11 @@ import {
   createCarbonTableConfig,
   PageTitleService,
 } from '@valtimo/components';
-import {BehaviorSubject, combineLatest, map, Observable, tap} from 'rxjs';
-import {dashboardListMock, widgetListMock} from '../../mocks';
+import {DashboardWidgetConfiguration} from '@valtimo/dashboard';
+import {IconService} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
 import {DashboardItem, DashboardWidget, WidgetModalType} from '../../models';
+import {DashboardManagementService} from '../../services/dashboard-management.service';
 
 @Component({
   templateUrl: './dashboard-details.component.html',
@@ -21,51 +25,110 @@ export class DashboardDetailsComponent implements AfterViewInit {
 
   public modalType: WidgetModalType = 'create';
   public tableConfig!: CarbonTableConfig;
+
+  private readonly _dashboardKey$ = this.route.params.pipe(map(params => params.id));
+  private readonly _refreshDashboardSubject$ = new BehaviorSubject<null>(null);
   public readonly currentDashboard$: Observable<DashboardItem | undefined> = combineLatest([
-    this.route.params,
+    this._dashboardKey$,
     this.translateService.stream('key'),
+    this._refreshDashboardSubject$,
   ]).pipe(
-    map(([params]) =>
-      dashboardListMock.find((mockItem: DashboardItem) => mockItem.key === params.id)
-    ),
-    tap(currentDashboard => {
+    switchMap(([dashboardKey]) => this.dashboardManagementService.getDashboard(dashboardKey)),
+    tap((currentDashboard: DashboardItem) => {
       if (!currentDashboard) {
         return;
       }
 
-      this.pageTitleService.setCustomPageTitle(currentDashboard.name);
+      this.pageTitleService.setCustomPageTitle(currentDashboard.title);
       this.pageTitleService.setCustomPageSubtitle(
         this.translateService.instant('dashboardManagement.widgets.metadata', {
           createdBy: currentDashboard.createdBy,
-          createdOn: currentDashboard.createdOn,
+          createdOn: this.datePipe.transform(currentDashboard.createdOn ?? '', 'd/M/yy, H:mm'),
           key: currentDashboard.key,
         })
       );
     })
   );
 
+  public readonly lastItemIndex$ = new BehaviorSubject<number>(0);
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
+
+  public readonly _refreshWidgetsSubject$ = new BehaviorSubject<{
+    direction: 'UP' | 'DOWN';
+    index: number;
+  } | null>(null);
+
+  private _widgetData: DashboardWidget[] | null = null;
+  public readonly widgetData$: Observable<DashboardWidget[]> = combineLatest([
+    this._dashboardKey$,
+    this._refreshWidgetsSubject$,
+  ]).pipe(
+    switchMap(([dashboardKey, refreshWidgets]) => {
+      this.loading$.next(true);
+      if (!this._widgetData || !refreshWidgets) {
+        return this.dashboardManagementService.getDashboardWidgetConfiguration(dashboardKey);
+      }
+
+      const {direction, index} = refreshWidgets;
+
+      return this.dashboardManagementService.updateDashboardWidgetConfigurations(
+        dashboardKey,
+        direction === 'UP'
+          ? this.swapWidgets(this._widgetData, index - 1, index)
+          : this.swapWidgets(this._widgetData, index, index + 1)
+      );
+    }),
+    tap((data: DashboardWidget[]) => {
+      this._widgetData = data;
+      this.lastItemIndex$.next(data.length - 1);
+      this.loading$.next(false);
+    })
+  );
+
   public readonly showModal$ = new BehaviorSubject<boolean>(false);
-  private data: Array<DashboardWidget> = widgetListMock;
-  public readonly widgetData$ = new BehaviorSubject<Array<DashboardWidget>>(this.data);
+  public readonly showEditDashboardModal$ = new BehaviorSubject<boolean>(false);
+
+  public readonly editWidgetConfiguration$ =
+    new BehaviorSubject<DashboardWidgetConfiguration | null>(null);
 
   constructor(
-    private readonly route: ActivatedRoute,
+    private readonly dashboardManagementService: DashboardManagementService,
+    private readonly datePipe: DatePipe,
+    private readonly iconService: IconService,
     private readonly pageTitleService: PageTitleService,
+    private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService
   ) {}
 
   public ngAfterViewInit(): void {
+    this.iconService.registerAll([ArrowDown16, ArrowUp16, Edit16]);
     this.setTableConfig();
   }
 
   public addWidget(): void {
+    this.editWidgetConfiguration$.next(null);
     this.modalType = 'create';
     this.showModal();
   }
 
   public editDashboard(): void {
-    this.modalType = 'editDashboard';
-    this.showModal();
+    this.showEditDashboardModal();
+  }
+
+  public refreshWidgets(): void {
+    this._refreshWidgetsSubject$.next(null);
+  }
+
+  public refreshDashboard(): void {
+    this._refreshDashboardSubject$.next(null);
+  }
+
+  public onArrowDownClick(data: {item: DashboardWidget; index: number}): void {
+    this._refreshWidgetsSubject$.next({direction: 'DOWN', index: data.index});
+  }
+
+  public onArrowUpClick(data: {item: DashboardWidget; index: number}): void {
+    this._refreshWidgetsSubject$.next({direction: 'UP', index: data.index});
   }
 
   private setTableConfig(): void {
@@ -73,7 +136,7 @@ export class DashboardDetailsComponent implements AfterViewInit {
       fields: [
         {
           columnType: ColumnType.TEXT,
-          fieldName: 'name',
+          fieldName: 'title',
           translationKey: 'Name',
         },
         {
@@ -101,22 +164,37 @@ export class DashboardDetailsComponent implements AfterViewInit {
           ],
         },
       ],
-      searchable: true,
-      showSelectionColumn: false,
     });
   }
 
-  private editWidget(): void {
+  private editWidget(event: DashboardWidgetConfiguration): void {
+    this.editWidgetConfiguration$.next({...event});
     this.modalType = 'edit';
     this.showModal();
   }
 
-  private deleteWidget(): void {
+  private deleteWidget(event: DashboardWidgetConfiguration): void {
+    this.editWidgetConfiguration$.next({...event});
     this.modalType = 'delete';
     this.showModal();
   }
 
   private showModal(): void {
     this.showModal$.next(true);
+  }
+
+  private showEditDashboardModal(): void {
+    this.showEditDashboardModal$.next(true);
+  }
+
+  private swapWidgets(
+    dashboardWidgets: DashboardWidget[],
+    index1: number,
+    index2: number
+  ): DashboardWidget[] {
+    const temp = [...dashboardWidgets];
+    temp[index1] = temp.splice(index2, 1, temp[index1])[0];
+
+    return temp;
   }
 }

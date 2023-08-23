@@ -13,19 +13,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component} from '@angular/core';
+import {Component, ViewEncapsulation} from '@angular/core';
+import {BehaviorSubject, Observable, take, tap} from 'rxjs';
+import {Dashboard, WidgetData} from '../../models';
 import {DashboardService} from '../../services';
-import {Dashboard} from '../../models';
-import {Observable} from 'rxjs';
+import {WidgetApiService} from '../../services/widget-api.service';
 
 @Component({
   selector: 'valtimo-widget-dashboard',
   templateUrl: './widget-dashboard.component.html',
-  styleUrls: ['./widget-dashboard.component.css'],
+  styleUrls: ['./widget-dashboard.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class WidgetDashboardComponent {
-  public dashboards$: Observable<Array<Dashboard>> = this.dashboardService.getDashboards();
+  public dashboards$: Observable<Array<Dashboard>> = this.dashboardService.getDashboards().pipe(
+    tap(dashboards => {
+      if (dashboards.length === 1) {
+        this.onTabSelected(dashboards[0].key);
+      }
+    })
+  );
+  public readonly activeWidgetData$ = new BehaviorSubject<{data: WidgetData[]; loading: boolean}>({
+    data: [],
+    loading: true,
+  });
 
-  constructor(private readonly dashboardService: DashboardService) {}
+  constructor(
+    private readonly dashboardService: DashboardService,
+    private readonly widgetApiService: WidgetApiService
+  ) {}
+
+  public onTabSelected(dashboardKey: string): void {
+    this.widgetApiService
+      .getWidgetData(dashboardKey)
+      .pipe(
+        tap(() => {
+          this.activeWidgetData$.next({data: [], loading: true});
+        }),
+        take(1)
+      )
+      .subscribe((data: WidgetData[]) => this.activeWidgetData$.next({data, loading: false}));
+  }
+
+  public trackByIndex(index: number): number {
+    return index;
+  }
 }

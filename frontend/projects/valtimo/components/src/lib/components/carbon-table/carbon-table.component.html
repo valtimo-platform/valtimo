@@ -25,7 +25,7 @@
   </cds-table-toolbar>
 
   <ng-template #actionsMenu let-data="data">
-    <cds-overflow-menu>
+    <cds-overflow-menu (click)="$event.stopPropagation()">
       <cds-overflow-menu-option
         *ngFor="let action of data.actions"
         [type]="action.type"

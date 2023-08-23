@@ -15,21 +15,14 @@
  */
 
 import {Pipe, PipeTransform} from '@angular/core';
-import {combineLatest, Observable, of} from 'rxjs';
-import {map} from 'rxjs/operators';
-import {TranslateService} from '@ngx-translate/core';
-import {PluginService} from '../../services';
-import {PluginSpecification} from '../../models';
+import {Observable} from 'rxjs';
 import {PluginTranslationService} from '../../services/plugin-translation.service';
 
 @Pipe({
   name: 'pluginTranslate',
 })
 export class PluginTranslatePipe implements PipeTransform {
-  constructor(
-    private readonly pluginTranslationService: PluginTranslationService,
-    private readonly pluginService: PluginService
-  ) {}
+  constructor(private readonly pluginTranslationService: PluginTranslationService) {}
 
   transform(translateKey: string, pluginDefinitionKey: string): Observable<string> {
     return this.pluginTranslationService.translate(translateKey, pluginDefinitionKey);

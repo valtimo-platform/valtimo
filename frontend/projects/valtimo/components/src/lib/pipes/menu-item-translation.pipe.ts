@@ -36,9 +36,9 @@ export class MenuItemTranslationPipe implements PipeTransform {
           return pageTranslation;
         } else if (menuItemTitleTranslation !== titleTranslationKey) {
           return menuItemTitleTranslation;
-        } else {
-          return menuItem.title;
         }
+
+        return menuItem.title;
       })
     );
   }

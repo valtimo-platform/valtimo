@@ -55,8 +55,8 @@ export class FormTranslationService {
 
     if (translation !== translationKey) {
       return translation;
-    } else {
-      return false;
     }
+
+    return false;
   }
 }

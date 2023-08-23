@@ -156,21 +156,21 @@ export class MultiInputFormComponent implements OnInit, OnDestroy {
     const initialRows = this.initialAmountOfRows;
     const amountOfInitalRows =
       minimumRows > initialRows ? minimumRows : initialRows > 1 ? initialRows : 0;
+    const fillArray = new Array(amountOfInitalRows);
 
-    if (!this.defaultValues) {
-      const fillArray = new Array(amountOfInitalRows);
-      return fillArray
-        .fill(this.getEmptyValue())
-        .map((row, index) =>
-          index + 1 === fillArray.length ? {...row, expanded: true} : {...row, expanded: false}
-        );
-    } else {
+    if (this.defaultValues) {
       return this.defaultValues.map(defaultValue => ({
         value: defaultValue,
         uuid: uuidv4(),
         expanded: false,
       }));
     }
+
+    return fillArray
+      .fill(this.getEmptyValue())
+      .map((row, index) =>
+        index + 1 === fillArray.length ? {...row, expanded: true} : {...row, expanded: false}
+      );
   }
 
   private getEmptyValue(): MultiInputFormValue {

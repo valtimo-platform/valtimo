@@ -81,7 +81,7 @@
     }
   }
 
-  ibm-structured-list:last-child {
+  cds-structured-list:last-child {
     .cds--structured-list-row:last-child {
       border-bottom: 0;
     }
@@ -104,7 +104,7 @@
     height: 100%;
   }
 
-  ibm-tab {
+  cds-tab {
     overflow: auto;
   }
 
@@ -126,23 +126,23 @@
   }
 
   .information-table {
-    ibm-list-row:first-child {
+    cds-list-row:first-child {
       border-top: 0;
 
-      ibm-list-column {
+      cds-list-column {
         border-top: 0;
         padding-top: 0;
       }
     }
 
-    ibm-list-row:last-child {
-      ibm-list-column {
+    cds-list-row:last-child {
+      cds-list-column {
         padding-bottom: 0;
       }
     }
 
-    ibm-list-row {
-      ibm-list-column:first-child {
+    cds-list-row {
+      cds-list-column:first-child {
         padding-left: 0 !important;
       }
     }

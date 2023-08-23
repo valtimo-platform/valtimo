@@ -14,10 +14,10 @@
   ~ limitations under the License.
   -->
 
-<div class="page-title-container">
+<div [ngClass]="{'--no-margin': hidePageTitle}" class="page-title-container">
   <ng-container
     *ngIf="
-      (hidePageTitle$ | async) === false && {
+      hidePageTitle === false && {
         title: translatedTitle$ | async,
         hasCustomPageTitle: hasCustomPageTitle$ | async,
         hasCustomPageSubtitle: hasCustomPageSubtitle$ | async,
@@ -29,30 +29,34 @@
     "
   >
     <div class="skeleton-container" *ngIf="obs.hasCustomPageTitle && !obs.customPageTitleSet">
-      <ibm-skeleton-placeholder></ibm-skeleton-placeholder>
+      <cds-skeleton-placeholder></cds-skeleton-placeholder>
     </div>
+
     <h2
-      class="page-title"
       *ngIf="obs.hasCustomPageTitle ? obs.customPageTitleSet : obs.title !== ''"
       [title]="obs.hasCustomPageTitle ? obs.customPageTitle : obs.title"
+      class="page-title"
     >
       {{ obs.hasCustomPageTitle ? obs.customPageTitle : obs.title }}
     </h2>
+
     <div
-      class="subtitle-skeleton-container"
       *ngIf="obs.hasCustomPageSubtitle && !obs.customPageSubtitleSet"
+      class="subtitle-skeleton-container"
     >
-      <ibm-skeleton-placeholder></ibm-skeleton-placeholder>
+      <cds-skeleton-placeholder></cds-skeleton-placeholder>
     </div>
+
     <span
-      class="page-subtitle"
       *ngIf="obs.hasCustomPageSubtitle && obs.customPageSubtitleSet"
-      [title]="obs.customPageSubtitle"
       [innerHtml]="obs.customPageSubtitle"
+      [title]="obs.customPageSubtitle"
+      class="page-subtitle"
     >
     </span>
   </ng-container>
-  <div class="page-actions" [ngClass]="{'--visible': hasPageActions$ | async}">
+
+  <div [ngClass]="{'--visible': hasPageActions$ | async}" class="page-actions">
     <ng-container #pageActionsVcr></ng-container>
   </div>
 </div>

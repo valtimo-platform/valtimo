@@ -24,13 +24,13 @@ import {ConfigService} from '@valtimo/config';
   providedIn: 'root',
 })
 export class DashboardService {
-  private endpointUri: string;
+  private _endpointUri: string;
 
   constructor(private readonly http: HttpClient, private readonly configService: ConfigService) {
-    this.endpointUri = configService.config.valtimoApi.endpointUri;
+    this._endpointUri = this.configService.config.valtimoApi.endpointUri;
   }
 
   public getDashboards(): Observable<Array<Dashboard>> {
-    return this.http.get<Array<Dashboard>>(`${this.endpointUri}v1/dashboard`);
+    return this.http.get<Array<Dashboard>>(`${this._endpointUri}v1/dashboard`);
   }
 }

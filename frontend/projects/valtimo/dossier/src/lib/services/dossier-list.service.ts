@@ -49,20 +49,18 @@ export class DossierListService {
     hasApiColumnConfig: boolean
   ) {
     if (hasEnvColumnConfig || !hasApiColumnConfig) {
-      const docsToMap = documents as Documents;
-      return docsToMap.content.map(document => {
+      return (documents as Documents).content.map(document => {
         const {content, ...others} = document;
         return {...content, ...others};
       });
-    } else {
-      const docsToMap = documents as SpecifiedDocuments;
-      return docsToMap.content.reduce((acc, curr) => {
-        const propsObject = {id: curr.id};
-        curr.items?.forEach(item => {
-          propsObject[item.key] = item.value;
-        });
-        return [...acc, propsObject];
-      }, []);
     }
+
+    return (documents as SpecifiedDocuments).content.reduce((acc, curr) => {
+      const propsObject = {id: curr.id};
+      curr.items?.forEach(item => {
+        propsObject[item.key] = item.value;
+      });
+      return [...acc, propsObject];
+    }, []);
   }
 }

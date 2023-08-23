@@ -40,13 +40,9 @@ import {PageTitleService} from './page-title.service';
 })
 export class PageTitleComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('pageActionsVcr', {static: true, read: ViewContainerRef})
-  pageActionsVcr!: ViewContainerRef;
-  public appTitle = this.configService?.config?.applicationTitle || 'Valtimo';
-  public readonly hidePageTitle$: Observable<boolean> = this.router.events.pipe(
-    startWith(this.router),
-    switchMap(() => this.activatedRoute.firstChild.data),
-    map(data => !!data?.hidePageTitle)
-  );
+  private readonly _pageActionsVcr!: ViewContainerRef;
+  public hidePageTitle = false;
+  public readonly appTitle = this.configService?.config?.applicationTitle || 'Valtimo';
   public readonly hasCustomPageTitle$: Observable<boolean> = this.router.events.pipe(
     startWith(this.router),
     switchMap(() => this.activatedRoute.firstChild.data),
@@ -62,11 +58,15 @@ export class PageTitleComponent implements OnInit, OnDestroy, AfterViewInit {
   public readonly customPageSubtitle$ = this.pageTitleService.customPageSubtitle$;
   public readonly customPageSubtitleSet$ = this.pageTitleService.customPageSubtitleSet$;
   public readonly hasPageActions$ = this.pageTitleService.hasPageActions$;
-
-  readonly translatedTitle$ = new BehaviorSubject<string>('');
+  public readonly translatedTitle$ = new BehaviorSubject<string>('');
   private appTitleAsSuffix =
     this.configService?.config?.featureToggles?.applicationTitleAsSuffix || false;
-  private routerTranslateSubscription!: Subscription;
+  private readonly _subscriptions = new Subscription();
+  private readonly _hidePageTitle$: Observable<boolean> = this.router.events.pipe(
+    startWith(this.router),
+    switchMap(() => this.activatedRoute.firstChild.data),
+    map(data => !!data?.hidePageTitle)
+  );
 
   constructor(
     private readonly router: Router,
@@ -78,52 +78,60 @@ export class PageTitleComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly pageTitleService: PageTitleService
   ) {}
 
-  ngOnInit() {
+  public ngOnInit(): void {
     this.openRouterTranslateSubscription();
+    this.openHidePageTitleSubscription();
   }
 
-  ngAfterViewInit(): void {
-    this.pageTitleService.setPageActionsViewContainerRef(this.pageActionsVcr);
+  public ngAfterViewInit(): void {
+    this.pageTitleService.setPageActionsViewContainerRef(this._pageActionsVcr);
   }
 
   ngOnDestroy() {
-    this.routerTranslateSubscription?.unsubscribe();
+    this._subscriptions.unsubscribe();
   }
 
   private openRouterTranslateSubscription(): void {
-    this.routerTranslateSubscription = combineLatest([
-      this.router.events,
-      this.translateService.stream('key'),
-    ]).subscribe(() => {
-      const routeTitle =
-        this.activatedRoute?.snapshot?.firstChild?.data?.title ||
-        this.activatedRoute?.snapshot?.firstChild?.children[0]?.data?.title;
-      const routeTitleTranslation = this.translateService.instant(routeTitle);
-      const routeTitlePageTranslationString = `pages.${routeTitle.toLowerCase()}.title`;
-      const routeTitlePageTranslation = this.translateService.instant(
-        routeTitlePageTranslationString
-      );
-      const translatedRouteTitle =
-        routeTitle &&
-        ((routeTitlePageTranslation !== routeTitlePageTranslationString
-          ? routeTitlePageTranslation
-          : '') ||
-          (routeTitle !== routeTitleTranslation ? routeTitleTranslation : '') ||
-          routeTitle);
+    this._subscriptions.add(
+      combineLatest([this.router.events, this.translateService.stream('key')]).subscribe(() => {
+        const routeTitle =
+          this.activatedRoute?.snapshot?.firstChild?.data?.title ||
+          this.activatedRoute?.snapshot?.firstChild?.children[0]?.data?.title;
+        const routeTitleTranslation = this.translateService.instant(routeTitle);
+        const routeTitlePageTranslationString = `pages.${routeTitle.toLowerCase()}.title`;
+        const routeTitlePageTranslation = this.translateService.instant(
+          routeTitlePageTranslationString
+        );
+        const translatedRouteTitle =
+          routeTitle &&
+          ((routeTitlePageTranslation !== routeTitlePageTranslationString
+            ? routeTitlePageTranslation
+            : '') ||
+            (routeTitle !== routeTitleTranslation ? routeTitleTranslation : '') ||
+            routeTitle);
 
-      if (translatedRouteTitle) {
-        this.logger.debug('PageTitle: setTitle translated async', translatedRouteTitle);
-        this.translatedTitle$.next(translatedRouteTitle);
-        if (this.appTitleAsSuffix) {
-          this.titleService.setTitle(translatedRouteTitle + ' - ' + this.appTitle);
+        if (translatedRouteTitle) {
+          this.logger.debug('PageTitle: setTitle translated async', translatedRouteTitle);
+          this.translatedTitle$.next(translatedRouteTitle);
+          if (this.appTitleAsSuffix) {
+            this.titleService.setTitle(translatedRouteTitle + ' - ' + this.appTitle);
+          } else {
+            this.titleService.setTitle(this.appTitle + ' - ' + translatedRouteTitle);
+          }
         } else {
-          this.titleService.setTitle(this.appTitle + ' - ' + translatedRouteTitle);
+          this.logger.debug('PageTitle: setTitle default', this.appTitle);
+          this.translatedTitle$.next('');
+          this.titleService.setTitle(this.appTitle);
         }
-      } else {
-        this.logger.debug('PageTitle: setTitle default', this.appTitle);
-        this.translatedTitle$.next('');
-        this.titleService.setTitle(this.appTitle);
-      }
-    });
+      })
+    );
+  }
+
+  private openHidePageTitleSubscription(): void {
+    this._subscriptions.add(
+      this._hidePageTitle$.subscribe(hidePageTitle => {
+        this.hidePageTitle = hidePageTitle;
+      })
+    );
   }
 }

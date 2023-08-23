@@ -25,7 +25,7 @@ import {
   ListModule,
   SearchFieldsModule,
   SpinnerModule,
-  ValtimoIbmModalDirectiveModule,
+  ValtimoCdsModalDirectiveModule,
   WidgetModule,
 } from '@valtimo/components';
 import {ObjectDetailContainerComponent} from './components/object-detail-container/object-detail-container.component';
@@ -60,7 +60,7 @@ import {TooltipIconModule} from '@valtimo/user-interface';
     TooltipIconModule,
     ConfirmationModalModule,
     SearchFieldsModule,
-    ValtimoIbmModalDirectiveModule,
+    ValtimoCdsModalDirectiveModule,
   ],
   exports: [],
 })

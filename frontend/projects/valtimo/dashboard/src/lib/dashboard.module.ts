@@ -13,19 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {HttpClient} from '@angular/common/http';
+import {NgModule} from '@angular/core';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {TranslateHttpLoader} from '@ngx-translate/http-loader';
-import {DashboardComponent} from './components/dashboard/dashboard.component';
-import {DashboardRoutingModule} from './dashboard-routing.module';
-import {AlertModule, BpmnJsDiagramModule, ListModule, SpinnerModule, WidgetModule,} from '@valtimo/components';
-import {HttpClient} from '@angular/common/http';
+import {
+  AlertModule,
+  BpmnJsDiagramModule,
+  ListModule,
+  SpinnerModule,
+  WidgetModule,
+} from '@valtimo/components';
 import {TaskModule} from '@valtimo/task';
-import {TabsModule} from 'carbon-components-angular';
-import {WidgetDashboardComponent} from './components/widget-dashboard/widget-dashboard.component';
+import {LoadingModule, TabsModule, ThemeModule} from 'carbon-components-angular';
+import {DashboardComponent} from './components/dashboard/dashboard.component';
 import {WidgetDashboardContentComponent} from './components/widget-dashboard-content/widget-dashboard-content.component';
+import {WidgetDashboardComponent} from './components/widget-dashboard/widget-dashboard.component';
+import {DashboardRoutingModule} from './dashboard-routing.module';
+import {DATA_SOURCE_TOKEN, DISPLAY_TYPE_TOKEN} from './constants';
+import {WidgetTranslatePipeModule} from './pipes';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(httpClient: HttpClient) {
@@ -51,7 +58,14 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     TaskModule,
     SpinnerModule,
     TabsModule,
+    ThemeModule,
+    WidgetTranslatePipeModule,
+    LoadingModule,
   ],
   exports: [DashboardComponent, WidgetDashboardComponent],
+  providers: [
+    {provide: DISPLAY_TYPE_TOKEN, useValue: null, multi: true},
+    {provide: DATA_SOURCE_TOKEN, useValue: null, multi: true},
+  ],
 })
 export class DashboardModule {}

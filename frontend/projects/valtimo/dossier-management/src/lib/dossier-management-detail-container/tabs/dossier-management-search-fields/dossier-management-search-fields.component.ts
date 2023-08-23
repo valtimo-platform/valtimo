@@ -156,12 +156,12 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
           id: fieldType,
           text: this.translateService.instant(`searchFieldsOverview.${fieldType}`),
         }));
-      } else {
-        return this.ALL_FIELD_TYPES.map(fieldType => ({
-          id: fieldType,
-          text: this.translateService.instant(`searchFieldsOverview.${fieldType}`),
-        }));
       }
+
+      return this.ALL_FIELD_TYPES.map(fieldType => ({
+        id: fieldType,
+        text: this.translateService.instant(`searchFieldsOverview.${fieldType}`),
+      }));
     })
   );
 
@@ -265,22 +265,22 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     switchMap(([documentDefinitionName, formData]) => {
       if (!formData || !formData.dropdownDataProvider) {
         return of([]);
-      } else {
-        return this.documentService
-          .getDropdownData(formData.dropdownDataProvider, documentDefinitionName, formData.key)
-          .pipe(
-            map(dropdownData => {
-              if (dropdownData) {
-                return Object.keys(dropdownData).map(dropdownFieldKey => ({
-                  key: dropdownFieldKey,
-                  value: dropdownData[dropdownFieldKey],
-                }));
-              } else {
-                return [];
-              }
-            })
-          );
       }
+
+      return this.documentService
+        .getDropdownData(formData.dropdownDataProvider, documentDefinitionName, formData.key)
+        .pipe(
+          map(dropdownData => {
+            if (dropdownData) {
+              return Object.keys(dropdownData).map(dropdownFieldKey => ({
+                key: dropdownFieldKey,
+                value: dropdownData[dropdownFieldKey],
+              }));
+            }
+
+            return [];
+          })
+        );
     })
   );
 

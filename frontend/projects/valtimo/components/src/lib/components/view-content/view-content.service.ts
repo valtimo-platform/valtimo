@@ -52,9 +52,9 @@ export class ViewContentService {
 
     if (typeof this.converters[definition.viewType] !== 'undefined') {
       return this.converters[definition.viewType].convert(value, definition);
-    } else {
-      return this.defaultConverter.convert(value, definition);
     }
+
+    return this.defaultConverter.convert(value, definition);
   }
 
   public addConverter(converter: TypeConverter) {

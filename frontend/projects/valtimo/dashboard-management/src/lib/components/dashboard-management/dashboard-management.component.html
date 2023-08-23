@@ -1,8 +1,9 @@
 <ng-container *ngIf="tableData$ | async as data">
   <valtimo-carbon-table
-    [tableConfig]="tableConfig"
     [data]="data.items"
     [loading]="data.loading"
+    [tableConfig]="tableConfig"
+    (rowClick)="onRowClick($event)"
     class="valtimo-dashboard-management__table"
   >
     <ng-container carbonTableTitle> {{ 'dashboardManagement.title' | translate }} </ng-container>
@@ -19,69 +20,73 @@
   </valtimo-carbon-table>
 </ng-container>
 
-<ibm-modal
+<cds-modal
+  valtimoIbmModal
   [open]="openModal$ | async"
   showFooter="true"
   title="{{ 'dashboardManagement.addDashboard' | translate }}"
-  valtimoIbmModal
 >
-  <ibm-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
-    <h3 ibmModalHeaderHeading>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    <h3 cdsModalHeaderHeading>
       {{ 'dashboardManagement.addDashboard' | translate }}
     </h3>
-  </ibm-modal-header>
+  </cds-modal-header>
 
-  <section ibmModalContent>
+  <section cdsModalContent>
     <form [formGroup]="form" class="valtimo-dashboard-management__form">
-      <ibm-label [invalid]="form.invalid">
+      <cds-label [invalid]="getControlInvalid('title')">
         {{ 'dashboardManagement.addModal.name' | translate }}
 
         <input
-          formControlName="title"
-          ibmText
-          placeholder="{{ 'dashboardManagement.addModal.namePlaceholder' | translate }}"
           [attr.modal-primary-focus]="true"
-          [invalid]="form.invalid"
+          [invalid]="getControlInvalid('title')"
+          formControlName="title"
+          cdsText
+          placeholder="{{ 'dashboardManagement.addModal.namePlaceholder' | translate }}"
         />
-      </ibm-label>
+      </cds-label>
 
-      <ibm-label [helperText]="'dashboardManagement.addModal.descriptionHelperText' | translate">
+      <cds-label
+        [helperText]="'dashboardManagement.addModal.descriptionHelperText' | translate"
+        [invalid]="getControlInvalid('description')"
+      >
         {{ 'dashboardManagement.description' | translate }}
 
         <input
+          [invalid]="getControlInvalid('description')"
           formControlName="description"
-          ibmText
+          cdsText
           placeholder="{{ 'dashboardManagement.addModal.descriptionPlaceholder' | translate }}"
         />
-      </ibm-label>
+      </cds-label>
     </form>
   </section>
 
-  <ibm-modal-footer>
-    <button ibmButton="ghost" (click)="closeModal()">
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="closeModal()">
       {{ 'dashboardManagement.cancel' | translate }}
     </button>
 
-    <button [disabled]="this.form.invalid" (click)="createDashboard()" ibmButton="primary">
+    <button [disabled]="this.form.invalid" cdsButton="primary" (click)="createDashboard()">
       {{ 'dashboardManagement.create' | translate }}
     </button>
-  </ibm-modal-footer>
-</ibm-modal>
+  </cds-modal-footer>
+</cds-modal>
 
 <valtimo-confirmation-modal
-  [outputOnConfirm]="deleteRowKey$ | async"
-  [showModalSubject$]="showDeleteModal$"
-  (confirmEvent)="onConfirmEvent($event)"
   confirmButtonTextTranslationKey="dashboardManagement.deleteModal.confirm"
   confirmButtonType="danger"
   contentTranslationKey="dashboardManagement.deleteModalContent"
+  [outputOnConfirm]="deleteRowKey$ | async"
+  [showModalSubject$]="showDeleteModal$"
   titleTranslationKey="dashboardManagement.delete"
+  (confirmEvent)="onConfirmEvent($event)"
 ></valtimo-confirmation-modal>
 
 <ng-template #addDashboardButton>
   <button cdsButton="primary" (click)="openModal()">
     {{ 'dashboardManagement.addDashboard' | translate }}
 
-    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
   </button>
 </ng-template>
