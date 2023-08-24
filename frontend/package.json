@@ -302,7 +302,6 @@
     "zone.js": "0.13.1"
   },
   "devDependencies": {
-    "@angular/compiler-cli": "^16.2.0",
     "@cypress/schematic": "^2.5.0",
     "@valtimo/access-control": "file:dist/valtimo/access-control",
     "@valtimo/access-control-management": "file:dist/valtimo/access-control-management",
