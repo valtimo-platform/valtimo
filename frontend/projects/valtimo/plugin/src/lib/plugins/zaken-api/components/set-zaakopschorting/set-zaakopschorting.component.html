@@ -17,41 +17,37 @@
 <v-form
     (valueChange)="formValueChange($event)"
     *ngIf="{
-    disabled: disabled$ | async,
-    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
-  } as obs"
->
- <v-input
+        disabled: disabled$ | async,
+        prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+    } as obs"
+    >
+    <v-input
       name="verlengingsduur"
-      [title]="'verlengingsduur' | pluginTranslate : obs.pluginId | async"
+      [title]="'verlengingsduur. Vul hier het aantal dagen in (alleen cijfers)' | pluginTranslate : obs.pluginId | async"
       [margin]="true"
       [defaultValue]="obs.prefill?.verlengingsduur"
       [disabled]="obs.disabled"
-      [required]="false"
-      [tooltip]="'statustoelichtingTooltip' | pluginTranslate : obs.pluginId | async"
+      [required]="true"
       [fullWidth]="true"
     >
     </v-input>
     <v-input
-      *ngIf="obs.selectedInputOption === 'text'"
       name="toelichtingVerlenging"
       [title]="'toelichtingVerlenging' | pluginTranslate : obs.pluginId | async"
       [margin]="true"
       [defaultValue]="obs.prefill?.toelichtingVerlenging"
       [disabled]="obs.disabled"
-      [required]="true"
-      [tooltip]="'statustypeUrlTooltip' | pluginTranslate : obs.pluginId | async"
+      [required]="false"
       [fullWidth]="true"
     >
-    </v-input><v-input
-      *ngIf="obs.selectedInputOption === 'text'"
+    </v-input>
+    <v-input
       name="toelichtingOpschorting"
       [title]="'toelichtingOpschorting' | pluginTranslate : obs.pluginId | async"
       [margin]="true"
       [defaultValue]="obs.prefill?.toelichtingOpschorting"
-      [disabled]="obs.disabled"
-      [required]="true"
-      [tooltip]="'statustypeUrlTooltip' | pluginTranslate : obs.pluginId | async"
+      [disabled]=""
+      [required]="false"
       [fullWidth]="true"
     >
     </v-input>

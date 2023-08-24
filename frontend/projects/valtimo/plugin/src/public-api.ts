@@ -60,6 +60,8 @@ export * from './lib/plugins/zaken-api/components/link-uploaded-document-to-zaak
 export * from './lib/plugins/zaken-api/components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
 export * from './lib/plugins/zaken-api/components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
 export * from './lib/plugins/zaken-api/components/create-zaak/create-zaak-configuration.component';
+export * from './lib/plugins/zaken-api/components/set-zaakopschorting/set-zaakopschorting.component';
+export * from './lib/plugins/zaken-api/components/continue-zaak-after-opschorting/continue-zaak-after-opschorting.component';
 /* objecten api plugin */
 export * from './lib/plugins/objecten-api/objecten-api-plugin-module';
 export * from './lib/plugins/objecten-api/objecten-api-plugin.specification';

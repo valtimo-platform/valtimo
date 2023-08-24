@@ -18,12 +18,14 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {SetZaakopschortingConfig} from '../../models';
+import {PluginTranslatePipe} from "../../../../pipes";
 
 
 @Component({
   selector: 'valtimo-set-zaak-opschorting-configuration',
   templateUrl: './set-zaakopschorting.component.html',
   styleUrls: ['./set-zaakopschorting.component.scss'],
+  providers: [PluginTranslatePipe],
 })
 export class SetZaakopschortingComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
@@ -33,8 +35,7 @@ export class SetZaakopschortingComponent
   @Input() pluginId: string;
   @Input() prefillConfiguration$: Observable<SetZaakopschortingConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<SetZaakopschortingConfig> =
-    new EventEmitter<SetZaakopschortingConfig>();
+  @Output() configuration: EventEmitter<SetZaakopschortingConfig> = new EventEmitter<SetZaakopschortingConfig>();
 
   private saveSubscription!: Subscription;
 
