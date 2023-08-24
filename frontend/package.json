@@ -346,7 +346,6 @@
     "@valtimo/view-configurator": "file:dist/valtimo/view-configurator",
     "cypress": "12.17.4",
     "deepmerge-ts": "5.1.0",
-    "ng-packagr": "^16.2.0",
     "puppeteer": "21.1.0",
     "sass": "1.66.1"
   }
