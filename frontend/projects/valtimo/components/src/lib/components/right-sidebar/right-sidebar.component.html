@@ -35,7 +35,6 @@
 
 <ng-template #accountTabTemplate>
   <ng-container *ngTemplateOutlet="accountInformationTemplate"></ng-container>
-  <ng-container *ngTemplateOutlet="contextTemplate"></ng-container>
   <ng-container *ngTemplateOutlet="linksTemplate"></ng-container>
 </ng-template>
 
@@ -82,27 +81,6 @@
       </cds-list-row>
     </cds-structured-list>
   </div>
-</ng-template>
-
-<ng-template #contextTemplate>
-  <ng-container
-    *ngIf="{userContexts: userContexts$ | async, activeContext: activeContext$ | async} as obs"
-  >
-    <cds-structured-list *ngIf="obs.userContexts?.length > 1 && obs.activeContext?.id">
-      <cds-list-header>
-        <cds-list-column>{{ 'settings.context.title' | translate }}</cds-list-column>
-      </cds-list-header>
-      <cds-list-row>
-        <cds-list-column>
-          <cds-select [ngModel]="obs.activeContext?.id" (ngModelChange)="setUserContext($event)">
-            <option *ngFor="let context of obs.userContexts" [value]="context.id">
-              {{ context.name }}
-            </option>
-          </cds-select>
-        </cds-list-column>
-      </cds-list-row>
-    </cds-structured-list>
-  </ng-container>
 </ng-template>
 
 <ng-template #linksTemplate>

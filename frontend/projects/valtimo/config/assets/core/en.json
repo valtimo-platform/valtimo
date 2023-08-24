@@ -284,9 +284,6 @@
   },
   "settings": {
     "title": "Settings",
-    "context": {
-      "title": "Context"
-    },
     "language": {
       "title": "Language",
       "options": {
@@ -438,9 +435,6 @@
   "Task": "Task",
   "Tasks": "Tasks",
   "Analysis": "Analysis",
-  "Contexts": "Contexts",
-  "Overview of all Contexts": "Overview of all Contexts",
-  "Create new Context": "Create new Context",
   "Entitlements": "Entitlements",
   "Overview of all Entitlements": "Overview of all Entitlements",
   "Create new Entitlement": "Create new Entitlement",

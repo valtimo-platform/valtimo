@@ -53,7 +53,6 @@ import {ViewConfiguratorModule} from '@valtimo/view-configurator';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {CustomFormExampleComponent} from './custom-form-example/custom-form-example.component';
 import {StartProcessCustomFormComponent} from './start-process-custom-form/start-process-custom-form.component';
-import {ContextModule} from '@valtimo/context';
 import {
   BarChartModule,
   BigNumberModule,
@@ -73,7 +72,6 @@ import {ResourceModule} from '@valtimo/resource';
 import {FormioComponent} from './form-io/form-io.component';
 import {FormModule} from '@valtimo/form';
 import {UploadShowcaseComponent} from './upload-showcase/upload-showcase.component';
-import {ManagementContextModule} from '@valtimo/management';
 import {CustomDossierTabComponent} from './custom-dossier-tab/custom-dossier-tab.component';
 import {CustomMapsTabComponent} from './custom-maps-tab/custom-maps-tab.component';
 import {SwaggerModule} from '@valtimo/swagger';
@@ -173,7 +171,6 @@ export function tabsFactory() {
     FormsModule,
     ReactiveFormsModule,
     ContactMomentModule,
-    ContextModule,
     DashboardModule,
     DashboardManagementModule,
     DocumentModule,
@@ -185,7 +182,6 @@ export function tabsFactory() {
     FormModule,
     FormIoModule,
     UploaderModule,
-    ManagementContextModule,
     AnalyseModule,
     SwaggerModule,
     ConnectorManagementModule,

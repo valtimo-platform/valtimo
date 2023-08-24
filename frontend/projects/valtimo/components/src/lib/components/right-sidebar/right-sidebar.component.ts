@@ -25,7 +25,6 @@ import {
 } from '@angular/core';
 import {FormBuilder, FormControl, FormGroup} from '@angular/forms';
 import {TranslateService} from '@ngx-translate/core';
-import {ContextService} from '@valtimo/context';
 import {ValtimoVersion} from '../../models';
 import {
   ConfigService,
@@ -112,9 +111,6 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
       })
     );
 
-  readonly userContexts$ = this.contextService.getUserContexts();
-  readonly activeContext$ = this.contextService.getUserContextActive();
-
   readonly collapsibleWidescreenMenu$ = this.shellService.collapsibleWidescreenMenu$;
 
   readonly frontendVersion!: string;
@@ -126,7 +122,6 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     private readonly userProviderService: UserProviderService,
     private readonly formBuilder: FormBuilder,
     private readonly versionService: VersionService,
-    private readonly contextService: ContextService,
     private readonly http: HttpClient,
     private readonly logger: NGXLogger,
     private readonly shellService: ShellService,
@@ -153,11 +148,6 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.formSubscription?.unsubscribe();
-  }
-
-  setUserContext(contextId: number): void {
-    this.contextService.setUserContext(contextId).subscribe();
-    location.href = '/';
   }
 
   updateUserLanguage(langKey: string, saveSettings = true): void {

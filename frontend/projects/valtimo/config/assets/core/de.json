@@ -283,9 +283,6 @@
   },
   "settings": {
     "title": "Einstellungen",
-    "context": {
-      "title": "Kontext"
-    },
     "language": {
       "title": "Sprache",
       "options": {
@@ -437,9 +434,6 @@
   "Task": "Aufgabe",
   "Tasks": "Aufgaben",
   "Analysis": "Analyse",
-  "Contexts": "Kontexte",
-  "Overview of all Contexts": "Überblick alle Kontexte",
-  "Create new Context": "Neuen Kontext erstellen",
   "Entitlements": "Berechtigungen",
   "Overview of all Entitlements": "Überblick alle Berechtigungen",
   "Create new Entitlement": "Neue Berechtigung erstellen",

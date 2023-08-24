@@ -137,7 +137,6 @@ export const environment: ValtimoConfig = {
           {link: ['/dashboard-management'], title: 'Dashboard configuration', sequence: 11},
           {link: ['/access-control'], title: 'Access Control', sequence: 12},
           {title: 'A&E', textClass: 'text-dark font-weight-bold c-default', sequence: 13},
-          {link: ['/contexts'], title: 'Contexts', sequence: 14},
           {link: ['/users'], title: 'Users', sequence: 15},
           {link: ['/entitlements'], title: 'Entitlements', sequence: 16},
           {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 17},
@@ -223,10 +222,6 @@ export const environment: ValtimoConfig = {
       {
         propertyName: 'assignee',
         translationKey: 'valtimoAssignee.fullName',
-      },
-      {
-        propertyName: 'context',
-        translationKey: 'context',
       },
     ],
     defaultSortedColumn: {

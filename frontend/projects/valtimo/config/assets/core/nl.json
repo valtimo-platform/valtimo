@@ -283,9 +283,6 @@
   },
   "settings": {
     "title": "Instellingen",
-    "context": {
-      "title": "Context"
-    },
     "language": {
       "title": "Taal",
       "options": {
@@ -437,9 +434,6 @@
   "Task": "Taak",
   "Tasks": "Taken",
   "Analysis": "Analyse",
-  "Contexts": "Contexten",
-  "Overview of all Contexts": "Overzicht van alle Contexten",
-  "Create new Context": "Maak nieuw Context",
   "Entitlements": "Rechten",
   "Overview of all Entitlements": "Overzicht van alle Rechten",
   "Create new Entitlement": "Maak nieuw Recht",

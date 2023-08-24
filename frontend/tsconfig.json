@@ -39,8 +39,6 @@
       "@valtimo/process/*": ["dist/valtimo/process/*"],
       "@valtimo/view-configurator": ["dist/valtimo/view-configurator"],
       "@valtimo/view-configurator/*": ["dist/valtimo/view-configurator/*"],
-      "@valtimo/context": ["dist/valtimo/context"],
-      "@valtimo/context/*": ["dist/valtimo/context/*"],
       "@valtimo/dashboard": ["dist/valtimo/dashboard"],
       "@valtimo/dashboard/*": ["dist/valtimo/dashboard/*"],
       "@valtimo/dashboard-management": ["dist/valtimo/dashboard-management"],
@@ -63,8 +61,6 @@
       ],
       "@valtimo/form": ["dist/valtimo/form"],
       "@valtimo/form/*": ["dist/valtimo/form/*"],
-      "@valtimo/management": ["dist/valtimo/management"],
-      "@valtimo/management/*": ["dist/valtimo/management/*"],
       "@valtimo/swagger": ["dist/valtimo/swagger"],
       "@valtimo/swagger/*": ["dist/valtimo/swagger/*"],
       "@valtimo/analyse": ["dist/valtimo/analyse"],
@@ -180,12 +176,6 @@
     },
     {
       "path": "./projects/valtimo/view-configurator/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/valtimo/context/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/valtimo/context/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/dashboard/tsconfig.lib.json"
