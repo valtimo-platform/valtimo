@@ -22,28 +22,22 @@ import {PluginTranslatePipe} from "../../../../pipes";
 
 
 @Component({
+  providers: [PluginTranslatePipe],
   selector: 'valtimo-set-zaak-opschorting-configuration',
   templateUrl: './set-zaakopschorting.component.html',
-  styleUrls: ['./set-zaakopschorting.component.scss'],
-  providers: [PluginTranslatePipe],
 })
-export class SetZaakopschortingComponent
-  implements FunctionConfigurationComponent, OnInit, OnDestroy
-{
-  @Input() save$: Observable<void>;
+
+export class SetZaakopschortingComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
   @Input() prefillConfiguration$: Observable<SetZaakopschortingConfig>;
-  @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Input() save$: Observable<void>;
   @Output() configuration: EventEmitter<SetZaakopschortingConfig> = new EventEmitter<SetZaakopschortingConfig>();
+  @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
 
+  private readonly formValue$ = new BehaviorSubject<SetZaakopschortingConfig | null>(null);
   private saveSubscription!: Subscription;
-
-  private readonly formValue$ = new BehaviorSubject<SetZaakopschortingConfig | null>(
-      null
-  );
   private readonly valid$ = new BehaviorSubject<boolean>(false);
-
 
   ngOnInit(): void {
     this.openSaveSubscription();
