@@ -124,7 +124,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultaattypeUrlSelectTooltip: 'Selecteer het resultaattype.',
       inputTypeZaakStatusToggle: 'Invoertype Zaakstatus-URL',
       inputTypeZaakResultaatToggle: 'Invoertype Zaakresultaat-URL',
-      verlengingsduur: 'Aantal dagen dat de einddatum wordt verlengd',
+      verlengingsduur: 'Aantal dagen dat de einddatum wordt verlengd (in cijfers)',
       toelichtingVerlenging: 'Reden voor verlenging',
       toelichtingOpschorting: 'Reden voor opschorting',
     },
@@ -146,7 +146,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       documentUrlTooltip:
         'This field supports URLs and process variables. Use pv:variable to read a process variable',
       titel: 'Document title',
-      verlengingsduur: 'Amount of days to prolong',
+      verlengingsduur: 'Amount of days to prolong (in numbers)',
       toelichtingVerlenging: 'Reason for prolonging',
       toelichtingOpschorting: 'Reason for suspending',
       titelTooltip:

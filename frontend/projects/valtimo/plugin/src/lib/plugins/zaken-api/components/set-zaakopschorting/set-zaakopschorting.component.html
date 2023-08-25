@@ -23,7 +23,7 @@
     >
     <v-input
       name="verlengingsduur"
-      [title]="'verlengingsduur. Vul hier het aantal dagen in (alleen cijfers)' | pluginTranslate : obs.pluginId | async"
+      [title]="'verlengingsduur' | pluginTranslate : pluginId | async"
       [margin]="true"
       [defaultValue]="obs.prefill?.verlengingsduur"
       [disabled]="obs.disabled"
@@ -33,7 +33,7 @@
     </v-input>
     <v-input
       name="toelichtingVerlenging"
-      [title]="'toelichtingVerlenging' | pluginTranslate : obs.pluginId | async"
+      [title]="'toelichtingVerlenging' | pluginTranslate : pluginId | async"
       [margin]="true"
       [defaultValue]="obs.prefill?.toelichtingVerlenging"
       [disabled]="obs.disabled"
@@ -43,7 +43,7 @@
     </v-input>
     <v-input
       name="toelichtingOpschorting"
-      [title]="'toelichtingOpschorting' | pluginTranslate : obs.pluginId | async"
+      [title]="'toelichtingOpschorting' | pluginTranslate : pluginId | async"
       [margin]="true"
       [defaultValue]="obs.prefill?.toelichtingOpschorting"
       [disabled]=""
