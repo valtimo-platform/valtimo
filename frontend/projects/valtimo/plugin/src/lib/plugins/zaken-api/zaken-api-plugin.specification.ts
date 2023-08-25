@@ -124,6 +124,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultaattypeUrlSelectTooltip: 'Selecteer het resultaattype.',
       inputTypeZaakStatusToggle: 'Invoertype Zaakstatus-URL',
       inputTypeZaakResultaatToggle: 'Invoertype Zaakresultaat-URL',
+      verlengingsduur: 'Aantal dagen dat de einddatum wordt verlengd',
+      toelichtingVerlenging: 'Reden voor verlenging',
+      toelichtingOpschorting: 'Reden voor opschorting',
     },
     en: {
       title: 'Zaken API',
