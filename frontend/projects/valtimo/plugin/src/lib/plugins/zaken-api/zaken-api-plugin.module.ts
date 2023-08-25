@@ -35,7 +35,6 @@ import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-n
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 import {LoadingModule, ToggleModule} from 'carbon-components-angular';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
-import {ContinueZaakAfterOpschortingComponent} from './components/continue-zaak-after-opschorting/continue-zaak-after-opschorting.component';
 
 @NgModule({
   declarations: [
@@ -48,7 +47,6 @@ import {ContinueZaakAfterOpschortingComponent} from './components/continue-zaak-
     CreateNietNatuurlijkPersoonZaakRolComponent,
     CreateZaakConfigurationComponent,
     SetZaakopschortingComponent,
-    ContinueZaakAfterOpschortingComponent,
   ],
   imports: [
     CommonModule,
@@ -72,7 +70,6 @@ import {ContinueZaakAfterOpschortingComponent} from './components/continue-zaak-
     CreateNatuurlijkPersoonZaakRolComponent,
     CreateNietNatuurlijkPersoonZaakRolComponent,
     SetZaakopschortingComponent,
-    ContinueZaakAfterOpschortingComponent,
   ],
 })
 export class ZakenApiPluginModule {}

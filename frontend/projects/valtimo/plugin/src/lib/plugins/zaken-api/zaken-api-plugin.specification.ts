@@ -25,8 +25,6 @@ import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuu
 import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
-import {ContinueZaakAfterOpschortingComponent} from "./components/continue-zaak-after-opschorting/continue-zaak-after-opschorting.component";
-
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -41,7 +39,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-natuurlijk-persoon-zaak-rol': CreateNatuurlijkPersoonZaakRolComponent,
     'create-niet-natuurlijk-persoon-zaak-rol': CreateNietNatuurlijkPersoonZaakRolComponent,
     'set-zaakopschorting': SetZaakopschortingComponent,
-    'continue-zaak-after-opschorting': ContinueZaakAfterOpschortingComponent,
   },
   pluginTranslations: {
     nl: {
@@ -88,7 +85,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - natuurlijk persoon',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - niet natuurlijk persoon',
       'set-zaakopschorting': 'Schort een zaak op',
-      'continue-zaak-after-opschorting': 'Verwijder zaak opschorting',
       roltypeUrl: 'Roltype URL',
       rolToelichting: 'Roltoelichting',
       inpBsn: 'Initiator BSN',
@@ -128,8 +124,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultaattypeUrlSelectTooltip: 'Selecteer het resultaattype.',
       inputTypeZaakStatusToggle: 'Invoertype Zaakstatus-URL',
       inputTypeZaakResultaatToggle: 'Invoertype Zaakresultaat-URL',
-      continueZaakMessage:
-          'Een zaakopschorting verwijderen vereist geen configuratie'
     },
     en: {
       title: 'Zaken API',
@@ -178,7 +172,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - natural person',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - not a natural person',
       'set-zaakopschorting': 'Suspend case',
-      'continue-zaak-after-opschorting': 'Remove case suspension',
       roltypeUrl: 'Role type URL',
       rolToelichting: 'Role explanation',
       inpBsn: 'Initiator BSN',
@@ -218,8 +211,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
       resultaattypeUrlSelectTooltip: 'Select the resultaat type.',
       inputTypeZaakStatusToggle: 'Input type Zaakstatus-URL',
       inputTypeZaakResultaatToggle: 'Input type Zaakresultaat-URL',
-      continueZaakMessage:
-          'Removing a suspension of the case does not require any configuration',
     },
     de: {
       title: 'Zaken API',
