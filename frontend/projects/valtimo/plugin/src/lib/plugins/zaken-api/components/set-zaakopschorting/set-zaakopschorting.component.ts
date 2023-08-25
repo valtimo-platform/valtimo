@@ -39,15 +39,15 @@ export class SetZaakopschortingComponent implements FunctionConfigurationCompone
   private saveSubscription!: Subscription;
   private readonly valid$ = new BehaviorSubject<boolean>(false);
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openSaveSubscription();
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy(): void {
     this.saveSubscription?.unsubscribe();
   }
 
-  formValueChange(formValue: SetZaakopschortingConfig): void {
+  public formValueChange(formValue: SetZaakopschortingConfig): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
   }
