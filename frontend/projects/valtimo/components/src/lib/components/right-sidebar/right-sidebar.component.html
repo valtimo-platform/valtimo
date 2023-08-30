@@ -248,36 +248,38 @@
 </ng-template>
 
 <ng-template #versionTemplate>
-  <ng-container *ngIf="{backendVersion: backendVersion$ | async} as obs">
-    <cds-structured-list *ngIf="obs.backendVersion || frontendVersion">
-      <cds-list-header>
-        <cds-list-column>{{ 'settings.version.title' | translate }}</cds-list-column>
-      </cds-list-header>
-      <cds-list-row *ngIf="obs.backendVersion">
-        <cds-list-column>
-          <div class="build-information">
-            <span class="build-title">{{
-              'interface.builds.' + obs.backendVersion.title | translate
-            }}</span>
-            <div class="tag-container">
-              <cds-tag type="blue">{{ obs.backendVersion.version }}</cds-tag>
+  <ng-container *ngIf="showValtimoVersions">
+    <ng-container *ngIf="{backendVersion: backendVersion$ | async} as obs">
+      <cds-structured-list *ngIf="obs.backendVersion || frontendVersion">
+        <cds-list-header>
+          <cds-list-column>{{ 'settings.version.title' | translate }}</cds-list-column>
+        </cds-list-header>
+        <cds-list-row *ngIf="obs.backendVersion">
+          <cds-list-column>
+            <div class="build-information">
+              <span class="build-title">{{
+                'interface.builds.' + obs.backendVersion.title | translate
+              }}</span>
+              <div class="tag-container">
+                <cds-tag type="blue">{{ obs.backendVersion.version }}</cds-tag>
+              </div>
             </div>
-          </div>
-        </cds-list-column>
-      </cds-list-row>
-      <cds-list-row *ngIf="frontendVersion">
-        <cds-list-column>
-          <div class="build-information">
-            <span class="build-title">{{
-              'interface.builds.valtimo-frontend-libraries' | translate
-            }}</span>
-            <div class="tag-container">
-              <cds-tag type="blue">{{ frontendVersion }}</cds-tag>
+          </cds-list-column>
+        </cds-list-row>
+        <cds-list-row *ngIf="frontendVersion">
+          <cds-list-column>
+            <div class="build-information">
+              <span class="build-title">{{
+                'interface.builds.valtimo-frontend-libraries' | translate
+              }}</span>
+              <div class="tag-container">
+                <cds-tag type="blue">{{ frontendVersion }}</cds-tag>
+              </div>
             </div>
-          </div>
-        </cds-list-column>
-      </cds-list-row>
-    </cds-structured-list>
+          </cds-list-column>
+        </cds-list-row>
+      </cds-structured-list>
+    </ng-container>
   </ng-container>
 </ng-template>
 

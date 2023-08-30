@@ -41,7 +41,7 @@ import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, Observable, Subscription, switchMap, take} from 'rxjs';
 import {VersionService} from '../version/version.service';
 import {ShellService} from '../../services/shell.service';
-import {tap} from 'rxjs/operators';
+import {map, tap} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-right-sidebar',
@@ -121,6 +121,15 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
 
   private formSubscription!: Subscription;
 
+  private hideValtimoVersionsForNonAdmins =
+    this.configService?.config?.featureToggles?.hideValtimoVersionsForNonAdmins || false;
+
+  readonly isAdmin$: Observable<boolean> = this.userProviderService
+    .getUserSubject()
+    .pipe(map(userIdentity => userIdentity?.roles.includes('ROLE_ADMIN')));
+
+  public showValtimoVersions = true;
+
   constructor(
     public translate: TranslateService,
     private readonly userProviderService: UserProviderService,
@@ -135,6 +144,11 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     private readonly userSettingsService: UserSettingsService
   ) {
     this.frontendVersion = VERSIONS?.frontendLibraries;
+    this.isAdmin$.subscribe(isAdmin => {
+      if (this.hideValtimoVersionsForNonAdmins && !isAdmin) {
+        this.showValtimoVersions = false;
+      }
+    })
   }
 
   showPlantATreeButton: boolean;

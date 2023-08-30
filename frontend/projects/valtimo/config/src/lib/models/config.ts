@@ -121,6 +121,7 @@ export interface ValtimoConfig {
     largeLogoMargin?: boolean;
     sortFilesByDate?: boolean;
     returnToLastUrlAfterTokenExpiration?: boolean;
+    hideValtimoVersionsForNonAdmins?: boolean;
   };
   visibleTaskListTabs?: Array<TaskListTab>;
   visibleDossierListTabs?: Array<DossierListTab>;
