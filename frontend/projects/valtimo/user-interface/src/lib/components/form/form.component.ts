@@ -101,9 +101,9 @@ export class FormComponent implements AfterContentInit, OnDestroy {
           return radioComponent.radioValue$;
         } else if (inputComponent.inputValue$) {
           return inputComponent.inputValue$.asObservable();
-        } else {
-          return of(null);
         }
+
+        return of(null);
       })
     )
       .pipe(
