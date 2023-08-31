@@ -15,6 +15,7 @@
   -->
 
 <form
+  class="case-count-configuration-form"
   *ngIf="{documentItems: documentItems$ | async, operatorItems: operatorItems$} as obs"
   [formGroup]="form"
 >
@@ -31,7 +32,7 @@
     </cds-dropdown>
   </div>
 
-  <div class="form__element">
+  <div class="form__element conditions-multi-input">
     <cds-label
       [helperText]="'conditionsHelperText' | widgetTranslate : dataSourceKey | async"
       class="conditions-label"

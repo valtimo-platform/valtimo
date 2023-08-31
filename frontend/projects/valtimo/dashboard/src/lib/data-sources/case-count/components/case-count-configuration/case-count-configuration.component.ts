@@ -22,6 +22,7 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  ViewEncapsulation,
 } from '@angular/core';
 import {ConfigurationOutput, DataSourceConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, map, Observable, startWith, Subscription} from 'rxjs';
@@ -37,6 +38,7 @@ import {WidgetTranslationService} from '../../../../services';
   templateUrl: './case-count-configuration.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./case-count-configuration.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class CaseCountConfigurationComponent
   implements OnInit, OnDestroy, DataSourceConfigurationComponent
