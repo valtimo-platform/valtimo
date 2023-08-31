@@ -181,7 +181,13 @@ export class DossierProcessStartModalComponent implements OnInit {
     this.formioSubmission = submission;
 
     if (this.processLinkId) {
-      this.processLinkService.submitForm(this.processLinkId, submission.data).subscribe({
+      this.processLinkService.submitForm(
+        this.processLinkId,
+        submission.data,
+        null,
+        null,
+        this.documentDefinitionName
+      ).subscribe({
         next: (formSubmissionResult: FormSubmissionResult) => {
           this.submitCompleted(formSubmissionResult);
         },
@@ -191,7 +197,13 @@ export class DossierProcessStartModalComponent implements OnInit {
       });
     } else {
       this.formLinkService
-        .onSubmit(this.processDefinitionKey, this.formAssociation.formLink.id, submission.data)
+        .onSubmit(
+          this.processDefinitionKey,
+          this.formAssociation.formLink.id,
+          submission.data,
+          null,
+          null,
+          this.documentDefinitionName)
         .subscribe(
           (formSubmissionResult: FormSubmissionResult) => {
             this.submitCompleted(formSubmissionResult);

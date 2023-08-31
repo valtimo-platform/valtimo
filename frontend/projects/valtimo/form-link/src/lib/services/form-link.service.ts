@@ -136,7 +136,8 @@ export class FormLinkService {
     formLinkId: string,
     formData: object,
     documentId?: string,
-    taskInstanceId?: string
+    taskInstanceId?: string,
+    documentDefinitionName?: string
   ): Observable<FormSubmissionResult> {
     let params = new HttpParams()
       .set('processDefinitionKey', processDefinitionKey)
@@ -147,6 +148,9 @@ export class FormLinkService {
     }
     if (taskInstanceId) {
       params = params.set('taskInstanceId', taskInstanceId);
+    }
+    if (documentDefinitionName) {
+      params = params.set('documentDefinitionName', documentDefinitionName);
     }
 
     const httpOptions = {
