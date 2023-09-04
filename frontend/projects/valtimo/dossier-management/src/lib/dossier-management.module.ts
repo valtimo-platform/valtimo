@@ -37,7 +37,6 @@ import {DossierManagementRoutingModule} from './dossier-management-routing.modul
 import {DossierManagementUploadComponent} from './dossier-management-upload/dossier-management-upload.component';
 import {DossierManagementRemoveModalComponent} from './dossier-management-remove-modal/dossier-management-remove-modal.component';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
-import {DossierManagementRolesComponent} from './dossier-management-roles/dossier-management-roles.component';
 import {DossierManagementLinkProcessComponent} from './dossier-management-link-process/dossier-management-link-process.component';
 import {
   FormModule,
@@ -71,7 +70,6 @@ import {
     DossierManagementConnectModalComponent,
     DossierManagementRemoveModalComponent,
     DossierManagementUploadComponent,
-    DossierManagementRolesComponent,
     DossierManagementLinkProcessComponent,
     DossierManagementSearchFieldsComponent,
     DossierManagementDetailContainerComponent,
