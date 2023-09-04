@@ -93,6 +93,13 @@ export class DocumentService {
     );
   }
 
+  queryDefinitionsForManagement(params?: any): Observable<Page<DocumentDefinition>> {
+    return this.http.get<Page<DocumentDefinition>>(
+      `${this.valtimoEndpointUri}/management/v1/document-definition`,
+      {params}
+    );
+  }
+
   getDocumentDefinition(documentDefinitionName: string): Observable<DocumentDefinition> {
     return this.http.get<DocumentDefinition>(
       `${this.valtimoEndpointUri}v1/document-definition/${documentDefinitionName}`

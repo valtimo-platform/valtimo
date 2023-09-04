@@ -61,7 +61,7 @@ export class DossierManagementListComponent {
 
   private getDocumentDefinitions() {
     this.documentService
-      .queryDefinitions({filteredOnRole: false, page: this.pageParam, size: this.pagination.size})
+      .queryDefinitionsForManagement({page: this.pageParam, size: this.pagination.size})
       .subscribe((documentDefinitionPage: Page<DocumentDefinition>) => {
         this.pagination.collectionSize = documentDefinitionPage.totalElements;
         this.dossiers = documentDefinitionPage.content;
