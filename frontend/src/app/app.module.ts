@@ -65,8 +65,6 @@ import {DashboardManagementModule} from '@valtimo/dashboard-management';
 import {DocumentModule} from '@valtimo/document';
 import {ContactMomentModule} from '@valtimo/contact-moment';
 import {AccountModule} from '@valtimo/account';
-import {UserManagementModule} from '@valtimo/user-management';
-import {AuthorityModule} from '@valtimo/authority';
 import {ChoiceFieldModule} from '@valtimo/choice-field';
 import {ResourceModule} from '@valtimo/resource';
 import {FormioComponent} from './form-io/form-io.component';
@@ -175,8 +173,6 @@ export function tabsFactory() {
     DashboardManagementModule,
     DocumentModule,
     AccountModule,
-    UserManagementModule,
-    AuthorityModule,
     ChoiceFieldModule,
     ResourceModule,
     FormModule,

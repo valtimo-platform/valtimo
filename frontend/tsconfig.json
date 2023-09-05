@@ -47,10 +47,6 @@
       "@valtimo/document/*": ["dist/valtimo/document/*"],
       "@valtimo/account": ["dist/valtimo/account"],
       "@valtimo/account/*": ["dist/valtimo/account/*"],
-      "@valtimo/user-management": ["dist/valtimo/user-management"],
-      "@valtimo/user-management/*": ["dist/valtimo/user-management/*"],
-      "@valtimo/authority": ["dist/valtimo/authority"],
-      "@valtimo/authority/*": ["dist/valtimo/authority/*"],
       "@valtimo/choice-field": ["dist/valtimo/choice-field"],
       "@valtimo/choice-field/*": ["dist/valtimo/choice-field/*"],
       "@valtimo/contact-moment": ["dist/valtimo/contact-moment"],
@@ -200,18 +196,6 @@
     },
     {
       "path": "./projects/valtimo/account/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/valtimo/user-management/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/valtimo/user-management/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/valtimo/authority/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/valtimo/authority/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/choice-field/tsconfig.lib.json"
