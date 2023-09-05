@@ -24,7 +24,7 @@ import {
   ValtimoFormioOptions,
   ValtimoModalService,
 } from '@valtimo/components';
-import {FormFlowService, FormLinkService} from '../../services';
+import {FormFlowService} from '../../services';
 import {FormFlowInstance, FormFlowStepType} from '../../models';
 
 @Component({
@@ -45,7 +45,6 @@ export class FormFlowComponent implements OnInit {
   private formFlowStepInstanceId: string;
 
   constructor(
-    private readonly formLinkService: FormLinkService,
     private readonly formFlowService: FormFlowService,
     private readonly modalService: ValtimoModalService
   ) {

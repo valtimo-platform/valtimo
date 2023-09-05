@@ -50,12 +50,12 @@
     </div>
     <div class="mb-0 mt-4 p-3 text-center">
       <button
+        (click)="gotoProcessLinkScreen()"
         class="btn btn-secondary btn-space"
+        id="process-link-button"
         type="button"
-        (click)="gotoFormLinkScreen()"
-        id="form-link-button"
       >
-        {{ 'formManagement.gotoFormLinksButton' | translate }}
+        {{ 'formManagement.gotoProcessLinksButton' | translate }}
       </button>
     </div>
   </div>

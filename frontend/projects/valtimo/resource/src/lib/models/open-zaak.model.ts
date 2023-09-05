@@ -45,7 +45,6 @@ export interface ZaakTypeLink {
   documentDefinitionName: string;
   zaakTypeUrl: string;
   zaakInstanceLinks: ZaakInstanceLink[];
-  serviceTaskHandlers: ServiceTaskHandlerRequest[];
   createWithDossier: boolean;
 }
 
@@ -71,17 +70,9 @@ export interface ZaakInstanceLink {
   documentId: string;
 }
 
-export interface ServiceTaskHandlerRequest {
-  processDefinitionKey: string;
-  serviceTaskId: string;
-  operation: Operation;
-  parameter: string;
-}
-
 export interface PreviousSelectedZaak {
   zaakTypeLink: ZaakTypeLink;
   zaakType: ZaakType;
-  serviceTaskHandler: ServiceTaskHandlerRequest;
 }
 
 export interface ZaakOperation {
@@ -176,11 +167,4 @@ export enum Objecttype {
   woz_waarde = 'woz_waarde',
   zakelijk_recht = 'zakelijk_recht',
   overige = 'overige',
-}
-
-export enum Operation {
-  CREATE_ZAAK = 'CREATE_ZAAK',
-  SET_RESULTAAT = 'SET_RESULTAAT',
-  SET_STATUS = 'SET_STATUS',
-  CREATE_BESLUIT = 'CREATE_BESLUIT',
 }

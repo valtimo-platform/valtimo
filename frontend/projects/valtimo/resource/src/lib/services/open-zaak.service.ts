@@ -27,7 +27,6 @@ import {
   OpenZaakConfig,
   OpenZaakResource,
   ResourceDto,
-  ServiceTaskHandlerRequest,
   ZaakType,
   ZaakTypeLink,
   ZaakTypeRequest,
@@ -119,30 +118,6 @@ export class OpenZaakService {
     return this.http.post(
       `${this.valtimoApiConfig.endpointUri}v1/openzaak/resultaat`,
       zaakTypeRequest
-    );
-  }
-
-  createServiceTaskHandler(id: string, request: ServiceTaskHandlerRequest): Observable<any> {
-    return this.http.post<any>(
-      `${this.valtimoApiConfig.endpointUri}v1/openzaak/link/${id}/service-handler`,
-      request
-    );
-  }
-
-  modifyServiceTaskHandler(id: string, request: ServiceTaskHandlerRequest): Observable<any> {
-    return this.http.put<any>(
-      `${this.valtimoApiConfig.endpointUri}v1/openzaak/link/${id}/service-handler`,
-      request
-    );
-  }
-
-  deleteServiceTaskHandler(
-    id: string,
-    processDefinitionKey: string,
-    serviceTaskId: string
-  ): Observable<any> {
-    return this.http.delete<any>(
-      `${this.valtimoApiConfig.endpointUri}v1/openzaak/link/${id}/service-handler/${processDefinitionKey}/${serviceTaskId}`
     );
   }
 

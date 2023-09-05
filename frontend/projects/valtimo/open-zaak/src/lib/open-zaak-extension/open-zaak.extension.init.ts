@@ -18,7 +18,6 @@ import {NGXLogger} from 'ngx-logger';
 import {ConfigService, BasicExtensionPoint, Extension} from '@valtimo/config';
 import {Injector} from '@angular/core';
 import {OpenZaakTypeLinkExtensionComponent} from './open-zaak-type-link-extension.component';
-import {OpenZaakServiceTaskConnectorModalExtensionComponent} from './open-zaak-service-task-connector-modal-extension/open-zaak-service-task-connector-modal-extension.component';
 
 export function openZaakExtensionInitializer(injector: Injector): () => Promise<any> {
   const configService = injector.get<ConfigService>(ConfigService);
@@ -37,17 +36,7 @@ export function openZaakExtensionInitializer(injector: Injector): () => Promise<
             OpenZaakTypeLinkExtensionComponent
           )
         );
-        const extensionServiceTask = new Extension(
-          'OpenZaakServiceTaskConnectorModal',
-          new BasicExtensionPoint(
-            'form-links',
-            'form-links',
-            'openzaak-service-task-connector-modal',
-            OpenZaakServiceTaskConnectorModalExtensionComponent
-          )
-        );
         configService.addExtension(extension);
-        configService.addExtension(extensionServiceTask);
         logger.debug('openzaak extension initializer after init');
         resolve();
       } catch (error) {

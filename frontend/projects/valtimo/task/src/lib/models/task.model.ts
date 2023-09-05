@@ -62,8 +62,6 @@ export interface TaskProcessLinkResult {
   processLinkId: string;
   type: TaskProcessLinkType;
   properties: {
-    formLinkId?: string;
-    formFlowId?: string;
     formFlowInstanceId?: string;
     formDefinitionId?: string;
     prefilledForm?: any;

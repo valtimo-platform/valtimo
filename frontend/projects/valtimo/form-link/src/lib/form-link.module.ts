@@ -15,12 +15,10 @@
  */
 
 import {NgModule} from '@angular/core';
-import {FormLinkComponent} from './components/form-link/form-link.component';
 import {FormLinkProcessDiagramComponent} from './components/form-link-process-diagram/form-link-process-diagram.component';
 import {CommonModule} from '@angular/common';
 import {FormLinkRoutingModule} from './form-link-routing.module';
 import {FormsModule} from '@angular/forms';
-import {FormLinkModalComponent} from './components/form-link-modal/form-link-modal.component';
 import {
   FormIoModule,
   ModalModule,
@@ -62,10 +60,8 @@ import {SelectFormFlowComponent} from './components/select-form-flow';
 
 @NgModule({
   declarations: [
-    FormLinkComponent,
     ProcessLinkComponent,
     FormLinkProcessDiagramComponent,
-    FormLinkModalComponent,
     SelectPluginConfigurationComponent,
     SelectPluginActionComponent,
     PluginActionConfigurationComponent,
@@ -105,7 +101,6 @@ import {SelectFormFlowComponent} from './components/select-form-flow';
     TilesModule,
   ],
   exports: [
-    FormLinkComponent,
     ProcessLinkComponent,
     SelectPluginConfigurationComponent,
     SelectPluginActionComponent,

@@ -20,15 +20,10 @@ import {TranslateModule} from '@ngx-translate/core';
 import {ModalModule, WidgetModule, SpinnerModule} from '@valtimo/components';
 import {CommonModule} from '@angular/common';
 import {OpenZaakTypeLinkExtensionComponent} from './open-zaak-extension/open-zaak-type-link-extension.component';
-import {OpenZaakServiceTaskConnectorModalExtensionComponent} from './open-zaak-extension/open-zaak-service-task-connector-modal-extension/open-zaak-service-task-connector-modal-extension.component';
 import {EmailExtensionComponent} from './email-extension/email-extension.component';
 
 @NgModule({
-  declarations: [
-    OpenZaakTypeLinkExtensionComponent,
-    OpenZaakServiceTaskConnectorModalExtensionComponent,
-    EmailExtensionComponent,
-  ],
+  declarations: [OpenZaakTypeLinkExtensionComponent, EmailExtensionComponent],
   imports: [
     FormsModule,
     TranslateModule,

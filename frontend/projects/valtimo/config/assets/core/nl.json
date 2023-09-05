@@ -336,7 +336,7 @@
   "formManagement": {
     "noFormDefinitionFoundAdmin": "Er is geen formulier gekoppeld aan de start event/user task. Om een formulier te koppelen ga naar Admin menu > Proceskoppelingen",
     "noFormDefinitionFoundUser": "Er is geen formulier gekoppeld aan de start event/user task. Vraag een admin gebruiker om hulp.",
-    "gotoFormLinksButton": "Configureer nu",
+    "gotoProcessLinksButton": "Configureer nu",
     "name": "Naam",
     "nameIsRequired": "Naam is vereist",
     "nameIsInUse": "Naam is al in gebruik",
@@ -370,32 +370,6 @@
       "searchFields": "Zoekvelden",
       "listColumns": "Lijst"
     }
-  },
-  "serviceTaskManagement": {
-    "subtitle": "Link {{selectedElement}} naar Open Zaak",
-    "context": "Kies een bestaande open zaak configuratie of maak een nieuwe aan.",
-    "noZaakTypeLinkFound": "Er is geen Zaak type link gekoppeld aan de service task. Om een Zaak type link te koppelen ga naar Admin > Dossiers.",
-    "gotoDossierManagementButton": "Configureer nu",
-    "serviceTaskHandler": {
-      "operation": "Operatie:",
-      "status": "Status:",
-      "result": "Resultaat:",
-      "type": "Type:"
-    },
-    "delete": "Verwijderen",
-    "edit": "Wijzigen",
-    "back": "Terug",
-    "save": "Opslaan",
-    "addMore": "Voeg nog een toe",
-    "selectDocumentDefinitionName": "Selecteer de document definitie",
-    "selectedZaakType": "Geselecteerde zaak type",
-    "selectZaakOperation": "Geef aan welke actie je op de Zaak wilt doen",
-    "selectZaakStatus": "Selecteer een zaak status",
-    "noZaakStatusConfigured": "Geen zaak status beschikbaar ga naar Open zaak om een zaak status te maken",
-    "selectZaakResult": "Selecteer een zaak resultaat",
-    "noZaakResultConfigured": "Geen zaak resultaat beschikbaar ga naar Open zaak om een zaak resultaat te maken",
-    "selectBesluitType": "Selecteer een besluit type",
-    "noBesluitTypeConfigured": "Geen besluit types beschikbaar ga naar Open zaak om een besluit type te maken"
   },
   "task-list": {
     "fieldLabels": {
@@ -469,8 +443,7 @@
   "Overview of all Forms": "Overzicht van alle Formulieren",
   "Create new Form": "Maak nieuw Formulier",
   "Form Builder": "Formulier Bouwer",
-  "Form links": "Proceskoppelingen",
-  "Form links Plugin": "Proceskoppelingen v2 (beta)",
+  "Process links": "Proceskoppelingen",
   "uploadFormDefinition": "Upload formulier-definitie",
   "Process migration": "Procesmigratie",
   "Process migration warning": "<b>Let op:</b> Bij het migreren van een proces worden de candidate groups van de lopende proces instanties niet meegenomen. Dit kan gedaan worden in de database indien nodig. (Voorbeeld: wanneer een specifieke gebruikerstaak op de ROLE_USER stond en de candidate group voor deze taak is veranderd in het proces naar ROLE_ADMIN blijft de taak beschikbaar voor ROLE_USER. Enkel nieuw gestartte processen krijgen de nieuwe candidate group)",
@@ -735,34 +708,6 @@
       "deleteSync": "Verwijderen",
       "noConnectors": "Er kon geen Object-definitie gevonden worden. Voeg er ten minste één toe onder Admin -> Connecties."
     }
-  },
-  "formLink": {
-    "title": "Kies een van de onderstaande manieren om een formulier in te stellen voor dit element:",
-    "subtitle": "Koppel {{type}} aan een formulier",
-    "formDefinition": "Formulierdefinitie",
-    "formFlowDefinition": "Form Flow definitie",
-    "angularState": "Interne route",
-    "redirect": "Doorverwijzen naar een pagina binnen de applicatie",
-    "externalUrl": "Externe URL",
-    "newWindow": "De URL wordt geopend in een nieuw venster",
-    "header": "Kies formulierdefinitie",
-    "linkTo": "Beschikbare formulierdefinitie koppelen aan ",
-    "linkedDefinition": "Geselecteerde formulierdefinitie: ",
-    "linkedFormFLowDefinition": "Geselecteerde form flow definitie: ",
-    "deselect": "Deselecteren",
-    "clear": "Formulier ontkoppelen",
-    "save": "Koppeling opslaan",
-    "infoPredefined": "Kies uit beschikbare formulierdefinities",
-    "infoFormFlowDefinition": "Kies uit beschikbare form flow definities",
-    "infoUrl": "Voer een URL in die wijst naar een locatie binnen de console. Voorbeeld: '/form-links'",
-    "infoExternal": "Voer een URL in die wijst naar een externe locatie. Voorbeeld: 'http://www.domain.com/form1'",
-    "alertRelink": "Formulier opnieuw gekoppeld",
-    "alertRelinkError": "Er ging iets mis bij het opnieuw koppelen van het formulier",
-    "alertLink": "Formulier gekoppeld",
-    "alertLinkError": "Er ging iets mis bij het koppelen van het formulier",
-    "alertUnlink": "Formulier ontkoppeld",
-    "alertUnlinkError": "Er ging iets mis bij het ontkoppelen van het formulier",
-    "noPluginConfigurations": "Geen pluginconfiguraties gevonden."
   },
   "connectorForm": {
     "taak": {

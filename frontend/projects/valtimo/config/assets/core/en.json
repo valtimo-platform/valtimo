@@ -337,7 +337,7 @@
   "formManagement": {
     "noFormDefinitionFoundAdmin": "There is no form connected to the start event/user task. To link a form go to Admin menu > Process links.",
     "noFormDefinitionFoundUser": "There is no form connected to the start event/user task. Ask an admin user for assistance.",
-    "gotoFormLinksButton": "Configure now",
+    "gotoProcessLinksButton": "Configure now",
     "name": "Name",
     "nameIsRequired": "Name is required",
     "nameIsInUse": "Name is already in use",
@@ -371,32 +371,6 @@
       "searchFields": "Search Fields",
       "listColumns": "List"
     }
-  },
-  "serviceTaskManagement": {
-    "subtitle": "Link {{selectedElement}} to Open Zaak",
-    "context": "Choose one of the existing open zaak handler or create a new one",
-    "noZaakTypeLinkFound": "There is no Zaak type link connected to the service task. To link a Zaak type go to Admin > Cases.",
-    "serviceTaskHandler": {
-      "operation": "Operation:",
-      "status": "Status:",
-      "result": "Result:",
-      "type": "Type:"
-    },
-    "delete": "Delete",
-    "edit": "Edit",
-    "back": "Back",
-    "save": "Save",
-    "addMore": "Add another",
-    "gotoDossierManagementButton": "Configure now",
-    "selectDocumentDefinitionName": "Select the Case Definition",
-    "selectedZaakType": "Selected zaak type",
-    "selectZaakOperation": "Select which action you want to take on the zaak",
-    "selectZaakStatus": "Select a zaak status",
-    "noZaakStatusConfigured": "No zaak status available go to Open Zaak to create a zaak status",
-    "selectZaakResult": "Select a zaak result",
-    "noZaakResultConfigured": "No zaak result available go to Open Zaak to create a zaak result",
-    "selectBesluitType": "Select a besluit type",
-    "noBesluitTypeConfigured": "No besluit type available go to Open Zaak to create a besluit type"
   },
   "task-list": {
     "fieldLabels": {
@@ -470,8 +444,7 @@
   "Overview of all Forms": "Overview of all Forms",
   "Create new Form": "Create new Form",
   "Form Builder": "Form Builder",
-  "Form links": "Process links",
-  "Form links Plugin": "Process links v2 (beta)",
+  "Process links": "Process links",
   "uploadFormDefinition": "Upload form definition",
   "Process migration": "Process migration",
   "Process migration warning": "<b>Warning:</b> When migrating a process, the candidate groups of running instances will not be updated. This can be done in the database if necessary. (For example if a specific user task is open for ROLE_USER and the candidate group for the user task is updated in the process to ROLE_ADMIN, this user task is still accessible for ROLE_USER. Only newly started processes will use the updated candidate group)",
@@ -736,34 +709,6 @@
       "deleteSync": "Delete",
       "noConnectors": "No Object definitions could be found. Please add at least one under Admin -> Connections."
     }
-  },
-  "formLink": {
-    "title": "Choose one of the ways below to specify a form for this element:",
-    "subtitle": "Connect {{type}} to a form",
-    "formDefinition": "Form definition",
-    "formFlowDefinition": "Form Flow definition",
-    "angularState": "Internal route",
-    "redirect": "Redirect to a page within the application",
-    "externalUrl": "External URL",
-    "newWindow": "Will open URL in a new window",
-    "header": "Choose form definition",
-    "linkTo": "Link available form definition to ",
-    "linkedDefinition": "Selected form definition: ",
-    "linkedFormFLowDefinition": "Selected form flow definition: ",
-    "deselect": "Deselect",
-    "clear": "Unlink form",
-    "save": "Save form link",
-    "infoPredefined": "Choose from predefined form definitions",
-    "infoFormFlowDefinition": "Choose from predefined form flow definitions",
-    "infoUrl": "Enter a URL pointing to a location in the Console. Example format: '/form-links'",
-    "infoExternal": "Enter a URL pointing to an external location. Example format: 'https://www.domain.com/form1'",
-    "alertRelink": "Form relinked",
-    "alertRelinkError": "Failed to relink form",
-    "alertLink": "Form linked",
-    "alertLinkError": "Failed to link form",
-    "alertUnlink": "Form unlinked",
-    "alertUnlinkError": "Failed to unlink form",
-    "noPluginConfigurations": "No plugin configurations found."
   },
   "connectorForm": {
     "taak": {

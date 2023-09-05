@@ -43,7 +43,7 @@ export class FormService {
     documentId: string
   ): Observable<FormioForm> {
     return this.http.get<FormioForm>(
-      `${this.valtimoApiConfig.endpointUri}v1/form-association/form-definition/${formDefinitionName}?documentId=${documentId}`,
+      `${this.valtimoApiConfig.endpointUri}v1/process-link/form-definition/${formDefinitionName}?documentId=${documentId}`,
       {
         headers: InterceptorSkipHeader,
       }

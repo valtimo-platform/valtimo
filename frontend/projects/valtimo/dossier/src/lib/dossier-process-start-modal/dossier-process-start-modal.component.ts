@@ -16,13 +16,7 @@
 
 import {Component, EventEmitter, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
-import {
-  FormAssociation,
-  FormFlowService,
-  FormLinkService,
-  FormSubmissionResult,
-  ProcessLinkService,
-} from '@valtimo/form-link';
+import {FormFlowService, FormSubmissionResult, ProcessLinkService} from '@valtimo/form-link';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ProcessService} from '@valtimo/process';
 import {
@@ -52,7 +46,6 @@ export class DossierProcessStartModalComponent implements OnInit {
   public formDefinition: FormioForm;
   public formFlowInstanceId: string;
   public formioSubmission: FormioSubmission;
-  private formAssociation: FormAssociation;
   private processLinkId: string;
   public options: ValtimoFormioOptions;
   public isAdmin: boolean;
@@ -65,7 +58,6 @@ export class DossierProcessStartModalComponent implements OnInit {
     private router: Router,
     private processService: ProcessService,
     private documentService: DocumentService,
-    private formLinkService: FormLinkService,
     private processLinkService: ProcessLinkService,
     private formFlowService: FormFlowService,
     private userProviderService: UserProviderService,
@@ -77,7 +69,6 @@ export class DossierProcessStartModalComponent implements OnInit {
   }
 
   private loadProcessLink() {
-    this.formAssociation = null;
     this.processLinkId = null;
     this.formDefinition = null;
     this.formFlowInstanceId = null;
@@ -99,64 +90,14 @@ export class DossierProcessStartModalComponent implements OnInit {
               this.formFlowInstanceId = startProcessResult.properties.formFlowInstanceId;
               break;
           }
-          this.modal.show();
-        } else {
-          // backwards compatibility for form associations
-          this.formLinkService
-            .getStartEventFormDefinitionByProcessDefinitionKey(this.processDefinitionKey, null)
-            .pipe(take(1))
-            .subscribe({
-              next: formDefinitionWithFormAssociation =>
-                this.openFormAssociation(formDefinitionWithFormAssociation),
-              error: error => {
-                this.modal.show();
-              },
-            });
         }
+        this.modal.show();
       });
   }
 
-  private openFormAssociation(formDefinitionWithFormAssociation: any) {
-    this.formAssociation = formDefinitionWithFormAssociation.formAssociation;
-    const className = this.formAssociation.formLink.className.split('.');
-    const linkType = className[className.length - 1];
-    switch (linkType) {
-      case 'BpmnElementFormIdLink':
-        this.formDefinition = formDefinitionWithFormAssociation;
-        this.modal.show();
-        break;
-      case 'BpmnElementFormFlowIdLink':
-        this.formFlowService
-          .createInstanceForNewProcess(this.processDefinitionKey, {
-            documentId: null,
-            documentDefinitionName: this.documentDefinitionName,
-          })
-          .subscribe(result => (this.formFlowInstanceId = result.formFlowInstanceId));
-        this.modal.show();
-        break;
-      case 'BpmnElementUrlLink':
-        const url = this.router.serializeUrl(
-          this.router.createUrlTree([this.formAssociation.formLink.url])
-        );
-        window.open(url, '_blank');
-        break;
-      case 'BpmnElementAngularStateUrlLink':
-        this.route.params.pipe(take(1)).subscribe(params => {
-          const documentId = params?.documentId;
-
-          this.router.navigate([this.formAssociation.formLink.url], {
-            state: {...(documentId && {documentId})},
-          });
-        });
-        break;
-      default:
-        this.logger.fatal('Unsupported class name');
-    }
-  }
-
-  public gotoFormLinkScreen() {
+  public gotoProcessLinkScreen(): void {
     this.modal.hide();
-    this.router.navigate(['form-links'], {queryParams: {process: this.processDefinitionKey}});
+    this.router.navigate(['process-links'], {queryParams: {process: this.processDefinitionKey}});
   }
 
   public get modalTitle() {
@@ -180,39 +121,14 @@ export class DossierProcessStartModalComponent implements OnInit {
   public onSubmit(submission: FormioSubmission) {
     this.formioSubmission = submission;
 
-    if (this.processLinkId) {
-      this.processLinkService.submitForm(
-        this.processLinkId,
-        submission.data,
-        null,
-        null,
-        this.documentDefinitionName
-      ).subscribe({
-        next: (formSubmissionResult: FormSubmissionResult) => {
-          this.submitCompleted(formSubmissionResult);
-        },
-        error: errors => {
-          this.form.showErrors(errors);
-        },
-      });
-    } else {
-      this.formLinkService
-        .onSubmit(
-          this.processDefinitionKey,
-          this.formAssociation.formLink.id,
-          submission.data,
-          null,
-          null,
-          this.documentDefinitionName)
-        .subscribe(
-          (formSubmissionResult: FormSubmissionResult) => {
-            this.submitCompleted(formSubmissionResult);
-          },
-          errors => {
-            this.form.showErrors(errors);
-          }
-        );
-    }
+    this.processLinkService.submitForm(this.processLinkId, submission.data).subscribe({
+      next: (formSubmissionResult: FormSubmissionResult) => {
+        this.submitCompleted(formSubmissionResult);
+      },
+      error: errors => {
+        this.form.showErrors(errors);
+      },
+    });
   }
 
   public formFlowSubmitted(): void {

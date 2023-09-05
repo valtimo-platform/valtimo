@@ -16,38 +16,6 @@
 
 import {ListItem} from 'carbon-components-angular';
 
-interface FormAssociation {
-  className: string;
-  id: string;
-  formLink: {
-    id: string;
-    formId: string;
-    formFlowId: string;
-    url: string;
-    className: string;
-  };
-}
-
-interface FormLinkRequest {
-  id: string;
-  type: string;
-  formId?: string;
-  formFlowId?: string;
-  customUrl?: string;
-  angularStateUrl?: string;
-}
-
-interface CreateFormAssociationRequest {
-  processDefinitionKey: string;
-  formLinkRequest: FormLinkRequest;
-}
-
-interface ModifyFormAssociationRequest {
-  processDefinitionKey: string;
-  formAssociationId: string;
-  formLinkRequest: FormLinkRequest;
-}
-
 interface FormSubmissionResult {
   errors: string[];
   documentId?: string;
@@ -102,10 +70,6 @@ interface FormDefinitionListItem extends ListItem {
 }
 
 export {
-  FormAssociation,
-  FormLinkRequest,
-  CreateFormAssociationRequest,
-  ModifyFormAssociationRequest,
   FormSubmissionResult,
   BpmnElement,
   FormFlowDefinition,

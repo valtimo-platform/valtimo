@@ -94,12 +94,12 @@ export class SelectFormComponent implements OnInit, OnDestroy {
     this._subscriptions.add(
       this.buttonService.saveButtonClick$.subscribe(() => {
         this.stateService.startSaving();
-        this.saveFormLink();
+        this.saveProcessLink();
       })
     );
   }
 
-  private saveFormLink(): void {
+  private saveProcessLink(): void {
     this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
       if (selectedProcessLink) {
         this.updateProcessLink();

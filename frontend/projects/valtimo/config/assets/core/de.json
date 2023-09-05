@@ -336,7 +336,7 @@
   "formManagement": {
     "noFormDefinitionFoundAdmin": "Es ist keine Formular verknüpft. Die Verknüpfung erfolgt im Admin Menü > Prozess-Verknüpfungen.",
     "noFormDefinitionFoundUser": "Es ist keine Formular verknüpft. Nur Admin-User können die Verknüpfung vornehmen.",
-    "gotoFormLinksButton": "Jetzt konfigurieren",
+    "gotoProcessLinksButton": "Jetzt konfigurieren",
     "name": "Name",
     "nameIsRequired": "Name ist erforderlich",
     "nameIsInUse": "Name wird bereits verwendet",
@@ -370,32 +370,6 @@
       "searchFields": "Suchfelder",
       "listColumns": "Aufführen"
     }
-  },
-  "serviceTaskManagement": {
-    "subtitle": "Verknüpfe {{selectedElement}} mit Open Zaak",
-    "context": "Wähle bestehenden Open Zaak Anwender oder erstelle einen neuen.",
-    "noZaakTypeLinkFound": "Es ist kein Zaak-Typ mit dem Service-Task verknüpft. Die Verknüpfung erfolgt im Admin Menü > Cases.",
-    "serviceTaskHandler": {
-      "operation": "Tätigkeit:",
-      "status": "Status:",
-      "result": "Ergebnis:",
-      "type": "Art:"
-    },
-    "delete": "Löschen",
-    "edit": "Editieren",
-    "back": "Zurück",
-    "save": "Speichern",
-    "addMore": "+1 ergänzen",
-    "gotoDossierManagementButton": "Jetzt konfigurieren",
-    "selectDocumentDefinitionName": "Case-Definition auswählen",
-    "selectedZaakType": "Zaak-Typ auswählen",
-    "selectZaakOperation": "Zaak-Aktion auswählen",
-    "selectZaakStatus": "Zaak-Status auswählen",
-    "noZaakStatusConfigured": "Kein Zaak-Status verfügbar. Gehe zu Open Zaak, um einen Zaak-Status zu erstellen",
-    "selectZaakResult": "Wählen Sie ein Zaak-Ergebnis aus",
-    "noZaakResultConfigured": "Kein Zaak-Ergebnis verfügbar. Gehen Sie zu Open Zaak, um ein Zaak-Ergebnis zu erstellen",
-    "selectBesluitType": "Wählen Sie einen besluit Typ aus",
-    "noBesluitTypeConfigured": "Kein Besluit-Typ verfügbar. Gehen Sie zu Open Zaak, um einen Besluit-Typ zu erstellen."
   },
   "task-list": {
     "fieldLabels": {
@@ -469,8 +443,7 @@
   "Overview of all Forms": "Überblick alle Formulare",
   "Create new Form": "Neues Formular erstellen",
   "Form Builder": "Formular-Builder",
-  "Form links": "Prozess-Verknüpfungen",
-  "Form links Plugin": "Prozess-Verknüpfungen v2 (bèta)",
+  "Process links": "Prozess-Verknüpfungen",
   "uploadFormDefinition": "Formular-Definition hochladen",
   "Process migration": "Prozess-Migration",
   "Process migration warning": "<b>Warnung:</b> Wenn ein Prozess migriert wird, werden die User-Gruppen der laufenden Instanzen nicht geupdatet. Dies kann bei Bedarf in der Datenbank erfolgen. (Zum Beispiel, wenn eine spezifische User-Aufgabe für ROLE_USER offen ist und die User-Gruppe für die User-Aufgabe wird im Prozess auf ROLE_ADMIN angepasst, wird diese Aufgabe nachwievor für ROLE_USER verfügbar sein. Nur neu gestartete Prozesse werden die neue User-Gruppe berücksichtigen.)",
@@ -735,34 +708,6 @@
       "deleteSync": "Delete",
       "noConnectors": "No Object definitions could be found. Please add at least one under Admin -> Connections."
     }
-  },
-  "formLink": {
-    "title": "Welche der Optionen soll genutzt werden, um ein Formular zu verknüpfen:",
-    "subtitle": "Connect {{type}} to a form",
-    "formDefinition": "Form definition",
-    "formFlowDefinition": "Formularflussdefinition",
-    "angularState": "Internal route",
-    "redirect": "Redirect to a page within the application",
-    "externalUrl": "External URL",
-    "newWindow": "Will open URL in a new window",
-    "header": "Choose form definition",
-    "linkTo": "Link available form definition to ",
-    "linkedDefinition": "Selected form definition: ",
-    "linkedFormFLowDefinition": "Ausgewählte Formularflussdefinition: ",
-    "deselect": "Abwählen",
-    "clear": "Verknüpfung löschen",
-    "save": "Form-Verknüpfung speichern",
-    "infoPredefined": "Wählen Sie aus vordefinierten Formulardefinitionen",
-    "infoFormFlowDefinition": "Wählen Sie aus vordefinierten Formularflussdefinitionen",
-    "infoUrl": "Enter a URL pointing to a location in the Console. Example format: '/form-links'",
-    "infoExternal": "Enter a URL pointing to an external location. Example format: 'http://www.domain.com/form1'",
-    "alertRelink": "Form relinked",
-    "alertRelinkError": "Failed to relink form",
-    "alertLink": "Form linked",
-    "alertLinkError": "Failed to link form",
-    "alertUnlink": "Form unlinked",
-    "alertUnlinkError": "Failed to unlink form",
-    "noPluginConfigurations": "Keine Plugin-Konfigurationen gefunden."
   },
   "connectorForm": {
     "taak": {
