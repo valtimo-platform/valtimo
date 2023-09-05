@@ -459,12 +459,12 @@ export class DocumentService {
     );
   }
 
-  patchCaseSettings(
+  patchCaseSettingsForManagement(
     documentDefinitionName: string,
     request: CaseSettings
   ): Observable<CaseSettings> {
     return this.http.patch<CaseSettings>(
-      `${this.valtimoEndpointUri}v1/case/${documentDefinitionName}/settings`,
+      `${this.valtimoEndpointUri}management/v1/case/${documentDefinitionName}/settings`,
       {...request}
     );
   }
@@ -475,35 +475,47 @@ export class DocumentService {
     );
   }
 
+  getCaseSettingsForManagement(documentDefinitionName: string): Observable<CaseSettings> {
+    return this.http.get<CaseSettings>(
+      `${this.valtimoEndpointUri}management/v1/case/${documentDefinitionName}/settings`
+    );
+  }
+
   getCaseList(documentDefinitionName: string): Observable<Array<CaseListColumn>> {
     return this.http.get<Array<CaseListColumn>>(
       `${this.valtimoEndpointUri}v1/case/${documentDefinitionName}/list-column`
     );
   }
 
-  postCaseList(
+  getCaseListForManagement(documentDefinitionName: string): Observable<Array<CaseListColumn>> {
+    return this.http.get<Array<CaseListColumn>>(
+      `${this.valtimoEndpointUri}management/v1/case/${documentDefinitionName}/list-column`
+    );
+  }
+
+  postCaseListForManagement(
     documentDefinitionName: string,
     request: CaseListColumn
   ): Observable<CaseListColumn> {
     return this.http.post<CaseListColumn>(
-      `${this.valtimoEndpointUri}v1/case/${documentDefinitionName}/list-column`,
+      `${this.valtimoEndpointUri}management/v1/case/${documentDefinitionName}/list-column`,
       {...request}
     );
   }
 
-  putCaseList(
+  putCaseListForManagement(
     documentDefinitionName: string,
     request: Array<CaseListColumn>
   ): Observable<Array<CaseListColumn>> {
     return this.http.put<Array<CaseListColumn>>(
-      `${this.valtimoEndpointUri}v1/case/${documentDefinitionName}/list-column`,
+      `${this.valtimoEndpointUri}management/v1/case/${documentDefinitionName}/list-column`,
       [...request]
     );
   }
 
-  deleteCaseList(documentDefinitionName: string, columnKey: string): Observable<CaseListColumn> {
+  deleteCaseListForManagement(documentDefinitionName: string, columnKey: string): Observable<CaseListColumn> {
     return this.http.delete<CaseListColumn>(
-      `${this.valtimoEndpointUri}v1/case/${documentDefinitionName}/list-column/${columnKey}`
+      `${this.valtimoEndpointUri}management/v1/case/${documentDefinitionName}/list-column/${columnKey}`
     );
   }
 

@@ -39,7 +39,7 @@ export class DossierManagementAssigneeComponent {
   readonly currentValue$: Observable<CaseSettings> = this._refresh$.pipe(
     switchMap(() => this.documentDefinitionName$),
     switchMap(documentDefinitionName =>
-      this.documentService.getCaseSettings(documentDefinitionName)
+      this.documentService.getCaseSettingsForManagement(documentDefinitionName)
     ),
     tap(() => this.loading$.next(false))
   );
@@ -51,7 +51,7 @@ export class DossierManagementAssigneeComponent {
   updateCaseSettings(caseSettings: CaseSettings, documentDefinitionName: string): void {
     this.disableInput();
 
-    this.documentService.patchCaseSettings(documentDefinitionName, caseSettings).subscribe(
+    this.documentService.patchCaseSettingsForManagement(documentDefinitionName, caseSettings).subscribe(
       () => {
         this.enableInput();
         this.refreshSettings();

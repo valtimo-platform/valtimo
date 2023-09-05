@@ -136,7 +136,7 @@ export class DossierManagementListColumnsComponent {
     this.refreshCaseListcolumns$,
   ]).pipe(
     switchMap(([documentDefinitionName]) =>
-      this.documentService.getCaseList(documentDefinitionName)
+      this.documentService.getCaseListForManagement(documentDefinitionName)
     ),
     tap(caseListColumns => {
       this.documentDefinitionName$.pipe(take(1)).subscribe(documentDefinitionName => {
@@ -368,7 +368,7 @@ export class DossierManagementListColumnsComponent {
       this.disableInput();
 
       this.documentDefinitionName$.pipe(take(1)).subscribe(docDefName => {
-        this.documentService.deleteCaseList(docDefName, columnKey).subscribe(
+        this.documentService.deleteCaseListForManagement(docDefName, columnKey).subscribe(
           () => {
             this.refreshCaseListColumns();
           },
@@ -491,7 +491,7 @@ export class DossierManagementListColumnsComponent {
   ): void {
     this.disableInput();
 
-    this.documentService.putCaseList(documentDefinitionName, newCaseListColumns).subscribe(
+    this.documentService.putCaseListForManagement(documentDefinitionName, newCaseListColumns).subscribe(
       () => {
         this.refreshCaseListColumns();
         localStorage.setItem(`list-search-${documentDefinitionName}`, null);
@@ -507,7 +507,7 @@ export class DossierManagementListColumnsComponent {
 
     this.documentDefinitionName$.pipe(take(1)).subscribe(docDefName => {
       this.documentService
-        .postCaseList(docDefName, this.mapFormValuesToColumn(formValue))
+        .postCaseListForManagement(docDefName, this.mapFormValuesToColumn(formValue))
         .subscribe(
           () => {
             this.closeModal();
@@ -557,7 +557,7 @@ export class DossierManagementListColumnsComponent {
     });
 
     this.documentDefinitionName$.pipe(take(1)).subscribe(docDefName => {
-      this.documentService.putCaseList(docDefName, mappedCurrentColumns).subscribe(
+      this.documentService.putCaseListForManagement(docDefName, mappedCurrentColumns).subscribe(
         () => {
           this.closeModal();
           this.refreshCaseListColumns();
