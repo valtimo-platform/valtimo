@@ -49,7 +49,7 @@ export class DossierManagementRemoveModalComponent {
   }
 
   removeDocumentDefinition() {
-    this.documentService.removeDocumentDefinition(this.documentDefinition.id.name).subscribe(
+    this.documentService.removeDocumentDefinitionForManagement(this.documentDefinition.id.name).subscribe(
       () => {
         this.menuService.reload();
         this.router.navigate(['/dossier-management']);

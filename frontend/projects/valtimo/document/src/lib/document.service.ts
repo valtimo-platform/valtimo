@@ -245,19 +245,6 @@ export class DocumentService {
     );
   }
 
-  public getDocumentRoles(documentDefinitionName: string): Observable<Array<string>> {
-    return this.http.get<Array<string>>(
-      `${this.valtimoEndpointUri}v1/document-definition/${documentDefinitionName}/roles`
-    );
-  }
-
-  public modifyDocumentRoles(documentDefinitionName: string, roles: any): Observable<void> {
-    return this.http.put<void>(
-      `${this.valtimoEndpointUri}v1/document-definition/${documentDefinitionName}/roles`,
-      roles
-    );
-  }
-
   getDocument(documentId: string): Observable<Document> {
     return this.http.get<Document>(`${this.valtimoEndpointUri}v1/document/${documentId}`);
   }
@@ -331,7 +318,7 @@ export class DocumentService {
     );
   }
 
-  createDocumentDefinition(
+  createDocumentDefinitionForManagement(
     documentDefinitionCreateRequest: DocumentDefinitionCreateRequest
   ): Observable<void> {
     const options = {
@@ -340,7 +327,7 @@ export class DocumentService {
       }),
     };
     return this.http.post<void>(
-      `${this.valtimoEndpointUri}v1/document-definition`,
+      `${this.valtimoEndpointUri}management/v1/document-definition`,
       documentDefinitionCreateRequest,
       options
     );
@@ -384,9 +371,9 @@ export class DocumentService {
     );
   }
 
-  removeDocumentDefinition(name: string): Observable<UndeployDocumentDefinitionResult> {
+  removeDocumentDefinitionForManagement(name: string): Observable<UndeployDocumentDefinitionResult> {
     return this.http.delete<UndeployDocumentDefinitionResult>(
-      `${this.valtimoEndpointUri}v1/document-definition/${name}`
+      `${this.valtimoEndpointUri}management/v1/document-definition/${name}`
     );
   }
 

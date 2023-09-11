@@ -85,7 +85,7 @@ export class DossierManagementUploadComponent implements AfterViewInit, OnDestro
       .pipe(
         switchMap(jsonString =>
           this.documentService
-            .createDocumentDefinition(new DocumentDefinitionCreateRequest(jsonString))
+            .createDocumentDefinitionForManagement(new DocumentDefinitionCreateRequest(jsonString))
             .pipe(
               tap(
                 // success
