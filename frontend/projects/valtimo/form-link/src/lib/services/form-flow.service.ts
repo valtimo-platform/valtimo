@@ -37,7 +37,7 @@ export class FormFlowService {
 
   getFormFlowDefinitions(): Observable<FormFlowDefinition[]> {
     return this.http.get<FormFlowDefinition[]>(
-      `${this.valtimoEndpointUri}v1/process-link/form-flow-definition`
+      `${this.valtimoEndpointUri}v1/form-flow/definition`
     );
   }
 
@@ -53,7 +53,7 @@ export class FormFlowService {
 
   getFormFlowStep(formFlowInstanceId: string): Observable<FormFlowInstance> {
     return this.http.get<FormFlowInstance>(
-      `${this.valtimoEndpointUri}v1/form-flow/${formFlowInstanceId}`
+      `${this.valtimoEndpointUri}v1/form-flow/instance/${formFlowInstanceId}`
     );
   }
 
@@ -63,21 +63,21 @@ export class FormFlowService {
     submissionData: any
   ): Observable<FormFlowInstance> {
     return this.http.post<FormFlowInstance>(
-      `${this.valtimoEndpointUri}v1/form-flow/${formFlowInstanceId}/step/${stepInstanceId}`,
+      `${this.valtimoEndpointUri}v1/form-flow/instance/${formFlowInstanceId}/step/instance/${stepInstanceId}`,
       submissionData
     );
   }
 
   back(formFlowInstanceId: string, submissionData: any): Observable<FormFlowInstance> {
     return this.http.post<FormFlowInstance>(
-      `${this.valtimoEndpointUri}v1/form-flow/${formFlowInstanceId}/back`,
+      `${this.valtimoEndpointUri}v1/form-flow/instance/${formFlowInstanceId}/back`,
       submissionData
     );
   }
 
   save(formFlowInstanceId: string, submissionData: any): Observable<null> {
     return this.http.post<null>(
-      `${this.valtimoEndpointUri}v1/form-flow/${formFlowInstanceId}/save`,
+      `${this.valtimoEndpointUri}v1/form-flow/instance/${formFlowInstanceId}/save`,
       submissionData
     );
   }
