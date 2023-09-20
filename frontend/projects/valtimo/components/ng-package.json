@@ -24,6 +24,10 @@
     "@carbon/styles",
     "carbon-components",
     "carbon-components-angular",
-    "monaco-editor"
+    "monaco-editor",
+    "ngx-skeleton-loader",
+    "@mdi/font",
+    "uuid",
+    "flatpickr"
   ]
 }
