@@ -20,7 +20,7 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {TranslateService} from '@ngx-translate/core';
 import {PluginTranslationService} from '../../../../services';
 import {CreatePortalTaskConfig, FormType, OtherReceiver, Receiver} from '../../models';
-import {SelectItem} from '@valtimo/user-interface';
+import {SelectItem} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-create-portal-task',

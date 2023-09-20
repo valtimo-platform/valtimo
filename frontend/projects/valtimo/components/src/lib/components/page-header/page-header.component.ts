@@ -15,7 +15,7 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {UserInterfaceService} from '@valtimo/user-interface';
+import {UserInterfaceService} from '../../services/user-interface.service';
 
 @Component({
   selector: 'valtimo-page-header',

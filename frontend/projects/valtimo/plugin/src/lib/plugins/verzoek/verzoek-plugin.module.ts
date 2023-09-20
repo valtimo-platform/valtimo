@@ -19,6 +19,13 @@ import {VerzoekConfigurationComponent} from './components/verzoek-configuration/
 import {PluginTranslatePipeModule} from '../../pipes';
 import {CommonModule} from '@angular/common';
 import {
+  ButtonModule as CarbonButtonModule,
+  InputModule as CarbonInputModule,
+  ModalModule,
+} from 'carbon-components-angular';
+import {
+  CarbonMultiInputModule,
+  ValtimoCdsModalDirectiveModule,
   ButtonModule,
   FormModule,
   InputLabelModule,
@@ -28,13 +35,7 @@ import {
   RadioModule,
   SelectModule,
   TooltipIconModule,
-} from '@valtimo/user-interface';
-import {
-  ButtonModule as CarbonButtonModule,
-  InputModule as CarbonInputModule,
-  ModalModule,
-} from 'carbon-components-angular';
-import {CarbonMultiInputModule, ValtimoCdsModalDirectiveModule} from '@valtimo/components';
+} from '@valtimo/components';
 
 @NgModule({
   declarations: [VerzoekConfigurationComponent],

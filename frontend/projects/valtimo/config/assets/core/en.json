@@ -529,7 +529,8 @@
       "ofLastPages": "of {{last}} pages",
       "singleSelect": "1 item selected",
       "totalItems": "{{start}}-{{end}} of {{total}} items"
-    }
+    },
+    "required": "required"
   },
   "taskDetail": {
     "taskCreated": "Created",

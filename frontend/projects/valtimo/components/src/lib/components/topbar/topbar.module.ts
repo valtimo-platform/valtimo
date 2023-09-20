@@ -18,7 +18,7 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TopbarComponent} from './topbar.component';
 import {RouterModule} from '@angular/router';
-import {ParagraphModule} from '@valtimo/user-interface';
+import {ParagraphModule} from '../paragraph/paragraph.module';
 import {IconModule, UIShellModule} from 'carbon-components-angular';
 
 @NgModule({

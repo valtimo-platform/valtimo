@@ -18,7 +18,7 @@ import {NgModule} from '@angular/core';
 import {NotificatiesApiConfigurationComponent} from './components/notificaties-api-configuration/notificaties-api-configuration.component';
 import {PluginTranslatePipeModule} from '../../pipes';
 import {CommonModule} from '@angular/common';
-import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/user-interface';
+import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/components';
 
 @NgModule({
   declarations: [NotificatiesApiConfigurationComponent],

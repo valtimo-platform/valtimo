@@ -17,8 +17,7 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {PluginConfigurationContainerComponent} from './plugin-configuration-container.component';
-import {ParagraphModule, TitleModule} from '@valtimo/user-interface';
-import {SpinnerModule} from '@valtimo/components';
+import {SpinnerModule, ParagraphModule, TitleModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 
 @NgModule({

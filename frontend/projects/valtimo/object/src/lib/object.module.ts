@@ -27,6 +27,7 @@ import {
   SpinnerModule,
   ValtimoCdsModalDirectiveModule,
   WidgetModule,
+  TooltipIconModule,
 } from '@valtimo/components';
 import {ObjectDetailContainerComponent} from './components/object-detail-container/object-detail-container.component';
 import {ObjectDetailComponent} from './components/object-detail-container/tabs/object-detail/object-detail.component';
@@ -38,7 +39,6 @@ import {
   ModalModule,
 } from 'carbon-components-angular';
 import {ReactiveFormsModule} from '@angular/forms';
-import {TooltipIconModule} from '@valtimo/user-interface';
 
 @NgModule({
   declarations: [ObjectListComponent, ObjectDetailContainerComponent, ObjectDetailComponent],

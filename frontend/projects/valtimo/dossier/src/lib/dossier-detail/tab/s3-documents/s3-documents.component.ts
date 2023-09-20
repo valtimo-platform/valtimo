@@ -23,7 +23,7 @@ import {map, switchMap} from 'rxjs/operators';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 import {ConfigService} from '@valtimo/config';
-import {PromptService} from '@valtimo/user-interface';
+import {PromptService} from '@valtimo/components';
 import {FileSortService} from '../../../services';
 
 @Component({

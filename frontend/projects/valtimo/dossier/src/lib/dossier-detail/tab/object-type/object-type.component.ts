@@ -19,7 +19,7 @@ import {ActivatedRoute} from '@angular/router';
 import {ZaakobjectenService} from '../../../services/zaakobjecten.service';
 import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
 import {ZaakObject, ZaakObjectType} from '../../../models';
-import {ModalComponent, ModalService, TableColumn} from '@valtimo/user-interface';
+import {VModalComponent, ModalService, TableColumn} from '@valtimo/components';
 import {take} from 'rxjs/operators';
 import {FormioForm} from '@formio/angular';
 
@@ -29,7 +29,7 @@ import {FormioForm} from '@formio/angular';
   styleUrls: ['./object-type.component.scss'],
 })
 export class DossierDetailTabObjectTypeComponent {
-  @ViewChild('viewObjectModal') viewObjectModal: ModalComponent;
+  @ViewChild('viewObjectModal') viewObjectModal: VModalComponent;
 
   private readonly documentId$ = this.route.params.pipe(map(params => params.documentId));
 

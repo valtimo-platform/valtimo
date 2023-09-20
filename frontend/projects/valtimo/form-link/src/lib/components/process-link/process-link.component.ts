@@ -23,7 +23,7 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {of, switchMap, tap} from 'rxjs';
-import {ModalService} from '@valtimo/user-interface';
+import {ModalService} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-process-link',

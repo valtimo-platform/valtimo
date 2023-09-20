@@ -15,7 +15,7 @@
  */
 
 import {Component, TemplateRef, ViewChild} from '@angular/core';
-import {ListField} from '@valtimo/components';
+import {ListField, MultiInputValues} from '@valtimo/components';
 import {ConfigService, DefinitionColumn} from '@valtimo/config';
 import {
   BehaviorSubject,
@@ -42,7 +42,6 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
 import {take} from 'rxjs/operators';
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
-import {MultiInputValues} from '@valtimo/user-interface';
 
 @Component({
   selector: 'valtimo-dossier-management-list-columns',
@@ -491,15 +490,17 @@ export class DossierManagementListColumnsComponent {
   ): void {
     this.disableInput();
 
-    this.documentService.putCaseListForManagement(documentDefinitionName, newCaseListColumns).subscribe(
-      () => {
-        this.refreshCaseListColumns();
-        localStorage.setItem(`list-search-${documentDefinitionName}`, null);
-      },
-      () => {
-        this.enableInput();
-      }
-    );
+    this.documentService
+      .putCaseListForManagement(documentDefinitionName, newCaseListColumns)
+      .subscribe(
+        () => {
+          this.refreshCaseListColumns();
+          localStorage.setItem(`list-search-${documentDefinitionName}`, null);
+        },
+        () => {
+          this.enableInput();
+        }
+      );
   }
 
   private addColumn(): void {

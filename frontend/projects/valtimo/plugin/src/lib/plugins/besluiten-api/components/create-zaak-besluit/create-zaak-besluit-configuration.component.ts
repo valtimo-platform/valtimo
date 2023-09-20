@@ -32,7 +32,7 @@ import {
 import {CreateZaakBesluitConfig, Vervalredenen} from '../../models';
 import {PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
-import {ModalService, RadioValue, SelectItem} from '@valtimo/user-interface';
+import {ModalService, RadioValue, SelectItem} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {BesluitenApiService} from '../../services';
 import {InputOption} from '../../../zaken-api/models';

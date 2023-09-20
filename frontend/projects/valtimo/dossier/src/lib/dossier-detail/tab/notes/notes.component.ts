@@ -17,9 +17,8 @@ import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {Pagination, TimelineItem, TimelineItemImpl} from '@valtimo/components';
+import {Pagination, TimelineItem, TimelineItemImpl, PromptService} from '@valtimo/components';
 import {Page} from '@valtimo/config';
-import {PromptService} from '@valtimo/user-interface';
 import moment from 'moment';
 import {ToastrService} from 'ngx-toastr';
 import {BehaviorSubject, combineLatest, map, Observable, of} from 'rxjs';
@@ -76,7 +75,7 @@ export class DossierDetailTabNotesComponent implements OnInit {
   ]).pipe(
     map(
       ([currentPage, sizes]) =>
-        ({...currentPage, ...sizes, page: (currentPage.page ?? 0) + 1} as Pagination)
+        ({...currentPage, ...sizes, page: (currentPage.page ?? 0) + 1}) as Pagination
     )
   );
 

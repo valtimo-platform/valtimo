@@ -528,7 +528,8 @@
       "ofLastPages": "van {{last}} pagina's",
       "singleSelect": "1 artikel geselecteerd",
       "totalItems": "{{start}}-{{end}} van {{total}} artikelen"
-    }
+    },
+    "required": "vereist"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",

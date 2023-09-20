@@ -30,7 +30,7 @@ import {
 import {CreateZaakConfig, InputOption} from '../../models';
 import {OpenZaakService, ZaakType, ZaakTypeLink} from '@valtimo/resource';
 import {DocumentService} from '@valtimo/document';
-import {ModalService, RadioValue, SelectItem} from '@valtimo/user-interface';
+import {ModalService, RadioValue, SelectItem} from '@valtimo/components';
 import {PluginTranslatePipe} from '../../../../pipes';
 
 @Component({

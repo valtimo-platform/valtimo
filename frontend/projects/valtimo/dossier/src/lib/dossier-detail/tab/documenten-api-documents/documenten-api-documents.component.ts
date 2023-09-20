@@ -23,9 +23,8 @@ import {catchError, map, switchMap, take, tap} from 'rxjs/operators';
 import {BehaviorSubject, combineLatest, Observable, of, Subject} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 import {ConfigService} from '@valtimo/config';
-import {DocumentenApiMetadata} from '@valtimo/components';
+import {DocumentenApiMetadata, PromptService} from '@valtimo/components';
 import {UserProviderService} from '@valtimo/security';
-import {PromptService} from '@valtimo/user-interface';
 import {FileSortService} from '../../../services';
 import moment from 'moment';
 

@@ -24,7 +24,7 @@ import {
   ParagraphModule,
   RadioModule,
   SelectModule,
-} from '@valtimo/user-interface';
+} from '@valtimo/components';
 import {ZakenApiConfigurationComponent} from './components/zaken-api-configuration/zaken-api-configuration.component';
 import {LinkDocumentToZaakConfigurationComponent} from './components/link-document-to-zaak/link-document-to-zaak-configuration.component';
 import {LinkUploadedDocumentToZaakConfigurationComponent} from './components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';

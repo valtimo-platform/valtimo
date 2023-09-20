@@ -37,6 +37,16 @@ import {
   TimelineModule,
   UploaderModule,
   WidgetModule,
+  ButtonModule,
+  FormModule as VFormModule,
+  InputLabelModule,
+  InputModule,
+  VModalModule,
+  PageModule,
+  ParagraphModule,
+  SelectModule,
+  TableModule,
+  TitleModule,
 } from '@valtimo/components';
 import {DossierDetailComponent} from './dossier-detail/dossier-detail.component';
 import {DossierDetailTabSummaryComponent} from './dossier-detail/tab/summary/summary.component';
@@ -62,18 +72,6 @@ import {TaskModule} from '@valtimo/task';
 import {FormLinkModule} from '@valtimo/form-link';
 import {DossierSupportingProcessStartModalComponent} from './dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
 import {DossierDetailTabZaakobjectenComponent} from './dossier-detail/tab/zaakobjecten/zaakobjecten.component';
-import {
-  ButtonModule,
-  FormModule as VFormModule,
-  InputLabelModule,
-  InputModule,
-  ModalModule as VModalModule,
-  PageModule,
-  ParagraphModule,
-  SelectModule,
-  TableModule,
-  TitleModule,
-} from '@valtimo/user-interface';
 import {DossierDetailTabObjectTypeComponent} from './dossier-detail/tab/object-type/object-type.component';
 import {DossierDetailTabDocumentenApiDocumentsComponent} from './dossier-detail/tab/documenten-api-documents/documenten-api-documents.component';
 import {DossierDetailTabS3DocumentsComponent} from './dossier-detail/tab/s3-documents/s3-documents.component';

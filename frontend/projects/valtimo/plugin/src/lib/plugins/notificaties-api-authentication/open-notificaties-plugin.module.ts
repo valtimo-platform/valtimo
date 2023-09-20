@@ -17,7 +17,7 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {OpenNotificatiesConfigurationComponent} from './components/open-notificaties-configuration/open-notificaties-configuration.component';
-import {FormModule, InputModule} from '@valtimo/user-interface';
+import {FormModule, InputModule} from '@valtimo/components';
 import {PluginTranslatePipeModule} from '../../pipes';
 
 @NgModule({

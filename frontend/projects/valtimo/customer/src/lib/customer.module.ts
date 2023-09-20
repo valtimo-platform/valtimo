@@ -16,13 +16,21 @@
 
 import {NgModule} from '@angular/core';
 import {CustomerListComponent} from './components/customer-list/customer-list.component';
-import {WidgetModule, ListModule, SpinnerModule, FilterSidebarModule} from '@valtimo/components';
+import {
+  WidgetModule,
+  ListModule,
+  SpinnerModule,
+  FilterSidebarModule,
+  PageModule,
+  ParagraphModule,
+  TableModule,
+  TitleModule,
+} from '@valtimo/components';
 import {CustomerRoutingModule} from './customer-routing.module';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {FormsModule} from '@angular/forms';
 import {CasesListComponent} from './components/cases-list/cases-list.component';
-import {PageModule, ParagraphModule, TableModule, TitleModule} from '@valtimo/user-interface';
 
 @NgModule({
   imports: [

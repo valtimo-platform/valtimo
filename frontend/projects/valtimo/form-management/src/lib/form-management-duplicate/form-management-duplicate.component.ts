@@ -15,7 +15,6 @@
  */
 
 import {Component, Inject} from '@angular/core';
-import {ModalService} from '@valtimo/user-interface';
 import {combineLatest} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
@@ -23,7 +22,7 @@ import {CreateFormDefinitionRequest} from '../models';
 import {BaseModal} from 'carbon-components-angular/modal';
 import {FormManagementService} from '../form-management.service';
 import {ActivatedRoute, Router} from '@angular/router';
-import {AlertService} from '@valtimo/components';
+import {AlertService, ModalService} from '@valtimo/components';
 import {noDuplicateFormValidator} from '../validators/no-duplicate-form.validator';
 
 @Component({

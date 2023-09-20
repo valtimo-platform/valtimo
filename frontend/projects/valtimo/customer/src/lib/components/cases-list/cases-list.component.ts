@@ -20,7 +20,7 @@ import {BehaviorSubject, Observable, of} from 'rxjs';
 import {switchMap, tap} from 'rxjs/operators';
 import {CustomerCase} from '../../models';
 import {CustomerService} from '../../services/customer.service';
-import {TableColumn} from '@valtimo/user-interface';
+import {TableColumn} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-cases-list',

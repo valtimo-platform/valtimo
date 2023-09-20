@@ -18,16 +18,14 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DocumentenApiMetadataModalComponent} from './documenten-api-metadata-modal.component';
 import {TranslateModule} from '@ngx-translate/core';
-import {
-  ButtonModule,
-  DatePickerModule,
-  FormModule,
-  InputLabelModule,
-  InputModule,
-  ModalModule,
-  SelectModule,
-  TitleModule,
-} from '@valtimo/user-interface';
+import {ButtonModule} from '../button/button.module';
+import {DatePickerModule} from '../date-picker/date-picker.module';
+import {FormModule} from '../form/form.module';
+import {InputLabelModule} from '../input-label/input-label.module';
+import {InputModule} from '../input/input.module';
+import {VModalModule} from '../v-modal/modal.module';
+import {SelectModule} from '../select/select.module';
+import {TitleModule} from '../title/title.module';
 
 @NgModule({
   declarations: [DocumentenApiMetadataModalComponent],
@@ -35,7 +33,7 @@ import {
   imports: [
     CommonModule,
     TranslateModule,
-    ModalModule,
+    VModalModule,
     TitleModule,
     ButtonModule,
     TranslateModule,

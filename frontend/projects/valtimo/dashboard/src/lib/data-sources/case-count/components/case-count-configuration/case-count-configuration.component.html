@@ -15,38 +15,39 @@
   -->
 
 <form
+  class="case-count-configuration-form"
   *ngIf="{documentItems: documentItems$ | async, operatorItems: operatorItems$} as obs"
   [formGroup]="form"
 >
   <div class="form__element">
     <cds-dropdown
       formControlName="documentDefinition"
-      [helperText]="'documentDefinitionHelperText' | widgetTranslate : dataSourceKey | async"
-      [invalidText]="'documentDefinitionHelperText' | widgetTranslate : dataSourceKey | async"
+      [helperText]="'documentDefinitionHelperText' | widgetTranslate: dataSourceKey | async"
+      [invalidText]="'documentDefinitionHelperText' | widgetTranslate: dataSourceKey | async"
       [invalid]="documentDefinition.dirty && documentDefinition.invalid"
-      [label]="'documentDefinition' | widgetTranslate : dataSourceKey | async"
+      [label]="'documentDefinition' | widgetTranslate: dataSourceKey | async"
       (selected)="documentDefinitionSelected($event)"
     >
       <cds-dropdown-list [items]="obs?.documentItems || []" type="multi"></cds-dropdown-list>
     </cds-dropdown>
   </div>
 
-  <div class="form__element">
+  <div class="form__element conditions-multi-input">
     <cds-label
-      [helperText]="'conditionsHelperText' | widgetTranslate : dataSourceKey | async"
+      [helperText]="'conditionsHelperText' | widgetTranslate: dataSourceKey | async"
       class="conditions-label"
-      >{{ 'conditions' | widgetTranslate : dataSourceKey | async }}</cds-label
+      >{{ 'conditions' | widgetTranslate: dataSourceKey | async }}</cds-label
     >
     <valtimo-carbon-multi-input
-      [addRowText]="'addCondition' | widgetTranslate : dataSourceKey | async"
+      [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
       [defaultValues]="defaultConditionValues$ | async"
-      [dropdownColumnTitle]="'operator' | widgetTranslate : dataSourceKey | async"
+      [dropdownColumnTitle]="'operator' | widgetTranslate: dataSourceKey | async"
       [dropdownItems]="operatorItems$ | async"
       [fullWidth]="true"
       [initialAmountOfRows]="0"
-      [keyColumnTitle]="'path' | widgetTranslate : dataSourceKey | async"
+      [keyColumnTitle]="'path' | widgetTranslate: dataSourceKey | async"
       [minimumAmountOfRows]="0"
-      [valueColumnTitle]="'value' | widgetTranslate : dataSourceKey | async"
+      [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
       type="keyDropdownValue"
       (allValuesValidEvent)="onAllConditionsValid($event)"
       (valueChange)="conditionsValueChange($event)"

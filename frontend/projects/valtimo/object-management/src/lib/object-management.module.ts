@@ -27,16 +27,14 @@ import {
   SpinnerModule,
   ValtimoCdsModalDirectiveModule,
   WidgetModule,
-} from '@valtimo/components';
-import {
   ButtonModule,
   FormModule,
-  InputModule as InputModule,
-  ModalModule as VModalModule,
+  InputModule,
+  VModalModule,
   SelectModule,
   TitleModule,
   TooltipIconModule,
-} from '@valtimo/user-interface';
+} from '@valtimo/components';
 import {ObjectManagementDetailContainerComponent} from './components/object-management-detail-container/object-management-detail-container.component';
 import {ObjectManagementDetailComponent} from './components/object-management-detail-container/tabs/object-management-detail/object-management-detail.component';
 import {ObjectManagementListComponent} from './components/object-management-list/object-management-list.component';

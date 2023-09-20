@@ -18,6 +18,9 @@ import {NgModule} from '@angular/core';
 import {BesluitenApiConfigurationComponent} from './components/besluiten-api-configuration/besluiten-api-configuration.component';
 import {CommonModule} from '@angular/common';
 import {PluginTranslatePipeModule} from '../../pipes';
+import {CreateZaakBesluitConfigurationComponent} from './components/create-zaak-besluit/create-zaak-besluit-configuration.component';
+import {LinkDocumentToBesluitConfigurationComponent} from './components/link-document-to-besluit/link-document-to-besluit-configuration.component';
+import {LoadingModule} from 'carbon-components-angular';
 import {
   DatePickerModule,
   FormModule,
@@ -25,10 +28,7 @@ import {
   ParagraphModule,
   RadioModule,
   SelectModule,
-} from '@valtimo/user-interface';
-import {CreateZaakBesluitConfigurationComponent} from './components/create-zaak-besluit/create-zaak-besluit-configuration.component';
-import {LinkDocumentToBesluitConfigurationComponent} from './components/link-document-to-besluit/link-document-to-besluit-configuration.component';
-import {LoadingModule} from 'carbon-components-angular';
+} from '@valtimo/components';
 
 @NgModule({
   declarations: [

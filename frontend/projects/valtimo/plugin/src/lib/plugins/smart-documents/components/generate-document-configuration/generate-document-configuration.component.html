@@ -62,7 +62,7 @@
     [defaultSelectionId]="obs.prefill?.format"
     [required]="true"
   ></v-select>
-  <v-multi-input
+  <v-carbon-multi-input
     name="templateData"
     [title]="'templateData' | pluginTranslate : pluginId | async"
     type="keyValue"
@@ -71,5 +71,5 @@
     [margin]="true"
     [required]="true"
     [tooltip]="'templateDataTooltip' | pluginTranslate : pluginId | async"
-  ></v-multi-input>
+  ></v-carbon-multi-input>
 </v-form>

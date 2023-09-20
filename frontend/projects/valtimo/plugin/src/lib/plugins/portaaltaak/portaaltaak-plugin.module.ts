@@ -21,10 +21,10 @@ import {CommonModule} from '@angular/common';
 import {
   FormModule,
   InputModule,
-  MultiInputModule,
+  CarbonMultiInputModule,
   ParagraphModule,
   SelectModule,
-} from '@valtimo/user-interface';
+} from '@valtimo/components';
 import {CreatePortalTaskComponent} from './components/create-portal-task/create-portal-task.component';
 import {CompletePortalTaskComponent} from './components/complete-portal-task/complete-portal-task.component';
 
@@ -41,7 +41,7 @@ import {CompletePortalTaskComponent} from './components/complete-portal-task/com
     InputModule,
     SelectModule,
     ParagraphModule,
-    MultiInputModule,
+    CarbonMultiInputModule,
   ],
   exports: [
     PortaaltaakConfigurationComponent,

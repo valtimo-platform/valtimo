@@ -15,7 +15,9 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
-import {ModalComponent, ModalService, SelectItem} from '@valtimo/user-interface';
+import {VModalComponent} from '../v-modal/modal.component';
+import {ModalService} from '../../services';
+import {SelectItem} from '../../models';
 import {
   BehaviorSubject,
   combineLatest,
@@ -49,7 +51,7 @@ import {tap} from 'rxjs/operators';
   styleUrls: ['./documenten-api-metadata-modal.component.scss'],
 })
 export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
-  @ViewChild('documentenApiMetadataModal') documentenApiMetadataModal: ModalComponent;
+  @ViewChild('documentenApiMetadataModal') documentenApiMetadataModal: VModalComponent;
 
   @Input() show$!: Observable<null>;
   @Input() hide$!: Observable<null>;

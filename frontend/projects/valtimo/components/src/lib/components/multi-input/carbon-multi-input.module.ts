@@ -17,7 +17,6 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {CarbonMultiInputComponent} from './carbon-multi-input.component';
-import {ButtonModule, InputLabelModule, InputModule} from '@valtimo/user-interface';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   ButtonModule as CarbonButtonModule,
@@ -25,6 +24,9 @@ import {
   IconModule,
   InputModule as CarbonInputModule,
 } from 'carbon-components-angular';
+import {ButtonModule} from '../button/button.module';
+import {InputLabelModule} from '../input-label/input-label.module';
+import {InputModule} from '../input/input.module';
 
 @NgModule({
   declarations: [CarbonMultiInputComponent],

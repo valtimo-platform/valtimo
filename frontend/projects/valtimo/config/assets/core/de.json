@@ -528,7 +528,8 @@
       "ofLastPages": "von {{last}} Seiten",
       "singleSelect": "1 Element ausgewählt",
       "totalItems": "{{start}}-{{end}} von {{total}} Objekte"
-    }
+    },
+    "required": "erforderlich"
   },
   "taskDetail": {
     "taskCreated": "Erstellt",

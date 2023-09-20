@@ -17,7 +17,7 @@
 import {ObjectTokenAuthencationConfigurationComponent} from './components/object-token-authentication-configuration/object-token-authencation-configuration.component';
 import {CommonModule} from '@angular/common';
 import {PluginTranslatePipeModule} from '../../pipes';
-import {FormModule, InputModule} from '@valtimo/user-interface';
+import {FormModule, InputModule} from '@valtimo/components';
 import {NgModule} from '@angular/core';
 
 @NgModule({

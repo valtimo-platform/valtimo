@@ -17,7 +17,7 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {PluginManagementStateService} from '../../services';
 import {take} from 'rxjs/operators';
-import {ModalComponent, ModalService} from '@valtimo/user-interface';
+import {VModalComponent, ModalService} from '@valtimo/components';
 import {BehaviorSubject, Observable, Subject, Subscription} from 'rxjs';
 import {
   PluginConfigurationData,
@@ -32,7 +32,7 @@ import {NGXLogger} from 'ngx-logger';
   styleUrls: ['./plugin-edit-modal.component.scss'],
 })
 export class PluginEditModalComponent implements OnInit {
-  @ViewChild('pluginEditModal') pluginEditModal: ModalComponent;
+  @ViewChild('pluginEditModal') pluginEditModal: VModalComponent;
 
   readonly inputDisabled$ = this.stateService.inputDisabled$;
   readonly selectedPluginConfiguration$: Observable<PluginConfiguration> =

@@ -17,7 +17,7 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {PluginManagementStateService} from '../../services';
 import {take} from 'rxjs/operators';
-import {ModalComponent, ModalService} from '@valtimo/user-interface';
+import {VModalComponent, ModalService} from '@valtimo/components';
 import {BehaviorSubject, Subject, Subscription} from 'rxjs';
 import {PluginConfigurationData, PluginManagementService} from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
@@ -28,7 +28,7 @@ import {NGXLogger} from 'ngx-logger';
   styleUrls: ['./plugin-add-modal.component.scss'],
 })
 export class PluginAddModalComponent implements OnInit {
-  @ViewChild('pluginAddModal') pluginAddModal: ModalComponent;
+  @ViewChild('pluginAddModal') pluginAddModal: VModalComponent;
 
   readonly inputDisabled$ = this.stateService.inputDisabled$;
   readonly selectedPluginDefinition$ = this.stateService.selectedPluginDefinition$;

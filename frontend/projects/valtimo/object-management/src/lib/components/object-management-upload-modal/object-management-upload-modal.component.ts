@@ -23,7 +23,6 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {ModalComponent as vModalComponent, ModalService} from '@valtimo/user-interface';
 import {BehaviorSubject, Observable, Subject, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {ObjectManagementStateService} from '../../services/object-management-state.service';
@@ -32,6 +31,7 @@ import {PluginManagementService} from '@valtimo/plugin';
 import {ObjectManagementService} from '../../services/object-management.service';
 import {TranslateService} from '@ngx-translate/core';
 import {Objecttype, ObjecttypeKeys} from '../../models/object-management.model';
+import {VModalComponent, ModalService} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-object-management-upload-modal',
@@ -39,7 +39,7 @@ import {Objecttype, ObjecttypeKeys} from '../../models/object-management.model';
   styleUrls: ['./object-management-upload-modal.component.scss'],
 })
 export class ObjectManagementUploadModalComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('objectManagementUploadModal') objectManagementUploadModal: vModalComponent;
+  @ViewChild('objectManagementUploadModal') objectManagementUploadModal: VModalComponent;
   @Input() objecttypes?: Objecttype[];
 
   readonly clear$ = new Subject();

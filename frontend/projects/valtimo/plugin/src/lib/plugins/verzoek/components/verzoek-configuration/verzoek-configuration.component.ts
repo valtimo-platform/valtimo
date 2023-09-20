@@ -30,7 +30,7 @@ import {
 import {CopyStrategy, VerzoekConfig, VerzoekType} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
-import {MultiInputValues, RadioValue, SelectItem} from '@valtimo/user-interface';
+import {MultiInputValues, RadioValue, SelectItem} from '@valtimo/components';
 import {VerzoekPluginService} from '../../services';
 import {ProcessService} from '@valtimo/process';
 import {DocumentService} from '@valtimo/document';

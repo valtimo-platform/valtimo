@@ -16,7 +16,7 @@
 
 import {Component} from '@angular/core';
 import {BehaviorSubject, combineLatest} from 'rxjs';
-import {TableColumn} from '@valtimo/user-interface';
+import {TableColumn} from '@valtimo/components';
 import {PluginManagementStateService} from '../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {map, switchMap, tap} from 'rxjs/operators';

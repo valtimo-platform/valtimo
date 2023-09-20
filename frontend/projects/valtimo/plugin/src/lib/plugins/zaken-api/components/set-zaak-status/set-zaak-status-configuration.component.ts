@@ -29,7 +29,7 @@ import {
   tap,
 } from 'rxjs';
 import {InputOption, SetZaakStatusConfig} from '../../models';
-import {ModalService, RadioValue, SelectItem} from '@valtimo/user-interface';
+import {ModalService, RadioValue, SelectItem} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {map} from 'rxjs/operators';
 import {ZakenApiService} from '../../services';

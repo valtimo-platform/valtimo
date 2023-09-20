@@ -20,7 +20,7 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {PortaaltaakConfig} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
-import {SelectItem} from '@valtimo/user-interface';
+import {SelectItem} from '@valtimo/components';
 import {ProcessService} from '@valtimo/process';
 import {ObjectService} from '../../services';
 

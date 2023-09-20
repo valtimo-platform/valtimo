@@ -48,7 +48,7 @@ import {
   SearchFieldMatchType,
 } from '@valtimo/config';
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
-import {MultiInputOutput, MultiInputValues, SelectItem, TableColumn} from '@valtimo/user-interface';
+import {MultiInputOutput, MultiInputValues, SelectItem, TableColumn} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-dossier-management-search-fields',

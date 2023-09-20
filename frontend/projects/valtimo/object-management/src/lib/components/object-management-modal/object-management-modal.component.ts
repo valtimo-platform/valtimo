@@ -15,7 +15,6 @@
  */
 
 import {AfterViewInit, Component, Input, OnDestroy, ViewChild} from '@angular/core';
-import {ModalComponent as vModalComponent, ModalService} from '@valtimo/user-interface';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {ObjectManagementStateService} from '../../services/object-management-state.service';
@@ -23,6 +22,7 @@ import {PluginConfiguration, PluginManagementService} from '@valtimo/plugin';
 import {ObjectManagementService} from '../../services/object-management.service';
 import {Objecttype} from '../../models/object-management.model';
 import {FormService} from '@valtimo/form';
+import {VModalComponent, ModalService} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-object-management-modal',
@@ -30,7 +30,7 @@ import {FormService} from '@valtimo/form';
   styleUrls: ['./object-management-modal.component.scss'],
 })
 export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('objectManagementModal') objectManagementModal: vModalComponent;
+  @ViewChild('objectManagementModal') objectManagementModal: VModalComponent;
   @Input() prefillObject$!: Observable<Objecttype>;
 
   readonly disabled$!: Observable<boolean>;
@@ -47,11 +47,12 @@ export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy 
   readonly formDefinitions$: Observable<Array<{id: string; text: string}>> = this.formService
     .getAllFormDefinitions()
     .pipe(
-      map(results =>
-        results?.map(configuration => ({
-          id: configuration.name,
-          text: configuration.name,
-        }))
+      map(
+        results =>
+          results?.map(configuration => ({
+            id: configuration.name,
+            text: configuration.name,
+          }))
       )
     );
 

@@ -18,7 +18,22 @@ import {NgModule} from '@angular/core';
 import {ConnectorManagementRoutingModule} from './connector-management-routing';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {FormIoModule, ListModule, ModalModule, SpinnerModule, WidgetModule,} from '@valtimo/components';
+import {
+  FormIoModule,
+  ListModule,
+  ModalModule,
+  SpinnerModule,
+  WidgetModule,
+  ButtonModule,
+  VCardModule,
+  InputModule,
+  VModalModule,
+  PageModule,
+  ParagraphModule,
+  StepperModule,
+  TableModule,
+  TitleModule,
+} from '@valtimo/components';
 import {ConnectorManagementStateService} from './services/connector-management-state/connector-management-state.service';
 import {ConnectorManagementComponent} from './components/connector-management/connector-management.component';
 import {ConnectorLinkExtensionModalComponent} from './components/connector-link-extension-modal/connector-link-extension-modal.component';
@@ -31,17 +46,6 @@ import {MultiValueConnectorPropertyComponent} from './components/multi-value-con
 import {EditProductAanvragenConnectorComponent} from './components/edit-product-aanvragen-connector/edit-product-aanvragen-connector.component';
 import {EditConnectorFormComponent} from './components/edit-connector-form/edit-connector-form.component';
 import {EditTaakConnectorComponent} from './components/edit-taak-connector/edit-taak-connector.component';
-import {
-  ButtonModule,
-  CardModule,
-  InputModule,
-  ModalModule as VModalModule,
-  PageModule,
-  ParagraphModule,
-  StepperModule,
-  TableModule,
-  TitleModule,
-} from '@valtimo/user-interface';
 import {AddConnectorConfigureComponent} from './components/add-connector-configure/add-connector-configure.component';
 
 @NgModule({
@@ -73,7 +77,7 @@ import {AddConnectorConfigureComponent} from './components/add-connector-configu
     TableModule,
     VModalModule,
     StepperModule,
-    CardModule,
+    VCardModule,
     TitleModule,
     InputModule,
     PageModule,

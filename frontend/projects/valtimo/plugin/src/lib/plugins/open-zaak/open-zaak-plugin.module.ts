@@ -17,8 +17,7 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {OpenZaakConfigurationComponent} from './components/open-zaak-configuration/open-zaak-configuration.component';
-import {FormModule, InputModule} from '@valtimo/user-interface';
-import {SpinnerModule} from '@valtimo/components';
+import {FormModule, InputModule} from '@valtimo/components';
 import {PluginTranslatePipeModule} from '../../pipes';
 
 @NgModule({

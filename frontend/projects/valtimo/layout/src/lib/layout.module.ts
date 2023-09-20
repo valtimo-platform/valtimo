@@ -28,7 +28,7 @@ import {RouterModule} from '@angular/router';
 import {LayoutPublicComponent} from './layout-public/layout-public.component';
 import {LayoutInternalComponent} from './layout-internal/layout-internal.component';
 import {CommonModule} from '@angular/common';
-import {PromptModule} from '@valtimo/user-interface';
+import {PromptModule} from '@valtimo/components';
 
 @NgModule({
   declarations: [LayoutComponent, LayoutPublicComponent, LayoutInternalComponent],

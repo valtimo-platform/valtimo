@@ -16,7 +16,7 @@
 import {Component, OnInit} from '@angular/core';
 import {ConfigService, UploadProvider, ValtimoConfig} from '@valtimo/config';
 import {BehaviorSubject, map, Observable} from 'rxjs';
-import {SelectItem} from '@valtimo/user-interface';
+import {SelectItem} from '@valtimo/components';
 import {ProcessService} from '@valtimo/process';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentService} from '@valtimo/document';

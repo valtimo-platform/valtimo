@@ -18,7 +18,7 @@ import {NgModule} from '@angular/core';
 import {ObjecttypenApiConfigurationComponent} from './components/objecttypen-api-configuration/objecttypen-api-configuration.component';
 import {CommonModule} from '@angular/common';
 import {PluginTranslatePipeModule} from '../../pipes';
-import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/user-interface';
+import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/components';
 
 @NgModule({
   declarations: [ObjecttypenApiConfigurationComponent],

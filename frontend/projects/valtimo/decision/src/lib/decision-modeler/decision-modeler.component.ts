@@ -34,8 +34,7 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {SelectedValue, SelectItem} from '@valtimo/user-interface';
-import {AlertService, PageTitleService} from '@valtimo/components';
+import {AlertService, PageTitleService, SelectedValue, SelectItem} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 import {EMPTY_DECISION} from './empty-decision';
 

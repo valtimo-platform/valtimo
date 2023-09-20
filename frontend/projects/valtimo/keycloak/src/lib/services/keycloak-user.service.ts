@@ -21,13 +21,13 @@ import {KeycloakEventType, KeycloakService} from 'keycloak-angular';
 import {ConfigService, UserIdentity, UserService, ValtimoUserIdentity} from '@valtimo/config';
 import {KeycloakOptionsService} from './keycloak-options.service';
 import jwt_decode from 'jwt-decode';
-import {PromptService} from '@valtimo/user-interface';
 import {TranslateService} from '@ngx-translate/core';
 import {DatePipe} from '@angular/common';
 import {take} from 'rxjs/operators';
 import {Router} from '@angular/router';
 import {STORAGE_KEYS} from '../constants';
 import {KeycloakStorageService} from './keycloak-storage.service';
+import {PromptService} from '@valtimo/components';
 
 @Injectable({
   providedIn: 'root',

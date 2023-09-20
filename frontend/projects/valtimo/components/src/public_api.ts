@@ -21,10 +21,11 @@
 export * from './lib/models';
 export * from './lib/constants';
 export * from './lib/pipes';
-export * from './lib/directives';
-export * from './lib/services/valtimo-modal.service';
-export * from './lib/services/shell.service';
+export * from './lib/services';
 
+/*
+components
+ */
 export * from './lib/components/camunda/form/camunda-form.components';
 export * from './lib/components/camunda/form/camunda-form.module';
 
@@ -76,8 +77,6 @@ export * from './lib/components/bpmn-js-diagram/bpmn-js-diagram.module';
 
 export * from './lib/components/timeline/timeline.component';
 export * from './lib/components/timeline/timeline.module';
-
-export * from './lib/components/components.module';
 
 export * from './lib/components/filter-sidebar/filter-sidebar.component';
 export * from './lib/components/filter-sidebar/filter-sidebar.module';
@@ -156,3 +155,84 @@ export * from './lib/components/expansion-panel/expansion-panel.component';
 
 export * from './lib/components/editor/editor.module';
 export * from './lib/components/editor/editor.component';
+
+// Button component
+export * from './lib/components/button/button.module';
+export * from './lib/components/button/button.component';
+
+// Table component
+export * from './lib/components/table/table.module';
+export * from './lib/components/table/table.component';
+// Select component
+export * from './lib/components/select/select.module';
+export * from './lib/components/select/select.component';
+// V modal component
+export * from './lib/components/v-modal/modal.module';
+export * from './lib/components/v-modal/modal.component';
+// Stepper components
+export * from './lib/components/stepper/stepper.module';
+export * from './lib/components/stepper/stepper-header/stepper-header.component';
+export * from './lib/components/stepper/stepper-footer/stepper-footer.component';
+export * from './lib/components/stepper/stepper-content/stepper-content.component';
+export * from './lib/components/stepper/stepper-container/stepper-container.component';
+export * from './lib/components/stepper/stepper-step/stepper-step.component';
+export * from './lib/components/stepper/stepper-footer-step/stepper-footer-step.component';
+// Card component
+export * from './lib/components/v-card/card.component';
+export * from './lib/components/v-card/card.module';
+// Title component
+export * from './lib/components/title/title.component';
+export * from './lib/components/title/title.module';
+// Text input
+export * from './lib/components/input/input.component';
+export * from './lib/components/input/input.module';
+// Input label
+export * from './lib/components/input-label/input-label.component';
+export * from './lib/components/input-label/input-label.module';
+// Page components
+export * from './lib/components/page/page.module';
+export * from './lib/components/page/page-container/page-container.component';
+export * from './lib/components/page/page-content/page-content.component';
+export * from './lib/components/page/page-header/page-header.component';
+export * from './lib/components/page/page-header-introduction/page-header-introduction.component';
+export * from './lib/components/page/page-header-actions/page-header-actions.component';
+// Paragraph
+export * from './lib/components/paragraph/paragraph.module';
+export * from './lib/components/paragraph/paragraph.component';
+// Form
+export * from './lib/components/form/form.module';
+export * from './lib/components/form/form.component';
+// Prompt component
+export * from './lib/components/prompt/prompt.module';
+export * from './lib/components/prompt/prompt.component';
+// Date picker
+export * from './lib/components/date-picker/date-picker.module';
+export * from './lib/components/date-picker/date-picker.component';
+// Tooltip icon
+export * from './lib/components/tooltip-icon/tooltip-icon.module';
+export * from './lib/components/tooltip-icon/tooltip-icon.component';
+// Multi input form
+export * from './lib/components/multi-input-form/multi-input-form.component';
+export * from './lib/components/multi-input-form/multi-input-form.module';
+// Radio
+export * from './lib/components/radio/radio.component';
+export * from './lib/components/radio/radio.module';
+
+/*
+directives
+ */
+// valtimo cds modal
+export * from './lib/directives/valtimo-cds-modal/valtimo-cds-modal.directive';
+export * from './lib/directives/valtimo-cds-modal/valtimo-cds-modal-directive.module';
+// tooltip
+export * from './lib/directives/tooltip/tooltip.directive';
+export * from './lib/directives/tooltip/tooltip.component';
+export * from './lib/directives/tooltip/tooltip.module';
+// render in page header
+export * from './lib/directives/render-in-page-header/render-in-page-header.directive';
+export * from './lib/directives/render-in-page-header/render-in-page-header-directive.module';
+// digit only
+export * from './lib/directives/digit-only/digit-only.directive';
+// command click
+export * from './lib/directives/command-click/command-click.directive';
+export * from './lib/directives/command-click/command-click-directive.module';

@@ -15,11 +15,11 @@
  */
 
 import {AfterViewInit, Component, OnDestroy, ViewChild} from '@angular/core';
-import {ModalComponent as vModalComponent, ModalService} from '@valtimo/user-interface';
 import {Observable, Subject, Subscription} from 'rxjs';
 import {ConnectorType} from '@valtimo/config';
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
 import {take} from 'rxjs/operators';
+import {VModalComponent, ModalService} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-connector-modal',
@@ -27,8 +27,8 @@ import {take} from 'rxjs/operators';
   styleUrls: ['./connector-modal.component.scss'],
 })
 export class ConnectorModalComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('connectorCreateModal') connectorCreateModal: vModalComponent;
-  @ViewChild('connectorEditModal') connectorEditModal: vModalComponent;
+  @ViewChild('connectorCreateModal') connectorCreateModal: VModalComponent;
+  @ViewChild('connectorEditModal') connectorEditModal: VModalComponent;
 
   showSubscription!: Subscription;
   hideSubscription!: Subscription;

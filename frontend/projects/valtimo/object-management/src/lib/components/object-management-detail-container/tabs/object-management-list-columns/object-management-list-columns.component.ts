@@ -30,11 +30,10 @@ import {
 } from 'rxjs';
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
 import {ConfigService, DefinitionColumn} from '@valtimo/config';
-import {ListField} from '@valtimo/components';
+import {ListField, MultiInputValues} from '@valtimo/components';
 import {catchError, take} from 'rxjs/operators';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
-import {MultiInputValues} from '@valtimo/user-interface';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {ListColumnModal} from '@valtimo/dossier-management';

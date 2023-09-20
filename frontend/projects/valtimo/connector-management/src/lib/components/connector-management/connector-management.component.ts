@@ -21,8 +21,7 @@ import {map, switchMap, take, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {ConnectorManagementService} from '../../services/connector-management/connector-management.service';
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
-import {Pagination} from '@valtimo/components';
-import {TableColumn} from '@valtimo/user-interface';
+import {Pagination, TableColumn} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-connector-management',
@@ -59,7 +58,7 @@ export class ConnectorManagementComponent implements OnDestroy {
   ]).pipe(
     map(
       ([currentPage, sizes]) =>
-        ({...currentPage, ...sizes, page: currentPage.page + 1} as Pagination)
+        ({...currentPage, ...sizes, page: currentPage.page + 1}) as Pagination
     )
   );
 

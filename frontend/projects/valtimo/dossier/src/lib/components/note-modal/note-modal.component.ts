@@ -23,7 +23,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {ModalComponent as vModalComponent, ModalService} from '@valtimo/user-interface';
+import {VModalComponent, ModalService} from '@valtimo/components';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {NotesService} from '../../services/notes.service';
@@ -34,7 +34,7 @@ import {NotesService} from '../../services/notes.service';
   styleUrls: ['./note-modal.component.scss'],
 })
 export class NoteModalComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('noteModal') noteModal: vModalComponent;
+  @ViewChild('noteModal') noteModal: VModalComponent;
   @Input() customData;
   @Output() createNoteEvent: EventEmitter<any> = new EventEmitter();
   @Output() editNoteEvent: EventEmitter<any> = new EventEmitter();

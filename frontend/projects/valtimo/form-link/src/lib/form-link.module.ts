@@ -24,18 +24,16 @@ import {
   ModalModule,
   SearchableDropdownSelectModule,
   ValtimoCdsModalDirectiveModule,
-} from '@valtimo/components';
-import {TranslateModule} from '@ngx-translate/core';
-import {
   ButtonModule,
-  CardModule,
-  ModalModule as VModalModule,
+  VCardModule,
+  VModalModule,
   ParagraphModule,
   StepperModule,
   TitleModule,
   TooltipIconModule,
   TooltipModule,
-} from '@valtimo/user-interface';
+} from '@valtimo/components';
+import {TranslateModule} from '@ngx-translate/core';
 import {SelectPluginConfigurationComponent} from './components/select-plugin-configuration/select-plugin-configuration.component';
 import {SelectPluginActionComponent} from './components/select-plugin-action/select-plugin-action.component';
 import {PluginConfigurationContainerModule, PluginTranslatePipeModule} from '@valtimo/plugin';
@@ -80,7 +78,7 @@ import {SelectFormFlowComponent} from './components/select-form-flow';
     TranslateModule,
     StepperModule,
     VModalModule,
-    CardModule,
+    VCardModule,
     PluginTranslatePipeModule,
     ParagraphModule,
     PluginConfigurationContainerModule,

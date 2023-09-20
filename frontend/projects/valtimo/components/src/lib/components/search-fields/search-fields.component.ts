@@ -17,7 +17,7 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {SearchField, SearchFieldBoolean, SearchFieldValues} from '@valtimo/config';
 import {BehaviorSubject, combineLatest, map, Observable, Subject, Subscription, take} from 'rxjs';
-import {SelectItem} from '@valtimo/user-interface';
+import {SelectItem} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
 
@@ -200,29 +200,30 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   private openDropdownSubscription(): void {
     this.dropdownSubscription = combineLatest([this.documentDefinitionName$, this.searchFields$])
       .pipe(
-        map(([documentDefinitionName, searchFields]) =>
-          searchFields
-            ?.filter(searchField => searchField.dropdownDataProvider)
-            .map(searchField =>
-              this.documentService
-                .getDropdownData(
-                  searchField.dropdownDataProvider,
-                  documentDefinitionName,
-                  searchField.key
-                )
-                .subscribe(dropdownData => {
-                  if (dropdownData) {
-                    this.dropdownSelectItemsMap[searchField.key] = Object.keys(dropdownData).map(
-                      dropdownFieldKey => ({
-                        id: dropdownFieldKey,
-                        text: dropdownData[dropdownFieldKey],
-                      })
-                    );
-                  } else {
-                    this.dropdownSelectItemsMap[searchField.key] = [];
-                  }
-                })
-            )
+        map(
+          ([documentDefinitionName, searchFields]) =>
+            searchFields
+              ?.filter(searchField => searchField.dropdownDataProvider)
+              .map(searchField =>
+                this.documentService
+                  .getDropdownData(
+                    searchField.dropdownDataProvider,
+                    documentDefinitionName,
+                    searchField.key
+                  )
+                  .subscribe(dropdownData => {
+                    if (dropdownData) {
+                      this.dropdownSelectItemsMap[searchField.key] = Object.keys(dropdownData).map(
+                        dropdownFieldKey => ({
+                          id: dropdownFieldKey,
+                          text: dropdownData[dropdownFieldKey],
+                        })
+                      );
+                    } else {
+                      this.dropdownSelectItemsMap[searchField.key] = [];
+                    }
+                  })
+              )
         )
       )
       .subscribe();

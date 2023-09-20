@@ -22,9 +22,9 @@ import {
   FormModule,
   InputModule,
   SelectModule,
-  MultiInputModule,
+  CarbonMultiInputModule,
   ParagraphModule,
-} from '@valtimo/user-interface';
+} from '@valtimo/components';
 import {GenerateDocumentConfigurationComponent} from './components/generate-document-configuration/generate-document-configuration.component';
 
 @NgModule({
@@ -35,7 +35,7 @@ import {GenerateDocumentConfigurationComponent} from './components/generate-docu
     FormModule,
     InputModule,
     SelectModule,
-    MultiInputModule,
+    CarbonMultiInputModule,
     ParagraphModule,
   ],
   exports: [SmartDocumentsConfigurationComponent, GenerateDocumentConfigurationComponent],

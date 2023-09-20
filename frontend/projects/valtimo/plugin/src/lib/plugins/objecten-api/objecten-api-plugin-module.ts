@@ -18,7 +18,7 @@ import {NgModule} from '@angular/core';
 import {ObjectenApiConfigurationComponent} from './components/objecten-api-configuration/objecten-api-configuration.component';
 import {CommonModule} from '@angular/common';
 import {PluginTranslatePipeModule} from '../../pipes';
-import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/user-interface';
+import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/components';
 import {DeleteObjectComponent} from './components/delete-object/delete-object.component';
 
 @NgModule({

@@ -28,6 +28,12 @@ import {
   SpinnerModule,
   ValtimoCdsModalDirectiveModule,
   WidgetModule,
+  FormModule,
+  InputModule,
+  ParagraphModule,
+  SelectModule,
+  TableModule,
+  TooltipIconModule,
 } from '@valtimo/components';
 import {ConfigModule} from '@valtimo/config';
 import {DossierManagementConnectModalComponent} from './dossier-management-connect-modal/dossier-management-connect-modal.component';
@@ -38,15 +44,6 @@ import {DossierManagementUploadComponent} from './dossier-management-upload/doss
 import {DossierManagementRemoveModalComponent} from './dossier-management-remove-modal/dossier-management-remove-modal.component';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {DossierManagementLinkProcessComponent} from './dossier-management-link-process/dossier-management-link-process.component';
-import {
-  FormModule,
-  InputModule,
-  MultiInputModule,
-  ParagraphModule,
-  SelectModule,
-  TableModule,
-  TooltipIconModule,
-} from '@valtimo/user-interface';
 import {DossierManagementSearchFieldsComponent} from './dossier-management-detail-container/tabs/dossier-management-search-fields/dossier-management-search-fields.component';
 import {DossierManagementDetailContainerComponent} from './dossier-management-detail-container/dossier-management-detail-container.component';
 import {DossierManagementAssigneeComponent} from './dossier-management-assignee/dossier-management-assignee.component';
@@ -107,7 +104,7 @@ import {
     LoadingModule,
     LinkModule,
     ConfirmationModalModule,
-    MultiInputModule,
+    CarbonMultiInputModule,
     TableModule,
     ValtimoCdsModalDirectiveModule,
   ],

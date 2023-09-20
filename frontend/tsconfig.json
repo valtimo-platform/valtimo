@@ -90,8 +90,6 @@
       "@valtimo/resource/*": ["dist/valtimo/resource/*"],
       "@valtimo/sse": ["dist/valtimo/sse"],
       "@valtimo/sse/*": ["dist/valtimo/sse/*"],
-      "@valtimo/user-interface": ["dist/valtimo/user-interface"],
-      "@valtimo/user-interface/*": ["dist/valtimo/user-interface/*"],
       "@valtimo/customer": ["dist/valtimo/customer"],
       "@valtimo/customer/*": ["dist/valtimo/customer/*"],
       "@valtimo/plugin-management": ["dist/valtimo/plugin-management"],
