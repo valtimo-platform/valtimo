@@ -48,20 +48,6 @@
       [tooltip]="'notificatiesApiPluginConfigurationTooltip' | pluginTranslate : pluginId | async"
     ></v-select>
   </ng-container>
-  <ng-container *ngIf="{objectManagementSelectItems: objectManagementSelectItems$ | async} as vars">
-    <v-select
-      [items]="vars.objectManagementSelectItems"
-      [margin]="true"
-      [widthInPx]="350"
-      name="objectManagementId"
-      [title]="'objectManagementId' | pluginTranslate : pluginId | async"
-      [disabled]="obs.disabled"
-      [defaultSelectionId]="obs.prefill?.objectManagementId"
-      [required]="true"
-      [loading]="!vars.objectManagementSelectItems"
-      [tooltip]="'objectManagementIdTooltip' | pluginTranslate : pluginId | async"
-    ></v-select>
-  </ng-container>
   <ng-container *ngIf="{processSelectItems: processSelectItems$ | async} as vars">
     <v-select
       [items]="vars.processSelectItems"
@@ -139,6 +125,20 @@
           [required]="true"
           [loading]="!vars.documentSelectItems"
           [tooltip]="'caseDefinitionNameTooltip' | pluginTranslate : pluginId | async"
+        ></v-select>
+      </ng-container>
+      <ng-container *ngIf="{objectManagementSelectItems: objectManagementSelectItems$ | async} as vars">
+        <v-select
+          [items]="vars.objectManagementSelectItems"
+          [smallMargin]="true"
+          [widthInPx]="350"
+          name="objectManagementId"
+          [title]="'objectManagementId' | pluginTranslate : pluginId | async"
+          [disabled]="obs.disabled"
+          [defaultSelectionId]="prefill?.objectManagementId"
+          [required]="true"
+          [loading]="!vars.objectManagementSelectItems"
+          [tooltip]="'objectManagementIdTooltip' | pluginTranslate : pluginId | async"
         ></v-select>
       </ng-container>
       <v-select

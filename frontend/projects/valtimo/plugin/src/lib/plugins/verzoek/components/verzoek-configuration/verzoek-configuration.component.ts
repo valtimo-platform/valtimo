@@ -213,7 +213,6 @@ export class VerzoekConfigurationComponent
       formValue.configurationTitle &&
       formValue.notificatiesApiPluginConfiguration &&
       formValue.rsin &&
-      formValue.objectManagementId &&
       formValue.processToStart
     );
     const verzoekTypen = formValue.verzoekProperties || [];
@@ -222,6 +221,7 @@ export class VerzoekConfigurationComponent
         !!(
           type.type &&
           type.caseDefinitionName &&
+          type.objectManagementId &&
           type.initiatorRoltypeUrl &&
           type.processDefinitionKey &&
           type.initiatorRolDescription

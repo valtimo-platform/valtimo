@@ -28,6 +28,7 @@ interface Mapping {
 interface VerzoekType {
   uuid?: string;
   caseDefinitionName: string;
+  objectManagementId: string;
   processDefinitionKey: string;
   initiatorRolDescription: string;
   initiatorRoltypeUrl: string;
@@ -38,7 +39,6 @@ interface VerzoekType {
 
 interface VerzoekConfig extends PluginConfigurationData {
   notificatiesApiPluginConfiguration: string;
-  objectManagementId: string;
   processToStart: string;
   rsin: string;
   verzoekProperties: Array<VerzoekType>;
