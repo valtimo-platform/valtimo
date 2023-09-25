@@ -27,7 +27,10 @@ import {map} from 'rxjs/operators';
 export class MenuIncludeService {
   private valtimoConfig!: ValtimoConfig;
 
-  constructor(private readonly http: HttpClient, private readonly configService: ConfigService) {
+  constructor(
+    private readonly http: HttpClient,
+    private readonly configService: ConfigService
+  ) {
     this.valtimoConfig = configService.config;
   }
 

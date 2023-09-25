@@ -33,7 +33,6 @@ export class DossierManagementListComponent {
     collectionSize: 0,
     page: 1,
     size: 10,
-    maxPaginationItemSize: 5,
   };
   public pageParam = 0;
   public dossierFields = [
@@ -44,7 +43,10 @@ export class DossierManagementListComponent {
 
   readonly showModal$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private documentService: DocumentService, private router: Router) {}
+  constructor(
+    private documentService: DocumentService,
+    private router: Router
+  ) {}
 
   public paginationClicked(page) {
     this.pageParam = page - 1;

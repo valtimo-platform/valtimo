@@ -17,14 +17,18 @@
 import {TemplateRef} from '@angular/core';
 import {TableRowSize} from 'carbon-components-angular';
 
-export enum ColumnType {
+export enum ViewType {
   ACTION = 'action',
+  ARRAY_COUNT = 'arrayCount',
+  BOOLEAN = 'boolean',
+  DATE = 'date',
+  ENUM = 'enum',
   TEMPLATE = 'template',
   TEXT = 'text',
+  UNDERSCORES_TO_SPACES = 'underscoresToSpaces',
 }
 
 export interface CarbonTableConfig {
-  fields: ColumnConfig[];
   enableSingleSelect?: boolean;
   searchable?: boolean;
   showSelectionColumn?: boolean;
@@ -40,18 +44,16 @@ export interface ActionItem {
   type?: 'normal' | 'danger';
 }
 
-export interface ColumnConfig {
-  columnType: ColumnType;
-  fieldName: string;
-  translationKey: string;
+export interface ColumnConfig extends ListField {
+  viewType: string | ViewType;
   actions?: ActionItem[];
   className?: string;
-  sortable?: boolean;
+  format?: string;
+  enum?: Array<string> | {[key: string]: string};
   template?: TemplateRef<any>;
 }
 
 const defaultTableConfig: CarbonTableConfig = {
-  fields: [],
   enableSingleSelect: false,
   searchable: false,
   size: 'md',
@@ -61,7 +63,15 @@ const defaultTableConfig: CarbonTableConfig = {
   withPagination: false,
 };
 
-export const createCarbonTableConfig = (config: CarbonTableConfig): CarbonTableConfig => ({
+export interface ListField {
+  key: string;
+  label: string;
+  viewType: string;
+  default?: string | boolean;
+  sortable?: boolean;
+}
+
+export const createCarbonTableConfig = (config?: CarbonTableConfig): CarbonTableConfig => ({
   ...defaultTableConfig,
   ...config,
 });

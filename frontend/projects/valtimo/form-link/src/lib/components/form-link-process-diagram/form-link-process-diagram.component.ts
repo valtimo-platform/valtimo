@@ -51,7 +51,10 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
   private callbacksAdded = false;
   private processDefinitionId!: string;
 
-  constructor(private processService: ProcessService, private route: ActivatedRoute) {}
+  constructor(
+    private processService: ProcessService,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit() {
     combineLatest([this.route.queryParams, this.processService.getProcessDefinitions()])

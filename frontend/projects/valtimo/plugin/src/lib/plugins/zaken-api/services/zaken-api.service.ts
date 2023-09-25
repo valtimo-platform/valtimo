@@ -26,7 +26,10 @@ import {ResultaatType, StatusType} from '../models';
 export class ZakenApiService {
   private valtimoEndpointUri: string;
 
-  constructor(private http: HttpClient, configService: ConfigService) {
+  constructor(
+    private http: HttpClient,
+    configService: ConfigService
+  ) {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 

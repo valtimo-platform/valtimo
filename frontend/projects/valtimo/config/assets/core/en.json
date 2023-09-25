@@ -977,7 +977,7 @@
   },
   "listColumnDisplayType": {
     "select": "Select a display type",
-    "string": "Text",
+    "text": "Text",
     "date": "Date",
     "boolean": "Yes/no",
     "enum": "Enumeration",

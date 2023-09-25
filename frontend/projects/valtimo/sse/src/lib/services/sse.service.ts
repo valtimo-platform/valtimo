@@ -77,7 +77,10 @@ export class SseService {
     return this._sseMessages$.asObservable().pipe(filter(message => !!message));
   }
 
-  constructor(private readonly configService: ConfigService, private readonly logger: NGXLogger) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly logger: NGXLogger
+  ) {
     this.VALTIMO_ENDPOINT_URL = configService.config.valtimoApi.endpointUri;
     this.connect();
   }

@@ -17,11 +17,11 @@
 <form [formGroup]="form">
   <div class="form__element">
     <cds-label
-      [helperText]="'valueHelperText' | widgetTranslate : dataSourceKey | async"
-      [invalidText]="'valueHelperText' | widgetTranslate : dataSourceKey | async"
+      [helperText]="'valueHelperText' | widgetTranslate: dataSourceKey | async"
+      [invalidText]="'valueHelperText' | widgetTranslate: dataSourceKey | async"
       [invalid]="value.dirty && value.invalid"
     >
-      {{ 'value' | widgetTranslate : dataSourceKey | async }}
+      {{ 'value' | widgetTranslate: dataSourceKey | async }}
 
       <input
         cdsText
@@ -34,11 +34,11 @@
 
   <div class="form__element">
     <cds-label
-      [helperText]="'totalHelperText' | widgetTranslate : dataSourceKey | async"
-      [invalidText]="'totalHelperText' | widgetTranslate : dataSourceKey | async"
+      [helperText]="'totalHelperText' | widgetTranslate: dataSourceKey | async"
+      [invalidText]="'totalHelperText' | widgetTranslate: dataSourceKey | async"
       [invalid]="total.dirty && total.invalid"
     >
-      {{ 'total' | widgetTranslate : dataSourceKey | async }}
+      {{ 'total' | widgetTranslate: dataSourceKey | async }}
 
       <input
         cdsText

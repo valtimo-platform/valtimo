@@ -70,7 +70,6 @@ export class DossierParameterService implements OnDestroy {
               collectionSize: Number(paramsCopy.collectionSize),
               page: Number(paramsCopy.page),
               size: Number(paramsCopy.size),
-              maxPaginationItemSize: Number(paramsCopy.maxPaginationItemSize),
               ...(paramsCopy.isSorting === 'true' && {
                 sort: {
                   isSorting: !!(paramsCopy.isSorting === 'true'),
@@ -103,7 +102,10 @@ export class DossierParameterService implements OnDestroy {
 
   dossierParametersSubscription!: Subscription;
 
-  constructor(private readonly router: Router, private readonly route: ActivatedRoute) {
+  constructor(
+    private readonly router: Router,
+    private readonly route: ActivatedRoute
+  ) {
     this.setDossierParameters();
   }
 
@@ -139,7 +141,6 @@ export class DossierParameterService implements OnDestroy {
           size: `${pagination.size}`,
           collectionSize: `${pagination.collectionSize}`,
           page: `${pagination.page}`,
-          maxPaginationItemSize: `${pagination.maxPaginationItemSize}`,
           isSorting: pagination.sort?.isSorting ? 'true' : 'false',
           ...(pagination.sort?.state?.name && {sortStateName: `${pagination.sort?.state.name}`}),
           ...(pagination.sort?.state?.direction && {

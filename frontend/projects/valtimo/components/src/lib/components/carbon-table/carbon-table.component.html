@@ -25,7 +25,11 @@
     </p>
   </cds-table-header>
 
-  <cds-table-toolbar [model]="tableModel" [batchText]="batchText$ | async">
+  <cds-table-toolbar
+    class="valtimo-carbon-table__toolbar"
+    [model]="tableModel"
+    [batchText]="batchText$ | async"
+  >
     <cds-table-toolbar-actions>
       <ng-content select="[carbonToolbarActions]"> </ng-content>
     </cds-table-toolbar-actions>
@@ -60,6 +64,7 @@
     [sortable]="tableConfig.sortable"
     [showSelectionColumn]="tableConfig.showSelectionColumn"
     [striped]="tableConfig.striped"
+    (sort)="onSortClick($event)"
     (rowClick)="onRowClick($event)"
   >
     <tbody>
@@ -73,9 +78,9 @@
 
   <cds-pagination
     *ngIf="tableModel.totalDataLength && tableConfig.withPagination"
-    [itemsPerPageOptions]="paginationConfig.itemsPerPageOptions"
+    [itemsPerPageOptions]="paginatorConfig.itemsPerPageOptions"
     [model]="tableModel"
-    [showPageInput]="paginationConfig.showPageInput"
+    [showPageInput]="paginatorConfig.showPageInput"
     [skeleton]="loading"
     [translations]="paginationTranslations$ | async"
     (selectPage)="onSelectPage($event)"

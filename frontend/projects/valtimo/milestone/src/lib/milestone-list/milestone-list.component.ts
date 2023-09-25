@@ -36,7 +36,10 @@ export class MilestoneListComponent implements OnInit {
     {key: 'color', label: 'Color'},
   ];
 
-  constructor(private milestoneService: MilestoneService, private router: Router) {}
+  constructor(
+    private milestoneService: MilestoneService,
+    private router: Router
+  ) {}
 
   editMilestoneSet(milestoneSetId: number) {
     this.router.navigate(['milestones/sets/set', milestoneSetId]);

@@ -30,19 +30,19 @@
   <ng-container *ngIf="obs.loading === false; else loading">
     <v-input
       name="statustoelichting"
-      [title]="'statustoelichting' | pluginTranslate : obs.pluginId | async"
+      [title]="'statustoelichting' | pluginTranslate: obs.pluginId | async"
       [margin]="true"
       [defaultValue]="obs.prefill?.statustoelichting"
       [disabled]="obs.disabled"
       [required]="false"
-      [tooltip]="'statustoelichtingTooltip' | pluginTranslate : obs.pluginId | async"
+      [tooltip]="'statustoelichtingTooltip' | pluginTranslate: obs.pluginId | async"
       [fullWidth]="true"
     >
     </v-input>
     <v-radio
       name="inputTypeZaakStatusToggle"
       [disabled]="obs.disabled"
-      [title]="'inputTypeZaakStatusToggle' | pluginTranslate : obs.pluginId | async"
+      [title]="'inputTypeZaakStatusToggle' | pluginTranslate: obs.pluginId | async"
       [radioValues]="inputTypeOptions$ | async"
       [defaultValue]="selectedInputOption$ | async"
       [margin]="true"
@@ -51,12 +51,12 @@
     <v-input
       *ngIf="obs.selectedInputOption === 'text'"
       name="statustypeUrl"
-      [title]="'statustypeUrl' | pluginTranslate : obs.pluginId | async"
+      [title]="'statustypeUrl' | pluginTranslate: obs.pluginId | async"
       [margin]="true"
       [defaultValue]="obs.prefill?.statustypeUrl"
       [disabled]="obs.disabled"
       [required]="true"
-      [tooltip]="'statustypeUrlTooltip' | pluginTranslate : obs.pluginId | async"
+      [tooltip]="'statustypeUrlTooltip' | pluginTranslate: obs.pluginId | async"
       [fullWidth]="true"
     >
     </v-input>
@@ -66,7 +66,7 @@
         [margin]="true"
         [widthInPx]="350"
         name="caseDefinition"
-        [title]="'caseDefinition' | pluginTranslate : obs.pluginId | async"
+        [title]="'caseDefinition' | pluginTranslate: obs.pluginId | async"
         [disabled]="
           obs.disabled ||
           obs.selectedInputOption === 'text' ||
@@ -75,7 +75,7 @@
         "
         [required]="true"
         [loading]="!obs.caseDefinitionItems"
-        [tooltip]="'caseDefinitionTooltip' | pluginTranslate : obs.pluginId | async"
+        [tooltip]="'caseDefinitionTooltip' | pluginTranslate: obs.pluginId | async"
         (selectedChange)="selectCaseDefinition($event)"
         [defaultSelectionId]="obs?.selectedCaseDefinitionId"
       ></v-select>
@@ -84,7 +84,7 @@
         [margin]="true"
         [widthInPx]="350"
         name="statustypeUrl"
-        [title]="'statustypeUrlSelect' | pluginTranslate : obs.pluginId | async"
+        [title]="'statustypeUrlSelect' | pluginTranslate: obs.pluginId | async"
         [disabled]="
           obs.disabled ||
           obs.selectedInputOption === 'text' ||
@@ -94,7 +94,7 @@
         [defaultSelectionId]="obs.prefill?.statustypeUrl"
         [required]="true"
         [loading]="!obs.statusTypeItems"
-        [tooltip]="'statustypeUrlSelectTooltip' | pluginTranslate : obs.pluginId | async"
+        [tooltip]="'statustypeUrlSelectTooltip' | pluginTranslate: obs.pluginId | async"
         [clearSelectionSubject$]="clearStatusSelection$"
       ></v-select>
     </ng-container>

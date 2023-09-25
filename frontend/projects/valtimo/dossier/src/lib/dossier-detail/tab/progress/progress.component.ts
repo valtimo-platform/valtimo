@@ -29,7 +29,10 @@ export class DossierDetailTabProgressComponent implements OnInit {
   public selectedProcessInstanceId: string;
   public readonly documentId: string;
 
-  constructor(private route: ActivatedRoute, private documentService: DocumentService) {
+  constructor(
+    private route: ActivatedRoute,
+    private documentService: DocumentService
+  ) {
     const snapshot = this.route.snapshot.paramMap;
     this.documentId = snapshot.get('documentId') || '';
   }

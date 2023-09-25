@@ -24,7 +24,6 @@ interface TableColumn {
 
 interface TablePagination {
   collectionSize: number;
-  maxPaginationItemSize: number;
   page: number;
   size: number;
 }

@@ -30,7 +30,10 @@ export class NotesService {
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   private readonly _modalType$ = new BehaviorSubject<ConnectorModal>('add');
 
-  constructor(private readonly configService: ConfigService, private readonly http: HttpClient) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly http: HttpClient
+  ) {}
 
   getDocumentNotes(documentId: string, params?: any): Observable<Page<Note>> {
     return this.http.get<Page<Note>>(

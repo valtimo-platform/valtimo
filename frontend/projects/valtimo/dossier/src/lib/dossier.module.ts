@@ -13,77 +13,78 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {ModuleWithProviders, NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {DossierRoutingModule} from './dossier-routing.module';
-import {DossierListComponent} from './dossier-list/dossier-list.component';
-import {DossierService} from './dossier.service';
-import {TAB_MAP} from './dossier.config';
-import {ConfigModule, HttpLoaderFactory} from '@valtimo/config';
-import {
-  BpmnJsDiagramModule,
-  CamundaFormModule,
-  DataListModule,
-  DocumentenApiMetadataModalModule,
-  DropzoneModule,
-  FilterSidebarModule,
-  FormIoModule,
-  ListModule,
-  ModalModule,
-  SearchableDropdownSelectModule,
-  SearchFieldsModule,
-  SpinnerModule,
-  TimelineModule,
-  UploaderModule,
-  WidgetModule,
-  ButtonModule,
-  FormModule as VFormModule,
-  InputLabelModule,
-  InputModule,
-  VModalModule,
-  PageModule,
-  ParagraphModule,
-  SelectModule,
-  TableModule,
-  TitleModule,
-} from '@valtimo/components';
-import {DossierDetailComponent} from './dossier-detail/dossier-detail.component';
-import {DossierDetailTabSummaryComponent} from './dossier-detail/tab/summary/summary.component';
-import {DossierUpdateComponent} from './dossier-update/dossier-update.component';
-import {DossierDetailTabProgressComponent} from './dossier-detail/tab/progress/progress.component';
-import {ProcessModule} from '@valtimo/process';
-import {DossierDetailTabAuditComponent} from './dossier-detail/tab/audit/audit.component';
-import {DossierDetailTabContactMomentsComponent} from './dossier-detail/tab/contact-moments/contact-moments.component';
-import {DossierDetailTabDocumentsComponent} from './dossier-detail/tab/documents/documents.component';
+import {HttpClient} from '@angular/common/http';
+import {ModuleWithProviders, NgModule} from '@angular/core';
+import {FormsModule} from '@angular/forms';
 import {
   NgbButtonsModule,
   NgbModule,
   NgbPaginationModule,
   NgbTooltipModule,
 } from '@ng-bootstrap/ng-bootstrap';
-import {DossierProcessStartModalComponent} from './dossier-process-start-modal/dossier-process-start-modal.component';
-import {FormModule} from '@valtimo/form';
-import {FormsModule} from '@angular/forms';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
-import {HttpClient} from '@angular/common/http';
-import {TabService} from './tab.service';
-import {TaskModule} from '@valtimo/task';
+import {
+  BpmnJsDiagramModule,
+  ButtonModule,
+  CamundaFormModule,
+  CarbonTableModule,
+  DataListModule,
+  DocumentenApiMetadataModalModule,
+  DropzoneModule,
+  FilterSidebarModule,
+  FormIoModule,
+  FormModule as VFormModule,
+  InputLabelModule,
+  InputModule,
+  ListModule,
+  ModalModule,
+  PageModule,
+  ParagraphModule,
+  SearchableDropdownSelectModule,
+  SearchFieldsModule,
+  SelectModule,
+  SpinnerModule,
+  TableModule,
+  TimelineModule,
+  TitleModule,
+  UploaderModule,
+  VModalModule,
+  WidgetModule,
+} from '@valtimo/components';
+import {ConfigModule, HttpLoaderFactory} from '@valtimo/config';
+import {FormModule} from '@valtimo/form';
 import {FormLinkModule} from '@valtimo/form-link';
-import {DossierSupportingProcessStartModalComponent} from './dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
-import {DossierDetailTabZaakobjectenComponent} from './dossier-detail/tab/zaakobjecten/zaakobjecten.component';
-import {DossierDetailTabObjectTypeComponent} from './dossier-detail/tab/object-type/object-type.component';
-import {DossierDetailTabDocumentenApiDocumentsComponent} from './dossier-detail/tab/documenten-api-documents/documenten-api-documents.component';
-import {DossierDetailTabS3DocumentsComponent} from './dossier-detail/tab/s3-documents/s3-documents.component';
-import {DossierAssignUserComponent} from './dossier-assign-user/dossier-assign-user.component';
-import {DossierDetailTabNotesComponent} from './dossier-detail/tab/notes/notes.component';
-import {NoteModalComponent} from './components/note-modal/note-modal.component';
+import {ProcessModule} from '@valtimo/process';
+import {TaskModule} from '@valtimo/task';
 import {
   ButtonModule as CarbonButtonModule,
   IconModule,
   LoadingModule,
+  TabsModule,
 } from 'carbon-components-angular';
+import {NoteModalComponent} from './components/note-modal/note-modal.component';
+import {DossierAssignUserComponent} from './dossier-assign-user/dossier-assign-user.component';
+import {DossierDetailComponent} from './dossier-detail/dossier-detail.component';
+import {DossierDetailTabAuditComponent} from './dossier-detail/tab/audit/audit.component';
+import {DossierDetailTabContactMomentsComponent} from './dossier-detail/tab/contact-moments/contact-moments.component';
+import {DossierDetailTabDocumentenApiDocumentsComponent} from './dossier-detail/tab/documenten-api-documents/documenten-api-documents.component';
+import {DossierDetailTabDocumentsComponent} from './dossier-detail/tab/documents/documents.component';
+import {DossierDetailTabNotesComponent} from './dossier-detail/tab/notes/notes.component';
+import {DossierDetailTabObjectTypeComponent} from './dossier-detail/tab/object-type/object-type.component';
+import {DossierDetailTabProgressComponent} from './dossier-detail/tab/progress/progress.component';
+import {DossierDetailTabS3DocumentsComponent} from './dossier-detail/tab/s3-documents/s3-documents.component';
+import {DossierDetailTabSummaryComponent} from './dossier-detail/tab/summary/summary.component';
+import {DossierDetailTabZaakobjectenComponent} from './dossier-detail/tab/zaakobjecten/zaakobjecten.component';
 import {DossierListActionsComponent} from './dossier-list-actions/dossier-list-actions.component';
+import {DossierListComponent} from './dossier-list/dossier-list.component';
+import {DossierProcessStartModalComponent} from './dossier-process-start-modal/dossier-process-start-modal.component';
+import {DossierRoutingModule} from './dossier-routing.module';
+import {DossierSupportingProcessStartModalComponent} from './dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
+import {DossierUpdateComponent} from './dossier-update/dossier-update.component';
+import {TAB_MAP} from './dossier.config';
+import {DossierService} from './dossier.service';
+import {TabService} from './tab.service';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -158,6 +159,8 @@ export type TabsFactory = () => Map<string, object>;
     CarbonButtonModule,
     IconModule,
     FormLinkModule,
+    CarbonTableModule,
+    TabsModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

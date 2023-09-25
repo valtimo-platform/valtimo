@@ -23,24 +23,24 @@
 >
   <v-input
     name="configurationTitle"
-    [title]="'configurationTitle' | pluginTranslate : pluginId | async"
+    [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [widthPx]="350"
     [required]="true"
-    [tooltip]="'configurationTitleTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
   <v-input
     name="token"
     type="password"
-    [title]="'token' | pluginTranslate : pluginId | async"
+    [title]="'token' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.clientId"
     [required]="true"
-    [tooltip]="'tokenTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'tokenTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>

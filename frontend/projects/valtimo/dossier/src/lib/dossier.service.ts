@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Injectable} from '@angular/core';
-import {ConfigService, DefinitionColumn, Direction} from '@valtimo/config';
-import {SortState} from '@valtimo/document';
+import {Direction, SortState} from '@valtimo/components';
+import {ConfigService, DefinitionColumn} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',

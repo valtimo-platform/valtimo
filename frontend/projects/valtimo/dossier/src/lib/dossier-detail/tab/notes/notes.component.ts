@@ -66,7 +66,6 @@ export class DossierDetailTabNotesComponent implements OnInit {
 
   public readonly pageSizes$ = new BehaviorSubject<Partial<Pagination>>({
     collectionSize: 0,
-    maxPaginationItemSize: 5,
   });
 
   public readonly pagination$: Observable<Pagination> = combineLatest([

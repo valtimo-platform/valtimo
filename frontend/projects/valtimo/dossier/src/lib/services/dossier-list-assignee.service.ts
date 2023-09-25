@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Injectable} from '@angular/core';
+import {TranslateService} from '@ngx-translate/core';
+import {ColumnConfig, ListField, ViewType} from '@valtimo/components';
+import {AssigneeFilter, DefinitionColumn} from '@valtimo/config';
+import {DocumentService} from '@valtimo/document';
 import {BehaviorSubject, map, Observable, switchMap, take} from 'rxjs';
 import {DossierListService} from './dossier-list.service';
-import {DocumentService} from '@valtimo/document';
-import {AssigneeFilter, DefinitionColumn} from '@valtimo/config';
-import {TranslateService} from '@ngx-translate/core';
-import {ListField} from '@valtimo/components';
 import {DossierParameterService} from './dossier-parameter.service';
 
 @Injectable()
@@ -80,11 +79,11 @@ export class DossierListAssigneeService {
     });
   }
 
-  addAssigneeListField(
+  addAssigneeColumnConfig(
     columns: Array<DefinitionColumn>,
     listFields: Array<ListField>,
     canHaveAssignee: boolean
-  ): Array<ListField> {
+  ): Array<ColumnConfig> {
     return [
       ...listFields,
       ...(canHaveAssignee && !columns.find(column => column.propertyName === this.ASSIGNEE_KEY)
@@ -93,7 +92,7 @@ export class DossierListAssigneeService {
               key: this.ASSIGNEE_KEY,
               label: this.translateService.instant(`fieldLabels.${this.ASSIGNEE_KEY}`),
               sortable: true,
-              viewType: 'string',
+              viewType: ViewType.TEXT,
             },
           ]
         : []),

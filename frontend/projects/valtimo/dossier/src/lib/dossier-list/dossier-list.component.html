@@ -37,6 +37,7 @@
         ></valtimo-dossier-list-actions>
         <ng-container *ngIf="obs.loaded; else loading">
           <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
+
           <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
         </ng-container>
       </div>
@@ -56,74 +57,58 @@
 </ng-template>
 
 <ng-template #list let-obs="obs">
-  <valtimo-widget>
-    <valtimo-list
-      [items]="obs.documentItems"
-      [fields]="obs.fields"
-      (rowClicked)="rowClick($event)"
-      [pagination]="pagination"
-      [viewMode]="true"
-      [header]="true"
-      paginationIdentifier="dossierList"
-      (paginationClicked)="pageChange($event)"
-      (paginationSet)="pageSizeChange($event)"
-      [initialSortState]="pagination.sort"
-      (sortChanged)="sortChanged($event)"
-    >
-      <div header>
-        <h3 class="list-header-title">
-          <sup class="ml-1 badge badge-pill badge-primary">{{
-            pagination?.collectionSize || 0
-          }}</sup>
-        </h3>
-      </div>
-      <div tabs *ngIf="canHaveAssignee">
-        <ng-container *ngTemplateOutlet="tabs"></ng-container>
-      </div>
-    </valtimo-list>
-  </valtimo-widget>
+  <ng-container *ngIf="canHaveAssignee">
+    <ng-container *ngTemplateOutlet="tabs"></ng-container>
+  </ng-container>
+
+  <valtimo-carbon-table
+    [data]="obs.documentItems"
+    [fields]="obs.fields"
+    hideTableHeader
+    [loading]="loadingDocumentItems"
+    [initialSort]="pagination.sort"
+    [tableConfig]="tableConfig"
+    [pagination]="pagination"
+    (paginationChange)="onPaginationChange($event)"
+    (rowClick)="onRowClick($event)"
+    (sortChange)="onSortChange($event)"
+  >
+    {{ 'interface.noResults' | translate }}
+  </valtimo-carbon-table>
 </ng-template>
 
 <ng-template #tabs>
   <ng-container *ngIf="assigneeFilter$ | async as assigneeFilter">
-    <ul
-      *ngIf="visibleDossierTabs === null; else configuredTabs"
-      ngbNav
-      [destroyOnHide]="false"
-      (navChange)="tabChange($event)"
-      class="nav-tabs"
-      [activeId]="assigneeFilter"
-    >
-      <li ngbNavItem="ALL" [title]="'dossier.tabs.ALL' | translate">
-        <a ngbNavLink>{{ 'dossier.tabs.ALL' | translate }}</a>
-      </li>
-      <li ngbNavItem="MINE" [title]="'dossier.tabs.MINE' | translate">
-        <a ngbNavLink>{{ 'dossier.tabs.MINE' | translate }}</a>
-      </li>
-      <li ngbNavItem="OPEN" [title]="'dossier.tabs.OPEN' | translate">
-        <a ngbNavLink>{{ 'dossier.tabs.OPEN' | translate }}</a>
-      </li>
-    </ul>
+    <cds-tabs type="contained" data-carbon-theme="g10" class="dossier-list-tabs">
+      <cds-tab
+        [active]="assigneeFilter === 'ALL'"
+        heading="{{ 'dossier.tabs.ALL' | translate }}"
+        (selected)="tabChange('ALL')"
+      ></cds-tab>
+      <cds-tab
+        [active]="assigneeFilter === 'MINE'"
+        heading="{{ 'dossier.tabs.MINE' | translate }}"
+        (selected)="tabChange('MINE')"
+      ></cds-tab>
+      <cds-tab
+        [active]="assigneeFilter === 'OPEN'"
+        heading="{{ 'dossier.tabs.OPEN' | translate }}"
+        (selected)="tabChange('OPEN')"
+      ></cds-tab>
+    </cds-tabs>
   </ng-container>
 </ng-template>
 
 <ng-template #configuredTabs>
   <ng-container *ngIf="assigneeFilter$ | async as assigneeFilter">
-    <ul
-      ngbNav
-      [destroyOnHide]="false"
-      (navChange)="tabChange($event)"
-      class="nav-tabs"
-      [activeId]="assigneeFilter"
-    >
-      <li
+    <cds-tabs type="contained" data-carbon-theme="g10" class="dossier-list-tabs">
+      <cds-tab
         *ngFor="let tab of visibleDossierTabs"
-        [ngbNavItem]="tab"
-        [title]="'dossier.tabs.' + tab | translate"
-      >
-        <a ngbNavLink>{{ 'dossier.tabs.' + tab | translate }}</a>
-      </li>
-    </ul>
+        [active]="assigneeFilter === tab"
+        heading="{{ 'dossier.tabs.' + tab | translate }}"
+        (selected)="tabChange(tab)"
+      ></cds-tab>
+    </cds-tabs>
   </ng-container>
 </ng-template>
 

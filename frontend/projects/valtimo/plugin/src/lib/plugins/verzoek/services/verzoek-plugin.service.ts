@@ -26,7 +26,10 @@ import {Objecttype, Roltype} from '../models';
 export class VerzoekPluginService {
   private valtimoEndpointUri: string;
 
-  constructor(private http: HttpClient, configService: ConfigService) {
+  constructor(
+    private http: HttpClient,
+    configService: ConfigService
+  ) {
     this.valtimoEndpointUri = configService.config?.valtimoApi?.endpointUri;
   }
 

@@ -44,22 +44,27 @@ export class DossierManagementAssigneeComponent {
     tap(() => this.loading$.next(false))
   );
 
-  constructor(private readonly documentService: DocumentService, private route: ActivatedRoute) {
+  constructor(
+    private readonly documentService: DocumentService,
+    private route: ActivatedRoute
+  ) {
     this.disabled$ = new BehaviorSubject<boolean>(false);
   }
 
   updateCaseSettings(caseSettings: CaseSettings, documentDefinitionName: string): void {
     this.disableInput();
 
-    this.documentService.patchCaseSettingsForManagement(documentDefinitionName, caseSettings).subscribe(
-      () => {
-        this.enableInput();
-        this.refreshSettings();
-      },
-      () => {
-        this.enableInput();
-      }
-    );
+    this.documentService
+      .patchCaseSettingsForManagement(documentDefinitionName, caseSettings)
+      .subscribe(
+        () => {
+          this.enableInput();
+          this.refreshSettings();
+        },
+        () => {
+          this.enableInput();
+        }
+      );
   }
 
   disableInput(): void {

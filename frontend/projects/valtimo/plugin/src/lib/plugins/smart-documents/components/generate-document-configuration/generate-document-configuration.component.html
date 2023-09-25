@@ -15,7 +15,7 @@
   -->
 
 <v-paragraph [margin]="true" [italic]="true">
-  {{ 'generateDocumentWarning' | pluginTranslate : pluginId | async }}
+  {{ 'generateDocumentWarning' | pluginTranslate: pluginId | async }}
 </v-paragraph>
 <v-form
   (valueChange)="formValueChange($event)"
@@ -26,7 +26,7 @@
 >
   <v-input
     name="templateGroup"
-    [title]="'templateGroup' | pluginTranslate : pluginId | async"
+    [title]="'templateGroup' | pluginTranslate: pluginId | async"
     [margin]="true"
     [defaultValue]="obs.prefill?.templateGroup"
     [disabled]="obs.disabled"
@@ -35,7 +35,7 @@
   </v-input>
   <v-input
     name="templateName"
-    [title]="'templateName' | pluginTranslate : pluginId | async"
+    [title]="'templateName' | pluginTranslate: pluginId | async"
     [margin]="true"
     [defaultValue]="obs.prefill?.templateName"
     [disabled]="obs.disabled"
@@ -44,11 +44,11 @@
   </v-input>
   <v-input
     name="resultingDocumentProcessVariableName"
-    [title]="'resultingDocumentProcessVariableName' | pluginTranslate : pluginId | async"
+    [title]="'resultingDocumentProcessVariableName' | pluginTranslate: pluginId | async"
     [margin]="true"
     [defaultValue]="obs.prefill?.resultingDocumentProcessVariableName"
     [disabled]="obs.disabled"
-    [tooltip]="'resultingDocumentProcessVariableNameTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'resultingDocumentProcessVariableNameTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
   >
   </v-input>
@@ -57,19 +57,19 @@
     [margin]="true"
     [widthInPx]="150"
     name="format"
-    [title]="'format' | pluginTranslate : pluginId | async"
+    [title]="'format' | pluginTranslate: pluginId | async"
     [disabled]="obs.disabled"
     [defaultSelectionId]="obs.prefill?.format"
     [required]="true"
   ></v-select>
   <v-carbon-multi-input
     name="templateData"
-    [title]="'templateData' | pluginTranslate : pluginId | async"
+    [title]="'templateData' | pluginTranslate: pluginId | async"
     type="keyValue"
     [disabled]="obs.disabled"
     [defaultValues]="obs.prefill?.templateData"
     [margin]="true"
     [required]="true"
-    [tooltip]="'templateDataTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'templateDataTooltip' | pluginTranslate: pluginId | async"
   ></v-carbon-multi-input>
 </v-form>

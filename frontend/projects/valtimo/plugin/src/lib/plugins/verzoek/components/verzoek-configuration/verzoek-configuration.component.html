@@ -23,12 +23,12 @@
 >
   <v-input
     name="configurationTitle"
-    [title]="'configurationTitle' | pluginTranslate : pluginId | async"
+    [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
-    [tooltip]="'configurationTitleTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
   >
   </v-input>
@@ -40,12 +40,12 @@
       [margin]="true"
       [widthInPx]="350"
       name="notificatiesApiPluginConfiguration"
-      [title]="'notificatiesApiPluginConfiguration' | pluginTranslate : pluginId | async"
+      [title]="'notificatiesApiPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.notificatiesApiPluginConfiguration"
       [required]="true"
       [loading]="!vars.notificatiePluginSelectItems"
-      [tooltip]="'notificatiesApiPluginConfigurationTooltip' | pluginTranslate : pluginId | async"
+      [tooltip]="'notificatiesApiPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
     ></v-select>
   </ng-container>
   <ng-container *ngIf="{processSelectItems: processSelectItems$ | async} as vars">
@@ -54,32 +54,32 @@
       [margin]="true"
       [widthInPx]="350"
       name="processToStart"
-      [title]="'processToStart' | pluginTranslate : pluginId | async"
+      [title]="'processToStart' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.processToStart"
       [required]="true"
       [loading]="!vars.processSelectItems"
-      [tooltip]="'processToStartTooltip' | pluginTranslate : pluginId | async"
+      [tooltip]="'processToStartTooltip' | pluginTranslate: pluginId | async"
     ></v-select>
   </ng-container>
   <v-input
     name="rsin"
-    [title]="'rsin' | pluginTranslate : pluginId | async"
+    [title]="'rsin' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.rsin"
     [required]="true"
-    [tooltip]="'rsinTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'rsinTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
   >
   </v-input>
   <v-multi-input-form
     name="verzoekProperties"
-    [title]="'verzoekProperties' | pluginTranslate : pluginId | async"
+    [title]="'verzoekProperties' | pluginTranslate: pluginId | async"
     [formTemplate]="mappingForm"
-    [addRowText]="'addVerzoekType' | pluginTranslate : pluginId | async"
+    [addRowText]="'addVerzoekType' | pluginTranslate: pluginId | async"
     [required]="false"
-    [tooltip]="'verzoekPropertiesTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'verzoekPropertiesTooltip' | pluginTranslate: pluginId | async"
     (deleteRowEvent)="deleteRow($event)"
     [initialAmountOfRows]="0"
     [minimumAmountOfRows]="0"
@@ -103,12 +103,12 @@
     <v-form (valueChange)="changeFunction($event, uuid); verzoekTypeFormChange($event, uuid)">
       <v-input
         name="type"
-        [title]="'type' | pluginTranslate : pluginId | async"
+        [title]="'type' | pluginTranslate: pluginId | async"
         [margin]="false"
         [disabled]="obs.disabled"
         [defaultValue]="prefill?.type"
         [required]="true"
-        [tooltip]="'typeTooltip' | pluginTranslate : pluginId | async"
+        [tooltip]="'typeTooltip' | pluginTranslate: pluginId | async"
         [widthPx]="350"
         [smallMargin]="true"
       >
@@ -119,26 +119,28 @@
           [smallMargin]="true"
           [widthInPx]="350"
           name="caseDefinitionName"
-          [title]="'caseDefinitionName' | pluginTranslate : pluginId | async"
+          [title]="'caseDefinitionName' | pluginTranslate: pluginId | async"
           [disabled]="obs.disabled"
           [defaultSelectionId]="prefill?.caseDefinitionName"
           [required]="true"
           [loading]="!vars.documentSelectItems"
-          [tooltip]="'caseDefinitionNameTooltip' | pluginTranslate : pluginId | async"
+          [tooltip]="'caseDefinitionNameTooltip' | pluginTranslate: pluginId | async"
         ></v-select>
       </ng-container>
-      <ng-container *ngIf="{objectManagementSelectItems: objectManagementSelectItems$ | async} as vars">
+      <ng-container
+        *ngIf="{objectManagementSelectItems: objectManagementSelectItems$ | async} as vars"
+      >
         <v-select
           [items]="vars.objectManagementSelectItems"
           [smallMargin]="true"
           [widthInPx]="350"
           name="objectManagementId"
-          [title]="'objectManagementId' | pluginTranslate : pluginId | async"
+          [title]="'objectManagementId' | pluginTranslate: pluginId | async"
           [disabled]="obs.disabled"
           [defaultSelectionId]="prefill?.objectManagementId"
           [required]="true"
           [loading]="!vars.objectManagementSelectItems"
-          [tooltip]="'objectManagementIdTooltip' | pluginTranslate : pluginId | async"
+          [tooltip]="'objectManagementIdTooltip' | pluginTranslate: pluginId | async"
         ></v-select>
       </ng-container>
       <v-select
@@ -149,20 +151,20 @@
         [smallMargin]="true"
         [widthInPx]="350"
         name="initiatorRoltypeUrl"
-        [title]="'initiatorRoltypeUrl' | pluginTranslate : pluginId | async"
+        [title]="'initiatorRoltypeUrl' | pluginTranslate: pluginId | async"
         [disabled]="obs.disabled || !rolTypeSelectItemsObservables[uuid]?.caseDefinitionName"
         [defaultSelectionId]="prefill?.initiatorRoltypeUrl"
         [required]="true"
-        [tooltip]="'initiatorRoltypeUrlTooltip' | pluginTranslate : pluginId | async"
+        [tooltip]="'initiatorRoltypeUrlTooltip' | pluginTranslate: pluginId | async"
       ></v-select>
       <v-input
         name="initiatorRolDescription"
-        [title]="'initiatorRolDescription' | pluginTranslate : pluginId | async"
+        [title]="'initiatorRolDescription' | pluginTranslate: pluginId | async"
         [margin]="false"
         [disabled]="obs.disabled"
         [defaultValue]="prefill?.initiatorRolDescription || 'Initiator'"
         [required]="true"
-        [tooltip]="'initiatorRolDescriptionTooltip' | pluginTranslate : pluginId | async"
+        [tooltip]="'initiatorRolDescriptionTooltip' | pluginTranslate: pluginId | async"
         [widthPx]="350"
         [smallMargin]="true"
       >
@@ -173,19 +175,19 @@
           [smallMargin]="true"
           [widthInPx]="350"
           name="processDefinitionKey"
-          [title]="'processDefinitionKey' | pluginTranslate : pluginId | async"
+          [title]="'processDefinitionKey' | pluginTranslate: pluginId | async"
           [disabled]="obs.disabled"
           [defaultSelectionId]="prefill?.processDefinitionKey"
           [required]="true"
           [loading]="!vars.processSelectItems"
-          [tooltip]="'processDefinitionKeyTooltip' | pluginTranslate : pluginId | async"
+          [tooltip]="'processDefinitionKeyTooltip' | pluginTranslate: pluginId | async"
         ></v-select>
       </ng-container>
       <v-radio
         name="copyStrategy"
         [disabled]="obs.disabled"
-        [title]="'copyStrategy' | pluginTranslate : pluginId | async"
-        [tooltip]="'copyStrategyTooltip' | pluginTranslate : pluginId | async"
+        [title]="'copyStrategy' | pluginTranslate: pluginId | async"
+        [tooltip]="'copyStrategyTooltip' | pluginTranslate: pluginId | async"
         [radioValues]="radioItems$ | async"
         [smallMargin]="true"
         [defaultValue]="prefill?.copyStrategy || 'full'"
@@ -193,27 +195,27 @@
       </v-radio>
       <ng-container *ngIf="showMappingButtons[uuid]">
         <v-input-label
-          [title]="'mapping' | pluginTranslate : pluginId | async"
-          [tooltip]="'mappingTooltip' | pluginTranslate : pluginId | async"
+          [title]="'mapping' | pluginTranslate: pluginId | async"
+          [tooltip]="'mappingTooltip' | pluginTranslate: pluginId | async"
         >
         </v-input-label>
         <v-button (clickEvent)="openMappingModal(uuid)" mdiIcon="table"
-          >{{ 'setMapping' | pluginTranslate : pluginId | async }}
+          >{{ 'setMapping' | pluginTranslate: pluginId | async }}
         </v-button>
       </ng-container>
       <v-input class="hidden-input" name="uuid" [defaultValue]="uuid"> </v-input>
     </v-form>
     <cds-modal valtimoCdsModal [open]="showMappingModals[uuid]">
       <cds-modal-header [showCloseButton]="true" (closeSelect)="closeMappingModal(uuid)">
-        <h3 cdsModalHeaderHeading>{{ 'setMapping' | pluginTranslate : pluginId | async }}</h3>
+        <h3 cdsModalHeaderHeading>{{ 'setMapping' | pluginTranslate: pluginId | async }}</h3>
       </cds-modal-header>
       <section cdsModalContent>
         <div class="cds--text-input__field-wrapper">
           <cds-label [disabled]="obs.disabled">
             <span class="label-with-tooltip select-label">
-              {{ 'mapping' | pluginTranslate : pluginId | async }}
+              {{ 'mapping' | pluginTranslate: pluginId | async }}
               <v-tooltip-icon
-                [tooltip]="'mappingTooltip' | pluginTranslate : pluginId | async"
+                [tooltip]="'mappingTooltip' | pluginTranslate: pluginId | async"
                 [disabled]="obs.disabled"
               ></v-tooltip-icon>
             </span>
@@ -222,8 +224,8 @@
               type="keyValue"
               (valueChange)="mappingValueChange($event, uuid)"
               [defaultValues]="mappings[uuid] || prefill?.mapping"
-              [valueColumnTitle]="'target' | pluginTranslate : pluginId | async"
-              [keyColumnTitle]="'source' | pluginTranslate : pluginId | async"
+              [valueColumnTitle]="'target' | pluginTranslate: pluginId | async"
+              [keyColumnTitle]="'source' | pluginTranslate: pluginId | async"
             ></valtimo-carbon-multi-input>
           </cds-label>
         </div>
@@ -236,7 +238,7 @@
             (click)="closeMappingModal(uuid)"
             [disabled]="obs.disabled"
           >
-            {{ 'close' | pluginTranslate : pluginId | async }}
+            {{ 'close' | pluginTranslate: pluginId | async }}
           </button>
           <button
             cdsButton="primary"
@@ -245,7 +247,7 @@
             (click)="saveMapping(uuid)"
             [disabled]="obs.disabled"
           >
-            {{ 'save' | pluginTranslate : pluginId | async }}
+            {{ 'save' | pluginTranslate: pluginId | async }}
           </button>
         </ng-container>
       </cds-modal-footer>

@@ -26,7 +26,10 @@ import {Observable} from 'rxjs';
 export class UserSettingsService {
   private readonly valtimoApiUri!: string;
 
-  constructor(private readonly http: HttpClient, private readonly configService: ConfigService) {
+  constructor(
+    private readonly http: HttpClient,
+    private readonly configService: ConfigService
+  ) {
     this.valtimoApiUri = configService?.config?.valtimoApi?.endpointUri;
   }
 

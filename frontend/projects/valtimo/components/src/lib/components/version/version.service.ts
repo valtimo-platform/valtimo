@@ -26,7 +26,10 @@ import {ConfigService} from '@valtimo/config';
 export class VersionService {
   private valtimoEndpointUri: string;
 
-  constructor(private readonly http: HttpClient, private readonly configService: ConfigService) {
+  constructor(
+    private readonly http: HttpClient,
+    private readonly configService: ConfigService
+  ) {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 

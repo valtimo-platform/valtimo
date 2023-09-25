@@ -49,17 +49,19 @@ export class DossierManagementRemoveModalComponent {
   }
 
   removeDocumentDefinition() {
-    this.documentService.removeDocumentDefinitionForManagement(this.documentDefinition.id.name).subscribe(
-      () => {
-        this.menuService.reload();
-        this.router.navigate(['/dossier-management']);
-        this.toasterService.success(
-          this.translateService.instant('remove-document-definition-success')
-        );
-      },
-      (result: UndeployDocumentDefinitionResult) => {
-        this.errors = result.errors;
-      }
-    );
+    this.documentService
+      .removeDocumentDefinitionForManagement(this.documentDefinition.id.name)
+      .subscribe(
+        () => {
+          this.menuService.reload();
+          this.router.navigate(['/dossier-management']);
+          this.toasterService.success(
+            this.translateService.instant('remove-document-definition-success')
+          );
+        },
+        (result: UndeployDocumentDefinitionResult) => {
+          this.errors = result.errors;
+        }
+      );
   }
 }

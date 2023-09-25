@@ -13,14 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-.valtimo-carbon-table__no-results {
-  display: flex;
-  justify-content: center;
-  padding: calc((100 / 16) * 1rem) 0;
-  gap: 4rem;
-
-  &__content:not(:empty) + &-text {
+.valtimo-carbon-table {
+  &__toolbar:empty {
     display: none;
+  }
+
+  &__no-results {
+    display: flex;
+    justify-content: center;
+    padding: calc((100 / 16) * 1rem) 0;
+    gap: 4rem;
+
+    &__content:not(:empty) + &-text {
+      display: none;
+    }
   }
 }

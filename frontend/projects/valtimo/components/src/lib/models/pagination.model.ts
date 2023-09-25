@@ -20,8 +20,17 @@ interface Pagination {
   collectionSize: number;
   page: number;
   size: number;
-  maxPaginationItemSize: number;
   sort?: SortState;
+  itemsPerPageOptions?: number[];
+  showPageInput?: boolean;
 }
 
-export {Pagination};
+const DEFAULT_PAGINATION: Pagination = {
+  collectionSize: 0,
+  page: 1,
+  size: 10,
+  itemsPerPageOptions: [10, 20, 30, 40, 50],
+  showPageInput: true,
+};
+
+export {Pagination, DEFAULT_PAGINATION};

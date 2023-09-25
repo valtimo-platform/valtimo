@@ -23,18 +23,18 @@
 >
   <v-input
     name="configurationTitle"
-    [title]="'configurationTitle' | pluginTranslate : pluginId | async"
+    [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
     [widthPx]="350"
-    [tooltip]="'configurationTitleTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
   <v-input
     name="url"
-    [title]="'url' | pluginTranslate : pluginId | async"
+    [title]="'url' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
     [margin]="true"
     [disabled]="obs.disabled"
@@ -44,7 +44,7 @@
   </v-input>
   <v-input
     name="username"
-    [title]="'username' | pluginTranslate : pluginId | async"
+    [title]="'username' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.username"
@@ -55,7 +55,7 @@
   <v-input
     name="password"
     type="password"
-    [title]="'password' | pluginTranslate : pluginId | async"
+    [title]="'password' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.password"

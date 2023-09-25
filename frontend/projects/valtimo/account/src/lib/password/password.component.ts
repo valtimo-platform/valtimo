@@ -31,7 +31,10 @@ export class PasswordComponent implements OnInit, OnDestroy {
   public errorMsg: string;
   public form: FormGroup;
 
-  constructor(private formBuilder: FormBuilder, private alertService: AlertService) {}
+  constructor(
+    private formBuilder: FormBuilder,
+    private alertService: AlertService
+  ) {}
 
   ngOnInit() {
     this.reset();

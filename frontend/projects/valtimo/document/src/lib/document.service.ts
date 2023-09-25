@@ -77,7 +77,10 @@ export class DocumentService {
     totalPages: 0,
   };
 
-  constructor(private http: HttpClient, configService: ConfigService) {
+  constructor(
+    private http: HttpClient,
+    configService: ConfigService
+  ) {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
@@ -371,7 +374,9 @@ export class DocumentService {
     );
   }
 
-  removeDocumentDefinitionForManagement(name: string): Observable<UndeployDocumentDefinitionResult> {
+  removeDocumentDefinitionForManagement(
+    name: string
+  ): Observable<UndeployDocumentDefinitionResult> {
     return this.http.delete<UndeployDocumentDefinitionResult>(
       `${this.valtimoEndpointUri}management/v1/document-definition/${name}`
     );
@@ -500,7 +505,10 @@ export class DocumentService {
     );
   }
 
-  deleteCaseListForManagement(documentDefinitionName: string, columnKey: string): Observable<CaseListColumn> {
+  deleteCaseListForManagement(
+    documentDefinitionName: string,
+    columnKey: string
+  ): Observable<CaseListColumn> {
     return this.http.delete<CaseListColumn>(
       `${this.valtimoEndpointUri}management/v1/case/${documentDefinitionName}/list-column/${columnKey}`
     );

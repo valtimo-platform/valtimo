@@ -25,7 +25,10 @@ import {ConfigService} from '@valtimo/config';
 export class ProcessManagementService {
   private valtimoApiConfig: any;
 
-  constructor(private configService: ConfigService, private http: HttpClient) {
+  constructor(
+    private configService: ConfigService,
+    private http: HttpClient
+  ) {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 

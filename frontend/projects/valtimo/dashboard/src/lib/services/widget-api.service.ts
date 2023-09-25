@@ -26,7 +26,10 @@ import {Observable} from 'rxjs';
 export class WidgetApiService {
   private _endpointUri: string;
 
-  constructor(private readonly configService: ConfigService, private readonly http: HttpClient) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly http: HttpClient
+  ) {
     this._endpointUri = `${this.configService.config.valtimoApi.endpointUri}v1/dashboard`;
   }
 

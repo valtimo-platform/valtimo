@@ -16,6 +16,7 @@
 
 <valtimo-carbon-table
   [data]="roles$ | async"
+  [fields]="fields"
   [loading]="loading$ | async"
   [tableConfig]="tableConfig"
   (rowClick)="onRowClick($event)"

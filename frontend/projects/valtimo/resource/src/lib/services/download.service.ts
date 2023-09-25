@@ -23,7 +23,10 @@ import {Observable, Subject} from 'rxjs';
   providedIn: 'root',
 })
 export class DownloadService {
-  constructor(private http: HttpClient, private configService: ConfigService) {}
+  constructor(
+    private http: HttpClient,
+    private configService: ConfigService
+  ) {}
 
   downloadFile(url: string, name: string): Observable<null> {
     const finishedSubject$ = new Subject<null>();

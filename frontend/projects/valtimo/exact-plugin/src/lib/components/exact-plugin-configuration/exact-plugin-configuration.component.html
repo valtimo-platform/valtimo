@@ -23,18 +23,18 @@
 >
   <v-input
     name="configurationTitle"
-    [title]="'configurationTitle' | pluginTranslate : pluginId | async"
+    [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
-    [tooltip]="'configurationTitleTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
   >
   </v-input>
   <v-input
     name="clientId"
-    [title]="'clientId' | pluginTranslate : pluginId | async"
+    [title]="'clientId' | pluginTranslate: pluginId | async"
     [margin]="true"
     [defaultValue]="obs.prefill?.clientId"
     [disabled]="obs.disabled"
@@ -42,7 +42,7 @@
   ></v-input>
   <v-input
     name="clientSecret"
-    [title]="'clientSecret' | pluginTranslate : pluginId | async"
+    [title]="'clientSecret' | pluginTranslate: pluginId | async"
     [margin]="true"
     [defaultValue]="obs.prefill?.clientSecret"
     [disabled]="obs.disabled"

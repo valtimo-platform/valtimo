@@ -32,7 +32,10 @@ import {Page} from '@valtimo/document';
 export class ConnectorManagementService {
   private valtimoApiConfig: any;
 
-  constructor(private http: HttpClient, private configService: ConfigService) {
+  constructor(
+    private http: HttpClient,
+    private configService: ConfigService
+  ) {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 

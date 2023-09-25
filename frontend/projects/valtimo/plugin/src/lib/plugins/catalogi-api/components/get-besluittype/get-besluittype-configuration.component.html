@@ -15,7 +15,7 @@
   -->
 
 <v-paragraph [margin]="true" [italic]="true">
-  {{ 'getBesluittypeInformation' | pluginTranslate : pluginId | async }}
+  {{ 'getBesluittypeInformation' | pluginTranslate: pluginId | async }}
 </v-paragraph>
 <v-form
   (valueChange)="formValueChange($event)"
@@ -26,23 +26,23 @@
 >
   <v-input
     name="besluittype"
-    [title]="'besluittype' | pluginTranslate : pluginId | async"
+    [title]="'besluittype' | pluginTranslate: pluginId | async"
     [margin]="true"
     [defaultValue]="obs.prefill?.besluittype"
     [disabled]="obs.disabled"
     [required]="true"
-    [tooltip]="'besluittypeTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'besluittypeTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
   <v-input
     name="processVariable"
-    [title]="'processVariable' | pluginTranslate : pluginId | async"
+    [title]="'processVariable' | pluginTranslate: pluginId | async"
     [margin]="true"
     [defaultValue]="obs.prefill?.processVariable"
     [disabled]="obs.disabled"
     [required]="true"
-    [tooltip]="'besluitProcessVariableTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'besluitProcessVariableTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>

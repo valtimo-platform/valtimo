@@ -13,3 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+type Direction = 'ASC' | 'DESC';
+
+interface Sort {
+  name: string;
+  direction: Direction;
+}
+
+interface SortState {
+  state: Sort;
+  isSorting: boolean;
+}
+
+export {Direction, Sort, SortState};

@@ -18,9 +18,10 @@ import {ChangeDetectionStrategy, Component, OnInit, ViewChild} from '@angular/co
 import {
   CARBON_CONSTANTS,
   CarbonTableConfig,
-  ColumnType,
   createCarbonTableConfig,
   CarbonTableComponent,
+  ColumnConfig,
+  ViewType,
 } from '@valtimo/components';
 import {BehaviorSubject, delay, finalize, Observable, Subject, take, tap} from 'rxjs';
 import {ExportRoleOutput, Role} from '../../models';
@@ -35,14 +36,14 @@ import {AccessControlExportService} from '../../services/access-control-export.s
 export class AccessControlOverviewComponent implements OnInit {
   @ViewChild(CarbonTableComponent) carbonTable: CarbonTableComponent<Role>;
 
+  public fields: ColumnConfig[] = [
+    {
+      viewType: ViewType.TEXT,
+      key: 'roleKey',
+      label: 'accessControl.roles.key',
+    },
+  ];
   public readonly tableConfig: CarbonTableConfig = createCarbonTableConfig({
-    fields: [
-      {
-        columnType: ColumnType.TEXT,
-        fieldName: 'roleKey',
-        translationKey: 'accessControl.roles.key',
-      },
-    ],
     showSelectionColumn: true,
   });
 

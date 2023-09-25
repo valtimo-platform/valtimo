@@ -31,7 +31,10 @@ export class ProcessManagementListComponent implements OnInit {
     {key: 'readOnly', label: 'Read-only'},
   ];
 
-  constructor(private processService: ProcessService, private router: Router) {}
+  constructor(
+    private processService: ProcessService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.loadProcessDefinitions();

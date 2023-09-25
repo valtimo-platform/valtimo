@@ -15,7 +15,7 @@
   -->
 
 <v-paragraph [margin]="true" [italic]="true">
-  {{ 'getResultaattypeInformation' | pluginTranslate : pluginId | async }}
+  {{ 'getResultaattypeInformation' | pluginTranslate: pluginId | async }}
 </v-paragraph>
 <v-form
   (valueChange)="formValueChange($event)"
@@ -26,23 +26,23 @@
 >
   <v-input
     name="resultaattype"
-    [title]="'resultaattype' | pluginTranslate : pluginId | async"
+    [title]="'resultaattype' | pluginTranslate: pluginId | async"
     [margin]="true"
     [defaultValue]="obs.prefill?.resultaattype"
     [disabled]="obs.disabled"
     [required]="true"
-    [tooltip]="'resultaattypeTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'resultaattypeTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
   <v-input
     name="processVariable"
-    [title]="'processVariable' | pluginTranslate : pluginId | async"
+    [title]="'processVariable' | pluginTranslate: pluginId | async"
     [margin]="true"
     [defaultValue]="obs.prefill?.processVariable"
     [disabled]="obs.disabled"
     [required]="true"
-    [tooltip]="'reslutaatProcessVariableTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'reslutaatProcessVariableTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>

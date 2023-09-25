@@ -37,13 +37,13 @@
           <div *ngIf="pluginConfiguration.pluginLogoBase64">
             <img
               [src]="pluginConfiguration.pluginLogoBase64"
-              [title]="'title' | pluginTranslate : pluginConfiguration.pluginDefinition.key | async"
+              [title]="'title' | pluginTranslate: pluginConfiguration.pluginDefinition.key | async"
               class="plugin-configuration-logo"
             /></div
         ></cds-list-column>
         <cds-list-column>{{ pluginConfiguration.title }}</cds-list-column>
         <cds-list-column>
-          {{ 'description' | pluginTranslate : pluginConfiguration.pluginDefinition.key | async }}
+          {{ 'description' | pluginTranslate: pluginConfiguration.pluginDefinition.key | async }}
         </cds-list-column>
       </cds-list-row>
     </cds-structured-list>

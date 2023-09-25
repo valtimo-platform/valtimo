@@ -23,12 +23,12 @@
 >
   <v-input
     name="configurationTitle"
-    [title]="'configurationTitle' | pluginTranslate : pluginId | async"
+    [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
-    [tooltip]="'configurationTitleTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
   >
   </v-input>
@@ -40,12 +40,12 @@
       [margin]="true"
       [widthInPx]="350"
       name="notificatiesApiPluginConfiguration"
-      [title]="'notificatiesApiPluginConfiguration' | pluginTranslate : pluginId | async"
+      [title]="'notificatiesApiPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.notificatiesApiPluginConfiguration"
       [required]="true"
       [loading]="!notificatiesApiPluginSelectItems"
-      [tooltip]="'notificatiesApiPluginConfigurationTooltip' | pluginTranslate : pluginId | async"
+      [tooltip]="'notificatiesApiPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
     ></v-select>
   </ng-container>
   <ng-container
@@ -56,12 +56,12 @@
       [margin]="true"
       [widthInPx]="350"
       name="objectManagementConfigurationId"
-      [title]="'objectManagementConfiguration' | pluginTranslate : pluginId | async"
+      [title]="'objectManagementConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.objectManagementConfigurationId"
       [required]="true"
       [loading]="!objectManagementConfigurationItems"
-      [tooltip]="'objectManagementConfigurationTooltip' | pluginTranslate : pluginId | async"
+      [tooltip]="'objectManagementConfigurationTooltip' | pluginTranslate: pluginId | async"
     ></v-select>
   </ng-container>
   <ng-container *ngIf="{processSelectItems: processSelectItems$ | async} as vars">
@@ -70,12 +70,12 @@
       [margin]="true"
       [widthInPx]="350"
       name="completeTaakProcess"
-      [title]="'completeTaakProcess' | pluginTranslate : pluginId | async"
+      [title]="'completeTaakProcess' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.completeTaakProcess"
       [required]="true"
       [loading]="!vars.processSelectItems"
-      [tooltip]="'completeTaakProcessTooltip' | pluginTranslate : pluginId | async"
+      [tooltip]="'completeTaakProcessTooltip' | pluginTranslate: pluginId | async"
     ></v-select>
   </ng-container>
 </v-form>

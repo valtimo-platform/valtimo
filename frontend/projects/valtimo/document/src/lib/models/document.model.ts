@@ -184,7 +184,7 @@ export class ModifyDocumentRequestImpl implements ModifyDocumentRequest {
 }
 
 export interface ModifyDocumentAndCompleteTaskRequest<
-  T_MODIFY_DOCUMENT_REQUEST extends ModifyDocumentRequest
+  T_MODIFY_DOCUMENT_REQUEST extends ModifyDocumentRequest,
 > {
   taskId: string;
   request: T_MODIFY_DOCUMENT_REQUEST;
@@ -218,7 +218,7 @@ export class NewDocumentRequestImpl implements NewDocumentRequest {
 }
 
 export interface NewDocumentAndStartProcessRequest<
-  T_NEW_DOCUMENT_REQUEST extends NewDocumentRequest
+  T_NEW_DOCUMENT_REQUEST extends NewDocumentRequest,
 > {
   processDefinitionKey: string;
   request: T_NEW_DOCUMENT_REQUEST;
@@ -237,7 +237,7 @@ export class NewDocumentAndStartProcessRequestImpl
 }
 
 export interface ModifyDocumentAndStartProcessRequest<
-  T_MODIFY_DOCUMENT_REQUEST extends ModifyDocumentRequest
+  T_MODIFY_DOCUMENT_REQUEST extends ModifyDocumentRequest,
 > {
   processDefinitionKey: string;
   request: T_MODIFY_DOCUMENT_REQUEST;

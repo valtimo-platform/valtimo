@@ -31,7 +31,10 @@ export class LayoutComponent implements OnInit, OnDestroy {
   private routerSub = Subscription.EMPTY;
   private defaultLayout = 'internal';
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit() {
     this.routerSub = this.router.events

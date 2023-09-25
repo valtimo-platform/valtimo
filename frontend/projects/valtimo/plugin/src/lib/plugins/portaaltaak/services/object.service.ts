@@ -26,7 +26,10 @@ import {Objecttype} from '../models';
 export class ObjectService {
   private valtimoEndpointUri: string;
 
-  constructor(private http: HttpClient, configService: ConfigService) {
+  constructor(
+    private http: HttpClient,
+    configService: ConfigService
+  ) {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 

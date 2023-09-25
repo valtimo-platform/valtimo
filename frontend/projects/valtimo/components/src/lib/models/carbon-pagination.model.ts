@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
-export interface CarbonPaginationConfig {
+interface CarbonPaginatorConfig {
   itemsPerPageOptions?: number[];
   showPageInput?: boolean;
 }
 
-export interface CarbonPaginationSelection {
-  currentPage: number;
-  pageLength: number;
+interface CarbonPaginationSelection {
+  page: number;
+  size: number;
 }
 
-const defaultPaginationConfig: CarbonPaginationConfig = {
+const DEFAULT_PAGINATOR_CONFIG: CarbonPaginatorConfig = {
   itemsPerPageOptions: [10, 20, 30, 40, 50],
   showPageInput: true,
 };
 
-export const createPaginationConfig = (
-  config?: CarbonPaginationConfig
-): CarbonPaginationConfig => ({
-  ...defaultPaginationConfig,
-  ...config,
-});
+export {CarbonPaginatorConfig, CarbonPaginationSelection, DEFAULT_PAGINATOR_CONFIG};

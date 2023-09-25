@@ -16,7 +16,7 @@
 
 <ng-container
   *ngIf="
-    tableConfig && {
+    fields && {
       currentDashboard: currentDashboard$ | async,
       editWidgetConfiguration: editWidgetConfiguration$ | async,
       loading: loading$ | async,
@@ -27,9 +27,9 @@
   <div class="dashboard-detail-table">
     <valtimo-carbon-table
       [data]="obs.widgetData"
+      [fields]="fields"
       [hideTableHeader]="true"
       [loading]="obs.loading"
-      [tableConfig]="tableConfig"
     >
       <div carbonToolbarContent>
         <ng-container [ngTemplateOutlet]="addWidgetButton"></ng-container>

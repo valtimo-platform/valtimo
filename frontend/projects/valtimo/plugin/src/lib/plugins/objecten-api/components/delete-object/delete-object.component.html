@@ -15,7 +15,7 @@
   -->
 
 <v-paragraph [margin]="true" [italic]="true">
-  {{ 'deleteObjectWarning' | pluginTranslate : pluginId | async }}
+  {{ 'deleteObjectWarning' | pluginTranslate: pluginId | async }}
 </v-paragraph>
 <v-form
   (valueChange)="formValueChange($event)"
@@ -26,8 +26,8 @@
 >
   <v-input
     name="objectUrl"
-    [title]="'objectUrl' | pluginTranslate : pluginId | async"
-    [tooltip]="'objectUrlTooltip' | pluginTranslate : pluginId | async"
+    [title]="'objectUrl' | pluginTranslate: pluginId | async"
+    [tooltip]="'objectUrlTooltip' | pluginTranslate: pluginId | async"
     [margin]="true"
     [defaultValue]="obs.prefill?.objectUrl"
     [disabled]="obs.disabled"

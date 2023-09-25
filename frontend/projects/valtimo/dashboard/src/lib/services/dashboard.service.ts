@@ -26,7 +26,10 @@ import {ConfigService} from '@valtimo/config';
 export class DashboardService {
   private _endpointUri: string;
 
-  constructor(private readonly http: HttpClient, private readonly configService: ConfigService) {
+  constructor(
+    private readonly http: HttpClient,
+    private readonly configService: ConfigService
+  ) {
     this._endpointUri = this.configService.config.valtimoApi.endpointUri;
   }
 

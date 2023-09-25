@@ -46,7 +46,6 @@ export class ConnectorLinkExtensionModalComponent implements AfterViewInit, OnDe
 
   readonly pageSizes$ = new BehaviorSubject<Partial<Pagination>>({
     collectionSize: 0,
-    maxPaginationItemSize: 5,
   });
 
   readonly pagination$: Observable<Pagination> = combineLatest([
@@ -55,7 +54,7 @@ export class ConnectorLinkExtensionModalComponent implements AfterViewInit, OnDe
   ]).pipe(
     map(
       ([currentPage, sizes]) =>
-        ({...currentPage, ...sizes, page: currentPage.page + 1} as Pagination)
+        ({...currentPage, ...sizes, page: currentPage.page + 1}) as Pagination
     )
   );
 

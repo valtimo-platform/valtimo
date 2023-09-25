@@ -84,7 +84,7 @@
         <tbody>
           <tr
             [ngClass]="{'click-able': this.rowClicked.observers.length > 0}"
-            *ngFor="let item of items | listFilter : searchModel; let i = index"
+            *ngFor="let item of items | listFilter: searchModel; let i = index"
             (click)="onClickRow(item)"
           >
             <td class="align-top" *ngFor="let listItemField of item.listItemFields">
@@ -129,7 +129,7 @@
             </td>
           </tr>
           <tr>
-            <td *ngIf="(items | listFilter : searchModel).length === 0" [colSpan]="fields.length">
+            <td *ngIf="(items | listFilter: searchModel).length === 0" [colSpan]="fields.length">
               {{ 'list.noMatchingItems' | translate }}<i>"{{ searchModel }}"</i>
             </td>
           </tr>
@@ -141,7 +141,7 @@
       <div class="row p-2">
         <div
           class="col-12 col-sm-6 col-xl-4 p-2"
-          *ngFor="let item of items | listFilter : searchModel"
+          *ngFor="let item of items | listFilter: searchModel"
           (click)="onClickRow(item)"
         >
           <div class="click-able tile-holder p-4">
@@ -151,7 +151,7 @@
             </dl>
           </div>
         </div>
-        <div class="col-12" *ngIf="(items | listFilter : searchModel).length === 0">
+        <div class="col-12" *ngIf="(items | listFilter: searchModel).length === 0">
           {{ 'list.noMatchingItems' | translate }}<i>"{{ searchModel }}"</i>
         </div>
       </div>
@@ -170,11 +170,11 @@
       }}</strong>
       {{
         pagination.collectionSize === 1
-          ? ('list.showingResult' | translate : {number: (items | listFilter : searchModel).length})
+          ? ('list.showingResult' | translate: {number: (items | listFilter: searchModel).length})
           : ('list.showingResults'
             | translate
               : {
-                  number: (items | listFilter : searchModel).length,
+                  number: (items | listFilter: searchModel).length,
                   total: pagination.collectionSize
                 })
       }}
@@ -196,7 +196,6 @@
         [collectionSize]="pagination.collectionSize"
         [(page)]="pagination.page"
         [pageSize]="pagination.size"
-        [maxSize]="pagination.maxPaginationItemSize"
         [rotate]="true"
         (pageChange)="onClickPagination(pagination.page)"
       ></ngb-pagination>

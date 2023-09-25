@@ -39,7 +39,10 @@ export class OpenZaakService {
   private valtimoApiConfig: any;
   private catalogus: string;
 
-  constructor(private http: HttpClient, private configService: ConfigService) {
+  constructor(
+    private http: HttpClient,
+    private configService: ConfigService
+  ) {
     this.valtimoApiConfig = configService.config.valtimoApi;
     this.catalogus = configService.config.openZaak.catalogus;
   }

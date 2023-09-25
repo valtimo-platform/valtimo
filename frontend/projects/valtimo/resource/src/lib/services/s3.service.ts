@@ -26,7 +26,10 @@ import {Resource, S3Resource, ResourceDto} from '../models';
 export class S3Service {
   private valtimoApiConfig: any;
 
-  constructor(private http: HttpClient, private configService: ConfigService) {
+  constructor(
+    private http: HttpClient,
+    private configService: ConfigService
+  ) {
     this.valtimoApiConfig = configService.config.valtimoApi;
   }
 

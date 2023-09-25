@@ -34,7 +34,6 @@ export class FormManagementListComponent implements OnInit {
     collectionSize: 0,
     page: 1,
     size: 10,
-    maxPaginationItemSize: 5,
   };
   public pageParam = 0;
 
@@ -43,7 +42,10 @@ export class FormManagementListComponent implements OnInit {
     this.loadFormDefinitions();
   }
 
-  constructor(private formManagementService: FormManagementService, private router: Router) {}
+  constructor(
+    private formManagementService: FormManagementService,
+    private router: Router
+  ) {}
 
   ngOnInit() {}
 

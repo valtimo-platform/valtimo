@@ -32,7 +32,10 @@ export class CtrlClickDirective implements OnInit, OnDestroy {
 
   private _unsubcribeFunction!: () => void;
 
-  constructor(private readonly renderer: Renderer2, private readonly element: ElementRef) {}
+  constructor(
+    private readonly renderer: Renderer2,
+    private readonly element: ElementRef
+  ) {}
 
   public ngOnInit(): void {
     this._unsubcribeFunction = this.renderer.listen(this.element.nativeElement, 'click', event => {

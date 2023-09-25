@@ -26,24 +26,24 @@
 >
   <ng-container *ngIf="obs.loading === false; else loading">
     <v-paragraph [margin]="true" [italic]="true">
-      {{ 'createZaakInformation' | pluginTranslate : obs.pluginId | async }}
+      {{ 'createZaakInformation' | pluginTranslate: obs.pluginId | async }}
     </v-paragraph>
     <v-form (valueChange)="formValueChange($event)">
       <v-input
         name="rsin"
-        [title]="'rsin' | pluginTranslate : obs.pluginId | async"
+        [title]="'rsin' | pluginTranslate: obs.pluginId | async"
         [margin]="true"
         [defaultValue]="obs.prefill?.rsin"
         [disabled]="obs.disabled"
         [required]="true"
-        [tooltip]="'rsinTooltip' | pluginTranslate : obs.pluginId | async"
+        [tooltip]="'rsinTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
       >
       </v-input>
       <v-radio
         name="inputTypeZaakTypeToggle"
         [disabled]="obs.disabled"
-        [title]="'inputTypeZaakTypeToggle' | pluginTranslate : obs.pluginId | async"
+        [title]="'inputTypeZaakTypeToggle' | pluginTranslate: obs.pluginId | async"
         [radioValues]="inputTypeOptions$ | async"
         [defaultValue]="selectedInputOption$ | async"
         [margin]="true"
@@ -52,12 +52,12 @@
       <v-input
         *ngIf="obs.selectedInputOption === 'text'"
         name="zaaktypeUrl"
-        [title]="'zaakTypeUrl' | pluginTranslate : obs.pluginId | async"
+        [title]="'zaakTypeUrl' | pluginTranslate: obs.pluginId | async"
         [margin]="true"
         [defaultValue]="obs.prefill?.zaaktypeUrl"
         [disabled]="obs.disabled || obs.selectedInputOption === 'selection'"
         [required]="true"
-        [tooltip]="'zaakTypeTooltip' | pluginTranslate : obs.pluginId | async"
+        [tooltip]="'zaakTypeTooltip' | pluginTranslate: obs.pluginId | async"
         [fullWidth]="true"
       >
       </v-input>
@@ -67,7 +67,7 @@
           [margin]="true"
           [widthInPx]="350"
           name="zaaktypeUrl"
-          [title]="'zaakType' | pluginTranslate : obs.pluginId | async"
+          [title]="'zaakType' | pluginTranslate: obs.pluginId | async"
           [disabled]="
             obs.disabled ||
             obs.selectedInputOption === 'text' ||
@@ -80,7 +80,7 @@
           "
           [required]="true"
           [loading]="!obs.zaakTypeSelectItems"
-          [tooltip]="'zaakTypeSelectTooltip' | pluginTranslate : obs.pluginId | async"
+          [tooltip]="'zaakTypeSelectTooltip' | pluginTranslate: obs.pluginId | async"
         ></v-select>
       </ng-container>
     </v-form>

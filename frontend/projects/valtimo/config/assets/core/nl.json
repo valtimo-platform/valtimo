@@ -976,7 +976,7 @@
   },
   "listColumnDisplayType": {
     "select": "Selecteer een weergavetype",
-    "string": "Tekst",
+    "text": "Tekst",
     "date": "Datum",
     "boolean": "Ja/nee",
     "enum": "Opsomming",

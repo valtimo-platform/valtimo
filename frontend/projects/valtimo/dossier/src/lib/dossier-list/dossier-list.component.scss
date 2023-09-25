@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-interface ListField {
-  key: string;
-  label: string;
-  sortable: boolean;
-  viewType: string;
-  default?: string | boolean;
+.dossier-list-tabs cds-tab {
+  display: none;
 }
-
-export {ListField};

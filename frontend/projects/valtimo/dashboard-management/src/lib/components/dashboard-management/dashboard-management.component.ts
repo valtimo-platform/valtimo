@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {ChangeDetectionStrategy, Component, OnInit, ViewEncapsulation} from '@angular/core';
-import {AbstractControl, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
-import {CarbonTableConfig, ColumnType, createCarbonTableConfig} from '@valtimo/components';
+import {AbstractControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {Router} from '@angular/router';
+import {ColumnConfig, ViewType} from '@valtimo/components';
 import {BehaviorSubject, finalize, Observable} from 'rxjs';
 import {DashboardItem} from '../../models';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
-import {Router} from '@angular/router';
 
 @Component({
   templateUrl: './dashboard-management.component.html',
@@ -35,39 +34,37 @@ export class DashboardManagementComponent implements OnInit {
 
   public readonly tableData$: Observable<{items: DashboardItem[] | null; loading: boolean}> =
     this.dashboardManagementService.dashboards$;
-  public tableConfig: CarbonTableConfig = createCarbonTableConfig({
-    fields: [
-      {
-        columnType: ColumnType.TEXT,
-        fieldName: 'title',
-        translationKey: 'dashboardManagement.name',
-      },
-      {
-        columnType: ColumnType.TEXT,
-        fieldName: 'description',
-        translationKey: 'dashboardManagement.description',
-      },
-      {
-        columnType: ColumnType.TEXT,
-        fieldName: 'key',
-        translationKey: 'dashboardManagement.key',
-      },
-      {
-        actions: [
-          {
-            actionName: 'Delete',
-            callback: this.deleteDashboard.bind(this),
-            type: 'danger',
-          },
-        ],
-        className: 'valtimo-dashboard-management__actions',
-        columnType: ColumnType.ACTION,
-        translationKey: '',
-        fieldName: '',
-        sortable: false,
-      },
-    ],
-  });
+  public fields: ColumnConfig[] = [
+    {
+      viewType: ViewType.TEXT,
+      key: 'title',
+      label: 'dashboardManagement.name',
+    },
+    {
+      viewType: ViewType.TEXT,
+      key: 'description',
+      label: 'dashboardManagement.description',
+    },
+    {
+      viewType: ViewType.TEXT,
+      key: 'key',
+      label: 'dashboardManagement.key',
+    },
+    {
+      actions: [
+        {
+          actionName: 'Delete',
+          callback: this.deleteDashboard.bind(this),
+          type: 'danger',
+        },
+      ],
+      className: 'valtimo-dashboard-management__actions',
+      viewType: ViewType.ACTION,
+      label: '',
+      key: '',
+      sortable: false,
+    },
+  ];
   public form: FormGroup;
 
   constructor(

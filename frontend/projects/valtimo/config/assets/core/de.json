@@ -976,7 +976,7 @@
   },
   "listColumnDisplayType": {
     "select": "Wählen Sie einen Anzeigetyp aus",
-    "string": "Text",
+    "text": "Text",
     "date": "Datum",
     "boolean": "Ja/nein",
     "enum": "Aufzählung",

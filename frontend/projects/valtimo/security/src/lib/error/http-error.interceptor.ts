@@ -32,7 +32,10 @@ import {NGXLogger} from 'ngx-logger';
   providedIn: 'root',
 })
 export class HttpErrorInterceptor implements HttpInterceptor {
-  constructor(private toastr: ToastrService, private logger: NGXLogger) {}
+  constructor(
+    private toastr: ToastrService,
+    private logger: NGXLogger
+  ) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     if (request.headers && request.headers.has(InterceptorSkip)) {

@@ -37,7 +37,10 @@ import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 export class ProcessLinkService {
   private readonly VALTIMO_ENDPOINT_URI!: string;
 
-  constructor(private readonly configService: ConfigService, private readonly http: HttpClient) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly http: HttpClient
+  ) {
     this.VALTIMO_ENDPOINT_URI = configService.config.valtimoApi.endpointUri;
   }
 

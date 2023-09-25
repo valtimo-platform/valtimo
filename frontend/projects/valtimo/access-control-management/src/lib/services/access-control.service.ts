@@ -31,7 +31,10 @@ export class AccessControlService {
     return this.http.get<Role[]>(`${this.valtimoEndpointUri}v1/roles`);
   }
 
-  constructor(private readonly configService: ConfigService, private readonly http: HttpClient) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly http: HttpClient
+  ) {
     this.valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}management/`;
   }
 

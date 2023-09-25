@@ -49,7 +49,10 @@ export class DashboardComponent implements OnInit {
 
   loading$ = new BehaviorSubject<boolean>(true);
 
-  constructor(private readonly taskService: TaskService, private readonly route: ActivatedRoute) {}
+  constructor(
+    private readonly taskService: TaskService,
+    private readonly route: ActivatedRoute
+  ) {}
 
   ngOnInit() {
     this.getOpenTasks();

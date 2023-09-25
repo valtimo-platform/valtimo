@@ -70,7 +70,10 @@ export class ListComponent implements OnChanges, OnInit, AfterViewInit {
     isSorting: false,
   });
 
-  constructor(private viewContentService: ViewContentService, private logger: NGXLogger) {
+  constructor(
+    private viewContentService: ViewContentService,
+    private logger: NGXLogger
+  ) {
     this.viewListAs = localStorage.getItem('viewListAs') || 'table';
   }
 

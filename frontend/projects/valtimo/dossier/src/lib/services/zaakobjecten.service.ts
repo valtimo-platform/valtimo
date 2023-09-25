@@ -26,7 +26,10 @@ import {ZaakObject, ZaakobjectFormResponse, ZaakObjectType} from '../models';
 export class ZaakobjectenService {
   private readonly VALTIMO_API_ENDPOINT_URI = this.configService.config.valtimoApi.endpointUri;
 
-  constructor(private readonly configService: ConfigService, private readonly http: HttpClient) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly http: HttpClient
+  ) {}
 
   getDocumentObjectTypes(documentId: string): Observable<Array<ZaakObjectType>> {
     return this.http.get<Array<ZaakObjectType>>(

@@ -317,8 +317,8 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
       const selectedDataSource = dataSources.find(source => source.key === selectedDataSourceKey);
       const availableDataFeatures = selectedDataSource?.dataFeatures;
       const compatibleDisplayTypes = supportedDisplayTypes.filter(displayType => {
-        const supportedDataFeatures = displayType.requiredDataFeatures.filter(feature =>
-          availableDataFeatures?.includes(feature)
+        const supportedDataFeatures = displayType.requiredDataFeatures.filter(
+          feature => availableDataFeatures?.includes(feature)
         );
         return supportedDataFeatures.length === displayType.requiredDataFeatures.length;
       });

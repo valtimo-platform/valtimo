@@ -34,7 +34,6 @@ export class ChoiceFieldValueListComponent implements OnInit {
     collectionSize: 0,
     page: 1,
     size: 10,
-    maxPaginationItemSize: 5,
   };
   public pageParam = 0;
   public fields: Array<any> = [

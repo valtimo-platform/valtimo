@@ -17,11 +17,11 @@
 <form [formGroup]="form">
   <div class="form__element">
     <cds-label
-      [helperText]="'formTitleHelperText' | widgetTranslate : displayTypeKey | async"
-      [invalidText]="'formTitleHelperText' | widgetTranslate : displayTypeKey | async"
+      [helperText]="'formTitleHelperText' | widgetTranslate: displayTypeKey | async"
+      [invalidText]="'formTitleHelperText' | widgetTranslate: displayTypeKey | async"
       [invalid]="title.dirty && title.invalid"
     >
-      {{ 'formTitle' | widgetTranslate : displayTypeKey | async }}
+      {{ 'formTitle' | widgetTranslate: displayTypeKey | async }}
 
       <input cdsText formControlName="title" [invalid]="title.dirty && title.invalid" />
     </cds-label>
@@ -29,11 +29,11 @@
 
   <div class="form__element">
     <cds-label
-      [helperText]="'subtitleHelperText' | widgetTranslate : displayTypeKey | async"
-      [invalidText]="'subtitleHelperText' | widgetTranslate : displayTypeKey | async"
+      [helperText]="'subtitleHelperText' | widgetTranslate: displayTypeKey | async"
+      [invalidText]="'subtitleHelperText' | widgetTranslate: displayTypeKey | async"
       [invalid]="subtitle.dirty && subtitle.invalid"
     >
-      {{ 'subtitle' | widgetTranslate : displayTypeKey | async }}
+      {{ 'subtitle' | widgetTranslate: displayTypeKey | async }}
 
       <input cdsText formControlName="subtitle" [invalid]="subtitle.dirty && subtitle.invalid" />
     </cds-label>
@@ -41,11 +41,11 @@
 
   <div class="form__element">
     <cds-label
-      [helperText]="'labelHelperText' | widgetTranslate : displayTypeKey | async"
-      [invalidText]="'labelHelperText' | widgetTranslate : displayTypeKey | async"
+      [helperText]="'labelHelperText' | widgetTranslate: displayTypeKey | async"
+      [invalidText]="'labelHelperText' | widgetTranslate: displayTypeKey | async"
       [invalid]="label.dirty && label.invalid"
     >
-      {{ 'label' | widgetTranslate : displayTypeKey | async }}
+      {{ 'label' | widgetTranslate: displayTypeKey | async }}
 
       <input cdsText formControlName="label" [invalid]="label.dirty && label.invalid" />
     </cds-label>
@@ -53,14 +53,14 @@
 
   <div class="form__element">
     <cds-checkbox formControlName="useKPI">
-      {{ 'useKPI' | widgetTranslate : displayTypeKey | async }}
+      {{ 'useKPI' | widgetTranslate: displayTypeKey | async }}
     </cds-checkbox>
   </div>
 
   <div class="form__row" *ngIf="useKPI.value">
     <div class="form__element">
       <cds-label [invalid]="lowSeverityThreshold.dirty && lowSeverityThreshold.invalid">
-        {{ 'lowSeverityThreshold' | widgetTranslate : displayTypeKey | async }}
+        {{ 'lowSeverityThreshold' | widgetTranslate: displayTypeKey | async }}
 
         <input
           cdsText
@@ -75,7 +75,7 @@
 
     <div class="form__element">
       <cds-label [invalid]="mediumSeverityThreshold.dirty && mediumSeverityThreshold.invalid">
-        {{ 'mediumSeverityThreshold' | widgetTranslate : displayTypeKey | async }}
+        {{ 'mediumSeverityThreshold' | widgetTranslate: displayTypeKey | async }}
 
         <input
           cdsText
@@ -90,7 +90,7 @@
 
     <div class="form__element">
       <cds-label [invalid]="highSeverityThreshold.dirty && highSeverityThreshold.invalid">
-        {{ 'highSeverityThreshold' | widgetTranslate : displayTypeKey | async }}
+        {{ 'highSeverityThreshold' | widgetTranslate: displayTypeKey | async }}
 
         <input
           cdsText

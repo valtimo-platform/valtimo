@@ -15,7 +15,7 @@
   -->
 
 <v-paragraph [margin]="true" [italic]="true">
-  {{ 'linkDocumentToBesluitInformation' | pluginTranslate : pluginId | async }}
+  {{ 'linkDocumentToBesluitInformation' | pluginTranslate: pluginId | async }}
 </v-paragraph>
 <v-form
   (valueChange)="formValueChange($event)"
@@ -26,23 +26,23 @@
 >
   <v-input
     name="besluitUrl"
-    [title]="'besluitUrl' | pluginTranslate : pluginId | async"
+    [title]="'besluitUrl' | pluginTranslate: pluginId | async"
     [margin]="true"
     [defaultValue]="obs.prefill?.besluitUrl"
     [disabled]="obs.disabled"
     [required]="true"
-    [tooltip]="'besluitUrlTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'besluitUrlTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
   >
   </v-input>
   <v-input
     name="documentUrl"
-    [title]="'documentUrl' | pluginTranslate : pluginId | async"
+    [title]="'documentUrl' | pluginTranslate: pluginId | async"
     [margin]="true"
     [defaultValue]="obs.prefill?.documentUrl"
     [disabled]="obs.disabled"
     [required]="true"
-    [tooltip]="'documentUrlTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'documentUrlTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
   >
   </v-input>

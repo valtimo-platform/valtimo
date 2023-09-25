@@ -246,7 +246,7 @@ export class MenuService {
                 iconClass: 'icon mdi mdi-dot-circle',
                 sequence: index,
                 show: true,
-              } as MenuItem)
+              }) as MenuItem
           );
           this.logger.debug('found objectsMenuItems', objectsMenuItems);
           const menuItemIndex = menuItems.findIndex(({title}) => title === 'Objects');

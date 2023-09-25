@@ -23,36 +23,36 @@
 >
   <v-input
     name="configurationTitle"
-    [title]="'configurationTitle' | pluginTranslate : pluginId | async"
+    [title]="'configurationTitle' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
-    [tooltip]="'configurationTitleTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
   >
   </v-input>
   <v-input
     name="url"
-    [title]="'url' | pluginTranslate : pluginId | async"
+    [title]="'url' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.url"
     [required]="true"
-    [tooltip]="'urlTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'urlTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
   <v-input
     name="bronorganisatie"
     type="digitOnly"
-    [title]="'bronorganisatie' | pluginTranslate : pluginId | async"
+    [title]="'bronorganisatie' | pluginTranslate: pluginId | async"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.bronorganisatie"
     [required]="true"
     [widthPx]="150"
-    [tooltip]="'bronorganisatieTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'bronorganisatieTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
   <ng-container
@@ -64,11 +64,11 @@
       [margin]="true"
       [widthInPx]="350"
       name="authenticationPluginConfiguration"
-      [title]="'authenticationPluginConfiguration' | pluginTranslate : pluginId | async"
+      [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
       [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"
       [required]="true"
-      [tooltip]="'authenticationPluginConfigurationTooltip' | pluginTranslate : pluginId | async"
+      [tooltip]="'authenticationPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
     ></v-select>
   </ng-container>
 </v-form>

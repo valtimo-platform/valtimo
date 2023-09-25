@@ -27,7 +27,10 @@ import {FormDefinition} from '@valtimo/form-management';
 export class ObjectService {
   private readonly valtimoEndpointUri: string;
 
-  constructor(private http: HttpClient, configService: ConfigService) {
+  constructor(
+    private http: HttpClient,
+    configService: ConfigService
+  ) {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 

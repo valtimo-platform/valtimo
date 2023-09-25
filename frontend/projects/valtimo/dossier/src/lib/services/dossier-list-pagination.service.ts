@@ -13,26 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, filter, map, Observable, take, tap} from 'rxjs';
-import {Pagination} from '@valtimo/components';
-import {NGXLogger} from 'ngx-logger';
-import {DossierParameterService} from './dossier-parameter.service';
+import {DEFAULT_PAGINATION, Pagination, SortState} from '@valtimo/components';
 import {DefinitionColumn} from '@valtimo/config';
+import {Documents, SpecifiedDocuments} from '@valtimo/document';
+import {NGXLogger} from 'ngx-logger';
+import {BehaviorSubject, filter, map, Observable, take, tap} from 'rxjs';
 import {DossierService} from '../dossier.service';
-import {Documents, SortState, SpecifiedDocuments} from '@valtimo/document';
+import {DossierParameterService} from './dossier-parameter.service';
 
 @Injectable()
 export class DossierListPaginationService {
-  private readonly DEFAULT_PAGINATION: Pagination = {
-    collectionSize: 0,
-    page: 1,
-    size: 10,
-    maxPaginationItemSize: 5,
-    sort: undefined,
-  };
-
   private readonly _pagination$ = new BehaviorSubject<Pagination | undefined>(undefined);
 
   private readonly _paginationCopy$ = this._pagination$.pipe(
@@ -52,34 +43,46 @@ export class DossierListPaginationService {
   ) {}
 
   pageChange(newPage: number): void {
-    this._pagination$.pipe(take(1)).subscribe(pagination => {
-      if (pagination && pagination.page !== newPage) {
+    this._pagination$
+      .pipe(
+        take(1),
+        filter(pagination => !!pagination && pagination.page !== newPage)
+      )
+      .subscribe(pagination => {
         this.logger.debug(`Page change: ${newPage}`);
         this._pagination$.next({...pagination, page: newPage});
-      }
-    });
+      });
   }
 
   pageSizeChange(newPageSize: number): void {
-    this._pagination$.pipe(take(1)).subscribe(pagination => {
-      if (pagination && pagination.size !== newPageSize) {
+    this._pagination$
+      .pipe(
+        take(1),
+        filter(pagination => !!pagination && pagination.size !== newPageSize)
+      )
+      .subscribe(pagination => {
         const amountOfAvailablePages = Math.ceil(pagination.collectionSize / newPageSize);
         const newPage =
           amountOfAvailablePages < pagination.page ? amountOfAvailablePages : pagination.page;
 
         this.logger.debug(`Page size change. New Page: ${newPage} New page size: ${newPageSize}`);
         this._pagination$.next({...pagination, size: newPageSize, page: newPage});
-      }
-    });
+      });
   }
 
   sortChanged(newSortState: SortState): void {
-    this._pagination$.pipe(take(1)).subscribe(pagination => {
-      if (pagination && JSON.stringify(pagination.sort) !== JSON.stringify(newSortState)) {
+    this._pagination$
+      .pipe(
+        take(1),
+        filter(
+          pagination =>
+            !!pagination && JSON.stringify(pagination.sort) !== JSON.stringify(newSortState)
+        )
+      )
+      .subscribe(pagination => {
         this.logger.debug(`Sort state change: ${JSON.stringify(newSortState)}`);
         this._pagination$.next({...pagination, sort: newSortState});
-      }
-    });
+      });
   }
 
   setPage(newPageNumber: number): void {
@@ -89,32 +92,40 @@ export class DossierListPaginationService {
   }
 
   setCollectionSize(documents: Documents | SpecifiedDocuments): void {
-    this._pagination$.pipe(take(1)).subscribe(pagination => {
-      if (pagination && pagination.collectionSize !== documents.totalElements) {
+    this._pagination$
+      .pipe(
+        take(1),
+        filter(pagination => !!pagination && pagination.collectionSize !== documents.totalElements)
+      )
+      .subscribe(pagination => {
         this._pagination$.next({...pagination, collectionSize: documents.totalElements});
-      }
-    });
+      });
   }
 
   checkPage(documents: Documents | SpecifiedDocuments): void {
-    this._pagination$.pipe(take(1)).subscribe(pagination => {
-      if (pagination) {
-        const amountOfItems = documents.totalElements;
-        const amountOfPages = Math.ceil(amountOfItems / pagination.size);
-        const currentPage = pagination.page;
+    this._pagination$
+      .pipe(
+        take(1),
+        filter(pagination => !!pagination)
+      )
+      .subscribe(pagination => {
+        if (pagination) {
+          const amountOfItems = documents.totalElements;
+          const amountOfPages = Math.ceil(amountOfItems / pagination.size);
+          const currentPage = pagination.page;
 
-        if (currentPage > amountOfPages) {
-          this._pagination$.next({...pagination, page: amountOfPages});
+          if (currentPage > amountOfPages) {
+            this._pagination$.next({...pagination, page: amountOfPages});
+          }
         }
-      }
-    });
+      });
   }
 
   clearPagination(): void {
     this._pagination$.next(undefined);
   }
 
-  setPagination(documentDefinitionName: string, columns: Array<DefinitionColumn>): void {
+  setPagination(columns: Array<DefinitionColumn>): void {
     this.dossierParameterService.queryPaginationParams$
       .pipe(take(1))
       .subscribe(queryPaginationParams => {
@@ -131,7 +142,7 @@ export class DossierListPaginationService {
     const defaultSortState = this.dossierService.getInitialSortState(columns);
 
     return {
-      ...this.DEFAULT_PAGINATION,
+      ...DEFAULT_PAGINATION,
       sort: defaultSortState,
     };
   }

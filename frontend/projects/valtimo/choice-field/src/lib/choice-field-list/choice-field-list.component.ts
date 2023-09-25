@@ -30,7 +30,6 @@ export class ChoiceFieldListComponent implements OnInit {
     collectionSize: 0,
     page: 1,
     size: 10,
-    maxPaginationItemSize: 5,
   };
   public pageParam = 0;
   public fields: Array<any> = [
@@ -48,7 +47,10 @@ export class ChoiceFieldListComponent implements OnInit {
     },
   ];
 
-  constructor(private router: Router, private service: ChoiceFieldService) {}
+  constructor(
+    private router: Router,
+    private service: ChoiceFieldService
+  ) {}
 
   ngOnInit() {}
 

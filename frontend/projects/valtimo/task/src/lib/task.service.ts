@@ -25,7 +25,10 @@ import {InterceptorSkip} from '@valtimo/security';
 export class TaskService {
   private valtimoEndpointUri: string;
 
-  constructor(private http: HttpClient, private readonly configService: ConfigService) {
+  constructor(
+    private http: HttpClient,
+    private readonly configService: ConfigService
+  ) {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 

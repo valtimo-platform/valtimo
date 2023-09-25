@@ -74,7 +74,6 @@ export class ObjectListComponent {
 
   readonly pageSizes$ = new BehaviorSubject<Partial<Pagination>>({
     collectionSize: 0,
-    maxPaginationItemSize: 5,
   });
 
   readonly pagination$: Observable<Pagination> = combineLatest([
@@ -83,7 +82,7 @@ export class ObjectListComponent {
   ]).pipe(
     map(
       ([currentPage, sizes]) =>
-        ({...currentPage, ...sizes, page: currentPage.page + 1} as Pagination)
+        ({...currentPage, ...sizes, page: currentPage.page + 1}) as Pagination
     )
   );
 
@@ -163,13 +162,15 @@ export class ObjectListComponent {
         });
       }
     }),
-    map(res =>
-      res?.content?.map(record =>
-        record?.items?.reduce(
-          (obj, item) => Object.assign(obj, {objectId: record.id}, {[item.key]: item.value}),
-          {}
+    map(
+      res =>
+        res?.content?.map(
+          record =>
+            record?.items?.reduce(
+              (obj, item) => Object.assign(obj, {objectId: record.id}, {[item.key]: item.value}),
+              {}
+            )
         )
-      )
     ),
     tap(() => this.loading$.next(false))
   );
