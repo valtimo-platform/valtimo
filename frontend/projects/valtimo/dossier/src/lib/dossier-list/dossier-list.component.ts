@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Params, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {
   BreadcrumbService,
   CarbonPaginationSelection,
+  CarbonTableComponent,
   CarbonTableConfig,
   ColumnConfig,
   createCarbonTableConfig,
@@ -39,6 +40,7 @@ import {
 import {
   AdvancedDocumentSearchRequest,
   AdvancedDocumentSearchRequestImpl,
+  Document,
   Documents,
   DocumentService,
   SpecifiedDocuments,
@@ -57,6 +59,7 @@ import {
 } from 'rxjs';
 import {DefaultTabs} from '../dossier-detail-tab-enum';
 import {
+  DossierBulkAssignService,
   DossierColumnService,
   DossierListAssigneeService,
   DossierListPaginationService,
@@ -79,6 +82,8 @@ import {
   ],
 })
 export class DossierListComponent implements OnInit, OnDestroy {
+  @ViewChild(CarbonTableComponent) carbonTable: CarbonTableComponent<Document>;
+
   public loadingFields = true;
   public loadingPagination = true;
   public loadingSearchFields = true;
@@ -88,16 +93,23 @@ export class DossierListComponent implements OnInit, OnDestroy {
   public canHaveAssignee!: boolean;
   public visibleDossierTabs: Array<DossierListTab> | null = null;
 
-  public readonly tableConfig: CarbonTableConfig = createCarbonTableConfig({withPagination: true});
+  public readonly tableConfig: CarbonTableConfig = createCarbonTableConfig({
+    showSelectionColumn: true,
+    withPagination: true,
+  });
+
+  public readonly showAssignModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showChangePageModal$ = new BehaviorSubject<boolean>(false);
 
   public readonly searchFields$: Observable<Array<SearchField> | null> =
     this.searchService.documentSearchFields$.pipe(
-      tap(searchFields => {
+      tap(() => {
         this.loadingSearchFields = false;
       })
     );
 
   public readonly documentDefinitionName$ = this.listService.documentDefinitionName$;
+  public readonly selectedDocumentIds$ = new BehaviorSubject<string[]>([]);
 
   public readonly schema$ = this.listService.documentDefinitionName$.pipe(
     switchMap(documentDefinitionName =>
@@ -114,12 +126,14 @@ export class DossierListComponent implements OnInit, OnDestroy {
   public readonly searchFieldValues$ = this.parameterService.searchFieldValues$;
   public readonly assigneeFilter$: Observable<AssigneeFilter> =
     this.assigneeService.assigneeFilter$;
+  public readonly paginationChange$ = new BehaviorSubject<CarbonPaginationSelection | null>(null);
   private readonly _pagination$ = this.paginationService.pagination$.pipe(
     tap(pagination => {
       this.pagination = pagination;
       this.loadingPagination = false;
     })
   );
+  private readonly _reload$ = new BehaviorSubject<boolean>(false);
   private readonly _hasEnvColumnConfig$: Observable<boolean> = this.listService.hasEnvColumnConfig$;
   private readonly _hasApiColumnConfig$ = new BehaviorSubject<boolean>(false);
   private readonly _canHaveAssignee$: Observable<boolean> = this.assigneeService.canHaveAssignee$;
@@ -209,6 +223,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
     this._hasEnvColumnConfig$,
     this._hasApiColumnConfig$,
     this._searchSwitch$,
+    this._reload$,
   ]).pipe(
     distinctUntilChanged(
       (
@@ -219,6 +234,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
           prevHasEnvColumnConfig,
           prevHasApiColumnConfig,
           prevSearchSwitch,
+          prevReload,
         ],
         [
           currSearchRequest,
@@ -227,14 +243,15 @@ export class DossierListComponent implements OnInit, OnDestroy {
           currHasEnvColumnConfig,
           currHasApiColumnConfig,
           currSearchSwitch,
+          currReload,
         ]
       ) =>
         JSON.stringify({...prevSearchRequest, ...prevSearchValues}) +
           prevAssigneeFilter +
           prevSearchSwitch ===
-        JSON.stringify({...currSearchRequest, ...currSearchValues}) +
-          currAssigneeFilter +
-          currSearchSwitch
+          JSON.stringify({...currSearchRequest, ...currSearchValues}) +
+            currAssigneeFilter +
+            currSearchSwitch && prevReload !== currReload
     ),
     switchMap(
       ([
@@ -291,22 +308,26 @@ export class DossierListComponent implements OnInit, OnDestroy {
 
   private _previousDocumentDefinitionName!: string;
   private _documentDefinitionNameSubscription!: Subscription;
+  public get tabsDisabled(): boolean {
+    return !!this.carbonTable?.tableModel && this.carbonTable.tableModel.selectedRowsCount() > 0;
+  }
   private _tabsInitialized = false;
 
   constructor(
-    private readonly route: ActivatedRoute,
-    private readonly translateService: TranslateService,
-    private readonly listService: DossierListService,
-    private readonly columnService: DossierColumnService,
     private readonly assigneeService: DossierListAssigneeService,
-    private readonly paginationService: DossierListPaginationService,
-    private readonly searchService: DossierListSearchService,
-    private readonly parameterService: DossierParameterService,
-    private readonly documentService: DocumentService,
-    private readonly router: Router,
+    private readonly breadcrumbService: BreadcrumbService,
+    private readonly bulkAssignService: DossierBulkAssignService,
+    private readonly columnService: DossierColumnService,
     private readonly configService: ConfigService,
+    private readonly documentService: DocumentService,
+    private readonly listService: DossierListService,
     private readonly pageTitleService: PageTitleService,
-    private readonly breadcrumbService: BreadcrumbService
+    private readonly paginationService: DossierListPaginationService,
+    private readonly parameterService: DossierParameterService,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly searchService: DossierListSearchService,
+    private readonly translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {
@@ -336,12 +357,12 @@ export class DossierListComponent implements OnInit, OnDestroy {
   }
 
   public onPaginationChange(pagination: CarbonPaginationSelection): void {
-    if (pagination.page !== this.pagination.page) {
-      this.paginationService.pageChange(pagination.page);
+    if (this.carbonTable.tableModel.selectedRowsCount()) {
+      this.showChangePageModal$.next(true);
+      this.paginationChange$.next(pagination);
       return;
     }
-
-    this.paginationService.pageSizeChange(pagination.size);
+    this.onChangePageConfirm(pagination);
   }
 
   public onSortChange(newSortState: SortState): void {
@@ -359,6 +380,41 @@ export class DossierListComponent implements OnInit, OnDestroy {
 
   public refresh(): void {
     this.searchService.refresh();
+  }
+
+  public showAssignModal(): void {
+    this.selectedDocumentIds$.next(
+      this.carbonTable.selectedItems.map((document: Document) => document.id)
+    );
+    this.showAssignModal$.next(true);
+  }
+
+  public onCloseEvent(assigneeId: null | string, documentIds: string[]): void {
+    this.showAssignModal$.next(false);
+    if (!assigneeId) {
+      return;
+    }
+
+    this.bulkAssignService
+      .bulkAssign(assigneeId, documentIds)
+      .pipe(
+        tap(() => {
+          this._reload$.next(false);
+        }),
+        take(1)
+      )
+      .subscribe(() => {
+        this._reload$.next(false);
+      });
+  }
+
+  public onChangePageConfirm(pagination: CarbonPaginationSelection): void {
+    if (pagination.page !== this.pagination.page) {
+      this.paginationService.pageChange(pagination.page);
+      return;
+    }
+
+    this.paginationService.pageSizeChange(pagination.size);
   }
 
   private openDocumentDefinitionNameSubscription(): void {

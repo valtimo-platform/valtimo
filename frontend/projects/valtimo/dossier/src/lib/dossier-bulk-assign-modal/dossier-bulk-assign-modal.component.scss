@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-export * from './candidate-user.model';
-export * from './dossier-parameters.model';
-export * from './search.model';
-export * from './tabs.model';
-export * from './zaakobjecten.model';
+.valtimo-dossier-bulk-assign-modal {
+  ::ng-deep .cds--list-box__menu {
+    position: fixed;
+  }
+}

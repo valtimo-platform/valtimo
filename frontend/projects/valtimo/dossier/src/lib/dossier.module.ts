@@ -16,7 +16,7 @@
 import {CommonModule} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {ModuleWithProviders, NgModule} from '@angular/core';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {
   NgbButtonsModule,
   NgbModule,
@@ -29,6 +29,7 @@ import {
   ButtonModule,
   CamundaFormModule,
   CarbonTableModule,
+  ConfirmationModalModule,
   DataListModule,
   DocumentenApiMetadataModalModule,
   DropzoneModule,
@@ -59,12 +60,16 @@ import {ProcessModule} from '@valtimo/process';
 import {TaskModule} from '@valtimo/task';
 import {
   ButtonModule as CarbonButtonModule,
+  DropdownModule,
   IconModule,
   LoadingModule,
+  ModalModule as CarbonModalModule,
+  SelectModule as CarbonSelectModule,
   TabsModule,
 } from 'carbon-components-angular';
 import {NoteModalComponent} from './components/note-modal/note-modal.component';
 import {DossierAssignUserComponent} from './dossier-assign-user/dossier-assign-user.component';
+import {DossierBulkAssignModalComponent} from './dossier-bulk-assign-modal/dossier-bulk-assign-modal.component';
 import {DossierDetailComponent} from './dossier-detail/dossier-detail.component';
 import {DossierDetailTabAuditComponent} from './dossier-detail/tab/audit/audit.component';
 import {DossierDetailTabContactMomentsComponent} from './dossier-detail/tab/contact-moments/contact-moments.component';
@@ -84,12 +89,14 @@ import {DossierSupportingProcessStartModalComponent} from './dossier-supporting-
 import {DossierUpdateComponent} from './dossier-update/dossier-update.component';
 import {TAB_MAP} from './dossier.config';
 import {DossierService} from './dossier.service';
+import {DossierBulkAssignService} from './services/dossier-bulk-assign.service';
 import {TabService} from './tab.service';
 
 export type TabsFactory = () => Map<string, object>;
 
 @NgModule({
   declarations: [
+    DossierBulkAssignModalComponent,
     DossierListComponent,
     DossierListActionsComponent,
     DossierDetailComponent,
@@ -122,6 +129,7 @@ export type TabsFactory = () => Map<string, object>;
     NgbButtonsModule,
     DataListModule,
     FormsModule,
+    ReactiveFormsModule,
     FormModule,
     FormIoModule,
     ModalModule,
@@ -160,6 +168,10 @@ export type TabsFactory = () => Map<string, object>;
     IconModule,
     FormLinkModule,
     CarbonTableModule,
+    CarbonModalModule,
+    CarbonSelectModule,
+    ConfirmationModalModule,
+    DropdownModule,
     TabsModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
@@ -170,6 +182,7 @@ export class DossierModule {
       ngModule: DossierModule,
       providers: [
         DossierService,
+        DossierBulkAssignService,
         TabService,
         {
           provide: TAB_MAP,

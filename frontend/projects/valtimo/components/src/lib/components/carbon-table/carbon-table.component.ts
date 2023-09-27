@@ -245,7 +245,6 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   }
 
   public onSelectPage(pageIndex: number): void {
-    this._tableModel.currentPage = pageIndex;
     this.paginationChange.emit({
       page: pageIndex,
       size: this._tableModel.pageLength,

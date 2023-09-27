@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-export * from './candidate-user.model';
-export * from './dossier-parameters.model';
-export * from './search.model';
-export * from './tabs.model';
-export * from './zaakobjecten.model';
+interface CandidateUser {
+  id: string;
+  firstName: string;
+  lastName: string;
+}
+
+export {CandidateUser};
