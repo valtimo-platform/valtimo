@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {ListItem} from 'carbon-components-angular';
 import {map, Observable} from 'rxjs';
@@ -24,6 +24,7 @@ import {DossierBulkAssignService} from '../services';
   selector: 'valtimo-dossier-bulk-assign-modal',
   templateUrl: './dossier-bulk-assign-modal.component.html',
   styleUrls: ['./dossier-bulk-assign-modal.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DossierBulkAssignModalComponent {
   @Input() public set documentIds(value: string[]) {

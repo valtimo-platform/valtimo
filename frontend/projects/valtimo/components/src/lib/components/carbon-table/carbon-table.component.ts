@@ -122,7 +122,13 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
     header.sorted = true;
     header.ascending = value.state.direction === 'ASC';
   }
-  @Input() loading: boolean;
+  private _loading = false;
+  @Input() public get loading(): boolean {
+    return this._loading;
+  }
+  public set loading(value: boolean) {
+    this._loading = coerceBooleanProperty(value);
+  }
   @Input() paginatorConfig: CarbonPaginatorConfig = DEFAULT_PAGINATOR_CONFIG;
   @Input() tableConfig: CarbonTableConfig = createCarbonTableConfig();
 
@@ -162,7 +168,7 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   private _tableModel: TableModel = new TableModel();
 
   public get numberOfColumns(): number | null {
-    return this.fields.length + (this.tableConfig.enableSingleSelect ? 0 : 1);
+    return this.loading ? null : this.fields.length + (this.tableConfig.enableSingleSelect ? 0 : 1);
   }
   public get tableModel(): TableModel {
     return this.loading ? this._skeletonTableModel : this._tableModel;
@@ -185,6 +191,9 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   ) {}
 
   public ngAfterViewInit(): void {
+    if (this.loading) {
+      return;
+    }
     this._subscriptions$.add(this.getHeaderItems());
 
     if (!this.data) {

@@ -19,10 +19,12 @@ import {TranslateService} from '@ngx-translate/core';
 import {
   BreadcrumbService,
   CarbonPaginationSelection,
+  CarbonPaginatorConfig,
   CarbonTableComponent,
   CarbonTableConfig,
   ColumnConfig,
   createCarbonTableConfig,
+  DEFAULT_PAGINATOR_CONFIG,
   Direction,
   ListField,
   PageTitleService,
@@ -97,6 +99,10 @@ export class DossierListComponent implements OnInit, OnDestroy {
     showSelectionColumn: true,
     withPagination: true,
   });
+  public readonly paginatorConfig: CarbonPaginatorConfig = {
+    ...DEFAULT_PAGINATOR_CONFIG,
+    itemsPerPageOptions: [10, 25, 50, 100],
+  };
 
   public readonly showAssignModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangePageModal$ = new BehaviorSubject<boolean>(false);
@@ -311,7 +317,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
   public get tabsDisabled(): boolean {
     return !!this.carbonTable?.tableModel && this.carbonTable.tableModel.selectedRowsCount() > 0;
   }
-  private _tabsInitialized = false;
+  private _previousTab: DossierListTab = null;
 
   constructor(
     private readonly assigneeService: DossierListAssigneeService,
@@ -370,10 +376,16 @@ export class DossierListComponent implements OnInit, OnDestroy {
   }
 
   public tabChange(tab: DossierListTab): void {
-    if (!this._tabsInitialized) {
-      this._tabsInitialized = true;
+    if (!this._previousTab) {
+      this._previousTab = tab;
       return;
     }
+
+    if (this._previousTab === tab) {
+      return;
+    }
+    this.loadingAssigneeFilter = true;
+    this._previousTab = tab;
     this.paginationService.setPage(1);
     this.assigneeService.setAssigneeFilter(tab);
   }

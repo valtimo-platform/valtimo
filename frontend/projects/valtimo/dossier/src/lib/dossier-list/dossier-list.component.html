@@ -48,7 +48,7 @@
 
   <ng-container *ngTemplateOutlet="bulkAssignModal; context: {obs: obs}"></ng-container>
 
-  <ng-container *ngTemplateOutlet="changePageModal; context: {obs: obs}"></ng-container>
+  <ng-container *ngTemplateOutlet="changePageModal"></ng-container>
 </ng-container>
 
 <ng-template #searchFields let-obs="obs">
@@ -73,6 +73,7 @@
     hideTableHeader
     [loading]="loadingDocumentItems"
     [initialSort]="pagination.sort"
+    [paginatorConfig]="paginatorConfig"
     [tableConfig]="tableConfig"
     [pagination]="pagination"
     (paginationChange)="onPaginationChange($event)"
@@ -129,7 +130,7 @@
   </ng-container>
 </ng-template>
 
-<ng-template #loading><valtimo-spinner></valtimo-spinner></ng-template>
+<ng-template #loading><valtimo-carbon-table loading></valtimo-carbon-table></ng-template>
 
 <ng-template #bulkAssignModal let-obs="obs">
   <valtimo-dossier-bulk-assign-modal

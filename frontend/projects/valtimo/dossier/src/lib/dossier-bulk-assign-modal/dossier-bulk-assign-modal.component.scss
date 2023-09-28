@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-.valtimo-dossier-bulk-assign-modal {
-  ::ng-deep .cds--list-box__menu {
-    position: fixed;
-  }
+::ng-deep .valtimo-dossier-bulk-assign-modal .cds--list-box__menu {
+  position: fixed;
 }
