@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export * from './dossier-bulk-assign.service';
 export * from './dossier-column.service';
 export * from './zaakobjecten.service';
 export * from './dossier-parameter.service';

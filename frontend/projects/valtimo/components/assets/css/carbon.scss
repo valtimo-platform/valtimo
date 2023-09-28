@@ -112,16 +112,28 @@ body {
   background-color: colors.$gray-10;
 }
 
-.cds--link--disabled {
-  pointer-events: none;
+.cds {
+  &--link--disabled {
+    pointer-events: none;
+  }
+
+  &--text-input:read-only {
+    color: theme.$text-primary;
+    border-color: theme.$border-subtle-01;
+    outline: none;
+  }
+
+  &--data-table {
+    &-container {
+      padding-top: 0 !important;
+    }
+
+    tr {
+      cursor: pointer;
+    }
+  }
 }
 
-.cds--text-input:read-only {
-  color: theme.$text-primary;
-  border-color: theme.$border-subtle-01;
-  outline: none;
-}
-
-.cds--data-table-container {
-  padding-top: 0 !important;
+.main-content label {
+  margin-bottom: 0 !important;
 }

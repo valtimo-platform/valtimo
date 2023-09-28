@@ -20,6 +20,8 @@
     documentItems: documentItems$ | async,
     searchFields: searchFields$ | async,
     schema: schema$ | async,
+    showAssignModal: showAssignModal$ | async,
+    selectedDocumentIds: selectedDocumentIds$ | async,
     loaded:
       !loadingFields &&
       !loadingPagination &&
@@ -43,6 +45,10 @@
       </div>
     </div>
   </div>
+
+  <ng-container *ngTemplateOutlet="bulkAssignModal; context: {obs: obs}"></ng-container>
+
+  <ng-container *ngTemplateOutlet="changePageModal"></ng-container>
 </ng-container>
 
 <ng-template #searchFields let-obs="obs">
@@ -67,12 +73,19 @@
     hideTableHeader
     [loading]="loadingDocumentItems"
     [initialSort]="pagination.sort"
+    [paginatorConfig]="paginatorConfig"
     [tableConfig]="tableConfig"
     [pagination]="pagination"
     (paginationChange)="onPaginationChange($event)"
     (rowClick)="onRowClick($event)"
     (sortChange)="onSortChange($event)"
   >
+    <ng-container carbonToolbarActions>
+      <button cdsButton="primary" (click)="showAssignModal()">
+        {{ 'dossier.bulkAssign.assign' | translate }}
+      </button>
+    </ng-container>
+
     {{ 'interface.noResults' | translate }}
   </valtimo-carbon-table>
 </ng-template>
@@ -82,16 +95,21 @@
     <cds-tabs type="contained" data-carbon-theme="g10" class="dossier-list-tabs">
       <cds-tab
         [active]="assigneeFilter === 'ALL'"
+        [disabled]="tabsDisabled"
         heading="{{ 'dossier.tabs.ALL' | translate }}"
         (selected)="tabChange('ALL')"
       ></cds-tab>
+
       <cds-tab
         [active]="assigneeFilter === 'MINE'"
+        [disabled]="tabsDisabled"
         heading="{{ 'dossier.tabs.MINE' | translate }}"
         (selected)="tabChange('MINE')"
       ></cds-tab>
+
       <cds-tab
         [active]="assigneeFilter === 'OPEN'"
+        [disabled]="tabsDisabled"
         heading="{{ 'dossier.tabs.OPEN' | translate }}"
         (selected)="tabChange('OPEN')"
       ></cds-tab>
@@ -112,4 +130,23 @@
   </ng-container>
 </ng-template>
 
-<ng-template #loading><valtimo-spinner></valtimo-spinner></ng-template>
+<ng-template #loading><valtimo-carbon-table loading></valtimo-carbon-table></ng-template>
+
+<ng-template #bulkAssignModal let-obs="obs">
+  <valtimo-dossier-bulk-assign-modal
+    [documentIds]="obs.selectedDocumentIds"
+    [open]="obs.showAssignModal"
+    (closeEvent)="onCloseEvent($event, obs.selectedDocumentIds)"
+  ></valtimo-dossier-bulk-assign-modal>
+</ng-template>
+
+<ng-template #changePageModal>
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="dossier.changePageModal.confirm"
+    contentTranslationKey="dossier.changePageModal.content"
+    [outputOnConfirm]="paginationChange$ | async"
+    [showModalSubject$]="showChangePageModal$"
+    titleTranslationKey="dossier.changePageModal.title"
+    (confirmEvent)="onChangePageConfirm($event)"
+  ></valtimo-confirmation-modal>
+</ng-template>

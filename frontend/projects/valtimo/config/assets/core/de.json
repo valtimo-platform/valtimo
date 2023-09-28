@@ -14,6 +14,20 @@
     "DocumentUnassignedEvent": "Die Zuweisung des Bevollmächtigten wurde aufgehoben"
   },
   "dossier": {
+    "bulkAssign": {
+      "assign": "Zuweisen",
+      "modal": {
+        "confirm": "Zuweisen",
+        "selectLabel": "Dem Benutzer zuweisen",
+        "selectPlaceholder": "Wähle eine Option",
+        "title": "Ausgewählte Fälle zuordnen"
+      }
+    },
+    "changePageModal": {
+      "title": "Seite wechseln",
+      "content": "Sind Sie sicher, dass Sie die Seite wechseln möchten? Die gesamte Auswahl geht verloren.",
+      "confirm": "Seite wechseln"
+    },
     "title": {
       "single": "Case",
       "plural": "Cases"
