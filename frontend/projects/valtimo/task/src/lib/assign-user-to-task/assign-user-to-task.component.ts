@@ -66,17 +66,12 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    const assigneeEmail = changes.assigneeEmail;
-    if (assigneeEmail) {
-      this.candidateUsersForTask$.pipe(take(1)).subscribe(candidateUsers => {
-        const currentUserEmail = assigneeEmail.currentValue;
-        this.assignedEmailOnServer$.next(currentUserEmail || null);
-        this.userEmailToAssign = currentUserEmail || null;
-        this.assignedUserFullName$.next(this.getAssignedUserName(candidateUsers, currentUserEmail));
-      });
-    } else {
-      this.clear();
-    }
+    this.candidateUsersForTask$.pipe(take(1)).subscribe(candidateUsers => {
+      const currentUserEmail = changes.assigneeEmail?.currentValue || this.assigneeEmail;
+      this.assignedEmailOnServer$.next(currentUserEmail || null);
+      this.userEmailToAssign = currentUserEmail || null;
+      this.assignedUserFullName$.next(this.getAssignedUserName(candidateUsers, currentUserEmail));
+    });
   }
 
   ngOnDestroy() {
@@ -119,9 +114,9 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   getAssignedUserName(users: User[], userEmail: string): string {
     if (users && userEmail) {
       const findUser = users.find(user => user.email === userEmail);
-      return findUser ? findUser.fullName : '';
+      return findUser ? findUser.fullName || userEmail : userEmail;
     }
-    return '';
+    return userEmail || '-';
   }
 
   mapUsersForDropdown(users: User[]): DropdownItem[] {
@@ -130,7 +125,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
       users
         .map(user => ({...user, lastName: user.lastName?.split(' ').splice(-1)[0] || ''}))
         .sort((a, b) => a.lastName.localeCompare(b.lastName))
-        .map(user => ({text: user.fullName, id: user.email}))
+        .map(user => ({text: user.fullName || user.email, id: user.email}))
     );
   }
 
