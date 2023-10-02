@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
-import {map, Observable, of, switchMap, tap} from 'rxjs';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
+import {map, Observable, of, switchMap, tap} from 'rxjs';
 import {DossierProcessStartModalComponent} from '../dossier-process-start-modal/dossier-process-start-modal.component';
-import {ActivatedRoute} from '@angular/router';
 import {DossierListService} from '../services';
 
 declare const $;
@@ -58,7 +56,6 @@ export class DossierListActionsComponent implements OnInit {
 
   constructor(
     private readonly documentService: DocumentService,
-    private readonly route: ActivatedRoute,
     private readonly listService: DossierListService
   ) {}
 

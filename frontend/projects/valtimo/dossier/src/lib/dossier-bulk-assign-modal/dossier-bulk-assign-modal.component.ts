@@ -13,7 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  HostBinding,
+  Input,
+  Output,
+} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {ListItem} from 'carbon-components-angular';
 import {map, Observable} from 'rxjs';
@@ -27,6 +34,8 @@ import {DossierBulkAssignService} from '../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DossierBulkAssignModalComponent {
+  @HostBinding('class') public modalClass = 'valtimo-dossier-bulk-assign-modal';
+
   @Input() public set documentIds(value: string[]) {
     if (!value.length) {
       return;

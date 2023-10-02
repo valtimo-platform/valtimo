@@ -22,6 +22,7 @@ import {
   CarbonPaginatorConfig,
   CarbonTableComponent,
   CarbonTableConfig,
+  CarbonTableSelectTranslations,
   ColumnConfig,
   createCarbonTableConfig,
   DEFAULT_PAGINATOR_CONFIG,
@@ -94,6 +95,11 @@ export class DossierListComponent implements OnInit, OnDestroy {
   public pagination!: Pagination;
   public canHaveAssignee!: boolean;
   public visibleDossierTabs: Array<DossierListTab> | null = null;
+
+  public readonly selectTranslations: CarbonTableSelectTranslations = {
+    single: 'dossier.select.single',
+    multiple: 'dossier.select.multiple',
+  };
 
   public readonly tableConfig: CarbonTableConfig = createCarbonTableConfig({
     showSelectionColumn: true,

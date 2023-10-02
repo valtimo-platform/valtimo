@@ -60,6 +60,7 @@ import {ProcessModule} from '@valtimo/process';
 import {TaskModule} from '@valtimo/task';
 import {
   ButtonModule as CarbonButtonModule,
+  ComboBoxModule,
   DropdownModule,
   IconModule,
   LoadingModule,
@@ -173,6 +174,7 @@ export type TabsFactory = () => Map<string, object>;
     ConfirmationModalModule,
     DropdownModule,
     TabsModule,
+    ComboBoxModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

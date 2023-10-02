@@ -28,6 +28,10 @@
       "content": "Sind Sie sicher, dass Sie die Seite wechseln möchten? Die gesamte Auswahl geht verloren.",
       "confirm": "Seite wechseln"
     },
+    "select": {
+      "single": "1 case ausgewählt",
+      "multiple": "{{count}} cases ausgewählt"
+    },
     "title": {
       "single": "Case",
       "plural": "Cases"

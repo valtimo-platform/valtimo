@@ -38,12 +38,24 @@ import {
   TableModel,
 } from 'carbon-components-angular';
 import {get as _get} from 'lodash';
-import {combineLatest, map, Observable, of, startWith, Subscription} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Observable,
+  of,
+  startWith,
+  Subscription,
+  switchMap,
+} from 'rxjs';
+
 import {
   ActionItem,
   CarbonPaginationSelection,
   CarbonPaginatorConfig,
+  CarbonTableBatchText,
   CarbonTableConfig,
+  CarbonTableSelectTranslations,
   ColumnConfig,
   createCarbonTableConfig,
   DEFAULT_PAGINATOR_CONFIG,
@@ -129,6 +141,16 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   public set loading(value: boolean) {
     this._loading = coerceBooleanProperty(value);
   }
+
+  private _selectTranslations$: BehaviorSubject<CarbonTableSelectTranslations> =
+    new BehaviorSubject({
+      single: 'interface.table.singleSelect',
+      multiple: 'interface.table.multipleSelect',
+    });
+  @Input() set selectTranslations(value: CarbonTableSelectTranslations) {
+    this._selectTranslations$.next(value);
+  }
+
   @Input() paginatorConfig: CarbonPaginatorConfig = DEFAULT_PAGINATOR_CONFIG;
   @Input() tableConfig: CarbonTableConfig = createCarbonTableConfig();
 
@@ -137,15 +159,19 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   @Output() search: EventEmitter<string | null> = new EventEmitter();
   @Output() sortChange: EventEmitter<SortState> = new EventEmitter();
 
-  public batchText$: Observable<{SINGLE: any; MULTIPLE: any}> = combineLatest([
-    this.translateService.stream('interface.table.singleSelect'),
-    this.translateService.stream('interface.table.multipleSelect'),
-  ]).pipe(
-    map(([SINGLE, MULTIPLE]) => ({SINGLE, MULTIPLE})),
-    startWith({
-      SINGLE: this.translateService.instant('interface.table.singleSelect'),
-      MULTIPLE: this.translateService.instant('interface.table.multipleSelect'),
-    })
+  public batchText$: Observable<CarbonTableBatchText> = this._selectTranslations$.pipe(
+    switchMap((translations: CarbonTableSelectTranslations) =>
+      combineLatest([
+        this.translateService.stream(translations.single),
+        this.translateService.stream(translations.multiple),
+      ]).pipe(
+        map(([SINGLE, MULTIPLE]) => ({SINGLE, MULTIPLE})),
+        startWith({
+          SINGLE: this.translateService.instant(translations.single),
+          MULTIPLE: this.translateService.instant(translations.multiple),
+        })
+      )
+    )
   );
 
   public paginationTranslations$: Observable<Partial<PaginationTranslations>> = combineLatest([

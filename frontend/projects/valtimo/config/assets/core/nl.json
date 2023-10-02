@@ -28,6 +28,10 @@
       "content": "Weet je zeker dat je van pagina wilt wisselen? Alle selectie gaat verloren.",
       "confirm": "Wijzig pagina"
     },
+    "select": {
+      "single": "1 dossier geselecteerd",
+      "multiple": "{{count}} dossiers geselecteerd"
+    },
     "title": {
       "single": "Dossier",
       "plural": "Dossiers"

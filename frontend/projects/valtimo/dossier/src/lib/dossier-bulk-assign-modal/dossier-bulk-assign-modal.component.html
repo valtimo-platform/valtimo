@@ -21,16 +21,14 @@
 
   <section cdsModalContent>
     <form *ngIf="candidateUsers$ | async as candidateUsers" [formGroup]="formGroup">
-      <cds-dropdown
-        formControlName="assignee"
+      <cds-combo-box
+        [dropUp]="false"
+        [items]="candidateUsers"
         [label]="'dossier.bulkAssign.modal.selectLabel' | translate"
         [placeholder]="'dossier.bulkAssign.modal.selectPlaceholder' | translate"
       >
-        <cds-dropdown-list
-          class="valtimo-dossier-bulk-assign-modal"
-          [items]="candidateUsers"
-        ></cds-dropdown-list>
-      </cds-dropdown>
+        <cds-dropdown-list></cds-dropdown-list>
+      </cds-combo-box>
     </form>
   </section>
 
