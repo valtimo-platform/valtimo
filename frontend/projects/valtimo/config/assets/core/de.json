@@ -359,6 +359,7 @@
     "noFormDefinitionFoundAdmin": "Es ist keine Formular verknüpft. Die Verknüpfung erfolgt im Admin Menü > Prozess-Verknüpfungen.",
     "noFormDefinitionFoundUser": "Es ist keine Formular verknüpft. Nur Admin-User können die Verknüpfung vornehmen.",
     "gotoProcessLinksButton": "Jetzt konfigurieren",
+    "loading": "Formular wird geladen...",
     "name": "Name",
     "nameIsRequired": "Name ist erforderlich",
     "nameIsInUse": "Name wird bereits verwendet",

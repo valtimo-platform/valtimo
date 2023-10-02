@@ -16,6 +16,9 @@
 
 <valtimo-modal
   #taskDetailModal
+  *ngIf="{
+    loading: loading$ | async
+  } as obs"
   elementId="taskDetailModal"
   [title]="page?.title"
   [subtitle]="page?.subtitle"
@@ -38,7 +41,12 @@
       (formFlowComplete)="completeTask()"
     ></valtimo-form-flow>
   </div>
-  <div body *ngIf="!formDefinition && !formFlowInstanceId && !errorMessage">
+  <div body *ngIf="obs.loading">
+    <div class="text-black mb-0 p-3 text-center">
+      {{ 'formManagement.loading' | translate }}
+    </div>
+  </div>
+  <div body *ngIf="obs.loading === false && !formDefinition && !formFlowInstanceId && !errorMessage">
     <div class="bg-warning text-black mb-0 p-3 text-center">
       {{
         (isAdmin$ | async)

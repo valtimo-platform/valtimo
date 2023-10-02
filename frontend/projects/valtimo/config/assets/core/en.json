@@ -360,6 +360,7 @@
     "noFormDefinitionFoundAdmin": "There is no form connected to the start event/user task. To link a form go to Admin menu > Process links.",
     "noFormDefinitionFoundUser": "There is no form connected to the start event/user task. Ask an admin user for assistance.",
     "gotoProcessLinksButton": "Configure now",
+    "loading": "Loading form...",
     "name": "Name",
     "nameIsRequired": "Name is required",
     "nameIsInUse": "Name is already in use",

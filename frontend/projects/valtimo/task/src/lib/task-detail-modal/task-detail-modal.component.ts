@@ -80,6 +80,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
   processLinkIsFormFlow$ = this.taskProcessLinkType$.pipe(map(type => type === 'form-flow'));
   formIoFormData$ = new BehaviorSubject<any>(null);
   private _subscriptions = new Subscription();
+  readonly loading$ = new BehaviorSubject<boolean>(true);
 
   constructor(
     private readonly toastr: ToastrService,
@@ -167,6 +168,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
 
   private resetFormDefinition(): void {
     this.formDefinition = null;
+    this.loading$.next(true);
   }
 
   private getTaskProcessLink(taskId: string): void {
@@ -184,6 +186,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
               this.formFlowInstanceId = res.properties.formFlowInstanceId;
               break;
           }
+          this.loading$.next(false);
         } else {
           this.getLegacyTaskProcessLink(taskId);
         }
@@ -214,6 +217,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
           this.formFlowInstanceId = resV1.properties.formFlowInstanceId;
           break;
       }
+      this.loading$.next(false);
     });
   }
 

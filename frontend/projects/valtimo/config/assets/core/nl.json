@@ -359,6 +359,7 @@
     "noFormDefinitionFoundAdmin": "Er is geen formulier gekoppeld aan de start event/user task. Om een formulier te koppelen ga naar Admin menu > Proceskoppelingen",
     "noFormDefinitionFoundUser": "Er is geen formulier gekoppeld aan de start event/user task. Vraag een admin gebruiker om hulp.",
     "gotoProcessLinksButton": "Configureer nu",
+    "loading": "Formulier wordt geladen...",
     "name": "Naam",
     "nameIsRequired": "Naam is vereist",
     "nameIsInUse": "Naam is al in gebruik",
