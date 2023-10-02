@@ -22,6 +22,7 @@
   <section cdsModalContent>
     <form *ngIf="candidateUsers$ | async as candidateUsers" [formGroup]="formGroup">
       <cds-combo-box
+        formControlName="assignee"
         [dropUp]="false"
         [items]="candidateUsers"
         [label]="'dossier.bulkAssign.modal.selectLabel' | translate"

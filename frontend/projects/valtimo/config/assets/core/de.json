@@ -20,13 +20,17 @@
         "confirm": "Zuweisen",
         "selectLabel": "Dem Benutzer zuweisen",
         "selectPlaceholder": "Wähle eine Option",
-        "title": "Ausgewählte Fälle zuordnen"
+        "title": "Ausgewählte Case zuordnen"
       }
     },
     "changePageModal": {
       "title": "Seite wechseln",
       "content": "Sind Sie sicher, dass Sie die Seite wechseln möchten? Die gesamte Auswahl geht verloren.",
       "confirm": "Seite wechseln"
+    },
+    "noResults": {
+      "description": "Klicken Sie auf <strong>Neuen Case erstellen</strong>, um einen neuen Case zu starten.",
+      "title": "Keine Case gefunden"
     },
     "select": {
       "single": "1 case ausgewählt",

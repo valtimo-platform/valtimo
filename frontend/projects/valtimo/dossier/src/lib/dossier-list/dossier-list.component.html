@@ -37,6 +37,7 @@
           [loading]="!obs.loaded"
           (formFlowComplete)="refresh()"
         ></valtimo-dossier-list-actions>
+
         <ng-container *ngIf="obs.loaded; else loading">
           <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
 
@@ -68,7 +69,7 @@
   </ng-container>
 
   <valtimo-carbon-table
-    [data]="obs.documentItems"
+    [data]="[]"
     [fields]="obs.fields"
     hideTableHeader
     [initialSort]="pagination.sort"
@@ -87,7 +88,15 @@
       </button>
     </ng-container>
 
-    {{ 'interface.noResults' | translate }}
+    <div carbonToolbarContent>
+      <ng-container *ngTemplateOutlet="dossierListActions"></ng-container>
+    </div>
+
+    <valtimo-no-results
+      [action]="dossierListActions"
+      description="{{ 'dossier.noResults.description' | translate }}"
+      title="{{ 'dossier.noResults.title' | translate }}"
+    ></valtimo-no-results>
   </valtimo-carbon-table>
 </ng-template>
 
@@ -150,4 +159,16 @@
     titleTranslationKey="dossier.changePageModal.title"
     (confirmEvent)="onChangePageConfirm($event)"
   ></valtimo-confirmation-modal>
+</ng-template>
+
+<ng-template #dossierListActions let-obs="obs">
+  <button
+    cdsButton="primary"
+    [disabled]="listActionsComponent.disableStartDossierButton$ | async"
+    (click)="startDossier()"
+  >
+    {{ 'Start Dossier' | translate }}
+
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
 </ng-template>

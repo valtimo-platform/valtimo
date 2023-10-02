@@ -33,37 +33,43 @@ export class DossierListActionsComponent implements OnInit {
 
   @Output() formFlowComplete = new EventEmitter();
 
+  public readonly associatedProcessDocumentDefinitions$: Observable<
+    Array<ProcessDocumentDefinition>
+  > = this.listService.documentDefinitionName$.pipe(
+    switchMap(documentDefinitionName =>
+      documentDefinitionName
+        ? this.documentService.findProcessDocumentDefinitions(documentDefinitionName)
+        : of([])
+    ),
+    map(processDocumentDefinitions =>
+      processDocumentDefinitions.filter(definition => definition.canInitializeDocument)
+    ),
+    tap(processDocumentDefinitions => {
+      this._cachedAssociatedProcessDocumentDefinitions = processDocumentDefinitions;
+    })
+  );
+
+  public readonly disableStartDossierButton$: Observable<boolean> =
+    this.associatedProcessDocumentDefinitions$.pipe(
+      map(definitions => definitions.length === 0 || this.loading)
+    );
+
   private selectedProcessDocumentDefinition: ProcessDocumentDefinition | null = null;
 
   private modalListenerAdded = false;
 
   private _cachedAssociatedProcessDocumentDefinitions: Array<ProcessDocumentDefinition> = [];
 
-  readonly associatedProcessDocumentDefinitions$: Observable<Array<ProcessDocumentDefinition>> =
-    this.listService.documentDefinitionName$.pipe(
-      switchMap(documentDefinitionName =>
-        documentDefinitionName
-          ? this.documentService.findProcessDocumentDefinitions(documentDefinitionName)
-          : of([])
-      ),
-      map(processDocumentDefinitions =>
-        processDocumentDefinitions.filter(definition => definition.canInitializeDocument)
-      ),
-      tap(processDocumentDefinitions => {
-        this._cachedAssociatedProcessDocumentDefinitions = processDocumentDefinitions;
-      })
-    );
-
   constructor(
     private readonly documentService: DocumentService,
     private readonly listService: DossierListService
   ) {}
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.modalListenerAdded = false;
   }
 
-  startDossier(): void {
+  public startDossier(): void {
     const associatedProcessDocumentDefinitions = this._cachedAssociatedProcessDocumentDefinitions;
 
     if (associatedProcessDocumentDefinitions.length > 1) {
@@ -74,7 +80,7 @@ export class DossierListActionsComponent implements OnInit {
     }
   }
 
-  selectProcess(processDocumentDefinition: ProcessDocumentDefinition): void {
+  public selectProcess(processDocumentDefinition: ProcessDocumentDefinition): void {
     const modal = $('#startProcess');
     if (!this.modalListenerAdded) {
       modal.on('hidden.bs.modal', this.showStartProcessModal.bind(this));
@@ -84,7 +90,7 @@ export class DossierListActionsComponent implements OnInit {
     modal.modal('hide');
   }
 
-  onFormFlowComplete() {
+  public onFormFlowComplete(): void {
     this.formFlowComplete.emit(null);
   }
 

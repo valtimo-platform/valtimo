@@ -28,6 +28,10 @@
       "content": "Weet je zeker dat je van pagina wilt wisselen? Alle selectie gaat verloren.",
       "confirm": "Wijzig pagina"
     },
+    "noResults": {
+      "description": "Klik op <strong>Creëer Nieuw Dossier</strong> om een nieuw dossier aan te maken.",
+      "title": "Geen dossiers gevonden"
+    },
     "select": {
       "single": "1 dossier geselecteerd",
       "multiple": "{{count}} dossiers geselecteerd"

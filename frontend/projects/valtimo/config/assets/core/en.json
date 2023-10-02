@@ -28,6 +28,10 @@
       "content": "Are you sure you want to change pages? All selection will be lost.",
       "confirm": "Change page"
     },
+    "noResults": {
+      "description": "Click <strong>Create New Case</strong> to start a new case.",
+      "title": "No cases found"
+    },
     "select": {
       "single": "1 case selected",
       "multiple": "{{count}} cases selected"

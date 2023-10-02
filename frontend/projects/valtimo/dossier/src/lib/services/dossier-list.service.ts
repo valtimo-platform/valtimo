@@ -29,11 +29,11 @@ export class DossierListService {
     )
   );
 
-  get documentDefinitionName$(): Observable<string> {
+  public get documentDefinitionName$(): Observable<string> {
     return this._documentDefinitionName$.asObservable();
   }
 
-  get hasEnvColumnConfig$(): Observable<boolean> {
+  public get hasEnvColumnConfig$(): Observable<boolean> {
     return this._hasEnvColumnConfig$;
   }
 
@@ -43,7 +43,7 @@ export class DossierListService {
     this._documentDefinitionName$.next(documentDefinitionName);
   }
 
-  mapDocuments(
+  public mapDocuments(
     documents: Documents | SpecifiedDocuments,
     hasEnvColumnConfig: boolean,
     hasApiColumnConfig: boolean

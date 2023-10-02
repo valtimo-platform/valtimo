@@ -61,6 +61,7 @@ import {
   tap,
 } from 'rxjs';
 import {DefaultTabs} from '../dossier-detail-tab-enum';
+import {DossierListActionsComponent} from '../dossier-list-actions/dossier-list-actions.component';
 import {
   DossierBulkAssignService,
   DossierColumnService,
@@ -86,6 +87,7 @@ import {
 })
 export class DossierListComponent implements OnInit, OnDestroy {
   @ViewChild(CarbonTableComponent) carbonTable: CarbonTableComponent<Document>;
+  @ViewChild(DossierListActionsComponent) listActionsComponent: DossierListActionsComponent;
 
   public loadingFields = true;
   public loadingPagination = true;
@@ -433,6 +435,10 @@ export class DossierListComponent implements OnInit, OnDestroy {
     }
 
     this.paginationService.pageSizeChange(pagination.size);
+  }
+
+  public startDossier(): void {
+    this.listActionsComponent.startDossier();
   }
 
   private openDocumentDefinitionNameSubscription(): void {
