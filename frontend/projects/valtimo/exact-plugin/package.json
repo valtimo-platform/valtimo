@@ -1,6 +1,7 @@
 {
   "name": "@valtimo/exact-plugin",
-  "version": "10.4.0",
+  "license": "EUPL-1.2",
+  "version": "10.7.0",
   "peerDependencies": {
     "@angular/common": "^14.3.0",
     "@angular/core": "^13.3.0"
