@@ -15,6 +15,7 @@
  */
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {ButtonModule, DialogModule, PaginationModule, TableModule} from 'carbon-components-angular';
 import {CarbonTableComponent} from './carbon-table.component';
@@ -29,6 +30,7 @@ import {CarbonNoResultsComponent} from './no-results/carbon-no-results.component
     TableModule,
     PaginationModule,
     ButtonModule,
+    ReactiveFormsModule,
   ],
   exports: [CarbonNoResultsComponent, CarbonTableComponent],
 })

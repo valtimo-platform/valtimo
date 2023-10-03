@@ -38,6 +38,7 @@
       <cds-table-toolbar-search
         *ngIf="tableConfig.searchable"
         [expandable]="true"
+        [formControl]="searchFormControl"
       ></cds-table-toolbar-search>
 
       <ng-content select="[carbonToolbarContent]"> </ng-content>

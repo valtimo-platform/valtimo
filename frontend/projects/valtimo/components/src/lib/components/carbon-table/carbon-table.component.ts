@@ -41,6 +41,7 @@ import {get as _get} from 'lodash';
 import {
   BehaviorSubject,
   combineLatest,
+  debounceTime,
   map,
   Observable,
   of,
@@ -64,6 +65,7 @@ import {
   ViewType,
 } from '../../models';
 import {ViewContentService} from '../view-content/view-content.service';
+import {FormControl} from '@angular/forms';
 
 @Component({
   selector: 'valtimo-carbon-table',
@@ -156,7 +158,7 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
 
   @Output() paginationChange: EventEmitter<CarbonPaginationSelection> = new EventEmitter();
   @Output() rowClick: EventEmitter<T> = new EventEmitter();
-  @Output() search: EventEmitter<string | null> = new EventEmitter();
+  @Output() search: EventEmitter<string> = new EventEmitter();
   @Output() sortChange: EventEmitter<SortState> = new EventEmitter();
 
   public batchText$: Observable<CarbonTableBatchText> = this._selectTranslations$.pipe(
@@ -187,6 +189,8 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
       TOTAL_ITEMS,
     }))
   );
+
+  public searchFormControl = new FormControl('');
 
   private _previousSortIndex: number;
   private _skeletonTableModel: TableModel = Table.skeletonModel(5, 5);
@@ -228,6 +232,14 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
 
     this._tableData = this.getTableItems(this.data);
     this._tableModel.data = this._tableData;
+
+    this._subscriptions$.add(
+      this.searchFormControl.valueChanges
+        .pipe(debounceTime(500))
+        .subscribe((searchString: string) => {
+          this.onSearch(searchString);
+        })
+    );
 
     this.cd.detectChanges();
   }
@@ -275,10 +287,6 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
     this.sortChange.emit({...sortState, isSorting: false});
   }
 
-  public onSearch(searchString: string | null): void {
-    this.search.emit(searchString);
-  }
-
   public onSelectPage(pageIndex: number): void {
     this.paginationChange.emit({
       page: pageIndex,
@@ -309,6 +317,10 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
           })
       );
     });
+  }
+
+  private onSearch(searchString: string): void {
+    this.search.emit(searchString);
   }
 
   private getItemInitialIndex(rowIndex: number): number {
