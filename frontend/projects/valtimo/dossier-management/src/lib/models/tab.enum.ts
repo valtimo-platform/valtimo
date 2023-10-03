@@ -14,5 +14,9 @@
  * limitations under the License.
  */
 
-export * from './list-column.model';
-export * from './tab.enum';
+export enum TabEnum {
+  CASE = 'case',
+  SEARCH = 'search',
+  LIST = 'list',
+  TABS = 'tabs',
+}

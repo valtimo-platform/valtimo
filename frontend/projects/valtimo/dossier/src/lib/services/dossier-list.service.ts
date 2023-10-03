@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, map, Observable} from 'rxjs';
-import {DossierColumnService} from '../services';
+import {DossierColumnService} from './dossier-column.service';
 import {Documents, SpecifiedDocuments} from '@valtimo/document';
 
 @Injectable()

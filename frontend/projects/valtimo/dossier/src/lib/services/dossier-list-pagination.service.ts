@@ -19,7 +19,7 @@ import {DefinitionColumn} from '@valtimo/config';
 import {Documents, SpecifiedDocuments} from '@valtimo/document';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, filter, map, Observable, take, tap} from 'rxjs';
-import {DossierService} from '../dossier.service';
+import {DossierService} from './dossier.service';
 import {DossierParameterService} from './dossier-parameter.service';
 
 @Injectable()

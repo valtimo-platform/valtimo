@@ -14,5 +14,21 @@
  * limitations under the License.
  */
 
-export * from './list-column.model';
-export * from './tab.enum';
+import {Injectable} from '@angular/core';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {TabEnum} from '../models/tab.enum';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class TabService {
+  private _currentTab$ = new BehaviorSubject<TabEnum>(TabEnum.CASE);
+
+  public get currentTab$(): Observable<TabEnum> {
+    return this._currentTab$.asObservable();
+  }
+
+  public set currentTab(tab: TabEnum) {
+    this._currentTab$.next(tab);
+  }
+}
