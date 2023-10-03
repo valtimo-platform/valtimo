@@ -393,6 +393,14 @@
       "searchFields": "Zoekvelden",
       "listColumns": "Lijst",
       "tabManagement": "Tabbladen"
+    },
+    "tabManagement": {
+      "columns": {
+        "content": "Inhoud",
+        "key": "Tab sleutel",
+        "name": "Tab naam",
+        "type": "Type"
+      }
     }
   },
   "task-list": {

@@ -14,5 +14,13 @@
  * limitations under the License.
  */
 
-export * from './tab.service';
-export * from './tab-management.service';
+export enum TabType {
+  STANDARD = 'standard',
+}
+
+export interface TabItem {
+  title: string;
+  key: string;
+  type: TabType;
+  content: string;
+}

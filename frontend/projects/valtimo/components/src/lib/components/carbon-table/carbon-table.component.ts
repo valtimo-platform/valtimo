@@ -102,6 +102,14 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
     this._hideTableHeader = coerceBooleanProperty(value);
   }
 
+  private _hideTableToolbar = false;
+  @Input() public get hideTableToolbar(): boolean {
+    return this._hideTableToolbar;
+  }
+  public set hideTableToolbar(value: boolean) {
+    this._hideTableToolbar = coerceBooleanProperty(value);
+  }
+
   private _tableData: TableItem[][];
   private _data: Array<T>;
   @Input() set data(value: Array<T>) {
@@ -182,10 +190,10 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
     this.translateService.stream('interface.table.ofLastPages'),
     this.translateService.stream('interface.table.totalItems'),
   ]).pipe(
-    map(([ITEMS_PER_PAGE, OF_LAST_PAGES, OF_LAST_PAGE, TOTAL_ITEMS]) => ({
+    map(([ITEMS_PER_PAGE, OF_LAST_PAGE, OF_LAST_PAGES, TOTAL_ITEMS]) => ({
       ITEMS_PER_PAGE,
-      OF_LAST_PAGES,
       OF_LAST_PAGE,
+      OF_LAST_PAGES,
       TOTAL_ITEMS,
     }))
   );
@@ -310,7 +318,7 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
         (translation: string, index: number) =>
           new TableHeaderItem({
             data: translation,
-            sortable: fields[index].sortable ?? true,
+            sortable: fields[index].sortable ?? this.tableConfig.sortable,
             className: fields[index].className ?? '',
             sorted: this.tableModel.header[index]?.sorted ?? false,
             ascending: this.tableModel.header[index]?.ascending ?? false,

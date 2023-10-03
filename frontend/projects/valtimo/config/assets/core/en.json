@@ -394,6 +394,14 @@
       "searchFields": "Search Fields",
       "listColumns": "List",
       "tabManagement": "Tabs"
+    },
+    "tabManagement": {
+      "columns": {
+        "content": "Content",
+        "key": "Tab key",
+        "name": "Tab name",
+        "type": "Type"
+      }
     }
   },
   "task-list": {

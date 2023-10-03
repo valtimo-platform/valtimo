@@ -26,6 +26,7 @@
   </cds-table-header>
 
   <cds-table-toolbar
+    *ngIf="!hideTableToolbar"
     class="valtimo-carbon-table__toolbar"
     [model]="tableModel"
     [batchText]="batchText$ | async"

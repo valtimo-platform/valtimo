@@ -97,7 +97,9 @@
       <valtimo-dossier-management-list-columns></valtimo-dossier-management-list-columns>
     </div>
     <div *ngIf="currentTab && currentTab === TabEnum.TABS">
-      <valtimo-dossier-management-tabs></valtimo-dossier-management-tabs>
+      <valtimo-dossier-management-tabs
+        [documentDefinitionName]="documentDefinitionName$ | async"
+      ></valtimo-dossier-management-tabs>
     </div>
   </div>
 </ng-template>
