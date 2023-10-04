@@ -30,6 +30,7 @@
     [required]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
+    placeholder="Documenten API Plugin"
   >
   </v-input>
   <v-input
@@ -41,6 +42,7 @@
     [defaultValue]="obs.prefill?.url"
     [required]="true"
     [tooltip]="'urlTooltip' | pluginTranslate: pluginId | async"
+    placeholder="https://openzaak.example.com/documenten/api/v1/"
   >
   </v-input>
   <v-input
@@ -53,6 +55,7 @@
     [required]="true"
     [widthPx]="150"
     [tooltip]="'bronorganisatieTooltip' | pluginTranslate: pluginId | async"
+    placeholder="123456789"
   >
   </v-input>
   <ng-container

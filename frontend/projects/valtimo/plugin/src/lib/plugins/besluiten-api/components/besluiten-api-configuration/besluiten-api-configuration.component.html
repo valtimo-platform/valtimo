@@ -30,6 +30,7 @@
     [required]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
+    placeholder="Besluiten API Plugin"
   >
   </v-input>
   <v-input
@@ -41,6 +42,7 @@
     [required]="true"
     [tooltip]="'rsinTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
+    placeholder="123456789"
   >
   </v-input>
   <v-input
@@ -52,6 +54,7 @@
     [defaultValue]="obs.prefill?.url"
     [required]="true"
     [tooltip]="'urlTooltip' | pluginTranslate: pluginId | async"
+    placeholder="https://openzaak.example.com/besluiten/api/v1/ "
   >
   </v-input>
   <ng-container

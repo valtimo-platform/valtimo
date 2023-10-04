@@ -30,6 +30,7 @@
     [required]="true"
     [widthPx]="350"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
+    placeholder="Smart Documents Plugin"
   >
   </v-input>
   <v-input
@@ -40,6 +41,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.url"
     [required]="true"
+    placeholder=""
   >
   </v-input>
   <v-input
@@ -50,6 +52,7 @@
     [defaultValue]="obs.prefill?.username"
     [required]="true"
     [widthPx]="350"
+    placeholder=""
   >
   </v-input>
   <v-input

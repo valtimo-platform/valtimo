@@ -30,6 +30,7 @@
     [required]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
+    placeholder="Notificaties API Plugin"
   >
   </v-input>
   <v-input
@@ -41,6 +42,7 @@
     [defaultValue]="obs.prefill?.url"
     [required]="true"
     [tooltip]="'urlTooltip' | pluginTranslate: pluginId | async"
+    placeholder="https://opennotificaties.example.com/api/v1/"
   >
   </v-input>
   <v-input
@@ -52,6 +54,7 @@
     [defaultValue]="obs.prefill?.callbackUrl"
     [required]="true"
     [tooltip]="'callbackUrlTooltip' | pluginTranslate: pluginId | async"
+    placeholder="https://{gzac-front-end-url}/api/v1/notificatiesapi/callback"
   >
   </v-input>
   <ng-container

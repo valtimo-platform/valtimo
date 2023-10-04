@@ -30,6 +30,7 @@
     [required]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
+    placeholder="Verzoek Plugin"
   >
   </v-input>
   <ng-container
@@ -71,6 +72,7 @@
     [required]="true"
     [tooltip]="'rsinTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
+    placeholder=""
   >
   </v-input>
   <v-multi-input-form
@@ -111,6 +113,7 @@
         [tooltip]="'typeTooltip' | pluginTranslate: pluginId | async"
         [widthPx]="350"
         [smallMargin]="true"
+        placeholder=""
       >
       </v-input>
       <ng-container *ngIf="{documentSelectItems: documentSelectItems$ | async} as vars">
@@ -167,6 +170,7 @@
         [tooltip]="'initiatorRolDescriptionTooltip' | pluginTranslate: pluginId | async"
         [widthPx]="350"
         [smallMargin]="true"
+        placeholder=""
       >
       </v-input>
       <ng-container *ngIf="{processSelectItems: processSelectItems$ | async} as vars">
