@@ -24,3 +24,4 @@ export * from './dossier-list-pagination.service';
 export * from './dossier-list-search.service';
 export * from './dossier-tab.service';
 export * from './dossier.service';
+export * from './dossier-tab-api.service';

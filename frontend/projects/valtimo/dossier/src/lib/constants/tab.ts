@@ -19,12 +19,28 @@ import {DossierDetailTabSummaryComponent} from '../components/dossier-detail/tab
 import {DossierDetailTabProgressComponent} from '../components/dossier-detail/tab/progress/progress.component';
 import {DossierDetailTabAuditComponent} from '../components/dossier-detail/tab/audit/audit.component';
 import {DossierDetailTabDocumentsComponent} from '../components/dossier-detail/tab/documents/documents.component';
-import {DefaultTabs} from '../models/dossier-detail-tab-enum';
+import {DefaultTabComponents, DefaultTabs} from '../models';
+import {DossierDetailTabContactMomentsComponent} from '../components/dossier-detail/tab/contact-moments/contact-moments.component';
+import {DossierDetailTabZaakobjectenComponent} from '../components/dossier-detail/tab/zaakobjecten/zaakobjecten.component';
+import {DossierDetailTabNotesComponent} from '../components/dossier-detail/tab/notes/notes.component';
 
-export const TAB_MAP = new InjectionToken<Map<string, object>>('TabMap');
-export const DEFAULT_TABS = new Map<string, object>([
+const TAB_MAP = new InjectionToken<Map<string, object>>('TabMap');
+
+const DEFAULT_TABS = new Map<string, object>([
   [DefaultTabs.summary, DossierDetailTabSummaryComponent],
   [DefaultTabs.progress, DossierDetailTabProgressComponent],
   [DefaultTabs.audit, DossierDetailTabAuditComponent],
   [DefaultTabs.documents, DossierDetailTabDocumentsComponent],
 ]);
+
+const DEFAULT_TAB_COMPONENTS: DefaultTabComponents = {
+  [DefaultTabs.summary]: DossierDetailTabSummaryComponent,
+  [DefaultTabs.progress]: DossierDetailTabProgressComponent,
+  [DefaultTabs.audit]: DossierDetailTabAuditComponent,
+  [DefaultTabs.documents]: DossierDetailTabDocumentsComponent,
+  [DefaultTabs.contactMoments]: DossierDetailTabContactMomentsComponent,
+  [DefaultTabs.zaakobjecten]: DossierDetailTabZaakobjectenComponent,
+  [DefaultTabs.notes]: DossierDetailTabNotesComponent,
+};
+
+export {TAB_MAP, DEFAULT_TABS, DEFAULT_TAB_COMPONENTS};

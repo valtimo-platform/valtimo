@@ -147,5 +147,6 @@ export const environment: ValtimoConfig = {
   featureToggles: {
     showUserNameInTopBar: true,
     largeLogoMargin: true,
+    enableTabManagement: true,
   },
 };

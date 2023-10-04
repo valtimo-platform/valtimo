@@ -1,1 +1,1 @@
-export * from './dossier.config';
+export * from './tab';

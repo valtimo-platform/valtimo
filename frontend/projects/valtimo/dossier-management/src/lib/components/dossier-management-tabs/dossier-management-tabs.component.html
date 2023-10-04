@@ -22,4 +22,9 @@
   hideTableHeader
   hideTableToolbar
   [tableConfig]="tableConfig"
-></valtimo-carbon-table>
+>
+  <valtimo-no-results
+    [description]="'dossier.tabs.noResultsDescription' | translate"
+    [title]="'dossier.tabs.noResults' | translate"
+  ></valtimo-no-results>
+</valtimo-carbon-table>

@@ -14,86 +14,102 @@
  * limitations under the License.
  */
 
-import {Inject, Injectable} from '@angular/core';
-import {TabImpl} from '../models';
-import {DEFAULT_TABS, TAB_MAP} from '../constants';
+import {Inject, Injectable, OnDestroy} from '@angular/core';
+import {TabImpl, TabLoaderImpl} from '../models';
+import {DEFAULT_TAB_COMPONENTS, DEFAULT_TABS, TAB_MAP} from '../constants';
 import {ConfigService} from '@valtimo/config';
 import {ActivatedRoute, Event as NavigationEvent, NavigationEnd, Router} from '@angular/router';
 import {DossierDetailTabObjectTypeComponent} from '../components/dossier-detail/tab/object-type/object-type.component';
+import {DossierTabApiService} from './dossier-tab-api.service';
+import {BehaviorSubject, filter, map, Observable, Subscription} from 'rxjs';
 
-@Injectable({
-  providedIn: 'root',
-})
-export class DossierTabService {
-  private readonly tabMap: Map<string, object>;
-  private tabs: TabImpl[] = [];
-  private allTabs!: Map<string, object>;
-  private extraTabs!: Map<string, object>;
-  private readonly tabManagementEnabled!: boolean;
+@Injectable()
+export class DossierTabService implements OnDestroy {
+  private readonly _tabManagementEnabled!: boolean;
+  private readonly _documentDefinitionName$: Observable<string> = this.route.params.pipe(
+    map(params => params?.documentDefinitionName),
+    filter(documentDefinitionName => !!documentDefinitionName)
+  );
+  private readonly _tabs$ = new BehaviorSubject<Array<TabImpl> | null>(null);
+  private readonly _subscriptions = new Subscription();
+
+  public get tabs$(): Observable<Array<TabImpl>> {
+    return this._tabs$.pipe(filter(tabs => !!tabs));
+  }
 
   constructor(
-    @Inject(TAB_MAP) tabMap: Map<string, object> = DEFAULT_TABS,
+    @Inject(TAB_MAP) private readonly tabMap: Map<string, object> = DEFAULT_TABS,
     private readonly configService: ConfigService,
-    private route: ActivatedRoute,
-    private router: Router
+    private readonly route: ActivatedRoute,
+    private readonly dossierTabApiService: DossierTabApiService
   ) {
-    this.tabManagementEnabled = this.configService.config?.featureToggles?.enableTabManagement;
-    this.tabMap = tabMap;
-    this.setTabs();
-    this.openRouterSubscription();
+    this._tabManagementEnabled = this.configService.config?.featureToggles?.enableTabManagement;
+    this.openDocumentDefinitionNameSubscription();
   }
 
-  public getTabs(): TabImpl[] {
-    return this.tabs;
+  public ngOnDestroy() {
+    this._subscriptions.unsubscribe();
   }
 
-  public getConfigurableTabs(documentDefinitionName: string) {
-    if (this.configService?.config?.caseObjectTypes && this.tabManagementEnabled) {
+  private getConfigurableTabs(documentDefinitionName: string): Map<string, object> {
+    const tabMap = new Map<string, object>();
+
+    if (this.configService?.config?.caseObjectTypes) {
       const allNamesObjects = this.configService?.config?.caseObjectTypes[documentDefinitionName];
-      const map = new Map();
 
       allNamesObjects?.forEach(name => {
-        map.set(name, DossierDetailTabObjectTypeComponent);
+        tabMap.set(name, DossierDetailTabObjectTypeComponent);
       });
-
-      this.extraTabs = map;
-    } else {
-      this.extraTabs = new Map<string, object>();
     }
+
+    return tabMap;
   }
 
-  private setTabs(extraTabs?: Map<string, object>) {
-    if (this.tabManagementEnabled) {
-      this.setApiTabs();
-    } else {
-      this.setEnvironmentTabs(extraTabs);
-    }
-  }
-
-  private setEnvironmentTabs(extraTabs?: Map<string, object>): void {
+  private getAllEnvironmentTabs(extraTabs: Map<string, object>): Array<TabImpl> {
     let i = 0;
-
-    this.tabs = [];
-
-    this.allTabs = extraTabs
+    const tabMap = extraTabs
       ? new Map([...Array.from(this.tabMap.entries()), ...Array.from(extraTabs.entries())])
       : this.tabMap;
+    const tabs: Array<TabImpl> = [];
 
-    this.allTabs.forEach((component, name) => {
-      this.tabs.push(new TabImpl(name, i, component));
+    tabMap.forEach((component, name) => {
+      tabs.push(new TabImpl(name, i, component));
       i++;
     });
+
+    return tabs;
   }
 
-  private setApiTabs(): void {
-    // to implement
+  private openDocumentDefinitionNameSubscription(): void {
+    this._subscriptions.add(
+      this._documentDefinitionName$.subscribe(documentDefinitionName => {
+        if (this._tabManagementEnabled) {
+          this.setApiTabs(documentDefinitionName);
+        } else {
+          this.setEnvironmentTabs(documentDefinitionName);
+        }
+      })
+    );
   }
 
-  private openRouterSubscription(): void {
-    this.router.events.subscribe((event: NavigationEvent) => {
-      if (event instanceof NavigationEnd) {
-        this.setTabs(this.extraTabs);
-      }
+  private setApiTabs(documentDefinitionName: string): void {
+    this.dossierTabApiService.getDossierTabs(documentDefinitionName).subscribe({
+      next: tabs => {
+        const supportedTabs = tabs.filter(tab => !!DEFAULT_TAB_COMPONENTS[tab.contentKey]);
+        const mappedTabs = supportedTabs.map(
+          (tab, index) => new TabImpl(tab.contentKey, index, DEFAULT_TAB_COMPONENTS[tab.contentKey])
+        );
+        this._tabs$.next(mappedTabs);
+      },
+      error: () => {
+        this._tabs$.next([]);
+      },
     });
+  }
+
+  private setEnvironmentTabs(documentDefinitionName: string): void {
+    const configurableTabs = this.getConfigurableTabs(documentDefinitionName);
+    const allEnvironmentTabs = this.getAllEnvironmentTabs(configurableTabs);
+    this._tabs$.next(allEnvironmentTabs);
   }
 }
