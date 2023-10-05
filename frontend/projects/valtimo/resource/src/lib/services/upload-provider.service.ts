@@ -51,8 +51,12 @@ export class UploadProviderService implements UploadService {
     this.logger.debug('Loading UploadService as', this.uploadService);
   }
 
-  uploadFile(file: File, documentDefinitionName?: string): Observable<ResourceFile> {
-    return this.uploadService.uploadFile(file, documentDefinitionName);
+  uploadFile(
+    file: File,
+    documentDefinitionName?: string,
+    documentId?: string
+  ): Observable<ResourceFile> {
+    return this.uploadService.uploadFile(file, documentDefinitionName, documentId);
   }
 
   getResource(resourceId: string): Observable<ResourceDto> {

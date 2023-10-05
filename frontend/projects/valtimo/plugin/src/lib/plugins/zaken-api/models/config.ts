@@ -62,6 +62,12 @@ interface CreateZaakConfig {
   inputTypeZaakTypeToggle?: InputOption;
 }
 
+interface SetZaakopschortingConfig {
+  verlengingsduur: string;
+  toelichtingVerlenging: string;
+  toelichtingOpschorting: string;
+}
+
 export {
   ZakenApiConfig,
   LinkDocumentToZaakConfig,
@@ -70,4 +76,5 @@ export {
   CreateZaakConfig,
   CreateNatuurlijkePersoonZaakRolConfig,
   CreateNietNatuurlijkePersoonZaakRolConfig,
+  SetZaakopschortingConfig,
 };

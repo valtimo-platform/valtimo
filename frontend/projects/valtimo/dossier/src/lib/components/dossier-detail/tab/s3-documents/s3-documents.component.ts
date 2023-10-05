@@ -100,23 +100,23 @@ export class DossierDetailTabS3DocumentsComponent implements OnInit {
     this.uploading$.next(true);
 
     this.uploadProviderService
-      .uploadFile(file, this.documentDefinitionName)
+      .uploadFile(file, this.documentDefinitionName, this.documentId)
       .pipe(
         switchMap(resourceFile =>
           this.documentService.assignResource(this.documentId, resourceFile.data.resourceId)
         )
       )
-      .subscribe(
-        () => {
+      .subscribe({
+        next: () => {
           this.toastrService.success('Successfully uploaded document to dossier');
           this.refetchDocuments();
           this.uploading$.next(false);
         },
-        () => {
+        error: () => {
           this.toastrService.error('Failed to upload document to dossier');
           this.uploading$.next(false);
-        }
-      );
+        },
+      });
   }
 
   downloadDocument(relatedFile: RelatedFile): void {
