@@ -122,6 +122,7 @@ export interface ValtimoConfig {
     sortFilesByDate?: boolean;
     returnToLastUrlAfterTokenExpiration?: boolean;
     enableTabManagement?: boolean;
+    hideValtimoVersionsForNonAdmins?: boolean;
   };
   visibleTaskListTabs?: Array<TaskListTab>;
   visibleDossierListTabs?: Array<DossierListTab>;

@@ -24,6 +24,7 @@ import {CreateZaakResultaatConfigurationComponent} from './components/create-zaa
 import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
 import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
+import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -37,6 +38,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-zaak': CreateZaakConfigurationComponent,
     'create-natuurlijk-persoon-zaak-rol': CreateNatuurlijkPersoonZaakRolComponent,
     'create-niet-natuurlijk-persoon-zaak-rol': CreateNietNatuurlijkPersoonZaakRolComponent,
+    'set-zaakopschorting': SetZaakopschortingComponent,
   },
   pluginTranslations: {
     nl: {
@@ -72,6 +74,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'Deze actie creëert een zaak in de Zaken API en koppeld de nieuwe zaak aan het dossier.',
       rsin: 'RSIN',
       rsinTooltip: 'Rechtspersonen en Samenwerkingsverbanden Informatienummer',
+      verlengingsduur: 'Aantal dagen dat de einddatum wordt verlengd (in cijfers)',
+      toelichtingVerlenging: 'Reden voor verlenging',
+      toelichtingOpschorting: 'Reden voor opschorting',
       zaakType: 'Zaaktype',
       zaakTypeUrl: 'Zaaktype-URL',
       zaakTypeTooltip: 'In dit veld moet de verwijzing komen naar de type zaak.',
@@ -82,6 +87,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       selection: 'Selectie',
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - natuurlijk persoon',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - niet natuurlijk persoon',
+      'set-zaakopschorting': 'Schort een zaak op',
       roltypeUrl: 'Roltype URL',
       rolToelichting: 'Roltoelichting',
       inpBsn: 'Initiator BSN',
@@ -155,6 +161,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'This action creates a zaak in the Zaken API and links the new zaak with the case.',
       rsin: 'RSIN',
       rsinTooltip: 'Legal Entities and Partnerships Information Number',
+      verlengingsduur: 'Amount of days to prolong (in numbers)',
+      toelichtingVerlenging: 'Reason for prolonging',
+      toelichtingOpschorting: 'Reason for suspending',
       zaakType: 'Zaaktype',
       zaakTypeUrl: 'Zaaktype URL',
       zaakTypeTooltip: 'In this field the reference must be made to the type of the zaak.',
@@ -165,6 +174,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       selection: 'Selection',
       'create-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - natural person',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - not a natural person',
+      'set-zaakopschorting': 'Suspend case',
       roltypeUrl: 'Role type URL',
       rolToelichting: 'Role explanation',
       inpBsn: 'Initiator BSN',
@@ -238,6 +248,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'Diese Aktion hat einen zaak in der Zaken-API definiert und den neuen zaak mit dem Fall verknüpft.',
       rsin: 'RSIN',
       rsinTooltip: 'Informationsnummer für juristische Personen und Partnerschaften.',
+      verlengingsduur: 'Anzahl der Tage, um die das Enddatum verlängert wird (in Zahlen)',
+      toelichtingVerlenging: 'Grund für die Verlängerung',
+      toelichtingOpschorting: 'Grund für die Suspendierung',
       zaakType: 'Zaaktype',
       zaakTypeUrl: 'Zaaktype-URL',
       zaakTypeTooltip: 'In diesem Feld muss auf die zaaktype verwiesen werden.',
@@ -248,6 +261,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       selection: 'Auswahl',
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol erstellen – natürliche Person',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Zaakrol erstellen – keine natürliche Person',
+      'set-zaakopschorting': 'Einen Fall aussetzen',
       roltypeUrl: 'Rollentyp-URL',
       rolToelichting: 'Rollenerklärung',
       inpBsn: 'Initiator BSN',

@@ -25,7 +25,7 @@ import {S3Service} from './s3.service';
 export class S3UploadService implements UploadService {
   constructor(private readonly s3Service: S3Service) {}
 
-  uploadFile(file: File): Observable<ResourceFile> {
+  uploadFile(file: File, _, documentId?: string): Observable<ResourceFile> {
     let resourceUrl: URL;
     const fileName = file.name;
     const splitFileName = fileName.split('.');
@@ -36,7 +36,7 @@ export class S3UploadService implements UploadService {
       map(url => new URL(url)),
       tap(url => (resourceUrl = url)),
       switchMap(url => this.s3Service.upload(url, renamedFile)),
-      map(() => new S3Resource(file, resourceUrl)),
+      map(() => new S3Resource(file, resourceUrl, documentId)),
       switchMap(s3Resource => this.s3Service.registerResource(s3Resource)),
       switchMap(s3Resource => this.s3Service.get(s3Resource.id)),
       map(result => ({...result, originalName: file.name})),

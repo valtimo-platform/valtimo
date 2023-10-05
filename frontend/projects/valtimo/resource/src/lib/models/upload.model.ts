@@ -40,7 +40,11 @@ interface ResourceFile {
 }
 
 interface UploadService {
-  uploadFile(file: File, documentDefinitionName?: string): Observable<ResourceFile>;
+  uploadFile(
+    file: File,
+    documentDefinitionName?: string,
+    documentId?: string
+  ): Observable<ResourceFile>;
   getResource(resourceId: string): Observable<ResourceDto>;
   checkUploadProcessLink?(caseDefinitionKey: string): Observable<boolean>;
   uploadFileWithMetadata?(

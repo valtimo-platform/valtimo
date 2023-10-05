@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import {Versions} from '../models';
-
-const VERSIONS: Versions = {
-  frontendLibraries: '11.0.0',
-};
-
-export {VERSIONS};
+describe('My First Test', () => {
+  it('Visits the initial project page', () => {
+    cy.visit('/')
+    cy.contains('app is running!')
+  })
+})

@@ -45,10 +45,15 @@ export class S3Resource implements Resource {
   sizeInBytes: number;
   extension?: string = null;
   createdOn?: Date = null;
+  documentId?: string;
 
-  constructor(file: File, preSignedUrl: URL) {
+  constructor(file: File, preSignedUrl: URL, documentId?: string) {
     this.key = decodeURIComponent(preSignedUrl.pathname.substring(1));
     this.name = file.name;
     this.sizeInBytes = file.size;
+    if (!documentId) {
+      return;
+    }
+    this.documentId = documentId;
   }
 }

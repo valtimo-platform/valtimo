@@ -36,3 +36,4 @@ export * from './table.model';
 export * from './timeline.model';
 export * from './title.model';
 export * from './version.model';
+export * from './multi-input.model';

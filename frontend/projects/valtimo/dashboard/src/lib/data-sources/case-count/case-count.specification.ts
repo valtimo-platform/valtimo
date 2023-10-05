@@ -23,7 +23,7 @@ export const caseCountDataSourceSpecification: DataSourceSpecification = {
   translations: {
     de: {
       title: 'Fallzahl',
-      documentDefinition: 'Falltyp',
+      documentDefinition: 'Falltyp (erforderlich)',
       documentDefinitionHelperText: 'Der Falltyp, für den die Anzahl abgerufen wird',
       '!=': 'Nicht gleichzusetzen mit',
       '==': 'Gleich',
@@ -41,7 +41,7 @@ export const caseCountDataSourceSpecification: DataSourceSpecification = {
     },
     en: {
       title: 'Case count',
-      documentDefinition: 'Case type',
+      documentDefinition: 'Case type (required)',
       documentDefinitionHelperText: 'The case type for which the count is retrieved',
       '!=': 'Not equal to',
       '==': 'Equal to',
@@ -59,7 +59,7 @@ export const caseCountDataSourceSpecification: DataSourceSpecification = {
     },
     nl: {
       title: 'Aantal dossiers',
-      documentDefinition: 'Dossiertype',
+      documentDefinition: 'Dossiertype (vereist)',
       documentDefinitionHelperText: 'Het dossiertype waarvoor de telling wordt opgehaald',
       '!=': 'Niet gelijk aan',
       '==': 'Gelijk aan',
