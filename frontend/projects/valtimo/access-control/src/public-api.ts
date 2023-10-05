@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {Versions} from '../models';
+/*
+ * Public API Surface of access-control
+ */
 
-const VERSIONS: Versions = {
-  frontendLibraries: '11.0.0',
-};
-
-export {VERSIONS};
+export * from './lib/models';
+export * from './lib/services';
+export * from './lib/utils';
