@@ -69,29 +69,29 @@ import {
   TabsModule,
 } from 'carbon-components-angular';
 import {NoteModalComponent} from './components/note-modal/note-modal.component';
-import {DossierAssignUserComponent} from './components/dossier-assign-user/dossier-assign-user.component';
-import {DossierBulkAssignModalComponent} from './components/dossier-bulk-assign-modal/dossier-bulk-assign-modal.component';
-import {DossierDetailComponent} from './components/dossier-detail/dossier-detail.component';
-import {DossierDetailTabAuditComponent} from './components/dossier-detail/tab/audit/audit.component';
-import {DossierDetailTabContactMomentsComponent} from './components/dossier-detail/tab/contact-moments/contact-moments.component';
-import {DossierDetailTabDocumentenApiDocumentsComponent} from './components/dossier-detail/tab/documenten-api-documents/documenten-api-documents.component';
-import {DossierDetailTabDocumentsComponent} from './components/dossier-detail/tab/documents/documents.component';
-import {DossierDetailTabNotesComponent} from './components/dossier-detail/tab/notes/notes.component';
-import {DossierDetailTabObjectTypeComponent} from './components/dossier-detail/tab/object-type/object-type.component';
-import {DossierDetailTabProgressComponent} from './components/dossier-detail/tab/progress/progress.component';
-import {DossierDetailTabS3DocumentsComponent} from './components/dossier-detail/tab/s3-documents/s3-documents.component';
-import {DossierDetailTabSummaryComponent} from './components/dossier-detail/tab/summary/summary.component';
-import {DossierDetailTabZaakobjectenComponent} from './components/dossier-detail/tab/zaakobjecten/zaakobjecten.component';
-import {DossierListActionsComponent} from './components/dossier-list-actions/dossier-list-actions.component';
-import {DossierListComponent} from './components/dossier-list/dossier-list.component';
-import {DossierProcessStartModalComponent} from './components/dossier-process-start-modal/dossier-process-start-modal.component';
+import {DossierAssignUserComponent} from './dossier-assign-user/dossier-assign-user.component';
+import {DossierBulkAssignModalComponent} from './dossier-bulk-assign-modal/dossier-bulk-assign-modal.component';
+import {DossierDetailComponent} from './dossier-detail/dossier-detail.component';
+import {DossierDetailTabAuditComponent} from './dossier-detail/tab/audit/audit.component';
+import {DossierDetailTabContactMomentsComponent} from './dossier-detail/tab/contact-moments/contact-moments.component';
+import {DossierDetailTabDocumentenApiDocumentsComponent} from './dossier-detail/tab/documenten-api-documents/documenten-api-documents.component';
+import {DossierDetailTabDocumentsComponent} from './dossier-detail/tab/documents/documents.component';
+import {DossierDetailTabNotesComponent} from './dossier-detail/tab/notes/notes.component';
+import {DossierDetailTabObjectTypeComponent} from './dossier-detail/tab/object-type/object-type.component';
+import {DossierDetailTabProgressComponent} from './dossier-detail/tab/progress/progress.component';
+import {DossierDetailTabS3DocumentsComponent} from './dossier-detail/tab/s3-documents/s3-documents.component';
+import {DossierDetailTabSummaryComponent} from './dossier-detail/tab/summary/summary.component';
+import {DossierDetailTabZaakobjectenComponent} from './dossier-detail/tab/zaakobjecten/zaakobjecten.component';
+import {DossierListActionsComponent} from './dossier-list-actions/dossier-list-actions.component';
+import {DossierListComponent} from './dossier-list/dossier-list.component';
+import {DossierProcessStartModalComponent} from './dossier-process-start-modal/dossier-process-start-modal.component';
 import {DossierRoutingModule} from './dossier-routing.module';
-import {DossierSupportingProcessStartModalComponent} from './components/dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
-import {DossierUpdateComponent} from './components/dossier-update/dossier-update.component';
-import {TAB_MAP} from './constants';
-import {DossierBulkAssignService, DossierService} from './services';
-import {DossierDetailTabFormioComponent} from './components/dossier-detail/tab/formio/formio.component';
-import {TabTranslatePipeModule} from './pipes';
+import {DossierSupportingProcessStartModalComponent} from './dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
+import {DossierUpdateComponent} from './dossier-update/dossier-update.component';
+import {TAB_MAP} from './dossier.config';
+import {DossierService} from './dossier.service';
+import {DossierBulkAssignService} from './services/dossier-bulk-assign.service';
+import {TabService} from './tab.service';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -116,7 +116,6 @@ export type TabsFactory = () => Map<string, object>;
     DossierDetailTabS3DocumentsComponent,
     DossierAssignUserComponent,
     NoteModalComponent,
-    DossierDetailTabFormioComponent,
   ],
   imports: [
     CommonModule,
@@ -176,7 +175,6 @@ export type TabsFactory = () => Map<string, object>;
     DropdownModule,
     TabsModule,
     ComboBoxModule,
-    TabTranslatePipeModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })
@@ -187,7 +185,7 @@ export class DossierModule {
       providers: [
         DossierService,
         DossierBulkAssignService,
-        DossierTabService,
+        TabService,
         {
           provide: TAB_MAP,
           useFactory: tabsFactory,

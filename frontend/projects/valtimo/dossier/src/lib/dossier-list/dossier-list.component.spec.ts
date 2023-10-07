@@ -19,14 +19,16 @@ import {RouterTestingModule} from '@angular/router/testing';
 import {DossierListComponent} from './dossier-list.component';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {HttpClient} from '@angular/common/http';
-import {MockKeycloakService, MockTranslateService, VALTIMO_CONFIG} from '@valtimo/config';
-import {environment} from '@src/environments/environment';
-import {TranslateService} from '@ngx-translate/core';
-import {LoggerTestingModule} from 'ngx-logger/testing';
-import {KeycloakService} from 'keycloak-angular';
-import {DatePipe} from '@angular/common';
-import {DossierBulkAssignService} from '../../services';
-import {MockProvider} from 'ng-mocks';
+import {VALTIMO_CONFIG} from '@valtimo/config';
+import {environment} from '../../../../../../src/environments/environment';
+import {
+  TranslateFakeLoader,
+  TranslateLoader,
+  TranslateModule,
+  TranslateService,
+} from '@ngx-translate/core';
+import {NGXLogger} from 'ngx-logger';
+import {NGXLoggerMock} from 'ngx-logger/testing';
 
 describe('DossierListComponent', () => {
   let httpClient: HttpClient;
@@ -34,17 +36,24 @@ describe('DossierListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule, HttpClientTestingModule, LoggerTestingModule],
+      imports: [
+        RouterTestingModule,
+        HttpClientTestingModule,
+        TranslateModule.forRoot({
+          loader: {
+            provide: TranslateLoader,
+            useClass: TranslateFakeLoader,
+          },
+        }),
+      ],
       declarations: [DossierListComponent],
       providers: [
         {
           provide: VALTIMO_CONFIG,
           useValue: environment,
         },
-        {provide: KeycloakService, useClass: MockKeycloakService},
-        {provide: TranslateService, useClass: MockTranslateService},
-        DossierBulkAssignService,
-        MockProvider(DatePipe),
+        TranslateService,
+        {provide: NGXLogger, useClass: NGXLoggerMock},
       ],
     }).compileComponents();
 

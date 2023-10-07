@@ -391,8 +391,7 @@
     "tabs": {
       "cases": "Falldetails",
       "searchFields": "Suchfelder",
-      "listColumns": "Aufführen",
-      "tabManagement": "Tabs"
+      "listColumns": "Aufführen"
     }
   },
   "task-list": {

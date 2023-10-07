@@ -36,18 +36,18 @@ import {
   TooltipIconModule,
 } from '@valtimo/components';
 import {ConfigModule} from '@valtimo/config';
-import {DossierManagementConnectModalComponent} from './components/dossier-management-connect-modal/dossier-management-connect-modal.component';
-import {DossierManagementDetailComponent} from './components/dossier-management-detail/dossier-management-detail.component';
-import {DossierManagementListComponent} from './components/dossier-management-list/dossier-management-list.component';
+import {DossierManagementConnectModalComponent} from './dossier-management-connect-modal/dossier-management-connect-modal.component';
+import {DossierManagementDetailComponent} from './dossier-management-detail-container/tabs/dossier-management-detail/dossier-management-detail.component';
+import {DossierManagementListComponent} from './dossier-management-list/dossier-management-list.component';
 import {DossierManagementRoutingModule} from './dossier-management-routing.module';
-import {DossierManagementUploadComponent} from './components/dossier-management-upload/dossier-management-upload.component';
-import {DossierManagementRemoveModalComponent} from './components/dossier-management-remove-modal/dossier-management-remove-modal.component';
+import {DossierManagementUploadComponent} from './dossier-management-upload/dossier-management-upload.component';
+import {DossierManagementRemoveModalComponent} from './dossier-management-remove-modal/dossier-management-remove-modal.component';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
-import {DossierManagementLinkProcessComponent} from './components/dossier-management-link-process/dossier-management-link-process.component';
-import {DossierManagementSearchFieldsComponent} from './components/dossier-management-search-fields/dossier-management-search-fields.component';
-import {DossierManagementDetailContainerComponent} from './components/dossier-management-detail-container/dossier-management-detail-container.component';
-import {DossierManagementAssigneeComponent} from './components/dossier-management-assignee/dossier-management-assignee.component';
-import {DossierManagementListColumnsComponent} from './components/dossier-management-list-columns/dossier-management-list-columns.component';
+import {DossierManagementLinkProcessComponent} from './dossier-management-link-process/dossier-management-link-process.component';
+import {DossierManagementSearchFieldsComponent} from './dossier-management-detail-container/tabs/dossier-management-search-fields/dossier-management-search-fields.component';
+import {DossierManagementDetailContainerComponent} from './dossier-management-detail-container/dossier-management-detail-container.component';
+import {DossierManagementAssigneeComponent} from './dossier-management-assignee/dossier-management-assignee.component';
+import {DossierManagementListColumnsComponent} from './dossier-management-detail-container/tabs/dossier-management-list-columns/dossier-management-list-columns.component';
 import {
   ButtonModule,
   CheckboxModule,
@@ -59,7 +59,6 @@ import {
   ModalModule as CarbonModalModule,
   NotificationModule,
 } from 'carbon-components-angular';
-import {DossierManagementTabsComponent} from './components/dossier-management-tabs/dossier-management-tabs.component';
 
 @NgModule({
   declarations: [
@@ -73,7 +72,6 @@ import {DossierManagementTabsComponent} from './components/dossier-management-ta
     DossierManagementDetailContainerComponent,
     DossierManagementAssigneeComponent,
     DossierManagementListColumnsComponent,
-    DossierManagementTabsComponent,
   ],
   imports: [
     CommonModule,

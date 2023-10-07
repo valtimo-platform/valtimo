@@ -14,7 +14,21 @@
  * limitations under the License.
  */
 
-.audit-pagination {
-  margin: 0 -1.923rem -1.923rem -1.923rem !important;
-  border-top: 1px solid #dee2e6;
+import {Injectable} from '@angular/core';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {TabEnum} from './tab.enum';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class TabService {
+  private _currentTab$ = new BehaviorSubject<TabEnum>(TabEnum.CASE);
+
+  public get currentTab$(): Observable<TabEnum> {
+    return this._currentTab$.asObservable();
+  }
+
+  public set currentTab(tab: TabEnum) {
+    this._currentTab$.next(tab);
+  }
 }

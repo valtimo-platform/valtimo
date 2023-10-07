@@ -392,8 +392,7 @@
     "tabs": {
       "cases": "Case Details",
       "searchFields": "Search Fields",
-      "listColumns": "List",
-      "tabManagement": "Tabs"
+      "listColumns": "List"
     }
   },
   "task-list": {
