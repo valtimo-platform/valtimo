@@ -28,7 +28,6 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import {FormControl} from '@angular/forms';
 import {TranslateService} from '@ngx-translate/core';
 import {
   OverflowMenu,
@@ -45,25 +44,28 @@ import {
   debounceTime,
   map,
   Observable,
+  of,
   startWith,
   Subscription,
   switchMap,
 } from 'rxjs';
+
 import {
   ActionItem,
   CarbonPaginationSelection,
   CarbonPaginatorConfig,
   CarbonTableBatchText,
   CarbonTableConfig,
-  CarbonTableTranslations,
+  CarbonTableSelectTranslations,
   ColumnConfig,
+  createCarbonTableConfig,
   DEFAULT_PAGINATOR_CONFIG,
-  DEFAULT_TABLE_CONFIG,
   Pagination,
   SortState,
   ViewType,
 } from '../../models';
 import {ViewContentService} from '../view-content/view-content.service';
+import {FormControl} from '@angular/forms';
 
 @Component({
   selector: 'valtimo-carbon-table',
@@ -74,24 +76,18 @@ import {ViewContentService} from '../view-content/view-content.service';
 })
 export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   @HostBinding('attr.data-carbon-theme') public theme = 'g10';
-  @HostBinding('class') public class = 'valtimo-carbon-table';
 
   @ViewChild('actionsMenu', {static: false}) actionsMenu: TemplateRef<OverflowMenu>;
 
   private _fields: ColumnConfig[];
-  @Input() public set fields(value: ColumnConfig[]) {
-    if (!value?.length) {
+  @Input() set fields(value: ColumnConfig[]) {
+    if (!value.length) {
       return;
     }
-
-    if (!!this._fields) {
-      this._headerItemsSubscription.unsubscribe();
-    }
-
     this._fields = value;
-    this._headerItemsSubscription.add(this.getHeaderItems());
+    this._subscriptions$.add(this.getHeaderItems());
   }
-  public get fields(): ColumnConfig[] {
+  get fields(): ColumnConfig[] {
     return this._fields;
   }
 
@@ -104,14 +100,6 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   }
   public set hideTableHeader(value: boolean) {
     this._hideTableHeader = coerceBooleanProperty(value);
-  }
-
-  private _hideTableToolbar = false;
-  @Input() public get hideTableToolbar(): boolean {
-    return this._hideTableToolbar;
-  }
-  public set hideTableToolbar(value: boolean) {
-    this._hideTableToolbar = coerceBooleanProperty(value);
   }
 
   private _tableData: TableItem[][];
@@ -148,90 +136,66 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
     header.sorted = true;
     header.ascending = value.state.direction === 'ASC';
   }
-
   private _loading = false;
-  @Input() public set loading(value: boolean) {
-    this._loading = coerceBooleanProperty(value);
-  }
-  public get loading(): boolean {
+  @Input() public get loading(): boolean {
     return this._loading;
   }
-
-  private readonly _defaultTranslations: CarbonTableTranslations = {
-    select: {single: 'interface.table.singleSelect', multiple: 'interface.table.multipleSelect'},
-    pagination: {
-      itemsPerPage: 'interface.table.itemsPerPage',
-      totalItems: 'interface.table.totalItems',
-    },
-  };
-  private _tableTranslations$: BehaviorSubject<CarbonTableTranslations> = new BehaviorSubject(
-    this._defaultTranslations
-  );
-  @Input() set tableTranslations(value: Partial<CarbonTableTranslations>) {
-    this._tableTranslations$.next({...this._defaultTranslations, ...value});
+  public set loading(value: boolean) {
+    this._loading = coerceBooleanProperty(value);
   }
 
-  private _paginatorConfig: CarbonPaginatorConfig = DEFAULT_PAGINATOR_CONFIG;
-  @Input() public set paginatorConfig(value: CarbonPaginatorConfig) {
-    this._paginatorConfig = {...DEFAULT_PAGINATOR_CONFIG, ...value};
-  }
-  public get paginatorConfig(): CarbonPaginatorConfig {
-    return this._paginatorConfig;
+  private _selectTranslations$: BehaviorSubject<CarbonTableSelectTranslations> =
+    new BehaviorSubject({
+      single: 'interface.table.singleSelect',
+      multiple: 'interface.table.multipleSelect',
+    });
+  @Input() set selectTranslations(value: CarbonTableSelectTranslations) {
+    this._selectTranslations$.next(value);
   }
 
-  private _tableConfig: CarbonTableConfig = DEFAULT_TABLE_CONFIG;
-  @Input() public set tableConfig(value: CarbonTableConfig) {
-    this._tableConfig = {...DEFAULT_TABLE_CONFIG, ...value};
-  }
-  public get tableConfig(): CarbonTableConfig {
-    return this._tableConfig;
-  }
+  @Input() paginatorConfig: CarbonPaginatorConfig = DEFAULT_PAGINATOR_CONFIG;
+  @Input() tableConfig: CarbonTableConfig = createCarbonTableConfig();
 
   @Output() paginationChange: EventEmitter<CarbonPaginationSelection> = new EventEmitter();
   @Output() rowClick: EventEmitter<T> = new EventEmitter();
-  @Output() search: EventEmitter<string | null> = new EventEmitter();
+  @Output() search: EventEmitter<string> = new EventEmitter();
   @Output() sortChange: EventEmitter<SortState> = new EventEmitter();
 
-  public batchText$: Observable<CarbonTableBatchText> = this._tableTranslations$.pipe(
-    switchMap((translations: CarbonTableTranslations) =>
+  public batchText$: Observable<CarbonTableBatchText> = this._selectTranslations$.pipe(
+    switchMap((translations: CarbonTableSelectTranslations) =>
       combineLatest([
-        this.translateService.stream(translations.select.single),
-        this.translateService.stream(translations.select.multiple),
+        this.translateService.stream(translations.single),
+        this.translateService.stream(translations.multiple),
       ]).pipe(
-        startWith(
-          this.translateService.instant(translations.select.single),
-          this.translateService.instant(translations.select.multiple)
-        )
+        map(([SINGLE, MULTIPLE]) => ({SINGLE, MULTIPLE})),
+        startWith({
+          SINGLE: this.translateService.instant(translations.single),
+          MULTIPLE: this.translateService.instant(translations.multiple),
+        })
       )
-    ),
-    map(([SINGLE, MULTIPLE]) => ({SINGLE, MULTIPLE}))
+    )
   );
 
-  public paginationTranslations$: Observable<Partial<PaginationTranslations>> =
-    this._tableTranslations$.pipe(
-      switchMap((translations: CarbonTableTranslations) =>
-        combineLatest([
-          this.translateService.stream(translations.pagination.itemsPerPage),
-          this.translateService.stream(translations.pagination.totalItems),
-          this.translateService.stream('interface.table.ofLastPage'),
-          this.translateService.stream('interface.table.ofLastPages'),
-        ])
-      ),
-      map(([ITEMS_PER_PAGE, TOTAL_ITEMS, OF_LAST_PAGE, OF_LAST_PAGES]) => ({
-        ITEMS_PER_PAGE,
-        TOTAL_ITEMS,
-        OF_LAST_PAGE,
-        OF_LAST_PAGES,
-      }))
-    );
+  public paginationTranslations$: Observable<Partial<PaginationTranslations>> = combineLatest([
+    this.translateService.stream('interface.table.itemsPerPage'),
+    this.translateService.stream('interface.table.ofLastPage'),
+    this.translateService.stream('interface.table.ofLastPages'),
+    this.translateService.stream('interface.table.totalItems'),
+  ]).pipe(
+    map(([ITEMS_PER_PAGE, OF_LAST_PAGES, OF_LAST_PAGE, TOTAL_ITEMS]) => ({
+      ITEMS_PER_PAGE,
+      OF_LAST_PAGES,
+      OF_LAST_PAGE,
+      TOTAL_ITEMS,
+    }))
+  );
 
   public searchFormControl = new FormControl('');
 
-  private _headerItemsSubscription = new Subscription();
   private _previousSortIndex: number;
   private _skeletonTableModel: TableModel = Table.skeletonModel(5, 5);
-  private _subscriptions = new Subscription();
-  private _tableModel = new TableModel();
+  private _subscriptions$: Subscription = new Subscription();
+  private _tableModel: TableModel = new TableModel();
 
   public get numberOfColumns(): number | null {
     return this.loading ? null : this.fields.length + (this.tableConfig.enableSingleSelect ? 0 : 1);
@@ -243,7 +207,9 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   public get selectedItems(): T[] {
     return this._tableModel.data.reduce(
       (items: T[], _, index: number) =>
-        this._tableModel.isRowSelected(index) ? [...items, this.data[index]] : [...items],
+        this._tableModel.isRowSelected(index)
+          ? [...items, this.data[this.getItemInitialIndex(index)]]
+          : [...items],
       []
     );
   }
@@ -258,14 +224,19 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
     if (this.loading) {
       return;
     }
+    this._subscriptions$.add(this.getHeaderItems());
+
+    if (!this.data) {
+      return;
+    }
 
     this._tableData = this.getTableItems(this.data);
     this._tableModel.data = this._tableData;
 
-    this._subscriptions.add(
+    this._subscriptions$.add(
       this.searchFormControl.valueChanges
         .pipe(debounceTime(500))
-        .subscribe((searchString: string | null) => {
+        .subscribe((searchString: string) => {
           this.onSearch(searchString);
         })
     );
@@ -274,8 +245,7 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this._headerItemsSubscription.unsubscribe();
-    this._subscriptions.unsubscribe();
+    this._subscriptions$.unsubscribe();
   }
 
   public onActionItemClick(action: ActionItem, item: T) {
@@ -283,11 +253,13 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   }
 
   public onRowClick(rowIndex: number): void {
-    if (!this.data[rowIndex]) {
+    const itemInitialIndex: number = this.getItemInitialIndex(rowIndex);
+
+    if (!this.data[itemInitialIndex]) {
       return;
     }
 
-    this.rowClick.emit(this.data[rowIndex]);
+    this.rowClick.emit(this.data[itemInitialIndex]);
   }
 
   public onSortClick(index: number): void {
@@ -329,26 +301,30 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   public getHeaderItems(): Subscription {
     const fields: ColumnConfig[] = this.fields;
 
-    return this.translateService
-      .stream(fields.map((field: ColumnConfig) => field.label))
-      .subscribe((translations: {[key: string]: string}) => {
-        this._tableModel.header = fields.map(
-          (field: ColumnConfig, index: number) =>
-            new TableHeaderItem({
-              data: translations[field.label],
-              sortable: field.sortable ?? this.tableConfig.sortable,
-              className: field.className ?? '',
-              sorted: this.tableModel.header[index]?.sorted ?? false,
-              ascending: this.tableModel.header[index]?.ascending ?? false,
-            })
-        );
+    const translations = fields.map((field: ColumnConfig) =>
+      !field.label ? of('') : this.translateService.stream(field.label)
+    );
 
-        this.cd.detectChanges();
-      });
+    return combineLatest(translations).subscribe((translationResults: string[]) => {
+      this._tableModel.header = translationResults.map(
+        (translation: string, index: number) =>
+          new TableHeaderItem({
+            data: translation,
+            sortable: fields[index].sortable ?? true,
+            className: fields[index].className ?? '',
+            sorted: this.tableModel.header[index]?.sorted ?? false,
+            ascending: this.tableModel.header[index]?.ascending ?? false,
+          })
+      );
+    });
   }
 
-  private onSearch(searchString: string | null): void {
+  private onSearch(searchString: string): void {
     this.search.emit(searchString);
+  }
+
+  private getItemInitialIndex(rowIndex: number): number {
+    return (this._tableModel.currentPage - 1) * this._tableModel.pageLength + rowIndex;
   }
 
   private getTableItems(items: T[]): TableItem[][] {

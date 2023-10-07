@@ -28,18 +28,9 @@
       "content": "Sind Sie sicher, dass Sie die Seite wechseln möchten? Die gesamte Auswahl geht verloren.",
       "confirm": "Seite wechseln"
     },
-    "changeTabModal": {
-      "title": "Seite Tab",
-      "content": "Sind Sie sicher, dass Sie die Seite Tab möchten? Die gesamte Auswahl geht verloren.",
-      "confirm": "Seite Tab"
-    },
     "noResults": {
       "description": "Klicken Sie auf <strong>Neuen Case erstellen</strong>, um einen neuen Case zu starten.",
       "title": "Keine Case gefunden"
-    },
-    "pagination": {
-      "itemsPerPage": "Cases pro Seite",
-      "totalItems": "{{start}}-{{end}} von {{total}} Cases"
     },
     "select": {
       "single": "1 case ausgewählt",
@@ -125,10 +116,6 @@
       "description": "Möchten Sie diese Datei wirklich löschen?",
       "cancel": "Absagen",
       "delete": "Löschen"
-    },
-    "formio": {
-      "noFormSpecified": "Für diese Registerkarte wurde keine Formulardefinition angegeben.",
-      "formNotFound": "Die Formulardefinition '{{formDefinitionName}}' konnte nicht gefunden werden."
     }
   },
   "document": {
@@ -406,49 +393,6 @@
       "searchFields": "Suchfelder",
       "listColumns": "Aufführen",
       "tabManagement": "Tabs"
-    },
-    "tabManagement": {
-      "columns": {
-        "content": "Inhalt",
-        "key": "Tab Schlüssel",
-        "name": "Tab name",
-        "type": "Typ"
-      },
-      "addModal": {
-        "addTab": "Hinzufügen Tab",
-        "customComponent": "Brauch component",
-        "description": "Wählen Sie eine der drei Optionen aus, um Ihrer Falldefinition eine neue Registerkarte hinzuzufügen",
-        "formIOComponent": "FormIO Komponente",
-        "standardTab": "Tab standard",
-        "tabContentLabel": "Inhalte auswählen",
-        "tabKeyLabel": "Key",
-        "tabNameLabel": "Tab name (Optional)",
-        "title": "Neue Registerkarte hinzufügen {{documentDefinitionName}}",
-        "uniqueKeyError": "Der Schlüssel für diese Spalte muss eindeutig sein."
-      },
-      "titles": {
-        "custom": "Neue Registerkarte hinzufügen mit brauch component",
-        "formio": "Neue Registerkarte hinzufügen mit FormIO Komponente",
-        "standard": "Neue Registerkarte hinzufügen mit Standardinhalte"
-      },
-      "contentLabels": {
-        "custom": "Brauch component auswählen",
-        "formio": "FormIO Komponente auswählen",
-        "standard": "Standardinhalte auswählen"
-      },
-      "editModal": {
-        "title": "Bearbeiten Tab {{name}}",
-        "updateTab": "Aktualisieren Tab"
-      },
-      "deleteModal": {
-        "title": "Löschen Tab?",
-        "description": "Sind Sie sicher, dass Sie diesen Tab löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
-      }
-    },
-    "tabType": {
-      "custom": "Brauch",
-      "formio": "FormIO",
-      "standard": "Standard"
     }
   },
   "task-list": {
@@ -573,7 +517,6 @@
     "edit": "Bearbeiten",
     "noItemsFound": "Keine Elemente gefunden",
     "clearAll": "Alles löschen",
-    "clearAll": "Löschen",
     "show": "Zeig",
     "items": "Elemente",
     "of": "von",
@@ -594,7 +537,6 @@
     "delete": "Löschen",
     "deleteConfirmation": "Sind Sie sicher, dass Sie löschen möchten?",
     "cancel": "Absagen",
-    "confirm": "Bestätigen",
     "collapse": "Kollaps",
     "expand": "Expandieren",
     "download": "Herunterladen",
@@ -611,13 +553,7 @@
       "singleSelect": "1 Element ausgewählt",
       "totalItems": "{{start}}-{{end}} von {{total}} Objekte"
     },
-    "pendingChanges": {
-      "title": "Seite verlassen",
-      "content": "Du hast nicht gespeicherte Änderungen. Bist du dir sicher, dass du weitermachen willst?"
-    },
-    "required": "erforderlich",
-    "filter": "Filter...",
-    "back": "Zurück"
+    "required": "erforderlich"
   },
   "taskDetail": {
     "taskCreated": "Erstellt",

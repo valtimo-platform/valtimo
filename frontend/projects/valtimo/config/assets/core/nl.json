@@ -28,18 +28,9 @@
       "content": "Weet je zeker dat je van pagina wilt wisselen? Alle selectie gaat verloren.",
       "confirm": "Wijzig pagina"
     },
-    "changeTabModal": {
-      "title": "Wijzig tabblad",
-      "content": "Weet je zeker dat je van tabblad wilt wisselen? Alle selectie gaat verloren.",
-      "confirm": "Wijzig tabblad"
-    },
     "noResults": {
       "description": "Klik op <strong>Creëer Nieuw Dossier</strong> om een nieuw dossier aan te maken.",
       "title": "Geen dossiers gevonden"
-    },
-    "pagination": {
-      "itemsPerPage": "Dossiers per pagina",
-      "totalItems": "{{start}}-{{end}} van {{total}} dossiers"
     },
     "select": {
       "single": "1 dossier geselecteerd",
@@ -125,10 +116,6 @@
       "description": "Weet u zeker dat u dit bestand wilt verwijderen?",
       "cancel": "Annuleren",
       "delete": "Verwijderen"
-    },
-    "formio": {
-      "noFormSpecified": "Voor dit tabblad is geen formulierdefinitie opgegeven.",
-      "formNotFound": "De formulierdefinitie '{{formDefinitionName}}' kan niet worden gevonden."
     }
   },
   "document": {
@@ -406,49 +393,6 @@
       "searchFields": "Zoekvelden",
       "listColumns": "Lijst",
       "tabManagement": "Tabbladen"
-    },
-    "tabManagement": {
-      "columns": {
-        "content": "Inhoud",
-        "key": "Tab sleutel",
-        "name": "Tab naam",
-        "type": "Type"
-      },
-      "addModal": {
-        "addTab": "Tabblad toevoegen",
-        "customComponent": "Aangepaste component",
-        "description": "Selecteer een van de drie opties om een ​​nieuw tabblad toe te voegen aan uw casusdefinitie",
-        "formIOComponent": "FormIO component",
-        "standardTab": "Standaard tabblad",
-        "tabContentLabel": "Kies inhoud",
-        "tabKeyLabel": "Sleutel",
-        "tabNameLabel": "Tabblad naam (optioneel)",
-        "title": "Nieuw tabblad toevoegen {{documentDefinitionName}}",
-        "uniqueKeyError": "De sleutel voor deze kolom moet uniek zijn."
-      },
-      "titles": {
-        "custom": "Nieuw tabblad toevoegen met aangepaste component",
-        "formio": "Nieuw tabblad toevoegen met FormIO component",
-        "standard": "Nieuw tabblad toevoegen met standaard inhoud"
-      },
-      "contentLabels": {
-        "custom": "Kies aangepaste component",
-        "formio": "Kies FormIO component",
-        "standard": "Kies standaard inhoud"
-      },
-      "editModal": {
-        "title": "Tabblad bewerken {{name}}",
-        "updateTab": "Tabblad updaten"
-      },
-      "deleteModal": {
-        "title": "Tabblad verwijderen?",
-        "description": "Weet u zeker dat u dit tabblad wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
-      }
-    },
-    "tabType": {
-      "custom": "Inhoud",
-      "formio": "FormIO",
-      "standard": "Standaard"
     }
   },
   "task-list": {
@@ -573,7 +517,6 @@
     "edit": "Aanpassen",
     "noItemsFound": "Geen items gevonden",
     "clearAll": "Alles wissen",
-    "clear": "Wissen",
     "show": "Toon",
     "items": "items",
     "of": "van",
@@ -594,7 +537,6 @@
     "delete": "Verwijderen",
     "deleteConfirmation": "Weet u zeker dat u wilt verwijderen?",
     "cancel": "Annuleren",
-    "confirm": "Bevestigen",
     "collapse": "Inklappen",
     "expand": "Uitklappen",
     "download": "Download",
@@ -611,13 +553,7 @@
       "singleSelect": "1 artikel geselecteerd",
       "totalItems": "{{start}}-{{end}} van {{total}} artikelen"
     },
-    "pendingChanges": {
-      "title": "Pagina verlaten",
-      "content": "Jij heeft niet-opgeslagen wijzigingen. Weet je zeker dat je door wilt gaan?"
-    },
-    "required": "vereist",
-    "filter": "Filteren...",
-    "back": "Terug"
+    "required": "vereist"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",

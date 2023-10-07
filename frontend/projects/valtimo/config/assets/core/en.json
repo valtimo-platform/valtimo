@@ -28,18 +28,9 @@
       "content": "Are you sure you want to change pages? All selection will be lost.",
       "confirm": "Change page"
     },
-    "changeTabModal": {
-      "title": "Change tab",
-      "content": "Are you sure you want to change tabs? All selection will be lost.",
-      "confirm": "Change tab"
-    },
     "noResults": {
       "description": "Click <strong>Create New Case</strong> to start a new case.",
       "title": "No cases found"
-    },
-    "pagination": {
-      "itemsPerPage": "Cases per page",
-      "totalItems": "{{start}}-{{end}} of {{total}} cases"
     },
     "select": {
       "single": "1 case selected",
@@ -125,10 +116,6 @@
       "description": "Are you sure you want to delete this file?",
       "cancel": "Cancel",
       "delete": "Delete"
-    },
-    "formio": {
-      "noFormSpecified": "No form definition has been specified for this tab.",
-      "formNotFound": "The form definition '{{formDefinitionName}}' could not be found."
     }
   },
   "document": {
@@ -407,49 +394,6 @@
       "searchFields": "Search Fields",
       "listColumns": "List",
       "tabManagement": "Tabs"
-    },
-    "tabManagement": {
-      "columns": {
-        "content": "Content",
-        "key": "Tab key",
-        "name": "Tab name",
-        "type": "Type"
-      },
-      "addModal": {
-        "addTab": "Add tab",
-        "customComponent": "Custom component",
-        "description": "Select one of the three options to add a new tab in your case definition",
-        "formIOComponent": "FormIO component",
-        "standardTab": "Standard tab",
-        "tabContentLabel": "Choose content",
-        "tabKeyLabel": "Key",
-        "tabNameLabel": "Tab name (optional)",
-        "title": "Add new tab in {{documentDefinitionName}}",
-        "uniqueKeyError": "The key for this column must be unique."
-      },
-      "titles": {
-        "custom": "Add new tab with custom component",
-        "formio": "Add new tab with FormIO component",
-        "standard": "Add new tab with standard content"
-      },
-      "contentLabels": {
-        "custom": "Choose custom component",
-        "formio": "Choose FormIO component",
-        "standard": "Choose standard content"
-      },
-      "editModal": {
-        "title": "Edit tab {{name}}",
-        "updateTab": "Update tab"
-      },
-      "deleteModal": {
-        "title": "Delete tab?",
-        "description": "Are you sure you want to delete this tab? This acction cannot be undone."
-      }
-    },
-    "tabType": {
-      "custom": "Custom",
-      "formio": "FormIO",
-      "standard": "Standard"
     }
   },
   "task-list": {
@@ -574,7 +518,6 @@
     "edit": "Edit",
     "noItemsFound": "No items found",
     "clearAll": "Clear all",
-    "clear": "Clear",
     "show": "Show",
     "items": "items",
     "of": "of",
@@ -595,7 +538,6 @@
     "delete": "Delete",
     "deleteConfirmation": "Are you sure you want to delete?",
     "cancel": "Cancel",
-    "confirm": "Confirm",
     "collapse": "Collapse",
     "expand": "Expand",
     "download": "Download",
@@ -612,13 +554,7 @@
       "singleSelect": "1 item selected",
       "totalItems": "{{start}}-{{end}} of {{total}} items"
     },
-    "pendingChanges": {
-      "title": "Leaving page",
-      "content": "You have unsaved changes. Are you sure you want to continue?"
-    },
-    "required": "required",
-    "filter": "Filter...",
-    "back": "Back"
+    "required": "required"
   },
   "taskDetail": {
     "taskCreated": "Created",
