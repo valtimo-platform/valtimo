@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-import {Type} from '@angular/core';
-
-enum DefaultTabs {
+export enum DefaultTabs {
   summary = 'summary',
   progress = 'progress',
   audit = 'audit',
@@ -25,13 +23,3 @@ enum DefaultTabs {
   zaakobjecten = 'zaakobjecten',
   notes = 'notes',
 }
-
-type DefaultTabComponents = {
-  [key in DefaultTabs]: Type<any>;
-};
-
-interface CaseTabConfig {
-  [tabKey: string]: Type<any>;
-}
-
-export {DefaultTabs, DefaultTabComponents, CaseTabConfig};

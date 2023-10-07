@@ -50,8 +50,6 @@
       "plural": "Dossiers"
     },
     "tabs": {
-      "noResults": "Geen tabbladen geconfigureerd",
-      "noResultsDescription": "Er zijn geen tabbladen geconfigureerd voor dit dossiertype.",
       "summary": "Algemeen",
       "progress": "Voortgang",
       "audit": "Log",

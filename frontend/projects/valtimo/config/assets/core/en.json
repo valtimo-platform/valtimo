@@ -50,8 +50,6 @@
       "plural": "Cases"
     },
     "tabs": {
-      "noResults": "No tabs configured",
-      "noResultsDescription": "No tabs are configured for this case type.",
       "summary": "Summary",
       "progress": "Progress",
       "audit": "Audit",

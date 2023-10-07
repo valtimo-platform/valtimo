@@ -24,9 +24,10 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import {ActivatedRoute, ParamMap, Params, Router} from '@angular/router';
+import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {BreadcrumbService} from '@valtimo/components';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService, DossierListTab} from '@valtimo/config';
 import {Document, DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
 import {KeycloakService} from 'keycloak-angular';
 import moment from 'moment';
@@ -56,7 +57,6 @@ import {DossierTabService} from '../../services';
   selector: 'valtimo-dossier-detail',
   templateUrl: './dossier-detail.component.html',
   styleUrls: ['./dossier-detail.component.css'],
-  providers: [DossierTabService],
 })
 export class DossierDetailComponent implements AfterViewInit, OnDestroy {
   @ViewChild('supportingProcessStartModal')
@@ -70,6 +70,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
   public documentDefinitionName: string;
   public documentDefinitionNameTitle: string;
   public documentId: string;
+  public dossierStatusTabs: Array<DossierListTab> | null = null;
   public processDefinitionListFields: Array<any> = [];
   public processDocumentDefinitions: ProcessDocumentDefinition[] = [];
   public tabLoader: TabLoaderImpl | null = null;
@@ -151,9 +152,6 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     )
   );
 
-  public readonly loadingTabs$ = new BehaviorSubject<boolean>(true);
-  public readonly noTabsConfigured$ = new BehaviorSubject<boolean>(false);
-
   private _snapshot: ParamMap;
   private _initialTabName: string;
 
@@ -168,16 +166,34 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     private readonly permissionService: PermissionService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly dossierTabService: DossierTabService
+    private readonly dossierTabService: DossierTabService,
+    private readonly translateService: TranslateService
   ) {
     this._snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this._snapshot.get('documentDefinitionName') || '';
     this.documentId = this._snapshot.get('documentId') || '';
+    this.dossierTabService.getConfigurableTabs(this.documentDefinitionName);
   }
 
   public ngAfterViewInit(): void {
-    this.initTabLoader();
-    this.initBreadcrumb();
+    this.tabLoader = new TabLoaderImpl(
+      this.dossierTabService.getTabs(),
+      this.componentFactoryResolver,
+      this.viewContainerRef,
+      this.translateService,
+      this.router,
+      this.location
+    );
+
+    this.documentService
+      .getDocumentDefinition(this.documentDefinitionName)
+      .subscribe(definition => {
+        this.documentDefinitionNameTitle = definition.schema.title;
+        this.setBreadcrumb();
+      });
+
+    this._initialTabName = this._snapshot.get('tab') ?? '';
+    this.tabLoader.initial(this._initialTabName);
     this.getAllAssociatedProcessDefinitions();
   }
 
@@ -226,35 +242,6 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
           this.logger.debug('Something went wrong while assigning user to case');
         },
       });
-  }
-
-  private initBreadcrumb(): void {
-    this.documentService
-      .getDocumentDefinition(this.documentDefinitionName)
-      .subscribe(definition => {
-        this.documentDefinitionNameTitle = definition.schema.title;
-        this.setBreadcrumb();
-      });
-  }
-
-  private initTabLoader(): void {
-    this.dossierTabService.tabs$.pipe(take(1)).subscribe(tabs => {
-      if (tabs?.length > 0) {
-        this._initialTabName = this._snapshot.get('tab') ?? '';
-        this.tabLoader = new TabLoaderImpl(
-          tabs,
-          this.componentFactoryResolver,
-          this.viewContainerRef,
-          this.router,
-          this.route
-        );
-        this.tabLoader.initial(this._initialTabName);
-        this.loadingTabs$.next(false);
-      } else {
-        this.noTabsConfigured$.next(true);
-        this.loadingTabs$.next(false);
-      }
-    });
   }
 
   public assignmentOfDocumentChanged(): void {

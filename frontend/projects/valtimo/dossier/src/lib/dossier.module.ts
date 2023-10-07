@@ -187,6 +187,7 @@ export class DossierModule {
       providers: [
         DossierService,
         DossierBulkAssignService,
+        DossierTabService,
         {
           provide: TAB_MAP,
           useFactory: tabsFactory,

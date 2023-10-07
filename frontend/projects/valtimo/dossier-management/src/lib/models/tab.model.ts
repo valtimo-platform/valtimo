@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-enum ApiTabType {
+export enum TabType {
   STANDARD = 'standard',
-  FORMIO = 'formio',
-  CUSTOM = 'custom',
 }
 
-interface ApiTabItem {
-  name: string | null;
+export interface TabItem {
+  title: string;
   key: string;
-  type: ApiTabType;
-  contentKey: string;
+  type: TabType;
+  content: string;
 }
-
-export {ApiTabType, ApiTabItem};

@@ -15,91 +15,11 @@
   -->
 
 <valtimo-carbon-table
-  *ngIf="{fields: fields$ | async, loading: loading$ | async, tabs: tabs$ | async} as obs"
+  *ngIf="{loading: loading$ | async, tabs: tabs$ | async} as obs"
   [data]="obs.tabs"
-  [fields]="obs.fields"
-  hideTableHeader
+  [fields]="fields"
   [loading]="obs.loading"
+  hideTableHeader
+  hideTableToolbar
   [tableConfig]="tableConfig"
-  (rowClick)="onRowClick($event)"
->
-  <ng-container carbonToolbarContent>
-    <ng-container [ngTemplateOutlet]="addTabButton"></ng-container>
-  </ng-container>
-
-  <valtimo-no-results
-    [action]="addTabButton"
-    [description]="'dossier.tabs.noResultsDescription' | translate"
-    [title]="'dossier.tabs.noResults' | translate"
-  ></valtimo-no-results>
-</valtimo-carbon-table>
-
-<ng-template #tabTypeColumn let-data="data">
-  {{
-    isTranslated('dossierManagement.tabType.' + data.item.type)
-      ? ('dossierManagement.tabType.' + data.item.type | translate)
-      : data.item.type
-  }}
-</ng-template>
-
-<ng-template #tabContentColumn let-data="data">
-  {{
-    isTranslated('dossier.tabs.' + data.item.contentKey)
-      ? ('dossier.tabs.' + data.item.contentKey | translate)
-      : data.item.contentKey
-  }}
-</ng-template>
-
-<ng-template #addTabButton>
-  <button cdsButton="primary" (click)="openAddTabModal()">
-    {{ 'dossierManagement.tabManagement.addModal.addTab' | translate }}
-
-    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-  </button>
-</ng-template>
-
-<ng-template #moveButtonsTemplate let-data="data">
-  <div class="move-buttons-container">
-    <button
-      cdsButton="tertiary"
-      [disabled]="data.index === 0"
-      [iconOnly]="true"
-      (click)="onArrowClick('UP', data.index, $event)"
-    >
-      <svg cdsIcon="arrow--up" size="16" class="cds--btn__icon"></svg>
-    </button>
-
-    <button
-      cdsButton="tertiary"
-      [disabled]="(lastItemIndex$ | async) === data.index"
-      [iconOnly]="true"
-      (click)="onArrowClick('DOWN', data.index, $event)"
-    >
-      <svg cdsIcon="arrow--down" size="16" class="cds--btn__icon"></svg>
-    </button>
-  </div>
-</ng-template>
-
-<valtimo-dossier-management-add-tab-modal
-  *ngIf="openAddModal$ | async"
-  [documentDefinitionName]="documentDefinitionName"
-  [open]="openAddModal$ | async"
-  (closeModalEvent)="onCloseAddModalEvent($event)"
-></valtimo-dossier-management-add-tab-modal>
-
-<valtimo-dossier-management-edit-tab-modal
-  *ngIf="openEditModal$ | async"
-  [tab]="tab$ | async"
-  (closeModalEvent)="onCloseEditModalEvent($event)"
-  [open]="openEditModal$ | async"
-></valtimo-dossier-management-edit-tab-modal>
-
-<valtimo-confirmation-modal
-  confirmButtonTextTranslationKey="interface.delete"
-  confirmButtonType="danger"
-  contentTranslationKey="dossierManagement.tabManagement.deleteModal.description"
-  [outputOnConfirm]="deleteRowKey$ | async"
-  [showModalSubject$]="showDeleteModal$"
-  titleTranslationKey="dossierManagement.tabManagement.deleteModal.title"
-  (confirmEvent)="onConfirmEvent($event)"
-></valtimo-confirmation-modal>
+></valtimo-carbon-table>
