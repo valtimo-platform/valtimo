@@ -21,7 +21,7 @@ import {
   ViewType,
 } from '@valtimo/components';
 import {Observable} from 'rxjs';
-import {ApiTabItem} from '@valtimo/dossier';
+import {TabItem} from '../../models';
 import {TabManagementService} from '../../services';
 
 @Component({
@@ -38,7 +38,7 @@ export class DossierManagementTabsComponent {
   }
 
   public readonly loading$: Observable<boolean> = this.tabManagementService.loading$;
-  public readonly tabs$: Observable<ApiTabItem[]> = this.tabManagementService.tabs$;
+  public readonly tabs$: Observable<TabItem[]> = this.tabManagementService.tabs$;
 
   public readonly fields: ColumnConfig[] = [
     {

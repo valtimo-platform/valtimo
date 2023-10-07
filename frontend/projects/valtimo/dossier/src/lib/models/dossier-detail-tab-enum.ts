@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-enum ApiTabType {
-  STANDARD = 'standard',
+export enum DefaultTabs {
+  summary = 'summary',
+  progress = 'progress',
+  audit = 'audit',
+  documents = 'documents',
+  contactMoments = 'contact-moments',
+  zaakobjecten = 'zaakobjecten',
+  notes = 'notes',
 }
-
-interface ApiTabItem {
-  title: string;
-  key: string;
-  type: ApiTabType;
-  contentKey: string;
-}
-
-export {ApiTabType, ApiTabItem};

@@ -17,13 +17,13 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
 import {BehaviorSubject, Observable, tap, take} from 'rxjs';
-import {ApiTabItem} from '@valtimo/dossier';
+import {TabItem} from '../models';
 
 @Injectable()
 export class TabManagementService {
   private _valtimoEndpointUri: string;
 
-  public readonly tabs$ = new BehaviorSubject<ApiTabItem[]>([]);
+  public readonly tabs$ = new BehaviorSubject<TabItem[]>([]);
   public readonly loading$ = new BehaviorSubject<boolean>(false);
 
   constructor(
@@ -38,7 +38,7 @@ export class TabManagementService {
     this.getTabList(caseDefinitionId)
       .pipe(take(1))
       .subscribe({
-        next: (items: ApiTabItem[]) => {
+        next: (items: TabItem[]) => {
           this.tabs$.next(items);
           this.loading$.next(false);
         },
@@ -48,7 +48,7 @@ export class TabManagementService {
       });
   }
 
-  private getTabList(caseDefinitionId: string): Observable<ApiTabItem[]> {
-    return this.http.get<ApiTabItem[]>(`${this._valtimoEndpointUri}/${caseDefinitionId}/tab`);
+  private getTabList(caseDefinitionId: string): Observable<TabItem[]> {
+    return this.http.get<TabItem[]>(`${this._valtimoEndpointUri}/${caseDefinitionId}/tab`).pipe();
   }
 }

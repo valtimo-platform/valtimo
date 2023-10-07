@@ -41,8 +41,6 @@
       "plural": "Cases"
     },
     "tabs": {
-      "noResults": "Es sind keine Tabs konfiguriert",
-      "noResultsDescription": "Für diesen Casetyp sind keine Tabs konfiguriert.",
       "summary": "Übersicht",
       "progress": "Fortschritt",
       "audit": "Audit",
