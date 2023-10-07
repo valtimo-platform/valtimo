@@ -16,4 +16,3 @@
 
 export * from './list-column.model';
 export * from './tab.enum';
-export * from './tab.model';

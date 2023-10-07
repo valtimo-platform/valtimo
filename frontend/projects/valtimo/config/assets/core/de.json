@@ -393,14 +393,6 @@
       "searchFields": "Suchfelder",
       "listColumns": "Aufführen",
       "tabManagement": "Tabs"
-    },
-    "tabManagement": {
-      "columns": {
-        "content": "Inhalt",
-        "key": "Tab Schlüssel",
-        "name": "Tab name",
-        "type": "Typ"
-      }
     }
   },
   "task-list": {
