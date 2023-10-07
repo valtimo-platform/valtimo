@@ -248,7 +248,6 @@ export const environment: ValtimoConfig = {
     disableCaseCount: false,
     enableObjectManagement: true,
     returnToLastUrlAfterTokenExpiration: true,
-    enableTabManagement: true,
   },
   customDossierHeader: {
     leningen: [

@@ -1,0 +1,90 @@
+<!--
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="col-12 px-0 mb-5">
+      <valtimo-widget>
+        <ng-container *ngTemplateOutlet="title"></ng-container>
+        <ng-container *ngTemplateOutlet="tabs"></ng-container>
+        <ng-container *ngTemplateOutlet="tabContent"></ng-container>
+      </valtimo-widget>
+    </div>
+  </div>
+</div>
+
+<ng-template #title>
+  <ng-container *ngIf="documentDefinition$ | async as documentDefinition">
+    <div class="bg-light dossier-header" *ngIf="documentDefinition.readOnly">
+      <h3 class="dossier-title">
+        <div class="pull-right">
+          <span class="badge badge-pill badge-info increase-size">{{
+            'dossierManagement.readonly' | translate
+          }}</span>
+        </div>
+      </h3>
+    </div>
+  </ng-container>
+</ng-template>
+
+<ng-template #tabs>
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a
+        id="case-tab"
+        class="nav-link clickable active"
+        data-toggle="tab"
+        (click)="displayBodyComponent(TabEnum.CASE)"
+      >
+        {{ 'dossierManagement.tabs.cases' | translate }}
+      </a>
+    </li>
+    <li class="nav-item">
+      <a
+        id="search-tab"
+        class="nav-link clickable"
+        data-toggle="tab"
+        (click)="displayBodyComponent(TabEnum.SEARCH)"
+      >
+        {{ 'dossierManagement.tabs.searchFields' | translate }}
+      </a>
+    </li>
+    <li class="nav-item" *ngIf="caseListColumn">
+      <a
+        id="list-tab"
+        class="nav-link clickable"
+        data-toggle="tab"
+        (click)="displayBodyComponent(TabEnum.LIST)"
+      >
+        {{ 'dossierManagement.tabs.listColumns' | translate }}
+      </a>
+    </li>
+  </ul>
+</ng-template>
+
+<ng-template #tabContent>
+  <div class="pt-3 bg-white position-relative tab-container">
+    <div *ngIf="currentTab && currentTab === TabEnum.CASE">
+      <valtimo-dossier-management-detail></valtimo-dossier-management-detail>
+    </div>
+    <div *ngIf="currentTab && currentTab === TabEnum.SEARCH">
+      <valtimo-dossier-management-search-fields></valtimo-dossier-management-search-fields>
+    </div>
+    <div *ngIf="currentTab && currentTab === TabEnum.LIST">
+      <valtimo-dossier-management-list-columns></valtimo-dossier-management-list-columns>
+    </div>
+  </div>
+</ng-template>

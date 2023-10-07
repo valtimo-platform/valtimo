@@ -391,8 +391,7 @@
     "tabs": {
       "cases": "Zaak Details",
       "searchFields": "Zoekvelden",
-      "listColumns": "Lijst",
-      "tabManagement": "Tabbladen"
+      "listColumns": "Lijst"
     }
   },
   "task-list": {
