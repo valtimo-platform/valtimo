@@ -18,7 +18,6 @@ import {ChangeDetectionStrategy, Component, OnInit, ViewChild} from '@angular/co
 import {
   CARBON_CONSTANTS,
   CarbonTableConfig,
-  createCarbonTableConfig,
   CarbonTableComponent,
   ColumnConfig,
   ViewType,
@@ -43,9 +42,9 @@ export class AccessControlOverviewComponent implements OnInit {
       label: 'accessControl.roles.key',
     },
   ];
-  public readonly tableConfig: CarbonTableConfig = createCarbonTableConfig({
+  public readonly tableConfig: CarbonTableConfig = {
     showSelectionColumn: true,
-  });
+  };
 
   public readonly roles$: Observable<Role[]> = this.accessControlService.roles$;
   public readonly loading$: Observable<boolean> = this.accessControlService.loading$;

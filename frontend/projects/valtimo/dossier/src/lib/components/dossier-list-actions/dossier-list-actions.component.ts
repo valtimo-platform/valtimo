@@ -16,8 +16,8 @@
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
 import {map, Observable, of, switchMap, tap} from 'rxjs';
-import {DossierProcessStartModalComponent} from '../dossier-process-start-modal/dossier-process-start-modal.component';
 import {DossierListService} from '../../services';
+import {DossierProcessStartModalComponent} from '../dossier-process-start-modal/dossier-process-start-modal.component';
 
 declare const $;
 

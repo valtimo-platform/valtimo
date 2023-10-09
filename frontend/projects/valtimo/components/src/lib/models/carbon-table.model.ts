@@ -27,10 +27,19 @@ enum ViewType {
   TEXT = 'text',
   UNDERSCORES_TO_SPACES = 'underscoresToSpaces',
 }
-
 interface CarbonTableSelectTranslations {
   single: string;
   multiple: string;
+}
+
+interface CarbonTablePaginationTranslations {
+  itemsPerPage: string;
+  totalItems: string;
+}
+
+interface CarbonTableTranslations {
+  select: CarbonTableSelectTranslations;
+  pagination: CarbonTablePaginationTranslations;
 }
 
 interface CarbonTableBatchText {
@@ -41,7 +50,6 @@ interface CarbonTableBatchText {
 interface CarbonTableConfig {
   enableSingleSelect?: boolean;
   searchable?: boolean;
-  selectTranslations?: CarbonTableSelectTranslations;
   showSelectionColumn?: boolean;
   size?: TableRowSize;
   sortable?: boolean;
@@ -64,7 +72,7 @@ interface ColumnConfig extends ListField {
   template?: TemplateRef<any>;
 }
 
-const defaultTableConfig: CarbonTableConfig = {
+const DEFAULT_TABLE_CONFIG: CarbonTableConfig = {
   enableSingleSelect: false,
   searchable: false,
   size: 'md',
@@ -82,18 +90,14 @@ interface ListField {
   sortable?: boolean;
 }
 
-const createCarbonTableConfig = (config?: CarbonTableConfig): CarbonTableConfig => ({
-  ...defaultTableConfig,
-  ...config,
-});
-
 export {
   ActionItem,
   CarbonTableBatchText,
   CarbonTableConfig,
   CarbonTableSelectTranslations,
+  CarbonTableTranslations,
   ColumnConfig,
-  createCarbonTableConfig,
+  DEFAULT_TABLE_CONFIG,
   ListField,
   ViewType,
 };

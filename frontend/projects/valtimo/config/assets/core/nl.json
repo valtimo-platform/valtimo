@@ -28,9 +28,18 @@
       "content": "Weet je zeker dat je van pagina wilt wisselen? Alle selectie gaat verloren.",
       "confirm": "Wijzig pagina"
     },
+    "changeTabModal": {
+      "title": "Wijzig tabblad",
+      "content": "Weet je zeker dat je van tabblad wilt wisselen? Alle selectie gaat verloren.",
+      "confirm": "Wijzig tabblad"
+    },
     "noResults": {
       "description": "Klik op <strong>Creëer Nieuw Dossier</strong> om een nieuw dossier aan te maken.",
       "title": "Geen dossiers gevonden"
+    },
+    "pagination": {
+      "itemsPerPage": "Dossiers per pagina",
+      "totalItems": "{{start}}-{{end}} van {{total}} dossiers"
     },
     "select": {
       "single": "1 dossier geselecteerd",

@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 import {Component, Input} from '@angular/core';
-import {
-  CarbonTableConfig,
-  ColumnConfig,
-  createCarbonTableConfig,
-  ViewType,
-} from '@valtimo/components';
+import {CarbonTableConfig, ColumnConfig, ViewType} from '@valtimo/components';
 import {Observable} from 'rxjs';
 import {ApiTabItem} from '@valtimo/dossier';
 import {TabManagementService} from '../../services';
@@ -63,7 +58,7 @@ export class DossierManagementTabsComponent {
     },
   ];
 
-  public readonly tableConfig: CarbonTableConfig = createCarbonTableConfig({sortable: false});
+  public readonly tableConfig: CarbonTableConfig = {sortable: false};
 
   constructor(private readonly tabManagementService: TabManagementService) {}
 }

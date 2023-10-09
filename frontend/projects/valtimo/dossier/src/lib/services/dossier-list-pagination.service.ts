@@ -109,14 +109,17 @@ export class DossierListPaginationService {
         filter(pagination => !!pagination)
       )
       .subscribe(pagination => {
-        if (pagination) {
-          const amountOfItems = documents.totalElements;
-          const amountOfPages = Math.ceil(amountOfItems / pagination.size);
-          const currentPage = pagination.page;
+        const amountOfItems = documents.totalElements;
+        const amountOfPages = Math.ceil(amountOfItems / pagination.size);
+        const currentPage = pagination.page;
 
-          if (currentPage > amountOfPages) {
-            this._pagination$.next({...pagination, page: amountOfPages});
-          }
+        if (!!amountOfItems && !currentPage) {
+          this._pagination$.next({...pagination, page: 1});
+          return;
+        }
+
+        if (currentPage > amountOfPages) {
+          this._pagination$.next({...pagination, page: amountOfPages});
         }
       });
   }
