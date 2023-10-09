@@ -28,9 +28,18 @@
       "content": "Are you sure you want to change pages? All selection will be lost.",
       "confirm": "Change page"
     },
+    "changeTabModal": {
+      "title": "Change tab",
+      "content": "Are you sure you want to change tabs? All selection will be lost.",
+      "confirm": "Change tab"
+    },
     "noResults": {
       "description": "Click <strong>Create New Case</strong> to start a new case.",
       "title": "No cases found"
+    },
+    "pagination": {
+      "itemsPerPage": "Cases per page",
+      "totalItems": "{{start}}-{{end}} of {{total}} cases"
     },
     "select": {
       "single": "1 case selected",
