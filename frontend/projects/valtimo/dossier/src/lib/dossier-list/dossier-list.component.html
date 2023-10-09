@@ -17,6 +17,7 @@
 <ng-container
   *ngIf="{
     fields: fields$ | async,
+    canHaveAssignee: canHaveAssignee$ | async,
     documentItems: documentItems$ | async,
     searchFields: searchFields$ | async,
     schema: schema$ | async,
@@ -50,6 +51,8 @@
   <ng-container *ngTemplateOutlet="bulkAssignModal; context: {obs: obs}"></ng-container>
 
   <ng-container *ngTemplateOutlet="changePageModal"></ng-container>
+
+  <ng-container *ngTemplateOutlet="changeTabModal"></ng-container>
 </ng-container>
 
 <ng-template #searchFields let-obs="obs">
@@ -64,7 +67,7 @@
 </ng-template>
 
 <ng-template #list let-obs="obs">
-  <ng-container *ngIf="canHaveAssignee">
+  <ng-container *ngIf="obs.canHaveAssignee">
     <ng-container *ngTemplateOutlet="tabs"></ng-container>
   </ng-container>
 
@@ -76,7 +79,7 @@
     [loading]="loadingDocumentItems"
     [pagination]="pagination"
     [paginatorConfig]="paginatorConfig"
-    [selectTranslations]="selectTranslations"
+    [tableTranslations]="tableTranslations"
     [tableConfig]="tableConfig"
     (paginationChange)="onPaginationChange($event)"
     (rowClick)="onRowClick($event)"
@@ -102,26 +105,18 @@
 
 <ng-template #tabs>
   <ng-container *ngIf="assigneeFilter$ | async as assigneeFilter">
-    <cds-tabs type="contained" data-carbon-theme="g10" class="dossier-list-tabs">
+    <cds-tabs
+      *ngIf="!visibleDossierTabs; else configuredTabs"
+      type="contained"
+      data-carbon-theme="g10"
+      class="dossier-list-tabs"
+    >
       <cds-tab
-        [active]="assigneeFilter === 'ALL'"
-        [disabled]="tabsDisabled"
-        heading="{{ 'dossier.tabs.ALL' | translate }}"
-        (selected)="tabChange('ALL')"
-      ></cds-tab>
-
-      <cds-tab
-        [active]="assigneeFilter === 'MINE'"
-        [disabled]="tabsDisabled"
-        heading="{{ 'dossier.tabs.MINE' | translate }}"
-        (selected)="tabChange('MINE')"
-      ></cds-tab>
-
-      <cds-tab
-        [active]="assigneeFilter === 'OPEN'"
-        [disabled]="tabsDisabled"
-        heading="{{ 'dossier.tabs.OPEN' | translate }}"
-        (selected)="tabChange('OPEN')"
+        *ngFor="let tab of defaultTabs; trackBy: trackByIndex"
+        [active]="assigneeFilter === tab"
+        heading="{{ 'dossier.tabs.' + tab | translate }}"
+        [id]="tab"
+        (selected)="tabChange(tab)"
       ></cds-tab>
     </cds-tabs>
   </ng-container>
@@ -131,9 +126,10 @@
   <ng-container *ngIf="assigneeFilter$ | async as assigneeFilter">
     <cds-tabs type="contained" data-carbon-theme="g10" class="dossier-list-tabs">
       <cds-tab
-        *ngFor="let tab of visibleDossierTabs"
+        *ngFor="let tab of visibleDossierTabs; trackBy: trackByIndex"
         [active]="assigneeFilter === tab"
         heading="{{ 'dossier.tabs.' + tab | translate }}"
+        [id]="tab"
         (selected)="tabChange(tab)"
       ></cds-tab>
     </cds-tabs>
@@ -161,10 +157,22 @@
   ></valtimo-confirmation-modal>
 </ng-template>
 
-<ng-template #dossierListActions let-obs="obs">
+<ng-template #changeTabModal>
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="dossier.changeTabModal.confirm"
+    contentTranslationKey="dossier.changeTabModal.content"
+    [outputOnConfirm]="tabChange$ | async"
+    [showModalSubject$]="showChangeTabModal$"
+    titleTranslationKey="dossier.changeTabModal.title"
+    (cancelEvent)="onChangeTabCancel()"
+    (confirmEvent)="onChangeTabConfirm($event)"
+  ></valtimo-confirmation-modal>
+</ng-template>
+
+<ng-template #dossierListActions>
   <button
     cdsButton="primary"
-    [disabled]="listActionsComponent.disableStartDossierButton$ | async"
+    [disabled]="listActionsComponent?.disableStartDossierButton$ | async"
     (click)="startDossier()"
   >
     {{ 'Start Dossier' | translate }}

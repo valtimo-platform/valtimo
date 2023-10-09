@@ -37,6 +37,7 @@ export class ConfirmationModalComponent implements OnInit, OnDestroy {
   @Input() outputOnConfirm: any = {};
 
   @Output() confirmEvent: EventEmitter<any> = new EventEmitter();
+  @Output() cancelEvent: EventEmitter<void> = new EventEmitter();
 
   readonly modalOpen$ = new BehaviorSubject<boolean>(false);
 
@@ -44,6 +45,7 @@ export class ConfirmationModalComponent implements OnInit, OnDestroy {
 
   closeModal(): void {
     this.modalOpen$.next(false);
+    this.cancelEvent.emit();
   }
 
   confirm(): void {
