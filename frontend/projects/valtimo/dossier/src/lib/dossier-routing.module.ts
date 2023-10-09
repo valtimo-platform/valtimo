@@ -41,6 +41,16 @@ const routes: Routes = [
     },
   },
   {
+    path: 'dossiers/:documentDefinitionName/document/:documentId',
+    component: DossierDetailComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Dossier details',
+      parentPath: 'dossiers/:documentDefinitionName',
+      roles: [ROLE_USER],
+    },
+  },
+  {
     path: 'dossiers/:documentDefinitionName/document/:documentId/:tab/tasks/:taskId',
     component: DossierUpdateComponent,
     canActivate: [AuthGuardService],

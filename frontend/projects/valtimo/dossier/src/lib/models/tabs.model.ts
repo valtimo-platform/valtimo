@@ -16,8 +16,9 @@
 
 import {ComponentFactoryResolver, ComponentRef, ViewContainerRef} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {Location} from '@angular/common';
+import {take} from 'rxjs';
 
 export interface TabLoader<T_TAB extends Tab> {
   tabs: T_TAB[];
@@ -38,6 +39,7 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
   private _translateService: TranslateService = null;
   private _router: Router;
   private _location: Location;
+  private _route: ActivatedRoute;
 
   constructor(
     tabs: TabImpl[],
@@ -45,7 +47,8 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
     viewContainerRef: ViewContainerRef,
     translateService: TranslateService,
     router: Router,
-    location: Location
+    location: Location,
+    route: ActivatedRoute
   ) {
     this._tabs = tabs;
     this._componentFactoryResolver = componentFactoryResolver;
@@ -53,6 +56,7 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
     this._translateService = translateService;
     this._router = router;
     this._location = location;
+    this._route = route;
   }
 
   initial(tabName?: string): void {
@@ -87,18 +91,19 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
     this._activeComponent = this._viewContainerRef.createComponent(componentFactory);
   }
 
-  private replaceUrlState(tab: TabImpl): void {
-    const currentUrl = this._router.url;
-    const queryParams = currentUrl.split('?')[1] || '';
-    const urlParts = currentUrl.split('/');
-    urlParts.splice(urlParts.length - 1, 1, tab.name);
-    const newUrl = urlParts.join('/');
+  private replaceUrlState(nextTab: TabImpl): void {
+    this._route.params.pipe(take(1)).subscribe(params => {
+      const currentUrl = this._router.url;
+      const currentDocumentId = params?.documentId;
+      const queryParams = currentUrl.split('?')[1] || '';
+      const urlBeforeDocumentId = currentUrl.split(currentDocumentId)[0];
 
-    if (currentUrl.includes(newUrl) && queryParams) {
-      this._router.navigateByUrl(`${newUrl}?${queryParams}`);
-    } else {
-      this._router.navigateByUrl(newUrl);
-    }
+      this._router.navigateByUrl(
+        `${urlBeforeDocumentId}${currentDocumentId}/${nextTab.name}${
+          queryParams ? `?${queryParams}` : ''
+        }`
+      );
+    });
   }
 
   private setActive(tab: TabImpl): void {

@@ -60,7 +60,6 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {DefaultTabs} from '../../models';
 import {DossierListActionsComponent} from '../dossier-list-actions/dossier-list-actions.component';
 import {
   DossierBulkAssignService,
@@ -364,9 +363,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         `/dossiers/${documentDefinitionName}`,
         this.route.snapshot.queryParams
       );
-      this.router.navigate([
-        `/dossiers/${documentDefinitionName}/document/${document.id}/${DefaultTabs.summary}`,
-      ]);
+      this.router.navigate([`/dossiers/${documentDefinitionName}/document/${document.id}`]);
     });
   }
 

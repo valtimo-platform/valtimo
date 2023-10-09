@@ -15,10 +15,10 @@
  */
 
 import {Inject, Injectable, OnDestroy} from '@angular/core';
-import {TabImpl, TabLoaderImpl} from '../models';
+import {TabImpl} from '../models';
 import {DEFAULT_TAB_COMPONENTS, DEFAULT_TABS, TAB_MAP} from '../constants';
 import {ConfigService} from '@valtimo/config';
-import {ActivatedRoute, Event as NavigationEvent, NavigationEnd, Router} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 import {DossierDetailTabObjectTypeComponent} from '../components/dossier-detail/tab/object-type/object-type.component';
 import {DossierTabApiService} from './dossier-tab-api.service';
 import {BehaviorSubject, filter, map, Observable, Subscription} from 'rxjs';

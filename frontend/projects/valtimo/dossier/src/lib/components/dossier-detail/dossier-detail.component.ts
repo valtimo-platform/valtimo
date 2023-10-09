@@ -27,7 +27,7 @@ import {ActivatedRoute, ParamMap, Params, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {BreadcrumbService} from '@valtimo/components';
-import {ConfigService, DossierListTab} from '@valtimo/config';
+import {ConfigService} from '@valtimo/config';
 import {Document, DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
 import {KeycloakService} from 'keycloak-angular';
 import moment from 'moment';
@@ -249,7 +249,8 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
           this.viewContainerRef,
           this.translateService,
           this.router,
-          this.location
+          this.location,
+          this.route
         );
         this.tabLoader.initial(this._initialTabName);
         this.loadingTabs$.next(false);
