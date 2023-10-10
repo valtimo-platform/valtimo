@@ -15,9 +15,9 @@
   -->
 
 <valtimo-carbon-table
-  *ngIf="{loading: loading$ | async, tabs: tabs$ | async} as obs"
+  *ngIf="{loading: loading$ | async, tabs: tabs$ | async, fields: fields$ | async} as obs"
   [data]="obs.tabs"
-  [fields]="fields"
+  [fields]="obs.fields"
   [loading]="obs.loading"
   hideTableHeader
   hideTableToolbar
@@ -28,3 +28,11 @@
     [title]="'dossier.tabs.noResults' | translate"
   ></valtimo-no-results>
 </valtimo-carbon-table>
+
+<ng-template #tabTypeColumn let-data="data">
+  {{
+    isTranslated('dossierManagement.tabType.' + data.item.type)
+      ? ('dossierManagement.tabType.' + data.item.type | translate)
+      : data.item.type
+  }}
+</ng-template>

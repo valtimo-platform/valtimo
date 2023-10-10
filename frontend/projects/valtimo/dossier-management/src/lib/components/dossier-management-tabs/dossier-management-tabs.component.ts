@@ -13,17 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, Input} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
+import {TranslateService} from '@ngx-translate/core';
 import {CarbonTableConfig, ColumnConfig, ViewType} from '@valtimo/components';
-import {Observable} from 'rxjs';
 import {ApiTabItem} from '@valtimo/dossier';
+import {BehaviorSubject, Observable} from 'rxjs';
 import {TabManagementService} from '../../services';
 
 @Component({
   selector: 'valtimo-dossier-management-tabs',
   templateUrl: './dossier-management-tabs.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DossierManagementTabsComponent {
+export class DossierManagementTabsComponent implements AfterViewInit {
+  @ViewChild('tabTypeColumn') tabTypeColumnTemplate: TemplateRef<any>;
+
   @Input() set documentDefinitionName(value: string) {
     if (!value) {
       return;
@@ -32,33 +43,43 @@ export class DossierManagementTabsComponent {
     this.tabManagementService.loadTabs(value);
   }
 
+  public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
   public readonly loading$: Observable<boolean> = this.tabManagementService.loading$;
   public readonly tabs$: Observable<ApiTabItem[]> = this.tabManagementService.tabs$;
-
-  public readonly fields: ColumnConfig[] = [
-    {
-      key: 'name',
-      label: 'dossierManagement.tabManagement.columns.name',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'key',
-      label: 'dossierManagement.tabManagement.columns.key',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'type',
-      label: 'dossierManagement.tabManagement.columns.type',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'contentKey',
-      label: 'dossierManagement.tabManagement.columns.content',
-      viewType: ViewType.TEXT,
-    },
-  ];
-
   public readonly tableConfig: CarbonTableConfig = {sortable: false};
 
-  constructor(private readonly tabManagementService: TabManagementService) {}
+  constructor(
+    private readonly tabManagementService: TabManagementService,
+    private readonly translateService: TranslateService
+  ) {}
+
+  public ngAfterViewInit(): void {
+    this.fields$.next([
+      {
+        key: 'name',
+        label: 'dossierManagement.tabManagement.columns.name',
+        viewType: ViewType.TEXT,
+      },
+      {
+        key: 'key',
+        label: 'dossierManagement.tabManagement.columns.key',
+        viewType: ViewType.TEXT,
+      },
+      {
+        viewType: ViewType.TEMPLATE,
+        template: this.tabTypeColumnTemplate,
+        key: '',
+        label: 'dossierManagement.tabManagement.columns.type',
+      },
+      {
+        key: 'contentKey',
+        label: 'dossierManagement.tabManagement.columns.content',
+        viewType: ViewType.TEXT,
+      },
+    ]);
+  }
+
+  public isTranslated(key: string): boolean {
+    return this.translateService.instant(key) !== key;
+  }
 }

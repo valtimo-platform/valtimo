@@ -32,7 +32,7 @@ import {DashboardManagementService} from '../../services/dashboard-management.se
   encapsulation: ViewEncapsulation.None,
 })
 export class DashboardDetailsComponent implements AfterViewInit {
-  @ViewChild('moveButtonsTemplate', {static: false}) moveButtonsTemplate: TemplateRef<any>;
+  @ViewChild('moveButtonsTemplate') moveButtonsTemplate: TemplateRef<any>;
 
   public modalType: WidgetModalType = 'create';
   public fields!: ColumnConfig[];

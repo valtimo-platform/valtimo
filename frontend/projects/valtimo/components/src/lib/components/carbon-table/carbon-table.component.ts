@@ -45,12 +45,10 @@ import {
   debounceTime,
   map,
   Observable,
-  of,
   startWith,
   Subscription,
   switchMap,
 } from 'rxjs';
-
 import {
   ActionItem,
   CarbonPaginationSelection,
@@ -84,9 +82,13 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
     if (!value.length) {
       return;
     }
+
+    if (!!this._fields) {
+      this._headerItemsSubscription.unsubscribe();
+    }
+
     this._fields = value;
-    this._headerItemsSubscription$.unsubscribe();
-    this._headerItemsSubscription$.add(this.getHeaderItems());
+    this._headerItemsSubscription.add(this.getHeaderItems());
   }
   public get fields(): ColumnConfig[] {
     return this._fields;
@@ -224,11 +226,11 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
 
   public searchFormControl = new FormControl('');
 
+  private _headerItemsSubscription = new Subscription();
   private _previousSortIndex: number;
   private _skeletonTableModel: TableModel = Table.skeletonModel(5, 5);
-  private _headerItemsSubscription$ = new Subscription();
-  private _subscriptions$: Subscription = new Subscription();
-  private _tableModel: TableModel = new TableModel();
+  private _subscriptions = new Subscription();
+  private _tableModel = new TableModel();
 
   public get numberOfColumns(): number | null {
     return this.loading ? null : this.fields.length + (this.tableConfig.enableSingleSelect ? 0 : 1);
@@ -255,28 +257,22 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
     if (this.loading) {
       return;
     }
-    this._headerItemsSubscription$.add(this.getHeaderItems());
-
-    if (!this.data) {
-      return;
-    }
 
     this._tableData = this.getTableItems(this.data);
     this._tableModel.data = this._tableData;
 
-    this._subscriptions$.add(
+    this._subscriptions.add(
       this.searchFormControl.valueChanges
         .pipe(debounceTime(500))
         .subscribe((searchString: string | null) => {
           this.onSearch(searchString);
         })
     );
-
-    this.cd.detectChanges();
   }
 
   public ngOnDestroy(): void {
-    this._subscriptions$.unsubscribe();
+    this._headerItemsSubscription.unsubscribe();
+    this._subscriptions.unsubscribe();
   }
 
   public onActionItemClick(action: ActionItem, item: T) {
@@ -330,22 +326,22 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   public getHeaderItems(): Subscription {
     const fields: ColumnConfig[] = this.fields;
 
-    const translations = fields.map((field: ColumnConfig) =>
-      !field.label ? of('') : this.translateService.stream(field.label)
-    );
+    return this.translateService
+      .stream(fields.map((field: ColumnConfig) => field.label))
+      .subscribe((translations: {[key: string]: string}) => {
+        this._tableModel.header = fields.map(
+          (field: ColumnConfig, index: number) =>
+            new TableHeaderItem({
+              data: translations[field.label],
+              sortable: field.sortable ?? this.tableConfig.sortable,
+              className: field.className ?? '',
+              sorted: this.tableModel.header[index]?.sorted ?? false,
+              ascending: this.tableModel.header[index]?.ascending ?? false,
+            })
+        );
 
-    return combineLatest(translations).subscribe((translationResults: string[]) => {
-      this._tableModel.header = translationResults.map(
-        (translation: string, index: number) =>
-          new TableHeaderItem({
-            data: translation,
-            sortable: fields[index].sortable ?? this.tableConfig.sortable,
-            className: fields[index].className ?? '',
-            sorted: this.tableModel.header[index]?.sorted ?? false,
-            ascending: this.tableModel.header[index]?.ascending ?? false,
-          })
-      );
-    });
+        this.cd.detectChanges();
+      });
   }
 
   private onSearch(searchString: string | null): void {

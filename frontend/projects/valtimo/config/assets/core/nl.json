@@ -412,6 +412,9 @@
         "name": "Tab naam",
         "type": "Type"
       }
+    },
+    "tabType": {
+      "standard": "Standaard"
     }
   },
   "task-list": {
