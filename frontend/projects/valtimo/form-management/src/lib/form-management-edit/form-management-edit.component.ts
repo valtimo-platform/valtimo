@@ -167,7 +167,7 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
     const definition = JSON.parse(formDefinition);
     if (!definition?.components) {
       this.reloading$.next(false);
-      this.alertService.error('Invalid JSON. Missing form.io JSON field "components".');
+      this.alertService.error('Invalid form.io. Missing JSON field "components".');
     } else {
       const components = definition.components;
       const currentDefinition = this.modifiedFormDefinition || this.formDefinition.formDefinition;
