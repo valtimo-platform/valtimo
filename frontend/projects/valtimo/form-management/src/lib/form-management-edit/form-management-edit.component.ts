@@ -165,14 +165,19 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
     this.reloading$.next(true);
 
     const definition = JSON.parse(formDefinition);
-    const components = definition?.formDefinition?.components;
-    const currentDefinition = this.modifiedFormDefinition || this.formDefinition.formDefinition;
-    const newDefinition = {...currentDefinition, ...(components && {components})};
+    if (!definition?.components) {
+      this.reloading$.next(false);
+      this.alertService.error('Invalid form.io. Missing JSON field "components".');
+    } else {
+      const components = definition.components;
+      const currentDefinition = this.modifiedFormDefinition || this.formDefinition.formDefinition;
+      const newDefinition = {...currentDefinition, ...(components && {components})};
 
-    this.modifiedFormDefinition = newDefinition;
-    this.formDefinition.formDefinition = newDefinition;
+      this.modifiedFormDefinition = newDefinition;
+      this.formDefinition.formDefinition = newDefinition;
 
-    this.reloading$.next(false);
+      this.reloading$.next(false);
+    }
   }
 
   private checkToOpenUploadModal(): void {
