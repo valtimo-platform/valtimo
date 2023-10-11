@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {Inject, Injectable, OnDestroy} from '@angular/core';
-import {ApiTabItem, ApiTabType, TabImpl} from '../models';
-import {DEFAULT_TAB_COMPONENTS, DEFAULT_TABS, TAB_MAP} from '../constants';
+import {Inject, Injectable, OnDestroy, Optional} from '@angular/core';
+import {ApiTabItem, ApiTabType, CaseTabConfig, TabImpl} from '../models';
+import {CASE_TAB_TOKEN, DEFAULT_TAB_COMPONENTS, DEFAULT_TABS, TAB_MAP} from '../constants';
 import {ConfigService} from '@valtimo/config';
 import {ActivatedRoute} from '@angular/router';
 import {DossierDetailTabObjectTypeComponent} from '../components/dossier-detail/tab/object-type/object-type.component';
@@ -40,6 +40,7 @@ export class DossierTabService implements OnDestroy {
 
   constructor(
     @Inject(TAB_MAP) private readonly tabMap: Map<string, object> = DEFAULT_TABS,
+    @Optional() @Inject(CASE_TAB_TOKEN) private readonly caseTabConfig: CaseTabConfig,
     private readonly configService: ConfigService,
     private readonly route: ActivatedRoute,
     private readonly dossierTabApiService: DossierTabApiService
@@ -104,7 +105,7 @@ export class DossierTabService implements OnDestroy {
       next: tabs => {
         const supportedTabs = tabs.filter(tab => this.filterTab(tab));
         const mappedTabs = supportedTabs.map((tab, index) => this.mapTap(tab, index));
-        this._tabs$.next(mappedTabs);
+        this._tabs$.next(mappedTabs.filter(tab => !!tab));
       },
       error: () => {
         this._tabs$.next([]);
@@ -116,17 +117,23 @@ export class DossierTabService implements OnDestroy {
     switch (tab.type) {
       case ApiTabType.STANDARD:
         return !!DEFAULT_TAB_COMPONENTS[tab.contentKey];
+      case ApiTabType.CUSTOM:
+        return !!(this.caseTabConfig || {})[tab.contentKey];
       default:
         return true;
     }
   }
 
-  private mapTap(tab: ApiTabItem, index: number): TabImpl {
+  private mapTap(tab: ApiTabItem, index: number): TabImpl | null {
     switch (tab.type) {
       case ApiTabType.STANDARD:
         return new TabImpl(tab.key, index, DEFAULT_TAB_COMPONENTS[tab.contentKey]);
       case ApiTabType.FORMIO:
         return new TabImpl(tab.key, index, DossierDetailTabFormioComponent, tab.contentKey);
+      case ApiTabType.CUSTOM:
+        return new TabImpl(tab.key, index, this.caseTabConfig[tab.contentKey]);
+      default:
+        return null;
     }
   }
 }

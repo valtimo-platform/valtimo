@@ -38,6 +38,7 @@ import {
 } from '@valtimo/components';
 import {ChoicefieldModule} from '@valtimo/choicefield';
 import {
+  CASE_TAB_TOKEN,
   DefaultTabs,
   DossierDetailTabAuditComponent,
   DossierDetailTabContactMomentsComponent,
@@ -240,6 +241,12 @@ export function tabsFactory() {
         zakenApiPluginSpecification,
         verzoekPluginSpecification,
       ],
+    },
+    {
+      provide: CASE_TAB_TOKEN,
+      useValue: {
+        'custom-dossier-tab': CustomDossierTabComponent,
+      },
     },
   ],
   bootstrap: [AppComponent],

@@ -14,24 +14,11 @@
  * limitations under the License.
  */
 
-import {Type} from '@angular/core';
+import {InjectionToken} from '@angular/core';
+import {CaseTabConfig} from '../models';
 
-enum DefaultTabs {
-  summary = 'summary',
-  progress = 'progress',
-  audit = 'audit',
-  documents = 'documents',
-  contactMoments = 'contact-moments',
-  zaakobjecten = 'zaakobjecten',
-  notes = 'notes',
-}
+const CASE_TAB_TOKEN = new InjectionToken<CaseTabConfig>(
+  'Specify a component to display per configured tab key.'
+);
 
-type DefaultTabComponents = {
-  [key in DefaultTabs]: Type<any>;
-};
-
-interface CaseTabConfig {
-  [tabKey: string]: Type<any>;
-}
-
-export {DefaultTabs, DefaultTabComponents, CaseTabConfig};
+export {CASE_TAB_TOKEN};
