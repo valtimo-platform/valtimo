@@ -127,6 +127,10 @@
       "description": "Möchten Sie diese Datei wirklich löschen?",
       "cancel": "Absagen",
       "delete": "Löschen"
+    },
+    "formio": {
+      "noFormSpecified": "Für diese Registerkarte wurde keine Formulardefinition angegeben.",
+      "formNotFound": "Die Formulardefinition '{{formDefinitionName}}' konnte nicht gefunden werden."
     }
   },
   "document": {

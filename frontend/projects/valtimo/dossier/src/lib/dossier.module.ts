@@ -89,7 +89,8 @@ import {DossierRoutingModule} from './dossier-routing.module';
 import {DossierSupportingProcessStartModalComponent} from './components/dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
 import {DossierUpdateComponent} from './components/dossier-update/dossier-update.component';
 import {TAB_MAP} from './constants';
-import {DossierBulkAssignService, DossierTabService, DossierService} from './services';
+import {DossierBulkAssignService, DossierService} from './services';
+import {DossierDetailTabFormioComponent} from './components/dossier-detail/tab/formio/formio.component';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -114,6 +115,7 @@ export type TabsFactory = () => Map<string, object>;
     DossierDetailTabS3DocumentsComponent,
     DossierAssignUserComponent,
     NoteModalComponent,
+    DossierDetailTabFormioComponent,
   ],
   imports: [
     CommonModule,

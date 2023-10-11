@@ -15,13 +15,14 @@
  */
 
 import {Inject, Injectable, OnDestroy} from '@angular/core';
-import {TabImpl} from '../models';
+import {ApiTabItem, ApiTabType, TabImpl} from '../models';
 import {DEFAULT_TAB_COMPONENTS, DEFAULT_TABS, TAB_MAP} from '../constants';
 import {ConfigService} from '@valtimo/config';
 import {ActivatedRoute} from '@angular/router';
 import {DossierDetailTabObjectTypeComponent} from '../components/dossier-detail/tab/object-type/object-type.component';
 import {DossierTabApiService} from './dossier-tab-api.service';
 import {BehaviorSubject, filter, map, Observable, Subscription} from 'rxjs';
+import {DossierDetailTabFormioComponent} from '../components/dossier-detail/tab/formio/formio.component';
 
 @Injectable()
 export class DossierTabService implements OnDestroy {
@@ -92,13 +93,17 @@ export class DossierTabService implements OnDestroy {
     );
   }
 
+  private setEnvironmentTabs(documentDefinitionName: string): void {
+    const configurableTabs = this.getConfigurableTabs(documentDefinitionName);
+    const allEnvironmentTabs = this.getAllEnvironmentTabs(configurableTabs);
+    this._tabs$.next(allEnvironmentTabs);
+  }
+
   private setApiTabs(documentDefinitionName: string): void {
     this.dossierTabApiService.getDossierTabs(documentDefinitionName).subscribe({
       next: tabs => {
-        const supportedTabs = tabs.filter(tab => !!DEFAULT_TAB_COMPONENTS[tab.contentKey]);
-        const mappedTabs = supportedTabs.map(
-          (tab, index) => new TabImpl(tab.contentKey, index, DEFAULT_TAB_COMPONENTS[tab.contentKey])
-        );
+        const supportedTabs = tabs.filter(tab => this.filterTab(tab));
+        const mappedTabs = supportedTabs.map((tab, index) => this.mapTap(tab, index));
         this._tabs$.next(mappedTabs);
       },
       error: () => {
@@ -107,9 +112,21 @@ export class DossierTabService implements OnDestroy {
     });
   }
 
-  private setEnvironmentTabs(documentDefinitionName: string): void {
-    const configurableTabs = this.getConfigurableTabs(documentDefinitionName);
-    const allEnvironmentTabs = this.getAllEnvironmentTabs(configurableTabs);
-    this._tabs$.next(allEnvironmentTabs);
+  private filterTab(tab: ApiTabItem): boolean {
+    switch (tab.type) {
+      case ApiTabType.STANDARD:
+        return !!DEFAULT_TAB_COMPONENTS[tab.contentKey];
+      default:
+        return true;
+    }
+  }
+
+  private mapTap(tab: ApiTabItem, index: number): TabImpl {
+    switch (tab.type) {
+      case ApiTabType.STANDARD:
+        return new TabImpl(tab.key, index, DEFAULT_TAB_COMPONENTS[tab.contentKey]);
+      case ApiTabType.FORMIO:
+        return new TabImpl(tab.key, index, DossierDetailTabFormioComponent, tab.contentKey);
+    }
   }
 }

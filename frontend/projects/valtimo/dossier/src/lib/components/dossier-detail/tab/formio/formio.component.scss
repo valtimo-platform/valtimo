@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-enum ApiTabType {
-  STANDARD = 'standard',
-  FORMIO = 'formio',
-  CUSTOM = 'custom',
+.loading-container {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: center;
 }
 
-interface ApiTabItem {
-  title: string;
-  key: string;
-  type: ApiTabType;
-  contentKey: string;
+.error-message {
+  text-align: center;
 }
-
-export {ApiTabType, ApiTabItem};

@@ -127,6 +127,10 @@
       "description": "Are you sure you want to delete this file?",
       "cancel": "Cancel",
       "delete": "Delete"
+    },
+    "formio": {
+      "noFormSpecified": "No form definition has been specified for this tab.",
+      "formNotFound": "The form definition '{{formDefinitionName}}' could not be found."
     }
   },
   "document": {
