@@ -138,12 +138,17 @@ export class TabImpl implements Tab {
   private readonly _name: string;
   private readonly _sequence: number;
   private readonly _component: any;
+  private readonly _contentKey: string;
   private _active = false;
 
-  constructor(name: string, sequence: number, component: any) {
+  constructor(name: string, sequence: number, component: any, contentKey?: string) {
     this._name = name;
     this._sequence = sequence;
     this._component = component;
+
+    if (contentKey) {
+      this._contentKey = contentKey;
+    }
   }
 
   get name(): string {
@@ -156,6 +161,10 @@ export class TabImpl implements Tab {
 
   get component(): any {
     return this._component;
+  }
+
+  get contentKey(): string {
+    return this._contentKey;
   }
 
   activate(): void {
