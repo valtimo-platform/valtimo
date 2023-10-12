@@ -1,7 +1,7 @@
 {
   "name": "@valtimo/form-link",
   "license": "EUPL-1.2",
-  "version": "10.7.0",
+  "version": "10.8.0",
   "peerDependencies": {
     "@angular/common": "^14.3.0",
     "@angular/core": "^14.3.0"
