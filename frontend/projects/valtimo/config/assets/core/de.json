@@ -543,6 +543,7 @@
     "edit": "Bearbeiten",
     "noItemsFound": "Keine Elemente gefunden",
     "clearAll": "Alles löschen",
+    "clearAll": "Löschen",
     "show": "Zeig",
     "items": "Elemente",
     "of": "von",
@@ -579,7 +580,8 @@
       "singleSelect": "1 Element ausgewählt",
       "totalItems": "{{start}}-{{end}} von {{total}} Objekte"
     },
-    "required": "erforderlich"
+    "required": "erforderlich",
+    "filter": "Filter..."
   },
   "taskDetail": {
     "taskCreated": "Erstellt",

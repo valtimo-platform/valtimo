@@ -24,10 +24,10 @@
     *ngIf="title || titleTranslationKey"
     [name]="name"
     [required]="required"
+    [small]="smallLabel"
     [titleTranslationKey]="titleTranslationKey"
     [title]="title"
     [tooltip]="tooltip"
-    [small]="smallLabel"
   >
   </v-input-label>
 </ng-template>
@@ -35,14 +35,15 @@
 <ng-template #dateInput>
   <input
     #datePickerElement
-    [disabled]="disabled"
+    cdsText
     [ngClass]="{
       'v-date-picker--full-width': fullWidth,
       'v-date-picker--margin': margin
     }"
-    [style.width.px]="widthPx"
-    class="v-date-picker"
-    type="text"
     [ngModel]="dateValue$ | async"
+    [attr.data-carbon-theme]="carbonTheme"
+    [disabled]="disabled"
+    [style.width.px]="widthPx + 20"
+    type="text"
   />
 </ng-template>

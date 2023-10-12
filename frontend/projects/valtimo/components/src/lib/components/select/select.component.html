@@ -15,8 +15,16 @@
   -->
 
 <div
-  class="v-select-container"
+  *ngIf="{
+    placeholderText: placeholder || ('interface.filter' | translate),
+    loadingText: loadingText || ('interface.loading' | translate),
+    clearText: clearText || ('interface.clear' | translate),
+    clearAllText: clearAllText || ('interface.clearAll' | translate),
+    notFoundText: notFoundText || ('interface.noItemsFound' | translate),
+    items: listItems$ | async
+  } as vars"
   [ngClass]="{'--margin': margin, '--small-margin': smallMargin}"
+  class="v-select-container"
   [style.width.px]="widthInPx"
 >
   <v-input-label
@@ -28,15 +36,23 @@
     [tooltip]="tooltip"
   >
   </v-input-label>
-  <cds-dropdown
-    [disabled]="disabled || loading"
-    [attr.data-carbon-theme]="carbonTheme"
+  <cds-combo-box
+    [clearSelectionTitle]="vars.clearText"
+    [clearSelectionsTitle]="vars.clearAllText"
+    [disabled]="disabled || loading || vars.items.length === 0"
+    [items]="vars.items"
+    [placeholder]="
+      loading
+        ? vars.loadingText
+        : vars.items.length === 0
+        ? vars.notFoundText
+        : vars.placeholderText
+    "
+    [type]="multiple ? 'multi' : 'single'"
+    (clear)="clear()"
     (selected)="setSelected($event)"
+    [attr.data-carbon-theme]="carbonTheme"
   >
-    <cds-dropdown-list
-      [items]="listItems$ | async"
-      [type]="multiple ? 'multi' : 'single'"
-      [attr.data-carbon-theme]="carbonTheme"
-    ></cds-dropdown-list>
-  </cds-dropdown>
+    <cds-dropdown-list [attr.data-carbon-theme]="carbonTheme"></cds-dropdown-list>
+  </cds-combo-box>
 </div>

@@ -45,59 +45,60 @@ import CustomLocale = flatpickr.CustomLocale;
 export class DatePickerComponent implements AfterViewInit, OnDestroy {
   @ViewChild('datePickerElement') datePickerElement!: ElementRef<HTMLInputElement>;
 
-  @Input() name = '';
-  @Input() title = '';
-  @Input() titleTranslationKey = '';
-  @Input() widthPx!: number;
-  @Input() fullWidth = false;
-  @Input() margin = false;
-  @Input() disabled = false;
-  @Input() tooltip = '';
-  @Input() required = false;
-  @Input() defaultDate!: string;
-  @Input() defaultDateIsToday!: boolean;
-  @Input() smallLabel = false;
-  @Input() clear$!: Observable<null>;
-  @Input() enableTime = false;
+  @Input() public name = '';
+  @Input() public title = '';
+  @Input() public titleTranslationKey = '';
+  @Input() public widthPx!: number;
+  @Input() public fullWidth = false;
+  @Input() public margin = false;
+  @Input() public disabled = false;
+  @Input() public tooltip = '';
+  @Input() public required = false;
+  @Input() public defaultDate!: string;
+  @Input() public defaultDateIsToday!: boolean;
+  @Input() public smallLabel = false;
+  @Input() public clear$!: Observable<null>;
+  @Input() public enableTime = false;
+  @Input() public carbonTheme = 'g10';
 
-  @Output() valueChange: EventEmitter<any> = new EventEmitter();
+  @Output() public valueChange: EventEmitter<any> = new EventEmitter();
 
-  dateValue$ = new BehaviorSubject<string>('');
+  public readonly dateValue$ = new BehaviorSubject<string>('');
 
-  private flatpickrInstance!: flatpickr.Instance;
-  private localeSubscription!: Subscription;
-  private dateValueSubscription!: Subscription;
-  private clearSubscription!: Subscription;
+  private _flatpickrInstance!: flatpickr.Instance;
+  private readonly _subscriptions = new Subscription();
 
   constructor(private readonly translateService: TranslateService) {}
 
-  ngAfterViewInit(): void {
+  public ngAfterViewInit(): void {
     this.openLocaleSubscription();
     this.openDateValueSubscription();
     this.openClearSubscription();
   }
 
-  ngOnDestroy(): void {
-    this.localeSubscription?.unsubscribe();
-    this.dateValueSubscription?.unsubscribe();
-    this.clearSubscription?.unsubscribe();
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
   }
 
   private openLocaleSubscription(): void {
-    this.localeSubscription = this.translateService.stream('key').subscribe(() => {
-      this.setFlatpickrInstance(this.translateService.currentLang as LocaleKey);
-    });
+    this._subscriptions.add(
+      this.translateService.stream('key').subscribe(() => {
+        this.setFlatpickrInstance(this.translateService.currentLang as LocaleKey);
+      })
+    );
   }
 
   private openDateValueSubscription(): void {
-    this.dateValueSubscription = this.dateValue$.subscribe(dateValue => {
-      this.valueChange.emit(dateValue);
-    });
+    this._subscriptions.add(
+      this.dateValue$.subscribe(dateValue => {
+        this.valueChange.emit(dateValue);
+      })
+    );
   }
 
   private setFlatpickrInstance(localeKey: LocaleKey): void {
-    this.flatpickrInstance?.destroy();
-    this.flatpickrInstance = flatpickr(this.datePickerElement.nativeElement, {
+    this._flatpickrInstance?.destroy();
+    this._flatpickrInstance = flatpickr(this.datePickerElement.nativeElement, {
       locale: this.getLocale(localeKey),
       onChange: [this.onChange],
       defaultDate: this.getFlatpickrValue(),
@@ -106,17 +107,13 @@ export class DatePickerComponent implements AfterViewInit, OnDestroy {
     this.emitDate();
   }
 
-  private onChange = (
-    selectedDates: Array<Date>,
-    dateStr: string,
-    instance: flatpickr.Instance
-  ): void => {
+  private onChange = (selectedDates: Array<Date>, dateStr: string): void => {
     this.dateValue$.next(dateStr);
   };
 
   private emitDate(): void {
-    const currentDate = this.flatpickrInstance.selectedDates[0];
-    const formattedDate = currentDate && this.flatpickrInstance.formatDate(currentDate, 'Y-m-d');
+    const currentDate = this._flatpickrInstance.selectedDates[0];
+    const formattedDate = currentDate && this._flatpickrInstance.formatDate(currentDate, 'Y-m-d');
     if (formattedDate) {
       this.dateValue$.next(formattedDate);
     }
@@ -152,9 +149,11 @@ export class DatePickerComponent implements AfterViewInit, OnDestroy {
 
   private openClearSubscription(): void {
     if (this.clear$) {
-      this.clearSubscription = this.clear$.subscribe(() => {
-        this.dateValue$.next('');
-      });
+      this._subscriptions.add(
+        this.clear$.subscribe(() => {
+          this.dateValue$.next('');
+        })
+      );
     }
   }
 }
