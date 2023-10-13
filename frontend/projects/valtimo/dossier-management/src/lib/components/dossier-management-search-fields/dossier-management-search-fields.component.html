@@ -193,7 +193,7 @@
           [widthInPx]="200"
           [tooltip]="'searchFieldsOverviewTooltips.dropdownDataProvider' | translate"
         ></v-select>
-        <v-carbon-multi-input
+        <valtimo-carbon-multi-input
           *ngIf="
             (showInputDropdownTable$ | async) &&
             (initialDropdownValues$ | async) as initialDropdownValues
@@ -208,7 +208,7 @@
           [tooltip]="'searchFieldsOverviewTooltips.dropdownListValues' | translate"
           (valueChange)="dropdownDatalistChange($event)"
         >
-        </v-carbon-multi-input>
+        </valtimo-carbon-multi-input>
         <v-table
           *ngIf="
             (showReadonlyDropdownTable$ | async) &&
