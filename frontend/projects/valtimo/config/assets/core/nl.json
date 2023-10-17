@@ -415,9 +415,33 @@
         "key": "Tab sleutel",
         "name": "Tab naam",
         "type": "Type"
+      },
+      "addModal": {
+        "addTab": "Tabblad toevoegen",
+        "custom": "Nieuw tabblad toevoegen met aangepaste component",
+        "customComponent": "Aangepaste component",
+        "description": "Selecteer een van de drie opties om een ​​nieuw tabblad toe te voegen aan uw casusdefinitie",
+        "formio": "Nieuw tabblad toevoegen met FormIO component",
+        "formIOComponent": "FormIO component",
+        "standard": "Nieuw tabblad toevoegen met standaard inhoud",
+        "standardTab": "Standaard tabblad",
+        "tabContentLabel": "Kies inhoud",
+        "tabKeyLabel": "Sleutel",
+        "tabNameLabel": "Tabblad naam (optioneel)",
+        "title": "Nieuw tabblad toevoegen {{documentDefinitionName}}"
+      },
+      "editModal": {
+        "title": "Tabblad bewerken {{name}}",
+        "updateTab": "Tabblad updaten"
+      },
+      "deleteModal": {
+        "title": "Tabblad verwijderen?",
+        "description": "Weet u zeker dat u dit tabblad wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
       }
     },
     "tabType": {
+      "custom": "Inhoud",
+      "formio": "FormIO",
       "standard": "Standaard"
     }
   },
@@ -581,7 +605,8 @@
       "totalItems": "{{start}}-{{end}} van {{total}} artikelen"
     },
     "required": "vereist",
-    "filter": "Filteren..."
+    "filter": "Filteren...",
+    "back": "Terug"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",

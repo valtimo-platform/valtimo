@@ -15,15 +15,19 @@
   -->
 
 <valtimo-carbon-table
-  *ngIf="{loading: loading$ | async, tabs: tabs$ | async, fields: fields$ | async} as obs"
+  *ngIf="{fields: fields$ | async, loading: loading$ | async, tabs: tabs$ | async} as obs"
   [data]="obs.tabs"
   [fields]="obs.fields"
-  [loading]="obs.loading"
   hideTableHeader
-  hideTableToolbar
+  [loading]="obs.loading"
   [tableConfig]="tableConfig"
 >
+  <ng-container carbonToolbarContent>
+    <ng-container [ngTemplateOutlet]="addTabButton"></ng-container>
+  </ng-container>
+
   <valtimo-no-results
+    [action]="addTabButton"
     [description]="'dossier.tabs.noResultsDescription' | translate"
     [title]="'dossier.tabs.noResults' | translate"
   ></valtimo-no-results>
@@ -36,3 +40,35 @@
       : data.item.type
   }}
 </ng-template>
+
+<ng-template #addTabButton>
+  <button cdsButton="primary" (click)="openAddTabModal()">
+    {{ 'dossierManagement.tabManagement.addModal.addTab' | translate }}
+
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</ng-template>
+
+<valtimo-dossier-management-add-tab-modal
+  *ngIf="openAddModal$ | async"
+  [documentDefinitionName]="documentDefinitionName"
+  [open]="openAddModal$ | async"
+  (closeModalEvent)="onCloseAddModalEvent($event)"
+></valtimo-dossier-management-add-tab-modal>
+
+<valtimo-dossier-management-edit-tab-modal
+  *ngIf="openEditModal$ | async"
+  [tab]="tab$ | async"
+  (closeModalEvent)="onCloseEditModalEvent($event)"
+  [open]="openEditModal$ | async"
+></valtimo-dossier-management-edit-tab-modal>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="dossierManagement.tabManagement.deleteModal.description"
+  [outputOnConfirm]="deleteRowKey$ | async"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="dossierManagement.tabManagement.deleteModal.title"
+  (confirmEvent)="onConfirmEvent($event)"
+></valtimo-confirmation-modal>

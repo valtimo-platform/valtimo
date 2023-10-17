@@ -416,9 +416,33 @@
         "key": "Tab key",
         "name": "Tab name",
         "type": "Type"
+      },
+      "addModal": {
+        "addTab": "Add tab",
+        "custom": "Add new tab with custom component",
+        "customComponent": "Custom component",
+        "description": "Select one of the three options to add a new tab in your case definition",
+        "formio": "Add new tab with FormIO component",
+        "formIOComponent": "FormIO component",
+        "standard": "Add new tab with standard content",
+        "standardTab": "Standard tab",
+        "tabContentLabel": "Choose content",
+        "tabKeyLabel": "Key",
+        "tabNameLabel": "Tab name (optional)",
+        "title": "Add new tab in {{documentDefinitionName}}"
+      },
+      "editModal": {
+        "title": "Edit tab {{name}}",
+        "updateTab": "Update tab"
+      },
+      "deleteModal": {
+        "title": "Delete tab?",
+        "description": "Are you sure you want to delete this tab? This acction cannot be undone."
       }
     },
     "tabType": {
+      "custom": "Custom",
+      "formio": "FormIO",
       "standard": "Standard"
     }
   },
@@ -582,7 +606,8 @@
       "totalItems": "{{start}}-{{end}} of {{total}} items"
     },
     "required": "required",
-    "filter": "Filter..."
+    "filter": "Filter...",
+    "back": "Back"
   },
   "taskDetail": {
     "taskCreated": "Created",

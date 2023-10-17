@@ -47,6 +47,7 @@ import {
   LoadingModule,
   ModalModule as CarbonModalModule,
   NotificationModule,
+  ComboBoxModule,
 } from 'carbon-components-angular';
 import {DossierManagementAssigneeComponent} from './components/dossier-management-assignee/dossier-management-assignee.component';
 import {DossierManagementConnectModalComponent} from './components/dossier-management-connect-modal/dossier-management-connect-modal.component';
@@ -57,10 +58,13 @@ import {DossierManagementListColumnsComponent} from './components/dossier-manage
 import {DossierManagementListComponent} from './components/dossier-management-list/dossier-management-list.component';
 import {DossierManagementRemoveModalComponent} from './components/dossier-management-remove-modal/dossier-management-remove-modal.component';
 import {DossierManagementSearchFieldsComponent} from './components/dossier-management-search-fields/dossier-management-search-fields.component';
+import {DossierManagementAddTabModalComponent} from './components/dossier-management-tabs/dossier-management-add-tab-modal/dossier-management-add-tab-modal.component';
 import {DossierManagementTabsComponent} from './components/dossier-management-tabs/dossier-management-tabs.component';
+import {TabFormComponent} from './components/dossier-management-tabs/tab-form/tab-form.component';
 import {DossierManagementUploadComponent} from './components/dossier-management-upload/dossier-management-upload.component';
 import {DossierManagementRoutingModule} from './dossier-management-routing.module';
 import {TabManagementService} from './services';
+import {DossierManagementEditTabModalComponent} from './components/dossier-management-tabs/dossier-management-edit-tab-modal/dossier-management-edit-tab-modal.component';
 
 @NgModule({
   declarations: [
@@ -75,6 +79,9 @@ import {TabManagementService} from './services';
     DossierManagementAssigneeComponent,
     DossierManagementListColumnsComponent,
     DossierManagementTabsComponent,
+    DossierManagementAddTabModalComponent,
+    TabFormComponent,
+    DossierManagementEditTabModalComponent,
   ],
   imports: [
     CommonModule,
@@ -111,6 +118,7 @@ import {TabManagementService} from './services';
     TableModule,
     ValtimoCdsModalDirectiveModule,
     CarbonTableModule,
+    ComboBoxModule,
   ],
   providers: [TabManagementService],
 })

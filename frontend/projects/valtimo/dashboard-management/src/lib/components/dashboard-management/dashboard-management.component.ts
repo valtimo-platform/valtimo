@@ -53,7 +53,7 @@ export class DashboardManagementComponent implements OnInit {
     {
       actions: [
         {
-          actionName: 'Delete',
+          actionName: 'interface.delete',
           callback: this.deleteDashboard.bind(this),
           type: 'danger',
         },

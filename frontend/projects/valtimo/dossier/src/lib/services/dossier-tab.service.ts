@@ -104,7 +104,7 @@ export class DossierTabService implements OnDestroy {
     this.dossierTabApiService.getDossierTabs(documentDefinitionName).subscribe({
       next: tabs => {
         const supportedTabs = tabs.filter(tab => this.filterTab(tab));
-        const mappedTabs = supportedTabs.map((tab, index) => this.mapTap(tab, index));
+        const mappedTabs = supportedTabs.map((tab, index) => this.mapTab(tab, index));
         this._tabs$.next(mappedTabs.filter(tab => !!tab));
       },
       error: () => {
@@ -124,7 +124,7 @@ export class DossierTabService implements OnDestroy {
     }
   }
 
-  private mapTap(tab: ApiTabItem, index: number): TabImpl | null {
+  private mapTab(tab: ApiTabItem, index: number): TabImpl | null {
     switch (tab.type) {
       case ApiTabType.STANDARD:
         return new TabImpl(tab.key, index, DEFAULT_TAB_COMPONENTS[tab.contentKey]);

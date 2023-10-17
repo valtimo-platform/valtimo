@@ -14,17 +14,37 @@
  * limitations under the License.
  */
 
-enum ApiTabType {
-  STANDARD = 'standard',
-  FORMIO = 'formio',
-  CUSTOM = 'custom',
-}
+.valtimo-add-tab-modal {
+  &__footer .cds--modal-footer {
+    justify-content: unset;
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    grid-template-areas: 'cancel . actions';
+  }
 
-interface ApiTabItem {
-  name: string | null;
-  key: string;
-  type: ApiTabType;
-  contentKey: string;
-}
+  &__cancel {
+    grid-area: cancel;
+    width: 100%;
+  }
 
-export {ApiTabType, ApiTabItem};
+  &__actions {
+    grid-area: actions;
+    display: flex;
+  }
+
+  &__types {
+    display: grid;
+    grid-template: 1fr / repeat(3, 1fr);
+    gap: 16px;
+
+    button {
+      width: 100%;
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+}

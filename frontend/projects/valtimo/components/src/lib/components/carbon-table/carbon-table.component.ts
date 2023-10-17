@@ -79,7 +79,7 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
 
   private _fields: ColumnConfig[];
   @Input() public set fields(value: ColumnConfig[]) {
-    if (!value.length) {
+    if (!value?.length) {
       return;
     }
 
@@ -268,6 +268,8 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
           this.onSearch(searchString);
         })
     );
+
+    this.cd.detectChanges();
   }
 
   public ngOnDestroy(): void {

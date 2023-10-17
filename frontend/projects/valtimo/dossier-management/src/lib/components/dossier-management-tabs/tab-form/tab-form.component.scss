@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+::ng-deep .valtimo-tab-form-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
 
-enum ApiTabType {
-  STANDARD = 'standard',
-  FORMIO = 'formio',
-  CUSTOM = 'custom',
+  .cds {
+    &--list-box__field {
+      background-color: white;
+    }
+
+    &--modal-container,
+    &--modal-content {
+      overflow: unset;
+    }
+  }
 }
-
-interface ApiTabItem {
-  name: string | null;
-  key: string;
-  type: ApiTabType;
-  contentKey: string;
-}
-
-export {ApiTabType, ApiTabItem};
