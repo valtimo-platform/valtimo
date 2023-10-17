@@ -81,7 +81,7 @@ export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
 
   private _fields: ColumnConfig[];
   @Input() public set fields(value: ColumnConfig[]) {
-    if (!value.length) {
+    if (!value?.length) {
       return;
     }
     this._fields = value;
