@@ -110,6 +110,8 @@ export interface Tab {
   name: string;
   sequence: number;
   component: any;
+  title: string;
+  contentKey: string;
 
   activate(): void;
 
