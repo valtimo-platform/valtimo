@@ -30,7 +30,7 @@ export class TabFormComponent implements OnInit {
   @Input() tabType: ApiTabType;
 
   public readonly listItems$ = combineLatest([
-    this.tabService.configuredTabKeys$,
+    this.tabService.configuredContentKeys$,
     this.tabService.formDefinitions$,
     this.tabService.defaultTabs$,
     this.tabService.customComponentKeys$,
@@ -58,11 +58,11 @@ export class TabFormComponent implements OnInit {
     this.form = this.formGroupDirective.control;
   }
 
-  private getListItems(tabItems: ListItem[], configuredTabKeys: string[]): ListItem[] {
+  private getListItems(tabItems: ListItem[], configuredContentKeys: string[]): ListItem[] {
     return tabItems
       .filter(
         (tabItem: ListItem) =>
-          !configuredTabKeys.includes(tabItem.contentKey) ||
+          !configuredContentKeys.includes(tabItem.contentKey) ||
           this.form?.get('contentKey')?.value === tabItem.contentKey
       )
       .map((tabItem: ListItem) => ({

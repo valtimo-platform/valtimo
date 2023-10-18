@@ -29,7 +29,6 @@ import {CarbonTableConfig, ColumnConfig, ViewType} from '@valtimo/components';
 import {ApiTabItem} from '@valtimo/dossier';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, map, Observable, tap} from 'rxjs';
-
 import {TabManagementService, TabService} from '../../services';
 
 @Component({
@@ -40,6 +39,7 @@ import {TabManagementService, TabService} from '../../services';
   encapsulation: ViewEncapsulation.None,
 })
 export class DossierManagementTabsComponent implements AfterViewInit {
+  @ViewChild('tabContentColumn') tabContentColumnTemplate: TemplateRef<any>;
   @ViewChild('tabTypeColumn') tabTypeColumnTemplate: TemplateRef<any>;
   @ViewChild('moveButtonsTemplate') moveButtonsTemplate: TemplateRef<any>;
 
@@ -70,7 +70,8 @@ export class DossierManagementTabsComponent implements AfterViewInit {
   public readonly tabs$ = this.tabManagementService.tabs$.pipe(
     tap((tabs: ApiTabItem[]) => {
       this._tabs = tabs;
-      this.tabService.configuredTabKeys = tabs.map((tab: ApiTabItem) => tab.contentKey);
+      this.tabService.configuredContentKeys = tabs.map((tab: ApiTabItem) => tab.contentKey);
+      this.tabService.configuredTabKeys = tabs.map((tab: ApiTabItem) => tab.key);
       this.lastItemIndex$.next(tabs.length - 1);
     })
   );
@@ -105,9 +106,10 @@ export class DossierManagementTabsComponent implements AfterViewInit {
         label: 'dossierManagement.tabManagement.columns.type',
       },
       {
-        key: 'contentKey',
+        viewType: ViewType.TEMPLATE,
+        template: this.tabContentColumnTemplate,
+        key: '',
         label: 'dossierManagement.tabManagement.columns.content',
-        viewType: ViewType.TEXT,
       },
       {
         className: 'valtimo-dossier-management-tabs__actions',

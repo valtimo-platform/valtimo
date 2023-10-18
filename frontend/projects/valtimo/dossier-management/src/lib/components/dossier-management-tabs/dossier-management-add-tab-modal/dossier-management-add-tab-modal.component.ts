@@ -21,7 +21,13 @@ import {
   Output,
   ViewEncapsulation,
 } from '@angular/core';
-import {FormBuilder, Validators} from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import {Code16, Development16, WatsonHealthPageScroll16} from '@carbon/icons';
 import {ApiTabItem, ApiTabType} from '@valtimo/dossier';
 import {IconService} from 'carbon-components-angular';
@@ -67,7 +73,7 @@ export class DossierManagementAddTabModalComponent {
 
   public readonly form = this.fb.group({
     name: this.fb.control(null),
-    key: this.fb.control('', Validators.required),
+    key: this.fb.control('', [Validators.required, this.uniqueKeyValidator()]),
     contentKey: this.fb.control('', Validators.required),
   });
   public readonly selectedTabType$ = new BehaviorSubject<ApiTabType | null>(null);
@@ -104,5 +110,13 @@ export class DossierManagementAddTabModalComponent {
 
   private resetModal(): void {
     this.selectedTabType$.next(null);
+  }
+
+  private uniqueKeyValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      return this.tabService.configuredTabKeys.every((key: string) => key !== control.value)
+        ? null
+        : {uniqueKey: {value: control.value}};
+    };
   }
 }

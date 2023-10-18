@@ -31,8 +31,8 @@ export class DossierManagementEditTabModalComponent {
       return;
     }
 
-    if (!!this.tabService.configuredTabKeys) {
-      this.configuredKeysForEdit = this.tabService.configuredTabKeys.filter(
+    if (!!this.tabService.configuredContentKeys) { 
+      this.configuredKeysForEdit = this.tabService.configuredContentKeys.filter(
         (tabKey: string) => tabKey !== value.contentKey
       );
     }

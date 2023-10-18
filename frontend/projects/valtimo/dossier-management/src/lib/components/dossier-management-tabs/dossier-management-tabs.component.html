@@ -42,6 +42,14 @@
   }}
 </ng-template>
 
+<ng-template #tabContentColumn let-data="data">
+  {{
+    isTranslated('dossier.tabs.' + data.item.contentKey)
+      ? ('dossier.tabs.' + data.item.contentKey | translate)
+      : data.item.contentKey
+  }}
+</ng-template>
+
 <ng-template #addTabButton>
   <button cdsButton="primary" (click)="openAddTabModal()">
     {{ 'dossierManagement.tabManagement.addModal.addTab' | translate }}

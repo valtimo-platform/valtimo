@@ -17,13 +17,16 @@
 <cds-modal *ngIf="form" [open]="open">
   <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
     <h3 cdsModalHeaderHeading>
-      {{ 'dossierManagement.tabManagement.editModal.title' | translate: {name: tab?.name} }}
+      {{
+        'dossierManagement.tabManagement.editModal.title'
+          | translate: {name: tab?.name ?? 'dossier.tabs.' + tab.key | translate}
+      }}
     </h3>
   </cds-modal-header>
 
   <section [formGroup]="form" cdsModalContent>
     <valtimo-tab-form
-      [configuredTabKeys]="configuredKeysForEdit"
+      [configuredContentKeys]="configuredKeysForEdit"
       [tabType]="tab?.type"
     ></valtimo-tab-form>
   </section>

@@ -419,17 +419,25 @@
       },
       "addModal": {
         "addTab": "Add tab",
-        "custom": "Add new tab with custom component",
         "customComponent": "Custom component",
         "description": "Select one of the three options to add a new tab in your case definition",
-        "formio": "Add new tab with FormIO component",
         "formIOComponent": "FormIO component",
-        "standard": "Add new tab with standard content",
         "standardTab": "Standard tab",
         "tabContentLabel": "Choose content",
         "tabKeyLabel": "Key",
         "tabNameLabel": "Tab name (optional)",
-        "title": "Add new tab in {{documentDefinitionName}}"
+        "title": "Add new tab in {{documentDefinitionName}}",
+        "uniqueKeyError": "The key for this column must be unique."
+      },
+      "titles": {
+        "custom": "Add new tab with custom component",
+        "formio": "Add new tab with FormIO component",
+        "standard": "Add new tab with standard content"
+      },
+      "contentLabels": {
+        "custom": "Choose custom component",
+        "formio": "Choose FormIO component",
+        "standard": "Choose standard content"
       },
       "editModal": {
         "title": "Edit tab {{name}}",

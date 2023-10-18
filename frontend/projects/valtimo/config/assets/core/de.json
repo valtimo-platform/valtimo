@@ -418,17 +418,25 @@
       },
       "addModal": {
         "addTab": "Hinzufügen Tab",
-        "custom": "Neue Registerkarte hinzufügen mit brauch component",
         "customComponent": "Brauch component",
         "description": "Wählen Sie eine der drei Optionen aus, um Ihrer Falldefinition eine neue Registerkarte hinzuzufügen",
-        "formio": "Neue Registerkarte hinzufügen mit FormIO Komponente",
         "formIOComponent": "FormIO Komponente",
-        "standard": "Neue Registerkarte hinzufügen mit Standardinhalte",
         "standardTab": "Tab standard",
         "tabContentLabel": "Inhalte auswählen",
         "tabKeyLabel": "Key",
         "tabNameLabel": "Tab name (Optional)",
-        "title": "Neue Registerkarte hinzufügen {{documentDefinitionName}}"
+        "title": "Neue Registerkarte hinzufügen {{documentDefinitionName}}",
+        "uniqueKeyError": "Der Schlüssel für diese Spalte muss eindeutig sein."
+      },
+      "titles": {
+        "custom": "Neue Registerkarte hinzufügen mit brauch component",
+        "formio": "Neue Registerkarte hinzufügen mit FormIO Komponente",
+        "standard": "Neue Registerkarte hinzufügen mit Standardinhalte"
+      },
+      "contentLabels": {
+        "custom": "Brauch component auswählen",
+        "formio": "FormIO Komponente auswählen",
+        "standard": "Standardinhalte auswählen"
       },
       "editModal": {
         "title": "Bearbeiten Tab {{name}}",

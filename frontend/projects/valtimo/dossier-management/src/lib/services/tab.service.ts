@@ -26,6 +26,8 @@ import {TabEnum} from '../models/tab.enum';
   providedIn: 'root',
 })
 export class TabService {
+  public configuredTabKeys: string[];
+
   private _currentTab$ = new BehaviorSubject<TabEnum>(TabEnum.CASE);
   public get currentTab$(): Observable<TabEnum> {
     return this._currentTab$.asObservable();
@@ -34,12 +36,12 @@ export class TabService {
     this._currentTab$.next(tab);
   }
 
-  private _configuredTabKeys$ = new BehaviorSubject<string[]>([]);
-  public get configuredTabKeys$(): Observable<string[]> {
-    return this._configuredTabKeys$.asObservable();
+  private _configuredContentKeys$ = new BehaviorSubject<string[]>([]);
+  public get configuredContentKeys$(): Observable<string[]> {
+    return this._configuredContentKeys$.asObservable();
   }
-  public set configuredTabKeys(value: string[]) {
-    this._configuredTabKeys$.next(value);
+  public set configuredContentKeys(value: string[]) {
+    this._configuredContentKeys$.next(value);
   }
 
   public readonly formDefinitions$: Observable<ListItem[]> = this.formService
@@ -79,7 +81,7 @@ export class TabService {
     custom: boolean;
     formIO: boolean;
   }> = combineLatest([
-    this.configuredTabKeys$,
+    this.configuredContentKeys$,
     this.formDefinitions$,
     this.defaultTabs$,
     this.customComponentKeys$,

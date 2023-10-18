@@ -21,7 +21,7 @@
         !obs.selectedTabType
           ? ('dossierManagement.tabManagement.addModal.title'
             | translate: {documentDefinitionName: (documentDefinitionName | titlecase)})
-          : ('dossierManagement.tabManagement.addModal.' + obs.selectedTabType | translate)
+          : ('dossierManagement.tabManagement.titles.' + obs.selectedTabType | translate)
       }}
     </h3>
   </cds-modal-header>

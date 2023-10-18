@@ -21,10 +21,18 @@
     <input cdsText formControlName="name" [attr.modal-primary-focus]="true" />
   </cds-label>
 
-  <cds-label>
+  <cds-label
+    [invalid]="!!this.form.get('key').errors?.uniqueKey"
+    [invalidText]="'dossierManagement.tabManagement.addModal.uniqueKeyError' | translate"
+  >
     {{ 'dossierManagement.tabManagement.addModal.tabKeyLabel' | translate }}
 
-    <input cdsText formControlName="key" [attr.modal-primary-focus]="true" />
+    <input
+      cdsText
+      formControlName="key"
+      [invalid]="!!this.form.get('key').errors?.uniqueKey"
+      [attr.modal-primary-focus]="true"
+    />
   </cds-label>
 
   <cds-combo-box
@@ -32,7 +40,7 @@
     formControlName="contentKey"
     [items]="listItems$ | async"
     itemValueKey="contentKey"
-    [label]="'dossierManagement.tabManagement.addModal.tabContentLabel' | translate"
+    [label]="'dossierManagement.tabManagement.contentLabels.' + tabType | translate"
   >
     <cds-dropdown-list></cds-dropdown-list>
   </cds-combo-box>

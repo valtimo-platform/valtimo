@@ -418,17 +418,25 @@
       },
       "addModal": {
         "addTab": "Tabblad toevoegen",
-        "custom": "Nieuw tabblad toevoegen met aangepaste component",
         "customComponent": "Aangepaste component",
         "description": "Selecteer een van de drie opties om een ​​nieuw tabblad toe te voegen aan uw casusdefinitie",
-        "formio": "Nieuw tabblad toevoegen met FormIO component",
         "formIOComponent": "FormIO component",
-        "standard": "Nieuw tabblad toevoegen met standaard inhoud",
         "standardTab": "Standaard tabblad",
         "tabContentLabel": "Kies inhoud",
         "tabKeyLabel": "Sleutel",
         "tabNameLabel": "Tabblad naam (optioneel)",
-        "title": "Nieuw tabblad toevoegen {{documentDefinitionName}}"
+        "title": "Nieuw tabblad toevoegen {{documentDefinitionName}}",
+        "uniqueKeyError": "De sleutel voor deze kolom moet uniek zijn."
+      },
+      "titles": {
+        "custom": "Nieuw tabblad toevoegen met aangepaste component",
+        "formio": "Nieuw tabblad toevoegen met FormIO component",
+        "standard": "Nieuw tabblad toevoegen met standaard inhoud"
+      },
+      "contentLabels": {
+        "custom": "Kies aangepaste component",
+        "formio": "Kies FormIO component",
+        "standard": "Kies standaard inhoud"
       },
       "editModal": {
         "title": "Tabblad bewerken {{name}}",
