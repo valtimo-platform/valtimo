@@ -24,7 +24,6 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import {ActivatedRoute, ParamMap, Params, Router} from '@angular/router';
-import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {BreadcrumbService} from '@valtimo/components';
 import {ConfigService} from '@valtimo/config';
@@ -169,8 +168,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     private readonly permissionService: PermissionService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly dossierTabService: DossierTabService,
-    private readonly translateService: TranslateService
+    private readonly dossierTabService: DossierTabService
   ) {
     this._snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this._snapshot.get('documentDefinitionName') || '';
@@ -247,9 +245,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
           tabs,
           this.componentFactoryResolver,
           this.viewContainerRef,
-          this.translateService,
           this.router,
-          this.location,
           this.route
         );
         this.tabLoader.initial(this._initialTabName);

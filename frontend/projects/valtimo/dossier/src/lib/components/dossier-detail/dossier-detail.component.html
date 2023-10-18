@@ -103,7 +103,7 @@
               data-toggle="tab"
               id="{{ tab.name }}-tab"
             >
-              {{ tabLoader.translateTabName(tab) }}
+              {{ tab | tabTranslate | async }}
             </a>
           </li>
         </ul>

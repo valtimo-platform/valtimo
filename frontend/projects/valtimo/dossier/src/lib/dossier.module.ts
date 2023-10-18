@@ -91,6 +91,7 @@ import {DossierUpdateComponent} from './components/dossier-update/dossier-update
 import {TAB_MAP} from './constants';
 import {DossierBulkAssignService, DossierService} from './services';
 import {DossierDetailTabFormioComponent} from './components/dossier-detail/tab/formio/formio.component';
+import {TabTranslatePipeModule} from './pipes';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -175,6 +176,7 @@ export type TabsFactory = () => Map<string, object>;
     DropdownModule,
     TabsModule,
     ComboBoxModule,
+    TabTranslatePipeModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })
