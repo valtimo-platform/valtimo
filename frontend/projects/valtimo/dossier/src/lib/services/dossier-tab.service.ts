@@ -127,7 +127,13 @@ export class DossierTabService implements OnDestroy {
   private mapTab(tab: ApiTabItem, index: number): TabImpl | null {
     switch (tab.type) {
       case ApiTabType.STANDARD:
-        return new TabImpl(tab.key, index, DEFAULT_TAB_COMPONENTS[tab.contentKey], tab.name);
+        return new TabImpl(
+          tab.key,
+          index,
+          DEFAULT_TAB_COMPONENTS[tab.contentKey],
+          tab.contentKey,
+          tab.name
+        );
       case ApiTabType.FORMIO:
         return new TabImpl(
           tab.key,
@@ -137,7 +143,13 @@ export class DossierTabService implements OnDestroy {
           tab.name
         );
       case ApiTabType.CUSTOM:
-        return new TabImpl(tab.key, index, this.caseTabConfig[tab.contentKey], tab.name);
+        return new TabImpl(
+          tab.key,
+          index,
+          this.caseTabConfig[tab.contentKey],
+          tab.contentKey,
+          tab.name
+        );
       default:
         return null;
     }
