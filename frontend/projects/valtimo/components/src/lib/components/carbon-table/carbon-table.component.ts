@@ -76,6 +76,7 @@ import {ViewContentService} from '../view-content/view-content.service';
 })
 export class CarbonTableComponent<T> implements AfterViewInit, OnDestroy {
   @HostBinding('attr.data-carbon-theme') public theme = 'g10';
+  @HostBinding('class') public class = 'valtimo-carbon-table';
 
   @ViewChild('actionsMenu', {static: false}) actionsMenu: TemplateRef<OverflowMenu>;
 
