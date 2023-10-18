@@ -113,10 +113,9 @@ export class DossierManagementAddTabModalComponent {
   }
 
   private uniqueKeyValidator(): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null => {
-      return this.tabService.configuredTabKeys.every((key: string) => key !== control.value)
+    return (control: AbstractControl): ValidationErrors | null =>
+      this.tabService.configuredTabKeys.every((key: string) => key !== control.value)
         ? null
         : {uniqueKey: {value: control.value}};
-    };
   }
 }
