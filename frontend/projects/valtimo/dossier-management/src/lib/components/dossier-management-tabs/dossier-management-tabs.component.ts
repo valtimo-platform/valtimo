@@ -23,10 +23,13 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
+import {ArrowDown16, ArrowUp16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {CarbonTableConfig, ColumnConfig, ViewType} from '@valtimo/components';
 import {ApiTabItem} from '@valtimo/dossier';
+import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, map, Observable, tap} from 'rxjs';
+
 import {TabManagementService, TabService} from '../../services';
 
 @Component({
@@ -38,6 +41,7 @@ import {TabManagementService, TabService} from '../../services';
 })
 export class DossierManagementTabsComponent implements AfterViewInit {
   @ViewChild('tabTypeColumn') tabTypeColumnTemplate: TemplateRef<any>;
+  @ViewChild('moveButtonsTemplate') moveButtonsTemplate: TemplateRef<any>;
 
   private _documentDefinitionName: string;
   @Input() public set documentDefinitionName(value: string) {
@@ -60,9 +64,14 @@ export class DossierManagementTabsComponent implements AfterViewInit {
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
   public readonly loading$: Observable<boolean> = this.tabManagementService.loading$;
   public readonly openAddModal$ = new BehaviorSubject<boolean>(false);
-  public readonly tabs$: Observable<ApiTabItem[]> = this.tabManagementService.tabs$.pipe(
+  public readonly lastItemIndex$ = new BehaviorSubject<number>(-1);
+
+  private _tabs: ApiTabItem[];
+  public readonly tabs$ = this.tabManagementService.tabs$.pipe(
     tap((tabs: ApiTabItem[]) => {
+      this._tabs = tabs;
       this.tabService.configuredTabKeys = tabs.map((tab: ApiTabItem) => tab.contentKey);
+      this.lastItemIndex$.next(tabs.length - 1);
     })
   );
   public readonly tab$ = new BehaviorSubject<ApiTabItem | null>(null);
@@ -70,12 +79,14 @@ export class DossierManagementTabsComponent implements AfterViewInit {
 
   constructor(
     private readonly cd: ChangeDetectorRef,
-    private readonly tabService: TabService,
+    private readonly iconService: IconService,
     private readonly tabManagementService: TabManagementService,
+    private readonly tabService: TabService,
     private readonly translateService: TranslateService
   ) {}
 
   public ngAfterViewInit(): void {
+    this.iconService.registerAll([ArrowDown16, ArrowUp16]);
     this.fields$.next([
       {
         key: 'name',
@@ -99,11 +110,14 @@ export class DossierManagementTabsComponent implements AfterViewInit {
         viewType: ViewType.TEXT,
       },
       {
+        className: 'valtimo-dossier-management-tabs__actions',
+        key: '',
+        label: '',
+        template: this.moveButtonsTemplate,
+        viewType: ViewType.TEMPLATE,
+      },
+      {
         actions: [
-          {
-            actionName: 'interface.edit',
-            callback: this.openEditTabModal.bind(this),
-          },
           {
             actionName: 'interface.delete',
             callback: this.openDeleteConfirmationModal.bind(this),
@@ -124,11 +138,21 @@ export class DossierManagementTabsComponent implements AfterViewInit {
     return this.translateService.instant(key) !== key;
   }
 
+  public onArrowClick(direction: 'UP' | 'DOWN', index: number, event: Event): void {
+    event.stopImmediatePropagation();
+    const orderedTabs: ApiTabItem[] =
+      direction === 'UP'
+        ? this.swapTabs(this._tabs, index - 1, index)
+        : this.swapTabs(this._tabs, index, index + 1);
+
+    this.tabManagementService.dispatchAction(this.tabManagementService.editTabsOrder(orderedTabs));
+  }
+
   public openAddTabModal(): void {
     this.openAddModal$.next(true);
   }
 
-  public openEditTabModal(tab: ApiTabItem): void {
+  public onRowClick(tab: ApiTabItem): void {
     this.tab$.next(tab);
     this.openEditModal$.next(true);
   }
@@ -172,5 +196,12 @@ export class DossierManagementTabsComponent implements AfterViewInit {
 
   private editTab(tab: ApiTabItem): void {
     this.tabManagementService.dispatchAction(this.tabManagementService.editTab(tab, tab.key));
+  }
+
+  private swapTabs(tabItems: ApiTabItem[], index1: number, index2: number): ApiTabItem[] {
+    const temp = [...tabItems];
+    temp[index1] = temp.splice(index2, 1, temp[index1])[0];
+
+    return temp;
   }
 }

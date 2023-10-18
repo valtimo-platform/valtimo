@@ -49,14 +49,16 @@ export class TabManagementService {
       });
   }
 
-  public dispatchAction(actionResult: Observable<ApiTabItem | null>): void {
+  public dispatchAction(actionResult: Observable<ApiTabItem | ApiTabItem[] | null>): void {
     actionResult
       .pipe(
         tap(() => {
           this.loading$.next(true);
           this.tabs$.next([]);
         }),
-        switchMap(() => this.getTabList()),
+        switchMap((result: ApiTabItem | ApiTabItem[] | null) =>
+          Array.isArray(result) ? of(result) : this.getTabList()
+        ),
         take(1),
         catchError(error => of(error))
       )
@@ -88,6 +90,13 @@ export class TabManagementService {
     return this.http.put<ApiTabItem>(
       `${this._valtimoEndpointUri}/${this._caseDefinitionId}/tab/${tabKey}`,
       tab
+    );
+  }
+
+  public editTabsOrder(tabList: ApiTabItem[]): Observable<ApiTabItem[]> {
+    return this.http.put<ApiTabItem[]>(
+      `${this._valtimoEndpointUri}/${this._caseDefinitionId}/tab`,
+      tabList
     );
   }
 
