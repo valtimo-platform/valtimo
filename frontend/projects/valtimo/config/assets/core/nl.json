@@ -525,6 +525,7 @@
     "edit": "Aanpassen",
     "noItemsFound": "Geen items gevonden",
     "clearAll": "Alles wissen",
+    "clear": "Wissen",
     "show": "Toon",
     "items": "items",
     "of": "van",
@@ -561,7 +562,8 @@
       "singleSelect": "1 artikel geselecteerd",
       "totalItems": "{{start}}-{{end}} van {{total}} artikelen"
     },
-    "required": "vereist"
+    "required": "vereist",
+    "filter": "Filteren..."
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",

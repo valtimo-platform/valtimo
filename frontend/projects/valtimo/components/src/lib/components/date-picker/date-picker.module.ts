@@ -20,13 +20,14 @@ import {DatePickerComponent} from './date-picker.component';
 import {FormsModule} from '@angular/forms';
 import {InputLabelModule} from '../input-label/input-label.module';
 import {TranslateModule} from '@ngx-translate/core';
+import {InputModule} from 'carbon-components-angular';
 
 /**
  * @deprecated Migrate old design to Carbon
  */
 @NgModule({
   declarations: [DatePickerComponent],
-  imports: [CommonModule, InputLabelModule, FormsModule, TranslateModule],
+  imports: [CommonModule, InputLabelModule, FormsModule, TranslateModule, InputModule],
   exports: [DatePickerComponent],
 })
 export class DatePickerModule {}
