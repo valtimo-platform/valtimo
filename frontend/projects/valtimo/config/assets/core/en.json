@@ -526,6 +526,7 @@
     "edit": "Edit",
     "noItemsFound": "No items found",
     "clearAll": "Clear all",
+    "clear": "Clear",
     "show": "Show",
     "items": "items",
     "of": "of",
@@ -562,7 +563,8 @@
       "singleSelect": "1 item selected",
       "totalItems": "{{start}}-{{end}} of {{total}} items"
     },
-    "required": "required"
+    "required": "required",
+    "filter": "Filter..."
   },
   "taskDetail": {
     "taskCreated": "Created",
