@@ -27,6 +27,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {
   FormioComponent,
   FormioOptionsImpl,
+  FormIoStateService,
   FormioSubmission,
   ModalComponent,
   ValtimoFormioOptions,
@@ -95,6 +96,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     private readonly taskService: TaskService,
     private readonly userProviderService: UserProviderService,
     private readonly modalService: ValtimoModalService,
+    private readonly stateService: FormIoStateService,
     private readonly documentService: DocumentService,
     private readonly translateService: TranslateService
   ) {
@@ -128,6 +130,8 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     this.resetFormDefinition();
     this.getTaskProcessLink(task.id);
     this.setDocumentDefinitionNameInService(task);
+    const documentId = task.businessKey;
+    this.stateService.setDocumentId(documentId);
 
     this.task = task;
     this.page = {
@@ -140,7 +144,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
       this.formLinkService
         .getPreFilledFormDefinitionByFormLinkId(
           task.processDefinitionKey,
-          task.businessKey,
+          documentId,
           task.taskDefinitionKey,
           task.id // taskInstanceId
         )
@@ -319,9 +323,9 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     this.documentService
       .getProcessDocumentDefinitionFromProcessInstanceId(task.processInstanceId)
       .subscribe(processDocumentDefinition => {
-        this.modalService.setDocumentDefinitionName(
-          processDocumentDefinition.id.documentDefinitionId.name
-        );
+        const documentDefinitionName = processDocumentDefinition.id.documentDefinitionId.name;
+        this.modalService.setDocumentDefinitionName(documentDefinitionName);
+        this.stateService.setDocumentDefinitionName(documentDefinitionName);
       });
   }
 }
