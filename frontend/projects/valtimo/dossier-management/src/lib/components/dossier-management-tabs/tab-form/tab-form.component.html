@@ -41,6 +41,8 @@
     [items]="listItems$ | async"
     itemValueKey="contentKey"
     [label]="'dossierManagement.tabManagement.contentLabels.' + tabType | translate"
+    (search)="onSearch($event)"
+    (selected)="onSelected($event)"
   >
     <cds-dropdown-list></cds-dropdown-list>
   </cds-combo-box>

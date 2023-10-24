@@ -110,6 +110,7 @@ export class DossierManagementAddTabModalComponent {
 
   private resetModal(): void {
     this.selectedTabType$.next(null);
+    this.form.reset();
   }
 
   private uniqueKeyValidator(): ValidatorFn {

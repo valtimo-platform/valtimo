@@ -49,6 +49,8 @@ export class TabFormComponent implements OnInit {
   );
   public form!: FormGroup;
 
+  private _searchActive: boolean;
+
   constructor(
     private readonly tabService: TabService,
     private readonly formGroupDirective: FormGroupDirective
@@ -56,6 +58,19 @@ export class TabFormComponent implements OnInit {
 
   public ngOnInit(): void {
     this.form = this.formGroupDirective.control;
+  }
+
+  public onSearch(): void {
+    if (this._searchActive) {
+      return;
+    }
+
+    this._searchActive = true;
+    this.form.get('contentKey')?.reset('');
+  }
+
+  public onSelected(): void {
+    this._searchActive = false;
   }
 
   private getListItems(tabItems: ListItem[], configuredContentKeys: string[]): ListItem[] {
