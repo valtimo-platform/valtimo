@@ -79,7 +79,7 @@ interface FormFlowCreateResult {
   formFlowInstanceId: string;
 }
 
-type FormFlowStepType = 'form';
+type FormFlowStepType = 'form' | 'custom-component';
 
 interface FormFlowStep {
   id: string;
@@ -88,7 +88,8 @@ interface FormFlowStep {
 }
 
 interface FormTypeProperties {
-  definition: any;
+  definition?: any;
+  id?: string;
 }
 
 interface ModalParams {

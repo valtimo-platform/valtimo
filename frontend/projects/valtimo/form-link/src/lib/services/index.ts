@@ -21,3 +21,4 @@ export * from './process-link.service';
 export * from './process-link-state.service';
 export * from './process-link-step.service';
 export * from './process-link-button.service';
+export * from './form-flow-component.service';

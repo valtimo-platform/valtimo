@@ -38,9 +38,12 @@ export class FormFlowComponent implements OnInit {
   @Input() formFlowInstanceId: string;
   @Output() formFlowComplete = new EventEmitter();
 
+  public readonly disabled$ = new BehaviorSubject<boolean>(false);
+  public readonly formFlowStepType$ = new BehaviorSubject<FormFlowStepType | null>(null);
+  public readonly FormFlowCustomComponentId$ = new BehaviorSubject<string>('');
+
   formDefinition: FormioForm;
   formioOptions: ValtimoFormioOptions;
-  formFlowStepType$ = new BehaviorSubject<FormFlowStepType | null>(null);
 
   private formFlowStepInstanceId: string;
 
@@ -53,17 +56,19 @@ export class FormFlowComponent implements OnInit {
     this.formioOptions.disableAlerts = true;
   }
 
-  ngOnInit() {
+  public ngOnInit() {
     this.getFormFlowStep();
   }
 
-  onChange(event: any): void {
+  public onChange(event: any): void {
     if (event.data) {
       this.formIoFormData.next(event.data);
     }
   }
 
-  onSubmit(submission: FormioSubmission): void {
+  public onSubmit(submission: FormioSubmission): void {
+    this.disable();
+
     if (submission.data) {
       this.formIoFormData.next(submission.data);
     }
@@ -72,17 +77,23 @@ export class FormFlowComponent implements OnInit {
         .submitStep(this.formFlowInstanceId, this.formFlowStepInstanceId, submission.data)
         .subscribe(
           (result: FormFlowInstance) => this.handleFormFlowStep(result),
-          errors => this.form.showErrors(errors)
+          errors => {
+            this.form?.showErrors(errors);
+            this.enable();
+          }
         );
     } else if (submission.data['back']) {
       this.formFlowService.back(this.formFlowInstanceId, submission.data).subscribe(
         (result: FormFlowInstance) => this.handleFormFlowStep(result),
-        errors => this.form.showErrors(errors)
+        errors => {
+          this.form?.showErrors(errors);
+          this.enable();
+        }
       );
     }
   }
 
-  saveData(): void {
+  public saveData(): void {
     const formIoFormData = this.formIoFormData.getValue();
     if (formIoFormData && this.formFlowInstanceId) {
       this.formFlowService.save(this.formFlowInstanceId, formIoFormData).subscribe(
@@ -103,15 +114,27 @@ export class FormFlowComponent implements OnInit {
   private handleFormFlowStep(formFlowInstance: FormFlowInstance) {
     if (formFlowInstance.step === null) {
       this.formFlowStepType$.next(null);
+      this.FormFlowCustomComponentId$.next('');
       this.formFlowInstanceId = null;
       this.formFlowStepInstanceId = null;
       this.formFlowComplete.emit(null);
     } else {
       this.modalService.scrollToTop();
       this.formFlowStepType$.next(formFlowInstance.step.type);
+      this.FormFlowCustomComponentId$.next(formFlowInstance?.step?.typeProperties?.id || '');
       this.formFlowInstanceId = formFlowInstance.id;
       this.formFlowStepInstanceId = formFlowInstance.step.id;
       this.formDefinition = formFlowInstance.step.typeProperties.definition;
     }
+
+    this.enable();
+  }
+
+  private disable(): void {
+    this.disabled$.next(true);
+  }
+
+  private enable(): void {
+    this.disabled$.next(false);
   }
 }

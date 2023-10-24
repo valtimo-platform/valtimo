@@ -14,6 +14,24 @@
  * limitations under the License.
  */
 
-export * from './form-link.model';
-export * from './process-link.model';
-export * from './form-flow.model';
+import {EventEmitter, Type} from '@angular/core';
+import {FormioSubmission} from '@valtimo/components';
+
+interface ChangeEvent {
+  data: object;
+}
+
+interface FormFlowCustomComponent {
+  formFlowInstanceId: string;
+  componentId?: string;
+  disabled: boolean;
+  changeEvent: EventEmitter<ChangeEvent>;
+  submitEvent: EventEmitter<FormioSubmission>;
+}
+
+interface FormFlowCustomComponentDefinition {
+  id: string;
+  component: Type<FormFlowCustomComponent>;
+}
+
+export {FormFlowCustomComponentDefinition, FormFlowCustomComponent, ChangeEvent};

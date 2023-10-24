@@ -60,6 +60,7 @@ import {ChooseProcessLinkTypeComponent} from './components/choose-process-link-t
 import {SelectFormComponent} from './components/select-form';
 import {FormFlowComponent} from './components/form-flow/form-flow.component';
 import {SelectFormFlowComponent} from './components/select-form-flow';
+import {FormFlowConfigurationContainerComponent} from './components/form-flow-configuration-container';
 
 @NgModule({
   declarations: [
@@ -75,6 +76,7 @@ import {SelectFormFlowComponent} from './components/select-form-flow';
     SelectFormComponent,
     FormFlowComponent,
     SelectFormFlowComponent,
+    FormFlowConfigurationContainerComponent,
   ],
   imports: [
     CommonModule,
