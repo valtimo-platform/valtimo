@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   AfterViewInit,
   Component,
@@ -23,7 +22,9 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
+import {Router} from '@angular/router';
+import {FormioForm} from '@formio/angular';
+import {TranslateService} from '@ngx-translate/core';
 import {
   FormioComponent,
   FormioOptionsImpl,
@@ -33,23 +34,16 @@ import {
   ValtimoFormioOptions,
   ValtimoModalService,
 } from '@valtimo/components';
-import {Task, TaskProcessLinkType} from '../models';
-import {
-  FormFlowComponent,
-  FormFlowService,
-  FormSubmissionResult,
-  ProcessLinkService,
-} from '@valtimo/form-link';
-import {FormioForm} from '@formio/angular';
-import moment from 'moment';
-import {NGXLogger} from 'ngx-logger';
-import {ToastrService} from 'ngx-toastr';
-import {map, take} from 'rxjs/operators';
-import {TaskService} from '../task.service';
-import {BehaviorSubject, distinctUntilChanged, Observable, Subscription, tap} from 'rxjs';
-import {UserProviderService} from '@valtimo/security';
 import {DocumentService} from '@valtimo/document';
-import {TranslateService} from '@ngx-translate/core';
+import {FormFlowComponent, FormSubmissionResult, ProcessLinkService} from '@valtimo/form-link';
+import {UserProviderService} from '@valtimo/security';
+import moment from 'moment';
+import {ToastrService} from 'ngx-toastr';
+import {BehaviorSubject, distinctUntilChanged, map, Observable, Subscription, tap} from 'rxjs';
+import {Task, TaskProcessLinkType} from '../models';
+import {TaskService} from '../task.service';
+import {PermissionService} from '@valtimo/access-control';
+import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../task-permissions';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -66,42 +60,48 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
   @Output() formSubmit = new EventEmitter();
   @Output() assignmentOfTaskChanged = new EventEmitter();
 
-  public task: Task | null = null;
-  public formDefinition: FormioForm;
+  public canAssign$: Observable<boolean>;
+  public errorMessage: string | null = null;
+  public formDefinition: FormioForm | null;
   public formFlowInstanceId: string;
-  public page: any = null;
+  public formIoFormData$ = new BehaviorSubject<any>(null);
   public formioOptions: ValtimoFormioOptions;
-  public errorMessage: string = null;
-  readonly isAdmin$: Observable<boolean> = this.userProviderService
+  public page: any = null;
+  public task: Task | null = null;
+
+  private _taskProcessLinkType$ = new BehaviorSubject<TaskProcessLinkType | null>(null);
+  public processLinkIsForm$: Observable<boolean> = this._taskProcessLinkType$.pipe(
+    map(type => type === 'form')
+  );
+  public processLinkIsFormFlow$: Observable<boolean> = this._taskProcessLinkType$.pipe(
+    map(type => type === 'form-flow')
+  );
+
+  public readonly isAdmin$: Observable<boolean> = this.userProviderService
     .getUserSubject()
     .pipe(map(userIdentity => userIdentity?.roles?.includes('ROLE_ADMIN')));
-  private processLinkId: string;
-  private taskProcessLinkType$ = new BehaviorSubject<TaskProcessLinkType | null>(null);
-  processLinkIsForm$ = this.taskProcessLinkType$.pipe(map(type => type === 'form'));
-  processLinkIsFormFlow$ = this.taskProcessLinkType$.pipe(map(type => type === 'form-flow'));
-  formIoFormData$ = new BehaviorSubject<any>(null);
-  private _subscriptions = new Subscription();
-  readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
+
+  private _processLinkId: string | null;
+  private readonly _subscriptions = new Subscription();
 
   constructor(
-    private readonly toastr: ToastrService,
-    private readonly processLinkService: ProcessLinkService,
-    private readonly formFlowService: FormFlowService,
-    private readonly router: Router,
-    private readonly logger: NGXLogger,
-    private readonly route: ActivatedRoute,
-    private readonly taskService: TaskService,
-    private readonly userProviderService: UserProviderService,
-    private readonly modalService: ValtimoModalService,
-    private readonly stateService: FormIoStateService,
     private readonly documentService: DocumentService,
-    private readonly translateService: TranslateService
+    private readonly modalService: ValtimoModalService,
+    private readonly permissionService: PermissionService,
+    private readonly processLinkService: ProcessLinkService,
+    private readonly router: Router,
+    private readonly stateService: FormIoStateService,
+    private readonly taskService: TaskService,
+    private readonly toastr: ToastrService,
+    private readonly translateService: TranslateService,
+    private readonly userProviderService: UserProviderService
   ) {
     this.formioOptions = new FormioOptionsImpl();
     this.formioOptions.disableAlerts = true;
   }
 
-  ngAfterViewInit() {
+  public ngAfterViewInit(): void {
     this._subscriptions.add(
       this.modal.modalShowing$
         .pipe(
@@ -118,11 +118,15 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     );
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  openTaskDetails(task: Task) {
+  public openTaskDetails(task: Task): void {
+    this.canAssign$ = this.permissionService.requestPermission(CAN_ASSIGN_TASK_PERMISSION, {
+      resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+      identifier: task.id,
+    });
     this.resetTaskProcessLinkType();
     this.resetFormDefinition();
     this.getTaskProcessLink(task.id);
@@ -135,7 +139,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
       subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task.created}`,
     };
 
-    if (!this.taskProcessLinkType$.getValue()) {
+    if (!this._taskProcessLinkType$.getValue()) {
       this.modal.show();
     }
   }
@@ -151,13 +155,28 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  public completeTask(): void {
+    this.toastr.success(
+      `${this.task?.name} ${this.translateService.instant('taskDetail.taskCompleted')}`
+    );
+    this.modal.hide();
+    this.task = null;
+    this.formSubmit.emit();
+  }
+
   public onSubmit(submission: FormioSubmission): void {
     if (submission.data) {
       this.formIoFormData$.next(submission.data);
     }
-    if (this.taskProcessLinkType$.getValue() === 'form') {
+
+    if (this._taskProcessLinkType$.getValue() === 'form') {
       this.processLinkService
-        .submitForm(this.processLinkId, submission.data, this.task.businessKey, this.task.id)
+        .submitForm(
+          this._processLinkId ?? '',
+          submission.data,
+          this.task?.businessKey,
+          this.task?.id
+        )
         .subscribe({
           next: (_: FormSubmissionResult) => {
             this.completeTask();
@@ -180,13 +199,13 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
         if (res != null) {
           switch (res?.type) {
             case 'form':
-              this.taskProcessLinkType$.next('form');
-              this.processLinkId = res.processLinkId;
+              this._taskProcessLinkType$.next('form');
+              this._processLinkId = res.processLinkId;
               this.setFormDefinitionAndOpenModal(res.properties.prefilledForm);
               break;
             case 'form-flow':
-              this.taskProcessLinkType$.next('form-flow');
-              this.formFlowInstanceId = res.properties.formFlowInstanceId;
+              this._taskProcessLinkType$.next('form-flow');
+              this.formFlowInstanceId = res.properties.formFlowInstanceId ?? '';
               break;
           }
           this.loading$.next(false);
@@ -200,24 +219,15 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  completeTask() {
-    this.toastr.success(
-      `${this.task.name} ${this.translateService.instant('taskDetail.taskCompleted')}`
-    );
-    this.modal.hide();
-    this.task = null;
-    this.formSubmit.emit();
-  }
-
   private getLegacyTaskProcessLink(taskId: string): void {
     this.taskService.getTaskProcessLinkV1(taskId).subscribe(resV1 => {
       switch (resV1?.type) {
         case 'form':
-          this.taskProcessLinkType$.next('form');
+          this._taskProcessLinkType$.next('form');
           break;
         case 'form-flow':
-          this.taskProcessLinkType$.next('form-flow');
-          this.formFlowInstanceId = resV1.properties.formFlowInstanceId;
+          this._taskProcessLinkType$.next('form-flow');
+          this.formFlowInstanceId = resV1.properties.formFlowInstanceId ?? '';
           break;
       }
       this.loading$.next(false);
@@ -225,12 +235,12 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
   }
 
   private resetTaskProcessLinkType(): void {
-    this.taskProcessLinkType$.next(null);
-    this.processLinkId = null;
+    this._taskProcessLinkType$.next(null);
+    this._processLinkId = null;
   }
 
   private setFormDefinitionAndOpenModal(formDefinition: any): void {
-    this.taskProcessLinkType$.next('form');
+    this._taskProcessLinkType$.next('form');
     this.formDefinition = formDefinition;
     this.modal.show();
   }

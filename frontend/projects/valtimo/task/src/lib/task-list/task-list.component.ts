@@ -159,7 +159,7 @@ export class TaskListComponent implements OnDestroy {
         .pipe(take(1))
         .subscribe(document => {
           this.router.navigate([
-            `/dossiers/${document.definitionId.name}/document/${currentTask.businessKey}/summary`,
+            `/dossiers/${document.definitionId?.name}/document/${currentTask.businessKey}/summary`,
           ]);
         });
     }

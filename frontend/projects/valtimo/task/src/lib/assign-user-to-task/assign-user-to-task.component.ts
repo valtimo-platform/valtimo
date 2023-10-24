@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   Component,
   EventEmitter,
@@ -25,10 +24,9 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {DropdownItem} from '@valtimo/components';
-import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
-import {take, tap} from 'rxjs/operators';
-import {TaskService} from '../task.service';
 import {User} from '@valtimo/config';
+import {BehaviorSubject, combineLatest, Subscription, take, tap} from 'rxjs';
+import {TaskService} from '../task.service';
 
 @Component({
   selector: 'valtimo-assign-user-to-task',
@@ -40,16 +38,16 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   @Input() assigneeEmail: string;
   @Output() assignmentOfTaskChanged = new EventEmitter();
 
-  candidateUsersForTask$ = new BehaviorSubject<User[]>(undefined);
-  disabled$ = new BehaviorSubject<boolean>(true);
-  assignedEmailOnServer$ = new BehaviorSubject<string>(null);
-  userEmailToAssign: string = null;
-  assignedUserFullName$ = new BehaviorSubject<string>(null);
+  public assignedEmailOnServer$ = new BehaviorSubject<string | null>(null);
+  public assignedUserFullName$ = new BehaviorSubject<string | null>(null);
+  public candidateUsersForTask$ = new BehaviorSubject<User[] | undefined>(undefined);
+  public disabled$ = new BehaviorSubject<boolean>(true);
+  public userEmailToAssign: string | null = null;
   private _subscriptions = new Subscription();
 
   constructor(private taskService: TaskService) {}
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this._subscriptions.add(
       this.taskService.getCandidateUsers(this.taskId).subscribe(candidateUsers => {
         this.candidateUsersForTask$.next(candidateUsers);
@@ -65,20 +63,22 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
     );
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  public ngOnChanges(changes: SimpleChanges): void {
     this.candidateUsersForTask$.pipe(take(1)).subscribe(candidateUsers => {
       const currentUserEmail = changes.assigneeEmail?.currentValue || this.assigneeEmail;
       this.assignedEmailOnServer$.next(currentUserEmail || null);
       this.userEmailToAssign = currentUserEmail || null;
-      this.assignedUserFullName$.next(this.getAssignedUserName(candidateUsers, currentUserEmail));
+      this.assignedUserFullName$.next(
+        this.getAssignedUserName(candidateUsers ?? [], currentUserEmail)
+      );
     });
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  assignTask(userEmail: string): void {
+  public assignTask(userEmail: string): void {
     this.disable();
     combineLatest([
       this.candidateUsersForTask$,
@@ -89,7 +89,9 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
         tap(([candidateUsers]) => {
           this.userEmailToAssign = userEmail;
           this.assignedEmailOnServer$.next(userEmail);
-          this.assignedUserFullName$.next(this.getAssignedUserName(candidateUsers, userEmail));
+          this.assignedUserFullName$.next(
+            this.getAssignedUserName(candidateUsers ?? [], userEmail)
+          );
           this.emitChange();
           this.enable();
         })
@@ -97,7 +99,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
       .subscribe();
   }
 
-  unassignTask(): void {
+  public unassignTask(): void {
     this.disable();
     this.taskService
       .unassignTask(this.taskId)
@@ -111,7 +113,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
       .subscribe();
   }
 
-  getAssignedUserName(users: User[], userEmail: string): string {
+  public getAssignedUserName(users: User[], userEmail: string): string {
     if (users && userEmail) {
       const findUser = users.find(user => user.email === userEmail);
       return findUser ? findUser.fullName || userEmail : userEmail;
@@ -119,7 +121,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
     return userEmail || '-';
   }
 
-  mapUsersForDropdown(users: User[]): DropdownItem[] {
+  public mapUsersForDropdown(users: User[]): DropdownItem[] {
     return (
       users &&
       users
