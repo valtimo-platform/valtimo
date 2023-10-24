@@ -78,7 +78,7 @@ import {ProcessManagementModule} from '@valtimo/process-management';
 import {DecisionModule} from '@valtimo/decision';
 import {MilestoneModule} from '@valtimo/milestone';
 import {LoggerModule} from 'ngx-logger';
-import {FormLinkModule} from '@valtimo/form-link';
+import {FORM_FLOW_COMPONENT_TOKEN, FormLinkModule} from '@valtimo/form-link';
 import {MigrationModule} from '@valtimo/migration';
 import {BootstrapModule} from '@valtimo/bootstrap';
 import {ConfigModule, ConfigService, MultiTranslateHttpLoaderFactory} from '@valtimo/config';
@@ -241,6 +241,15 @@ export function tabsFactory() {
         verzoekPluginSpecification,
       ],
     },
+    {
+      provide: FORM_FLOW_COMPONENT_TOKEN,
+      useValue: [
+        {
+          id: 'test-component',
+          component: CustomMapsTabComponent,
+        }
+      ]
+    }
   ],
   bootstrap: [AppComponent],
 })
