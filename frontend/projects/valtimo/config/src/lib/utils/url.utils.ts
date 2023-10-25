@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-import {UrlUtils, ValtimoConfig} from '@valtimo/config';
+class UrlUtils {
+  static formatUrlTrailingSlash(url: string, returnWithTrailingSlash: boolean): string {
+    if (url && typeof url === 'string') {
+      const urlLastCharacter = url[url.length - 1];
+      const urlLastCharacterIsSlash = urlLastCharacter === '/';
 
-const getFormioAppConfig = (config: ValtimoConfig) => {
-  const origin = window.location.origin;
+      if (!returnWithTrailingSlash && urlLastCharacterIsSlash) {
+        return url.slice(0, -1);
+      } else if (returnWithTrailingSlash && !urlLastCharacterIsSlash) {
+        return `${url}/`;
+      }
+    }
 
-  return {
-    appUrl: origin,
-    apiUrl: UrlUtils.formatUrlTrailingSlash(
-      `${window.location.origin}${config.valtimoApi.endpointUri}`,
-      false
-    ),
-    icons: 'fontawesome',
-    formOnly: false,
-  };
-};
+    return url;
+  }
+}
 
-export {getFormioAppConfig};
+export {UrlUtils};

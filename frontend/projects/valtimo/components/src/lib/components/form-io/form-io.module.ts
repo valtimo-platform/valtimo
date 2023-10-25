@@ -19,7 +19,7 @@ import {CommonModule} from '@angular/common';
 import {FormioComponent} from './form-io.component';
 import {FormioBuilderComponent} from './form-io-builder.component';
 import {FormioAppConfig, FormioModule} from '@formio/angular';
-import {AppConfig} from './formio-config';
+import {getFormioAppConfig} from './formio-config';
 import {FormIoUploaderComponent} from './form-io-uploader/form-io-uploader.component';
 import {DropzoneModule} from '../dropzone/dropzone.module';
 import {TranslateModule} from '@ngx-translate/core';
@@ -31,6 +31,7 @@ import {RouterModule} from '@angular/router';
 import {DocumentenApiUploaderComponent} from './documenten-api-uploader/documenten-api-uploader.component';
 import {DocumentenApiMetadataModalModule} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.module';
 import {FormIoCurrentUserComponent} from './form-io-current-user/form-io-current-user.component';
+import {ConfigService} from '@valtimo/config';
 
 @NgModule({
   imports: [
@@ -58,6 +59,13 @@ import {FormIoCurrentUserComponent} from './form-io-current-user/form-io-current
     DocumentenApiUploaderComponent,
     FormIoCurrentUserComponent,
   ],
-  providers: [FormIoDomService, {provide: FormioAppConfig, useValue: AppConfig}],
+  providers: [
+    FormIoDomService,
+    {
+      provide: FormioAppConfig,
+      deps: [ConfigService],
+      useFactory: (configService: ConfigService) => getFormioAppConfig(configService.config),
+    },
+  ],
 })
 export class FormIoModule {}
