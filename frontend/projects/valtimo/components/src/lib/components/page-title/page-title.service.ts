@@ -111,7 +111,7 @@ export class PageTitleService implements OnDestroy {
             event instanceof NavigationStart ||
             event instanceof ResolveEnd
         ),
-        tap(([event, pageActionsViewContainerRef]) => {
+        tap(([_, pageActionsViewContainerRef]) => {
           if (!this._preventReset) {
             this._customPageTitle$.next('');
             this._customPageTitleSet$.next(false);

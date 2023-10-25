@@ -597,6 +597,7 @@
     "delete": "Delete",
     "deleteConfirmation": "Are you sure you want to delete?",
     "cancel": "Cancel",
+    "confirm": "Confirm",
     "collapse": "Collapse",
     "expand": "Expand",
     "download": "Download",
@@ -612,6 +613,10 @@
       "ofLastPages": "of {{last}} pages",
       "singleSelect": "1 item selected",
       "totalItems": "{{start}}-{{end}} of {{total}} items"
+    },
+    "pendingChanges": {
+      "title": "Leaving page",
+      "content": "You have unsaved changes. Are you sure you want to continue?"
     },
     "required": "required",
     "filter": "Filter...",

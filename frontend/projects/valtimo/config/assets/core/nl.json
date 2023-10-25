@@ -596,6 +596,7 @@
     "delete": "Verwijderen",
     "deleteConfirmation": "Weet u zeker dat u wilt verwijderen?",
     "cancel": "Annuleren",
+    "confirm": "Bevestigen",
     "collapse": "Inklappen",
     "expand": "Uitklappen",
     "download": "Download",
@@ -611,6 +612,10 @@
       "ofLastPages": "van {{last}} pagina's",
       "singleSelect": "1 artikel geselecteerd",
       "totalItems": "{{start}}-{{end}} van {{total}} artikelen"
+    },
+    "pendingChanges": {
+      "title": "Pagina verlaten",
+      "content": "Jij heeft niet-opgeslagen wijzigingen. Weet je zeker dat je door wilt gaan?"
     },
     "required": "vereist",
     "filter": "Filteren...",
