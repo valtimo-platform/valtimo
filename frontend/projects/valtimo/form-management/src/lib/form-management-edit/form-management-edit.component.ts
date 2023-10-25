@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
-import {FormManagementService} from '../form-management.service';
-import {AlertService, PageTitleService} from '@valtimo/components';
-import {FormDefinition, ModifyFormDefinitionRequest} from '../models';
 import {ActivatedRoute, Router} from '@angular/router';
-import {first, take} from 'rxjs/operators';
-import {BehaviorSubject, Subscription} from 'rxjs';
 import {FormioForm} from '@formio/angular';
-import {FormManagementDuplicateComponent} from '../form-management-duplicate/form-management-duplicate.component';
+import {TranslateService} from '@ngx-translate/core';
+import {AlertService, PageTitleService, PendingChangesComponent} from '@valtimo/components';
 import {ModalService} from 'carbon-components-angular';
+import {BehaviorSubject, Subscription} from 'rxjs';
+import {first, take} from 'rxjs/operators';
+import {FormManagementDuplicateComponent} from '../form-management-duplicate/form-management-duplicate.component';
+import {FormManagementService} from '../form-management.service';
+import {FormDefinition, ModifyFormDefinitionRequest} from '../models';
 
 @Component({
   selector: 'valtimo-form-management-edit',
@@ -31,48 +31,61 @@ import {ModalService} from 'carbon-components-angular';
   styleUrls: ['./form-management-edit.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class FormManagementEditComponent implements OnInit, OnDestroy {
-  readonly showModal$ = new BehaviorSubject<boolean>(false);
-  readonly reloading$ = new BehaviorSubject<boolean>(false);
-  public modifiedFormDefinition: FormioForm = null;
+export class FormManagementEditComponent
+  extends PendingChangesComponent
+  implements OnInit, OnDestroy
+{
+  public modifiedFormDefinition: FormioForm | null = null;
   public formDefinition: FormDefinition | null = null;
-  private alertSub: Subscription = Subscription.EMPTY;
-  private formDefinitionId: string | null = null;
+
+  public readonly showModal$ = new BehaviorSubject<boolean>(false);
+  public readonly reloading$ = new BehaviorSubject<boolean>(false);
+
+  private _alertSub: Subscription = Subscription.EMPTY;
+  private _formDefinitionId: string | null = null;
 
   constructor(
-    private readonly formManagementService: FormManagementService,
+    protected readonly modalService: ModalService,
+    protected readonly translateService: TranslateService,
     private readonly alertService: AlertService,
+    private readonly formManagementService: FormManagementService,
+    private readonly pageTitleService: PageTitleService,
     private readonly route: ActivatedRoute,
-    private readonly router: Router,
-    private readonly modalService: ModalService,
-    private readonly pageTitleService: PageTitleService
-  ) {}
+    private readonly router: Router
+  ) {
+    super(modalService, translateService);
+  }
 
-  ngOnInit() {
+  public ngOnInit(): void {
+    this.pageTitleService.disableReset();
     this.loadFormDefinition();
     this.checkToOpenUploadModal();
   }
 
-  ngOnDestroy() {
-    this.alertSub.unsubscribe();
+  public ngOnDestroy(): void {
+    this._alertSub.unsubscribe();
   }
 
-  loadFormDefinition() {
-    this.formDefinitionId = this.route.snapshot.paramMap.get('id');
-    this.formManagementService.getFormDefinition(this.formDefinitionId).subscribe(
-      formDefinition => {
+  public loadFormDefinition(): void {
+    this._formDefinitionId = this.route.snapshot.paramMap.get('id');
+    this.formManagementService.getFormDefinition(this._formDefinitionId ?? '').subscribe({
+      next: formDefinition => {
         this.formDefinition = formDefinition;
         this.pageTitleService.setCustomPageTitle(formDefinition.name);
       },
-      () => {
+      error: () => {
         this.alertService.error('Error retrieving Form Definition');
-      }
-    );
+      },
+    });
   }
 
-  modifyFormDefinition() {
+  public modifyFormDefinition(): void {
+    if (!this.formDefinition) {
+      return;
+    }
+
     const form = JSON.stringify(
-      this.modifiedFormDefinition != null
+      this.modifiedFormDefinition !== null
         ? this.modifiedFormDefinition
         : this.formDefinition.formDefinition
     );
@@ -81,23 +94,24 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
       name: this.formDefinition.name,
       formDefinition: form,
     };
-    this.formManagementService.modifyFormDefinition(request).subscribe(
-      () => {
+    this.formManagementService.modifyFormDefinition(request).subscribe({
+      next: () => {
         this.router.navigate(['/form-management']);
         this.alertService.success('Form deployed');
       },
-      err => {
+      error: () => {
         this.alertService.error('Error deploying Form');
-      }
-    );
+      },
+    });
   }
 
-  public formBuilderChanged(event) {
+  public formBuilderChanged(event): void {
+    this.pendingChanges = true;
     this.modifiedFormDefinition = event.form;
   }
 
-  public delete() {
-    if (!this.alertSub.closed) {
+  public delete(): void {
+    if (!this._alertSub.closed) {
       return;
     }
     const mssg = 'Delete Form?';
@@ -114,7 +128,8 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
       },
     ];
     this.alertService.notification(mssg, confirmations);
-    this.alertSub = this.alertService
+
+    this._alertSub = this.alertService
       .getAlertConfirmChangeEmitter()
       .pipe(first())
       .subscribe(alert => {
@@ -124,19 +139,27 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
       });
   }
 
-  deleteFormDefinition() {
-    this.formManagementService.deleteFormDefinition(this.formDefinition.id).subscribe(
-      () => {
+  public deleteFormDefinition(): void {
+    if (!this.formDefinition) {
+      return;
+    }
+
+    this.formManagementService.deleteFormDefinition(this.formDefinition.id).subscribe({
+      next: () => {
         this.router.navigate(['/form-management']);
         this.alertService.success('Form deleted');
       },
-      err => {
+      error: () => {
         this.alertService.error('Error deleting Form');
-      }
-    );
+      },
+    });
   }
 
-  downloadFormDefinition() {
+  public downloadFormDefinition(): void {
+    if (!this.formDefinition) {
+      return;
+    }
+
     const file = new Blob([JSON.stringify(this.formDefinition.formDefinition)], {
       type: 'text/json',
     });
@@ -148,11 +171,11 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
     link.remove();
   }
 
-  showUploadModal() {
+  public showUploadModal(): void {
     this.showModal$.next(true);
   }
 
-  showDuplicateModal() {
+  public showDuplicateModal(): void {
     this.modalService.create({
       component: FormManagementDuplicateComponent,
       inputs: {
@@ -161,23 +184,28 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
     });
   }
 
-  setFormDefinition(formDefinition: any) {
+  public setFormDefinition(formDefinition: any): void {
     this.reloading$.next(true);
 
     const definition = JSON.parse(formDefinition);
     if (!definition?.components) {
       this.reloading$.next(false);
-      this.alertService.error('Invalid JSON. Missing form.io JSON field "components".');
-    } else {
-      const components = definition.components;
-      const currentDefinition = this.modifiedFormDefinition || this.formDefinition.formDefinition;
-      const newDefinition = {...currentDefinition, ...(components && {components})};
-
-      this.modifiedFormDefinition = newDefinition;
-      this.formDefinition.formDefinition = newDefinition;
-
-      this.reloading$.next(false);
+      this.alertService.error('Invalid form.io. Missing JSON field "components".');
+      return;
     }
+
+    if (!this.formDefinition) {
+      return;
+    }
+
+    const components = definition.components;
+    const currentDefinition = this.modifiedFormDefinition || this.formDefinition.formDefinition;
+    const newDefinition = {...currentDefinition, ...(components && {components})};
+
+    this.modifiedFormDefinition = newDefinition;
+    this.formDefinition.formDefinition = newDefinition;
+
+    this.reloading$.next(false);
   }
 
   private checkToOpenUploadModal(): void {

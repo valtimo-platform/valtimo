@@ -30,11 +30,11 @@ import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
   combineLatest,
-  map,
   Observable,
   startWith,
   Subscription,
   switchMap,
+  map,
 } from 'rxjs';
 import {PageTitleService} from './page-title.service';
 
