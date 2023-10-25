@@ -27,4 +27,3 @@ export * from './lib/services/menu-include.service';
 export * from './lib/services/user-settings.service';
 export * from './lib/translation/multi-translate-http-loader-factory';
 export * from './lib/utils';
-export * from './lib/testing';
