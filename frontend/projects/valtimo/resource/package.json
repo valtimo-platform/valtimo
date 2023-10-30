@@ -1,7 +1,7 @@
 {
   "name": "@valtimo/resource",
   "license": "EUPL-1.2",
-  "version": "11.0.0",
+  "version": "11.0.0-3.RC",
   "peerDependencies": {
     "@angular/common": "^16.2.0",
     "@angular/core": "^16.2.0"
