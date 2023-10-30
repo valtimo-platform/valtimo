@@ -24,6 +24,7 @@ enum IncludeFunction {
 interface MenuItem {
   title: string;
   sequence: number;
+  id?: string;
   link?: string[] | null;
   textClass?: string;
   iconClass?: string;

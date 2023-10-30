@@ -567,6 +567,7 @@
         (click)="clear()"
         [disabled]="loading || noSearchFields"
         type="button"
+        id="clear"
         class="btn btn-space btn-secondary"
         *ngIf="obs.expanded"
       >
@@ -576,6 +577,7 @@
         (click)="search()"
         [disabled]="loading || noSearchFields || (hasValidValues$ | async) === false"
         type="button"
+        id="search"
         class="btn btn-space btn-primary"
         *ngIf="obs.expanded"
       >
