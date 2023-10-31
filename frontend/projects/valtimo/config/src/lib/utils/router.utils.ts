@@ -13,9 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {CanDeactivateFn} from '@angular/router';
-import {PendingChangesComponent} from '../components/pending-changes/pending-changes.component';
 
-export const pendingChangesGuard: CanDeactivateFn<PendingChangesComponent> = (
-  component: PendingChangesComponent
-) => component.canDeactivate();
+import {Router} from '@angular/router';
+
+class RouterUtils {
+  public static configureRouter(router: Router): void {
+    this.configureNavigationCanceling(router);
+  }
+
+  private static configureNavigationCanceling(router: Router): void {
+    router.canceledNavigationResolution = 'computed';
+  }
+}
+
+export {RouterUtils};
