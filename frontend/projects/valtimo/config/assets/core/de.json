@@ -615,7 +615,7 @@
     },
     "pendingChanges": {
       "title": "Seite verlassen",
-      "content": "Du hast nicht gespeicherte Änderungen. Bist du dir sicher, dass du weitermachen willst?"
+      "content": "Sie verlassen die Seite. Alle nicht gespeicherten Änderungen gehen verloren. Sind Sie sicher, dass Sie fortfahren möchten?"
     },
     "required": "erforderlich",
     "filter": "Filter...",
