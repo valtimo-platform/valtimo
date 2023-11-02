@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {ComponentRef} from '@angular/core';
 import {UrlTree} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {ModalButtonType, ModalService} from 'carbon-components-angular';
 import {Observable, Subject} from 'rxjs';
 
 export class PendingChangesComponent {
-  public pendingChanges = false;
+  protected pendingChanges = false;
+  private _activeModal: ComponentRef<any> | null = null;
 
   constructor(
     protected readonly modalService: ModalService,
@@ -38,27 +39,41 @@ export class PendingChangesComponent {
 
     const deactivateSubject = new Subject<boolean>();
 
-    this.modalService.show({
+    if (!!this._activeModal) {
+      return false;
+    }
+
+    this._activeModal = this.modalService.show({
       title: this.translateService.instant('interface.pendingChanges.title'),
       content: this.translateService.instant('interface.pendingChanges.content'),
+      showCloseButton: false,
       buttons: [
         {
           text: this.translateService.instant('interface.cancel'),
           type: ModalButtonType.secondary,
           click: () => {
+            this.onCancelRedirect();
             deactivateSubject.next(false);
+            this._activeModal = null;
           },
         },
         {
           text: this.translateService.instant('interface.confirm'),
           type: ModalButtonType.primary,
           click: () => {
+            this.onConfirmRedirect();
             deactivateSubject.next(true);
+            this._activeModal = null;
           },
         },
       ],
+      close: () => false,
     });
 
     return deactivateSubject;
   }
+
+  protected onCancelRedirect(): void {}
+
+  protected onConfirmRedirect(): void {}
 }

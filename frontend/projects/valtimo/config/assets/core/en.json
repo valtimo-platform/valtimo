@@ -616,7 +616,7 @@
     },
     "pendingChanges": {
       "title": "Leaving page",
-      "content": "You have unsaved changes. Are you sure you want to continue?"
+      "content": "You are leaving the page. Any unsaved changes will be lost. Are you sure you want to continue?"
     },
     "required": "required",
     "filter": "Filter...",

@@ -84,6 +84,8 @@ export class FormManagementEditComponent
       return;
     }
 
+    this.pendingChanges = false;
+
     const form = JSON.stringify(
       this.modifiedFormDefinition !== null
         ? this.modifiedFormDefinition
@@ -206,6 +208,15 @@ export class FormManagementEditComponent
     this.formDefinition.formDefinition = newDefinition;
 
     this.reloading$.next(false);
+  }
+
+  protected onConfirmRedirect(): void {
+    const cancelButton: HTMLElement | null = document.querySelector('button[ref="cancelButton"]');
+    if (!cancelButton) {
+      return;
+    }
+
+    cancelButton.click();
   }
 
   private checkToOpenUploadModal(): void {

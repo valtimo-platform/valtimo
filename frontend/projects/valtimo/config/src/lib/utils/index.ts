@@ -14,4 +14,5 @@
  * limitations under the License.
  */
 
+export * from './router.utils';
 export * from './url.utils';
