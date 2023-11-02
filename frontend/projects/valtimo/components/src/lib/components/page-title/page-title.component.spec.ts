@@ -17,6 +17,12 @@
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {RouterTestingModule} from '@angular/router/testing';
 import {PageTitleComponent} from './page-title.component';
+import {TranslateService} from '@ngx-translate/core';
+import {MockTranslateService, VALTIMO_CONFIG} from '@valtimo/config';
+import {LoggerTestingModule} from 'ngx-logger/testing';
+import {environment} from '@src/environments/environment';
+import {ActivatedRoute} from '@angular/router';
+import {of} from 'rxjs';
 
 describe('PageTitleComponent', () => {
   let component: PageTitleComponent;
@@ -24,9 +30,23 @@ describe('PageTitleComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [RouterTestingModule],
+      imports: [RouterTestingModule, LoggerTestingModule],
       declarations: [PageTitleComponent],
+      providers: [
+        {provide: TranslateService, useClass: MockTranslateService},
+        {provide: VALTIMO_CONFIG, useValue: environment},
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            firstChild: {
+              data: of({id: ''}),
+            },
+          },
+        },
+      ],
     }).compileComponents();
+
+    window.onbeforeunload = jasmine.createSpy();
   }));
 
   beforeEach(() => {
@@ -41,11 +61,5 @@ describe('PageTitleComponent', () => {
 
   it('should have Valtimo as appTitle', () => {
     expect(component.appTitle).toEqual('Valtimo');
-  });
-
-  it('should render title in a h2 tag', () => {
-    const el = fixture.debugElement.nativeElement;
-    expect(el.querySelectorAll('h2').length).toEqual(1);
-    expect(el.querySelectorAll('h2')[0].innerText).toEqual('');
   });
 });

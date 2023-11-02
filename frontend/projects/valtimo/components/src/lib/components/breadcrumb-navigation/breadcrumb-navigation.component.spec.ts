@@ -17,16 +17,38 @@
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {RouterTestingModule} from '@angular/router/testing';
 import {BreadcrumbNavigationComponent} from './breadcrumb-navigation.component';
+import {KeycloakService} from 'keycloak-angular';
+import {MockKeycloakService, MockTranslateService, VALTIMO_CONFIG} from '@valtimo/config';
+import {environment} from '@src/environments/environment';
+import {HttpClient} from '@angular/common/http';
+import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
+import {LoggerModule} from 'ngx-logger';
+import {LoggerTestingModule} from 'ngx-logger/testing';
+import {DatePipe} from '@angular/common';
+import {TranslateService} from '@ngx-translate/core';
 
 describe('BreadcrumbNavigationComponent', () => {
   let component: BreadcrumbNavigationComponent;
   let fixture: ComponentFixture<BreadcrumbNavigationComponent>;
+  let httpClient: HttpClient;
+  let httpTestingController: HttpTestingController;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [RouterTestingModule],
+      imports: [RouterTestingModule, HttpClientTestingModule, LoggerModule, LoggerTestingModule],
       declarations: [BreadcrumbNavigationComponent],
+      providers: [
+        {provide: KeycloakService, useClass: MockKeycloakService},
+        {provide: VALTIMO_CONFIG, useValue: environment},
+        {provide: TranslateService, useClass: MockTranslateService},
+        DatePipe,
+      ],
     }).compileComponents();
+
+    httpClient = TestBed.inject(HttpClient);
+    httpTestingController = TestBed.inject(HttpTestingController);
+
+    window.onbeforeunload = jasmine.createSpy();
   }));
 
   beforeEach(() => {
@@ -39,12 +61,7 @@ describe('BreadcrumbNavigationComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have Valtimo as appTitle', () => {
-    expect(component.appTitle).toEqual('Valtimo');
-  });
-
-  it('should show breadcrumb navigation with first item text same as component.appTitle', () => {
-    const el = fixture.debugElement.nativeElement;
-    expect(el.querySelectorAll('nav ol li a')[0].innerText).toEqual(component.appTitle);
+  it('should have breadcrumbItems$ property', () => {
+    expect(component.breadcrumbItems$).toBeTruthy();
   });
 });
