@@ -22,7 +22,6 @@ import {MockKeycloakService, MockTranslateService, VALTIMO_CONFIG} from '@valtim
 import {environment} from '@src/environments/environment';
 import {HttpClient} from '@angular/common/http';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
-import {LoggerModule} from 'ngx-logger';
 import {LoggerTestingModule} from 'ngx-logger/testing';
 import {DatePipe} from '@angular/common';
 import {TranslateService} from '@ngx-translate/core';
@@ -35,7 +34,7 @@ describe('BreadcrumbNavigationComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [RouterTestingModule, HttpClientTestingModule, LoggerModule, LoggerTestingModule],
+      imports: [RouterTestingModule, HttpClientTestingModule, LoggerTestingModule],
       declarations: [BreadcrumbNavigationComponent],
       providers: [
         {provide: KeycloakService, useClass: MockKeycloakService},

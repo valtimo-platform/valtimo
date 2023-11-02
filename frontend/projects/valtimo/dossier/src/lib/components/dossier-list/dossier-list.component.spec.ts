@@ -19,16 +19,13 @@ import {RouterTestingModule} from '@angular/router/testing';
 import {DossierListComponent} from './dossier-list.component';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {HttpClient} from '@angular/common/http';
-import {VALTIMO_CONFIG} from '@valtimo/config';
-import {environment} from '../../../../../../../src/environments/environment';
-import {
-  TranslateFakeLoader,
-  TranslateLoader,
-  TranslateModule,
-  TranslateService,
-} from '@ngx-translate/core';
-import {NGXLogger} from 'ngx-logger';
-import {NGXLoggerMock} from 'ngx-logger/testing';
+import {MockKeycloakService, MockTranslateService, VALTIMO_CONFIG} from '@valtimo/config';
+import {environment} from '@src/environments/environment';
+import {TranslateService} from '@ngx-translate/core';
+import {LoggerTestingModule} from 'ngx-logger/testing';
+import {KeycloakService} from 'keycloak-angular';
+import {DatePipe} from '@angular/common';
+import {DossierBulkAssignService} from '../../services';
 
 describe('DossierListComponent', () => {
   let httpClient: HttpClient;
@@ -36,29 +33,24 @@ describe('DossierListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        RouterTestingModule,
-        HttpClientTestingModule,
-        TranslateModule.forRoot({
-          loader: {
-            provide: TranslateLoader,
-            useClass: TranslateFakeLoader,
-          },
-        }),
-      ],
+      imports: [RouterTestingModule, HttpClientTestingModule, LoggerTestingModule],
       declarations: [DossierListComponent],
       providers: [
         {
           provide: VALTIMO_CONFIG,
           useValue: environment,
         },
-        TranslateService,
-        {provide: NGXLogger, useClass: NGXLoggerMock},
+        {provide: KeycloakService, useClass: MockKeycloakService},
+        {provide: TranslateService, useClass: MockTranslateService},
+        DossierBulkAssignService,
+        DatePipe,
       ],
     }).compileComponents();
 
     httpClient = TestBed.inject(HttpClient);
     httpTestingController = TestBed.inject(HttpTestingController);
+
+    window.onbeforeunload = jasmine.createSpy();
   });
 
   it('should create the component', () => {
