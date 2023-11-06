@@ -4,7 +4,7 @@ In order to contribute to this project, please follow the below code formatting 
 
 ## Testing
 
-For the project policy regarding testing, please refer to [the following documentation](./TESTING-POLICY.md).
+For the project policy regarding testing, please refer to [the following documentation](./TESTING.md#policy).
 
 ## Template
 
