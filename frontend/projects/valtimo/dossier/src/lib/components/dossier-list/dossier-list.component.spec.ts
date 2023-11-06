@@ -49,8 +49,6 @@ describe('DossierListComponent', () => {
 
     httpClient = TestBed.inject(HttpClient);
     httpTestingController = TestBed.inject(HttpTestingController);
-
-    window.onbeforeunload = jasmine.createSpy();
   });
 
   it('should create the component', () => {

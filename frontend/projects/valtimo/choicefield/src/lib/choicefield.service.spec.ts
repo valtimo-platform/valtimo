@@ -26,8 +26,6 @@ describe('ChoicefieldService', () => {
       providers: [ChoicefieldService, {provide: VALTIMO_CONFIG, useValue: environment}],
       imports: [HttpClientTestingModule],
     });
-
-    window.onbeforeunload = jasmine.createSpy();
   });
 
   it('should be created', () => {

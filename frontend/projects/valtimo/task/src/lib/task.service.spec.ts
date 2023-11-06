@@ -26,8 +26,6 @@ describe('TaskService', () => {
       providers: [TaskService, {provide: VALTIMO_CONFIG, useValue: environment}],
       imports: [HttpClientTestingModule],
     });
-
-    window.onbeforeunload = jasmine.createSpy();
   });
 
   it('should be created', () => {

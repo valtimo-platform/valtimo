@@ -36,8 +36,6 @@ describe('FormService', () => {
 
     httpTestingController = TestBed.inject(HttpTestingController);
     service = TestBed.inject(FormService);
-
-    window.onbeforeunload = jasmine.createSpy();
   });
 
   it('should be created', () => {
