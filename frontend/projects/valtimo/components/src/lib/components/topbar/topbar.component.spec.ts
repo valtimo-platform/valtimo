@@ -36,8 +36,6 @@ describe('TopbarComponent', () => {
         {provide: IconService, useClass: MockIconService},
       ],
     }).compileComponents();
-
-    window.onbeforeunload = jasmine.createSpy();
   }));
 
   beforeEach(() => {

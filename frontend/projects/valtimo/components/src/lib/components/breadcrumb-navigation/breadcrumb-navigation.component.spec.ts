@@ -46,8 +46,6 @@ describe('BreadcrumbNavigationComponent', () => {
 
     httpClient = TestBed.inject(HttpClient);
     httpTestingController = TestBed.inject(HttpTestingController);
-
-    window.onbeforeunload = jasmine.createSpy();
   }));
 
   beforeEach(() => {

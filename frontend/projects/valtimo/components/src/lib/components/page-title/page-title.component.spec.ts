@@ -45,8 +45,6 @@ describe('PageTitleComponent', () => {
         },
       ],
     }).compileComponents();
-
-    window.onbeforeunload = jasmine.createSpy();
   }));
 
   beforeEach(() => {
