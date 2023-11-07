@@ -42,7 +42,7 @@ reload if you change any of the source files.
 ## Build
 
 If you have already built the libraries before(dist/valtimo/libraryName exists for all libraries)
-all you need to do is run `npm run libs-build-all` to build all of the libraries. Use the `--prod`
+all you need to do is run `npm run libs-build-all` to build all the libraries. Use the `--prod`
 flag for a production build. To build a specific library, just run `npm run libs:build:libraryName`.
 
 When building the libraries for the first time you need to run `npm install --only=production`
