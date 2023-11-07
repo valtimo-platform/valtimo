@@ -22,7 +22,6 @@ export * from './lib/models';
 export * from './lib/constants';
 export * from './lib/pipes';
 export * from './lib/services';
-export * from './lib/guards';
 
 /*
 components
@@ -219,9 +218,6 @@ export * from './lib/components/multi-input-form/multi-input-form.module';
 // Radio
 export * from './lib/components/radio/radio.component';
 export * from './lib/components/radio/radio.module';
-
-// Pending Changes
-export * from './lib/components/pending-changes/pending-changes.component';
 
 /*
 directives

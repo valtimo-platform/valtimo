@@ -16,7 +16,6 @@
 
 import {ComponentFactoryResolver, Inject, Injectable, ViewContainerRef} from '@angular/core';
 import {Extension, ExtensionLoader, ExtensionPoint, VALTIMO_CONFIG, ValtimoConfig} from '../models';
-import {UrlUtils} from '../utils';
 
 @Injectable({
   providedIn: 'root',
@@ -33,64 +32,76 @@ export class ConfigService {
     this.extensionLoader = new ExtensionLoader(componentFactoryResolver);
   }
 
-  public get config(): ValtimoConfig {
+  get config(): ValtimoConfig {
     const config = this.valtimoConfig;
     const translationResourcesConfig = config.translationResources;
 
     return {
       ...config,
       whitelistedDomains: config.whitelistedDomains.map(domain =>
-        UrlUtils.formatUrlTrailingSlash(domain, false)
+        this.formatUrlTrailingSlash(domain, false)
       ),
       mockApi: {
         ...config.mockApi,
-        endpointUri: UrlUtils.formatUrlTrailingSlash(config.mockApi.endpointUri, true),
+        endpointUri: this.formatUrlTrailingSlash(config.mockApi.endpointUri, true),
       },
       swagger: {
         ...config.swagger,
-        endpointUri: UrlUtils.formatUrlTrailingSlash(config.swagger.endpointUri, false),
+        endpointUri: this.formatUrlTrailingSlash(config.swagger.endpointUri, false),
       },
       valtimoApi: {
         ...config.valtimoApi,
-        endpointUri: UrlUtils.formatUrlTrailingSlash(config.valtimoApi.endpointUri, true),
+        endpointUri: this.formatUrlTrailingSlash(config.valtimoApi.endpointUri, true),
       },
       ...(translationResourcesConfig && {
         translationResources: translationResourcesConfig.map(resource =>
-          UrlUtils.formatUrlTrailingSlash(resource, true)
+          this.formatUrlTrailingSlash(resource, true)
         ),
       }),
       applicationTitle: config.applicationTitle || this.DEFAULT_APPLICATION_TITLE,
     };
   }
 
-  public get initializers() {
+  get initializers() {
     return this.valtimoConfig.initializers;
   }
 
-  public addExtension(extension: Extension) {
+  addExtension(extension: Extension) {
     return this.extensions.push(extension);
   }
 
-  public getSupportedExtensionPoint(module: string, page: string, section: string) {
+  getSupportedExtensionPoint(module: string, page: string, section: string) {
     return this.extensions.find(extension =>
       extension.extensionPoint.supports(module, page, section)
     );
   }
 
-  public getSupportedExtensionPoints(module: string, page: string, section: string) {
+  getSupportedExtensionPoints(module: string, page: string, section: string) {
     return this.extensions.filter(extension =>
       extension.extensionPoint.supports(module, page, section)
     );
   }
 
-  public loadExtensionPoint(viewContainerRef: ViewContainerRef, extensionPoint: ExtensionPoint) {
+  loadExtensionPoint(viewContainerRef: ViewContainerRef, extensionPoint: ExtensionPoint) {
     this.extensionLoader.loadExtensionPoint(viewContainerRef, extensionPoint);
   }
 
-  public loadAndReturnExtensionPoint(
-    viewContainerRef: ViewContainerRef,
-    extensionPoint: ExtensionPoint
-  ) {
+  loadAndReturnExtensionPoint(viewContainerRef: ViewContainerRef, extensionPoint: ExtensionPoint) {
     return this.extensionLoader.loadAndClearExtensionPoint(viewContainerRef, extensionPoint);
+  }
+
+  private formatUrlTrailingSlash(url: string, returnWithTrailingSlash: boolean): string {
+    if (url && typeof url === 'string') {
+      const urlLastCharacter = url[url.length - 1];
+      const urlLastCharacterIsSlash = urlLastCharacter === '/';
+
+      if (!returnWithTrailingSlash && urlLastCharacterIsSlash) {
+        return url.slice(0, -1);
+      } else if (returnWithTrailingSlash && !urlLastCharacterIsSlash) {
+        return `${url}/`;
+      }
+    }
+
+    return url;
   }
 }

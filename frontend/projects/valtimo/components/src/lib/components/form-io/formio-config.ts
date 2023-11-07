@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-import {UrlUtils, ValtimoConfig} from '@valtimo/config';
-
-const getFormioAppConfig = (config: ValtimoConfig) => {
-  const origin = window.location.origin;
-
-  return {
-    appUrl: origin,
-    apiUrl: UrlUtils.formatUrlTrailingSlash(
-      `${window.location.origin}${config.valtimoApi.endpointUri}`,
-      false
-    ),
-    icons: 'fontawesome',
-    formOnly: false,
-  };
+export const AppConfig = {
+  appUrl: 'http://localhost:4200',
+  apiUrl: 'http://localhost:4200',
+  icons: 'fontawesome',
+  formOnly: false,
 };
-
-export {getFormioAppConfig};
