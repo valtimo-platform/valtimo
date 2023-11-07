@@ -17,14 +17,16 @@
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {RouterTestingModule} from '@angular/router/testing';
 import {BreadcrumbNavigationComponent} from './breadcrumb-navigation.component';
-import {KeycloakService} from 'keycloak-angular';
-import {MockKeycloakService, MockTranslateService, VALTIMO_CONFIG} from '@valtimo/config';
+import {MockTranslateService, VALTIMO_CONFIG} from '@valtimo/config';
 import {environment} from '@src/environments/environment';
 import {HttpClient} from '@angular/common/http';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {LoggerTestingModule} from 'ngx-logger/testing';
 import {DatePipe} from '@angular/common';
 import {TranslateService} from '@ngx-translate/core';
+import {MockProvider} from 'ng-mocks';
+import {KeycloakUserService} from '@valtimo/keycloak';
+import {KeycloakService} from 'keycloak-angular';
 
 describe('BreadcrumbNavigationComponent', () => {
   let component: BreadcrumbNavigationComponent;
@@ -37,10 +39,11 @@ describe('BreadcrumbNavigationComponent', () => {
       imports: [RouterTestingModule, HttpClientTestingModule, LoggerTestingModule],
       declarations: [BreadcrumbNavigationComponent],
       providers: [
-        {provide: KeycloakService, useClass: MockKeycloakService},
+        MockProvider(KeycloakService),
+        MockProvider(KeycloakUserService),
         {provide: VALTIMO_CONFIG, useValue: environment},
         {provide: TranslateService, useClass: MockTranslateService},
-        DatePipe,
+        MockProvider(DatePipe),
       ],
     }).compileComponents();
 

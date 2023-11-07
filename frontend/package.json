@@ -332,6 +332,7 @@
     "cypress": "12.17.4",
     "deepmerge-ts": "5.1.0",
     "karma-coverage": "^2.2.1",
+    "ng-mocks": "^14.11.0",
     "puppeteer": "21.1.0",
     "sass": "1.66.1"
   }
