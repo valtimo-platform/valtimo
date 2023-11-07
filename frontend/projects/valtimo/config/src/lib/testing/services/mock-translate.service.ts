@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of config
- */
+import {Injectable} from '@angular/core';
+import {Observable, of} from 'rxjs';
 
-export * from './lib/config.module';
-export * from './lib/constants';
-export * from './lib/extension/extension.component';
-export * from './lib/models';
-export * from './lib/services/config.service';
-export * from './lib/services/menu-include.service';
-export * from './lib/services/user-settings.service';
-export * from './lib/translation/multi-translate-http-loader-factory';
-export * from './lib/testing';
+@Injectable({
+  providedIn: 'root',
+})
+export class MockTranslateService {
+  public stream(key: string): Observable<any> {
+    return of(null);
+  }
+}
