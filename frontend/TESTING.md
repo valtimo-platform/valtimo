@@ -17,14 +17,10 @@ To run all tests in a pipeline, use `libs-test-all-cicd`, which will run all tes
 To run tests for an individual library in watch mode, run its testing script from the root `package.json`, for example:
 `libs:test:config`.
 
-For instantiating tests, a single [`test.ts`](./src/test.ts) is shared by all libraries. In this file, [`ng-mocks`](https://github.com/help-me-mom/ng-mocks)
-is initialized, which can subsequently used to mock inside unit tests.
-
 ## Policy
 
 It is advised to write unit tests for all new components, directives, guards, pipes and services with a reasonable
 degree of complexity. This is to make sure the code is free of bugs, and to make the intention of the code clear to
 other developers.
 
-Unit tests for elements with less complexity and obvious functionality (i.e. display components) are optional. Moreover,
-unit tests for third-party dependencies are not required.
+Unit tests for elements with less complexity (i.e. display components) and obvious functionality are optional.
