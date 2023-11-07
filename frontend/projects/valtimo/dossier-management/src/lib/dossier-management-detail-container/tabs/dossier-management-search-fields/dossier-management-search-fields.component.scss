@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,15 +14,27 @@
  * limitations under the License.
  */
 
-<<<<<<< HEAD:projects/valtimo/dossier/src/lib/constants/case-tab-token.ts
-import {InjectionToken} from '@angular/core';
-import {CaseTabConfig} from '../models';
+valtimo-list::ng-deep table {
+  border-top: 1px solid rgba(0, 0, 0, 0.125);
+}
 
-const CASE_TAB_TOKEN = new InjectionToken<CaseTabConfig>(
-  'Specify a component to display per configured tab key.'
-);
+.modal-header::ng-deep {
+  background-color: #f3f4f7;
+}
 
-export {CASE_TAB_TOKEN};
-=======
-export * from './injection-tokens';
->>>>>>> origin/rc/11.0.0-3.RC:projects/valtimo/form-link/src/lib/constants/index.ts
+::ng-deep .disabled-move-row-button {
+  cursor: default !important;
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+
+::ng-deep .move-row-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-right: 13px;
+}
+
+::ng-deep .tab-container {
+  min-height: unset !important;
+}

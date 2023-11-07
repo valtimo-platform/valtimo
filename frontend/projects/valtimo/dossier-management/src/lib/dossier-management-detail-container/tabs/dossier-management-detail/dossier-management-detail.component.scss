@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-<<<<<<< HEAD:projects/valtimo/dossier/src/lib/constants/case-tab-token.ts
-import {InjectionToken} from '@angular/core';
-import {CaseTabConfig} from '../models';
+.row {
+  margin: 0;
+}
 
-const CASE_TAB_TOKEN = new InjectionToken<CaseTabConfig>(
-  'Specify a component to display per configured tab key.'
-);
+.dossier-schema {
+  resize: none;
+}
 
-export {CASE_TAB_TOKEN};
-=======
-export * from './injection-tokens';
->>>>>>> origin/rc/11.0.0-3.RC:projects/valtimo/form-link/src/lib/constants/index.ts
+valtimo-widget::ng-deep .card-border.card-full-default {
+  border: none;
+}

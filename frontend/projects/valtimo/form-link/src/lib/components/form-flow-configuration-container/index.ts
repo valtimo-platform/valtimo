@@ -14,4 +14,9 @@
  * limitations under the License.
  */
 
+<<<<<<< HEAD:projects/valtimo/dossier/src/lib/pipes/tab-translate/index.ts
+export * from './tab-translate.pipe';
+export * from './tab-translate-pipe.module';
+=======
 export * from './form-flow-configuration-container.component';
+>>>>>>> origin/rc/11.0.0-3.RC:projects/valtimo/form-link/src/lib/components/form-flow-configuration-container/index.ts

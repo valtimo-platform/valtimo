@@ -1,0 +1,87 @@
+<!--
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12 pl-0 d-flex flex-row align-items-center">
+      <ng-container *ngTemplateOutlet="content"> </ng-container>
+    </div>
+  </div>
+</div>
+
+<ng-template #content>
+  <ng-container
+    *ngIf="{
+      disabled: disabled$ | async,
+      assigneeFullName: assigneeFullName$ | async,
+      assigneeId: assigneeId$ | async
+    } as obs"
+  >
+    <ng-container *ngIf="!hasPermission && obs.assigneeFullName">
+      <ng-container *ngTemplateOutlet="fullName; context: {obs: obs}"></ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="hasPermission">
+      <ng-container *ngTemplateOutlet="selectUser; context: {obs: obs}"></ng-container>
+    </ng-container>
+  </ng-container>
+</ng-template>
+
+<ng-template #fullName let-obs="obs">
+  <valtimo-searchable-dropdown-select
+    [buttonText]="'assignDocument.header' | translate"
+    [clearSelectionButtonTitle]="'assignDocument.remove' | translate"
+    [hasPermission]="false"
+    [hasSelection]="true"
+    [noResultsText]="'interface.noSearchResults' | translate"
+    [searchText]="'interface.typeToSearch' | translate"
+    [selectedTextValue]="obs.assigneeFullName"
+    [selectedText]="'assignDocument.assignedTo' | translate"
+    [style]="'underlinedText'"
+    [width]="250"
+    class="dossier-candidates-dropdown"
+  >
+  </valtimo-searchable-dropdown-select>
+</ng-template>
+
+<ng-template #selectUser let-obs="obs">
+  <ng-container *ngIf="userItems$ | async as userItems; else loadingUsers">
+    <valtimo-searchable-dropdown-select
+      [buttonText]="'assignDocument.header' | translate"
+      [clearSelectionButtonTitle]="'assignDocument.remove' | translate"
+      [disabled]="obs.disabled"
+      [hasPermission]="hasPermission"
+      [hasSelection]="obs.assigneeId"
+      [items]="userItems"
+      [noResultsText]="'interface.noSearchResults' | translate"
+      [searchText]="'interface.typeToSearch' | translate"
+      [selectedTextValue]="obs.assigneeFullName"
+      [selectedText]="'assignDocument.assignedTo' | translate"
+      [style]="'underlinedText'"
+      [width]="250"
+      (clearSelection)="unassignDocument()"
+      (itemSelected)="assignDocument($event)"
+      class="dossier-candidates-dropdown"
+    >
+    </valtimo-searchable-dropdown-select>
+  </ng-container>
+</ng-template>
+
+<ng-template #loadingUsers>
+  <h5>
+    <b>{{ 'assignDocument.fetchingUsers' | translate }}</b>
+  </h5>
+</ng-template>

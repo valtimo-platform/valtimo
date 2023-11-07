@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,15 +14,37 @@
  * limitations under the License.
  */
 
-<<<<<<< HEAD:projects/valtimo/dossier/src/lib/constants/case-tab-token.ts
-import {InjectionToken} from '@angular/core';
-import {CaseTabConfig} from '../models';
+.hoverable:hover {
+  background-color: #eee;
+}
 
-const CASE_TAB_TOKEN = new InjectionToken<CaseTabConfig>(
-  'Specify a component to display per configured tab key.'
-);
+.summaryForm {
+  .formio-component {
+    margin-bottom: 0 !important;
 
-export {CASE_TAB_TOKEN};
-=======
-export * from './injection-tokens';
->>>>>>> origin/rc/11.0.0-3.RC:projects/valtimo/form-link/src/lib/constants/index.ts
+    div[ref='element'] .form-control {
+      height: 24px !important;
+      background-color: white;
+      border: 0px;
+      margin: 0px;
+      padding: 0px !important;
+      font-size: 13px;
+    }
+  }
+
+  .formio-field div[ref='element'] .form-control {
+    font-weight: 400;
+  }
+
+  .formio-value div[ref='element'] .form-control {
+    font-weight: 700;
+  }
+}
+
+.user-tasks-title {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-weight: 400;
+  color: #000;
+  height: 20px;
+}

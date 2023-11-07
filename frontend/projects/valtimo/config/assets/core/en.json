@@ -125,10 +125,6 @@
       "description": "Are you sure you want to delete this file?",
       "cancel": "Cancel",
       "delete": "Delete"
-    },
-    "formio": {
-      "noFormSpecified": "No form definition has been specified for this tab.",
-      "formNotFound": "The form definition '{{formDefinitionName}}' could not be found."
     }
   },
   "document": {
@@ -551,7 +547,6 @@
     "delete": "Delete",
     "deleteConfirmation": "Are you sure you want to delete?",
     "cancel": "Cancel",
-    "confirm": "Confirm",
     "collapse": "Collapse",
     "expand": "Expand",
     "download": "Download",
@@ -567,10 +562,6 @@
       "ofLastPages": "of {{last}} pages",
       "singleSelect": "1 item selected",
       "totalItems": "{{start}}-{{end}} of {{total}} items"
-    },
-    "pendingChanges": {
-      "title": "Leaving page",
-      "content": "You have unsaved changes. Are you sure you want to continue?"
     },
     "required": "required",
     "filter": "Filter..."

@@ -141,10 +141,6 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
     this.setSelectedValue(this.multiple ? [] : '');
   }
 
-  public clear(): void {
-    this.setSelectedValue(this.multiple ? [] : '');
-  }
-
   private setDefaultSelection(): void {
     this.listItems$.pipe(take(1)).subscribe(listItems => {
       const itemsIds = listItems?.map(item => item.id);

@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-<<<<<<< HEAD:projects/valtimo/dossier/src/lib/constants/case-tab-token.ts
-import {InjectionToken} from '@angular/core';
-import {CaseTabConfig} from '../models';
+.container-fluid {
+  color: #959595;
+}
 
-const CASE_TAB_TOKEN = new InjectionToken<CaseTabConfig>(
-  'Specify a component to display per configured tab key.'
-);
+valtimo-searchable-dropdown-select {
+  font-size: 13px;
+}
 
-export {CASE_TAB_TOKEN};
-=======
-export * from './injection-tokens';
->>>>>>> origin/rc/11.0.0-3.RC:projects/valtimo/form-link/src/lib/constants/index.ts
+:host .dossier-candidates-dropdown h5 {
+  margin-block: 0;
+}

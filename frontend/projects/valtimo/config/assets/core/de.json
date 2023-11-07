@@ -125,10 +125,6 @@
       "description": "Möchten Sie diese Datei wirklich löschen?",
       "cancel": "Absagen",
       "delete": "Löschen"
-    },
-    "formio": {
-      "noFormSpecified": "Für diese Registerkarte wurde keine Formulardefinition angegeben.",
-      "formNotFound": "Die Formulardefinition '{{formDefinitionName}}' konnte nicht gefunden werden."
     }
   },
   "document": {
@@ -550,7 +546,6 @@
     "delete": "Löschen",
     "deleteConfirmation": "Sind Sie sicher, dass Sie löschen möchten?",
     "cancel": "Absagen",
-    "confirm": "Bestätigen",
     "collapse": "Kollaps",
     "expand": "Expandieren",
     "download": "Herunterladen",
@@ -566,10 +561,6 @@
       "ofLastPages": "von {{last}} Seiten",
       "singleSelect": "1 Element ausgewählt",
       "totalItems": "{{start}}-{{end}} von {{total}} Objekte"
-    },
-    "pendingChanges": {
-      "title": "Seite verlassen",
-      "content": "Du hast nicht gespeicherte Änderungen. Bist du dir sicher, dass du weitermachen willst?"
     },
     "required": "erforderlich",
     "filter": "Filter..."

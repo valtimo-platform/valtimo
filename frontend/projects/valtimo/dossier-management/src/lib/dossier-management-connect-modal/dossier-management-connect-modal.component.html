@@ -1,0 +1,83 @@
+<!--
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<valtimo-modal
+  #dossierConnectModal
+  elementId="dossierConnectModal"
+  [title]="documentDefinition ? documentDefinition.schema.title : 'Document definition'"
+  subtitle="Connect document definition to process definition"
+  showFooter="true"
+>
+  <div body *ngIf="documentDefinition">
+    <p>
+      {{ 'Select process definition for document definition' | translate }}
+      <strong>{{ documentDefinition.id.name }} *</strong>
+    </p>
+    <div class="input-group mb-3 align-items-center">
+      <select class="form-control" [(ngModel)]="newDocumentProcessDefinition">
+        <option [ngValue]="null">{{ 'dossierManagement.selectProcessDef' | translate }}</option>
+        <option
+          *ngFor="let processDefinition of processDefinitions"
+          [disabled]="processDocumentDefinitionExists[processDefinition.key]"
+          [ngValue]="processDefinition"
+        >
+          {{ processDefinition.name }} ({{ processDefinition.key }})
+        </option>
+      </select>
+    </div>
+    <p>
+      {{ 'Select options for the selected process' | translate }}
+    </p>
+    <div class="input-group mb-3 align-items-center">
+      <label
+        class="custom-control custom-checkbox custom-control-inline pl-6 mb-0"
+        placement="bottom"
+        ngbTooltip="{{ 'processCaseConnection.processCreatesCaseTooltip' | translate }}"
+      >
+        <input
+          class="custom-control-input"
+          type="checkbox"
+          [(ngModel)]="newDocumentProcessDefinitionInit"
+        /><span class="custom-control-label custom-control-color">{{
+          'processCaseConnection.processCreatesCase' | translate
+        }}</span>
+      </label>
+      <label
+        class="custom-control custom-checkbox custom-control-inline ml-2 pl-6 mb-0"
+        placement="bottom"
+        ngbTooltip="{{ 'processCaseConnection.startableWithinCaseTooltip' | translate }}"
+      >
+        <input
+          class="custom-control-input"
+          type="checkbox"
+          [(ngModel)]="newDocumentProcessDefinitionStartableByUser"
+        /><span class="custom-control-label custom-control-color">{{
+          'processCaseConnection.startableWithinCase' | translate
+        }}</span>
+      </label>
+    </div>
+  </div>
+  <div footer>
+    <button
+      (click)="submit()"
+      class="btn btn-primary"
+      data-dismiss="modal"
+      [disabled]="!newDocumentProcessDefinition"
+    >
+      {{ 'Save' | translate }}
+    </button>
+  </div>
+</valtimo-modal>

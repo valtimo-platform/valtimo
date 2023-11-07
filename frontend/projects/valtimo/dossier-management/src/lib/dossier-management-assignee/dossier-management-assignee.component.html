@@ -1,0 +1,63 @@
+<!--
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<h2 class="mb-4 mt-6">{{ 'dossierManagement.toggleAssignee.title' | translate }}</h2>
+
+<ng-container
+  *ngIf="{
+    currentValue: currentValue$ | async,
+    documentDefinitionName: documentDefinitionName$ | async,
+    loading: loading$ | async,
+    disabled: disabled$ | async
+  } as obs"
+>
+  <ng-container *ngIf="obs.loading === false; else loading">
+    <label
+      class="custom-control custom-checkbox custom-control-inline pl-6 mr-5"
+      placement="bottom"
+    >
+      <input
+        [checked]="obs.currentValue.canHaveAssignee"
+        class="custom-control-input"
+        type="checkbox"
+        [disabled]="obs.disabled"
+        (click)="toggleAssignee(obs.currentValue, obs.documentDefinitionName)"
+      /><span class="custom-control-label custom-control-color">{{
+        'dossierManagement.toggleAssignee.checkboxDescription' | translate
+      }}</span>
+    </label>
+  </ng-container>
+  <ng-container *ngIf="obs.currentValue.canHaveAssignee">
+    <label
+      class="custom-control custom-checkbox custom-control-inline pl-6 mr-5"
+      placement="bottom"
+    >
+      <input
+        [checked]="obs.currentValue.autoAssignTasks"
+        class="custom-control-input"
+        type="checkbox"
+        [disabled]="obs.disabled"
+        (click)="toggleTaskAssignment(obs.currentValue, obs.documentDefinitionName)"
+      /><span class="custom-control-label custom-control-color">{{
+        'dossierManagement.toggleAutoAssignTasks.checkboxDescription' | translate
+      }}</span>
+    </label>
+  </ng-container>
+</ng-container>
+
+<ng-template #loading>
+  <valtimo-spinner></valtimo-spinner>
+</ng-template>
