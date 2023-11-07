@@ -284,7 +284,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/layout/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/layout/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/layout/karma.conf.js"
           }
@@ -354,7 +354,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/components/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/components/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/components/karma.conf.js"
           }
@@ -424,7 +424,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/task/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/task/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/task/karma.conf.js"
           }
@@ -497,7 +497,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/access-control/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/access-control/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/access-control/karma.conf.js"
           }
@@ -537,7 +537,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/access-control-management/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/access-control-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/access-control-management/karma.conf.js"
           }
@@ -574,7 +574,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/security/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/security/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/security/karma.conf.js"
           }
@@ -644,7 +644,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/dossier/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/dossier/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/dossier/karma.conf.js"
           }
@@ -714,7 +714,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/choicefield/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/choicefield/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/choicefield/karma.conf.js"
           }
@@ -784,7 +784,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/process/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/process/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/process/karma.conf.js"
           }
@@ -854,7 +854,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/view-configurator/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/view-configurator/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/view-configurator/karma.conf.js"
           }
@@ -924,7 +924,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/dashboard/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/dashboard/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/dashboard/karma.conf.js"
           }
@@ -997,7 +997,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/dashboard-management/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/dashboard-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/dashboard-management/karma.conf.js"
           }
@@ -1034,7 +1034,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/document/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/document/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/document/karma.conf.js"
           }
@@ -1104,7 +1104,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/contact-moment/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/contact-moment/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/contact-moment/karma.conf.js"
           }
@@ -1174,7 +1174,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/account/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/account/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/account/karma.conf.js"
           }
@@ -1244,7 +1244,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/choice-field/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/choice-field/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/choice-field/karma.conf.js"
           }
@@ -1314,7 +1314,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/form/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/form/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/form/karma.conf.js"
           }
@@ -1384,7 +1384,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/analyse/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/analyse/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/analyse/karma.conf.js"
           }
@@ -1454,7 +1454,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/swagger/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/swagger/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/swagger/karma.conf.js"
           }
@@ -1524,7 +1524,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/connector-management/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/connector-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/connector-management/karma.conf.js"
           }
@@ -1594,7 +1594,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/process-management/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/process-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/process-management/karma.conf.js"
           }
@@ -1664,7 +1664,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/decision/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/decision/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/decision/karma.conf.js"
           }
@@ -1734,7 +1734,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/milestone/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/milestone/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/milestone/karma.conf.js"
           }
@@ -1804,7 +1804,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/form-management/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/form-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/form-management/karma.conf.js"
           }
@@ -1874,7 +1874,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/form-link/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/form-link/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/form-link/karma.conf.js"
           }
@@ -1944,7 +1944,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/migration/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/migration/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/migration/karma.conf.js"
           }
@@ -2014,7 +2014,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/dossier-management/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/dossier-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/dossier-management/karma.conf.js"
           }
@@ -2084,7 +2084,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/keycloak/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/keycloak/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/keycloak/karma.conf.js"
           }
@@ -2154,7 +2154,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/bootstrap/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/bootstrap/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/bootstrap/karma.conf.js"
           }
@@ -2224,7 +2224,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/config/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/config/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/config/karma.conf.js"
           }
@@ -2294,7 +2294,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/open-zaak/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/open-zaak/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/open-zaak/karma.conf.js"
           }
@@ -2364,7 +2364,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/resource/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/resource/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/resource/karma.conf.js"
           }
@@ -2434,7 +2434,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/customer/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/customer/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/customer/karma.conf.js"
           }
@@ -2504,7 +2504,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/plugin-management/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/plugin-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/plugin-management/karma.conf.js"
           }
@@ -2574,7 +2574,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/plugin/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/plugin/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/plugin/karma.conf.js"
           }
@@ -2647,7 +2647,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/exact-plugin/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/exact-plugin/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/exact-plugin/karma.conf.js"
           }
@@ -2687,7 +2687,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/object-management/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/object-management/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/object-management/karma.conf.js"
           }
@@ -2727,7 +2727,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/sse/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/sse/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/sse/karma.conf.js"
           }
@@ -2764,7 +2764,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/valtimo/object/src/test.ts",
+            "main": "src/test.ts",
             "tsConfig": "projects/valtimo/object/tsconfig.spec.json",
             "karmaConfig": "projects/valtimo/object/karma.conf.js"
           }

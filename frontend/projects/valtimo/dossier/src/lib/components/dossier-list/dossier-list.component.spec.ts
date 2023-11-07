@@ -26,6 +26,7 @@ import {LoggerTestingModule} from 'ngx-logger/testing';
 import {KeycloakService} from 'keycloak-angular';
 import {DatePipe} from '@angular/common';
 import {DossierBulkAssignService} from '../../services';
+import {MockProvider} from 'ng-mocks';
 
 describe('DossierListComponent', () => {
   let httpClient: HttpClient;
@@ -43,7 +44,7 @@ describe('DossierListComponent', () => {
         {provide: KeycloakService, useClass: MockKeycloakService},
         {provide: TranslateService, useClass: MockTranslateService},
         DossierBulkAssignService,
-        DatePipe,
+        MockProvider(DatePipe),
       ],
     }).compileComponents();
 
