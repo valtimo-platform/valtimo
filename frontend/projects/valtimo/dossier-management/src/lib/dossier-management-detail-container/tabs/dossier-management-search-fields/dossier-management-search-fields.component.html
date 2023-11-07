@@ -1,0 +1,261 @@
+<!--
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    searchFields: translatedSearchFields$ | async,
+    fields: fields$ | async,
+    downloadUrl: downloadUrl$ | async,
+    downloadName: downloadName$ | async,
+    documentDefinitionName: documentDefinitionName$ | async,
+    valid: valid$ | async,
+    disableInput: disableInput$ | async
+  } as obs"
+>
+  <ng-container *ngTemplateOutlet="buttons; context: {obs: obs}"></ng-container>
+  <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
+  <ng-container *ngTemplateOutlet="modal; context: {obs: obs}"></ng-container>
+</ng-container>
+
+<ng-template #buttons let-obs="obs">
+  <div class="btn-group mt-m3px mb-3 pr-2 float-right">
+    <a
+      class="btn btn-secondary btn-space"
+      [href]="obs.downloadUrl"
+      [download]="obs.downloadName"
+      [ngClass]="{
+        disabled:
+          !obs.downloadUrl || !obs.downloadName || obs.searchFields.length <= 0 || obs.disableInput
+      }"
+    >
+      <i class="icon mdi mdi-download mr-1"></i>
+      {{ 'searchFields.downloadButtonText' | translate }}
+    </a>
+    <button
+      (click)="searchFieldClicked($event, true)"
+      class="btn btn-primary btn-space"
+      [ngClass]="{disabled: loadingSearchFields || obs.disableInput}"
+    >
+      <i class="icon mdi mdi-plus mr-1"></i>
+      {{ 'searchFieldsOverview.addRow' | translate }}
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #list let-obs="obs">
+  <valtimo-list
+    [items]="obs.searchFields"
+    [fields]="obs.fields"
+    [viewMode]="false"
+    [header]="false"
+    (rowClicked)="searchFieldClicked($event, false)"
+    *ngIf="obs.searchFields; else loading"
+    [lastColumnTemplate]="moveRowButtonsTemplateRef"
+  >
+  </valtimo-list>
+</ng-template>
+
+<ng-template #moveRowButtons let-index="index" let-length="length">
+  <div
+    class="move-row-buttons"
+    *ngIf="{
+      disableInput: disableInput$ | async,
+      documentDefinitionName: documentDefinitionName$ | async
+    } as obs"
+  >
+    <i
+      class="mdi mdi-arrow-up-bold btn btn-outline-primary mr-1"
+      (click)="moveRow(index, true, $event, obs.documentDefinitionName)"
+      [ngClass]="{'disabled disabled-move-row-button': index === 0 || obs.disableInput}"
+    ></i>
+    <i
+      class="mdi mdi-arrow-down-bold btn btn-outline-secondary"
+      (click)="moveRow(index, false, $event, obs.documentDefinitionName)"
+      [ngClass]="{'disabled disabled-move-row-button': index === length - 1 || obs.disableInput}"
+    ></i>
+  </div>
+</ng-template>
+
+<ng-template #modal let-obs="obs">
+  <valtimo-modal
+    #searchFieldModal
+    elementId="searchFieldModal"
+    [title]="
+      searchFieldActionTypeIsAdd
+        ? ('searchFieldsOverview.addRow' | translate)
+        : ('searchFieldsOverview.edit' | translate)
+    "
+    [showFooter]="true"
+  >
+    <div body class="mt-2">
+      <v-form
+        (valueChange)="formValueChange($event)"
+        *ngIf="showSearchFieldsForm && {searchField: selectedSearchField$ | async} as searchObs"
+      >
+        <v-input
+          name="title"
+          [title]="'searchFieldsOverview.title' | translate"
+          [margin]="true"
+          [defaultValue]="searchObs.searchField?.title"
+          [disabled]="obs.disableInput"
+          [required]="false"
+          [fullWidth]="true"
+          [tooltip]="'searchFieldsOverviewTooltips.title' | translate"
+        >
+        </v-input>
+        <v-input
+          name="key"
+          [title]="'searchFieldsOverview.key' | translate"
+          [margin]="true"
+          [defaultValue]="searchObs.searchField?.key"
+          [disabled]="obs.disableInput || !searchFieldActionTypeIsAdd"
+          [required]="true"
+          [widthPx]="200"
+          [tooltip]="'searchFieldsOverviewTooltips.key' | translate"
+        >
+        </v-input>
+        <v-input
+          name="path"
+          [title]="'searchFieldsOverview.path' | translate"
+          [margin]="true"
+          [defaultValue]="searchObs.searchField?.path"
+          [disabled]="obs.disableInput"
+          [required]="true"
+          [fullWidth]="true"
+          [tooltip]="'searchFieldsOverviewTooltips.path' | translate"
+        >
+        </v-input>
+        <v-select
+          *ngIf="dataTypeItems$ | async as dataTypeItems"
+          [items]="dataTypeItems"
+          [placeholder]="'searchFieldsOverview.searchFieldPlaceholder' | translate"
+          [title]="'searchFieldsOverview.dataType' | translate"
+          [disabled]="obs.disableInput"
+          [margin]="true"
+          [required]="true"
+          name="dataType"
+          [defaultSelectionId]="searchObs.searchField?.dataType"
+          [widthInPx]="200"
+          [tooltip]="'searchFieldsOverviewTooltips.dataType' | translate"
+        ></v-select>
+        <v-select
+          *ngIf="(showMatchTypes$ | async) && (matchTypeItems$ | async) as matchTypeItems"
+          [items]="matchTypeItems"
+          [placeholder]="'searchFieldsOverview.searchFieldPlaceholder' | translate"
+          [title]="'searchFieldsOverview.matchType' | translate"
+          [disabled]="obs.disableInput"
+          [margin]="true"
+          [required]="true"
+          name="matchType"
+          [defaultSelectionId]="searchObs.searchField?.matchType"
+          [widthInPx]="200"
+          [tooltip]="'searchFieldsOverviewTooltips.matchType' | translate"
+        ></v-select>
+        <v-select
+          *ngIf="fieldTypeItems$ | async as fieldTypeItems"
+          [items]="fieldTypeItems"
+          [placeholder]="'searchFieldsOverview.searchFieldPlaceholder' | translate"
+          [title]="'searchFieldsOverview.fieldType' | translate"
+          [disabled]="obs.disableInput"
+          [margin]="true"
+          [required]="true"
+          name="fieldType"
+          [defaultSelectionId]="searchObs.searchField?.fieldType"
+          [widthInPx]="200"
+          [tooltip]="'searchFieldsOverviewTooltips.fieldType' | translate"
+        ></v-select>
+        <v-select
+          *ngIf="
+            (fieldTypeIsDropdown$ | async) &&
+            (dropdownDataProviderNames$ | async) as dropdownDataProviderNames
+          "
+          [items]="dropdownDataProviderNames"
+          [placeholder]="'searchFieldsOverview.searchFieldPlaceholder' | translate"
+          [title]="'searchFieldsOverview.dropdownDataProvider' | translate"
+          [disabled]="obs.disableInput"
+          [margin]="true"
+          [required]="false"
+          name="dropdownDataProvider"
+          [defaultSelectionId]="searchObs.searchField?.dropdownDataProvider"
+          [widthInPx]="200"
+          [tooltip]="'searchFieldsOverviewTooltips.dropdownDataProvider' | translate"
+        ></v-select>
+        <valtimo-carbon-multi-input
+          *ngIf="
+            (showInputDropdownTable$ | async) &&
+            (initialDropdownValues$ | async) as initialDropdownValues
+          "
+          name="dropdownValues"
+          [title]="'searchFieldsOverview.dropdownListValues' | translate"
+          type="keyValue"
+          [disabled]="obs.disableInput"
+          [defaultValues]="initialDropdownValues"
+          [margin]="true"
+          [required]="false"
+          [tooltip]="'searchFieldsOverviewTooltips.dropdownListValues' | translate"
+          (valueChange)="dropdownDatalistChange($event)"
+        >
+        </valtimo-carbon-multi-input>
+        <v-table
+          *ngIf="
+            (showReadonlyDropdownTable$ | async) &&
+            (initialDropdownValues$ | async) as initialDropdownValues
+          "
+          [items]="initialDropdownValues"
+          [columns]="dropdownColumns$ | async"
+          [showEditButtons]="false"
+          [itemsTranslationKey]="'searchFieldsOverview'"
+          [showPagination]="false"
+          [mobileBreakpointPx]="200"
+        ></v-table>
+      </v-form>
+    </div>
+    <div footer>
+      <div class="col-12 p-0">
+        <ng-container *ngTemplateOutlet="buttonsFooterModal; context: {obs: obs}"></ng-container>
+      </div>
+    </div>
+  </valtimo-modal>
+</ng-template>
+
+<ng-template #buttonsFooterModal let-obs="obs">
+  <div class="buttons-container" *ngIf="{searchField: selectedSearchField$ | async} as searchObs">
+    <div class="right-buttons">
+      <button
+        class="btn btn-space btn-secondary"
+        *ngIf="!searchFieldActionTypeIsAdd"
+        [disabled]="obs.disableInput"
+        (click)="deleteSelectedSearchField(obs.documentDefinitionName, searchObs.searchField)"
+      >
+        {{ 'searchFieldsOverview.delete' | translate }}
+      </button>
+      <button
+        (click)="saveSearchField(obs.documentDefinitionName)"
+        type="button"
+        class="btn btn-primary btn-space mr-0"
+        [disabled]="obs.disableInput || !obs.valid"
+      >
+        {{ 'searchFieldsOverview.submit' | translate }}
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #loading>
+  <div class="mb-3">
+    <valtimo-spinner></valtimo-spinner>
+  </div>
+</ng-template>
