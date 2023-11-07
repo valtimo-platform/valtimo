@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
-import {pendingChangesGuard} from '@valtimo/components';
-import {ROLE_ADMIN} from '@valtimo/config';
+import {FormManagementComponent} from './form-management.component';
 import {AuthGuardService} from '@valtimo/security';
 import {FormManagementCreateComponent} from './form-management-create/form-management-create.component';
 import {FormManagementEditComponent} from './form-management-edit/form-management-edit.component';
-import {FormManagementComponent} from './form-management.component';
+import {ROLE_ADMIN} from '@valtimo/config';
 
 const routes: Routes = [
   {
@@ -39,7 +39,6 @@ const routes: Routes = [
     path: 'form-management/edit/:id',
     component: FormManagementEditComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
     data: {title: 'Form Builder', roles: [ROLE_ADMIN], customPageTitle: true},
   },
 ];

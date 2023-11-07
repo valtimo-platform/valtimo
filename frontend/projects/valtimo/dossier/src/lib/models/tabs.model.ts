@@ -15,8 +15,9 @@
  */
 
 import {ComponentFactoryResolver, ComponentRef, ViewContainerRef} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {take} from 'rxjs';
+import {TranslateService} from '@ngx-translate/core';
+import {Router} from '@angular/router';
+import {Location} from '@angular/common';
 
 export interface TabLoader<T_TAB extends Tab> {
   tabs: T_TAB[];
@@ -24,6 +25,8 @@ export interface TabLoader<T_TAB extends Tab> {
   initial(tabName?: string): void;
 
   load(tabToLoad: T_TAB): void;
+
+  translateTabName(tab: T_TAB): string;
 }
 
 export class TabLoaderImpl implements TabLoader<TabImpl> {
@@ -32,28 +35,27 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
   private readonly _viewContainerRef: ViewContainerRef = null;
   private _activeComponent: ComponentRef<any> = null;
   private _activeTab: TabImpl = null;
+  private _translateService: TranslateService = null;
   private _router: Router;
-  private _route: ActivatedRoute;
+  private _location: Location;
 
   constructor(
     tabs: TabImpl[],
     componentFactoryResolver: ComponentFactoryResolver,
     viewContainerRef: ViewContainerRef,
+    translateService: TranslateService,
     router: Router,
-    route: ActivatedRoute
+    location: Location
   ) {
     this._tabs = tabs;
     this._componentFactoryResolver = componentFactoryResolver;
     this._viewContainerRef = viewContainerRef;
+    this._translateService = translateService;
     this._router = router;
-    this._route = route;
+    this._location = location;
   }
 
-  public get tabs(): TabImpl[] {
-    return this._tabs;
-  }
-
-  public initial(tabName?: string): void {
+  initial(tabName?: string): void {
     let initialTab;
     if (tabName) {
       initialTab = this._tabs.find(tab => tab.name === tabName);
@@ -63,7 +65,7 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
     this.load(initialTab);
   }
 
-  public load(newTab: TabImpl): void {
+  load(newTab: TabImpl): void {
     if (newTab !== this._activeTab) {
       this._tabs.forEach(tab => tab.deactivate());
       this.replaceView(newTab);
@@ -72,7 +74,7 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
     }
   }
 
-  public refreshView() {
+  refreshView() {
     this.replaceView(this._activeTab);
   }
 
@@ -85,24 +87,33 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
     this._activeComponent = this._viewContainerRef.createComponent(componentFactory);
   }
 
-  private replaceUrlState(nextTab: TabImpl): void {
-    this._route.params.pipe(take(1)).subscribe(params => {
-      const currentUrl = this._router.url;
-      const currentDocumentId = params?.documentId;
-      const queryParams = currentUrl.split('?')[1] || '';
-      const urlBeforeDocumentId = currentUrl.split(currentDocumentId)[0];
+  private replaceUrlState(tab: TabImpl): void {
+    const currentUrl = this._router.url;
+    const queryParams = currentUrl.split('?')[1] || '';
+    const urlParts = currentUrl.split('/');
+    urlParts.splice(urlParts.length - 1, 1, tab.name);
+    const newUrl = urlParts.join('/');
 
-      this._router.navigateByUrl(
-        `${urlBeforeDocumentId}${currentDocumentId}/${nextTab.name}${
-          queryParams ? `?${queryParams}` : ''
-        }`
-      );
-    });
+    if (currentUrl.includes(newUrl) && queryParams) {
+      this._router.navigateByUrl(`${newUrl}?${queryParams}`);
+    } else {
+      this._router.navigateByUrl(newUrl);
+    }
   }
 
   private setActive(tab: TabImpl): void {
     tab.activate();
     this._activeTab = tab;
+  }
+
+  get tabs(): TabImpl[] {
+    return this._tabs;
+  }
+
+  translateTabName(tab: TabImpl): string {
+    const translationId = 'dossier.tabs.' + tab.name;
+    const translation = this._translateService.instant('dossier.tabs.' + tab.name);
+    return translationId !== translation ? translation : tab.name;
   }
 }
 
@@ -110,8 +121,6 @@ export interface Tab {
   name: string;
   sequence: number;
   component: any;
-  title: string;
-  contentKey: string;
 
   activate(): void;
 
@@ -124,53 +133,35 @@ export class TabImpl implements Tab {
   private readonly _name: string;
   private readonly _sequence: number;
   private readonly _component: any;
-  private readonly _contentKey: string;
-  private readonly _title: string;
   private _active = false;
 
-  constructor(name: string, sequence: number, component: any, contentKey?: string, title?: string) {
+  constructor(name: string, sequence: number, component: any) {
     this._name = name;
     this._sequence = sequence;
     this._component = component;
-
-    if (contentKey) {
-      this._contentKey = contentKey;
-    }
-
-    if (title) {
-      this._title = title;
-    }
   }
 
-  public get name(): string {
+  get name(): string {
     return this._name;
   }
 
-  public get sequence(): number {
+  get sequence(): number {
     return this._sequence;
   }
 
-  public get component(): any {
+  get component(): any {
     return this._component;
   }
 
-  public get contentKey(): string {
-    return this._contentKey;
-  }
-
-  public get title(): string {
-    return this._title;
-  }
-
-  public activate(): void {
+  activate(): void {
     this._active = true;
   }
 
-  public deactivate(): void {
+  deactivate(): void {
     this._active = false;
   }
 
-  public isActive(): boolean {
+  isActive(): boolean {
     return this._active;
   }
 }
