@@ -291,7 +291,6 @@
   },
   "devDependencies": {
     "@cypress/schematic": "^2.5.0",
-    "@hetznercloud/ngx-translate-mock": "^1.1.0",
     "@valtimo/access-control": "file:dist/valtimo/access-control",
     "@valtimo/access-control-management": "file:dist/valtimo/access-control-management",
     "@valtimo/account": "file:dist/valtimo/account",
