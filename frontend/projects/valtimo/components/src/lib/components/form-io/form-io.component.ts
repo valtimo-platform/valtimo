@@ -16,6 +16,7 @@
 import {
   Component,
   EventEmitter,
+  HostListener,
   Input,
   OnChanges,
   OnDestroy,
@@ -52,6 +53,11 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() change = new EventEmitter<any>();
 
+  @HostListener('window:beforeunload', ['$event'])
+  private handleBeforeUnload() {
+    this.clearTokenFromLocalStorage();
+  }
+
   public refreshForm = new EventEmitter<FormioRefreshValue>();
   public formDefinition: FormioForm;
   public errors: string[] = [];
@@ -78,6 +84,8 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   private _tokenTimerSubscription = new Subscription();
   private _formRefreshSubscription = new Subscription();
+
+  private readonly _FORMIO_TOKEN_LOCAL_STORAGE_KEY = 'formioToken';
 
   constructor(
     private readonly logger: NGXLogger,
@@ -125,6 +133,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   public ngOnDestroy(): void {
     this._tokenTimerSubscription.unsubscribe();
     this._formRefreshSubscription.unsubscribe();
+    this.clearTokenFromLocalStorage();
   }
 
   public reloadForm(): void {
@@ -171,7 +180,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   private setToken(token: string): void {
     Formio.setToken(token);
-    localStorage.setItem('formioToken', token);
+    localStorage.setItem(this._FORMIO_TOKEN_LOCAL_STORAGE_KEY, token);
     this.setTimerForTokenRefresh(token);
 
     this.logger.debug('New token set for form.io.');
@@ -206,5 +215,9 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
         })
       );
     }
+  }
+
+  private clearTokenFromLocalStorage(): void {
+    localStorage.removeItem(this._FORMIO_TOKEN_LOCAL_STORAGE_KEY);
   }
 }
