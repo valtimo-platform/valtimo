@@ -133,6 +133,10 @@ body {
     }
   }
 
+  &--list-box__wrapper {
+    z-index: 10001 !important;
+  }
+
   &--modal.is-visible {
     z-index: 10001 !important;
   }
