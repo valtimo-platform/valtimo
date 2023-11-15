@@ -33,7 +33,10 @@ export class DossierManagementLinkProcessComponent implements OnInit {
   readonly selectionId$ = new BehaviorSubject<string>('');
   readonly processItems$: Observable<Array<SelectItem>> = this.processService
     .getProcessDefinitions()
-    .pipe(map(processes => processes.map(process => ({text: process.name, id: process.key}))));
+    .pipe(
+      map(definitions => definitions.filter(definition => !!definition?.key) || []),
+      map(processes => processes.map(process => ({text: process?.name || '-', id: process.key})))
+    );
 
   readonly disabled$ = new BehaviorSubject<boolean>(false);
 
