@@ -109,6 +109,12 @@ export class DocumentService {
     );
   }
 
+  getDocumentDefinitionForManagement(documentDefinitionName: string): Observable<DocumentDefinition> {
+    return this.http.get<DocumentDefinition>(
+      `${this.valtimoEndpointUri}management/v1/document-definition/${documentDefinitionName}`
+    );
+  }
+
   getDocuments(documentSearchRequest: DocumentSearchRequest): Observable<Documents> {
     return this.http.post<Documents>(
       `${this.valtimoEndpointUri}v1/document-search`,
