@@ -59,7 +59,7 @@ export class DossierManagementDetailComponent implements OnInit {
 
   loadDocumentDefinition() {
     this.documentService
-      .getDocumentDefinition(this.documentDefinitionName)
+      .getDocumentDefinitionForManagement(this.documentDefinitionName)
       .subscribe((documentDefinition: DocumentDefinition) => {
         this.documentDefinition = documentDefinition;
       });
