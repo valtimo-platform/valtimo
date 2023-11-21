@@ -134,7 +134,7 @@ body {
   }
 
   &--list-box__wrapper {
-    z-index: 10001 !important;
+    z-index: 99999 !important;
   }
 
   &--modal.is-visible {
