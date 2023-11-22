@@ -16,7 +16,8 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
-import {Observable, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
+import {DownloadDocumentConfig} from '../../models';
 
 @Component({
   selector: 'valtimo-download-document-configuration',
@@ -29,11 +30,15 @@ export class DownloadDocumentConfigurationComponent
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
-  @Input() prefillConfiguration$: Observable<any>;
+  @Input() prefillConfiguration$: Observable<DownloadDocumentConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<any> = new EventEmitter<any>();
+  @Output() configuration: EventEmitter<DownloadDocumentConfig> = new EventEmitter<DownloadDocumentConfig>();
 
   private saveSubscription!: Subscription;
+  private readonly formValue$ = new BehaviorSubject<DownloadDocumentConfig | null>(null);
+  private readonly valid$ = new BehaviorSubject<boolean>(false);
+
+
 
   ngOnInit(): void {
     this.openSaveSubscription();
@@ -46,7 +51,27 @@ export class DownloadDocumentConfigurationComponent
 
   private openSaveSubscription(): void {
     this.saveSubscription = this.save$?.subscribe(save => {
-      this.configuration.emit({});
+      combineLatest([this.formValue$, this.valid$])
+        .pipe(take(1))
+        .subscribe(([formValue, valid]) => {
+          if (valid) {
+            this.configuration.emit(formValue);
+          }
+        });
     });
+  }
+
+  formValueChange(formValue: DownloadDocumentConfig): void {
+    this.formValue$.next(formValue);
+    this.handleValid(formValue);
+  }
+
+  private handleValid(formValue: DownloadDocumentConfig): void {
+    const valid = !!(
+      formValue.processVariableName
+    );
+
+    this.valid$.next(valid);
+    this.valid.emit(valid);
   }
 }
