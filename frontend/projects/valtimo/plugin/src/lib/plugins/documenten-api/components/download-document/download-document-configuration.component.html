@@ -14,6 +14,20 @@
   ~ limitations under the License.
   -->
 
-<v-paragraph [center]="true" [fullWidth]="true">
-  {{ 'downloadDocumentMessage' | pluginTranslate: pluginId | async }}
-</v-paragraph>
+<v-form
+        (valueChange)="formValueChange($event)"
+        *ngIf="{
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+  } as obs"
+>
+  <v-input
+          name="processVariableName"
+          [title]="'processVariableName' | pluginTranslate: pluginId | async"
+          [margin]="true"
+          [defaultValue]="obs.prefill?.processVariableName"
+          [disabled]="obs.disabled"
+          [required]="false"
+          [tooltip]="'processVariableTooltip' | pluginTranslate: pluginId | async"
+  ></v-input>
+</v-form>

@@ -48,6 +48,10 @@ interface StoreTempDocumentConfig {
   informatieobjecttype: string;
 }
 
+export interface DownloadDocumentConfig {
+  processVariableName: string;
+}
+
 export {
   DocumentenApiConfig,
   StoreTempDocumentConfig,
