@@ -29,7 +29,7 @@
         [header]="true"
         (rowClicked)="rowOpenTaskClick($event)"
         (sortChanged)="sortChanged($event)"
-        [lastColumnTemplate]="caseLink"
+        [lastColumnTemplate]="caseLinkWithTaskLock"
       >
         <div header>
           <h3 class="list-header-title">{{ listTitle }}</h3>
@@ -76,8 +76,16 @@
   </ul>
 </ng-template>
 
-<ng-template #caseLink let-index="index">
-  <a cdsLink href="javascript:void(0)" (click)="openRelatedCase($event, index)">
+<ng-template #caseLinkWithTaskLock let-index="index">
+  <a class="float-left" cdsLink href="javascript:void(0)" (click)="openRelatedCase($event, index)">
     {{ 'task-list.goToCase' | translate }}
   </a>
+  <div *ngIf="tasks[currentTaskType].tasks[index].isLocked">
+    <span
+      class="float-right badge badge-pill badge-secondary bg-grey"
+      ngbTooltip="{{ 'task-list.taskLocked' | translate }}"
+    >
+      <i class="icon mdi mdi-lock"></i>
+    </span>
+  </div>
 </ng-template>

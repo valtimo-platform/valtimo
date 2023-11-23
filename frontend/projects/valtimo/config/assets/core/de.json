@@ -424,7 +424,8 @@
       "title": "Alle Aufgaben",
       "description": "Überblick alle Aufgaben"
     },
-    "goToCase": "Gehen Sie zum Fall"
+    "goToCase": "Gehen Sie zum Fall",
+    "taskLocked": "Kein Zugriff zu dieser Aufgabe!"
   },
   "Task": "Aufgabe",
   "Tasks": "Aufgaben",

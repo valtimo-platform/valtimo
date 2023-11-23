@@ -33,6 +33,8 @@ import moment from 'moment';
 import {FormioForm} from '@formio/angular';
 import {UserProviderService} from '@valtimo/security';
 import {Subscription} from 'rxjs';
+import {PermissionService} from '@valtimo/access-control';
+import {CAN_VIEW_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '@valtimo/task';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -66,7 +68,8 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
     private readonly renderer: Renderer2,
     private readonly route: ActivatedRoute,
     private readonly formService: FormService,
-    private readonly userProviderService: UserProviderService
+    private readonly userProviderService: UserProviderService,
+    private readonly permissionService: PermissionService
   ) {
     this.snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this.snapshot.get('documentDefinitionName') || '';
@@ -128,18 +131,15 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
           tasks.forEach(task => {
             task.createdUnix = this.moment(task.created).unix();
             task.created = this.moment(task.created).format('DD MMM YYYY HH:mm');
-            task.isLocked = () => {
-              let locked = true;
-              for (const link of task.identityLinks) {
-                if (link.type === 'candidate' && link.groupId) {
-                  if (this.roles.includes(link.groupId)) {
-                    locked = false;
-                    break;
-                  }
-                }
-              }
-              return locked;
-            };
+            task.isLocked = true;
+            this.permissionService
+              .requestPermission(CAN_VIEW_TASK_PERMISSION, {
+                resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+                identifier: task.id,
+              })
+              .subscribe(canView => {
+                task.isLocked = !canView;
+              });
           });
           this.tasks = this.tasks.concat(tasks);
           this.tasks.sort((t1, t2) => t2.createdUnix - t1.createdUnix);

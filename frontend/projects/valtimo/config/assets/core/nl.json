@@ -424,7 +424,8 @@
       "title": "Alle taken",
       "description": "Overzicht van alle taken"
     },
-    "goToCase": "Ga naar zaak"
+    "goToCase": "Ga naar dossier",
+    "taskLocked": "Je hebt geen toegang tot deze taak"
   },
   "Task": "Taak",
   "Tasks": "Taken",

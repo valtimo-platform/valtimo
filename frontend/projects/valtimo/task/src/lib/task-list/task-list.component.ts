@@ -26,6 +26,8 @@ import {combineLatest, Subscription} from 'rxjs';
 import {ConfigService, SortState, TaskListTab} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
 import {take} from 'rxjs/operators';
+import {PermissionService} from '@valtimo/access-control';
+import {CAN_VIEW_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../task-permissions';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -55,7 +57,8 @@ export class TaskListComponent implements OnDestroy {
     private logger: NGXLogger,
     private translateService: TranslateService,
     private configService: ConfigService,
-    private documentService: DocumentService
+    private documentService: DocumentService,
+    private readonly permissionService: PermissionService
   ) {
     this.visibleTabs = this.configService.config?.visibleTaskListTabs || null;
     if (this.visibleTabs != null) {
@@ -138,6 +141,15 @@ export class TaskListComponent implements OnDestroy {
         if (task.due) {
           task.due = moment(task.due).format('DD MMM YYYY HH:mm');
         }
+        task.isLocked = true;
+        this.permissionService
+          .requestPermission(CAN_VIEW_TASK_PERMISSION, {
+            resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+            identifier: task.id,
+          })
+          .subscribe(canView => {
+            task.isLocked = !canView;
+          });
       });
       if (this.taskService.getConfigCustomTaskList()) {
         this.customTaskListFields(type);
@@ -217,7 +229,7 @@ export class TaskListComponent implements OnDestroy {
   }
 
   public rowOpenTaskClick(task) {
-    if (!task.endTime) {
+    if (!task.endTime && !task.isLocked) {
       this.taskDetail.openTaskDetails(task);
     } else {
       return false;

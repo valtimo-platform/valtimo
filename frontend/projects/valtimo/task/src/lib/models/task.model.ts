@@ -44,6 +44,7 @@ export interface Task {
   businessKey: string;
   processDefinitionKey: string;
   valtimoAssignee: User;
+  isLocked: boolean;
 }
 
 export interface ListItemField {
