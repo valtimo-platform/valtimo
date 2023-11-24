@@ -555,13 +555,17 @@
     "save": "Opslaan",
     "more": "Meer",
     "export": "Exporteren",
-    "table": {
-      "itemsPerPage": "Artikelen per pagina",
-      "multipleSelect": "{{count}} artikelen geselecteerd",
+    "list": {
+      "itemsPerPage": "Items per pagina",
+      "multipleSelect": "{{count}} items geselecteerd",
       "ofLastPage": "van {{last}} pagina",
       "ofLastPages": "van {{last}} pagina's",
-      "singleSelect": "1 artikel geselecteerd",
-      "totalItems": "{{start}}-{{end}} van {{total}} artikelen"
+      "singleSelect": "1 item geselecteerd",
+      "totalItems": "{{start}}-{{end}} van {{total}} items",
+      "viewMode": {
+        "table": "Tabel",
+        "tile": "Tegel"
+      }
     },
     "required": "vereist",
     "filter": "Filteren..."

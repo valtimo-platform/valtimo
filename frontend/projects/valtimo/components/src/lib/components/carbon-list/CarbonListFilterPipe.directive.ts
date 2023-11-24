@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,3 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import {Pipe, PipeTransform} from '@angular/core';
+import {TableItem} from 'carbon-components-angular';
+
+@Pipe({
+  name: 'listFilter',
+})
+export class CarbonListFilterPipe implements PipeTransform {
+  transform(list: TableItem[][], filterText: string): TableItem[][] {
+    list = list || [];
+
+    return !filterText
+      ? list
+      : list.filter((row: TableItem[]) =>
+          row.some((item: TableItem) =>
+            item.data.toString().toLowerCase().includes(filterText.toLowerCase())
+          )
+        );
+  }
+}

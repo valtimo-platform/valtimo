@@ -17,7 +17,7 @@
 import {SortState} from '@valtimo/document';
 
 interface Pagination {
-  collectionSize: number;
+  collectionSize: number | string;
   page: number;
   size: number;
   sort?: SortState;

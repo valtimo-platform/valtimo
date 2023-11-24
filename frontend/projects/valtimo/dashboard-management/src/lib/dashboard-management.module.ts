@@ -18,7 +18,7 @@ import {NgModule} from '@angular/core';
 import {ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {
-  CarbonTableModule,
+  CarbonListModule,
   ConfirmationModalModule,
   ListModule,
   RenderInPageHeaderDirectiveModule,
@@ -50,7 +50,6 @@ import {WidgetConfigurationContainerComponent} from './components/widget-configu
   ],
   imports: [
     ButtonModule,
-    CarbonTableModule,
     CommonModule,
     DashboardManagementRoutingModule,
     DropdownModule,
@@ -65,6 +64,7 @@ import {WidgetConfigurationContainerComponent} from './components/widget-configu
     NotificationModule,
     IconModule,
     WidgetTranslatePipeModule,
+    CarbonListModule,
   ],
   exports: [],
 })

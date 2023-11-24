@@ -555,13 +555,17 @@
     "save": "Speichern",
     "More": "Mehr",
     "export": "Export",
-    "table": {
+    "list": {
       "itemsPerPage": "Objekte pro Seite",
-      "multipleSelect": "{{count}} Elemente ausgewählt",
+      "multipleSelect": "{{count}} Objekte ausgewählt",
       "ofLastPage": "von {{last}} Seite",
       "ofLastPages": "von {{last}} Seiten",
-      "singleSelect": "1 Element ausgewählt",
-      "totalItems": "{{start}}-{{end}} von {{total}} Objekte"
+      "singleSelect": "1 Objekt ausgewählt",
+      "totalItems": "{{start}}-{{end}} von {{total}} Objekte",
+      "viewMode": {
+        "table": "Tabelle",
+        "tile": "Fliesen"
+      }
     },
     "required": "erforderlich",
     "filter": "Filter..."

@@ -556,13 +556,17 @@
     "save": "Save",
     "more": "More",
     "export": "Export",
-    "table": {
+    "list": {
       "itemsPerPage": "Items per page",
       "multipleSelect": "{{count}} items selected",
       "ofLastPage": "of {{last}} page",
       "ofLastPages": "of {{last}} pages",
       "singleSelect": "1 item selected",
-      "totalItems": "{{start}}-{{end}} of {{total}} items"
+      "totalItems": "{{start}}-{{end}} of {{total}} items",
+      "viewMode": {
+        "table": "Table",
+        "tile": "Tile"
+      }
     },
     "required": "required",
     "filter": "Filter..."

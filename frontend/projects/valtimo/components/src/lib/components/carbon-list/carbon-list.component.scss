@@ -13,18 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-.valtimo-carbon-table {
+
+.clickable {
+  cursor: pointer;
+}
+
+.container-fluid {
+  background-color: var(--cds-layer);
+}
+
+.tile-holder {
+  background-color: whitesmoke;
+  border: 1px solid transparent;
+  &:hover {
+    background-color: #eee;
+    border: 1px solid #dee2e6;
+  }
+}
+
+th:first-child,
+td:first-child {
+  padding-left: 25px;
+}
+
+.valtimo-carbon-list {
   &__toolbar:empty {
     display: none;
   }
 
   &__no-results {
-    display: flex;
-    justify-content: center;
-    padding: calc((100 / 16) * 1rem) 0;
-    gap: 4rem;
-
-    &__content:not(:empty) + &-text {
+    &:empty,
+    &:not(:empty) + td {
       display: none;
     }
   }

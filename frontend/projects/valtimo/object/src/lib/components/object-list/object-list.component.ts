@@ -223,7 +223,7 @@ export class ObjectListComponent {
               key: column.translationKey,
               label: column.title || validTranslation || column.translationKey,
               sortable: column.sortable,
-              ...(column.viewType && {viewType: column.viewType}),
+              ...(column.viewType && {viewType: column.viewType || ''}),
               ...(column.enum && {enum: column.enum}),
               ...(column.format && {format: column.format}),
             };
@@ -329,7 +329,7 @@ export class ObjectListComponent {
       label: `${this.translateService.instant(`object.labels.${key}`)}`,
       key,
       sortable: true,
-      viewType: 'string',
+      type: 'string',
     }));
   }
 
