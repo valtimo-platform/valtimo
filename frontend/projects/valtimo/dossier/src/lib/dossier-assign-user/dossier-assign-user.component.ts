@@ -27,7 +27,7 @@ import {
 import {DropdownItem} from '@valtimo/components';
 import {BehaviorSubject, Subscription} from 'rxjs';
 import {tap} from 'rxjs/operators';
-import {User} from '@valtimo/config';
+import {NamedUser} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
 
 @Component({
@@ -45,7 +45,7 @@ export class DossierAssignUserComponent implements OnInit, OnChanges, OnDestroy 
 
   userIdToAssign: string | null = null;
 
-  readonly candidateUsersForDocument$ = new BehaviorSubject<User[]>(undefined);
+  readonly candidateUsersForDocument$ = new BehaviorSubject<NamedUser[]>(undefined);
   readonly disabled$ = new BehaviorSubject<boolean>(true);
   readonly assignedIdOnServer$ = new BehaviorSubject<string>(null);
   readonly assignedUserFullName$ = new BehaviorSubject<string>(null);
@@ -116,7 +116,7 @@ export class DossierAssignUserComponent implements OnInit, OnChanges, OnDestroy 
       .subscribe();
   }
 
-  mapUsersForDropdown(users: User[]): DropdownItem[] {
+  mapUsersForDropdown(users: NamedUser[]): DropdownItem[] {
     return (
       users &&
       users
@@ -125,7 +125,7 @@ export class DossierAssignUserComponent implements OnInit, OnChanges, OnDestroy 
             return a.lastName.localeCompare(b.lastName);
           }
         })
-        .map(user => ({text: `${user.firstName} ${user.lastName}`, id: user.id}))
+        .map(user => ({text: user.label, id: user.id}))
     );
   }
 
