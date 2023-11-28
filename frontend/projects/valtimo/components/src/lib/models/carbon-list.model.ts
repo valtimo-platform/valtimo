@@ -33,6 +33,7 @@ interface CarbonListSelectTranslations {
 
 interface CarbonListPaginationTranslations {
   itemsPerPage: string;
+  totalItem: string;
   totalItems: string;
 }
 
@@ -66,6 +67,7 @@ const DEFAULT_LIST_TRANSLATIONS: CarbonListTranslations = {
   select: {single: 'interface.list.singleSelect', multiple: 'interface.list.multipleSelect'},
   pagination: {
     itemsPerPage: 'interface.list.itemsPerPage',
+    totalItem: 'interface.list.totalItem',
     totalItems: 'interface.list.totalItems',
   },
 };

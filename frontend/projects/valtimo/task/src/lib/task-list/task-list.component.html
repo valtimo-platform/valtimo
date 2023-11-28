@@ -23,7 +23,6 @@
       [lastColumnTemplate]="caseLinkWithTaskLock"
       [pagination]="tasks[currentTaskType].pagination"
       paginationIdentifier="taskList"
-      [viewMode]="true"
       (paginationClicked)="paginationClicked($event, currentTaskType)"
       (paginationSet)="paginationSet($event)"
       (rowClicked)="rowOpenTaskClick($event)"
@@ -44,6 +43,12 @@
         <cds-tab [heading]="'task-list.all.title' | translate" (selected)="tabChange('all')">
         </cds-tab>
       </cds-tabs>
+
+      <valtimo-no-results
+        [description]="'task-list.' + currentTaskType + '.noResultsDescription' | translate"
+        [title]="'task-list.' + currentTaskType + '.noResultsTitle' | translate"
+      >
+      </valtimo-no-results>
     </valtimo-carbon-list>
 
     <valtimo-task-detail-modal

@@ -42,9 +42,13 @@ td:first-child {
   }
 
   &__no-results {
-    &:empty,
-    &:not(:empty) + td {
-      display: none;
+    cursor: default;
+
+    td {
+      &:empty,
+      &:not(:empty) + td {
+        display: none;
+      }
     }
   }
 }

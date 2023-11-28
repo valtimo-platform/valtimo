@@ -111,6 +111,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
     },
     pagination: {
       itemsPerPage: 'dossier.pagination.itemsPerPage',
+      totalItem: 'dossier.pagination.totalItem',
       totalItems: 'dossier.pagination.totalItems',
     },
   };

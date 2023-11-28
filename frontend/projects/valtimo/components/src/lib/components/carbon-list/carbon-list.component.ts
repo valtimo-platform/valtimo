@@ -146,10 +146,6 @@ export class CarbonListComponent<T> implements OnInit, OnDestroy {
   @Input() paginationIdentifier: string;
   @Input() showSelectionColumn = false;
   @Input() striped = false;
-  /**
-   * @deprecated The viewMode field is deprecated.
-   */
-  @Input() viewMode: boolean;
 
   @Output() rowClicked = new EventEmitter<any>();
   @Output() paginationClicked = new EventEmitter<number>();
@@ -177,13 +173,15 @@ export class CarbonListComponent<T> implements OnInit, OnDestroy {
       switchMap((translations: CarbonListTranslations) =>
         combineLatest([
           this.translateService.stream(translations.pagination.itemsPerPage),
+          this.translateService.stream(translations.pagination.totalItem),
           this.translateService.stream(translations.pagination.totalItems),
           this.translateService.stream('interface.list.ofLastPage'),
           this.translateService.stream('interface.list.ofLastPages'),
         ])
       ),
-      map(([ITEMS_PER_PAGE, TOTAL_ITEMS, OF_LAST_PAGE, OF_LAST_PAGES]) => ({
+      map(([ITEMS_PER_PAGE, TOTAL_ITEM, TOTAL_ITEMS, OF_LAST_PAGE, OF_LAST_PAGES]) => ({
         ITEMS_PER_PAGE,
+        TOTAL_ITEM,
         TOTAL_ITEMS,
         OF_LAST_PAGE,
         OF_LAST_PAGES,
@@ -242,8 +240,6 @@ export class CarbonListComponent<T> implements OnInit, OnDestroy {
           if (this.search.observed) {
             this.search.emit(searchString);
           } else {
-            //to remove when deprecating viewMode 'tile'
-            this.searchModel = searchString ?? '';
             this.model.data = this.filterPipe.transform(this._completeDataSource, this.searchModel);
           }
         })
@@ -302,11 +298,6 @@ export class CarbonListComponent<T> implements OnInit, OnDestroy {
       this.sort$.next(newState);
       this.sortChanged.emit(newState);
     });
-  }
-
-  public switchView(type: 'table' | 'tile'): void {
-    localStorage.setItem('viewListAs', type);
-    this.viewListAs = type;
   }
 
   private buildPaginationModel(): void {

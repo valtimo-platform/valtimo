@@ -41,22 +41,6 @@
         [formControl]="searchFormControl"
       ></cds-table-toolbar-search>
 
-      <ng-container *ngIf="!loading && !!viewMode">
-        <cds-overflow-menu [customTrigger]="viewModeTrigger">
-          <cds-overflow-menu-option (selected)="switchView('table')">{{
-            'interface.list.viewMode.table' | translate
-          }}</cds-overflow-menu-option>
-
-          <cds-overflow-menu-option (selected)="switchView('tile')">{{
-            'interface.list.viewMode.tile' | translate
-          }}</cds-overflow-menu-option>
-        </cds-overflow-menu>
-
-        <ng-template #viewModeTrigger>
-          <svg cdsIcon="settings--view" size="16"></svg>
-        </ng-template>
-      </ng-container>
-
       <ng-content select="[carbonToolbarContent]"> </ng-content>
     </cds-table-toolbar-content>
   </cds-table-toolbar>
@@ -76,7 +60,7 @@
   </ng-template>
 
   <cds-table
-    *ngIf="(!viewMode || viewListAs === 'table') && !!obs.sort"
+    *ngIf="!!obs.sort"
     [enableSingleSelect]="enableSingleSelect"
     [model]="loading ? skeletonModel : model"
     [showSelectionColumn]="showSelectionColumn"
@@ -86,11 +70,8 @@
     (rowClick)="onRowClick($event)"
   >
     <tbody cdsTableBody>
-      <tr>
-        <td
-          [attr.colspan]="model.header.length + (showSelectionColumn ? 1 : 0)"
-          class="valtimo-carbon-list__no-results"
-        >
+      <tr class="valtimo-carbon-list__no-results">
+        <td [attr.colspan]="model.header.length + (showSelectionColumn ? 1 : 0)">
           <ng-content></ng-content>
         </td>
 
@@ -100,38 +81,6 @@
       </tr>
     </tbody>
   </cds-table>
-
-  <div
-    *ngIf="viewMode && viewListAs === 'tile'"
-    class="container-fluid"
-    [attr.data-carbon-theme]="theme"
-  >
-    <div class="row p-2">
-      <div
-        class="col-12 col-sm-6 col-xl-4 p-2"
-        *ngFor="let item of model.data | listFilter: searchModel; let index = index"
-        (click)="onClickRow(items[index])"
-      >
-        <div class="clickable tile-holder p-4">
-          <dl class="row mb-0" *ngFor="let column of model.header; let index = index">
-            <ng-container *ngIf="![ViewType.ACTION, ViewType.TEMPLATE].includes(column.viewType)">
-              <dt class="col-12 col-md-5 text-xl-right">{{ column.data }}</dt>
-
-              <dd class="col-12 col-md-7">{{ item[index].data }}</dd>
-            </ng-container>
-          </dl>
-        </div>
-      </div>
-
-      <div *ngIf="!model.data.length">
-        {{ 'list.noResults' | translate }}
-      </div>
-
-      <div class="col-12" *ngIf="!(model.data | listFilter: searchModel).length && !!searchModel">
-        {{ 'list.noMatchingItems' | translate }}<i>"{{ searchModel }}"</i>
-      </div>
-    </div>
-  </div>
 
   <cds-pagination
     *ngIf="paginationModel && items.length"

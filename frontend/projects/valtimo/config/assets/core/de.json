@@ -39,6 +39,7 @@
     },
     "pagination": {
       "itemsPerPage": "Cases pro Seite",
+      "totalItem": "{{start}}-{{end}} von {{total}} Case",
       "totalItems": "{{start}}-{{end}} von {{total}} Cases"
     },
     "select": {
@@ -414,15 +415,21 @@
     },
     "mine": {
       "title": "Meine Aufgaben",
-      "description": "Überblick alle zugeordneten Aufgaben"
+      "description": "Überblick alle zugeordneten Aufgaben",
+      "noResultsDescription": "Kurze Pause.",
+      "noResultsTitle": "Es sind Ihnen keine Aufgaben zugewiesen"
     },
     "open": {
       "title": "Nicht zugeordnete Aufgaben",
-      "description": "Überblick alle nicht zugeordneten Aufgaben"
+      "description": "Überblick alle nicht zugeordneten Aufgaben",
+      "noResultsDescription": "Kommen Sie später wieder.",
+      "noResultsTitle": "Alle Aufgaben wurden zugewiesen"
     },
     "all": {
       "title": "Alle Aufgaben",
-      "description": "Überblick alle Aufgaben"
+      "description": "Überblick alle Aufgaben",
+      "noResultsDescription": "Hier gibt es nichts zu tun.",
+      "noResultsTitle": "Keine Aufgaben gefunden"
     },
     "goToCase": "Gehen Sie zum Fall",
     "taskLocked": "Kein Zugriff zu dieser Aufgabe!"
