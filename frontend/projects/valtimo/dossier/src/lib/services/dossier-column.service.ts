@@ -59,14 +59,16 @@ export class DossierColumnService {
 
   mapDefinitionColumnsToListFields(
     columns: Array<DefinitionColumn>,
-    hasEnvConfig: boolean
+    hasEnvColumnConfig: boolean,
+    hasApiColumnConfig: boolean
   ): Array<ListField> {
     return columns.map(column => {
       const translationKey = `fieldLabels.${column.translationKey}`;
       const translation = this.translateService.instant(translationKey);
       const validTranslation = translation !== translationKey && translation;
       return {
-        key: hasEnvConfig ? column.propertyName : column.translationKey,
+        key:
+          hasEnvColumnConfig || !hasApiColumnConfig ? column.propertyName : column.translationKey,
         label: column.title || validTranslation || column.translationKey,
         sortable: column.sortable,
         ...(column.viewType && {viewType: column.viewType}),

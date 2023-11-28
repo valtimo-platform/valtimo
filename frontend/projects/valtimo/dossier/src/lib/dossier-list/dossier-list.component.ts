@@ -19,8 +19,8 @@ import {TranslateService} from '@ngx-translate/core';
 import {
   BreadcrumbService,
   CarbonListComponent,
-  CarbonPaginationSelection,
   CarbonListTranslations,
+  CarbonPaginationSelection,
   ListField,
   PageTitleService,
   Pagination,
@@ -56,7 +56,6 @@ import {
   take,
   tap,
 } from 'rxjs';
-
 import {DefaultTabs} from '../dossier-detail-tab-enum';
 import {DossierListActionsComponent} from '../dossier-list-actions/dossier-list-actions.component';
 import {
@@ -194,19 +193,21 @@ export class DossierListComponent implements OnInit, OnDestroy {
     this._canHaveAssignee$,
     this._columns$,
     this._hasEnvColumnConfig$,
+    this._hasApiColumnConfig$,
     this.translateService.stream('key'),
   ]).pipe(
     tap(([canHaveAssignee]) => {
       this.canHaveAssignee = canHaveAssignee;
     }),
-    map(([canHaveAssignee, columns, hasEnvConfig]) => {
+    map(([canHaveAssignee, columns, hasEnvConfig, hasApiConfig]) => {
       const filteredAssigneeColumns = this.assigneeService.filterAssigneeColumns(
         columns,
         canHaveAssignee
       );
       const listFields = this.columnService.mapDefinitionColumnsToListFields(
         filteredAssigneeColumns,
-        hasEnvConfig
+        hasEnvConfig,
+        hasApiConfig
       );
       const fieldsToReturn = this.assigneeService.addAssigneeListField(
         columns,
