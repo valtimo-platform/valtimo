@@ -1,0 +1,51 @@
+<!--
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="dossier-actions" *ngIf="{exporting: exporting$ | async} as obs">
+  {{ '' // replace with version dropdown }}
+  <span></span>
+
+  <cds-overflow-menu
+    valtimoCdsOverflowButton
+    [width]="250"
+    [customTrigger]="customTrigger"
+    [offset]="{y: 48, x: 37}"
+    class="overflow-button"
+  >
+    <cds-overflow-menu-option [disabled]="obs.exporting" (selected)="export()"
+      >{{ 'dossierManagement.export' | translate: {value: documentDefinitionTitle}
+      }}</cds-overflow-menu-option
+    >
+  </cds-overflow-menu>
+</div>
+
+<ng-template #customTrigger>
+  <button cdsButton="tertiary">
+    {{ 'dossierManagement.more' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="overflow-menu--vertical" size="16"></svg>
+  </button>
+</ng-template>
+
+<ng-template #exportingMessage>
+  <div class="exporting-message">
+    <span class="cds--inline-notification__title"
+      >{{'dossierManagement.preparingDownload' | translate}}</span
+    >
+
+    <cds-loading size="sm"></cds-loading>
+  </div>
+</ng-template>

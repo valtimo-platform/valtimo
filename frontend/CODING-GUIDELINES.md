@@ -6,7 +6,7 @@ In order to contribute to this project, please follow the below code formatting 
 
 ### Attribute sorting
 
-On an element inside your template code, keep to the following sorting of attributes
+On an element inside your template code, we recommend you keep to the following sorting of attributes:
 
 - Structural directives like `*ngIf` and `*ngFor`
 - Angular directives such as `ngStyle` and `ngClass`
@@ -98,7 +98,7 @@ private myTestFunction(testParams: TestParam): TestResult {
 
 ### Preferred class property order
 
-As much possible, please keep to the following ordering of properties in Angular classes:
+As much possible, we recommend you keep to the following ordering of properties in Angular classes:
 
 - Property decorators like `ViewChild`, `ViewChildren` etc.
 - `Input()`

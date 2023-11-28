@@ -387,6 +387,12 @@
     "readOnly": "Schreibgeschützt"
   },
   "dossierManagement": {
+    "preparingDownload": "Download wird vorbereitet",
+    "more": "Mehr",
+    "export": "{{value}} exportieren",
+    "exportErrorTitle": "Fehler",
+    "exportErrorMessage": "Etwas ist schief gelaufen",
+    "exportSuccessTitle": "Download beginnt in Kürze",
     "readonly": "Schreibgeschützt",
     "connectedProcesses": "Verknüpfte Prozesse",
     "connectProcess": "Prozess verknüpfen",

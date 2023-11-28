@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import {AfterContentInit, ContentChild, Directive, TemplateRef} from '@angular/core';
+import {AfterContentInit, ContentChild, Directive, Input, TemplateRef} from '@angular/core';
 import {take} from 'rxjs';
 import {PageTitleService} from '../../components/page-title/page-title.service';
 
 @Directive({selector: '[renderInPageHeader]'})
 export class RenderInPageHeaderDirective implements AfterContentInit {
   @ContentChild(TemplateRef) templateRef;
+  @Input() fullWidth = false;
   constructor(private readonly pageTitleService: PageTitleService) {}
 
   ngAfterContentInit(): void {
@@ -29,6 +30,7 @@ export class RenderInPageHeaderDirective implements AfterContentInit {
         pageActionsVcr.clear();
         pageActionsVcr.createEmbeddedView(this.templateRef);
         this.pageTitleService.setHasPageActions(true);
+        this.pageTitleService.setPageActionsFullWidth(this.fullWidth);
       }
     });
   }

@@ -140,4 +140,16 @@ body {
   &--modal.is-visible {
     z-index: 10001 !important;
   }
+
+  &--inline-notification__text-wrapper {
+    width: 100%;
+  }
+
+  &--overflow-menu-options__btn {
+    min-width: 100%;
+  }
+}
+
+.hide-after::after {
+  display: none;
 }

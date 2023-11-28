@@ -29,17 +29,21 @@ import {
   ModalModule,
   MultiselectDropdownModule,
   ParagraphModule,
+  RenderInPageHeaderDirectiveModule,
   SelectModule,
   SpinnerModule,
   TableModule,
   TooltipIconModule,
   ValtimoCdsModalDirectiveModule,
+  ValtimoCdsOverflowButtonDirectiveModule,
   WidgetModule,
 } from '@valtimo/components';
 import {ConfigModule} from '@valtimo/config';
 import {
   ButtonModule,
   CheckboxModule,
+  ComboBoxModule,
+  DialogModule,
   DropdownModule,
   IconModule,
   InputModule as CarbonInputModule,
@@ -47,7 +51,6 @@ import {
   LoadingModule,
   ModalModule as CarbonModalModule,
   NotificationModule,
-  ComboBoxModule,
 } from 'carbon-components-angular';
 import {DossierManagementAssigneeComponent} from './components/dossier-management-assignee/dossier-management-assignee.component';
 import {DossierManagementConnectModalComponent} from './components/dossier-management-connect-modal/dossier-management-connect-modal.component';
@@ -65,6 +68,7 @@ import {DossierManagementUploadComponent} from './components/dossier-management-
 import {DossierManagementRoutingModule} from './dossier-management-routing.module';
 import {TabManagementService} from './services';
 import {DossierManagementEditTabModalComponent} from './components/dossier-management-tabs/dossier-management-edit-tab-modal/dossier-management-edit-tab-modal.component';
+import {DossierManagementDetailContainerActionsComponent} from './components/dossier-management-detail-container-actions/dossier-management-detail-container-actions';
 
 @NgModule({
   declarations: [
@@ -82,6 +86,7 @@ import {DossierManagementEditTabModalComponent} from './components/dossier-manag
     DossierManagementAddTabModalComponent,
     TabFormComponent,
     DossierManagementEditTabModalComponent,
+    DossierManagementDetailContainerActionsComponent,
   ],
   imports: [
     CommonModule,
@@ -119,6 +124,10 @@ import {DossierManagementEditTabModalComponent} from './components/dossier-manag
     ValtimoCdsModalDirectiveModule,
     CarbonTableModule,
     ComboBoxModule,
+    RenderInPageHeaderDirectiveModule,
+    DialogModule,
+    ValtimoCdsOverflowButtonDirectiveModule,
+    NotificationModule,
   ],
   providers: [TabManagementService],
 })

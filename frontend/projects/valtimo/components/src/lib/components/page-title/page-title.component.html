@@ -56,7 +56,13 @@
     </span>
   </ng-container>
 
-  <div [ngClass]="{'--visible': hasPageActions$ | async}" class="page-actions">
+  <div
+    [ngClass]="{
+      'page-actions--visible': hasPageActions$ | async,
+      'page-actions--full-width': pageActionsFullWidth$ | async
+    }"
+    class="page-actions"
+  >
     <ng-container #pageActionsVcr></ng-container>
   </div>
 </div>

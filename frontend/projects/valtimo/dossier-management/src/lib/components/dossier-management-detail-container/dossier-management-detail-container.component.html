@@ -103,3 +103,12 @@
     </div>
   </div>
 </ng-template>
+
+<ng-container renderInPageHeader [fullWidth]="true">
+  <ng-template>
+    <valtimo-dossier-management-detail-container-actions
+      [documentDefinitionTitle]="documentDefinitionTitle$ | async"
+      [documentDefinitionName]="documentDefinitionName$ | async"
+    ></valtimo-dossier-management-detail-container-actions>
+  </ng-template>
+</ng-container>

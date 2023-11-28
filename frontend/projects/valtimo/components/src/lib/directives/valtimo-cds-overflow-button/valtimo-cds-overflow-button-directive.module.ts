@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
-export * from './tab.service';
-export * from './tab-management.service';
-export * from './dossier-export.service';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {ValtimoCdsOverflowButtonDirective} from './valtimo-cds-overflow-button.directive';
+
+@NgModule({
+  declarations: [ValtimoCdsOverflowButtonDirective],
+  imports: [CommonModule],
+  exports: [ValtimoCdsOverflowButtonDirective],
+})
+export class ValtimoCdsOverflowButtonDirectiveModule {}

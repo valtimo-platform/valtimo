@@ -34,6 +34,8 @@ export class DossierManagementDetailContainerComponent implements OnInit, OnDest
   public caseListColumn!: boolean;
   public tabManagementEnabled!: boolean;
 
+  public readonly documentDefinitionTitle$ = this.pageTitleService.customPageTitle$;
+
   private tabSubscription: Subscription;
 
   readonly TabEnum = TabEnum;

@@ -15,7 +15,7 @@
  */
 
 import {Component} from '@angular/core';
-import {DocumentService, CaseSettings} from '@valtimo/document';
+import {CaseSettings, DocumentService} from '@valtimo/document';
 import {BehaviorSubject, map, Observable, switchMap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {tap} from 'rxjs/operators';
@@ -82,7 +82,7 @@ export class DossierManagementAssigneeComponent {
   toggleAssignee(currentSettings: CaseSettings, documentDefinitionName: string) {
     this.updateCaseSettings(
       {
-        canHaveAssignee: !currentSettings.canHaveAssignee,
+        canHaveAssignee: !currentSettings?.canHaveAssignee,
         autoAssignTasks: currentSettings.autoAssignTasks,
       },
       documentDefinitionName
@@ -92,7 +92,7 @@ export class DossierManagementAssigneeComponent {
   toggleTaskAssignment(currentSettings: CaseSettings, documentDefinitionName: string) {
     this.updateCaseSettings(
       {
-        canHaveAssignee: currentSettings.canHaveAssignee,
+        canHaveAssignee: currentSettings?.canHaveAssignee,
         autoAssignTasks: !currentSettings.autoAssignTasks,
       },
       documentDefinitionName

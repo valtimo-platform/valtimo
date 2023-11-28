@@ -30,27 +30,27 @@
       placement="bottom"
     >
       <input
-        [checked]="obs.currentValue.canHaveAssignee"
+        [checked]="obs?.currentValue?.canHaveAssignee"
         class="custom-control-input"
         type="checkbox"
         [disabled]="obs.disabled"
-        (click)="toggleAssignee(obs.currentValue, obs.documentDefinitionName)"
+        (click)="toggleAssignee(obs?.currentValue, obs.documentDefinitionName)"
       /><span class="custom-control-label custom-control-color">{{
         'dossierManagement.toggleAssignee.checkboxDescription' | translate
       }}</span>
     </label>
   </ng-container>
-  <ng-container *ngIf="obs.currentValue.canHaveAssignee">
+  <ng-container *ngIf="obs?.currentValue?.canHaveAssignee">
     <label
       class="custom-control custom-checkbox custom-control-inline pl-6 mr-5"
       placement="bottom"
     >
       <input
-        [checked]="obs.currentValue.autoAssignTasks"
+        [checked]="obs?.currentValue?.autoAssignTasks"
         class="custom-control-input"
         type="checkbox"
         [disabled]="obs.disabled"
-        (click)="toggleTaskAssignment(obs.currentValue, obs.documentDefinitionName)"
+        (click)="toggleTaskAssignment(obs?.currentValue, obs?.documentDefinitionName)"
       /><span class="custom-control-label custom-control-color">{{
         'dossierManagement.toggleAutoAssignTasks.checkboxDescription' | translate
       }}</span>

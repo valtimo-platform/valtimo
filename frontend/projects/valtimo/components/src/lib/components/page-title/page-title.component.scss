@@ -25,6 +25,7 @@
   }
 
   .page-title {
+    flex-shrink: 0;
     font-weight: 300;
     white-space: nowrap;
     overflow: hidden;
@@ -63,9 +64,13 @@
   }
 
   .page-actions {
-    &.--visible {
+    &--visible {
       margin-left: auto;
       padding-left: 32px;
+    }
+
+    &--full-width {
+      width: 100%;
     }
   }
 }

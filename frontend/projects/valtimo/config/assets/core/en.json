@@ -388,6 +388,12 @@
     "readOnly": "Read-only"
   },
   "dossierManagement": {
+    "preparingDownload": "Preparing download",
+    "more": "More",
+    "export": "Export {{value}}",
+    "exportErrorTitle": "Error",
+    "exportErrorMessage": "Something went wrong",
+    "exportSuccessTitle": "Download will start shortly",
     "readonly": "Read-only",
     "connectedProcesses": "Connected processes",
     "connectProcess": "Connect process",

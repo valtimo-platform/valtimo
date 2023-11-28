@@ -30,11 +30,11 @@ import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
   combineLatest,
+  map,
   Observable,
   startWith,
   Subscription,
   switchMap,
-  map,
 } from 'rxjs';
 import {PageTitleService} from './page-title.service';
 
@@ -64,6 +64,7 @@ export class PageTitleComponent implements OnInit, OnDestroy, AfterViewInit {
   public readonly customPageSubtitle$ = this.pageTitleService.customPageSubtitle$;
   public readonly customPageSubtitleSet$ = this.pageTitleService.customPageSubtitleSet$;
   public readonly hasPageActions$ = this.pageTitleService.hasPageActions$;
+  public readonly pageActionsFullWidth$ = this.pageTitleService.pageActionsFullWidth$;
   public readonly translatedTitle$ = new BehaviorSubject<string>('');
   private appTitleAsSuffix =
     this.configService?.config?.featureToggles?.applicationTitleAsSuffix || false;

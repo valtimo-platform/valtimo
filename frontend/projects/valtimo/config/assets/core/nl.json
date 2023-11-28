@@ -387,6 +387,12 @@
     "readOnly": "Alleen-lezen"
   },
   "dossierManagement": {
+    "preparingDownload": "Download aan het voorbereiden",
+    "more": "Meer",
+    "export": "{{value}} exporteren",
+    "exportErrorTitle": "Oeps",
+    "exportErrorMessage": "Er is iets misgegaan",
+    "exportSuccessTitle": "Download start binnenkort",
     "readonly": "Alleen-lezen",
     "connectedProcesses": "Gekoppelde processen",
     "connectProcess": "Proces koppelen",

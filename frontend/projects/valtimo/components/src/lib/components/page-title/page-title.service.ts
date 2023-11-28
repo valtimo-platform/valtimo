@@ -28,6 +28,7 @@ export class PageTitleService implements OnDestroy {
   private readonly _customPageSubtitle$ = new BehaviorSubject<string>('');
   private readonly _customPageSubtitleSet$ = new BehaviorSubject<boolean>(false);
   private readonly _hasPageActions$ = new BehaviorSubject<boolean>(false);
+  private readonly _pageActionsFullWidth$ = new BehaviorSubject<boolean>(false);
 
   private readonly _pageActionsViewContainerRef$ = new BehaviorSubject<ViewContainerRef | null>(
     null
@@ -59,6 +60,10 @@ export class PageTitleService implements OnDestroy {
 
   public get hasPageActions$(): Observable<boolean> {
     return this._hasPageActions$.asObservable();
+  }
+
+  public get pageActionsFullWidth$(): Observable<boolean> {
+    return this._pageActionsFullWidth$.asObservable();
   }
 
   constructor(private readonly router: Router) {
@@ -97,6 +102,10 @@ export class PageTitleService implements OnDestroy {
 
   public setHasPageActions(value: boolean): void {
     this._hasPageActions$.next(value);
+  }
+
+  public setPageActionsFullWidth(value: boolean): void {
+    this._pageActionsFullWidth$.next(value);
   }
 
   private openRouteSubscription(): void {

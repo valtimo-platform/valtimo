@@ -241,3 +241,6 @@ export * from './lib/directives/digit-only/digit-only.directive';
 // command click
 export * from './lib/directives/command-click/command-click.directive';
 export * from './lib/directives/command-click/command-click-directive.module';
+// cds overflow button
+export * from './lib/directives/valtimo-cds-overflow-button/valtimo-cds-overflow-button.directive';
+export * from './lib/directives/valtimo-cds-overflow-button/valtimo-cds-overflow-button-directive.module';
