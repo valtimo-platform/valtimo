@@ -28,7 +28,6 @@
     class="valtimo-carbon-list__toolbar"
     [model]="model"
     [batchText]="batchText$ | async"
-    (cancel)="onToolbarCancel()"
   >
     <cds-table-toolbar-actions>
       <ng-content select="[carbonToolbarActions]"> </ng-content>

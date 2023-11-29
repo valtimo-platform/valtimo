@@ -133,8 +133,14 @@ body {
     }
   }
 
-  &--list-box__wrapper {
-    z-index: 99999 !important;
+  &--list-box {
+    &__field {
+      z-index: 1;
+    }
+
+    &__wrapper {
+      z-index: 99999 !important;
+    }
   }
 }
 

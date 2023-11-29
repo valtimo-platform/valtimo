@@ -17,7 +17,6 @@
 <ng-container
   *ngIf="{
     fields: fields$ | async,
-    canHaveAssignee: canHaveAssignee$ | async,
     documentItems: documentItems$ | async,
     searchFields: searchFields$ | async,
     schema: schema$ | async,
@@ -36,7 +35,7 @@
       <div class="col-12 px-0 mb-5">
         <valtimo-dossier-list-actions
           [loading]="!obs.loaded"
-          (formFlowComplete)="refresh()"
+          (formFlowComplete)="forceRefresh()"
         ></valtimo-dossier-list-actions>
 
         <ng-container *ngIf="obs.loaded; else loading">
@@ -74,7 +73,7 @@
     [items]="obs.documentItems"
     [pagination]="pagination"
     paginationIdentifier="dossierList"
-    [showSelectionColumn]="true"
+    [showSelectionColumn]="canHaveAssignee"
     [tableTranslations]="tableTranslations"
     (paginationClicked)="pageChange($event)"
     (paginationSet)="pageSizeChange($event)"

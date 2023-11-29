@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, Observable, switchMap} from 'rxjs';
+import {Observable, switchMap} from 'rxjs';
 import {SearchField, SearchFieldValues, SearchFilter, SearchFilterRange} from '@valtimo/config';
 import {DossierListService} from './dossier-list.service';
 import {DocumentService} from '@valtimo/document';
@@ -23,17 +23,12 @@ import {DossierParameterService} from './dossier-parameter.service';
 
 @Injectable()
 export class DossierListSearchService {
-  private readonly _searchSwitch$ = new BehaviorSubject<boolean>(false);
   private readonly _documentSearchFields$: Observable<Array<SearchField> | null> =
     this.dossierListService.documentDefinitionName$.pipe(
       switchMap(documentDefinitionName =>
         this.documentService.getDocumentSearchFields(documentDefinitionName)
       )
     );
-
-  get searchSwitch$(): Observable<boolean> {
-    return this._searchSwitch$.asObservable();
-  }
 
   get documentSearchFields$(): Observable<Array<SearchField> | null> {
     return this._documentSearchFields$;
@@ -48,11 +43,7 @@ export class DossierListSearchService {
   search(searchFieldValues: SearchFieldValues): void {
     this.dossierParameterService.setSearchFieldValues(searchFieldValues || {});
     this.dossierParameterService.setSearchParameters(searchFieldValues);
-    this._searchSwitch$.next(!this._searchSwitch$.getValue());
-  }
-
-  refresh(): void {
-    this._searchSwitch$.next(!this._searchSwitch$.getValue());
+    this.dossierListService.checkRefresh();
   }
 
   mapSearchValuesToFilters(values: SearchFieldValues): Array<SearchFilter | SearchFilterRange> {

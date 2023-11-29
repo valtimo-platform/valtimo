@@ -16,6 +16,7 @@
 import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Params, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
+import {PermissionService} from '@valtimo/access-control';
 import {
   BreadcrumbService,
   CarbonListComponent,
@@ -49,8 +50,10 @@ import {
   combineLatest,
   distinctUntilChanged,
   filter,
+  forkJoin,
   map,
   Observable,
+  of,
   Subscription,
   switchMap,
   take,
@@ -58,6 +61,7 @@ import {
 } from 'rxjs';
 import {DefaultTabs} from '../dossier-detail-tab-enum';
 import {DossierListActionsComponent} from '../dossier-list-actions/dossier-list-actions.component';
+import {CAN_CREATE_CASE_PERMISSION, DOSSIER_DETAIL_PERMISSION_RESOURCE} from '../permissions';
 import {
   DossierBulkAssignService,
   DossierColumnService,
@@ -67,8 +71,7 @@ import {
   DossierListService,
   DossierParameterService,
 } from '../services';
-import {PermissionService} from '@valtimo/access-control';
-import {CAN_CREATE_CASE_PERMISSION, DOSSIER_DETAIL_PERMISSION_RESOURCE} from '../permissions';
+import {isEqual} from 'lodash';
 
 @Component({
   selector: 'valtimo-dossier-list',
@@ -150,29 +153,20 @@ export class DossierListComponent implements OnInit, OnDestroy {
     })
   );
 
-  public showSelectionColumn!: boolean;
   public readonly searchFieldValues$ = this.parameterService.searchFieldValues$;
   public readonly assigneeFilter$: Observable<AssigneeFilter> =
     this.assigneeService.assigneeFilter$;
   public readonly paginationChange$ = new BehaviorSubject<CarbonPaginationSelection | null>(null);
   public readonly tabChange$ = new BehaviorSubject<DossierListTab | null>(null);
-  public readonly canHaveAssignee$: Observable<boolean> =
-    this.assigneeService.canHaveAssignee$.pipe(
-      tap((showSelectionColumn: boolean) => {
-        this.showSelectionColumn = showSelectionColumn;
-      })
-    );
   private readonly _pagination$ = this.paginationService.pagination$.pipe(
     tap(pagination => {
       this.pagination = pagination;
       this.loadingPagination = false;
     })
   );
-  private readonly _reload$ = new BehaviorSubject<boolean>(false);
   private readonly _hasEnvColumnConfig$: Observable<boolean> = this.listService.hasEnvColumnConfig$;
   private readonly _hasApiColumnConfig$ = new BehaviorSubject<boolean>(false);
   private readonly _canHaveAssignee$: Observable<boolean> = this.assigneeService.canHaveAssignee$;
-  private readonly _searchSwitch$ = this.searchService.searchSwitch$;
   private readonly _columns$: Observable<Array<DefinitionColumn>> =
     this.listService.documentDefinitionName$.pipe(
       switchMap(documentDefinitionName =>
@@ -184,7 +178,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
       }),
       tap(columns => {
         this.listService.documentDefinitionName$.pipe(take(1)).subscribe(documentDefinitionName => {
-          this.paginationService.setPagination(documentDefinitionName, columns);
+          this.paginationService.setPagination(columns);
         });
       })
     );
@@ -219,7 +213,6 @@ export class DossierListComponent implements OnInit, OnDestroy {
     }),
     tap(listFields => {
       const defaultListField = listFields.find(field => field.default);
-
       // set default sort state if no pagination query parameters for sorting are available
       this.parameterService.queryPaginationParams$
         .pipe(take(1))
@@ -242,100 +235,115 @@ export class DossierListComponent implements OnInit, OnDestroy {
   private readonly _documentSearchRequest$: Observable<AdvancedDocumentSearchRequest> =
     combineLatest([this._pagination$, this.listService.documentDefinitionName$]).pipe(
       filter(([pagination]) => !!pagination),
-      map(
-        ([pagination, documentDefinitionName]) =>
-          new AdvancedDocumentSearchRequestImpl(
-            documentDefinitionName,
-            pagination.page - 1,
-            pagination.size,
-            pagination.sort
-          )
-      )
+      map(([pagination, documentDefinitionName]) => {
+        const page = pagination.page - 1;
+
+        return new AdvancedDocumentSearchRequestImpl(
+          documentDefinitionName,
+          page >= 0 ? page : 0,
+          pagination.size,
+          pagination.sort
+        );
+      })
     );
 
-  private readonly _documentsRequest$: Observable<Documents | SpecifiedDocuments> = combineLatest([
-    this._documentSearchRequest$,
-    this.searchFieldValues$,
-    this.assigneeFilter$,
-    this._hasEnvColumnConfig$,
-    this._hasApiColumnConfig$,
-    this._searchSwitch$,
-    this._reload$,
-  ]).pipe(
+  public readonly documentItems$: Observable<any[]> = this.listService.checkRefresh$.pipe(
+    switchMap(() =>
+      combineLatest([
+        this._documentSearchRequest$,
+        this.assigneeFilter$,
+        this.searchFieldValues$,
+        this.listService.forceRefresh$,
+        this._hasEnvColumnConfig$,
+        this._hasApiColumnConfig$,
+      ])
+    ),
     distinctUntilChanged(
       (
-        [
-          prevSearchRequest,
-          prevSearchValues,
-          prevAssigneeFilter,
-          prevHasEnvColumnConfig,
-          prevHasApiColumnConfig,
-          prevSearchSwitch,
-          prevReload,
-        ],
-        [
-          currSearchRequest,
-          currSearchValues,
-          currAssigneeFilter,
-          currHasEnvColumnConfig,
-          currHasApiColumnConfig,
-          currSearchSwitch,
-          currReload,
-        ]
+        [prevSearchRequest, prevAssigneeFilter, prevSearchFieldValues, prevForceRefresh],
+        [currSearchRequest, currAssigneeFilter, currSearchFieldValues, currForceRefresh]
       ) =>
-        JSON.stringify({...prevSearchRequest, ...prevSearchValues}) +
-          prevAssigneeFilter +
-          prevSearchSwitch ===
-          JSON.stringify({...currSearchRequest, ...currSearchValues}) +
-            currAssigneeFilter +
-            currSearchSwitch && prevReload !== currReload
+        isEqual(
+          {
+            ...prevSearchRequest,
+            assignee: prevAssigneeFilter,
+            ...prevSearchFieldValues,
+            forceRefresh: prevForceRefresh,
+          },
+          {
+            ...currSearchRequest,
+            assignee: currAssigneeFilter,
+            ...currSearchFieldValues,
+            forceRefresh: currForceRefresh,
+          }
+        )
     ),
     switchMap(
       ([
         documentSearchRequest,
-        searchValues,
         assigneeFilter,
+        searchValues,
+        _,
         hasEnvColumnConfig,
         hasApiColumnConfig,
       ]) => {
+        const obsEnv: Observable<boolean> = of(hasEnvColumnConfig);
+        const obsApi: Observable<boolean> = of(hasApiColumnConfig);
+
         if ((Object.keys(searchValues) || []).length > 0) {
-          return hasEnvColumnConfig || !hasApiColumnConfig
-            ? this.documentService.getDocumentsSearch(
-                documentSearchRequest,
-                'AND',
-                assigneeFilter,
-                this.searchService.mapSearchValuesToFilters(searchValues)
-              )
-            : this.documentService.getSpecifiedDocumentsSearch(
-                documentSearchRequest,
-                'AND',
-                assigneeFilter,
-                this.searchService.mapSearchValuesToFilters(searchValues)
-              );
+          return forkJoin({
+            documents:
+              hasEnvColumnConfig || !hasApiColumnConfig
+                ? this.documentService.getDocumentsSearch(
+                    documentSearchRequest,
+                    'AND',
+                    assigneeFilter,
+                    this.searchService.mapSearchValuesToFilters(searchValues)
+                  )
+                : this.documentService.getSpecifiedDocumentsSearch(
+                    documentSearchRequest,
+                    'AND',
+                    assigneeFilter,
+                    this.searchService.mapSearchValuesToFilters(searchValues)
+                  ),
+            hasEnvColumnConfig: obsEnv,
+            hasApiColumnConfig: obsApi,
+          });
         }
 
-        return hasEnvColumnConfig || !hasApiColumnConfig
-          ? this.documentService.getDocumentsSearch(documentSearchRequest, 'AND', assigneeFilter)
-          : this.documentService.getSpecifiedDocumentsSearch(
-              documentSearchRequest,
-              'AND',
-              assigneeFilter
-            );
+        return forkJoin({
+          documents:
+            hasEnvColumnConfig || !hasApiColumnConfig
+              ? this.documentService.getDocumentsSearch(
+                  documentSearchRequest,
+                  'AND',
+                  assigneeFilter
+                )
+              : this.documentService.getSpecifiedDocumentsSearch(
+                  documentSearchRequest,
+                  'AND',
+                  assigneeFilter
+                ),
+          hasEnvColumnConfig: obsEnv,
+          hasApiColumnConfig: obsApi,
+        });
       }
     ),
-    tap(documents => {
-      this.paginationService.setCollectionSize(documents);
-      this.paginationService.checkPage(documents);
-    })
-  );
+    map(
+      (res: {
+        documents: Documents | SpecifiedDocuments;
+        hasEnvColumnConfig: boolean;
+        hasApiColumnConfig: boolean;
+      }) => {
+        this.paginationService.setCollectionSize(res.documents);
+        this.paginationService.checkPage(res.documents);
 
-  public documentItems$ = combineLatest([
-    this._documentsRequest$,
-    this._hasEnvColumnConfig$,
-    this._hasApiColumnConfig$,
-  ]).pipe(
-    map(([documents, hasEnvColumnConfig, hasApiColumnConfig]) =>
-      this.listService.mapDocuments(documents, hasEnvColumnConfig, hasApiColumnConfig)
+        return this.listService.mapDocuments(
+          res.documents,
+          res.hasEnvColumnConfig,
+          res.hasApiColumnConfig
+        );
+      }
     ),
     tap(() => {
       this.loadingAssigneeFilter = false;
@@ -457,10 +465,6 @@ export class DossierListComponent implements OnInit, OnDestroy {
     this.assigneeService.setAssigneeFilter(tab);
   }
 
-  public refresh(): void {
-    this.searchService.refresh();
-  }
-
   public showAssignModal(): void {
     this.selectedDocumentIds$.next(
       this.carbonList.selectedItems.map((document: Document) => document.id)
@@ -474,17 +478,9 @@ export class DossierListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.bulkAssignService
-      .bulkAssign(assigneeId, documentIds)
-      .pipe(
-        tap(() => {
-          this._reload$.next(false);
-        }),
-        take(1)
-      )
-      .subscribe(() => {
-        this._reload$.next(false);
-      });
+    this.bulkAssignService.bulkAssign(assigneeId, documentIds).subscribe(() => {
+      this.forceRefresh();
+    });
   }
 
   public onChangePageConfirm(pagination: CarbonPaginationSelection): void {
@@ -498,6 +494,10 @@ export class DossierListComponent implements OnInit, OnDestroy {
 
   public startDossier(): void {
     this.listActionsComponent.startDossier();
+  }
+
+  public forceRefresh(): void {
+    this.listService.forceRefresh();
   }
 
   private openDocumentDefinitionNameSubscription(): void {
