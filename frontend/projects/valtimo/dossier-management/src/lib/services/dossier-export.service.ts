@@ -18,6 +18,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpResponse} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
 import {Observable} from 'rxjs';
+import {InterceptorSkipHeader} from '@valtimo/security';
 
 @Injectable({
   providedIn: 'root',
@@ -38,7 +39,7 @@ export class DossierExportService {
   ): Observable<HttpResponse<Blob>> {
     return this.http.get<Blob>(
       `${this.valtimoEndpointUri}management/v1/case/${documentDefinitionName}/${version}/export`,
-      {observe: 'response', responseType: 'blob' as 'json'}
+      {observe: 'response', responseType: 'blob' as 'json', headers: InterceptorSkipHeader}
     );
   }
 }

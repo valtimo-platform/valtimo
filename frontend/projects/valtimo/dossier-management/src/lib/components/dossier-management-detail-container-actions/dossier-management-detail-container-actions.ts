@@ -23,7 +23,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {BehaviorSubject, switchMap, tap} from 'rxjs';
-import {NotificationService} from 'carbon-components-angular';
+import {Notification, NotificationService} from 'carbon-components-angular';
 import {DossierExportService} from '../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {DOCUMENT} from '@angular/common';
@@ -46,6 +46,8 @@ export class DossierManagementDetailContainerActionsComponent {
   public readonly exporting$ = new BehaviorSubject<boolean>(false);
   public readonly selectedVersionNumber$ = new BehaviorSubject<number>(1);
 
+  private _currentNotification!: Notification;
+
   constructor(
     @Inject(DOCUMENT) private document: Document,
     private readonly notificationService: NotificationService,
@@ -54,7 +56,9 @@ export class DossierManagementDetailContainerActionsComponent {
   ) {}
 
   public export(): void {
-    const exportingNotification = this.notificationService.showNotification({
+    this.closeCurrentNotification();
+
+    this._currentNotification = this.notificationService.showNotification({
       type: 'info',
       title: '',
       showClose: false,
@@ -76,8 +80,8 @@ export class DossierManagementDetailContainerActionsComponent {
       )
       .subscribe({
         next: response => {
-          this.notificationService.close(exportingNotification);
-          this.notificationService.showNotification({
+          this.closeCurrentNotification();
+          this._currentNotification = this.notificationService.showNotification({
             type: 'success',
             title: this.translateService.instant('dossierManagement.exportSuccessTitle'),
             duration: 5000,
@@ -86,8 +90,8 @@ export class DossierManagementDetailContainerActionsComponent {
           this.stopExporting();
         },
         error: () => {
-          this.notificationService.close(exportingNotification);
-          this.notificationService.showNotification({
+          this.closeCurrentNotification();
+          this._currentNotification = this.notificationService.showNotification({
             type: 'error',
             title: this.translateService.instant('dossierManagement.exportErrorTitle'),
             message: this.translateService.instant('dossierManagement.exportErrorMessage'),
@@ -117,5 +121,11 @@ export class DossierManagementDetailContainerActionsComponent {
     link.target = '_blank';
     link.click();
     link.remove();
+  }
+
+  private closeCurrentNotification(): void {
+    if (this._currentNotification) {
+      this.notificationService.close(this._currentNotification);
+    }
   }
 }
