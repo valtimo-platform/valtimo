@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {NgModule} from '@angular/core';
@@ -23,8 +22,8 @@ import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {
   CamundaFormModule,
+  CarbonListModule,
   FormIoModule,
-  ListModule,
   ModalModule,
   PageHeaderModule,
   SearchableDropdownSelectModule,
@@ -32,20 +31,20 @@ import {
   WidgetModule,
 } from '@valtimo/components';
 import {HttpLoaderFactory} from '@valtimo/config';
+import {FormLinkModule} from '@valtimo/form-link';
+import {ContentSwitcherModule, LinkModule, TabsModule} from 'carbon-components-angular';
 import {ToastrModule} from 'ngx-toastr';
+import {AssignUserToTaskComponent} from './assign-user-to-task/assign-user-to-task.component';
 import {TaskDetailModalComponent} from './task-detail-modal/task-detail-modal.component';
 import {TaskListComponent} from './task-list/task-list.component';
 import {TaskRoutingModule} from './task-routing.module';
-import {AssignUserToTaskComponent} from './assign-user-to-task/assign-user-to-task.component';
-import {LinkModule} from 'carbon-components-angular';
-import {FormLinkModule} from '@valtimo/form-link';
 
 @NgModule({
   declarations: [TaskListComponent, TaskDetailModalComponent, AssignUserToTaskComponent],
   imports: [
     CommonModule,
     TaskRoutingModule,
-    ListModule,
+    CarbonListModule,
     PageHeaderModule,
     WidgetModule,
     SpinnerModule,
@@ -69,6 +68,8 @@ import {FormLinkModule} from '@valtimo/form-link';
     ModalModule,
     LinkModule,
     FormLinkModule,
+    TabsModule,
+    ContentSwitcherModule,
   ],
   exports: [TaskListComponent, TaskDetailModalComponent, AssignUserToTaskComponent],
 })

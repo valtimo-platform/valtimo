@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, map, Observable} from 'rxjs';
+import {BehaviorSubject, map, Observable, take} from 'rxjs';
 import {DossierColumnService} from '../services';
 import {Documents, SpecifiedDocuments} from '@valtimo/document';
 
@@ -29,6 +29,9 @@ export class DossierListService {
     )
   );
 
+  private readonly _checkRefresh$ = new BehaviorSubject<boolean>(false);
+  private readonly _forceRefresh$ = new BehaviorSubject<boolean>(false);
+
   public get documentDefinitionName$(): Observable<string> {
     return this._documentDefinitionName$.asObservable();
   }
@@ -37,9 +40,17 @@ export class DossierListService {
     return this._hasEnvColumnConfig$;
   }
 
+  get checkRefresh$(): Observable<boolean> {
+    return this._checkRefresh$.asObservable();
+  }
+
+  get forceRefresh$(): Observable<boolean> {
+    return this._forceRefresh$.asObservable();
+  }
+
   constructor(private readonly dossierColumnService: DossierColumnService) {}
 
-  setDocumentDefinitionName(documentDefinitionName: string): void {
+  public setDocumentDefinitionName(documentDefinitionName: string): void {
     this._documentDefinitionName$.next(documentDefinitionName);
   }
 
@@ -62,5 +73,17 @@ export class DossierListService {
       });
       return [...acc, propsObject];
     }, []);
+  }
+
+  public forceRefresh(): void {
+    this._forceRefresh$.pipe(take(1)).subscribe(forceRefresh => {
+      this._forceRefresh$.next(!forceRefresh);
+    });
+  }
+
+  public checkRefresh(): void {
+    this._checkRefresh$.pipe(take(1)).subscribe(checkRefresh => {
+      this._checkRefresh$.next(!checkRefresh);
+    });
   }
 }

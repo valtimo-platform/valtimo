@@ -28,7 +28,6 @@ import {
   BpmnJsDiagramModule,
   ButtonModule,
   CamundaFormModule,
-  CarbonTableModule,
   ConfirmationModalModule,
   DataListModule,
   DocumentenApiMetadataModalModule,
@@ -52,6 +51,7 @@ import {
   UploaderModule,
   VModalModule,
   WidgetModule,
+  CarbonListModule,
 } from '@valtimo/components';
 import {ConfigModule, HttpLoaderFactory} from '@valtimo/config';
 import {FormModule} from '@valtimo/form';
@@ -168,13 +168,13 @@ export type TabsFactory = () => Map<string, object>;
     CarbonButtonModule,
     IconModule,
     FormLinkModule,
-    CarbonTableModule,
     CarbonModalModule,
     CarbonSelectModule,
     ConfirmationModalModule,
     DropdownModule,
     TabsModule,
     ComboBoxModule,
+    CarbonListModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

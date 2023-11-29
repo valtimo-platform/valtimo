@@ -132,8 +132,22 @@ body {
       cursor: pointer;
     }
   }
+
+  &--list-box {
+    &__field {
+      z-index: 1;
+    }
+
+    &__wrapper {
+      z-index: 99999 !important;
+    }
+  }
 }
 
 .main-content label {
   margin-bottom: 0 !important;
+}
+
+.valtimo-carbon-list__tabs cds-tab {
+  display: none !important;
 }

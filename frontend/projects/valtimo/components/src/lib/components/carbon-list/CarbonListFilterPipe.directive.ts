@@ -14,14 +14,22 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of task
- */
+import {Pipe, PipeTransform} from '@angular/core';
+import {TableItem} from 'carbon-components-angular';
 
-export * from './lib/models';
-export * from './lib/task.service';
-export * from './lib/task.module';
-export * from './lib/task-detail-modal/task-detail-modal.component';
-export * from './lib/task-list/task-list.component';
-export * from './lib/assign-user-to-task/assign-user-to-task.component';
-export * from './lib/task-permissions';
+@Pipe({
+  name: 'listFilter',
+})
+export class CarbonListFilterPipe implements PipeTransform {
+  transform(list: TableItem[][], filterText: string): TableItem[][] {
+    list = list || [];
+
+    return !filterText
+      ? list
+      : list.filter((row: TableItem[]) =>
+          row.some((item: TableItem) =>
+            item.data.toString().toLowerCase().includes(filterText.toLowerCase())
+          )
+        );
+  }
+}

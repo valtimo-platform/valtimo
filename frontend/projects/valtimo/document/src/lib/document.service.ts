@@ -109,6 +109,14 @@ export class DocumentService {
     );
   }
 
+  getDocumentDefinitionForManagement(
+    documentDefinitionName: string
+  ): Observable<DocumentDefinition> {
+    return this.http.get<DocumentDefinition>(
+      `${this.valtimoEndpointUri}management/v1/document-definition/${documentDefinitionName}`
+    );
+  }
+
   getDocuments(documentSearchRequest: DocumentSearchRequest): Observable<Documents> {
     return this.http.post<Documents>(
       `${this.valtimoEndpointUri}v1/document-search`,
@@ -125,19 +133,12 @@ export class DocumentService {
     assigneeFilter?: AssigneeFilter,
     otherFilters?: Array<SearchFilter | SearchFilterRange>
   ): Observable<Documents> {
-    const body = documentSearchRequest.asHttpBody();
-
-    if (searchOperator) {
-      body.searchOperator = searchOperator;
-    }
-
-    if (assigneeFilter) {
-      body.assigneeFilter = assigneeFilter;
-    }
-
-    if (otherFilters) {
-      body.otherFilters = otherFilters;
-    }
+    const body = {
+      ...documentSearchRequest.asHttpBody(),
+      ...(searchOperator && {searchOperator}),
+      ...(assigneeFilter && {assigneeFilter}),
+      ...(otherFilters && {otherFilters}),
+    };
 
     return this.http
       .post<Documents>(
@@ -154,19 +155,12 @@ export class DocumentService {
     assigneeFilter?: AssigneeFilter,
     otherFilters?: Array<SearchFilter | SearchFilterRange>
   ): Observable<SpecifiedDocuments> {
-    const body = documentSearchRequest.asHttpBody();
-
-    if (searchOperator) {
-      body.searchOperator = searchOperator;
-    }
-
-    if (assigneeFilter) {
-      body.assigneeFilter = assigneeFilter;
-    }
-
-    if (otherFilters) {
-      body.otherFilters = otherFilters;
-    }
+    const body = {
+      ...documentSearchRequest.asHttpBody(),
+      ...(searchOperator && {searchOperator}),
+      ...(assigneeFilter && {assigneeFilter}),
+      ...(otherFilters && {otherFilters}),
+    };
 
     return this.http
       .post<SpecifiedDocuments>(

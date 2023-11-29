@@ -291,6 +291,7 @@
   },
   "devDependencies": {
     "@cypress/schematic": "^2.5.0",
+    "@types/lodash": "^4.14.202",
     "@valtimo/access-control": "file:dist/valtimo/access-control",
     "@valtimo/access-control-management": "file:dist/valtimo/access-control-management",
     "@valtimo/account": "file:dist/valtimo/account",

@@ -163,11 +163,11 @@ export class DashboardDetailsComponent implements AfterViewInit {
         label: '',
         actions: [
           {
-            actionName: 'Edit',
+            label: 'Edit',
             callback: this.editWidget.bind(this),
           },
           {
-            actionName: 'Delete',
+            label: 'Delete',
             callback: this.deleteWidget.bind(this),
             type: 'danger',
           },

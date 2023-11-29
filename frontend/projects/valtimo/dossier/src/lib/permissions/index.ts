@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './dossier-detail.permissions';
+export * from './dossier.permissions';

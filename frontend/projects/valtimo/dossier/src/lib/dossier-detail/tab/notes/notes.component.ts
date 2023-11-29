@@ -17,7 +17,7 @@ import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {Pagination, TimelineItem, TimelineItemImpl, PromptService} from '@valtimo/components';
+import {Pagination, PromptService, TimelineItem, TimelineItemImpl} from '@valtimo/components';
 import {Page} from '@valtimo/config';
 import moment from 'moment';
 import {ToastrService} from 'ngx-toastr';
@@ -53,7 +53,7 @@ export class DossierDetailTabNotesComponent implements OnInit {
   public readonly canAdd$: Observable<boolean> = this.documentId$.pipe(
     switchMap((identifier: string) =>
       this.permissionService.requestPermission(CAN_ADD_NOTE_PERMISSION, {
-        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.domain,
+        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
         identifier,
       })
     )

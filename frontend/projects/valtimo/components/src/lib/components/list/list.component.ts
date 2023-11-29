@@ -34,6 +34,9 @@ import {debounceTime, take} from 'rxjs/operators';
 import {ViewContentService} from '../view-content/view-content.service';
 import {get as _get} from 'lodash';
 
+/**
+ * @deprecated This component is deprecated. Please switch to using valtimo-carbon-list.
+ */
 @Component({
   selector: 'valtimo-list',
   templateUrl: './list.component.html',

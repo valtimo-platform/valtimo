@@ -13,61 +13,69 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {Injectable} from '@angular/core';
-import {TranslateService} from '@ngx-translate/core';
-import {ColumnConfig, ListField, ViewType} from '@valtimo/components';
-import {AssigneeFilter, DefinitionColumn} from '@valtimo/config';
-import {DocumentService} from '@valtimo/document';
-import {BehaviorSubject, map, Observable, switchMap, take} from 'rxjs';
+import {BehaviorSubject, Subject, map, Observable, switchMap, take, tap, combineLatest} from 'rxjs';
 import {DossierListService} from './dossier-list.service';
+import {DocumentService} from '@valtimo/document';
+import {AssigneeFilter, ConfigService, DefinitionColumn} from '@valtimo/config';
+import {TranslateService} from '@ngx-translate/core';
+import {ListField} from '@valtimo/components';
 import {DossierParameterService} from './dossier-parameter.service';
 
 @Injectable()
 export class DossierListAssigneeService {
   private readonly ASSIGNEE_KEY = 'assigneeFullName';
-  private readonly defaultAssigneeFilter: AssigneeFilter = 'ALL';
+  private readonly _defaultAssigneeFilter$ = new Subject<AssigneeFilter>();
+  private readonly _assigneeFilter$ = new BehaviorSubject<AssigneeFilter | null>(null);
 
-  readonly canHaveAssignee$: Observable<boolean> =
+  public readonly canHaveAssignee$: Observable<boolean> =
     this.dossierListService.documentDefinitionName$.pipe(
       switchMap(documentDefinitionName =>
         this.documentService.getCaseSettings(documentDefinitionName)
       ),
-      map(caseSettings => caseSettings?.canHaveAssignee)
+      map(caseSettings => caseSettings?.canHaveAssignee),
+      tap(canHaveAssignee => {
+        const visibleTabs: AssigneeFilter[] = this.configService.config.visibleDossierListTabs;
+
+        this._defaultAssigneeFilter$.next(
+          !!visibleTabs && canHaveAssignee ? visibleTabs[0] : 'ALL'
+        );
+      })
     );
 
-  private readonly _assigneeFilter$ = new BehaviorSubject<AssigneeFilter>(
-    this.defaultAssigneeFilter
-  );
-
-  get assigneeFilter$(): Observable<AssigneeFilter> {
+  public get assigneeFilter$(): Observable<AssigneeFilter> {
     return this._assigneeFilter$.asObservable();
   }
 
   constructor(
+    private readonly configService: ConfigService,
     private readonly dossierListService: DossierListService,
     private readonly documentService: DocumentService,
     private readonly translateService: TranslateService,
     private readonly dossierParameterService: DossierParameterService
   ) {}
 
-  resetAssigneeFilter(): void {
-    this.dossierParameterService.queryAssigneeParam$.pipe(take(1)).subscribe(assigneeParam => {
-      if (assigneeParam) {
-        this._assigneeFilter$.next(assigneeParam);
-        this.dossierParameterService.setAssigneeParameter(assigneeParam);
-      } else {
-        this._assigneeFilter$.next(this.defaultAssigneeFilter);
-        this.dossierParameterService.setAssigneeParameter(this.defaultAssigneeFilter);
-      }
-    });
+  public resetAssigneeFilter(): void {
+    combineLatest([this.dossierParameterService.queryAssigneeParam$, this._defaultAssigneeFilter$])
+      .pipe(take(1))
+      .subscribe(([assigneeParam, defaultAssigneeFilter]) => {
+        if (assigneeParam) {
+          this._assigneeFilter$.next(assigneeParam);
+          this.dossierParameterService.setAssigneeParameter(assigneeParam);
+        } else {
+          this._assigneeFilter$.next(defaultAssigneeFilter);
+          this.dossierParameterService.setAssigneeParameter(defaultAssigneeFilter);
+        }
+      });
   }
 
-  setAssigneeFilter(assigneeFilter: AssigneeFilter): void {
+  public setAssigneeFilter(assigneeFilter: AssigneeFilter): void {
     this._assigneeFilter$.next(assigneeFilter);
     this.dossierParameterService.setAssigneeParameter(assigneeFilter);
   }
 
-  filterAssigneeColumns(
+  public filterAssigneeColumns(
     columns: Array<DefinitionColumn>,
     canHaveAssignee: boolean
   ): Array<DefinitionColumn> {
@@ -79,11 +87,11 @@ export class DossierListAssigneeService {
     });
   }
 
-  addAssigneeColumnConfig(
+  public addAssigneeListField(
     columns: Array<DefinitionColumn>,
     listFields: Array<ListField>,
     canHaveAssignee: boolean
-  ): Array<ColumnConfig> {
+  ): Array<ListField> {
     return [
       ...listFields,
       ...(canHaveAssignee && !columns.find(column => column.propertyName === this.ASSIGNEE_KEY)
@@ -92,7 +100,7 @@ export class DossierListAssigneeService {
               key: this.ASSIGNEE_KEY,
               label: this.translateService.instant(`fieldLabels.${this.ASSIGNEE_KEY}`),
               sortable: true,
-              viewType: ViewType.TEXT,
+              viewType: 'string',
             },
           ]
         : []),

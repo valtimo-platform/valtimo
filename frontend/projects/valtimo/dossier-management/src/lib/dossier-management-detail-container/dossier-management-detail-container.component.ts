@@ -44,7 +44,7 @@ export class DossierManagementDetailContainerComponent implements OnInit, OnDest
 
   readonly documentDefinition$ = this.documentDefinitionName$.pipe(
     switchMap(documentDefinitionName =>
-      this.documentService.getDocumentDefinition(documentDefinitionName)
+      this.documentService.getDocumentDefinitionForManagement(documentDefinitionName)
     ),
     tap(documentDefinition => {
       this.pageTitleService.setCustomPageTitle(documentDefinition.schema.title);

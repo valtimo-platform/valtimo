@@ -26,6 +26,8 @@ import {combineLatest, Subscription} from 'rxjs';
 import {ConfigService, SortState, TaskListTab} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
 import {take} from 'rxjs/operators';
+import {PermissionService} from '@valtimo/access-control';
+import {CAN_VIEW_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../task-permissions';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -50,47 +52,49 @@ export class TaskListComponent implements OnDestroy {
   private translationSubscription: Subscription;
 
   constructor(
-    private taskService: TaskService,
-    private router: Router,
-    private logger: NGXLogger,
-    private translateService: TranslateService,
-    private configService: ConfigService,
-    private documentService: DocumentService
+    private readonly configService: ConfigService,
+    private readonly documentService: DocumentService,
+    private readonly logger: NGXLogger,
+    private readonly permissionService: PermissionService,
+    private readonly router: Router,
+    private readonly taskService: TaskService,
+    private readonly translateService: TranslateService
   ) {
     this.visibleTabs = this.configService.config?.visibleTaskListTabs || null;
-    if (this.visibleTabs != null) {
+    if (this.visibleTabs) {
       this.currentTaskType = this.visibleTabs[0];
     }
     this.setDefaultSorting();
   }
 
-  public paginationClicked(page: number, type: string) {
+  public ngOnDestroy(): void {
+    this.translationSubscription.unsubscribe();
+  }
+
+  public paginationClicked(page: number, type: string): void {
     this.tasks[type].page = page - 1;
+    this.tasks[type].pagination.page = page;
     this.getTasks(type);
   }
 
-  paginationSet() {
+  public paginationSet(size: number): void {
     this.tasks.mine.pagination.size =
       this.tasks.all.pagination.size =
       this.tasks.open.pagination.size =
-        this.tasks[this.currentTaskType].pagination.size;
+        size;
     this.getTasks(this.currentTaskType);
   }
 
-  private clearPagination(type: string) {
-    this.tasks[type].page = 0;
-  }
-
-  tabChange(tab) {
+  public tabChange(tab: string): void {
     this.clearPagination(this.currentTaskType);
-    this.getTasks(tab.nextId);
+    this.getTasks(tab);
   }
 
-  showTask(task) {
+  public showTask(task: Task): void {
     this.router.navigate(['tasks', task.id]);
   }
 
-  getTasks(type: string) {
+  public getTasks(type: string): void {
     let params: any;
 
     this.translationSubscription = combineLatest([
@@ -131,14 +135,27 @@ export class TaskListComponent implements OnDestroy {
     }
 
     this.taskService.queryTasks(params).subscribe((results: any) => {
-      this.tasks[type].pagination.collectionSize = results.headers.get('x-total-count');
+      this.tasks[type].pagination = {
+        ...this.tasks[type].pagination,
+        collectionSize: results.headers.get('x-total-count'),
+      };
       this.tasks[type].tasks = results.body as Array<Task>;
       this.tasks[type].tasks.map((task: Task) => {
         task.created = moment(task.created).format('DD MMM YYYY HH:mm');
         if (task.due) {
           task.due = moment(task.due).format('DD MMM YYYY HH:mm');
         }
+        task.isLocked = true;
+        this.permissionService
+          .requestPermission(CAN_VIEW_TASK_PERMISSION, {
+            resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+            identifier: task.id,
+          })
+          .subscribe(canView => {
+            task.isLocked = !canView;
+          });
       });
+
       if (this.taskService.getConfigCustomTaskList()) {
         this.customTaskListFields(type);
       } else {
@@ -147,7 +164,7 @@ export class TaskListComponent implements OnDestroy {
     });
   }
 
-  openRelatedCase(event: MouseEvent, index: number): void {
+  public openRelatedCase(event: MouseEvent, index: number): void {
     event.stopPropagation();
 
     const tasks = this.tasks[this.currentTaskType].tasks;
@@ -217,14 +234,14 @@ export class TaskListComponent implements OnDestroy {
   }
 
   public rowOpenTaskClick(task) {
-    if (!task.endTime) {
+    if (!task.endTime && !task.isLocked) {
       this.taskDetail.openTaskDetails(task);
     } else {
       return false;
     }
   }
 
-  setDefaultSorting() {
+  public setDefaultSorting(): void {
     this.sortState = this.taskService.getConfigCustomTaskList()?.defaultSortedColumn || null;
   }
 
@@ -233,11 +250,11 @@ export class TaskListComponent implements OnDestroy {
     this.getTasks(this.currentTaskType);
   }
 
-  getSortString(sort: SortState): string {
+  public getSortString(sort: SortState): string {
     return `${sort.state.name},${sort.state.direction}`;
   }
 
-  ngOnDestroy(): void {
-    this.translationSubscription.unsubscribe();
+  private clearPagination(type: string): void {
+    this.tasks[type].page = 0;
   }
 }
