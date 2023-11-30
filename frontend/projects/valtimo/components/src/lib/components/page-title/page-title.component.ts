@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   AfterViewInit,
   Component,
@@ -23,13 +22,20 @@ import {
   ViewContainerRef,
   ViewEncapsulation,
 } from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
 import {Title} from '@angular/platform-browser';
-import {BehaviorSubject, combineLatest, Observable, startWith, Subscription, switchMap} from 'rxjs';
+import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {NGXLogger} from 'ngx-logger';
 import {ConfigService} from '@valtimo/config';
-import {map} from 'rxjs/operators';
+import {NGXLogger} from 'ngx-logger';
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Observable,
+  startWith,
+  Subscription,
+  switchMap,
+} from 'rxjs';
 import {PageTitleService} from './page-title.service';
 
 @Component({

@@ -32,7 +32,7 @@ export class MenuService {
   private readonly _activeParentSequenceNumber$ = new BehaviorSubject<string>('');
   public includeFunctionObservables: {[key: string]: Observable<boolean>} = {};
 
-  private _menuItems$ = new BehaviorSubject<MenuItem[]>(undefined);
+  private _menuItems$ = new BehaviorSubject<MenuItem[]>([]);
   private menuConfig: MenuConfig;
 
   private readonly disableCaseCount!: boolean;
