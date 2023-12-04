@@ -164,8 +164,28 @@ export class MenuService {
 
       menuItem.show = true;
 
-      if (userRoles.find(userRole => menuItem.roles.includes(userRole))) {
-        menuItems.push(menuItem);
+      // check if the top level menu item specifies roles it requires. If so, check if the user roles contain at least one of these roles
+      if (
+        Array.isArray(menuItem?.roles)
+          ? userRoles.find(userRole => menuItem.roles.includes(userRole))
+          : true
+      ) {
+        // check if menu item has children. If so, check if children specify required roles. If so, check if the user roles contain at least one of these roles
+        const filteredMenuItemChildren =
+          menuItem?.children &&
+          menuItem?.children.filter(childMenuItem =>
+            Array.isArray(childMenuItem?.roles)
+              ? userRoles.find(userRole => childMenuItem.roles.includes(userRole))
+              : true
+          );
+
+        // if the menu item has children, set the menu item children to filtered menu item children
+        const menuItemWithFilteredChildren: MenuItem = {
+          ...menuItem,
+          ...(menuItem?.children && {children: filteredMenuItemChildren}),
+        };
+
+        menuItems.push(menuItemWithFilteredChildren);
       }
     });
     menuItems = this.sortMenuItems(menuItems);
