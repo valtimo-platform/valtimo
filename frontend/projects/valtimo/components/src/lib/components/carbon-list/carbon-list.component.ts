@@ -198,7 +198,6 @@ export class CarbonListComponent<T> implements OnInit, OnDestroy {
   public skeletonModel = Table.skeletonModel(5, 5);
   public paginationModel: PaginationModel;
   public searchFormControl = new FormControl('');
-  public searchModel: string;
   public viewListAs: string;
 
   private static readonly PAGINATION_SIZE = 'PaginationSize';
@@ -240,7 +239,10 @@ export class CarbonListComponent<T> implements OnInit, OnDestroy {
           if (this.search.observed) {
             this.search.emit(searchString);
           } else {
-            this.model.data = this.filterPipe.transform(this._completeDataSource, this.searchModel);
+            this.model.data = this.filterPipe.transform(
+              this._completeDataSource,
+              searchString ?? ''
+            );
           }
         })
     );

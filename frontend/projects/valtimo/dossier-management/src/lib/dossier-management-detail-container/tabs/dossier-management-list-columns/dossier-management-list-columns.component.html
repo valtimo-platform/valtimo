@@ -71,7 +71,7 @@
   </button>
 </ng-template>
 
-<ng-template #moveRowButtons let-data="data">
+<ng-template #moveRowButtons let-index="index" let-length="length">
   <div
     class="move-row-buttons"
     *ngIf="{
@@ -81,19 +81,19 @@
   >
     <i
       class="mdi mdi-delete btn btn-outline-danger mr-1"
-      (click)="deleteRow(data.index, $event)"
+      (click)="deleteRow(index, $event)"
       [ngClass]="{'disabled disabled-move-row-button': obs.disableInput}"
     ></i>
     <i
       class="mdi mdi-arrow-up-bold btn btn-outline-primary mr-1"
-      (click)="moveRow(data.index, true, $event, obs.documentDefinitionName)"
-      [ngClass]="{'disabled disabled-move-row-button': data.index === 0 || obs.disableInput}"
+      (click)="moveRow(index, true, $event, obs.documentDefinitionName)"
+      [ngClass]="{'disabled disabled-move-row-button': index === 0 || obs.disableInput}"
     ></i>
     <i
       class="mdi mdi-arrow-down-bold btn btn-outline-secondary"
-      (click)="moveRow(data.index, false, $event, obs.documentDefinitionName)"
+      (click)="moveRow(index, false, $event, obs.documentDefinitionName)"
       [ngClass]="{
-        'disabled disabled-move-row-button': data.index === data.length - 1 || obs.disableInput
+        'disabled disabled-move-row-button': index === length - 1 || obs.disableInput
       }"
     ></i>
   </div>

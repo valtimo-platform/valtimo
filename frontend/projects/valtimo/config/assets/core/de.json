@@ -34,8 +34,18 @@
       "confirm": "Seite Tab"
     },
     "noResults": {
-      "description": "Klicken Sie auf <strong>Neuen Case erstellen</strong>, um einen neuen Case zu starten.",
-      "title": "Keine Case gefunden"
+      "ALL": {
+        "description": "Hier gibt es nichts zu tun.",
+        "title": "Keine Cases gefunden"
+      },
+      "MINE": {
+        "description": "Kurze Pause.",
+        "title": "Es sind Ihnen keine Cases zugewiesen"
+      },
+      "OPEN": {
+        "description": "Kommen Sie später wieder.",
+        "title": "Alle cases wurden zugewiesen"
+      }
     },
     "pagination": {
       "itemsPerPage": "Cases pro Seite",

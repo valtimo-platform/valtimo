@@ -45,6 +45,7 @@ import {
   SpecifiedDocuments,
 } from '@valtimo/document';
 import {Tab, Tabs} from 'carbon-components-angular';
+import {isEqual} from 'lodash';
 import {
   BehaviorSubject,
   combineLatest,
@@ -71,7 +72,6 @@ import {
   DossierListService,
   DossierParameterService,
 } from '../services';
-import {isEqual} from 'lodash';
 
 @Component({
   selector: 'valtimo-dossier-list',
@@ -91,6 +91,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
   @ViewChild(DossierListActionsComponent) listActionsComponent: DossierListActionsComponent;
   @ViewChild(Tabs) tabsComponent: Tabs;
 
+  public activeTab: DossierListTab = null;
   public loadingFields = true;
   public loadingPagination = true;
   public loadingSearchFields = true;
@@ -353,7 +354,6 @@ export class DossierListComponent implements OnInit, OnDestroy {
 
   private _previousDocumentDefinitionName!: string;
   private _documentDefinitionNameSubscription!: Subscription;
-  private _previousTab: DossierListTab = null;
 
   constructor(
     private readonly assigneeService: DossierListAssigneeService,
@@ -404,12 +404,12 @@ export class DossierListComponent implements OnInit, OnDestroy {
   }
 
   public tabChange(tab: DossierListTab): void {
-    if (!this._previousTab) {
-      this._previousTab = tab;
+    if (!this.activeTab) {
+      this.activeTab = tab;
       return;
     }
 
-    if (this._previousTab === tab) {
+    if (this.activeTab === tab) {
       return;
     }
 
@@ -427,7 +427,10 @@ export class DossierListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const prevTab: Tab = this.tabsComponent.tabs.find((tab: Tab) => tab.id === this._previousTab);
+    const prevTab: Tab | undefined = this.tabsComponent.tabs.find(
+      (tab: Tab) => tab.id === this.activeTab
+    );
+
     if (!prevTab) {
       return;
     }
@@ -460,7 +463,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
 
   private onChangeTabConfirm(tab: DossierListTab): void {
     this.loadingAssigneeFilter = true;
-    this._previousTab = tab;
+    this.activeTab = tab;
     this.paginationService.setPage(1);
     this.assigneeService.setAssigneeFilter(tab);
   }

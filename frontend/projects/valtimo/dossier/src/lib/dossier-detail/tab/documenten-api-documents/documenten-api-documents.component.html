@@ -85,16 +85,16 @@
   </div>
 </ng-template>
 
-<ng-template #downloadButton let-data="data">
+<ng-template #downloadButton let-index="index" let-item="item">
   <div
     class="download-button-container"
-    *ngIf="{isDownloading: indexesIncludeIndex(downloadingFileIndexes$ | async, data.index)} as vars"
+    *ngIf="{isDownloading: indexesIncludeIndex(downloadingFileIndexes$ | async, index)} as vars"
   >
     <button
       *ngIf="!vars.isDownloading"
       cdsButton="primary"
       size="sm"
-      (click)="downloadDocument(data.item, data.index)"
+      (click)="downloadDocument(item, index)"
     >
       {{ 'interface.download' | translate
       }}<svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>

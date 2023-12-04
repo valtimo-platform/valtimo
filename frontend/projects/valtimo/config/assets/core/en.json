@@ -34,8 +34,18 @@
       "confirm": "Change tab"
     },
     "noResults": {
-      "description": "Click <strong>Create New Case</strong> to start a new case.",
-      "title": "No cases found"
+      "ALL": {
+        "description": "There is nothing to do here.",
+        "title": "There are no cases"
+      },
+      "MINE": {
+        "description": "Time for a short break.",
+        "title": "No cases assigned to you"
+      },
+      "OPEN": {
+        "description": "Come back later.",
+        "title": "All cases have been assigned"
+      }
     },
     "pagination": {
       "itemsPerPage": "Cases per page",

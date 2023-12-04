@@ -92,8 +92,8 @@
 
     <valtimo-no-results
       [action]="dossierListActions"
-      description="{{ 'dossier.noResults.description' | translate }}"
-      title="{{ 'dossier.noResults.title' | translate }}"
+      description="{{ 'dossier.noResults.' + activeTab + '.description' | translate }}"
+      title="{{ 'dossier.noResults.' + activeTab + '.title' | translate }}"
     ></valtimo-no-results>
 
     <div tabs *ngIf="canHaveAssignee">

@@ -34,8 +34,18 @@
       "confirm": "Wijzig tabblad"
     },
     "noResults": {
-      "description": "Klik op <strong>Creëer Nieuw Dossier</strong> om een nieuw dossier aan te maken.",
-      "title": "Geen dossiers gevonden"
+      "ALL": {
+        "description": "Er is hier niets te doen.",
+        "title": "Er zijn geen dossiers"
+      },
+      "MINE": {
+        "description": "Even pauze.",
+        "title": "Er zijn geen dossiers aan jou toegewezen"
+      },
+      "OPEN": {
+        "description": "Kom later nog eens terug.",
+        "title": "Alle dossiers hebben een behandelaar"
+      }
     },
     "pagination": {
       "itemsPerPage": "Dossiers per pagina",
