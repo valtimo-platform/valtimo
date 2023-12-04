@@ -133,7 +133,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
   public readonly canAssign$: Observable<boolean> = this.route.paramMap.pipe(
     switchMap((params: ParamMap) =>
       this.permissionService.requestPermission(CAN_ASSIGN_CASE_PERMISSION, {
-        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.domain,
+        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
         identifier: params.get('documentId') ?? '',
       })
     ),
@@ -145,7 +145,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
   public readonly canClaim$: Observable<boolean> = this.route.paramMap.pipe(
     switchMap((params: ParamMap) =>
       this.permissionService.requestPermission(CAN_CLAIM_CASE_PERMISSION, {
-        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.domain,
+        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
         identifier: params.get('documentId') ?? '',
       })
     )

@@ -17,6 +17,10 @@
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {TopbarComponent} from './topbar.component';
 import {RouterTestingModule} from '@angular/router/testing';
+import {KeycloakService} from 'keycloak-angular';
+import {MockIconService, MockKeycloakService, VALTIMO_CONFIG} from '@valtimo/config';
+import {environment} from '@src/environments/environment';
+import {IconService} from 'carbon-components-angular';
 
 describe('TopbarComponent', () => {
   let component: TopbarComponent;
@@ -26,6 +30,11 @@ describe('TopbarComponent', () => {
     TestBed.configureTestingModule({
       declarations: [TopbarComponent],
       imports: [RouterTestingModule],
+      providers: [
+        {provide: KeycloakService, useClass: MockKeycloakService},
+        {provide: VALTIMO_CONFIG, useValue: environment},
+        {provide: IconService, useClass: MockIconService},
+      ],
     }).compileComponents();
   }));
 

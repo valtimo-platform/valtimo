@@ -132,7 +132,7 @@ export const environment: ValtimoConfig = {
           },
           {link: ['/connectors'], title: 'Connectors', sequence: 7},
           {link: ['/plugins'], title: 'Plugins', sequence: 8},
-          {link: ['/process-links'], title: 'Form links Plugin', sequence: 9},
+          {link: ['/process-links'], title: 'Process links', sequence: 9},
           {link: ['/dashboard-management'], title: 'Dashboard configuration', sequence: 10},
           {link: ['/access-control'], title: 'Access Control', sequence: 11},
           {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 12},

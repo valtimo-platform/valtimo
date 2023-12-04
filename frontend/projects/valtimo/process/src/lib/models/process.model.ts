@@ -117,8 +117,7 @@ export interface ProcessInstanceTask {
   formKey: string;
   tenantId: string;
   identityLinks: IdentityLink[];
-
-  isLocked(): boolean;
+  isLocked: boolean;
 }
 
 export interface IdentityLink {

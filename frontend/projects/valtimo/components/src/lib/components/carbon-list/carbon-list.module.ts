@@ -13,25 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {ReactiveFormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {NgbPaginationModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateModule} from '@ngx-translate/core';
-import {ButtonModule, DialogModule, PaginationModule, TableModule} from 'carbon-components-angular';
-import {CarbonTableComponent} from './carbon-table.component';
+import {CardModule} from '../card/card.module';
+import {CarbonListComponent} from './carbon-list.component';
+import {CarbonListFilterPipe} from './CarbonListFilterPipe.directive';
 import {CarbonNoResultsComponent} from './no-results/carbon-no-results.component';
+import {
+  ButtonModule,
+  ContentSwitcherModule,
+  DialogModule,
+  IconModule,
+  PaginationModule,
+  TableModule,
+} from 'carbon-components-angular';
 
 @NgModule({
-  declarations: [CarbonNoResultsComponent, CarbonTableComponent],
+  declarations: [CarbonListComponent, CarbonListFilterPipe, CarbonNoResultsComponent],
   imports: [
+    CardModule,
     CommonModule,
-    DialogModule,
-    TranslateModule,
-    TableModule,
+    FormsModule,
+    NgbPaginationModule,
     PaginationModule,
-    ButtonModule,
+    TableModule,
+    TranslateModule,
     ReactiveFormsModule,
+    ContentSwitcherModule,
+    IconModule,
+    ButtonModule,
+    DialogModule,
   ],
-  exports: [CarbonNoResultsComponent, CarbonTableComponent],
+  exports: [CarbonListComponent, CarbonListFilterPipe, CarbonNoResultsComponent],
 })
-export class CarbonTableModule {}
+export class CarbonListModule {}

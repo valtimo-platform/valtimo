@@ -15,7 +15,7 @@
  */
 
 ::ng-deep .cds--list-box__wrapper {
-  z-index: 99999;
+  z-index: 100001 !important;
 }
 
 .v-select-container {

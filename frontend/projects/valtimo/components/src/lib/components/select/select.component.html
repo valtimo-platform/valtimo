@@ -40,7 +40,6 @@
     [clearSelectionTitle]="vars.clearText"
     [clearSelectionsTitle]="vars.clearAllText"
     [disabled]="disabled || loading || vars.items.length === 0"
-    [items]="vars.items"
     [placeholder]="
       loading
         ? vars.loadingText
@@ -53,6 +52,9 @@
     (selected)="setSelected($event)"
     [attr.data-carbon-theme]="carbonTheme"
   >
-    <cds-dropdown-list [attr.data-carbon-theme]="carbonTheme"></cds-dropdown-list>
+    <cds-dropdown-list
+      [items]="vars.items"
+      [attr.data-carbon-theme]="carbonTheme"
+    ></cds-dropdown-list>
   </cds-combo-box>
 </div>

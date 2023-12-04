@@ -13,27 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {ChangeDetectionStrategy, Component, OnInit, ViewChild} from '@angular/core';
-import {
-  CARBON_CONSTANTS,
-  CarbonTableConfig,
-  CarbonTableComponent,
-  ColumnConfig,
-  ViewType,
-} from '@valtimo/components';
-import {BehaviorSubject, delay, finalize, Observable, Subject, take, tap} from 'rxjs';
-import {ExportRoleOutput, Role} from '../../models';
-import {AccessControlService} from '../../services/access-control.service';
 import {Router} from '@angular/router';
+import {CARBON_CONSTANTS, CarbonListComponent, ColumnConfig, ViewType} from '@valtimo/components';
+import {BehaviorSubject, delay, finalize, Observable, Subject, tap} from 'rxjs';
+import {ExportRoleOutput, Role} from '../../models';
 import {AccessControlExportService} from '../../services/access-control-export.service';
+import {AccessControlService} from '../../services/access-control.service';
 
 @Component({
   templateUrl: './access-control-overview.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AccessControlOverviewComponent implements OnInit {
-  @ViewChild(CarbonTableComponent) carbonTable: CarbonTableComponent<Role>;
+  @ViewChild(CarbonListComponent) carbonList: CarbonListComponent<Role>;
 
   public fields: ColumnConfig[] = [
     {
@@ -42,9 +35,6 @@ export class AccessControlOverviewComponent implements OnInit {
       label: 'accessControl.roles.key',
     },
   ];
-  public readonly tableConfig: CarbonTableConfig = {
-    showSelectionColumn: true,
-  };
 
   public readonly roles$: Observable<Role[]> = this.accessControlService.roles$;
   public readonly loading$: Observable<boolean> = this.accessControlService.loading$;
@@ -142,6 +132,6 @@ export class AccessControlOverviewComponent implements OnInit {
   }
 
   private setSelectedRoleKeys(): void {
-    this.selectedRowKeys$.next(this.carbonTable.selectedItems.map((role: Role) => role.roleKey));
+    this.selectedRowKeys$.next(this.carbonList.selectedItems.map((role: Role) => role.roleKey));
   }
 }

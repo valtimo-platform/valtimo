@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,23 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-.valtimo-carbon-table {
-  &__toolbar:empty {
-    display: none;
-  }
 
-  &__no-results {
-    display: flex;
-    justify-content: center;
-    padding: calc((100 / 16) * 1rem) 0;
-    gap: 4rem;
+import {Injectable} from '@angular/core';
+import {Observable, of} from 'rxjs';
 
-    &__content:not(:empty) + &-text {
-      display: none;
-    }
-  }
-
-  label {
-    margin-bottom: 0 !important;
+@Injectable({
+  providedIn: 'root',
+})
+export class MockTranslateService {
+  public stream(key: string): Observable<any> {
+    return of(null);
   }
 }

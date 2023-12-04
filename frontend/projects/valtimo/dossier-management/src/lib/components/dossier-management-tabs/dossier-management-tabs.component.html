@@ -14,14 +14,13 @@
   ~ limitations under the License.
   -->
 
-<valtimo-carbon-table
+<valtimo-carbon-list
   *ngIf="{fields: fields$ | async, loading: loading$ | async, tabs: tabs$ | async} as obs"
-  [data]="obs.tabs"
+  [items]="obs.tabs"
   [fields]="obs.fields"
-  hideTableHeader
+  header="false"
   [loading]="obs.loading"
-  [tableConfig]="tableConfig"
-  (rowClick)="onRowClick($event)"
+  (rowClicked)="onRowClicked($event)"
 >
   <ng-container carbonToolbarContent>
     <ng-container [ngTemplateOutlet]="addTabButton"></ng-container>
@@ -32,7 +31,7 @@
     [description]="'dossier.tabs.noResultsDescription' | translate"
     [title]="'dossier.tabs.noResults' | translate"
   ></valtimo-no-results>
-</valtimo-carbon-table>
+</valtimo-carbon-list>
 
 <ng-template #tabTypeColumn let-data="data">
   {{

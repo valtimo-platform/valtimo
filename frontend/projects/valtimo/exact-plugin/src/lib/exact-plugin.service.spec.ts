@@ -15,14 +15,19 @@
  */
 
 import {TestBed} from '@angular/core/testing';
-
 import {ExactPluginService} from './exact-plugin.service';
+import {HttpClientTestingModule} from '@angular/common/http/testing';
+import {VALTIMO_CONFIG} from '@valtimo/config';
+import {environment} from '@src/environments/environment';
 
 describe('ExactPluginService', () => {
   let service: ExactPluginService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [{provide: VALTIMO_CONFIG, useValue: environment}],
+    });
     service = TestBed.inject(ExactPluginService);
   });
 

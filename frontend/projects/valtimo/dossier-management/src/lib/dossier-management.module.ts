@@ -19,8 +19,8 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateModule} from '@ngx-translate/core';
 import {
+  CarbonListModule,
   CarbonMultiInputModule,
-  CarbonTableModule,
   ConfirmationModalModule,
   DropzoneModule,
   FormModule,
@@ -117,7 +117,7 @@ import {DossierManagementEditTabModalComponent} from './components/dossier-manag
     CarbonMultiInputModule,
     TableModule,
     ValtimoCdsModalDirectiveModule,
-    CarbonTableModule,
+    CarbonListModule,
     ComboBoxModule,
   ],
   providers: [TabManagementService],

@@ -18,6 +18,8 @@
     "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": false,
     "paths": {
+      "@src": ["src"],
+      "@src/*": ["src/*"],
       "@angular/*": ["./node_modules/@angular/*"],
       "@valtimo/layout": ["dist/valtimo/layout"],
       "@valtimo/layout/*": ["dist/valtimo/layout/*"],

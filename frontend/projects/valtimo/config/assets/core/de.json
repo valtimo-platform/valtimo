@@ -34,11 +34,22 @@
       "confirm": "Seite Tab"
     },
     "noResults": {
-      "description": "Klicken Sie auf <strong>Neuen Case erstellen</strong>, um einen neuen Case zu starten.",
-      "title": "Keine Case gefunden"
+      "ALL": {
+        "description": "Hier gibt es nichts zu tun.",
+        "title": "Keine Cases gefunden"
+      },
+      "MINE": {
+        "description": "Kurze Pause.",
+        "title": "Es sind Ihnen keine Cases zugewiesen"
+      },
+      "OPEN": {
+        "description": "Kommen Sie später wieder.",
+        "title": "Alle cases wurden zugewiesen"
+      }
     },
     "pagination": {
       "itemsPerPage": "Cases pro Seite",
+      "totalItem": "{{start}}-{{end}} von {{total}} Case",
       "totalItems": "{{start}}-{{end}} von {{total}} Cases"
     },
     "select": {
@@ -464,17 +475,24 @@
     },
     "mine": {
       "title": "Meine Aufgaben",
-      "description": "Überblick alle zugeordneten Aufgaben"
+      "description": "Überblick alle zugeordneten Aufgaben",
+      "noResultsDescription": "Kurze Pause.",
+      "noResultsTitle": "Es sind Ihnen keine Aufgaben zugewiesen"
     },
     "open": {
       "title": "Nicht zugeordnete Aufgaben",
-      "description": "Überblick alle nicht zugeordneten Aufgaben"
+      "description": "Überblick alle nicht zugeordneten Aufgaben",
+      "noResultsDescription": "Kommen Sie später wieder.",
+      "noResultsTitle": "Alle Aufgaben wurden zugewiesen"
     },
     "all": {
       "title": "Alle Aufgaben",
-      "description": "Überblick alle Aufgaben"
+      "description": "Überblick alle Aufgaben",
+      "noResultsDescription": "Hier gibt es nichts zu tun.",
+      "noResultsTitle": "Keine Aufgaben gefunden"
     },
-    "goToCase": "Gehen Sie zum Fall"
+    "goToCase": "Gehen Sie zum Fall",
+    "taskLocked": "Kein Zugriff zu dieser Aufgabe!"
   },
   "Task": "Aufgabe",
   "Tasks": "Aufgaben",
@@ -605,13 +623,17 @@
     "save": "Speichern",
     "More": "Mehr",
     "export": "Export",
-    "table": {
+    "list": {
       "itemsPerPage": "Objekte pro Seite",
-      "multipleSelect": "{{count}} Elemente ausgewählt",
+      "multipleSelect": "{{count}} Objekte ausgewählt",
       "ofLastPage": "von {{last}} Seite",
       "ofLastPages": "von {{last}} Seiten",
-      "singleSelect": "1 Element ausgewählt",
-      "totalItems": "{{start}}-{{end}} von {{total}} Objekte"
+      "singleSelect": "1 Objekt ausgewählt",
+      "totalItems": "{{start}}-{{end}} von {{total}} Objekte",
+      "viewMode": {
+        "table": "Tabelle",
+        "tile": "Fliesen"
+      }
     },
     "pendingChanges": {
       "title": "Seite verlassen",

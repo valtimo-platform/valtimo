@@ -25,13 +25,14 @@ enum PERMISSION_ACTION {
 }
 
 enum DOSSIER_DETAIL_PERMISSION_RESOURCE {
-  domain = 'com.ritense.document.domain.impl.JsonSchemaDocument',
+  jsonSchemaDocument = 'com.ritense.document.domain.impl.JsonSchemaDocument',
   note = 'com.ritense.note.domain.Note',
+  jsonSchemaDocumentDefinition = 'com.ritense.document.domain.impl.JsonSchemaDocumentDefinition',
 }
 
 const CAN_CLAIM_CASE_PERMISSION: PermissionRequest = {
   action: PERMISSION_ACTION.claim,
-  resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.domain,
+  resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
 };
 
 const CAN_ADD_NOTE_PERMISSION: PermissionRequest = {
@@ -51,7 +52,12 @@ const CAN_EDIT_NOTE_PERMISSION: PermissionRequest = {
 
 const CAN_ASSIGN_CASE_PERMISSION: PermissionRequest = {
   action: PERMISSION_ACTION.assign,
-  resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.domain,
+  resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+};
+
+const CAN_CREATE_CASE_PERMISSION: PermissionRequest = {
+  action: PERMISSION_ACTION.add,
+  resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
 };
 
 export {
@@ -61,4 +67,5 @@ export {
   CAN_DELETE_NOTE_PERMISSION,
   CAN_EDIT_NOTE_PERMISSION,
   DOSSIER_DETAIL_PERMISSION_RESOURCE,
+  CAN_CREATE_CASE_PERMISSION,
 };

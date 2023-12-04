@@ -13,22 +13,20 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
-<cds-table-container>
-  <cds-table-header *ngIf="!hideTableHeader">
-    <h4 cdsTableHeaderTitle>
-      <ng-content select="[carbonTableTitle]"></ng-content>
-    </h4>
-
-    <p cdsTableHeaderDescription>
-      <ng-content select="[carbonTableDescription]"></ng-content>
-    </p>
+<cds-table-container
+  *ngIf="{
+    sort: sort$ | async
+  } as obs"
+>
+  <cds-table-header *ngIf="header">
+    <ng-content select="[header]"></ng-content>
   </cds-table-header>
 
+  <ng-content select="[tabs]"></ng-content>
+
   <cds-table-toolbar
-    *ngIf="!hideTableToolbar"
-    class="valtimo-carbon-table__toolbar"
-    [model]="tableModel"
+    class="valtimo-carbon-list__toolbar"
+    [model]="model"
     [batchText]="batchText$ | async"
   >
     <cds-table-toolbar-actions>
@@ -37,7 +35,7 @@
 
     <cds-table-toolbar-content>
       <cds-table-toolbar-search
-        *ngIf="tableConfig.searchable"
+        *ngIf="isSearchable"
         [expandable]="true"
         [formControl]="searchFormControl"
       ></cds-table-toolbar-search>
@@ -51,40 +49,53 @@
       <cds-overflow-menu-option
         *ngFor="let action of data.actions"
         [type]="action.type"
-        (selected)="onActionItemClick(action, data.item)"
+        (selected)="action.callback(data.item)"
       >
-        {{ action.actionName | translate }}
+        <i *ngIf="!!action.iconClass" [ngClass]="action.iconClass"></i>
+
+        {{ action.label | translate }}
       </cds-overflow-menu-option>
     </cds-overflow-menu>
   </ng-template>
 
   <cds-table
-    [enableSingleSelect]="tableConfig.enableSingleSelect"
-    [model]="tableModel"
-    [size]="tableConfig.size"
+    *ngIf="!!obs.sort"
+    [enableSingleSelect]="enableSingleSelect"
+    [model]="loading ? skeletonModel : model"
+    [showSelectionColumn]="showSelectionColumn"
     [skeleton]="loading"
-    [sortable]="tableConfig.sortable"
-    [showSelectionColumn]="tableConfig.showSelectionColumn"
-    [striped]="tableConfig.striped"
-    (sort)="onSortClick($event)"
+    [striped]="striped"
+    (sort)="onSort(model.header[$event])"
     (rowClick)="onRowClick($event)"
   >
-    <tbody>
-      <tr>
-        <td [attr.colspan]="numberOfColumns">
+    <tbody cdsTableBody>
+      <tr class="valtimo-carbon-list__no-results">
+        <td [attr.colspan]="model.header.length + (showSelectionColumn ? 1 : 0)">
           <ng-content></ng-content>
+        </td>
+
+        <td [attr.colspan]="model.header.length + (showSelectionColumn ? 1 : 0)">
+          {{ 'list.noResults' | translate }}
         </td>
       </tr>
     </tbody>
   </cds-table>
 
   <cds-pagination
-    *ngIf="tableModel.totalDataLength && tableConfig.withPagination"
+    *ngIf="paginationModel && items.length"
     [itemsPerPageOptions]="paginatorConfig.itemsPerPageOptions"
-    [model]="tableModel"
+    [model]="paginationModel"
     [showPageInput]="paginatorConfig.showPageInput"
     [skeleton]="loading"
     [translations]="paginationTranslations$ | async"
     (selectPage)="onSelectPage($event)"
   ></cds-pagination>
 </cds-table-container>
+
+<ng-template #actionItem let-data="data">
+  <i
+    class="clickable"
+    [ngClass]="data.iconClass"
+    (click)="$event.stopPropagation(); data.callback(data.item)"
+  ></i>
+</ng-template>

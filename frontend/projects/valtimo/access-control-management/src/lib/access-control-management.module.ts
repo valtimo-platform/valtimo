@@ -17,7 +17,7 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {
-  CarbonTableModule,
+  CarbonListModule,
   ConfirmationModalModule,
   EditorModule,
   RenderInPageHeaderDirectiveModule,
@@ -48,10 +48,9 @@ import {ExportRoleModalComponent} from './components/export-role-modal/export-ro
     ExportRoleModalComponent,
   ],
   imports: [
+    CommonModule,
     AccessControlManagementRoutingModule,
     ButtonModule,
-    CarbonTableModule,
-    CommonModule,
     FormsModule,
     ModalModule,
     TranslateModule,
@@ -65,6 +64,7 @@ import {ExportRoleModalComponent} from './components/export-role-modal/export-ro
     IconModule,
     DialogModule,
     NotificationModule,
+    CarbonListModule,
   ],
 })
 export class AccessControlManagementModule {}
