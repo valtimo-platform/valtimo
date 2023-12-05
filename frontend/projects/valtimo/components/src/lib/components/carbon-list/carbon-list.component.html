@@ -17,6 +17,7 @@
   *ngIf="{
     sort: sort$ | async
   } as obs"
+  class="valtimo-carbon-list"
 >
   <cds-table-header *ngIf="header">
     <ng-content select="[header]"></ng-content>
