@@ -148,10 +148,12 @@ body {
   }
 }
 
-.main-content label {
-  margin-bottom: 0 !important;
-}
+.valtimo-carbon-list {
+  .cds--checkbox-label {
+    margin-bottom: 0 !important;
+  }
 
-.valtimo-carbon-list__tabs cds-tab {
-  display: none !important;
+  &__tabs cds-tab {
+    display: none !important;
+  }
 }

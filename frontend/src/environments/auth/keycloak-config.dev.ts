@@ -31,7 +31,7 @@ const keycloakAuthenticationProviders: AuthProviders = {
 };
 
 const keycloakConfigDev: KeycloakConfig = {
-  url: 'http://localhost:8081/auth/',
+  url: 'http://localhost:8082/auth/',
   realm: 'valtimo',
   clientId: 'valtimo-console',
 };
