@@ -17,6 +17,8 @@
 import {TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {ProcessService} from './process.service';
+import {VALTIMO_CONFIG} from '@valtimo/config';
+import {environment} from '@src/environments/environment';
 
 describe('ProcessService', () => {
   let mockConfig;
@@ -24,11 +26,11 @@ describe('ProcessService', () => {
   let service: ProcessService;
 
   beforeEach(() => {
-    mockConfig = {endpointUri: '/api/'};
+    mockConfig = {endpointUri: '/api/v1/'};
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [ProcessService],
+      providers: [ProcessService, {provide: VALTIMO_CONFIG, useValue: environment}],
     });
 
     httpTestingController = TestBed.inject(HttpTestingController);

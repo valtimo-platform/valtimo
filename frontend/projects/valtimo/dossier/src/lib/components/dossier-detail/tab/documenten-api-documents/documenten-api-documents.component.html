@@ -85,7 +85,7 @@
   </div>
 </ng-template>
 
-<ng-template #downloadButton let-item="item" let-index="index">
+<ng-template #downloadButton let-index="index" let-item="item">
   <div
     class="download-button-container"
     *ngIf="{isDownloading: indexesIncludeIndex(downloadingFileIndexes$ | async, index)} as vars"

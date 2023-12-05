@@ -34,11 +34,22 @@
       "confirm": "Wijzig tabblad"
     },
     "noResults": {
-      "description": "Klik op <strong>Creëer Nieuw Dossier</strong> om een nieuw dossier aan te maken.",
-      "title": "Geen dossiers gevonden"
+      "ALL": {
+        "description": "Er is hier niets te doen.",
+        "title": "Er zijn geen dossiers"
+      },
+      "MINE": {
+        "description": "Even pauze.",
+        "title": "Er zijn geen dossiers aan jou toegewezen"
+      },
+      "OPEN": {
+        "description": "Kom later nog eens terug.",
+        "title": "Alle dossiers hebben een behandelaar"
+      }
     },
     "pagination": {
       "itemsPerPage": "Dossiers per pagina",
+      "totalItem": "{{start}}-{{end}} van {{total}} dossier",
       "totalItems": "{{start}}-{{end}} van {{total}} dossiers"
     },
     "select": {
@@ -470,17 +481,24 @@
     },
     "mine": {
       "title": "Mijn taken",
-      "description": "Overzicht van alle toegewezen taken"
+      "description": "Overzicht van alle toegewezen taken",
+      "noResultsDescription": "Even pauze.",
+      "noResultsTitle": "Je hebt geen taken op je naam staan"
     },
     "open": {
       "title": "Niet toegewezen taken",
-      "description": "Overzicht van alle niet toegewezen taken"
+      "description": "Overzicht van alle niet toegewezen taken",
+      "noResultsDescription": "Kom later nog eens terug.",
+      "noResultsTitle": "Alle taken zijn al toegewezen"
     },
     "all": {
       "title": "Alle taken",
-      "description": "Overzicht van alle taken"
+      "description": "Overzicht van alle taken",
+      "noResultsDescription": "Er is hier niets te doen.",
+      "noResultsTitle": "Er staan geen taken open"
     },
-    "goToCase": "Ga naar zaak"
+    "goToCase": "Ga naar dossier",
+    "taskLocked": "Je hebt geen toegang tot deze taak"
   },
   "Task": "Taak",
   "Tasks": "Taken",
@@ -611,13 +629,17 @@
     "save": "Opslaan",
     "more": "Meer",
     "export": "Exporteren",
-    "table": {
-      "itemsPerPage": "Artikelen per pagina",
-      "multipleSelect": "{{count}} artikelen geselecteerd",
+    "list": {
+      "itemsPerPage": "Items per pagina",
+      "multipleSelect": "{{count}} items geselecteerd",
       "ofLastPage": "van {{last}} pagina",
       "ofLastPages": "van {{last}} pagina's",
-      "singleSelect": "1 artikel geselecteerd",
-      "totalItems": "{{start}}-{{end}} van {{total}} artikelen"
+      "singleSelect": "1 item geselecteerd",
+      "totalItems": "{{start}}-{{end}} van {{total}} items",
+      "viewMode": {
+        "table": "Tabel",
+        "tile": "Tegel"
+      }
     },
     "pendingChanges": {
       "title": "Pagina verlaten",

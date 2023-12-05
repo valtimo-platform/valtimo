@@ -118,7 +118,7 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnChanges
 
   private prefillForm(): void {
     const properties = cloneDeep(this.properties);
-    const submission: {[key: string]: string} = {};
+    const submission: {[key: string]: any} = {};
 
     submission.objectsApiConnectionName = properties.objectsApiConnectionName;
     submission.openNotificatieConnectionName = properties.openNotificatieConnectionName;

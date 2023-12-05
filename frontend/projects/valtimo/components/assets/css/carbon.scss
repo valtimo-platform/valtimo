@@ -133,10 +133,6 @@ body {
     }
   }
 
-  &--list-box__wrapper {
-    z-index: 99999 !important;
-  }
-
   &--modal.is-visible {
     z-index: 10001 !important;
   }
@@ -148,8 +144,24 @@ body {
   &--overflow-menu-options__btn {
     min-width: 100%;
   }
+
+  &--list-box {
+    &__field {
+      z-index: 1;
+    }
+
+    &__wrapper {
+      z-index: 100001 !important;
+    }
+  }
 }
 
-.hide-after::after {
-  display: none;
+.valtimo-carbon-list {
+  .cds--checkbox-label {
+    margin-bottom: 0 !important;
+  }
+
+  &__tabs cds-tab {
+    display: none !important;
+  }
 }

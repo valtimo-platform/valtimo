@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-modal valtimoCdsModal [open]="open" showFooter="true">
+<cds-modal valtimoCdsModal [open]="open" (close)="closeModal()" showFooter="true">
   <cds-modal-header showCloseButton="true" (closeSelect)="closeModal()">
     <h3 cdsModalHeaderHeading>{{ 'dossier.bulkAssign.modal.title' | translate }}</h3>
   </cds-modal-header>

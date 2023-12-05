@@ -17,14 +17,16 @@
 import {TestBed} from '@angular/core/testing';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
 import {ChoicefieldService} from './choicefield.service';
+import {VALTIMO_CONFIG} from '@valtimo/config';
+import {environment} from '@src/environments/environment';
 
 describe('ChoicefieldService', () => {
-  beforeEach(() =>
+  beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [ChoicefieldService],
+      providers: [ChoicefieldService, {provide: VALTIMO_CONFIG, useValue: environment}],
       imports: [HttpClientTestingModule],
-    })
-  );
+    });
+  });
 
   it('should be created', () => {
     const service: ChoicefieldService = TestBed.inject(ChoicefieldService);

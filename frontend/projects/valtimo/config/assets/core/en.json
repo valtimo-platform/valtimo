@@ -34,11 +34,22 @@
       "confirm": "Change tab"
     },
     "noResults": {
-      "description": "Click <strong>Create New Case</strong> to start a new case.",
-      "title": "No cases found"
+      "ALL": {
+        "description": "There is nothing to do here.",
+        "title": "There are no cases"
+      },
+      "MINE": {
+        "description": "Time for a short break.",
+        "title": "No cases assigned to you"
+      },
+      "OPEN": {
+        "description": "Come back later.",
+        "title": "All cases have been assigned"
+      }
     },
     "pagination": {
       "itemsPerPage": "Cases per page",
+      "totalItem": "{{start}}-{{end}} of {{total}} case",
       "totalItems": "{{start}}-{{end}} of {{total}} cases"
     },
     "select": {
@@ -471,17 +482,24 @@
     },
     "mine": {
       "title": "My tasks",
-      "description": "Overview of all tasks assigned to you"
+      "description": "Overview of all tasks assigned to you",
+      "noResultsDescription": "Time for a short break.",
+      "noResultsTitle": "No tasks assigned to you"
     },
     "open": {
       "title": "Unassigned tasks",
-      "description": "Overview of all unassigned tasks"
+      "description": "Overview of all unassigned tasks",
+      "noResultsDescription": "Come back later.",
+      "noResultsTitle": "All tasks have been assigned"
     },
     "all": {
       "title": "All tasks",
-      "description": "Overview of all tasks"
+      "description": "Overview of all tasks",
+      "noResultsDescription": "There is nothing to do here.",
+      "noResultsTitle": "No open tasks"
     },
-    "goToCase": "Go to case"
+    "goToCase": "Go to case",
+    "taskLocked": "You don't have access to this task"
   },
   "Task": "Task",
   "Tasks": "Tasks",
@@ -612,13 +630,18 @@
     "save": "Save",
     "more": "More",
     "export": "Export",
-    "table": {
+    "list": {
       "itemsPerPage": "Items per page",
       "multipleSelect": "{{count}} items selected",
       "ofLastPage": "of {{last}} page",
       "ofLastPages": "of {{last}} pages",
       "singleSelect": "1 item selected",
-      "totalItems": "{{start}}-{{end}} of {{total}} items"
+      "totalItems": "{{start}}-{{end}} of {{total}} items",
+      "totalItem": "{{start}}-{{end}} of {{total}} item",
+      "viewMode": {
+        "table": "Table",
+        "tile": "Tile"
+      }
     },
     "pendingChanges": {
       "title": "Leaving page",

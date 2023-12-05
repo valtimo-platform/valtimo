@@ -40,18 +40,14 @@
       </ng-container>
       <ng-container *ngFor="let task of tasks">
         <valtimo-widget>
-          <div
-            class="p-3 clickable hoverable"
-            (click)="rowTaskClick(task)"
-            *ngIf="!task.isLocked()"
-          >
+          <div *ngIf="!task.isLocked" class="p-3 clickable hoverable" (click)="rowTaskClick(task)">
             <span class="float-right badge badge-pill badge-primary">{{
               'summary.taskOpen' | translate
             }}</span>
             <strong>{{ task.name }}</strong>
             <div class="mt-1">{{ 'summary.taskCreated' | translate }} {{ task.created }}</div>
           </div>
-          <div class="p-3 hoverable" *ngIf="task.isLocked()">
+          <div class="p-3 hoverable" *ngIf="task.isLocked">
             <span
               class="float-right badge badge-pill badge-secondary bg-grey"
               ngbTooltip="{{ 'summary.taskLocked' | translate }}"

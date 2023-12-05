@@ -53,7 +53,7 @@ export class DossierDetailTabNotesComponent implements OnInit {
   public readonly canAdd$: Observable<boolean> = this.documentId$.pipe(
     switchMap((identifier: string) =>
       this.permissionService.requestPermission(CAN_ADD_NOTE_PERMISSION, {
-        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.domain,
+        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
         identifier,
       })
     )

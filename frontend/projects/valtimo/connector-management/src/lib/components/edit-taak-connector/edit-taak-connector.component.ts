@@ -114,7 +114,7 @@ export class EditTaakConnectorComponent implements OnInit, OnChanges, OnDestroy 
         tap(() => {
           if (this.defaultName !== undefined) {
             const properties = cloneDeep(this.properties);
-            const submission: {[key: string]: string} = {};
+            const submission: {[key: string]: any} = {};
 
             submission.objectsApiConnectionName = properties.objectsApiConnectionName;
             submission.openNotificatieConnectionName = properties.openNotificatieConnectionName;

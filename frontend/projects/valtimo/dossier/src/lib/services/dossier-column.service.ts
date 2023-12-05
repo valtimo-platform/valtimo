@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {Injectable} from '@angular/core';
-import {TranslateService} from '@ngx-translate/core';
-import {ColumnConfig} from '@valtimo/components';
 import {ConfigService, DefinitionColumn} from '@valtimo/config';
-import {CaseListColumn, DocumentService} from '@valtimo/document';
 import {map, Observable} from 'rxjs';
+import {CaseListColumn, DocumentService} from '@valtimo/document';
+import {ListField} from '@valtimo/components';
+import {TranslateService} from '@ngx-translate/core';
 
 @Injectable()
 export class DossierColumnService {
@@ -56,17 +57,19 @@ export class DossierColumnService {
     return !!this.configService.config?.customDefinitionTables[documentDefinitionName];
   }
 
-  mapDefinitionColumnsToColumnConfigs(
+  mapDefinitionColumnsToListFields(
     columns: Array<DefinitionColumn>,
-    hasEnvConfig: boolean
-  ): Array<ColumnConfig> {
+    hasEnvColumnConfig: boolean,
+    hasApiColumnConfig: boolean
+  ): Array<ListField> {
     return columns.map(column => {
       const translationKey = `fieldLabels.${column.translationKey}`;
       const translation = this.translateService.instant(translationKey);
       const validTranslation = translation !== translationKey && translation;
       return {
-        key: hasEnvConfig ? column.propertyName : column.translationKey,
-        label: column.title || translationKey || validTranslation,
+        key:
+          hasEnvColumnConfig || !hasApiColumnConfig ? column.propertyName : column.translationKey,
+        label: column.title || validTranslation || column.translationKey,
         sortable: column.sortable,
         ...(column.viewType && {viewType: column.viewType}),
         ...(column.enum && {enum: column.enum}),

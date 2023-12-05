@@ -84,7 +84,9 @@
     <i
       class="mdi mdi-arrow-down-bold btn btn-outline-secondary"
       (click)="moveRow(index, false, $event, obs.documentDefinitionName)"
-      [ngClass]="{'disabled disabled-move-row-button': index === length - 1 || obs.disableInput}"
+      [ngClass]="{
+        'disabled disabled-move-row-button': index === length - 1 || obs.disableInput
+      }"
     ></i>
   </div>
 </ng-template>

@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {ArrowDown16, ArrowUp16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {CarbonTableConfig, ColumnConfig, ViewType} from '@valtimo/components';
+import {ColumnConfig, ViewType} from '@valtimo/components';
 import {ApiTabItem} from '@valtimo/dossier';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, map, Observable, tap} from 'rxjs';
@@ -76,7 +76,6 @@ export class DossierManagementTabsComponent implements AfterViewInit {
     })
   );
   public readonly tab$ = new BehaviorSubject<ApiTabItem | null>(null);
-  public readonly tableConfig: CarbonTableConfig = {sortable: false};
 
   constructor(
     private readonly cd: ChangeDetectorRef,
@@ -121,7 +120,7 @@ export class DossierManagementTabsComponent implements AfterViewInit {
       {
         actions: [
           {
-            actionName: 'interface.delete',
+            label: 'interface.delete',
             callback: this.openDeleteConfirmationModal.bind(this),
             type: 'danger',
           },
@@ -154,7 +153,7 @@ export class DossierManagementTabsComponent implements AfterViewInit {
     this.openAddModal$.next(true);
   }
 
-  public onRowClick(tab: ApiTabItem): void {
+  public onRowClicked(tab: ApiTabItem): void {
     this.tab$.next(tab);
     this.openEditModal$.next(true);
   }

@@ -15,14 +15,15 @@
   -->
 
 <ng-container *ngIf="tableData$ | async as data">
-  <valtimo-carbon-table
-    [data]="data.items"
+  <valtimo-carbon-list
+    [header]="true"
+    [items]="data.items"
     [loading]="data.loading"
     [fields]="fields"
-    (rowClick)="onRowClick($event)"
+    (rowClicked)="onRowClick($event)"
     class="valtimo-dashboard-management__table"
   >
-    <ng-container carbonTableTitle> {{ 'dashboardManagement.title' | translate }} </ng-container>
+    <ng-container header> {{ 'dashboardManagement.title' | translate }} </ng-container>
 
     <div carbonToolbarContent>
       <ng-container [ngTemplateOutlet]="addDashboardButton"></ng-container>
@@ -33,7 +34,7 @@
       description="{{ 'dashboardManagement.noResults.description' | translate }}"
       title="{{ 'dashboardManagement.noResults.title' | translate }}"
     ></valtimo-no-results>
-  </valtimo-carbon-table>
+  </valtimo-carbon-list>
 </ng-container>
 
 <cds-modal

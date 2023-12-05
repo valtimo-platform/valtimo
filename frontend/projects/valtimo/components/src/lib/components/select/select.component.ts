@@ -38,10 +38,16 @@ import {map, take} from 'rxjs/operators';
 export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public set items(value: Array<SelectItem>) {
     this._listItems$.next(
-      value?.map(
-        item =>
-          ({content: item.text || item.translationKey, id: item.id, selected: false}) as ListItem
-      ) || []
+      Array.isArray(value)
+        ? value.map(
+            item =>
+              ({
+                content: item.text || item.translationKey,
+                id: item.id,
+                selected: false,
+              }) as ListItem
+          )
+        : []
     );
   }
   @Input() public defaultSelection!: SelectItem;
@@ -70,7 +76,6 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
 
   public readonly selected$ = new BehaviorSubject<SelectedValue>('');
   private readonly _listItems$ = new BehaviorSubject<Array<ListItem>>([]);
-
   public readonly listItems$: Observable<Array<ListItem>> = combineLatest([
     this._listItems$,
     this.selected$,
@@ -91,7 +96,6 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
       })
     )
   );
-
   private _selectedSubscription!: Subscription;
   private _clearSubjectSubscription!: Subscription;
 

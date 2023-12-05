@@ -18,6 +18,8 @@ import {TestBed} from '@angular/core/testing';
 
 import {FormService} from './form.service';
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
+import {VALTIMO_CONFIG} from '@valtimo/config';
+import {environment} from '@src/environments/environment';
 
 describe('FormService', () => {
   let mockConfig;
@@ -29,7 +31,7 @@ describe('FormService', () => {
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [FormService],
+      providers: [FormService, {provide: VALTIMO_CONFIG, useValue: environment}],
     });
 
     httpTestingController = TestBed.inject(HttpTestingController);
