@@ -61,7 +61,7 @@ export class DossierManagementDetailComponent implements OnInit {
       });
   }
 
-  public publicopenDossierConnectModal(): void {
+  public openDossierConnectModal(): void {
     this._dossierConnectModal.openModal(this.documentDefinition);
   }
 
