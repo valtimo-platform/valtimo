@@ -254,9 +254,9 @@ export function tabsFactory() {
         {
           id: 'test-component',
           component: CustomMapsTabComponent,
-        }
-      ]
-    }
+        },
+      ],
+    },
   ],
   bootstrap: [AppComponent],
 })

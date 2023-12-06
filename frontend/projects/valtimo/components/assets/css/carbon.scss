@@ -165,3 +165,7 @@ body {
     display: none !important;
   }
 }
+
+.hide-after::after {
+  display: none;
+}

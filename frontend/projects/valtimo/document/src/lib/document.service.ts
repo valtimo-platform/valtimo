@@ -26,6 +26,7 @@ import {
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
   DocumentDefinitions,
+  DocumentDefinitionVersionsResult,
   DocumentResult,
   Documents,
   DocumentSendMessageRequest,
@@ -62,7 +63,7 @@ import {AdvancedDocumentSearchRequest} from './advanced-document-search-request'
   providedIn: 'root',
 })
 export class DocumentService {
-  private valtimoEndpointUri: string;
+  private readonly valtimoEndpointUri!: string;
 
   private readonly EMPTY_DOCUMENTS_RESPONSE: Documents | SpecifiedDocuments = {
     content: [],
@@ -89,27 +90,27 @@ export class DocumentService {
     return this.http.get<DocumentDefinitions>(`${this.valtimoEndpointUri}v1/document-definition`);
   }
 
-  queryDefinitions(params?: any): Observable<Page<DocumentDefinition>> {
+  public queryDefinitions(params?: any): Observable<Page<DocumentDefinition>> {
     return this.http.get<Page<DocumentDefinition>>(
       `${this.valtimoEndpointUri}v1/document-definition`,
       {params}
     );
   }
 
-  queryDefinitionsForManagement(params?: any): Observable<Page<DocumentDefinition>> {
+  public queryDefinitionsForManagement(params?: any): Observable<Page<DocumentDefinition>> {
     return this.http.get<Page<DocumentDefinition>>(
       `${this.valtimoEndpointUri}management/v1/document-definition`,
       {params}
     );
   }
 
-  getDocumentDefinition(documentDefinitionName: string): Observable<DocumentDefinition> {
+  public getDocumentDefinition(documentDefinitionName: string): Observable<DocumentDefinition> {
     return this.http.get<DocumentDefinition>(
       `${this.valtimoEndpointUri}v1/document-definition/${documentDefinitionName}`
     );
   }
 
-  getDocumentDefinitionForManagement(
+  public getDocumentDefinitionForManagement(
     documentDefinitionName: string
   ): Observable<DocumentDefinition> {
     return this.http.get<DocumentDefinition>(
@@ -117,7 +118,7 @@ export class DocumentService {
     );
   }
 
-  getDocuments(documentSearchRequest: DocumentSearchRequest): Observable<Documents> {
+  public getDocuments(documentSearchRequest: DocumentSearchRequest): Observable<Documents> {
     return this.http.post<Documents>(
       `${this.valtimoEndpointUri}v1/document-search`,
       documentSearchRequest.asHttpBody(),
@@ -127,7 +128,7 @@ export class DocumentService {
     );
   }
 
-  getDocumentsSearch(
+  public getDocumentsSearch(
     documentSearchRequest: AdvancedDocumentSearchRequest,
     searchOperator?: SearchOperator,
     assigneeFilter?: AssigneeFilter,
@@ -149,7 +150,7 @@ export class DocumentService {
       .pipe(catchError(() => of(this.EMPTY_DOCUMENTS_RESPONSE as Documents)));
   }
 
-  getSpecifiedDocumentsSearch(
+  public getSpecifiedDocumentsSearch(
     documentSearchRequest: AdvancedDocumentSearchRequest,
     searchOperator?: SearchOperator,
     assigneeFilter?: AssigneeFilter,
@@ -171,27 +172,33 @@ export class DocumentService {
       .pipe(catchError(() => of(this.EMPTY_DOCUMENTS_RESPONSE as SpecifiedDocuments)));
   }
 
-  getDocumentSearchFields(documentDefinitionName: string): Observable<Array<SearchField>> {
+  public getDocumentSearchFields(documentDefinitionName: string): Observable<Array<SearchField>> {
     return this.http.get<Array<SearchField>>(
       `${this.valtimoEndpointUri}v1/document-search/${documentDefinitionName}/fields`
     );
   }
 
-  putDocumentSearch(documentDefinitionName: string, request: Array<SearchField>): Observable<void> {
+  public putDocumentSearch(
+    documentDefinitionName: string,
+    request: Array<SearchField>
+  ): Observable<void> {
     return this.http.put<void>(
       `${this.valtimoEndpointUri}v1/document-search/${documentDefinitionName}/fields`,
       [...request]
     );
   }
 
-  postDocumentSearch(documentDefinitionName: string, request: SearchField): Observable<void> {
+  public postDocumentSearch(
+    documentDefinitionName: string,
+    request: SearchField
+  ): Observable<void> {
     return this.http.post<void>(
       `${this.valtimoEndpointUri}v1/document-search/${documentDefinitionName}/fields`,
       {...request}
     );
   }
 
-  deleteDocumentSearch(documentDefinitionName: string, key: string): Observable<any> {
+  public deleteDocumentSearch(documentDefinitionName: string, key: string): Observable<any> {
     const options = {
       headers: new HttpHeaders({
         'Content-Type': 'application/json',
@@ -203,11 +210,11 @@ export class DocumentService {
     );
   }
 
-  getDropdownDataProviders(): Observable<Array<string>> {
+  public getDropdownDataProviders(): Observable<Array<string>> {
     return this.http.get<Array<string>>(`${this.valtimoEndpointUri}v1/data/dropdown-list/provider`);
   }
 
-  getDropdownData(
+  public getDropdownData(
     provider: string,
     documentDefinitionName: string,
     fieldKey: string
@@ -218,7 +225,7 @@ export class DocumentService {
     );
   }
 
-  postDropdownData(
+  public postDropdownData(
     provider: string,
     documentDefinitionName: string,
     fieldKey: string,
@@ -231,7 +238,7 @@ export class DocumentService {
     );
   }
 
-  deleteDropdownData(
+  public deleteDropdownData(
     provider: string,
     documentDefinitionName: string,
     fieldKey: string
@@ -242,22 +249,22 @@ export class DocumentService {
     );
   }
 
-  getDocument(documentId: string): Observable<Document> {
+  public getDocument(documentId: string): Observable<Document> {
     return this.http.get<Document>(`${this.valtimoEndpointUri}v1/document/${documentId}`);
   }
 
-  modifyDocument(document: any): Observable<DocumentResult> {
+  public modifyDocument(document: any): Observable<DocumentResult> {
     return this.http.put<DocumentResult>(`${this.valtimoEndpointUri}v1/document`, document);
   }
 
   // ProcessDocument-calls
-  getProcessDocumentDefinitions(): Observable<ProcessDocumentDefinition> {
+  public getProcessDocumentDefinitions(): Observable<ProcessDocumentDefinition> {
     return this.http.get<ProcessDocumentDefinition>(
       `${this.valtimoEndpointUri}v1/process-document/definition`
     );
   }
 
-  findProcessDocumentDefinitions(
+  public findProcessDocumentDefinitions(
     documentDefinitionName: string
   ): Observable<ProcessDocumentDefinition[]> {
     return this.http.get<ProcessDocumentDefinition[]>(
@@ -265,7 +272,7 @@ export class DocumentService {
     );
   }
 
-  findProcessDocumentDefinitionsByProcessDefinitionKey(
+  public findProcessDocumentDefinitionsByProcessDefinitionKey(
     processDefinitionKey: string
   ): Observable<ProcessDocumentDefinition[]> {
     return this.http.get<ProcessDocumentDefinition[]>(
@@ -273,13 +280,13 @@ export class DocumentService {
     );
   }
 
-  findProcessDocumentInstances(documentId: string): Observable<ProcessDocumentInstance[]> {
+  public findProcessDocumentInstances(documentId: string): Observable<ProcessDocumentInstance[]> {
     return this.http.get<ProcessDocumentInstance[]>(
       `${this.valtimoEndpointUri}v1/process-document/instance/document/${documentId}`
     );
   }
 
-  newDocumentAndStartProcess(
+  public newDocumentAndStartProcess(
     request: NewDocumentAndStartProcessRequestImpl
   ): Observable<NewDocumentAndStartProcessResult> {
     return this.http.post<NewDocumentAndStartProcessResult>(
@@ -288,7 +295,7 @@ export class DocumentService {
     );
   }
 
-  modifyDocumentAndCompleteTask(
+  public modifyDocumentAndCompleteTask(
     request: ModifyDocumentAndCompleteTaskRequestImpl
   ): Observable<ModifyDocumentAndCompleteTaskResult> {
     return this.http.post<ModifyDocumentAndCompleteTaskResult>(
@@ -297,7 +304,7 @@ export class DocumentService {
     );
   }
 
-  modifyDocumentAndStartProcess(
+  public modifyDocumentAndStartProcess(
     request: ModifyDocumentAndStartProcessRequestImpl
   ): Observable<ModifyDocumentAndStartProcessResult> {
     return this.http.post<ModifyDocumentAndStartProcessResult>(
@@ -306,7 +313,7 @@ export class DocumentService {
     );
   }
 
-  createProcessDocumentDefinition(
+  public createProcessDocumentDefinition(
     request: ProcessDocumentDefinitionRequest
   ): Observable<ProcessDocumentDefinition> {
     return this.http.post<ProcessDocumentDefinition>(
@@ -315,7 +322,7 @@ export class DocumentService {
     );
   }
 
-  createDocumentDefinitionForManagement(
+  public createDocumentDefinitionForManagement(
     documentDefinitionCreateRequest: DocumentDefinitionCreateRequest
   ): Observable<void> {
     const options = {
@@ -330,7 +337,9 @@ export class DocumentService {
     );
   }
 
-  deleteProcessDocumentDefinition(request: ProcessDocumentDefinitionRequest): Observable<any> {
+  public deleteProcessDocumentDefinition(
+    request: ProcessDocumentDefinitionRequest
+  ): Observable<any> {
     const options = {
       headers: new HttpHeaders({
         'Content-Type': 'application/json',
@@ -340,7 +349,7 @@ export class DocumentService {
     return this.http.delete(`${this.valtimoEndpointUri}v1/process-document/definition`, options);
   }
 
-  getAuditLog(documentId: string, page: number = 0): Observable<Page<AuditRecord>> {
+  public getAuditLog(documentId: string, page: number = 0): Observable<Page<AuditRecord>> {
     let params = new HttpParams();
     params = params.set('page', page.toString());
     return this.http.get<Page<AuditRecord>>(
@@ -349,14 +358,14 @@ export class DocumentService {
     );
   }
 
-  assignResource(documentId: string, resourceId: string): Observable<void> {
+  public assignResource(documentId: string, resourceId: string): Observable<void> {
     return this.http.post<void>(
       `${this.valtimoEndpointUri}v1/document/${documentId}/resource/${resourceId}`,
       {}
     );
   }
 
-  removeResource(documentId: string, resourceId: string): Observable<void> {
+  public removeResource(documentId: string, resourceId: string): Observable<void> {
     const options = {
       headers: new HttpHeaders({
         'Content-Type': 'application/json',
@@ -368,7 +377,7 @@ export class DocumentService {
     );
   }
 
-  removeDocumentDefinitionForManagement(
+  public removeDocumentDefinitionForManagement(
     name: string
   ): Observable<UndeployDocumentDefinitionResult> {
     return this.http.delete<UndeployDocumentDefinitionResult>(
@@ -376,23 +385,23 @@ export class DocumentService {
     );
   }
 
-  sendMessage(documentId: string, request: DocumentSendMessageRequest): Observable<any> {
+  public sendMessage(documentId: string, request: DocumentSendMessageRequest): Observable<any> {
     return this.http.post(`${this.valtimoEndpointUri}v1/document/${documentId}/message`, request);
   }
 
-  getDocumentTypes(documentDefinitionName: string): Observable<Array<DocumentType>> {
+  public getDocumentTypes(documentDefinitionName: string): Observable<Array<DocumentType>> {
     return this.http.get<Array<DocumentType>>(
       `${this.valtimoEndpointUri}v1/documentdefinition/${documentDefinitionName}/zaaktype/documenttype`
     );
   }
 
-  getLinkedUploadProcess(documentDefinitionName: string): Observable<UploadProcessLink> {
+  public getLinkedUploadProcess(documentDefinitionName: string): Observable<UploadProcessLink> {
     return this.http.get<UploadProcessLink>(
       `${this.valtimoEndpointUri}v1/process-document/demo/${documentDefinitionName}/process`
     );
   }
 
-  updateLinkedUploadProcess(
+  public updateLinkedUploadProcess(
     documentDefinitionName: string,
     processDefinitionKey: string
   ): Observable<UploadProcessLink> {
@@ -405,13 +414,13 @@ export class DocumentService {
     );
   }
 
-  deleteLinkedUploadProcess(documentDefinitionName: string): Observable<void> {
+  public deleteLinkedUploadProcess(documentDefinitionName: string): Observable<void> {
     return this.http.delete<void>(
       `${this.valtimoEndpointUri}v1/process-document/demo/${documentDefinitionName}/process`
     );
   }
 
-  getProcessDocumentDefinitionFromProcessInstanceId(
+  public getProcessDocumentDefinitionFromProcessInstanceId(
     processInstanceId: string
   ): Observable<ProcessDocumentDefinition> {
     return this.http.get<ProcessDocumentDefinition>(
@@ -419,7 +428,7 @@ export class DocumentService {
     );
   }
 
-  assignHandlerToDocument(
+  public assignHandlerToDocument(
     documentId: string,
     assigneeId: string
   ): Observable<AssignHandlerToDocumentResult> {
@@ -429,23 +438,23 @@ export class DocumentService {
     );
   }
 
-  unassignHandlerFromDocument(documentId: string): Observable<void> {
+  public unassignHandlerFromDocument(documentId: string): Observable<void> {
     return this.http.post<void>(`${this.valtimoEndpointUri}v1/document/${documentId}/unassign`, {});
   }
 
-  getCandidateUsers(documentId: string): Observable<Array<User>> {
+  public getCandidateUsers(documentId: string): Observable<Array<User>> {
     return this.http.get<Array<User>>(
       `${this.valtimoEndpointUri}v1/document/${documentId}/candidate-user`
     );
   }
 
-  getOpenDocumentCount(): Observable<Array<OpenDocumentCount>> {
+  public getOpenDocumentCount(): Observable<Array<OpenDocumentCount>> {
     return this.http.get<Array<OpenDocumentCount>>(
       `${this.valtimoEndpointUri}v1/document-definition/open/count`
     );
   }
 
-  patchCaseSettingsForManagement(
+  public patchCaseSettingsForManagement(
     documentDefinitionName: string,
     request: CaseSettings
   ): Observable<CaseSettings> {
@@ -455,31 +464,33 @@ export class DocumentService {
     );
   }
 
-  getCaseSettings(documentDefinitionName: string): Observable<CaseSettings> {
+  public getCaseSettings(documentDefinitionName: string): Observable<CaseSettings> {
     return this.http.get<CaseSettings>(
       `${this.valtimoEndpointUri}v1/case/${documentDefinitionName}/settings`
     );
   }
 
-  getCaseSettingsForManagement(documentDefinitionName: string): Observable<CaseSettings> {
+  public getCaseSettingsForManagement(documentDefinitionName: string): Observable<CaseSettings> {
     return this.http.get<CaseSettings>(
       `${this.valtimoEndpointUri}management/v1/case/${documentDefinitionName}/settings`
     );
   }
 
-  getCaseList(documentDefinitionName: string): Observable<Array<CaseListColumn>> {
+  public getCaseList(documentDefinitionName: string): Observable<Array<CaseListColumn>> {
     return this.http.get<Array<CaseListColumn>>(
       `${this.valtimoEndpointUri}v1/case/${documentDefinitionName}/list-column`
     );
   }
 
-  getCaseListForManagement(documentDefinitionName: string): Observable<Array<CaseListColumn>> {
+  public getCaseListForManagement(
+    documentDefinitionName: string
+  ): Observable<Array<CaseListColumn>> {
     return this.http.get<Array<CaseListColumn>>(
       `${this.valtimoEndpointUri}management/v1/case/${documentDefinitionName}/list-column`
     );
   }
 
-  postCaseListForManagement(
+  public postCaseListForManagement(
     documentDefinitionName: string,
     request: CaseListColumn
   ): Observable<CaseListColumn> {
@@ -489,7 +500,7 @@ export class DocumentService {
     );
   }
 
-  putCaseListForManagement(
+  public putCaseListForManagement(
     documentDefinitionName: string,
     request: Array<CaseListColumn>
   ): Observable<Array<CaseListColumn>> {
@@ -499,7 +510,7 @@ export class DocumentService {
     );
   }
 
-  deleteCaseListForManagement(
+  public deleteCaseListForManagement(
     documentDefinitionName: string,
     columnKey: string
   ): Observable<CaseListColumn> {
@@ -508,9 +519,26 @@ export class DocumentService {
     );
   }
 
-  getZakenApiDocuments(documentId: string): Observable<Array<RelatedFile>> {
+  public getZakenApiDocuments(documentId: string): Observable<Array<RelatedFile>> {
     return this.http.get<Array<RelatedFile>>(
       `${this.valtimoEndpointUri}v1/zaken-api/document/${documentId}/files`
+    );
+  }
+
+  public getDocumentDefinitionVersions(
+    documentDefinitionName: string
+  ): Observable<DocumentDefinitionVersionsResult> {
+    return this.http.get<DocumentDefinitionVersionsResult>(
+      `${this.valtimoEndpointUri}management/v1/document-definition/${documentDefinitionName}/version`
+    );
+  }
+
+  public getDocumentDefinitionByVersion(
+    documentDefinitionName: string,
+    version: number
+  ): Observable<DocumentDefinition> {
+    return this.http.get<DocumentDefinition>(
+      `${this.valtimoEndpointUri}management/v1/document-definition/${documentDefinitionName}/version/${version}`
     );
   }
 }

@@ -4,13 +4,15 @@ In order to contribute to this project, please follow the below code formatting 
 
 ## Testing
 
-For the project policy regarding testing, please refer to [the following documentation](./TESTING-POLICY.md).
+For the project policy regarding testing, please refer to
+[the following documentation](./TESTING-POLICY.md).
 
 ## Template
 
 ### Attribute sorting
 
-On an element inside your template code, we recommend you keep to the following sorting of attributes:
+On an element inside your template code, we recommend you keep to the following sorting of
+attributes:
 
 - Structural directives like `*ngIf` and `*ngFor`
 - Angular directives such as `ngStyle` and `ngClass`

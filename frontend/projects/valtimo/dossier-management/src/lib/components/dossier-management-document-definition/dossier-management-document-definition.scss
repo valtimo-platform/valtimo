@@ -14,25 +14,8 @@
  * limitations under the License.
  */
 
-.dossier-actions {
+.loading-container {
   display: flex;
   width: 100%;
-  justify-content: space-between;
-  align-items: flex-end;
-
-  ::ng-deep .version-selection {
-    width: 160px;
-
-    .cds--list-box__selection {
-      display: none;
-    }
-  }
-}
-
-.exporting-message {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
+  justify-content: center;
 }

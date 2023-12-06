@@ -87,7 +87,8 @@ const documentenApiPluginSpecification: PluginSpecification = {
         'Selecteer de plugin die de authenticatie kan afhandelen. Wanneer de selectiebox leeg blijft zal de authenticatie plugin (bv. OpenZaak) eerst aangemaakt moeten worden',
       downloadDocumentMessage:
         'Het downloaden van een document vanuit de Documenten API vereist geen configuratie.',
-      processVariableName: 'Wat is de naam van de procesvariabele waarnaar u het document wilt downloaden?',
+      processVariableName:
+        'Wat is de naam van de procesvariabele waarnaar u het document wilt downloaden?',
     },
     en: {
       title: 'Documenten API',
@@ -145,7 +146,8 @@ const documentenApiPluginSpecification: PluginSpecification = {
         'Select the plugin that can handle the authentication. If the selection box remains empty, the authentication plugin (e.g. OpenZaak) will have to be created first',
       downloadDocumentMessage:
         'Downloading a document form the Documenten API does not require any configuration.',
-      processVariableName: 'What is the name of the process variable you want to download the document to?',
+      processVariableName:
+        'What is the name of the process variable you want to download the document to?',
     },
     de: {
       title: 'Documenten API',
@@ -203,7 +205,8 @@ const documentenApiPluginSpecification: PluginSpecification = {
         'Wählen Sie das Plugin aus, das die Authentifizierung verarbeiten kann. Bleibt das Auswahlfeld leer, muss zunächst das Authentifizierungs-Plugin (z. B. OpenZaak) erstellt werden',
       downloadDocumentMessage:
         'Das Herunterladen eines Dokuments aus der Documenten-API erfordert keine Konfiguration.',
-      processVariableName: 'Wie lautet der Name der Prozessvariablen, in die Sie das Dokument herunterladen möchten?',
+      processVariableName:
+        'Wie lautet der Name der Prozessvariablen, in die Sie das Dokument herunterladen möchten?',
     },
   },
 };

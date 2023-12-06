@@ -14,20 +14,20 @@
   ~ limitations under the License.
   -->
 
-<v-form
-  (valueChange)="formValueChange($event)"
-  *ngIf="{
-    disabled: disabled$ | async,
-    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
-  } as obs"
+<ng-container
+  *ngIf="{documentDefinitionModel: documentDefinitionModel$ | async, loadingDocumentDefinition: loadingDocumentDefinition$ | async} as obs"
 >
-  <v-input
-    name="processVariableName"
-    [title]="'processVariableName' | pluginTranslate: pluginId | async"
-    [margin]="true"
-    [defaultValue]="obs.prefill?.processVariableName"
-    [disabled]="obs.disabled"
-    [required]="false"
-    [tooltip]="'processVariableTooltip' | pluginTranslate: pluginId | async"
-  ></v-input>
-</v-form>
+  <valtimo-editor
+    *ngIf="!obs.loadingDocumentDefinition; else loading"
+    [model]="obs.documentDefinitionModel"
+    [heightPx]="500"
+    [disabled]="true"
+  >
+  </valtimo-editor>
+</ng-container>
+
+<ng-template #loading>
+  <div class="loading-container">
+    <cds-loading></cds-loading>
+  </div>
+</ng-template>

@@ -23,6 +23,7 @@ import {
   CarbonMultiInputModule,
   ConfirmationModalModule,
   DropzoneModule,
+  EditorModule,
   FormModule,
   InputModule,
   ListModule,
@@ -69,6 +70,7 @@ import {DossierManagementRoutingModule} from './dossier-management-routing.modul
 import {TabManagementService} from './services';
 import {DossierManagementEditTabModalComponent} from './components/dossier-management-tabs/dossier-management-edit-tab-modal/dossier-management-edit-tab-modal.component';
 import {DossierManagementDetailContainerActionsComponent} from './components/dossier-management-detail-container-actions/dossier-management-detail-container-actions';
+import {DossierManagementDocumentDefinitionComponent} from './components/dossier-management-document-definition/dossier-management-document-definition';
 
 @NgModule({
   declarations: [
@@ -87,6 +89,7 @@ import {DossierManagementDetailContainerActionsComponent} from './components/dos
     TabFormComponent,
     DossierManagementEditTabModalComponent,
     DossierManagementDetailContainerActionsComponent,
+    DossierManagementDocumentDefinitionComponent,
   ],
   imports: [
     CommonModule,
@@ -128,6 +131,7 @@ import {DossierManagementDetailContainerActionsComponent} from './components/dos
     DialogModule,
     ValtimoCdsOverflowButtonDirectiveModule,
     NotificationModule,
+    EditorModule,
   ],
   providers: [TabManagementService],
 })

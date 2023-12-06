@@ -22,12 +22,14 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import {BehaviorSubject, switchMap, tap} from 'rxjs';
-import {Notification, NotificationService} from 'carbon-components-angular';
-import {DossierExportService} from '../../services';
+import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
+import {ListItem, Notification, NotificationService} from 'carbon-components-angular';
+import {DossierDetailService, DossierExportService} from '../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {DOCUMENT} from '@angular/common';
 import {HttpResponse} from '@angular/common/http';
+import {DocumentService} from '@valtimo/document';
+import {take} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-dossier-management-detail-container-actions',
@@ -41,10 +43,43 @@ export class DossierManagementDetailContainerActionsComponent {
   private readonly _exportMessageTemplateRef: TemplateRef<HTMLDivElement>;
 
   @Input() public documentDefinitionTitle = '';
-  @Input() public documentDefinitionName = '';
+  @Input() public set documentDefinitionName(value: string) {
+    this.dossierDetailService.setSelectedDocumentDefinitionName(value);
+  }
+
+  public readonly CARBON_THEME = 'g10';
 
   public readonly exporting$ = new BehaviorSubject<boolean>(false);
-  public readonly selectedVersionNumber$ = new BehaviorSubject<number>(1);
+  public readonly selectedVersionNumber$ = this.dossierDetailService.selectedVersionNumber$;
+  private readonly _documentDefinitionName$ =
+    this.dossierDetailService.selectedDocumentDefinitionName$;
+
+  public readonly loadingVersion$ = new BehaviorSubject<boolean>(true);
+
+  private readonly _documentDefinitionVersions$ = this._documentDefinitionName$.pipe(
+    switchMap(documentDefinitionName =>
+      this.documentService.getDocumentDefinitionVersions(documentDefinitionName)
+    ),
+    tap(res => {
+      this.dossierDetailService.setSelectedVersionNumber(this.findLargestInArray(res.versions));
+      this.loadingVersion$.next(false);
+    })
+  );
+
+  public readonly versionListItems$: Observable<Array<ListItem>> = combineLatest([
+    this._documentDefinitionVersions$,
+    this.selectedVersionNumber$,
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(
+      ([versionsRes, selectVersionNumber]) =>
+        versionsRes?.versions?.map(version => ({
+          content: `${this.translateService.instant('dossierManagement.version')}${version}`,
+          selected: selectVersionNumber === version,
+          id: `${version}`,
+        })) || []
+    )
+  );
 
   private _currentNotification!: Notification;
 
@@ -52,7 +87,9 @@ export class DossierManagementDetailContainerActionsComponent {
     @Inject(DOCUMENT) private document: Document,
     private readonly notificationService: NotificationService,
     private readonly dossierExportService: DossierExportService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly documentService: DocumentService,
+    private readonly dossierDetailService: DossierDetailService
   ) {}
 
   public export(): void {
@@ -68,12 +105,13 @@ export class DossierManagementDetailContainerActionsComponent {
 
     this.startExporting();
 
-    this.selectedVersionNumber$
+    combineLatest([this.selectedVersionNumber$, this._documentDefinitionName$])
       .pipe(
-        tap(selectedVersion => (selectedVersionNumber = selectedVersion)),
-        switchMap(selectedVersion =>
+        take(1),
+        tap(([selectedVersion]) => (selectedVersionNumber = selectedVersion)),
+        switchMap(([selectedVersion, documentDefinitionName]) =>
           this.dossierExportService.exportDocumentDefinition(
-            this.documentDefinitionName,
+            documentDefinitionName,
             selectedVersion
           )
         )
@@ -102,6 +140,10 @@ export class DossierManagementDetailContainerActionsComponent {
       });
   }
 
+  public setVersion(version: {id: string}): void {
+    this.dossierDetailService.setSelectedVersionNumber(Number(version.id));
+  }
+
   private startExporting(): void {
     this.exporting$.next(true);
   }
@@ -127,5 +169,11 @@ export class DossierManagementDetailContainerActionsComponent {
     if (this._currentNotification) {
       this.notificationService.close(this._currentNotification);
     }
+  }
+
+  private findLargestInArray(array: Array<number>): number {
+    return array.reduce(function (a, b) {
+      return a > b ? a : b;
+    });
   }
 }

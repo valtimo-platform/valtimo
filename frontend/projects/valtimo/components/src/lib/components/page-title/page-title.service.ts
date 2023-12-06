@@ -108,6 +108,10 @@ export class PageTitleService implements OnDestroy {
     this._pageActionsFullWidth$.next(value);
   }
 
+  public setCustomPageTitleSet(set: boolean): void {
+    this._customPageTitleSet$.next(set);
+  }
+
   private openRouteSubscription(): void {
     this._routeSubscription = combineLatest([
       this.router.events,

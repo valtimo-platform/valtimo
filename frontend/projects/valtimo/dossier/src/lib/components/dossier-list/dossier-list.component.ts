@@ -71,7 +71,7 @@ import {
   DossierListService,
   DossierParameterService,
 } from '../../services';
-import { DefaultTabs } from '../../models';
+import {DefaultTabs} from '../../models';
 
 @Component({
   selector: 'valtimo-dossier-list',

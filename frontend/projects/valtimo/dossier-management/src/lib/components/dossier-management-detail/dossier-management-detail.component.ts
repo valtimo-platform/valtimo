@@ -20,6 +20,8 @@ import {ActivatedRoute} from '@angular/router';
 import {DossierManagementConnectModalComponent} from '../dossier-management-connect-modal/dossier-management-connect-modal.component';
 import {AlertService} from '@valtimo/components';
 import {DossierManagementRemoveModalComponent} from '../dossier-management-remove-modal/dossier-management-remove-modal.component';
+import {DossierDetailService} from '../../services';
+import {take} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-dossier-management-detail',
@@ -27,29 +29,31 @@ import {DossierManagementRemoveModalComponent} from '../dossier-management-remov
   styleUrls: ['./dossier-management-detail.component.scss'],
 })
 export class DossierManagementDetailComponent implements OnInit {
+  @ViewChild('dossierConnectModal')
+  private readonly _dossierConnectModal: DossierManagementConnectModalComponent;
+  @ViewChild('dossierRemoveModal')
+  private readonly _dossierRemoveModal: DossierManagementRemoveModalComponent;
+
   public documentDefinitionName: string | null = null;
   public documentDefinition: DocumentDefinition | null = null;
   public processDocumentDefinitions: ProcessDocumentDefinition[] = [];
-
-  @ViewChild('dossierConnectModal')
-  dossierConnectModal: DossierManagementConnectModalComponent;
-  @ViewChild('dossierRemoveModal')
-  dossierRemoveModal: DossierManagementRemoveModalComponent;
+  public readonly loadingDocumentDefinition$ = this.dossierDetailService.loadingDocumentDefinition$;
 
   constructor(
-    private documentService: DocumentService,
-    private route: ActivatedRoute,
-    private alertService: AlertService
+    private readonly documentService: DocumentService,
+    private readonly route: ActivatedRoute,
+    private readonly alertService: AlertService,
+    private readonly dossierDetailService: DossierDetailService
   ) {
     this.documentDefinitionName = this.route.snapshot.paramMap.get('name');
   }
 
-  ngOnInit() {
+  public ngOnInit(): void {
     this.loadDocumentDefinition();
     this.loadProcessDocumentDefinitions();
   }
 
-  loadProcessDocumentDefinitions() {
+  public loadProcessDocumentDefinitions(): void {
     this.documentService
       .findProcessDocumentDefinitions(this.documentDefinitionName)
       .subscribe((processDocumentDefinitions: ProcessDocumentDefinition[]) => {
@@ -57,23 +61,17 @@ export class DossierManagementDetailComponent implements OnInit {
       });
   }
 
-  loadDocumentDefinition() {
-    this.documentService
-      .getDocumentDefinitionForManagement(this.documentDefinitionName)
-      .subscribe((documentDefinition: DocumentDefinition) => {
-        this.documentDefinition = documentDefinition;
-      });
+  public publicopenDossierConnectModal(): void {
+    this._dossierConnectModal.openModal(this.documentDefinition);
   }
 
-  openDossierConnectModal() {
-    this.dossierConnectModal.openModal(this.documentDefinition);
+  public openDossierRemoveModal(): void {
+    this._dossierRemoveModal.openModal(this.documentDefinition);
   }
 
-  openDossierRemoveModal() {
-    this.dossierRemoveModal.openModal(this.documentDefinition);
-  }
-
-  deleteProcessDocumentDefinition(processDocumentDefinition: ProcessDocumentDefinition) {
+  public deleteProcessDocumentDefinition(
+    processDocumentDefinition: ProcessDocumentDefinition
+  ): void {
     this.documentService
       .deleteProcessDocumentDefinition({
         documentDefinitionName: processDocumentDefinition.id.documentDefinitionId.name,
@@ -92,17 +90,26 @@ export class DossierManagementDetailComponent implements OnInit {
       );
   }
 
-  downloadDefinition(): void {
-    const definition = this.documentDefinition;
-    const dataString =
-      'data:text/json;charset=utf-8,' +
-      encodeURIComponent(JSON.stringify(definition.schema, null, 2));
-    const downloadAnchorElement = document.getElementById('downloadAnchorElement');
-    downloadAnchorElement.setAttribute('href', dataString);
-    downloadAnchorElement.setAttribute(
-      'download',
-      `${definition.id.name}-v${definition.id.version}.json`
-    );
-    downloadAnchorElement.click();
+  public downloadDefinition(): void {
+    this.dossierDetailService.documentDefinition$.pipe(take(1)).subscribe(definition => {
+      const dataString =
+        'data:text/json;charset=utf-8,' +
+        encodeURIComponent(JSON.stringify(definition.schema, null, 2));
+      const downloadAnchorElement = document.getElementById('downloadAnchorElement');
+      downloadAnchorElement.setAttribute('href', dataString);
+      downloadAnchorElement.setAttribute(
+        'download',
+        `${definition.id.name}-v${definition.id.version}.json`
+      );
+      downloadAnchorElement.click();
+    });
+  }
+
+  private loadDocumentDefinition(): void {
+    this.documentService
+      .getDocumentDefinitionForManagement(this.documentDefinitionName)
+      .subscribe((documentDefinition: DocumentDefinition) => {
+        this.documentDefinition = documentDefinition;
+      });
   }
 }

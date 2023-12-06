@@ -14,26 +14,53 @@
   ~ limitations under the License.
   -->
 
-<div class="dossier-actions" *ngIf="{exporting: exporting$ | async} as obs">
-  {{ '' // replace with version dropdown }}
-  <span></span>
+<div
+  class="dossier-actions"
+  *ngIf="{
+  exporting: exporting$ | async,
+  loadingVersion: loadingVersion$ | async,
+  versionListItems: versionListItems$ | async
+  } as obs"
+>
+  <ng-container *ngTemplateOutlet="versionSelection;context:{obs:obs}"></ng-container>
 
+  <ng-container *ngTemplateOutlet="exportMenu;context:{obs:obs}"></ng-container>
+</div>
+
+<ng-template #versionSelection let-obs="obs">
+  <cds-combo-box
+    class="version-selection"
+    [disabled]="obs.loadingVersion || obs.versionListItems.length === 1"
+    type="single"
+    [items]="obs.versionListItems"
+    [attr.data-carbon-theme]="CARBON_THEME"
+    (selected)="setVersion($event)"
+  >
+    <cds-dropdown-list></cds-dropdown-list>
+  </cds-combo-box>
+</ng-template>
+
+<ng-template #exportMenu let-obs="obs">
   <cds-overflow-menu
     valtimoCdsOverflowButton
     [width]="250"
     [customTrigger]="customTrigger"
     [offset]="{y: 48, x: 37}"
     class="overflow-button"
+    [attr.data-carbon-theme]="CARBON_THEME"
   >
-    <cds-overflow-menu-option [disabled]="obs.exporting" (selected)="export()"
+    <cds-overflow-menu-option
+      [disabled]="obs.exporting || obs.loadingVersion"
+      (selected)="export() "
+      [attr.data-carbon-theme]="CARBON_THEME"
       >{{ 'dossierManagement.export' | translate: {value: documentDefinitionTitle}
       }}</cds-overflow-menu-option
     >
   </cds-overflow-menu>
-</div>
+</ng-template>
 
 <ng-template #customTrigger>
-  <button cdsButton="tertiary">
+  <button cdsButton="tertiary" [attr.data-carbon-theme]="CARBON_THEME">
     {{ 'dossierManagement.more' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="overflow-menu--vertical" size="16"></svg>

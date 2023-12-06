@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-export interface SortResult {
+interface SortResult {
   sorted: boolean;
   unsorted: boolean;
 }
 
-export interface Pageable {
+interface Pageable {
   sort: SortResult;
   pageSize: number;
   pageNumber: number;
@@ -28,7 +28,7 @@ export interface Pageable {
   paged: boolean;
 }
 
-export interface Page<T> {
+interface Page<T> {
   content: Array<T>;
   pageable: Pageable;
   last: boolean;
@@ -41,7 +41,7 @@ export interface Page<T> {
   number: number;
 }
 
-export interface DocumentDefinitions {
+interface DocumentDefinitions {
   content: DocumentDefinition[];
   empty: boolean;
   first: boolean;
@@ -54,19 +54,19 @@ export interface DocumentDefinitions {
   totalPages: number;
 }
 
-export interface DocumentDefinition {
+interface DocumentDefinition {
   id: DefinitionId;
   schema: any;
   createdOn: string;
   readOnly: boolean;
 }
 
-export interface DefinitionId {
+interface DefinitionId {
   name: string;
   version: number;
 }
 
-export interface Documents {
+interface Documents {
   content: Document[];
   empty: boolean;
   first: boolean;
@@ -79,11 +79,11 @@ export interface Documents {
   totalPages: number;
 }
 
-export type SpecifiedDocuments = Omit<Documents, 'content'> & {
+type SpecifiedDocuments = Omit<Documents, 'content'> & {
   content: Array<{id: string; items: Array<{key: string; value: string}>}>;
 };
 
-export interface RelatedFile {
+interface RelatedFile {
   fileId: string;
   fileName: string;
   sizeInBytes: number;
@@ -92,9 +92,9 @@ export interface RelatedFile {
   pluginConfigurationId?: string;
 }
 
-export type RelatedFileListItem = Omit<RelatedFile, 'createdOn'> & {createdOn: string};
+type RelatedFileListItem = Omit<RelatedFile, 'createdOn'> & {createdOn: string};
 
-export interface Document {
+interface Document {
   id: string;
   content: object;
   version: string;
@@ -110,17 +110,17 @@ export interface Document {
   assigneeId: string;
 }
 
-export interface DocumentDefinitionId {
+interface DocumentDefinitionId {
   name: string;
   version: number;
 }
 
-export interface ProcessDocumentDefinitionId {
+interface ProcessDocumentDefinitionId {
   processDefinitionKey: string;
   documentDefinitionId: DefinitionId;
 }
 
-export interface ProcessDocumentDefinition {
+interface ProcessDocumentDefinition {
   id: ProcessDocumentDefinitionId;
   processName: string;
   canInitializeDocument: boolean;
@@ -128,50 +128,50 @@ export interface ProcessDocumentDefinition {
   latestVersionId: string;
 }
 
-export interface ProcessDocumentInstanceId {
+interface ProcessDocumentInstanceId {
   processInstanceId: string;
   documentId: string;
 }
 
-export interface ProcessDocumentInstance {
+interface ProcessDocumentInstance {
   id: ProcessDocumentInstanceId;
   processName: string;
   isActive: boolean;
 }
 
-export interface AssignHandlerToDocumentResult {
+interface AssignHandlerToDocumentResult {
   assigneeId: string;
 }
 
-export interface NewDocumentAndStartProcessResult {
+interface NewDocumentAndStartProcessResult {
   document: Document;
   processInstanceId: string;
   errors: string[];
 }
 
-export interface ModifyDocumentAndCompleteTaskResult {
+interface ModifyDocumentAndCompleteTaskResult {
   document: Document;
   errors: string[];
 }
 
-export interface ModifyDocumentAndStartProcessResult {
+interface ModifyDocumentAndStartProcessResult {
   document: Document;
   processInstanceId: string;
   errors: string[];
 }
 
-export interface DocumentResult {
+interface DocumentResult {
   document: Document;
   errors: string[];
 }
 
-export interface ModifyDocumentRequest {
+interface ModifyDocumentRequest {
   documentId: string;
   content: object;
   versionBasedOn: string;
 }
 
-export class ModifyDocumentRequestImpl implements ModifyDocumentRequest {
+class ModifyDocumentRequestImpl implements ModifyDocumentRequest {
   documentId: string;
   content: object;
   versionBasedOn: string;
@@ -183,14 +183,14 @@ export class ModifyDocumentRequestImpl implements ModifyDocumentRequest {
   }
 }
 
-export interface ModifyDocumentAndCompleteTaskRequest<
+interface ModifyDocumentAndCompleteTaskRequest<
   T_MODIFY_DOCUMENT_REQUEST extends ModifyDocumentRequest,
 > {
   taskId: string;
   request: T_MODIFY_DOCUMENT_REQUEST;
 }
 
-export class ModifyDocumentAndCompleteTaskRequestImpl
+class ModifyDocumentAndCompleteTaskRequestImpl
   implements ModifyDocumentAndCompleteTaskRequest<ModifyDocumentRequestImpl>
 {
   taskId: string;
@@ -202,12 +202,12 @@ export class ModifyDocumentAndCompleteTaskRequestImpl
   }
 }
 
-export interface NewDocumentRequest {
+interface NewDocumentRequest {
   definition: string;
   content: object;
 }
 
-export class NewDocumentRequestImpl implements NewDocumentRequest {
+class NewDocumentRequestImpl implements NewDocumentRequest {
   definition: string;
   content: object;
 
@@ -217,14 +217,12 @@ export class NewDocumentRequestImpl implements NewDocumentRequest {
   }
 }
 
-export interface NewDocumentAndStartProcessRequest<
-  T_NEW_DOCUMENT_REQUEST extends NewDocumentRequest,
-> {
+interface NewDocumentAndStartProcessRequest<T_NEW_DOCUMENT_REQUEST extends NewDocumentRequest> {
   processDefinitionKey: string;
   request: T_NEW_DOCUMENT_REQUEST;
 }
 
-export class NewDocumentAndStartProcessRequestImpl
+class NewDocumentAndStartProcessRequestImpl
   implements NewDocumentAndStartProcessRequest<NewDocumentRequestImpl>
 {
   processDefinitionKey: string;
@@ -236,14 +234,14 @@ export class NewDocumentAndStartProcessRequestImpl
   }
 }
 
-export interface ModifyDocumentAndStartProcessRequest<
+interface ModifyDocumentAndStartProcessRequest<
   T_MODIFY_DOCUMENT_REQUEST extends ModifyDocumentRequest,
 > {
   processDefinitionKey: string;
   request: T_MODIFY_DOCUMENT_REQUEST;
 }
 
-export class ModifyDocumentAndStartProcessRequestImpl
+class ModifyDocumentAndStartProcessRequestImpl
   implements ModifyDocumentAndStartProcessRequest<ModifyDocumentRequestImpl>
 {
   processDefinitionKey: string;
@@ -255,14 +253,14 @@ export class ModifyDocumentAndStartProcessRequestImpl
   }
 }
 
-export interface ProcessDocumentDefinitionRequest {
+interface ProcessDocumentDefinitionRequest {
   processDefinitionKey: string;
   documentDefinitionName: string;
   canInitializeDocument: boolean;
   startableByUser: boolean;
 }
 
-export class DocumentDefinitionCreateRequest {
+class DocumentDefinitionCreateRequest {
   definition: string;
 
   constructor(definition: string) {
@@ -270,50 +268,50 @@ export class DocumentDefinitionCreateRequest {
   }
 }
 
-export interface UndeployDocumentDefinitionResult {
+interface UndeployDocumentDefinitionResult {
   documentDefinitionName: string;
   errors: string[];
 }
 
-export interface DocumentSendMessageRequest {
+interface DocumentSendMessageRequest {
   subject: string;
   bodyText: string;
 }
 
-export interface DocumentRoles {
+interface DocumentRoles {
   content: DocumentRole[];
 }
 
-export interface DocumentRole {
+interface DocumentRole {
   name: string;
 }
 
-export interface DocumentType {
+interface DocumentType {
   url: string;
   name: string;
 }
 
-export interface UploadProcessLink {
+interface UploadProcessLink {
   processDefinitionKey: string;
   processName: string;
 }
 
-export interface UpdateUploadProcessLinkRequest {
+interface UpdateUploadProcessLinkRequest {
   processDefinitionKey: string;
 }
 
-export interface CaseSettings {
+interface CaseSettings {
   name?: string;
   canHaveAssignee: boolean;
   autoAssignTasks: boolean;
 }
 
-export interface OpenDocumentCount {
+interface OpenDocumentCount {
   documentDefinitionName: string;
   openDocumentCount: number;
 }
 
-export interface CaseListColumn {
+interface CaseListColumn {
   title: string;
   key: string;
   path: string;
@@ -322,7 +320,7 @@ export interface CaseListColumn {
   defaultSort: string;
 }
 
-export interface CaseListColumnView {
+interface CaseListColumnView {
   title: string;
   key: string;
   path: string;
@@ -332,14 +330,69 @@ export interface CaseListColumnView {
   defaultSort: string;
 }
 
-export interface DisplayType {
+interface DisplayType {
   type: string;
   displayTypeParameters: DisplayTypeParameters;
 }
 
-export interface DisplayTypeParameters {
+interface DisplayTypeParameters {
   enum?: {
     [key: string]: string;
   };
   dateFormat?: string;
 }
+
+interface DocumentDefinitionVersionsResult {
+  name: string;
+  versions: Array<number>;
+}
+
+export {
+  AssignHandlerToDocumentResult,
+  CaseListColumn,
+  CaseListColumnView,
+  CaseSettings,
+  DefinitionId,
+  DisplayType,
+  DisplayTypeParameters,
+  Document,
+  DocumentDefinition,
+  DocumentDefinitionCreateRequest,
+  DocumentDefinitionId,
+  DocumentDefinitionVersionsResult,
+  DocumentDefinitions,
+  DocumentResult,
+  DocumentRole,
+  DocumentRoles,
+  DocumentSendMessageRequest,
+  DocumentType,
+  Documents,
+  ModifyDocumentAndCompleteTaskRequest,
+  ModifyDocumentAndCompleteTaskRequestImpl,
+  ModifyDocumentAndCompleteTaskResult,
+  ModifyDocumentAndStartProcessRequest,
+  ModifyDocumentAndStartProcessRequestImpl,
+  ModifyDocumentAndStartProcessResult,
+  ModifyDocumentRequest,
+  ModifyDocumentRequestImpl,
+  NewDocumentAndStartProcessRequest,
+  NewDocumentAndStartProcessRequestImpl,
+  NewDocumentAndStartProcessResult,
+  NewDocumentRequest,
+  NewDocumentRequestImpl,
+  OpenDocumentCount,
+  Page,
+  Pageable,
+  ProcessDocumentDefinition,
+  ProcessDocumentDefinitionId,
+  ProcessDocumentDefinitionRequest,
+  ProcessDocumentInstance,
+  ProcessDocumentInstanceId,
+  RelatedFile,
+  RelatedFileListItem,
+  SortResult,
+  SpecifiedDocuments,
+  UndeployDocumentDefinitionResult,
+  UpdateUploadProcessLinkRequest,
+  UploadProcessLink,
+};

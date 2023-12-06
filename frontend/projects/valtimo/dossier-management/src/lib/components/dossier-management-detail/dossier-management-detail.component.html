@@ -26,18 +26,15 @@
       <div class="col-5">
         <h2>{{ 'document definition' | translate }}</h2>
       </div>
-      <div class="col-5 offset-2">
+      <div class="col-5 offset-1">
         <h2>{{ 'dossierManagement.connectedProcesses' | translate }}</h2>
       </div>
     </div>
     <div class="row bg-white mb-5 pb-4 pl-2 pr-2">
       <div class="col-5 bg-red">
-        <textarea class="w-100 dossier-schema" disabled rows="25"
-          >{{ documentDefinition | json }}
-          </textarea
-        >
+        <valtimo-dossier-management-document-definition></valtimo-dossier-management-document-definition>
       </div>
-      <div class="col-5 offset-2 bg-blue">
+      <div class="col-5 offset-1 bg-blue">
         <div
           *ngFor="let processDocumentDefinition of processDocumentDefinitions"
           class="input-group mb-5"
@@ -113,8 +110,12 @@
 </ng-template>
 
 <ng-template #buttons>
-  <div *ngIf="documentDefinition" class="btn-group mt-m3px mb-3 pr-2 float-right">
-    <button (click)="downloadDefinition()" class="btn btn-primary btn-space">
+  <div class="btn-group mt-m3px mb-3 pr-2 float-right">
+    <button
+      (click)="downloadDefinition()"
+      class="btn btn-primary btn-space"
+      [disabled]="loadingDocumentDefinition$ | async"
+    >
       <i class="icon mdi mdi-download mr-1"></i>
       {{ 'Download document definition' | translate }}
     </button>

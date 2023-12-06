@@ -31,7 +31,10 @@ import {ConfigService} from '@valtimo/config';
 export class FormFlowService {
   private valtimoEndpointUri!: string;
 
-  constructor(private http: HttpClient, private configService: ConfigService) {
+  constructor(
+    private http: HttpClient,
+    private configService: ConfigService
+  ) {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 

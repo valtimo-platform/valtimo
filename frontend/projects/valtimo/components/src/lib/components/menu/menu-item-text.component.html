@@ -17,7 +17,7 @@
 <div
   *ngIf="{titleTranslation: menuItem | menuItemTranslate | async} as obs"
   class="menu-item-text-container"
-  id="{{menuItem?.id}}"
+  id="{{ menuItem?.id }}"
 >
   <span [ngClass]="{'cds--link empty-menu-icon-text': accent}">
     <div class="menu-item-icon-container">

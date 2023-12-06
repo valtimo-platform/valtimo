@@ -32,13 +32,12 @@ export class DownloadDocumentConfigurationComponent
   @Input() pluginId: string;
   @Input() prefillConfiguration$: Observable<DownloadDocumentConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<DownloadDocumentConfig> = new EventEmitter<DownloadDocumentConfig>();
+  @Output() configuration: EventEmitter<DownloadDocumentConfig> =
+    new EventEmitter<DownloadDocumentConfig>();
 
   private saveSubscription!: Subscription;
   private readonly formValue$ = new BehaviorSubject<DownloadDocumentConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
-
-
 
   ngOnInit(): void {
     this.openSaveSubscription();
@@ -67,9 +66,7 @@ export class DownloadDocumentConfigurationComponent
   }
 
   private handleValid(formValue: DownloadDocumentConfig): void {
-    const valid = !!(
-      formValue.processVariableName
-    );
+    const valid = !!formValue.processVariableName;
 
     this.valid$.next(valid);
     this.valid.emit(valid);
