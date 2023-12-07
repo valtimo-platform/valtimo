@@ -14,42 +14,13 @@
   ~ limitations under the License.
   -->
 
-<div class="main-content">
+<div class="main-content" *ngIf="{loadingTasks: loadingTasks$ | async} as obs">
   <div class="container-fluid">
-    <valtimo-carbon-list
-      [fields]="tasks[currentTaskType].fields"
-      [header]="false"
-      [items]="tasks[currentTaskType].tasks"
-      [lastColumnTemplate]="caseLinkWithTaskLock"
-      [pagination]="tasks[currentTaskType].pagination"
-      paginationIdentifier="taskList"
-      (paginationClicked)="paginationClicked($event, currentTaskType)"
-      (paginationSet)="paginationSet($event)"
-      (rowClicked)="rowOpenTaskClick($event)"
-      (sortChanged)="sortChanged($event)"
-    >
-      <cds-tabs
-        *ngIf="visibleTabs === null; else configuredTabs"
-        type="contained"
-        class="valtimo-carbon-list__tabs"
-        tabs
-      >
-        <cds-tab [heading]="'task-list.mine.title' | translate" (selected)="tabChange('mine')">
-        </cds-tab>
+    <ng-container *ngTemplateOutlet="tasksList; context: {show: !obs.loadingTasks}"></ng-container>
 
-        <cds-tab [heading]="'task-list.open.title' | translate" (selected)="tabChange('open')">
-        </cds-tab>
-
-        <cds-tab [heading]="'task-list.all.title' | translate" (selected)="tabChange('all')">
-        </cds-tab>
-      </cds-tabs>
-
-      <valtimo-no-results
-        [description]="'task-list.' + currentTaskType + '.noResultsDescription' | translate"
-        [title]="'task-list.' + currentTaskType + '.noResultsTitle' | translate"
-      >
-      </valtimo-no-results>
-    </valtimo-carbon-list>
+    <ng-container
+      *ngTemplateOutlet="tasksListLoading; context: {show: obs.loadingTasks}"
+    ></ng-container>
 
     <valtimo-task-detail-modal
       #taskDetail
@@ -86,4 +57,46 @@
       <i class="icon mdi mdi-lock"></i>
     </span>
   </div>
+</ng-template>
+
+<ng-template #tasksList let-show="show">
+  <valtimo-carbon-list
+    [ngClass]="{'hide-tasks-list': !show}"
+    [fields]="tasks[currentTaskType].fields"
+    [header]="false"
+    [items]="tasks[currentTaskType].tasks"
+    [lastColumnTemplate]="caseLinkWithTaskLock"
+    [pagination]="tasks[currentTaskType].pagination"
+    paginationIdentifier="taskList"
+    (paginationClicked)="paginationClicked($event, currentTaskType)"
+    (paginationSet)="paginationSet($event)"
+    (rowClicked)="rowOpenTaskClick($event)"
+    (sortChanged)="sortChanged($event)"
+  >
+    <cds-tabs
+      *ngIf="visibleTabs === null; else configuredTabs"
+      type="contained"
+      class="valtimo-carbon-list__tabs"
+      tabs
+    >
+      <cds-tab [heading]="'task-list.mine.title' | translate" (selected)="tabChange('mine')">
+      </cds-tab>
+
+      <cds-tab [heading]="'task-list.open.title' | translate" (selected)="tabChange('open')">
+      </cds-tab>
+
+      <cds-tab [heading]="'task-list.all.title' | translate" (selected)="tabChange('all')">
+      </cds-tab>
+    </cds-tabs>
+
+    <valtimo-no-results
+      [description]="'task-list.' + currentTaskType + '.noResultsDescription' | translate"
+      [title]="'task-list.' + currentTaskType + '.noResultsTitle' | translate"
+    >
+    </valtimo-no-results>
+  </valtimo-carbon-list>
+</ng-template>
+
+<ng-template #tasksListLoading let-show="show">
+  <valtimo-carbon-list *ngIf="show" [loading]="true"></valtimo-carbon-list>
 </ng-template>
