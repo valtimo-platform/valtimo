@@ -119,6 +119,15 @@ export class DossierListComponent implements OnInit, OnDestroy {
     },
   };
 
+  public readonly noResultsMessage$ = new BehaviorSubject<{
+    description: string;
+    isSearchResult: boolean;
+    title: string;
+  }>({
+    description: 'dossier.noResults.ALL.description',
+    isSearchResult: false,
+    title: 'dossier.noResults.ALL.title',
+  });
   public readonly showAssignModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangePageModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangeTabModal$ = new BehaviorSubject<boolean>(false);
@@ -309,6 +318,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
                   ),
             hasEnvColumnConfig: obsEnv,
             hasApiColumnConfig: obsApi,
+            isSearchResult: of(true),
           });
         }
 
@@ -327,6 +337,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
                 ),
           hasEnvColumnConfig: obsEnv,
           hasApiColumnConfig: obsApi,
+          isSearchResult: of(false),
         });
       }
     ),
@@ -335,9 +346,11 @@ export class DossierListComponent implements OnInit, OnDestroy {
         documents: Documents | SpecifiedDocuments;
         hasEnvColumnConfig: boolean;
         hasApiColumnConfig: boolean;
+        isSearchResult: boolean;
       }) => {
         this.paginationService.setCollectionSize(res.documents);
         this.paginationService.checkPage(res.documents);
+        this.updateNoResultsMessage(res.isSearchResult);
 
         return this.listService.mapDocuments(
           res.documents,
@@ -406,6 +419,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
   public tabChange(tab: DossierListTab): void {
     if (!this.activeTab) {
       this.activeTab = tab;
+      this.updateNoResultsMessage(false);
       return;
     }
 
@@ -464,6 +478,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
   private onChangeTabConfirm(tab: DossierListTab): void {
     this.loadingAssigneeFilter = true;
     this.activeTab = tab;
+    this.updateNoResultsMessage(false);
     this.paginationService.setPage(1);
     this.assigneeService.setAssigneeFilter(tab);
   }
@@ -533,5 +548,21 @@ export class DossierListComponent implements OnInit, OnDestroy {
 
   private setVisibleTabs(): void {
     this.visibleDossierTabs = this.configService.config?.visibleDossierListTabs || null;
+  }
+
+  private updateNoResultsMessage(isSearchResult: boolean): void {
+    this.noResultsMessage$.next(
+      isSearchResult
+        ? {
+            description: 'dossier.noResults.search.description',
+            isSearchResult,
+            title: 'dossier.noResults.search.title',
+          }
+        : {
+            description: `dossier.noResults.${this.activeTab ?? 'ALL'}.description`,
+            isSearchResult,
+            title: `dossier.noResults.${this.activeTab ?? 'ALL'}.title`,
+          }
+    );
   }
 }

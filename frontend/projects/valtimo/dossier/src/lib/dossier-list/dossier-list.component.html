@@ -18,6 +18,7 @@
   *ngIf="{
     fields: fields$ | async,
     documentItems: documentItems$ | async,
+    noResultsMessage: noResultsMessage$ | async,
     searchFields: searchFields$ | async,
     schema: schema$ | async,
     showAssignModal: showAssignModal$ | async,
@@ -91,9 +92,9 @@
     </div>
 
     <valtimo-no-results
-      [action]="dossierListActions"
-      description="{{ 'dossier.noResults.' + activeTab + '.description' | translate }}"
-      title="{{ 'dossier.noResults.' + activeTab + '.title' | translate }}"
+      [action]="obs.noResultsMessage.isSearchResult ? null : dossierListActions"
+      [description]="obs.noResultsMessage.description | translate"
+      [title]="obs.noResultsMessage.title | translate"
     ></valtimo-no-results>
 
     <div tabs *ngIf="canHaveAssignee">
