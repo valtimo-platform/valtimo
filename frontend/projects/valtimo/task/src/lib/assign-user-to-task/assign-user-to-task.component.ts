@@ -24,9 +24,9 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {DropdownItem} from '@valtimo/components';
-import {User} from '@valtimo/config';
 import {BehaviorSubject, combineLatest, Subscription, take, tap} from 'rxjs';
 import {TaskService} from '../task.service';
+import {NamedUser} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-assign-user-to-task',
@@ -40,7 +40,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
 
   public assignedEmailOnServer$ = new BehaviorSubject<string | null>(null);
   public assignedUserFullName$ = new BehaviorSubject<string | null>(null);
-  public candidateUsersForTask$ = new BehaviorSubject<User[] | undefined>(undefined);
+  public candidateUsersForTask$ = new BehaviorSubject<NamedUser[] | undefined>(undefined);
   public disabled$ = new BehaviorSubject<boolean>(true);
   public userEmailToAssign: string | null = null;
   private _subscriptions = new Subscription();
@@ -113,21 +113,21 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
       .subscribe();
   }
 
-  public getAssignedUserName(users: User[], userEmail: string): string {
+  public getAssignedUserName(users: NamedUser[], userEmail: string): string {
     if (users && userEmail) {
       const findUser = users.find(user => user.email === userEmail);
-      return findUser ? findUser.fullName || userEmail : userEmail;
+      return findUser ? findUser.label : userEmail;
     }
     return userEmail || '-';
   }
 
-  public mapUsersForDropdown(users: User[]): DropdownItem[] {
+  public mapUsersForDropdown(users: NamedUser[]): DropdownItem[] {
     return (
       users &&
       users
         .map(user => ({...user, lastName: user.lastName?.split(' ').splice(-1)[0] || ''}))
         .sort((a, b) => a.lastName.localeCompare(b.lastName))
-        .map(user => ({text: user.fullName || user.email, id: user.email}))
+        .map(user => ({text: user.label, id: user.email}))
     );
   }
 
