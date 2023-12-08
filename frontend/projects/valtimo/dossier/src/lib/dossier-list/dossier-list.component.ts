@@ -165,7 +165,9 @@ export class DossierListComponent implements OnInit, OnDestroy {
 
   public readonly searchFieldValues$ = this.parameterService.searchFieldValues$;
   public readonly assigneeFilter$: Observable<AssigneeFilter> =
-    this.assigneeService.assigneeFilter$;
+    this.assigneeService.assigneeFilter$.pipe(
+      tap(assigneeFilter => (this.activeTab = assigneeFilter as DossierListTab))
+    );
   public readonly paginationChange$ = new BehaviorSubject<CarbonPaginationSelection | null>(null);
   public readonly tabChange$ = new BehaviorSubject<DossierListTab | null>(null);
   private readonly _pagination$ = this.paginationService.pagination$.pipe(
@@ -187,7 +189,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         return res.columns;
       }),
       tap(columns => {
-        this.listService.documentDefinitionName$.pipe(take(1)).subscribe(documentDefinitionName => {
+        this.listService.documentDefinitionName$.pipe(take(1)).subscribe(_ => {
           this.paginationService.setPagination(columns);
         });
       })
@@ -423,7 +425,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.activeTab === tab) {
+    if (this.activeTab.toLowerCase() === tab.toLowerCase()) {
       return;
     }
 
