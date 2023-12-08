@@ -38,10 +38,13 @@
           [loading]="!obs.loaded"
           (formFlowComplete)="forceRefresh()"
         ></valtimo-dossier-list-actions>
-
-        <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
+        <ng-container *ngIf="!obs.loaded">
+          <ng-container *ngTemplateOutlet="searchFieldsLoading; context: {obs: obs}"></ng-container>
+        </ng-container>
 
         <ng-container *ngIf="obs.loaded; else loading">
+          <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
+
           <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
         </ng-container>
       </div>
@@ -62,7 +65,17 @@
       (doSearch)="search($event)"
       [documentDefinitionName]="documentDefinitionName$ | async"
       [defaultValues]="searchFieldValues$ | async"
-      [inputDisabled]="!obs.loaded"
+    ></valtimo-search-fields>
+  </div>
+</ng-template>
+
+<ng-template #searchFieldsLoading let-obs="obs">
+  <div class="mb-3">
+    <valtimo-search-fields
+      [searchFields]="obs.searchFields"
+      [documentDefinitionName]="documentDefinitionName$ | async"
+      [defaultValues]="searchFieldValues$ | async"
+      [inputDisabled]="true"
     ></valtimo-search-fields>
   </div>
 </ng-template>
