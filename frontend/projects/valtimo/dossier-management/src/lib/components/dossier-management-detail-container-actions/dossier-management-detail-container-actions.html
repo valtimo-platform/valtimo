@@ -28,16 +28,15 @@
 </div>
 
 <ng-template #versionSelection let-obs="obs">
-  <cds-combo-box
+  <cds-dropdown
     class="version-selection"
     [disabled]="obs.loadingVersion || obs.versionListItems.length === 1"
-    type="single"
-    [items]="obs.versionListItems"
     [attr.data-carbon-theme]="CARBON_THEME"
+    [skeleton]="obs.loadingVersion"
     (selected)="setVersion($event)"
   >
-    <cds-dropdown-list></cds-dropdown-list>
-  </cds-combo-box>
+    <cds-dropdown-list [items]="obs.versionListItems"></cds-dropdown-list>
+  </cds-dropdown>
 </ng-template>
 
 <ng-template #exportMenu let-obs="obs">

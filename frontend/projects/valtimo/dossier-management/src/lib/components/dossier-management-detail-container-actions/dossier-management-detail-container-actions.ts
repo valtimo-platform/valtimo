@@ -140,8 +140,8 @@ export class DossierManagementDetailContainerActionsComponent {
       });
   }
 
-  public setVersion(version: {id: string}): void {
-    this.dossierDetailService.setSelectedVersionNumber(Number(version.id));
+  public setVersion(version: any): void {
+    this.dossierDetailService.setSelectedVersionNumber(Number(version.item.id));
   }
 
   private startExporting(): void {
