@@ -14,12 +14,20 @@
   ~ limitations under the License.
   -->
 
-<div class="main-content" *ngIf="{loadingTasks: loadingTasks$ | async} as obs">
+<div
+  class="main-content"
+  *ngIf="{loadingTasks: loadingTasks$ | async, activeTab: activeTab$ | async} as obs"
+>
   <div class="container-fluid">
-    <ng-container *ngTemplateOutlet="tasksList; context: {show: !obs.loadingTasks}"></ng-container>
+    <ng-container
+      *ngTemplateOutlet="tasksList; context: {show: !obs.loadingTasks, activeTab: obs.activeTab}"
+    ></ng-container>
 
     <ng-container
-      *ngTemplateOutlet="tasksListLoading; context: {show: obs.loadingTasks}"
+      *ngTemplateOutlet="
+        tasksListLoading;
+        context: {show: obs.loadingTasks, activeTab: obs.activeTab}
+      "
     ></ng-container>
 
     <valtimo-task-detail-modal
@@ -30,11 +38,12 @@
   </div>
 </div>
 
-<ng-template #configuredTabs>
+<ng-template #configuredTabs let-activeTab="activeTab">
   <cds-tabs type="contained" class="valtimo-carbon-list__tabs">
     <cds-tab
       *ngFor="let tab of visibleTabs"
       [heading]="'task-list.' + tab + '.title' | translate"
+      [active]="activeTab === tab"
       (selected)="tabChange(tab)"
     ></cds-tab>
   </cds-tabs>
@@ -59,7 +68,7 @@
   </div>
 </ng-template>
 
-<ng-template #tasksList let-show="show">
+<ng-template #tasksList let-show="show" let-activeTab="activeTab">
   <valtimo-carbon-list
     [ngClass]="{'hide-tasks-list': !show}"
     [fields]="tasks[currentTaskType].fields"
@@ -73,21 +82,34 @@
     (rowClicked)="rowOpenTaskClick($event)"
     (sortChanged)="sortChanged($event)"
   >
-    <cds-tabs
-      *ngIf="visibleTabs === null; else configuredTabs"
-      type="contained"
-      class="valtimo-carbon-list__tabs"
-      tabs
-    >
-      <cds-tab [heading]="'task-list.mine.title' | translate" (selected)="tabChange('mine')">
-      </cds-tab>
+    <div tabs>
+      <cds-tabs
+        *ngIf="visibleTabs === null; else configuredTabs; context: {activeTab: activeTab}"
+        type="contained"
+        class="valtimo-carbon-list__tabs"
+      >
+        <cds-tab
+          [heading]="'task-list.mine.title' | translate"
+          (selected)="tabChange('mine')"
+          [active]="activeTab === 'mine'"
+        >
+        </cds-tab>
 
-      <cds-tab [heading]="'task-list.open.title' | translate" (selected)="tabChange('open')">
-      </cds-tab>
+        <cds-tab
+          [heading]="'task-list.open.title' | translate"
+          (selected)="tabChange('open')"
+          [active]="activeTab === 'open'"
+        >
+        </cds-tab>
 
-      <cds-tab [heading]="'task-list.all.title' | translate" (selected)="tabChange('all')">
-      </cds-tab>
-    </cds-tabs>
+        <cds-tab
+          [heading]="'task-list.all.title' | translate"
+          (selected)="tabChange('all')"
+          [active]="activeTab === 'all'"
+        >
+        </cds-tab>
+      </cds-tabs>
+    </div>
 
     <valtimo-no-results
       [description]="'task-list.' + currentTaskType + '.noResultsDescription' | translate"
@@ -97,6 +119,27 @@
   </valtimo-carbon-list>
 </ng-template>
 
-<ng-template #tasksListLoading let-show="show">
-  <valtimo-carbon-list *ngIf="show" [loading]="true"></valtimo-carbon-list>
+<ng-template #tasksListLoading let-show="show" let-activeTab="activeTab">
+  <valtimo-carbon-list [ngClass]="{'hide-tasks-list': !show}" [loading]="true">
+    <div tabs>
+      <cds-tabs *ngIf="visibleTabs === null" type="contained" class="valtimo-carbon-list__tabs">
+        <cds-tab [heading]="'task-list.mine.title' | translate" [active]="activeTab === 'mine'">
+        </cds-tab>
+
+        <cds-tab [heading]="'task-list.open.title' | translate" [active]="activeTab === 'open'">
+        </cds-tab>
+
+        <cds-tab [heading]="'task-list.all.title' | translate" [active]="activeTab === 'all'">
+        </cds-tab>
+      </cds-tabs>
+
+      <cds-tabs type="contained" class="valtimo-carbon-list__tabs" *ngIf="visibleTabs">
+        <cds-tab
+          *ngFor="let tab of visibleTabs"
+          [heading]="'task-list.' + tab + '.title' | translate"
+          [active]="activeTab === tab"
+        ></cds-tab>
+      </cds-tabs>
+    </div>
+  </valtimo-carbon-list>
 </ng-template>

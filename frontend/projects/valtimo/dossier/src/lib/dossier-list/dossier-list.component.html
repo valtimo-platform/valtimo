@@ -39,9 +39,9 @@
           (formFlowComplete)="forceRefresh()"
         ></valtimo-dossier-list-actions>
 
-        <ng-container *ngIf="obs.loaded; else loading">
-          <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
+        <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
 
+        <ng-container *ngIf="obs.loaded; else loading">
           <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
         </ng-container>
       </div>
@@ -62,6 +62,7 @@
       (doSearch)="search($event)"
       [documentDefinitionName]="documentDefinitionName$ | async"
       [defaultValues]="searchFieldValues$ | async"
+      [inputDisabled]="!obs.loaded"
     ></valtimo-search-fields>
   </div>
 </ng-template>
@@ -136,7 +137,12 @@
   </ng-container>
 </ng-template>
 
-<ng-template #loading><valtimo-carbon-list [loading]="true"></valtimo-carbon-list></ng-template>
+<ng-template #loading
+  ><valtimo-carbon-list [loading]="true">
+    <div tabs *ngIf="canHaveAssignee">
+      <ng-container *ngTemplateOutlet="tabs"></ng-container>
+    </div> </valtimo-carbon-list
+></ng-template>
 
 <ng-template #bulkAssignModal let-obs="obs">
   <valtimo-dossier-bulk-assign-modal

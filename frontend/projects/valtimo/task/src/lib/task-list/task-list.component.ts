@@ -50,6 +50,7 @@ export class TaskListComponent implements OnDestroy {
   public listDescription: string | null = null;
   public sortState: SortState | null = null;
   public readonly loadingTasks$ = new BehaviorSubject<boolean>(true);
+  public readonly activeTab$ = new BehaviorSubject<string>('');
   private _translationSubscription!: Subscription;
 
   constructor(
@@ -97,6 +98,7 @@ export class TaskListComponent implements OnDestroy {
 
   public getTasks(type: string): void {
     this.loadingTasks$.next(true);
+    this.activeTab$.next(type);
 
     let params: any;
 
