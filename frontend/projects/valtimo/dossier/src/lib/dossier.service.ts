@@ -16,12 +16,14 @@
 import {Injectable} from '@angular/core';
 import {Direction, SortState} from '@valtimo/components';
 import {ConfigService, DefinitionColumn} from '@valtimo/config';
+import {BehaviorSubject, Observable} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DossierService {
   private readonly definitions: any;
+  private readonly _refreshDocument$ = new BehaviorSubject<null>(null);
 
   constructor(private readonly configService: ConfigService) {
     this.definitions = configService.config.definitions;
@@ -46,5 +48,13 @@ export class DossierService {
         direction,
       },
     };
+  }
+
+  get refreshDocument(): Observable<any> {
+    return this._refreshDocument$.asObservable();
+  }
+
+  refresh(): void {
+    this._refreshDocument$.next(null);
   }
 }
