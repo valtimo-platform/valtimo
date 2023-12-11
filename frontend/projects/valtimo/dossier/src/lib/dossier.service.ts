@@ -50,11 +50,11 @@ export class DossierService {
     };
   }
 
-  get refreshDocument(): Observable<any> {
+  public get refreshDocument(): Observable<any> {
     return this._refreshDocument$.asObservable();
   }
 
-  refresh(): void {
+  public refresh(): void {
     this._refreshDocument$.next(null);
   }
 }
