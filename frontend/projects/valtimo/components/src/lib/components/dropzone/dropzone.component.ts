@@ -19,12 +19,15 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  Inject,
   Input,
   OnDestroy,
   OnInit,
   Output,
+  Renderer2,
   ViewChild,
 } from '@angular/core';
+import {DOCUMENT} from '@angular/common';
 import {TranslateService} from '@ngx-translate/core';
 import Dropzone from 'dropzone';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription} from 'rxjs';
@@ -87,7 +90,11 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
     })
   );
 
-  constructor(private readonly translateService: TranslateService) {}
+  constructor(
+    private readonly translateService: TranslateService,
+    private readonly renderer: Renderer2,
+    @Inject(DOCUMENT) private readonly document: Document
+  ) {}
 
   ngOnInit(): void {
     this.clearSubscription = this.clear$.subscribe(() => {
@@ -102,6 +109,7 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearSubscription.unsubscribe();
+    this.destroyHiddenInputs();
   }
 
   showCamera(): void {
@@ -154,5 +162,13 @@ export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
     this.file$.next(file);
     this.clearError();
     this.fileSelected.emit(file);
+  }
+
+  private destroyHiddenInputs(): void {
+    const hiddenElements = this.document.getElementsByClassName('dz-hidden-input');
+
+    Array.from(hiddenElements).forEach(element => {
+      element.remove();
+    });
   }
 }
