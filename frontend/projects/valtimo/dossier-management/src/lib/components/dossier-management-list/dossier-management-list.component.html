@@ -14,38 +14,32 @@
   ~ limitations under the License.
   -->
 
-<div class="main-content pt-0">
-  <div class="container-fluid">
-    <div class="btn-group mt-m3px mb-3 float-right">
-      <button class="btn btn-secondary btn-space mr-0" (click)="showModal()">
-        <i class="icon mdi mdi-upload mr-1"></i>
-        {{ 'Upload document definition' | translate }}
-      </button>
-    </div>
-    <div class="clearfix"></div>
-    <valtimo-widget>
-      <valtimo-list
-        [items]="dossiers"
-        [fields]="dossierFields"
-        [header]="true"
-        [viewMode]="true"
-        [isSearchable]="true"
-        [pagination]="pagination"
-        paginationIdentifier="dossierManagementList"
-        (paginationClicked)="paginationClicked($event)"
-        (paginationSet)="paginationSet()"
-        (rowClicked)="redirectToDetails($event)"
-      >
-        <div header>
-          <h3 class="list-header-title">{{ 'Dossiers' | translate }}</h3>
-          <h5 class="list-header-description">{{ 'Overview of all Dossiers' | translate }}</h5>
-        </div>
-      </valtimo-list>
-    </valtimo-widget>
-  </div>
-</div>
+<valtimo-carbon-list
+  *ngIf="dossiers$ | async as dossiers; else loading"
+  [items]="dossiers"
+  [fields]="dossierFields"
+  [pagination]="pagination"
+  paginationIdentifier="dossierManagementList"
+  (paginationClicked)="paginationClicked($event)"
+  (paginationSet)="paginationSet($event)"
+  (rowClicked)="redirectToDetails($event)"
+>
+  <ng-container carbonToolbarContent [ngTemplateOutlet]="addCaseDefinitionButton"></ng-container>
+</valtimo-carbon-list>
+
+<ng-template #loading>
+  <valtimo-carbon-list loading="true"></valtimo-carbon-list>
+</ng-template>
 
 <valtimo-dossier-management-upload
   [show$]="showModal$"
-  (definitionUploaded)="paginationSet()"
+  (definitionUploaded)="onDefinitionUploaded()"
 ></valtimo-dossier-management-upload>
+
+<ng-template #addCaseDefinitionButton>
+  <button cdsButton="primary" (click)="showModal()">
+    <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
+
+    {{ 'Upload document definition' | translate }}
+  </button>
+</ng-template>

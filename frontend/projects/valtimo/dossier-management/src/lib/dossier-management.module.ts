@@ -132,6 +132,7 @@ import {DossierManagementDocumentDefinitionComponent} from './components/dossier
     ValtimoCdsOverflowButtonDirectiveModule,
     NotificationModule,
     EditorModule,
+    CarbonListModule,
   ],
   providers: [TabManagementService],
 })
