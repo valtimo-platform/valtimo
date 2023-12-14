@@ -101,10 +101,6 @@
   ></i>
 </ng-template>
 
-<ng-template #defaultTemplate let-data="data">
-  {{
-    data.viewType === ViewType.BOOLEAN
-      ? ('viewTypeConverter.' + data.resolvedObject | translate)
-      : data.resolvedObject
-  }}
+<ng-template #booleanTemplate let-data="data">
+  {{ 'viewTypeConverter.' + data | translate }}
 </ng-template>

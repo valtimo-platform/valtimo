@@ -78,7 +78,7 @@ export class CarbonListComponent<T> implements OnInit, OnDestroy {
   @HostBinding('attr.data-carbon-theme') theme = 'g10';
   @ViewChild('actionsMenu') actionsMenu: TemplateRef<OverflowMenu>;
   @ViewChild('actionItem') actionItem: TemplateRef<any>;
-  @ViewChild('defaultTemplate') defaultTemplate: TemplateRef<any>;
+  @ViewChild('booleanTemplate') booleanTemplate: TemplateRef<any>;
 
   private _completeDataSource: TableItem[][];
   private _items: T[];
@@ -385,15 +385,13 @@ export class CarbonListComponent<T> implements OnInit, OnDestroy {
               data: {item, index, length: itemCount},
               template: column.template,
             });
-          default:
+          case ViewType.BOOLEAN:
             return new TableItem({
-              data: {
-                resolvedObject: this.resolveObject(column, item) ?? '-',
-                viewType: column.viewType,
-              },
-              item,
-              template: this.defaultTemplate,
+              data: this.resolveObject(column, item) ?? '-',
+              template: this.booleanTemplate,
             });
+          default:
+            return new TableItem({data: this.resolveObject(column, item) ?? '-', item});
         }
       });
 
