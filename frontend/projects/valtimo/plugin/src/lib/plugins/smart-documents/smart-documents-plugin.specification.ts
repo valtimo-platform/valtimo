@@ -18,6 +18,7 @@ import {PluginSpecification} from '../../models';
 import {SmartDocumentsConfigurationComponent} from './components/smart-documents-configuration/smart-documents-configuration.component';
 import {SMART_DOCUMENTS_PLUGIN_LOGO_BASE64} from './assets';
 import {GenerateDocumentConfigurationComponent} from './components/generate-document-configuration/generate-document-configuration.component';
+import { GetTemplateNamesComponent } from './components/get-template-names/get-template-names.component';
 
 const smartDocumentsPluginSpecification: PluginSpecification = {
   pluginId: 'smartdocuments',
@@ -25,6 +26,7 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
   pluginLogoBase64: SMART_DOCUMENTS_PLUGIN_LOGO_BASE64,
   functionConfigurationComponents: {
     'generate-document': GenerateDocumentConfigurationComponent,
+    'get-template-names': GetTemplateNamesComponent,
   },
   pluginTranslations: {
     nl: {
@@ -37,6 +39,7 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       username: 'Gebruikersnaam',
       password: 'Wachtwoord',
       'generate-document': 'Document genereren',
+      'get-template-names': 'Test test test'
       templateGroup: 'Template-groep',
       templateName: 'Template-naam',
       templateDataTooltip:
@@ -59,6 +62,7 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       username: 'Username',
       password: 'Password',
       'generate-document': 'Generate document',
+      'get-template-names': 'Test test test'
       templateGroup: 'Template group',
       templateName: 'Template name',
       format: 'Document format',
@@ -81,6 +85,7 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       username: 'Nutzername',
       password: 'Passwort',
       'generate-document': 'Dokument generieren',
+      'get-template-names': 'Test test test'
       templateGroup: 'Templategruppe',
       templateName: 'Templatename',
       format: 'Dokumentformat',

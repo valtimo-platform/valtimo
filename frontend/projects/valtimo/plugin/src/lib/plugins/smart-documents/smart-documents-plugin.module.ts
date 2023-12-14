@@ -26,9 +26,10 @@ import {
   ParagraphModule,
 } from '@valtimo/components';
 import {GenerateDocumentConfigurationComponent} from './components/generate-document-configuration/generate-document-configuration.component';
+import { GetTemplateNamesComponent } from './components/get-template-names/get-template-names.component';
 
 @NgModule({
-  declarations: [SmartDocumentsConfigurationComponent, GenerateDocumentConfigurationComponent],
+  declarations: [SmartDocumentsConfigurationComponent, GenerateDocumentConfigurationComponent, GetTemplateNamesComponent],
   imports: [
     CommonModule,
     PluginTranslatePipeModule,
@@ -38,6 +39,6 @@ import {GenerateDocumentConfigurationComponent} from './components/generate-docu
     CarbonMultiInputModule,
     ParagraphModule,
   ],
-  exports: [SmartDocumentsConfigurationComponent, GenerateDocumentConfigurationComponent],
+  exports: [SmartDocumentsConfigurationComponent, GenerateDocumentConfigurationComponent, GetTemplateNamesComponent],
 })
 export class SmartDocumentsPluginModule {}
