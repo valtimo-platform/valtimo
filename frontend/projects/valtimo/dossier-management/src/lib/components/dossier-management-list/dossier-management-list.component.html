@@ -25,6 +25,12 @@
   (rowClicked)="redirectToDetails($event)"
 >
   <ng-container carbonToolbarContent [ngTemplateOutlet]="addCaseDefinitionButton"></ng-container>
+
+  <valtimo-no-results
+    [action]="addCaseDefinitionButton"
+    [description]="'dossierManagement.noResults.description' | translate"
+    [title]="'dossierManagement.noResults.title' | translate"
+  ></valtimo-no-results>
 </valtimo-carbon-list>
 
 <ng-template #loading>

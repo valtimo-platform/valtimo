@@ -409,6 +409,10 @@
     "connectedProcesses": "Gekoppelde processen",
     "connectProcess": "Proces koppelen",
     "selectProcessDef": "Procesdefinitie kiezen",
+    "noResults": {
+      "title": "Er zijn geen case-definities",
+      "description": "Voeg een case-definitie toe om te beginnen"
+    },
     "linkProcess": {
       "title": "Uploadproces koppelen aan dossier",
       "description": "Kies welk proces het uploaden van bestanden moet afhandelen."
@@ -637,10 +641,7 @@
       "ofLastPages": "van {{last}} pagina's",
       "singleSelect": "1 item geselecteerd",
       "totalItems": "{{start}}-{{end}} van {{total}} items",
-      "viewMode": {
-        "table": "Tabel",
-        "tile": "Tegel"
-      }
+      "totalItem": "{{start}}-{{end}} van {{total}} item"
     },
     "pendingChanges": {
       "title": "Pagina verlaten",
@@ -693,7 +694,9 @@
     "files": "Bestanden",
     "firstName": "Voornaam",
     "assigneeFullName": "Behandelaar",
-    "accepted": "Akkoord"
+    "accepted": "Akkoord",
+    "title": "Titel",
+    "readOnly": "Alleen-lezen"
   },
   "list": {
     "currentPage": "Pagina {{current}} van {{total}}",

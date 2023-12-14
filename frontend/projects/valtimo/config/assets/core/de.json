@@ -409,6 +409,10 @@
     "connectedProcesses": "Verknüpfte Prozesse",
     "connectProcess": "Prozess verknüpfen",
     "selectProcessDef": "Prozessdefinition auswählen",
+    "noResults": {
+      "title": "Es gibt keine Cases-Definitionen",
+      "description": "Fügen Sie eine Case-Definition hinzu"
+    },
     "linkProcess": {
       "title": "Verknüpfen Sie den Upload-Prozess mit dem Fall",
       "description": "Wählen Sie einen Prozess, der das Hochladen von Dateien handhaben soll."
@@ -637,10 +641,7 @@
       "ofLastPages": "von {{last}} Seiten",
       "singleSelect": "1 Objekt ausgewählt",
       "totalItems": "{{start}}-{{end}} von {{total}} Objekte",
-      "viewMode": {
-        "table": "Tabelle",
-        "tile": "Fliesen"
-      }
+      "totalItem": "{{start}}-{{end}} von {{total}} Objekt"
     },
     "pendingChanges": {
       "title": "Seite verlassen",
@@ -693,7 +694,9 @@
     "files": "Dateien",
     "firstName": "Vorname",
     "assigneeFullName": "Eigentümer",
-    "accepted": "Akzeptiert"
+    "accepted": "Akzeptiert",
+    "title": "Titel",
+    "readOnly": "Schreibgeschützt"
   },
   "list": {
     "currentPage": "Seite {{current}} von {{total}}",

@@ -410,6 +410,10 @@
     "connectedProcesses": "Connected processes",
     "connectProcess": "Connect process",
     "selectProcessDef": "Select process definition",
+    "noResults": {
+      "title": "There are no case-definitions",
+      "description": "Add a case-definition to start"
+    },
     "linkProcess": {
       "title": "Link upload process to case",
       "description": "Choose which process should handle file uploads."
@@ -638,11 +642,7 @@
       "ofLastPages": "of {{last}} pages",
       "singleSelect": "1 item selected",
       "totalItems": "{{start}}-{{end}} of {{total}} items",
-      "totalItem": "{{start}}-{{end}} of {{total}} item",
-      "viewMode": {
-        "table": "Table",
-        "tile": "Tile"
-      }
+      "totalItem": "{{start}}-{{end}} of {{total}} item"
     },
     "pendingChanges": {
       "title": "Leaving page",
@@ -695,7 +695,9 @@
     "files": "Files",
     "firstName": "First name",
     "assigneeFullName": "Assignee",
-    "accepted": "Accepted"
+    "accepted": "Accepted",
+    "title": "Title",
+    "readOnly": "Read-only"
   },
   "list": {
     "currentPage": "Page {{current}} of {{total}}",

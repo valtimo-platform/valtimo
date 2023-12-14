@@ -58,9 +58,9 @@ export class DossierManagementListComponent {
   );
 
   public dossierFields: ColumnConfig[] = [
-    {key: 'schema.title', label: 'Title', viewType: ViewType.TEXT},
-    {key: 'createdOn', label: 'Created On', viewType: ViewType.TEXT},
-    {key: 'readOnly', label: 'Read-only', viewType: ViewType.BOOLEAN},
+    {key: 'schema.title', label: 'fieldLabels.title', viewType: ViewType.TEXT},
+    {key: 'createdOn', label: 'fieldLabels.createdOn', viewType: ViewType.TEXT},
+    {key: 'readOnly', label: 'fieldLabels.readOnly', viewType: ViewType.BOOLEAN},
   ];
 
   public readonly showModal$ = new BehaviorSubject<boolean>(false);
