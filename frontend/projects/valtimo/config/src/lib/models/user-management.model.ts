@@ -27,3 +27,11 @@ export interface User {
   verified: string;
   status: string;
 }
+
+export interface NamedUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  label: string;
+}

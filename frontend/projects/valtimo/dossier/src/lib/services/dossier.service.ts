@@ -16,22 +16,24 @@
 import {Injectable} from '@angular/core';
 import {Direction, SortState} from '@valtimo/components';
 import {ConfigService, DefinitionColumn} from '@valtimo/config';
+import {BehaviorSubject, Observable} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DossierService {
   private readonly definitions: any;
+  private readonly _refreshDocument$ = new BehaviorSubject<null>(null);
 
   constructor(private readonly configService: ConfigService) {
     this.definitions = configService.config.definitions;
   }
 
-  getImplementationEnvironmentDefinitions(name: string) {
+  public getImplementationEnvironmentDefinitions(name: string) {
     return this.definitions.dossiers.find(definition => definition.name === name);
   }
 
-  getInitialSortState(columns: Array<DefinitionColumn>): SortState {
+  public getInitialSortState(columns: Array<DefinitionColumn>): SortState {
     const defaultColumn = columns.find(column => column.default);
     const isSorting = defaultColumn?.default === 'ASC' || defaultColumn?.default === 'DESC';
     const direction: Direction =
@@ -46,5 +48,13 @@ export class DossierService {
         direction,
       },
     };
+  }
+
+  public get refreshDocument$(): Observable<any> {
+    return this._refreshDocument$.asObservable();
+  }
+
+  public refresh(): void {
+    this._refreshDocument$.next(null);
   }
 }

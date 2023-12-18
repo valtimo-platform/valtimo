@@ -45,6 +45,10 @@
       "OPEN": {
         "description": "Kommen Sie später wieder.",
         "title": "Alle cases wurden zugewiesen"
+      },
+      "search": {
+        "description": "Es sind keine Dateien vorhanden, die Ihren Suchkriterien entsprechen.",
+        "title": "Keine Cases gefunden"
       }
     },
     "pagination": {

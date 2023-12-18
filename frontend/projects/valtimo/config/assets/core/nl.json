@@ -45,6 +45,10 @@
       "OPEN": {
         "description": "Kom later nog eens terug.",
         "title": "Alle dossiers hebben een behandelaar"
+      },
+      "search": {
+        "description": "Er zijn geen dossiers die voldoen aan je zoekcriteria.",
+        "title": "Geen dossiers gevonden"
       }
     },
     "pagination": {

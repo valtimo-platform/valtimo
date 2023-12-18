@@ -50,7 +50,7 @@ import {
   CAN_CLAIM_CASE_PERMISSION,
   DOSSIER_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
-import {DossierTabService} from '../../services';
+import {DossierService, DossierTabService} from '../../services';
 
 @Component({
   selector: 'valtimo-dossier-detail',
@@ -75,32 +75,32 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
   public tabLoader: TabLoaderImpl | null = null;
 
   public readonly assigneeId$ = new BehaviorSubject<string>('');
-  public readonly refreshDocument$ = new BehaviorSubject<null>(null);
 
-  public readonly document$: Observable<Document | null> = this.refreshDocument$.pipe(
-    switchMap(() => this.route.params),
-    map((params: Params) => params?.documentId),
-    switchMap((documentId: string) =>
-      documentId ? this.documentService.getDocument(this.documentId) : of(null)
-    ),
-    tap((document: Document | null) => {
-      if (document) {
-        this.assigneeId$.next(document.assigneeId);
-        this.document = document;
+  public readonly document$: Observable<Document | null> =
+    this.dossierService.refreshDocument$.pipe(
+      switchMap(() => this.route.params),
+      map((params: Params) => params?.documentId),
+      switchMap((documentId: string) =>
+        documentId ? this.documentService.getDocument(this.documentId) : of(null)
+      ),
+      tap((document: Document | null) => {
+        if (document) {
+          this.assigneeId$.next(document.assigneeId);
+          this.document = document;
 
-        if (
-          this.configService.config.customDossierHeader?.hasOwnProperty(
-            this.documentDefinitionName.toLowerCase()
-          ) &&
-          this.customDossierHeaderItems.length === 0
-        ) {
-          this.configService.config.customDossierHeader[
-            this.documentDefinitionName.toLowerCase()
-          ]?.forEach(item => this.getCustomDossierHeaderItem(item));
+          if (
+            this.configService.config.customDossierHeader?.hasOwnProperty(
+              this.documentDefinitionName.toLowerCase()
+            ) &&
+            this.customDossierHeaderItems.length === 0
+          ) {
+            this.configService.config.customDossierHeader[
+              this.documentDefinitionName.toLowerCase()
+            ]?.forEach(item => this.getCustomDossierHeaderItem(item));
+          }
         }
-      }
-    })
-  );
+      })
+    );
 
   public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
     map(params => params.documentDefinitionName || '')
@@ -168,7 +168,8 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     private readonly permissionService: PermissionService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly dossierTabService: DossierTabService
+    private readonly dossierTabService: DossierTabService,
+    private readonly dossierService: DossierService
   ) {
     this._snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this._snapshot.get('documentDefinitionName') || '';
@@ -219,7 +220,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
       .subscribe({
         next: (): void => {
           this.isAssigning$.next(false);
-          this.refreshDocument$.next(null);
+          this.dossierService.refresh();
         },
         error: (): void => {
           this.isAssigning$.next(false);
@@ -258,7 +259,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
   }
 
   public assignmentOfDocumentChanged(): void {
-    this.refreshDocument$.next(null);
+    this.dossierService.refresh();
   }
 
   private getCustomDossierHeaderItem(item): void {

@@ -22,7 +22,7 @@
   [showSelectionColumn]="true"
   (rowClicked)="onRowClick($event)"
 >
-  <h2 header>{{ 'accessControl.roles.title' | translate }}</h2>
+  <ng-container header> {{ 'accessControl.roles.title' | translate }} </ng-container>
 
   <div carbonToolbarContent>
     <ng-container [ngTemplateOutlet]="addRoleButton"></ng-container>

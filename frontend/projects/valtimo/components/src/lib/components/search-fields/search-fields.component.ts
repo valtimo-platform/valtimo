@@ -40,6 +40,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   }
   @Input() setValuesSubject$: Observable<SearchFieldValues>;
   @Input() defaultValues: SearchFieldValues;
+  @Input() inputDisabled = false;
   @Output() doSearch: EventEmitter<SearchFieldValues> = new EventEmitter<SearchFieldValues>();
 
   readonly documentDefinitionName$ = new BehaviorSubject<string>('');
