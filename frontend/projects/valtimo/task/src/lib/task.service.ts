@@ -15,10 +15,10 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpResponse} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {AssigneeRequest, Task, TaskProcessLinkResult} from './models';
-import {ConfigService, CustomTaskList, User} from '@valtimo/config';
+import {ConfigService, CustomTaskList, NamedUser} from '@valtimo/config';
 import {InterceptorSkip} from '@valtimo/security';
 
 @Injectable({providedIn: 'root'})
@@ -32,8 +32,11 @@ export class TaskService {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
-  queryTasks(params?: any): Observable<any> {
-    return this.http.get(`${this.valtimoEndpointUri}v1/task`, {observe: 'response', params});
+  queryTasks(params?: any): Observable<HttpResponse<Array<Task>>> {
+    return this.http.get<Array<Task>>(`${this.valtimoEndpointUri}v1/task`, {
+      observe: 'response',
+      params,
+    });
   }
 
   getTasks(): Observable<Task[]> {
@@ -44,8 +47,10 @@ export class TaskService {
     return this.http.get(this.valtimoEndpointUri + 'v1/task/' + id);
   }
 
-  getCandidateUsers(id: string): Observable<User[]> {
-    return this.http.get<User[]>(this.valtimoEndpointUri + 'v1/task/' + id + '/candidate-user');
+  getCandidateUsers(id: string): Observable<NamedUser[]> {
+    return this.http.get<NamedUser[]>(
+      this.valtimoEndpointUri + 'v2/task/' + id + '/candidate-user'
+    );
   }
 
   assignTask(id: string, assigneeRequest: AssigneeRequest): Observable<any> {

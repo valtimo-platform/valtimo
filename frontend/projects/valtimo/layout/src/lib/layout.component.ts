@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  ViewContainerRef,
+} from '@angular/core';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {filter} from 'rxjs/operators';
 import {Subscription} from 'rxjs';
+import {PlaceholderService} from 'carbon-components-angular';
 
 // eslint-disable-next-line no-var
 declare var App: any;
@@ -26,26 +34,40 @@ declare var App: any;
   selector: 'valtimo-layout',
   templateUrl: './layout.component.html',
 })
-export class LayoutComponent implements OnInit, OnDestroy {
+export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('carbonPlaceHolder', {static: true, read: ViewContainerRef})
+  private readonly _carbonPlaceHolder: ViewContainerRef;
+
   public layoutType: string | null = null;
-  private routerSub = Subscription.EMPTY;
-  private defaultLayout = 'internal';
+  private readonly _routerSub = new Subscription();
+  private readonly _DEFAULT_LAYOUT = 'internal';
 
   constructor(
-    private router: Router,
-    private route: ActivatedRoute
+    private readonly router: Router,
+    private readonly route: ActivatedRoute,
+    private readonly placeHolderService: PlaceholderService
   ) {}
 
-  ngOnInit() {
-    this.routerSub = this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe(() => {
-        const layout = this.route.snapshot.firstChild.data.layout;
-        this.layoutType = layout ? layout : this.defaultLayout;
-      });
+  public ngAfterViewInit(): void {
+    this.registerCarbonPlaceHolder();
   }
 
-  ngOnDestroy() {
-    this.routerSub.unsubscribe();
+  public ngOnInit() {
+    this._routerSub.add(
+      this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
+        const layout = this.route.snapshot.firstChild.data.layout;
+        this.layoutType = layout ? layout : this._DEFAULT_LAYOUT;
+      })
+    );
+  }
+
+  public ngOnDestroy() {
+    this._routerSub.unsubscribe();
+  }
+
+  private registerCarbonPlaceHolder(): void {
+    if (this._carbonPlaceHolder) {
+      this.placeHolderService.registerViewContainerRef(this._carbonPlaceHolder);
+    }
   }
 }

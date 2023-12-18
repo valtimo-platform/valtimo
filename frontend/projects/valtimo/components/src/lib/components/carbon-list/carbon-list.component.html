@@ -100,3 +100,7 @@
     (click)="$event.stopPropagation(); data.callback(data.item)"
   ></i>
 </ng-template>
+
+<ng-template #booleanTemplate let-data="data">
+  {{ 'viewTypeConverter.' + data | translate }}
+</ng-template>

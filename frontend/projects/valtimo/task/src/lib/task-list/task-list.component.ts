@@ -22,7 +22,7 @@ import {Task, TaskList} from '../models';
 import {NGXLogger} from 'ngx-logger';
 import {TaskDetailModalComponent} from '../task-detail-modal/task-detail-modal.component';
 import {TranslateService} from '@ngx-translate/core';
-import {combineLatest, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, of, Subscription, switchMap} from 'rxjs';
 import {ConfigService, SortState, TaskListTab} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
 import {take} from 'rxjs/operators';
@@ -49,7 +49,9 @@ export class TaskListComponent implements OnDestroy {
   public listTitle: string | null = null;
   public listDescription: string | null = null;
   public sortState: SortState | null = null;
-  private translationSubscription: Subscription;
+  public readonly loadingTasks$ = new BehaviorSubject<boolean>(true);
+  public readonly activeTab$ = new BehaviorSubject<string>('');
+  private _translationSubscription!: Subscription;
 
   constructor(
     private readonly configService: ConfigService,
@@ -68,7 +70,7 @@ export class TaskListComponent implements OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this.translationSubscription.unsubscribe();
+    this.closeTranslationSubscription();
   }
 
   public paginationClicked(page: number, type: string): void {
@@ -95,9 +97,14 @@ export class TaskListComponent implements OnDestroy {
   }
 
   public getTasks(type: string): void {
+    this.loadingTasks$.next(true);
+    this.activeTab$.next(type);
+
     let params: any;
 
-    this.translationSubscription = combineLatest([
+    this.closeTranslationSubscription();
+
+    this._translationSubscription = combineLatest([
       this.translateService.stream(`task-list.${type}.title`),
       this.translateService.stream(`task-list.${type}.description`),
     ]).subscribe(([title, description]) => {
@@ -134,34 +141,46 @@ export class TaskListComponent implements OnDestroy {
       params.sort = this.getSortString(this.sortState);
     }
 
-    this.taskService.queryTasks(params).subscribe((results: any) => {
-      this.tasks[type].pagination = {
-        ...this.tasks[type].pagination,
-        collectionSize: results.headers.get('x-total-count'),
-      };
-      this.tasks[type].tasks = results.body as Array<Task>;
-      this.tasks[type].tasks.map((task: Task) => {
-        task.created = moment(task.created).format('DD MMM YYYY HH:mm');
-        if (task.due) {
-          task.due = moment(task.due).format('DD MMM YYYY HH:mm');
-        }
-        task.isLocked = true;
-        this.permissionService
-          .requestPermission(CAN_VIEW_TASK_PERMISSION, {
-            resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
-            identifier: task.id,
-          })
-          .subscribe(canView => {
-            task.isLocked = !canView;
-          });
-      });
+    this.taskService
+      .queryTasks(params)
+      .pipe(
+        switchMap(tasksResult =>
+          combineLatest([
+            of(tasksResult),
+            ...tasksResult.body.map(task =>
+              this.permissionService.requestPermission(CAN_VIEW_TASK_PERMISSION, {
+                resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+                identifier: task.id,
+              })
+            ),
+          ])
+        )
+      )
+      .subscribe(results => {
+        const tasksResult = results[0];
+        const permissions = results.filter((_, index) => index !== 0);
 
-      if (this.taskService.getConfigCustomTaskList()) {
-        this.customTaskListFields(type);
-      } else {
-        this.defaultTaskListFields(type);
-      }
-    });
+        this.tasks[type].pagination = {
+          ...this.tasks[type].pagination,
+          collectionSize: tasksResult.headers.get('x-total-count'),
+        };
+        this.tasks[type].tasks = tasksResult.body;
+        this.tasks[type].tasks.map((task, taskIndex) => {
+          task.created = moment(task.created).format('DD MMM YYYY HH:mm');
+          if (task.due) {
+            task.due = moment(task.due).format('DD MMM YYYY HH:mm');
+          }
+          task.isLocked = !permissions[taskIndex];
+        });
+
+        if (this.taskService.getConfigCustomTaskList()) {
+          this.customTaskListFields(type);
+        } else {
+          this.defaultTaskListFields(type);
+        }
+
+        this.loadingTasks$.next(false);
+      });
   }
 
   public openRelatedCase(event: MouseEvent, index: number): void {
@@ -182,8 +201,9 @@ export class TaskListComponent implements OnDestroy {
     }
   }
 
-  public defaultTaskListFields(type) {
-    this.translationSubscription = combineLatest([
+  public defaultTaskListFields(type): void {
+    this.closeTranslationSubscription();
+    this._translationSubscription = combineLatest([
       this.translateService.stream(`task-list.fieldLabels.created`),
       this.translateService.stream(`task-list.fieldLabels.name`),
       this.translateService.stream(`task-list.fieldLabels.valtimoAssignee.fullName`),
@@ -215,10 +235,11 @@ export class TaskListComponent implements OnDestroy {
     });
   }
 
-  public customTaskListFields(type) {
+  public customTaskListFields(type): void {
     const customTaskListFields = this.taskService.getConfigCustomTaskList().fields;
 
-    this.translationSubscription = combineLatest(
+    this.closeTranslationSubscription();
+    this._translationSubscription = combineLatest(
       customTaskListFields.map(column =>
         this.translateService.stream(`task-list.fieldLabels.${column.translationKey}`)
       )
@@ -233,7 +254,7 @@ export class TaskListComponent implements OnDestroy {
     });
   }
 
-  public rowOpenTaskClick(task) {
+  public rowOpenTaskClick(task): void | boolean {
     if (!task.endTime && !task.isLocked) {
       this.taskDetail.openTaskDetails(task);
     } else {
@@ -245,7 +266,7 @@ export class TaskListComponent implements OnDestroy {
     this.sortState = this.taskService.getConfigCustomTaskList()?.defaultSortedColumn || null;
   }
 
-  public sortChanged(sortState: SortState) {
+  public sortChanged(sortState: SortState): void {
     this.sortState = sortState;
     this.getTasks(this.currentTaskType);
   }
@@ -256,5 +277,9 @@ export class TaskListComponent implements OnDestroy {
 
   private clearPagination(type: string): void {
     this.tasks[type].page = 0;
+  }
+
+  private closeTranslationSubscription(): void {
+    this._translationSubscription?.unsubscribe();
   }
 }

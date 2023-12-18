@@ -15,9 +15,9 @@
  */
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {DropdownItem} from '@valtimo/components';
-import {User} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
 import {BehaviorSubject, filter, map, Observable, of, switchMap} from 'rxjs';
+import {NamedUser} from '@valtimo/config';
 import {tap} from 'rxjs/operators';
 
 @Component({
@@ -77,7 +77,7 @@ export class DossierAssignUserComponent {
       });
   }
 
-  private mapUsersForDropdown(users: User[]): DropdownItem[] {
+  private mapUsersForDropdown(users: NamedUser[]): DropdownItem[] {
     return users
       .sort((a, b) => {
         if (a.lastName && b.lastName) {
@@ -86,7 +86,7 @@ export class DossierAssignUserComponent {
 
         return 0;
       })
-      .map(user => ({text: `${user.firstName} ${user.lastName}`, id: user.id}));
+      .map(user => ({text: user.label, id: user.id}));
   }
 
   private emitChange(): void {

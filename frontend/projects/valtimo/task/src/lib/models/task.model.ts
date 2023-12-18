@@ -16,7 +16,7 @@
 
 import {User} from '@valtimo/config';
 
-export interface Task {
+interface Task {
   assignee: string;
   caseDefinitionId: string;
   caseExecutionId: string;
@@ -47,19 +47,19 @@ export interface Task {
   isLocked: boolean;
 }
 
-export interface ListItemField {
+interface ListItemField {
   key: string;
   value: string;
   label: string;
 }
 
-export interface AssigneeRequest {
+interface AssigneeRequest {
   assignee: string;
 }
 
-export type TaskProcessLinkType = 'form' | 'form-flow';
+type TaskProcessLinkType = 'form' | 'form-flow';
 
-export interface TaskProcessLinkResult {
+interface TaskProcessLinkResult {
   processLinkId: string;
   type: TaskProcessLinkType;
   properties: {
@@ -68,3 +68,5 @@ export interface TaskProcessLinkResult {
     prefilledForm?: any;
   };
 }
+
+export {AssigneeRequest, ListItemField, Task, TaskProcessLinkResult, TaskProcessLinkType};

@@ -45,6 +45,10 @@
       "OPEN": {
         "description": "Come back later.",
         "title": "All cases have been assigned"
+      },
+      "search": {
+        "description": "There are no cases that match your search criteria.",
+        "title": "No cases found"
       }
     },
     "pagination": {
