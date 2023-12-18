@@ -154,7 +154,6 @@ export class DossierProcessStartModalComponent implements OnInit {
       this.documentDefinitionName,
       'document',
       formSubmissionResult.documentId,
-      'summary',
     ]);
   }
 }
