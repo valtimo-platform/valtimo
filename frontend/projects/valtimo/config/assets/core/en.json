@@ -941,7 +941,9 @@
     "complete": "Connect plugin action"
   },
   "plugin": {
-    "noConfigurationComponent": "No configuration component is available."
+    "noConfigurationComponent": "No configuration component is available.",
+    "configurationId": "Configuration ID",
+    "configurationIdTooltip": "The plugin will be saved under this ID. The ID must be in the format of a UUID"
   },
   "pluginManagement": {
     "tableItemsText": "plugin configurations",

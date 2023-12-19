@@ -102,12 +102,14 @@ export class PluginManagementService {
 
   updatePluginConfiguration(
     configurationId: string,
+    newConfigurationId: string,
     configurationTitle: string,
     configurationProperties: object
   ): Observable<PluginConfiguration> {
     return this.http.put<PluginConfiguration>(
       `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/configuration/${configurationId}`,
       {
+        newId: newConfigurationId,
         title: configurationTitle,
         properties: configurationProperties,
       }

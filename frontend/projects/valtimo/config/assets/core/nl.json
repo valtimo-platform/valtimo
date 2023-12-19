@@ -940,7 +940,9 @@
     "complete": "Pluginactie koppelen"
   },
   "plugin": {
-    "noConfigurationComponent": "Er is geen configuratie-component beschikbaar."
+    "noConfigurationComponent": "Er is geen configuratie-component beschikbaar.",
+    "configurationId": "Configuratie ID",
+    "configurationIdTooltip": "Onder deze ID zal de plugin worden opgeslagen. Het ID moet het format van een UUID hebben"
   },
   "pluginManagement": {
     "tableItemsText": "plugin-configuraties",

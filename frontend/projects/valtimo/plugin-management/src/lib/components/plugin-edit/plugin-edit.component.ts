@@ -38,7 +38,11 @@ export class PluginEditComponent {
   readonly prefillConfiguration$ = this.stateService.selectedPluginConfiguration$.pipe(
     map(configuration =>
       configuration
-        ? {...configuration.properties, configurationTitle: configuration.title}
+        ? {
+            ...configuration.properties,
+            configurationId: configuration.id,
+            configurationTitle: configuration.title,
+          }
         : undefined
     )
   );

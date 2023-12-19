@@ -16,14 +16,21 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {PluginConfigurationContainerComponent} from './plugin-configuration-container.component';
-import {ParagraphModule} from '@valtimo/components';
+import {DefaultPluginConfigurationComponent} from './default-plugin-configuration.component';
+import {FormModule, InputModule, ParagraphModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
-import {DefaultPluginConfigurationModule} from '../default-plugin-configuration/default-plugin-configuration.module';
+import {PluginTranslatePipeModule} from '../../pipes';
 
 @NgModule({
-  declarations: [PluginConfigurationContainerComponent],
-  imports: [CommonModule, ParagraphModule, TranslateModule, DefaultPluginConfigurationModule],
-  exports: [PluginConfigurationContainerComponent],
+  declarations: [DefaultPluginConfigurationComponent],
+  imports: [
+    CommonModule,
+    ParagraphModule,
+    TranslateModule,
+    PluginTranslatePipeModule,
+    FormModule,
+    InputModule,
+  ],
+  exports: [DefaultPluginConfigurationComponent],
 })
-export class PluginConfigurationContainerModule {}
+export class DefaultPluginConfigurationModule {}

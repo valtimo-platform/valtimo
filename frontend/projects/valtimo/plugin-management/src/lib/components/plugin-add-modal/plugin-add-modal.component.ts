@@ -73,6 +73,7 @@ export class PluginAddModalComponent implements OnInit {
 
   onConfiguration(configuration: PluginConfigurationData): void {
     const pluginConfiguration = {...configuration};
+    delete pluginConfiguration['configurationId'];
     delete pluginConfiguration['configurationTitle'];
 
     this.stateService.disableInput();
@@ -80,6 +81,7 @@ export class PluginAddModalComponent implements OnInit {
     this.stateService.selectedPluginDefinition$.pipe(take(1)).subscribe(selectedDefinition => {
       this.pluginManagementService
         .savePluginConfiguration({
+          id: configuration.configurationId,
           definitionKey: selectedDefinition.key,
           title: configuration.configurationTitle,
           properties: pluginConfiguration,

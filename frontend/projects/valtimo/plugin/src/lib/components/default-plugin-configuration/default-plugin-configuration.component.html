@@ -14,16 +14,23 @@
   ~ limitations under the License.
   -->
 
-<valtimo-default-plugin-configuration
-  [prefillConfiguration$]="prefillConfiguration$"
-  [save$]="save$"
-  [disabled$]="disabled$"
-  (valid)="onValid($event)"
-  (configuration)="onDefaultConfiguration($event)"
-  type="configuration"
+<v-form
+  (valueChange)="formValueChange($event)"
+  *ngIf="{
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+  } as obs"
 >
-</valtimo-default-plugin-configuration>
-<ng-template #pluginConfigurationComponent></ng-template>
-<ng-container *ngIf="noConfigurationComponentAvailable$ | async">
-  <v-paragraph [center]="true">{{ 'plugin.noConfigurationComponent' | translate }}</v-paragraph>
-</ng-container>
+  <v-input
+    name="configurationId"
+    [title]="'configurationId' | translate"
+    [margin]="true"
+    [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.configurationId"
+    [required]="false"
+    [tooltip]="'configurationIdTooltip' | translate"
+    [widthPx]="350"
+    placeholder="00000000-0000-0000-0000-000000000000"
+  >
+  </v-input>
+</v-form>

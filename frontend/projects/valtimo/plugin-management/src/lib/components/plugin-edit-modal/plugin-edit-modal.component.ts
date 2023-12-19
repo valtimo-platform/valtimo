@@ -96,6 +96,7 @@ export class PluginEditModalComponent implements OnInit {
     this.stateService.selectedPluginConfiguration$
       .pipe(take(1))
       .subscribe(selectedPluginConfiguration => {
+        const configurationId = configuration.configurationId;
         const configurationTitle = configuration.configurationTitle;
         const configurationData = {...configuration};
         delete configurationData['configurationTitle'];
@@ -103,6 +104,7 @@ export class PluginEditModalComponent implements OnInit {
         this.pluginManagementService
           .updatePluginConfiguration(
             selectedPluginConfiguration.id,
+            configurationId,
             configurationTitle,
             configurationData
           )
