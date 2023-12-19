@@ -15,11 +15,11 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {FormioForm} from '@formio/angular';
 import {ConfigService} from '@valtimo/config';
-import {InterceptorSkipHeader} from '@valtimo/security';
+import {InterceptorSkip} from '@valtimo/security';
 import {FormDefinitionOption} from './models';
 
 @Injectable({
@@ -48,7 +48,7 @@ export class FormService {
     return this.http.get<FormioForm>(
       `${this.valtimoApiConfig.endpointUri}v1/process-link/form-definition/${formDefinitionName}?documentId=${documentId}`,
       {
-        headers: InterceptorSkipHeader,
+        headers: new HttpHeaders().set(InterceptorSkip, '404'),
       }
     );
   }
