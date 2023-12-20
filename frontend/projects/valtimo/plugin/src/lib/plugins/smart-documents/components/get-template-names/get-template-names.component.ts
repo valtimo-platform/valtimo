@@ -15,17 +15,18 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {PluginConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take, tap} from 'rxjs';
-import {GetTemplateNamesConfig} from '../../models';
+import {GetTemplateNamesConfig} from "../../models";
+import {PluginTranslatePipe} from "../../../../pipes";
+import {FunctionConfigurationComponent} from "@valtimo/plugin";
 
 @Component({
+  providers: [PluginTranslatePipe],
   selector: 'valtimo-get-template-names',
   templateUrl: './get-template-names.component.html',
-  styleUrls: ['./get-template-names.component.scss'],
 })
 export class GetTemplateNamesComponent
-  implements PluginConfigurationComponent, OnInit, OnDestroy
+  implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
@@ -54,7 +55,7 @@ export class GetTemplateNamesComponent
   }
 
   private handleValid(formValue: GetTemplateNamesConfig): void {
-    const valid = !!(formValue.templateGroup);
+    const valid = !!(formValue.templateGroupName);
 
     this.valid$.next(valid);
     this.valid.emit(valid);

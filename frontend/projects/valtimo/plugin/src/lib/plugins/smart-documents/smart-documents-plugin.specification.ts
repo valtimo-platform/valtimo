@@ -39,9 +39,10 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       username: 'Gebruikersnaam',
       password: 'Wachtwoord',
       'generate-document': 'Document genereren',
-      'get-template-names': 'Test test test'
-      templateGroup: 'Template-groep',
-      templateName: 'Template-naam',
+      'get-template-names': 'Test test test',
+      templateGroup: 'Template groep',
+      templateName: 'Template naam',
+      templateGroupName: 'Template groep naam',
       templateDataTooltip:
         'De rechter value-kolom ondersteunt ook het gebruik van procesvariabelen zoals pv: en doc:',
       format: 'Documentformaat',
@@ -62,9 +63,10 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       username: 'Username',
       password: 'Password',
       'generate-document': 'Generate document',
-      'get-template-names': 'Test test test'
+      'get-template-names': 'Test test test',
       templateGroup: 'Template group',
       templateName: 'Template name',
+      templateGroupName: 'Template group name',
       format: 'Document format',
       templateData: 'Template data',
       templateDataTooltip:
@@ -85,9 +87,10 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       username: 'Nutzername',
       password: 'Passwort',
       'generate-document': 'Dokument generieren',
-      'get-template-names': 'Test test test'
-      templateGroup: 'Templategruppe',
-      templateName: 'Templatename',
+      'get-template-names': 'Test test test',
+      templateGroup: 'Template gruppe',
+      templateName: 'Template name',
+      templateGroupName: 'Template gruppe name',
       format: 'Dokumentformat',
       templateData: 'Templatedaten',
       templateDataTooltip:
