@@ -14,9 +14,11 @@
   ~ limitations under the License.
   -->
 <cds-table-container
-  *ngIf="{
-    sort: sort$ | async
-  } as obs"
+  *ngIf="
+    (viewInitialized$ | async) && {
+      sort: sort$ | async
+    } as obs
+  "
   class="valtimo-carbon-list"
 >
   <cds-table-header *ngIf="header">
@@ -26,6 +28,7 @@
   <ng-content select="[tabs]"></ng-content>
 
   <cds-table-toolbar
+    *ngIf="!hideToolbar"
     class="valtimo-carbon-list__toolbar"
     [model]="model"
     [batchText]="batchText$ | async"
@@ -44,20 +47,6 @@
       <ng-content select="[carbonToolbarContent]"> </ng-content>
     </cds-table-toolbar-content>
   </cds-table-toolbar>
-
-  <ng-template #actionsMenu let-data="data">
-    <cds-overflow-menu (click)="$event.stopPropagation()">
-      <cds-overflow-menu-option
-        *ngFor="let action of data.actions"
-        [type]="action.type"
-        (selected)="action.callback(data.item)"
-      >
-        <i *ngIf="!!action.iconClass" [ngClass]="action.iconClass"></i>
-
-        {{ action.label | translate }}
-      </cds-overflow-menu-option>
-    </cds-overflow-menu>
-  </ng-template>
 
   <cds-table
     *ngIf="!!obs.sort"
@@ -103,4 +92,18 @@
 
 <ng-template #booleanTemplate let-data="data">
   {{ 'viewTypeConverter.' + data | translate }}
+</ng-template>
+
+<ng-template #actionsMenu let-data="data">
+  <cds-overflow-menu (click)="$event.stopPropagation()">
+    <cds-overflow-menu-option
+      *ngFor="let action of data.actions"
+      [type]="action.type"
+      (selected)="action.callback(data.item)"
+    >
+      <i *ngIf="!!action.iconClass" [ngClass]="action.iconClass"></i>
+
+      {{ action.label | translate }}
+    </cds-overflow-menu-option>
+  </cds-overflow-menu>
 </ng-template>

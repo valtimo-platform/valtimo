@@ -18,6 +18,7 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {DossierDetailService} from '../../services';
 import {Observable} from 'rxjs';
 import {EditorModel} from '@valtimo/components';
+import {take} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-dossier-management-document-definition',
@@ -29,6 +30,22 @@ export class DossierManagementDocumentDefinitionComponent {
   public readonly loadingDocumentDefinition$ = this.dossierDetailService.loadingDocumentDefinition$;
   public readonly documentDefinitionModel$: Observable<EditorModel> =
     this.dossierDetailService.documentDefinitionModel$;
+  public readonly selectedDocumentDefinition$ = this.dossierDetailService.documentDefinition$;
 
   constructor(private readonly dossierDetailService: DossierDetailService) {}
+
+  public downloadDefinition(): void {
+    this.selectedDocumentDefinition$.pipe(take(1)).subscribe(definition => {
+      const dataString =
+        'data:text/json;charset=utf-8,' +
+        encodeURIComponent(JSON.stringify(definition.schema, null, 2));
+      const downloadAnchorElement = document.getElementById('downloadAnchorElement');
+      downloadAnchorElement.setAttribute('href', dataString);
+      downloadAnchorElement.setAttribute(
+        'download',
+        `${definition.id.name}-v${definition.id.version}.json`
+      );
+      downloadAnchorElement.click();
+    });
+  }
 }

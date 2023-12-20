@@ -430,10 +430,11 @@
       "checkboxDescription": "Alle taken worden toegewezen aan de behandelaar"
     },
     "tabs": {
-      "cases": "Zaak Details",
+      "cases": "Configuratie",
       "searchFields": "Zoekvelden",
       "listColumns": "Lijst",
-      "tabManagement": "Tabbladen"
+      "tabManagement": "Tabbladen",
+      "document": "Document"
     },
     "tabManagement": {
       "columns": {
@@ -541,13 +542,13 @@
   "Process migration warning": "<b>Let op:</b> Bij het migreren van een proces worden de candidate groups van de lopende proces instanties niet meegenomen. Dit kan gedaan worden in de database indien nodig. (Voorbeeld: wanneer een specifieke gebruikerstaak op de ROLE_USER stond en de candidate group voor deze taak is veranderd in het proces naar ROLE_ADMIN blijft de taak beschikbaar voor ROLE_USER. Enkel nieuw gestartte processen krijgen de nieuwe candidate group)",
   "Dossier": "Dossier",
   "Dossiers": "Dossiers",
-  "document definition": "Dossier-definitie",
-  "Upload document definition": "Upload dossier-definitie",
-  "Remove document definition": "Verwijder dossier-definitie",
-  "remove-document-definition-confirmation": "Waarschuwing: <br/><br/> Deze dossier-definitie en alle hierbij horende dossiers zullen worden verwijderd. Gekoppelde processen worden ontkoppeld.<br/> Het verwijderen van een dossier-definitie en bijbehorende dossiers kan niet worden teruggedraaid",
+  "document definition": "Documentdefinitie",
+  "Upload document definition": "Upload documentdefinitie",
+  "Remove document definition": "Verwijder documentdefinitie",
+  "remove-document-definition-confirmation": "Waarschuwing: <br/><br/> Deze documentdefinitie en alle hierbij horende dossiers zullen worden verwijderd. Gekoppelde processen worden ontkoppeld.<br/> Het verwijderen van een documentdefinitie en bijbehorende dossiers kan niet worden teruggedraaid",
   "remove-document-definition-confirmation-button": "Verwijder",
-  "remove-document-definition-success": "Dossier-definitie verwijderd",
-  "Download document definition": "Download dossier-definitie",
+  "remove-document-definition-success": "Documentdefinitie verwijderd",
+  "Download document definition": "Download documentdefinitie",
   "Select a document definition": "Kies een bestand om te uploaden",
   "Overview of all Dossiers": "Overzicht van alle Dossiers",
   "Start Dossier": "Creëer Nieuw Dossier",

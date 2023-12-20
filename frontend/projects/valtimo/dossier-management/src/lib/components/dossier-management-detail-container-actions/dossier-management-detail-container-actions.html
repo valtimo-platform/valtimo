@@ -19,10 +19,16 @@
   *ngIf="{
   exporting: exporting$ | async,
   loadingVersion: loadingVersion$ | async,
-  versionListItems: versionListItems$ | async
+  versionListItems: versionListItems$ | async,
+  selectedDocumentDefinition: selectedDocumentDefinition$ | async,
+  selectedDocumentDefinitionIsReadOnly: selectedDocumentDefinitionIsReadOnly$ | async
   } as obs"
 >
-  <ng-container *ngTemplateOutlet="versionSelection;context:{obs:obs}"></ng-container>
+  <div class="dossier-metadata">
+    <ng-container *ngTemplateOutlet="versionSelection;context:{obs:obs}"></ng-container>
+
+    <ng-container *ngTemplateOutlet="readOnly;context:{obs:obs}"></ng-container>
+  </div>
 
   <ng-container *ngTemplateOutlet="exportMenu;context:{obs:obs}"></ng-container>
 </div>
@@ -55,6 +61,14 @@
       >{{ 'dossierManagement.export' | translate: {value: documentDefinitionTitle}
       }}</cds-overflow-menu-option
     >
+
+    <cds-overflow-menu-option
+      *ngIf="obs.selectedDocumentDefinition && !obs.selectedDocumentDefinition.readOnly"
+      [disabled]="obs.exporting || obs.loadingVersion"
+      (selected)="openDossierRemoveModal() "
+      [attr.data-carbon-theme]="CARBON_THEME"
+      >{{ 'Remove document definition' | translate}}</cds-overflow-menu-option
+    >
   </cds-overflow-menu>
 </ng-template>
 
@@ -75,3 +89,13 @@
     <cds-loading size="sm"></cds-loading>
   </div>
 </ng-template>
+
+<ng-template #readOnly let-obs="obs">
+  <cds-tag *ngIf="obs.selectedDocumentDefinitionIsReadOnly" type="blue"
+    >{{'dossierManagement.readonly' | translate}}</cds-tag
+  >
+</ng-template>
+
+<valtimo-dossier-management-remove-modal
+  #dossierRemoveModal
+></valtimo-dossier-management-remove-modal>

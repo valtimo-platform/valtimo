@@ -28,7 +28,7 @@ import {TabEnum} from '../models/tab.enum';
 export class TabService {
   public configuredTabKeys: string[];
 
-  private _currentTab$ = new BehaviorSubject<TabEnum>(TabEnum.CASE);
+  private _currentTab$ = new BehaviorSubject<TabEnum>(TabEnum.DOCUMENT);
   public get currentTab$(): Observable<TabEnum> {
     return this._currentTab$.asObservable();
   }

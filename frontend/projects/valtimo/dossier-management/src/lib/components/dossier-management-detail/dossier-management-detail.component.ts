@@ -19,7 +19,6 @@ import {DocumentDefinition, DocumentService, ProcessDocumentDefinition} from '@v
 import {ActivatedRoute} from '@angular/router';
 import {DossierManagementConnectModalComponent} from '../dossier-management-connect-modal/dossier-management-connect-modal.component';
 import {AlertService} from '@valtimo/components';
-import {DossierManagementRemoveModalComponent} from '../dossier-management-remove-modal/dossier-management-remove-modal.component';
 import {DossierDetailService} from '../../services';
 import {take} from 'rxjs/operators';
 
@@ -31,8 +30,6 @@ import {take} from 'rxjs/operators';
 export class DossierManagementDetailComponent implements OnInit {
   @ViewChild('dossierConnectModal')
   private readonly _dossierConnectModal: DossierManagementConnectModalComponent;
-  @ViewChild('dossierRemoveModal')
-  private readonly _dossierRemoveModal: DossierManagementRemoveModalComponent;
 
   public documentDefinitionName: string | null = null;
   public documentDefinition: DocumentDefinition | null = null;
@@ -63,10 +60,6 @@ export class DossierManagementDetailComponent implements OnInit {
 
   public openDossierConnectModal(): void {
     this._dossierConnectModal.openModal(this.documentDefinition);
-  }
-
-  public openDossierRemoveModal(): void {
-    this._dossierRemoveModal.openModal(this.documentDefinition);
   }
 
   public deleteProcessDocumentDefinition(
