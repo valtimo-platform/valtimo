@@ -30,7 +30,7 @@
     <div class="col-sm-12 col-md-4 col-xl-3">
       <h4 class="user-tasks-title">{{ 'summary.userTasks' | translate }}</h4>
       <ng-container *ngIf="!obs.loadingTasks; else loadingTasksTemplate">
-        <ng-container *ngIf="!tasks.length">
+        <ng-container *ngIf="(tasks | isArray: 1) === false">
           <valtimo-widget>
             <div class="p-3">
               <img class="float-left" src="assets/audit-2.png" height="25" />
@@ -40,8 +40,8 @@
           </valtimo-widget>
         </ng-container>
 
-        <ng-container *ngFor="let task of tasks">
-          <valtimo-widget>
+        <ng-container *ngIf="tasks | isArray: 1">
+          <valtimo-widget *ngFor="let task of tasks">
             <div
               *ngIf="!task.isLocked"
               class="p-3 clickable hoverable"

@@ -39,6 +39,7 @@ import {FormioForm} from '@formio/angular';
 import {UserProviderService} from '@valtimo/security';
 import {BehaviorSubject, combineLatest, of, Subscription, switchMap} from 'rxjs';
 import {PermissionService} from '@valtimo/access-control';
+import {catchError} from 'rxjs/operators';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -147,7 +148,11 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
                 })
               ),
             ])
-          )
+          ),
+          catchError(() => {
+            this.loadingTasks$.next(false);
+            return of(null);
+          })
         )
         .subscribe(res => {
           const tasks = res[0];
