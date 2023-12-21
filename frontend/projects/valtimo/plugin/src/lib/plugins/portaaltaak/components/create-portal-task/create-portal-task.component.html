@@ -55,7 +55,7 @@
     [tooltip]="'formTypeUrlTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
   ></v-input>
-  <v-carbon-multi-input
+  <valtimo-carbon-multi-input
     name="sendData"
     [title]="'sendData' | pluginTranslate: pluginId | async"
     type="keyValue"
@@ -66,8 +66,8 @@
     [tooltip]="'sendDataTooltip' | pluginTranslate: pluginId | async"
     [minimumAmountOfRows]="0"
     [initialAmountOfRows]="0"
-  ></v-carbon-multi-input>
-  <v-carbon-multi-input
+  ></valtimo-carbon-multi-input>
+  <valtimo-carbon-multi-input
     name="receiveData"
     [title]="'receiveData' | pluginTranslate: pluginId | async"
     type="keyValue"
@@ -78,7 +78,7 @@
     [tooltip]="'receiveDataTooltip' | pluginTranslate: pluginId | async"
     [minimumAmountOfRows]="0"
     [initialAmountOfRows]="0"
-  ></v-carbon-multi-input>
+  ></valtimo-carbon-multi-input>
   <v-select
     [items]="receiverSelectItems$ | async"
     [margin]="true"
@@ -114,11 +114,11 @@
   <v-input
     name="verloopDurationInDays"
     [type]="'number'"
-    [title]="'verloopDurationInDays' | pluginTranslate : pluginId | async"
+    [title]="'verloopDurationInDays' | pluginTranslate: pluginId | async"
     [margin]="true"
     [defaultValue]="obs.prefill?.verloopDurationInDays?.toString()"
     [disabled]="obs.disabled"
-    [tooltip]="'verloopDurationInDaysTooltip' | pluginTranslate : pluginId | async"
+    [tooltip]="'verloopDurationInDaysTooltip' | pluginTranslate: pluginId | async"
     [required]="false"
   ></v-input>
 </v-form>
