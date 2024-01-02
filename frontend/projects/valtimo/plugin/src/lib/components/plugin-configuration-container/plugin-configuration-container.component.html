@@ -15,12 +15,12 @@
   -->
 
 <valtimo-default-plugin-configuration
+  *ngIf="isTypeConfiguration$ | async"
   [prefillConfiguration$]="prefillConfiguration$"
   [save$]="save$"
   [disabled$]="disabled$"
   (valid)="onValid($event)"
   (configuration)="onDefaultConfiguration($event)"
-  type="configuration"
 >
 </valtimo-default-plugin-configuration>
 <ng-template #pluginConfigurationComponent></ng-template>

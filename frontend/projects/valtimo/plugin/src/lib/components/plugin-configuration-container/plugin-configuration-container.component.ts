@@ -28,7 +28,7 @@ import {
 } from '@angular/core';
 import {PluginService} from '../../services';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
-import {tap} from 'rxjs/operators';
+import {map, tap} from 'rxjs/operators';
 import {
   ConfigurationComponentType,
   DefaultPluginConfigurationData,
@@ -81,6 +81,10 @@ export class PluginConfigurationContainerComponent
   private readonly _defaultConfiguration =
     new BehaviorSubject<DefaultPluginConfigurationData | null>(null);
   private readonly _valid = new BehaviorSubject<boolean>(false);
+
+  readonly isTypeConfiguration$: Observable<boolean> = this._componentType.pipe(
+    map(componentType => componentType === 'configuration')
+  );
 
   constructor(private readonly pluginService: PluginService) {}
 
