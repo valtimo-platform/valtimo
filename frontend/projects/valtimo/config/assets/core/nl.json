@@ -210,7 +210,13 @@
     "taskCreated": "Aangemaakt op"
   },
   "progress": {
-    "noProcessDocumentInstances": "Er is nog geen proces gestart"
+    "noProcessDocumentInstances": "Er is nog geen proces gestart",
+    "process": "Proces",
+    "processPlaceholder": "Selecteer een proces",
+    "version": "Versie",
+    "startedBy": "Gestart door",
+    "startedOn": "Gestart op",
+    "of": "van"
   },
   "dashboard": {
     "openTasks": {

@@ -14,31 +14,51 @@
   ~ limitations under the License.
   -->
 
-<div
+<ng-container
   class="full-height-tab-content"
-  *ngIf="
-    processDocumentInstances && processDocumentInstances.length > 0;
-    else emptyProcessDocumentInstances
-  "
+  *ngIf="{
+    processInstanceItems: processInstanceItems$ | async,
+    selectedProcessInstance: selectedProcessInstance$ | async
+  } as obs"
 >
-  <div class="col-3">
-    <label><strong>Process</strong></label
-    ><br />
-    <select class="form-control" (change)="loadProcessInstance($event.target.value)">
-      <option
-        *ngFor="let processDocumentInstance of processDocumentInstances"
-        [value]="processDocumentInstance.id.processInstanceId"
-        [selected]="selectedProcessInstanceId === processDocumentInstance.id.processInstanceId"
-      >
-        {{ processDocumentInstance.processName }}
-      </option>
-    </select>
+  <span *ngIf="!obs.processInstanceItems">{{
+    'progress.noProcessDocumentInstances' | translate
+  }}</span>
+  <div class="process-info-row">
+    <cds-combo-box
+      *ngIf="obs.processInstanceItems"
+      [placeholder]="'progress.processPlaceholder' | translate"
+      [dropUp]="false"
+      [items]="obs.processInstanceItems"
+      itemValueKey="processInstanceId"
+      [label]="'progress.process' | translate"
+      (selected)="loadProcessInstance($event.processInstanceId)"
+    >
+      <cds-dropdown-list></cds-dropdown-list>
+    </cds-combo-box>
+    <div *ngIf="obs.selectedProcessInstance">
+      <v-input-label [title]="'progress.version' | translate"></v-input-label>
+      <span class="process-info-text">
+        {{ obs.selectedProcessInstance.version }} ({{ 'progress.of' | translate }}
+        {{ obs.selectedProcessInstance.latestVersion }})
+      </span>
+    </div>
+    <div *ngIf="obs.selectedProcessInstance">
+      <v-input-label [title]="'progress.startedBy' | translate"></v-input-label>
+      <span class="process-info-text"> {{ obs.selectedProcessInstance.startedBy }} </span>
+    </div>
+    <div *ngIf="obs.selectedProcessInstance">
+      <v-input-label [title]="'progress.startedOn' | translate"></v-input-label>
+      <span class="process-info-text">
+        {{ obs.selectedProcessInstance.startedOn.toLocaleDateString() }}
+      </span>
+    </div>
   </div>
-  <valtimo-process-diagram
-    [processInstanceId]="selectedProcessInstanceId"
-  ></valtimo-process-diagram>
-</div>
-
-<ng-template #emptyProcessDocumentInstances>
-  <span> {{ 'progress.noProcessDocumentInstances' | translate }}</span>
-</ng-template>
+  <div>
+    <valtimo-process-diagram
+      class="col"
+      *ngIf="obs.selectedProcessInstance"
+      [processInstanceId]="obs.selectedProcessInstance.id.processInstanceId"
+    ></valtimo-process-diagram>
+  </div>
+</ng-container>

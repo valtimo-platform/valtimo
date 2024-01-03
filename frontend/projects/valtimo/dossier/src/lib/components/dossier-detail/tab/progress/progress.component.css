@@ -18,3 +18,13 @@
   height: calc(100vh - 380px);
   width: 100%;
 }
+
+.process-info-row {
+  display: flex;
+  gap: 24px;
+}
+
+.process-info-text {
+  color: var(--v-color-black);
+  font-size: var(--v-font-size-default);
+}
