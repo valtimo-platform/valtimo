@@ -15,7 +15,7 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {BehaviorSubject, combineLatest, Observable, Subscription, take, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {GetTemplateNamesConfig} from "../../models";
 import {PluginTranslatePipe} from "../../../../pipes";
 import {FunctionConfigurationComponent} from "@valtimo/plugin";
@@ -32,13 +32,13 @@ export class GetTemplateNamesComponent
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
   @Input() prefillConfiguration$: Observable<GetTemplateNamesConfig>;
-  @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<GetTemplateNamesConfig> =
     new EventEmitter<GetTemplateNamesConfig>();
+  @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-  private saveSubscription!: Subscription;
 
   private readonly formValue$ = new BehaviorSubject<GetTemplateNamesConfig | null>(null);
+  private saveSubscription!: Subscription;
   private readonly valid$ = new BehaviorSubject<boolean>(false);
 
   ngOnInit(): void {

@@ -36,4 +36,9 @@ interface GetTemplateNamesConfig {
   templateGroupName: string;
 }
 
-export {SmartDocumentsConfig, GenerateDocumentConfig, GetTemplateNamesConfig, DocumentFormat};
+export {
+  SmartDocumentsConfig,
+  GenerateDocumentConfig,
+  GetTemplateNamesConfig,
+  DocumentFormat
+};

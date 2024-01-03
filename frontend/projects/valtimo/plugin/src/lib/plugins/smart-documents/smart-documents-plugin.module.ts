@@ -29,7 +29,11 @@ import {GenerateDocumentConfigurationComponent} from './components/generate-docu
 import { GetTemplateNamesComponent } from './components/get-template-names/get-template-names.component';
 
 @NgModule({
-  declarations: [SmartDocumentsConfigurationComponent, GenerateDocumentConfigurationComponent, GetTemplateNamesComponent],
+  declarations: [
+      SmartDocumentsConfigurationComponent,
+      GenerateDocumentConfigurationComponent,
+      GetTemplateNamesComponent
+  ],
   imports: [
     CommonModule,
     PluginTranslatePipeModule,
@@ -39,6 +43,9 @@ import { GetTemplateNamesComponent } from './components/get-template-names/get-t
     CarbonMultiInputModule,
     ParagraphModule,
   ],
-  exports: [SmartDocumentsConfigurationComponent, GenerateDocumentConfigurationComponent, GetTemplateNamesComponent],
+  exports: [SmartDocumentsConfigurationComponent,
+      GenerateDocumentConfigurationComponent,
+      GetTemplateNamesComponent
+  ],
 })
 export class SmartDocumentsPluginModule {}
