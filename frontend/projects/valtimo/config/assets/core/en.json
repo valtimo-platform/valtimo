@@ -45,6 +45,10 @@
       "OPEN": {
         "description": "Come back later.",
         "title": "All cases have been assigned"
+      },
+      "search": {
+        "description": "There are no cases that match your search criteria.",
+        "title": "No cases found"
       }
     },
     "pagination": {
@@ -427,10 +431,11 @@
       "checkboxDescription": "Automatically assign user tasks to the case handler"
     },
     "tabs": {
-      "cases": "Case Details",
+      "cases": "Configuration",
       "searchFields": "Search Fields",
       "listColumns": "List",
-      "tabManagement": "Tabs"
+      "tabManagement": "Tabs",
+      "document": "Document"
     },
     "tabManagement": {
       "columns": {
@@ -538,13 +543,13 @@
   "Process migration warning": "<b>Warning:</b> When migrating a process, the candidate groups of running instances will not be updated. This can be done in the database if necessary. (For example if a specific user task is open for ROLE_USER and the candidate group for the user task is updated in the process to ROLE_ADMIN, this user task is still accessible for ROLE_USER. Only newly started processes will use the updated candidate group)",
   "Dossier": "Case",
   "Dossiers": "Cases",
-  "document definition": "Case-definition",
-  "Upload document definition": "Upload case-definition",
-  "Remove document definition": "Remove case-definition",
-  "remove-document-definition-confirmation": "Warning: <br/><br/> This case-definition and all related cases will be removed. Linked processes will be unlinked.<br/> Please note that removing a case-definition and its cases cannot be reversed",
+  "document definition": "Document definition",
+  "Upload document definition": "Upload document definition",
+  "Remove document definition": "Remove document definition",
+  "remove-document-definition-confirmation": "Warning: <br/><br/> This document definition and all related cases will be removed. Linked processes will be unlinked.<br/> Please note that removing a document definition and its cases cannot be reversed",
   "remove-document-definition-confirmation-button": "Remove",
-  "remove-document-definition-success": "Removed case-definition",
-  "Download document definition": "Download case-definition",
+  "remove-document-definition-success": "Removed document definition",
+  "Download document definition": "Download document definition",
   "Select a document definition": "Select a file to upload",
   "Overview of all Dossiers": "Overview of all Cases",
   "Start Dossier": "Create New Case",
@@ -937,7 +942,9 @@
     "complete": "Connect plugin action"
   },
   "plugin": {
-    "noConfigurationComponent": "No configuration component is available."
+    "noConfigurationComponent": "No configuration component is available.",
+    "configurationId": "Configuration ID",
+    "configurationIdTooltip": "The plugin will be saved under this ID. The ID must be in the format of a UUID"
   },
   "pluginManagement": {
     "tableItemsText": "plugin configurations",

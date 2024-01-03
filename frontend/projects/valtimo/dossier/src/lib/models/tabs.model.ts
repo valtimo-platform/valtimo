@@ -54,12 +54,18 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
   }
 
   public initial(tabName?: string): void {
-    let initialTab;
+    let initialTab!: TabImpl;
+
     if (tabName) {
-      initialTab = this._tabs.find(tab => tab.name === tabName);
-    } else {
+      initialTab =
+        this._tabs.find(tab => tab.name === tabName) ||
+        this._tabs.find(tab => tab.contentKey === tabName);
+    }
+
+    if (!initialTab) {
       initialTab = this._tabs[0] || null;
     }
+
     this.load(initialTab);
   }
 

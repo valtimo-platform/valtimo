@@ -18,6 +18,7 @@
   *ngIf="{
     fields: fields$ | async,
     documentItems: documentItems$ | async,
+    noResultsMessage: noResultsMessage$ | async,
     searchFields: searchFields$ | async,
     schema: schema$ | async,
     showAssignModal: showAssignModal$ | async,
@@ -37,10 +38,9 @@
           [loading]="!obs.loaded"
           (formFlowComplete)="forceRefresh()"
         ></valtimo-dossier-list-actions>
+        <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
 
         <ng-container *ngIf="obs.loaded; else loading">
-          <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
-
           <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
         </ng-container>
       </div>
@@ -61,6 +61,7 @@
       (doSearch)="search($event)"
       [documentDefinitionName]="documentDefinitionName$ | async"
       [defaultValues]="searchFieldValues$ | async"
+      [inputDisabled]="!obs.loaded"
     ></valtimo-search-fields>
   </div>
 </ng-template>
@@ -91,9 +92,9 @@
     </div>
 
     <valtimo-no-results
-      [action]="dossierListActions"
-      description="{{ 'dossier.noResults.' + activeTab + '.description' | translate }}"
-      title="{{ 'dossier.noResults.' + activeTab + '.title' | translate }}"
+      [action]="obs.noResultsMessage.isSearchResult ? null : dossierListActions"
+      [description]="obs.noResultsMessage.description | translate"
+      [title]="obs.noResultsMessage.title | translate"
     ></valtimo-no-results>
 
     <div tabs *ngIf="canHaveAssignee">
@@ -135,7 +136,12 @@
   </ng-container>
 </ng-template>
 
-<ng-template #loading><valtimo-carbon-list [loading]="true"></valtimo-carbon-list></ng-template>
+<ng-template #loading
+  ><valtimo-carbon-list [loading]="true">
+    <div tabs *ngIf="canHaveAssignee">
+      <ng-container *ngTemplateOutlet="tabs"></ng-container>
+    </div> </valtimo-carbon-list
+></ng-template>
 
 <ng-template #bulkAssignModal let-obs="obs">
   <valtimo-dossier-bulk-assign-modal

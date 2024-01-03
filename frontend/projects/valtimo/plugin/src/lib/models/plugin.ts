@@ -19,8 +19,13 @@ import {Observable} from 'rxjs';
 import {SafeResourceUrl} from '@angular/platform-browser';
 
 interface PluginConfigurationData {
+  configurationId: string;
   configurationTitle: string;
   [key: string]: any;
+}
+
+interface DefaultPluginConfigurationData {
+  configurationId: string;
 }
 
 interface FunctionConfigurationData {
@@ -78,6 +83,7 @@ interface PluginConfiguration {
   definitionKey?: string;
   pluginDefinition?: PluginDefinition;
   id?: string;
+  newId?: string;
   title: string;
   properties: object;
 }
@@ -98,6 +104,7 @@ export {
   PluginConfigurationComponent,
   ConfigurationComponentType,
   PluginConfigurationData,
+  DefaultPluginConfigurationData,
   FunctionConfigurationComponent,
   FunctionConfigurationData,
   PluginConfiguration,

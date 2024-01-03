@@ -45,6 +45,10 @@
       "OPEN": {
         "description": "Kommen Sie später wieder.",
         "title": "Alle cases wurden zugewiesen"
+      },
+      "search": {
+        "description": "Es sind keine Dateien vorhanden, die Ihren Suchkriterien entsprechen.",
+        "title": "Keine Cases gefunden"
       }
     },
     "pagination": {
@@ -426,10 +430,11 @@
       "checkboxDescription": "Aufgaben automatisch zu Fallbearbeiter zuweisen"
     },
     "tabs": {
-      "cases": "Falldetails",
+      "cases": "Konfiguration",
       "searchFields": "Suchfelder",
       "listColumns": "Aufführen",
-      "tabManagement": "Tabs"
+      "tabManagement": "Tabs",
+      "document": "Dokument"
     },
     "tabManagement": {
       "columns": {
@@ -537,13 +542,13 @@
   "Process migration warning": "<b>Warnung:</b> Wenn ein Prozess migriert wird, werden die User-Gruppen der laufenden Instanzen nicht geupdatet. Dies kann bei Bedarf in der Datenbank erfolgen. (Zum Beispiel, wenn eine spezifische User-Aufgabe für ROLE_USER offen ist und die User-Gruppe für die User-Aufgabe wird im Prozess auf ROLE_ADMIN angepasst, wird diese Aufgabe nachwievor für ROLE_USER verfügbar sein. Nur neu gestartete Prozesse werden die neue User-Gruppe berücksichtigen.)",
   "Dossier": "Case",
   "Dossiers": "Cases",
-  "document definition": "Case-Definition",
-  "Upload document definition": "Upload Case-Definition",
-  "Remove document definition": "Case-Definition löschen",
-  "remove-document-definition-confirmation": "Warnung: <br/><br/> Diese Case-Definition und alle verbundenen Cases werden gelöscht. Für verknüpfte Prozesse wird die Verknüpfung aufgehoben.<br/> Das Entfernen einer Case-Definition kann nicht rückgängig gemacht werden.",
+  "document definition": "Dokumentdefinition",
+  "Upload document definition": "Upload Dokumentdefinition",
+  "Remove document definition": "Dokumentdefinition löschen",
+  "remove-document-definition-confirmation": "Warnung: <br/><br/> Diese Dokumentdefinition und alle verbundenen Cases werden gelöscht. Für verknüpfte Prozesse wird die Verknüpfung aufgehoben.<br/> Das Entfernen einer Dokumentdefinition kann nicht rückgängig gemacht werden.",
   "remove-document-definition-confirmation-button": "Löschen",
-  "remove-document-definition-success": "Case-Definition gelöscht",
-  "Download document definition": "Download Case-Definition",
+  "remove-document-definition-success": "Dokumentdefinition gelöscht",
+  "Download document definition": "Download Dokumentdefinition",
   "Select a document definition": "Datei für Upload auswählen",
   "Overview of all Dossiers": "Überblick alle Cases",
   "Start Dossier": "Neuen Case erstellen",
@@ -936,7 +941,9 @@
     "complete": "Plugin-Aktion verbinden"
   },
   "plugin": {
-    "noConfigurationComponent": "Es ist keine Konfigurationskomponente verfügbar."
+    "noConfigurationComponent": "Es ist keine Konfigurationskomponente verfügbar.",
+    "configurationId": "Konfigurations ID",
+    "configurationIdTooltip": "Unter dieser ID wird das Plugin gespeichert. Die ID muss im Format einer UUID vorliegen"
   },
   "pluginManagement": {
     "tableItemsText": "Plugin-Konfigurationen",

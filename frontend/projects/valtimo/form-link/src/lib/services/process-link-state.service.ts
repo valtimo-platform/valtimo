@@ -48,8 +48,10 @@ export class ProcessLinkStateService implements OnDestroy {
       .pipe(
         map(
           availableTypes =>
-            (availableTypes.length === 1 && availableTypes[0].processLinkType === 'form') ||
-            availableTypes[0].processLinkType === 'form-flow'
+            Array.isArray(availableTypes) &&
+            availableTypes.length === 1 &&
+            (availableTypes[0]?.processLinkType === 'form' ||
+              availableTypes[0]?.processLinkType === 'form-flow')
         )
       );
   }

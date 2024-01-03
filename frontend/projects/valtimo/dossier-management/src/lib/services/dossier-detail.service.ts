@@ -57,6 +57,13 @@ export class DossierDetailService implements OnDestroy {
     );
   }
 
+  public get selectedDocumentDefinitionIsReadOnly$(): Observable<boolean> {
+    return this.documentDefinition$.pipe(
+      map(definition => definition.readOnly),
+      distinctUntilChanged()
+    );
+  }
+
   public get loadingDocumentDefinition$(): Observable<boolean> {
     return this._loadingDocumentDefinition$.asObservable();
   }

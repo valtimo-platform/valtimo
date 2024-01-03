@@ -55,6 +55,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   @Input() formatOnLoad = true;
   @Input() widthPx!: number;
   @Input() heightPx!: number;
+  @Input() heightStyle!: string;
 
   @Output() validEvent: EventEmitter<boolean> = new EventEmitter();
   @Output() valueChangeEvent: EventEmitter<string> = new EventEmitter();

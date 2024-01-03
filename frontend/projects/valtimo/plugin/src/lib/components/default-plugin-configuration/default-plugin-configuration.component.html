@@ -14,6 +14,23 @@
   ~ limitations under the License.
   -->
 
-<div #carbonPlaceHolder class="carbon-placeholder"></div>
-<valtimo-layout-public *ngIf="layoutType === 'public'"></valtimo-layout-public>
-<valtimo-layout-internal *ngIf="layoutType === 'internal'"></valtimo-layout-internal>
+<v-form
+  (valueChange)="formValueChange($event)"
+  *ngIf="{
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+  } as obs"
+>
+  <v-input
+    name="configurationId"
+    [title]="'configurationId' | translate"
+    [margin]="true"
+    [disabled]="obs.disabled"
+    [defaultValue]="obs.prefill?.configurationId"
+    [required]="false"
+    [tooltip]="'configurationIdTooltip' | translate"
+    [widthPx]="350"
+    placeholder="00000000-0000-0000-0000-000000000000"
+  >
+  </v-input>
+</v-form>

@@ -227,6 +227,7 @@
     [clear$]="clear$"
     (keyup.enter)="search()"
     [defaultValue]="values[searchField.key]"
+    [disabled]="inputDisabled"
   >
   </v-input>
 </ng-template>
@@ -252,6 +253,7 @@
     [clear$]="clear$"
     (keyup.enter)="search()"
     [defaultValue]="values[searchField.key]"
+    [disabled]="inputDisabled"
   >
   </v-input>
 </ng-template>
@@ -275,6 +277,7 @@
     [clear$]="clear$"
     (keyup.enter)="search()"
     [defaultDate]="values[searchField.key]"
+    [disabled]="inputDisabled"
   ></v-date-picker>
 </ng-template>
 
@@ -302,6 +305,7 @@
         [clear$]="clear$"
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.start"
+        [disabled]="inputDisabled"
       >
       </v-input>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
@@ -311,6 +315,7 @@
         [clear$]="clear$"
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.end"
+        [disabled]="inputDisabled"
       >
       </v-input>
     </v-form>
@@ -343,6 +348,7 @@
         [clear$]="clear$"
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.start"
+        [disabled]="inputDisabled"
       >
       </v-input>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
@@ -354,6 +360,7 @@
         [clear$]="clear$"
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.end"
+        [disabled]="inputDisabled"
       >
       </v-input>
     </v-form>
@@ -384,6 +391,7 @@
         [clear$]="clear$"
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.start"
+        [disabled]="inputDisabled"
       ></v-date-picker>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-date-picker
@@ -392,6 +400,7 @@
         [clear$]="clear$"
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.end"
+        [disabled]="inputDisabled"
       ></v-date-picker>
     </v-form>
   </ng-container>
@@ -422,6 +431,7 @@
       (selectedChange)="singleValueChange(searchField.key, $event)"
       (keyup.enter)="search()"
       [defaultSelectionId]="getDefaultBooleanSelectionId(values, searchField.key)"
+      [disabled]="inputDisabled"
     ></v-select>
   </ng-container>
 </ng-template>
@@ -446,6 +456,7 @@
     [clear$]="clear$"
     (keyup.enter)="search()"
     [defaultDate]="values[searchField.key]"
+    [disabled]="inputDisabled"
   ></v-date-picker>
 </ng-template>
 
@@ -474,6 +485,7 @@
         [clear$]="clear$"
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.start"
+        [disabled]="inputDisabled"
       ></v-date-picker>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-date-picker
@@ -483,6 +495,7 @@
         [clear$]="clear$"
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.end"
+        [disabled]="inputDisabled"
       ></v-date-picker>
     </v-form>
   </ng-container>
@@ -515,6 +528,7 @@
       (selectedChange)="singleValueChange(searchField.key, $event)"
       (keyup.enter)="search()"
       [defaultSelectionId]="values[searchField.key]"
+      [disabled]="inputDisabled"
     ></v-select>
   </ng-container>
 </ng-template>
@@ -547,6 +561,7 @@
       (selectedChange)="multipleValueChange(searchField.key, $event)"
       (keyup.enter)="search()"
       [defaultSelectionIds]="values[searchField.key]"
+      [disabled]="inputDisabled"
     ></v-select>
   </ng-container>
 </ng-template>
@@ -565,7 +580,7 @@
     <div class="right-buttons">
       <button
         (click)="clear()"
-        [disabled]="loading || noSearchFields"
+        [disabled]="loading || noSearchFields || inputDisabled"
         type="button"
         id="clear"
         class="btn btn-space btn-secondary"
@@ -575,7 +590,9 @@
       </button>
       <button
         (click)="search()"
-        [disabled]="loading || noSearchFields || (hasValidValues$ | async) === false"
+        [disabled]="
+          loading || noSearchFields || (hasValidValues$ | async) === false || inputDisabled
+        "
         type="button"
         id="search"
         class="btn btn-space btn-primary"
@@ -598,7 +615,7 @@
 <ng-template #buttonAccordion>
   <div class="buttons-container" *ngIf="{expanded: expanded$ | async} as obs">
     <button
-      [disabled]="loading"
+      [disabled]="loading || inputDisabled"
       type="button"
       class="accordion-button"
       (click)="toggleExpanded()"

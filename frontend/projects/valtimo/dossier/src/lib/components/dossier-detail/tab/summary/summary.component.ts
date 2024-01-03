@@ -26,15 +26,19 @@ import {
 import {ProcessInstanceTask, ProcessService} from '@valtimo/process';
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
 import {Document, DocumentService, ProcessDocumentInstance} from '@valtimo/document';
-import {TaskDetailModalComponent, TaskService} from '@valtimo/task';
+import {
+  CAN_VIEW_TASK_PERMISSION,
+  TASK_DETAIL_PERMISSION_RESOURCE,
+  TaskDetailModalComponent,
+  TaskService,
+} from '@valtimo/task';
 import {FormService} from '@valtimo/form';
 import {FormioOptionsImpl, ValtimoFormioOptions} from '@valtimo/components';
 import moment from 'moment';
 import {FormioForm} from '@formio/angular';
 import {UserProviderService} from '@valtimo/security';
-import {Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, of, Subscription, switchMap} from 'rxjs';
 import {PermissionService} from '@valtimo/access-control';
-import {CAN_VIEW_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '@valtimo/task';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -46,6 +50,7 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
   encapsulation: ViewEncapsulation.None,
 })
 export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
+  @ViewChild('taskDetail') taskDetail: TaskDetailModalComponent;
   public readonly documentDefinitionName: string;
   public document: Document;
   public documentId: string;
@@ -56,8 +61,8 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
   public formDefinition: FormioForm = null;
   public options: ValtimoFormioOptions;
   public roles: string[] = [];
+  public readonly loadingTasks$ = new BehaviorSubject<boolean>(true);
   private _subscriptions = new Subscription();
-  @ViewChild('taskDetail') taskDetail: TaskDetailModalComponent;
 
   constructor(
     private readonly router: Router,
@@ -78,16 +83,15 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
     this.options.disableAlerts = true;
   }
 
-  ngOnInit() {
+  public ngOnInit(): void {
     this.moment = moment;
     this.init();
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
-
-  init() {
+  public init(): void {
     this._subscriptions.add(
       this.documentService.getDocument(this.documentId).subscribe(document => {
         this.document = document;
@@ -111,7 +115,7 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
     );
   }
 
-  public loadProcessDocumentInstances(documentId: string) {
+  public loadProcessDocumentInstances(documentId: string): void {
     this._subscriptions.add(
       this.documentService
         .findProcessDocumentInstances(documentId)
@@ -124,31 +128,43 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
     );
   }
 
-  private loadProcessInstanceTasks(processInstanceId: string) {
-    this._subscriptions.add(
-      this.processService.getProcessInstanceTasks(processInstanceId).subscribe(tasks => {
-        if (tasks != null) {
-          tasks.forEach(task => {
-            task.createdUnix = this.moment(task.created).unix();
-            task.created = this.moment(task.created).format('DD MMM YYYY HH:mm');
-            task.isLocked = true;
-            this.permissionService
-              .requestPermission(CAN_VIEW_TASK_PERMISSION, {
-                resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
-                identifier: task.id,
-              })
-              .subscribe(canView => {
-                task.isLocked = !canView;
-              });
-          });
-          this.tasks = this.tasks.concat(tasks);
-          this.tasks.sort((t1, t2) => t2.createdUnix - t1.createdUnix);
-        }
-      })
-    );
+  public rowTaskClick(task: any): void {
+    this.taskDetail.openTaskDetails(task);
   }
 
-  public rowTaskClick(task: any) {
-    this.taskDetail.openTaskDetails(task);
+  private loadProcessInstanceTasks(processInstanceId: string): void {
+    this._subscriptions.add(
+      this.processService
+        .getProcessInstanceTasks(processInstanceId)
+        .pipe(
+          switchMap(tasks =>
+            combineLatest([
+              of(tasks),
+              ...tasks.map(task =>
+                this.permissionService.requestPermission(CAN_VIEW_TASK_PERMISSION, {
+                  resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+                  identifier: task.id,
+                })
+              ),
+            ])
+          )
+        )
+        .subscribe(res => {
+          const tasks = res[0];
+          const permissions = res.filter((_, index) => index !== 0);
+
+          if (tasks != null) {
+            tasks.forEach((task, taskIndex) => {
+              task.createdUnix = this.moment(task.created).unix();
+              task.created = this.moment(task.created).format('DD MMM YYYY HH:mm');
+              task.isLocked = !permissions[taskIndex];
+            });
+            this.tasks = this.tasks.concat(tasks);
+            this.tasks.sort((t1, t2) => t2.createdUnix - t1.createdUnix);
+          }
+
+          this.loadingTasks$.next(false);
+        })
+    );
   }
 }

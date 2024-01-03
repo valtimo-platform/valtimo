@@ -119,6 +119,15 @@ export class DossierListComponent implements OnInit, OnDestroy {
     },
   };
 
+  public readonly noResultsMessage$ = new BehaviorSubject<{
+    description: string;
+    isSearchResult: boolean;
+    title: string;
+  }>({
+    description: 'dossier.noResults.ALL.description',
+    isSearchResult: false,
+    title: 'dossier.noResults.ALL.title',
+  });
   public readonly showAssignModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangePageModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangeTabModal$ = new BehaviorSubject<boolean>(false);
@@ -156,7 +165,9 @@ export class DossierListComponent implements OnInit, OnDestroy {
 
   public readonly searchFieldValues$ = this.parameterService.searchFieldValues$;
   public readonly assigneeFilter$: Observable<AssigneeFilter> =
-    this.assigneeService.assigneeFilter$;
+    this.assigneeService.assigneeFilter$.pipe(
+      tap(assigneeFilter => (this.activeTab = assigneeFilter as DossierListTab))
+    );
   public readonly paginationChange$ = new BehaviorSubject<CarbonPaginationSelection | null>(null);
   public readonly tabChange$ = new BehaviorSubject<DossierListTab | null>(null);
   private readonly _pagination$ = this.paginationService.pagination$.pipe(
@@ -178,7 +189,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         return res.columns;
       }),
       tap(columns => {
-        this.listService.documentDefinitionName$.pipe(take(1)).subscribe(documentDefinitionName => {
+        this.listService.documentDefinitionName$.pipe(take(1)).subscribe(_ => {
           this.paginationService.setPagination(columns);
         });
       })
@@ -309,6 +320,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
                   ),
             hasEnvColumnConfig: obsEnv,
             hasApiColumnConfig: obsApi,
+            isSearchResult: of(true),
           });
         }
 
@@ -327,6 +339,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
                 ),
           hasEnvColumnConfig: obsEnv,
           hasApiColumnConfig: obsApi,
+          isSearchResult: of(false),
         });
       }
     ),
@@ -335,9 +348,11 @@ export class DossierListComponent implements OnInit, OnDestroy {
         documents: Documents | SpecifiedDocuments;
         hasEnvColumnConfig: boolean;
         hasApiColumnConfig: boolean;
+        isSearchResult: boolean;
       }) => {
         this.paginationService.setCollectionSize(res.documents);
         this.paginationService.checkPage(res.documents);
+        this.updateNoResultsMessage(res.isSearchResult);
 
         return this.listService.mapDocuments(
           res.documents,
@@ -398,7 +413,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         this.route.snapshot.queryParams
       );
       this.router.navigate([
-        `/dossiers/${documentDefinitionName}/document/${document.id}/${DefaultTabs.summary}`,
+        `/dossiers/${documentDefinitionName}/document/${document.id}`,
       ]);
     });
   }
@@ -406,10 +421,11 @@ export class DossierListComponent implements OnInit, OnDestroy {
   public tabChange(tab: DossierListTab): void {
     if (!this.activeTab) {
       this.activeTab = tab;
+      this.updateNoResultsMessage(false);
       return;
     }
 
-    if (this.activeTab === tab) {
+    if (this.activeTab.toLowerCase() === tab.toLowerCase()) {
       return;
     }
 
@@ -464,6 +480,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
   private onChangeTabConfirm(tab: DossierListTab): void {
     this.loadingAssigneeFilter = true;
     this.activeTab = tab;
+    this.updateNoResultsMessage(false);
     this.paginationService.setPage(1);
     this.assigneeService.setAssigneeFilter(tab);
   }
@@ -533,5 +550,21 @@ export class DossierListComponent implements OnInit, OnDestroy {
 
   private setVisibleTabs(): void {
     this.visibleDossierTabs = this.configService.config?.visibleDossierListTabs || null;
+  }
+
+  private updateNoResultsMessage(isSearchResult: boolean): void {
+    this.noResultsMessage$.next(
+      isSearchResult
+        ? {
+            description: 'dossier.noResults.search.description',
+            isSearchResult,
+            title: 'dossier.noResults.search.title',
+          }
+        : {
+            description: `dossier.noResults.${this.activeTab ?? 'ALL'}.description`,
+            isSearchResult,
+            title: `dossier.noResults.${this.activeTab ?? 'ALL'}.title`,
+          }
+    );
   }
 }

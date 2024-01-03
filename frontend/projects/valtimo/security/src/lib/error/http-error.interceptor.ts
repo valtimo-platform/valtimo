@@ -38,13 +38,25 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   ) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    let skipStatusCodes: string[] = [];
+    let response$: Observable<HttpEvent<any>>;
     if (request.headers && request.headers.has(InterceptorSkip)) {
+      skipStatusCodes = request.headers.get(InterceptorSkip).split(',');
       const headers = request.headers.delete(InterceptorSkip);
-      return next.handle(request.clone({headers}));
+      response$ = next.handle(request.clone({headers}));
+    } else {
+      response$ = next.handle(request);
     }
 
-    return next.handle(request).pipe(
+    return response$.pipe(
       catchError((error: HttpErrorResponse) => {
+        if (
+          skipStatusCodes.find(
+            skipStatusCode => skipStatusCode === 'all' || skipStatusCode === error.status.toString()
+          )
+        ) {
+          return response$;
+        }
         let errorMessage = '';
         if (error?.error instanceof ErrorEvent) {
           // client-side error

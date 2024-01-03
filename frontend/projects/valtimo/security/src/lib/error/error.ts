@@ -17,7 +17,7 @@
 import {HttpHeaders} from '@angular/common/http';
 
 export const InterceptorSkip = 'X-Skip-Interceptor';
-export const InterceptorSkipHeader = new HttpHeaders().set(InterceptorSkip, '');
+export const InterceptorSkipHeader = new HttpHeaders().set(InterceptorSkip, 'all');
 
 export interface Error {
   title: string;

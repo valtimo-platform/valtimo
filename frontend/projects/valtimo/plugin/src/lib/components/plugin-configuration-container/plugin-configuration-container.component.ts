@@ -31,10 +31,12 @@ import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {tap} from 'rxjs/operators';
 import {
   ConfigurationComponentType,
+  DefaultPluginConfigurationData,
   FunctionConfigurationComponent,
   PluginConfigurationComponent,
   PluginConfigurationData,
 } from '../../models';
+import {NGXLogger} from 'ngx-logger';
 
 @Component({
   selector: 'valtimo-plugin-configuration-container',
@@ -76,6 +78,9 @@ export class PluginConfigurationContainerComponent
   private readonly _componentType = new BehaviorSubject<ConfigurationComponentType | null>(null);
   private readonly _pluginDefinitionKey = new BehaviorSubject<string>('');
   private readonly _functionKey = new BehaviorSubject<string>('');
+  private readonly _defaultConfiguration =
+    new BehaviorSubject<DefaultPluginConfigurationData | null>(null);
+  private readonly _valid = new BehaviorSubject<boolean>(false);
 
   constructor(private readonly pluginService: PluginService) {}
 
@@ -87,6 +92,14 @@ export class PluginConfigurationContainerComponent
   ngOnDestroy(): void {
     this.pluginSubscription?.unsubscribe();
     this.componentRefSubscription?.unsubscribe();
+  }
+
+  onDefaultConfiguration(defaultConfiguration: DefaultPluginConfigurationData) {
+    this._defaultConfiguration.next(defaultConfiguration);
+  }
+
+  onValid(valid: boolean) {
+    this._valid.next(valid);
   }
 
   private openPluginSubscription(): void {
@@ -147,12 +160,18 @@ export class PluginConfigurationContainerComponent
           instance.prefillConfiguration$ = this.prefillConfiguration$;
         }
 
-        this.validSubscription = instance.valid.subscribe(valid => {
-          this.valid.emit(valid);
-        });
+        this.validSubscription = combineLatest([instance.valid, this._valid]).subscribe(
+          ([instanceValid, defaultConfigurationValid]) => {
+            this.valid.emit(instanceValid && defaultConfigurationValid);
+          }
+        );
 
         this.configurationSubscription = instance.configuration.subscribe(configuration => {
-          this.configuration.emit(configuration as any as PluginConfigurationData);
+          const configurationId = this._defaultConfiguration.value?.configurationId;
+          this.configuration.emit({
+            ...configuration,
+            configurationId,
+          } as any as PluginConfigurationData);
         });
       }
     });
