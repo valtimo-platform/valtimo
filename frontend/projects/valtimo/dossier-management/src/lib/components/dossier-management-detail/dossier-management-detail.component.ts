@@ -52,7 +52,7 @@ export class DossierManagementDetailComponent implements OnInit {
 
   public loadProcessDocumentDefinitions(): void {
     this.documentService
-      .findProcessDocumentDefinitions(this.documentDefinitionName)
+      .findProcessDocumentDefinitionsAdmin(this.documentDefinitionName)
       .subscribe((processDocumentDefinitions: ProcessDocumentDefinition[]) => {
         this.processDocumentDefinitions = processDocumentDefinitions;
       });
