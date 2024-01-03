@@ -56,6 +56,7 @@ import {
 } from 'rxjs';
 import {
   CarbonListBatchText,
+  CarbonListItem,
   CarbonListTranslations,
   CarbonPaginatorConfig,
   ColumnConfig,
@@ -76,16 +77,17 @@ import {filter} from 'rxjs/operators';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [CarbonListFilterPipe],
 })
-export class CarbonListComponent<T> implements OnInit, AfterViewInit, OnDestroy {
+export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @HostBinding('attr.data-carbon-theme') theme = 'g10';
   @ViewChild('actionsMenu') actionsMenu: TemplateRef<OverflowMenu>;
   @ViewChild('actionItem') actionItem: TemplateRef<any>;
   @ViewChild('booleanTemplate') booleanTemplate: TemplateRef<any>;
+  @ViewChild('rowDisabled') rowDisabled: TemplateRef<any>;
 
   private _completeDataSource: TableItem[][];
-  private _items: T[];
+  private _items: CarbonListItem[];
   public items$ = new BehaviorSubject<TableItem[][]>([]);
-  @Input() set items(value: T[]) {
+  @Input() set items(value: CarbonListItem[]) {
     this._items = value;
     if (!this._fields) {
       return;
@@ -96,7 +98,7 @@ export class CarbonListComponent<T> implements OnInit, AfterViewInit, OnDestroy 
       this._completeDataSource = this.model.data;
     });
   }
-  public get items(): T[] {
+  public get items(): CarbonListItem[] {
     return this._items;
   }
 
@@ -154,6 +156,7 @@ export class CarbonListComponent<T> implements OnInit, AfterViewInit, OnDestroy 
   @Input() showSelectionColumn = false;
   @Input() striped = false;
   @Input() hideToolbar = false;
+  @Input() lockedTooltipTranslationKey = '';
 
   @Output() rowClicked = new EventEmitter<any>();
   @Output() paginationClicked = new EventEmitter<number>();
@@ -211,9 +214,9 @@ export class CarbonListComponent<T> implements OnInit, AfterViewInit, OnDestroy 
   private static readonly PAGINATION_SIZE = 'PaginationSize';
   private readonly _subscriptions = new Subscription();
 
-  public get selectedItems(): T[] {
+  public get selectedItems(): CarbonListItem[] {
     return this.model.data.reduce(
-      (items: T[], _, index: number) =>
+      (items: CarbonListItem[], _, index: number) =>
         this.model.isRowSelected(index) ? [...items, this.items[index]] : [...items],
       []
     );
@@ -273,7 +276,7 @@ export class CarbonListComponent<T> implements OnInit, AfterViewInit, OnDestroy 
   public onRowClick(index: number): void {
     const item = this.model.data[index][0]['item'];
 
-    if (!item) {
+    if (!item || item?.locked) {
       return;
     }
     this.rowClicked.emit(item);
@@ -366,34 +369,49 @@ export class CarbonListComponent<T> implements OnInit, AfterViewInit, OnDestroy 
                     data: action.columnName,
                     key: action.columnName,
                     ViewType: ViewType.TEMPLATE,
-                    sorable: false,
+                    sortable: false,
                   })
               ),
             ];
           }
 
-          this.model.header = !this.lastColumnTemplate
-            ? header
-            : [
-                ...header,
-                new TableHeaderItem({
-                  data: '',
-                  key: '',
-                  viewType: ViewType.ACTION,
-                  sortable: false,
-                }),
-              ];
+          if (!!this.lastColumnTemplate) {
+            header = [
+              ...header,
+              new TableHeaderItem({
+                data: '',
+                key: '',
+                viewType: ViewType.ACTION,
+                sortable: false,
+              }),
+            ];
+          }
+
+          if (this._items?.some(item => item.locked)) {
+            header = [
+              ...header,
+              new TableHeaderItem({
+                data: '',
+                key: '',
+                viewType: ViewType.TEMPLATE,
+                sortable: false,
+              }),
+            ];
+          }
+
+          this.model.header = header;
         })
     );
   }
 
   private buildTableItems(): Observable<TableItem[][]> {
     const itemCount: number = this._items.length;
+    const showLocks = !!this._items?.find(item => !!item.locked)?.locked;
 
     return this.viewInitialized$.pipe(
       take(1),
       map(() =>
-        this._items.map((item: T, index: number) => {
+        this._items.map((item: CarbonListItem, index: number) => {
           const fields = this._fields.map((column: ColumnConfig) => {
             switch (column.viewType) {
               case ViewType.ACTION:
@@ -428,15 +446,25 @@ export class CarbonListComponent<T> implements OnInit, AfterViewInit, OnDestroy 
             );
           }
 
-          return !this.lastColumnTemplate
-            ? fields
-            : [
-                ...fields,
-                new TableItem({
-                  data: {item, index, length: itemCount},
-                  template: this.lastColumnTemplate,
-                }),
-              ];
+          if (!!this.lastColumnTemplate) {
+            fields.push(
+              new TableItem({
+                data: {item, index, length: itemCount},
+                template: this.lastColumnTemplate,
+              })
+            );
+          }
+
+          if (showLocks) {
+            fields.push(
+              new TableItem({
+                data: {locked: item.locked},
+                template: this.rowDisabled,
+              })
+            );
+          }
+
+          return fields;
         })
       )
     );

@@ -22,12 +22,24 @@ import {Task, TaskList} from '../models';
 import {NGXLogger} from 'ngx-logger';
 import {TaskDetailModalComponent} from '../task-detail-modal/task-detail-modal.component';
 import {TranslateService} from '@ngx-translate/core';
-import {BehaviorSubject, combineLatest, of, Subscription, switchMap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  defaultIfEmpty,
+  forkJoin,
+  of,
+  Subscription,
+  switchMap,
+} from 'rxjs';
 import {ConfigService, SortState, TaskListTab} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
 import {take} from 'rxjs/operators';
 import {PermissionService} from '@valtimo/access-control';
-import {CAN_VIEW_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../task-permissions';
+import {
+  CAN_VIEW_TASK_PERMISSION,
+  CAN_VIEW_CASE_PERMISSION,
+  TASK_DETAIL_PERMISSION_RESOURCE,
+} from '../task-permissions';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -147,19 +159,30 @@ export class TaskListComponent implements OnDestroy {
         switchMap(tasksResult =>
           combineLatest([
             of(tasksResult),
-            ...tasksResult.body.map(task =>
-              this.permissionService.requestPermission(CAN_VIEW_TASK_PERMISSION, {
-                resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
-                identifier: task.id,
-              })
-            ),
+            forkJoin(
+              tasksResult.body.map(task =>
+                this.permissionService
+                  .requestPermission(CAN_VIEW_TASK_PERMISSION, {
+                    resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+                    identifier: task.id,
+                  })
+                  .pipe(take(1))
+              )
+            ).pipe(defaultIfEmpty(null)),
+            forkJoin(
+              tasksResult.body.map(task =>
+                this.permissionService
+                  .requestPermission(CAN_VIEW_CASE_PERMISSION, {
+                    resource: TASK_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+                    identifier: task.businessKey,
+                  })
+                  .pipe(take(1))
+              )
+            ).pipe(defaultIfEmpty(null)),
           ])
         )
       )
-      .subscribe(results => {
-        const tasksResult = results[0];
-        const permissions = results.filter((_, index) => index !== 0);
-
+      .subscribe(([tasksResult, taskPermissions, taskCasePermissions]) => {
         this.tasks[type].pagination = {
           ...this.tasks[type].pagination,
           collectionSize: tasksResult.headers.get('x-total-count'),
@@ -170,7 +193,8 @@ export class TaskListComponent implements OnDestroy {
           if (task.due) {
             task.due = moment(task.due).format('DD MMM YYYY HH:mm');
           }
-          task.isLocked = !permissions[taskIndex];
+          task.locked = !taskPermissions[taskIndex];
+          task.caseLocked = !taskCasePermissions[taskIndex];
         });
 
         if (this.taskService.getConfigCustomTaskList()) {
@@ -189,7 +213,7 @@ export class TaskListComponent implements OnDestroy {
     const tasks = this.tasks[this.currentTaskType].tasks;
     const currentTask = tasks && tasks[index];
 
-    if (currentTask) {
+    if (currentTask && !currentTask.caseLocked) {
       this.documentService
         .getDocument(currentTask.businessKey)
         .pipe(take(1))
@@ -255,7 +279,7 @@ export class TaskListComponent implements OnDestroy {
   }
 
   public rowOpenTaskClick(task): void | boolean {
-    if (!task.endTime && !task.isLocked) {
+    if (!task.endTime && !task.locked) {
       this.taskDetail.openTaskDetails(task);
     } else {
       return false;

@@ -146,7 +146,8 @@
     "formio": {
       "noFormSpecified": "Für diese Registerkarte wurde keine Formulardefinition angegeben.",
       "formNotFound": "Die Formulardefinition '{{formDefinitionName}}' konnte nicht gefunden werden."
-    }
+    },
+    "rowLocked": "Kein Zugriff zu dieser Fall!"
   },
   "document": {
     "title": {
@@ -508,7 +509,8 @@
       "noResultsTitle": "Keine Aufgaben gefunden"
     },
     "goToCase": "Gehen Sie zum Fall",
-    "taskLocked": "Kein Zugriff zu dieser Aufgabe!"
+    "caseLocked": "Kein Zugriff zu dieser Fall!",
+    "rowLocked": "Kein Zugriff zu dieser Aufgabe!"
   },
   "Task": "Aufgabe",
   "Tasks": "Aufgaben",

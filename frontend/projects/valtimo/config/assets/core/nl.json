@@ -146,7 +146,8 @@
     "formio": {
       "noFormSpecified": "Voor dit tabblad is geen formulierdefinitie opgegeven.",
       "formNotFound": "De formulierdefinitie '{{formDefinitionName}}' kan niet worden gevonden."
-    }
+    },
+    "rowLocked": "Je hebt geen toegang tot dit dossier"
   },
   "document": {
     "title": {
@@ -508,7 +509,8 @@
       "noResultsTitle": "Er staan geen taken open"
     },
     "goToCase": "Ga naar dossier",
-    "taskLocked": "Je hebt geen toegang tot deze taak"
+    "caseLocked": "Je hebt geen toegang tot dit dossier",
+    "rowLocked": "Je hebt geen toegang tot deze taak"
   },
   "Task": "Taak",
   "Tasks": "Taken",

@@ -56,3 +56,7 @@ td:first-child {
     margin-bottom: 0 !important;
   }
 }
+
+.disabled {
+  cursor: not-allowed;
+}

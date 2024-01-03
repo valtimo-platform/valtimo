@@ -22,6 +22,7 @@ enum PERMISSION_ACTION {
   claim = 'claim',
   delete = 'delete',
   edit = 'modify',
+  view = 'view',
 }
 
 enum DOSSIER_DETAIL_PERMISSION_RESOURCE {
@@ -55,6 +56,11 @@ const CAN_ASSIGN_CASE_PERMISSION: PermissionRequest = {
   resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
 };
 
+const CAN_VIEW_CASE_PERMISSION: PermissionRequest = {
+  action: PERMISSION_ACTION.view,
+  resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+};
+
 const CAN_CREATE_CASE_PERMISSION: PermissionRequest = {
   action: PERMISSION_ACTION.add,
   resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
@@ -67,5 +73,6 @@ export {
   CAN_DELETE_NOTE_PERMISSION,
   CAN_EDIT_NOTE_PERMISSION,
   DOSSIER_DETAIL_PERMISSION_RESOURCE,
+  CAN_VIEW_CASE_PERMISSION,
   CAN_CREATE_CASE_PERMISSION,
 };

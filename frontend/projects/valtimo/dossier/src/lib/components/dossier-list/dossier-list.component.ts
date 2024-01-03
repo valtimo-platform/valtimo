@@ -49,6 +49,7 @@ import {isEqual} from 'lodash';
 import {
   BehaviorSubject,
   combineLatest,
+  defaultIfEmpty,
   distinctUntilChanged,
   filter,
   forkJoin,
@@ -61,7 +62,11 @@ import {
   tap,
 } from 'rxjs';
 import {DossierListActionsComponent} from '../dossier-list-actions/dossier-list-actions.component';
-import {CAN_CREATE_CASE_PERMISSION, DOSSIER_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
+import {
+  CAN_VIEW_CASE_PERMISSION,
+  CAN_CREATE_CASE_PERMISSION,
+  DOSSIER_DETAIL_PERMISSION_RESOURCE,
+} from '../../permissions';
 import {
   DossierBulkAssignService,
   DossierColumnService,
@@ -87,7 +92,7 @@ import {DefaultTabs} from '../../models';
   ],
 })
 export class DossierListComponent implements OnInit, OnDestroy {
-  @ViewChild(CarbonListComponent) carbonList: CarbonListComponent<Document>;
+  @ViewChild(CarbonListComponent) carbonList: CarbonListComponent;
   @ViewChild(DossierListActionsComponent) listActionsComponent: DossierListActionsComponent;
   @ViewChild(Tabs) tabsComponent: Tabs;
 
@@ -343,6 +348,31 @@ export class DossierListComponent implements OnInit, OnDestroy {
         });
       }
     ),
+    switchMap(res =>
+      combineLatest([
+        of(res),
+        forkJoin(
+          res.documents.content.map(document =>
+            this.permissionService
+              .requestPermission(CAN_VIEW_CASE_PERMISSION, {
+                resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+                identifier: document.id,
+              })
+              .pipe(take(1))
+          )
+        ).pipe(defaultIfEmpty([] as boolean[])),
+      ])
+    ),
+    map(([res, documentsAuthorization]) => ({
+      ...res,
+      documents: {
+        ...res.documents,
+        content: res.documents.content.map((document, index) => ({
+          ...document,
+          locked: !documentsAuthorization[index],
+        })),
+      },
+    })),
     map(
       (res: {
         documents: Documents | SpecifiedDocuments;
@@ -412,9 +442,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         `/dossiers/${documentDefinitionName}`,
         this.route.snapshot.queryParams
       );
-      this.router.navigate([
-        `/dossiers/${documentDefinitionName}/document/${document.id}`,
-      ]);
+      this.router.navigate([`/dossiers/${documentDefinitionName}/document/${document.id}`]);
     });
   }
 

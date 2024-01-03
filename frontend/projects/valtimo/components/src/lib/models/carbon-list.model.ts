@@ -37,6 +37,11 @@ interface CarbonListPaginationTranslations {
   totalItems: string;
 }
 
+interface CarbonListItem {
+  [key: string]: any;
+  locked?: boolean;
+}
+
 interface CarbonListTranslations {
   select: CarbonListSelectTranslations;
   pagination: CarbonListPaginationTranslations;
@@ -84,6 +89,7 @@ export {
   ActionItem,
   CarbonListBatchText,
   CarbonListSelectTranslations,
+  CarbonListItem,
   CarbonListTranslations,
   ColumnConfig,
   DEFAULT_LIST_TRANSLATIONS,
