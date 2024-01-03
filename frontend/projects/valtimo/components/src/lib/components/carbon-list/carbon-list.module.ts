@@ -17,7 +17,7 @@
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {NgbPaginationModule} from '@ng-bootstrap/ng-bootstrap';
+import {NgbPaginationModule, NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateModule} from '@ngx-translate/core';
 import {CardModule} from '../card/card.module';
 import {CarbonListComponent} from './carbon-list.component';
@@ -47,6 +47,7 @@ import {
     IconModule,
     ButtonModule,
     DialogModule,
+    NgbTooltipModule,
   ],
   exports: [CarbonListComponent, CarbonListFilterPipe, CarbonNoResultsComponent],
 })

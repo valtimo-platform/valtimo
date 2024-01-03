@@ -77,10 +77,11 @@ interface Documents {
   sort: any;
   totalElements: number;
   totalPages: number;
+  locked?: boolean;
 }
 
 type SpecifiedDocuments = Omit<Documents, 'content'> & {
-  content: Array<{id: string; items: Array<{key: string; value: string}>}>;
+  content: Array<{id: string; items: Array<{key: string; value: string}>; locked?: boolean}>;
 };
 
 interface RelatedFile {
@@ -137,6 +138,10 @@ interface ProcessDocumentInstance {
   id: ProcessDocumentInstanceId;
   processName: string;
   isActive: boolean;
+  version: number;
+  latestVersion: number;
+  startedBy: string;
+  startedOn: Date;
 }
 
 interface AssignHandlerToDocumentResult {

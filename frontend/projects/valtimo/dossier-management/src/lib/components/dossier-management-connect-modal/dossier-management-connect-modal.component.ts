@@ -49,7 +49,7 @@ export class DossierManagementConnectModalComponent implements OnInit {
   loadProcessDocumentDefinitions() {
     this.processDocumentDefinitionExists = {};
     this.documentService
-      .findProcessDocumentDefinitions(this.documentDefinition.id.name)
+      .findProcessDocumentDefinitionsAdmin(this.documentDefinition.id.name)
       .subscribe((processDocumentDefinitions: ProcessDocumentDefinition[]) => {
         processDocumentDefinitions.forEach(
           (processDocumentDefinition: ProcessDocumentDefinition) => {

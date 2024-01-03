@@ -146,7 +146,8 @@
     "formio": {
       "noFormSpecified": "Für diese Registerkarte wurde keine Formulardefinition angegeben.",
       "formNotFound": "Die Formulardefinition '{{formDefinitionName}}' konnte nicht gefunden werden."
-    }
+    },
+    "rowLocked": "Kein Zugriff zu dieser Fall!"
   },
   "document": {
     "title": {
@@ -209,7 +210,13 @@
     "taskCreated": "Erstellt"
   },
   "progress": {
-    "noProcessDocumentInstances": "Es wurde noch kein Prozess gestartet"
+    "noProcessDocumentInstances": "Es wurde noch kein Prozess gestartet",
+    "process": "Prozess",
+    "processPlaceholder": "Prozess auswählen",
+    "version": "Version",
+    "startedBy": "Gestartet von",
+    "startedOn": "Gestartet am",
+    "of": "von"
   },
   "dashboard": {
     "openTasks": {
@@ -508,7 +515,8 @@
       "noResultsTitle": "Keine Aufgaben gefunden"
     },
     "goToCase": "Gehen Sie zum Fall",
-    "taskLocked": "Kein Zugriff zu dieser Aufgabe!"
+    "caseLocked": "Kein Zugriff zu dieser Fall!",
+    "rowLocked": "Kein Zugriff zu dieser Aufgabe!"
   },
   "Task": "Aufgabe",
   "Tasks": "Aufgaben",

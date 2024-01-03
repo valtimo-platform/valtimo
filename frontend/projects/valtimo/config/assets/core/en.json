@@ -146,7 +146,8 @@
     "formio": {
       "noFormSpecified": "No form definition has been specified for this tab.",
       "formNotFound": "The form definition '{{formDefinitionName}}' could not be found."
-    }
+    },
+    "rowLocked": "You don't have access to this case"
   },
   "document": {
     "title": {
@@ -209,7 +210,13 @@
     "taskCreated": "Created"
   },
   "progress": {
-    "noProcessDocumentInstances": "There is no process started yet"
+    "noProcessDocumentInstances": "There is no process started yet",
+    "process": "Process",
+    "processPlaceholder": "Select a process",
+    "version": "Version",
+    "startedBy": "Started by",
+    "startedOn": "Started on",
+    "of": "of"
   },
   "dashboard": {
     "openTasks": {
@@ -509,7 +516,8 @@
       "noResultsTitle": "No open tasks"
     },
     "goToCase": "Go to case",
-    "taskLocked": "You don't have access to this task"
+    "caseLocked": "You don't have access to this case",
+    "rowLocked": "You don't have access to this task"
   },
   "Task": "Task",
   "Tasks": "Tasks",

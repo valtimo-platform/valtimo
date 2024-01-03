@@ -107,3 +107,14 @@
     </cds-overflow-menu-option>
   </cds-overflow-menu>
 </ng-template>
+
+<ng-template #rowDisabled let-data="data">
+  <div *ngIf="data.locked" class="disabled">
+    <span
+      class="float-right badge badge-pill badge-secondary bg-grey"
+      ngbTooltip="{{ lockedTooltipTranslationKey | translate }}"
+    >
+      <i class="icon mdi mdi-lock"></i>
+    </span>
+  </div>
+</ng-template>

@@ -49,22 +49,27 @@
   </cds-tabs>
 </ng-template>
 
-<ng-template #caseLinkWithTaskLock let-data="data">
-  <a
-    class="float-left"
-    cdsLink
-    href="javascript:void(0)"
-    (click)="openRelatedCase($event, data.index)"
-  >
-    {{ 'task-list.goToCase' | translate }}
-  </a>
-  <div *ngIf="tasks[currentTaskType].tasks[data.index].isLocked">
-    <span
-      class="float-right badge badge-pill badge-secondary bg-grey"
-      ngbTooltip="{{ 'task-list.taskLocked' | translate }}"
+<ng-template #caseLink let-data="data">
+  <div *ngIf="tasks[currentTaskType].tasks[data.index].caseLocked">
+    <a
+      class="float-left cds--link--disabled"
+      cdsLink
+      href="javascript:void(0)"
+      ngbTooltip="{{ 'task-list.caseLocked' | translate }}"
+      (click)="$event.stopPropagation()"
     >
-      <i class="icon mdi mdi-lock"></i>
-    </span>
+      {{ 'task-list.goToCase' | translate }}
+    </a>
+  </div>
+  <div *ngIf="!tasks[currentTaskType].tasks[data.index].caseLocked">
+    <a
+      class="float-left cds--link"
+      cdsLink
+      href="javascript:void(0)"
+      (click)="openRelatedCase($event, data.index)"
+    >
+      {{ 'task-list.goToCase' | translate }}
+    </a>
   </div>
 </ng-template>
 
@@ -74,9 +79,10 @@
     [fields]="tasks[currentTaskType].fields"
     [header]="false"
     [items]="tasks[currentTaskType].tasks"
-    [lastColumnTemplate]="caseLinkWithTaskLock"
+    [lastColumnTemplate]="caseLink"
     [pagination]="tasks[currentTaskType].pagination"
     paginationIdentifier="taskList"
+    lockedTooltipTranslationKey="task-list.rowLocked"
     (paginationClicked)="paginationClicked($event, currentTaskType)"
     (paginationSet)="paginationSet($event)"
     (rowClicked)="rowOpenTaskClick($event)"

@@ -26,7 +26,7 @@ import {AccessControlService} from '../../services/access-control.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AccessControlOverviewComponent implements OnInit {
-  @ViewChild(CarbonListComponent) carbonList: CarbonListComponent<Role>;
+  @ViewChild(CarbonListComponent) carbonList: CarbonListComponent;
 
   public fields: ColumnConfig[] = [
     {
