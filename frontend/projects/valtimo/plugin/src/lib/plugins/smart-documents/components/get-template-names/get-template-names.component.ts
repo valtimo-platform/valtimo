@@ -16,12 +16,9 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
-import {GetTemplateNamesConfig} from "../../models";
-import {PluginTranslatePipe} from "../../../../pipes";
-import {FunctionConfigurationComponent} from "@valtimo/plugin";
-
+import {GetTemplateNamesConfig, } from "../../models";
+import {FunctionConfigurationComponent} from "../../../../models"
 @Component({
-  providers: [PluginTranslatePipe],
   selector: 'valtimo-get-template-names',
   templateUrl: './get-template-names.component.html',
 })
