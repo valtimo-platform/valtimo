@@ -35,7 +35,9 @@ import {
   StepperModule,
   TableModule,
   TitleModule,
+  CarbonListModule,
 } from '@valtimo/components';
+import {IconModule, ButtonModule as CarbonButtonModule} from 'carbon-components-angular';
 
 @NgModule({
   providers: [PluginManagementStateService],
@@ -61,6 +63,9 @@ import {
     VCardModule,
     PluginTranslatePipeModule,
     PluginConfigurationContainerModule,
+    CarbonButtonModule,
+    CarbonListModule,
+    IconModule,
   ],
   exports: [
     PluginManagementComponent,

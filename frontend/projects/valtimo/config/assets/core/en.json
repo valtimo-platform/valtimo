@@ -967,7 +967,7 @@
     },
     "plugins": {
       "title": "Plugins",
-      "description": "On this page you can create, change and delete configurations of plugins that have been added to your application."
+      "noResults": "There are no plugins configured yet"
     },
     "customercases": {
       "title": "Cases",

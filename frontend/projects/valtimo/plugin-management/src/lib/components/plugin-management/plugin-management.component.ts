@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Component} from '@angular/core';
-import {BehaviorSubject, combineLatest} from 'rxjs';
-import {TableColumn} from '@valtimo/components';
-import {PluginManagementStateService} from '../../services';
 import {TranslateService} from '@ngx-translate/core';
-import {map, switchMap, tap} from 'rxjs/operators';
+import {ColumnConfig, ViewType} from '@valtimo/components';
 import {
-  PluginTranslationService,
-  PluginManagementService,
   PluginConfiguration,
+  PluginManagementService,
+  PluginTranslationService,
 } from '@valtimo/plugin';
+import {NGXLogger} from 'ngx-logger';
+import {BehaviorSubject, combineLatest} from 'rxjs';
+import {map, switchMap, take, tap} from 'rxjs/operators';
+import {PluginManagementStateService} from '../../services';
 
 @Component({
   selector: 'valtimo-plugin-management',
@@ -32,24 +32,42 @@ import {
   styleUrls: ['./plugin-management.component.scss'],
 })
 export class PluginManagementComponent {
-  readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly fields: ColumnConfig[] = [
+    {
+      key: 'pluginName',
+      label: 'pluginManagement.labels.pluginName',
+      viewType: ViewType.TEXT,
+    },
+    {
+      key: 'definitionKey',
+      label: 'pluginManagement.labels.identifier',
+      viewType: ViewType.TEXT,
+    },
+    {
+      key: 'title',
+      label: 'pluginManagement.labels.configurationName',
+      viewType: ViewType.TEXT,
+    },
+    {
+      key: '',
+      label: '',
+      viewType: ViewType.ACTION,
+      actions: [
+        {
+          callback: this.editConfiguration.bind(this),
+          label: 'interface.edit',
+        },
+        {
+          callback: this.deleteConfiguration.bind(this),
+          label: 'interface.delete',
+          type: 'danger',
+        },
+      ],
+    },
+  ];
 
-  readonly columns$ = new BehaviorSubject<Array<TableColumn>>([
-    {
-      labelTranslationKey: 'pluginManagement.labels.pluginName',
-      dataKey: 'pluginName',
-    },
-    {
-      labelTranslationKey: 'pluginManagement.labels.identifier',
-      dataKey: 'definitionKey',
-    },
-    {
-      labelTranslationKey: 'pluginManagement.labels.configurationName',
-      dataKey: 'title',
-    },
-  ]);
-
-  readonly pluginConfigurations$ = this.stateService.refresh$.pipe(
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly pluginConfigurations$ = this.stateService.refresh$.pipe(
     switchMap(() =>
       combineLatest([
         this.pluginManagementService.getAllPluginConfigurations(),
@@ -60,9 +78,9 @@ export class PluginManagementComponent {
             ...configuration,
             pluginName: this.pluginTranslationService.instant(
               'title',
-              configuration.pluginDefinition.key
+              configuration.pluginDefinition?.key ?? ''
             ),
-            definitionKey: configuration.pluginDefinition.key,
+            definitionKey: configuration.pluginDefinition?.key ?? '',
           }))
         ),
         tap(() => {
@@ -71,20 +89,38 @@ export class PluginManagementComponent {
       )
     )
   );
-
   constructor(
+    private readonly logger: NGXLogger,
     private readonly pluginManagementService: PluginManagementService,
-    private readonly translateService: TranslateService,
+    private readonly pluginTranslationService: PluginTranslationService,
     private readonly stateService: PluginManagementStateService,
-    private readonly pluginTranslationService: PluginTranslationService
+    private readonly translateService: TranslateService
   ) {}
 
-  showAddModal(): void {
+  public showAddModal(): void {
     this.stateService.showModal('add');
   }
 
-  rowClicked(configuration: PluginConfiguration): void {
+  public editConfiguration(configuration: PluginConfiguration): void {
     this.stateService.selectPluginConfiguration(configuration);
     this.stateService.showModal('edit');
+  }
+
+  public deleteConfiguration(configuration: PluginConfiguration): void {
+    if (!configuration.id) {
+      return;
+    }
+
+    this.pluginManagementService
+      .deletePluginConfiguration(configuration.id)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.stateService.refresh();
+        },
+        error: () => {
+          this.logger.error('Something went wrong with deleting the plugin configuration.');
+        },
+      });
   }
 }

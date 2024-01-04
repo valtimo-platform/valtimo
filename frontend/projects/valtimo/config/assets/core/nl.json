@@ -966,7 +966,7 @@
     },
     "plugins": {
       "title": "Plugins",
-      "description": "Op deze pagina kun je configuraties aanmaken, wijzigen en verwijderen van plugins die zijn toegevoegd aan je applicatie."
+      "noResults": "Er zijn geen plugins geconfigureerd"
     },
     "customercases": {
       "title": "Zaken",

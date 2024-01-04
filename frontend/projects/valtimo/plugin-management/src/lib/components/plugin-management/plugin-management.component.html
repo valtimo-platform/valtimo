@@ -13,42 +13,34 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
-<v-page-container
+<ng-container
   *ngIf="{
     pluginConfigurations: pluginConfigurations$ | async,
-    columns: columns$ | async,
     loading: loading$ | async
   } as obs"
 >
-  <v-page-header>
-    <v-page-header-introduction>
-      <v-paragraph>{{ 'pages.plugins.description' | translate }}</v-paragraph>
-    </v-page-header-introduction>
-    <v-page-header-actions>
-      <v-button
-        (clickEvent)="showAddModal()"
-        type="primary"
-        mdiIcon="plus"
-        [disabled]="obs.loading"
-      >
-        {{ 'pluginManagement.add' | translate }}
-      </v-button>
-    </v-page-header-actions>
-  </v-page-header>
-  <v-page-content>
-    <v-table
-      [loading]="obs.loading"
-      [items]="obs.pluginConfigurations"
-      [columns]="obs.columns"
-      [showEditButtons]="true"
-      [amountOfLoadingRows]="2"
-      [itemsTranslationKey]="'pluginManagement.tableItemsText'"
-      [showPagination]="false"
-      (editButtonClicked)="rowClicked($event)"
-    ></v-table>
-  </v-page-content>
-</v-page-container>
+  <valtimo-carbon-list
+    [loading]="obs.loading"
+    [items]="obs.pluginConfigurations"
+    [fields]="fields"
+    [header]="false"
+  >
+    <ng-container carbonToolbarContent [ngTemplateOutlet]="configurePluginButton"></ng-container>
+
+    <valtimo-no-results
+      [action]="configurePluginButton"
+      [title]="'pages.plugins.noResults' | translate"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+
+  <ng-template #configurePluginButton>
+    <button cdsButton="primary" [disabled]="obs.loading" (click)="showAddModal()">
+      {{ 'pluginManagement.add' | translate }}
+
+      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+    </button>
+  </ng-template>
+</ng-container>
 
 <valtimo-plugin-add-modal></valtimo-plugin-add-modal>
 
