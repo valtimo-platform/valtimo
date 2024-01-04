@@ -13,3 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+.valtimo-definition-uploader {
+  &__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 24px;
+  }
+
+  &__footer {
+    ::ng-deep.cds--modal-footer {
+      justify-content: unset !important;
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      grid-template-areas: 'cancel actions' !important;
+    }
+  }
+
+  &__cancel {
+    grid-area: cancel;
+    width: 100%;
+  }
+
+  &__actions {
+    grid-area: actions;
+    display: flex;
+
+    button {
+      flex: unset;
+      width: 100%;
+    }
+  }
+
+  &__file-uploader ::ng-deep cds-file {
+    max-width: unset;
+  }
+
+  ::ng-deep .cds--modal-container {
+    height: 450px;
+  }
+}

@@ -486,6 +486,34 @@
       "custom": "Custom",
       "formio": "FormIO",
       "standard": "Standard"
+    },
+    "importDefinition": {
+      "title": "Import case definition",
+      "overwriteWarning": "If your case definition contains configurations, models and/or definitions with the same name or identifier as already on your system, they will be overwritten.",
+      "info": {
+        "title": "Attention",
+        "message": "Before importing, please make sure the plugin configurations that are referenced in process links are present."
+      },
+      "upload": {
+        "title": "Upload file",
+        "description": "Max file size is 500kb. Supported file types are ZIP and JSON.",
+        "buttonText": "Select file"
+      },
+      "progressBar": {
+        "active": "This may take a while",
+        "error": "Unable to import case definition. Nothing was imported due to an error at our end. Please try again later.If the issue keeps happening, contact support.",
+        "finished": "Case definition successfully imported",
+        "label": "Importing case definition"
+      },
+      "invalidJsonError": {
+        "text": "Please make sure it contains a valid JSON value.",
+        "title": "The file contains an error."
+      },
+      "steps": {
+        "accessControl": "Don't forget to set the rights in Access Control. Without the proper rights your new case definition won't be accessible.",
+        "dashboard": "If you want widgets to appear on your dashboard, you'll have to manually configure these. Do this via 'dashboard configuration'",
+        "plugins": "This process may use plugins. Make sure you configure them correctly."
+      }
     }
   },
   "task-list": {
@@ -568,6 +596,7 @@
   "Other": "Other",
   "Download": "Download",
   "Upload": "Upload",
+  "Import": "Import",
   "Select process definition for document definition": "Select process definition for document definition",
   "Select options for the selected process": "Select options for the selected process",
   "Save": "Save",
@@ -623,7 +652,7 @@
     "items": "items",
     "of": "of",
     "visible": "visible",
-    "next": "Next >",
+    "nextArrow": "Next >",
     "previous": "< Previous",
     "addRow": "Add row",
     "deleteRow": "Delete row",
@@ -639,6 +668,9 @@
     "delete": "Delete",
     "deleteConfirmation": "Are you sure you want to delete?",
     "cancel": "Cancel",
+    "close": "Close",
+    "next": "Next",
+    "skip": "Skip",
     "confirm": "Confirm",
     "collapse": "Collapse",
     "expand": "Expand",

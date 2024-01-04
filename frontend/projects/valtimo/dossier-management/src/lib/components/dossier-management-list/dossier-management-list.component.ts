@@ -16,7 +16,7 @@
 import {Component} from '@angular/core';
 import {Router} from '@angular/router';
 import {Upload16} from '@carbon/icons';
-import {ColumnConfig, Pagination, ViewType} from '@valtimo/components';
+import {ColumnConfig, MenuService, Pagination, ViewType} from '@valtimo/components';
 import {DocumentDefinition, DocumentService, Page} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import moment from 'moment';
@@ -39,22 +39,22 @@ export class DossierManagementListComponent {
   private readonly _refreshData$ = new BehaviorSubject<null>(null);
   public dossiers$: Observable<DocumentDefinition[]> = this._refreshData$.pipe(
     switchMap(() =>
-      this.documentService
-        .queryDefinitionsForManagement({page: this.pagination.page - 1, size: this.pagination.size})
-        .pipe(
-          map((documentDefinitionPage: Page<DocumentDefinition>) => {
-            this.pagination = {
-              ...this.pagination,
-              collectionSize: documentDefinitionPage.totalElements,
-            };
+      this.documentService.queryDefinitionsForManagement({
+        page: this.pagination.page - 1,
+        size: this.pagination.size,
+      })
+    ),
+    map((documentDefinitionPage: Page<DocumentDefinition>) => {
+      this.pagination = {
+        ...this.pagination,
+        collectionSize: documentDefinitionPage.totalElements,
+      };
 
-            return documentDefinitionPage.content.map((documentDefinition: DocumentDefinition) => ({
-              ...documentDefinition,
-              createdOn: moment(documentDefinition.createdOn).format('DD MMM YYYY HH:mm'),
-            }));
-          })
-        )
-    )
+      return documentDefinitionPage.content.map((documentDefinition: DocumentDefinition) => ({
+        ...documentDefinition,
+        createdOn: moment(documentDefinition.createdOn).format('DD MMM YYYY HH:mm'),
+      }));
+    })
   );
 
   public dossierFields: ColumnConfig[] = [
@@ -68,13 +68,20 @@ export class DossierManagementListComponent {
   constructor(
     private readonly documentService: DocumentService,
     private readonly iconService: IconService,
+    private readonly menuService: MenuService,
     private readonly router: Router
   ) {
     this.iconService.registerAll([Upload16]);
   }
 
-  public onDefinitionUploaded(): void {
+  public onCloseModal(definitionUploaded: boolean): void {
+    this.showModal$.next(false);
+
+    if (!definitionUploaded) {
+      return;
+    }
     this._refreshData$.next(null);
+    this.menuService.reload();
   }
 
   public paginationClicked(page: number): void {

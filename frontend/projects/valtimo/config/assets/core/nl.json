@@ -485,6 +485,34 @@
       "custom": "Inhoud",
       "formio": "FormIO",
       "standard": "Standaard"
+    },
+    "importDefinition": {
+      "title": "Case-definitie importeren",
+      "overwriteWarning": "Als je case-definitie configuraties, modellen en/of definities bevat met een naam of identifier die al op je systeem aanwezig zijn, worden deze overschreven.",
+      "info": {
+        "title": "Let op",
+        "message": "Zorg er vóór het importeren voor dat de plug-inconfiguraties waarnaar wordt verwezen in proceslinks aanwezig zijn."
+      },
+      "upload": {
+        "title": "Upload bestand",
+        "description": "De maximale bestandsgrootte is 500kb. Ondersteunde bestandstypen zijn ZIP en JSON.",
+        "buttonText": "Selecteer bestand"
+      },
+      "progressBar": {
+        "active": "Dit kan een tijdje duren",
+        "error": "Kan case-definitie niet importeren. Er is niets geïmporteerd vanwege een fout aan onze kant. Probeer het later opnieuw. Neem contact op met de ondersteuning als het probleem zich blijft voordoen.",
+        "finished": "Case-definitie succesvol geïmporteerd",
+        "label": "Case-definitie importeren"
+      },
+      "invalidJsonError": {
+        "text": "Zorg ervoor dat deze een geldige JSON-waarde bevat.",
+        "title": "Het bestand bevat een fout."
+      },
+      "steps": {
+        "accessControl": "Vergeet niet de rechten in Access Control in te stellen. Zonder de juiste rechten is uw nieuwe casusdefinitie niet toegankelijk.",
+        "dashboard": "Je kunt widgets voor dit proces op het dashboard plaatsen. Deze kun je configureren onder 'dashboards'.",
+        "plugins": "Dit proces maakt mogelijk gebruik van plugins. Zorg dat je deze goed instelt."
+      }
     }
   },
   "task-list": {
@@ -567,6 +595,7 @@
   "Other": "Overig",
   "Download": "Downloaden",
   "Upload": "Uploaden",
+  "Import": "Import",
   "Select process definition for document definition": "Selecteer een processdefinitie voor de documentdefinitie",
   "Select options for the selected process": "Kies opties voor het geselecteerde proces",
   "Save": "Opslaan",
@@ -622,7 +651,7 @@
     "items": "items",
     "of": "van",
     "visible": "zichtbaar",
-    "next": "Volgende >",
+    "nextArrow": "Volgende >",
     "previous": "< Vorige",
     "addRow": "Rij toevoegen",
     "deleteRow": "Rij verwijderen",
@@ -638,6 +667,9 @@
     "delete": "Verwijderen",
     "deleteConfirmation": "Weet u zeker dat u wilt verwijderen?",
     "cancel": "Annuleren",
+    "close": "Sluiten",
+    "next": "Volgende",
+    "skip": "Overslaan",
     "confirm": "Bevestigen",
     "collapse": "Inklappen",
     "expand": "Uitklappen",

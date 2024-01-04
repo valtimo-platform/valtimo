@@ -24,7 +24,7 @@
   (paginationSet)="paginationSet($event)"
   (rowClicked)="redirectToDetails($event)"
 >
-  <ng-container carbonToolbarContent [ngTemplateOutlet]="addCaseDefinitionButton"></ng-container>
+  <ng-container carbonToolbarContent [ngTemplateOutlet]="importCaseDefinitionButton"></ng-container>
 
   <valtimo-no-results
     [action]="addCaseDefinitionButton"
@@ -38,14 +38,14 @@
 </ng-template>
 
 <valtimo-dossier-management-upload
-  [show$]="showModal$"
-  (definitionUploaded)="onDefinitionUploaded()"
+  [open]="showModal$ | async"
+  (closeModal)="onCloseModal($event)"
 ></valtimo-dossier-management-upload>
 
-<ng-template #addCaseDefinitionButton>
+<ng-template #importCaseDefinitionButton>
   <button cdsButton="primary" (click)="showModal()">
     <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
 
-    {{ 'Upload document definition' | translate }}
+    {{ 'Import' | translate }}
   </button>
 </ng-template>

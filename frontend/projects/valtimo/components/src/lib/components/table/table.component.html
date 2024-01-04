@@ -207,7 +207,7 @@
     </span>
     <span *ngIf="paginationObject.page * paginationObject.size < paginationObject.collectionSize">
       <v-button (clickEvent)="setPage('next')" type="text" [disabled]="loading">{{
-        'interface.next' | translate
+        'interface.nextArrow' | translate
       }}</v-button>
     </span>
   </div>

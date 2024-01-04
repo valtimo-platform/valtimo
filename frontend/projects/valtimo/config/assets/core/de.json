@@ -485,6 +485,34 @@
       "custom": "Brauch",
       "formio": "FormIO",
       "standard": "Standard"
+    },
+    "importDefinition": {
+      "title": "Casedefinition importieren",
+      "overwriteWarning": "Wenn Ihre Casedefinition Konfigurationen, Modelle und/oder Definitionen mit demselben Namen oder derselben Kennung enthält wie bereits auf Ihrem System, werden diese überschrieben.",
+      "info": {
+        "title": "Aufmerksamkeit",
+        "message": "Bitte stellen Sie vor dem Import sicher, dass die Plugin-Konfigurationen, auf die in den Prozesslinks verwiesen wird, vorhanden sind."
+      },
+      "upload": {
+        "title": "Datei hochladen",
+        "description": "Die maximale Dateigröße beträgt 500kb. Unterstützte Dateitypen sind ZIP und JSON.",
+        "buttonText": "Datei aussuchen"
+      },
+      "progressBar": {
+        "active": "Das kann eine Weile dauern",
+        "error": "Casedefinition nicht importiert werden. Aufgrund eines Fehlers unsererseits konnte nichts importiert werden. Bitte versuchen Sie es später erneut. Wenn das Problem weiterhin auftritt, wenden Sie sich an den Support.",
+        "finished": "Casedefinition importiert",
+        "label": "Importing Casedefinition"
+      },
+      "invalidJsonError": {
+        "text": "Bitte stellen Sie sicher, dass es einen gültigen JSON-Wert enthält.",
+        "title": "Die Datei enthält einen Fehler."
+      },
+      "steps": {
+        "accessControl": "Vergessen Sie nicht, die Rechte in der Access Control festzulegen. Ohne die entsprechenden Rechte ist Ihre neue Falldefinition nicht zugänglich.",
+        "dashboard": "Wenn Sie möchten, dass Widgets auf Ihrem Dashboard angezeigt werden, müssen Sie diese manuell konfigurieren. Tun Sie dies über 'dashboard configuration'",
+        "plugins": "Dieser Prozess kann Plugins verwenden. Stellen Sie sicher, dass Sie sie richtig konfigurieren."
+      }
     }
   },
   "task-list": {
@@ -567,6 +595,7 @@
   "Other": "Andere",
   "Download": "Download",
   "Upload": "Upload",
+  "Import": "Import",
   "Select process definition for document definition": "Prozess-Definition für Dokument-Definition auswählen",
   "Select options for the selected process": "Optionen für gewählten Prozess auswählen",
   "Save": "Speichern",
@@ -622,7 +651,7 @@
     "items": "Elemente",
     "of": "von",
     "visible": "sichtbar",
-    "next": "Nächste >",
+    "nextArrow": "Nächste >",
     "previous": "< Vorherige",
     "addRow": "Zeile hinzufügen",
     "deleteRow": "Zeile löschen",
@@ -638,6 +667,9 @@
     "delete": "Löschen",
     "deleteConfirmation": "Sind Sie sicher, dass Sie löschen möchten?",
     "cancel": "Absagen",
+    "close": "Schließen",
+    "next": "Nächste",
+    "skip": "Springen",
     "confirm": "Bestätigen",
     "collapse": "Kollaps",
     "expand": "Expandieren",

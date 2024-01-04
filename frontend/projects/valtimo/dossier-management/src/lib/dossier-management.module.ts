@@ -54,6 +54,8 @@ import {
   NotificationModule,
   TabsModule,
   TagModule,
+  FileUploaderModule,
+  ProgressBarModule,
 } from 'carbon-components-angular';
 import {DossierManagementAssigneeComponent} from './components/dossier-management-assignee/dossier-management-assignee.component';
 import {DossierManagementConnectModalComponent} from './components/dossier-management-connect-modal/dossier-management-connect-modal.component';
@@ -73,6 +75,7 @@ import {TabManagementService} from './services';
 import {DossierManagementEditTabModalComponent} from './components/dossier-management-tabs/dossier-management-edit-tab-modal/dossier-management-edit-tab-modal.component';
 import {DossierManagementDetailContainerActionsComponent} from './components/dossier-management-detail-container-actions/dossier-management-detail-container-actions';
 import {DossierManagementDocumentDefinitionComponent} from './components/dossier-management-document-definition/dossier-management-document-definition';
+import {DossierManagementUploadStepComponent} from './components/dossier-management-upload/step/dossier-management-upload-step.component';
 
 @NgModule({
   declarations: [
@@ -92,6 +95,7 @@ import {DossierManagementDocumentDefinitionComponent} from './components/dossier
     DossierManagementEditTabModalComponent,
     DossierManagementDetailContainerActionsComponent,
     DossierManagementDocumentDefinitionComponent,
+    DossierManagementUploadStepComponent,
   ],
   imports: [
     CommonModule,
@@ -137,6 +141,8 @@ import {DossierManagementDocumentDefinitionComponent} from './components/dossier
     CarbonListModule,
     TabsModule,
     TagModule,
+    FileUploaderModule,
+    ProgressBarModule,
   ],
   providers: [TabManagementService],
 })
