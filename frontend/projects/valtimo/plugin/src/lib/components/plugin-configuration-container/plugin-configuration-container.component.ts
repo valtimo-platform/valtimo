@@ -80,10 +80,11 @@ export class PluginConfigurationContainerComponent
   private readonly _functionKey = new BehaviorSubject<string>('');
   private readonly _defaultConfiguration =
     new BehaviorSubject<DefaultPluginConfigurationData | null>(null);
-  private readonly _valid = new BehaviorSubject<boolean>(false);
+  private readonly _validDefaultConfiguration = new BehaviorSubject<boolean>(true);
 
   readonly isTypeConfiguration$: Observable<boolean> = this._componentType.pipe(
-    map(componentType => componentType === 'configuration')
+    map(componentType => componentType === 'configuration'),
+    tap(isTypeConfiguration => this._validDefaultConfiguration.next(!isTypeConfiguration))
   );
 
   constructor(private readonly pluginService: PluginService) {}
@@ -102,8 +103,8 @@ export class PluginConfigurationContainerComponent
     this._defaultConfiguration.next(defaultConfiguration);
   }
 
-  onValid(valid: boolean) {
-    this._valid.next(valid);
+  onValidDefaultConfiguration(valid: boolean) {
+    this._validDefaultConfiguration.next(valid);
   }
 
   private openPluginSubscription(): void {
@@ -164,11 +165,12 @@ export class PluginConfigurationContainerComponent
           instance.prefillConfiguration$ = this.prefillConfiguration$;
         }
 
-        this.validSubscription = combineLatest([instance.valid, this._valid]).subscribe(
-          ([instanceValid, defaultConfigurationValid]) => {
-            this.valid.emit(instanceValid && defaultConfigurationValid);
-          }
-        );
+        this.validSubscription = combineLatest([
+          instance.valid,
+          this._validDefaultConfiguration,
+        ]).subscribe(([instanceValid, defaultConfigurationValid]) => {
+          this.valid.emit(instanceValid && defaultConfigurationValid);
+        });
 
         this.configurationSubscription = instance.configuration.subscribe(configuration => {
           const configurationId = this._defaultConfiguration.value?.configurationId;
