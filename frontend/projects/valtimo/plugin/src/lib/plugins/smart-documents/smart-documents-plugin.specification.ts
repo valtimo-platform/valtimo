@@ -18,6 +18,7 @@ import {PluginSpecification} from '../../models';
 import {SmartDocumentsConfigurationComponent} from './components/smart-documents-configuration/smart-documents-configuration.component';
 import {SMART_DOCUMENTS_PLUGIN_LOGO_BASE64} from './assets';
 import {GenerateDocumentConfigurationComponent} from './components/generate-document-configuration/generate-document-configuration.component';
+import { GetTemplateNamesComponent } from './components/get-template-names/get-template-names.component';
 
 const smartDocumentsPluginSpecification: PluginSpecification = {
   pluginId: 'smartdocuments',
@@ -25,20 +26,23 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
   pluginLogoBase64: SMART_DOCUMENTS_PLUGIN_LOGO_BASE64,
   functionConfigurationComponents: {
     'generate-document': GenerateDocumentConfigurationComponent,
+    'get-template-names': GetTemplateNamesComponent,
   },
   pluginTranslations: {
     nl: {
       title: 'SmartDocuments',
       description: 'Automatiseer documenten met slimme templates.',
+      'generate-document': 'Document genereren',
+      'get-template-names': 'Templatenamen ophalen',
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
         'Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
       url: 'SmartDocuments URL',
       username: 'Gebruikersnaam',
       password: 'Wachtwoord',
-      'generate-document': 'Document genereren',
-      templateGroup: 'Template-groep',
-      templateName: 'Template-naam',
+      templateGroup: 'Template groep',
+      templateName: 'Template naam',
+      templateGroupName: 'Template groepsnaam',
       templateDataTooltip:
         'De rechter value-kolom ondersteunt ook het gebruik van procesvariabelen zoals pv: en doc:',
       format: 'Documentformaat',
@@ -52,15 +56,17 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
     en: {
       title: 'SmartDocuments',
       description: 'Automate documents with smart templates.',
+      'generate-document': 'Generate document',
+      'get-template-names': 'Get Template Names',
       configurationTitle: 'Configuration name',
       configurationTitleTooltip:
         'With this name the plugin will be recognizable in the rest of the application',
       url: 'SmartDocuments URL',
       username: 'Username',
       password: 'Password',
-      'generate-document': 'Generate document',
       templateGroup: 'Template group',
       templateName: 'Template name',
+      templateGroupName: 'Template group name',
       format: 'Document format',
       templateData: 'Template data',
       templateDataTooltip:
@@ -74,15 +80,17 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
     de: {
       title: 'SmartDocuments',
       description: 'Automatisieren Sie Dokumente mit intelligenten Templates.',
+      'generate-document': 'Dokument generieren',
+      'get-template-names': 'Get Template Names',
       configurationTitle: 'Konfigurationsname',
       configurationTitleTooltip:
         'An diesem Namen wird das Plugin im Rest der Anwendung erkennbar sein',
       url: 'SmartDocuments URL',
       username: 'Nutzername',
       password: 'Passwort',
-      'generate-document': 'Dokument generieren',
-      templateGroup: 'Templategruppe',
-      templateName: 'Templatename',
+      templateGroup: 'Template gruppe',
+      templateName: 'Template name',
+      templateGroupName: 'Template gruppe name',
       format: 'Dokumentformat',
       templateData: 'Templatedaten',
       templateDataTooltip:

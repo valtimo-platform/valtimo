@@ -32,4 +32,13 @@ interface GenerateDocumentConfig {
   templateData: Array<{key: string; value: string}>;
 }
 
-export {SmartDocumentsConfig, GenerateDocumentConfig, DocumentFormat};
+interface GetTemplateNamesConfig {
+  templateGroupName: string;
+}
+
+export {
+  SmartDocumentsConfig,
+  GenerateDocumentConfig,
+  GetTemplateNamesConfig,
+  DocumentFormat
+};
