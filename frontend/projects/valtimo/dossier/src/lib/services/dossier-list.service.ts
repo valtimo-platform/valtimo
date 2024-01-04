@@ -67,7 +67,7 @@ export class DossierListService {
     }
 
     return (documents as SpecifiedDocuments).content.reduce((acc, curr) => {
-      const propsObject = {id: curr.id};
+      const propsObject = {id: curr.id, locked: curr.locked};
       curr.items?.forEach(item => {
         propsObject[item.key] = item.value;
       });

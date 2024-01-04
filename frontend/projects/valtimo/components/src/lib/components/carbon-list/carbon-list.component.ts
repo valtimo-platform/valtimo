@@ -406,7 +406,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private buildTableItems(): Observable<TableItem[][]> {
     const itemCount: number = this._items.length;
-    const showLocks = !!this._items?.find(item => !!item.locked)?.locked;
+    const showLocks = this._items?.some(item => item.locked);
 
     return this.viewInitialized$.pipe(
       take(1),

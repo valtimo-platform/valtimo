@@ -15,6 +15,7 @@
  */
 
 import {Component, EventEmitter, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
+import {PermissionService} from '@valtimo/access-control';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
 import {FormFlowService, FormSubmissionResult, ProcessLinkService} from '@valtimo/form-link';
 import {ActivatedRoute, Router} from '@angular/router';
@@ -28,9 +29,10 @@ import {
 } from '@valtimo/components';
 import {FormioBeforeSubmit} from '@formio/angular/formio.common';
 import {FormioForm} from '@formio/angular';
-import {NGXLogger} from 'ngx-logger';
 import {UserProviderService} from '@valtimo/security';
 import {take} from 'rxjs/operators';
+import {CAN_VIEW_CASE_PERMISSION, DOSSIER_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
+import {DossierListService} from '../../services';
 
 @Component({
   selector: 'valtimo-dossier-process-start-modal',
@@ -61,7 +63,8 @@ export class DossierProcessStartModalComponent implements OnInit {
     private processLinkService: ProcessLinkService,
     private formFlowService: FormFlowService,
     private userProviderService: UserProviderService,
-    private logger: NGXLogger
+    private permissionService: PermissionService,
+    private listService: DossierListService
   ) {}
 
   ngOnInit() {
@@ -149,11 +152,22 @@ export class DossierProcessStartModalComponent implements OnInit {
 
   private submitCompleted(formSubmissionResult: FormSubmissionResult): void {
     this.modal.hide();
-    this.router.navigate([
-      'dossiers',
-      this.documentDefinitionName,
-      'document',
-      formSubmissionResult.documentId,
-    ]);
+    this.permissionService
+      .requestPermission(CAN_VIEW_CASE_PERMISSION, {
+        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+        identifier: formSubmissionResult.documentId,
+      })
+      .subscribe(canViewCase => {
+        if (canViewCase) {
+          this.router.navigate([
+            'dossiers',
+            this.documentDefinitionName,
+            'document',
+            formSubmissionResult.documentId,
+          ]);
+        } else {
+          this.listService.forceRefresh();
+        }
+      });
   }
 }
