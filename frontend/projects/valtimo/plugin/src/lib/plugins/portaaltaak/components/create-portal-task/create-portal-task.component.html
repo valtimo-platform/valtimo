@@ -55,7 +55,7 @@
     [tooltip]="'formTypeUrlTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
   ></v-input>
-  <v-carbon-multi-input
+  <valtimo-carbon-multi-input
     name="sendData"
     [title]="'sendData' | pluginTranslate: pluginId | async"
     type="keyValue"
@@ -66,8 +66,8 @@
     [tooltip]="'sendDataTooltip' | pluginTranslate: pluginId | async"
     [minimumAmountOfRows]="0"
     [initialAmountOfRows]="0"
-  ></v-carbon-multi-input>
-  <v-carbon-multi-input
+  ></valtimo-carbon-multi-input>
+  <valtimo-carbon-multi-input
     name="receiveData"
     [title]="'receiveData' | pluginTranslate: pluginId | async"
     type="keyValue"
@@ -78,7 +78,7 @@
     [tooltip]="'receiveDataTooltip' | pluginTranslate: pluginId | async"
     [minimumAmountOfRows]="0"
     [initialAmountOfRows]="0"
-  ></v-carbon-multi-input>
+  ></valtimo-carbon-multi-input>
   <v-select
     [items]="receiverSelectItems$ | async"
     [margin]="true"
