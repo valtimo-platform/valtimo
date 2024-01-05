@@ -19,7 +19,7 @@
   class="menu-item-text-container"
   id="{{ menuItem?.id }}"
 >
-  <span [ngClass]="{'cds--link empty-menu-icon-text': accent}">
+  <span *ngIf="obs.titleTranslation" [ngClass]="{'cds--link empty-menu-icon-text': accent}">
     <div class="menu-item-icon-container">
       <i class="{{ menuItem.iconClass }}"></i>
     </div>
