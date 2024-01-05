@@ -52,7 +52,7 @@ export class GetTemplateNamesComponent
   }
 
   private handleValid(formValue: GetTemplateNamesConfig): void {
-    const valid = !!(formValue.templateGroupName);
+    const valid = !!(formValue.templateGroupName && formValue.resultingTemplateNameListProcessVariableName);
 
     this.valid$.next(valid);
     this.valid.emit(valid);
