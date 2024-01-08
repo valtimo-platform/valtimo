@@ -17,7 +17,6 @@
 <ng-container
   *ngIf="{
     searchFields: translatedSearchFields$ | async,
-    fields: fields$ | async,
     downloadUrl: downloadUrl$ | async,
     downloadName: downloadName$ | async,
     documentDefinitionName: documentDefinitionName$ | async,
@@ -25,69 +24,81 @@
     disableInput: disableInput$ | async
   } as obs"
 >
-  <ng-container *ngTemplateOutlet="buttons; context: {obs: obs}"></ng-container>
   <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
+
   <ng-container *ngTemplateOutlet="modal; context: {obs: obs}"></ng-container>
 </ng-container>
 
 <ng-template #buttons let-obs="obs">
-  <div class="btn-group mt-m3px mb-3 pr-2 float-right">
+  <div class="dossier-management-search-fields__buttons">
     <a
-      class="btn btn-secondary btn-space"
-      [href]="obs.downloadUrl"
+      cdsLink
+      class="center-link"
+      [disabled]="
+        !obs.downloadUrl || !obs.downloadName || obs.searchFields.length <= 0 || obs.disableInput
+      "
       [download]="obs.downloadName"
-      [ngClass]="{
-        disabled:
-          !obs.downloadUrl || !obs.downloadName || obs.searchFields.length <= 0 || obs.disableInput
-      }"
+      [href]="obs.downloadUrl"
     >
-      <i class="icon mdi mdi-download mr-1"></i>
       {{ 'searchFields.downloadButtonText' | translate }}
     </a>
+
     <button
+      cdsButton="primary"
+      [disabled]="loadingSearchFields || obs.disableInput"
       (click)="searchFieldClicked($event, true)"
-      class="btn btn-primary btn-space"
-      [ngClass]="{disabled: loadingSearchFields || obs.disableInput}"
     >
-      <i class="icon mdi mdi-plus mr-1"></i>
+      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+
       {{ 'searchFieldsOverview.addRow' | translate }}
     </button>
   </div>
 </ng-template>
 
 <ng-template #list let-obs="obs">
-  <valtimo-list
+  <valtimo-carbon-list
+    *ngIf="obs.searchFields; else loading"
+    [fields]="fields"
     [items]="obs.searchFields"
-    [fields]="obs.fields"
-    [viewMode]="false"
     [header]="false"
     (rowClicked)="searchFieldClicked($event, false)"
-    *ngIf="obs.searchFields; else loading"
-    [lastColumnTemplate]="moveRowButtonsTemplateRef"
   >
-  </valtimo-list>
+    <ng-container
+      carbonToolbarContent
+      *ngTemplateOutlet="buttons; context: {obs: obs}"
+    ></ng-container>
+  </valtimo-carbon-list>
 </ng-template>
 
-<ng-template #moveRowButtons let-index="index" let-length="length">
+<ng-template #loading><valtimo-carbon-list [loading]="true"></valtimo-carbon-list></ng-template>
+
+<ng-template #moveRowButtons let-data="data">
   <div
-    class="move-row-buttons"
     *ngIf="{
       disableInput: disableInput$ | async,
       documentDefinitionName: documentDefinitionName$ | async
     } as obs"
+    class="dossier-management-search-fields__move-buttons"
   >
-    <i
-      class="mdi mdi-arrow-up-bold btn btn-outline-primary mr-1"
-      (click)="moveRow(index, true, $event, obs.documentDefinitionName)"
-      [ngClass]="{'disabled disabled-move-row-button': index === 0 || obs.disableInput}"
-    ></i>
-    <i
-      class="mdi mdi-arrow-down-bold btn btn-outline-secondary"
-      (click)="moveRow(index, false, $event, obs.documentDefinitionName)"
-      [ngClass]="{
-        'disabled disabled-move-row-button': index === length - 1 || obs.disableInput
-      }"
-    ></i>
+    <button
+      cdsButton="tertiary"
+      [disabled]="data.index === 0 || obs.disableInput"
+      [iconOnly]="true"
+      size="sm"
+      (click)="moveRow(data.index, true, $event, obs.documentDefinitionName)"
+    >
+      <svg cdsIcon="arrow--up" size="16" class="cds--btn__icon"></svg>
+    </button>
+
+    <button
+      cdsButton="tertiary"
+      [disabled]="data.index === data.length - 1 || obs.disableInput"
+      [iconOnly]="true"
+      size="sm"
+      (click)="moveRow(data.index, false, $event, obs.documentDefinitionName)"
+    >
+      <svg cdsIcon="arrow--down" size="16" class="cds--btn__icon"></svg>
+    </button>
   </div>
 </ng-template>
 
@@ -240,7 +251,7 @@
         class="btn btn-space btn-secondary"
         *ngIf="!searchFieldActionTypeIsAdd"
         [disabled]="obs.disableInput"
-        (click)="deleteSelectedSearchField(obs.documentDefinitionName, searchObs.searchField)"
+        (click)="deleteSelectedSearchField(searchObs.searchField)"
       >
         {{ 'searchFieldsOverview.delete' | translate }}
       </button>
@@ -253,11 +264,5 @@
         {{ 'searchFieldsOverview.submit' | translate }}
       </button>
     </div>
-  </div>
-</ng-template>
-
-<ng-template #loading>
-  <div class="mb-3">
-    <valtimo-spinner></valtimo-spinner>
   </div>
 </ng-template>
