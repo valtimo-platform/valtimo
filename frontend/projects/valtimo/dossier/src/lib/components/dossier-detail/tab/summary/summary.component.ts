@@ -140,7 +140,7 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
           switchMap(tasks =>
             combineLatest([
               of(tasks),
-              ...tasks?.map(task =>
+              ...(tasks || []).map(task =>
                 this.permissionService.requestPermission(CAN_VIEW_TASK_PERMISSION, {
                   resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
                   identifier: task.id,
