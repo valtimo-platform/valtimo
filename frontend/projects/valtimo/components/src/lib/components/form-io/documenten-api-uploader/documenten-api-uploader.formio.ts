@@ -42,7 +42,10 @@ export function registerDocumentenApiFormioUploadComponent(injector: Injector) {
   // override setValue function to allow for setting an array value
   class UploaderComponent extends originalUploadComponent {
     setValue(value): boolean {
-      this._customAngularElement.value = value;
+      if (this._customAngularElement?.value) {
+        this._customAngularElement.value = value;
+      }
+
       return true;
     }
   }
