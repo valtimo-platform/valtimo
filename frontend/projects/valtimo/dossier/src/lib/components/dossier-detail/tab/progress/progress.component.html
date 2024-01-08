@@ -54,7 +54,7 @@
         [maxLineWidth]="50"
       ></cds-skeleton-text>
       <span *ngIf="!obs.selectedProcessInstance.isLoading" class="process-info-text">
-        {{ obs.selectedProcessInstance.value.startedBy || 'System' }}
+        {{ obs.selectedProcessInstance.value.startedBy || ('progress.system' | translate) }}
       </span>
     </div>
     <div>

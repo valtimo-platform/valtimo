@@ -216,6 +216,7 @@
     "version": "Version",
     "startedBy": "Started by",
     "startedOn": "Started on",
+    "system": "System",
     "of": "of"
   },
   "dashboard": {

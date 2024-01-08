@@ -216,6 +216,7 @@
     "version": "Versie",
     "startedBy": "Gestart door",
     "startedOn": "Gestart op",
+    "system": "Systeem",
     "of": "van"
   },
   "dashboard": {
