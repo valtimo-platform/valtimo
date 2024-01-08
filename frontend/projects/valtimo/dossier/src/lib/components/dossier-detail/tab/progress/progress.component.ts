@@ -16,8 +16,8 @@
 
 import {Component} from '@angular/core';
 import {ActivatedRoute, ParamMap} from '@angular/router';
-import {DocumentService, ProcessDocumentInstance} from '@valtimo/document';
-import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
+import {DocumentService, LoadedValue, ProcessDocumentInstance} from '@valtimo/document';
+import {BehaviorSubject, combineLatest, map, Observable, startWith, switchMap, tap} from 'rxjs';
 import {ListItem} from 'carbon-components-angular/dropdown';
 
 @Component({
@@ -53,7 +53,7 @@ export class DossierDetailTabProgressComponent {
       })
     );
 
-  public readonly processInstanceItems$: Observable<Array<ListItem>> =
+  public readonly processInstanceItems$: Observable<LoadedValue<Array<ListItem>>> =
     this.processDocumentInstances$.pipe(
       map(processDocumentInstances =>
         processDocumentInstances.map((processDocumentInstance, index) => ({
@@ -61,27 +61,35 @@ export class DossierDetailTabProgressComponent {
           content: processDocumentInstance.processName || '-',
           selected: index === 0,
         }))
-      )
+      ),
+      map(processInstanceItems => ({
+        value: processInstanceItems,
+        isLoading: false,
+      })),
+      startWith({isLoading: true})
     );
 
   public readonly selectedProcessInstanceId$ = new BehaviorSubject<string | null>(null);
-  public readonly selectedProcessInstance$ = combineLatest([
-    this.processDocumentInstances$,
-    this.selectedProcessInstanceId$,
-  ]).pipe(
-    map(([processDocumentInstances, selectedProcessInstanceId]) =>
-      processDocumentInstances.find(
-        instance => instance.id.processInstanceId === selectedProcessInstanceId
-      )
-    )
-  );
+  public readonly selectedProcessInstance$: Observable<LoadedValue<ProcessDocumentInstance>> =
+    combineLatest([this.processDocumentInstances$, this.selectedProcessInstanceId$]).pipe(
+      map(([processDocumentInstances, selectedProcessInstanceId]) =>
+        processDocumentInstances.find(
+          instance => instance.id.processInstanceId === selectedProcessInstanceId
+        )
+      ),
+      map(processInstanceItems => ({
+        value: processInstanceItems,
+        isLoading: false,
+      })),
+      startWith({isLoading: true})
+    );
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly documentService: DocumentService
   ) {}
 
-  public loadProcessInstance(processInstanceId: any) {
+  public loadProcessInstance(processInstanceId: string) {
     if (!!processInstanceId) {
       this.selectedProcessInstanceId$.next(processInstanceId);
     }

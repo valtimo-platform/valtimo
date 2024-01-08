@@ -66,6 +66,7 @@ import {
   LoadingModule,
   ModalModule as CarbonModalModule,
   SelectModule as CarbonSelectModule,
+  SkeletonModule,
   TabsModule,
 } from 'carbon-components-angular';
 import {NoteModalComponent} from './components/note-modal/note-modal.component';
@@ -177,6 +178,7 @@ export type TabsFactory = () => Map<string, object>;
     ComboBoxModule,
     TabTranslatePipeModule,
     CarbonListModule,
+    SkeletonModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

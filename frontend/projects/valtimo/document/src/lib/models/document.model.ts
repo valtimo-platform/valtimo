@@ -352,6 +352,11 @@ interface DocumentDefinitionVersionsResult {
   versions: Array<number>;
 }
 
+interface LoadedValue<T> {
+  isLoading: boolean;
+  value?: T;
+}
+
 export {
   AssignHandlerToDocumentResult,
   CaseListColumn,
@@ -385,6 +390,7 @@ export {
   NewDocumentAndStartProcessResult,
   NewDocumentRequest,
   NewDocumentRequestImpl,
+  LoadedValue,
   OpenDocumentCount,
   Page,
   Pageable,

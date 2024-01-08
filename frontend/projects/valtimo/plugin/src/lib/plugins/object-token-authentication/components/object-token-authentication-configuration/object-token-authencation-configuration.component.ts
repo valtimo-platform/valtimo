@@ -54,7 +54,7 @@ export class ObjectTokenAuthencationConfigurationComponent
   }
 
   private handleValid(formValue: ObjectTokenAuthenticationConfig): void {
-    const valid = !!(formValue.configurationTitle && formValue.token);
+    const valid = !!(formValue.configurationTitle && formValue.token?.length >= 20);
 
     this.valid$.next(valid);
     this.valid.emit(valid);
