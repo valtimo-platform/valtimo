@@ -212,7 +212,6 @@
   "progress": {
     "noProcessDocumentInstances": "Es wurde noch kein Prozess gestartet",
     "process": "Prozess",
-    "processPlaceholder": "Prozess auswählen",
     "version": "Version",
     "startedBy": "Gestartet von",
     "startedOn": "Gestartet am",

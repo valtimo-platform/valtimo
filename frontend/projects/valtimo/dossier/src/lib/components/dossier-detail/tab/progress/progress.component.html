@@ -26,10 +26,10 @@
   }}</span>
   <div class="process-info-row">
     <cds-dropdown
-      [placeholder]="'progress.processPlaceholder' | translate"
       [dropUp]="false"
       [label]="'progress.process' | translate"
       [skeleton]="obs.processInstanceItems.isLoading"
+      [style.width.px]="350"
       (selected)="loadProcessInstance($event.item.processInstanceId)"
     >
       <cds-dropdown-list [items]="obs.processInstanceItems.value || []"></cds-dropdown-list>
@@ -64,14 +64,14 @@
         [lines]="1"
         [maxLineWidth]="50"
       ></cds-skeleton-text>
-      <span *ngIf="!obs.processInstanceItems.isLoading" class="process-info-text">
+      <span *ngIf="!obs.selectedProcessInstance.isLoading" class="process-info-text">
         {{ obs.selectedProcessInstance.value.startedOn.toLocaleDateString() }}
       </span>
     </div>
   </div>
   <div>
     <valtimo-process-diagram
-      *ngIf="!obs.processInstanceItems.isLoading"
+      *ngIf="!obs.selectedProcessInstance.isLoading"
       [processInstanceId]="obs.selectedProcessInstance.value.id.processInstanceId"
     ></valtimo-process-diagram>
   </div>

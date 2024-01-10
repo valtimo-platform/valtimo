@@ -212,7 +212,6 @@
   "progress": {
     "noProcessDocumentInstances": "Er is nog geen proces gestart",
     "process": "Proces",
-    "processPlaceholder": "Selecteer een proces",
     "version": "Versie",
     "startedBy": "Gestart door",
     "startedOn": "Gestart op",
