@@ -272,11 +272,12 @@ export class DocumentService {
     );
   }
 
-  public findProcessDocumentDefinitionsAdmin(
-    documentDefinitionName: string
+  public findProcessDocumentDefinitionsByVersion(
+    documentDefinitionName: string,
+    version: number
   ): Observable<ProcessDocumentDefinition[]> {
     return this.http.get<ProcessDocumentDefinition[]>(
-      `${this.valtimoEndpointUri}management/v1/process-document/definition/document/${documentDefinitionName}`
+      `${this.valtimoEndpointUri}v1/process-document/definition/document/${documentDefinitionName}/version/${version}`
     );
   }
 

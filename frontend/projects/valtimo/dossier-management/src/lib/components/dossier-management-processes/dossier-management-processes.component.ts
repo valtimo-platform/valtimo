@@ -20,7 +20,8 @@ import {TranslateService} from '@ngx-translate/core';
 import {ColumnConfig, ViewType} from '@valtimo/components';
 import {DocumentDefinition, DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
 import {IconService, NotificationService} from 'carbon-components-angular';
-import {BehaviorSubject, Observable, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, switchMap} from 'rxjs';
+import {DossierDetailService} from '../../services';
 import {DossierManagementConnectModalComponent} from '../dossier-management-connect-modal/dossier-management-connect-modal.component';
 
 @Component({
@@ -36,9 +37,14 @@ export class DossierManagementProcessesComponent {
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   public readonly processDocumentDefinitions$: Observable<ProcessDocumentDefinition[]> =
     this._refresh$.pipe(
-      switchMap(() => this.route.paramMap),
-      switchMap((params: ParamMap) =>
-        this.documentService.findProcessDocumentDefinitions(params.get('name') ?? '')
+      switchMap(() =>
+        combineLatest([this.route.paramMap, this.dossierDetailService.selectedVersionNumber$])
+      ),
+      switchMap(([params, version]) =>
+        this.documentService.findProcessDocumentDefinitionsByVersion(
+          params.get('name') ?? '',
+          version
+        )
       )
     );
 
@@ -82,6 +88,7 @@ export class DossierManagementProcessesComponent {
   constructor(
     private readonly documentService: DocumentService,
     private readonly iconService: IconService,
+    private readonly dossierDetailService: DossierDetailService,
     private readonly route: ActivatedRoute,
     private readonly notificationService: NotificationService,
     private readonly translateService: TranslateService
@@ -96,6 +103,7 @@ export class DossierManagementProcessesComponent {
       .deleteProcessDocumentDefinition({
         documentDefinitionName: processDocumentDefinition.id.documentDefinitionId.name,
         processDefinitionKey: processDocumentDefinition.id.processDefinitionKey,
+        documentDefinitionVersion: processDocumentDefinition.id.documentDefinitionId.version,
         canInitializeDocument: processDocumentDefinition.canInitializeDocument,
         startableByUser: processDocumentDefinition.startableByUser,
       })

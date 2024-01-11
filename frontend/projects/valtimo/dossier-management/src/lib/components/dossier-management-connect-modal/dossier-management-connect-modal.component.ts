@@ -24,7 +24,8 @@ import {
 } from '@valtimo/document';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {NotificationService} from 'carbon-components-angular';
-import {take} from 'rxjs';
+import {switchMap, take} from 'rxjs';
+import {DossierDetailService} from '../../services';
 
 @Component({
   selector: 'valtimo-dossier-management-connect-modal',
@@ -44,16 +45,21 @@ export class DossierManagementConnectModalComponent implements OnInit {
   public processDocumentDefinitionExists: any = {};
 
   constructor(
-    private readonly translateService: TranslateService,
-    private readonly processService: ProcessService,
     private readonly documentService: DocumentService,
-    private readonly notificationService: NotificationService
+    private readonly dossierDetailService: DossierDetailService,
+    private readonly notificationService: NotificationService,
+    private readonly processService: ProcessService,
+    private readonly translateService: TranslateService
   ) {}
 
   public loadProcessDocumentDefinitions(): void {
+    if (!this.documentDefinition) {
+      return;
+    }
+    const {name, version} = this.documentDefinition.id;
     this.processDocumentDefinitionExists = {};
     this.documentService
-      .findProcessDocumentDefinitions(this.documentDefinition?.id.name ?? '')
+      .findProcessDocumentDefinitionsByVersion(name, version)
       .subscribe((processDocumentDefinitions: ProcessDocumentDefinition[]) => {
         processDocumentDefinitions.forEach(
           (processDocumentDefinition: ProcessDocumentDefinition) => {
@@ -87,16 +93,28 @@ export class DossierManagementConnectModalComponent implements OnInit {
   }
 
   public submit(): void {
+    if (!this.documentDefinition || !this.newDocumentProcessDefinition) {
+      return;
+    }
+
     const request: ProcessDocumentDefinitionRequest = {
       canInitializeDocument: this.newDocumentProcessDefinitionInit,
+      documentDefinitionName: this.documentDefinition.id.name,
+      documentDefinitionVersion: this.documentDefinition.id.version,
+      processDefinitionKey: this.newDocumentProcessDefinition.key,
       startableByUser: this.newDocumentProcessDefinitionStartableByUser,
-      documentDefinitionName: this.documentDefinition?.id.name ?? '',
-      processDefinitionKey: this.newDocumentProcessDefinition?.key ?? '',
     };
 
-    this.documentService
-      .createProcessDocumentDefinition(request)
-      .pipe(take(1))
+    this.dossierDetailService.selectedVersionNumber$
+      .pipe(
+        switchMap((documentDefinitionVersion: number) =>
+          this.documentService.createProcessDocumentDefinition({
+            ...request,
+            documentDefinitionVersion,
+          })
+        ),
+        take(1)
+      )
       .subscribe({
         next: () => {
           this.notificationService.showNotification({
