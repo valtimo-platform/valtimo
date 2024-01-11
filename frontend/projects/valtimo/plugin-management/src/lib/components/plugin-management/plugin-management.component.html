@@ -24,6 +24,7 @@
     [items]="obs.pluginConfigurations"
     [fields]="fields"
     [header]="false"
+    (rowClicked)="editConfiguration($event)"
   >
     <ng-container carbonToolbarContent [ngTemplateOutlet]="configurePluginButton"></ng-container>
 
