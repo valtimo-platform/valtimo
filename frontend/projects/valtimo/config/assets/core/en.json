@@ -263,6 +263,7 @@
     "task": {
       "title": "Task"
     },
+    "noDashboards": "No dashboards have been configured.",
     "noWidgets": "No widgets have been configured for this dashboard."
   },
   "dashboardManagement": {
@@ -420,7 +421,15 @@
     "readonly": "Read-only",
     "connectedProcesses": "Connected processes",
     "connectProcess": "Connect process",
+    "processLink": "Link process",
     "selectProcessDef": "Select process definition",
+    "unlinkProcess": "Unlink",
+    "processLinkNotification": {
+      "linkSuccess": "Successfully linked process",
+      "linkFailure": "Failed to link process",
+      "unlinkSuccess": "Successfully unlinked process",
+      "unlinkFailure": "Failed to unlink process"
+    },
     "noResults": {
       "title": "There are no case-definitions",
       "description": "Add a case-definition to start"
@@ -439,6 +448,7 @@
     },
     "tabs": {
       "cases": "Configuration",
+      "processes": "Processes",
       "searchFields": "Search Fields",
       "listColumns": "List",
       "tabManagement": "Tabs",
@@ -612,6 +622,7 @@
     "readOnlySystemProcessWarningMessage": "This is a system process, so it is marked as read-only. This process can be used but not modified."
   },
   "processCaseConnection": {
+    "noProcesses": "There are no processes connected yet to this Case definition",
     "processCreatesCase": "Process creates new case",
     "processCreatesCaseTooltip": "When this option is selected, a new case is created when this process is started. For this to be possible, a start form must be linked to the first step in the process.",
     "startableWithinCase": "Can be started within existing case",
@@ -1029,7 +1040,7 @@
     "collapseButtonText": "Hide",
     "searchButtonText": "Search",
     "clearButtonText": "Clear",
-    "downloadButtonText": "Download search field configuration",
+    "downloadButtonText": "Download configuration",
     "to": "to",
     "text": "Text",
     "number": "Number",

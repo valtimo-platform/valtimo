@@ -24,9 +24,10 @@
       </div>
     </ng-container>
 
-    <div *ngIf="widgetConfigurations.length === 0" class="no-widgets-message">
-      {{ 'dashboard.noWidgets' | translate }}
-    </div>
+    <valtimo-no-results
+      *ngIf="!widgetConfigurations.length"
+      [title]="'dashboard.noWidgets' | translate"
+    ></valtimo-no-results>
   </ng-container>
 </div>
 

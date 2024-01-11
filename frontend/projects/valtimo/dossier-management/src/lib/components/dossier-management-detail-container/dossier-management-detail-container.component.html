@@ -45,6 +45,17 @@
       <valtimo-dossier-management-detail *ngIf="vars.active"></valtimo-dossier-management-detail>
     </cds-tab>
     <cds-tab
+      *ngIf="{active: currentTab === TabEnum.PROCESSES} as vars"
+      class="no-padding-left-right main-content"
+      [active]="vars.active"
+      [heading]="'dossierManagement.tabs.processes' | translate"
+      (selected)="displayBodyComponent(TabEnum.PROCESSES)"
+    >
+      <valtimo-dossier-management-processes
+        *ngIf="vars.active"
+      ></valtimo-dossier-management-processes>
+    </cds-tab>
+    <cds-tab
       *ngIf="{active: currentTab === TabEnum.SEARCH} as vars"
       class="main-content no-padding-left-right no-padding-bottom"
       [active]="vars.active"

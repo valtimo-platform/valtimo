@@ -13,96 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component, OnInit, ViewChild} from '@angular/core';
-import {DocumentDefinition, DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
-import {ActivatedRoute} from '@angular/router';
-import {DossierManagementConnectModalComponent} from '../dossier-management-connect-modal/dossier-management-connect-modal.component';
-import {AlertService} from '@valtimo/components';
-import {DossierDetailService} from '../../services';
-import {take} from 'rxjs/operators';
+import {Component} from '@angular/core';
+import {ActivatedRoute, ParamMap} from '@angular/router';
+import {DocumentDefinition, DocumentService} from '@valtimo/document';
+import {Observable, switchMap} from 'rxjs';
 
 @Component({
   selector: 'valtimo-dossier-management-detail',
   templateUrl: './dossier-management-detail.component.html',
   styleUrls: ['./dossier-management-detail.component.scss'],
 })
-export class DossierManagementDetailComponent implements OnInit {
-  @ViewChild('dossierConnectModal')
-  private readonly _dossierConnectModal: DossierManagementConnectModalComponent;
-
-  public documentDefinitionName: string | null = null;
-  public documentDefinition: DocumentDefinition | null = null;
-  public processDocumentDefinitions: ProcessDocumentDefinition[] = [];
-  public readonly loadingDocumentDefinition$ = this.dossierDetailService.loadingDocumentDefinition$;
+export class DossierManagementDetailComponent {
+  public readonly documentDefinition$: Observable<DocumentDefinition> = this.route.paramMap.pipe(
+    switchMap((params: ParamMap) =>
+      this.documentService.getDocumentDefinitionForManagement(params.get('name') ?? '')
+    )
+  );
 
   constructor(
     private readonly documentService: DocumentService,
-    private readonly route: ActivatedRoute,
-    private readonly alertService: AlertService,
-    private readonly dossierDetailService: DossierDetailService
-  ) {
-    this.documentDefinitionName = this.route.snapshot.paramMap.get('name');
-  }
-
-  public ngOnInit(): void {
-    this.loadDocumentDefinition();
-    this.loadProcessDocumentDefinitions();
-  }
-
-  public loadProcessDocumentDefinitions(): void {
-    this.documentService
-      .findProcessDocumentDefinitionsAdmin(this.documentDefinitionName)
-      .subscribe((processDocumentDefinitions: ProcessDocumentDefinition[]) => {
-        this.processDocumentDefinitions = processDocumentDefinitions;
-      });
-  }
-
-  public openDossierConnectModal(): void {
-    this._dossierConnectModal.openModal(this.documentDefinition);
-  }
-
-  public deleteProcessDocumentDefinition(
-    processDocumentDefinition: ProcessDocumentDefinition
-  ): void {
-    this.documentService
-      .deleteProcessDocumentDefinition({
-        documentDefinitionName: processDocumentDefinition.id.documentDefinitionId.name,
-        processDefinitionKey: processDocumentDefinition.id.processDefinitionKey,
-        canInitializeDocument: processDocumentDefinition.canInitializeDocument,
-        startableByUser: processDocumentDefinition.startableByUser,
-      })
-      .subscribe(
-        () => {
-          this.alertService.success('Successfully deleted process document definition');
-          this.loadProcessDocumentDefinitions();
-        },
-        () => {
-          this.alertService.error('Failed to delete process document definition');
-        }
-      );
-  }
-
-  public downloadDefinition(): void {
-    this.dossierDetailService.documentDefinition$.pipe(take(1)).subscribe(definition => {
-      const dataString =
-        'data:text/json;charset=utf-8,' +
-        encodeURIComponent(JSON.stringify(definition.schema, null, 2));
-      const downloadAnchorElement = document.getElementById('downloadAnchorElement');
-      downloadAnchorElement.setAttribute('href', dataString);
-      downloadAnchorElement.setAttribute(
-        'download',
-        `${definition.id.name}-v${definition.id.version}.json`
-      );
-      downloadAnchorElement.click();
-    });
-  }
-
-  private loadDocumentDefinition(): void {
-    this.documentService
-      .getDocumentDefinitionForManagement(this.documentDefinitionName)
-      .subscribe((documentDefinition: DocumentDefinition) => {
-        this.documentDefinition = documentDefinition;
-      });
-  }
+    private readonly route: ActivatedRoute
+  ) {}
 }

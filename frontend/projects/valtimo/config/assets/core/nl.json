@@ -263,6 +263,7 @@
     "task": {
       "title": "Taak"
     },
+    "noDashboards": "Er zijn geen dashboards geconfigureerd.",
     "noWidgets": "Er zijn geen widgets geconfigureerd voor dit dashboard."
   },
   "dashboardManagement": {
@@ -283,8 +284,8 @@
     "key": "Sleutel",
     "name": "Naam",
     "noResults": {
-      "description": "Klik op <strong>Nieuw dashboard toevoegen</strong> om te beginnen met het ontwerpen van uw dashboard",
-      "title": "Geen dashboards toegevoegd"
+      "description": "Klik op <strong>Nieuw dashboard toevoegen</strong> om een dashboard te maken",
+      "title": "Er zijn geen dashboards"
     },
     "widgets": {
       "complete": "Voltooien",
@@ -419,7 +420,15 @@
     "readonly": "Alleen-lezen",
     "connectedProcesses": "Gekoppelde processen",
     "connectProcess": "Proces koppelen",
+    "processLink": "Proces koppelen",
     "selectProcessDef": "Procesdefinitie kiezen",
+    "unlinkProcess": "Ontkoppelen",
+    "processLinkNotification": {
+      "linkSuccess": "Succesvol gekoppeld proces",
+      "linkFailure": "Kan het proces niet koppelen",
+      "unlinkSuccess": "Het proces is ontkoppeld",
+      "unlinkFailure": "Kan het proces niet ontkoppelen"
+    },
     "noResults": {
       "title": "Er zijn geen case-definities",
       "description": "Voeg een case-definitie toe om te beginnen"
@@ -438,6 +447,7 @@
     },
     "tabs": {
       "cases": "Configuratie",
+      "processes": "Processen",
       "searchFields": "Zoekvelden",
       "listColumns": "Lijst",
       "tabManagement": "Tabbladen",
@@ -611,6 +621,7 @@
     "readOnlySystemProcessWarningMessage": "Dit is een systeemproces, daarmee is het gemarkeerd als alleen-lezen. Dit proces is wel te gebruiken maar niet aan te passen."
   },
   "processCaseConnection": {
+    "noProcesses": "Er zijn nog geen processen gekoppeld aan deze Case definition.",
     "processCreatesCase": "Proces maakt nieuw dossier aan",
     "processCreatesCaseTooltip": "Wanneer deze optie is geselecteerd wordt bij het starten van dit proces een nieuw dossier aangemaakt. Hiervoor moet er een startformulier gekoppeld zijn aan de eerste stap in het proces.",
     "startableWithinCase": "Kan gestart worden binnen bestaand dossier",
@@ -1028,7 +1039,7 @@
     "collapseButtonText": "Verbergen",
     "searchButtonText": "Zoeken",
     "clearButtonText": "Wissen",
-    "downloadButtonText": "Download zoekveldconfiguratie",
+    "downloadButtonText": "Download configuratie",
     "to": "tot",
     "text": "Tekst",
     "number": "Nummer",

@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-export enum TabEnum {
-  DOCUMENT = 'document',
-  CASE = 'case',
-  PROCESSES = 'processes',
-  SEARCH = 'search',
-  LIST = 'list',
-  TABS = 'tabs',
+::ng-deep .cds--tab-content {
+  padding: 0 !important;
+}
+
+::ng-deep .dossier-management-processes_actions {
+  width: 1px;
 }

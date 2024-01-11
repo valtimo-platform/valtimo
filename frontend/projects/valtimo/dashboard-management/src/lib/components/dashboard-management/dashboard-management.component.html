@@ -16,15 +16,13 @@
 
 <ng-container *ngIf="tableData$ | async as data">
   <valtimo-carbon-list
-    [header]="true"
+    [header]="false"
     [items]="data.items"
     [loading]="data.loading"
     [fields]="fields"
     (rowClicked)="onRowClick($event)"
     class="valtimo-dashboard-management__table"
   >
-    <ng-container header> {{ 'dashboardManagement.title' | translate }} </ng-container>
-
     <div carbonToolbarContent>
       <ng-container [ngTemplateOutlet]="addDashboardButton"></ng-container>
     </div>

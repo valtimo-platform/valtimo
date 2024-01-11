@@ -15,6 +15,11 @@
   -->
 
 <div *ngIf="dashboards$ | async as dashboards" class="dashboards-container">
+  <valtimo-no-results
+    *ngIf="!dashboards.length"
+    [title]="'dashboard.noDashboards' | translate"
+  ></valtimo-no-results>
+
   <div *ngIf="dashboards.length === 1">
     <h4>{{ dashboards[0].title }}</h4>
 

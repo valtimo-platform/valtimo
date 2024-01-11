@@ -54,6 +54,7 @@ import {
   switchMap,
   take,
 } from 'rxjs';
+import {filter} from 'rxjs/operators';
 import {
   CarbonListBatchText,
   CarbonListItem,
@@ -68,7 +69,6 @@ import {
 } from '../../models';
 import {ViewContentService} from '../view-content/view-content.service';
 import {CarbonListFilterPipe} from './CarbonListFilterPipe.directive';
-import {filter} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-carbon-list',
