@@ -46,12 +46,14 @@ import {
   ComboBoxModule,
   DialogModule,
   DropdownModule,
+  FileUploaderModule,
   IconModule,
   InputModule as CarbonInputModule,
   LinkModule,
   LoadingModule,
   ModalModule as CarbonModalModule,
   NotificationModule,
+  ProgressBarModule,
   TabsModule,
   TagModule,
 } from 'carbon-components-angular';
@@ -74,6 +76,7 @@ import {DossierManagementEditTabModalComponent} from './components/dossier-manag
 import {DossierManagementDetailContainerActionsComponent} from './components/dossier-management-detail-container-actions/dossier-management-detail-container-actions';
 import {DossierManagementDocumentDefinitionComponent} from './components/dossier-management-document-definition/dossier-management-document-definition';
 import {DossierManagementProcessesComponent} from './components/dossier-management-processes/dossier-management-processes.component';
+import {DossierManagementUploadStepComponent} from './components/dossier-management-upload/step/dossier-management-upload-step.component';
 
 @NgModule({
   declarations: [
@@ -94,6 +97,7 @@ import {DossierManagementProcessesComponent} from './components/dossier-manageme
     DossierManagementDetailContainerActionsComponent,
     DossierManagementDocumentDefinitionComponent,
     DossierManagementProcessesComponent,
+    DossierManagementUploadStepComponent
   ],
   imports: [
     CommonModule,
@@ -139,6 +143,8 @@ import {DossierManagementProcessesComponent} from './components/dossier-manageme
     CarbonListModule,
     TabsModule,
     TagModule,
+    FileUploaderModule,
+    ProgressBarModule
   ],
   providers: [TabManagementService],
 })
