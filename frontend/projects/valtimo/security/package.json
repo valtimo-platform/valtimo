@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "ngx-toastr": "17.0.2",
-    "tslib": "2.6.2"
+    "tslib": "2.6.2",
+    "moment": "2.29.4"
   }
 }
