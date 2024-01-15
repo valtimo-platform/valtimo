@@ -23,7 +23,7 @@ import moment from 'moment';
 export class ZoneOffsetInterceptor implements HttpInterceptor {
   public intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const modifiedReq = req.clone({
-      headers: req.headers.set('Zone-Offset', this.getFormattedZoneOffset()),
+      headers: req.headers.set('X-Timezone-Offset', this.getFormattedZoneOffset()),
     });
     return next.handle(modifiedReq);
   }
