@@ -17,6 +17,7 @@
 import {InjectionToken, Injector} from '@angular/core';
 import {Auth} from './security.config';
 import {MenuConfig} from './menu.config';
+import {CSPHeaderParams} from 'csp-header';
 
 export const VALTIMO_CONFIG = new InjectionToken<ValtimoConfig>('valtimoConfig');
 
@@ -132,6 +133,7 @@ export interface ValtimoConfig {
     [definitionNameId: string]: Array<string>;
   };
   overrideFeedbackMenuItemToMailTo?: FeedbackMailTo;
+  csp?: CSPHeaderParams;
 }
 
 export interface FeedbackMailTo {

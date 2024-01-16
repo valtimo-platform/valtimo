@@ -26,6 +26,7 @@ import {
 import {authenticationKeycloak} from './auth/keycloak-config.prod';
 import {openZaakExtensionInitializer} from '@valtimo/open-zaak';
 import {LOGO_BASE_64} from './logo';
+import {cspHeaderParamsProd} from './csp';
 
 const defaultDefinitionColumns = [
   {
@@ -148,4 +149,5 @@ export const environment: ValtimoConfig = {
     largeLogoMargin: true,
     enableTabManagement: true,
   },
+  csp: cspHeaderParamsProd,
 };

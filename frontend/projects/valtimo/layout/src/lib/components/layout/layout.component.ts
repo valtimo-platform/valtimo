@@ -26,6 +26,8 @@ import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {filter} from 'rxjs/operators';
 import {Subscription} from 'rxjs';
 import {PlaceholderService} from 'carbon-components-angular';
+import {ConfigService} from '@valtimo/config';
+import {CspService} from '../../services';
 
 // eslint-disable-next-line no-var
 declare var App: any;
@@ -43,6 +45,8 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly _DEFAULT_LAYOUT = 'internal';
 
   constructor(
+    private readonly configService: ConfigService,
+    private readonly cspService: CspService,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
     private readonly placeHolderService: PlaceholderService
@@ -53,12 +57,8 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public ngOnInit() {
-    this._routerSub.add(
-      this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
-        const layout = this.route.snapshot.firstChild.data.layout;
-        this.layoutType = layout ? layout : this._DEFAULT_LAYOUT;
-      })
-    );
+    this.openRouterSubscription();
+    this.registerCsp();
   }
 
   public ngOnDestroy() {
@@ -68,6 +68,21 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   private registerCarbonPlaceHolder(): void {
     if (this._carbonPlaceHolder) {
       this.placeHolderService.registerViewContainerRef(this._carbonPlaceHolder);
+    }
+  }
+
+  private openRouterSubscription(): void {
+    this._routerSub.add(
+      this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
+        const layout = this.route.snapshot.firstChild.data.layout;
+        this.layoutType = layout ? layout : this._DEFAULT_LAYOUT;
+      })
+    );
+  }
+
+  private registerCsp(): void {
+    if (this.configService.config.csp) {
+      this.cspService.registerCsp(this.configService.config.csp);
     }
   }
 }

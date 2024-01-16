@@ -14,10 +14,4 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of layout
- */
-
-export * from './lib/services/layout/layout.service';
-export * from './lib/components/layout/layout.component';
-export * from './lib/layout.module';
+export * from './csp.service';

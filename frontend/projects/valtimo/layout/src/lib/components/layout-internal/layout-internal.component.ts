@@ -15,7 +15,7 @@
  */
 
 import {AfterViewInit, Component, ElementRef, OnDestroy, Renderer2, ViewChild} from '@angular/core';
-import {LayoutService} from '../layout.service';
+import {LayoutService} from '../../services/layout/layout.service';
 import {ShellService, UserInterfaceService} from '@valtimo/components';
 
 // eslint-disable-next-line no-var
