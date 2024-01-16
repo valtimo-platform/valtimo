@@ -15,5 +15,12 @@
   -->
 
 <div #carbonPlaceHolder class="carbon-placeholder"></div>
-<valtimo-layout-public *ngIf="layoutType === 'public'"></valtimo-layout-public>
-<valtimo-layout-internal *ngIf="layoutType === 'internal'"></valtimo-layout-internal>
+
+<ng-container
+  *ngIf="{hasCspConfig: hasCspConfig$ | async, cspHeaderAdded: cspHeaderAdded$ | async} as obs"
+>
+  <ng-container *ngIf="obs.hasCspConfig ? obs.cspHeaderAdded : true">
+    <valtimo-layout-public *ngIf="layoutType === 'public'"></valtimo-layout-public>
+    <valtimo-layout-internal *ngIf="layoutType === 'internal'"></valtimo-layout-internal>
+  </ng-container>
+</ng-container>

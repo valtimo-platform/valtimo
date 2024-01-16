@@ -18,6 +18,7 @@ import {Inject, Injectable, SecurityContext} from '@angular/core';
 import {DOCUMENT} from '@angular/common';
 import {CSPHeaderParams, getCSP} from 'csp-header';
 import {DomSanitizer} from '@angular/platform-browser';
+import {map, Observable, of} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -28,14 +29,22 @@ export class CspService {
     private readonly domSanitizer: DomSanitizer
   ) {}
 
-  public registerCsp(cspHeaderParams: CSPHeaderParams): void {
-    const csp = getCSP(cspHeaderParams);
-    const sanitizedCsp = this.domSanitizer.sanitize(SecurityContext.HTML, csp);
-    const cspMeta = this.document.createElement('meta');
+  public registerCsp(cspHeaderParams: CSPHeaderParams): Observable<boolean> {
+    return of(false).pipe(
+      map(() => {
+        const csp = getCSP(cspHeaderParams);
+        const sanitizedCsp = this.domSanitizer.sanitize(SecurityContext.HTML, csp);
+        const cspMeta = this.document.createElement('meta');
+        const cspMetaId = 'CSP_META';
 
-    cspMeta.httpEquiv = 'Content-Security-Policy';
-    cspMeta.content = sanitizedCsp;
+        cspMeta.httpEquiv = 'Content-Security-Policy';
+        cspMeta.content = sanitizedCsp;
+        cspMeta.id = cspMetaId;
 
-    this.document.head.appendChild(cspMeta);
+        this.document.head.appendChild(cspMeta);
+
+        return !!this.document.getElementById(cspMetaId);
+      })
+    );
   }
 }

@@ -23,8 +23,8 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
-import {filter} from 'rxjs/operators';
-import {Subscription} from 'rxjs';
+import {filter, take} from 'rxjs/operators';
+import {BehaviorSubject, Subscription} from 'rxjs';
 import {PlaceholderService} from 'carbon-components-angular';
 import {ConfigService} from '@valtimo/config';
 import {CspService} from '../../services';
@@ -41,6 +41,8 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly _carbonPlaceHolder: ViewContainerRef;
 
   public layoutType: string | null = null;
+  public readonly hasCspConfig$ = new BehaviorSubject<boolean>(true);
+  public readonly cspHeaderAdded$ = new BehaviorSubject<boolean>(false);
   private readonly _routerSub = new Subscription();
   private readonly _DEFAULT_LAYOUT = 'internal';
 
@@ -52,13 +54,13 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly placeHolderService: PlaceholderService
   ) {}
 
-  public ngAfterViewInit(): void {
-    this.registerCarbonPlaceHolder();
-  }
-
   public ngOnInit() {
     this.openRouterSubscription();
     this.registerCsp();
+  }
+
+  public ngAfterViewInit(): void {
+    this.registerCarbonPlaceHolder();
   }
 
   public ngOnDestroy() {
@@ -81,8 +83,17 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private registerCsp(): void {
-    if (this.configService.config.csp) {
-      this.cspService.registerCsp(this.configService.config.csp);
+    const cspConfig = this.configService?.config?.csp;
+
+    this.hasCspConfig$.next(!!cspConfig);
+
+    if (cspConfig) {
+      this.cspService
+        .registerCsp(cspConfig)
+        .pipe(take(1))
+        .subscribe(cspHeaderAdded => {
+          this.cspHeaderAdded$.next(cspHeaderAdded);
+        });
     }
   }
 }
