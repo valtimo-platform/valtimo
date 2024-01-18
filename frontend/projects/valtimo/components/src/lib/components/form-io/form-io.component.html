@@ -14,7 +14,12 @@
   ~ limitations under the License.
   -->
 
-<div>
+<div
+  *ngIf="{
+    currentLanguage: currentLanguage$ | async,
+    formioOptions: formioOptions$ | async
+  } as obs"
+>
   <div *ngIf="errors.length > 0" class="alert alert-danger pt-5 pb-5 mb-2">
     <ol>
       <li *ngFor="let error of errors">
@@ -23,16 +28,12 @@
     </ol>
   </div>
   <formio
-    *ngIf="{
-      currentLanguage: currentLanguage$ | async,
-      formioOptions: formioOptions$ | async
-    } as obs"
+    *ngIf="obs.formioOptions"
     [submission]="submission"
     [form]="formDefinition"
     [refresh]="refreshForm"
-    [options]="obs.formioOptions || options"
+    [options]="obs.formioOptions"
     [readOnly]="readOnly"
-    [language]="obs.currentLanguage"
     (submit)="onSubmit($event)"
     (ready)="formReady($event)"
     (change)="onChange($event)"

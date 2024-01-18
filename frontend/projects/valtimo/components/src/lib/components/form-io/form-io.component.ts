@@ -73,12 +73,15 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
       return typeof formioTranslations === 'object'
         ? {
             ...this.options,
-            language,
             i18n: {
               [language]: this.stateService.flattenTranslationsObject(formioTranslations),
             },
+            language,
           }
-        : this.options;
+        : {
+            ...this.options,
+            language,
+          };
     })
   );
 
