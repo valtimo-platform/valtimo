@@ -7,7 +7,7 @@
     "ng": "ng",
     "installDeps": "npm install",
     "start": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng serve --proxy-config proxy.conf.json",
-    "startProd": "node --max_o  ld_space_size=8048 ./node_modules/@angular/cli/bin/ng serve --proxy-config proxy.conf.json --configuration production",
+    "startProd": "node --max_old_space_size=8048 ./node_modules/@angular/cli/bin/ng serve --proxy-config proxy.conf.json --configuration production",
     "startAot": "ng serve --proxy-config proxy.conf.json --aot",
     "startHmr": "ng serve --proxy-config proxy.conf.json --hmr",
     "buildTest": "ng build --configuration production --configuration=test",
