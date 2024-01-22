@@ -55,13 +55,14 @@ const isElementLoaded = async (elementId: string, document: Document): Promise<b
   return !!document.getElementById(elementId);
 };
 
-export const initializeCsp = (
-  logger: NGXLogger,
-  configService: ConfigService,
-  document: Document,
-  domSanitizer: DomSanitizer
-): (() => Promise<boolean>) => {
-  return async (): Promise<boolean> => {
+export const initializeCsp =
+  (
+    logger: NGXLogger,
+    configService: ConfigService,
+    document: Document,
+    domSanitizer: DomSanitizer
+  ): (() => Promise<boolean>) =>
+  async (): Promise<boolean> => {
     const cspHeaderParams = configService?.config?.csp;
 
     if (cspHeaderParams) {
@@ -78,4 +79,3 @@ export const initializeCsp = (
 
     return true;
   };
-};
