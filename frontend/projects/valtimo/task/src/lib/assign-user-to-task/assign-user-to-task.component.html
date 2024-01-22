@@ -18,7 +18,7 @@
   *ngIf="{
     candidateUsers: candidateUsersForTask$ | async,
     disabled: disabled$ | async,
-    emailOnServer: assignedEmailOnServer$ | async
+    idOnServer: assignedIdOnServer$ | async
   } as obs"
 >
   <div class="container-fluid">
@@ -35,7 +35,7 @@
           [selectedText]="'assignTask.assignedTo' | translate"
           [selectedTextValue]="assignedUserFullName$ | async"
           [clearSelectionButtonTitle]="'assignTask.remove' | translate"
-          [hasSelection]="userEmailToAssign === obs.emailOnServer && obs.emailOnServer !== null"
+          [hasSelection]="userIdToAssign === obs.idOnServer && obs.idOnServer !== null"
           [width]="250"
           (itemSelected)="assignTask($event)"
           (clearSelection)="unassignTask()"

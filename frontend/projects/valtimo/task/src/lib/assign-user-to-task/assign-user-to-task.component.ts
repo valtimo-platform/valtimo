@@ -35,14 +35,14 @@ import {NamedUser} from '@valtimo/config';
 })
 export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   @Input() taskId: string;
-  @Input() assigneeEmail: string;
+  @Input() assigneeId: string;
   @Output() assignmentOfTaskChanged = new EventEmitter();
 
-  public assignedEmailOnServer$ = new BehaviorSubject<string | null>(null);
+  public assignedIdOnServer$ = new BehaviorSubject<string | null>(null);
   public assignedUserFullName$ = new BehaviorSubject<string | null>(null);
   public candidateUsersForTask$ = new BehaviorSubject<NamedUser[] | undefined>(undefined);
   public disabled$ = new BehaviorSubject<boolean>(true);
-  public userEmailToAssign: string | null = null;
+  public userIdToAssign: string | null = null;
   private _subscriptions = new Subscription();
 
   constructor(private taskService: TaskService) {}
@@ -51,11 +51,11 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
     this._subscriptions.add(
       this.taskService.getCandidateUsers(this.taskId).subscribe(candidateUsers => {
         this.candidateUsersForTask$.next(candidateUsers);
-        if (this.assigneeEmail) {
-          this.assignedEmailOnServer$.next(this.assigneeEmail);
-          this.userEmailToAssign = this.assigneeEmail;
+        if (this.assigneeId) {
+          this.assignedIdOnServer$.next(this.assigneeId);
+          this.userIdToAssign = this.assigneeId;
           this.assignedUserFullName$.next(
-            this.getAssignedUserName(candidateUsers, this.assigneeEmail)
+            this.getAssignedUserName(candidateUsers, this.assigneeId)
           );
         }
         this.enable();
@@ -65,11 +65,11 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
 
   public ngOnChanges(changes: SimpleChanges): void {
     this.candidateUsersForTask$.pipe(take(1)).subscribe(candidateUsers => {
-      const currentUserEmail = changes.assigneeEmail?.currentValue || this.assigneeEmail;
-      this.assignedEmailOnServer$.next(currentUserEmail || null);
-      this.userEmailToAssign = currentUserEmail || null;
+      const currentUserId = changes.assigneeId?.currentValue || this.assigneeId;
+      this.assignedIdOnServer$.next(currentUserId || null);
+      this.userIdToAssign = currentUserId || null;
       this.assignedUserFullName$.next(
-        this.getAssignedUserName(candidateUsers ?? [], currentUserEmail)
+        this.getAssignedUserName(candidateUsers ?? [], currentUserId)
       );
     });
   }
@@ -78,19 +78,19 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  public assignTask(userEmail: string): void {
+  public assignTask(userId: string): void {
     this.disable();
     combineLatest([
       this.candidateUsersForTask$,
-      this.taskService.assignTask(this.taskId, {assignee: userEmail}),
+      this.taskService.assignTask(this.taskId, {assignee: userId}),
     ])
       .pipe(
         take(1),
         tap(([candidateUsers]) => {
-          this.userEmailToAssign = userEmail;
-          this.assignedEmailOnServer$.next(userEmail);
+          this.userIdToAssign = userId;
+          this.assignedIdOnServer$.next(userId);
           this.assignedUserFullName$.next(
-            this.getAssignedUserName(candidateUsers ?? [], userEmail)
+            this.getAssignedUserName(candidateUsers ?? [], userId)
           );
           this.emitChange();
           this.enable();
@@ -113,12 +113,12 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
       .subscribe();
   }
 
-  public getAssignedUserName(users: NamedUser[], userEmail: string): string {
-    if (users && userEmail) {
-      const findUser = users.find(user => user.email === userEmail);
-      return findUser ? findUser.label : userEmail;
+  public getAssignedUserName(users: NamedUser[], userId: string): string {
+    if (users && userId) {
+      const findUser = users.find(user => user.id === userId);
+      return findUser ? findUser.label : userId;
     }
-    return userEmail || '-';
+    return userId || '-';
   }
 
   public mapUsersForDropdown(users: NamedUser[]): DropdownItem[] {
@@ -127,13 +127,13 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
       users
         .map(user => ({...user, lastName: user.lastName?.split(' ').splice(-1)[0] || ''}))
         .sort((a, b) => a.lastName.localeCompare(b.lastName))
-        .map(user => ({text: user.label, id: user.email}))
+        .map(user => ({text: user.label, id: user.id}))
     );
   }
 
   private clear(): void {
-    this.assignedEmailOnServer$.next(null);
-    this.userEmailToAssign = null;
+    this.assignedIdOnServer$.next(null);
+    this.userIdToAssign = null;
   }
 
   private emitChange(): void {
