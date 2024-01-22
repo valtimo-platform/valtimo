@@ -53,6 +53,7 @@ import {
   switchMap,
   take,
 } from 'rxjs';
+import {BOOLEAN_CONVERTER_VALUES} from '../../constants';
 import {
   CarbonListBatchText,
   CarbonListTranslations,
@@ -386,8 +387,12 @@ export class CarbonListComponent<T> implements OnInit, OnDestroy {
               template: column.template,
             });
           case ViewType.BOOLEAN:
+            let data = this.resolveObject(column, item);
+            data = !BOOLEAN_CONVERTER_VALUES.includes(data)
+              ? data
+              : `${'viewTypeConverter.' + data}`;
             return new TableItem({
-              data: this.resolveObject(column, item) ?? '-',
+              data,
               template: this.booleanTemplate,
             });
           default:
