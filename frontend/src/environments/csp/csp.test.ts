@@ -24,7 +24,7 @@ export const cspHeaderParamsTest: CSPHeaderParams = {
     // DATA is needed because of use of inline images
     'img-src': [SELF, DATA],
     // UNSAFE_EVAL is needed because of javascript in form.io forms (i.e. on summary page)
-    'script-src': [SELF, UNSAFE_EVAL],
+    'script-src': [SELF, 'https://cdn.form.io/', UNSAFE_EVAL],
     // DATA is needed because of use of inline fonts
     'font-src': [
       SELF,

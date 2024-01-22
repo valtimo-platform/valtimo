@@ -14,13 +14,4 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of security
- */
-export * from './lib/guard/auth-guard.service';
-export * from './lib/security.module';
-export * from './lib/error/error';
-export * from './lib/error/error.component';
-export * from './lib/user-provider.service';
-export * from './lib/constants';
-export * from './lib/initializers';
+export * from './csp.constant';

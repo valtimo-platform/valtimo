@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './csp.service';
+export * from './initialize-csp';
