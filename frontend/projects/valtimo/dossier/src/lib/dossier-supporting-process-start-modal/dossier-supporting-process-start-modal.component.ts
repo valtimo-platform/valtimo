@@ -14,9 +14,18 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Output, ViewChild, ViewEncapsulation} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  OnDestroy,
+  Output,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
 import {
+  BEAGLE_CONSTANTS,
   FormioComponent,
   FormioOptionsImpl,
   FormioSubmission,
@@ -34,7 +43,7 @@ import {
   ProcessLinkService,
 } from '@valtimo/form-link';
 import {NGXLogger} from 'ngx-logger';
-import {noop, Observable} from 'rxjs';
+import {BehaviorSubject, noop, Observable, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {UserProviderService} from '@valtimo/security';
 
@@ -44,7 +53,7 @@ import {UserProviderService} from '@valtimo/security';
   styleUrls: ['./dossier-supporting-process-start-modal.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class DossierSupportingProcessStartModalComponent {
+export class DossierSupportingProcessStartModalComponent implements AfterViewInit, OnDestroy {
   public processDefinitionKey: string;
   public documentDefinitionName: string;
   public processName: string;
@@ -61,11 +70,15 @@ export class DossierSupportingProcessStartModalComponent {
     .getUserSubject()
     .pipe(map(userIdentity => userIdentity?.roles?.includes('ROLE_ADMIN')));
 
+  public readonly showForm$ = new BehaviorSubject<boolean>(false);
+
   @ViewChild('form', {static: false}) form: FormioComponent;
   @ViewChild('supportingProcessStartModal', {static: false}) modal: ModalComponent;
   @Output() formSubmit = new EventEmitter();
 
   private documentId: string;
+
+  private readonly _subscriptions = new Subscription();
 
   constructor(
     private route: ActivatedRoute,
@@ -78,6 +91,26 @@ export class DossierSupportingProcessStartModalComponent {
     private logger: NGXLogger,
     private readonly userProviderService: UserProviderService
   ) {}
+
+  public ngAfterViewInit(): void {
+    if (this.modal?.modalShowing$) {
+      this._subscriptions.add(
+        this.modal.modalShowing$.subscribe(modalShowing => {
+          if (!modalShowing) {
+            setTimeout(() => {
+              this.showForm$.next(modalShowing);
+            }, BEAGLE_CONSTANTS.modalAnimationMs);
+          } else {
+            this.showForm$.next(modalShowing);
+          }
+        })
+      );
+    }
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
 
   private loadProcessLink() {
     this.formAssociation = null;

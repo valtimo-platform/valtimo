@@ -23,7 +23,7 @@
       : processName
   "
 >
-  <div body *ngIf="formDefinition">
+  <div body *ngIf="formDefinition && (showForm$ | async)">
     <valtimo-form-io
       #form
       [submission]="submission"

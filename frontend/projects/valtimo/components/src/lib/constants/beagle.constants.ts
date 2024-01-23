@@ -14,5 +14,8 @@
  * limitations under the License.
  */
 
-export * from './carbon.constants';
-export * from './beagle.constants';
+const BEAGLE_CONSTANTS = {
+  modalAnimationMs: 150,
+};
+
+export {BEAGLE_CONSTANTS};

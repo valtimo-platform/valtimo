@@ -24,7 +24,7 @@
   [subtitle]="page?.subtitle"
   [templateBelowSubtitle]="assignUserToTask"
 >
-  <div body *ngIf="formDefinition && (processLinkIsForm$ | async)">
+  <div body *ngIf="formDefinition && (processLinkIsForm$ | async) && (showForm$ | async)">
     <valtimo-form-io
       #form
       [form]="formDefinition"
@@ -33,7 +33,7 @@
       [options]="formioOptions"
     ></valtimo-form-io>
   </div>
-  <div body *ngIf="processLinkIsFormFlow$ | async">
+  <div body *ngIf="(processLinkIsFormFlow$ | async) && (showForm$ | async)">
     <valtimo-form-flow
       #formFlow
       [formIoFormData]="formIoFormData$"
@@ -46,7 +46,10 @@
       {{ 'formManagement.loading' | translate }}
     </div>
   </div>
-  <div body *ngIf="obs.loading === false && !formDefinition && !formFlowInstanceId && !errorMessage">
+  <div
+    body
+    *ngIf="obs.loading === false && !formDefinition && !formFlowInstanceId && !errorMessage"
+  >
     <div class="bg-warning text-black mb-0 p-3 text-center">
       {{
         (isAdmin$ | async)
