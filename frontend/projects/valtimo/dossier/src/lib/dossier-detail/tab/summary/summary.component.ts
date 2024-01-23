@@ -26,7 +26,7 @@ import {
 import {ProcessInstanceTask, ProcessService} from '@valtimo/process';
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
 import {Document, DocumentService, ProcessDocumentInstance} from '@valtimo/document';
-import {TaskDetailModalComponent, TaskService} from '@valtimo/task';
+import {SummaryFormService, TaskDetailModalComponent, TaskService} from '@valtimo/task';
 import {FormService} from '@valtimo/form';
 import {FormioOptionsImpl, ValtimoFormioOptions} from '@valtimo/components';
 import moment from 'moment';
@@ -54,6 +54,9 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
   public formDefinition: FormioForm = null;
   public options: ValtimoFormioOptions;
   public roles: string[] = [];
+
+  public readonly renderSummaryForm$ = this.summaryFormService.renderSummaryForm$;
+
   private _subscriptions = new Subscription();
   @ViewChild('taskDetail') taskDetail: TaskDetailModalComponent;
 
@@ -66,7 +69,8 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
     private readonly renderer: Renderer2,
     private readonly route: ActivatedRoute,
     private readonly formService: FormService,
-    private readonly userProviderService: UserProviderService
+    private readonly userProviderService: UserProviderService,
+    private readonly summaryFormService: SummaryFormService
   ) {
     this.snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this.snapshot.get('documentDefinitionName') || '';

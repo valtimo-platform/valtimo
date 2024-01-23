@@ -14,14 +14,22 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of task
- */
+import {Injectable} from '@angular/core';
+import {BehaviorSubject, Observable} from 'rxjs';
 
-export * from './lib/models';
-export * from './lib/services';
-export * from './lib/task.service';
-export * from './lib/task.module';
-export * from './lib/task-detail-modal/task-detail-modal.component';
-export * from './lib/task-list/task-list.component';
-export * from './lib/assign-user-to-task/assign-user-to-task.component';
+@Injectable()
+export class SummaryFormService {
+  private readonly _renderSummaryForm$ = new BehaviorSubject<boolean>(true);
+
+  public get renderSummaryForm$(): Observable<boolean> {
+    return this._renderSummaryForm$.asObservable();
+  }
+
+  public renderSummaryForm(): void {
+    this._renderSummaryForm$.next(true);
+  }
+
+  public hideSummaryForm(): void {
+    this._renderSummaryForm$.next(false);
+  }
+}

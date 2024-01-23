@@ -53,6 +53,7 @@ import {BehaviorSubject, distinctUntilChanged, Observable, Subscription, tap} fr
 import {UserProviderService} from '@valtimo/security';
 import {DocumentService} from '@valtimo/document';
 import {TranslateService} from '@ngx-translate/core';
+import {SummaryFormService} from '../services';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -101,7 +102,8 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     private readonly modalService: ValtimoModalService,
     private readonly stateService: FormIoStateService,
     private readonly documentService: DocumentService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly summaryFormService: SummaryFormService
   ) {
     this.formioOptions = new FormioOptionsImpl();
     this.formioOptions.disableAlerts = true;
@@ -127,10 +129,12 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
       this._subscriptions.add(
         this.modal.modalShowing$.subscribe(modalShowing => {
           if (!modalShowing) {
+            this.summaryFormService.renderSummaryForm();
             setTimeout(() => {
               this.showForm$.next(modalShowing);
             }, BEAGLE_CONSTANTS.modalAnimationMs);
           } else {
+            this.summaryFormService.hideSummaryForm();
             this.showForm$.next(modalShowing);
           }
         })
