@@ -28,6 +28,16 @@ export const documentenApiUploaderEditForm = () => ({
       },
     },
     {
+      type: 'checkbox',
+      input: true,
+      inputType: 'checkbox',
+      key: 'validate.required',
+      label: 'Required',
+      validate: {
+        required: false,
+      },
+    },
+    {
       type: 'textfield',
       input: true,
       key: 'key',

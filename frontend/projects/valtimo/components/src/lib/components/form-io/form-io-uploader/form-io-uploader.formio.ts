@@ -42,10 +42,8 @@ export function registerFormioUploadComponent(injector: Injector) {
   // override setValue function to allow for setting an array value
   class UploaderComponent extends originalUploadComponent {
     setValue(value): boolean {
-      let componentValue = this._customAngularElement?.value;
-
-      if (componentValue) {
-        componentValue = value;
+      if (this._customAngularElement?.value) {
+        this._customAngularElement.value = value;
       }
 
       return true;
