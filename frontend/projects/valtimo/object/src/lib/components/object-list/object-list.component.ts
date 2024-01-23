@@ -30,7 +30,7 @@ import {catchError, finalize, switchMap, take, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ObjectService} from '../../services/object.service';
-import {ListField, PageTitleService, Pagination} from '@valtimo/components';
+import {FormIoStateService, ListField, PageTitleService, Pagination} from '@valtimo/components';
 import {ColumnType, FormType} from '../../models/object.model';
 import {ToastrService} from 'ngx-toastr';
 import {ObjectColumnService} from '../../services/object-column.service';
@@ -41,6 +41,7 @@ import {SearchField, SearchFieldValues, SearchFilter, SearchFilterRange} from '@
   selector: 'valtimo-object-list',
   templateUrl: './object-list.component.html',
   styleUrls: ['./object-list.component.scss'],
+  providers: [FormIoStateService],
 })
 export class ObjectListComponent {
   readonly loading$ = new BehaviorSubject<boolean>(true);

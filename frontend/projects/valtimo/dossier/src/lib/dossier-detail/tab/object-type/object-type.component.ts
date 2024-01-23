@@ -22,11 +22,13 @@ import {ZaakObject, ZaakObjectType} from '../../../models';
 import {ModalComponent, ModalService, TableColumn} from '@valtimo/user-interface';
 import {take} from 'rxjs/operators';
 import {FormioForm} from '@formio/angular';
+import {FormIoStateService} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-object-type',
   templateUrl: './object-type.component.html',
   styleUrls: ['./object-type.component.scss'],
+  providers: [FormIoStateService],
 })
 export class DossierDetailTabObjectTypeComponent {
   @ViewChild('viewObjectModal') viewObjectModal: ModalComponent;

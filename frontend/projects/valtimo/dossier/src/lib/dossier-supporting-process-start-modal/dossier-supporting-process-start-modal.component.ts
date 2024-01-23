@@ -28,6 +28,7 @@ import {
   BEAGLE_CONSTANTS,
   FormioComponent,
   FormioOptionsImpl,
+  FormIoStateService,
   FormioSubmission,
   ModalComponent,
   ValtimoFormioOptions,
@@ -53,6 +54,7 @@ import {SummaryFormService} from '@valtimo/task';
   templateUrl: './dossier-supporting-process-start-modal.component.html',
   styleUrls: ['./dossier-supporting-process-start-modal.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  providers: [FormIoStateService],
 })
 export class DossierSupportingProcessStartModalComponent implements AfterViewInit, OnDestroy {
   public processDefinitionKey: string;

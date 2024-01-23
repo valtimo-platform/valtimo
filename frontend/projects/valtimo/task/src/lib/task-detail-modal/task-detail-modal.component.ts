@@ -62,6 +62,7 @@ moment.locale(localStorage.getItem('langKey') || '');
   templateUrl: './task-detail-modal.component.html',
   styleUrls: ['./task-detail-modal.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  providers: [FormIoStateService],
 })
 export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
   @ViewChild('form') form: FormioComponent;

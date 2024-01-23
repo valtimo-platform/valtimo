@@ -18,9 +18,7 @@ import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {FormioComponent} from '@formio/angular';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class FormIoStateService {
   private _documentDefinitionName$ = new BehaviorSubject<string>(undefined);
   private _documentId$ = new BehaviorSubject<string>(undefined);

@@ -16,7 +16,7 @@
 
 import {Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
 import {FormManagementService} from '../form-management.service';
-import {AlertService, PageTitleService} from '@valtimo/components';
+import {AlertService, FormIoStateService, PageTitleService} from '@valtimo/components';
 import {FormDefinition, ModifyFormDefinitionRequest} from '../models';
 import {ActivatedRoute, Router} from '@angular/router';
 import {first, take} from 'rxjs/operators';
@@ -30,6 +30,7 @@ import {ModalService} from 'carbon-components-angular';
   templateUrl: './form-management-edit.component.html',
   styleUrls: ['./form-management-edit.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  providers: [FormIoStateService],
 })
 export class FormManagementEditComponent implements OnInit, OnDestroy {
   readonly showModal$ = new BehaviorSubject<boolean>(false);
