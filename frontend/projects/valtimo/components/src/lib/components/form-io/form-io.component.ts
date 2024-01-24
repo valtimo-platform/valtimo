@@ -144,7 +144,6 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public formReady(form: FormIoSourceComponent): void {
-    this.reloadForm();
     this.stateService.currentForm = form;
   }
 
@@ -178,12 +177,6 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
         });
       })
     );
-  }
-
-  private reloadForm(): void {
-    this.form$.pipe(take(1)).subscribe(form => {
-      this.form$.next(form);
-    });
   }
 
   private scrollToTop(): void {
