@@ -81,6 +81,7 @@ export class DossierSupportingProcessStartModalComponent {
   private loadProcessLink() {
     combineLatest([this.processDefinitionId$, this.documentId$])
       .pipe(
+        take(1),
         switchMap(([processDefinitionId, documentId]) =>
           this.processService.getProcessDefinitionStartProcessLink(
             processDefinitionId,
@@ -105,6 +106,7 @@ export class DossierSupportingProcessStartModalComponent {
           // backwards compatibility for form associations
           combineLatest([this.processDefinitionKey$, this.documentId$])
             .pipe(
+              take(1),
               switchMap(([processDefinitionKey, documentId]) =>
                 this.formLinkService.getStartEventFormDefinitionByProcessDefinitionKey(
                   processDefinitionKey,
@@ -184,6 +186,7 @@ export class DossierSupportingProcessStartModalComponent {
     if (this.processLinkId$.getValue()) {
       combineLatest([this.processLinkId$, this.documentId$])
         .pipe(
+          take(1),
           switchMap(([processLinkId, documentId]) =>
             this.processLinkService.submitForm(processLinkId, submission.data, documentId)
           )
@@ -199,6 +202,7 @@ export class DossierSupportingProcessStartModalComponent {
     } else {
       combineLatest([this.processDefinitionKey$, this.formAssociation$, this.documentId$])
         .pipe(
+          take(1),
           switchMap(([processDefinitionKey, formAssociation, documentId]) =>
             this.formLinkService.onSubmit(
               processDefinitionKey,
@@ -235,6 +239,7 @@ export class DossierSupportingProcessStartModalComponent {
     this.formDefinition$.next(formDefinitionWithFormAssociation);
     this.documentId$
       .pipe(
+        take(1),
         switchMap(documentId => this.documentService.getDocument(documentId)),
         tap(document => {
           this.submission$.next({
@@ -251,6 +256,7 @@ export class DossierSupportingProcessStartModalComponent {
   private setFormFlow(): void {
     combineLatest([this.processDefinitionKey$, this.documentId$])
       .pipe(
+        take(1),
         switchMap(([processDefinitionKey, documentId]) =>
           this.formFlowService.createInstanceForNewProcess(processDefinitionKey, {
             documentId,
