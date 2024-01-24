@@ -15,4 +15,3 @@
  */
 
 export * from './carbon.constants';
-export * from './beagle.constants';

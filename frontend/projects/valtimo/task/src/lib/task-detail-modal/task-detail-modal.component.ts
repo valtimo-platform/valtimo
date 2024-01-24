@@ -25,7 +25,6 @@ import {
 } from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {
-  BEAGLE_CONSTANTS,
   FormioComponent,
   FormioOptionsImpl,
   FormIoStateService,
@@ -78,7 +77,6 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
   readonly isAdmin$: Observable<boolean> = this.userProviderService
     .getUserSubject()
     .pipe(map(userIdentity => userIdentity?.roles?.includes('ROLE_ADMIN')));
-  public readonly showForm$ = new BehaviorSubject<boolean>(false);
   private formAssociation: FormAssociation;
   private processLinkId: string;
   private taskProcessLinkType$ = new BehaviorSubject<TaskProcessLinkType | null>(null);
@@ -122,20 +120,6 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
         )
         .subscribe()
     );
-
-    if (this.modal?.modalShowing$) {
-      this._subscriptions.add(
-        this.modal.modalShowing$.subscribe(modalShowing => {
-          if (!modalShowing) {
-            setTimeout(() => {
-              this.showForm$.next(modalShowing);
-            }, BEAGLE_CONSTANTS.modalAnimationMs);
-          } else {
-            this.showForm$.next(modalShowing);
-          }
-        })
-      );
-    }
   }
 
   ngOnDestroy() {
