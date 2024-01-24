@@ -253,7 +253,7 @@ export class DossierSupportingProcessStartModalComponent {
       .pipe(
         switchMap(([processDefinitionKey, documentId]) =>
           this.formFlowService.createInstanceForNewProcess(processDefinitionKey, {
-            documentId: documentId,
+            documentId,
             documentDefinitionName: null,
           })
         ),

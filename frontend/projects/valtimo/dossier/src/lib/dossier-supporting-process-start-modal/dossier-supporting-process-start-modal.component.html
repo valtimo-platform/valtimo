@@ -15,12 +15,16 @@
   -->
 
 <valtimo-modal
+  *ngIf="{
+    processDefinitionKey: processDefinitionKey$ | async,
+    processName: processName$ | async
+  } as vars"
   #supportingProcessStartModal
   elementId="supportingProcessStartModal"
   [title]="
-    (processDefinitionKey$ | async | translate) !== (processDefinitionKey$ | async)
-      ? (processDefinitionKey$ | async | translate)
-      : (processName$ | async)
+    (vars.processDefinitionKey | translate) !== vars.processDefinitionKey
+      ? (vars.processDefinitionKey | translate)
+      : vars.processName
   "
 >
   <div body *ngIf="formDefinition$ | async as formDefinition">
@@ -40,23 +44,31 @@
       (formFlowComplete)="formSubmitted()"
     ></valtimo-form-flow>
   </div>
-  <div body *ngIf="!(formDefinition$ | async) && !(formFlowInstanceId$ | async)">
-    <div class="bg-warning text-black mb-0 p-3 text-center">
-      {{
-        (isAdmin$ | async)
-          ? ('formManagement.noFormDefinitionFoundAdmin' | translate)
-          : ('formManagement.noFormDefinitionFoundUser' | translate)
-      }}
+
+  <ng-container
+    *ngIf="{
+      formDefinition: formDefinition$ | async,
+      formFlowInstanceId: formFlowInstanceId$ | async
+    } as obs"
+  >
+    <div body *ngIf="!obs.formDefinition && !obs.formFlowInstanceId">
+      <div class="bg-warning text-black mb-0 p-3 text-center">
+        {{
+          (isAdmin$ | async)
+            ? ('formManagement.noFormDefinitionFoundAdmin' | translate)
+            : ('formManagement.noFormDefinitionFoundUser' | translate)
+        }}
+      </div>
+      <div class="mb-0 mt-4 p-3 text-center">
+        <button
+          class="btn btn-secondary btn-space"
+          type="button"
+          (click)="gotoFormLinkScreen()"
+          id="form-link-button"
+        >
+          {{ 'formManagement.gotoFormLinksButton' | translate }}
+        </button>
+      </div>
     </div>
-    <div class="mb-0 mt-4 p-3 text-center">
-      <button
-        class="btn btn-secondary btn-space"
-        type="button"
-        (click)="gotoFormLinkScreen()"
-        id="form-link-button"
-      >
-        {{ 'formManagement.gotoFormLinksButton' | translate }}
-      </button>
-    </div>
-  </div>
+  </ng-container>
 </valtimo-modal>
