@@ -48,7 +48,14 @@ import {NGXLogger} from 'ngx-logger';
 import {ToastrService} from 'ngx-toastr';
 import {map, take} from 'rxjs/operators';
 import {TaskService} from '../task.service';
-import {BehaviorSubject, distinctUntilChanged, Observable, Subscription, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  Observable,
+  Subscription,
+  tap,
+} from 'rxjs';
 import {UserProviderService} from '@valtimo/security';
 import {DocumentService} from '@valtimo/document';
 import {TranslateService} from '@ngx-translate/core';
@@ -68,23 +75,28 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
   @Output() formSubmit = new EventEmitter();
   @Output() assignmentOfTaskChanged = new EventEmitter();
 
-  public task: Task | null = null;
-  public formDefinition: FormioForm;
-  public formFlowInstanceId: string;
-  public page: any = null;
-  public formioOptions: ValtimoFormioOptions;
-  public errorMessage: string = null;
-  readonly isAdmin$: Observable<boolean> = this.userProviderService
+  public readonly task$ = new BehaviorSubject<Task | null>(null);
+  public readonly formDefinition$ = new BehaviorSubject<FormioForm>(undefined);
+  public readonly formFlowInstanceId$ = new BehaviorSubject<string>(undefined);
+  public readonly page$ = new BehaviorSubject<any>(null);
+  public readonly formioOptions$ = new BehaviorSubject<ValtimoFormioOptions>(null);
+  public readonly errorMessage$ = new BehaviorSubject<string>(undefined);
+  public readonly isAdmin$: Observable<boolean> = this.userProviderService
     .getUserSubject()
     .pipe(map(userIdentity => userIdentity?.roles?.includes('ROLE_ADMIN')));
-  private formAssociation: FormAssociation;
-  private processLinkId: string;
-  private taskProcessLinkType$ = new BehaviorSubject<TaskProcessLinkType | null>(null);
-  processLinkIsForm$ = this.taskProcessLinkType$.pipe(map(type => type === 'form'));
-  processLinkIsFormFlow$ = this.taskProcessLinkType$.pipe(map(type => type === 'form-flow'));
-  formIoFormData$ = new BehaviorSubject<any>(null);
+  public readonly formIoFormData$ = new BehaviorSubject<any>(null);
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
+
+  private readonly taskProcessLinkType$ = new BehaviorSubject<TaskProcessLinkType | null>(null);
+  public readonly processLinkIsForm$ = this.taskProcessLinkType$.pipe(map(type => type === 'form'));
+  public readonly processLinkIsFormFlow$ = this.taskProcessLinkType$.pipe(
+    map(type => type === 'form-flow')
+  );
+
+  private readonly formAssociation$ = new BehaviorSubject<FormAssociation>(undefined);
+  private readonly processLinkId$ = new BehaviorSubject<string>(undefined);
+
   private _subscriptions = new Subscription();
-  readonly loading$ = new BehaviorSubject<boolean>(true);
 
   constructor(
     private readonly toastr: ToastrService,
@@ -101,11 +113,12 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     private readonly documentService: DocumentService,
     private readonly translateService: TranslateService
   ) {
-    this.formioOptions = new FormioOptionsImpl();
-    this.formioOptions.disableAlerts = true;
+    const options = new FormioOptionsImpl();
+    options.disableAlerts = true;
+    this.formioOptions$.next(options);
   }
 
-  ngAfterViewInit() {
+  public ngAfterViewInit(): void {
     this._subscriptions.add(
       this.modal.modalShowing$
         .pipe(
@@ -122,11 +135,11 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     );
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  openTaskDetails(task: Task) {
+  public openTaskDetails(task: Task): void {
     this.resetTaskProcessLinkType();
     this.resetFormDefinition();
     this.getTaskProcessLink(task.id);
@@ -134,11 +147,11 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     const documentId = task.businessKey;
     this.stateService.setDocumentId(documentId);
 
-    this.task = task;
-    this.page = {
+    this.task$.next(task);
+    this.page$.next({
       title: task.name,
       subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task.created}`,
-    };
+    });
 
     //only load from formlink when process link failed for backwards compatibility
     if (!this.taskProcessLinkType$.getValue()) {
@@ -151,9 +164,9 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
         )
         .subscribe(
           formDefinition => {
-            this.formAssociation = formDefinition.formAssociation;
+            this.formAssociation$.next(formDefinition.formAssociation);
 
-            const className = this.formAssociation.formLink.className.split('.');
+            const className = formDefinition.formAssociation.formLink.className.split('.');
             const linkType = className[className.length - 1];
 
             switch (linkType) {
@@ -177,7 +190,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
           },
           errors => {
             if (errors?.error?.detail) {
-              this.errorMessage = errors.error.detail;
+              this.errorMessage$.next(errors.error.detail);
             }
 
             this.modal.show();
@@ -201,41 +214,62 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     if (submission.data) {
       this.formIoFormData$.next(submission.data);
     }
-    if (this.taskProcessLinkType$.getValue() === 'form') {
-      if (this.processLinkId) {
-        this.processLinkService
-          .submitForm(this.processLinkId, submission.data, this.task.businessKey, this.task.id)
-          .subscribe({
-            next: (_: FormSubmissionResult) => {
-              this.completeTask();
-            },
-            error: errors => {
-              this.form.showErrors(errors);
-            },
-          });
-      } else {
-        this.formLinkService
-          .onSubmit(
-            this.task.processDefinitionKey,
-            this.formAssociation.formLink.id,
-            submission.data,
-            this.task.businessKey,
-            this.task.id
-          )
-          .subscribe(
-            (_: FormSubmissionResult) => {
-              this.completeTask();
-            },
-            errors => {
-              this.form.showErrors(errors);
-            }
-          );
-      }
-    }
+
+    combineLatest([
+      this.processLinkId$,
+      this.taskProcessLinkType$,
+      this.task$,
+      this.formAssociation$,
+    ])
+      .pipe(take(1))
+      .subscribe(([processLinkId, taskProcessLinkType, task, formAssociation]) => {
+        if (taskProcessLinkType === 'form') {
+          if (processLinkId) {
+            this.processLinkService
+              .submitForm(processLinkId, submission.data, task.businessKey, task.id)
+              .subscribe({
+                next: (_: FormSubmissionResult) => {
+                  this.completeTask();
+                },
+                error: errors => {
+                  this.form.showErrors(errors);
+                },
+              });
+          } else {
+            this.formLinkService
+              .onSubmit(
+                task.processDefinitionKey,
+                formAssociation.formLink.id,
+                submission.data,
+                task.businessKey,
+                task.id
+              )
+              .subscribe(
+                (_: FormSubmissionResult) => {
+                  this.completeTask();
+                },
+                errors => {
+                  this.form.showErrors(errors);
+                }
+              );
+          }
+        }
+      });
+  }
+
+  public completeTask(): void {
+    this.task$.pipe(take(1)).subscribe(task => {
+      this.toastr.success(
+        `${task.name} ${this.translateService.instant('taskDetail.taskCompleted')}`
+      );
+      this.modal.hide();
+      this.task$.next(null);
+      this.formSubmit.emit();
+    });
   }
 
   private resetFormDefinition(): void {
-    this.formDefinition = null;
+    this.formDefinition$.next(null);
     this.loading$.next(true);
   }
 
@@ -246,12 +280,12 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
           switch (res?.type) {
             case 'form':
               this.taskProcessLinkType$.next('form');
-              this.processLinkId = res.processLinkId;
+              this.processLinkId$.next(res.processLinkId);
               this.setFormDefinitionAndOpenModal(res.properties.prefilledForm);
               break;
             case 'form-flow':
               this.taskProcessLinkType$.next('form-flow');
-              this.formFlowInstanceId = res.properties.formFlowInstanceId;
+              this.formFlowInstanceId$.next(res.properties.formFlowInstanceId);
               break;
           }
           this.loading$.next(false);
@@ -265,15 +299,6 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  completeTask() {
-    this.toastr.success(
-      `${this.task.name} ${this.translateService.instant('taskDetail.taskCompleted')}`
-    );
-    this.modal.hide();
-    this.task = null;
-    this.formSubmit.emit();
-  }
-
   private getLegacyTaskProcessLink(taskId: string): void {
     this.taskService.getTaskProcessLinkV1(taskId).subscribe(resV1 => {
       switch (resV1?.type) {
@@ -282,7 +307,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
           break;
         case 'form-flow':
           this.taskProcessLinkType$.next('form-flow');
-          this.formFlowInstanceId = resV1.properties.formFlowInstanceId;
+          this.formFlowInstanceId$.next(resV1.properties.formFlowInstanceId);
           break;
       }
       this.loading$.next(false);
@@ -291,13 +316,13 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
 
   private resetTaskProcessLinkType(): void {
     this.taskProcessLinkType$.next(null);
-    this.processLinkId = null;
-    this.formAssociation = null;
+    this.processLinkId$.next(null);
+    this.formAssociation$.next(null);
   }
 
   private setFormDefinitionAndOpenModal(formDefinition: any): void {
     this.taskProcessLinkType$.next('form');
-    this.formDefinition = formDefinition;
+    this.formDefinition$.next(formDefinition);
     this.modal.show();
   }
 

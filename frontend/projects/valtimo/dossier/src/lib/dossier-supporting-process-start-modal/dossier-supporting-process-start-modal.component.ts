@@ -47,6 +47,7 @@ import {UserProviderService} from '@valtimo/security';
 export class DossierSupportingProcessStartModalComponent {
   @ViewChild('form', {static: false}) form: FormioComponent;
   @ViewChild('supportingProcessStartModal', {static: false}) modal: ModalComponent;
+
   @Output() formSubmit = new EventEmitter();
 
   public readonly processDefinitionKey$ = new BehaviorSubject<string>('');
@@ -78,7 +79,7 @@ export class DossierSupportingProcessStartModalComponent {
     private readonly userProviderService: UserProviderService
   ) {}
 
-  private loadProcessLink() {
+  private loadProcessLink(): void {
     combineLatest([this.processDefinitionId$, this.documentId$])
       .pipe(
         take(1),
@@ -126,7 +127,7 @@ export class DossierSupportingProcessStartModalComponent {
       });
   }
 
-  private openFormAssociation(formDefinitionWithFormAssociation: any) {
+  private openFormAssociation(formDefinitionWithFormAssociation: any): void {
     const formAssociation = formDefinitionWithFormAssociation.formAssociation;
     const className = formAssociation.formLink.className.split('.');
 
@@ -160,7 +161,7 @@ export class DossierSupportingProcessStartModalComponent {
     }
   }
 
-  openModal(processDocumentDefinition: ProcessDocumentDefinition, documentId: string) {
+  public openModal(processDocumentDefinition: ProcessDocumentDefinition, documentId: string): void {
     this.documentId$.next(documentId);
     this.documentDefinitionName$.next(processDocumentDefinition.id.documentDefinitionId.name);
     this.processDefinitionKey$.next(processDocumentDefinition.id.processDefinitionKey);
@@ -170,9 +171,9 @@ export class DossierSupportingProcessStartModalComponent {
     const formioBeforeSubmit: FormioBeforeSubmit = function (submission, callback) {
       callback(null, submission);
     };
+
     const options = new FormioOptionsImpl();
     options.disableAlerts = true;
-
     options.setHooks(formioBeforeSubmit);
 
     this.options$.next(options);
@@ -180,7 +181,7 @@ export class DossierSupportingProcessStartModalComponent {
     this.loadProcessLink();
   }
 
-  public onSubmit(submission: FormioSubmission) {
+  public onSubmit(submission: FormioSubmission): void {
     this.formioSubmission$.next(submission);
 
     if (this.processLinkId$.getValue()) {
@@ -223,12 +224,12 @@ export class DossierSupportingProcessStartModalComponent {
     }
   }
 
-  public formSubmitted() {
+  public formSubmitted(): void {
     this.modal.hide();
     this.formSubmit.emit();
   }
 
-  public gotoFormLinkScreen() {
+  public gotoFormLinkScreen(): void {
     this.modal.hide();
     this.router.navigate(['form-links'], {
       queryParams: {process: this.processDefinitionKey$.getValue()},
