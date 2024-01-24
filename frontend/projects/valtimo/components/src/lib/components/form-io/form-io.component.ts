@@ -52,8 +52,8 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   @Input() set form(formValue: object) {
     this.form$.next(formValue);
   }
-  @Input() set readonly(readonlyValue: boolean) {
-    this.readonly$.next(readonlyValue);
+  @Input() set readOnly(readOnlyValue: boolean) {
+    this.readOnly$.next(readOnlyValue);
   }
   @Input() formRefresh$!: Subject<FormioRefreshValue>;
 
@@ -67,7 +67,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   public readonly submission$ = new BehaviorSubject<object>(undefined);
   public readonly form$ = new BehaviorSubject<object>(undefined);
   public readonly options$ = new BehaviorSubject<ValtimoFormioOptions>(undefined);
-  public readonly readonly$ = new BehaviorSubject<boolean>(false);
+  public readonly readOnly$ = new BehaviorSubject<boolean>(false);
   public readonly errors$ = new BehaviorSubject<Array<string>>([]);
 
   private tokenRefreshTimerSubscription: Subscription;

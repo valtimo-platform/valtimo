@@ -19,7 +19,7 @@
     currentLanguage: currentLanguage$ | async,
     formioOptions: formioOptions$ | async,
     submission: submission$ | async,
-    readonly: readonly$ | async,
+    readOnly: readOnly$ | async,
     form: form$ | async,
     errors: errors$ | async
   } as obs"
@@ -37,7 +37,7 @@
     [form]="obs.form"
     [refresh]="refreshForm"
     [options]="obs.formioOptions"
-    [readOnly]="obs.readonly"
+    [readOnly]="obs.readOnly"
     (submit)="onSubmit($event)"
     (ready)="formReady($event)"
     (change)="onChange($event)"
