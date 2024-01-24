@@ -13,14 +13,13 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<div
+<ng-container
   *ngIf="{
     canAdd: canAdd$ | async,
     notes: notes$ | async,
     pagination: pagination$ | async,
     loading: loading$ | async
   } as obs"
-  class="notes"
 >
   <button
     *ngIf="obs.canAdd"
@@ -60,7 +59,7 @@
       (pageChange)="paginationClicked($event)"
     ></ngb-pagination>
   </div>
-</div>
+</ng-container>
 
 <valtimo-note-modal
   [customData]="customData$ | async"
