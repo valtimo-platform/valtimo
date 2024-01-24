@@ -18,29 +18,29 @@
   #supportingProcessStartModal
   elementId="supportingProcessStartModal"
   [title]="
-    (processDefinitionKey | translate) !== processDefinitionKey
-      ? (processDefinitionKey | translate)
-      : processName
+    (processDefinitionKey$ | async | translate) !== (processDefinitionKey$ | async)
+      ? (processDefinitionKey$ | async | translate)
+      : (processName$ | async)
   "
 >
-  <div body *ngIf="formDefinition">
+  <div body *ngIf="formDefinition$ | async as formDefinition">
     <valtimo-form-io
       #form
-      [submission]="submission"
+      [submission]="submission$ | async"
       [form]="formDefinition"
-      [options]="options"
+      [options]="options$ | async"
       (submit)="onSubmit($event)"
     >
     </valtimo-form-io>
   </div>
-  <div body *ngIf="formFlowInstanceId">
+  <div body *ngIf="formFlowInstanceId$ | async as formFlowInstanceId">
     <valtimo-form-flow
       #formFlow
       [formFlowInstanceId]="formFlowInstanceId"
       (formFlowComplete)="formSubmitted()"
     ></valtimo-form-flow>
   </div>
-  <div body *ngIf="!formDefinition && !formFlowInstanceId">
+  <div body *ngIf="!(formDefinition$ | async) && !(formFlowInstanceId$ | async)">
     <div class="bg-warning text-black mb-0 p-3 text-center">
       {{
         (isAdmin$ | async)
