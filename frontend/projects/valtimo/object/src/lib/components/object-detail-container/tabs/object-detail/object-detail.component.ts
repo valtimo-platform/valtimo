@@ -23,14 +23,13 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {FormType} from '../../../../models/object.model';
 import {ToastrService} from 'ngx-toastr';
 import {TranslateService} from '@ngx-translate/core';
-import {BreadcrumbService, FormIoStateService, PageTitleService} from '@valtimo/components';
+import {BreadcrumbService, PageTitleService} from '@valtimo/components';
 import {ObjectManagementService} from '@valtimo/object-management';
 
 @Component({
   selector: 'valtimo-object-detail',
   templateUrl: './object-detail.component.html',
   styleUrls: ['./object-detail.component.scss'],
-  providers: [FormIoStateService],
 })
 export class ObjectDetailComponent {
   readonly loading$ = new BehaviorSubject<boolean>(true);

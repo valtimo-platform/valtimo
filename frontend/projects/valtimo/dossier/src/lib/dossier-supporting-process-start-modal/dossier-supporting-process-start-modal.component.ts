@@ -28,7 +28,6 @@ import {
   BEAGLE_CONSTANTS,
   FormioComponent,
   FormioOptionsImpl,
-  FormIoStateService,
   FormioSubmission,
   ModalComponent,
   ValtimoFormioOptions,
@@ -47,14 +46,12 @@ import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, noop, Observable, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {UserProviderService} from '@valtimo/security';
-import {SummaryFormService} from '@valtimo/task';
 
 @Component({
   selector: 'valtimo-dossier-supporting-process-start-modal',
   templateUrl: './dossier-supporting-process-start-modal.component.html',
   styleUrls: ['./dossier-supporting-process-start-modal.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  providers: [FormIoStateService],
 })
 export class DossierSupportingProcessStartModalComponent implements AfterViewInit, OnDestroy {
   public processDefinitionKey: string;
@@ -92,8 +89,7 @@ export class DossierSupportingProcessStartModalComponent implements AfterViewIni
     private formLinkService: FormLinkService,
     private formFlowService: FormFlowService,
     private logger: NGXLogger,
-    private readonly userProviderService: UserProviderService,
-    private readonly summaryFormService: SummaryFormService
+    private readonly userProviderService: UserProviderService
   ) {}
 
   public ngAfterViewInit(): void {
@@ -101,12 +97,10 @@ export class DossierSupportingProcessStartModalComponent implements AfterViewIni
       this._subscriptions.add(
         this.modal.modalShowing$.subscribe(modalShowing => {
           if (!modalShowing) {
-            this.summaryFormService.renderSummaryForm();
             setTimeout(() => {
               this.showForm$.next(modalShowing);
             }, BEAGLE_CONSTANTS.modalAnimationMs);
           } else {
-            this.summaryFormService.hideSummaryForm();
             this.showForm$.next(modalShowing);
           }
         })

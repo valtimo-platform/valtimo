@@ -19,7 +19,6 @@
  */
 
 export * from './lib/models';
-export * from './lib/services';
 export * from './lib/task.service';
 export * from './lib/task.module';
 export * from './lib/task-detail-modal/task-detail-modal.component';

@@ -20,7 +20,6 @@ import {FormioForm} from '@formio/angular';
 import {
   FormioComponent,
   FormioOptionsImpl,
-  FormIoStateService,
   FormioSubmission,
   ValtimoFormioOptions,
   ValtimoModalService,
@@ -32,7 +31,6 @@ import {FormFlowInstance, FormFlowStepType} from '../../models';
   selector: 'valtimo-form-flow',
   templateUrl: './form-flow.component.html',
   styleUrls: ['./form-flow.component.css'],
-  providers: [FormIoStateService],
 })
 export class FormFlowComponent implements OnInit {
   @ViewChild('form') form: FormioComponent;

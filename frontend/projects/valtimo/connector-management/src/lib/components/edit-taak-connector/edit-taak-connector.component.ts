@@ -26,13 +26,11 @@ import {TranslateService} from '@ngx-translate/core';
 import {map, tap} from 'rxjs/operators';
 import {ConnectorManagementService} from '../../services/connector-management/connector-management.service';
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
-import {FormIoStateService} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-edit-taak-connector',
   templateUrl: './edit-taak-connector.component.html',
   styleUrls: ['./edit-taak-connector.component.scss'],
-  providers: [FormIoStateService],
 })
 export class EditTaakConnectorComponent implements OnInit, OnChanges, OnDestroy {
   @Input() properties: ConnectorProperties;

@@ -28,13 +28,11 @@ import {TranslateService} from '@ngx-translate/core';
 import {map, switchMap, tap} from 'rxjs/operators';
 import {ConnectorManagementService} from '../../services/connector-management/connector-management.service';
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
-import {FormIoStateService} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-edit-product-aanvragen-connector',
   templateUrl: './edit-product-aanvragen-connector.component.html',
   styleUrls: ['./edit-product-aanvragen-connector.component.scss'],
-  providers: [FormIoStateService],
 })
 export class EditProductAanvragenConnectorComponent implements OnInit, OnChanges, OnDestroy {
   @Input() properties: ConnectorProperties;

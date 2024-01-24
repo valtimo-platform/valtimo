@@ -47,13 +47,11 @@ import {
 import {KeycloakService} from 'keycloak-angular';
 import {NGXLogger} from 'ngx-logger';
 import {BreadcrumbService, PageTitleService} from '@valtimo/components';
-import {SummaryFormService} from '@valtimo/task';
 
 @Component({
   selector: 'valtimo-dossier-detail',
   templateUrl: './dossier-detail.component.html',
   styleUrls: ['./dossier-detail.component.css'],
-  providers: [SummaryFormService],
 })
 export class DossierDetailComponent implements OnInit, OnDestroy {
   @ViewChild('tabContainer', {read: ViewContainerRef, static: true})

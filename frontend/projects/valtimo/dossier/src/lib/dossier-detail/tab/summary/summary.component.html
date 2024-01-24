@@ -20,11 +20,7 @@
       <div *ngIf="document">
         <div *ngIf="formDefinition" class="summaryForm">
           <div class="mb-4">
-            <valtimo-form-io
-              *ngIf="renderSummaryForm$ | async"
-              [form]="formDefinition"
-              [options]="options"
-            ></valtimo-form-io>
+            <valtimo-form-io [form]="formDefinition" [options]="options"></valtimo-form-io>
           </div>
         </div>
       </div>

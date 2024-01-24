@@ -26,9 +26,9 @@ import {
 import {ProcessInstanceTask, ProcessService} from '@valtimo/process';
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
 import {Document, DocumentService, ProcessDocumentInstance} from '@valtimo/document';
-import {SummaryFormService, TaskDetailModalComponent, TaskService} from '@valtimo/task';
+import {TaskDetailModalComponent, TaskService} from '@valtimo/task';
 import {FormService} from '@valtimo/form';
-import {FormioOptionsImpl, FormIoStateService, ValtimoFormioOptions} from '@valtimo/components';
+import {FormioOptionsImpl, ValtimoFormioOptions} from '@valtimo/components';
 import moment from 'moment';
 import {FormioForm} from '@formio/angular';
 import {UserProviderService} from '@valtimo/security';
@@ -42,7 +42,6 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
   templateUrl: './summary.component.html',
   styleUrls: ['./summary.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  providers: [FormIoStateService],
 })
 export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
   public readonly documentDefinitionName: string;
@@ -55,9 +54,6 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
   public formDefinition: FormioForm = null;
   public options: ValtimoFormioOptions;
   public roles: string[] = [];
-
-  public readonly renderSummaryForm$ = this.summaryFormService.renderSummaryForm$;
-
   private _subscriptions = new Subscription();
   @ViewChild('taskDetail') taskDetail: TaskDetailModalComponent;
 
@@ -70,8 +66,7 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
     private readonly renderer: Renderer2,
     private readonly route: ActivatedRoute,
     private readonly formService: FormService,
-    private readonly userProviderService: UserProviderService,
-    private readonly summaryFormService: SummaryFormService
+    private readonly userProviderService: UserProviderService
   ) {
     this.snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this.snapshot.get('documentDefinitionName') || '';
