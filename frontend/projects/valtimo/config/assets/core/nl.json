@@ -499,6 +499,11 @@
     "importDefinition": {
       "title": "Case-definitie importeren",
       "overwriteWarning": "Als je case-definitie configuraties, modellen en/of definities bevat met een naam of identifier die al op je systeem aanwezig zijn, worden deze overschreven.",
+      "startUpload": "Begin het uploaden",
+      "checkbox": {
+        "message": "Ik begrijp dat configuraties mogelijk worden overschreven",
+        "error": "Dit veld is verplicht"
+      },
       "info": {
         "title": "Let op",
         "message": "Zorg er vóór het importeren voor dat de plug-inconfiguraties waarnaar wordt verwezen in proceslinks aanwezig zijn."
@@ -519,9 +524,18 @@
         "title": "Het bestand bevat een fout."
       },
       "steps": {
-        "accessControl": "Vergeet niet de rechten in Access Control in te stellen. Zonder de juiste rechten is uw nieuwe casusdefinitie niet toegankelijk.",
-        "dashboard": "Je kunt widgets voor dit proces op het dashboard plaatsen. Deze kun je configureren onder 'dashboards'.",
-        "plugins": "Dit proces maakt mogelijk gebruik van plugins. Zorg dat je deze goed instelt."
+        "accessControl": {
+          "message": "Vergeet niet de rechten in Access Control in te stellen. Zonder de juiste rechten is uw nieuwe casusdefinitie niet toegankelijk.",
+          "title": "Access control"
+        },
+        "dashboard": {
+          "message": "Je kunt widgets voor dit proces op het dashboard plaatsen. Deze kun je configureren onder 'dashboards'.",
+          "title": "Dashboard"
+        },
+        "plugins": {
+          "message": "Dit proces maakt mogelijk gebruik van plugins. Zorg dat je deze goed instelt.",
+          "title": "Plugin configuraties"
+        }
       }
     }
   },
@@ -705,7 +719,9 @@
     },
     "required": "vereist",
     "filter": "Filteren...",
-    "back": "Terug"
+    "back": "Terug",
+    "warning": "Waarschuwing",
+    "finish": "Finish"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",

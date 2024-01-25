@@ -500,6 +500,11 @@
     "importDefinition": {
       "title": "Import case definition",
       "overwriteWarning": "If your case definition contains configurations, models and/or definitions with the same name or identifier as already on your system, they will be overwritten.",
+      "startUpload": "Start upload",
+      "checkbox": {
+        "message": "I understand that configurations may be overwritten",
+        "error": "This field is mandatory"
+      },
       "info": {
         "title": "Attention",
         "message": "Before importing, please make sure the plugin configurations that are referenced in process links are present."
@@ -520,9 +525,18 @@
         "title": "The file contains an error."
       },
       "steps": {
-        "accessControl": "Don't forget to set the rights in Access Control. Without the proper rights your new case definition won't be accessible.",
-        "dashboard": "If you want widgets to appear on your dashboard, you'll have to manually configure these. Do this via 'dashboard configuration'",
-        "plugins": "This process may use plugins. Make sure you configure them correctly."
+        "accessControl": {
+          "message": "Don't forget to set the rights in Access Control. Without the proper rights your new case definition won't be accessible.",
+          "title": "Access control"
+        },
+        "dashboard": {
+          "message": "If you want widgets to appear on your dashboard, you'll have to manually configure these. Do this via 'dashboard configuration'",
+          "title": "Dashboard"
+        },
+        "plugins": {
+          "message": "This process may use plugins. Make sure you configure them correctly.",
+          "title": "Plugin Configuration"
+        }
       }
     }
   },
@@ -706,7 +720,9 @@
     },
     "required": "required",
     "filter": "Filter...",
-    "back": "Back"
+    "back": "Back",
+    "warning": "Warning",
+    "finish": "Finish"
   },
   "taskDetail": {
     "taskCreated": "Created",

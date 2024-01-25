@@ -499,6 +499,11 @@
     "importDefinition": {
       "title": "Casedefinition importieren",
       "overwriteWarning": "Wenn Ihre Casedefinition Konfigurationen, Modelle und/oder Definitionen mit demselben Namen oder derselben Kennung enthält wie bereits auf Ihrem System, werden diese überschrieben.",
+      "startUpload": "Upload starten",
+      "checkbox": {
+        "message": "Ich verstehe, dass Konfigurationen überschrieben werden können",
+        "error": "Das Feld ist obligatorisch"
+      },
       "info": {
         "title": "Aufmerksamkeit",
         "message": "Bitte stellen Sie vor dem Import sicher, dass die Plugin-Konfigurationen, auf die in den Prozesslinks verwiesen wird, vorhanden sind."
@@ -519,9 +524,18 @@
         "title": "Die Datei enthält einen Fehler."
       },
       "steps": {
-        "accessControl": "Vergessen Sie nicht, die Rechte in der Access Control festzulegen. Ohne die entsprechenden Rechte ist Ihre neue Falldefinition nicht zugänglich.",
-        "dashboard": "Wenn Sie möchten, dass Widgets auf Ihrem Dashboard angezeigt werden, müssen Sie diese manuell konfigurieren. Tun Sie dies über 'dashboard configuration'",
-        "plugins": "Dieser Prozess kann Plugins verwenden. Stellen Sie sicher, dass Sie sie richtig konfigurieren."
+        "accessControl": {
+          "message": "Vergessen Sie nicht, die Rechte in der Access Control festzulegen. Ohne die entsprechenden Rechte ist Ihre neue Falldefinition nicht zugänglich.",
+          "titlle": "Access control"
+        },
+        "dashboard": {
+          "message": "Wenn Sie möchten, dass Widgets auf Ihrem Dashboard angezeigt werden, müssen Sie diese manuell konfigurieren. Tun Sie dies über 'dashboard configuration'",
+          "title": "Dashboard"
+        },
+        "plugins": {
+          "message": "Dieser Prozess kann Plugins verwenden. Stellen Sie sicher, dass Sie sie richtig konfigurieren.",
+          "title": "Plugin Konfigurationen"
+        }
       }
     }
   },
@@ -657,7 +671,6 @@
     "edit": "Bearbeiten",
     "noItemsFound": "Keine Elemente gefunden",
     "clearAll": "Alles löschen",
-    "clearAll": "Löschen",
     "show": "Zeig",
     "items": "Elemente",
     "of": "von",
@@ -705,7 +718,9 @@
     },
     "required": "erforderlich",
     "filter": "Filter...",
-    "back": "Zurück"
+    "back": "Zurück",
+    "warning": "Warnung",
+    "finish": "Beenden"
   },
   "taskDetail": {
     "taskCreated": "Erstellt",

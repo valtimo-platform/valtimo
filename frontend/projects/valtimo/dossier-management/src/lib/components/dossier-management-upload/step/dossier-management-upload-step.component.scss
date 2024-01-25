@@ -3,15 +3,27 @@
   justify-content: space-around;
   align-items: center;
   gap: 32px;
+
+  label {
+    color: unset;
+  }
 }
 
 .valtimo-upload-step {
-  &__message {
+  &__content {
     display: flex;
     flex-direction: column;
-    text-align: justify;
     gap: 16px;
+  }
+
+  &__title {
+    font-weight: 600;
     font-size: 16px;
+  }
+
+  &__message {
+    font-size: 16px;
+    line-height: 28px;
   }
 
   &__illustration {
