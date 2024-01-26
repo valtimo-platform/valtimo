@@ -64,6 +64,7 @@ import {
   MeterModule,
 } from '@valtimo/dashboard';
 import {DashboardManagementModule} from '@valtimo/dashboard-management';
+import {TemplateManagementModule} from '@valtimo/template-management';
 import {DocumentModule} from '@valtimo/document';
 import {AccountModule} from '@valtimo/account';
 import {ChoiceFieldModule} from '@valtimo/choice-field';
@@ -182,6 +183,7 @@ export function tabsFactory() {
     ReactiveFormsModule,
     DashboardModule,
     DashboardManagementModule,
+    TemplateManagementModule,
     DocumentModule,
     AccountModule,
     ChoiceFieldModule,

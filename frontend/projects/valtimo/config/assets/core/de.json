@@ -1861,5 +1861,20 @@
       "title": "Es gibt keine Protokolle"
     },
     "detailsTitle": "Protokolldetails"
+  },
+  "template": {
+    "title": "Alle Templates",
+    "key": "Template-Schlüssel",
+    "add": "Neues Template hinzufügen",
+    "name": "Template-Name",
+    "deleteModalContent": "Sind Sie sicher, dass Sie diese Templates löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "editMetadata": "Metadaten bearbeiten",
+    "editScript": "Template bearbeiten",
+    "savedSuccessTitle": "Erfolgreich gespeichert",
+    "savedSuccessTitleMessage": "{{key}} wurde erfolgreich gespeichert",
+    "noResults": {
+      "description": "Klicken Sie auf <strong>Neues Template hinzufügen</strong>, um mit der Gestaltung Ihres Template zu beginnen.",
+      "title": "Kein Template hinzugefügt"
+    }
   }
 }

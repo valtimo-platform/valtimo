@@ -43,6 +43,8 @@
       "@valtimo/dashboard/*": ["dist/valtimo/dashboard/*"],
       "@valtimo/dashboard-management": ["dist/valtimo/dashboard-management"],
       "@valtimo/dashboard-management/*": ["dist/valtimo/dashboard-management/*"],
+      "@valtimo/template-management": ["dist/valtimo/template-management"],
+      "@valtimo/template-management/*": ["dist/valtimo/template-management/*"],
       "@valtimo/document": ["dist/valtimo/document"],
       "@valtimo/document/*": ["dist/valtimo/document/*"],
       "@valtimo/account": ["dist/valtimo/account"],

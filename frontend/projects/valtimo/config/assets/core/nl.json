@@ -1867,5 +1867,20 @@
       "title": "Er zijn geen logboeken"
     },
     "detailsTitle": "Loggegevens"
+  },
+  "template": {
+    "title": "Alle Templates",
+    "key": "Template Sleutel",
+    "add": "Nieuwe Template Toevoegen",
+    "name": "Template Naam",
+    "deleteModalContent": "Weet u zeker dat u deze templates wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+    "editMetadata": "Metadata Bewerken",
+    "editScript": "Template Bewerken",
+    "savedSuccessTitle": "Succesvol Opgeslagen",
+    "savedSuccessTitleMessage": "{{key}} is succesvol opgeslagen",
+    "noResults": {
+      "description": "Klik op <strong>Nieuwe Template Toevoegen</strong> om te beginnen met het ontwerpen van uw template.",
+      "title": "Geen Template Toegevoegd"
+    }
   }
 }

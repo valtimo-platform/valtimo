@@ -1866,5 +1866,20 @@
       "title": "There are no logs"
     },
     "detailsTitle": "Log details"
+  },
+  "template": {
+    "title": "All Templates",
+    "key": "Template Key",
+    "add": "Add New Template",
+    "name": "Template Name",
+    "deleteModalContent": "Are you sure you want to delete these templates? This action cannot be undone.",
+    "editMetadata": "Edit Metadata",
+    "editScript": "Edit Template",
+    "savedSuccessTitle": "Successfully Saved",
+    "savedSuccessTitleMessage": "{{key}} has been successfully saved",
+    "noResults": {
+      "description": "Click on <strong>Add New Template</strong> to start designing your template",
+      "title": "No Template Added"
+    }
   }
 }
