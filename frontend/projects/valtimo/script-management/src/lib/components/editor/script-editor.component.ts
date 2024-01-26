@@ -35,7 +35,6 @@ export class ScriptEditorComponent implements OnInit, OnDestroy {
   public readonly editorDisabled$ = new BehaviorSubject<boolean>(false);
   public readonly moreDisabled$ = new BehaviorSubject<boolean>(true);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
-  public readonly showEditModal$ = new BehaviorSubject<boolean>(false);
   public readonly selectedRowKeys$ = new BehaviorSubject<Array<string> | null>(null);
 
   private _scriptKeySubscription!: Subscription;
@@ -52,7 +51,7 @@ export class ScriptEditorComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
-    this.getPermissions();
+    this.getScriptContent();
     this.openScriptKeySubscription();
   }
 
@@ -69,7 +68,7 @@ export class ScriptEditorComponent implements OnInit, OnDestroy {
     this._updatedModelValue$.next(value);
   }
 
-  public updatePermissions(): void {
+  public updateScriptContent(): void {
     this.disableEditor();
     this.disableSave();
     this.disableMore();
@@ -134,12 +133,13 @@ export class ScriptEditorComponent implements OnInit, OnDestroy {
           this.enableSave();
           this.enableEditor();
           this.setModel(result.content);
+          this._updatedModelValue$.next(result.content);
         })
       )
       .subscribe();
   }
 
-  private getPermissions(): void {
+  private getScriptContent(): void {
     this.route.params
       .pipe(
         tap(params => {
