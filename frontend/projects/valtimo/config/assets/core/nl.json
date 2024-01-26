@@ -1294,18 +1294,18 @@
     }
   },
   "script": {
-    "title": "Alle Skripte",
-    "key": "Skriptschlüssel",
-    "add": "Neues Skript hinzufügen",
-    "name": "Skriptname",
-    "deleteModalContent": "Sind Sie sicher, dass Sie diese Skripte löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "editMetadata": "Metadaten bearbeiten",
-    "editScript": "Skript bearbeiten",
-    "savedSuccessTitle": "Erfolgreich gespeichert",
-    "savedSuccessTitleMessage": "{{key}} wurde erfolgreich gespeichert",
+    "title": "Alle scripts",
+    "key": "Scriptsleutel",
+    "add": "Nieuwe script toevoegen",
+    "name": "Scriptnaam",
+    "deleteModalContent": "Weet u zeker dat u deze scripts wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
+    "editMetadata": "Metadata bewerken",
+    "editScript": "Script bewerken",
+    "savedSuccessTitle": "Succesvol opgeslagen",
+    "savedSuccessTitleMessage": "{{key}} is succesvol opgeslagen",
     "noResults": {
-      "description": "Klicken Sie auf <strong>Neues Skript hinzufügen</strong>, um mit dem Entwerfen Ihres Skripts zu beginnen",
-      "title": "Keine Skripte hinzugefügt"
+      "description": "Klik op <strong>Nieuw script toevoegen</strong> om te beginnen met het ontwerpen van uw script",
+      "title": "Geen scripts toegevoegd"
     }
   }
 }
