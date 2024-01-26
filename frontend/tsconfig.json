@@ -45,6 +45,8 @@
       "@valtimo/dashboard/*": ["dist/valtimo/dashboard/*"],
       "@valtimo/dashboard-management": ["dist/valtimo/dashboard-management"],
       "@valtimo/dashboard-management/*": ["dist/valtimo/dashboard-management/*"],
+      "@valtimo/script-management": ["dist/valtimo/script-management"],
+      "@valtimo/script-management/*": ["dist/valtimo/script-management/*"],
       "@valtimo/document": ["dist/valtimo/document"],
       "@valtimo/document/*": ["dist/valtimo/document/*"],
       "@valtimo/account": ["dist/valtimo/account"],

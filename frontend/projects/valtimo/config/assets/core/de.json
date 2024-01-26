@@ -1291,5 +1291,20 @@
         "title": "Keine Rollen hinzugefügt"
       }
     }
+  },
+  "script": {
+    "title": "Alle Skripte",
+    "key": "Skriptschlüssel",
+    "add": "Neues Skript hinzufügen",
+    "name": "Skriptname",
+    "deleteModalContent": "Sind Sie sicher, dass Sie diese Skripte löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "editMetadata": "Metadaten bearbeiten",
+    "editScript": "Skript bearbeiten",
+    "savedSuccessTitle": "Erfolgreich gespeichert",
+    "savedSuccessTitleMessage": "{{key}} wurde erfolgreich gespeichert",
+    "noResults": {
+      "description": "Klicken Sie auf <strong>Neues Skript hinzufügen</strong>, um mit dem Entwerfen Ihres Skripts zu beginnen",
+      "title": "Keine Skripte hinzugefügt"
+    }
   }
 }

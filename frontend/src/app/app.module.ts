@@ -63,6 +63,7 @@ import {
   TestDataSourceModule,
 } from '@valtimo/dashboard';
 import {DashboardManagementModule} from '@valtimo/dashboard-management';
+import {ScriptManagementModule} from '@valtimo/script-management';
 import {DocumentModule} from '@valtimo/document';
 import {ContactMomentModule} from '@valtimo/contact-moment';
 import {AccountModule} from '@valtimo/account';
@@ -172,6 +173,7 @@ export function tabsFactory() {
     ContactMomentModule,
     DashboardModule,
     DashboardManagementModule,
+    ScriptManagementModule,
     DocumentModule,
     AccountModule,
     ChoiceFieldModule,

@@ -1290,5 +1290,20 @@
         "title": "No roles added"
       }
     }
+  },
+  "script": {
+    "title": "All Scripts",
+    "key": "Script Key",
+    "add": "Add New Script",
+    "name": "Script Name",
+    "deleteModalContent": "Are you sure you want to delete these scripts? This action cannot be undone.",
+    "editMetadata": "Edit Metadata",
+    "editScript": "Edit Script",
+    "savedSuccessTitle": "Successfully Saved",
+    "savedSuccessTitleMessage": "{{key}} has been successfully saved",
+    "noResults": {
+      "description": "Click on <strong>Add New Script</strong> to start designing your script",
+      "title": "No Scripts Added"
+    }
   }
 }
