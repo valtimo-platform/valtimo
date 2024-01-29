@@ -154,6 +154,10 @@ body {
       z-index: 100001 !important;
     }
   }
+
+  &--dropdown__wrapper {
+    z-index: 10002 !important;
+  }
 }
 
 .valtimo-carbon-list {
