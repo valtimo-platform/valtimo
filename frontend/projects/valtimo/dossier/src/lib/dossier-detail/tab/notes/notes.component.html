@@ -13,7 +13,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<div
+<ng-container
   class="notes"
   *ngIf="{
     notes: notes$ | async,
@@ -57,7 +57,7 @@
       (pageChange)="paginationClicked($event)"
     ></ngb-pagination>
   </div>
-</div>
+</ng-container>
 
 <valtimo-note-modal
   [customData]="customData$ | async"
