@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-:host {
-  display: flex;
-  flex-direction: column;
+.notes {
+  position: relative;
 }
 
 .add-note {
-  align-self: flex-end;
+  position: absolute;
+  right: 0;
 }
