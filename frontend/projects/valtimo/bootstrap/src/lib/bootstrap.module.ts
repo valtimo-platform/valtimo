@@ -17,9 +17,11 @@
 import {APP_INITIALIZER, Injector, NgModule} from '@angular/core';
 import {NGXLogger} from 'ngx-logger';
 import {initialize, initializerFactory} from './init';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService, INITIALIZERS} from '@valtimo/config';
 import {TranslateService} from '@ngx-translate/core';
-import {INITIALIZERS} from '@valtimo/config';
+import {initializeCsp} from '@valtimo/security';
+import {DOCUMENT} from '@angular/common';
+import {DomSanitizer} from '@angular/platform-browser';
 
 @NgModule({
   declarations: [],
@@ -35,6 +37,12 @@ import {INITIALIZERS} from '@valtimo/config';
       provide: INITIALIZERS,
       useFactory: initializerFactory,
       deps: [ConfigService, Injector, NGXLogger, TranslateService],
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeCsp,
+      multi: true,
+      deps: [NGXLogger, ConfigService, DOCUMENT, DomSanitizer],
     },
   ],
   exports: [],

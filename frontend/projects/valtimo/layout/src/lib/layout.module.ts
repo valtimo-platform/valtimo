@@ -15,20 +15,20 @@
  */
 
 import {NgModule} from '@angular/core';
-import {LayoutComponent} from './layout.component';
+import {LayoutComponent} from './components/layout/layout.component';
 import {
   AlertModule,
   LeftSidebarModule,
   MenuRoutingModule,
   PageHeaderModule,
+  PromptModule,
   RightSidebarModule,
   TopbarModule,
 } from '@valtimo/components';
 import {RouterModule} from '@angular/router';
-import {LayoutPublicComponent} from './layout-public/layout-public.component';
-import {LayoutInternalComponent} from './layout-internal/layout-internal.component';
+import {LayoutPublicComponent} from './components/layout-public/layout-public.component';
+import {LayoutInternalComponent} from './components/layout-internal/layout-internal.component';
 import {CommonModule} from '@angular/common';
-import {PromptModule} from '@valtimo/components';
 
 @NgModule({
   declarations: [LayoutComponent, LayoutPublicComponent, LayoutInternalComponent],

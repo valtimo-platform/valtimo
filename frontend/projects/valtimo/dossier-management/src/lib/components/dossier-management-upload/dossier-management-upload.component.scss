@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@use '@carbon/colors';
 
 .valtimo-definition-uploader {
-  &__content {
+  &__content,
+  &__content form {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 24px;
+    gap: 16px;
   }
 
   &__footer {
@@ -29,6 +31,15 @@
       grid-template-columns: 1fr 1fr !important;
       grid-template-areas: 'cancel actions' !important;
     }
+  }
+
+  &__error {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: colors.$red-60;
+    fill: colors.$red-60;
+    font-size: 12px;
   }
 
   &__cancel {
@@ -50,7 +61,22 @@
     max-width: unset;
   }
 
+  &__checkbox {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    &--invalid ::ng-deep label::before {
+      border-color: colors.$red-60;
+      margin-inline: 0;
+    }
+  }
+
   ::ng-deep .cds--modal-container {
-    height: 450px;
+    height: 550px;
+  }
+
+  ::ng-deep .cds--checkbox-label-text {
+    color: colors.$black-100;
   }
 }

@@ -34,6 +34,7 @@ import {authenticationKeycloak} from './auth/keycloak-config.dev';
 import {emailExtensionInitializer, openZaakExtensionInitializer} from '@valtimo/open-zaak';
 import {connectorLinkExtensionInitializer} from '@valtimo/connector-management';
 import {LOGO_BASE_64} from './logo';
+import {cspHeaderParamsDev} from './csp';
 
 const defaultDefinitionColumns: Array<DefinitionColumn> = [
   {
@@ -259,6 +260,7 @@ export const environment: ValtimoConfig = {
       },
     ],
   },
+  csp: cspHeaderParamsDev,
 };
 
 /*

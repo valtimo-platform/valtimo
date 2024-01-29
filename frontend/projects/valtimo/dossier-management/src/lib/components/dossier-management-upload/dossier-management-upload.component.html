@@ -19,11 +19,12 @@
     activeStep: activeStep$ | async,
     backButtonEnabled: backButtonEnabled$ | async,
     nextButtonDisabled: nextButtonDisabled$ | async,
+    notificationObj: notificationObj$ | async,
+    showCheckboxError: showCheckboxError$ | async,
     uploadStatus: uploadStatus$ | async
   } as obs"
   valtimoCdsModal
   [open]="open"
-  size="md"
   showFooter="true"
   class="valtimo-definition-uploader"
   (close)="onCloseModal()"
@@ -45,31 +46,49 @@
   <section [ngSwitch]="obs.activeStep" cdsModalContent class="valtimo-definition-uploader__content">
     <ng-template ngSwitchDefault>
       <valtimo-dossier-management-upload-step
+        [message]="
+          'dossierManagement.importDefinition.steps.' + obs.activeStep + '.message' | translate
+        "
+        [title]="
+          'dossierManagement.importDefinition.steps.' + obs.activeStep + '.title' | translate
+        "
         [illustration]="'valtimo-layout/img/' + obs.activeStep + '.svg'"
       >
-        {{ 'dossierManagement.importDefinition.steps.' + obs.activeStep | translate }}
-
-        <span *ngIf="obs.activeStep === UPLOAD_STEP.PLUGINS">
-          {{ 'dossierManagement.importDefinition.overwriteWarning' | translate }}
-        </span>
       </valtimo-dossier-management-upload-step>
     </ng-template>
 
-    <ng-container *ngSwitchCase="UPLOAD_STEP.FILE_SELECT">
-      <form [formGroup]="form">
-        <cds-file-uploader
-          [accept]="acceptedFiles"
-          [buttonText]="'dossierManagement.importDefinition.upload.buttonText' | translate"
-          [description]="'dossierManagement.importDefinition.upload.description' | translate"
-          [multiple]="false"
-          [title]="'dossierManagement.importDefinition.upload.title' | translate"
-          buttonType="primary"
-          formControlName="file"
-          class="valtimo-definition-uploader__file-uploader"
-        >
-        </cds-file-uploader>
-      </form>
-    </ng-container>
+    <form *ngSwitchCase="UPLOAD_STEP.FILE_SELECT" [formGroup]="form">
+      <cds-file-uploader
+        [accept]="acceptedFiles"
+        [buttonText]="'dossierManagement.importDefinition.upload.buttonText' | translate"
+        [description]="'dossierManagement.importDefinition.upload.description' | translate"
+        [multiple]="false"
+        [title]="'dossierManagement.importDefinition.upload.title' | translate"
+        buttonType="primary"
+        formControlName="file"
+        class="valtimo-definition-uploader__file-uploader"
+      >
+      </cds-file-uploader>
+
+      <ng-container *ngIf="!obs.nextButtonDisabled">
+        <cds-inline-notification [notificationObj]="obs.notificationObj"></cds-inline-notification>
+
+        <div class="valtimo-uploader__checkbox">
+          <cds-checkbox
+            [class.valtimo-definition-uploader__checkbox--invalid]="obs.showCheckboxError"
+            (checkedChange)="onCheckedChange($event)"
+          >
+            {{ 'dossierManagement.importDefinition.checkbox.message' | translate }}
+          </cds-checkbox>
+
+          <div *ngIf="obs.showCheckboxError" class="valtimo-definition-uploader__error">
+            <svg cdsIcon="warning--filled" size="16"></svg>
+
+            {{ 'dossierManagement.importDefinition.checkbox.error' | translate }}
+          </div>
+        </div>
+      </ng-container>
+    </form>
 
     <cds-progress-bar
       *ngSwitchCase="UPLOAD_STEP.FILE_UPLOAD"
@@ -113,7 +132,12 @@
         [disabled]="obs.nextButtonDisabled"
         (click)="onNextClick(obs.activeStep)"
       >
-        {{ 'interface.next' | translate }}
+        {{
+          (obs.activeStep === UPLOAD_STEP.FILE_SELECT
+            ? 'dossierManagement.importDefinition.startUpload'
+            : 'interface.next'
+          ) | translate
+        }}
       </button>
 
       <button
@@ -122,7 +146,7 @@
         cdsButton="primary"
         (click)="onCloseModal(true)"
       >
-        {{ 'interface.close' | translate }}
+        {{ 'interface.finish' | translate }}
       </button>
     </div>
   </cds-modal-footer>

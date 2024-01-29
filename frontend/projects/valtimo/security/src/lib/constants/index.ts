@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,11 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-:host {
-  display: flex;
-  flex-direction: column;
-}
 
-.add-note {
-  align-self: flex-end;
-}
+export * from './csp.constant';

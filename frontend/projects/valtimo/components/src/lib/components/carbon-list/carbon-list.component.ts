@@ -55,6 +55,7 @@ import {
   take,
 } from 'rxjs';
 import {filter} from 'rxjs/operators';
+import {BOOLEAN_CONVERTER_VALUES} from '../../constants';
 import {
   CarbonListBatchText,
   CarbonListItem,
@@ -425,8 +426,12 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
                   template: column.template,
                 });
               case ViewType.BOOLEAN:
+                let data = this.resolveObject(column, item);
+                data = !BOOLEAN_CONVERTER_VALUES.includes(data)
+                  ? data
+                  : `${'viewTypeConverter.' + data}`;
                 return new TableItem({
-                  data: this.resolveObject(column, item) ?? '-',
+                  data,
                   template: this.booleanTemplate,
                 });
               default:

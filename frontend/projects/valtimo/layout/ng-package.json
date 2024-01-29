@@ -44,6 +44,7 @@
     "select2",
     "sweetalert2",
     "tinycolor2",
-    "tslib"
+    "tslib",
+    "csp-header"
   ]
 }

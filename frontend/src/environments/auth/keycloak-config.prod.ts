@@ -55,7 +55,7 @@ const valtimoKeycloakOptions: ValtimoKeycloakOptions = {
   logoutRedirectUri: '',
 };
 
-const authenticationKeycloak: Auth = {
+export const authenticationKeycloak: Auth = {
   module: KeycloakModule,
   initializer: keycloakInitializer,
   authProviders: keycloakAuthenticationProviders,

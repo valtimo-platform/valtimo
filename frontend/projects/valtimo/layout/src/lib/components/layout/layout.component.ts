@@ -48,17 +48,12 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly placeHolderService: PlaceholderService
   ) {}
 
-  public ngAfterViewInit(): void {
-    this.registerCarbonPlaceHolder();
+  public ngOnInit() {
+    this.openRouterSubscription();
   }
 
-  public ngOnInit() {
-    this._routerSub.add(
-      this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
-        const layout = this.route.snapshot.firstChild.data.layout;
-        this.layoutType = layout ? layout : this._DEFAULT_LAYOUT;
-      })
-    );
+  public ngAfterViewInit(): void {
+    this.registerCarbonPlaceHolder();
   }
 
   public ngOnDestroy() {
@@ -69,5 +64,14 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this._carbonPlaceHolder) {
       this.placeHolderService.registerViewContainerRef(this._carbonPlaceHolder);
     }
+  }
+
+  private openRouterSubscription(): void {
+    this._routerSub.add(
+      this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
+        const layout = this.route.snapshot.firstChild.data.layout;
+        this.layoutType = layout ? layout : this._DEFAULT_LAYOUT;
+      })
+    );
   }
 }

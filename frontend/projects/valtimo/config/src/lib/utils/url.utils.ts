@@ -29,6 +29,16 @@ class UrlUtils {
 
     return url;
   }
+
+  static getUrlHost(urlString: string): string {
+    let url!: URL;
+
+    try {
+      url = new URL(urlString);
+    } catch (_) {}
+
+    return url ? url.host : '';
+  }
 }
 
 export {UrlUtils};

@@ -26,6 +26,7 @@ import {
   ValtimoConfig,
 } from '@valtimo/config';
 import {LOGO_BASE_64} from './logo';
+import {cspHeaderParamsTest} from './csp';
 
 const defaultDefinitionColumns = [
   {
@@ -149,4 +150,5 @@ export const environment: ValtimoConfig = {
     largeLogoMargin: true,
     enableTabManagement: true,
   },
+  csp: cspHeaderParamsTest,
 };
