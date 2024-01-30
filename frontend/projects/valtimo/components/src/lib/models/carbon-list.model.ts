@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 import {TemplateRef} from '@angular/core';
-import {TableRowSize} from 'carbon-components-angular';
 
 enum ViewType {
   ACTION = 'dropdownActions',
@@ -61,11 +60,20 @@ interface ActionItem {
 
 interface ColumnConfig extends ListField {
   viewType: string | ViewType;
-  actions?: ActionItem[];
   className?: string;
   format?: string;
   enum?: Array<string> | {[key: string]: string};
   template?: TemplateRef<any>;
+}
+
+enum MoveRowDirection {
+  UP = 'UP',
+  DOWN = 'DOWN',
+}
+
+interface MoveRowEvent {
+  direction: MoveRowDirection;
+  index: number;
 }
 
 const DEFAULT_LIST_TRANSLATIONS: CarbonListTranslations = {
@@ -94,5 +102,7 @@ export {
   ColumnConfig,
   DEFAULT_LIST_TRANSLATIONS,
   ListField,
+  MoveRowDirection,
+  MoveRowEvent,
   ViewType,
 };

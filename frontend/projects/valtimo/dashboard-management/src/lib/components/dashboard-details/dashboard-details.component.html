@@ -26,10 +26,13 @@
 >
   <div class="dashboard-detail-table">
     <valtimo-carbon-list
-      [items]="obs.widgetData"
+      [actionItems]="actionItems"
       [fields]="fields"
       [header]="false"
+      [items]="obs.widgetData"
       [loading]="obs.loading"
+      [movingRowsEnabled]="true"
+      (moveRow)="onMoveRow($event)"
     >
       <div carbonToolbarContent>
         <ng-container [ngTemplateOutlet]="addWidgetButton"></ng-container>
@@ -59,28 +62,6 @@
   >
   </valtimo-edit-dashboard-modal>
 </ng-container>
-
-<ng-template #moveButtonsTemplate let-data="data">
-  <div class="move-buttons-container">
-    <button
-      cdsButton="tertiary"
-      [disabled]="data.index === 0"
-      [iconOnly]="true"
-      (click)="onArrowUpClick(data)"
-    >
-      <svg cdsIcon="arrow--up" size="16" class="cds--btn__icon"></svg>
-    </button>
-
-    <button
-      cdsButton="tertiary"
-      [disabled]="(lastItemIndex$ | async) === data.index"
-      [iconOnly]="true"
-      (click)="onArrowDownClick(data)"
-    >
-      <svg cdsIcon="arrow--down" size="16" class="cds--btn__icon"></svg>
-    </button>
-  </div>
-</ng-template>
 
 <ng-container renderInPageHeader>
   <ng-template>

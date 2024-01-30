@@ -22,6 +22,7 @@ import {
   CarbonListComponent,
   CarbonListTranslations,
   CarbonPaginationSelection,
+  DEFAULT_PAGINATOR_CONFIG,
   ListField,
   PageTitleService,
   Pagination,
@@ -200,6 +201,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
       })
     );
 
+  public paginatorConfig = {...DEFAULT_PAGINATOR_CONFIG, itemsPerPageOptions: [1, 2, 3, 4, 10]};
   public readonly fields$: Observable<Array<ListField>> = combineLatest([
     this._canHaveAssignee$,
     this._columns$,
@@ -208,7 +210,8 @@ export class DossierListComponent implements OnInit, OnDestroy {
     this.translateService.stream('key'),
   ]).pipe(
     tap(([canHaveAssignee]) => {
-      this.canHaveAssignee = canHaveAssignee;
+      this.canHaveAssignee = true;
+      // this.canHaveAssignee = canHaveAssignee;
     }),
     map(([canHaveAssignee, columns, hasEnvConfig, hasApiConfig]) => {
       const filteredAssigneeColumns = this.assigneeService.filterAssigneeColumns(

@@ -169,6 +169,10 @@ body {
   &__tabs cds-tab {
     display: none !important;
   }
+
+  &__actions {
+    width: 1px !important;
+  }
 }
 
 .hide-after::after {

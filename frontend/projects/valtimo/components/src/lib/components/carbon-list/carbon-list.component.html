@@ -16,7 +16,8 @@
 <cds-table-container
   *ngIf="
     (viewInitialized$ | async) && {
-      sort: sort$ | async
+      sort: sort$ | async,
+      model: model$ | async
     } as obs
   "
   class="valtimo-carbon-list"
@@ -30,7 +31,7 @@
   <cds-table-toolbar
     *ngIf="!hideToolbar"
     class="valtimo-carbon-list__toolbar"
-    [model]="model"
+    [model]="obs.model"
     [batchText]="batchText$ | async"
   >
     <cds-table-toolbar-actions>
@@ -50,21 +51,25 @@
 
   <cds-table
     *ngIf="!!obs.sort"
+    [ngClass]="{
+      'valtimo-carbon-list__header--hidden': hideColumnHeader,
+      'valtimo-carbon-list--unclickable': !this.rowClicked.observed
+    }"
     [enableSingleSelect]="enableSingleSelect"
-    [model]="loading ? skeletonModel : model"
+    [model]="loading ? skeletonModel : obs.model"
     [showSelectionColumn]="showSelectionColumn"
     [skeleton]="loading"
     [striped]="striped"
-    (sort)="onSort(model.header[$event])"
+    (sort)="onSort(obs.model.header[$event])"
     (rowClick)="onRowClick($event)"
   >
     <tbody cdsTableBody>
       <tr class="valtimo-carbon-list__no-results">
-        <td [attr.colspan]="model.header.length + (showSelectionColumn ? 1 : 0)">
+        <td [attr.colspan]="obs.model.header.length + (showSelectionColumn ? 1 : 0)">
           <ng-content></ng-content>
         </td>
 
-        <td [attr.colspan]="model.header.length + (showSelectionColumn ? 1 : 0)">
+        <td [attr.colspan]="obs.model.header.length + (showSelectionColumn ? 1 : 0)">
           {{ 'list.noResults' | translate }}
         </td>
       </tr>
@@ -82,7 +87,7 @@
   ></cds-pagination>
 </cds-table-container>
 
-<ng-template #actionItem let-data="data">
+<ng-template #actionTemplate let-data="data">
   <i
     class="clickable"
     [ngClass]="data.iconClass"
@@ -94,7 +99,7 @@
   {{ data | translate }}
 </ng-template>
 
-<ng-template #actionsMenu let-data="data">
+<ng-template #actionsMenuTemplate let-data="data">
   <cds-overflow-menu (click)="$event.stopPropagation()">
     <cds-overflow-menu-option
       *ngFor="let action of data.actions"
@@ -116,5 +121,29 @@
     >
       <i class="icon mdi mdi-lock"></i>
     </span>
+  </div>
+</ng-template>
+
+<ng-template #moveRowsTemplate let-data="data">
+  <div class="valtimo-carbon-list__move-rows">
+    <button
+      cdsButton="tertiary"
+      [disabled]="data.index === 0"
+      [iconOnly]="true"
+      size="sm"
+      (click)="onMoveUpClick($event, data)"
+    >
+      <svg cdsIcon="arrow--up" size="16" class="cds--btn__icon"></svg>
+    </button>
+
+    <button
+      cdsButton="tertiary"
+      [disabled]="data.index === data.length - 1"
+      [iconOnly]="true"
+      size="sm"
+      (click)="onMoveDownClick($event, data)"
+    >
+      <svg cdsIcon="arrow--down" size="16" class="cds--btn__icon"></svg>
+    </button>
   </div>
 </ng-template>

@@ -15,7 +15,7 @@
  */
 import {Component} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
-import {ColumnConfig, ViewType} from '@valtimo/components';
+import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
 import {
   PluginConfiguration,
   PluginManagementService,
@@ -48,21 +48,16 @@ export class PluginManagementComponent {
       label: 'pluginManagement.labels.configurationName',
       viewType: ViewType.TEXT,
     },
+  ];
+  public readonly actionItems: ActionItem[] = [
     {
-      key: '',
-      label: '',
-      viewType: ViewType.ACTION,
-      actions: [
-        {
-          callback: this.editConfiguration.bind(this),
-          label: 'interface.edit',
-        },
-        {
-          callback: this.deleteConfiguration.bind(this),
-          label: 'interface.delete',
-          type: 'danger',
-        },
-      ],
+      callback: this.editConfiguration.bind(this),
+      label: 'interface.edit',
+    },
+    {
+      callback: this.deleteConfiguration.bind(this),
+      label: 'interface.delete',
+      type: 'danger',
     },
   ];
 
