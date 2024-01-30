@@ -97,7 +97,7 @@ import {DossierManagementUploadStepComponent} from './components/dossier-managem
     DossierManagementDetailContainerActionsComponent,
     DossierManagementDocumentDefinitionComponent,
     DossierManagementProcessesComponent,
-    DossierManagementUploadStepComponent
+    DossierManagementUploadStepComponent,
   ],
   imports: [
     CommonModule,
@@ -130,7 +130,6 @@ import {DossierManagementUploadStepComponent} from './components/dossier-managem
     LoadingModule,
     LinkModule,
     ConfirmationModalModule,
-    CarbonMultiInputModule,
     TableModule,
     ValtimoCdsModalDirectiveModule,
     CarbonListModule,
@@ -144,7 +143,7 @@ import {DossierManagementUploadStepComponent} from './components/dossier-managem
     TabsModule,
     TagModule,
     FileUploaderModule,
-    ProgressBarModule
+    ProgressBarModule,
   ],
   providers: [TabManagementService],
 })
