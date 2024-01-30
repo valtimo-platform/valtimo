@@ -415,7 +415,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   );
 
   private get extraColumns(): TableHeaderItem[] {
-    const emptyHeader = new TableHeaderItem();
+    const emptyHeader = new TableHeaderItem({sortable: false});
     return [
       ...(this.movingRowsEnabled ? [emptyHeader] : []),
       ...(!!this.actions
@@ -434,6 +434,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
         ? [
             new TableHeaderItem({
               className: 'valtimo-carbon-list__actions',
+              sortable: false,
             }),
           ]
         : []),

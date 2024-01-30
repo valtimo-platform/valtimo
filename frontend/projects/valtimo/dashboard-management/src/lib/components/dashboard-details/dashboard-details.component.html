@@ -32,7 +32,7 @@
       [items]="obs.widgetData"
       [loading]="obs.loading"
       [movingRowsEnabled]="true"
-      (moveRow)="onMoveRow($event)"
+      (moveRow)="onMoveRowClick($event)"
     >
       <div carbonToolbarContent>
         <ng-container [ngTemplateOutlet]="addWidgetButton"></ng-container>

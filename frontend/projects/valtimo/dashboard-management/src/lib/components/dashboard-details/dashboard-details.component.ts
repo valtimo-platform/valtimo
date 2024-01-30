@@ -39,8 +39,6 @@ import {DashboardManagementService} from '../../services/dashboard-management.se
   encapsulation: ViewEncapsulation.None,
 })
 export class DashboardDetailsComponent implements AfterViewInit {
-  @ViewChild('moveButtonsTemplate') moveButtonsTemplate: TemplateRef<any>;
-
   public modalType: WidgetModalType = 'create';
   public fields!: ColumnConfig[];
   public readonly actionItems: ActionItem[] = [
@@ -159,13 +157,6 @@ export class DashboardDetailsComponent implements AfterViewInit {
         viewType: ViewType.TEXT,
         key: 'title',
         label: 'Name',
-      },
-      {
-        viewType: ViewType.TEMPLATE,
-        template: this.moveButtonsTemplate,
-        className: 'dashboard-detail-table__actions',
-        key: '',
-        label: '',
       },
     ];
   }
