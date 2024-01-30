@@ -60,6 +60,17 @@ export class DossierManagementUploadComponent implements OnInit, OnDestroy {
       )
     )
   );
+  public readonly isStepAfterUpload$: Observable<boolean> = this.activeStep$.pipe(
+    map(
+      (activeStep: UPLOAD_STEP) =>
+        ![UPLOAD_STEP.PLUGINS, UPLOAD_STEP.FILE_SELECT].includes(activeStep)
+    )
+  );
+  public readonly showCloseButton$: Observable<boolean> = this.activeStep$.pipe(
+    map((activeStep: UPLOAD_STEP) =>
+      [UPLOAD_STEP.PLUGINS, UPLOAD_STEP.FILE_SELECT, UPLOAD_STEP.FILE_UPLOAD].includes(activeStep)
+    )
+  );
   public readonly nextButtonDisabled$: Observable<boolean> = combineLatest([
     this.activeStep$,
     this._disabled$,
@@ -110,6 +121,7 @@ export class DossierManagementUploadComponent implements OnInit, OnDestroy {
         if (!fileItem) {
           this._disabled$.next(true);
           this.showCheckboxError$.next(false);
+          this._checked = false;
           return;
         }
 

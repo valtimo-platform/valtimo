@@ -18,9 +18,11 @@
   *ngIf="{
     activeStep: activeStep$ | async,
     backButtonEnabled: backButtonEnabled$ | async,
+    isStepAfterUpload: isStepAfterUpload$ | async,
     nextButtonDisabled: nextButtonDisabled$ | async,
     notificationObj: notificationObj$ | async,
     showCheckboxError: showCheckboxError$ | async,
+    showCloseButton: showCloseButton$ | async,
     uploadStatus: uploadStatus$ | async
   } as obs"
   valtimoCdsModal
@@ -30,13 +32,8 @@
   (close)="onCloseModal()"
 >
   <cds-modal-header
-    showCloseButton="true"
-    (closeSelect)="
-      onCloseModal(
-        ![UPLOAD_STEP.PLUGINS, UPLOAD_STEP.FILE_SELECT].includes(obs.activeStep) &&
-          obs.uploadStatus !== UPLOAD_STATUS.ERROR
-      )
-    "
+    [showCloseButton]="obs.showCloseButton"
+    (closeSelect)="onCloseModal(obs.isStepAfterUpload && obs.uploadStatus !== UPLOAD_STATUS.ERROR)"
   >
     <h3 cdsModalHeaderHeading>
       {{ 'dossierManagement.importDefinition.title' | translate }}
@@ -65,6 +62,7 @@
         [multiple]="false"
         [title]="'dossierManagement.importDefinition.upload.title' | translate"
         buttonType="primary"
+        data-carbon-theme="g10"
         formControlName="file"
         class="valtimo-definition-uploader__file-uploader"
       >
@@ -100,21 +98,17 @@
     ></cds-progress-bar>
   </section>
 
-  <cds-modal-footer class="valtimo-definition-uploader__footer">
+  <cds-modal-footer
+    class="valtimo-definition-uploader__footer"
+    [class.valtimo-definition-uploader__footer--double]="obs.activeStep === UPLOAD_STEP.PLUGINS"
+  >
     <button
       *ngIf="obs.uploadStatus !== UPLOAD_STATUS.ERROR && obs.activeStep !== UPLOAD_STEP.FILE_UPLOAD"
       class="valtimo-definition-uploader__cancel"
       cdsButton="ghost"
-      (click)="
-        onCloseModal(![UPLOAD_STEP.PLUGINS, UPLOAD_STEP.FILE_SELECT].includes(obs.activeStep))
-      "
+      (click)="onCloseModal(obs.isStepAfterUpload)"
     >
-      {{
-        ([UPLOAD_STEP.PLUGINS, UPLOAD_STEP.FILE_SELECT].includes(obs.activeStep)
-          ? 'interface.cancel'
-          : 'interface.skip'
-        ) | translate
-      }}
+      {{ (obs.isStepAfterUpload ? 'interface.skip' : 'interface.cancel') | translate }}
     </button>
 
     <div class="valtimo-definition-uploader__actions">
