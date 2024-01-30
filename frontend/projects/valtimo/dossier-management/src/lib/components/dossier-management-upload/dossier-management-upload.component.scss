@@ -20,7 +20,6 @@
   &__content form {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     gap: 16px;
   }
 
@@ -28,6 +27,11 @@
     ::ng-deep.cds--modal-footer {
       justify-content: unset !important;
       display: grid !important;
+      grid-template-columns: 1fr 1fr 2fr !important;
+      grid-template-areas: 'cancel . actions' !important;
+    }
+
+    &--double ::ng-deep.cds--modal-footer {
       grid-template-columns: 1fr 1fr !important;
       grid-template-areas: 'cancel actions' !important;
     }

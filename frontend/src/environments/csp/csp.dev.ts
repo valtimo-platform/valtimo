@@ -21,14 +21,12 @@ import {authenticationKeycloak} from '../auth/keycloak-config.dev';
 export const cspHeaderParamsDev: CSPHeaderParams = {
   directives: {
     'default-src': [SELF],
-    // DATA is needed because of use of inline images
     'img-src': [SELF, DATA],
-    // UNSAFE_EVAL is needed because of javascript in form.io forms (i.e. on summary page)
-    'script-src': [SELF, 'https://cdn.form.io/', UNSAFE_EVAL],
-    // DATA is needed because of use of inline fonts
+    'script-src': [SELF, UNSAFE_EVAL, UNSAFE_INLINE, 'https://cdn.form.io/'],
     'font-src': [
       SELF,
       DATA,
+      UNSAFE_INLINE,
       'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/',
       'https://fonts.gstatic.com',
     ],
@@ -36,7 +34,6 @@ export const cspHeaderParamsDev: CSPHeaderParams = {
       SELF,
       UrlUtils.getUrlHost(authenticationKeycloak.options.keycloakOptions.config.url),
     ],
-    // UNSAFE_INLINE is needed because of use of inline styles
     'style-src': [
       SELF,
       UNSAFE_INLINE,

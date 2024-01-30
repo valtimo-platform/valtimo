@@ -28,8 +28,11 @@ import {ActivatedRoute} from '@angular/router';
 import {ArrowDown16, ArrowUp16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {
+  ActionItem,
   ColumnConfig,
   ModalComponent,
+  MoveRowDirection,
+  MoveRowEvent,
   MultiInputOutput,
   MultiInputValues,
   SelectItem,
@@ -64,7 +67,6 @@ import {
   styleUrls: ['./dossier-management-search-fields.component.scss'],
 })
 export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild('moveRowButtons') public moveRowButtonsTemplateRef: TemplateRef<any>;
   @ViewChild('searchFieldModal') modal: ModalComponent;
 
   @Output() searchField: EventEmitter<SearchField> = new EventEmitter();
@@ -78,6 +80,13 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
 
   private _subscriptions = new Subscription();
 
+  public readonly actionItems: ActionItem[] = [
+    {
+      callback: this.deleteSelectedSearchField.bind(this),
+      label: 'interface.delete',
+      type: 'danger',
+    },
+  ];
   public readonly fields: ColumnConfig[] = [
     {
       viewType: ViewType.TEXT,
@@ -331,29 +340,6 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
 
   public ngAfterViewInit(): void {
     this.openModalShowingSubscription();
-
-    this.fields.push(
-      {
-        key: '',
-        label: '',
-        viewType: ViewType.TEMPLATE,
-        template: this.moveRowButtonsTemplateRef,
-      },
-      {
-        viewType: ViewType.ACTION,
-        sortable: false,
-        key: '',
-        label: '',
-        className: 'list-actions',
-        actions: [
-          {
-            callback: this.deleteSelectedSearchField.bind(this),
-            label: 'interface.delete',
-            type: 'danger',
-          },
-        ],
-      }
-    );
   }
 
   public ngOnDestroy(): void {
@@ -386,16 +372,11 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     this.modifiedDropdownValues$.next(data as MultiInputValues);
   }
 
-  public moveRow(
-    searchFieldRowIndex: number,
-    moveUp: boolean,
-    clickEvent: MouseEvent,
-    documentDefinitionName: string
-  ): void {
+  public onMoveRowClick(moveEvent: MoveRowEvent, documentDefinitionName: string): void {
+    const {index, direction} = moveEvent;
+    const moveUp = direction === MoveRowDirection.UP;
     const searchFields = [...this.cachedSearchFields];
-    const searchFieldRow = searchFields[searchFieldRowIndex];
-
-    clickEvent.stopPropagation();
+    const searchFieldRow = searchFields[index];
 
     const searchFieldIndex = searchFields.findIndex(field => field.key === searchFieldRow.key);
     const foundSearchField = {...searchFields[searchFieldIndex]};

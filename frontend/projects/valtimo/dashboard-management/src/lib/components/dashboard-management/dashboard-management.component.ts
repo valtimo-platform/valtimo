@@ -16,7 +16,7 @@
 import {ChangeDetectionStrategy, Component, OnInit, ViewEncapsulation} from '@angular/core';
 import {AbstractControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
-import {ColumnConfig, ViewType} from '@valtimo/components';
+import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
 import {BehaviorSubject, finalize, Observable} from 'rxjs';
 import {DashboardItem} from '../../models';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
@@ -50,19 +50,12 @@ export class DashboardManagementComponent implements OnInit {
       key: 'key',
       label: 'dashboardManagement.key',
     },
+  ];
+  public readonly actionItems: ActionItem[] = [
     {
-      actions: [
-        {
-          label: 'interface.delete',
-          callback: this.deleteDashboard.bind(this),
-          type: 'danger',
-        },
-      ],
-      className: 'valtimo-dashboard-management__actions',
-      viewType: ViewType.ACTION,
-      label: '',
-      key: '',
-      sortable: false,
+      label: 'interface.delete',
+      callback: this.deleteDashboard.bind(this),
+      type: 'danger',
     },
   ];
   public form: FormGroup;

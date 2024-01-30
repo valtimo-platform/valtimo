@@ -16,6 +16,7 @@
 
 <ng-container *ngIf="tableData$ | async as data">
   <valtimo-carbon-list
+    [actionItems]="actionItems"
     [header]="false"
     [items]="data.items"
     [loading]="data.loading"

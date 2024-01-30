@@ -57,49 +57,20 @@
 
 <ng-template #list let-obs="obs">
   <valtimo-carbon-list
-    *ngIf="obs.searchFields; else loading"
+    [actionItems]="actionItems"
     [fields]="fields"
-    [items]="obs.searchFields"
     [header]="false"
+    [items]="obs.searchFields"
+    [loading]="!obs.searchFields"
+    [movingRowsEnabled]="true"
     (rowClicked)="searchFieldClicked($event, false)"
+    (moveRow)="onMoveRowClick($event, obs.documentDefinitionName)"
   >
     <ng-container
       carbonToolbarContent
       *ngTemplateOutlet="buttons; context: {obs: obs}"
     ></ng-container>
   </valtimo-carbon-list>
-</ng-template>
-
-<ng-template #loading><valtimo-carbon-list [loading]="true"></valtimo-carbon-list></ng-template>
-
-<ng-template #moveRowButtons let-data="data">
-  <div
-    *ngIf="{
-      disableInput: disableInput$ | async,
-      documentDefinitionName: documentDefinitionName$ | async
-    } as obs"
-    class="dossier-management-search-fields__move-buttons"
-  >
-    <button
-      cdsButton="tertiary"
-      [disabled]="data.index === 0 || obs.disableInput"
-      [iconOnly]="true"
-      size="sm"
-      (click)="moveRow(data.index, true, $event, obs.documentDefinitionName)"
-    >
-      <svg cdsIcon="arrow--up" size="16" class="cds--btn__icon"></svg>
-    </button>
-
-    <button
-      cdsButton="tertiary"
-      [disabled]="data.index === data.length - 1 || obs.disableInput"
-      [iconOnly]="true"
-      size="sm"
-      (click)="moveRow(data.index, false, $event, obs.documentDefinitionName)"
-    >
-      <svg cdsIcon="arrow--down" size="16" class="cds--btn__icon"></svg>
-    </button>
-  </div>
 </ng-template>
 
 <ng-template #modal let-obs="obs">
