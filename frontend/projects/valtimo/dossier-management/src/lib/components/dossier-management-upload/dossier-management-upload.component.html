@@ -90,6 +90,7 @@
 
     <cds-progress-bar
       *ngSwitchCase="UPLOAD_STEP.FILE_UPLOAD"
+      class="valtimo-definition-uploader__progress-bar"
       [label]="'dossierManagement.importDefinition.progressBar.label' | translate"
       [status]="obs.uploadStatus"
       [helperText]="
