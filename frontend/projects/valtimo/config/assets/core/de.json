@@ -597,6 +597,7 @@
   "Create new Form": "Neues Formular erstellen",
   "Form Builder": "Formular-Builder",
   "Process links": "Prozess-Verknüpfungen",
+  "Translations": "Übersetzungen",
   "uploadFormDefinition": "Formular-Definition hochladen",
   "Process migration": "Prozess-Migration",
   "Process migration warning": "<b>Warnung:</b> Wenn ein Prozess migriert wird, werden die User-Gruppen der laufenden Instanzen nicht geupdatet. Dies kann bei Bedarf in der Datenbank erfolgen. (Zum Beispiel, wenn eine spezifische User-Aufgabe für ROLE_USER offen ist und die User-Gruppe für die User-Aufgabe wird im Prozess auf ROLE_ADMIN angepasst, wird diese Aufgabe nachwievor für ROLE_USER verfügbar sein. Nur neu gestartete Prozesse werden die neue User-Gruppe berücksichtigen.)",
@@ -1306,5 +1307,12 @@
         "title": "Keine Rollen hinzugefügt"
       }
     }
+  },
+  "translationManagement": {
+    "add": "Übersetzung hinzufügen",
+    "modalTitle": "Übersetzungen speichern",
+    "modalContent": "Die Anzeige neuer Übersetzungen in der Anwendung erfordert möglicherweise ein Neuladen der Seite.",
+    "saveWithoutReload": "Speichern",
+    "saveWithReload": "Speichern und neu laden"
   }
 }

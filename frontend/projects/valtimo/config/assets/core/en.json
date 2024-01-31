@@ -598,6 +598,7 @@
   "Create new Form": "Create new Form",
   "Form Builder": "Form Builder",
   "Process links": "Process links",
+  "Translations": "Translations",
   "uploadFormDefinition": "Upload form definition",
   "Process migration": "Process migration",
   "Process migration warning": "<b>Warning:</b> When migrating a process, the candidate groups of running instances will not be updated. This can be done in the database if necessary. (For example if a specific user task is open for ROLE_USER and the candidate group for the user task is updated in the process to ROLE_ADMIN, this user task is still accessible for ROLE_USER. Only newly started processes will use the updated candidate group)",
@@ -1306,5 +1307,12 @@
         "title": "No roles added"
       }
     }
+  },
+  "translationManagement": {
+    "add": "Add translation",
+    "modalTitle": "Save translations",
+    "modalContent": "Displaying new translations in the application might require a page reload.",
+    "saveWithoutReload": "Save",
+    "saveWithReload": "Save and reload"
   }
 }

@@ -25,6 +25,7 @@ export * from './lib/models';
 export * from './lib/services/config.service';
 export * from './lib/services/menu-include.service';
 export * from './lib/services/user-settings.service';
-export * from './lib/translation/multi-translate-http-loader-factory';
+export * from './lib/services/localization.service';
+export * from './lib/translation';
 export * from './lib/utils';
 export * from './lib/testing';

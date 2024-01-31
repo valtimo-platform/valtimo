@@ -17,13 +17,14 @@
 import {FormOutput} from '../models';
 import {ListItem} from 'carbon-components-angular';
 
-type MultiInputType = 'keyValue' | 'value' | 'keyDropdownValue';
+type MultiInputType = 'keyValue' | 'value' | 'keyDropdownValue' | 'arbitraryAmount';
 
 interface MultiInputKeyValue {
   uuid?: string;
-  key: string;
-  value: string;
+  key?: string;
+  value?: string;
   dropdown?: string;
+  [index: string]: string;
 }
 
 interface MultiInputFormValue {
@@ -42,6 +43,10 @@ interface ListItemWithId extends ListItem {
   id: string;
 }
 
+interface ArbitraryInputTitles {
+  [indexKey: string]: string;
+}
+
 export {
   MultiInputType,
   MultiInputValues,
@@ -50,4 +55,5 @@ export {
   MultiInputFormValue,
   MultiInputFormsValues,
   ListItemWithId,
+  ArbitraryInputTitles,
 };

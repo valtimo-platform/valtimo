@@ -14,19 +14,10 @@
  * limitations under the License.
  */
 
-export * from './config';
-export * from './email-notification-settings.model';
-export * from './menu-item.model';
-export * from './menu.config';
-export * from './security.config';
-export * from './extension.model';
-export * from './http-loader';
-export * from './roles';
-export * from './user-management.model';
-export * from './page';
-export * from './connector.model';
-export * from './search.model';
-export * from './versions.model';
-export * from './user-settings.model';
-export * from './translation.model';
-export * from './localization.model';
+interface ITranslationResource {
+  prefix: string;
+  suffix?: string;
+  optional?: boolean;
+}
+
+export {ITranslationResource};

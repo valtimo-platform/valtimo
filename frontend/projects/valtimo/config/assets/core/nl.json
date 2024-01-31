@@ -597,6 +597,7 @@
   "Create new Form": "Maak nieuw Formulier",
   "Form Builder": "Formulier Bouwer",
   "Process links": "Proceskoppelingen",
+  "Translations": "Vertalingen",
   "uploadFormDefinition": "Upload formulier-definitie",
   "Process migration": "Procesmigratie",
   "Process migration warning": "<b>Let op:</b> Bij het migreren van een proces worden de candidate groups van de lopende proces instanties niet meegenomen. Dit kan gedaan worden in de database indien nodig. (Voorbeeld: wanneer een specifieke gebruikerstaak op de ROLE_USER stond en de candidate group voor deze taak is veranderd in het proces naar ROLE_ADMIN blijft de taak beschikbaar voor ROLE_USER. Enkel nieuw gestartte processen krijgen de nieuwe candidate group)",
@@ -1308,5 +1309,12 @@
         "title": "Geen rollen toegevoegd"
       }
     }
+  },
+  "translationManagement": {
+    "add": "Vertaling toevoegen",
+    "modalTitle": "Vertalingen opslaan",
+    "modalContent": "Het weergeven van nieuwe vertalingen in de applicatie vereist mogelijk een herladen van de pagina.",
+    "saveWithoutReload": "Opslaan",
+    "saveWithReload": "Opslaan en opnieuw laden"
   }
 }

@@ -45,6 +45,7 @@
     "sweetalert2",
     "tinycolor2",
     "tslib",
-    "csp-header"
+    "csp-header",
+    "lodash"
   ]
 }

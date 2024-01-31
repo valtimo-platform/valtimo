@@ -239,6 +239,7 @@
     "components-jqueryui": "1.12.1",
     "core-js": "3.32.0",
     "csp-header": "5.2.1",
+    "deepmerge-ts": "5.1.0",
     "dmn-js": "12.3.0",
     "dropzone": "6.0.0-beta.2",
     "eslint": "8.40.0",

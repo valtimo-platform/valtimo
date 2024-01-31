@@ -29,6 +29,7 @@
           : deleteRowText
         : ('interface.deleteRow' | translate)
   } as vars"
+  [attr.data-carbon-theme]="carbonTheme"
   [ngClass]="{'v-multi-input--margin': margin}"
   class="v-multi-input"
 >
@@ -60,6 +61,12 @@
       <ng-container *ngIf="type === 'keyDropdownValue'">
         <ng-container
           *ngTemplateOutlet="keyDropdownValue; context: {value: value, index: i}"
+        ></ng-container>
+      </ng-container>
+
+      <ng-container *ngIf="type === 'arbitraryAmount'">
+        <ng-container
+          *ngTemplateOutlet="arbitraryAmountValue; context: {value: value, index: i}"
         ></ng-container>
       </ng-container>
 
@@ -125,6 +132,25 @@
       [defaultValue]="value.value"
       [disabled]="disabled"
       (input)="onValueChange(value, $event.target.value, 'value')"
+    />
+  </div>
+</ng-template>
+
+<ng-template #arbitraryAmountValue let-value="value" let-index="index">
+  <div
+    class="v-multi-input__input"
+    [ngClass]="{'--full-width': fullWidth}"
+    *ngFor="let _ of amountOfArbitraryValuesArray$ | async; index as i"
+  >
+    <cds-label *ngIf="index === 0">{{
+      arbitraryAmountTitles ? arbitraryAmountTitles[i] : ''
+    }}</cds-label>
+
+    <input
+      cdsText
+      [defaultValue]="value ? value['' + i] : ''"
+      [disabled]="disabled"
+      (input)="onValueChange(value, $event.target.value, 'arbitrary', i)"
     />
   </div>
 </ng-template>
