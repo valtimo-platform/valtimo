@@ -58,7 +58,7 @@ export class OpenZaakService {
   }
 
   getZaakTypes(): Observable<ZaakType[]> {
-    return this.http.get<ZaakType[]>(`${this.valtimoApiConfig.endpointUri}v1/openzaak/zaaktype`);
+    return this.http.get<ZaakType[]>(`${this.valtimoApiConfig.endpointUri}management/v1/zgw/zaaktype`);
   }
 
   getBesluittypen(): Observable<any> {

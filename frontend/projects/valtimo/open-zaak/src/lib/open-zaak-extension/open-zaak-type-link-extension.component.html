@@ -91,7 +91,7 @@
         </option>
       </select>
     </div>
-    <div *ngIf="selectedZaakType" class="input-group mb-3 align-items-center">
+    <div *ngIf="informatieObjectTypeSelectionEnabled && selectedZaakType" class="input-group mb-3 align-items-center">
       <select class="form-control" [(ngModel)]="selectedInformatieObjectTypeUrl">
         <option [ngValue]="null" selected>{{ 'openZaak.selectInfoObjectType' | translate }}</option>
         <option

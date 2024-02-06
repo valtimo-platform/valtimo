@@ -16,20 +16,21 @@
 
 import {Component, ViewChild} from '@angular/core';
 import {
-  CreateZaakTypeLinkRequest,
-  ZaakType,
-  InformatieObjectType,
   CreateInformatieObjectTypeLinkRequest,
+  CreateZaakTypeLinkRequest,
+  InformatieObjectType,
+  OpenZaakService,
+  ZaakType,
   ZaakTypeLink,
 } from '@valtimo/resource';
 import {ActivatedRoute, Router} from '@angular/router';
 import {FormBuilder} from '@angular/forms';
-import {OpenZaakService} from '@valtimo/resource';
 import {AlertService, ModalComponent} from '@valtimo/components';
 import {NGXLogger} from 'ngx-logger';
 import {ToastrService} from 'ngx-toastr';
 import {TranslateService} from '@ngx-translate/core';
 import {BehaviorSubject} from 'rxjs';
+import {ConfigService, UploadProvider} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-open-zaak-type-link-extension',
@@ -40,6 +41,7 @@ export class OpenZaakTypeLinkExtensionComponent {
   public zaakTypes: ZaakType[];
   public zaakTypeLink: ZaakTypeLink;
   public selectedZaakType: ZaakType;
+  public informatieObjectTypeSelectionEnabled: boolean
   public informatieObjectTypes: InformatieObjectType[];
   public selectedInformatieObjectTypeUrl: string = null;
   private readonly documentDefinitionName: string;
@@ -57,11 +59,12 @@ export class OpenZaakTypeLinkExtensionComponent {
     private alertService: AlertService,
     private toasterService: ToastrService,
     private logger: NGXLogger,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    configService: ConfigService
   ) {
     this.documentDefinitionName = this.route.snapshot.paramMap.get('name');
+    this.informatieObjectTypeSelectionEnabled = configService.config.uploadProvider === UploadProvider.OPEN_ZAAK
   }
-
   // eslint-disable-next-line @angular-eslint/use-lifecycle-interface
   ngOnInit() {
     this.openZaakService.getOpenZaakConfig().subscribe(config => {
@@ -122,14 +125,16 @@ export class OpenZaakTypeLinkExtensionComponent {
       if (config === null) {
         this.alertService.error(this.translateService.instant('openZaak.error.configNotFound'));
       } else {
-        this.loadInformatieObjectTypeUrls();
-        this.openZaakService
-          .getInformatieObjectTypeLink(this.documentDefinitionName)
-          .subscribe(informatieObjectTypeLink => {
-            if (informatieObjectTypeLink !== null) {
-              this.selectedInformatieObjectTypeUrl = informatieObjectTypeLink.informatieObjectType;
-            }
-          });
+        if (this.informatieObjectTypeSelectionEnabled) {
+          this.loadInformatieObjectTypeUrls();
+          this.openZaakService
+            .getInformatieObjectTypeLink(this.documentDefinitionName)
+            .subscribe(informatieObjectTypeLink => {
+              if (informatieObjectTypeLink !== null) {
+                this.selectedInformatieObjectTypeUrl = informatieObjectTypeLink.informatieObjectType;
+              }
+            });
+        }
         this.modal.show();
       }
     });
