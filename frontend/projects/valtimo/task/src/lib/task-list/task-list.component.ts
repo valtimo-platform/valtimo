@@ -22,24 +22,12 @@ import {Task, TaskList} from '../models';
 import {NGXLogger} from 'ngx-logger';
 import {TaskDetailModalComponent} from '../task-detail-modal/task-detail-modal.component';
 import {TranslateService} from '@ngx-translate/core';
-import {
-  BehaviorSubject,
-  combineLatest,
-  defaultIfEmpty,
-  forkJoin,
-  of,
-  Subscription,
-  switchMap,
-} from 'rxjs';
+import {BehaviorSubject, combineLatest, defaultIfEmpty, forkJoin, of, Subscription, switchMap,} from 'rxjs';
 import {ConfigService, SortState, TaskListTab} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
 import {take} from 'rxjs/operators';
 import {PermissionService} from '@valtimo/access-control';
-import {
-  CAN_VIEW_TASK_PERMISSION,
-  CAN_VIEW_CASE_PERMISSION,
-  TASK_DETAIL_PERMISSION_RESOURCE,
-} from '../task-permissions';
+import {CAN_VIEW_CASE_PERMISSION, CAN_VIEW_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE,} from '../task-permissions';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -154,13 +142,13 @@ export class TaskListComponent implements OnDestroy {
     }
 
     this.taskService
-      .queryTasks(params)
+      .queryTasksPage(params)
       .pipe(
         switchMap(tasksResult =>
           combineLatest([
             of(tasksResult),
             forkJoin(
-              tasksResult.body.map(task =>
+              tasksResult.content.map(task =>
                 this.permissionService
                   .requestPermission(CAN_VIEW_TASK_PERMISSION, {
                     resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
@@ -170,7 +158,7 @@ export class TaskListComponent implements OnDestroy {
               )
             ).pipe(defaultIfEmpty(null)),
             forkJoin(
-              tasksResult.body.map(task =>
+              tasksResult.content.map(task =>
                 this.permissionService
                   .requestPermission(CAN_VIEW_CASE_PERMISSION, {
                     resource: TASK_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
@@ -185,9 +173,9 @@ export class TaskListComponent implements OnDestroy {
       .subscribe(([tasksResult, taskPermissions, taskCasePermissions]) => {
         this.tasks[type].pagination = {
           ...this.tasks[type].pagination,
-          collectionSize: tasksResult.headers.get('x-total-count'),
+          collectionSize: tasksResult.totalElements,
         };
-        this.tasks[type].tasks = tasksResult.body;
+        this.tasks[type].tasks = tasksResult.content;
         this.tasks[type].tasks.map((task, taskIndex) => {
           task.created = moment(task.created).format('DD MMM YYYY HH:mm');
           if (task.due) {

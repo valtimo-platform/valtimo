@@ -81,10 +81,10 @@ export class ChoiceFieldValueListComponent implements OnInit {
     this.service.get(id).subscribe(result => {
       this.choiceField = result;
       this.service
-        .queryValues(this.choiceField.keyName, {page: this.pageParam, size: this.pagination.size})
-        .subscribe(values => {
-          this.pagination.collectionSize = values.headers.get('x-total-count');
-          this.choiceFieldValues = values.body;
+        .queryValuesPage(this.choiceField.keyName, {page: this.pageParam, size: this.pagination.size})
+        .subscribe(page => {
+          this.pagination.collectionSize = page.totalElements;
+          this.choiceFieldValues = page.content;
           this.choiceFieldValues.forEach(choiceFieldValue => {
             choiceFieldValue.deprecatedDisplayString = choiceFieldValue.deprecated ? 'Yes' : 'No';
           });

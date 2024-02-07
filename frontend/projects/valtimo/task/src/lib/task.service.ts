@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpResponse} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {AssigneeRequest, Task, TaskProcessLinkResult} from './models';
-import {ConfigService, CustomTaskList, NamedUser} from '@valtimo/config';
+import {ConfigService, CustomTaskList, NamedUser, Page} from '@valtimo/config';
 import {InterceptorSkip} from '@valtimo/security';
 
 @Injectable({providedIn: 'root'})
@@ -35,6 +35,12 @@ export class TaskService {
   queryTasks(params?: any): Observable<HttpResponse<Array<Task>>> {
     return this.http.get<Array<Task>>(`${this.valtimoEndpointUri}v1/task`, {
       observe: 'response',
+      params,
+    });
+  }
+
+  queryTasksPage(params?: any): Observable<Page<Task>> {
+    return this.http.get<Page<Task>>(`${this.valtimoEndpointUri}v2/task`, {
       params,
     });
   }

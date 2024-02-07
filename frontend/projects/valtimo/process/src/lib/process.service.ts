@@ -25,7 +25,7 @@ import {
   ProcessInstanceTask,
   ProcessStart,
 } from './models';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService, Page} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',
@@ -131,8 +131,8 @@ export class ProcessService {
       .set('size', size.toString())
       .set('sort', sort);
 
-    return this.http.post<ProcessInstance>(
-      `${this.valtimoEndpointUri}v1/process/${key}/search`,
+    return this.http.post<Page<ProcessInstance>>(
+      `${this.valtimoEndpointUri}v2/process/${key}/search`,
       {},
       {params}
     );

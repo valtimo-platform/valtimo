@@ -17,8 +17,8 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {ChoiceField} from './models';
-import {ConfigService} from '@valtimo/config';
+import {ChoiceField, ChoiceFieldValue} from './models';
+import {ConfigService, Page} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',
@@ -36,6 +36,12 @@ export class ChoiceFieldService {
   query(params?: any): Observable<any> {
     return this.http.get<ChoiceField>(`${this.valtimoApiConfig.endpointUri}v1/choice-fields`, {
       observe: 'response',
+      params,
+    });
+  }
+
+  queryPage(params?: any): Observable<Page<ChoiceField>> {
+    return this.http.get<Page<ChoiceField>>(`${this.valtimoApiConfig.endpointUri}v2/choice-fields`, {
       params,
     });
   }
@@ -60,6 +66,13 @@ export class ChoiceFieldService {
     return this.http.get<ChoiceField>(
       `${this.valtimoApiConfig.endpointUri}v1/choice-field-values/${keyName}/values`,
       {observe: 'response', params}
+    );
+  }
+
+  queryValuesPage(keyName: string, params?: any): Observable<Page<ChoiceFieldValue>> {
+    return this.http.get<Page<ChoiceFieldValue>>(
+      `${this.valtimoApiConfig.endpointUri}v2/choice-field-values/${keyName}/values`,
+      {params}
     );
   }
 

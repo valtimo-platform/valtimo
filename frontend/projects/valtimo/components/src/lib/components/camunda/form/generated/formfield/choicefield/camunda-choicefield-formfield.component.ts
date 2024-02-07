@@ -32,9 +32,9 @@ export class CamundaChoicefieldFormfieldComponent implements OnInit {
 
   ngOnInit(): void {
     this.choicefieldService
-      .getChoiceFieldValuesByName(this.formField.properties['choicefield'])
+      .getChoiceFieldValuesPageByName(this.formField.properties['choicefield'])
       .subscribe(data => {
-        this.choicefieldValues = data;
+        this.choicefieldValues = data.content
       });
   }
 }

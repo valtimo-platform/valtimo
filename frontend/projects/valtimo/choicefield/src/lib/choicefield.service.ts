@@ -17,8 +17,8 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {ChoicefieldValue} from './models';
-import {ConfigService} from '@valtimo/config';
+import {ChoiceField, ChoicefieldValue} from './models';
+import {ConfigService, Page} from '@valtimo/config';
 
 @Injectable({providedIn: 'root'})
 export class ChoicefieldService {
@@ -35,6 +35,10 @@ export class ChoicefieldService {
     return this.http.get(this.valtimoEndpointUri + 'v1/choice-fields');
   }
 
+  getChoiceFieldsPage(): Observable<Page<ChoiceField>> {
+    return this.http.get<Page<ChoiceField>>(this.valtimoEndpointUri + 'v2/choice-fields');
+  }
+
   getChoiceFieldByName(name: string): Observable<any> {
     return this.http.get(this.valtimoEndpointUri + 'v1/choice-fields/name/' + name);
   }
@@ -42,6 +46,12 @@ export class ChoicefieldService {
   getChoiceFieldValuesByName(name: string): Observable<ChoicefieldValue[]> {
     return this.http.get<ChoicefieldValue[]>(
       this.valtimoEndpointUri + 'v1/choice-field-values/' + name + '/values'
+    );
+  }
+
+  getChoiceFieldValuesPageByName(name: string): Observable<Page<ChoicefieldValue>> {
+    return this.http.get<Page<ChoicefieldValue>>(
+      this.valtimoEndpointUri + 'v2/choice-field-values/' + name + '/values'
     );
   }
 
