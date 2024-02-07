@@ -537,6 +537,14 @@
           "title": "Plugin Konfigurationen"
         }
       }
+    },
+    "documentDefinition": {
+      "cancelModal": {
+        "title": "Verlassen des Editors",
+        "content": "Sind Sie sicher, dass Sie den Editor verlassen möchten? Möglicherweise gehen nicht gespeicherte Änderungen verloren. Beachten Sie beim Speichern, dass das Entfernen oder Ändern eines Attributs die Falldefinition zerstören kann.",
+        "keepEditing": "Bearbeiten Sie weiter"
+      },
+      "saveModalContent": "Sind Sie sicher, dass Sie die Dokumentdefinition speichern möchten? Das Entfernen oder Ändern eines Attributs kann die Falldefinition zerstören."
     }
   },
   "task-list": {
@@ -693,6 +701,7 @@
     "deleteConfirmation": "Sind Sie sicher, dass Sie löschen möchten?",
     "cancel": "Absagen",
     "close": "Schließen",
+    "discard": "Verwerfen",
     "next": "Nächste",
     "skip": "Springen",
     "confirm": "Bestätigen",

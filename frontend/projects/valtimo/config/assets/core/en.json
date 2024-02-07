@@ -538,6 +538,14 @@
           "title": "Plugin Configuration"
         }
       }
+    },
+    "documentDefinition": {
+      "cancelModal": {
+        "title": "Leaving the editor",
+        "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost. When saving, beware that removing or changing an attribute can break the case definition.",
+        "keepEditing": "Keep editing"
+      },
+      "saveModalContent": "Are you sure you want to save the Document definition? Removing or changing an attribute can break the case definition."
     }
   },
   "task-list": {
@@ -695,6 +703,7 @@
     "deleteConfirmation": "Are you sure you want to delete?",
     "cancel": "Cancel",
     "close": "Close",
+    "discard": "Discard",
     "next": "Next",
     "skip": "Skip",
     "confirm": "Confirm",

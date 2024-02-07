@@ -51,10 +51,7 @@ export class DossierDetailService implements OnDestroy {
   }
 
   public get selectedDocumentDefinitionName$(): Observable<string> {
-    return this._selectedDocumentDefinitionName$.pipe(
-      filter(name => !!name),
-      distinctUntilChanged()
-    );
+    return this._selectedDocumentDefinitionName$.pipe(filter(name => !!name));
   }
 
   public get selectedDocumentDefinitionIsReadOnly$(): Observable<boolean> {
@@ -116,7 +113,7 @@ export class DossierDetailService implements OnDestroy {
           ),
           tap(res => {
             this._documentDefinition$.next(res);
-            this.pageTitleService.setCustomPageTitle(res?.schema?.title || '-');
+            this.pageTitleService.setCustomPageTitle(res?.schema?.title || '-', true);
             this.setLoadingDocumentDefinition(false);
           })
         )

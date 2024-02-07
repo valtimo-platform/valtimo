@@ -13,73 +13,120 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {DocumentService} from '@valtimo/document';
-import {filter, map, Observable, Subscription, switchMap} from 'rxjs';
+import {TranslateService} from '@ngx-translate/core';
+import {PageTitleService, PendingChangesComponent} from '@valtimo/components';
 import {ConfigService} from '@valtimo/config';
-import {DossierDetailService, TabService} from '../../services';
+import {DocumentService} from '@valtimo/document';
+import {ModalService} from 'carbon-components-angular';
+import {filter, map, Observable, Subscription, switchMap, tap} from 'rxjs';
 import {TabEnum} from '../../models';
-import {PageTitleService} from '@valtimo/components';
+import {DossierDetailService, TabService} from '../../services';
+import {DossierManagementDocumentDefinitionComponent} from '../dossier-management-document-definition/dossier-management-document-definition.component';
 
 @Component({
   selector: 'valtimo-dossier-management-detail-container',
   templateUrl: './dossier-management-detail-container.component.html',
   styleUrls: ['./dossier-management-detail-container.component.scss'],
   providers: [DossierDetailService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DossierManagementDetailContainerComponent implements OnInit, OnDestroy {
-  public currentTab: TabEnum;
-  public caseListColumn!: boolean;
-  public tabManagementEnabled!: boolean;
+export class DossierManagementDetailContainerComponent
+  extends PendingChangesComponent
+  implements OnDestroy, AfterViewInit
+{
+  @ViewChild(DossierManagementDocumentDefinitionComponent)
+  private _documentDefinitionTab: DossierManagementDocumentDefinitionComponent;
 
-  public readonly documentDefinitionTitle$ = this.pageTitleService.customPageTitle$;
-  public readonly CARBON_THEME = 'g10';
-
-  private tabSubscription: Subscription;
-
-  readonly TabEnum = TabEnum;
-
-  readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
+  public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
     map(params => params.name || ''),
     filter(docDefName => !!docDefName)
   );
 
-  readonly documentDefinition$ = this.documentDefinitionName$.pipe(
+  public readonly documentDefinition$ = this.documentDefinitionName$.pipe(
     switchMap(documentDefinitionName =>
       this.documentService.getDocumentDefinitionForManagement(documentDefinitionName)
     )
   );
+  public caseListColumn!: boolean;
+  public tabManagementEnabled!: boolean;
+
+  public _activeTab: TabEnum;
+  public pendingTab: TabEnum | null;
+  public currentTab$ = this.tabService.currentTab$.pipe(
+    tap((currentTab: TabEnum) => {
+      this._activeTab = currentTab;
+    })
+  );
+  public readonly documentDefinitionTitle$ = this.pageTitleService.customPageTitle$;
+  public readonly CARBON_THEME = 'g10';
+  public readonly DossierManagementTabs = Object.values(TabEnum);
+
+  public readonly TabEnum = TabEnum;
+
+  private _pendingChangesSubscription: Subscription;
+  private _tabSubscription: Subscription;
 
   constructor(
+    protected readonly modalService: ModalService,
+    protected readonly translateService: TranslateService,
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
     private readonly configService: ConfigService,
     private readonly tabService: TabService,
     private readonly pageTitleService: PageTitleService
   ) {
+    super(modalService, translateService);
     const featureToggles = this.configService.config.featureToggles;
     this.caseListColumn = !!featureToggles?.caseListColumn;
     this.tabManagementEnabled = !!featureToggles?.enableTabManagement;
   }
 
-  ngOnInit(): void {
-    this.openCurrentTabSubscription();
-  }
-
-  displayBodyComponent(tab: TabEnum): void {
-    this.tabService.currentTab = tab;
-  }
-
-  openCurrentTabSubscription(): void {
-    this.tabSubscription = this.tabService.currentTab$.subscribe(
-      value => (this.currentTab = value)
+  public ngAfterViewInit(): void {
+    this.customModal = this._documentDefinitionTab.cancelModal;
+    this._pendingChangesSubscription = this._documentDefinitionTab.pendingChanges$.subscribe(
+      (pendingChanges: boolean) => {
+        this.pendingChanges = pendingChanges;
+        this.pendingTab = pendingChanges ? this._activeTab : null;
+      }
     );
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this.tabService.currentTab = TabEnum.DOCUMENT;
-    this.tabSubscription?.unsubscribe();
+    this._tabSubscription?.unsubscribe();
+    this._pendingChangesSubscription?.unsubscribe();
+    this.pageTitleService.enableReset();
+  }
+
+  public displayBodyComponent(tab: TabEnum): void {
+    if (this.pendingChanges) {
+      this.onCanDeactivate();
+    }
+    this.tabService.currentTab = tab;
+  }
+
+  public onCancelRedirectEvent(): void {
+    this.onCustomCancel();
+    if (!this.pendingTab) {
+      return;
+    }
+    this.tabService.currentTab = this.pendingTab;
+  }
+
+  public onConfirmRedirectEvent(): void {
+    this.pendingTab = null;
+    this.onCustomConfirm();
+  }
+
+  protected onCanDeactivate(): void {
+    this._documentDefinitionTab.onCanDeactivate();
   }
 }

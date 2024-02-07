@@ -19,3 +19,7 @@
   width: 100%;
   justify-content: center;
 }
+
+::ng-deep .cds--dropdown__wrapper {
+  z-index: 10001 !important;
+}

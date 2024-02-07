@@ -132,7 +132,7 @@ export class PageTitleService implements OnDestroy {
             this._customPageSubtitleSet$.next(false);
           }
 
-          if (pageActionsViewContainerRef) {
+          if (pageActionsViewContainerRef && !this._preventReset) {
             pageActionsViewContainerRef.clear();
             this.setHasPageActions(false);
           }

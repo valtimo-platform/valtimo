@@ -20,6 +20,8 @@ import {ModalButtonType, ModalService} from 'carbon-components-angular';
 import {Observable, Subject} from 'rxjs';
 
 export class PendingChangesComponent {
+  protected customModal: any = null;
+  protected deactivateSubject = new Subject<boolean>();
   protected pendingChanges = false;
   private _activeModal: ComponentRef<any> | null = null;
 
@@ -37,10 +39,14 @@ export class PendingChangesComponent {
       return true;
     }
 
-    const deactivateSubject = new Subject<boolean>();
-
     if (!!this._activeModal) {
       return false;
+    }
+
+    if (!!this.customModal) {
+      this.onCanDeactivate();
+      this._activeModal = this.customModal;
+      return this.deactivateSubject;
     }
 
     this._activeModal = this.modalService.show({
@@ -53,7 +59,7 @@ export class PendingChangesComponent {
           type: ModalButtonType.secondary,
           click: () => {
             this.onCancelRedirect();
-            deactivateSubject.next(false);
+            this.deactivateSubject.next(false);
             this._activeModal = null;
           },
         },
@@ -62,7 +68,7 @@ export class PendingChangesComponent {
           type: ModalButtonType.primary,
           click: () => {
             this.onConfirmRedirect();
-            deactivateSubject.next(true);
+            this.deactivateSubject.next(true);
             this._activeModal = null;
           },
         },
@@ -70,8 +76,22 @@ export class PendingChangesComponent {
       close: () => false,
     });
 
-    return deactivateSubject;
+    return this.deactivateSubject;
   }
+
+  protected onCustomCancel(): void {
+    this._activeModal = null;
+    this.deactivateSubject.next(false);
+    this.onCancelRedirect();
+  }
+
+  protected onCustomConfirm(): void {
+    this._activeModal = null;
+    this.deactivateSubject.next(true);
+    this.onConfirmRedirect();
+  }
+
+  protected onCanDeactivate(): void {}
 
   protected onCancelRedirect(): void {}
 

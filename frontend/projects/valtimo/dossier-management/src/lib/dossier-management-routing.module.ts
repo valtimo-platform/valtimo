@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
-import {AuthGuardService} from '@valtimo/security';
-import {DossierManagementListComponent} from './components/dossier-management-list/dossier-management-list.component';
+import {pendingChangesGuard} from '@valtimo/components';
 import {ROLE_ADMIN} from '@valtimo/config';
+import {AuthGuardService} from '@valtimo/security';
 import {DossierManagementDetailContainerComponent} from './components/dossier-management-detail-container/dossier-management-detail-container.component';
+import {DossierManagementListComponent} from './components/dossier-management-list/dossier-management-list.component';
 
 const routes: Routes = [
   {
@@ -32,6 +32,7 @@ const routes: Routes = [
     path: 'dossier-management/dossier/:name',
     component: DossierManagementDetailContainerComponent,
     canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
     data: {title: 'Dossier details', roles: [ROLE_ADMIN], customPageTitle: true},
   },
 ];

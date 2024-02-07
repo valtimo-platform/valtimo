@@ -537,6 +537,14 @@
           "title": "Plugin configuraties"
         }
       }
+    },
+    "documentDefinition": {
+      "cancelModal": {
+        "title": "De editor verlaten",
+        "content": "Weet je zeker dat je de editor wilt verlaten? Er kunnen niet-opgeslagen wijzigingen zijn die verloren gaan. Houd er bij het opslaan rekening mee dat het verwijderen of wijzigen van een attribuut de zaakdefinitie kan beschadigen.",
+        "keepEditing": "Blijf bewerken"
+      },
+      "saveModalContent": "Weet je zeker dat je de documentdefinitie wilt opslaan? Het verwijderen of wijzigen van een attribuut kan de zaakdefinitie verbreken."
     }
   },
   "task-list": {
@@ -694,6 +702,7 @@
     "deleteConfirmation": "Weet u zeker dat u wilt verwijderen?",
     "cancel": "Annuleren",
     "close": "Sluiten",
+    "discard": "Weggooien",
     "next": "Volgende",
     "skip": "Overslaan",
     "confirm": "Bevestigen",
