@@ -682,6 +682,10 @@
     "autoCreateForCase": "Automatisch aanmaken voor elk dossier",
     "selectZaakTypeForCase": "Kies zaaktype voor dossier",
     "selectZaakType": "Kies zaaktype",
+    "selectZakenApiPluginForCase": "Kies Zaken Api plugin voor aanmaken zaak",
+    "selectZakenApiPlugin": "Kies Zaken Api plugin",
+    "zakenApiPlugin": "Zaken Api plugin",
+    "rsin": "RSIN gebruikt bij aanmaken zaak",
     "selectInfoObjectType": "Kies informatieobject-type",
     "save": "Opslaan"
   },

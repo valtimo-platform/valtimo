@@ -682,6 +682,10 @@
     "autoCreateForCase": "Für jeden Case automatisch erstellen",
     "selectZaakTypeForCase": "Wählen Sie den Zaaktyp für die Case",
     "selectZaakType": "Zaaktyp wählen",
+    "selectZakenApiPluginForCase": "Wählen Sie den Zaken Api plugin für die Case",
+    "selectZakenApiPlugin": "Zaken Api plugin wählen",
+    "zakenApiPlugin": "Zaken Api plugin",
+    "rsin": "RSIN ",
     "selectInfoObjectType": "Wählen Sie den Typ des Informationsobjekts",
     "save": "Speichern"
   },

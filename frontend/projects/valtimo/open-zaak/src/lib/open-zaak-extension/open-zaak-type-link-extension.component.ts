@@ -31,6 +31,7 @@ import {ToastrService} from 'ngx-toastr';
 import {TranslateService} from '@ngx-translate/core';
 import {BehaviorSubject} from 'rxjs';
 import {ConfigService, UploadProvider} from '@valtimo/config';
+import {PluginConfiguration, PluginManagementService} from '@valtimo/plugin';
 
 @Component({
   selector: 'valtimo-open-zaak-type-link-extension',
@@ -39,10 +40,13 @@ import {ConfigService, UploadProvider} from '@valtimo/config';
 })
 export class OpenZaakTypeLinkExtensionComponent {
   public zaakTypes: ZaakType[];
+  public pluginConfigurations: PluginConfiguration[];
   public zaakTypeLink: ZaakTypeLink;
-  public selectedZaakType: ZaakType;
-  public informatieObjectTypeSelectionEnabled: boolean
+  public zaakTypeLinkRequest: CreateZaakTypeLinkRequest;
+  public informatieObjectTypeSelectionEnabled: boolean;
   public informatieObjectTypes: InformatieObjectType[];
+  public selectedZaakType: ZaakType = null;
+  public selectedPluginConfiguration: PluginConfiguration = null;
   public selectedInformatieObjectTypeUrl: string = null;
   private readonly documentDefinitionName: string;
 
@@ -60,40 +64,61 @@ export class OpenZaakTypeLinkExtensionComponent {
     private toasterService: ToastrService,
     private logger: NGXLogger,
     private translateService: TranslateService,
+    private pluginManagementService: PluginManagementService,
     configService: ConfigService
   ) {
     this.documentDefinitionName = this.route.snapshot.paramMap.get('name');
-    this.informatieObjectTypeSelectionEnabled = configService.config.uploadProvider === UploadProvider.OPEN_ZAAK
+    this.informatieObjectTypeSelectionEnabled =
+      configService.config.uploadProvider === UploadProvider.OPEN_ZAAK;
   }
   // eslint-disable-next-line @angular-eslint/use-lifecycle-interface
   ngOnInit() {
-    this.openZaakService.getOpenZaakConfig().subscribe(config => {
-      if (config !== null) {
-        this.openZaakService
-          .getZaakTypeLink(this.documentDefinitionName)
-          .subscribe(zaakTypeLink => {
-            if (zaakTypeLink !== null) {
-              this.zaakTypeLink = zaakTypeLink;
-            }
-            this.loadZaakTypes();
-          });
-      } else {
-        this.noConfigAvailable$.next(true);
+    this.zaakTypeLinkRequest = {
+      documentDefinitionName: this.documentDefinitionName,
+      createWithDossier: false,
+    };
+    this.openZaakService.getZaakTypeLink(this.documentDefinitionName).subscribe(zaakTypeLink => {
+      if (zaakTypeLink !== null) {
+        this.zaakTypeLinkRequest = {
+          documentDefinitionName: this.documentDefinitionName,
+          createWithDossier: zaakTypeLink?.createWithDossier,
+          rsin: zaakTypeLink?.rsin,
+          zakenApiPluginConfigurationId: zaakTypeLink?.zakenApiPluginConfigurationId,
+          zaakTypeUrl: zaakTypeLink?.zaakTypeUrl,
+        };
       }
-      this.loading$.next(false);
+      this.zaakTypeLink = zaakTypeLink;
+      this.loadZaakTypes();
+      this.loadZakenApiPluginConfigurations();
     });
+    this.loading$.next(false);
+  }
+
+  private findZaakType(zaakTypeUrl: string) {
+    this.selectedZaakType = this.zaakTypes.find(zaakType => zaakType.url === zaakTypeUrl);
+  }
+
+  private findPluginConfiguration(pluginConfigurationId: string) {
+    this.selectedPluginConfiguration = this.pluginConfigurations.find(
+      pluginConfiguration => pluginConfiguration.id === pluginConfigurationId
+    );
   }
 
   loadZaakTypes() {
     return this.openZaakService.getZaakTypes().subscribe((zaakTypes: ZaakType[]) => {
       this.zaakTypes = zaakTypes;
-      if (this.zaakTypeLink !== null) {
-        this.selectedZaakType = this.zaakTypes.find(
-          zaakType => zaakType.url === this.zaakTypeLink.zaakTypeUrl
-        );
-      }
+      this.findZaakType(this.zaakTypeLink.zaakTypeUrl);
       this.loading$.next(false);
     });
+  }
+
+  loadZakenApiPluginConfigurations() {
+    return this.pluginManagementService
+      .getPluginConfigurationsByPluginDefinitionKey('zakenapi')
+      .subscribe((plugins: PluginConfiguration[]) => {
+        this.pluginConfigurations = plugins;
+        this.findPluginConfiguration(this.zaakTypeLink.zakenApiPluginConfigurationId);
+      });
   }
 
   loadInformatieObjectTypeUrls() {
@@ -104,40 +129,34 @@ export class OpenZaakTypeLinkExtensionComponent {
       });
   }
 
-  updateConfig(): void {
-    const request: CreateZaakTypeLinkRequest = {
-      documentDefinitionName: this.zaakTypeLink.documentDefinitionName,
-      zaakTypeUrl: this.zaakTypeLink.zaakTypeUrl,
-      createWithDossier: this.zaakTypeLink.createWithDossier,
-    };
-    this.openZaakService.createZaakTypeLink(request).subscribe(
-      () => {
-        this.toasterService.success('Successfully updated linked zaaktype');
-      },
-      err => {
-        this.toasterService.error('Failed to update linked zaaktype');
-      }
-    );
-  }
-
   openModal() {
-    this.openZaakService.getOpenZaakConfig().subscribe(config => {
-      if (config === null) {
-        this.alertService.error(this.translateService.instant('openZaak.error.configNotFound'));
-      } else {
-        if (this.informatieObjectTypeSelectionEnabled) {
+    this.zaakTypeLinkRequest = {
+      documentDefinitionName: this.documentDefinitionName,
+      createWithDossier: this.zaakTypeLink?.createWithDossier,
+      rsin: this.zaakTypeLink?.rsin,
+      zakenApiPluginConfigurationId: this.zaakTypeLink?.zakenApiPluginConfigurationId,
+      zaakTypeUrl: this.zaakTypeLink?.zaakTypeUrl,
+    };
+    if (this.informatieObjectTypeSelectionEnabled) {
+      this.openZaakService.getOpenZaakConfig().subscribe(config => {
+        if (config === null) {
+          this.alertService.error(this.translateService.instant('openZaak.error.configNotFound'));
+        } else {
           this.loadInformatieObjectTypeUrls();
           this.openZaakService
             .getInformatieObjectTypeLink(this.documentDefinitionName)
             .subscribe(informatieObjectTypeLink => {
               if (informatieObjectTypeLink !== null) {
-                this.selectedInformatieObjectTypeUrl = informatieObjectTypeLink.informatieObjectType;
+                this.selectedInformatieObjectTypeUrl =
+                  informatieObjectTypeLink.informatieObjectType;
               }
             });
         }
         this.modal.show();
-      }
-    });
+      });
+    } else {
+      this.modal.show();
+    }
   }
 
   removeZaakTypeLink() {
@@ -147,7 +166,6 @@ export class OpenZaakTypeLinkExtensionComponent {
           this.openZaakService.deleteInformatieObjectTypeLink(this.documentDefinitionName);
         }
         this.toasterService.success('Successfully de-linked zaaktype');
-        this.selectedZaakType = null;
         this.zaakTypeLink = null;
       },
       () => {
@@ -157,19 +175,24 @@ export class OpenZaakTypeLinkExtensionComponent {
   }
 
   submit() {
-    const request: CreateZaakTypeLinkRequest = {
-      documentDefinitionName: this.documentDefinitionName,
-      zaakTypeUrl: this.selectedZaakType.url,
-      createWithDossier: false,
-    };
     const requestInformatieObjectTypeLink: CreateInformatieObjectTypeLinkRequest = {
       documentDefinitionName: this.documentDefinitionName,
-      zaakType: this.selectedZaakType.url,
+      zaakType: this.zaakTypeLinkRequest.zaakTypeUrl,
       informatieObjectType: this.selectedInformatieObjectTypeUrl,
     };
-    this.openZaakService.createZaakTypeLink(request).subscribe(
+    console.log(this.zaakTypeLinkRequest);
+    this.openZaakService.createZaakTypeLink(this.zaakTypeLinkRequest).subscribe(
       linkResult => {
-        this.zaakTypeLink = linkResult.zaakTypeLink;
+        this.zaakTypeLink = linkResult;
+        this.zaakTypeLinkRequest = {
+          documentDefinitionName: this.documentDefinitionName,
+          createWithDossier: this.zaakTypeLink?.createWithDossier,
+          rsin: this.zaakTypeLink?.rsin,
+          zakenApiPluginConfigurationId: this.zaakTypeLink?.zakenApiPluginConfigurationId,
+          zaakTypeUrl: this.zaakTypeLink?.zaakTypeUrl,
+        };
+        this.findZaakType(this.zaakTypeLink.zaakTypeUrl);
+        this.findPluginConfiguration(this.zaakTypeLink.zakenApiPluginConfigurationId);
         if (requestInformatieObjectTypeLink.informatieObjectType !== null) {
           this.openZaakService
             .createInformatieObjectTypeLink(requestInformatieObjectTypeLink)

@@ -32,31 +32,44 @@
         <div class="card card-border card-contrast">
           <div class="card-header card-header-contrast card-header-featured">
             <div>
-              {{ selectedZaakType?.omschrijving || '-' }}
+              {{ this.selectedZaakType?.omschrijving || '-' }}
             </div>
             <div class="controls">
+              <button class="btn btn-danger ml-3" (click)="openModal()">
+                <i class="icon mdi mdi-pencil"></i>
+              </button>
               <button class="btn btn-danger ml-3" (click)="removeZaakTypeLink()">
                 <i class="icon mdi mdi-delete"></i>
               </button>
             </div>
           </div>
           <div class="card-body">
-            <div class="setting-row">
-              {{ 'openZaak.autoCreateForCase' | translate }}
-              <div class="controls">
-                <div class="switch-button switch-button-success">
-                  <input
-                    type="checkbox"
-                    [checked]="zaakTypeLink.createWithDossier"
-                    name="createWithDossier"
-                    id="createWithDossier"
-                    (change)="
-                      zaakTypeLink.createWithDossier = !zaakTypeLink.createWithDossier;
-                      updateConfig()
-                    "
-                  />
-                  <span><label for="createWithDossier"></label></span>
-                </div>
+            <div class="row pt-3 mt-1">
+              <div class="col-3">
+                <strong>{{ 'openZaak.autoCreateForCase' | translate }}</strong>
+              </div>
+              <div class="col-3">
+                {{
+                  this.zaakTypeLink?.createWithDossier
+                    ? ('viewTypeConverter.Yes' | translate)
+                    : ('viewTypeConverter.No' | translate)
+                }}
+              </div>
+            </div>
+            <div class="row pt-3 mt-1">
+              <div class="col-3">
+                <strong>{{ 'openZaak.zakenApiPlugin' | translate }}</strong>
+              </div>
+              <div class="col-3">
+                {{ this.selectedPluginConfiguration?.title || '-' }}
+              </div>
+            </div>
+            <div class="row pt-3 mt-1">
+              <div class="col-3">
+                <strong>{{ 'openZaak.rsin' | translate }}</strong>
+              </div>
+              <div class="col-3">
+                {{ this.zaakTypeLink?.rsin || '-' }}
               </div>
             </div>
           </div>
@@ -84,14 +97,64 @@
   <div body>
     <p>{{ 'openZaak.selectZaakTypeForCase' | translate }}</p>
     <div class="input-group mb-3 mr-3 align-items-center">
-      <select class="form-control" [(ngModel)]="selectedZaakType">
-        <option [ngValue]="null" selected>{{ 'openZaak.selectZaakType' | translate }}</option>
-        <option *ngFor="let zaakType of zaakTypes" [ngValue]="zaakType">
+      <select class="form-control" [(ngModel)]="this.zaakTypeLinkRequest.zaakTypeUrl">
+        <option [ngValue]="null">{{ 'openZaak.selectZaakType' | translate }}</option>
+        <option *ngFor="let zaakType of zaakTypes" [ngValue]="zaakType.url">
           {{ zaakType?.omschrijving || '-' }}
         </option>
       </select>
     </div>
-    <div *ngIf="informatieObjectTypeSelectionEnabled && selectedZaakType" class="input-group mb-3 align-items-center">
+
+    <p>{{ 'openZaak.selectZakenApiPluginForCase' | translate }}</p>
+    <div class="input-group mb-3 mr-3 align-items-center">
+      <select
+        class="form-control"
+        [(ngModel)]="this.zaakTypeLinkRequest.zakenApiPluginConfigurationId"
+      >
+        <option [ngValue]="null">{{ 'openZaak.selectZakenApiPlugin' | translate }}</option>
+        <option
+          *ngFor="let pluginConfiguration of pluginConfigurations"
+          [ngValue]="pluginConfiguration.id"
+        >
+          {{ pluginConfiguration?.title || '-' }}
+        </option>
+      </select>
+    </div>
+
+    <p>{{ 'openZaak.rsin' | translate }}</p>
+    <div class="input-group mb-3 mr-3 align-items-center">
+      <input
+        type="text"
+        id="name"
+        class="form-control"
+        placeholder="RSIN"
+        [(ngModel)]="this.zaakTypeLinkRequest.rsin"
+      />
+    </div>
+
+    <div class="setting-row">
+      <p>{{ 'openZaak.autoCreateForCase' | translate }}</p>
+      <div class="controls">
+        <div class="switch-button switch-button-success">
+          <input
+            type="checkbox"
+            [checked]="this.zaakTypeLinkRequest.createWithDossier"
+            name="createWithDossier"
+            id="createWithDossier"
+            (change)="
+              this.zaakTypeLinkRequest.createWithDossier =
+                !this.zaakTypeLinkRequest.createWithDossier
+            "
+          />
+          <span><label for="createWithDossier"></label></span>
+        </div>
+      </div>
+    </div>
+
+    <div
+      *ngIf="informatieObjectTypeSelectionEnabled && selectedZaakType"
+      class="input-group mb-3 align-items-center"
+    >
       <select class="form-control" [(ngModel)]="selectedInformatieObjectTypeUrl">
         <option [ngValue]="null" selected>{{ 'openZaak.selectInfoObjectType' | translate }}</option>
         <option
@@ -108,7 +171,7 @@
       (click)="submit()"
       class="btn btn-primary"
       data-dismiss="modal"
-      [disabled]="!selectedZaakType"
+      [disabled]="!this.zaakTypeLinkRequest.zaakTypeUrl"
     >
       <i class="icon mdi mdi-save"></i>
       {{ 'openZaak.save' | translate }}

@@ -46,6 +46,8 @@ export interface ZaakTypeLink {
   zaakTypeUrl: string;
   zaakInstanceLinks: ZaakInstanceLink[];
   createWithDossier: boolean;
+  zakenApiPluginConfigurationId: string;
+  rsin: string;
 }
 
 export interface ZaakTypeRequest {
@@ -54,8 +56,10 @@ export interface ZaakTypeRequest {
 
 export interface CreateZaakTypeLinkRequest {
   documentDefinitionName: string;
-  zaakTypeUrl: string;
+  zaakTypeUrl?: string;
   createWithDossier: boolean;
+  zakenApiPluginConfigurationId?: string;
+  rsin?: string;
 }
 
 export interface CreateInformatieObjectTypeLinkRequest {
