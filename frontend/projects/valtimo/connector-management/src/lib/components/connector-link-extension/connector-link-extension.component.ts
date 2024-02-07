@@ -26,6 +26,9 @@ import {ObjectApiSyncService} from '../../services/object-api-sync/object-api-sy
 import {ConnectorManagementService} from '../../services/connector-management/connector-management.service';
 import {ConnectorInstance} from '@valtimo/config';
 
+/**
+ * @deprecated Use the new plugin framework
+ */
 @Component({
   selector: 'valtimo-connector-link-extension',
   templateUrl: './connector-link-extension.component.html',

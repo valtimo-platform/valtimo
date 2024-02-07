@@ -25,6 +25,9 @@ import {ConnectorManagementService} from '../../services/connector-management/co
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
 import {ObjectApiSyncService} from '../../services/object-api-sync/object-api-sync.service';
 
+/**
+ * @deprecated Use the new plugin framework
+ */
 @Component({
   selector: 'valtimo-connector-link-extension-modal',
   templateUrl: './connector-link-extension-modal.component.html',

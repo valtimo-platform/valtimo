@@ -17,6 +17,9 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {ConnectorProperties} from '@valtimo/config';
 
+/**
+ * @deprecated Use the new plugin framework
+ */
 @Component({
   selector: 'valtimo-edit-connector-form',
   templateUrl: './edit-connector-form.component.html',

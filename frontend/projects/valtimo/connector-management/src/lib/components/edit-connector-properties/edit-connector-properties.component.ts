@@ -25,6 +25,9 @@ import {map, take} from 'rxjs/operators';
 import {cloneDeep, get, set} from 'lodash';
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
 
+/**
+ * @deprecated Use the new plugin framework
+ */
 @Component({
   selector: 'valtimo-edit-connector-properties',
   templateUrl: './edit-connector-properties.component.html',

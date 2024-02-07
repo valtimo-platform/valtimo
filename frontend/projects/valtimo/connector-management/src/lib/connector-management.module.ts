@@ -48,6 +48,9 @@ import {EditConnectorFormComponent} from './components/edit-connector-form/edit-
 import {EditTaakConnectorComponent} from './components/edit-taak-connector/edit-taak-connector.component';
 import {AddConnectorConfigureComponent} from './components/add-connector-configure/add-connector-configure.component';
 
+/**
+ * @deprecated Use the new plugin framework
+ */
 @NgModule({
   providers: [ConnectorManagementStateService],
   declarations: [

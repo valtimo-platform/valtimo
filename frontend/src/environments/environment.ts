@@ -32,7 +32,6 @@ import {
 } from '@valtimo/config';
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
 import {emailExtensionInitializer, openZaakExtensionInitializer} from '@valtimo/open-zaak';
-import {connectorLinkExtensionInitializer} from '@valtimo/connector-management';
 import {LOGO_BASE_64} from './logo';
 import {cspHeaderParamsDev} from './csp';
 
@@ -74,7 +73,6 @@ export const environment: ValtimoConfig = {
   initializers: [
     openZaakExtensionInitializer,
     emailExtensionInitializer,
-    connectorLinkExtensionInitializer,
   ],
   authentication: authenticationKeycloak,
   menu: {
@@ -131,15 +129,14 @@ export const environment: ValtimoConfig = {
             sequence: 6,
             includeFunction: IncludeFunction.ObjectManagementEnabled,
           },
-          {link: ['/connectors'], title: 'Connectors', sequence: 7},
-          {link: ['/plugins'], title: 'Plugins', sequence: 8},
-          {link: ['/process-links'], title: 'Process links', sequence: 9},
-          {link: ['/dashboard-management'], title: 'Dashboard configuration', sequence: 10},
-          {link: ['/access-control'], title: 'Access Control', sequence: 11},
-          {link: ['/translation-management'], title: 'Translations', sequence: 12},
-          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 13},
-          {link: ['/process-migration'], title: 'Process migration', sequence: 14},
-          {link: ['/choice-fields'], title: 'Choice fields', sequence: 15},
+          {link: ['/plugins'], title: 'Plugins', sequence: 7},
+          {link: ['/process-links'], title: 'Process links', sequence: 8},
+          {link: ['/dashboard-management'], title: 'Dashboard configuration', sequence: 9},
+          {link: ['/access-control'], title: 'Access Control', sequence: 10},
+          {link: ['/translation-management'], title: 'Translations', sequence: 11},
+          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 12},
+          {link: ['/process-migration'], title: 'Process migration', sequence: 13},
+          {link: ['/choice-fields'], title: 'Choice fields', sequence: 14},
         ],
       },
       {

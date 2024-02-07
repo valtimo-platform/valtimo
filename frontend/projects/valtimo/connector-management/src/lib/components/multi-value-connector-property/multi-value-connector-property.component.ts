@@ -19,6 +19,9 @@ import {ConnectorPropertyEditField, ConnectorPropertyValueType} from '@valtimo/c
 import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 
+/**
+ * @deprecated Use the new plugin framework
+ */
 @Component({
   selector: 'valtimo-multi-value-connector-property',
   templateUrl: './multi-value-connector-property.component.html',

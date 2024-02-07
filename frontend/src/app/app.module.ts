@@ -92,7 +92,6 @@ import {FormManagementModule} from '@valtimo/form-management';
 import {DossierManagementModule} from '@valtimo/dossier-management';
 import {OpenZaakModule} from '@valtimo/open-zaak';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
-import {ConnectorManagementModule} from '@valtimo/connector-management';
 import {CustomerModule} from '@valtimo/customer';
 import {PluginManagementModule} from '@valtimo/plugin-management';
 import {
@@ -186,7 +185,6 @@ export function tabsFactory() {
     UploaderModule,
     AnalyseModule,
     SwaggerModule,
-    ConnectorManagementModule,
     ProcessManagementModule,
     DecisionModule,
     MilestoneModule,

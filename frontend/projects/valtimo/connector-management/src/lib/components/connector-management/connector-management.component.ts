@@ -23,6 +23,9 @@ import {ConnectorManagementService} from '../../services/connector-management/co
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
 import {Pagination, TableColumn} from '@valtimo/components';
 
+/**
+ * @deprecated Use the new plugin framework
+ */
 @Component({
   selector: 'valtimo-connector-management',
   templateUrl: './connector-management.component.html',

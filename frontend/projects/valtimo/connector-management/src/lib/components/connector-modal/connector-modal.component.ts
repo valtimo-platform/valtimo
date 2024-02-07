@@ -21,6 +21,9 @@ import {ConnectorManagementStateService} from '../../services/connector-manageme
 import {take} from 'rxjs/operators';
 import {VModalComponent, ModalService} from '@valtimo/components';
 
+/**
+ * @deprecated Use the new plugin framework
+ */
 @Component({
   selector: 'valtimo-connector-modal',
   templateUrl: './connector-modal.component.html',
