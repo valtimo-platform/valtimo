@@ -93,6 +93,12 @@ interface ListField {
   sortable?: boolean;
 }
 
+interface CarbonListNoResultsMessage {
+  description: string;
+  isSearchResult: boolean;
+  title: string;
+}
+
 export {
   ActionItem,
   CarbonListBatchText,
@@ -105,4 +111,5 @@ export {
   MoveRowDirection,
   MoveRowEvent,
   ViewType,
+  CarbonListNoResultsMessage,
 };

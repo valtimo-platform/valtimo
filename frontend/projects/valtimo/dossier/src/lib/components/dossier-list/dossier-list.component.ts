@@ -20,9 +20,8 @@ import {PermissionService} from '@valtimo/access-control';
 import {
   BreadcrumbService,
   CarbonListComponent,
-  CarbonListTranslations,
+  CarbonListNoResultsMessage,
   CarbonPaginationSelection,
-  DEFAULT_PAGINATOR_CONFIG,
   ListField,
   PageTitleService,
   Pagination,
@@ -63,11 +62,7 @@ import {
   tap,
 } from 'rxjs';
 import {DossierListActionsComponent} from '../dossier-list-actions/dossier-list-actions.component';
-import {
-  CAN_VIEW_CASE_PERMISSION,
-  CAN_CREATE_CASE_PERMISSION,
-  DOSSIER_DETAIL_PERMISSION_RESOURCE,
-} from '../../permissions';
+import {CAN_VIEW_CASE_PERMISSION, DOSSIER_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
 import {
   DossierBulkAssignService,
   DossierColumnService,
@@ -75,9 +70,14 @@ import {
   DossierListPaginationService,
   DossierListSearchService,
   DossierListService,
+  DossierListStatusService,
   DossierParameterService,
 } from '../../services';
-import {DefaultTabs} from '../../models';
+import {
+  DEFAULT_DOSSIER_LIST_TABS,
+  DOSSIER_LIST_NO_RESULTS_MESSAGE,
+  DOSSIER_LIST_TABLE_TRANSLATIONS,
+} from '../../constants';
 
 @Component({
   selector: 'valtimo-dossier-list',
@@ -90,6 +90,7 @@ import {DefaultTabs} from '../../models';
     DossierParameterService,
     DossierListPaginationService,
     DossierListSearchService,
+    DossierListStatusService,
   ],
 })
 export class DossierListComponent implements OnInit, OnDestroy {
@@ -103,37 +104,17 @@ export class DossierListComponent implements OnInit, OnDestroy {
   public loadingSearchFields = true;
   public loadingAssigneeFilter = true;
   public loadingDocumentItems = true;
+  public loadingStatuses = true;
   public pagination!: Pagination;
   public canHaveAssignee!: boolean;
   public visibleDossierTabs: Array<DossierListTab> | null = null;
 
-  public readonly defaultTabs: DossierListTab[] = [
-    DossierListTab.ALL,
-    DossierListTab.MINE,
-    DossierListTab.OPEN,
-  ];
+  public readonly defaultTabs = DEFAULT_DOSSIER_LIST_TABS;
+  public readonly tableTranslations = DOSSIER_LIST_TABLE_TRANSLATIONS;
 
-  public readonly tableTranslations: CarbonListTranslations = {
-    select: {
-      single: 'dossier.select.single',
-      multiple: 'dossier.select.multiple',
-    },
-    pagination: {
-      itemsPerPage: 'dossier.pagination.itemsPerPage',
-      totalItem: 'dossier.pagination.totalItem',
-      totalItems: 'dossier.pagination.totalItems',
-    },
-  };
-
-  public readonly noResultsMessage$ = new BehaviorSubject<{
-    description: string;
-    isSearchResult: boolean;
-    title: string;
-  }>({
-    description: 'dossier.noResults.ALL.description',
-    isSearchResult: false,
-    title: 'dossier.noResults.ALL.title',
-  });
+  public readonly noResultsMessage$ = new BehaviorSubject<CarbonListNoResultsMessage>(
+    DOSSIER_LIST_NO_RESULTS_MESSAGE
+  );
   public readonly showAssignModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangePageModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangeTabModal$ = new BehaviorSubject<boolean>(false);
@@ -147,14 +128,6 @@ export class DossierListComponent implements OnInit, OnDestroy {
 
   public readonly documentDefinitionName$ = this.listService.documentDefinitionName$;
 
-  public readonly canCreateDocument$: Observable<boolean> = this.documentDefinitionName$.pipe(
-    switchMap(documentDefinitionName =>
-      this.permissionService.requestPermission(CAN_CREATE_CASE_PERMISSION, {
-        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
-        identifier: documentDefinitionName,
-      })
-    )
-  );
   public readonly selectedDocumentIds$ = new BehaviorSubject<string[]>([]);
 
   public readonly schema$ = this.listService.documentDefinitionName$.pipe(
@@ -201,7 +174,6 @@ export class DossierListComponent implements OnInit, OnDestroy {
       })
     );
 
-  public paginatorConfig = {...DEFAULT_PAGINATOR_CONFIG, itemsPerPageOptions: [1, 2, 3, 4, 10]};
   public readonly fields$: Observable<Array<ListField>> = combineLatest([
     this._canHaveAssignee$,
     this._columns$,
@@ -418,7 +390,8 @@ export class DossierListComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly searchService: DossierListSearchService,
     private readonly translateService: TranslateService,
-    private readonly permissionService: PermissionService
+    private readonly permissionService: PermissionService,
+    private readonly statusService: DossierListStatusService
   ) {}
 
   public ngOnInit(): void {

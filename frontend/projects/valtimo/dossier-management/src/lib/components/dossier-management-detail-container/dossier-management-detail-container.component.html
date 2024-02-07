@@ -62,6 +62,17 @@
       (selected)="displayBodyComponent(TabEnum.TABS)"
     >
     </cds-tab>
+    <cds-tab
+      *ngIf="{active: currentTab === TabEnum.STATUSES} as vars"
+      class="no-padding-left-right no-padding-top-bottom"
+      [active]="vars.active"
+      [heading]="'dossierManagement.tabs.statuses' | translate"
+      (selected)="displayBodyComponent(TabEnum.STATUSES)"
+    >
+      <valtimo-dossier-management-statuses
+        *ngIf="vars.active"
+      ></valtimo-dossier-management-statuses>
+    </cds-tab>
   </cds-tabs>
 
   <div class="dossier-management-detail-container__content">

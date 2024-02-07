@@ -21,4 +21,5 @@ export enum TabEnum {
   SEARCH = 'search',
   LIST = 'list',
   TABS = 'tabs',
+  STATUSES = 'statuses',
 }

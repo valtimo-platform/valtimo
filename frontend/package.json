@@ -107,6 +107,7 @@
     "libs:build:object-management": "ng build @valtimo/object-management",
     "libs:build:object": "ng build @valtimo/object",
     "libs:build:access-control-management": "ng build @valtimo/access-control-management",
+    "libs:build:copy-version": "npm run copy-frontend-version",
     "libs:test:config": "cross-env-shell \"ng test @valtimo/config --watch $WATCH_TESTS --browsers $TEST_BROWSER\"",
     "libs:test:access-control": "cross-env-shell \"ng test @valtimo/access-control --watch $WATCH_TESTS --browsers $TEST_BROWSER\"",
     "libs:test:security": "cross-env-shell \"ng test @valtimo/security --watch $WATCH_TESTS --browsers $TEST_BROWSER\"",

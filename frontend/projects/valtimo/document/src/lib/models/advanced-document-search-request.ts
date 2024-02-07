@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,78 +15,64 @@
  */
 
 import {HttpParams} from '@angular/common/http';
-import {SortState} from './models';
+import {SortState} from './index';
+import {AssigneeFilter, SearchFilter, SearchFilterRange, SearchOperator} from '@valtimo/config';
 
-export interface DocumentSearchRequest {
+export interface AdvancedDocumentSearchRequest {
   definitionName: string;
   page: number;
   size: number;
-  sequence?: number;
-  createdBy?: string;
-  globalSearchFilter?: string;
   sort?: SortState;
-  searchCriteria?: Array<{path: string; value: string}>;
 
-  asHttpBody(): DocumentSearchRequestHttpBody;
+  asHttpBody(): AdvancedDocumentSearchRequestHttpBody;
   asHttpParams(): HttpParams;
   setPage(page: number): void;
   getSortString(sort: SortState): string;
 }
 
-export class DocumentSearchRequestHttpBody {
+export class AdvancedDocumentSearchRequestHttpBody {
   documentDefinitionName?: string;
   sequence?: number;
   createdBy?: string;
-  globalSearchFilter?: string;
-  otherFilters?: Array<{path: string; value: string}>;
+  searchOperator?: SearchOperator;
+  otherFilters?: Array<SearchFilter | SearchFilterRange>;
+  assigneeFilter?: AssigneeFilter;
 }
 
-export class DocumentSearchRequestImpl implements DocumentSearchRequest {
+export class AdvancedDocumentSearchRequestImpl implements AdvancedDocumentSearchRequest {
   definitionName: string;
   page: number;
   size: number;
-  sequence?: number;
-  createdBy?: string;
-  globalSearchFilter?: string;
   sort?: SortState;
-  otherFilters?: Array<{path: string; value: string}>;
+  searchOperator?: SearchOperator;
+  otherFilters?: Array<SearchFilter | SearchFilterRange>;
 
   constructor(
     definitionName: string,
     page: number,
     size: number,
-    sequence?: number,
-    createdBy?: string,
-    globalSearchFilter?: string,
     sort?: SortState,
-    otherFilters?: Array<{path: string; value: string}>
+    searchOperator?: SearchOperator,
+    otherFilters?: Array<SearchFilter | SearchFilterRange>
   ) {
     this.definitionName = definitionName;
     this.page = page;
     this.size = size;
-    this.sequence = sequence;
-    this.createdBy = createdBy;
-    this.globalSearchFilter = globalSearchFilter;
     this.sort = sort;
     this.otherFilters = otherFilters;
+    this.searchOperator = searchOperator;
   }
 
-  asHttpBody(): DocumentSearchRequestHttpBody {
-    const httpBody = new DocumentSearchRequestHttpBody();
+  asHttpBody(): AdvancedDocumentSearchRequestHttpBody {
+    const httpBody = new AdvancedDocumentSearchRequestHttpBody();
 
     httpBody.documentDefinitionName = this.definitionName;
 
-    if (this.sequence) {
-      httpBody.sequence = this.sequence;
-    }
-    if (this.createdBy) {
-      httpBody.createdBy = this.createdBy;
-    }
-    if (this.globalSearchFilter) {
-      httpBody.globalSearchFilter = this.globalSearchFilter;
-    }
     if (this.otherFilters) {
       httpBody.otherFilters = this.otherFilters;
+    }
+    if (this.searchOperator) {
+      httpBody.searchOperator = this.searchOperator;
     }
 
     return httpBody;

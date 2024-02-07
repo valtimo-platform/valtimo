@@ -15,7 +15,7 @@
  */
 import {Component} from '@angular/core';
 import {Router} from '@angular/router';
-import {Upload16} from '@carbon/icons';
+import {Search20, TrashCan20} from '@carbon/icons';
 import {ColumnConfig, MenuService, Pagination, ViewType} from '@valtimo/components';
 import {DocumentDefinition, DocumentService, Page} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
@@ -71,7 +71,7 @@ export class DossierManagementListComponent {
     private readonly menuService: MenuService,
     private readonly router: Router
   ) {
-    this.iconService.registerAll([Upload16]);
+    this.iconService.registerAll([Search20, TrashCan20]);
   }
 
   public onCloseModal(definitionUploaded: boolean): void {

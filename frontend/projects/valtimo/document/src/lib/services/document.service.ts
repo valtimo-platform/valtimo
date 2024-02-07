@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,8 @@ import {
   SpecifiedDocuments,
   UndeployDocumentDefinitionResult,
   UploadProcessLink,
-} from './models';
-import {DocumentSearchRequest} from './document-search-request';
+} from '../models';
+import {DocumentSearchRequest} from '../models/document-search-request';
 import {
   AssigneeFilter,
   ConfigService,
@@ -57,7 +57,7 @@ import {
   SearchFilterRange,
   SearchOperator,
 } from '@valtimo/config';
-import {AdvancedDocumentSearchRequest} from './advanced-document-search-request';
+import {AdvancedDocumentSearchRequest} from '../models/advanced-document-search-request';
 
 @Injectable({
   providedIn: 'root',
