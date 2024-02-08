@@ -21,6 +21,7 @@
 >
   <div class="form__element">
     <cds-dropdown
+      [appendInline]="true"
       formControlName="documentDefinition"
       [helperText]="'documentDefinitionHelperText' | widgetTranslate: dataSourceKey | async"
       [invalidText]="'documentDefinitionHelperText' | widgetTranslate: dataSourceKey | async"
@@ -51,6 +52,7 @@
       type="keyDropdownValue"
       (allValuesValidEvent)="onAllConditionsValid($event)"
       (valueChange)="conditionsValueChange($event)"
+      carbonTheme="white"
     ></valtimo-carbon-multi-input>
   </div>
 </form>

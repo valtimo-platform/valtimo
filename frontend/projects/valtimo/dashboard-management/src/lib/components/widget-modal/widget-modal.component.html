@@ -103,6 +103,7 @@
 
     <div class="form__element" *ngIf="obs.dataSourceItems">
       <cds-dropdown
+        [appendInline]="true"
         formControlName="dataSource"
         [helperText]="'dashboardManagement.widgets.form.dataSourceHelperText' | translate"
         [invalidText]="'dashboardManagement.widgets.form.dateSourceHelperText' | translate"
@@ -124,6 +125,7 @@
 
     <div class="form__element" *ngIf="obs.displayTypeItems">
       <cds-dropdown
+        [appendInline]="true"
         formControlName="displayType"
         [helperText]="'dashboardManagement.widgets.form.displayTypeHelperText' | translate"
         [invalid]="displayType.dirty && displayType.invalid"
