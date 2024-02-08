@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-::ng-deep .cds--list-box__wrapper {
-  z-index: 100001 !important;
-}
-
 .v-select-container {
   &.--margin {
     margin-block-end: var(--v-input-margin);

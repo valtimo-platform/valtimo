@@ -25,6 +25,7 @@
   </p>
   <div class="select-form">
     <cds-combo-box
+      [appendInline]="true"
       [disabled]="!obs.formDefinitions || obs.saving"
       [items]="obs.formDefinitions || []"
       [placeholder]="'interface.typeToSearch' | translate"
