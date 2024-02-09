@@ -43,6 +43,7 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       templateGroup: 'Template groep',
       templateName: 'Template naam',
       templateGroupName: 'Template groepsnaam',
+      resultingTemplateNameListProcessVariableName: "Naam van process variable om lijst in op te slaan",
       templateDataTooltip:
         'De rechter value-kolom ondersteunt ook het gebruik van procesvariabelen zoals pv: en doc:',
       format: 'Documentformaat',
@@ -67,6 +68,8 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       templateGroup: 'Template group',
       templateName: 'Template name',
       templateGroupName: 'Template group name',
+      resultingTemplateNameListProcessVariableName: "Name of process variable to save the list in",
+
       format: 'Document format',
       templateData: 'Template data',
       templateDataTooltip:
@@ -91,6 +94,7 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       templateGroup: 'Template gruppe',
       templateName: 'Template name',
       templateGroupName: 'Template gruppe name',
+      resultingTemplateNameListProcessVariableName: "Name der Prozessvariable, um die Liste zu speichern",
       format: 'Dokumentformat',
       templateData: 'Templatedaten',
       templateDataTooltip:

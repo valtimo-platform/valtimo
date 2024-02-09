@@ -34,6 +34,7 @@ interface GenerateDocumentConfig {
 
 interface GetTemplateNamesConfig {
   templateGroupName: string;
+  resultingTemplateNameListProcessVariableName: string;
 }
 
 export {
