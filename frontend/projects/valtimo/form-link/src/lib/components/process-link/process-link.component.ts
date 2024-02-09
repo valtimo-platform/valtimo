@@ -70,7 +70,9 @@ export class ProcessLinkComponent {
               this.stateService.setAvailableProcessLinkTypes(result);
             }
 
-            this.stateService.showModal();
+            if (result?.length > 0 || processLink) {
+              this.stateService.showModal();
+            }
           })
         )
         .subscribe();
