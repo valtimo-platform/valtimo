@@ -124,6 +124,7 @@ export interface ValtimoConfig {
     returnToLastUrlAfterTokenExpiration?: boolean;
     enableTabManagement?: boolean;
     hideValtimoVersionsForNonAdmins?: boolean;
+    useStartEventNameAsStartFormTitle?: boolean;
   };
   visibleTaskListTabs?: Array<TaskListTab>;
   visibleDossierListTabs?: Array<DossierListTab>;

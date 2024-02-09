@@ -34,11 +34,7 @@ interface GenerateDocumentConfig {
 
 interface GetTemplateNamesConfig {
   templateGroupName: string;
+  resultingTemplateNameListProcessVariableName: string;
 }
 
-export {
-  SmartDocumentsConfig,
-  GenerateDocumentConfig,
-  GetTemplateNamesConfig,
-  DocumentFormat
-};
+export {SmartDocumentsConfig, GenerateDocumentConfig, GetTemplateNamesConfig, DocumentFormat};

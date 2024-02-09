@@ -37,6 +37,13 @@
     }
   }
 
+  &__progress-bar {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
   &__error {
     display: flex;
     align-items: center;

@@ -17,27 +17,35 @@
 <valtimo-modal
   #taskDetailModal
   *ngIf="{
-    loading: loading$ | async
+    loading: loading$ | async,
+    page: page$ | async,
+    task: task$ | async,
+    formDefinition: formDefinition$ | async,
+    processLinkIsForm: processLinkIsForm$ | async,
+    formioOptions: formioOptions$ | async,
+    processLinkIsFormFlow: processLinkIsFormFlow$ | async,
+    formFlowInstanceId: formFlowInstanceId$ | async,
+    errorMessage: errorMessage$ | async
   } as obs"
   elementId="taskDetailModal"
-  [title]="page?.title"
-  [subtitle]="page?.subtitle"
+  [title]="obs.page?.title"
+  [subtitle]="obs.page?.subtitle"
   [templateBelowSubtitle]="assignUserToTask"
 >
-  <div body *ngIf="formDefinition && (processLinkIsForm$ | async)">
+  <div body *ngIf="obs.formDefinition && obs.processLinkIsForm">
     <valtimo-form-io
       #form
-      [form]="formDefinition"
+      [form]="obs.formDefinition"
       (submit)="onSubmit($event)"
       (change)="onChange($event)"
-      [options]="formioOptions"
+      [options]="obs.formioOptions"
     ></valtimo-form-io>
   </div>
-  <div body *ngIf="processLinkIsFormFlow$ | async">
+  <div body *ngIf="obs.processLinkIsFormFlow">
     <valtimo-form-flow
       #formFlow
       [formIoFormData]="formIoFormData$"
-      [formFlowInstanceId]="formFlowInstanceId"
+      [formFlowInstanceId]="obs.formFlowInstanceId"
       (formFlowComplete)="completeTask()"
     ></valtimo-form-flow>
   </div>
@@ -48,7 +56,9 @@
   </div>
   <div
     body
-    *ngIf="obs.loading === false && !formDefinition && !formFlowInstanceId && !errorMessage"
+    *ngIf="
+      obs.loading === false && !obs.formDefinition && !obs.formFlowInstanceId && !obs.errorMessage
+    "
   >
     <div class="bg-warning text-black mb-0 p-3 text-center">
       {{
@@ -58,18 +68,18 @@
       }}
     </div>
   </div>
-  <div body *ngIf="errorMessage">
+  <div body *ngIf="obs.errorMessage">
     <div class="bg-danger text-black mb-0 p-3 text-center">
-      {{ errorMessage }}
+      {{ obs.errorMessage }}
     </div>
   </div>
   <div footer>
-    <div class="mb-0 p-3 text-center" *ngIf="!formDefinition">
+    <div class="mb-0 p-3 text-center" *ngIf="!!obs.formDefinition">
       <button
-        (click)="gotoProcessLinkScreen()"
         class="btn btn-secondary btn-space"
-        id="process-link-button"
         type="button"
+        (click)="gotoProcessLinkScreen()"
+        id="process-link-button"
       >
         {{ 'formManagement.gotoProcessLinksButton' | translate }}
       </button>
@@ -78,10 +88,12 @@
 </valtimo-modal>
 
 <ng-template #assignUserToTask>
-  <valtimo-assign-user-to-task
-    *ngIf="task && assignmentOfTaskChanged && (canAssign$ | async)"
-    [taskId]="task.id"
-    [assigneeId]="task.assignee"
-    (assignmentOfTaskChanged)="assignmentOfTaskChanged.emit()"
-  ></valtimo-assign-user-to-task>
+  <ng-container *ngIf="task$ | async as task">
+    <valtimo-assign-user-to-task
+      *ngIf="task && assignmentOfTaskChanged"
+      [taskId]="task.id"
+      [assigneeEmail]="task.assignee"
+      (assignmentOfTaskChanged)="assignmentOfTaskChanged.emit()"
+    ></valtimo-assign-user-to-task>
+  </ng-container>
 </ng-template>
