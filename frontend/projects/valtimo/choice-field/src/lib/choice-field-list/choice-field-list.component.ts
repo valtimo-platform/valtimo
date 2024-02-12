@@ -59,9 +59,9 @@ export class ChoiceFieldListComponent implements OnInit {
   }
 
   private initData() {
-    this.service.query({page: this.pageParam, size: this.pagination.size}).subscribe(results => {
-      this.pagination.collectionSize = results.headers.get('x-total-count');
-      this.choiceFields = results.body;
+    this.service.queryPage({page: this.pageParam, size: this.pagination.size}).subscribe(results => {
+      this.pagination.collectionSize = results.totalElements;
+      this.choiceFields = results.content;
     });
   }
 

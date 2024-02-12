@@ -686,7 +686,7 @@
     "selectZakenApiPluginForCase": "Select Zaken Api plugin for case",
     "selectZakenApiPlugin": "Select Zaken Api plugin",
     "zakenApiPlugin": "Zaken Api plugin",
-    "rsin": "RSIN, der zum Erstellen von Zaak verwendet wird",
+    "rsin": "RSIN used when creating the Zaak in the Zaken Api",
     "selectInfoObjectType": "Select information object type",
     "save": "Save"
   },
