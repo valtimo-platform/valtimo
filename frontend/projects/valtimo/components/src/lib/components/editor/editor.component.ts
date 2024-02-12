@@ -56,6 +56,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   @Input() widthPx!: number;
   @Input() heightPx!: number;
   @Input() heightStyle!: string;
+  @Input() jsonSchema?: string;
 
   @Output() validEvent: EventEmitter<boolean> = new EventEmitter();
   @Output() valueChangeEvent: EventEmitter<string> = new EventEmitter();
@@ -99,13 +100,24 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   private updateModel(): void {
     if (this._editor && this._model && monaco?.editor) {
-      const model = monaco.editor.createModel(
-        this._model.value,
-        this._model.language,
-        this._model.uri
-      );
+      let model = null;
+      if (this._model.uri) {
+        model = monaco.editor.getModel(monaco.Uri.parse(this._model.uri));
+        if (model != null) {
+          model.setValue(this._model.value);
+        }
+      }
+
+      if (model == null) {
+        model = monaco.editor.createModel(
+          this._model.value,
+          this._model.language,
+          monaco.Uri.parse(this._model.uri)
+        );
+      }
 
       this._editor.setModel(model);
+      this.initJsonSchemaValidation();
     }
   }
 
@@ -144,6 +156,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     this._editor.onDidChangeModelLanguageConfiguration(this.formatDocument);
     this._editor.onDidLayoutChange(this.formatDocument);
     this._editor.onDidChangeModelContent(() => {
+      this.formatDocument();
       this.valueChangeEvent.emit(this._editor.getValue());
     });
     monaco?.editor?.onDidChangeMarkers(() => {
@@ -163,5 +176,20 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
     this.setEditorEvents();
     this.updateModel();
+  }
+
+  private initJsonSchemaValidation() {
+    if (this.jsonSchema && this._model.uri) {
+      monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+        validate: true,
+        schemas: [
+          {
+            uri: this.jsonSchema['$id'],
+            fileMatch: ['*'],
+            schema: this.jsonSchema,
+          },
+        ],
+      });
+    }
   }
 }

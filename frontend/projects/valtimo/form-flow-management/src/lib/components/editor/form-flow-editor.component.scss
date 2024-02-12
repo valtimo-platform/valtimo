@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,14 +14,27 @@
  * limitations under the License.
  */
 
-interface EditorModel {
-  value: string;
-  language?: string;
-  uri?: string;
+.loading-container {
+  display: flex;
+  width: 100%;
+  justify-content: center;
 }
 
-interface WindowWithMonaco extends Window {
-  monaco?: object;
+::ng-deep .page-actions {
+  width: 100%;
 }
 
-export {EditorModel, WindowWithMonaco};
+.buttons-container {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.buttons-container-right {
+  display: flex;
+}
+
+.overflow-button {
+  margin-right: 16px;
+}

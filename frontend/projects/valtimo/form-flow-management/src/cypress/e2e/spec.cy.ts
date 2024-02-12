@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-interface EditorModel {
-  value: string;
-  language?: string;
-  uri?: string;
-}
-
-interface WindowWithMonaco extends Window {
-  monaco?: object;
-}
-
-export {EditorModel, WindowWithMonaco};
+describe('My First Test', () => {
+  it('Visits the initial project page', () => {
+    cy.visit('/');
+    cy.contains('app is running!');
+  });
+});

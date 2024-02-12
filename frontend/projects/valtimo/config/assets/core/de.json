@@ -1343,5 +1343,19 @@
     "modalContent": "Die Anzeige neuer Übersetzungen in der Anwendung erfordert möglicherweise ein Neuladen der Seite.",
     "saveWithoutReload": "Speichern",
     "saveWithReload": "Speichern und neu laden"
+  },
+  "formFlow": {
+    "title": "Alle form flow",
+    "key": "Schlüssel",
+    "version": "Version",
+    "readOnly": "Nur lesen",
+    "add": "Neuen Formularablauf hinzufügen",
+    "deleteModalContent": "Sind Sie sicher, dass Sie diesen Formularablauf löschen möchten?",
+    "savedSuccessTitle": "Erfolgreich gespeichert",
+    "savedSuccessTitleMessage": "{{key}} wurde erfolgreich gespeichert",
+    "noResults": {
+      "description": "Klicken Sie auf <strong>Neuen Formularablauf hinzufügen</strong>, um mit dem Entwerfen Ihres Formularablaufs zu beginnen",
+      "title": "Keine form flow hinzugefügt"
+    }
   }
 }

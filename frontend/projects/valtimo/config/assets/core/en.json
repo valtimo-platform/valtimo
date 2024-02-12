@@ -1343,5 +1343,19 @@
     "modalContent": "Displaying new translations in the application might require a page reload.",
     "saveWithoutReload": "Save",
     "saveWithReload": "Save and reload"
+  },
+  "formFlow": {
+    "title": "All form flows",
+    "key": "Key",
+    "version": "Version",
+    "readOnly": "Read only",
+    "add": "Add new form flow",
+    "deleteModalContent": "Are you sure you want to delete this form flow?",
+    "savedSuccessTitle": "Saved successfully",
+    "savedSuccessTitleMessage": "{{key}} was saved successfully",
+    "noResults": {
+      "description": "Click <strong>Add new form flow</strong> to start designing your form flow",
+      "title": "No form flows added"
+    }
   }
 }

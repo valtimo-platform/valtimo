@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-interface EditorModel {
-  value: string;
-  language?: string;
-  uri?: string;
-}
+/*
+ * Public API Surface of form-flow
+ */
 
-interface WindowWithMonaco extends Window {
-  monaco?: object;
-}
-
-export {EditorModel, WindowWithMonaco};
+export * from './lib/models';
+export * from './lib/services';
+export * from './lib/form-flow-management.module';

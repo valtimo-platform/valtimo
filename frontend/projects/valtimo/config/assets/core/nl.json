@@ -1345,5 +1345,19 @@
     "modalContent": "Het weergeven van nieuwe vertalingen in de applicatie vereist mogelijk een herladen van de pagina.",
     "saveWithoutReload": "Opslaan",
     "saveWithReload": "Opslaan en opnieuw laden"
+  },
+  "formFlow": {
+    "title": "Alle form flows",
+    "key": "Sleutel",
+    "version": "Versie",
+    "readOnly": "Alleen lezen",
+    "add": "Nieuwe form flow toevoegen",
+    "deleteModalContent": "Weet je zeker dat je deze form flow wilt verwijderen?",
+    "savedSuccessTitle": "Succesvol opgeslagen",
+    "savedSuccessTitleMessage": "{{key}} is succesvol opgeslagen",
+    "noResults": {
+      "description": "Klik op <strong>Nieuwe form flow toevoegen</strong> om te beginnen met het ontwerpen van je form flow",
+      "title": "Geen formulierstromen toegevoegd"
+    }
   }
 }

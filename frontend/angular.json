@@ -1853,6 +1853,76 @@
         }
       }
     },
+    "@valtimo/form-flow-management": {
+      "projectType": "library",
+      "root": "projects/valtimo/form-flow-management",
+      "sourceRoot": "projects/valtimo/form-flow-management/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/valtimo/form-flow-management/tsconfig.lib.json",
+            "project": "projects/valtimo/form-flow-management/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/form-flow-management/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.ts",
+            "tsConfig": "projects/valtimo/form-flow-management/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/form-flow-management/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/form-flow-management/src/**/*.ts",
+              "projects/valtimo/form-flow-management/src/**/*.html"
+            ]
+          }
+        },
+        "cypress-run": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "@valtimo/form-flow-management:serve",
+            "configFile": "projects/valtimo/form-flow-management/cypress.config.js"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "@valtimo/form-flow-management:serve:production"
+            }
+          }
+        },
+        "cypress-open": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "watch": true,
+            "headless": false,
+            "configFile": "projects/valtimo/form-flow-management/cypress.config.js"
+          }
+        },
+        "e2e": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "@valtimo/form-flow-management:serve",
+            "watch": true,
+            "headless": false
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "@valtimo/form-flow-management:serve:production"
+            }
+          }
+        }
+      }
+    },
     "@valtimo/form-link": {
       "projectType": "library",
       "root": "projects/valtimo/form-link",

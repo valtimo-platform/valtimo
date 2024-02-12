@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-interface EditorModel {
-  value: string;
-  language?: string;
-  uri?: string;
-}
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {Observable} from 'rxjs';
 
-interface WindowWithMonaco extends Window {
-  monaco?: object;
-}
+@Component({
+  selector: 'valtimo-delete-form-flow-modal',
+  templateUrl: './delete-form-flow-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class DeleteFormFlowModalComponent {
+  @Input() deleteFormFlowDefinitionKey: string;
+  @Input() showDeleteModal$: Observable<boolean>;
+  @Output() deleteEvent = new EventEmitter<string>();
 
-export {EditorModel, WindowWithMonaco};
+  public onDelete(formFlowDefinitionKey: string): void {
+    this.deleteEvent.emit(formFlowDefinitionKey);
+  }
+}

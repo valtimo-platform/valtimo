@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-interface EditorModel {
-  value: string;
-  language?: string;
-  uri?: string;
-}
+import {defineConfig} from 'cypress';
 
-interface WindowWithMonaco extends Window {
-  monaco?: object;
-}
-
-export {EditorModel, WindowWithMonaco};
+export default defineConfig({
+  e2e: {
+    baseUrl: 'http://localhost:4200',
+    supportFile: false,
+  },
+});

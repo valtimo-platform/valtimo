@@ -14,14 +14,4 @@
  * limitations under the License.
  */
 
-interface EditorModel {
-  value: string;
-  language?: string;
-  uri?: string;
-}
-
-interface WindowWithMonaco extends Window {
-  monaco?: object;
-}
-
-export {EditorModel, WindowWithMonaco};
+export * from './form-flow.service';

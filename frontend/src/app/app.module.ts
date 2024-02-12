@@ -126,6 +126,7 @@ import {
 import {ObjectManagementModule} from '@valtimo/object-management';
 import {ObjectModule} from '@valtimo/object';
 import {AccessControlManagementModule} from '@valtimo/access-control-management';
+import {FormFlowManagementModule} from '@valtimo/form-flow-management';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -224,6 +225,7 @@ export function tabsFactory() {
     TestDataSourceModule,
     CaseCountDataSourceModule,
     AccessControlManagementModule,
+    FormFlowManagementModule,
     TranslationManagementModule,
   ],
   providers: [
