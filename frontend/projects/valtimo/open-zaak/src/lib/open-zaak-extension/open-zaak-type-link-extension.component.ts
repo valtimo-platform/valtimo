@@ -23,10 +23,8 @@ import {
   ZaakType,
   ZaakTypeLink,
 } from '@valtimo/resource';
-import {ActivatedRoute, Router} from '@angular/router';
-import {FormBuilder} from '@angular/forms';
+import {ActivatedRoute} from '@angular/router';
 import {AlertService, ModalComponent} from '@valtimo/components';
-import {NGXLogger} from 'ngx-logger';
 import {ToastrService} from 'ngx-toastr';
 import {TranslateService} from '@ngx-translate/core';
 import {BehaviorSubject} from 'rxjs';
@@ -41,7 +39,6 @@ import {PluginConfiguration, PluginManagementService} from '@valtimo/plugin';
 export class OpenZaakTypeLinkExtensionComponent {
   public zaakTypes: ZaakType[];
   public pluginConfigurations: PluginConfiguration[];
-  public zaakTypeLink: ZaakTypeLink;
   public zaakTypeLinkRequest: CreateZaakTypeLinkRequest;
   public informatieObjectTypeSelectionEnabled: boolean;
   public informatieObjectTypes: InformatieObjectType[];
@@ -51,18 +48,15 @@ export class OpenZaakTypeLinkExtensionComponent {
   private readonly documentDefinitionName: string;
 
   readonly loading$ = new BehaviorSubject<boolean>(true);
-  readonly noConfigAvailable$ = new BehaviorSubject<boolean>(false);
+  readonly zaakTypeLink$ = new BehaviorSubject<ZaakTypeLink>(null);
 
   @ViewChild('openZaakTypeLinkModal') modal: ModalComponent;
 
   constructor(
-    private router: Router,
     private route: ActivatedRoute,
-    private formBuilder: FormBuilder,
     private openZaakService: OpenZaakService,
     private alertService: AlertService,
     private toasterService: ToastrService,
-    private logger: NGXLogger,
     private translateService: TranslateService,
     private pluginManagementService: PluginManagementService,
     configService: ConfigService
@@ -87,7 +81,7 @@ export class OpenZaakTypeLinkExtensionComponent {
           zaakTypeUrl: zaakTypeLink?.zaakTypeUrl,
         };
       }
-      this.zaakTypeLink = zaakTypeLink;
+      this.zaakTypeLink$.next(zaakTypeLink);
       this.loadZaakTypes();
       this.loadZakenApiPluginConfigurations();
     });
@@ -107,7 +101,7 @@ export class OpenZaakTypeLinkExtensionComponent {
   loadZaakTypes() {
     return this.openZaakService.getZaakTypes().subscribe((zaakTypes: ZaakType[]) => {
       this.zaakTypes = zaakTypes;
-      this.findZaakType(this.zaakTypeLink.zaakTypeUrl);
+      this.findZaakType(this.zaakTypeLink$.getValue().zaakTypeUrl);
       this.loading$.next(false);
     });
   }
@@ -117,7 +111,7 @@ export class OpenZaakTypeLinkExtensionComponent {
       .getPluginConfigurationsByPluginDefinitionKey('zakenapi')
       .subscribe((plugins: PluginConfiguration[]) => {
         this.pluginConfigurations = plugins;
-        this.findPluginConfiguration(this.zaakTypeLink.zakenApiPluginConfigurationId);
+        this.findPluginConfiguration(this.zaakTypeLink$.getValue().zakenApiPluginConfigurationId);
       });
   }
 
@@ -129,13 +123,13 @@ export class OpenZaakTypeLinkExtensionComponent {
       });
   }
 
-  openModal() {
+  openModal(zaakTypeLink: ZaakTypeLink) {
     this.zaakTypeLinkRequest = {
       documentDefinitionName: this.documentDefinitionName,
-      createWithDossier: this.zaakTypeLink?.createWithDossier,
-      rsin: this.zaakTypeLink?.rsin,
-      zakenApiPluginConfigurationId: this.zaakTypeLink?.zakenApiPluginConfigurationId,
-      zaakTypeUrl: this.zaakTypeLink?.zaakTypeUrl,
+      createWithDossier: zaakTypeLink?.createWithDossier,
+      rsin: zaakTypeLink?.rsin,
+      zakenApiPluginConfigurationId: zaakTypeLink?.zakenApiPluginConfigurationId,
+      zaakTypeUrl: zaakTypeLink?.zaakTypeUrl,
     };
     if (this.informatieObjectTypeSelectionEnabled) {
       this.openZaakService.getOpenZaakConfig().subscribe(config => {
@@ -166,7 +160,7 @@ export class OpenZaakTypeLinkExtensionComponent {
           this.openZaakService.deleteInformatieObjectTypeLink(this.documentDefinitionName);
         }
         this.toasterService.success('Successfully de-linked zaaktype');
-        this.zaakTypeLink = null;
+        this.zaakTypeLink$.next(null);
       },
       () => {
         this.toasterService.error('Failed to de-link zaaktype');
@@ -183,16 +177,16 @@ export class OpenZaakTypeLinkExtensionComponent {
     console.log(this.zaakTypeLinkRequest);
     this.openZaakService.createZaakTypeLink(this.zaakTypeLinkRequest).subscribe(
       linkResult => {
-        this.zaakTypeLink = linkResult;
+        this.zaakTypeLink$.next(linkResult);
         this.zaakTypeLinkRequest = {
           documentDefinitionName: this.documentDefinitionName,
-          createWithDossier: this.zaakTypeLink?.createWithDossier,
-          rsin: this.zaakTypeLink?.rsin,
-          zakenApiPluginConfigurationId: this.zaakTypeLink?.zakenApiPluginConfigurationId,
-          zaakTypeUrl: this.zaakTypeLink?.zaakTypeUrl,
+          createWithDossier: linkResult?.createWithDossier,
+          rsin: linkResult?.rsin,
+          zakenApiPluginConfigurationId: linkResult?.zakenApiPluginConfigurationId,
+          zaakTypeUrl: linkResult?.zaakTypeUrl,
         };
-        this.findZaakType(this.zaakTypeLink.zaakTypeUrl);
-        this.findPluginConfiguration(this.zaakTypeLink.zakenApiPluginConfigurationId);
+        this.findZaakType(linkResult.zaakTypeUrl);
+        this.findPluginConfiguration(linkResult.zakenApiPluginConfigurationId);
         if (requestInformatieObjectTypeLink.informatieObjectType !== null) {
           this.openZaakService
             .createInformatieObjectTypeLink(requestInformatieObjectTypeLink)
