@@ -112,7 +112,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
         model = monaco.editor.createModel(
           this._model.value,
           this._model.language,
-          monaco.Uri.parse(this._model.uri)
+          this._model.uri == null ? null : monaco.Uri.parse(this._model.uri)
         );
       }
 
