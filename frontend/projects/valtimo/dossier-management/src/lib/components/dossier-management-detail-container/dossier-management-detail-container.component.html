@@ -81,6 +81,7 @@
         (currentTab === TabEnum.DOCUMENT && !pendingChanges) || pendingTab === TabEnum.DOCUMENT
       "
       [documentDefinitionName]="documentDefinitionName$ | async"
+      (pendingChangesUpdate)="onPendingChangesUpdate($event)"
       (cancelRedirect)="onCancelRedirectEvent()"
       (confirmRedirect)="onConfirmRedirectEvent()"
     ></valtimo-dossier-management-document-definition>
@@ -115,6 +116,7 @@
     <valtimo-dossier-management-detail-container-actions
       [documentDefinitionTitle]="documentDefinitionTitle$ | async"
       [documentDefinitionName]="documentDefinitionName$ | async"
+      (versionSet)="onVersionSet($event)"
     ></valtimo-dossier-management-detail-container-actions>
   </ng-template>
 </ng-container>

@@ -17,8 +17,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Inject,
   Input,
+  Output,
   TemplateRef,
   ViewChild,
 } from '@angular/core';
@@ -34,8 +36,8 @@ import {DossierManagementRemoveModalComponent} from '../dossier-management-remov
 
 @Component({
   selector: 'valtimo-dossier-management-detail-container-actions',
-  templateUrl: './dossier-management-detail-container-actions.html',
-  styleUrls: ['./dossier-management-detail-container-actions.scss'],
+  templateUrl: './dossier-management-detail-container-actions.component.html',
+  styleUrls: ['./dossier-management-detail-container-actions.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [NotificationService],
 })
@@ -49,11 +51,14 @@ export class DossierManagementDetailContainerActionsComponent {
   @Input() public set documentDefinitionName(value: string) {
     this.dossierDetailService.setSelectedDocumentDefinitionName(value);
   }
+  @Output() public versionSet = new EventEmitter<number>();
 
   public readonly CARBON_THEME = 'g10';
 
   public readonly exporting$ = new BehaviorSubject<boolean>(false);
   public readonly selectedVersionNumber$ = this.dossierDetailService.selectedVersionNumber$;
+  private readonly _previousSelectedVersionNumber$ =
+    this.dossierDetailService.previousSelectedVersionNumber$;
   private readonly _documentDefinitionName$ =
     this.dossierDetailService.selectedDocumentDefinitionName$;
   public readonly loadingVersion$ = new BehaviorSubject<boolean>(true);
@@ -70,13 +75,14 @@ export class DossierManagementDetailContainerActionsComponent {
   public readonly versionListItems$: Observable<Array<ListItem>> = combineLatest([
     this._documentDefinitionVersions$,
     this.selectedVersionNumber$,
+    this._previousSelectedVersionNumber$,
     this.translateService.stream('key'),
   ]).pipe(
     map(
-      ([versionsRes, selectVersionNumber]) =>
+      ([versionsRes, selectVersionNumber, previousVersionNumber]) =>
         versionsRes?.versions?.map(version => ({
           content: `${this.translateService.instant('dossierManagement.version')}${version}`,
-          selected: selectVersionNumber === version,
+          selected: selectVersionNumber === version || previousVersionNumber === version,
           id: `${version}`,
         })) || []
     )
@@ -146,7 +152,7 @@ export class DossierManagementDetailContainerActionsComponent {
   }
 
   public setVersion(version: any): void {
-    this.dossierDetailService.setSelectedVersionNumber(Number(version.item.id));
+    this.versionSet.emit(Number(version.item.id));
   }
 
   public openDossierRemoveModal(): void {

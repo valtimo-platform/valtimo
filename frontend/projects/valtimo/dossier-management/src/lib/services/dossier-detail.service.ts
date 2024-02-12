@@ -32,22 +32,24 @@ import {EditorModel, PageTitleService} from '@valtimo/components';
 @Injectable()
 export class DossierDetailService implements OnDestroy {
   private readonly _loadingDocumentDefinition$ = new BehaviorSubject<boolean>(true);
+  private readonly _previousSelectedVersionNumber$ = new BehaviorSubject<number | null>(null);
   private readonly _selectedVersionNumber$ = new BehaviorSubject<number | null>(null);
   private readonly _selectedDocumentDefinitionName$ = new BehaviorSubject<string>('');
   private readonly _documentDefinition$ = new BehaviorSubject<DocumentDefinition | null>(null);
   private readonly _documentDefinitionModel$: Observable<EditorModel> =
     this.documentDefinition$.pipe(
-      map(definition => ({
-        value: JSON.stringify(definition, null, 2),
+      map((definition: DocumentDefinition) => ({
+        value: JSON.stringify(definition.schema, null, 2),
         language: 'json',
       }))
     );
 
-  public get selectedVersionNumber$(): Observable<number> {
-    return this._selectedVersionNumber$.pipe(
-      filter(version => typeof version === 'number'),
-      distinctUntilChanged()
-    );
+  public get selectedVersionNumber$(): Observable<number | null> {
+    return this._selectedVersionNumber$.pipe(filter(version => typeof version === 'number'));
+  }
+
+  public get previousSelectedVersionNumber$(): Observable<number | null> {
+    return this._previousSelectedVersionNumber$.asObservable();
   }
 
   public get selectedDocumentDefinitionName$(): Observable<string> {
@@ -88,6 +90,10 @@ export class DossierDetailService implements OnDestroy {
 
   public setSelectedVersionNumber(versionNumber: number): void {
     this._selectedVersionNumber$.next(versionNumber);
+  }
+
+  public setPreviousSelectedVersionNumber(versionNumber: number | null): void {
+    this._previousSelectedVersionNumber$.next(versionNumber);
   }
 
   public setSelectedDocumentDefinitionName(name: string): void {

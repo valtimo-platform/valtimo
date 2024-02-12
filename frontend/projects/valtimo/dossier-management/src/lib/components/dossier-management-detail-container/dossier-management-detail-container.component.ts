@@ -18,6 +18,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnDestroy,
+  OnInit,
   ViewChild,
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
@@ -40,7 +41,7 @@ import {DossierManagementDocumentDefinitionComponent} from '../dossier-managemen
 })
 export class DossierManagementDetailContainerComponent
   extends PendingChangesComponent
-  implements OnDestroy, AfterViewInit
+  implements OnInit, AfterViewInit, OnDestroy
 {
   @ViewChild(DossierManagementDocumentDefinitionComponent)
   private _documentDefinitionTab: DossierManagementDocumentDefinitionComponent;
@@ -71,13 +72,15 @@ export class DossierManagementDetailContainerComponent
 
   public readonly TabEnum = TabEnum;
 
-  private _pendingChangesSubscription: Subscription;
-  private _tabSubscription: Subscription;
+  private _activeVersion: number | null;
+  private _pendingVersion: number | null;
+  private _subscriptions = new Subscription();
 
   constructor(
     protected readonly modalService: ModalService,
     protected readonly translateService: TranslateService,
     private readonly documentService: DocumentService,
+    private readonly dossierDetailService: DossierDetailService,
     private readonly route: ActivatedRoute,
     private readonly configService: ConfigService,
     private readonly tabService: TabService,
@@ -89,20 +92,17 @@ export class DossierManagementDetailContainerComponent
     this.tabManagementEnabled = !!featureToggles?.enableTabManagement;
   }
 
+  public ngOnInit(): void {
+    this.openActiveVersionSubscription();
+  }
+
   public ngAfterViewInit(): void {
     this.customModal = this._documentDefinitionTab.cancelModal;
-    this._pendingChangesSubscription = this._documentDefinitionTab.pendingChanges$.subscribe(
-      (pendingChanges: boolean) => {
-        this.pendingChanges = pendingChanges;
-        this.pendingTab = pendingChanges ? this._activeTab : null;
-      }
-    );
   }
 
   public ngOnDestroy(): void {
     this.tabService.currentTab = TabEnum.DOCUMENT;
-    this._tabSubscription?.unsubscribe();
-    this._pendingChangesSubscription?.unsubscribe();
+    this._subscriptions.unsubscribe();
     this.pageTitleService.enableReset();
   }
 
@@ -115,6 +115,12 @@ export class DossierManagementDetailContainerComponent
 
   public onCancelRedirectEvent(): void {
     this.onCustomCancel();
+    if (this._activeVersion) {
+      this.dossierDetailService.setPreviousSelectedVersionNumber(this._activeVersion);
+      this._activeVersion = null;
+      return;
+    }
+
     if (!this.pendingTab) {
       return;
     }
@@ -123,7 +129,35 @@ export class DossierManagementDetailContainerComponent
 
   public onConfirmRedirectEvent(): void {
     this.pendingTab = null;
+    this._activeVersion = null;
+    if (this._pendingVersion) {
+      this.dossierDetailService.setSelectedVersionNumber(this._pendingVersion);
+      this._pendingVersion = null;
+      this.dossierDetailService.setPreviousSelectedVersionNumber(null);
+    }
     this.onCustomConfirm();
+  }
+
+  public onPendingChangesUpdate(pendingChanges: boolean): void {
+    this.pendingChanges = pendingChanges;
+    this.pendingTab = pendingChanges ? this._activeTab : null;
+  }
+
+  public onVersionSet(version: number): void {
+    if (this.pendingChanges) {
+      this.onCanDeactivate();
+      this._pendingVersion = version;
+      return;
+    }
+    this.dossierDetailService.setSelectedVersionNumber(version);
+  }
+
+  private openActiveVersionSubscription(): void {
+    this._subscriptions.add(
+      this.dossierDetailService.selectedVersionNumber$.subscribe((versionNumber: number | null) => {
+        this._activeVersion = versionNumber;
+      })
+    );
   }
 
   protected onCanDeactivate(): void {

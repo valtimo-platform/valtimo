@@ -15,6 +15,7 @@
  */
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   OnDestroy,
@@ -65,6 +66,7 @@ import {
   selector: 'valtimo-dossier-management-search-fields',
   templateUrl: './dossier-management-search-fields.component.html',
   styleUrls: ['./dossier-management-search-fields.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('searchFieldModal') modal: ModalComponent;
@@ -77,6 +79,7 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
   public readonly selectedSearchField$ = new BehaviorSubject<SearchField | undefined>(undefined);
   public readonly formData$ = new BehaviorSubject<SearchField | null>(null);
   public readonly valid$ = new BehaviorSubject<boolean>(false);
+  public readonly showFields$ = new BehaviorSubject<boolean>(false);
 
   private _subscriptions = new Subscription();
 
@@ -204,7 +207,6 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
   private cachedSearchFields!: Array<SearchField>;
   searchFieldActionTypeIsAdd: boolean;
   loadingSearchFields = true;
-  showSearchFieldsForm = false;
 
   private readonly refreshSearchFields$ = new BehaviorSubject<null>(null);
 
@@ -561,11 +563,11 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
       this.modal.modalShowing$.subscribe(modalShowing => {
         if (modalShowing) {
           setTimeout(() => {
-            this.showSearchFieldsForm = true;
+            this.showFields$.next(true);
           }, 0);
         } else {
           setTimeout(() => {
-            this.showSearchFieldsForm = false;
+            this.showFields$.next(false);
           }, 150);
         }
       })

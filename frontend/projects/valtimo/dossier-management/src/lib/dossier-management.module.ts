@@ -61,7 +61,7 @@ import {
 
 import {DossierManagementAssigneeComponent} from './components/dossier-management-assignee/dossier-management-assignee.component';
 import {DossierManagementConnectModalComponent} from './components/dossier-management-connect-modal/dossier-management-connect-modal.component';
-import {DossierManagementDetailContainerActionsComponent} from './components/dossier-management-detail-container-actions/dossier-management-detail-container-actions';
+import {DossierManagementDetailContainerActionsComponent} from './components/dossier-management-detail-container-actions/dossier-management-detail-container-actions.component';
 import {DossierManagementDetailContainerComponent} from './components/dossier-management-detail-container/dossier-management-detail-container.component';
 import {DossierManagementDetailComponent} from './components/dossier-management-detail/dossier-management-detail.component';
 import {DossierManagementDocumentDefinitionComponent} from './components/dossier-management-document-definition/dossier-management-document-definition.component';

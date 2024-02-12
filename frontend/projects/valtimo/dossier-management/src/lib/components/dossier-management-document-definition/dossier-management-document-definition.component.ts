@@ -44,6 +44,7 @@ export class DossierManagementDocumentDefinitionComponent {
   @Input() documentDefinitionName: string;
   @Output() cancelRedirect = new EventEmitter();
   @Output() confirmRedirect = new EventEmitter();
+  @Output() pendingChangesUpdate = new EventEmitter<boolean>();
 
   public readonly loadingDocumentDefinition$ = this.dossierDetailService.loadingDocumentDefinition$;
   private readonly _refreshEditor$ = new BehaviorSubject<null>(null);
@@ -51,7 +52,12 @@ export class DossierManagementDocumentDefinitionComponent {
     switchMap(() => this.dossierDetailService.documentDefinitionModel$)
   );
 
-  public readonly pendingChanges$ = new BehaviorSubject<boolean>(false);
+  private readonly _pendingChanges$ = new BehaviorSubject<boolean>(false);
+  public readonly pendingChanges$: Observable<boolean> = this._pendingChanges$.pipe(
+    tap((pendingChanges: boolean) => {
+      this.pendingChangesUpdate.emit(pendingChanges);
+    })
+  );
   public readonly editActive$ = new BehaviorSubject<boolean>(false);
   public readonly showSaveConfirmation$ = new BehaviorSubject<boolean>(false);
   public readonly showCancelConfirmation$ = new BehaviorSubject<boolean>(false);
@@ -138,7 +144,7 @@ export class DossierManagementDocumentDefinitionComponent {
         next: () => {
           this.dossierDetailService.setSelectedDocumentDefinitionName(this.documentDefinitionName);
           this.confirmRedirect.emit();
-          this.pendingChanges$.next(false);
+          this._pendingChanges$.next(false);
         },
         error: () => {
           this.cancelRedirect.emit();
@@ -155,8 +161,8 @@ export class DossierManagementDocumentDefinitionComponent {
   }
 
   public onValueChangeEvent(value: string): void {
-    this.pendingChanges$.next(true);
-    this._changesToSave = JSON.parse(value).schema;
+    this._pendingChanges$.next(true);
+    this._changesToSave = JSON.parse(value);
     const id: string = this._changesToSave.$id;
     this._idChanged$.next(this._initialId !== id);
   }
@@ -172,6 +178,6 @@ export class DossierManagementDocumentDefinitionComponent {
   private resetEditorState(): void {
     this._refreshEditor$.next(null);
     this.editActive$.next(false);
-    this.pendingChanges$.next(false);
+    this._pendingChanges$.next(false);
   }
 }

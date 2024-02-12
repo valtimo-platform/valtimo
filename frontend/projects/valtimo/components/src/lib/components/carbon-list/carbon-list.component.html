@@ -14,12 +14,11 @@
   ~ limitations under the License.
   -->
 <cds-table-container
-  *ngIf="
-    (viewInitialized$ | async) && {
-      sort: sort$ | async,
-      model: model$ | async
-    } as obs
-  "
+  *ngIf="{
+    sort: sort$ | async,
+    model: model$ | async,
+    viewInitialized: viewInitialized$ | async
+  } as obs"
   class="valtimo-carbon-list"
 >
   <cds-table-header *ngIf="header">
@@ -56,7 +55,7 @@
       'valtimo-carbon-list--unclickable': !this.rowClicked.observed
     }"
     [enableSingleSelect]="enableSingleSelect"
-    [model]="loading ? skeletonModel : obs.model"
+    [model]="loading || !obs.viewInitialized ? skeletonModel : obs.model"
     [showSelectionColumn]="showSelectionColumn"
     [skeleton]="loading"
     [striped]="striped"

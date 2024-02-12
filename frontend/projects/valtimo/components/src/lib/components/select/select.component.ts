@@ -54,6 +54,7 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public defaultSelectionId!: string;
   @Input() public defaultSelectionIds!: Array<string>;
   @Input() public disabled = false;
+  @Input() public dropUp?: boolean;
   @Input() public multiple = false;
   @Input() public margin = false;
   @Input() public widthInPx!: number;

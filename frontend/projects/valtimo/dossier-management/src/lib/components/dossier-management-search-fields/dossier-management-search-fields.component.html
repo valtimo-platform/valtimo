@@ -87,7 +87,11 @@
     <div body class="mt-2">
       <v-form
         (valueChange)="formValueChange($event)"
-        *ngIf="showSearchFieldsForm && {searchField: selectedSearchField$ | async} as searchObs"
+        *ngIf="
+          (showFields$ | async) && {
+            searchField: selectedSearchField$ | async
+          } as searchObs
+        "
       >
         <v-input
           name="title"
@@ -124,6 +128,7 @@
         </v-input>
         <v-select
           *ngIf="dataTypeItems$ | async as dataTypeItems"
+          [dropUp]="false"
           [items]="dataTypeItems"
           [placeholder]="'searchFieldsOverview.searchFieldPlaceholder' | translate"
           [title]="'searchFieldsOverview.dataType' | translate"
@@ -137,6 +142,7 @@
         ></v-select>
         <v-select
           *ngIf="(showMatchTypes$ | async) && (matchTypeItems$ | async) as matchTypeItems"
+          [dropUp]="false"
           [items]="matchTypeItems"
           [placeholder]="'searchFieldsOverview.searchFieldPlaceholder' | translate"
           [title]="'searchFieldsOverview.matchType' | translate"
@@ -150,6 +156,7 @@
         ></v-select>
         <v-select
           *ngIf="fieldTypeItems$ | async as fieldTypeItems"
+          [dropUp]="false"
           [items]="fieldTypeItems"
           [placeholder]="'searchFieldsOverview.searchFieldPlaceholder' | translate"
           [title]="'searchFieldsOverview.fieldType' | translate"
@@ -166,6 +173,7 @@
             (fieldTypeIsDropdown$ | async) &&
             (dropdownDataProviderNames$ | async) as dropdownDataProviderNames
           "
+          [dropUp]="false"
           [items]="dropdownDataProviderNames"
           [placeholder]="'searchFieldsOverview.searchFieldPlaceholder' | translate"
           [title]="'searchFieldsOverview.dropdownDataProvider' | translate"
