@@ -36,7 +36,11 @@
         <svg cdsIcon="download" size="16" class="cds--btn__icon"></svg>
       </button>
 
-      <button cdsButton="primary" (click)="onEditClick()">
+      <button
+        cdsButton="primary"
+        [disabled]="obs.selectedDocumentDefinition?.readOnly"
+        (click)="onEditClick()"
+      >
         {{ 'interface.edit' | translate }}
 
         <svg cdsIcon="edit" size="16" class="cds--btn__icon"></svg>

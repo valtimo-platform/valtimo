@@ -25,9 +25,8 @@ import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PageTitleService, PendingChangesComponent} from '@valtimo/components';
 import {ConfigService} from '@valtimo/config';
-import {DocumentService} from '@valtimo/document';
 import {ModalService} from 'carbon-components-angular';
-import {filter, map, Observable, Subscription, switchMap, tap} from 'rxjs';
+import {filter, map, Observable, Subscription, tap} from 'rxjs';
 import {TabEnum} from '../../models';
 import {DossierDetailService, TabService} from '../../services';
 import {DossierManagementDocumentDefinitionComponent} from '../dossier-management-document-definition/dossier-management-document-definition.component';
@@ -51,11 +50,6 @@ export class DossierManagementDetailContainerComponent
     filter(docDefName => !!docDefName)
   );
 
-  public readonly documentDefinition$ = this.documentDefinitionName$.pipe(
-    switchMap(documentDefinitionName =>
-      this.documentService.getDocumentDefinitionForManagement(documentDefinitionName)
-    )
-  );
   public caseListColumn!: boolean;
   public tabManagementEnabled!: boolean;
 
@@ -79,7 +73,6 @@ export class DossierManagementDetailContainerComponent
   constructor(
     protected readonly modalService: ModalService,
     protected readonly translateService: TranslateService,
-    private readonly documentService: DocumentService,
     private readonly dossierDetailService: DossierDetailService,
     private readonly route: ActivatedRoute,
     private readonly configService: ConfigService,
