@@ -36,6 +36,7 @@
       } as obs"
     >
       <cds-dropdown
+        [disabled]="obs.versions.isLoading || obs.versions.value.length === 1"
         [dropUp]="false"
         [skeleton]="obs.versions.isLoading"
         [attr.data-carbon-theme]="CARBON_THEME"
@@ -47,7 +48,7 @@
       <div class="buttons-container-right">
         <cds-overflow-menu class="overflow-button">
           <cds-overflow-menu-option
-            [disabled]="!obs.valid"
+            [disabled]="!obs.valid && !obs.readOnly"
             (selected)="downloadFormFlowDefinition(obs.model)"
             >{{ 'interface.export' | translate }}
           </cds-overflow-menu-option>

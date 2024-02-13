@@ -219,11 +219,9 @@ export class FormFlowEditorComponent implements OnInit, OnDestroy {
     this.model$.next({
       value: JSON.stringify(clone),
       language: 'json',
-      uri: formFlowDefinition.key,
+      uri: formFlowDefinition.key + '-' + formFlowDefinition.version + '.formflow.json',
     });
-    setTimeout(() => {
-      this.loading$.next(false);
-    }, 500);
+    this.loading$.next(false);
   }
 
   private showSuccessMessage(key: string): void {

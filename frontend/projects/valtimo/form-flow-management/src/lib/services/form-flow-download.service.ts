@@ -28,7 +28,7 @@ export class FormFlowDownloadService {
     element.setAttribute('href', 'data:text/json;charset=UTF-8,' + encodeURIComponent(sJson));
     element.setAttribute(
       'download',
-      `${formFlowDefinitionId.key}-${formFlowDefinitionId.version}.json`
+      `${formFlowDefinitionId.key}-${formFlowDefinitionId.version}.formflow.json`
     );
     element.style.display = 'none';
     document.body.appendChild(element);
