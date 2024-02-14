@@ -42,7 +42,7 @@
   >
   </v-input-label>
 
-  <div class="v-multi-input__rows iets mb-1" *ngFor="let value of values$ | async as values; trackBy: trackByFn; index as i">
+  <div class="v-multi-input__rows style-as-row mb-1" *ngFor="let value of values$ | async as values; trackBy: trackByFn; index as i">
       <ng-container *ngIf="type === 'value'">
         <ng-container *ngTemplateOutlet="singleValue; context: {value: value}"></ng-container>
       </ng-container>

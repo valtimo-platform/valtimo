@@ -28,14 +28,7 @@
   display: none;
 }
 
-.cds--label {
-  width: 100% !important;
+.cds--text-input__field-wrapper {
+  flex-direction: column;
 }
 
-cds-label .cds--label {
-  width: 100% !important;
-}
-
-cds-label > * {
-  width: 100% !important;
-}
