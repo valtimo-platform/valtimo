@@ -42,11 +42,7 @@
   >
   </v-input-label>
 
-  <div class="v-multi-input__rows">
-    <div
-      *ngFor="let value of values$ | async as values; trackBy: trackByFn; index as i"
-      class="v-multi-input__row"
-    >
+  <div class="v-multi-input__rows iets mb-1" *ngFor="let value of values$ | async as values; trackBy: trackByFn; index as i">
       <ng-container *ngIf="type === 'value'">
         <ng-container *ngTemplateOutlet="singleValue; context: {value: value}"></ng-container>
       </ng-container>
@@ -89,11 +85,10 @@
         <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
       </button>
     </div>
-  </div>
 </div>
 
 <ng-template #singleValue let-value="value">
-  <div class="v-multi-input__input">
+  <div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
     <input
       cdsText
       [defaultValue]="value.value"
@@ -104,7 +99,7 @@
 </ng-template>
 
 <ng-template #keyValue let-value="value" let-index="index">
-  <div class="v-multi-input__input">
+  <div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
     <cds-label *ngIf="index === 0 && keyColumnTitle && valueColumnTitle">{{
       keyColumnTitle
     }}</cds-label>
@@ -116,7 +111,7 @@
       (input)="onValueChange(value, $event.target.value, 'key')"
     />
   </div>
-  <div class="v-multi-input__input">
+  <div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
     <cds-label *ngIf="index === 0 && keyColumnTitle && valueColumnTitle">{{
       valueColumnTitle
     }}</cds-label>

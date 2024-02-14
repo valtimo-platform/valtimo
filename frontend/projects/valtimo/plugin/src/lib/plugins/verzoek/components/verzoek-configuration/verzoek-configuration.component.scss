@@ -27,3 +27,15 @@
 .hidden-input {
   display: none;
 }
+
+.cds--label {
+  width: 100% !important;
+}
+
+cds-label .cds--label {
+  width: 100% !important;
+}
+
+cds-label > * {
+  width: 100% !important;
+}
