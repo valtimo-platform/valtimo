@@ -93,7 +93,7 @@
 </div>
 
 <ng-template #singleValue let-value="value">
-  <div class="v-multi-input__input">
+  <div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
     <input
       cdsText
       [defaultValue]="value.value"
@@ -104,7 +104,7 @@
 </ng-template>
 
 <ng-template #keyValue let-value="value" let-index="index">
-  <div class="v-multi-input__input">
+  <div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
     <cds-label *ngIf="index === 0 && keyColumnTitle && valueColumnTitle">{{
       keyColumnTitle
     }}</cds-label>
@@ -116,7 +116,7 @@
       (input)="onValueChange(value, $event.target.value, 'key')"
     />
   </div>
-  <div class="v-multi-input__input">
+  <div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
     <cds-label *ngIf="index === 0 && keyColumnTitle && valueColumnTitle">{{
       valueColumnTitle
     }}</cds-label>
