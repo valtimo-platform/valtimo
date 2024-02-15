@@ -540,6 +540,16 @@
         }
       }
     },
+    "createDefinition": {
+      "idError": "This definition name is already in use. Please change to a unique name",
+      "modalTitle": "Create case definition",
+      "name": "Case definition name",
+      "namePlaceholder": "Case definition name will be auto-generated here",
+      "nameTooltip": "The name is used for the system names, $id etc. No spaces or special characters are allowed other than “-”.",
+      "title": "Case definition title",
+      "titlePlaceholder": "Enter title here",
+      "titleTooltip": "The title is used for the visible name of the case definition in the UI"
+    },
     "documentDefinition": {
       "cancelModal": {
         "title": "Leaving the editor",

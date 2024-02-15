@@ -66,6 +66,11 @@ interface DefinitionId {
   version: number;
 }
 
+interface CreateDocumentDefinitionResponse {
+  documentDefinition: DocumentDefinition;
+  errors: string[];
+}
+
 interface Documents {
   content: Document[];
   empty: boolean;
@@ -358,11 +363,26 @@ interface LoadedValue<T> {
   value?: T;
 }
 
+interface TemplatePayload {
+  documentDefinitionId: string;
+  documentDefinitionTitle: string;
+}
+
+interface TemplateResponse {
+  $id: string;
+  $schema: string;
+  additionalProperties: boolean;
+  properties: {[key: string]: {[key: string]: string}};
+  title: string;
+  type: string;
+}
+
 export {
   AssignHandlerToDocumentResult,
   CaseListColumn,
   CaseListColumnView,
   CaseSettings,
+  CreateDocumentDefinitionResponse,
   DefinitionId,
   DisplayType,
   DisplayTypeParameters,
@@ -370,14 +390,15 @@ export {
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
   DocumentDefinitionId,
-  DocumentDefinitionVersionsResult,
   DocumentDefinitions,
+  DocumentDefinitionVersionsResult,
   DocumentResult,
   DocumentRole,
   DocumentRoles,
+  Documents,
   DocumentSendMessageRequest,
   DocumentType,
-  Documents,
+  LoadedValue,
   ModifyDocumentAndCompleteTaskRequest,
   ModifyDocumentAndCompleteTaskRequestImpl,
   ModifyDocumentAndCompleteTaskResult,
@@ -391,7 +412,6 @@ export {
   NewDocumentAndStartProcessResult,
   NewDocumentRequest,
   NewDocumentRequestImpl,
-  LoadedValue,
   OpenDocumentCount,
   Page,
   Pageable,
@@ -404,6 +424,8 @@ export {
   RelatedFileListItem,
   SortResult,
   SpecifiedDocuments,
+  TemplatePayload,
+  TemplateResponse,
   UndeployDocumentDefinitionResult,
   UpdateUploadProcessLinkRequest,
   UploadProcessLink,

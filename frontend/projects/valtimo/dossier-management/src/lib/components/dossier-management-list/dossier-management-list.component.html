@@ -38,14 +38,25 @@
 </ng-template>
 
 <valtimo-dossier-management-upload
-  [open]="showModal$ | async"
-  (closeModal)="onCloseModal($event)"
+  [open]="showUploadModal$ | async"
+  (closeModal)="onCloseUploadModal($event)"
 ></valtimo-dossier-management-upload>
 
-<ng-template #importCaseDefinitionButton>
-  <button cdsButton="primary" (click)="showModal()">
-    <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
+<valtimo-dossier-management-create
+  [open]="showCreateModal$ | async"
+  (closeModal)="onCloseCreateModal($event)"
+></valtimo-dossier-management-create>
 
-    {{ 'Import' | translate }}
+<ng-template #importCaseDefinitionButton>
+  <button cdsButton="ghost" (click)="showUploadModal()">
+    {{ 'Upload' | translate }}
+
+    <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
+  </button>
+
+  <button cdsButton="primary" (click)="showCreateModal()">
+    {{ 'interface.create' | translate }}
+
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
   </button>
 </ng-template>

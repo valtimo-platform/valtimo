@@ -539,6 +539,16 @@
         }
       }
     },
+    "createDefinition": {
+      "idError": "Dieser Definitionsname wird bereits verwendet. Bitte ändern Sie ihn in einen eindeutigen Namen",
+      "modalTitle": "Casedefinition erstellen",
+      "name": "Name der Casedefinition",
+      "namePlaceholder": "Der Name der Casedefinition wird hier automatisch generiert",
+      "nameTooltip": "Der Name wird für den Systemnamen, $id usw. verwendet. Außer „-“ sind keine Leerzeichen oder Sonderzeichen erlaubt.",
+      "title": "Titel der Casedefinition",
+      "titlePlaceholder": "Geben Sie hier den Titel ein",
+      "titleTooltip": "Der Titel wird als sichtbarer Name der Casedefinition in der Benutzeroberfläche verwendet"
+    },
     "documentDefinition": {
       "cancelModal": {
         "title": "Verlassen des Editors",

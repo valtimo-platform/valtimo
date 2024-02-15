@@ -13,15 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {catchError, Observable, of} from 'rxjs';
+import {Injectable} from '@angular/core';
+import {
+  AssigneeFilter,
+  ConfigService,
+  NamedUser,
+  SearchField,
+  SearchFilter,
+  SearchFilterRange,
+  SearchOperator,
+} from '@valtimo/config';
+import {InterceptorSkip} from '@valtimo/security';
+import {catchError, Observable, of, switchMap, tap} from 'rxjs';
+
 import {
   AssignHandlerToDocumentResult,
   AuditRecord,
   CaseListColumn,
   CaseSettings,
+  CreateDocumentDefinitionResponse,
   Document,
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
@@ -44,20 +55,13 @@ import {
   ProcessDocumentInstance,
   RelatedFile,
   SpecifiedDocuments,
+  TemplatePayload,
+  TemplateResponse,
   UndeployDocumentDefinitionResult,
   UploadProcessLink,
 } from '../models';
-import {DocumentSearchRequest} from '../models/document-search-request';
-import {
-  AssigneeFilter,
-  ConfigService,
-  NamedUser,
-  SearchField,
-  SearchFilter,
-  SearchFilterRange,
-  SearchOperator,
-} from '@valtimo/config';
 import {AdvancedDocumentSearchRequest} from '../models/advanced-document-search-request';
+import {DocumentSearchRequest} from '../models/document-search-request';
 
 @Injectable({
   providedIn: 'root',
@@ -104,10 +108,18 @@ export class DocumentService {
     );
   }
 
-  public getDocumentDefinition(documentDefinitionName: string): Observable<DocumentDefinition> {
-    return this.http.get<DocumentDefinition>(
-      `${this.valtimoEndpointUri}v1/document-definition/${documentDefinitionName}`
-    );
+  public getDocumentDefinition(
+    documentDefinitionName: string,
+    skipNotFound: boolean = false
+  ): Observable<DocumentDefinition> {
+    return skipNotFound
+      ? this.http.get<DocumentDefinition>(
+          `${this.valtimoEndpointUri}v1/document-definition/${documentDefinitionName}`,
+          {headers: new HttpHeaders().set(InterceptorSkip, '404')}
+        )
+      : this.http.get<DocumentDefinition>(
+          `${this.valtimoEndpointUri}v1/document-definition/${documentDefinitionName}`
+        );
   }
 
   public getDocumentDefinitionForManagement(
@@ -295,6 +307,21 @@ export class DocumentService {
     );
   }
 
+  public createDocumentDefinitionTemplate(
+    payload: TemplatePayload
+  ): Observable<CreateDocumentDefinitionResponse> {
+    return this.http
+      .post<TemplateResponse>(
+        `${this.valtimoEndpointUri}management/v1/document-definition-template`,
+        payload
+      )
+      .pipe(
+        switchMap((definition: TemplateResponse) =>
+          this.createDocumentDefinitionForManagement({definition: JSON.stringify(definition)})
+        )
+      );
+  }
+
   public newDocumentAndStartProcess(
     request: NewDocumentAndStartProcessRequestImpl
   ): Observable<NewDocumentAndStartProcessResult> {
@@ -333,13 +360,13 @@ export class DocumentService {
 
   public createDocumentDefinitionForManagement(
     documentDefinitionCreateRequest: DocumentDefinitionCreateRequest
-  ): Observable<void> {
+  ): Observable<CreateDocumentDefinitionResponse> {
     const options = {
       headers: new HttpHeaders({
         'Content-Type': 'application/json',
       }),
     };
-    return this.http.post<void>(
+    return this.http.post<CreateDocumentDefinitionResponse>(
       `${this.valtimoEndpointUri}management/v1/document-definition`,
       documentDefinitionCreateRequest,
       options

@@ -539,6 +539,16 @@
         }
       }
     },
+    "createDefinition": {
+      "idError": "Deze definitienaam is al in gebruik. Wijzig dit naar een unieke naam",
+      "modalTitle": "Dossierdefinitie maken",
+      "name": "Dossierdefinitienaam",
+      "namePlaceholder": "De naam van de dossierdefinitie wordt hier automatisch gegenereerd",
+      "nameTooltip": "De naam wordt gebruikt voor de systeemnamen, $id etc. Er zijn geen spaties of speciale tekens toegestaan behalve “-”.",
+      "title": "Dossierdefinitietitel",
+      "titlePlaceholder": "Voer hier de titel in",
+      "titleTooltip": "De titel wordt gebruikt voor de naam van de definitie in de interface"
+    },
     "documentDefinition": {
       "cancelModal": {
         "title": "De editor verlaten",

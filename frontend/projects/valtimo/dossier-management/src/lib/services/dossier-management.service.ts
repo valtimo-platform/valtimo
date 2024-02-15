@@ -22,7 +22,7 @@ import {Observable} from 'rxjs';
 @Injectable({
   providedIn: 'root',
 })
-export class DossierImportService {
+export class DossierManagementService {
   private readonly valtimoEndpointUri: string;
 
   constructor(

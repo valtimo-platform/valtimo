@@ -57,6 +57,7 @@ import {
   TabsModule,
   TagModule,
   ToggleModule,
+  TooltipModule,
 } from 'carbon-components-angular';
 
 import {DossierManagementAssigneeComponent} from './components/dossier-management-assignee/dossier-management-assignee.component';
@@ -81,6 +82,7 @@ import {DossierManagementRoutingModule} from './dossier-management-routing.modul
 import {TabManagementService} from './services';
 import {DossierManagementStatusesComponent} from './components/dossier-management-statuses/dossier-management-statuses.component';
 import {DossierManagementStatusModalComponent} from './components/dossier-management-statuses/dossier-management-status-modal/dossier-management-status-modal.component';
+import {DossierManagementCreateComponent} from './components/dossier-management-create/dossier-management-create.component';
 
 @NgModule({
   declarations: [
@@ -104,6 +106,7 @@ import {DossierManagementStatusModalComponent} from './components/dossier-manage
     DossierManagementUploadStepComponent,
     DossierManagementStatusesComponent,
     DossierManagementStatusModalComponent,
+    DossierManagementCreateComponent,
   ],
   imports: [
     CommonModule,
@@ -152,6 +155,7 @@ import {DossierManagementStatusModalComponent} from './components/dossier-manage
     ProgressBarModule,
     ConfirmationModalModule,
     ToggleModule,
+    TooltipModule
   ],
   providers: [TabManagementService],
 })

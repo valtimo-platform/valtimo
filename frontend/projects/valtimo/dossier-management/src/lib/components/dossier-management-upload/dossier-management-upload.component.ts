@@ -21,16 +21,15 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  ViewChild,
 } from '@angular/core';
 import {AbstractControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {WarningFilled16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {CARBON_CONSTANTS, ModalComponent} from '@valtimo/components';
+import {CARBON_CONSTANTS} from '@valtimo/components';
 import {DocumentDefinitionCreateRequest, DocumentService} from '@valtimo/document';
 import {FileItem, IconService, NotificationContent} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
-import {DossierImportService} from '../../services/dossier-import.service';
+import {DossierManagementService} from '../../services/dossier-management.service';
 import {STEPS, UPLOAD_STATUS, UPLOAD_STEP} from './dossier-management-upload.constants';
 
 @Component({
@@ -40,8 +39,6 @@ import {STEPS, UPLOAD_STATUS, UPLOAD_STEP} from './dossier-management-upload.con
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DossierManagementUploadComponent implements OnInit, OnDestroy {
-  @ViewChild('uploadDefinitionModal') modal: ModalComponent;
-
   @Input() open = false;
   @Output() closeModal = new EventEmitter<boolean>();
 
@@ -101,7 +98,7 @@ export class DossierManagementUploadComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly documentService: DocumentService,
-    private readonly dossierImportService: DossierImportService,
+    private readonly dossierManagementService: DossierManagementService,
     private readonly fb: FormBuilder,
     private readonly iconService: IconService,
     private readonly translateService: TranslateService
@@ -227,7 +224,7 @@ export class DossierManagementUploadComponent implements OnInit, OnDestroy {
       .pipe(
         switchMap((file: string | FormData) =>
           file instanceof FormData
-            ? this.dossierImportService.importDocumentDefinitionZip(file)
+            ? this.dossierManagementService.importDocumentDefinitionZip(file)
             : this.documentService.createDocumentDefinitionForManagement(
                 new DocumentDefinitionCreateRequest(file)
               )
