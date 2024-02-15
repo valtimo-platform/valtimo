@@ -23,7 +23,6 @@
   flex-direction: row;
   align-items: flex-end;
   margin-block-end: var(--v-multi-input-row-spacing-block);
-  width: 100%;
 }
 
 .v-multi-input__input {
@@ -32,10 +31,4 @@
   &.--full-width {
     width: 100%;
   }
-}
-
-.style-as-row {
-  display: flex;
-  flex-direction: row;
-  align-items: end;
 }
