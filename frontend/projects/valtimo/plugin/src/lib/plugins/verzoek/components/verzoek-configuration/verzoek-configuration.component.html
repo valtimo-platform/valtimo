@@ -223,16 +223,15 @@
                 [disabled]="obs.disabled"
               ></v-tooltip-icon>
             </span>
-
           </cds-label>
           <valtimo-carbon-multi-input
-                  *ngIf="showMappingModalsDelay[uuid]"
-                  type="keyValue"
-                  (valueChange)="mappingValueChange($event, uuid)"
-                  [defaultValues]="mappings[uuid] || prefill?.mapping"
-                  [valueColumnTitle]="'target' | pluginTranslate: pluginId | async"
-                  [keyColumnTitle]="'source' | pluginTranslate: pluginId | async"
-                  [fullWidth]="true"
+            *ngIf="showMappingModalsDelay[uuid]"
+            type="keyValue"
+            (valueChange)="mappingValueChange($event, uuid)"
+            [defaultValues]="mappings[uuid] || prefill?.mapping"
+            [valueColumnTitle]="'target' | pluginTranslate: pluginId | async"
+            [keyColumnTitle]="'source' | pluginTranslate: pluginId | async"
+            [fullWidth]="true"
           ></valtimo-carbon-multi-input>
         </div>
       </section>

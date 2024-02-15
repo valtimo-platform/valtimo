@@ -42,49 +42,50 @@
   >
   </v-input-label>
 
-  <div class="v-multi-input__rows style-as-row mb-1" *ngFor="let value of values$ | async as values; trackBy: trackByFn; index as i">
-      <ng-container *ngIf="type === 'value'">
-        <ng-container *ngTemplateOutlet="singleValue; context: {value: value}"></ng-container>
-      </ng-container>
+  <div
+    class="v-multi-input__rows style-as-row mb-1"
+    *ngFor="let value of values$ | async as values; trackBy: trackByFn; index as i"
+  >
+    <ng-container *ngIf="type === 'value'">
+      <ng-container *ngTemplateOutlet="singleValue; context: {value: value}"></ng-container>
+    </ng-container>
 
-      <ng-container *ngIf="type === 'keyValue'">
-        <ng-container
-          *ngTemplateOutlet="keyValue; context: {value: value, index: i}"
-        ></ng-container>
-      </ng-container>
+    <ng-container *ngIf="type === 'keyValue'">
+      <ng-container *ngTemplateOutlet="keyValue; context: {value: value, index: i}"></ng-container>
+    </ng-container>
 
-      <ng-container *ngIf="type === 'keyDropdownValue'">
-        <ng-container
-          *ngTemplateOutlet="keyDropdownValue; context: {value: value, index: i}"
-        ></ng-container>
-      </ng-container>
+    <ng-container *ngIf="type === 'keyDropdownValue'">
+      <ng-container
+        *ngTemplateOutlet="keyDropdownValue; context: {value: value, index: i}"
+      ></ng-container>
+    </ng-container>
 
-      <button
-        *ngIf="!hideDeleteButton"
-        cdsButton="danger"
-        [disabled]="values?.length <= this.minimumAmountOfRows || disabled"
-        [iconOnly]="true"
-        size="md"
-        (click)="deleteRow(value.uuid)"
-        [title]="vars.deleteRowText"
-      >
-        <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
-      </button>
-    </div>
+    <button
+      *ngIf="!hideDeleteButton"
+      cdsButton="danger"
+      [disabled]="values?.length <= this.minimumAmountOfRows || disabled"
+      [iconOnly]="true"
+      size="md"
+      (click)="deleteRow(value.uuid)"
+      [title]="vars.deleteRowText"
+    >
+      <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+    </button>
+  </div>
 
-    <div class="v-multi-input__add-button">
-      <button
-        *ngIf="!hideAddButton"
-        cdsButton="primary"
-        size="md"
-        [disabled]="(addRowEnabled$ | async) === false || disabled"
-        (click)="addRow()"
-      >
-        {{ vars.addRowText }}
+  <div class="v-multi-input__add-button">
+    <button
+      *ngIf="!hideAddButton"
+      cdsButton="primary"
+      size="md"
+      [disabled]="(addRowEnabled$ | async) === false || disabled"
+      (click)="addRow()"
+    >
+      {{ vars.addRowText }}
 
-        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-      </button>
-    </div>
+      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+    </button>
+  </div>
 </div>
 
 <ng-template #singleValue let-value="value">
