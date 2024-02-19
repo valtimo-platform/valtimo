@@ -36,6 +36,7 @@ import {CreateZaakConfigurationComponent} from './components/create-zaak/create-
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
 import {LoadingModule, ToggleModule} from 'carbon-components-angular';
 import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
+import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
 
 @NgModule({
   declarations: [
@@ -49,6 +50,7 @@ import {StartHersteltermijnConfigurationComponent} from './components/start-hers
     CreateZaakConfigurationComponent,
     SetZaakopschortingComponent,
     StartHersteltermijnConfigurationComponent,
+    EndHersteltermijnComponent,
   ],
   imports: [
     CommonModule,
@@ -73,6 +75,7 @@ import {StartHersteltermijnConfigurationComponent} from './components/start-hers
     CreateNietNatuurlijkPersoonZaakRolComponent,
     SetZaakopschortingComponent,
     StartHersteltermijnConfigurationComponent,
+    EndHersteltermijnComponent,
   ],
 })
 export class ZakenApiPluginModule {}
