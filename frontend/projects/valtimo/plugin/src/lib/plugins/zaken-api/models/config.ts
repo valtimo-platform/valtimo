@@ -68,6 +68,10 @@ interface SetZaakopschortingConfig {
   toelichtingOpschorting: string;
 }
 
+interface StartHersteltermijnConfig {
+  maxDurationInDays: string;
+}
+
 export {
   ZakenApiConfig,
   LinkDocumentToZaakConfig,
@@ -77,4 +81,5 @@ export {
   CreateNatuurlijkePersoonZaakRolConfig,
   CreateNietNatuurlijkePersoonZaakRolConfig,
   SetZaakopschortingConfig,
+  StartHersteltermijnConfig,
 };

@@ -17,20 +17,20 @@
 <div
   class="dossier-actions"
   *ngIf="{
-  exporting: exporting$ | async,
-  loadingVersion: loadingVersion$ | async,
-  versionListItems: versionListItems$ | async,
-  selectedDocumentDefinition: selectedDocumentDefinition$ | async,
-  selectedDocumentDefinitionIsReadOnly: selectedDocumentDefinitionIsReadOnly$ | async
+    exporting: exporting$ | async,
+    loadingVersion: loadingVersion$ | async,
+    versionListItems: versionListItems$ | async,
+    selectedDocumentDefinition: selectedDocumentDefinition$ | async,
+    selectedDocumentDefinitionIsReadOnly: selectedDocumentDefinitionIsReadOnly$ | async
   } as obs"
 >
   <div class="dossier-metadata">
-    <ng-container *ngTemplateOutlet="versionSelection;context:{obs:obs}"></ng-container>
+    <ng-container *ngTemplateOutlet="versionSelection; context: {obs: obs}"></ng-container>
 
-    <ng-container *ngTemplateOutlet="readOnly;context:{obs:obs}"></ng-container>
+    <ng-container *ngTemplateOutlet="readOnly; context: {obs: obs}"></ng-container>
   </div>
 
-  <ng-container *ngTemplateOutlet="exportMenu;context:{obs:obs}"></ng-container>
+  <ng-container *ngTemplateOutlet="exportMenu; context: {obs: obs}"></ng-container>
 </div>
 
 <ng-template #versionSelection let-obs="obs">
@@ -56,18 +56,19 @@
   >
     <cds-overflow-menu-option
       [disabled]="obs.exporting || obs.loadingVersion"
-      (selected)="export() "
+      (selected)="export()"
       [attr.data-carbon-theme]="CARBON_THEME"
-      >{{ 'dossierManagement.export' | translate: {value: documentDefinitionTitle}
+      >{{
+        'dossierManagement.export' | translate: {value: documentDefinitionTitle}
       }}</cds-overflow-menu-option
     >
 
     <cds-overflow-menu-option
       *ngIf="obs.selectedDocumentDefinition && !obs.selectedDocumentDefinition.readOnly"
       [disabled]="obs.exporting || obs.loadingVersion"
-      (selected)="openDossierRemoveModal() "
+      (selected)="openDossierRemoveModal()"
       [attr.data-carbon-theme]="CARBON_THEME"
-      >{{ 'Remove document definition' | translate}}</cds-overflow-menu-option
+      >{{ 'Remove document definition' | translate }}</cds-overflow-menu-option
     >
   </cds-overflow-menu>
 </ng-template>
@@ -82,18 +83,18 @@
 
 <ng-template #exportingMessage>
   <div class="exporting-message">
-    <span class="cds--inline-notification__title"
-      >{{'dossierManagement.preparingDownload' | translate}}</span
-    >
+    <span class="cds--inline-notification__title">{{
+      'dossierManagement.preparingDownload' | translate
+    }}</span>
 
     <cds-loading size="sm"></cds-loading>
   </div>
 </ng-template>
 
 <ng-template #readOnly let-obs="obs">
-  <cds-tag *ngIf="obs.selectedDocumentDefinitionIsReadOnly" type="blue"
-    >{{'dossierManagement.readonly' | translate}}</cds-tag
-  >
+  <cds-tag *ngIf="obs.selectedDocumentDefinitionIsReadOnly" type="blue">{{
+    'dossierManagement.readonly' | translate
+  }}</cds-tag>
 </ng-template>
 
 <valtimo-dossier-management-remove-modal

@@ -59,10 +59,12 @@ export class ChoiceFieldListComponent implements OnInit {
   }
 
   private initData() {
-    this.service.queryPage({page: this.pageParam, size: this.pagination.size}).subscribe(results => {
-      this.pagination.collectionSize = results.totalElements;
-      this.choiceFields = results.content;
-    });
+    this.service
+      .queryPage({page: this.pageParam, size: this.pagination.size})
+      .subscribe(results => {
+        this.pagination.collectionSize = results.totalElements;
+        this.choiceFields = results.content;
+      });
   }
 
   public rowClick(data) {

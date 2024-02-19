@@ -72,7 +72,8 @@ export class DossierProcessStartModalComponent implements OnInit {
     private startModalService: StartModalService,
     private configService: ConfigService
   ) {
-    this._useStartEventNameAsStartFormTitle = this.configService.config.featureToggles?.useStartEventNameAsStartFormTitle
+    this._useStartEventNameAsStartFormTitle =
+      this.configService.config.featureToggles?.useStartEventNameAsStartFormTitle;
   }
 
   ngOnInit() {
@@ -84,7 +85,7 @@ export class DossierProcessStartModalComponent implements OnInit {
     this.formDefinition = null;
     this.formFlowInstanceId = null;
     if (this._useStartEventNameAsStartFormTitle) {
-      this.processService.getProcessDefinitionXml(this.processDefinitionId).subscribe((result) => {
+      this.processService.getProcessDefinitionXml(this.processDefinitionId).subscribe(result => {
         this._startEventName = this.startModalService.getStandardStartEventTitle(result.bpmn20Xml);
       });
     }
@@ -118,7 +119,9 @@ export class DossierProcessStartModalComponent implements OnInit {
 
   public get modalTitle() {
     const fallbackTitle = `Start - ${this.processName}`;
-    return this._useStartEventNameAsStartFormTitle ? (this._startEventName || fallbackTitle) : fallbackTitle;
+    return this._useStartEventNameAsStartFormTitle
+      ? this._startEventName || fallbackTitle
+      : fallbackTitle;
   }
 
   openModal(processDocumentDefinition: ProcessDocumentDefinition) {

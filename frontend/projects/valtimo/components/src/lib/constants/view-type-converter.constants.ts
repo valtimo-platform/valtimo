@@ -1,3 +1,3 @@
-const BOOLEAN_CONVERTER_VALUES = ['Yes', 'No']
+const BOOLEAN_CONVERTER_VALUES = ['Yes', 'No'];
 
 export {BOOLEAN_CONVERTER_VALUES};

@@ -81,7 +81,10 @@ export class ChoiceFieldValueListComponent implements OnInit {
     this.service.get(id).subscribe(result => {
       this.choiceField = result;
       this.service
-        .queryValuesPage(this.choiceField.keyName, {page: this.pageParam, size: this.pagination.size})
+        .queryValuesPage(this.choiceField.keyName, {
+          page: this.pageParam,
+          size: this.pagination.size,
+        })
         .subscribe(page => {
           this.pagination.collectionSize = page.totalElements;
           this.choiceFieldValues = page.content;

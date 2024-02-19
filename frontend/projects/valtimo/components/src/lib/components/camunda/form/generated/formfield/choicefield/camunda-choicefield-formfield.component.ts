@@ -34,7 +34,7 @@ export class CamundaChoicefieldFormfieldComponent implements OnInit {
     this.choicefieldService
       .getChoiceFieldValuesPageByName(this.formField.properties['choicefield'])
       .subscribe(data => {
-        this.choicefieldValues = data.content
+        this.choicefieldValues = data.content;
       });
   }
 }

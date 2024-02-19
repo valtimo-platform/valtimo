@@ -25,6 +25,7 @@ import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuu
 import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
+import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -39,6 +40,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-natuurlijk-persoon-zaak-rol': CreateNatuurlijkPersoonZaakRolComponent,
     'create-niet-natuurlijk-persoon-zaak-rol': CreateNietNatuurlijkPersoonZaakRolComponent,
     'set-zaakopschorting': SetZaakopschortingComponent,
+    'start-hersteltermijn': StartHersteltermijnConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -88,6 +90,11 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - natuurlijk persoon',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - niet natuurlijk persoon',
       'set-zaakopschorting': 'Schort een zaak op',
+      'start-hersteltermijn': 'Start hersteltermijn',
+      startRecoveryPeriodInformation:
+        'Deze actie start een hersteltermijn voor de zaak die aan dit proces is gekoppeld.',
+      maxDurationInDays: 'Maximale duur in dagen',
+      maxDurationInDaysTooltip: 'De ingevoerde waarde vertegenwoordigt de maximale duur van de hersteltermijn in dagen.',
       roltypeUrl: 'Roltype URL',
       rolToelichting: 'Roltoelichting',
       inpBsn: 'Initiator BSN',
@@ -175,6 +182,11 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - natural person',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - not a natural person',
       'set-zaakopschorting': 'Suspend case',
+      'start-hersteltermijn': 'Start recovery period',
+      startHersteltermijnInformation:
+        'This action initiates a recovery period for the case associated with this process.',
+      maxDurationInDays: 'Maximum duration in days',
+      maxDurationInDaysTooltip: 'The entered value represents the maximum duration of the recovery period in days.',
       roltypeUrl: 'Role type URL',
       rolToelichting: 'Role explanation',
       inpBsn: 'Initiator BSN',
@@ -262,6 +274,11 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol erstellen – natürliche Person',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Zaakrol erstellen – keine natürliche Person',
       'set-zaakopschorting': 'Einen Fall aussetzen',
+      'start-hersteltermijn': 'Beginnen Sie mit der Erholungsphase',
+      startHersteltermijnInformation:
+        'Diese Aktion startet eine Erholungszeit für den Fall, der mit diesem Prozess verknüpft ist.',
+      maxDurationInDays: 'Maximale Dauer in Tagen',
+      maxDurationInDaysTooltip: 'Der eingegebene Wert stellt die maximale Dauer der Erholungszeit in Tagen dar.',
       roltypeUrl: 'Rollentyp-URL',
       rolToelichting: 'Rollenerklärung',
       inpBsn: 'Initiator BSN',

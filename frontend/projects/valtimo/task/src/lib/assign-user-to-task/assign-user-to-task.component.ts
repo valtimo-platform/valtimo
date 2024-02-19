@@ -89,9 +89,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
         tap(([candidateUsers]) => {
           this.userIdToAssign = userId;
           this.assignedIdOnServer$.next(userId);
-          this.assignedUserFullName$.next(
-            this.getAssignedUserName(candidateUsers ?? [], userId)
-          );
+          this.assignedUserFullName$.next(this.getAssignedUserName(candidateUsers ?? [], userId));
           this.emitChange();
           this.enable();
         })

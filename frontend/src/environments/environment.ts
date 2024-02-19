@@ -70,10 +70,7 @@ export const environment: ValtimoConfig = {
   logoSvgBase64: LOGO_BASE_64,
   applicationTitle: '',
   production: false,
-  initializers: [
-    openZaakExtensionInitializer,
-    emailExtensionInitializer,
-  ],
+  initializers: [openZaakExtensionInitializer, emailExtensionInitializer],
   authentication: authenticationKeycloak,
   menu: {
     menuItems: [

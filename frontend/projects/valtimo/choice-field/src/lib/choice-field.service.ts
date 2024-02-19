@@ -41,9 +41,12 @@ export class ChoiceFieldService {
   }
 
   queryPage(params?: any): Observable<Page<ChoiceField>> {
-    return this.http.get<Page<ChoiceField>>(`${this.valtimoApiConfig.endpointUri}v2/choice-fields`, {
-      params,
-    });
+    return this.http.get<Page<ChoiceField>>(
+      `${this.valtimoApiConfig.endpointUri}v2/choice-fields`,
+      {
+        params,
+      }
+    );
   }
 
   get(id: string): Observable<any> {
