@@ -53,6 +53,7 @@
     [header]="false"
     [hideToolbar]="true"
     [movingRowsEnabled]="true"
+    (moveRow)="onMoveRowEvent($event, obs.documentDefinitionName)"
     (rowClicked)="columnRowClicked($event)"
   >
   </valtimo-carbon-list>
