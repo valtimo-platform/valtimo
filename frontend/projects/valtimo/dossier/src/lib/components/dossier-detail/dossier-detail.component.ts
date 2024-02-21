@@ -278,8 +278,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
 
   private getStringFromDocumentPath(item, path): string {
     const prefix = item['propertyPaths'].indexOf(path) > 0 ? ' ' : '';
-    let string =
-      path.split('.').reduce((o, i) => o[i], this.document?.content) || item['noValueText'] || '';
+    let string = this.getNestedProperty(this.document.content, path, item['noValueText']) || '';
     const dateFormats = [moment.ISO_8601, 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD'];
     switch (item['modifier']) {
       case 'age': {
@@ -295,6 +294,10 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
       }
     }
     return prefix + string;
+  }
+
+  private getNestedProperty(obj: any, path: string, defaultValue: any): any {
+    return path.split('.').reduce((currentObject, key) => currentObject?.[key], obj) || defaultValue;
   }
 
   private setBreadcrumb(): void {
