@@ -137,7 +137,7 @@ interface ProcessDocumentInstanceId {
 interface ProcessDocumentInstance {
   id: ProcessDocumentInstanceId;
   processName: string;
-  isActive: boolean;
+  active: boolean;
   version: number;
   latestVersion: number;
   startedBy: string;
