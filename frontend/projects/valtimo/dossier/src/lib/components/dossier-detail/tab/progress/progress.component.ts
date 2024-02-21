@@ -39,9 +39,9 @@ export class DossierDetailTabProgressComponent {
       ),
       map(processDocumentInstances =>
         processDocumentInstances.sort((a, b) =>
-          a.isActive === b.isActive
+          a.active === b.active
             ? b.startedOn.getTime() - a.startedOn.getTime()
-            : a.isActive
+            : a.active
             ? -1
             : 1
         )
