@@ -23,10 +23,21 @@
   &__content {
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: center;
+    color: var(--cds-text-primary);
+    gap: 1rem;
+  }
+
+  &__content:has(button){
+    justify-content: space-between;
   }
 
   &__title {
     font-size: 1.75rem;
+  }
+
+  span{
+    font-size: 1rem;
+    line-height: 1.5rem;
   }
 }

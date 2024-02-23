@@ -263,8 +263,10 @@
     "task": {
       "title": "Task"
     },
-    "noDashboards": "No dashboards have been configured.",
-    "noWidgets": "No widgets have been configured for this dashboard."
+    "noDashboards": "No dashboards",
+    "noDashboardsDescription": "It's possible that the system administrator hasn't configured any dashboards yet, or you don't have the rights to view dashboards.",
+    "noWidgets": "No widgets",
+    "noWidgetsDescription": "There are no widgets configured for this dashboard, or you don't have the rights to view them."
   },
   "dashboardManagement": {
     "addDashboard": "Add new dashboard",
@@ -674,7 +676,8 @@
     "readOnlySystemProcessWarningMessage": "This is a system process, so it is marked as read-only. This process can be used but not modified."
   },
   "processCaseConnection": {
-    "noProcesses": "There are no processes connected yet to this Case definition",
+    "noProcessesTitle": "No processes",
+    "noProcessesDescription": "There are no processes connected to this Case definition yet",
     "processCreatesCase": "Process creates new case",
     "processCreatesCaseTooltip": "When this option is selected, a new case is created when this process is started. For this to be possible, a start form must be linked to the first step in the process.",
     "startableWithinCase": "Can be started within existing case",
@@ -1169,7 +1172,9 @@
     "configFile": "Config file",
     "dropdownListValues": "Dropdown list values",
     "id": "ID",
-    "text": "Text"
+    "text": "Text",
+    "noSearchfieldsTitle": "No search fields",
+    "noSearchfieldsDescription": "There are no configured search fields in this Case definition"
   },
   "searchFieldsOverviewTooltips": {
     "title": "The title is an optional field that appears as a label for the current search field. When the title is not set, the default value will be the search field key translation (if there is no translation available, the original key value will be displayed).",

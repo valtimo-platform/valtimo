@@ -263,8 +263,10 @@
     "task": {
       "title": "Aufgabe"
     },
-    "noDashboards": "Es sind keine Dashboards konfiguriert.",
-    "noWidgets": "Für dieses Dashboard wurden keine Widgets konfiguriert."
+    "noDashboards": "Keine Dashboards",
+    "noDashboardsDescription": "Ihr Systemadministrator hat möglicherweise noch keine Dashboards konfiguriert oder Sie verfügen möglicherweise nicht über die entsprechenden Berechtigungen zum Anzeigen von Dashboards.",
+    "noWidgets": "Keine Widgets",
+    "noWidgetsDescription": "Für dieses Dashboard sind keine Widgets konfiguriert, oder Sie verfügen nicht über die entsprechenden Berechtigungen, um sie anzuzeigen."
   },
   "dashboardManagement": {
     "addDashboard": "Neues Dashboard hinzufügen",
@@ -673,7 +675,8 @@
     "readOnlySystemProcessWarningMessage": "Dies ist ein Systemprozess, daher ist er als schreibgeschützt gekennzeichnet. Dieser Prozess kann verwendet, aber nicht geändert werden."
   },
   "processCaseConnection": {
-    "noProcesses": "Mit dieser Falldefinition sind noch keine Prozesse verbunden.",
+    "noProcessesTitle": "Keine Prozesse",
+    "noProcessesDescription": "Mit dieser Falldefinition sind noch keine Prozesse verbunden",
     "processCreatesCase": "Prozess erstellt neuen Case",
     "processCreatesCaseTooltip": "Wenn diese Option ausgewählt ist, wird eine neue Case erstellt, wenn dieser Prozess gestartet wird. Dazu muss ein Startformular mit dem ersten Prozessschritt verknüpft werden.",
     "startableWithinCase": "Kann im bestehenden Case gestartet werden",
@@ -1167,7 +1170,9 @@
     "configFile": "Konfigurationsdatei",
     "dropdownListValues": "Dropdown-Listenwerte",
     "id": "ID",
-    "text": "Text"
+    "text": "Text",
+    "noSearchfieldsTitle": "Keine Suchfelder",
+    "noSearchfieldsDescription": "Innerhalb dieser case definition wurden noch keine Suchfelder konfiguriert"
   },
   "searchFieldsOverviewTooltips": {
     "title": "Der Titel ist ein optionales Feld, das als Bezeichnung für das aktuelle Suchfeld erscheint. Wenn der Titel nicht festgelegt ist, ist der Standardwert die Übersetzung des Suchfeldschlüssels (wenn keine Übersetzung verfügbar ist, wird der ursprüngliche Schlüsselwert angezeigt).",

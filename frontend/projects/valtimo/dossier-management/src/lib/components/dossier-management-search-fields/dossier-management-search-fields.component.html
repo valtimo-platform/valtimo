@@ -27,6 +27,7 @@
   <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
 
   <ng-container *ngTemplateOutlet="modal; context: {obs: obs}"></ng-container>
+
 </ng-container>
 
 <valtimo-confirmation-modal
@@ -41,17 +42,17 @@
 
 <ng-template #buttons let-obs="obs">
   <div class="dossier-management-search-fields__buttons">
-    <a
-      cdsLink
-      class="center-link"
+    <button
+            cdsButton="ghost"
+            iconOnly="true"
       [disabled]="
         !obs.downloadUrl || !obs.downloadName || obs.searchFields?.length <= 0 || obs.disableInput
       "
       [download]="obs.downloadName"
       [href]="obs.downloadUrl"
     >
-      {{ 'searchFields.downloadButtonText' | translate }}
-    </a>
+      <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
+    </button>
 
     <button
       cdsButton="primary"
@@ -80,6 +81,11 @@
       carbonToolbarContent
       *ngTemplateOutlet="buttons; context: {obs: obs}"
     ></ng-container>
+
+    <valtimo-no-results
+            [title]="'searchFieldsOverview.noSearchfieldsTitle' | translate"
+            [description]="'searchFieldsOverview.noSearchfieldsDescription' | translate"
+    ></valtimo-no-results>
   </valtimo-carbon-list>
 </ng-template>
 

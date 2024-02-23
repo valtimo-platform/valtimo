@@ -263,8 +263,10 @@
     "task": {
       "title": "Taak"
     },
-    "noDashboards": "Er zijn geen dashboards geconfigureerd.",
-    "noWidgets": "Er zijn geen widgets geconfigureerd voor dit dashboard."
+    "noDashboards": "Geen dashboards",
+    "noDashboardsDescription": "Het kan zijn dat de systeembeheerder nog geen dashboards heeft geconfigureerd, of je hebt niet de juiste rechten om dashboards te zien.",
+    "noWidgets": "Geen widgets",
+    "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit dashboard, of je hebt niet de juiste rechten om deze te zien."
   },
   "dashboardManagement": {
     "addDashboard": "Nieuw dashboard toevoegen",
@@ -673,7 +675,8 @@
     "readOnlySystemProcessWarningMessage": "Dit is een systeemproces, daarmee is het gemarkeerd als alleen-lezen. Dit proces is wel te gebruiken maar niet aan te passen."
   },
   "processCaseConnection": {
-    "noProcesses": "Er zijn nog geen processen gekoppeld aan deze Case definition.",
+    "noProcessesTitle": "Geen processen",
+    "noProcessesDescription": "Er zijn nog geen processen gekoppeld aan deze Case definitie",
     "processCreatesCase": "Proces maakt nieuw dossier aan",
     "processCreatesCaseTooltip": "Wanneer deze optie is geselecteerd wordt bij het starten van dit proces een nieuw dossier aangemaakt. Hiervoor moet er een startformulier gekoppeld zijn aan de eerste stap in het proces.",
     "startableWithinCase": "Kan gestart worden binnen bestaand dossier",
@@ -1168,7 +1171,9 @@
     "configFile": "Configuratiebestand",
     "dropdownListValues": "Dropdown lijst waarden",
     "id": "ID",
-    "text": "Text"
+    "text": "Text",
+    "noSearchfieldsTitle": "Geen zoekvelden",
+    "noSearchfieldsDescription": "Er zijn nog geen zoekvelden geconfigureerd binnen deze case definitie"
   },
   "searchFieldsOverviewTooltips": {
     "title": "De titel is een optioneel veld dat wordt weergegeven als een label voor het huidige zoekveld. Als de titel niet is ingesteld, is de standaardwaarde de sleutelvertaling van het zoekveld (als er geen vertaling beschikbaar is, wordt de oorspronkelijke sleutelwaarde weergegeven).",

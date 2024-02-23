@@ -130,7 +130,8 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
     )
   );
 
-  private cachedCaseListColumns: Array<CaseListColumn> = [];
+  private cachedCaseListColumns!: Array<CaseListColumn>;
+  loadingCaseListColumns = true;
 
   private readonly refreshCaseListcolumns$ = new BehaviorSubject<null>(null);
 
@@ -152,6 +153,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
       this.lastItemIndex$.next(caseListColumns.length - 1);
       this.cachedCaseListColumns = caseListColumns;
       this.loadingCaseListColumns$.next(false);
+      this.loadingCaseListColumns = false;
       this.enableInput();
     })
   );
@@ -497,7 +499,6 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
       .subscribe(
         () => {
           this.refreshCaseListColumns();
-          localStorage.setItem(`list-search-${documentDefinitionName}`, null);
         },
         () => {
           this.enableInput();
