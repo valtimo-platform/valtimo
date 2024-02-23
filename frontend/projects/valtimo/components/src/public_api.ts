@@ -244,3 +244,5 @@ export * from './lib/directives/command-click/command-click-directive.module';
 // cds overflow button
 export * from './lib/directives/valtimo-cds-overflow-button/valtimo-cds-overflow-button.directive';
 export * from './lib/directives/valtimo-cds-overflow-button/valtimo-cds-overflow-button-directive.module';
+// status selector
+export * from './lib/components/status-selector/status-selector.component';

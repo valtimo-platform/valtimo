@@ -41,7 +41,7 @@
   <input
     *ngIf="isText"
     [ngClass]="{
-      'v-input--full-width': fullWidth,
+      'v-input--full-width': fullWidthClass,
       'v-input--margin': margin,
       'v-input--small-margin': smallMargin
     }"
@@ -65,7 +65,7 @@
   <textarea
     *ngIf="isTextarea"
     [ngClass]="{
-      'v-input--full-width': fullWidth,
+      'v-input--full-width': fullWidthClass,
       'v-input--margin': margin,
       'v-input--small-margin': smallMargin
     }"
@@ -86,7 +86,7 @@
     <div
       *ngIf="{showPassword: showPassword$ | async} as obs"
       [ngClass]="{
-        'v-input--full-width': fullWidth,
+        'v-input--full-width': fullWidthClass,
         'v-input--margin': margin,
         'v-input--small-margin': smallMargin
       }"
@@ -94,7 +94,7 @@
     >
       <input
         [ngClass]="{
-          'v-input--full-width': fullWidth
+          'v-input--full-width': fullWidthClass
         }"
         cdsText
         [disabled]="disabled"
@@ -124,7 +124,7 @@
   <input
     *ngIf="isNumber"
     [ngClass]="{
-      'v-input--full-width': fullWidth,
+      'v-input--full-width': fullWidthClass,
       'v-input--margin': margin,
       'v-input--small-margin': smallMargin,
       'v-input--hide-spinbox': hideNumberSpinBox
@@ -148,7 +148,7 @@
   <input
     *ngIf="isDigitOnly"
     [ngClass]="{
-      'v-input--full-width': fullWidth,
+      'v-input--full-width': fullWidthClass,
       'v-input--margin': margin,
       'v-input--small-margin': smallMargin
     }"

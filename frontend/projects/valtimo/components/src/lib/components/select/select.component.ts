@@ -72,6 +72,7 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public placeholder = '';
   @Input() public smallMargin = false;
   @Input() public carbonTheme = 'g10';
+  @Input() public appendInline = true;
 
   @Output() public selectedChange: EventEmitter<SelectedValue> = new EventEmitter();
 

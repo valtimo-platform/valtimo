@@ -174,7 +174,6 @@ export class OpenZaakTypeLinkExtensionComponent {
       zaakType: this.zaakTypeLinkRequest.zaakTypeUrl,
       informatieObjectType: this.selectedInformatieObjectTypeUrl,
     };
-    console.log(this.zaakTypeLinkRequest);
     this.openZaakService.createZaakTypeLink(this.zaakTypeLinkRequest).subscribe(
       linkResult => {
         this.zaakTypeLink$.next(linkResult);

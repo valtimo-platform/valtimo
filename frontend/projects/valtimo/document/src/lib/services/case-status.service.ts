@@ -31,9 +31,17 @@ export class CaseStatusService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public getInternalCaseStatuses(caseDefinitionName: string): Observable<InternalCaseStatus[]> {
+  public getInternalCaseStatusesManagement(
+    caseDefinitionName: string
+  ): Observable<InternalCaseStatus[]> {
     return this.httpClient.get<InternalCaseStatus[]>(
       this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/internal-status`)
+    );
+  }
+
+  public getInternalCaseStatuses(caseDefinitionName: string): Observable<InternalCaseStatus[]> {
+    return this.httpClient.get<InternalCaseStatus[]>(
+      this.getApiUrl(`/v1/case-definition/${caseDefinitionName}/internal-status`)
     );
   }
 

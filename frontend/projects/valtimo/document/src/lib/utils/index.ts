@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,35 +14,4 @@
  * limitations under the License.
  */
 
-.status-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.edit-key-input {
-  height: 40px;
-  display: flex;
-  width: 100%;
-  flex-direction: row;
-  gap: 16px;
-  align-items: flex-end;
-}
-
-::ng-deep .horizontal-inputs {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(2, 1fr);
-
-  .cds--label {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-}
-
-::ng-deep .dropdown-color-tag .cds--tag {
-  margin-top: -4px;
-  margin-left: 2px;
-}
+export * from './internal-case-status.utils';

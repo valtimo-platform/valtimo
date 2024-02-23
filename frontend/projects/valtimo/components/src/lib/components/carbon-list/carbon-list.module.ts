@@ -30,6 +30,7 @@ import {
   IconModule,
   PaginationModule,
   TableModule,
+  TagModule,
 } from 'carbon-components-angular';
 
 @NgModule({
@@ -48,6 +49,7 @@ import {
     ButtonModule,
     DialogModule,
     NgbTooltipModule,
+    TagModule,
   ],
   exports: [CarbonListComponent, CarbonListFilterPipe, CarbonNoResultsComponent],
 })

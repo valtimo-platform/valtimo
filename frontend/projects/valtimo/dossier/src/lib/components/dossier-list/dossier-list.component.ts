@@ -22,9 +22,11 @@ import {
   CarbonListComponent,
   CarbonListNoResultsMessage,
   CarbonPaginationSelection,
+  CASES_WITHOUT_STATUS_KEY,
   ListField,
   PageTitleService,
   Pagination,
+  ViewType,
 } from '@valtimo/components';
 import {
   AssigneeFilter,
@@ -42,6 +44,7 @@ import {
   Document,
   Documents,
   DocumentService,
+  InternalCaseStatus,
   SpecifiedDocuments,
 } from '@valtimo/document';
 import {Tab, Tabs} from 'carbon-components-angular';
@@ -61,7 +64,12 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {DossierListActionsComponent} from '../dossier-list-actions/dossier-list-actions.component';
+
+import {
+  DEFAULT_DOSSIER_LIST_TABS,
+  DOSSIER_LIST_NO_RESULTS_MESSAGE,
+  DOSSIER_LIST_TABLE_TRANSLATIONS,
+} from '../../constants';
 import {CAN_VIEW_CASE_PERMISSION, DOSSIER_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
 import {
   DossierBulkAssignService,
@@ -73,11 +81,7 @@ import {
   DossierListStatusService,
   DossierParameterService,
 } from '../../services';
-import {
-  DEFAULT_DOSSIER_LIST_TABS,
-  DOSSIER_LIST_NO_RESULTS_MESSAGE,
-  DOSSIER_LIST_TABLE_TRANSLATIONS,
-} from '../../constants';
+import {DossierListActionsComponent} from '../dossier-list-actions/dossier-list-actions.component';
 
 @Component({
   selector: 'valtimo-dossier-list',
@@ -120,11 +124,12 @@ export class DossierListComponent implements OnInit, OnDestroy {
   public readonly showChangeTabModal$ = new BehaviorSubject<boolean>(false);
 
   public readonly searchFields$: Observable<Array<SearchField> | null> =
-    this.searchService.documentSearchFields$.pipe(
-      tap(() => {
-        this.loadingSearchFields = false;
-      })
-    );
+    this.searchService.documentSearchFields$.pipe(tap(() => (this.loadingSearchFields = false)));
+
+  public readonly statuses$ = this.statusService.caseStatuses$.pipe(
+    tap(() => (this.loadingStatuses = false))
+  );
+  public readonly selectedStatuses$ = this.statusService.selectedCaseStatuses$;
 
   public readonly documentDefinitionName$ = this.listService.documentDefinitionName$;
 
@@ -173,19 +178,30 @@ export class DossierListComponent implements OnInit, OnDestroy {
         });
       })
     );
+  public readonly showStatusSelector$: Observable<boolean> = combineLatest([
+    this.statusService.showStatusSelector$,
+    this._hasApiColumnConfig$,
+  ]).pipe(
+    map(([showStatusSelector, hasApiColumnConfig]) => showStatusSelector && !hasApiColumnConfig)
+  );
 
+  private readonly _statusField: ListField = {
+    label: 'document.status',
+    key: 'internalStatus',
+    viewType: ViewType.STATUS,
+  };
   public readonly fields$: Observable<Array<ListField>> = combineLatest([
     this._canHaveAssignee$,
     this._columns$,
     this._hasEnvColumnConfig$,
     this._hasApiColumnConfig$,
+    this.statuses$,
     this.translateService.stream('key'),
   ]).pipe(
     tap(([canHaveAssignee]) => {
-      this.canHaveAssignee = true;
-      // this.canHaveAssignee = canHaveAssignee;
+      this.canHaveAssignee = canHaveAssignee;
     }),
-    map(([canHaveAssignee, columns, hasEnvConfig, hasApiConfig]) => {
+    map(([canHaveAssignee, columns, hasEnvConfig, hasApiConfig, statuses]) => {
       const filteredAssigneeColumns = this.assigneeService.filterAssigneeColumns(
         columns,
         canHaveAssignee
@@ -201,7 +217,11 @@ export class DossierListComponent implements OnInit, OnDestroy {
         canHaveAssignee
       );
 
-      return fieldsToReturn;
+      return statuses.some(
+        (status: InternalCaseStatus) => status.key !== CASES_WITHOUT_STATUS_KEY
+      ) && !hasApiConfig
+        ? [...fieldsToReturn, this._statusField]
+        : fieldsToReturn;
     }),
     tap(listFields => {
       const defaultListField = listFields.find(field => field.default);
@@ -245,6 +265,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         this._documentSearchRequest$,
         this.assigneeFilter$,
         this.searchFieldValues$,
+        this.statusService.selectedCaseStatuses$,
         this.listService.forceRefresh$,
         this._hasEnvColumnConfig$,
         this._hasApiColumnConfig$,
@@ -252,20 +273,34 @@ export class DossierListComponent implements OnInit, OnDestroy {
     ),
     distinctUntilChanged(
       (
-        [prevSearchRequest, prevAssigneeFilter, prevSearchFieldValues, prevForceRefresh],
-        [currSearchRequest, currAssigneeFilter, currSearchFieldValues, currForceRefresh]
+        [
+          prevSearchRequest,
+          prevAssigneeFilter,
+          prevSearchFieldValues,
+          prevSelectedStatuses,
+          prevForceRefresh,
+        ],
+        [
+          currSearchRequest,
+          currAssigneeFilter,
+          currSearchFieldValues,
+          currSelectedStatuses,
+          currForceRefresh,
+        ]
       ) =>
         isEqual(
           {
             ...prevSearchRequest,
             assignee: prevAssigneeFilter,
             ...prevSearchFieldValues,
+            ...prevSelectedStatuses.map((status: InternalCaseStatus) => status.key),
             forceRefresh: prevForceRefresh,
           },
           {
             ...currSearchRequest,
             assignee: currAssigneeFilter,
             ...currSearchFieldValues,
+            ...currSelectedStatuses.map((status: InternalCaseStatus) => status.key),
             forceRefresh: currForceRefresh,
           }
         )
@@ -275,12 +310,16 @@ export class DossierListComponent implements OnInit, OnDestroy {
         documentSearchRequest,
         assigneeFilter,
         searchValues,
+        selectedStatuses,
         _,
         hasEnvColumnConfig,
         hasApiColumnConfig,
       ]) => {
         const obsEnv: Observable<boolean> = of(hasEnvColumnConfig);
         const obsApi: Observable<boolean> = of(hasApiColumnConfig);
+        const statusKeys: (string | null)[] = selectedStatuses.map((status: InternalCaseStatus) =>
+          status.key === CASES_WITHOUT_STATUS_KEY ? null : status.key
+        );
 
         if ((Object.keys(searchValues) || []).length > 0) {
           return forkJoin({
@@ -290,13 +329,15 @@ export class DossierListComponent implements OnInit, OnDestroy {
                     documentSearchRequest,
                     'AND',
                     assigneeFilter,
-                    this.searchService.mapSearchValuesToFilters(searchValues)
+                    this.searchService.mapSearchValuesToFilters(searchValues),
+                    statusKeys
                   )
                 : this.documentService.getSpecifiedDocumentsSearch(
                     documentSearchRequest,
                     'AND',
                     assigneeFilter,
-                    this.searchService.mapSearchValuesToFilters(searchValues)
+                    this.searchService.mapSearchValuesToFilters(searchValues),
+                    statusKeys
                   ),
             hasEnvColumnConfig: obsEnv,
             hasApiColumnConfig: obsApi,
@@ -310,12 +351,16 @@ export class DossierListComponent implements OnInit, OnDestroy {
               ? this.documentService.getDocumentsSearch(
                   documentSearchRequest,
                   'AND',
-                  assigneeFilter
+                  assigneeFilter,
+                  undefined,
+                  statusKeys
                 )
               : this.documentService.getSpecifiedDocumentsSearch(
                   documentSearchRequest,
                   'AND',
-                  assigneeFilter
+                  assigneeFilter,
+                  undefined,
+                  statusKeys
                 ),
           hasEnvColumnConfig: obsEnv,
           hasApiColumnConfig: obsApi,
@@ -524,6 +569,10 @@ export class DossierListComponent implements OnInit, OnDestroy {
     this.listService.forceRefresh();
   }
 
+  public onSelectedStatusesChange(statuses: InternalCaseStatus[]): void {
+    this.statusService.setSelectedStatuses(statuses);
+  }
+
   private openDocumentDefinitionNameSubscription(): void {
     this._documentDefinitionNameSubscription = this.route.params
       .pipe(
@@ -537,10 +586,10 @@ export class DossierListComponent implements OnInit, OnDestroy {
           this.parameterService.clearSearchFieldValues();
         }
         this._previousDocumentDefinitionName = documentDefinitonName;
-        this.setLoading();
         this.paginationService.clearPagination();
         this.assigneeService.resetAssigneeFilter();
         this.listService.setDocumentDefinitionName(documentDefinitonName);
+        this.setLoading();
       });
   }
 
@@ -550,6 +599,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
     this.loadingSearchFields = true;
     this.loadingAssigneeFilter = true;
     this.loadingDocumentItems = true;
+    this.loadingStatuses = true;
   }
 
   private setVisibleTabs(): void {

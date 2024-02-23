@@ -21,3 +21,4 @@
 export * from './lib/models';
 export * from './lib/services';
 export * from './lib/document.module';
+export * from './lib/utils';

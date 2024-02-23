@@ -16,7 +16,7 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, Observable, Subscription, take,} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {StartHersteltermijnConfig} from '../../models';
 import {PluginTranslatePipe} from '../../../../pipes';
 

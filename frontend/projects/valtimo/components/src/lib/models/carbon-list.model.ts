@@ -20,6 +20,7 @@ enum ViewType {
   ARRAY_COUNT = 'arrayCount',
   BOOLEAN = 'boolean',
   DATE = 'date',
+  STATUS = 'status',
   ENUM = 'enum',
   TEMPLATE = 'template',
   TEXT = 'text',

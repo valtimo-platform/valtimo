@@ -29,7 +29,7 @@ import {
 import {FormControl} from '@angular/forms';
 import {ArrowDown16, ArrowUp16, SettingsView16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {SortState} from '@valtimo/document';
+import {InternalCaseStatus, InternalCaseStatusUtils, SortState} from '@valtimo/document';
 import {
   IconService,
   OverflowMenu,
@@ -39,6 +39,7 @@ import {
   TableHeaderItem,
   TableItem,
   TableModel,
+  TagType,
 } from 'carbon-components-angular';
 import {get as _get} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
@@ -54,7 +55,7 @@ import {
   take,
 } from 'rxjs';
 import {filter, tap} from 'rxjs/operators';
-import {BOOLEAN_CONVERTER_VALUES} from '../../constants';
+import {BOOLEAN_CONVERTER_VALUES, CASES_WITHOUT_STATUS_KEY} from '../../constants';
 import {
   ActionItem,
   CarbonListBatchText,
@@ -87,6 +88,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('booleanTemplate') booleanTemplate: TemplateRef<any>;
   @ViewChild('moveRowsTemplate') moveRowsTemplate: TemplateRef<any>;
   @ViewChild('rowDisabled') rowDisabled: TemplateRef<any>;
+  @ViewChild('statusTemplate') statusTemplate: TemplateRef<any>;
   @ViewChild(Table) private _table: Table;
 
   private _completeDataSource: TableItem[][];
@@ -129,6 +131,24 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   public get pagination(): Pagination {
     return this._pagination;
+  }
+
+  // TODO: make this generic for tags not just case status
+  private _availableStatuses: {[key: string]: {title: string; tagType: TagType}};
+  @Input() set availableStatuses(value: InternalCaseStatus[]) {
+    this._availableStatuses = value.reduce(
+      (acc, curr) => ({
+        ...acc,
+        [curr.key]: {
+          title: curr.title,
+          tagType: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(curr.color),
+        },
+      }),
+      {}
+    );
+  }
+  public get availableStatuses(): {[key: string]: {title: string; tagType: TagType}} {
+    return this._availableStatuses;
   }
 
   @Input() loading: boolean;
@@ -201,6 +221,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     isSorting: false,
   });
 
+  public readonly CASES_WITHOUT_STATUS_KEY = CASES_WITHOUT_STATUS_KEY;
   public readonly ViewType = ViewType;
   public skeletonModel = Table.skeletonModel(5, 5);
   public paginationModel: PaginationModel;
@@ -385,6 +406,11 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
               return new TableItem({
                 data,
                 template: this.booleanTemplate,
+              });
+            case ViewType.STATUS:
+              return new TableItem({
+                data: {item, index, length: items.length},
+                template: this.statusTemplate,
               });
             default:
               return new TableItem({data: this.resolveObject(field, item) ?? '-', item});

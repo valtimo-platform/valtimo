@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-modal *ngIf="{selectedTabType: selectedTabType$ | async} as obs" [open]="open">
+<cds-modal valtimoCdsModal *ngIf="{selectedTabType: selectedTabType$ | async} as obs" [open]="open">
   <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
     <h3 cdsModalHeaderHeading>
       {{

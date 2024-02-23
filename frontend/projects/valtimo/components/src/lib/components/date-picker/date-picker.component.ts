@@ -19,6 +19,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  HostBinding,
   Input,
   OnDestroy,
   Output,
@@ -43,13 +44,17 @@ import CustomLocale = flatpickr.CustomLocale;
   styleUrls: ['./date-picker.component.scss'],
 })
 export class DatePickerComponent implements AfterViewInit, OnDestroy {
+  @HostBinding('class.full-width') fullWidthClass = false;
+
   @ViewChild('datePickerElement') datePickerElement!: ElementRef<HTMLInputElement>;
 
   @Input() public name = '';
   @Input() public title = '';
   @Input() public titleTranslationKey = '';
   @Input() public widthPx!: number;
-  @Input() public fullWidth = false;
+  @Input() public set fullWidth(value: boolean) {
+    this.fullWidthClass = value;
+  }
   @Input() public margin = false;
   @Input() public disabled = false;
   @Input() public tooltip = '';

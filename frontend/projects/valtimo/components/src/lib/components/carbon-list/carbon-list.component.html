@@ -146,3 +146,15 @@
     </button>
   </div>
 </ng-template>
+
+<ng-template #statusTemplate let-data="data">
+  <div class="status-template">
+    <cds-tag
+      *ngIf="data.item.internalStatus"
+      class="cds-tag--no-margin"
+      [type]="availableStatuses[data.item.internalStatus]?.tagType"
+    >
+      {{ availableStatuses[data.item.internalStatus]?.title }}
+    </cds-tag>
+  </div>
+</ng-template>

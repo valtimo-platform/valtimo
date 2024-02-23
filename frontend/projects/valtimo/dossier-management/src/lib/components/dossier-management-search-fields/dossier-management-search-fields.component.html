@@ -84,26 +84,34 @@
 </ng-template>
 
 <ng-template #modal let-obs="obs">
-  <cds-modal size="sm" [open]="modalShowing$ | async">
-    <cds-modal-header showCloseButton="true" (closeSelect)="onModalClose()">
+  <cds-modal
+    valtimoCdsModal
+    [title]="
+      searchFieldActionTypeIsAdd
+        ? ('searchFieldsOverview.addRow' | translate)
+        : ('searchFieldsOverview.edit' | translate)
+    "
+    [open]="modalShowing$ | async"
+    [showFooter]="true"
+  >
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="onModalClose()">
       <h3 cdsModalHeaderHeading>
         {{
-          searchFieldActionTypeIsAdd
-            ? ('searchFieldsOverview.addRow' | translate)
-            : ('searchFieldsOverview.edit' | translate)
+          (searchFieldActionTypeIsAdd ? 'searchFieldsOverview.addRow' : 'searchFieldsOverview.edit')
+            | translate
         }}
       </h3>
     </cds-modal-header>
 
-    <section
-      cdsModalContent
-      *ngIf="
-        (showFields$ | async) && {
-          searchField: selectedSearchField$ | async
-        } as searchObs
-      "
-    >
-      <v-form (valueChange)="formValueChange($event)">
+    <section cdsModalContent>
+      <v-form
+        (valueChange)="formValueChange($event)"
+        *ngIf="
+          (showFields$ | async) && {
+            searchField: selectedSearchField$ | async
+          } as searchObs
+        "
+      >
         <v-input
           name="title"
           [title]="'searchFieldsOverview.title' | translate"
@@ -145,6 +153,7 @@
 
         <v-select
           *ngIf="dataTypeItems$ | async as dataTypeItems"
+          [appendInline]="true"
           [dropUp]="false"
           [items]="dataTypeItems"
           [placeholder]="'searchFieldsOverview.searchFieldPlaceholder' | translate"
@@ -161,6 +170,7 @@
 
         <v-select
           *ngIf="(showMatchTypes$ | async) && (matchTypeItems$ | async) as matchTypeItems"
+          [appendInline]="true"
           [dropUp]="false"
           [items]="matchTypeItems"
           [placeholder]="'searchFieldsOverview.searchFieldPlaceholder' | translate"
@@ -177,6 +187,7 @@
 
         <v-select
           *ngIf="fieldTypeItems$ | async as fieldTypeItems"
+          [appendInline]="true"
           [dropUp]="false"
           [items]="fieldTypeItems"
           [placeholder]="'searchFieldsOverview.searchFieldPlaceholder' | translate"
@@ -196,6 +207,7 @@
             (fieldTypeIsDropdown$ | async) &&
             (dropdownDataProviderNames$ | async) as dropdownDataProviderNames
           "
+          [appendInline]="true"
           [dropUp]="false"
           [items]="dropdownDataProviderNames"
           [placeholder]="'searchFieldsOverview.searchFieldPlaceholder' | translate"

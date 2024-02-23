@@ -14,31 +14,24 @@
  * limitations under the License.
  */
 
+import {InternalCaseStatusColor} from '../models';
 import {TagType} from 'carbon-components-angular';
 
-enum InternalCaseStatusColor {
-  WarmGray = 'WARMGRAY',
-  Red = 'RED',
-  Magenta = 'MAGENTA',
-  Purple = 'PURPLE',
-  Blue = 'BLUE',
-  Cyan = 'CYAN',
-  Teal = 'TEAL',
-  Green = 'GREEN',
-  Gray = 'GRAY',
-  CoolGray = 'COOLGRAY',
-  HighContrast = 'HIGHCONTRAST',
-  Outline = 'OUTLINE',
+class InternalCaseStatusUtils {
+  static getTagTypeFromInternalCaseStatusColor(
+    internalCaseStatusColor: InternalCaseStatusColor
+  ): TagType {
+    switch (internalCaseStatusColor) {
+      case InternalCaseStatusColor.HighContrast:
+        return 'high-contrast';
+      case InternalCaseStatusColor.CoolGray:
+        return 'cool-gray';
+      case InternalCaseStatusColor.WarmGray:
+        return 'warm-gray';
+      default:
+        return internalCaseStatusColor?.toLowerCase() as TagType;
+    }
+  }
 }
 
-interface InternalCaseStatus {
-  key: string;
-  title: string;
-  visibleInCaseListByDefault: boolean;
-  color: InternalCaseStatusColor;
-  documentDefinitionName?: string;
-  order?: number;
-  tagType?: TagType;
-}
-
-export {InternalCaseStatus, InternalCaseStatusColor};
+export {InternalCaseStatusUtils};

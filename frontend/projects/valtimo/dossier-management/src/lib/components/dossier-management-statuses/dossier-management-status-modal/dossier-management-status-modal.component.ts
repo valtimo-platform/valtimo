@@ -24,7 +24,16 @@ import {
   Output,
 } from '@angular/core';
 import {StatusModalCloseEvent, StatusModalType} from '../../../models';
-import {BehaviorSubject, combineLatest, map, Subscription, switchMap, take, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 import {
   AbstractControl,
@@ -33,9 +42,16 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import {CaseStatusService, InternalCaseStatus} from '@valtimo/document';
+import {
+  CaseStatusService,
+  InternalCaseStatus,
+  InternalCaseStatusColor,
+  InternalCaseStatusUtils,
+} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import {Edit16} from '@carbon/icons';
+import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   selector: 'valtimo-dossier-management-status-modal',
@@ -75,6 +91,7 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
     title: this.fb.control('', Validators.required),
     key: this.fb.control('', [Validators.required, this.uniqueKeyValidator()]),
     visibleInCaseListByDefault: this.fb.control(true, Validators.required),
+    color: this.fb.control('', Validators.required),
   });
 
   public readonly isEdit$ = combineLatest([this._typeAnimationDelay$, this._prefillStatus]).pipe(
@@ -93,6 +110,40 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
 
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
 
+  private readonly COLORS: InternalCaseStatusColor[] = [
+    InternalCaseStatusColor.Red,
+    InternalCaseStatusColor.Magenta,
+    InternalCaseStatusColor.Purple,
+    InternalCaseStatusColor.Blue,
+    InternalCaseStatusColor.Teal,
+    InternalCaseStatusColor.Green,
+    InternalCaseStatusColor.Cyan,
+    InternalCaseStatusColor.Gray,
+    InternalCaseStatusColor.CoolGray,
+    InternalCaseStatusColor.WarmGray,
+    InternalCaseStatusColor.HighContrast,
+    InternalCaseStatusColor.Outline,
+  ];
+
+  private readonly _selectedColor$ = new BehaviorSubject<InternalCaseStatusColor>(undefined);
+
+  public readonly colorListItems$: Observable<ListItem[]> = combineLatest([
+    this._selectedColor$,
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([selectedColor]) =>
+      this.COLORS.map(color => ({
+        selected: color === selectedColor,
+        content: this.translateService.instant(
+          'interface.tagType.' +
+            InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(color)
+        ),
+        color,
+        tagType: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(color),
+      }))
+    )
+  );
+
   public get visibleInCaseListByDefault(): AbstractControl<boolean, boolean> {
     return this.statusFormGroup?.get('visibleInCaseListByDefault');
   }
@@ -103,6 +154,10 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
 
   public get title(): AbstractControl<string, string> {
     return this.statusFormGroup?.get('title');
+  }
+
+  public get color(): AbstractControl<string, string> {
+    return this.statusFormGroup?.get('color');
   }
 
   public get invalid(): boolean {
@@ -132,7 +187,8 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
   constructor(
     private readonly fb: FormBuilder,
     private readonly iconService: IconService,
-    private readonly caseStatusService: CaseStatusService
+    private readonly caseStatusService: CaseStatusService,
+    private readonly translateService: TranslateService
   ) {
     this.iconService.registerAll([Edit16]);
   }
@@ -201,13 +257,28 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
     this._editingKey$.next(true);
   }
 
+  public colorDropdownChange(event: {
+    item: {color: string; content: string; selected: boolean};
+    isUpdate: boolean;
+  }): void {
+    const newColor = event?.item?.color as InternalCaseStatusColor;
+
+    if (newColor) {
+      this._selectedColor$.next(newColor);
+      this.statusFormGroup.patchValue({color: newColor});
+      this.statusFormGroup.markAsDirty();
+    }
+  }
+
   private prefillForm(prefillStatus: InternalCaseStatus): void {
     this._originalStatusKey$.next(prefillStatus.key);
     this.statusFormGroup.patchValue({
       key: prefillStatus.key,
       title: prefillStatus.title,
       visibleInCaseListByDefault: prefillStatus.visibleInCaseListByDefault,
+      color: prefillStatus.color,
     });
+    this._selectedColor$.next(prefillStatus.color);
     this.statusFormGroup.markAsPristine();
     this.resetEditingKey();
   }
@@ -217,7 +288,9 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
       key: '',
       title: '',
       visibleInCaseListByDefault: true,
+      color: '',
     });
+    this._selectedColor$.next(undefined);
     this.statusFormGroup.markAsPristine();
     this.resetEditingKey();
   }
@@ -309,6 +382,7 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
       key: this.key.value,
       title: this.title.value,
       visibleInCaseListByDefault: this.visibleInCaseListByDefault.value,
+      color: this.color.value as InternalCaseStatusColor,
     };
   }
 }

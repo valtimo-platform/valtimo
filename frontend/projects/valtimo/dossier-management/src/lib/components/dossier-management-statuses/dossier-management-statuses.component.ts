@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {CaseStatusService, InternalCaseStatus} from '@valtimo/document';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
+import {CaseStatusService, InternalCaseStatus, InternalCaseStatusUtils} from '@valtimo/document';
 import {
   BehaviorSubject,
   combineLatest,
@@ -39,9 +45,12 @@ import {StatusModalCloseEvent, StatusModalType} from '../../models';
 @Component({
   selector: 'valtimo-dossier-management-statuses',
   templateUrl: './dossier-management-statuses.component.html',
+  styleUrls: ['./dossier-management-statuses.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DossierManagementStatusesComponent {
+export class DossierManagementStatusesComponent implements AfterViewInit {
+  @ViewChild('colorColumnTemplate') colorColumnTemplate: TemplateRef<any>;
+
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
 
   private readonly _documentDefinitionName$: Observable<string> = this.route.params.pipe(
@@ -69,7 +78,13 @@ export class DossierManagementStatusesComponent {
       }
     }),
     switchMap(([documentDefinitionName]) =>
-      this.caseStatusService.getInternalCaseStatuses(documentDefinitionName)
+      this.caseStatusService.getInternalCaseStatusesManagement(documentDefinitionName)
+    ),
+    map(statuses =>
+      statuses.map(status => ({
+        ...status,
+        tagType: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
+      }))
     ),
     tap(statuses => {
       this._documentStatuses = statuses;
@@ -78,23 +93,7 @@ export class DossierManagementStatusesComponent {
     })
   );
 
-  public readonly FIELDS: ColumnConfig[] = [
-    {
-      key: 'title',
-      label: 'dossierManagement.statuses.columns.title',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'key',
-      label: 'dossierManagement.statuses.columns.key',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'visibleInCaseListByDefault',
-      label: 'dossierManagement.statuses.columns.visible',
-      viewType: ViewType.BOOLEAN,
-    },
-  ];
+  public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
 
   public readonly ACTION_ITEMS: ActionItem[] = [
     {
@@ -119,6 +118,10 @@ export class DossierManagementStatusesComponent {
     private readonly caseStatusService: CaseStatusService,
     private readonly route: ActivatedRoute
   ) {}
+
+  public ngAfterViewInit(): void {
+    this.initFields();
+  }
 
   public openDeleteModal(status: InternalCaseStatus): void {
     this.statusToDelete$.next(status);
@@ -186,5 +189,31 @@ export class DossierManagementStatusesComponent {
     temp[index1] = temp.splice(index2, 1, temp[index1])[0];
 
     return temp;
+  }
+
+  private initFields(): void {
+    this.fields$.next([
+      {
+        key: 'title',
+        label: 'dossierManagement.statuses.columns.title',
+        viewType: ViewType.TEXT,
+      },
+      {
+        key: 'key',
+        label: 'dossierManagement.statuses.columns.key',
+        viewType: ViewType.TEXT,
+      },
+      {
+        key: 'visibleInCaseListByDefault',
+        label: 'dossierManagement.statuses.columns.visible',
+        viewType: ViewType.BOOLEAN,
+      },
+      {
+        viewType: ViewType.TEMPLATE,
+        template: this.colorColumnTemplate,
+        key: 'color',
+        label: 'dossierManagement.statuses.columns.color',
+      },
+    ]);
   }
 }

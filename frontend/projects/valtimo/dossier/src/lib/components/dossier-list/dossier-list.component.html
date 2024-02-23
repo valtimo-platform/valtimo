@@ -23,6 +23,9 @@
     schema: schema$ | async,
     showAssignModal: showAssignModal$ | async,
     selectedDocumentIds: selectedDocumentIds$ | async,
+    statuses: statuses$ | async,
+    selectedStatuses: selectedStatuses$ | async,
+    showStatusSelector: showStatusSelector$ | async,
     loaded:
       !loadingFields &&
       !loadingPagination &&
@@ -62,12 +65,22 @@
       [documentDefinitionName]="documentDefinitionName$ | async"
       [defaultValues]="searchFieldValues$ | async"
       [inputDisabled]="!obs.loaded"
-    ></valtimo-search-fields>
+      [externalSearchField]="obs.showStatusSelector"
+    >
+      <valtimo-status-selector
+        *ngIf="obs.showStatusSelector"
+        [statuses]="obs.statuses"
+        [selectedStatuses]="obs.selectedStatuses"
+        [disabled]="!obs.loaded"
+        (selectedStatusesChangeEvent)="onSelectedStatusesChange($event)"
+      ></valtimo-status-selector>
+    </valtimo-search-fields>
   </div>
 </ng-template>
 
 <ng-template #list let-obs="obs">
   <valtimo-carbon-list
+    [availableStatuses]="obs.statuses"
     [fields]="obs.fields"
     [header]="false"
     [initialSortState]="pagination.sort"

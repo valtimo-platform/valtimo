@@ -155,7 +155,7 @@ import {DossierManagementCreateComponent} from './components/dossier-management-
     ProgressBarModule,
     ConfirmationModalModule,
     ToggleModule,
-    TooltipModule
+    TooltipModule,
   ],
   providers: [TabManagementService],
 })

@@ -144,13 +144,15 @@ export class DocumentService {
     documentSearchRequest: AdvancedDocumentSearchRequest,
     searchOperator?: SearchOperator,
     assigneeFilter?: AssigneeFilter,
-    otherFilters?: Array<SearchFilter | SearchFilterRange>
+    otherFilters?: Array<SearchFilter | SearchFilterRange>,
+    statusFilter?: Array<string | null>
   ): Observable<Documents> {
     const body = {
       ...documentSearchRequest.asHttpBody(),
       ...(searchOperator && {searchOperator}),
       ...(assigneeFilter && {assigneeFilter}),
       ...(otherFilters && {otherFilters}),
+      ...(statusFilter && {statusFilter}),
     };
 
     return this.http
@@ -166,13 +168,15 @@ export class DocumentService {
     documentSearchRequest: AdvancedDocumentSearchRequest,
     searchOperator?: SearchOperator,
     assigneeFilter?: AssigneeFilter,
-    otherFilters?: Array<SearchFilter | SearchFilterRange>
+    otherFilters?: Array<SearchFilter | SearchFilterRange>,
+    statusFilter?: Array<string | null>
   ): Observable<SpecifiedDocuments> {
     const body = {
       ...documentSearchRequest.asHttpBody(),
       ...(searchOperator && {searchOperator}),
       ...(assigneeFilter && {assigneeFilter}),
       ...(otherFilters && {otherFilters}),
+      ...(statusFilter && {statusFilter}),
     };
 
     return this.http

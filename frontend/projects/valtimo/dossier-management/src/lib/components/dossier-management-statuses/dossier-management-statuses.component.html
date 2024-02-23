@@ -20,7 +20,7 @@
     documentStatuses: documentStatuses$ | async
   } as obs"
   [items]="obs.documentStatuses"
-  [fields]="FIELDS"
+  [fields]="fields$ | async"
   [header]="false"
   [loading]="obs.loading"
   [movingRowsEnabled]="true"
@@ -60,4 +60,10 @@
       {{ 'dossierManagement.statuses.add' | translate }}
     </button>
   </div>
+</ng-template>
+
+<ng-template #colorColumnTemplate let-data="data">
+  <cds-tag class="cds-tag--no-margin" [type]="data?.item?.tagType">
+    {{ 'interface.tagType.' + data?.item?.tagType | translate }}
+  </cds-tag>
 </ng-template>

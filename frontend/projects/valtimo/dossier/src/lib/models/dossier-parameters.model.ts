@@ -26,6 +26,7 @@ interface PaginationParameters {
 interface DossierParameters extends PaginationParameters {
   search?: string;
   assignee?: string;
+  status?: string;
 }
 
 export {DossierParameters};

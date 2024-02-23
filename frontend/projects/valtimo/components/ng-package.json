@@ -28,6 +28,7 @@
     "ngx-skeleton-loader",
     "@mdi/font",
     "uuid",
-    "flatpickr"
+    "flatpickr",
+    "lodash"
   ]
 }

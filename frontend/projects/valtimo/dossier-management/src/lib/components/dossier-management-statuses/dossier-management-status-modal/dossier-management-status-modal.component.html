@@ -15,6 +15,7 @@
   -->
 
 <cds-modal
+  valtimoCdsModal
   *ngIf="{
     isAdd: isAdd$ | async,
     isEdit: isEdit$ | async,
@@ -40,6 +41,14 @@
     <ng-container *ngTemplateOutlet="buttons; context: {obs: obs}"></ng-container>
   </cds-modal-footer>
 </cds-modal>
+
+<ng-template #colorDropdownItemTemplate let-item="item">
+  <div class="dropdown-color-tag">
+    <cds-tag *ngIf="item && item.content" class="cds-tag--no-margin" [type]="item?.tagType">
+      {{ 'interface.tagType.' + item?.tagType | translate }}
+    </cds-tag>
+  </div>
+</ng-template>
 
 <ng-template #statusForm let-obs="obs">
   <form [formGroup]="statusFormGroup" class="status-form">
@@ -75,14 +84,29 @@
       </div>
     </cds-label>
 
-    <cds-toggle
-      [label]="'dossierManagement.statuses.visibleTitle' | translate"
-      [onText]="'dossierManagement.statuses.visible' | translate"
-      [offText]="'dossierManagement.statuses.invisible' | translate"
-      [disabled]="obs.disabled"
-      [checked]="visibleInCaseListByDefault?.value"
-      (checkedChange)="toggleCheckedChange($event)"
-    ></cds-toggle>
+    <div class="horizontal-inputs">
+      <cds-label>
+        {{ 'dossierManagement.statuses.columns.color' | translate }}
+
+        <cds-dropdown
+          [appendInline]="false"
+          [placeholder]="'dossierManagement.statuses.colorPlaceholder' | translate"
+          (selected)="colorDropdownChange($event)"
+        >
+          <cds-dropdown-list [items]="colorListItems$" [listTpl]="colorDropdownItemTemplate">
+          </cds-dropdown-list>
+        </cds-dropdown>
+      </cds-label>
+
+      <cds-toggle
+        [label]="'dossierManagement.statuses.visibleTitle' | translate"
+        [onText]="'dossierManagement.statuses.visible' | translate"
+        [offText]="'dossierManagement.statuses.invisible' | translate"
+        [disabled]="obs.disabled"
+        [checked]="visibleInCaseListByDefault?.value"
+        (checkedChange)="toggleCheckedChange($event)"
+      ></cds-toggle>
+    </div>
   </form>
 </ng-template>
 

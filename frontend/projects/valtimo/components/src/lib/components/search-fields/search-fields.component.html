@@ -36,16 +36,24 @@
 
 <ng-template #searchFieldsTemplate>
   <ng-container *ngIf="searchFields$ | async as searchFields">
-    <ng-container *ngIf="{noSearchFields: !searchFields || searchFields.length === 0} as vars">
+    <ng-container
+      *ngIf="{
+        noSearchFields: (!searchFields || searchFields.length === 0) && !externalSearchField
+      } as vars"
+    >
       <div
         *ngIf="!vars.noSearchFields"
         class="search-fields-container"
         [ngClass]="{'search-fields-container--hidden': (expanded$ | async) === false}"
       >
+        <ng-content></ng-content>
+
         <ng-container *ngFor="let searchField of searchFields">
-          <ng-container
-            *ngTemplateOutlet="searchFieldTemplate; context: {searchField: searchField}"
-          ></ng-container>
+          <div class="search-field-container">
+            <ng-container
+              *ngTemplateOutlet="searchFieldTemplate; context: {searchField: searchField}"
+            ></ng-container>
+          </div>
         </ng-container>
       </div>
 
@@ -433,7 +441,6 @@
       [items]="booleanItems"
       [margin]="false"
       [required]="false"
-      [widthInPx]="200"
       [name]="searchField.key"
       [clearSelectionSubject$]="clear$"
       (selectedChange)="singleValueChange(searchField.key, $event)"
@@ -441,6 +448,7 @@
       [defaultSelectionId]="getDefaultBooleanSelectionId(values, searchField.key)"
       [disabled]="inputDisabled"
       [carbonTheme]="carbonTheme"
+      [appendInline]="false"
     ></v-select>
   </ng-container>
 </ng-template>
@@ -534,7 +542,6 @@
       [items]="searchFieldSelectItems"
       [margin]="false"
       [required]="false"
-      [widthInPx]="200"
       [name]="searchField.key"
       [clearSelectionSubject$]="clear$"
       (selectedChange)="singleValueChange(searchField.key, $event)"
@@ -542,6 +549,7 @@
       [defaultSelectionId]="values[searchField.key]"
       [disabled]="inputDisabled"
       [carbonTheme]="carbonTheme"
+      [appendInline]="false"
     ></v-select>
   </ng-container>
 </ng-template>
@@ -568,7 +576,6 @@
       [margin]="false"
       [multiple]="true"
       [required]="false"
-      [widthInPx]="200"
       [name]="searchField.key"
       [clearSelectionSubject$]="clear$"
       (selectedChange)="multipleValueChange(searchField.key, $event)"
@@ -576,6 +583,7 @@
       [defaultSelectionIds]="values[searchField.key]"
       [disabled]="inputDisabled"
       [carbonTheme]="carbonTheme"
+      [appendInline]="false"
     ></v-select>
   </ng-container>
 </ng-template>

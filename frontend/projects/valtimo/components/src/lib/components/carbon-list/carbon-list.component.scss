@@ -75,6 +75,10 @@ td:first-child {
   label {
     margin-bottom: 0 !important;
   }
+
+  ::ng-deep .status-template .cds--tag {
+    margin: 0;
+  }
 }
 
 .disabled {

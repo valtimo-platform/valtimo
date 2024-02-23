@@ -17,6 +17,7 @@
 import {
   Component,
   EventEmitter,
+  HostBinding,
   Input,
   OnChanges,
   OnDestroy,
@@ -33,13 +34,17 @@ import {BehaviorSubject, Observable, Subscription, take} from 'rxjs';
   styleUrls: ['./input.component.scss'],
 })
 export class InputComponent implements OnInit, OnChanges, OnDestroy {
+  @HostBinding('class.full-width') fullWidthClass = false;
+
   @Input() public name = '';
   @Input() public type: InputType = 'text';
   @Input() public title = '';
   @Input() public titleTranslationKey = '';
   @Input() public defaultValue = '';
   @Input() public widthPx!: number;
-  @Input() public fullWidth = false;
+  @Input() public set fullWidth(value: boolean) {
+    this.fullWidthClass = value;
+  }
   @Input() public margin = false;
   @Input() public smallMargin = false;
   @Input() public disabled = false;
