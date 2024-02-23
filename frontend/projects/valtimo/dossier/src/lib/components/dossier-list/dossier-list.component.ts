@@ -189,6 +189,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
     label: 'document.status',
     key: 'internalStatus',
     viewType: ViewType.STATUS,
+    sortable: true,
   };
   public readonly fields$: Observable<Array<ListField>> = combineLatest([
     this._canHaveAssignee$,

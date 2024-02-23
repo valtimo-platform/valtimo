@@ -27,13 +27,21 @@ import {ActivatedRoute, ParamMap, Params, Router} from '@angular/router';
 import {PermissionService} from '@valtimo/access-control';
 import {BreadcrumbService} from '@valtimo/components';
 import {ConfigService} from '@valtimo/config';
-import {Document, DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
+import {
+  CaseStatusService,
+  Document,
+  DocumentService,
+  InternalCaseStatus,
+  InternalCaseStatusUtils,
+  ProcessDocumentDefinition,
+} from '@valtimo/document';
 import {KeycloakService} from 'keycloak-angular';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
   combineLatest,
+  filter,
   from,
   map,
   Observable,
@@ -76,6 +84,10 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
 
   public readonly assigneeId$ = new BehaviorSubject<string>('');
 
+  private readonly _caseStatusKey$ = new BehaviorSubject<string>('');
+
+  public readonly caseStatusKey$ = this._caseStatusKey$.pipe(filter(key => !!key));
+
   public readonly document$: Observable<Document | null> =
     this.dossierService.refreshDocument$.pipe(
       switchMap(() => this.route.params),
@@ -87,6 +99,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
         if (document) {
           this.assigneeId$.next(document.assigneeId);
           this.document = document;
+          this._caseStatusKey$.next(document.internalStatus);
 
           if (
             this.configService.config.customDossierHeader?.hasOwnProperty(
@@ -104,6 +117,21 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
 
   public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
     map(params => params.documentDefinitionName || '')
+  );
+
+  public readonly caseStatus$: Observable<InternalCaseStatus> = this.documentDefinitionName$.pipe(
+    filter(documentDefinitionName => !!documentDefinitionName),
+    switchMap(documentDefinitionName =>
+      combineLatest([
+        this.caseStatusService.getInternalCaseStatuses(documentDefinitionName),
+        this.caseStatusKey$,
+      ])
+    ),
+    map(([statuses, key]) => statuses.find(status => status.key === key)),
+    map(status => ({
+      ...status,
+      tagType: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
+    }))
   );
 
   public readonly userId$: Observable<string | undefined> = from(
@@ -169,7 +197,8 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly dossierTabService: DossierTabService,
-    private readonly dossierService: DossierService
+    private readonly dossierService: DossierService,
+    private readonly caseStatusService: CaseStatusService
   ) {
     this._snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this._snapshot.get('documentDefinitionName') || '';
