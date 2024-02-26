@@ -209,14 +209,8 @@
 
 <ng-container renderInPageHeader [fullWidth]="true">
   <ng-template>
-    <div class="dossier-detail-page-header">
-      <ng-container *ngIf="caseStatus$ | async as caseStatus; else loadingStatus">
-        <cds-tag [type]="caseStatus.tagType">{{ caseStatus.title }}</cds-tag>
-      </ng-container>
+    <div *ngIf="caseStatus$ | async as caseStatus" class="dossier-detail-page-header">
+      <cds-tag [type]="caseStatus.tagType">{{ caseStatus.title }}</cds-tag>
     </div>
   </ng-template>
 </ng-container>
-
-<ng-template #loadingStatus>
-  <cds-tag type="gray">...</cds-tag>
-</ng-template>

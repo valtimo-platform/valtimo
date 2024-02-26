@@ -84,9 +84,11 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
 
   public readonly assigneeId$ = new BehaviorSubject<string>('');
 
-  private readonly _caseStatusKey$ = new BehaviorSubject<string>('');
+  private readonly _caseStatusKey$ = new BehaviorSubject<string | null | 'NOT_AVAILABLE'>(null);
 
-  public readonly caseStatusKey$ = this._caseStatusKey$.pipe(filter(key => !!key));
+  public readonly caseStatusKey$: Observable<string | 'NOT_AVAILABLE'> = this._caseStatusKey$.pipe(
+    filter(key => !!key)
+  );
 
   public readonly document$: Observable<Document | null> =
     this.dossierService.refreshDocument$.pipe(
@@ -99,7 +101,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
         if (document) {
           this.assigneeId$.next(document.assigneeId);
           this.document = document;
-          this._caseStatusKey$.next(document.internalStatus);
+          this._caseStatusKey$.next(document?.internalStatus || 'NOT_AVAILABLE');
 
           if (
             this.configService.config.customDossierHeader?.hasOwnProperty(
@@ -119,20 +121,26 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     map(params => params.documentDefinitionName || '')
   );
 
-  public readonly caseStatus$: Observable<InternalCaseStatus> = this.documentDefinitionName$.pipe(
-    filter(documentDefinitionName => !!documentDefinitionName),
-    switchMap(documentDefinitionName =>
-      combineLatest([
-        this.caseStatusService.getInternalCaseStatuses(documentDefinitionName),
-        this.caseStatusKey$,
-      ])
-    ),
-    map(([statuses, key]) => statuses.find(status => status.key === key)),
-    map(status => ({
-      ...status,
-      tagType: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
-    }))
-  );
+  public readonly caseStatus$: Observable<InternalCaseStatus | undefined> =
+    this.documentDefinitionName$.pipe(
+      filter(documentDefinitionName => !!documentDefinitionName),
+      switchMap(documentDefinitionName =>
+        combineLatest([
+          this.caseStatusService.getInternalCaseStatuses(documentDefinitionName),
+          this.caseStatusKey$,
+        ])
+      ),
+      map(
+        ([statuses, key]) => key !== 'NOT_AVAILABLE' && statuses.find(status => status?.key === key)
+      ),
+      map(
+        status =>
+          status && {
+            ...status,
+            tagType: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
+          }
+      )
+    );
 
   public readonly userId$: Observable<string | undefined> = from(
     this.keyCloakService.isLoggedIn()
