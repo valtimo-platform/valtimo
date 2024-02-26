@@ -42,6 +42,7 @@ import {
   ModalModule,
   PageModule,
   ParagraphModule,
+  RenderInPageHeaderDirectiveModule,
   SearchableDropdownSelectModule,
   SearchFieldsModule,
   SelectModule,
@@ -69,6 +70,7 @@ import {
   SelectModule as CarbonSelectModule,
   SkeletonModule,
   TabsModule,
+  TagModule,
 } from 'carbon-components-angular';
 import {NoteModalComponent} from './components/note-modal/note-modal.component';
 import {DossierAssignUserComponent} from './components/dossier-assign-user/dossier-assign-user.component';
@@ -181,6 +183,8 @@ export type TabsFactory = () => Map<string, object>;
     CarbonListModule,
     SkeletonModule,
     StatusSelectorComponent,
+    RenderInPageHeaderDirectiveModule,
+    TagModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

@@ -178,17 +178,14 @@ export class DossierListComponent implements OnInit, OnDestroy {
         });
       })
     );
-  public readonly showStatusSelector$: Observable<boolean> = combineLatest([
-    this.statusService.showStatusSelector$,
-    this._hasApiColumnConfig$,
-  ]).pipe(
-    map(([showStatusSelector, hasApiColumnConfig]) => showStatusSelector && !hasApiColumnConfig)
-  );
+
+  public readonly showStatusSelector$ = this.statusService.showStatusSelector$;
 
   private readonly _statusField: ListField = {
     label: 'document.status',
     key: 'internalStatus',
     viewType: ViewType.STATUS,
+    sortable: true,
   };
   public readonly fields$: Observable<Array<ListField>> = combineLatest([
     this._canHaveAssignee$,

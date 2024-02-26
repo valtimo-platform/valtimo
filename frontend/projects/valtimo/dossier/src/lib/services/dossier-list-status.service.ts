@@ -41,7 +41,10 @@ export class DossierListStatusService {
       tap(([statuses, queryStatuses]) => {
         const selectedStatuses = queryStatuses
           ? statuses.filter(status => queryStatuses.includes(status.key))
-          : statuses.filter(status => status.visibleInCaseListByDefault);
+          : [
+              ...statuses.filter(status => status.visibleInCaseListByDefault),
+              CASE_WITHOUT_STATUS_STATUS,
+            ];
         this.setSelectedStatuses(selectedStatuses);
       }),
       map(([statuses]) => statuses),

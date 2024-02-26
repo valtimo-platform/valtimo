@@ -206,3 +206,11 @@
     </button>
   </div>
 </ng-template>
+
+<ng-container renderInPageHeader [fullWidth]="true">
+  <ng-template>
+    <div *ngIf="caseStatus$ | async as caseStatus" class="dossier-detail-page-header">
+      <cds-tag [type]="caseStatus.tagType">{{ caseStatus.title }}</cds-tag>
+    </div>
+  </ng-template>
+</ng-container>

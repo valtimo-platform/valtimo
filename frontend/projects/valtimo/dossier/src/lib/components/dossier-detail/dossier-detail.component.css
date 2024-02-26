@@ -23,3 +23,14 @@
   justify-content: center;
   flex-direction: row;
 }
+
+.dossier-detail-page-header {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  padding-bottom: 5px;
+
+  ::ng-deep .cds--tag {
+    margin: 0;
+  }
+}
