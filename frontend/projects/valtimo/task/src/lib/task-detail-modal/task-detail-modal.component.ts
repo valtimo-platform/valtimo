@@ -34,7 +34,7 @@ import {
   ValtimoModalService,
 } from '@valtimo/components';
 import {Task, TaskProcessLinkType} from '../models';
-import {FormFlowComponent, FormSubmissionResult, ProcessLinkService} from '@valtimo/form-link';
+import {FormFlowComponent, FormSubmissionResult, ProcessLinkService} from '@valtimo/process-link';
 import {FormioForm} from '@formio/angular';
 import moment from 'moment';
 import {ToastrService} from 'ngx-toastr';

@@ -17,21 +17,21 @@
 import {NgModule} from '@angular/core';
 import {FormLinkProcessDiagramComponent} from './components/form-link-process-diagram/form-link-process-diagram.component';
 import {CommonModule} from '@angular/common';
-import {FormLinkRoutingModule} from './form-link-routing.module';
+import {ProcessLinkRoutingModule} from './process-link-routing.module';
 import {FormsModule} from '@angular/forms';
 import {
+  ButtonModule,
   FormIoModule,
   ModalModule,
-  SearchableDropdownSelectModule,
-  ValtimoCdsModalDirectiveModule,
-  ButtonModule,
-  VCardModule,
-  VModalModule,
   ParagraphModule,
+  SearchableDropdownSelectModule,
   StepperModule,
   TitleModule,
   TooltipIconModule,
   TooltipModule,
+  ValtimoCdsModalDirectiveModule,
+  VCardModule,
+  VModalModule,
 } from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {SelectPluginConfigurationComponent} from './components/select-plugin-configuration/select-plugin-configuration.component';
@@ -73,7 +73,7 @@ import {FormFlowConfigurationContainerComponent} from './components/form-flow-co
   ],
   imports: [
     CommonModule,
-    FormLinkRoutingModule,
+    ProcessLinkRoutingModule,
     FormsModule,
     ModalModule,
     SearchableDropdownSelectModule,
@@ -109,4 +109,4 @@ import {FormFlowConfigurationContainerComponent} from './components/form-flow-co
     FormFlowComponent,
   ],
 })
-export class FormLinkModule {}
+export class ProcessLinkModule {}

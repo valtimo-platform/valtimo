@@ -57,7 +57,7 @@ import {
 } from '@valtimo/components';
 import {ConfigModule, HttpLoaderFactory} from '@valtimo/config';
 import {FormModule} from '@valtimo/form';
-import {FormLinkModule} from '@valtimo/form-link';
+import {ProcessLinkModule} from '@valtimo/process-link';
 import {ProcessModule} from '@valtimo/process';
 import {TaskModule} from '@valtimo/task';
 import {
@@ -172,7 +172,7 @@ export type TabsFactory = () => Map<string, object>;
     LoadingModule,
     CarbonButtonModule,
     IconModule,
-    FormLinkModule,
+    ProcessLinkModule,
     CarbonModalModule,
     CarbonSelectModule,
     ConfirmationModalModule,

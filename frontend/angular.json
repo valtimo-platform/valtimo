@@ -1923,21 +1923,21 @@
         }
       }
     },
-    "@valtimo/form-link": {
+    "@valtimo/process-link": {
       "projectType": "library",
-      "root": "projects/valtimo/form-link",
-      "sourceRoot": "projects/valtimo/form-link/src",
+      "root": "projects/valtimo/process-link",
+      "sourceRoot": "projects/valtimo/process-link/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/valtimo/form-link/tsconfig.lib.json",
-            "project": "projects/valtimo/form-link/ng-package.json"
+            "tsConfig": "projects/valtimo/process-link/tsconfig.lib.json",
+            "project": "projects/valtimo/process-link/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/valtimo/form-link/tsconfig.lib.prod.json"
+              "tsConfig": "projects/valtimo/process-link/tsconfig.lib.prod.json"
             }
           }
         },
@@ -1945,28 +1945,28 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "src/test.ts",
-            "tsConfig": "projects/valtimo/form-link/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/form-link/karma.conf.js"
+            "tsConfig": "projects/valtimo/process-link/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/process-link/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/valtimo/form-link/src/**/*.ts",
-              "projects/valtimo/form-link/src/**/*.html"
+              "projects/valtimo/process-link/src/**/*.ts",
+              "projects/valtimo/process-link/src/**/*.html"
             ]
           }
         },
         "cypress-run": {
           "builder": "@cypress/schematic:cypress",
           "options": {
-            "devServerTarget": "@valtimo/form-link:serve",
-            "configFile": "projects/valtimo/form-link/cypress.config.js"
+            "devServerTarget": "@valtimo/process-link:serve",
+            "configFile": "projects/valtimo/process-link/cypress.config.js"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "@valtimo/form-link:serve:production"
+              "devServerTarget": "@valtimo/process-link:serve:production"
             }
           }
         },
@@ -1975,19 +1975,19 @@
           "options": {
             "watch": true,
             "headless": false,
-            "configFile": "projects/valtimo/form-link/cypress.config.js"
+            "configFile": "projects/valtimo/process-link/cypress.config.js"
           }
         },
         "e2e": {
           "builder": "@cypress/schematic:cypress",
           "options": {
-            "devServerTarget": "@valtimo/form-link:serve",
+            "devServerTarget": "@valtimo/process-link:serve",
             "watch": true,
             "headless": false
           },
           "configurations": {
             "production": {
-              "devServerTarget": "@valtimo/form-link:serve:production"
+              "devServerTarget": "@valtimo/process-link:serve:production"
             }
           }
         }
