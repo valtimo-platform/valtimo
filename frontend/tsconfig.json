@@ -79,8 +79,8 @@
       "@valtimo/object-management/*": ["dist/valtimo/object-management/*"],
       "@valtimo/object": ["dist/valtimo/object"],
       "@valtimo/object/*": ["dist/valtimo/object/*"],
-      "@valtimo/form-link": ["dist/valtimo/form-link"],
-      "@valtimo/form-link/*": ["dist/valtimo/form-link/*"],
+      "@valtimo/process-link": ["dist/valtimo/process-link"],
+      "@valtimo/process-link/*": ["dist/valtimo/process-link/*"],
       "@valtimo/migration": ["dist/valtimo/migration"],
       "@valtimo/migration/*": ["dist/valtimo/migration/*"],
       "@valtimo/dossier-management": ["dist/valtimo/dossier-management"],
@@ -266,10 +266,10 @@
       "path": "./projects/valtimo/form-flow-management/tsconfig.spec.json"
     },
     {
-      "path": "./projects/valtimo/form-link/tsconfig.lib.json"
+      "path": "./projects/valtimo/process-link/tsconfig.lib.json"
     },
     {
-      "path": "./projects/valtimo/form-link/tsconfig.spec.json"
+      "path": "./projects/valtimo/process-link/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/migration/tsconfig.lib.json"

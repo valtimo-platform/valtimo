@@ -31,7 +31,7 @@ import {
   WidgetModule,
 } from '@valtimo/components';
 import {HttpLoaderFactory} from '@valtimo/config';
-import {FormLinkModule} from '@valtimo/form-link';
+import {ProcessLinkModule} from '@valtimo/process-link';
 import {ContentSwitcherModule, LinkModule, TabsModule} from 'carbon-components-angular';
 import {ToastrModule} from 'ngx-toastr';
 import {AssignUserToTaskComponent} from './assign-user-to-task/assign-user-to-task.component';
@@ -67,7 +67,7 @@ import {TaskRoutingModule} from './task-routing.module';
     FormIoModule,
     ModalModule,
     LinkModule,
-    FormLinkModule,
+    ProcessLinkModule,
     TabsModule,
     ContentSwitcherModule,
   ],
