@@ -15,7 +15,7 @@
  */
 
 /*
- * Public API Surface of form-link
+ * Public API Surface of process-link
  */
 
 export * from './lib/services/form-flow.service';

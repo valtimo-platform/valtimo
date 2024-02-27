@@ -143,7 +143,7 @@ export class DossierSupportingProcessStartModalComponent {
 
   public gotoFormLinkScreen(): void {
     this.modal.hide();
-    this.router.navigate(['form-links'], {
+    this.router.navigate(['process-links'], {
       queryParams: {process: this.processDefinitionKey$.getValue()},
     });
   }
