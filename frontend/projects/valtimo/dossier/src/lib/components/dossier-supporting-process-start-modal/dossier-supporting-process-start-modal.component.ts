@@ -26,7 +26,7 @@ import {
 import {Router} from '@angular/router';
 import {ProcessService} from '@valtimo/process';
 import {ProcessDocumentDefinition} from '@valtimo/document';
-import {FormSubmissionResult, ProcessLinkService} from '@valtimo/form-link';
+import {FormSubmissionResult, ProcessLinkService} from '@valtimo/process-link';
 import {BehaviorSubject, combineLatest, Observable, switchMap} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {UserProviderService} from '@valtimo/security';
@@ -143,7 +143,7 @@ export class DossierSupportingProcessStartModalComponent {
 
   public gotoFormLinkScreen(): void {
     this.modal.hide();
-    this.router.navigate(['form-links'], {
+    this.router.navigate(['process-links'], {
       queryParams: {process: this.processDefinitionKey$.getValue()},
     });
   }

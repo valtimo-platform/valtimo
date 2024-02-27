@@ -34,4 +34,4 @@ const routes: Routes = [
   exports: [RouterModule],
   declarations: [],
 })
-export class FormLinkRoutingModule {}
+export class ProcessLinkRoutingModule {}

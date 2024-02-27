@@ -83,7 +83,7 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
               case 'value':
                 return value;
               case 'keyValue':
-                return (value as MultiInputKeyValue).value && (value as MultiInputKeyValue).key;
+                return (value as MultiInputKeyValue).value || (value as MultiInputKeyValue).key;
               case 'keyDropdownValue':
                 return (
                   (value as MultiInputKeyValue).value &&

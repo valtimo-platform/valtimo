@@ -42,6 +42,7 @@ import {
   ModalModule,
   PageModule,
   ParagraphModule,
+  RenderInPageHeaderDirectiveModule,
   SearchableDropdownSelectModule,
   SearchFieldsModule,
   SelectModule,
@@ -56,7 +57,7 @@ import {
 } from '@valtimo/components';
 import {ConfigModule, HttpLoaderFactory} from '@valtimo/config';
 import {FormModule} from '@valtimo/form';
-import {FormLinkModule} from '@valtimo/form-link';
+import {ProcessLinkModule} from '@valtimo/process-link';
 import {ProcessModule} from '@valtimo/process';
 import {TaskModule} from '@valtimo/task';
 import {
@@ -69,6 +70,7 @@ import {
   SelectModule as CarbonSelectModule,
   SkeletonModule,
   TabsModule,
+  TagModule,
 } from 'carbon-components-angular';
 import {NoteModalComponent} from './components/note-modal/note-modal.component';
 import {DossierAssignUserComponent} from './components/dossier-assign-user/dossier-assign-user.component';
@@ -170,7 +172,7 @@ export type TabsFactory = () => Map<string, object>;
     LoadingModule,
     CarbonButtonModule,
     IconModule,
-    FormLinkModule,
+    ProcessLinkModule,
     CarbonModalModule,
     CarbonSelectModule,
     ConfirmationModalModule,
@@ -181,6 +183,8 @@ export type TabsFactory = () => Map<string, object>;
     CarbonListModule,
     SkeletonModule,
     StatusSelectorComponent,
+    RenderInPageHeaderDirectiveModule,
+    TagModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

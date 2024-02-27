@@ -17,7 +17,7 @@
 import {Component, EventEmitter, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import {PermissionService} from '@valtimo/access-control';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
-import {FormFlowService, FormSubmissionResult, ProcessLinkService} from '@valtimo/form-link';
+import {FormFlowService, FormSubmissionResult, ProcessLinkService} from '@valtimo/process-link';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ProcessService} from '@valtimo/process';
 import {

@@ -114,6 +114,7 @@ interface Document {
   relatedFiles: RelatedFile[];
   assigneeFullName: string;
   assigneeId: string;
+  internalStatus?: string;
 }
 
 interface DocumentDefinitionId {
