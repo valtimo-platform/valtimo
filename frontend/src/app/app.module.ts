@@ -127,6 +127,7 @@ import {ObjectManagementModule} from '@valtimo/object-management';
 import {ObjectModule} from '@valtimo/object';
 import {AccessControlManagementModule} from '@valtimo/access-control-management';
 import {FormFlowManagementModule} from '@valtimo/form-flow-management';
+import {CustomFormFlowComponent} from '@src/app/custom-form-flow-component/custom-form-flow.component';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -227,6 +228,7 @@ export function tabsFactory() {
     AccessControlManagementModule,
     FormFlowManagementModule,
     TranslationManagementModule,
+    CustomFormFlowComponent,
   ],
   providers: [
     FormioComponent,
@@ -259,7 +261,7 @@ export function tabsFactory() {
       useValue: [
         {
           id: 'test-component',
-          component: CustomMapsTabComponent,
+          component: CustomFormFlowComponent,
         },
       ],
     },
