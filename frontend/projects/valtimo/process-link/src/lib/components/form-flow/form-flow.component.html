@@ -29,8 +29,8 @@
       [componentId]="FormFlowCustomComponentId$ | async"
       [formFlowInstanceId]="formFlowInstanceId"
       [disabled]="disabled$ | async"
-      (submit)="onSubmit($event)"
-      (change)="onChange($event)"
+      (submitEvent)="onSubmit($event)"
+      (changeEvent)="onChange($event)"
     >
     </valtimo-form-flow-configuration-container>
   </div>
