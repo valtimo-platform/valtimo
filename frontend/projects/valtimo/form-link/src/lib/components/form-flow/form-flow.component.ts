@@ -34,7 +34,7 @@ import {FormFlowInstance, FormFlowStepType} from '../../models';
 })
 export class FormFlowComponent implements OnInit {
   @ViewChild('form') form: FormioComponent;
-  @Input() formIoFormData: BehaviorSubject<any> | null = new BehaviorSubject<any>(null);
+  @Input() formIoFormData$: BehaviorSubject<any> | null = new BehaviorSubject<any>(null);
   @Input() formFlowInstanceId: string;
   @Output() formFlowComplete = new EventEmitter();
 
@@ -60,8 +60,8 @@ export class FormFlowComponent implements OnInit {
   }
 
   public onChange(event: any): void {
-    if (event.data) {
-      this.formIoFormData.next(event.data);
+    if (event?.data) {
+      this.formIoFormData$.next(event.data);
     }
   }
 
@@ -69,11 +69,15 @@ export class FormFlowComponent implements OnInit {
     this.disable();
 
     if (submission.data) {
-      this.formIoFormData.next(submission.data);
+      this.formIoFormData$.next(submission.data);
     }
     if (submission.data.submit) {
       this.formFlowService
-        .submitStep(this.formFlowInstanceId, this.formFlowStepInstanceId, submission.data)
+        .submitStep(
+          this.formFlowInstanceId,
+          this.formFlowStepInstanceId,
+          this.formIoFormData$.getValue()
+        )
         .subscribe(
           (result: FormFlowInstance) => this.handleFormFlowStep(result),
           errors => {
@@ -93,7 +97,7 @@ export class FormFlowComponent implements OnInit {
   }
 
   public saveData(): void {
-    const formIoFormData = this.formIoFormData.getValue();
+    const formIoFormData = this.formIoFormData$.getValue();
     if (formIoFormData && this.formFlowInstanceId) {
       this.formFlowService.save(this.formFlowInstanceId, formIoFormData).subscribe(
         () => null,

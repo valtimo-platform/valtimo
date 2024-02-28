@@ -24,7 +24,8 @@ import {
 
 export interface FormioSubmission {
   data: {
-    submit: boolean;
+    [key: string]: any;
+    submit?: boolean;
   };
   metadata: object;
   state: string;
