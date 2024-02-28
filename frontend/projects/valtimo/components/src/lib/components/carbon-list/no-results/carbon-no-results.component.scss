@@ -20,6 +20,11 @@
   padding: calc((100 / 16) * 1rem) 0;
   gap: 4rem;
 
+  >img{
+    width: 150px;
+    height: 150px;
+  }
+
   &__content {
     display: flex;
     flex-direction: column;
