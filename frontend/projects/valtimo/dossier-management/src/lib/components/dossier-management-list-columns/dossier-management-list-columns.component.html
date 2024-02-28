@@ -24,22 +24,7 @@
     loadingCaseListColumns: loadingCaseListColumns$ | async
   } as obs"
 >
-
   <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
-
-<!--  <div class="cds&#45;&#45;toolbar-content list-columns__buttons">-->
-<!--    <ng-container *ngTemplateOutlet="buttons; context: {obs: obs}"></ng-container>-->
-<!--  </div>-->
-
-<!--  <ng-container *ngIf="!obs.hasEnvironmentConfig; else environmentConfigWarning">-->
-<!--    <ng-container *ngIf="!obs.caseListColumn || obs.caseListColumn?.length > 0">-->
-<!--      <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>-->
-<!--    </ng-container>-->
-
-<!--    <ng-container *ngIf="obs.caseListColumn?.length === 0">-->
-<!--      <ng-container *ngTemplateOutlet="noConfigWarning"></ng-container>-->
-<!--    </ng-container>-->
-<!--  </ng-container>-->
 
   <ng-container *ngTemplateOutlet="createEditModal"></ng-container>
 
