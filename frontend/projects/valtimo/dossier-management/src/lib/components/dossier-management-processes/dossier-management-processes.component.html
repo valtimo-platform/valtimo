@@ -30,7 +30,8 @@
     <ng-container carbonToolbarContent [ngTemplateOutlet]="connectProcessButton"></ng-container>
 
     <valtimo-no-results
-      [title]="'processCaseConnection.noProcesses' | translate"
+      [title]="'processCaseConnection.noProcessesTitle' | translate"
+      [description]="'processCaseConnection.noProcessesDescription' | translate"
       [action]="connectProcessButton"
     ></valtimo-no-results>
   </valtimo-carbon-list>

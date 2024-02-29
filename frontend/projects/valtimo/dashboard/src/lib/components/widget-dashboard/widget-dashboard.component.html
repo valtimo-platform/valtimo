@@ -18,6 +18,8 @@
   <valtimo-no-results
     *ngIf="!dashboards.length"
     [title]="'dashboard.noDashboards' | translate"
+    [description]="'dashboard.noDashboardsDescription' | translate"
+    illustration="valtimo-layout/img/no-dashboards.svg"
   ></valtimo-no-results>
 
   <div *ngIf="dashboards.length === 1">
