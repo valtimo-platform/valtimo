@@ -17,10 +17,10 @@
 .valtimo-no-results {
   display: flex;
   justify-content: center;
-  padding: calc((100 / 16) * 1rem) 0;
-  gap: 4rem;
+  padding: calc((100 / 16) * 16px) 0;
+  gap: 64px;
 
-  >img{
+  img{
     height: 150px;
   }
 
@@ -29,7 +29,7 @@
     flex-direction: column;
     justify-content: center;
     color: var(--cds-text-primary);
-    gap: 1rem;
+    gap: 8px;
   }
 
   &__content:has(button){
@@ -37,11 +37,11 @@
   }
 
   &__title {
-    font-size: 1.75rem;
+    font-size: 28px;
   }
 
   span{
-    font-size: 1rem;
-    line-height: 1.5rem;
+    font-size: 16px;
+    line-height: 24px;
   }
 }

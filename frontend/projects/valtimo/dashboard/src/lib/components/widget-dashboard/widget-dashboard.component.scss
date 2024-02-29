@@ -20,21 +20,17 @@
 }
 
 .dashboards-container, .widget-container {
-  .valtimo-no-results__content {
-    gap: 8px;
-    max-width: 500px;
-    line-height: 1.2px;
-  }
-
   .valtimo-no-results {
     flex-wrap: wrap;
     align-items: flex-start;
     align-content: center;
     flex-direction: column;
-    gap: 1rem !important;
-  }
+    gap: 16px !important;
 
-  .valtimo-no-results img {
-    width: 120px;
+    &__content {
+      gap: 16px !important;
+      max-width: 500px;
+      line-height: 20px;
+    }
   }
 }

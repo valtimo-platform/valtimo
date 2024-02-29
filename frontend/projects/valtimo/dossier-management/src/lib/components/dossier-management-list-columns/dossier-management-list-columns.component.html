@@ -39,7 +39,6 @@
     [fields]="fields"
     [viewMode]="false"
     [header]="false"
-    [hideToolbar]="false"
     [movingRowsEnabled]="true"
     (moveRow)="onMoveRowEvent($event, obs.documentDefinitionName)"
     (rowClicked)="columnRowClicked($event)"
@@ -53,13 +52,14 @@
             *ngIf="!obs.hasEnvironmentConfig"
             [title]="'listColumn.noConfigWarningTitle' | translate"
             [description]="'listColumn.noConfigWarning' | translate"
-            [illustration]="'valtimo-layout/img/emptystate-empty.svg'"
+            illustration="valtimo-layout/img/emptystate-empty.svg"
     ></valtimo-no-results>
+
     <valtimo-no-results
             *ngIf="obs.hasEnvironmentConfig"
             [title]="'listColumn.hasEnvConfigWarningTitle' | translate"
             [description]="'listColumn.hasEnvConfigWarning' | translate"
-            [illustration]="'valtimo-layout/img/emptystate-error.svg'"
+            illustration="valtimo-layout/img/emptystate-error.svg"
     ></valtimo-no-results>
   </valtimo-carbon-list>
 </ng-template>
