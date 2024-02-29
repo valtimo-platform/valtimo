@@ -48,7 +48,7 @@ export class DossierListStatusService {
         this.setSelectedStatuses(selectedStatuses);
       }),
       map(([statuses]) => statuses),
-      tap(statuses => this._showStatusSelector$.next((statuses || []).length > 2))
+      tap(statuses => this._showStatusSelector$.next((statuses || []).length > 1))
     );
 
   public get caseStatuses$(): Observable<Array<InternalCaseStatus>> {
