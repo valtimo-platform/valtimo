@@ -37,6 +37,11 @@ import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-
 import {LoadingModule, ToggleModule} from 'carbon-components-angular';
 import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
 import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
+import {
+  CreateZaakeigenschapComponent
+} from "./components/create-zaakeigenschap/create-zaakeigenschap.component";
+import {UpdateZaakeigenschapComponent} from "./components/update-zaakeigenschap/update-zaakeigenschap.component";
+import {DeleteZaakeigenschapComponent} from "./components/delete-zaakeigenschap/delete-zaakeigenschap.component";
 
 @NgModule({
   declarations: [
@@ -50,7 +55,10 @@ import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-he
     CreateZaakConfigurationComponent,
     SetZaakopschortingComponent,
     StartHersteltermijnConfigurationComponent,
-    EndHersteltermijnComponent
+    EndHersteltermijnComponent,
+    CreateZaakeigenschapComponent,
+    UpdateZaakeigenschapComponent,
+    DeleteZaakeigenschapComponent,
   ],
   imports: [
     CommonModule,
@@ -75,7 +83,10 @@ import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-he
     CreateNietNatuurlijkPersoonZaakRolComponent,
     SetZaakopschortingComponent,
     StartHersteltermijnConfigurationComponent,
-    EndHersteltermijnComponent
+    EndHersteltermijnComponent,
+    CreateZaakeigenschapComponent,
+    UpdateZaakeigenschapComponent,
+    DeleteZaakeigenschapComponent,
   ],
 })
 export class ZakenApiPluginModule {}

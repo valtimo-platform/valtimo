@@ -19,6 +19,7 @@ import {Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
 import {ResultaatType, StatusType} from '../models';
+import {Eigenschap} from "../models/eigenschap";
 
 @Injectable({
   providedIn: 'root',
@@ -44,6 +45,14 @@ export class ZakenApiService {
   ): Observable<Array<ResultaatType>> {
     return this.http.get<Array<ResultaatType>>(
       `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionId}/zaaktype/resultaattype`
+    );
+  }
+
+  public getEigenschappenByCaseDefinition(
+    caseDefinitionName: string
+  ): Observable<Array<Eigenschap>> {
+    return this.http.get<Array<Eigenschap>>(
+      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionName}/catalogi-eigenschappen`
     );
   }
 }

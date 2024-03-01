@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-export * from './config';
-export * from './status';
-export * from './input';
-export * from './resultaat';
-export * from './eigenschap';
+interface Eigenschap {
+  name: string;
+  url: string;
+}
+
+export {Eigenschap};
