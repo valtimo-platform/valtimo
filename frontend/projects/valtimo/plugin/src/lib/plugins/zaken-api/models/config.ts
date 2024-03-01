@@ -72,6 +72,23 @@ interface StartHersteltermijnConfig {
   maxDurationInDays: string;
 }
 
+interface CreateZaakeigenschapConfig {
+  eigenschapUrl: string;
+  eigenschapValue: string;
+  inputTypeEigenschapToggle?: InputOption;
+}
+
+interface UpdateZaakeigenschapConfig {
+  eigenschapUrl: string;
+  eigenschapValue: string;
+  inputTypeEigenschapToggle?: InputOption;
+}
+
+interface DeleteZaakeigenschapConfig {
+  eigenschapUrl: string;
+  inputTypeEigenschapToggle?: InputOption;
+}
+
 export {
   ZakenApiConfig,
   LinkDocumentToZaakConfig,
@@ -82,4 +99,7 @@ export {
   CreateNietNatuurlijkePersoonZaakRolConfig,
   SetZaakopschortingConfig,
   StartHersteltermijnConfig,
+  CreateZaakeigenschapConfig,
+  UpdateZaakeigenschapConfig,
+  DeleteZaakeigenschapConfig
 };
