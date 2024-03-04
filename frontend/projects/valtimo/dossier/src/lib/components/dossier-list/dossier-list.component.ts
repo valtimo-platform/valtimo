@@ -210,8 +210,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
     this.translateService.stream('key'),
   ]).pipe(
     tap(([canHaveAssignee]) => {
-      this.canHaveAssignee = true;
-      // this.canHaveAssignee = canHaveAssignee;
+      this.canHaveAssignee = canHaveAssignee;
     }),
     map(([canHaveAssignee, columns, hasEnvConfig, hasApiConfig]) => {
       const filteredAssigneeColumns = this.assigneeService.filterAssigneeColumns(
