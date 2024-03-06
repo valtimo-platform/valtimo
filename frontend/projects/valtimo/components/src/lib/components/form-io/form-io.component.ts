@@ -28,7 +28,7 @@ import {
 import {FormioSubmission, ValtimoFormioOptions} from '../../models';
 import {ValtimoModalService} from '../../services/valtimo-modal.service';
 import {UserProviderService} from '@valtimo/security';
-import {Formio, FormioComponent as FormIoSourceComponent} from '@formio/angular';
+import {Formio, FormioComponent as FormIoSourceComponent, FormioUtils} from '@formio/angular';
 import {FormioRefreshValue} from '@formio/angular/formio.common';
 import jwt_decode from 'jwt-decode';
 import {NGXLogger} from 'ngx-logger';
@@ -119,6 +119,10 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
+
+    FormioUtils.Evaluator.templateSettings.escape = /\{{2,3}([\s\S]+?)\}{2,3}/g
+    FormioUtils.Evaluator.templateSettings.interpolate = /\[\[([\s\S]+?)\]\]/g
+
     this.openRouteSubscription();
     this.errors$.next([]);
     this.setInitialToken();
