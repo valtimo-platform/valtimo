@@ -22,10 +22,8 @@ import {
   ViewChild,
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {TranslateService} from '@ngx-translate/core';
 import {PageTitleService, PendingChangesComponent} from '@valtimo/components';
 import {ConfigService} from '@valtimo/config';
-import {ModalService} from 'carbon-components-angular';
 import {filter, map, Observable, Subscription, tap} from 'rxjs';
 import {TabEnum} from '../../models';
 import {DossierDetailService, TabService} from '../../services';
@@ -71,15 +69,13 @@ export class DossierManagementDetailContainerComponent
   private _subscriptions = new Subscription();
 
   constructor(
-    protected readonly modalService: ModalService,
-    protected readonly translateService: TranslateService,
     private readonly dossierDetailService: DossierDetailService,
     private readonly route: ActivatedRoute,
     private readonly configService: ConfigService,
     private readonly tabService: TabService,
     private readonly pageTitleService: PageTitleService
   ) {
-    super(modalService, translateService);
+    super();
     const featureToggles = this.configService.config.featureToggles;
     this.caseListColumn = !!featureToggles?.caseListColumn;
     this.tabManagementEnabled = !!featureToggles?.enableTabManagement;
