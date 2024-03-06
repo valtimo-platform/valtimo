@@ -86,7 +86,7 @@ export class VerzoekConfigurationComponent
       map(processDefinitions =>
         processDefinitions.map(processDefinition => ({
           id: processDefinition.key,
-          text: processDefinition.name,
+          text: processDefinition.name ?? '',
         }))
       )
     );
