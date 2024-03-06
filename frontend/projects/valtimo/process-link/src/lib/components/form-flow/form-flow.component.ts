@@ -60,7 +60,7 @@ export class FormFlowComponent implements OnInit {
   }
 
   public onChange(event: any): void {
-    if (event.data) {
+    if (event?.data) {
       this.formIoFormData.next(event.data);
     }
   }
@@ -73,7 +73,11 @@ export class FormFlowComponent implements OnInit {
     }
     if (submission.data.submit) {
       this.formFlowService
-        .submitStep(this.formFlowInstanceId, this.formFlowStepInstanceId, submission.data)
+        .submitStep(
+          this.formFlowInstanceId,
+          this.formFlowStepInstanceId,
+          this.formIoFormData.getValue()
+        )
         .subscribe(
           (result: FormFlowInstance) => this.handleFormFlowStep(result),
           errors => {
@@ -93,9 +97,9 @@ export class FormFlowComponent implements OnInit {
   }
 
   public saveData(): void {
-    const formIoFormData = this.formIoFormData.getValue();
-    if (formIoFormData && this.formFlowInstanceId) {
-      this.formFlowService.save(this.formFlowInstanceId, formIoFormData).subscribe(
+    const formIoFormDataValue = this.formIoFormData.getValue();
+    if (formIoFormDataValue && this.formFlowInstanceId) {
+      this.formFlowService.save(this.formFlowInstanceId, formIoFormDataValue).subscribe(
         () => null,
         errors => this.form.showErrors(errors)
       );
