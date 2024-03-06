@@ -38,11 +38,7 @@ export class CustomFormFlowComponent implements FormFlowCustomComponent {
   public onSubmit(): void {
     setTimeout(() => {
       this.submitEvent.emit({
-        data: {
-          formFlowInstanceId: this.formFlowInstanceId,
-          test2: this.componentId,
-          submit: true,
-        },
+        data: {},
         metadata: {},
         state: '',
       });
