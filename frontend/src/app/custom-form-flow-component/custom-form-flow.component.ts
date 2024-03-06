@@ -15,10 +15,7 @@
  */
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {
-  ChangeEvent,
-  FormFlowCustomComponent,
-} from '../../../projects/valtimo/process-link/src/lib/models';
+import {ChangeEvent, FormFlowCustomComponent} from '@valtimo/process-link';
 import {FormioSubmission} from '@valtimo/components';
 
 @Component({
@@ -36,12 +33,22 @@ export class CustomFormFlowComponent implements FormFlowCustomComponent {
   @Output() submitEvent = new EventEmitter<FormioSubmission>();
 
   public onSubmit(): void {
-    setTimeout(() => {
-      this.submitEvent.emit({
-        data: {},
-        metadata: {},
-        state: '',
-      });
+    this.submitEvent.emit({
+      data: {
+        submit: true,
+      },
+      metadata: {},
+      state: '',
+    });
+  }
+
+  public onBack(): void {
+    this.submitEvent.emit({
+      data: {
+        back: true,
+      },
+      metadata: {},
+      state: '',
     });
   }
 }
