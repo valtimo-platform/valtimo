@@ -16,7 +16,6 @@
 import {Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {FormioForm} from '@formio/angular';
-import {TranslateService} from '@ngx-translate/core';
 import {AlertService, PageTitleService, PendingChangesComponent} from '@valtimo/components';
 import {ModalService} from 'carbon-components-angular';
 import {BehaviorSubject, Subscription} from 'rxjs';
@@ -45,15 +44,14 @@ export class FormManagementEditComponent
   private _formDefinitionId: string | null = null;
 
   constructor(
-    protected readonly modalService: ModalService,
-    protected readonly translateService: TranslateService,
     private readonly alertService: AlertService,
     private readonly formManagementService: FormManagementService,
+    private readonly modalService: ModalService,
     private readonly pageTitleService: PageTitleService,
     private readonly route: ActivatedRoute,
     private readonly router: Router
   ) {
-    super(modalService, translateService);
+    super();
   }
 
   public ngOnInit(): void {
