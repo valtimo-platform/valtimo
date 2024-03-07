@@ -32,5 +32,13 @@
       max-width: 500px;
       line-height: 20px;
     }
+
+    img{
+      padding-left: 0 !important;
+    }
+
+    span, h4{
+      width: 100% !important;
+    }
   }
 }
