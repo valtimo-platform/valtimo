@@ -1172,7 +1172,7 @@
     "id": "ID",
     "text": "Text",
     "noSearchfieldsTitle": "Keine Suchfelder",
-    "noSearchfieldsDescription": "Innerhalb dieser case definition wurden noch keine Suchfelder konfiguriert"
+    "noSearchfieldsDescription": "Innerhalb dieser case definition wurden noch keine Suchfelder konfiguriert."
   },
   "searchFieldsOverviewTooltips": {
     "title": "Der Titel ist ein optionales Feld, das als Bezeichnung für das aktuelle Suchfeld erscheint. Wenn der Titel nicht festgelegt ist, ist der Standardwert die Übersetzung des Suchfeldschlüssels (wenn keine Übersetzung verfügbar ist, wird der ursprüngliche Schlüsselwert angezeigt).",
@@ -1214,7 +1214,7 @@
     "sortableAsc": "Aufsteigend",
     "sortableDesc": "Absteigend",
     "hasEnvConfigWarningTitle": "Dieser Dossiertyp hat bereits eine Spaltenkonfiguration",
-    "hasEnvConfigWarning": "Für diesen Dossiertyp ist bereits eine Spaltenkonfiguration in der Umgebungskonfiguration der Anwendung verfügbar. Um die Konfiguration der Spalten für diesen Dossiertyp über die Benutzeroberfläche zu ermöglichen, muss diese Umgebungskonfiguration entfernt werden.",
+    "hasEnvConfigWarning": "Für diesen Dossiertyp ist bereits eine Spaltenkonfiguration in der Umgebungskonfiguration verfügbar. Löschen Sie diese Option, um hier Spalten hinzuzufügen.",
     "noConfigWarningTitle": "Keine Spalten",
     "noConfigWarning": "Für diesen Dateityp sind keine Spalten konfiguriert.",
     "addButtonText": "Spalte hinzufügen",

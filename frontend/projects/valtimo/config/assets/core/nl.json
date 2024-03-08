@@ -1173,7 +1173,7 @@
     "id": "ID",
     "text": "Text",
     "noSearchfieldsTitle": "Geen zoekvelden",
-    "noSearchfieldsDescription": "Er zijn nog geen zoekvelden geconfigureerd binnen deze case definitie"
+    "noSearchfieldsDescription": "Er zijn geen zoekvelden geconfigureerd voor dit dossiertype."
   },
   "searchFieldsOverviewTooltips": {
     "title": "De titel is een optioneel veld dat wordt weergegeven als een label voor het huidige zoekveld. Als de titel niet is ingesteld, is de standaardwaarde de sleutelvertaling van het zoekveld (als er geen vertaling beschikbaar is, wordt de oorspronkelijke sleutelwaarde weergegeven).",
@@ -1215,7 +1215,7 @@
     "sortableAsc": "Oplopend",
     "sortableDesc": "Aflopend",
     "hasEnvConfigWarningTitle": "Dit dossiertype heeft al een kolomconfiguratie",
-    "hasEnvConfigWarning": "Dit dossiertype heeft al een kolomconfiguratie beschikbaar in de omgevingsconfiguratie van de applicatie. Om het configureren van de kolommen voor dit dossiertype via de gebruikersinterface mogelijk te maken, moet deze omgevingsconfiguratie verwijderd worden.",
+    "hasEnvConfigWarning": "Dit dossiertype heeft al een kolomconfiguratie in de omgevingsconfiguratie. Verwijder deze om kolommen hier te configureren.",
     "noConfigWarningTitle": "Geen kolommen",
     "noConfigWarning": "Er zijn geen kolommen geconfigureerd voor dit dossiertype.",
     "addButtonText": "Kolom toevoegen",

@@ -1174,7 +1174,7 @@
     "id": "ID",
     "text": "Text",
     "noSearchfieldsTitle": "No search fields",
-    "noSearchfieldsDescription": "There are no configured search fields in this Case definition"
+    "noSearchfieldsDescription": "There are no search fields configured for this case type."
   },
   "searchFieldsOverviewTooltips": {
     "title": "The title is an optional field that appears as a label for the current search field. When the title is not set, the default value will be the search field key translation (if there is no translation available, the original key value will be displayed).",
@@ -1216,7 +1216,7 @@
     "sortableAsc": "Ascending",
     "sortableDesc": "Descending",
     "hasEnvConfigWarningTitle": "Case type already has a column configuration",
-    "hasEnvConfigWarning": "This case type already has a column configuration available in the environment configuration of the application. In order to enable configuring the columns for this case type through the user interface, remove this environment configuration.",
+    "hasEnvConfigWarning": "This case type already has a column configuration in the environment configuration. Delete this in order to add columns here.",
     "noConfigWarningTitle": "No columns",
     "noConfigWarning": "There are no columns configured for this case type.",
     "addButtonText": "Add column",
