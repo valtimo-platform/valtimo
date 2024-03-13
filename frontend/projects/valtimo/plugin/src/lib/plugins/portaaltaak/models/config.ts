@@ -36,6 +36,7 @@ interface CreatePortalTaskConfig {
   receiver: Receiver;
   identificationKey?: string;
   identificationValue?: string;
+  verloopDurationInDays?: number;
 }
 
 export {PortaaltaakConfig, CreatePortalTaskConfig, FormType, Receiver, OtherReceiver};

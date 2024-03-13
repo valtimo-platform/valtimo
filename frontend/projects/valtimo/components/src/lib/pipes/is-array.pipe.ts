@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-export * from './menu-item-translation.pipe';
-export * from './components-pipes.module';
-export * from './case-count.pipe';
-export * from './is-array.pipe';
+import {Pipe, PipeTransform} from '@angular/core';
+
+@Pipe({name: 'isArray', standalone: true})
+export class IsArrayPipe implements PipeTransform {
+  transform(value: any, minLength = 0): boolean {
+    return Array.isArray(value) && value.length >= minLength;
+  }
+}
