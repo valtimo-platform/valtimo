@@ -60,8 +60,8 @@ export class DossierManagementDetailContainerComponent implements OnInit, OnDest
     private readonly pageTitleService: PageTitleService
   ) {
     const featureToggles = this.configService.config.featureToggles;
-    this.caseListColumn = featureToggles?.caseListColumn;
-    this.tabManagementEnabled = featureToggles?.enableTabManagement;
+    this.caseListColumn = !!featureToggles?.caseListColumn;
+    this.tabManagementEnabled = !!featureToggles?.enableTabManagement;
   }
 
   ngOnInit(): void {

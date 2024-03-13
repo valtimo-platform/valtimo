@@ -222,6 +222,7 @@ export * from './lib/components/radio/radio.module';
 
 // Pending Changes
 export * from './lib/components/pending-changes/pending-changes.component';
+export * from './lib/components/pending-changes/pending-changes.service';
 
 /*
 directives
