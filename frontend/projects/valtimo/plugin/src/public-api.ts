@@ -42,6 +42,8 @@ export * from './lib/plugins/smart-documents/components/get-template-names/get-t
 /* documenten api plugin */
 export * from './lib/plugins/documenten-api/documenten-api-plugin.module';
 export * from './lib/plugins/documenten-api/documenten-api-plugin.specification';
+export * from './lib/plugins/documenten-api/services/documenten-api.service';
+export * from './lib/plugins/documenten-api/models/config';
 export * from './lib/plugins/documenten-api/components/store-temp-document/store-temp-document-configuration.component';
 export * from './lib/plugins/documenten-api/components/documenten-api-configuration/documenten-api-configuration.component';
 export * from './lib/plugins/documenten-api/components/store-uploaded-document/store-uploaded-document-configuration.component';

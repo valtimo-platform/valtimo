@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,20 +14,4 @@
  * limitations under the License.
  */
 
-.card-header,
-.setting-row {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.controls {
-  display: flex;
-  align-items: center;
-}
-
-.full-width-notification {
-  max-inline-size: 100%;
-  min-inline-size: 100%;
-}
+export * from './documenten-api.service';

@@ -16,6 +16,65 @@
 
 <div class="input-group mt-4 mb-2 align-items-center">
   <div>
+    <h2>{{ 'openZaak.documentenApi.title' | translate }}</h2>
+  </div>
+</div>
+
+<ng-container
+  *ngIf="{
+    loading: loading$ | async,
+    documentenApiVersion: documentenApiVersion$ | async
+  } as obs"
+>
+  <ng-container *ngIf="obs.loading === false; else loading">
+    <ng-container
+      *ngIf="obs.documentenApiVersion.selectedVersion; else noDocumentenApiVersionWarning"
+    >
+      <ng-container
+        *ngIf="
+          obs.documentenApiVersion.detectedVersions.length === 1;
+          else multipleDocumentenApiVersionsWarning
+        "
+      >
+        {{ 'openZaak.documentenApi.documentenApiVersion' | translate }}
+        <strong> {{ obs.documentenApiVersion.selectedVersion }} </strong>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</ng-container>
+
+<ng-template #noDocumentenApiVersionWarning>
+  <div class="pl-2 pr-2 pb-2">
+    <cds-notification
+      class="full-width-notification"
+      [notificationObj]="{
+        type: 'warning',
+        title: 'openZaak.documentenApi.noVersionWarningTitle' | translate,
+        message: 'openZaak.documentenApi.noVersionWarningMessage' | translate,
+        showClose: false
+      }"
+    >
+    </cds-notification>
+  </div>
+</ng-template>
+
+<ng-template #multipleDocumentenApiVersionsWarning>
+  <div class="pl-2 pr-2 pb-2">
+    <cds-notification
+      class="full-width-notification"
+      [notificationObj]="{
+        type: 'warning',
+        title: 'openZaak.documentenApi.multipleVersionsWarningTitle' | translate,
+        message: 'openZaak.documentenApi.multipleVersionsWarningMessage' | translate,
+        showClose: false
+      }"
+    >
+    </cds-notification>
+  </div>
+</ng-template>
+
+<div class="input-group mt-4 mb-2 align-items-center">
+  <div>
     <h2>{{ 'openZaak.links' | translate }}</h2>
   </div>
 </div>

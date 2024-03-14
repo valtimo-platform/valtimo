@@ -20,6 +20,7 @@ interface DocumentenApiConfig extends PluginConfigurationData {
   url: string;
   bronorganisatie: string;
   authenticationPluginConfiguration: string;
+  apiVersion?: string;
 }
 
 type ConfidentialityLevel =
@@ -48,6 +49,15 @@ interface StoreTempDocumentConfig {
   informatieobjecttype: string;
 }
 
+interface DocumentenApiVersion {
+  selectedVersion: string;
+}
+
+interface DocumentenApiManagementVersion {
+  selectedVersion: string;
+  detectedVersions: string;
+}
+
 export interface DownloadDocumentConfig {
   processVariableName: string;
 }
@@ -58,4 +68,6 @@ export {
   ConfidentialityLevel,
   DocumentLanguage,
   DocumentStatus,
+  DocumentenApiVersion,
+  DocumentenApiManagementVersion,
 };

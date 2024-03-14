@@ -684,6 +684,14 @@
   },
   "openZaak": {
     "links": "OpenZaak Links",
+    "documentenApi": {
+      "title": "Documenten API",
+      "documentenApiVersion": "Das Documenten-API-Plugin verwendet die Version",
+      "noVersionWarningTitle": "Kein Documenten-API-Plugin erkannt",
+      "noVersionWarningMessage": "Bitte konfigurieren Sie den Upload-Prozess, um das Documenten-API-Plugin zu verknüpfen",
+      "multipleVersionsWarningTitle": "Mehrere Documenten-API-Plugins erkannt",
+      "multipleVersionsWarningMessage": "Der Upload-Prozess verknüpft mehrere Documenten-APIs mit unterschiedlichen Versionen"
+    },
     "success": {
       "serviceTaskLinked": "Service task verknüpft",
       "serviceTaskLinkUpdated": "Link zur service task aktualisiert",

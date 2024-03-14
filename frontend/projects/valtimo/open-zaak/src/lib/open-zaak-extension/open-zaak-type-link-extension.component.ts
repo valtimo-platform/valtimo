@@ -27,9 +27,14 @@ import {ActivatedRoute} from '@angular/router';
 import {AlertService, ModalComponent} from '@valtimo/components';
 import {ToastrService} from 'ngx-toastr';
 import {TranslateService} from '@ngx-translate/core';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, map, Observable, switchMap} from 'rxjs';
 import {ConfigService, UploadProvider} from '@valtimo/config';
-import {PluginConfiguration, PluginManagementService} from '@valtimo/plugin';
+import {
+  DocumentenApiManagementVersion,
+  DocumentenApiService,
+  PluginConfiguration,
+  PluginManagementService,
+} from '@valtimo/plugin';
 
 @Component({
   selector: 'valtimo-open-zaak-type-link-extension',
@@ -50,6 +55,16 @@ export class OpenZaakTypeLinkExtensionComponent {
   readonly loading$ = new BehaviorSubject<boolean>(true);
   readonly zaakTypeLink$ = new BehaviorSubject<ZaakTypeLink>(null);
 
+  readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
+    map(params => params.name || '')
+  );
+  readonly documentenApiVersion$: Observable<DocumentenApiManagementVersion> =
+    this.documentDefinitionName$.pipe(
+      switchMap(documentDefinitionName =>
+        this.documentenApiService.getManagementApiVersion(documentDefinitionName)
+      )
+    );
+
   @ViewChild('openZaakTypeLinkModal') modal: ModalComponent;
 
   constructor(
@@ -59,6 +74,7 @@ export class OpenZaakTypeLinkExtensionComponent {
     private toasterService: ToastrService,
     private translateService: TranslateService,
     private pluginManagementService: PluginManagementService,
+    private documentenApiService: DocumentenApiService,
     configService: ConfigService
   ) {
     this.documentDefinitionName = this.route.snapshot.paramMap.get('name');

@@ -684,6 +684,14 @@
   },
   "openZaak": {
     "links": "Gekoppeld zaak type",
+    "documentenApi": {
+      "title": "Documenten API",
+      "documentenApiVersion": "De Documenten API-plugin gebruikt versie",
+      "noVersionWarningTitle": "Geen Documenten API-plugin gedetecteerd",
+      "noVersionWarningMessage": "Configureer het uploadproces om het Documenten API-plugin te koppelen",
+      "multipleVersionsWarningTitle": "Meerdere Documenten API-plugins gedetecteerd",
+      "multipleVersionsWarningMessage": "Het uploadproces is gekoppelt aan meerdere Documenten API's met verschillende versies"
+    },
     "success": {
       "serviceTaskLinked": "Servicetaak gekoppeld",
       "serviceTaskLinkUpdated": "Servicetaak-link bijgewerkt",

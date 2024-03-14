@@ -74,4 +74,18 @@
       [tooltip]="'authenticationPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
     ></v-select>
   </ng-container>
+  <ng-container *ngIf="{apiVersionItems: apiVersionItems$ | async} as pObs">
+    <v-select
+      [loading]="!pObs.apiVersionItems"
+      [items]="pObs.apiVersionItems"
+      [margin]="true"
+      [widthInPx]="350"
+      name="apiVersion"
+      [title]="'apiVersion' | pluginTranslate: pluginId | async"
+      [disabled]="obs.disabled"
+      [defaultSelectionId]="obs.prefill?.apiVersion"
+      [required]="false"
+      [tooltip]="'apiVersionTooltip' | pluginTranslate: pluginId | async"
+    ></v-select>
+  </ng-container>
 </v-form>

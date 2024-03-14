@@ -85,6 +85,8 @@ const documentenApiPluginSpecification: PluginSpecification = {
       authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
       authenticationPluginConfigurationTooltip:
         'Selecteer de plugin die de authenticatie kan afhandelen. Wanneer de selectiebox leeg blijft zal de authenticatie plugin (bv. OpenZaak) eerst aangemaakt moeten worden',
+      apiVersion: 'Documenten API versie',
+      apiVersionTooltip: 'Selecteer de versie van de Documenten API',
       downloadDocumentMessage:
         'Het downloaden van een document vanuit de Documenten API vereist geen configuratie.',
       processVariableName:
@@ -144,6 +146,8 @@ const documentenApiPluginSpecification: PluginSpecification = {
       authenticationPluginConfiguration: 'Authentication plugin configuration',
       authenticationPluginConfigurationTooltip:
         'Select the plugin that can handle the authentication. If the selection box remains empty, the authentication plugin (e.g. OpenZaak) will have to be created first',
+      apiVersion: 'Documenten API version',
+      apiVersionTooltip: 'Select the version of the Documenten API',
       downloadDocumentMessage:
         'Downloading a document form the Documenten API does not require any configuration.',
       processVariableName:
@@ -203,6 +207,8 @@ const documentenApiPluginSpecification: PluginSpecification = {
       authenticationPluginConfiguration: 'Authentifizierungs-Plugin-Konfiguration',
       authenticationPluginConfigurationTooltip:
         'Wählen Sie das Plugin aus, das die Authentifizierung verarbeiten kann. Bleibt das Auswahlfeld leer, muss zunächst das Authentifizierungs-Plugin (z. B. OpenZaak) erstellt werden',
+      apiVersion: 'Documenten-API-Version',
+      apiVersionTooltip: 'Wählen Sie die Version der Documenten-API aus',
       downloadDocumentMessage:
         'Das Herunterladen eines Dokuments aus der Documenten-API erfordert keine Konfiguration.',
       processVariableName:
