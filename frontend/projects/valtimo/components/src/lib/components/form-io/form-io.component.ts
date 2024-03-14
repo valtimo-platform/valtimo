@@ -25,10 +25,15 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import {FormioSubmission, ValtimoFormioOptions} from '../../models';
+import {ValtimoFormioOptions} from '../../models';
 import {ValtimoModalService} from '../../services/valtimo-modal.service';
 import {UserProviderService} from '@valtimo/security';
-import {Formio, FormioComponent as FormIoSourceComponent} from '@formio/angular';
+import {
+  Formio,
+  FormioComponent as FormIoSourceComponent,
+  FormioSubmission,
+  FormioUtils,
+} from '@formio/angular';
 import {FormioRefreshValue} from '@formio/angular/formio.common';
 import jwt_decode from 'jwt-decode';
 import {NGXLogger} from 'ngx-logger';
@@ -47,7 +52,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   @Input() set options(optionsValue: ValtimoFormioOptions) {
     this.options$.next(optionsValue);
   }
-  @Input() set submission(submissionValue: object) {
+  @Input() set submission(submissionValue: FormioSubmission) {
     this.submission$.next(submissionValue);
   }
   @Input() set form(formValue: object) {
@@ -70,11 +75,12 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   public refreshForm = new EventEmitter<FormioRefreshValue>();
 
-  public readonly submission$ = new BehaviorSubject<object>(undefined);
+  public readonly submission$ = new BehaviorSubject<FormioSubmission>({data: {}});
   public readonly form$ = new BehaviorSubject<object>(undefined);
   public readonly options$ = new BehaviorSubject<ValtimoFormioOptions>(undefined);
   public readonly readOnly$ = new BehaviorSubject<boolean>(false);
   public readonly errors$ = new BehaviorSubject<Array<string>>([]);
+  public readonly tokenSetInLocalStorage$ = new BehaviorSubject<boolean>(false);
 
   public readonly currentLanguage$ = this.translateService.stream('key').pipe(
     map(() => this.translateService.currentLang),
@@ -119,6 +125,9 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
+    FormioUtils.Evaluator.templateSettings.escape = /\{{2,3}([\s\S]+?)\}{2,3}/g;
+    FormioUtils.Evaluator.templateSettings.interpolate = /\[\[([\s\S]+?)\]\]/g;
+
     this.openRouteSubscription();
     this.errors$.next([]);
     this.setInitialToken();
@@ -200,6 +209,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     Formio.setToken(token);
     localStorage.setItem(this._FORMIO_TOKEN_LOCAL_STORAGE_KEY, token);
     this.setTimerForTokenRefresh(token);
+    this.tokenSetInLocalStorage$.next(true);
 
     this.logger.debug('New token set for form.io.');
   }
