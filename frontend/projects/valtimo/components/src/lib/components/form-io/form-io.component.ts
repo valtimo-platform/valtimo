@@ -80,6 +80,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   public readonly options$ = new BehaviorSubject<ValtimoFormioOptions>(undefined);
   public readonly readOnly$ = new BehaviorSubject<boolean>(false);
   public readonly errors$ = new BehaviorSubject<Array<string>>([]);
+  public readonly tokenSetInLocalStorage$ = new BehaviorSubject<boolean>(false);
 
   public readonly currentLanguage$ = this.translateService.stream('key').pipe(
     map(() => this.translateService.currentLang),
@@ -208,6 +209,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     Formio.setToken(token);
     localStorage.setItem(this._FORMIO_TOKEN_LOCAL_STORAGE_KEY, token);
     this.setTimerForTokenRefresh(token);
+    this.tokenSetInLocalStorage$.next(true);
 
     this.logger.debug('New token set for form.io.');
   }
