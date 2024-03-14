@@ -75,7 +75,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   public refreshForm = new EventEmitter<FormioRefreshValue>();
 
-  public readonly submission$ = new BehaviorSubject<FormioSubmission>({data: {}});
+  public readonly submission$ = new BehaviorSubject<FormioSubmission>({});
   public readonly form$ = new BehaviorSubject<object>(undefined);
   public readonly options$ = new BehaviorSubject<ValtimoFormioOptions>(undefined);
   public readonly readOnly$ = new BehaviorSubject<boolean>(false);
