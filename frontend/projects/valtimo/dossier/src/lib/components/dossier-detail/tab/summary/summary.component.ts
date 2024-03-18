@@ -155,10 +155,10 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
           })
         )
         .subscribe(res => {
-          const tasks = res[0];
-          const permissions = res.filter((_, index) => index !== 0);
+          const tasks = res?.[0];
+          const permissions = res?.filter((_, index) => index !== 0);
 
-          if (tasks != null) {
+          if (!!tasks) {
             tasks.forEach((task, taskIndex) => {
               task.createdUnix = this.moment(task.created).unix();
               task.created = this.moment(task.created).format('DD MMM YYYY HH:mm');
