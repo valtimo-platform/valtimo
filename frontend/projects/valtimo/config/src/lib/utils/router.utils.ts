@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-import {Router} from '@angular/router';
+import {ExtraOptions} from '@angular/router';
 
 class RouterUtils {
-  public static configureRouter(router: Router): void {
-    this.configureNavigationCanceling(router);
-  }
-
-  private static configureNavigationCanceling(router: Router): void {
-    router.canceledNavigationResolution = 'computed';
+  public static getRouterExtraOptions(): ExtraOptions {
+    return {canceledNavigationResolution: 'computed'};
   }
 }
 

@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 
 @Component({
   selector: 'valtimo-form-management',
   templateUrl: './form-management.component.html',
   styleUrls: ['./form-management.component.scss'],
 })
-export class FormManagementComponent implements OnInit {
-  constructor() {}
-
-  ngOnInit() {}
-}
+export class FormManagementComponent {}

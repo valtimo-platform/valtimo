@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Output, ViewChild} from '@angular/core';
 import {DecisionService} from '../decision.service';
 import {ModalComponent} from '@valtimo/components';
 import {DecisionStateService} from '../services';
@@ -24,7 +24,7 @@ import {DecisionStateService} from '../services';
   templateUrl: './decision-deploy.component.html',
   styleUrls: ['./decision-deploy.component.scss'],
 })
-export class DecisionDeployComponent implements OnInit {
+export class DecisionDeployComponent {
   public dmn: File | null = null;
   @Output() deploySuccessful = new EventEmitter();
   @ViewChild('decisionDeployModal') modal: ModalComponent;
@@ -33,8 +33,6 @@ export class DecisionDeployComponent implements OnInit {
     private readonly decisionService: DecisionService,
     private readonly stateService: DecisionStateService
   ) {}
-
-  ngOnInit() {}
 
   onChange(files: FileList): void {
     this.dmn = files.item(0);

@@ -3,5 +3,6 @@
   "dest": "../../../dist/valtimo/access-control",
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "allowedNonPeerDependencies": ["jwt-decode"]
 }

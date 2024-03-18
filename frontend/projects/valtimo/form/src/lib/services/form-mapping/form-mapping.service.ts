@@ -15,8 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {FormioForm} from '@formio/angular';
-import {ExtendedComponentSchema} from 'formiojs';
+import {ExtendedComponentSchema, FormioForm} from '@formio/angular';
 
 @Injectable({
   providedIn: 'root',

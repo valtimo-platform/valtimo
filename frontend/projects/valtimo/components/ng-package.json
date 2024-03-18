@@ -18,7 +18,6 @@
     "@formio/angular",
     "ngx-spinner",
     "ng-multiselect-dropdown",
-    "formiojs",
     "@carbon/icons",
     "@carbon/grid",
     "@carbon/styles",
@@ -29,6 +28,9 @@
     "@mdi/font",
     "uuid",
     "flatpickr",
-    "lodash"
+    "lodash",
+    "jwt-decode",
+    "formiojs",
+    "deepmerge-ts"
   ]
 }

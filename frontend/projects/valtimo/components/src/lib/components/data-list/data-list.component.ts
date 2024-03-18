@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 
 @Component({
   selector: 'valtimo-data-list',
   templateUrl: './data-list.component.html',
   styleUrls: ['./data-list.component.css'],
 })
-export class DataListComponent implements OnInit {
+export class DataListComponent {
   @Input() collection?: Array<any>;
   @Input() object?: any;
-
-  constructor() {}
-
-  ngOnInit() {}
 }

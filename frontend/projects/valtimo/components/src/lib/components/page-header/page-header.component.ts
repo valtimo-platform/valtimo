@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 import {UserInterfaceService} from '../../services/user-interface.service';
 
 @Component({
@@ -22,10 +22,8 @@ import {UserInterfaceService} from '../../services/user-interface.service';
   templateUrl: './page-header.component.html',
   styleUrls: ['./page-header.component.css'],
 })
-export class PageHeaderComponent implements OnInit {
+export class PageHeaderComponent {
   readonly showPageHeader$ = this.userInterfaceService.showPageHeader$;
 
   constructor(private readonly userInterfaceService: UserInterfaceService) {}
-
-  ngOnInit() {}
 }

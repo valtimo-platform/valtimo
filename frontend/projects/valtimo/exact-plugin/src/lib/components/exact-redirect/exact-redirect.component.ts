@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'valtimo-exact-redirect',
   templateUrl: './exact-redirect.component.html',
 })
-export class ExactRedirectComponent implements OnInit, OnDestroy {
+export class ExactRedirectComponent implements OnInit {
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {
@@ -30,6 +30,4 @@ export class ExactRedirectComponent implements OnInit, OnDestroy {
       window.close();
     });
   }
-
-  ngOnDestroy() {}
 }

@@ -16,7 +16,7 @@
 
 import {Component, HostBinding, OnInit} from '@angular/core';
 import {KeycloakService} from 'keycloak-angular';
-import {from, map, switchMap} from 'rxjs';
+import {map, of, switchMap} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
 import {IconService} from 'carbon-components-angular';
 import User20 from '@carbon/icons/es/user/20';
@@ -35,7 +35,7 @@ export class TopbarComponent implements OnInit {
 
   logoBase64!: SafeResourceUrl;
 
-  readonly userFullName$ = from(this.keyCloakService.isLoggedIn()).pipe(
+  readonly userFullName$ = of(this.keyCloakService.isLoggedIn()).pipe(
     switchMap(() => this.keyCloakService.loadUserProfile()),
     map(profile => `${profile.firstName} ${profile.lastName}`)
   );

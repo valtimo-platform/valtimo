@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 
 @Component({
   selector: 'valtimo-layout-public',
   templateUrl: './layout-public.component.html',
   styleUrls: ['./layout-public.component.scss'],
 })
-export class LayoutPublicComponent implements OnInit {
-  constructor() {}
-
-  ngOnInit() {}
-}
+export class LayoutPublicComponent {}

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 import {FormDefinition} from '../models';
 import {FormManagementService} from '../form-management.service';
 import {Router} from '@angular/router';
@@ -24,7 +24,7 @@ import {Router} from '@angular/router';
   templateUrl: './form-management-list.component.html',
   styleUrls: ['./form-management-list.component.scss'],
 })
-export class FormManagementListComponent implements OnInit {
+export class FormManagementListComponent {
   public formDefinitions: FormDefinition[] = [];
   public formDefinitionFields: any[] = [
     {key: 'name', label: 'Name'},
@@ -46,8 +46,6 @@ export class FormManagementListComponent implements OnInit {
     private formManagementService: FormManagementService,
     private router: Router
   ) {}
-
-  ngOnInit() {}
 
   paginationSet() {
     this.loadFormDefinitions();

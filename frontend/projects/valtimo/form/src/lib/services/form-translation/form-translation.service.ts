@@ -16,9 +16,8 @@
 
 import {Injectable} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
-import {FormioForm} from '@formio/angular';
+import {ExtendedComponentSchema, FormioForm} from '@formio/angular';
 import {FormMappingService} from '../form-mapping/form-mapping.service';
-import {ExtendedComponentSchema} from 'formiojs';
 
 @Injectable({
   providedIn: 'root',

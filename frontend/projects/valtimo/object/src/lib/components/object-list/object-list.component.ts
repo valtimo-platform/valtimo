@@ -162,15 +162,13 @@ export class ObjectListComponent {
         });
       }
     }),
-    map(
-      res =>
-        res?.content?.map(
-          record =>
-            record?.items?.reduce(
-              (obj, item) => Object.assign(obj, {objectId: record.id}, {[item.key]: item.value}),
-              {}
-            )
+    map(res =>
+      res?.content?.map(record =>
+        record?.items?.reduce(
+          (obj, item) => Object.assign(obj, {objectId: record.id}, {[item.key]: item.value}),
+          {}
         )
+      )
     ),
     tap(() => this.loading$.next(false))
   );

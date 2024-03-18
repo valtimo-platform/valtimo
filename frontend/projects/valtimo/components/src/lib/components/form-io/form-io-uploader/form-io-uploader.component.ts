@@ -15,7 +15,7 @@
  */
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {FormioCustomComponent} from '@formio/angular';
+import {FormioCustomComponent} from '../../../modules';
 import {BehaviorSubject} from 'rxjs';
 import {DownloadService, ResourceDto, ResourceFile, UploadProviderService} from '@valtimo/resource';
 import {FormIoStateService} from '../services/form-io-state.service';

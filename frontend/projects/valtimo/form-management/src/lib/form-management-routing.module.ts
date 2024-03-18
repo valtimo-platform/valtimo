@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {NgModule} from '@angular/core';
-import {Router, RouterModule, Routes} from '@angular/router';
+import {RouterModule, Routes} from '@angular/router';
 import {pendingChangesGuard} from '@valtimo/components';
 import {ROLE_ADMIN, RouterUtils} from '@valtimo/config';
 import {AuthGuardService} from '@valtimo/security';
@@ -45,11 +45,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forChild(routes)],
+  imports: [RouterModule.forRoot(routes, RouterUtils.getRouterExtraOptions())],
   exports: [RouterModule],
 })
-export class FormManagementRoutingModule {
-  constructor(private router: Router) {
-    RouterUtils.configureRouter(this.router);
-  }
-}
+export class FormManagementRoutingModule {}

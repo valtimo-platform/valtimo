@@ -41,9 +41,9 @@ export class VerzoekPluginService {
 
   getRoltypesByDocumentDefinitionName(documentDefinitionName: string): Observable<Array<Roltype>> {
     return this.http
-      .get<Array<Roltype>>(
-        `${this.valtimoEndpointUri}v1/case-definition/${documentDefinitionName}/zaaktype/roltype`
-      )
+      .get<
+        Array<Roltype>
+      >(`${this.valtimoEndpointUri}v1/case-definition/${documentDefinitionName}/zaaktype/roltype`)
       .pipe(catchError(() => of([])));
   }
 }

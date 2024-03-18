@@ -15,7 +15,7 @@
  */
 
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {Components} from '@formio/angular';
+import {Components} from 'formiojs';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 import {Observable} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';

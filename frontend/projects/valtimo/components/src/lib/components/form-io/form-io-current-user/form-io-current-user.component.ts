@@ -15,7 +15,7 @@
  */
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {FormioCustomComponent} from '@formio/angular';
+import {FormioCustomComponent} from '../../../modules';
 import {KeycloakService} from 'keycloak-angular';
 import {KeycloakProfile} from 'keycloak-js';
 

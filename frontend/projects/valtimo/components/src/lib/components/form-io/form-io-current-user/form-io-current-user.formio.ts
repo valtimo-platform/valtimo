@@ -15,7 +15,7 @@
  */
 
 import {Injector} from '@angular/core';
-import {FormioCustomComponentInfo, registerCustomFormioComponent} from '@formio/angular';
+import {FormioCustomComponentInfo, registerCustomFormioComponent} from '../../../modules';
 import {formIoCurrentUserEditForm} from './form-io-current-user-edit-form';
 import {FormIoCurrentUserComponent} from './form-io-current-user.component';
 

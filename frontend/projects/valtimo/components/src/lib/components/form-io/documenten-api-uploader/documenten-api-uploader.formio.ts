@@ -19,7 +19,7 @@ import {
   createCustomFormioComponent,
   FormioCustomComponentInfo,
   registerCustomFormioComponentWithClass,
-} from '@formio/angular';
+} from '../../../modules';
 import {DocumentenApiUploaderComponent} from './documenten-api-uploader.component';
 import {documentenApiUploaderEditForm} from './documenten-api-uploader-edit-form';
 

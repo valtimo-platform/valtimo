@@ -20,7 +20,7 @@ import {NGXLogger} from 'ngx-logger';
 import {KeycloakEventType, KeycloakService} from 'keycloak-angular';
 import {ConfigService, UserIdentity, UserService, ValtimoUserIdentity} from '@valtimo/config';
 import {KeycloakOptionsService} from './keycloak-options.service';
-import jwt_decode from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 import {TranslateService} from '@ngx-translate/core';
 import {DatePipe} from '@angular/common';
 import {take} from 'rxjs/operators';
@@ -120,7 +120,7 @@ export class KeycloakUserService implements UserService, OnDestroy {
 
   private openRefreshTokenSubscription(): void {
     this.refreshTokenSubscription = this._refreshToken$.subscribe(refreshToken => {
-      const decodedRefreshToken: any = jwt_decode(refreshToken);
+      const decodedRefreshToken = jwtDecode(refreshToken);
       const tokenExp = decodedRefreshToken.exp * 1000;
       const expiryTimeMs = tokenExp - Date.now() - 1000;
 

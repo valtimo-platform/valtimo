@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 
 @Component({
   selector: 'valtimo-analyse',
   templateUrl: './analyse.component.html',
   styleUrls: ['./analyse.component.scss'],
 })
-export class AnalyseComponent implements OnInit {
-  constructor() {}
-
-  ngOnInit() {}
-}
+export class AnalyseComponent {}

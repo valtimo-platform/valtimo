@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import jwt_decode from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 import {KeycloakService} from 'keycloak-angular';
 import {NGXLogger} from 'ngx-logger';
 import {Observable, of, Subject, Subscription, switchMap, take, timer} from 'rxjs';
@@ -138,7 +138,7 @@ export class PermissionService {
       .pipe(
         take(1),
         switchMap(token => {
-          const tokenExp = (jwt_decode(token) as any).exp * 1000;
+          const tokenExp = jwtDecode(token).exp * 1000;
           const expiryTime = tokenExp - Date.now() - 1000;
           return timer(expiryTime);
         })

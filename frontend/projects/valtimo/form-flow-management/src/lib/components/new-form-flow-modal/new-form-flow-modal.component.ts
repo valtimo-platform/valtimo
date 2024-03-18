@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {FormBuilder, Validators} from '@angular/forms';
 import {FormFlowDefinition} from '../../models';
 import {CARBON_CONSTANTS} from '@valtimo/components';
@@ -31,7 +24,7 @@ import {CARBON_CONSTANTS} from '@valtimo/components';
   templateUrl: './new-form-flow-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NewFormFlowModalComponent implements OnInit {
+export class NewFormFlowModalComponent {
   @Input() open = false;
   @Output() closeEvent = new EventEmitter<FormFlowDefinition | null>();
 
@@ -44,8 +37,6 @@ export class NewFormFlowModalComponent implements OnInit {
   }
 
   constructor(private readonly fb: FormBuilder) {}
-
-  public ngOnInit(): void {}
 
   public onCancel(): void {
     this.closeEvent.emit(null);

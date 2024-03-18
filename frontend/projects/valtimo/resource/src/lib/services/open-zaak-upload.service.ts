@@ -74,9 +74,9 @@ export class OpenZaakUploadService implements UploadService {
 
   checkUploadProcessLink(caseDefinitionKey: string): Observable<boolean> {
     return this.http
-      .get<{processCaseLinkExists: boolean}>(
-        `${this.valtimoApiConfig.endpointUri}v1/uploadprocess/case/${caseDefinitionKey}/check-link`
-      )
+      .get<{
+        processCaseLinkExists: boolean;
+      }>(`${this.valtimoApiConfig.endpointUri}v1/uploadprocess/case/${caseDefinitionKey}/check-link`)
       .pipe(map(res => res.processCaseLinkExists));
   }
 

@@ -47,11 +47,10 @@ export class SelectPluginConfigurationComponent implements OnInit, OnDestroy {
             : of(undefined),
           this.pluginService.availablePluginIds$,
         ]).pipe(
-          map(
-            ([pluginConfigurations, availablePluginIds]) =>
-              pluginConfigurations?.filter(configuration =>
-                availablePluginIds.includes(configuration.pluginDefinition.key)
-              )
+          map(([pluginConfigurations, availablePluginIds]) =>
+            pluginConfigurations?.filter(configuration =>
+              availablePluginIds.includes(configuration.pluginDefinition.key)
+            )
           )
         )
       )

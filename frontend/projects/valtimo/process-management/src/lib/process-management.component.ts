@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, ViewChild} from '@angular/core';
 import {ProcessManagementListComponent} from './process-management-list/process-management-list.component';
 
 @Component({
@@ -22,10 +22,6 @@ import {ProcessManagementListComponent} from './process-management-list/process-
   templateUrl: './process-management.component.html',
   styleUrls: ['./process-management.component.scss'],
 })
-export class ProcessManagementComponent implements OnInit {
+export class ProcessManagementComponent {
   @ViewChild('processManagementList') processManagementList: ProcessManagementListComponent;
-
-  constructor() {}
-
-  ngOnInit() {}
 }

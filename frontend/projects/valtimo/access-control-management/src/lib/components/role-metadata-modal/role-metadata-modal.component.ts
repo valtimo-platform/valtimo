@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {FormBuilder, Validators} from '@angular/forms';
 import {Role, RoleMetadataModal} from '../../models';
 import {CARBON_CONSTANTS} from '@valtimo/components';
@@ -31,7 +24,7 @@ import {CARBON_CONSTANTS} from '@valtimo/components';
   templateUrl: './role-metadata-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RoleMetadataModalComponent implements OnInit {
+export class RoleMetadataModalComponent {
   @Input() open = false;
   @Input() type: RoleMetadataModal = 'add';
   @Input() set defaultKeyValue(value: string) {
@@ -51,8 +44,6 @@ export class RoleMetadataModalComponent implements OnInit {
   }
 
   constructor(private readonly fb: FormBuilder) {}
-
-  public ngOnInit(): void {}
 
   public onCancel(): void {
     this.closeEvent.emit(null);

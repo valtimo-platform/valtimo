@@ -46,8 +46,8 @@
       loading
         ? vars.loadingText
         : vars.items.length === 0
-        ? vars.notFoundText
-        : vars.placeholderText
+          ? vars.notFoundText
+          : vars.placeholderText
     "
     [type]="multiple ? 'multi' : 'single'"
     (clear)="clear()"

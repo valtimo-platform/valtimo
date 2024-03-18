@@ -42,7 +42,6 @@ import {
   BehaviorSubject,
   combineLatest,
   filter,
-  from,
   map,
   Observable,
   of,
@@ -142,7 +141,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
       )
     );
 
-  public readonly userId$: Observable<string | undefined> = from(
+  public readonly userId$: Observable<string | undefined> = of(
     this.keyCloakService.isLoggedIn()
   ).pipe(
     switchMap(() => this.keyCloakService.loadUserProfile()),

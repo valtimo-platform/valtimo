@@ -126,22 +126,21 @@ export class PluginManagementService {
     pluginConfigurations$: Observable<Array<PluginConfiguration>>
   ): Observable<Array<PluginConfigurationWithLogo>> {
     return combineLatest([pluginConfigurations$, this.pluginService.pluginSpecifications$]).pipe(
-      map(
-        ([pluginConfigurations, pluginSpecifications]) =>
-          pluginConfigurations?.map(pluginConfiguration => {
-            const pluginSpecification = pluginSpecifications.find(
-              specification => specification.pluginId === pluginConfiguration?.pluginDefinition?.key
-            );
+      map(([pluginConfigurations, pluginSpecifications]) =>
+        pluginConfigurations?.map(pluginConfiguration => {
+          const pluginSpecification = pluginSpecifications.find(
+            specification => specification.pluginId === pluginConfiguration?.pluginDefinition?.key
+          );
 
-            return {
-              ...pluginConfiguration,
-              ...(pluginSpecification?.pluginLogoBase64 && {
-                pluginLogoBase64: this.sanitizer.bypassSecurityTrustResourceUrl(
-                  pluginSpecification?.pluginLogoBase64
-                ),
-              }),
-            };
-          })
+          return {
+            ...pluginConfiguration,
+            ...(pluginSpecification?.pluginLogoBase64 && {
+              pluginLogoBase64: this.sanitizer.bypassSecurityTrustResourceUrl(
+                pluginSpecification?.pluginLogoBase64
+              ),
+            }),
+          };
+        })
       )
     );
   }

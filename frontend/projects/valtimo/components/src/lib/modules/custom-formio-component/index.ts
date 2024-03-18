@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, Input} from '@angular/core';
-
-/**
- * Component used to display a card element
- */
-@Component({
-  selector: 'valtimo-card',
-  templateUrl: './card.component.html',
-  styleUrls: ['./card.component.css'],
-})
-export class CardComponent {
-  /**
-   * The main title used on the card
-   */
-  @Input() title?: string;
-
-  /**
-   * The smaller font size sub title used on the card
-   */
-  @Input() subtitle?: string;
-}
+export * from './custom-tags.service';
+export * from './create-custom-component';
+export * from './elements.common';
+export * from './register-custom-component';

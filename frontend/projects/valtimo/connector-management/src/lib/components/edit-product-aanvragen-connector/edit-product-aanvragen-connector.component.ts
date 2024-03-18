@@ -18,10 +18,9 @@ import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output} fr
 import {editProductAanvragenConnectorForm} from './edit-product-aanvragen-connector.form';
 import {FormMappingService, FormTranslationService} from '@valtimo/form';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
-import {ExtendedComponentSchema} from 'formiojs';
+import {ExtendedComponentSchema, FormioForm, FormioRefreshValue} from '@formio/angular';
 import {BehaviorSubject, combineLatest, Subject, Subscription} from 'rxjs';
 import {ConnectorProperties} from '@valtimo/config';
-import {FormioForm, FormioRefreshValue} from '@formio/angular';
 import {FormioOptions} from '@formio/angular/formio.common';
 import {cloneDeep} from 'lodash';
 import {TranslateService} from '@ngx-translate/core';

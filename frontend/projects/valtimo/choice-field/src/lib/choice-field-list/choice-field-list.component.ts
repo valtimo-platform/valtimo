@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 import {Router} from '@angular/router';
 import {ChoiceField} from '../models';
 import {ChoiceFieldService} from '../choice-field.service';
@@ -24,7 +24,7 @@ import {ChoiceFieldService} from '../choice-field.service';
   templateUrl: './choice-field-list.component.html',
   styleUrls: ['./choice-field-list.component.css'],
 })
-export class ChoiceFieldListComponent implements OnInit {
+export class ChoiceFieldListComponent {
   public choiceFields: Array<ChoiceField> = [];
   public pagination = {
     collectionSize: 0,
@@ -51,8 +51,6 @@ export class ChoiceFieldListComponent implements OnInit {
     private router: Router,
     private service: ChoiceFieldService
   ) {}
-
-  ngOnInit() {}
 
   paginationSet() {
     this.initData();

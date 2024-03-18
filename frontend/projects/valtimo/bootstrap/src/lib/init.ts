@@ -22,7 +22,7 @@ import {ConfigService} from '@valtimo/config';
 import {menuInitializer} from '@valtimo/components';
 
 export function initialize(
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line
   initializers: (() => Function)[],
   logger: NGXLogger
 ): () => Promise<any> {

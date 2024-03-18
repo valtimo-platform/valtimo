@@ -23,6 +23,7 @@ export * from './lib/constants';
 export * from './lib/pipes';
 export * from './lib/services';
 export * from './lib/guards';
+export * from './lib/modules';
 
 /*
 components

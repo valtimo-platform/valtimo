@@ -215,30 +215,29 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   private openDropdownSubscription(): void {
     this.dropdownSubscription = combineLatest([this._documentDefinitionName$, this.searchFields$])
       .pipe(
-        map(
-          ([documentDefinitionName, searchFields]) =>
-            searchFields
-              ?.filter(searchField => searchField.dropdownDataProvider)
-              .map(searchField =>
-                this.documentService
-                  .getDropdownData(
-                    searchField.dropdownDataProvider,
-                    documentDefinitionName,
-                    searchField.key
-                  )
-                  .subscribe(dropdownData => {
-                    if (dropdownData) {
-                      this.dropdownSelectItemsMap[searchField.key] = Object.keys(dropdownData).map(
-                        dropdownFieldKey => ({
-                          id: dropdownFieldKey,
-                          text: dropdownData[dropdownFieldKey],
-                        })
-                      );
-                    } else {
-                      this.dropdownSelectItemsMap[searchField.key] = [];
-                    }
-                  })
-              )
+        map(([documentDefinitionName, searchFields]) =>
+          searchFields
+            ?.filter(searchField => searchField.dropdownDataProvider)
+            .map(searchField =>
+              this.documentService
+                .getDropdownData(
+                  searchField.dropdownDataProvider,
+                  documentDefinitionName,
+                  searchField.key
+                )
+                .subscribe(dropdownData => {
+                  if (dropdownData) {
+                    this.dropdownSelectItemsMap[searchField.key] = Object.keys(dropdownData).map(
+                      dropdownFieldKey => ({
+                        id: dropdownFieldKey,
+                        text: dropdownData[dropdownFieldKey],
+                      })
+                    );
+                  } else {
+                    this.dropdownSelectItemsMap[searchField.key] = [];
+                  }
+                })
+            )
         )
       )
       .subscribe();

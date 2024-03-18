@@ -47,12 +47,11 @@ export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy 
   readonly formDefinitions$: Observable<Array<{id: string; text: string}>> = this.formService
     .getAllFormDefinitions()
     .pipe(
-      map(
-        results =>
-          results?.map(configuration => ({
-            id: configuration.name,
-            text: configuration.name,
-          }))
+      map(results =>
+        results?.map(configuration => ({
+          id: configuration.name,
+          text: configuration.name,
+        }))
       )
     );
 
