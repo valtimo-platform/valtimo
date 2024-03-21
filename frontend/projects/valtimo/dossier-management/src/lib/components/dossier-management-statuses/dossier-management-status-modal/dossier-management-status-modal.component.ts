@@ -288,9 +288,9 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
       key: '',
       title: '',
       visibleInCaseListByDefault: true,
-      color: '',
+      color: InternalCaseStatusColor.Blue,
     });
-    this._selectedColor$.next(undefined);
+    this._selectedColor$.next(InternalCaseStatusColor.Blue);
     this.statusFormGroup.markAsPristine();
     this.resetEditingKey();
   }
@@ -316,14 +316,18 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
   }
 
   private getUniqueKey(title: string): string {
-    const dashCaseTitle = `${title}`.toLowerCase().replace(/\s+/g, '-');
+    const dashCaseKey = `${title}`
+      .toLowerCase()
+      .replace(/[^a-z0-9-_]+|-[^a-z0-9]+/g, '-')
+      .replace(/_[-_]+/g, '_')
+      .replace(/^[^a-z]+/g, '');
     const usedKeys = this.usedKeys;
 
-    if (!usedKeys.includes(dashCaseTitle)) {
-      return dashCaseTitle;
+    if (!usedKeys.includes(dashCaseKey)) {
+      return dashCaseKey;
     }
 
-    return this.getUniqueKeyWithNumber(dashCaseTitle, usedKeys);
+    return this.getUniqueKeyWithNumber(dashCaseKey, usedKeys);
   }
 
   private getUniqueKeyWithNumber(dashCaseKey: string, usedKeys: string[]): string {
