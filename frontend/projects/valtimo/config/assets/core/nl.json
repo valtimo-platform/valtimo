@@ -1401,5 +1401,9 @@
       "description": "Klik op <strong>Nieuwe form flow toevoegen</strong> om te beginnen met het ontwerpen van je form flow",
       "title": "Geen formulierstromen toegevoegd"
     }
+  },
+  "taskManagement": {
+    "columns": "Kolommen",
+    "caseName": "Dossiernaam"
   }
 }

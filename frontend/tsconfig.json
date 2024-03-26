@@ -27,6 +27,8 @@
       "@valtimo/components/*": ["dist/valtimo/components/*"],
       "@valtimo/task": ["dist/valtimo/task"],
       "@valtimo/task/*": ["dist/valtimo/task/*"],
+      "@valtimo/task-management": ["dist/valtimo/task-management"],
+      "@valtimo/task-management/*": ["dist/valtimo/task-management/*"],
       "@valtimo/access-control": ["dist/valtimo/access-control"],
       "@valtimo/access-control/*": ["dist/valtimo/access-control/*"],
       "@valtimo/access-control-management": ["dist/valtimo/access-control-management"],
@@ -132,6 +134,12 @@
     },
     {
       "path": "./projects/valtimo/task/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/task-management/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/task-management/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/access-control/tsconfig.lib.json"

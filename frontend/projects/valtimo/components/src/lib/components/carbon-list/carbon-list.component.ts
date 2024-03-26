@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -180,6 +180,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @Output() search = new EventEmitter<any>();
   @Output() sortChanged = new EventEmitter<SortState>();
   @Output() moveRow = new EventEmitter<MoveRowEvent>();
+  @Output() itemsReordered = new EventEmitter<CarbonListItem[]>();
 
   public batchText$: Observable<CarbonListBatchText> = this._tableTranslations$.pipe(
     switchMap((translations: CarbonListTranslations) =>
@@ -478,10 +479,15 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     data: {index: number; item: CarbonListItem; length: number}
   ): void {
     event.stopImmediatePropagation();
-    this.moveRow.emit({
+
+    const moveRowEvent = {
       direction: MoveRowDirection.DOWN,
       index: data.index,
-    });
+    };
+    const orderedItems = this.swapItems(this._items, moveRowEvent.index, moveRowEvent.index + 1);
+
+    this.moveRow.emit(moveRowEvent);
+    this.itemsReordered.emit(orderedItems);
   }
 
   public onMoveUpClick(
@@ -489,10 +495,15 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     data: {index: number; item: CarbonListItem; length: number}
   ): void {
     event.stopImmediatePropagation();
-    this.moveRow.emit({
+
+    const moveRowEvent = {
       direction: MoveRowDirection.UP,
       index: data.index,
-    });
+    };
+    const orderedItems = this.swapItems(this._items, moveRowEvent.index - 1, moveRowEvent.index);
+
+    this.moveRow.emit(moveRowEvent);
+    this.itemsReordered.emit(orderedItems);
   }
 
   private getExtraItems(item: CarbonListItem, index: number, length: number): TableItem[] {
@@ -570,5 +581,12 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
       : definitionKey;
     const resolvedObjValue = _get(obj, key, null);
     return this.viewContentService.get(resolvedObjValue, definition);
+  }
+
+  private swapItems(items: CarbonListItem[], index1: number, index2: number): CarbonListItem[] {
+    const temp = [...items];
+    temp[index1] = temp.splice(index2, 1, temp[index1])[0];
+
+    return temp;
   }
 }

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@
         : ('interface.deleteRow' | translate)
   } as vars"
   [attr.data-carbon-theme]="carbonTheme"
-  [ngClass]="{'v-multi-input--margin': margin}"
+  [ngClass]="{'v-multi-input--margin': margin, 'v-multi-input--no-delete-button': hideDeleteButton}"
   class="v-multi-input"
 >
   <v-input-label

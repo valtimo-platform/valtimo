@@ -1399,5 +1399,9 @@
       "description": "Click <strong>Add new form flow</strong> to start designing your form flow",
       "title": "No form flows added"
     }
+  },
+  "taskManagement": {
+    "columns": "Columns",
+    "caseName": "Case name"
   }
 }
