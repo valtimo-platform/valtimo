@@ -89,7 +89,7 @@ const cleanUp = () => {
 const fetchDeps = () =>
   http.get(
     // update link to raw Github content of latest major package.json
-    'https://raw.githubusercontent.com/valtimo-platform/valtimo-frontend-libraries/feature/100450-upgrade-angular-and-other-deps/package.json',
+    'https://raw.githubusercontent.com/valtimo-platform/valtimo-frontend-libraries/development/12.0.0/package.json',
     function (response) {
       response.pipe(file);
 
