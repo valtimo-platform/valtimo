@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-interface UserSettings {
-  collapsibleWidescreenMenu?: boolean;
-  languageCode?: string;
-  preferredTheme?: string;
+enum SelectableCarbonTheme {
+  G10 = 'g10',
+  G90 = 'g90',
+  SYSTEM = 'system',
 }
 
-export {UserSettings};
+export {SelectableCarbonTheme};

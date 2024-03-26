@@ -38,3 +38,5 @@ export * from './title.model';
 export * from './version.model';
 export * from './multi-input.model';
 export * from './carbon-theme.model';
+export * from './right-sidebar.model';
+export * from './theme.model';

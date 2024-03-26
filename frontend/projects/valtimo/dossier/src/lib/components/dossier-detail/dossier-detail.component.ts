@@ -333,7 +333,9 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
   }
 
   private getNestedProperty(obj: any, path: string, defaultValue: any): any {
-    return path.split('.').reduce((currentObject, key) => currentObject?.[key], obj) || defaultValue;
+    return (
+      path.split('.').reduce((currentObject, key) => currentObject?.[key], obj) || defaultValue
+    );
   }
 
   private setBreadcrumb(): void {

@@ -44,22 +44,22 @@
     (rowClicked)="columnRowClicked($event)"
   >
     <ng-container
-            carbonToolbarContent
-            *ngTemplateOutlet="buttons; context: {obs: obs}"
+      carbonToolbarContent
+      *ngTemplateOutlet="buttons; context: {obs: obs}"
     ></ng-container>
 
     <valtimo-no-results
-            *ngIf="!obs.hasEnvironmentConfig"
-            [title]="'listColumn.noConfigWarningTitle' | translate"
-            [description]="'listColumn.noConfigWarning' | translate"
-            illustration="valtimo-layout/img/emptystate-empty.svg"
+      *ngIf="!obs.hasEnvironmentConfig"
+      [title]="'listColumn.noConfigWarningTitle' | translate"
+      [description]="'listColumn.noConfigWarning' | translate"
+      illustration="valtimo-layout/img/emptystate-empty.svg"
     ></valtimo-no-results>
 
     <valtimo-no-results
-            *ngIf="obs.hasEnvironmentConfig"
-            [title]="'listColumn.hasEnvConfigWarningTitle' | translate"
-            [description]="'listColumn.hasEnvConfigWarning' | translate"
-            illustration="valtimo-layout/img/emptystate-error.svg"
+      *ngIf="obs.hasEnvironmentConfig"
+      [title]="'listColumn.hasEnvConfigWarningTitle' | translate"
+      [description]="'listColumn.hasEnvConfigWarning' | translate"
+      illustration="valtimo-layout/img/emptystate-error.svg"
     ></valtimo-no-results>
   </valtimo-carbon-list>
 </ng-template>

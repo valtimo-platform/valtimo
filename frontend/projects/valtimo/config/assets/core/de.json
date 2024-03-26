@@ -375,7 +375,13 @@
     },
     "interface": {
       "title": "Interface",
-      "collapsibleMenu": "Navigationsleiste immer einklappbar"
+      "collapsibleMenu": "Navigationsleiste immer einklappbar",
+      "themePreference": "Thema",
+      "themes": {
+        "light": "Hell",
+        "dark": "Dunkel",
+        "system": "System"
+      }
     }
   },
   "decisions": {

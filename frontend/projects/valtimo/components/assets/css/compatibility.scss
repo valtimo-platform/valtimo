@@ -14,7 +14,70 @@
  * limitations under the License.
  */
 
-/* General */
+/* Carbon */
+
+body {
+  background-color: var(--cds-background);
+}
+
+.cds--header {
+  background-color: var(--cds-layer);
+}
+
+.cds--side-nav {
+  background-color: var(--cds-layer);
+}
+
+.cds {
+  &--link--disabled {
+    pointer-events: none;
+  }
+
+  &--text-input:read-only {
+    color: var(--cds-text-primary);
+    border-color: var(--cds-border-subtle-01);
+    outline: none;
+  }
+
+  &--data-table {
+    &-container {
+      padding-top: 0 !important;
+    }
+
+    tr {
+      cursor: pointer;
+    }
+  }
+
+  &--inline-notification__text-wrapper {
+    width: 100%;
+  }
+
+  &--overflow-menu-options__btn {
+    min-width: 100%;
+  }
+}
+
+.valtimo-carbon-list {
+  .cds--checkbox-label,
+  .cds--pagination__text {
+    margin-bottom: 0 !important;
+  }
+
+  &__tabs cds-tab {
+    display: none !important;
+  }
+
+  &__actions {
+    width: 1px !important;
+  }
+}
+
+.hide-after::after {
+  display: none;
+}
+
+/* Beagle */
 
 html {
   overflow-y: scroll !important;

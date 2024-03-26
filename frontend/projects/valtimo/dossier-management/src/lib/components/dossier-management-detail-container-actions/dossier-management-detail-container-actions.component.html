@@ -37,7 +37,6 @@
   <cds-dropdown
     class="version-selection"
     [disabled]="obs.loadingVersion || obs.versionListItems.length === 1"
-    [attr.data-carbon-theme]="CARBON_THEME"
     [skeleton]="obs.loadingVersion"
     (selected)="setVersion($event)"
   >
@@ -52,12 +51,10 @@
     [customTrigger]="customTrigger"
     [offset]="{y: 48, x: 37}"
     class="overflow-button"
-    [attr.data-carbon-theme]="CARBON_THEME"
   >
     <cds-overflow-menu-option
       [disabled]="obs.exporting || obs.loadingVersion"
       (selected)="export()"
-      [attr.data-carbon-theme]="CARBON_THEME"
       >{{
         'dossierManagement.export' | translate: {value: documentDefinitionTitle}
       }}</cds-overflow-menu-option
@@ -67,14 +64,13 @@
       *ngIf="obs.selectedDocumentDefinition && !obs.selectedDocumentDefinition.readOnly"
       [disabled]="obs.exporting || obs.loadingVersion"
       (selected)="openDossierRemoveModal()"
-      [attr.data-carbon-theme]="CARBON_THEME"
       >{{ 'Remove document definition' | translate }}</cds-overflow-menu-option
     >
   </cds-overflow-menu>
 </ng-template>
 
 <ng-template #customTrigger>
-  <button cdsButton="tertiary" [attr.data-carbon-theme]="CARBON_THEME">
+  <button cdsButton="tertiary">
     {{ 'dossierManagement.more' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="overflow-menu--vertical" size="16"></svg>

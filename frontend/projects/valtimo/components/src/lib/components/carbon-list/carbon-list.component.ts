@@ -82,7 +82,6 @@ import {CarbonListFilterPipe} from './CarbonListFilterPipe.directive';
   providers: [CarbonListFilterPipe],
 })
 export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
-  @HostBinding('attr.data-carbon-theme') theme = 'g10';
   @ViewChild('actionsMenuTemplate') actionsMenuTemplate: TemplateRef<OverflowMenu>;
   @ViewChild('actionTemplate') actionTemplate: TemplateRef<any>;
   @ViewChild('booleanTemplate') booleanTemplate: TemplateRef<any>;

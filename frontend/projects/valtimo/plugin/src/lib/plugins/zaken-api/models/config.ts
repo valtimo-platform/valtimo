@@ -101,5 +101,5 @@ export {
   StartHersteltermijnConfig,
   CreateZaakeigenschapConfig,
   UpdateZaakeigenschapConfig,
-  DeleteZaakeigenschapConfig
+  DeleteZaakeigenschapConfig,
 };

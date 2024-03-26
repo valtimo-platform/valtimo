@@ -375,7 +375,13 @@
     },
     "interface": {
       "title": "Interface",
-      "collapsibleMenu": "Navigatiebalk altijd inklapbaar"
+      "collapsibleMenu": "Navigatiebalk altijd inklapbaar",
+      "themePreference": "Thema",
+      "themes": {
+        "light": "Licht",
+        "dark": "Donker",
+        "system": "Systeem"
+      }
     }
   },
   "decisions": {

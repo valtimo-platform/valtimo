@@ -27,7 +27,6 @@
   <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
 
   <ng-container *ngTemplateOutlet="modal; context: {obs: obs}"></ng-container>
-
 </ng-container>
 
 <valtimo-confirmation-modal
@@ -41,27 +40,27 @@
 ></valtimo-confirmation-modal>
 
 <ng-template #buttons let-obs="obs">
-    <button
-            cdsButton="ghost"
-            iconOnly="true"
-      [disabled]="
-        !obs.downloadUrl || !obs.downloadName || obs.searchFields?.length <= 0 || obs.disableInput
-      "
-      [download]="obs.downloadName"
-      [href]="obs.downloadUrl"
-    >
-      <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
-    </button>
+  <button
+    cdsButton="ghost"
+    iconOnly="true"
+    [disabled]="
+      !obs.downloadUrl || !obs.downloadName || obs.searchFields?.length <= 0 || obs.disableInput
+    "
+    [download]="obs.downloadName"
+    [href]="obs.downloadUrl"
+  >
+    <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
+  </button>
 
-    <button
-      cdsButton="primary"
-      [disabled]="loadingSearchFields || obs.disableInput"
-      (click)="searchFieldClicked($event, true)"
-    >
-      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  <button
+    cdsButton="primary"
+    [disabled]="loadingSearchFields || obs.disableInput"
+    (click)="searchFieldClicked($event, true)"
+  >
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
 
-      {{ 'searchFieldsOverview.addRow' | translate }}
-    </button>
+    {{ 'searchFieldsOverview.addRow' | translate }}
+  </button>
 </ng-template>
 
 <ng-template #list let-obs="obs">
@@ -81,8 +80,8 @@
     ></ng-container>
 
     <valtimo-no-results
-            [title]="'searchFieldsOverview.noSearchfieldsTitle' | translate"
-            [description]="'searchFieldsOverview.noSearchfieldsDescription' | translate"
+      [title]="'searchFieldsOverview.noSearchfieldsTitle' | translate"
+      [description]="'searchFieldsOverview.noSearchfieldsDescription' | translate"
     ></valtimo-no-results>
   </valtimo-carbon-list>
 </ng-template>

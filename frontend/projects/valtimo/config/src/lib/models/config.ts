@@ -130,6 +130,7 @@ export interface ValtimoConfig {
     enableTabManagement?: boolean;
     hideValtimoVersionsForNonAdmins?: boolean;
     useStartEventNameAsStartFormTitle?: boolean;
+    allowUserThemeSwitching?: boolean;
   };
   visibleTaskListTabs?: Array<TaskListTab>;
   visibleDossierListTabs?: Array<DossierListTab>;

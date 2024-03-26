@@ -80,7 +80,7 @@ const portaaltaakPluginSpecification: PluginSpecification = {
         "De waarde waarmee de ontvanger wordt geïdentificeerd. Wanneer er bijvoorbeeld in het veld 'Identificatiesleutel' de waarde 'bsn' is ingevoerd, kan er in dit veld een burgerservicenummer worden ingevoerd (bijvoorbeeld 558099476).",
       verloopDurationInDays: 'Verlooptijd taak in dagen',
       verloopDurationInDaysTooltip:
-        "Het aantal dagen na aanmaken van een taak dat deze verloopt. Deze wordt alleen ingesteld voor de portaal taak, niet in het BPMN proces.",
+        'Het aantal dagen na aanmaken van een taak dat deze verloopt. Deze wordt alleen ingesteld voor de portaal taak, niet in het BPMN proces.',
     },
     en: {
       title: 'Portal task',
@@ -133,7 +133,7 @@ const portaaltaakPluginSpecification: PluginSpecification = {
         "The value that identifies the recipient. For example, if the value 'bsn' is entered in the 'Identification key' field, a citizen service number can be entered in this field (for example 558099476).",
       verloopDurationInDays: 'Number of days for the task to expire',
       verloopDurationInDaysTooltip:
-        "The number of days from the creation time until the task expires. This will only be used in the portal task. The BPMN due date needs to be configured separately.",
+        'The number of days from the creation time until the task expires. This will only be used in the portal task. The BPMN due date needs to be configured separately.',
     },
     de: {
       title: 'Portalaufgabe',
@@ -184,7 +184,7 @@ const portaaltaakPluginSpecification: PluginSpecification = {
         "Der Wert, der den Empfänger identifiziert. Wird beispielsweise im Feld 'Identifikationsschlüssel' der Wert 'bsn' eingetragen, kann in diesem Feld eine Sozialversicherungsnummer eingetragen werden (z. B. 558099476).",
       verloopDurationInDays: 'Ablaufzeit der Aufgabe in Tagen',
       verloopDurationInDaysTooltip:
-        "Die Anzahl der Tage vom Erstellungszeitpunkt bis zum Ablauf der Aufgabe. Dies wird nur in der Portalaufgabe verwendet. Das BPMN-Fälligkeitsdatum muss separat konfiguriert werden.",
+        'Die Anzahl der Tage vom Erstellungszeitpunkt bis zum Ablauf der Aufgabe. Dies wird nur in der Portalaufgabe verwendet. Das BPMN-Fälligkeitsdatum muss separat konfiguriert werden.',
     },
   },
 };

@@ -222,6 +222,19 @@
         </cds-toggle>
       </cds-list-column>
     </cds-list-row>
+    <cds-list-row *ngIf="allowUserThemeSwitching">
+      <cds-list-column>
+        <cds-select
+          [label]="'settings.interface.themePreference' | translate"
+          [ngModel]="preferredTheme$ | async"
+          (ngModelChange)="setPreferredTheme($event)"
+        >
+          <option *ngFor="let option of themeOptions$ | async" [value]="option.value">
+            {{ option.name }}
+          </option>
+        </cds-select>
+      </cds-list-column>
+    </cds-list-row>
   </cds-structured-list>
 </ng-template>
 

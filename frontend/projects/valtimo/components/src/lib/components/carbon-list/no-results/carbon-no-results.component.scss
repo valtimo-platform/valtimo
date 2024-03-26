@@ -20,7 +20,7 @@
   padding: 100px 0;
   gap: 64px;
 
-  img{
+  img {
     height: 150px;
     padding-left: calc(40% - 214px);
   }
@@ -34,7 +34,7 @@
     width: 60%;
   }
 
-  &__content:has(button){
+  &__content:has(button) {
     justify-content: space-between;
   }
 
@@ -42,13 +42,13 @@
     font-size: 28px;
   }
 
-  span{
+  span {
     font-size: 16px;
     line-height: 24px;
     width: 75%;
   }
 
-  h4{
+  h4 {
     width: 75%;
   }
 }

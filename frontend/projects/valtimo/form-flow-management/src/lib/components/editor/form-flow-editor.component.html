@@ -39,7 +39,6 @@
         [disabled]="obs.versions.isLoading || obs.versions.value.length === 1"
         [dropUp]="false"
         [skeleton]="obs.versions.isLoading"
-        [attr.data-carbon-theme]="CARBON_THEME"
         (selected)="loadFormFlowDefinitionId($event.item.formFlowDefinitionId)"
       >
         <cds-dropdown-list [items]="obs.versions.value || []"></cds-dropdown-list>

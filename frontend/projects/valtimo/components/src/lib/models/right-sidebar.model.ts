@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-interface UserSettings {
-  collapsibleWidescreenMenu?: boolean;
-  languageCode?: string;
-  preferredTheme?: string;
+interface ThemeOption {
+  name: string;
+  value: string;
 }
 
-export {UserSettings};
+export {ThemeOption};

@@ -376,7 +376,13 @@
     },
     "interface": {
       "title": "Interface",
-      "collapsibleMenu": "Navigation bar always collapsible"
+      "collapsibleMenu": "Navigation bar always collapsible",
+      "themePreference": "Theme",
+      "themes": {
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+      }
     }
   },
   "decisions": {

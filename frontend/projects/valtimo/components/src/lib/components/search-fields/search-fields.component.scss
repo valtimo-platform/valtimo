@@ -74,7 +74,7 @@
 }
 
 ::ng-deep .cds--accordion {
-  background-color: colors.$white;
+  background-color: var(--cds-layer);
 }
 
 ::ng-deep .cds--accordion__item {

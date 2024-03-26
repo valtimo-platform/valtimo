@@ -68,7 +68,8 @@
               "src/styles.scss",
               "node_modules/flatpickr/dist/flatpickr.css",
               "dist/valtimo/components/assets/css/carbon.scss",
-              "dist/valtimo/components/assets/css/carbon-beagle-compatibility.scss",
+              "dist/valtimo/components/assets/css/color.scss",
+              "dist/valtimo/components/assets/css/compatibility.scss",
               "dist/valtimo/components/assets/css/design-tokens.css"
             ],
             "scripts": [

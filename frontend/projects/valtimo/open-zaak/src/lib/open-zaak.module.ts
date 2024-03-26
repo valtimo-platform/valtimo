@@ -21,7 +21,7 @@ import {ModalModule, WidgetModule, SpinnerModule} from '@valtimo/components';
 import {CommonModule} from '@angular/common';
 import {OpenZaakTypeLinkExtensionComponent} from './open-zaak-extension/open-zaak-type-link-extension.component';
 import {EmailExtensionComponent} from './email-extension/email-extension.component';
-import {NotificationModule} from "carbon-components-angular";
+import {NotificationModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [OpenZaakTypeLinkExtensionComponent, EmailExtensionComponent],

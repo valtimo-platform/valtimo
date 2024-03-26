@@ -43,7 +43,6 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   @Input() public setValuesSubject$!: Observable<SearchFieldValues>;
   @Input() public defaultValues!: SearchFieldValues;
   @Input() public inputDisabled = false;
-  @Input() public carbonTheme: CARBON_THEME = CARBON_THEME.WHITE;
   @Input() public externalSearchField = false;
 
   @Output() public doSearch: EventEmitter<SearchFieldValues> =

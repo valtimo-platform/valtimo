@@ -19,7 +19,7 @@ import {Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
 import {ResultaatType, StatusType} from '../models';
-import {Eigenschap} from "../models/eigenschap";
+import {Eigenschap} from '../models/eigenschap';
 
 @Injectable({
   providedIn: 'root',

@@ -19,7 +19,8 @@
   padding: 0;
 }
 
-.dashboards-container, .widget-container {
+.dashboards-container,
+.widget-container {
   .valtimo-no-results {
     flex-wrap: wrap;
     align-items: flex-start;
@@ -33,11 +34,12 @@
       line-height: 20px;
     }
 
-    img{
+    img {
       padding-left: 0 !important;
     }
 
-    span, h4{
+    span,
+    h4 {
       width: 100% !important;
     }
   }
