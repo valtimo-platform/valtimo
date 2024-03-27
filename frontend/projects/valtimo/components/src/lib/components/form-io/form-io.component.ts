@@ -136,7 +136,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   public ngOnInit(): void {
     FormioUtils.Evaluator.templateSettings.escape = /\{{2,3}([\s\S]+?)\}{2,3}/g;
-    FormioUtils.Evaluator.templateSettings.interpolate = /\[\[([\s\S]+?)\]\]/g;
+    FormioUtils.Evaluator.templateSettings.interpolate = /\{(?!%)([\s\S]+?)\}/g;
 
     this.openRouteSubscription();
     this.errors$.next([]);
