@@ -22,6 +22,7 @@
     "@carbon/icons",
     "@carbon/grid",
     "@carbon/styles",
+    "@carbon/themes",
     "carbon-components",
     "carbon-components-angular",
     "monaco-editor",
