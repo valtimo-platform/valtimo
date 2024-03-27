@@ -87,7 +87,7 @@ export class DocumentService {
 
   // Document-calls
   public getAllDefinitions(): Observable<DocumentDefinitions> {
-    return this.http.get<DocumentDefinitions>(`${this.valtimoEndpointUri}v1/document-definition`);
+    return this.http.get<DocumentDefinitions>(`${this.valtimoEndpointUri}v1/document-definition?size=1000`);
   }
 
   public queryDefinitions(params?: any): Observable<Page<DocumentDefinition>> {
