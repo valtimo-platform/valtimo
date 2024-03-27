@@ -62,7 +62,7 @@ import {DossierService, DossierTabService} from '../../services';
 @Component({
   selector: 'valtimo-dossier-detail',
   templateUrl: './dossier-detail.component.html',
-  styleUrls: ['./dossier-detail.component.css'],
+  styleUrls: ['./dossier-detail.component.scss'],
   providers: [DossierTabService],
 })
 export class DossierDetailComponent implements AfterViewInit, OnDestroy {

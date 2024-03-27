@@ -94,19 +94,20 @@
           </div>
         </div>
 
-        <ul *ngIf="tabLoader" class="nav nav-tabs">
-          <li class="nav-item" *ngFor="let tab of tabLoader.tabs">
-            <a
-              [ngClass]="{active: tab.isActive()}"
-              (click)="tabLoader.load(tab)"
-              class="nav-link clickable"
-              data-toggle="tab"
-              id="{{ tab.name }}-tab"
-            >
-              {{ tab | tabTranslate | async }}
-            </a>
-          </li>
-        </ul>
+        <ng-container *ngTemplateOutlet="tabs"></ng-container>
+        <ng-template #tabs>
+          <ng-container *ngIf="tabLoader">
+            <cds-tabs type="contained" class="case-detail-tabs">
+              <cds-tab
+                *ngFor="let tab of tabLoader.tabs"
+                [active]="tab.isActive()"
+                heading="{{ tab | tabTranslate | async }}"
+                [id]=""
+                (selected)="tabLoader.load(tab)"
+              ></cds-tab>
+            </cds-tabs>
+          </ng-container>
+        </ng-template>
 
         <div class="card-body bg-white p-5 position-relative tab-container">
           <div *ngIf="loadingTabs$ | async" class="loading-container">

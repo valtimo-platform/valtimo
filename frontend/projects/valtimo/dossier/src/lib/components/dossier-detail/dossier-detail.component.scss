@@ -34,3 +34,16 @@
     margin: 0;
   }
 }
+
+.case-detail-tabs cds-tab {
+  display: none !important;
+}
+
+.overflow-button {
+  margin-right: 16px;
+}
+
+.buttons-container {
+  display: flex;
+  flex-direction: row;
+}

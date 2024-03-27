@@ -19,6 +19,8 @@ import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {SelectableCarbonTheme} from '../models';
 import {filter} from 'rxjs/operators';
 
+// import {editor} from 'monaco-editor';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -52,15 +54,19 @@ export class CdsThemeService implements OnDestroy {
           case SelectableCarbonTheme.SYSTEM:
             if (browserPrefersDarkMode) {
               this.setThemeOnDocument(SelectableCarbonTheme.G90);
+              // editor.setTheme('vs-dark');
             } else {
               this.setThemeOnDocument(SelectableCarbonTheme.G10);
+              // editor.setTheme('vs');
             }
             break;
           case SelectableCarbonTheme.G10:
             this.setThemeOnDocument(SelectableCarbonTheme.G10);
+            // editor.setTheme('vs');
             break;
           case SelectableCarbonTheme.G90:
             this.setThemeOnDocument(SelectableCarbonTheme.G90);
+            // editor.setTheme('vs-dark');
             break;
         }
       }
