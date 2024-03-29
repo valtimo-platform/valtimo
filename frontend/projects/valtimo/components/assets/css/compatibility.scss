@@ -111,7 +111,7 @@ valtimo-modal {
   .modal-content {
     color: var(--cds-text-primary);
     .colored-header-grey {
-      background-color: var(--cds-layer) !important;
+      background-color: var(--cds-layer-02) !important;
       border: none;
       border-radius: 0 !important;
 
@@ -127,14 +127,18 @@ valtimo-modal {
     }
 
     .modal-body {
-      background-color: var(--cds-layer-02) !important;
-      .form-control {
-        background-color: var(--cds-layer-02) !important;
-      }
+      background-color: var(--cds-layer) !important;
     }
 
     valtimo-searchable-dropdown-select h5 {
       color: var(--cds-text-secondary) !important;
+    }
+
+    .formio-component-textfield input {
+      background-color: var(--cds-field-02) !important;
+      border: none !important;
+      border-bottom: 1px solid var(--cds-border-strong) !important;
+      border-radius: 0;
     }
   }
 }
@@ -524,8 +528,9 @@ valtimo-list {
 }
 
 .card-body.bg-white,
-.form-control {
+.summaryForm .form-control {
   background-color: var(--cds-layer) !important;
+  border: none !important;
 }
 
 .card-header.bg-light {
