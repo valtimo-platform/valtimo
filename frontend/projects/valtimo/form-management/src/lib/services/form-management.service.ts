@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {CreateFormDefinitionRequest, FormDefinition, ModifyFormDefinitionRequest} from './models';
+import {CreateFormDefinitionRequest, FormDefinition, ModifyFormDefinitionRequest} from '../models';
 import {Observable} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
 

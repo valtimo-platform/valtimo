@@ -415,7 +415,12 @@
     "delete": "Verwijderen",
     "deploy": "Deploy",
     "duplicate": "Dupliceren",
-    "readOnly": "Alleen-lezen"
+    "readOnly": "Alleen-lezen",
+    "tabs": {
+      "formBuilder": "Formulier editor",
+      "jsonEditor": "JSON editor",
+      "output": "Uitvoer"
+    }
   },
   "dossierManagement": {
     "version": "Versie: ",

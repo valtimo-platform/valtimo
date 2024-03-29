@@ -415,7 +415,12 @@
     "delete": "Löschen",
     "deploy": "Deploy",
     "duplicate": "Duplizieren",
-    "readOnly": "Schreibgeschützt"
+    "readOnly": "Schreibgeschützt",
+    "tabs": {
+      "formBuilder": "Formulareditor",
+      "jsonEditor": "JSON-Editor",
+      "output": "Output"
+    }
   },
   "dossierManagement": {
     "version": "Version: ",
