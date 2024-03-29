@@ -618,7 +618,8 @@
     },
     "goToCase": "Ga naar dossier",
     "caseLocked": "Je hebt geen toegang tot dit dossier",
-    "rowLocked": "Je hebt geen toegang tot deze taak"
+    "rowLocked": "Je hebt geen toegang tot deze taak",
+    "allCases": "Alle dossiers"
   },
   "Task": "Taak",
   "Tasks": "Taken",

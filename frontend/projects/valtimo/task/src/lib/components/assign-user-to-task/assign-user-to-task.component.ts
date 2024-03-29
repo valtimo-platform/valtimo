@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {DropdownItem} from '@valtimo/components';
 import {BehaviorSubject, combineLatest, Subscription, take, tap} from 'rxjs';
-import {TaskService} from '../task.service';
+import {TaskService} from '../../services';
 import {NamedUser} from '@valtimo/config';
 
 @Component({

@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-.hide-tasks-list {
-  display: none;
-}
+import {Injectable} from '@angular/core';
+import {BehaviorSubject, Observable} from 'rxjs';
 
-.cds--link--disabled {
-  cursor: not-allowed;
-  pointer-events: auto !important;
-  outline: 0 !important;
+@Injectable()
+export class TaskListService {
+  private readonly _caseDefinitionName$ = new BehaviorSubject<string | null>(null);
+
+  public get caseDefinitionName$(): Observable<string | null> {
+    return this._caseDefinitionName$.asObservable();
+  }
+
+  public setCaseDefinitionName(caseDefinitionName: string): void {
+    this._caseDefinitionName$.next(caseDefinitionName);
+  }
 }

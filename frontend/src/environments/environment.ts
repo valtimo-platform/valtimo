@@ -214,7 +214,7 @@ export const environment: ValtimoConfig = {
         sortable: true,
       },
       {
-        propertyName: 'assignee',
+        propertyName: 'valtimoAssignee.fullName',
         translationKey: 'valtimoAssignee.fullName',
       },
     ],
