@@ -27,7 +27,8 @@ import {
   SpinnerModule,
   ValtimoCdsModalDirectiveModule,
   WidgetModule,
-  TooltipIconModule, CarbonListModule,
+  TooltipIconModule,
+  CarbonListModule,
 } from '@valtimo/components';
 import {ObjectDetailContainerComponent} from './components/object-detail-container/object-detail-container.component';
 import {ObjectDetailComponent} from './components/object-detail-container/tabs/object-detail/object-detail.component';
