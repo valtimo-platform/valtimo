@@ -590,7 +590,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     return temp;
   }
 
-  public handleActionOpenChange(actionId: string, isOpen: boolean) {
+  public handleActionOpenChange(actionId: string, isOpen: boolean): void {
     if (isOpen) {
       this.currentOpenActionId = actionId;
     } else if (this.currentOpenActionId === actionId) {
