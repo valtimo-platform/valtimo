@@ -23,11 +23,11 @@
   }
 
   &__output .cds--tab-content {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
 
     > * {
-      width: 100%;
+      min-width: 100% !important;
     }
   }
 
