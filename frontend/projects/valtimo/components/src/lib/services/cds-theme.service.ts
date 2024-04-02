@@ -16,10 +16,10 @@
 
 import {Injectable, OnDestroy} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
-import {SelectableCarbonTheme} from '../models';
+import {SelectableCarbonTheme, SelectableMonacoTheme} from '../models';
 import {filter} from 'rxjs/operators';
 
-// import {editor} from 'monaco-editor';
+declare const monaco: any;
 
 @Injectable({
   providedIn: 'root',
@@ -44,6 +44,7 @@ export class CdsThemeService implements OnDestroy {
   }
 
   public setPreferredTheme(selectedTheme: SelectableCarbonTheme): void {
+    console.log('selected theme is', selectedTheme);
     if (selectedTheme) this._preferredTheme$.next(selectedTheme);
   }
 
@@ -54,19 +55,19 @@ export class CdsThemeService implements OnDestroy {
           case SelectableCarbonTheme.SYSTEM:
             if (browserPrefersDarkMode) {
               this.setThemeOnDocument(SelectableCarbonTheme.G90);
-              // editor.setTheme('vs-dark');
+              this.setMonacoEditorTheme(SelectableMonacoTheme.VSDARK);
             } else {
               this.setThemeOnDocument(SelectableCarbonTheme.G10);
-              // editor.setTheme('vs');
+              this.setMonacoEditorTheme(SelectableMonacoTheme.VS);
             }
             break;
           case SelectableCarbonTheme.G10:
             this.setThemeOnDocument(SelectableCarbonTheme.G10);
-            // editor.setTheme('vs');
+            this.setMonacoEditorTheme(SelectableMonacoTheme.VS);
             break;
           case SelectableCarbonTheme.G90:
             this.setThemeOnDocument(SelectableCarbonTheme.G90);
-            // editor.setTheme('vs-dark');
+            this.setMonacoEditorTheme(SelectableMonacoTheme.VSDARK);
             break;
         }
       }
@@ -75,6 +76,16 @@ export class CdsThemeService implements OnDestroy {
 
   private setThemeOnDocument(theme: SelectableCarbonTheme): void {
     document.documentElement.setAttribute('data-carbon-theme', theme);
+  }
+
+  private async setMonacoEditorTheme(monacoTheme: SelectableMonacoTheme): Promise<void> {
+    await this.delay(200);
+    console.log('Setting Monaco theme:', monacoTheme);
+    monaco?.editor?.setTheme(monacoTheme);
+  }
+
+  public delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   private getBrowserPrefersDarkModeObservable(signal?: AbortSignal): Observable<boolean> {

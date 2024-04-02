@@ -20,4 +20,9 @@ enum SelectableCarbonTheme {
   SYSTEM = 'system',
 }
 
-export {SelectableCarbonTheme};
+enum SelectableMonacoTheme {
+  VS = 'vs',
+  VSDARK = 'vs-dark',
+}
+
+export {SelectableCarbonTheme, SelectableMonacoTheme};
