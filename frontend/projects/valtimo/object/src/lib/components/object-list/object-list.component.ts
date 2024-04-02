@@ -326,7 +326,7 @@ export class ObjectListComponent {
     return keys.map(key => ({
       label: `${this.translateService.instant(`object.labels.${key}`)}`,
       key,
-      sortable: true,
+      sortable: false,
       type: 'string',
     }));
   }

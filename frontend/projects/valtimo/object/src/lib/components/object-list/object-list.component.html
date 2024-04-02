@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 <ng-container
-  *ngIf="{
+        *ngIf="{
     loading: loading$ | async,
     pagination: pagination$ | async,
     disableInput: disableInput$ | async,
@@ -23,16 +23,13 @@
   } as obs"
 >
   <div class="main-content pt-0">
-    <div class="container-fluid pr-0 pl-0">
-      <div class="text-right">
-        <div class="btn-group mt-m3px mb-3 mr-0">
-          <ng-container *ngTemplateOutlet="buttons; context: {obs: obs}"></ng-container>
-        </div>
+    <div class="container-fluid">
+      <div class="col-12 px-0 mb-5">
+        <ng-container *ngIf="obs.loading === false; else loading">
+          <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
+          <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
+        </ng-container>
       </div>
-      <ng-container *ngIf="obs.loading === false; else loading">
-        <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
-        <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
-      </ng-container>
     </div>
   </div>
   <ng-container *ngTemplateOutlet="createNewModal"></ng-container>
@@ -40,11 +37,11 @@
 
 <ng-template #buttons let-obs="obs">
   <button
-    (click)="openModal()"
-    cdsButton="primary"
-    size="md"
-    class="ml-3"
-    [disabled]="obs.disableInput || obs.loading"
+          (click)="openModal()"
+          cdsButton="primary"
+          size="md"
+          class="ml-3"
+          [disabled]="obs.disableInput || obs.loading"
   >
     {{ 'object.createObject' | translate }}
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -54,50 +51,48 @@
 <ng-template #searchFields let-obs="obs">
   <div class="mb-3">
     <valtimo-search-fields
-      [loading]="obs.loading"
-      [searchFields]="objectSearchFields$ | async"
-      (doSearch)="search($event)"
-      [documentDefinitionName]="objectManagementId$ | async"
-      [setValuesSubject$]="null"
+            [loading]="obs.loading"
+            [searchFields]="objectSearchFields$ | async"
+            (doSearch)="search($event)"
+            [documentDefinitionName]="objectManagementId$ | async"
+            [setValuesSubject$]="null"
     ></valtimo-search-fields>
   </div>
 </ng-template>
 
 <ng-template #list let-obs="obs">
   <valtimo-widget>
-    <valtimo-list
-      [items]="obs.objectConfiguration"
-      [fields]="obs.fields"
-      [viewMode]="true"
-      [header]="true"
-      [pagination]="obs.pagination"
-      paginationIdentifier="objectConfigurationList"
-      (paginationClicked)="paginationClicked($event)"
-      (paginationSet)="paginationSet($event)"
-      (rowClicked)="redirectToDetails($event)"
+    <valtimo-carbon-list
+            [items]="obs.objectConfiguration"
+            [fields]="obs.fields"
+            [header]="false"
+            [pagination]="obs.pagination"
+            paginationIdentifier="objectConfigurationList"
+            (paginationClicked)="paginationClicked($event)"
+            (paginationSet)="paginationSet($event)"
+            (rowClicked)="redirectToDetails($event)"
     >
-      <div header>
-        <h3 class="list-header-title">
-          {{ 'object.title' | translate }}
-          <sup class="ml-1 badge badge-pill badge-primary">{{
-            obs.objectConfiguration?.length || 0
-          }}</sup>
-        </h3>
-      </div>
-    </valtimo-list>
+
+      <ng-container carbonToolbarContent>
+        <button cdsButton="primary" (click)="openModal()">
+          {{ 'object.createObject' | translate }}
+        </button>
+      </ng-container>
+
+    </valtimo-carbon-list>
   </valtimo-widget>
 </ng-template>
 
 <ng-template #createNewModal>
   <cds-modal
-    valtimoCdsModal
-    *ngIf="{
+          valtimoCdsModal
+          *ngIf="{
       show: showModal$ | async,
       formValid: formValid$ | async,
       formDefinition: formDefinition$ | async,
       disableInput: disableInput$ | async
     } as modalObs"
-    [open]="modalObs.show"
+          [open]="modalObs.show"
   >
     <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
       <h3 cdsModalHeaderHeading>
@@ -113,8 +108,8 @@
 
 <ng-template #modalContent let-modalObs="modalObs">
   <valtimo-form-io
-    [form]="modalObs.formDefinition"
-    (change)="onFormioChange($event)"
+          [form]="modalObs.formDefinition"
+          (change)="onFormioChange($event)"
   ></valtimo-form-io>
 </ng-template>
 
@@ -122,18 +117,18 @@
   <cds-modal-footer>
     <ng-container>
       <button
-        cdsButton="secondary"
-        [attr.modal-primary-focus]="true"
-        (click)="closeModal()"
-        [disabled]="modalObs.disableInput"
+              cdsButton="secondary"
+              [attr.modal-primary-focus]="true"
+              (click)="closeModal()"
+              [disabled]="modalObs.disableInput"
       >
         {{ 'object.close' | translate }}
       </button>
       <button
-        cdsButton="primary"
-        [attr.modal-primary-focus]="true"
-        (click)="addObject()"
-        [disabled]="modalObs.disableInput || modalObs.formValid === false"
+              cdsButton="primary"
+              [attr.modal-primary-focus]="true"
+              (click)="addObject()"
+              [disabled]="modalObs.disableInput || modalObs.formValid === false"
       >
         {{ 'object.save' | translate }}
       </button>
@@ -142,5 +137,6 @@
 </ng-template>
 
 <ng-template #loading>
-  <div class="loading-icon"><cds-loading></cds-loading></div>
+  <valtimo-carbon-list [loading]="true">
+  </valtimo-carbon-list>
 </ng-template>
