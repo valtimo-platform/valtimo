@@ -18,7 +18,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
-  HostBinding,
   Input,
   OnDestroy,
   OnInit,
@@ -94,6 +93,8 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly _items$ = new BehaviorSubject<CarbonListItem[]>([]);
   private _items: CarbonListItem[];
   public items$ = new BehaviorSubject<TableItem[][]>([]);
+  public currentOpenActionId: string | null = null;
+
   @Input() set items(value: CarbonListItem[]) {
     this._items = value;
     this._items$.next(value);
@@ -587,5 +588,13 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     temp[index1] = temp.splice(index2, 1, temp[index1])[0];
 
     return temp;
+  }
+
+  public handleActionOpenChange(actionId: string, isOpen: boolean) {
+    if (isOpen) {
+      this.currentOpenActionId = actionId;
+    } else if (this.currentOpenActionId === actionId) {
+      this.currentOpenActionId = null;
+    }
   }
 }
