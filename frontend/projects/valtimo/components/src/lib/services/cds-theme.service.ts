@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Injectable, OnDestroy} from '@angular/core';
-import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
+import {isBoolean} from 'lodash';
+import {BehaviorSubject, Observable, of, Subscription} from 'rxjs';
+import {filter, switchMap} from 'rxjs/operators';
+import {EditorService} from '../components/editor/editor.service';
 import {SelectableCarbonTheme, SelectableMonacoTheme} from '../models';
-import {filter} from 'rxjs/operators';
 
 declare const monaco: any;
 
@@ -25,18 +26,22 @@ declare const monaco: any;
   providedIn: 'root',
 })
 export class CdsThemeService implements OnDestroy {
+  private readonly _editorTheme$ = new BehaviorSubject<SelectableMonacoTheme>(
+    SelectableMonacoTheme.VS
+  );
   private readonly _preferredTheme$ = new BehaviorSubject<SelectableCarbonTheme>(
     SelectableCarbonTheme.G10
   );
 
-  public get preferredTheme$(): Observable<string> {
+  public get preferredTheme$(): Observable<SelectableCarbonTheme> {
     return this._preferredTheme$.pipe(filter(theme => !!theme));
   }
 
   private readonly _subscriptions = new Subscription();
 
-  constructor() {
+  constructor(private readonly editorService: EditorService) {
     this.openDarkModeSubscription();
+    this.openMonacoThemeSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -44,33 +49,46 @@ export class CdsThemeService implements OnDestroy {
   }
 
   public setPreferredTheme(selectedTheme: SelectableCarbonTheme): void {
-    console.log('selected theme is', selectedTheme);
     if (selectedTheme) this._preferredTheme$.next(selectedTheme);
   }
 
   private openDarkModeSubscription(): void {
-    combineLatest([this.getBrowserPrefersDarkModeObservable(), this.preferredTheme$]).subscribe(
-      ([browserPrefersDarkMode, preferredTheme]) => {
-        switch (preferredTheme) {
-          case SelectableCarbonTheme.SYSTEM:
-            if (browserPrefersDarkMode) {
-              this.setThemeOnDocument(SelectableCarbonTheme.G90);
-              this.setMonacoEditorTheme(SelectableMonacoTheme.VSDARK);
-            } else {
-              this.setThemeOnDocument(SelectableCarbonTheme.G10);
-              this.setMonacoEditorTheme(SelectableMonacoTheme.VS);
-            }
-            break;
-          case SelectableCarbonTheme.G10:
-            this.setThemeOnDocument(SelectableCarbonTheme.G10);
-            this.setMonacoEditorTheme(SelectableMonacoTheme.VS);
-            break;
-          case SelectableCarbonTheme.G90:
-            this.setThemeOnDocument(SelectableCarbonTheme.G90);
-            this.setMonacoEditorTheme(SelectableMonacoTheme.VSDARK);
-            break;
-        }
-      }
+    this._subscriptions.add(
+      this.preferredTheme$
+        .pipe(
+          switchMap((preferredTheme: SelectableCarbonTheme) =>
+            preferredTheme === SelectableCarbonTheme.SYSTEM
+              ? this.getBrowserPrefersDarkModeObservable()
+              : of(preferredTheme)
+          )
+        )
+        .subscribe((theme: SelectableCarbonTheme | boolean) => {
+          let documentTheme: SelectableCarbonTheme;
+          let editorTheme: SelectableMonacoTheme;
+
+          if (isBoolean(theme)) {
+            documentTheme = theme ? SelectableCarbonTheme.G90 : SelectableCarbonTheme.G10;
+            editorTheme = theme ? SelectableMonacoTheme.VSDARK : SelectableMonacoTheme.VS;
+          } else {
+            documentTheme = theme;
+            editorTheme =
+              theme === SelectableCarbonTheme.G10
+                ? SelectableMonacoTheme.VS
+                : SelectableMonacoTheme.VSDARK;
+          }
+          this.setThemeOnDocument(documentTheme);
+          this._editorTheme$.next(editorTheme);
+        })
+    );
+  }
+
+  private openMonacoThemeSubscription(): void {
+    this._subscriptions.add(
+      this.editorService.loadingFinished$
+        .pipe(switchMap(() => this._editorTheme$))
+        .subscribe((theme: SelectableMonacoTheme) => {
+          this.setMonacoEditorTheme(theme);
+        })
     );
   }
 
@@ -78,14 +96,8 @@ export class CdsThemeService implements OnDestroy {
     document.documentElement.setAttribute('data-carbon-theme', theme);
   }
 
-  private async setMonacoEditorTheme(monacoTheme: SelectableMonacoTheme): Promise<void> {
-    await this.delay(200);
-    console.log('Setting Monaco theme:', monacoTheme);
+  private setMonacoEditorTheme(monacoTheme: SelectableMonacoTheme): void {
     monaco?.editor?.setTheme(monacoTheme);
-  }
-
-  public delay(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   private getBrowserPrefersDarkModeObservable(signal?: AbortSignal): Observable<boolean> {
