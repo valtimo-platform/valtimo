@@ -416,7 +416,12 @@
     "delete": "Delete",
     "deploy": "Deploy",
     "duplicate": "Duplicate",
-    "readOnly": "Read-only"
+    "readOnly": "Read-only",
+    "tabs": {
+      "formBuilder": "Form builder",
+      "jsonEditor": "JSON editor",
+      "output": "Output"
+    }
   },
   "dossierManagement": {
     "version": "Version: ",
@@ -614,7 +619,8 @@
     },
     "goToCase": "Go to case",
     "caseLocked": "You don't have access to this case",
-    "rowLocked": "You don't have access to this task"
+    "rowLocked": "You don't have access to this task",
+    "allCases": "All cases"
   },
   "Task": "Task",
   "Tasks": "Tasks",

@@ -21,42 +21,40 @@ import {BehaviorSubject, Observable, Subject} from 'rxjs';
   providedIn: 'root',
 })
 export class FormManagementStateService {
-  private readonly _showModal$ = new Subject();
-  private readonly _hideModal$ = new Subject();
+  private readonly _showModal$ = new Subject<null>();
+  private readonly _hideModal$ = new Subject<null>();
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   private readonly _modalType$ = new BehaviorSubject<any>('add');
 
-  constructor() {}
-
-  get showModal$(): Observable<any> {
+  public get showModal$(): Observable<null> {
     return this._showModal$.asObservable();
   }
 
-  get hideModal$(): Observable<any> {
+  public get hideModal$(): Observable<null> {
     return this._hideModal$.asObservable();
   }
 
-  get refresh$(): Observable<any> {
+  public get refresh$(): Observable<null> {
     return this._refresh$.asObservable();
   }
 
-  get modalType$(): Observable<any> {
+  public get modalType$(): Observable<any> {
     return this._modalType$.asObservable();
   }
 
-  showModal(): void {
+  public showModal(): void {
     this._showModal$.next(null);
   }
 
-  hideModal(): void {
+  public hideModal(): void {
     this._hideModal$.next(null);
   }
 
-  refresh(): void {
+  public refresh(): void {
     this._refresh$.next(null);
   }
 
-  setModalType(type: any): void {
+  public setModalType(type: any): void {
     this._modalType$.next(type);
   }
 }

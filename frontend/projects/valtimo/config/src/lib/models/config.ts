@@ -115,13 +115,11 @@ export interface ValtimoConfig {
   translationResources?: Array<string>;
   featureToggles?: {
     applicationTitleAsSuffix?: boolean;
-    disableFormFlow?: boolean;
     enableHackathonCasesPage?: boolean;
     showUserNameInTopBar?: boolean;
     showPlantATreeButton?: boolean;
     experimentalDmnEditing?: boolean;
     disableCaseCount?: boolean;
-    caseSearchFields?: boolean;
     caseListColumn?: boolean;
     enableObjectManagement?: boolean;
     largeLogoMargin?: boolean;

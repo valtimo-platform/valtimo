@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-export class TaskList {
-  public tasks = [];
-  fields = [];
-  pagination = {
-    collectionSize: 0,
-    page: 1,
-    size: 10,
-  };
-  page = 0;
+interface TaskPageParams {
+  page: number;
+  size: number;
+  collectionSize?: number;
+  sort?: string;
 }
+
+export {TaskPageParams};

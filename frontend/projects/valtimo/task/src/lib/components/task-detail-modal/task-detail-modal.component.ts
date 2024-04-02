@@ -33,13 +33,13 @@ import {
   ValtimoFormioOptions,
   ValtimoModalService,
 } from '@valtimo/components';
-import {Task, TaskProcessLinkType} from '../models';
+import {Task, TaskProcessLinkType} from '../../models';
 import {FormFlowComponent, FormSubmissionResult, ProcessLinkService} from '@valtimo/process-link';
 import {FormioForm} from '@formio/angular';
 import moment from 'moment';
 import {ToastrService} from 'ngx-toastr';
 import {map, take} from 'rxjs/operators';
-import {TaskService} from '../task.service';
+import {TaskService} from '../../services/task.service';
 import {
   BehaviorSubject,
   combineLatest,

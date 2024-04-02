@@ -56,7 +56,7 @@ export class MenuService {
     const config = configService?.config;
     this.menuConfig = config?.menu;
     this.disableCaseCount = config?.featureToggles?.disableCaseCount;
-    this.enableObjectManagement = config?.featureToggles?.enableObjectManagement;
+    this.enableObjectManagement = config?.featureToggles?.enableObjectManagement ?? true;
   }
 
   private readonly currentRoute$ = this.router.events.pipe(

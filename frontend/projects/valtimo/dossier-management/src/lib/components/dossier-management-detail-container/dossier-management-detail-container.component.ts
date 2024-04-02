@@ -77,8 +77,8 @@ export class DossierManagementDetailContainerComponent
   ) {
     super();
     const featureToggles = this.configService.config.featureToggles;
-    this.caseListColumn = !!featureToggles?.caseListColumn;
-    this.tabManagementEnabled = !!featureToggles?.enableTabManagement;
+    this.caseListColumn = featureToggles?.caseListColumn ?? true;
+    this.tabManagementEnabled = featureToggles?.enableTabManagement ?? true;
   }
 
   public ngOnInit(): void {

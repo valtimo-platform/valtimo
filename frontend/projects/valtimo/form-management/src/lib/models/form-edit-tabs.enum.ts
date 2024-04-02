@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,3 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+export enum EDIT_TABS {
+  BUILDER = 'formManagement.tabs.formBuilder',
+  EDITOR = 'formManagement.tabs.jsonEditor',
+  OUTPUT = 'formManagement.tabs.output',
+}

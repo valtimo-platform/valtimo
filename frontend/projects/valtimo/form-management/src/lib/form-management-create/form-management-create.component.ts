@@ -18,7 +18,7 @@ import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {AlertService} from '@valtimo/components';
-import {FormManagementService} from '../form-management.service';
+import {FormManagementService} from '../services';
 import {CreateFormDefinitionRequest} from '../models';
 import {combineLatest} from 'rxjs';
 import {take} from 'rxjs/operators';

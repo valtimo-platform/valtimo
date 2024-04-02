@@ -415,7 +415,12 @@
     "delete": "Löschen",
     "deploy": "Deploy",
     "duplicate": "Duplizieren",
-    "readOnly": "Schreibgeschützt"
+    "readOnly": "Schreibgeschützt",
+    "tabs": {
+      "formBuilder": "Formulareditor",
+      "jsonEditor": "JSON-Editor",
+      "output": "Output"
+    }
   },
   "dossierManagement": {
     "version": "Version: ",
@@ -613,7 +618,8 @@
     },
     "goToCase": "Gehen Sie zum Fall",
     "caseLocked": "Kein Zugriff zu dieser Fall!",
-    "rowLocked": "Kein Zugriff zu dieser Aufgabe!"
+    "rowLocked": "Kein Zugriff zu dieser Aufgabe!",
+    "allCases": "Alle Fälle"
   },
   "Task": "Aufgabe",
   "Tasks": "Aufgaben",
