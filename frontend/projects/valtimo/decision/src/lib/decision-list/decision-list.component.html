@@ -16,21 +16,19 @@
 
 <ng-container *ngIf="decisionsLatestVersions$ | async as decisions">
   <ng-container *ngIf="(loading$ | async) === false">
-    <valtimo-widget>
-      <valtimo-carbon-list
-        [items]="decisions"
-        [fields]="fields"
-        (rowClicked)="viewDecisionTable($event)"
-        [header]="false"
-        [isSearchable]="true"
-      >
-        <ng-container carbonToolbarContent>
-          <button cdsButton="primary" (click)="this.deploy.openModal()">
-            {{ 'Upload' | translate }}
-          </button>
-        </ng-container>
-      </valtimo-carbon-list>
-    </valtimo-widget>
+    <valtimo-carbon-list
+      [items]="decisions"
+      [fields]="fields"
+      (rowClicked)="viewDecisionTable($event)"
+      [header]="false"
+      [isSearchable]="true"
+    >
+      <ng-container carbonToolbarContent>
+        <button cdsButton="primary" (click)="this.deploy.openModal()">
+          {{ 'Upload' | translate }}
+        </button>
+      </ng-container>
+    </valtimo-carbon-list>
   </ng-container>
 </ng-container>
 
