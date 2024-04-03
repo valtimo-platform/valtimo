@@ -28,9 +28,11 @@ import {
   SpinnerModule,
   WidgetModule,
   SelectModule,
+  CarbonListModule,
 } from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {DecisionModelerComponent} from './decision-modeler/decision-modeler.component';
+import {ButtonModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [
@@ -50,6 +52,8 @@ import {DecisionModelerComponent} from './decision-modeler/decision-modeler.comp
     FormsModule,
     SelectModule,
     SpinnerModule,
+    CarbonListModule,
+    ButtonModule,
   ],
   exports: [DecisionComponent, DecisionModelerComponent],
 })

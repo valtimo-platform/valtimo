@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, ViewChild} from '@angular/core';
 import {Decision} from '../models';
 import {DecisionService} from '../decision.service';
 import {Router} from '@angular/router';
 import {BehaviorSubject, map, switchMap, tap} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
 import {DecisionStateService} from '../services';
+import {DecisionDeployComponent} from '../decision-deploy/decision-deploy.component';
 
 @Component({
   selector: 'valtimo-decision-list',
@@ -28,6 +29,8 @@ import {DecisionStateService} from '../services';
   styleUrls: ['./decision-list.component.scss'],
 })
 export class DecisionListComponent {
+  @ViewChild('decisionDeploy') deploy: DecisionDeployComponent;
+
   public fields = [
     {key: 'key', label: 'Key'},
     {key: 'name', label: 'Name'},

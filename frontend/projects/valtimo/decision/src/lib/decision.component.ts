@@ -15,7 +15,6 @@
  */
 
 import {Component, ViewChild} from '@angular/core';
-import {DecisionDeployComponent} from './decision-deploy/decision-deploy.component';
 import {DecisionListComponent} from './decision-list/decision-list.component';
 import {ConfigService} from '@valtimo/config';
 
@@ -31,6 +30,5 @@ export class DecisionComponent {
     this.experimentalEditing = this.configService.config.featureToggles.experimentalDmnEditing;
   }
 
-  @ViewChild('decisionDeploy') deploy: DecisionDeployComponent;
   @ViewChild('decisionList') list: DecisionListComponent;
 }
