@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute, ParamMap, Params, Router} from '@angular/router';
 import {PermissionService} from '@valtimo/access-control';
-import {BreadcrumbService} from '@valtimo/components';
+import {BreadcrumbService, PageTitleService} from '@valtimo/components';
 import {ConfigService} from '@valtimo/config';
 import {
   CaseStatusService,
@@ -205,7 +205,8 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     private readonly router: Router,
     private readonly dossierTabService: DossierTabService,
     private readonly dossierService: DossierService,
-    private readonly caseStatusService: CaseStatusService
+    private readonly caseStatusService: CaseStatusService,
+    private readonly pageTitleService: PageTitleService
   ) {
     this._snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this._snapshot.get('documentDefinitionName') || '';
@@ -216,10 +217,12 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     this.initTabLoader();
     this.initBreadcrumb();
     this.getAllAssociatedProcessDefinitions();
+    this.pageTitleService.disableReset();
   }
 
   public ngOnDestroy(): void {
     this.breadcrumbService.clearSecondBreadcrumb();
+    this.pageTitleService.enableReset();
   }
 
   public getAllAssociatedProcessDefinitions(): void {

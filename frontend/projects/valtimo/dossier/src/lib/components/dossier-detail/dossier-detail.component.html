@@ -215,45 +215,49 @@
   </button>
 </ng-template>
 
-<ng-container renderInPageHeader>
+<ng-container renderInPageHeader [fullWidth]="true">
   <ng-template>
-    <div class="buttons-container">
-      <ng-container
-        *ngTemplateOutlet="
-          caseDetailAssignee;
-          context: {
-            canHaveAssignee: this.canHaveAssignee$,
-            document: document,
-            canAssign: this.canAssign$
-          }
-        "
-      ></ng-container>
-      <ng-container
-        *ngTemplateOutlet="
-          claimButton;
-          context: {canClaim: this.canClaim$, canHaveAssignee: this.canHaveAssignee$}
-        "
-      >
-      </ng-container>
-      <cds-overflow-menu
-        valtimoCdsOverflowButton
-        [width]="250"
-        [customTrigger]="customTrigger"
-        [offset]="{y: 48, x: 37}"
-        class="overflow-button"
-      >
-        <cds-overflow-menu-option
-          *ngFor="let processDocumentDefinition of processDocumentDefinitions"
-          (click)="startProcess(processDocumentDefinition)"
+    <div class="dossier-actions">
+      <div class="dossier-metadata">
+        <ng-container
+          *ngTemplateOutlet="
+            caseDetailAssignee;
+            context: {
+              canHaveAssignee: this.canHaveAssignee$,
+              document: document,
+              canAssign: this.canAssign$
+            }
+          "
+        ></ng-container>
+      </div>
+      <div class="buttons-container">
+        <ng-container
+          *ngTemplateOutlet="
+            claimButton;
+            context: {canClaim: this.canClaim$, canHaveAssignee: this.canHaveAssignee$}
+          "
         >
-          {{
-            (processDocumentDefinition?.id?.processDefinitionKey | translate) !==
-            processDocumentDefinition?.id?.processDefinitionKey
-              ? (processDocumentDefinition.id.processDefinitionKey | translate)
-              : processDocumentDefinition.processName
-          }}
-        </cds-overflow-menu-option>
-      </cds-overflow-menu>
+        </ng-container>
+        <cds-overflow-menu
+          valtimoCdsOverflowButton
+          [width]="250"
+          [customTrigger]="customTrigger"
+          [offset]="{y: 48, x: 37}"
+          class="overflow-button"
+        >
+          <cds-overflow-menu-option
+            *ngFor="let processDocumentDefinition of processDocumentDefinitions"
+            (click)="startProcess(processDocumentDefinition)"
+          >
+            {{
+              (processDocumentDefinition?.id?.processDefinitionKey | translate) !==
+              processDocumentDefinition?.id?.processDefinitionKey
+                ? (processDocumentDefinition.id.processDefinitionKey | translate)
+                : processDocumentDefinition.processName
+            }}
+          </cds-overflow-menu-option>
+        </cds-overflow-menu>
+      </div>
     </div>
     <div *ngIf="caseStatus$ | async as caseStatus" class="dossier-detail-page-header">
       <cds-tag [type]="caseStatus.tagType">{{ caseStatus.title }}</cds-tag>

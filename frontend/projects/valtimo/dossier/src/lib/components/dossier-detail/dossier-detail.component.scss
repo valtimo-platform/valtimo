@@ -47,3 +47,35 @@
   display: flex;
   flex-direction: row;
 }
+
+.dossier-actions {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: flex-end;
+
+  ::ng-deep .version-selection {
+    width: 160px;
+
+    .cds--list-box__selection {
+      display: none;
+    }
+  }
+}
+
+.dossier-metadata {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  margin-left: 16px;
+  padding-bottom: 4px;
+  color: var(--cds-text-helper) !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px !important;
+  line-height: 18px !important;
+  & b {
+    font-weight: 400 !important;
+  }
+}

@@ -364,6 +364,15 @@ valtimo-list {
   border: none !important;
 }
 
+valtimo-searchable-dropdown-select {
+  color: var(--cds-text-helper) !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px !important;
+  line-height: 18px !important;
+}
+
 /* Modal */
 
 .modal {
