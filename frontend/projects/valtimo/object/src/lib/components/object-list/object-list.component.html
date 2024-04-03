@@ -61,24 +61,22 @@
 </ng-template>
 
 <ng-template #list let-obs="obs">
-  <valtimo-widget>
-    <valtimo-carbon-list
-      [items]="obs.objectConfiguration"
-      [fields]="obs.fields"
-      [header]="false"
-      [pagination]="obs.pagination"
-      paginationIdentifier="objectConfigurationList"
-      (paginationClicked)="paginationClicked($event)"
-      (paginationSet)="paginationSet($event)"
-      (rowClicked)="redirectToDetails($event)"
-    >
-      <ng-container carbonToolbarContent>
-        <button cdsButton="primary" (click)="openModal()">
-          {{ 'object.createObject' | translate }}
-        </button>
-      </ng-container>
-    </valtimo-carbon-list>
-  </valtimo-widget>
+  <valtimo-carbon-list
+    [items]="obs.objectConfiguration"
+    [fields]="obs.fields"
+    [header]="false"
+    [pagination]="obs.pagination"
+    paginationIdentifier="objectConfigurationList"
+    (paginationClicked)="paginationClicked($event)"
+    (paginationSet)="paginationSet($event)"
+    (rowClicked)="redirectToDetails($event)"
+  >
+    <ng-container carbonToolbarContent>
+      <button cdsButton="primary" (click)="openModal()">
+        {{ 'object.createObject' | translate }}
+      </button>
+    </ng-container>
+  </valtimo-carbon-list>
 </ng-template>
 
 <ng-template #createNewModal>
