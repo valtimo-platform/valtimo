@@ -29,6 +29,9 @@ import {
 import {ConfigService} from '@valtimo/config';
 import {Router} from '@angular/router';
 
+/**
+ * @deprecated Will be replace by new plugins
+ */
 @Component({
   selector: 'valtimo-customer-list',
   templateUrl: './customer-list.component.html',

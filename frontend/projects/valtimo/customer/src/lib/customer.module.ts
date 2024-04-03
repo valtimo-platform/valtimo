@@ -32,6 +32,9 @@ import {TranslateModule} from '@ngx-translate/core';
 import {FormsModule} from '@angular/forms';
 import {CasesListComponent} from './components/cases-list/cases-list.component';
 
+/**
+ * @deprecated Will be replace by new plugins
+ */
 @NgModule({
   imports: [
     CommonModule,

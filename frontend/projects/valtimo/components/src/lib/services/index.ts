@@ -21,3 +21,4 @@ export * from './stepper.service';
 export * from './user-interface.service';
 export * from './valtimo-modal.service';
 export * from './cds-theme.service';
+export * from './choice-field.service';

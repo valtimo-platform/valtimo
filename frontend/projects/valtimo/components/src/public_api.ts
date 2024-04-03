@@ -225,6 +225,11 @@ export * from './lib/components/radio/radio.module';
 export * from './lib/components/pending-changes/pending-changes.component';
 export * from './lib/components/pending-changes/pending-changes.service';
 
+// Choice fields
+export * from './lib/services/choice-field.service';
+export * from './lib/models/choice-field.model';
+export * from './lib/models/choicefield-value.model';
+
 /*
 directives
  */

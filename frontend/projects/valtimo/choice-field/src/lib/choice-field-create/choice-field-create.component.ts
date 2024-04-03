@@ -17,8 +17,7 @@
 import {Component, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
-import {ChoiceFieldService} from '../choice-field.service';
-import {AlertService} from '@valtimo/components';
+import {AlertService, ChoiceFieldService} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-choice-field-create',

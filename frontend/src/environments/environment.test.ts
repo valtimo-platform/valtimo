@@ -16,7 +16,7 @@
 
 import {NgxLoggerLevel} from 'ngx-logger';
 import {authenticationKeycloak} from './auth/keycloak-config.test';
-import {openZaakExtensionInitializer} from '@valtimo/open-zaak';
+import {openZaakExtensionInitializer} from '@valtimo/plugin';
 import {
   Language,
   ROLE_ADMIN,

@@ -37,12 +37,8 @@
       "@valtimo/security/*": ["dist/valtimo/security/*"],
       "@valtimo/dossier": ["dist/valtimo/dossier"],
       "@valtimo/dossier/*": ["dist/valtimo/dossier/*"],
-      "@valtimo/choicefield": ["dist/valtimo/choicefield"],
-      "@valtimo/choicefield/*": ["dist/valtimo/choicefield/*"],
       "@valtimo/process": ["dist/valtimo/process"],
       "@valtimo/process/*": ["dist/valtimo/process/*"],
-      "@valtimo/view-configurator": ["dist/valtimo/view-configurator"],
-      "@valtimo/view-configurator/*": ["dist/valtimo/view-configurator/*"],
       "@valtimo/dashboard": ["dist/valtimo/dashboard"],
       "@valtimo/dashboard/*": ["dist/valtimo/dashboard/*"],
       "@valtimo/dashboard-management": ["dist/valtimo/dashboard-management"],
@@ -91,7 +87,6 @@
       "@valtimo/keycloak/*": ["dist/valtimo/keycloak/*"],
       "@valtimo/bootstrap": ["dist/valtimo/bootstrap/valtimo-bootstrap", "dist/valtimo/bootstrap"],
       "@valtimo/config": ["dist/valtimo/config/valtimo-config", "dist/valtimo/config"],
-      "@valtimo/open-zaak": ["dist/valtimo/open-zaak/valtimo-openzaak", "dist/valtimo/open-zaak"],
       "@valtimo/resource": ["dist/valtimo/resource"],
       "@valtimo/resource/*": ["dist/valtimo/resource/*"],
       "@valtimo/sse": ["dist/valtimo/sse"],
@@ -166,22 +161,10 @@
       "path": "./projects/valtimo/dossier/tsconfig.spec.json"
     },
     {
-      "path": "./projects/valtimo/choicefield/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/valtimo/choicefield/tsconfig.spec.json"
-    },
-    {
       "path": "./projects/valtimo/process/tsconfig.lib.json"
     },
     {
       "path": "./projects/valtimo/process/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/valtimo/view-configurator/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/valtimo/view-configurator/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/dashboard/tsconfig.lib.json"
@@ -308,12 +291,6 @@
     },
     {
       "path": "./projects/valtimo/config/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/valtimo/open-zaak/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/valtimo/open-zaak/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/resource/tsconfig.lib.json"

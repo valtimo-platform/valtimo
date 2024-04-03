@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {ChoiceField, ChoiceFieldValue} from './models';
+import {Injectable} from '@angular/core';
 import {ConfigService, Page} from '@valtimo/config';
+import {Observable} from 'rxjs';
+import {ChoiceField, ChoiceFieldValue, ChoicefieldValue} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -30,7 +29,7 @@ export class ChoiceFieldService {
     private http: HttpClient,
     private configService: ConfigService
   ) {
-    this.valtimoApiConfig = configService.config.valtimoApi;
+    this.valtimoApiConfig = this.configService.config.valtimoApi;
   }
 
   query(params?: any): Observable<any> {
@@ -100,6 +99,20 @@ export class ChoiceFieldService {
       `${this.valtimoApiConfig.endpointUri}v1/choice-field-values`,
       choiceFieldValue,
       {params: {choice_field_name: choiceFieldName}}
+    );
+  }
+
+  getChoiceFieldByName(name: string): Observable<any> {
+    return this.http.get(this.valtimoApiConfig.endpointUri + 'v1/choice-fields/name/' + name);
+  }
+
+  getChoiceFieldValueByNameAndValue(name: string, value: string): Observable<any> {
+    return this.http.get(
+      this.valtimoApiConfig.endpointUri +
+        'v1/choice-field-values/choice-field/' +
+        name +
+        '/value/' +
+        value
     );
   }
 }

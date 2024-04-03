@@ -23,23 +23,27 @@ import {
   ZaakType,
   ZaakTypeLink,
 } from '@valtimo/resource';
+import {FormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
-import {AlertService, ModalComponent} from '@valtimo/components';
+import {AlertService, ModalComponent, ModalModule} from '@valtimo/components';
 import {ToastrService} from 'ngx-toastr';
 import {TranslateService} from '@ngx-translate/core';
 import {BehaviorSubject, map, Observable, switchMap} from 'rxjs';
 import {ConfigService, UploadProvider} from '@valtimo/config';
-import {
-  DocumentenApiManagementVersion,
-  DocumentenApiService,
-  PluginConfiguration,
-  PluginManagementService,
-} from '@valtimo/plugin';
+import {PluginConfiguration} from '../../../../models';
+import {PluginManagementService} from '../../../../services';
+import {DocumentenApiManagementVersion} from '../../../documenten-api/models';
+import {DocumentenApiService} from '../../../documenten-api/services/documenten-api.service';
+import {CommonModule} from '@angular/common';
+import {TranslateModule} from '@ngx-translate/core';
+import {NotificationModule} from 'carbon-components-angular';
 
 @Component({
   selector: 'valtimo-open-zaak-type-link-extension',
   templateUrl: './open-zaak-type-link-extension.component.html',
   styleUrls: ['./open-zaak-type-link-extension.component.scss'],
+  standalone: true,
+  imports: [CommonModule, FormsModule, ModalModule, NotificationModule, TranslateModule],
 })
 export class OpenZaakTypeLinkExtensionComponent {
   public zaakTypes: ZaakType[];
