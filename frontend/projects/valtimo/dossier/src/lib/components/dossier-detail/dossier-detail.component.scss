@@ -39,8 +39,12 @@
   display: none !important;
 }
 
-.overflow-button {
-  margin-right: 16px;
+.cds--overflow-menu-options {
+  margin-top: 32px;
+}
+
+.assign-overflow {
+  margin-right: 8px;
 }
 
 .buttons-container {
@@ -63,19 +67,7 @@
   }
 }
 
-.dossier-metadata {
-  display: flex;
-  gap: 24px;
-  align-items: flex-end;
-  margin-left: 16px;
+.dossier-assign-user {
   padding-bottom: 4px;
-  color: var(--cds-text-helper) !important;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 14px !important;
-  line-height: 18px !important;
-  & b {
-    font-weight: 400 !important;
-  }
+  margin-left: -16px;
 }

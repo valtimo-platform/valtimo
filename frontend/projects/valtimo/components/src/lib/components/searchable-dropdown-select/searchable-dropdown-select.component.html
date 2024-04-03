@@ -38,11 +38,11 @@
       {{ selectedText }} <b>{{ selectedTextValue }}</b>
     </h5>
     <button
-      *ngIf="hasPermission"
+      *ngIf="hasPermission && showClearSelection"
       [title]="clearSelectionButtonTitle"
       (click)="onClearSelection()"
       aria-label="Close"
-      class="close p-0 m-0 ml-2 d-flex text-danger"
+      class="close p-0 m-0 ml-2 text-danger"
       type="button"
     >
       <i class="clear-icon mdi mdi-close text-danger"></i>

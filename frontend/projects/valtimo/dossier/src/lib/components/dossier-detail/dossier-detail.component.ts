@@ -58,6 +58,8 @@ import {
   DOSSIER_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
 import {DossierService, DossierTabService} from '../../services';
+import {IconService} from 'carbon-components-angular';
+import {ChevronDown16} from '@carbon/icons';
 
 @Component({
   selector: 'valtimo-dossier-detail',
@@ -206,7 +208,8 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     private readonly dossierTabService: DossierTabService,
     private readonly dossierService: DossierService,
     private readonly caseStatusService: CaseStatusService,
-    private readonly pageTitleService: PageTitleService
+    private readonly pageTitleService: PageTitleService,
+    private readonly iconService: IconService
   ) {
     this._snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this._snapshot.get('documentDefinitionName') || '';
@@ -218,6 +221,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     this.initBreadcrumb();
     this.getAllAssociatedProcessDefinitions();
     this.pageTitleService.disableReset();
+    this.iconService.registerAll([ChevronDown16]);
   }
 
   public ngOnDestroy(): void {
@@ -264,6 +268,28 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
         error: (): void => {
           this.isAssigning$.next(false);
           this.logger.debug('Something went wrong while assigning user to case');
+        },
+      });
+  }
+
+  public unassignAssignee(): void {
+    this.isAssigning$.next(true);
+
+    this.userId$
+      .pipe(
+        take(1),
+        switchMap((userId: string | undefined) =>
+          this.documentService.unassignHandlerFromDocument(this.documentId)
+        )
+      )
+      .subscribe({
+        next: (): void => {
+          this.isAssigning$.next(false);
+          this.dossierService.refresh();
+        },
+        error: (): void => {
+          this.isAssigning$.next(false);
+          this.logger.debug('Something went wrong while unassigning user from case');
         },
       });
   }

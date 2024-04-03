@@ -143,6 +143,13 @@ valtimo-modal {
   }
 }
 
+.assign-overflow {
+  button {
+    block-size: 48px !important;
+    inline-size: 48px !important;
+  }
+}
+
 /* Beagle */
 
 html {
@@ -280,6 +287,10 @@ body {
   }
 }
 
+.badge-primary {
+  background-color: var(--cds-brand-01);
+}
+
 .bg-white {
   background-color: var(--cds-layer) !important;
 }
@@ -364,13 +375,30 @@ valtimo-list {
   border: none !important;
 }
 
-valtimo-searchable-dropdown-select {
-  color: var(--cds-text-helper) !important;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 14px !important;
-  line-height: 18px !important;
+valtimo-dossier-assign-user {
+  h5.selected-text {
+    font-size: 14px;
+    line-height: 18px;
+    font-weight: 700;
+    color: var(--cds-text-helper);
+    & b {
+      font-weight: 400;
+    }
+  }
+  h5.searchable-dropdown {
+    &__underline-button {
+      text-decoration: none !important;
+      b {
+        color: var(--cds-text-helper);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 14px;
+        line-height: 18px;
+        font-weight: 400;
+      }
+    }
+  }
 }
 
 /* Modal */
