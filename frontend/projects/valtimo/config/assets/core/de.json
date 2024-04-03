@@ -379,8 +379,8 @@
       "themePreference": "Thema",
       "themes": {
         "light": "Hell",
-        "dark": "Dunkel",
-        "system": "System"
+        "dark": "Dunkel (Beta)",
+        "system": "System (Beta)"
       }
     }
   },

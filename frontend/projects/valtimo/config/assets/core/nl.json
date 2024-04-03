@@ -379,8 +379,8 @@
       "themePreference": "Thema",
       "themes": {
         "light": "Licht",
-        "dark": "Donker",
-        "system": "Systeem"
+        "dark": "Donker (Beta)",
+        "system": "Systeem (Beta)"
       }
     }
   },

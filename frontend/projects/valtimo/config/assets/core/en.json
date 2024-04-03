@@ -380,8 +380,8 @@
       "themePreference": "Theme",
       "themes": {
         "light": "Light",
-        "dark": "Dark",
-        "system": "System"
+        "dark": "Dark (Beta)",
+        "system": "System (Beta)"
       }
     }
   },
