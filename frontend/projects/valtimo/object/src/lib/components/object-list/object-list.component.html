@@ -23,16 +23,13 @@
   } as obs"
 >
   <div class="main-content pt-0">
-    <div class="container-fluid pr-0 pl-0">
-      <div class="text-right">
-        <div class="btn-group mt-m3px mb-3 mr-0">
-          <ng-container *ngTemplateOutlet="buttons; context: {obs: obs}"></ng-container>
-        </div>
+    <div class="container-fluid">
+      <div class="col-12 px-0 mb-5">
+        <ng-container *ngIf="obs.loading === false; else loading">
+          <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
+          <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
+        </ng-container>
       </div>
-      <ng-container *ngIf="obs.loading === false; else loading">
-        <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
-        <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
-      </ng-container>
     </div>
   </div>
   <ng-container *ngTemplateOutlet="createNewModal"></ng-container>
@@ -65,26 +62,22 @@
 
 <ng-template #list let-obs="obs">
   <valtimo-widget>
-    <valtimo-list
+    <valtimo-carbon-list
       [items]="obs.objectConfiguration"
       [fields]="obs.fields"
-      [viewMode]="true"
-      [header]="true"
+      [header]="false"
       [pagination]="obs.pagination"
       paginationIdentifier="objectConfigurationList"
       (paginationClicked)="paginationClicked($event)"
       (paginationSet)="paginationSet($event)"
       (rowClicked)="redirectToDetails($event)"
     >
-      <div header>
-        <h3 class="list-header-title">
-          {{ 'object.title' | translate }}
-          <sup class="ml-1 badge badge-pill badge-primary">{{
-            obs.objectConfiguration?.length || 0
-          }}</sup>
-        </h3>
-      </div>
-    </valtimo-list>
+      <ng-container carbonToolbarContent>
+        <button cdsButton="primary" (click)="openModal()">
+          {{ 'object.createObject' | translate }}
+        </button>
+      </ng-container>
+    </valtimo-carbon-list>
   </valtimo-widget>
 </ng-template>
 
@@ -142,5 +135,5 @@
 </ng-template>
 
 <ng-template #loading>
-  <div class="loading-icon"><cds-loading></cds-loading></div>
+  <valtimo-carbon-list [loading]="true"> </valtimo-carbon-list>
 </ng-template>
