@@ -31,7 +31,7 @@ import {
   tap,
 } from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
-import {EditorModel, PageTitleService} from '@valtimo/components';
+import {EditorModel, PageHeaderService, PageTitleService} from '@valtimo/components';
 import {FormFlowDefinition, FormFlowDefinitionId, LoadedValue} from '../../models';
 import {NotificationService} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
@@ -89,6 +89,8 @@ export class FormFlowEditorComponent implements OnInit, OnDestroy {
       switchMap(id => this.formFlowService.getFormFlowDefinition(id))
     );
 
+  public readonly compactMode$ = this.pageHeaderService.compactMode$;
+
   constructor(
     private readonly formFlowService: FormFlowService,
     private readonly route: ActivatedRoute,
@@ -96,7 +98,8 @@ export class FormFlowEditorComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly notificationService: NotificationService,
     private readonly translateService: TranslateService,
-    private readonly formFlowDownloadService: FormFlowDownloadService
+    private readonly formFlowDownloadService: FormFlowDownloadService,
+    private readonly pageHeaderService: PageHeaderService
   ) {}
 
   public ngOnInit(): void {

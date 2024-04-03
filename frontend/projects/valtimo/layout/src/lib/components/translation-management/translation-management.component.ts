@@ -18,7 +18,12 @@ import {Component, Inject, OnInit} from '@angular/core';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, take, tap} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 import {Localization, LocalizationService, MergedLocalizations} from '@valtimo/config';
-import {ArbitraryInputTitles, MultiInputKeyValue, MultiInputOutput} from '@valtimo/components';
+import {
+  ArbitraryInputTitles,
+  MultiInputKeyValue,
+  MultiInputOutput,
+  PageHeaderService,
+} from '@valtimo/components';
 import {isEqual} from 'lodash';
 import {DOCUMENT} from '@angular/common';
 
@@ -86,9 +91,12 @@ export class TranslationManagementComponent implements OnInit {
     map(multiInputTitles => Object.keys(multiInputTitles).length)
   );
 
+  public readonly compactMode$ = this.pageHeaderService.compactMode$;
+
   constructor(
     private readonly translateService: TranslateService,
     private readonly localizationService: LocalizationService,
+    private readonly pageHeaderService: PageHeaderService,
     @Inject(DOCUMENT) private readonly document: Document
   ) {}
 

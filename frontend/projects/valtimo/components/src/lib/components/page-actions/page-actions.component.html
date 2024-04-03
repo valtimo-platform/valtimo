@@ -15,12 +15,22 @@
   -->
 
 <div
-  class="editor-container"
-  #editorContainer
-  [style.width.px]="widthPx"
-  [style.height.px]="!fitPage && heightPx"
-  [style.height]="!fitPage && heightStyle"
-  fitPage
-  [disabled]="!fitPage"
-  [extraSpace]="fitPageExtraSpace"
-></div>
+  class="page-actions-container"
+  [ngClass]="{
+    '--compact': compactMode$ | async
+  }"
+>
+  <ng-container #subtitleVcr></ng-container>
+
+  <div
+    #pageActions
+    [ngClass]="{
+      'page-actions--visible': hasPageActions$ | async,
+      'page-actions--full-width': (pageActionsFullWidth$ | async),
+      'page-actions--compact': (hasPageActions$ | async) && (compactMode$ | async)
+    }"
+    class="page-actions"
+  >
+    <ng-container #pageActionsVcr></ng-container>
+  </div>
+</div>

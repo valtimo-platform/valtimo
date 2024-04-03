@@ -14,5 +14,13 @@
  * limitations under the License.
  */
 
-export * from './form-management-state.service';
-export * from './form-management.service';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {RenderPageSubtitleDirective} from './render-page-subtitle.directive';
+
+@NgModule({
+  declarations: [RenderPageSubtitleDirective],
+  imports: [CommonModule],
+  exports: [RenderPageSubtitleDirective],
+})
+export class RenderPageSubtitleDirectiveModule {}

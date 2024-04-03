@@ -65,7 +65,11 @@
 
 <ng-container renderInPageHeader>
   <ng-template>
-    <button cdsButton="tertiary" size="md" (click)="editDashboard()">
+    <button
+      cdsButton="tertiary"
+      [size]="(compactMode$ | async) ? 'sm' : 'md'"
+      (click)="editDashboard()"
+    >
       {{ 'dashboardManagement.widgets.editButton' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>

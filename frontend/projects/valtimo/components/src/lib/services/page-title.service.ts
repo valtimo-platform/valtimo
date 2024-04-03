@@ -34,6 +34,8 @@ export class PageTitleService implements OnDestroy {
     null
   );
 
+  private readonly _pageTitleHidden$ = new BehaviorSubject<boolean>(false);
+
   private _routeSubscription!: Subscription;
 
   private _preventReset!: boolean;
@@ -55,7 +57,7 @@ export class PageTitleService implements OnDestroy {
   }
 
   public get pageActionsViewContainerRef$(): Observable<ViewContainerRef> {
-    return this._pageActionsViewContainerRef$.asObservable();
+    return this._pageActionsViewContainerRef$.pipe(filter(ref => !!ref));
   }
 
   public get hasPageActions$(): Observable<boolean> {
@@ -64,6 +66,10 @@ export class PageTitleService implements OnDestroy {
 
   public get pageActionsFullWidth$(): Observable<boolean> {
     return this._pageActionsFullWidth$.asObservable();
+  }
+
+  public get pageTitleHidden$(): Observable<boolean> {
+    return this._pageTitleHidden$.asObservable();
   }
 
   constructor(private readonly router: Router) {
@@ -112,11 +118,12 @@ export class PageTitleService implements OnDestroy {
     this._customPageTitleSet$.next(set);
   }
 
+  public setPageTitleHidden(hidden: boolean): void {
+    this._pageTitleHidden$.next(hidden);
+  }
+
   private openRouteSubscription(): void {
-    this._routeSubscription = combineLatest([
-      this.router.events,
-      this._pageActionsViewContainerRef$,
-    ])
+    this._routeSubscription = combineLatest([this.router.events, this.pageActionsViewContainerRef$])
       .pipe(
         filter(
           ([event]) =>

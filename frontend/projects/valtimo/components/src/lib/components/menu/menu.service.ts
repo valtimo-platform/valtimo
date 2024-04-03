@@ -294,11 +294,11 @@ export class MenuService {
 
     timer(0, 5000).subscribe(() => {
       this.documentService.getOpenDocumentCount().subscribe(openDocumentCountList => {
-        openDocumentCountList.forEach(openDocumentCount =>
-          countMap
-            .get(openDocumentCount.documentDefinitionName)
-            .next(openDocumentCount.openDocumentCount)
-        );
+        openDocumentCountList.forEach(openDocumentCount => {
+          const mapEntry = countMap.get(openDocumentCount.documentDefinitionName);
+
+          if (mapEntry) mapEntry.next(openDocumentCount.openDocumentCount);
+        });
       });
     });
     return countMap;

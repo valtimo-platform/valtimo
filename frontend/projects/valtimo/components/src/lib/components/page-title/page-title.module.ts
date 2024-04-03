@@ -18,11 +18,11 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {PageTitleComponent} from './page-title.component';
 import {TranslateModule} from '@ngx-translate/core';
-import {SkeletonModule} from 'carbon-components-angular';
+import {SkeletonModule, UIShellModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [PageTitleComponent],
-  imports: [CommonModule, TranslateModule, SkeletonModule],
+  imports: [CommonModule, TranslateModule, SkeletonModule, UIShellModule],
   exports: [PageTitleComponent],
 })
 export class PageTitleModule {}

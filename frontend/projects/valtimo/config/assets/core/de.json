@@ -381,7 +381,10 @@
         "light": "Hell",
         "dark": "Dunkel",
         "system": "System"
-      }
+      },
+      "collapsibleMenu": "Navigationsleiste immer einklappbar",
+      "compactMode": "Kompaktmodus",
+      "showUserName": "Benutzernamen anzeigen"
     }
   },
   "decisions": {

@@ -19,6 +19,7 @@ import {FormioForm} from '@formio/angular';
 import {
   AlertService,
   EditorModel,
+  PageHeaderService,
   PageTitleService,
   PendingChangesComponent,
   ShellService,
@@ -78,6 +79,7 @@ export class FormManagementEditComponent
   public readonly jsonOutput$ = new BehaviorSubject<EditorModel | null>(null);
   public readonly reloading$ = new BehaviorSubject<boolean>(false);
   public readonly showModal$ = new BehaviorSubject<boolean>(false);
+  public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
   private _activeOuput: string;
   private _alertSub: Subscription = Subscription.EMPTY;
@@ -91,7 +93,8 @@ export class FormManagementEditComponent
     private readonly pageTitleService: PageTitleService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly shellService: ShellService
+    private readonly shellService: ShellService,
+    private readonly pageHeaderService: PageHeaderService
   ) {
     super();
   }

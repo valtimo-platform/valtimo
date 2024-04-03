@@ -381,7 +381,10 @@
         "light": "Licht",
         "dark": "Donker",
         "system": "Systeem"
-      }
+      },
+      "collapsibleMenu": "Navigatiebalk altijd inklapbaar",
+      "compactMode": "Compacte modus",
+      "showUserName": "Toon naam van gebruiker"
     }
   },
   "decisions": {

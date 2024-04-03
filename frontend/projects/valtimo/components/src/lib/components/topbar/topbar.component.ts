@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import {Component, HostBinding, OnInit} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  HostBinding,
+  OnInit,
+  ViewChild,
+  ViewContainerRef,
+} from '@angular/core';
 import {KeycloakService} from 'keycloak-angular';
 import {map, of, switchMap} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
@@ -22,58 +29,65 @@ import {IconService} from 'carbon-components-angular';
 import User20 from '@carbon/icons/es/user/20';
 import {ShellService} from '../../services/shell.service';
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
+import {PageHeaderService} from '../../services';
 
 @Component({
   selector: 'valtimo-topbar',
   templateUrl: './topbar.component.html',
   styleUrls: ['./topbar.component.scss'],
 })
-export class TopbarComponent implements OnInit {
+export class TopbarComponent implements OnInit, AfterViewInit {
   @HostBinding('class.cds--header') headerClass = true;
 
-  showUserNameInTopBar!: boolean;
+  @ViewChild('headerVcr', {static: true, read: ViewContainerRef})
+  private readonly _headerVcr!: ViewContainerRef;
 
-  logoBase64!: SafeResourceUrl;
+  public logoBase64!: SafeResourceUrl;
 
-  readonly userFullName$ = of(this.keyCloakService.isLoggedIn()).pipe(
+  public readonly userFullName$ = of(this.keyCloakService.isLoggedIn()).pipe(
     switchMap(() => this.keyCloakService.loadUserProfile()),
     map(profile => `${profile.firstName} ${profile.lastName}`)
   );
 
-  readonly applicationTitle = this.configService.config.applicationTitle;
-  readonly largeLogoMargin = this.configService.config.featureToggles?.largeLogoMargin;
-  readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
-  readonly largeScreen$ = this.shellService.largeScreen$;
-  readonly panelExpanded$ = this.shellService.panelExpanded$;
-  readonly collapsibleWidescreenMenu$ = this.shellService.collapsibleWidescreenMenu$;
+  public readonly applicationTitle = this.configService.config.applicationTitle;
+  public readonly largeLogoMargin = this.configService.config.featureToggles?.largeLogoMargin;
+  public readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
+  public readonly largeScreen$ = this.shellService.largeScreen$;
+  public readonly panelExpanded$ = this.shellService.panelExpanded$;
+  public readonly collapsibleWidescreenMenu$ = this.shellService.collapsibleWidescreenMenu$;
+  public readonly showUserNameInTopBar$ = this.pageHeaderService.showUserNameInTopBar$;
 
   constructor(
     private readonly keyCloakService: KeycloakService,
     private readonly configService: ConfigService,
     private readonly iconService: IconService,
     private readonly shellService: ShellService,
-    private readonly sanitizer: DomSanitizer
+    private readonly sanitizer: DomSanitizer,
+    private readonly pageHeaderService: PageHeaderService
   ) {}
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.iconService.registerAll([User20]);
-    this.showUserNameInTopBar = this.configService.config.featureToggles?.showUserNameInTopBar;
     this.setLogo();
   }
 
-  toggleSideBar(): void {
+  public ngAfterViewInit(): void {
+    this.pageHeaderService.setHeaderViewContainerRef(this._headerVcr);
+  }
+
+  public toggleSideBar(): void {
     this.shellService.toggleSideBar();
   }
 
-  setPanelExpanded(expanded: boolean): void {
+  public setPanelExpanded(expanded: boolean): void {
     this.shellService.setPanelExpanded(expanded);
   }
 
-  mouseEnter(): void {
+  public mouseEnter(): void {
     this.shellService.setMouseOnTopBar(true);
   }
 
-  mouseLeave(): void {
+  public mouseLeave(): void {
     this.shellService.setMouseOnTopBar(false);
   }
 

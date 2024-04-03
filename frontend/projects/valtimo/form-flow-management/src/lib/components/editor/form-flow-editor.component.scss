@@ -28,11 +28,16 @@
   display: flex;
   width: 100%;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
+
+  button {
+    height: min-content;
+  }
 }
 
 .buttons-container-right {
   display: flex;
+  align-items: center;
 }
 
 .overflow-button {

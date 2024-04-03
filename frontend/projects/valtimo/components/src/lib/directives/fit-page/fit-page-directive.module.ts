@@ -14,5 +14,13 @@
  * limitations under the License.
  */
 
-export * from './form-management-state.service';
-export * from './form-management.service';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FitPageDirective} from './fit-page.directive';
+
+@NgModule({
+  declarations: [FitPageDirective],
+  imports: [CommonModule],
+  exports: [FitPageDirective],
+})
+export class FitPageDirectiveModule {}

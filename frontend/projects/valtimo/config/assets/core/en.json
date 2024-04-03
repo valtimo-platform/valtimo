@@ -382,7 +382,10 @@
         "light": "Light",
         "dark": "Dark",
         "system": "System"
-      }
+      },
+      "collapsibleMenu": "Navigation bar always collapsible",
+      "compactMode": "Compact mode",
+      "showUserName": "Show name of user"
     }
   },
   "decisions": {

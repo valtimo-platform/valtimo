@@ -17,7 +17,8 @@
   *ngIf="{
     formDefinition: formDefinition$ | async,
     jsonFormDefinition: jsonFormDefinition$ | async,
-    jsonOutput: jsonOutput$ | async
+    jsonOutput: jsonOutput$ | async,
+    compactMode: compactMode$ | async
   } as obs"
 >
   @if (obs.formDefinition) {
@@ -54,6 +55,7 @@
           <button
             cdsButton="primary"
             [disabled]="obs.formDefinition.readOnly || !validJsonChange"
+            [size]="obs.compactMode ? 'sm' : 'md'"
             (click)="modifyFormDefinition(obs.formDefinition)"
           >
             {{ 'interface.save' | translate }}
@@ -123,7 +125,8 @@
       [disabled]="data.disabled"
       (validEvent)="onValidEvent($event, data.disabled)"
       (valueChangeEvent)="onValueChangeEvent($event, data.formDefinition, data.disabled)"
-      heightStyle="calc(100vh - 316px)"
+      [fitPage]="true"
+      [fitPageExtraSpace]="80"
     ></valtimo-editor>
   </ng-template>
 </ng-container>

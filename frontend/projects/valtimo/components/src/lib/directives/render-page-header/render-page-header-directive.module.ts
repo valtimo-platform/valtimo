@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
-.page-head--hidden {
-  display: none;
-}
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {RenderPageHeaderDirective} from './render-page-header.directive';
+
+@NgModule({
+  declarations: [RenderPageHeaderDirective],
+  imports: [CommonModule],
+  exports: [RenderPageHeaderDirective],
+})
+export class RenderPageHeaderDirectiveModule {}

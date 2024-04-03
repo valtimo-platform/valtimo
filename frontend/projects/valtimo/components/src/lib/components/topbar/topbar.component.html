@@ -30,7 +30,10 @@
     (selected)="toggleSideBar()"
   ></cds-hamburger>
   <cds-header-global>
+    <ng-container #headerVcr></ng-container>
+
     <ng-container *ngTemplateOutlet="userFullName"></ng-container>
+
     <cds-header-action
       title="action"
       [active]="panelExpanded$ | async"
@@ -44,7 +47,7 @@
 <ng-template #userFullName>
   <div
     class="user-full-name"
-    *ngIf="showUserNameInTopBar && {userFullName: userFullName$ | async} as obs"
+    *ngIf="(showUserNameInTopBar$ | async) && {userFullName: userFullName$ | async} as obs"
   >
     <v-paragraph [loading]="!obs.userFullName">{{ obs.userFullName }}</v-paragraph>
   </div>

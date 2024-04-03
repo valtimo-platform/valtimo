@@ -22,7 +22,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {Edit16, Save16} from '@carbon/icons';
-import {ConfirmationModalComponent, EditorModel} from '@valtimo/components';
+import {ConfirmationModalComponent, EditorModel, PageHeaderService} from '@valtimo/components';
 import {
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
@@ -79,13 +79,16 @@ export class DossierManagementDocumentDefinitionComponent {
     )
   );
 
+  public readonly compactMode$ = this.pageHeaderService.compactMode$;
+
   private _changesToSave: any;
   private _initialId: string;
 
   constructor(
     private readonly documentService: DocumentService,
     private readonly dossierDetailService: DossierDetailService,
-    private readonly iconService: IconService
+    private readonly iconService: IconService,
+    private readonly pageHeaderService: PageHeaderService
   ) {
     this.iconService.registerAll([Edit16, Save16]);
   }

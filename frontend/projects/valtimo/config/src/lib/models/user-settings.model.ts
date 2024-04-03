@@ -17,6 +17,8 @@
 interface UserSettings {
   collapsibleWidescreenMenu?: boolean;
   languageCode?: string;
+  compactMode?: boolean;
+  showUserNameInTopBar?: boolean;
   preferredTheme?: string;
 }
 

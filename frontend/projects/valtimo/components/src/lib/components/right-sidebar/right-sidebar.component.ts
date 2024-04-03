@@ -39,7 +39,7 @@ import {UserProviderService} from '@valtimo/security';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, Observable, Subscription, switchMap, take} from 'rxjs';
 import {VersionService} from '../version/version.service';
-import {CdsThemeService, ShellService} from '../../services';
+import {CdsThemeService, PageHeaderService, ShellService} from '../../services';
 import {map, tap} from 'rxjs/operators';
 
 @Component({
@@ -115,6 +115,10 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
 
   readonly preferredTheme$ = this.cdsThemeService.preferredTheme$;
 
+  readonly compactMode$ = this.pageHeaderService.compactMode$;
+
+  readonly showUserNameInTopBar$ = this.pageHeaderService.showUserNameInTopBar$;
+
   readonly frontendVersion!: string;
 
   private formSubscription!: Subscription;
@@ -149,6 +153,9 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
 
   private readonly _subscriptions = new Subscription();
 
+  public enableCompactModeToggle = false;
+  public enableShowUserNameToggle = false;
+
   constructor(
     public translate: TranslateService,
     private readonly userProviderService: UserProviderService,
@@ -160,6 +167,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     private readonly elementRef: ElementRef,
     private readonly configService: ConfigService,
     private readonly userSettingsService: UserSettingsService,
+    private readonly pageHeaderService: PageHeaderService,
     private readonly cdsThemeService: CdsThemeService
   ) {
     this.frontendVersion = VERSIONS?.frontendLibraries;
@@ -171,7 +179,11 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
       })
     );
     this.allowUserThemeSwitching =
-      this.configService?.config?.featureToggles?.allowUserThemeSwitching;
+      !!this.configService?.config?.featureToggles?.allowUserThemeSwitching;
+    this.enableCompactModeToggle =
+      !!this.configService?.config?.featureToggles.enableCompactModeToggle;
+    this.enableShowUserNameToggle =
+      !!this.configService?.config?.featureToggles.enableUserNameInTopBarToggle;
   }
 
   showPlantATreeButton: boolean;
@@ -209,6 +221,22 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
 
   setCollapsibleWidescreenMenu(collapsible: boolean, saveSettings = true): void {
     this.shellService.setCollapsibleWidescreenMenu(collapsible);
+
+    if (saveSettings) {
+      this.saveUserSettings();
+    }
+  }
+
+  setCompactMode(compactMode: boolean, saveSettings = true): void {
+    this.pageHeaderService.setCompactMode(compactMode);
+
+    if (saveSettings) {
+      this.saveUserSettings();
+    }
+  }
+
+  setShowUserName(showUserName: boolean, saveSettings = true): void {
+    this.pageHeaderService.setShowUserNameInTopBar(showUserName);
 
     if (saveSettings) {
       this.saveUserSettings();
@@ -302,15 +330,30 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   private saveUserSettings(): void {
     this.updatingUserSettings$.next(true);
 
-    combineLatest([this.selectedLanguage$, this.collapsibleWidescreenMenu$, this.preferredTheme$])
+    combineLatest([
+      this.selectedLanguage$,
+      this.collapsibleWidescreenMenu$,
+      this.compactMode$,
+      this.showUserNameInTopBar$,
+      this.preferredTheme$,
+    ])
       .pipe(
         take(1),
-        switchMap(([languageCode, collapsibleWidescreenMenu, preferredTheme]) =>
-          this.userSettingsService.saveUserSettings({
-            collapsibleWidescreenMenu,
+        switchMap(
+          ([
             languageCode,
-            ...(this.allowUserThemeSwitching && {preferredTheme}),
-          })
+            collapsibleWidescreenMenu,
+            compactMode,
+            showUserNameInTopBar,
+            preferredTheme,
+          ]) =>
+            this.userSettingsService.saveUserSettings({
+              collapsibleWidescreenMenu,
+              languageCode,
+              ...(this.enableCompactModeToggle && {compactMode}),
+              ...(this.enableShowUserNameToggle && {showUserNameInTopBar}),
+              ...(this.allowUserThemeSwitching && {preferredTheme}),
+            })
         )
       )
       .subscribe(() => {
@@ -322,6 +365,8 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     this.selectedLanguage$.next(settings.languageCode);
     this.updateUserLanguage(settings.languageCode, false);
     this.setCollapsibleWidescreenMenu(settings.collapsibleWidescreenMenu, false);
+    if (this.enableCompactModeToggle) this.setCompactMode(settings.compactMode, false);
+    if (this.enableShowUserNameToggle) this.setShowUserName(settings.showUserNameInTopBar, false);
     if (settings.preferredTheme && this.allowUserThemeSwitching) {
       this.setPreferredTheme(settings.preferredTheme, false);
     }

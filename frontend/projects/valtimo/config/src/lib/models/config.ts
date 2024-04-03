@@ -129,6 +129,9 @@ export interface ValtimoConfig {
     hideValtimoVersionsForNonAdmins?: boolean;
     useStartEventNameAsStartFormTitle?: boolean;
     allowUserThemeSwitching?: boolean;
+    enableCompactModeToggle?: boolean;
+    compactModeOnByDefault?: boolean;
+    enableUserNameInTopBarToggle?: boolean;
   };
   visibleTaskListTabs?: Array<TaskListTab>;
   visibleDossierListTabs?: Array<DossierListTab>;
