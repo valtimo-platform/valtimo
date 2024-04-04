@@ -29,6 +29,9 @@ body {
 
 .cds--side-nav {
   background-color: var(--cds-layer);
+  &__navigation {
+    border-color: var(--cds-border-subtle) !important;
+  }
 }
 
 .cds {
@@ -147,6 +150,13 @@ valtimo-modal {
   button {
     block-size: 48px !important;
     inline-size: 48px !important;
+  }
+}
+
+.widget-configuration-content {
+  background-color: var(--cds-layer) !important;
+  .valtimo-big-number-widget__number {
+    color: var(--cds-text-primary) !important;
   }
 }
 
