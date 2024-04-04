@@ -101,15 +101,6 @@ $darkThemeOverwriteVariables: (
   $button-tertiary: var(--vcds-color-60)
 );
 
-@use '@carbon/styles/scss/components/tag/tokens' as tag-tokens with (
-  $tag-color-blue: var(--vcds-color-80),
-  $tag-background-blue: var(--vcds-color-20)
-);
-
-@use '@carbon/styles/scss/components/notification/tokens' as notification-tokens with (
-  $notification-background-info: var(--vcds-color-10)
-);
-
 @use '@carbon/styles';
 @use '@carbon/grid';
 @include grid.flex-grid();
