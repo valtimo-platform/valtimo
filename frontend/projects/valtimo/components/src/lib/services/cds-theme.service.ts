@@ -14,34 +14,33 @@
  * limitations under the License.
  */
 import {Injectable, OnDestroy} from '@angular/core';
-import {isBoolean} from 'lodash';
-import {BehaviorSubject, Observable, of, Subscription} from 'rxjs';
-import {filter, switchMap} from 'rxjs/operators';
-import {EditorService} from '../components/editor/editor.service';
-import {SelectableCarbonTheme, SelectableMonacoTheme} from '../models';
+import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
+import {filter} from 'rxjs/operators';
+import {CurrentCarbonTheme, SelectableCarbonTheme} from '../models';
 
-declare const monaco: any;
+// declare const monaco: any;
 
 @Injectable({
   providedIn: 'root',
 })
 export class CdsThemeService implements OnDestroy {
-  private readonly _editorTheme$ = new BehaviorSubject<SelectableMonacoTheme>(
-    SelectableMonacoTheme.VS
-  );
   private readonly _preferredTheme$ = new BehaviorSubject<SelectableCarbonTheme>(
     SelectableCarbonTheme.G10
   );
+  private readonly _currentTheme$ = new BehaviorSubject<CurrentCarbonTheme | null>(null);
 
   public get preferredTheme$(): Observable<SelectableCarbonTheme> {
     return this._preferredTheme$.pipe(filter(theme => !!theme));
   }
 
+  public get currentTheme$(): Observable<CurrentCarbonTheme> {
+    return this._currentTheme$.pipe(filter(theme => !!theme));
+  }
+
   private readonly _subscriptions = new Subscription();
 
-  constructor(private readonly editorService: EditorService) {
+  constructor() {
     this.openDarkModeSubscription();
-    this.openMonacoThemeSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -53,51 +52,30 @@ export class CdsThemeService implements OnDestroy {
   }
 
   private openDarkModeSubscription(): void {
-    this._subscriptions.add(
-      this.preferredTheme$
-        .pipe(
-          switchMap((preferredTheme: SelectableCarbonTheme) =>
-            preferredTheme === SelectableCarbonTheme.SYSTEM
-              ? this.getBrowserPrefersDarkModeObservable()
-              : of(preferredTheme)
-          )
-        )
-        .subscribe((theme: SelectableCarbonTheme | boolean) => {
-          let documentTheme: SelectableCarbonTheme;
-          let editorTheme: SelectableMonacoTheme;
-
-          if (isBoolean(theme)) {
-            documentTheme = theme ? SelectableCarbonTheme.G90 : SelectableCarbonTheme.G10;
-            editorTheme = theme ? SelectableMonacoTheme.VSDARK : SelectableMonacoTheme.VS;
-          } else {
-            documentTheme = theme;
-            editorTheme =
-              theme === SelectableCarbonTheme.G10
-                ? SelectableMonacoTheme.VS
-                : SelectableMonacoTheme.VSDARK;
-          }
-          this.setThemeOnDocument(documentTheme);
-          this._editorTheme$.next(editorTheme);
-        })
+    combineLatest([this.getBrowserPrefersDarkModeObservable(), this.preferredTheme$]).subscribe(
+      ([browserPrefersDarkMode, preferredTheme]) => {
+        switch (preferredTheme) {
+          case SelectableCarbonTheme.SYSTEM:
+            if (browserPrefersDarkMode) {
+              this.setThemeOnDocument(CurrentCarbonTheme.G90);
+            } else {
+              this.setThemeOnDocument(CurrentCarbonTheme.G10);
+            }
+            break;
+          case SelectableCarbonTheme.G10:
+            this.setThemeOnDocument(CurrentCarbonTheme.G10);
+            break;
+          case SelectableCarbonTheme.G90:
+            this.setThemeOnDocument(CurrentCarbonTheme.G90);
+            break;
+        }
+      }
     );
   }
 
-  private openMonacoThemeSubscription(): void {
-    this._subscriptions.add(
-      this.editorService.loadingFinished$
-        .pipe(switchMap(() => this._editorTheme$))
-        .subscribe((theme: SelectableMonacoTheme) => {
-          this.setMonacoEditorTheme(theme);
-        })
-    );
-  }
-
-  private setThemeOnDocument(theme: SelectableCarbonTheme): void {
+  private setThemeOnDocument(theme: CurrentCarbonTheme): void {
     document.documentElement.setAttribute('data-carbon-theme', theme);
-  }
-
-  private setMonacoEditorTheme(monacoTheme: SelectableMonacoTheme): void {
-    monaco?.editor?.setTheme(monacoTheme);
+    this._currentTheme$.next(theme);
   }
 
   private getBrowserPrefersDarkModeObservable(signal?: AbortSignal): Observable<boolean> {
