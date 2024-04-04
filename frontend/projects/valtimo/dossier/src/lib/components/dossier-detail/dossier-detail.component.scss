@@ -58,6 +58,10 @@
   justify-content: space-between;
   align-items: flex-end;
 
+  &.--compact {
+    align-items: center;
+  }
+
   ::ng-deep .version-selection {
     width: 160px;
 
@@ -70,4 +74,8 @@
 .dossier-assign-user {
   padding-bottom: 4px;
   margin-left: -16px;
+
+  &.--compact {
+    margin-left: 0;
+  }
 }

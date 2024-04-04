@@ -139,6 +139,7 @@
   <ng-template>
     <div
       class="dossier-actions"
+      [ngClass]="{'--compact': compactMode$ | async}"
       *ngIf="{
         assigneeId: assigneeId$ | async,
         canAssign: canAssign$ | async,
@@ -147,7 +148,7 @@
         document: document$ | async
       } as obs"
     >
-      <div class="dossier-assign-user">
+      <div class="dossier-assign-user" [ngClass]="{'--compact': compactMode$ | async}">
         <ng-container
           *ngTemplateOutlet="
             caseDetailAssignee;

@@ -32,7 +32,12 @@ import {
 } from '@valtimo/config';
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
 import {openZaakExtensionInitializer} from '@valtimo/plugin';
-import {LOGO_BASE_64} from './logo';
+import {
+  DARK_MODE_LOGO_BASE_64,
+  DARK_MODE_LOGO_BASE_64_PNG,
+  LOGO_BASE_64,
+  LOGO_BASE_64_PNG,
+} from './logo';
 import {cspHeaderParamsDev} from './csp';
 
 const defaultDefinitionColumns: Array<DefinitionColumn> = [
@@ -68,6 +73,9 @@ const defaultDefinitionColumns: Array<DefinitionColumn> = [
 
 export const environment: ValtimoConfig = {
   logoSvgBase64: LOGO_BASE_64,
+  darkModeLogoSvgBase64: DARK_MODE_LOGO_BASE_64,
+  logoPngBase64: LOGO_BASE_64_PNG,
+  darkModeLogoPngBase64: DARK_MODE_LOGO_BASE_64_PNG,
   applicationTitle: '',
   production: false,
   initializers: [openZaakExtensionInitializer],

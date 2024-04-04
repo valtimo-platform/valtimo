@@ -42,3 +42,4 @@ export * from './theme.model';
 export * from './timeline.model';
 export * from './title.model';
 export * from './version.model';
+export * from './topbar.model';

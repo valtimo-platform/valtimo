@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute, ParamMap, Params, Router} from '@angular/router';
 import {PermissionService} from '@valtimo/access-control';
-import {BreadcrumbService, PageTitleService} from '@valtimo/components';
+import {BreadcrumbService, PageHeaderService, PageTitleService} from '@valtimo/components';
 import {ConfigService} from '@valtimo/config';
 import {
   CaseStatusService,
@@ -191,6 +191,8 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
   public readonly loadingTabs$ = new BehaviorSubject<boolean>(true);
   public readonly noTabsConfigured$ = new BehaviorSubject<boolean>(false);
 
+  public readonly compactMode$ = this.pageHeaderService.compactMode$;
+
   private _snapshot: ParamMap;
   private _initialTabName: string;
 
@@ -209,7 +211,8 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     private readonly dossierService: DossierService,
     private readonly caseStatusService: CaseStatusService,
     private readonly pageTitleService: PageTitleService,
-    private readonly iconService: IconService
+    private readonly iconService: IconService,
+    private readonly pageHeaderService: PageHeaderService
   ) {
     this._snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this._snapshot.get('documentDefinitionName') || '';
