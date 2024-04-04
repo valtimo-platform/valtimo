@@ -45,6 +45,7 @@
     >
     </cds-tab>
     <cds-tab
+      *ngIf="caseListColumn"
       class="no-padding-left-right no-padding-top-bottom"
       [active]="currentTab === TabEnum.LIST"
       [heading]="'dossierManagement.tabs.listColumns' | translate"
@@ -52,6 +53,7 @@
     >
     </cds-tab>
     <cds-tab
+      *ngIf="tabManagementEnabled"
       class="no-padding-left-right no-padding-top-bottom"
       [active]="currentTab === TabEnum.TABS"
       [heading]="'dossierManagement.tabs.tabManagement' | translate"

@@ -20,13 +20,18 @@
     [model]="model"
     (validEvent)="onValid($event)"
     (valueChangeEvent)="onValueChange($event)"
+    [fitPage]="true"
   ></valtimo-editor>
 </ng-container>
 
 <ng-container renderInPageHeader>
   <ng-template>
     <div
-      *ngIf="{model: model$ | async, moreDisabled: moreDisabled$ | async} as obs"
+      *ngIf="{
+        model: model$ | async,
+        moreDisabled: moreDisabled$ | async,
+        compactMode: compactMode$ | async
+      } as obs"
       class="buttons-container"
     >
       <cds-overflow-menu class="overflow-button">
@@ -51,7 +56,7 @@
       <button
         [disabled]="saveDisabled$ | async"
         cdsButton="primary"
-        size="md"
+        [size]="obs.compactMode ? 'sm' : 'md'"
         (click)="updatePermissions()"
       >
         {{ 'interface.save' | translate }}

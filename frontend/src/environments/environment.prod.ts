@@ -24,7 +24,6 @@ import {
   ValtimoConfig,
 } from '@valtimo/config';
 import {authenticationKeycloak} from './auth/keycloak-config.prod';
-import {openZaakExtensionInitializer} from '@valtimo/open-zaak';
 import {LOGO_BASE_64} from './logo';
 import {cspHeaderParamsProd} from './csp';
 
@@ -147,8 +146,7 @@ export const environment: ValtimoConfig = {
   customDefinitionTables: {},
   featureToggles: {
     showUserNameInTopBar: true,
-    largeLogoMargin: true,
-    enableTabManagement: true,
+    largeLogoMargin: true
   },
   csp: cspHeaderParamsProd,
 };

@@ -60,7 +60,7 @@ export * from './lib/components/page-header/page-header.module';
 
 export * from './lib/components/page-title/page-title.component';
 export * from './lib/components/page-title/page-title.module';
-export * from './lib/components/page-title/page-title.service';
+export * from './lib/services/page-title.service';
 
 export * from './lib/components/breadcrumb-navigation/breadcrumb-navigation.component';
 export * from './lib/components/breadcrumb-navigation/breadcrumb-navigation.module';
@@ -225,6 +225,11 @@ export * from './lib/components/radio/radio.module';
 export * from './lib/components/pending-changes/pending-changes.component';
 export * from './lib/components/pending-changes/pending-changes.service';
 
+// Choice fields
+export * from './lib/services/choice-field.service';
+export * from './lib/models/choice-field.model';
+export * from './lib/models/choicefield-value.model';
+
 /*
 directives
  */
@@ -238,6 +243,12 @@ export * from './lib/directives/tooltip/tooltip.module';
 // render in page header
 export * from './lib/directives/render-in-page-header/render-in-page-header.directive';
 export * from './lib/directives/render-in-page-header/render-in-page-header-directive.module';
+// render page header
+export * from './lib/directives/render-page-header/render-page-header.directive';
+export * from './lib/directives/render-page-header/render-page-header-directive.module';
+// fit page
+export * from './lib/directives/fit-page/fit-page.directive';
+export * from './lib/directives/fit-page/fit-page-directive.module';
 // digit only
 export * from './lib/directives/digit-only/digit-only.directive';
 // command click

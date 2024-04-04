@@ -115,13 +115,11 @@ export interface ValtimoConfig {
   translationResources?: Array<string>;
   featureToggles?: {
     applicationTitleAsSuffix?: boolean;
-    disableFormFlow?: boolean;
     enableHackathonCasesPage?: boolean;
     showUserNameInTopBar?: boolean;
     showPlantATreeButton?: boolean;
     experimentalDmnEditing?: boolean;
     disableCaseCount?: boolean;
-    caseSearchFields?: boolean;
     caseListColumn?: boolean;
     enableObjectManagement?: boolean;
     largeLogoMargin?: boolean;
@@ -131,6 +129,9 @@ export interface ValtimoConfig {
     hideValtimoVersionsForNonAdmins?: boolean;
     useStartEventNameAsStartFormTitle?: boolean;
     allowUserThemeSwitching?: boolean;
+    enableCompactModeToggle?: boolean;
+    compactModeOnByDefault?: boolean;
+    enableUserNameInTopBarToggle?: boolean;
   };
   visibleTaskListTabs?: Array<TaskListTab>;
   visibleDossierListTabs?: Array<DossierListTab>;

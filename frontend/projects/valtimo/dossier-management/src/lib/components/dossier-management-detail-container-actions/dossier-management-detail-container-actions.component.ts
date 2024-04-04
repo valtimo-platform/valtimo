@@ -33,6 +33,7 @@ import {HttpResponse} from '@angular/common/http';
 import {DocumentService} from '@valtimo/document';
 import {take} from 'rxjs/operators';
 import {DossierManagementRemoveModalComponent} from '../dossier-management-remove-modal/dossier-management-remove-modal.component';
+import {PageHeaderService} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-dossier-management-detail-container-actions',
@@ -92,6 +93,8 @@ export class DossierManagementDetailContainerActionsComponent {
   public readonly selectedDocumentDefinitionIsReadOnly$ =
     this.dossierDetailService.selectedDocumentDefinitionIsReadOnly$;
 
+  public readonly compactMode$ = this.pageHeaderService.compactMode$;
+
   private _currentNotification!: Notification;
 
   constructor(
@@ -100,7 +103,8 @@ export class DossierManagementDetailContainerActionsComponent {
     private readonly dossierExportService: DossierExportService,
     private readonly translateService: TranslateService,
     private readonly documentService: DocumentService,
-    private readonly dossierDetailService: DossierDetailService
+    private readonly dossierDetailService: DossierDetailService,
+    private readonly pageHeaderService: PageHeaderService
   ) {}
 
   public export(): void {

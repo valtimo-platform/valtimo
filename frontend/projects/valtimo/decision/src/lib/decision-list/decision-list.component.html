@@ -16,26 +16,24 @@
 
 <ng-container *ngIf="decisionsLatestVersions$ | async as decisions">
   <ng-container *ngIf="(loading$ | async) === false">
-    <valtimo-widget>
-      <valtimo-list
-        [items]="decisions"
-        [fields]="fields"
-        (rowClicked)="viewDecisionTable($event)"
-        [header]="true"
-        [viewMode]="true"
-        [isSearchable]="true"
-      >
-        <div header>
-          <h3 class="list-header-title">{{ 'Decision tables' | translate }}</h3>
-          <h5 class="list-header-description">
-            {{ 'Overview of all Decision tables' | translate }}
-          </h5>
-        </div>
-      </valtimo-list>
-    </valtimo-widget>
+    <valtimo-carbon-list
+      [items]="decisions"
+      [fields]="fields"
+      (rowClicked)="viewDecisionTable($event)"
+      [header]="false"
+      [isSearchable]="true"
+    >
+      <ng-container carbonToolbarContent>
+        <button cdsButton="primary" (click)="this.deploy.openModal()">
+          {{ 'Upload' | translate }}
+        </button>
+      </ng-container>
+    </valtimo-carbon-list>
   </ng-container>
 </ng-container>
 
+<valtimo-decision-deploy #decisionDeploy></valtimo-decision-deploy>
+
 <ng-container *ngIf="loading$ | async">
-  <valtimo-spinner></valtimo-spinner>
+  <valtimo-carbon-list [loading]="true"> </valtimo-carbon-list>
 </ng-container>

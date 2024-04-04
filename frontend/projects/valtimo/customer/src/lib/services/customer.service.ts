@@ -20,6 +20,9 @@ import {Observable} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
 import {Customer, CustomerCase, CustomerSearchRequest} from '../models';
 
+/**
+ * @deprecated Will be replace by new plugins
+ */
 @Injectable({
   providedIn: 'root',
 })

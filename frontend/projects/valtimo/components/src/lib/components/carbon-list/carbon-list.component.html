@@ -99,14 +99,20 @@
 </ng-template>
 
 <ng-template #actionsMenuTemplate let-data="data">
-  <cds-overflow-menu (click)="$event.stopPropagation()">
+  <cds-overflow-menu
+    [open]="currentOpenActionId === data.item.id"
+    (openChange)="handleActionOpenChange(data.item.id, $event)"
+    [flip]="true"
+    [offset]="{x: 0, y: 50}"
+    placement="bottom"
+    (click)="$event.stopPropagation()"
+  >
     <cds-overflow-menu-option
       *ngFor="let action of data.actions"
       [type]="action.type"
       (selected)="action.callback(data.item)"
     >
       <i *ngIf="!!action.iconClass" [ngClass]="action.iconClass"></i>
-
       {{ action.label | translate }}
     </cds-overflow-menu-option>
   </cds-overflow-menu>

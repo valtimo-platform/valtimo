@@ -39,7 +39,7 @@ export class MenuIncludeService {
       case IncludeFunction.HaalcentraalConnectorConfigured:
         return this.isHaalCentraalConnectorConfigured();
       case IncludeFunction.ObjectManagementEnabled:
-        return of(!!this.valtimoConfig?.featureToggles?.enableObjectManagement);
+        return of(!!this.valtimoConfig?.featureToggles?.enableObjectManagement ?? true);
       default:
         return of(true);
     }

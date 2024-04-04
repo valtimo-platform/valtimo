@@ -418,7 +418,12 @@
     "delete": "Delete",
     "deploy": "Deploy",
     "duplicate": "Duplicate",
-    "readOnly": "Read-only"
+    "readOnly": "Read-only",
+    "tabs": {
+      "formBuilder": "Form builder",
+      "jsonEditor": "JSON editor",
+      "output": "Output"
+    }
   },
   "dossierManagement": {
     "version": "Version: ",
@@ -616,7 +621,8 @@
     },
     "goToCase": "Go to case",
     "caseLocked": "You don't have access to this case",
-    "rowLocked": "You don't have access to this task"
+    "rowLocked": "You don't have access to this task",
+    "allCases": "All cases"
   },
   "Task": "Task",
   "Tasks": "Tasks",
@@ -696,8 +702,8 @@
     "documentenApi": {
       "title": "Documenten API",
       "documentenApiVersion": "The Documenten API plugin is using version",
-      "noVersionWarningTitle": "No Documenten API plugin detected",
-      "noVersionWarningMessage": "Please configure the upload process to link the Documenten API plugin",
+      "noVersionWarningTitle": "No Documents API plugin version detected",
+      "noVersionWarningMessage": "Please configure the Documents API plugin version and configure the upload process",
       "multipleVersionsWarningTitle": "Multiple Documenten API plugins detected",
       "multipleVersionsWarningMessage": "The upload process links to multiple Documenten APIs with different versions"
     },

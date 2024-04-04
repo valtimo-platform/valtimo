@@ -19,9 +19,9 @@
  */
 
 export * from './lib/models';
-export * from './lib/task.service';
+export * from './lib/services/task.service';
 export * from './lib/task.module';
-export * from './lib/task-detail-modal/task-detail-modal.component';
-export * from './lib/task-list/task-list.component';
-export * from './lib/assign-user-to-task/assign-user-to-task.component';
+export * from './lib/components/task-detail-modal/task-detail-modal.component';
+export * from './lib/components/task-list/task-list.component';
+export * from './lib/components/assign-user-to-task/assign-user-to-task.component';
 export * from './lib/task-permissions';

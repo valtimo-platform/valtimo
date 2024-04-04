@@ -15,3 +15,4 @@
  */
 
 export * from './form-definition.model';
+export * from './form-edit-tabs.enum';

@@ -20,12 +20,13 @@ import {ActivatedRoute} from '@angular/router';
 import {ArrowDown16, ArrowUp16, Edit16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {
-  ViewType,
-  PageTitleService,
-  ColumnConfig,
-  MoveRowEvent,
-  MoveRowDirection,
   ActionItem,
+  ColumnConfig,
+  MoveRowDirection,
+  MoveRowEvent,
+  PageHeaderService,
+  PageTitleService,
+  ViewType,
 } from '@valtimo/components';
 import {DashboardWidgetConfiguration} from '@valtimo/dashboard';
 import {IconService} from 'carbon-components-angular';
@@ -117,13 +118,15 @@ export class DashboardDetailsComponent implements AfterViewInit {
   public readonly editWidgetConfiguration$ =
     new BehaviorSubject<DashboardWidgetConfiguration | null>(null);
 
+  public readonly compactMode$ = this.pageHeaderService.compactMode$;
   constructor(
     private readonly dashboardManagementService: DashboardManagementService,
     private readonly datePipe: DatePipe,
     private readonly iconService: IconService,
     private readonly pageTitleService: PageTitleService,
     private readonly route: ActivatedRoute,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly pageHeaderService: PageHeaderService
   ) {}
 
   public ngAfterViewInit(): void {

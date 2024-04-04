@@ -16,7 +16,7 @@
 
 import {NgxLoggerLevel} from 'ngx-logger';
 import {authenticationKeycloak} from './auth/keycloak-config.test';
-import {openZaakExtensionInitializer} from '@valtimo/open-zaak';
+import {openZaakExtensionInitializer} from '@valtimo/plugin';
 import {
   Language,
   ROLE_ADMIN,
@@ -148,8 +148,7 @@ export const environment: ValtimoConfig = {
   customDefinitionTables: {},
   featureToggles: {
     showUserNameInTopBar: true,
-    largeLogoMargin: true,
-    enableTabManagement: true,
+    largeLogoMargin: true
   },
   csp: cspHeaderParamsTest,
 };

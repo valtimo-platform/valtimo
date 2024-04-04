@@ -13,16 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
+import {Component, HostBinding, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
+import {ActivatedRoute, ParamMap, Router} from '@angular/router';
 import {FormioForm} from '@formio/angular';
-import {AlertService, PageTitleService, PendingChangesComponent} from '@valtimo/components';
+import {
+  AlertService,
+  EditorModel,
+  PageHeaderService,
+  PageTitleService,
+  PendingChangesComponent,
+  ShellService,
+} from '@valtimo/components';
 import {ModalService} from 'carbon-components-angular';
-import {BehaviorSubject, Subscription} from 'rxjs';
-import {first, take} from 'rxjs/operators';
+import {
+  BehaviorSubject,
+  distinctUntilChanged,
+  filter,
+  first,
+  Subscription,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {FormManagementDuplicateComponent} from '../form-management-duplicate/form-management-duplicate.component';
-import {FormManagementService} from '../form-management.service';
-import {FormDefinition, ModifyFormDefinitionRequest} from '../models';
+import {EDIT_TABS, FormDefinition, ModifyFormDefinitionRequest} from '../models';
+import {FormManagementService} from '../services';
 
 @Component({
   selector: 'valtimo-form-management-edit',
@@ -34,14 +49,42 @@ export class FormManagementEditComponent
   extends PendingChangesComponent
   implements OnInit, OnDestroy
 {
+  @HostBinding('class') public readonly class = 'valtimo-form-management-edit';
+
   public modifiedFormDefinition: FormioForm | null = null;
-  public formDefinition: FormDefinition | null = null;
+  public validJsonChange: boolean | null = null;
 
-  public readonly showModal$ = new BehaviorSubject<boolean>(false);
+  public readonly CARBON_THEME = 'g10';
+  public readonly TABS = EDIT_TABS;
+
+  public activeTab = EDIT_TABS.BUILDER;
+
+  private readonly _formDefinition$ = new BehaviorSubject<FormDefinition | null>(null);
+  public readonly formDefinition$ = this._formDefinition$.pipe(
+    filter((definition: FormDefinition | null) => !!definition),
+    distinctUntilChanged(
+      (prevFormDefinition, currFormDefinition) =>
+        JSON.stringify(prevFormDefinition?.formDefinition.components) ===
+        JSON.stringify(currFormDefinition?.formDefinition.components)
+    ),
+    tap(() => {
+      if (!this._editorInitialized) {
+        this._editorInitialized = true;
+        return;
+      }
+      this.pendingChanges = true;
+    })
+  );
+  public readonly jsonFormDefinition$ = new BehaviorSubject<EditorModel | null>(null);
+  public readonly jsonOutput$ = new BehaviorSubject<EditorModel | null>(null);
   public readonly reloading$ = new BehaviorSubject<boolean>(false);
+  public readonly showModal$ = new BehaviorSubject<boolean>(false);
+  public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
+  private _activeOuput: string;
   private _alertSub: Subscription = Subscription.EMPTY;
-  private _formDefinitionId: string | null = null;
+  private _changeActive = false;
+  private _editorInitialized = false;
 
   constructor(
     private readonly alertService: AlertService,
@@ -49,7 +92,9 @@ export class FormManagementEditComponent
     private readonly modalService: ModalService,
     private readonly pageTitleService: PageTitleService,
     private readonly route: ActivatedRoute,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly shellService: ShellService,
+    private readonly pageHeaderService: PageHeaderService
   ) {
     super();
   }
@@ -62,55 +107,20 @@ export class FormManagementEditComponent
 
   public ngOnDestroy(): void {
     this._alertSub.unsubscribe();
+    this.pageTitleService.enableReset();
   }
 
-  public loadFormDefinition(): void {
-    this._formDefinitionId = this.route.snapshot.paramMap.get('id');
-    this.formManagementService.getFormDefinition(this._formDefinitionId ?? '').subscribe({
-      next: formDefinition => {
-        this.formDefinition = formDefinition;
-        this.pageTitleService.setCustomPageTitle(formDefinition.name);
-      },
-      error: () => {
-        this.alertService.error('Error retrieving Form Definition');
-      },
-    });
-  }
-
-  public modifyFormDefinition(): void {
-    if (!this.formDefinition) {
+  public formBuilderChanged(event, definition: EditorModel): void {
+    this._changeActive = true;
+    this.modifiedFormDefinition = event.form;
+    if (event.type === 'updateComponent') {
       return;
     }
-
-    this.pendingChanges = false;
-
-    const form = JSON.stringify(
-      this.modifiedFormDefinition !== null
-        ? this.modifiedFormDefinition
-        : this.formDefinition.formDefinition
-    );
-    const request: ModifyFormDefinitionRequest = {
-      id: this.formDefinition.id,
-      name: this.formDefinition.name,
-      formDefinition: form,
-    };
-    this.formManagementService.modifyFormDefinition(request).subscribe({
-      next: () => {
-        this.router.navigate(['/form-management']);
-        this.alertService.success('Form deployed');
-      },
-      error: () => {
-        this.alertService.error('Error deploying Form');
-      },
-    });
+    this.jsonFormDefinition$.next({...definition, value: JSON.stringify(event.form)});
+    this._changeActive = false;
   }
 
-  public formBuilderChanged(event): void {
-    this.pendingChanges = true;
-    this.modifiedFormDefinition = event.form;
-  }
-
-  public delete(): void {
+  public delete(definition: FormDefinition): void {
     if (!this._alertSub.closed) {
       return;
     }
@@ -134,17 +144,13 @@ export class FormManagementEditComponent
       .pipe(first())
       .subscribe(alert => {
         if (alert.confirm === true) {
-          this.deleteFormDefinition();
+          this.deleteFormDefinition(definition);
         }
       });
   }
 
-  public deleteFormDefinition(): void {
-    if (!this.formDefinition) {
-      return;
-    }
-
-    this.formManagementService.deleteFormDefinition(this.formDefinition.id).subscribe({
+  public deleteFormDefinition(definition: FormDefinition): void {
+    this.formManagementService.deleteFormDefinition(definition.id).subscribe({
       next: () => {
         this.router.navigate(['/form-management']);
         this.alertService.success('Form deleted');
@@ -155,31 +161,96 @@ export class FormManagementEditComponent
     });
   }
 
-  public downloadFormDefinition(): void {
-    if (!this.formDefinition) {
-      return;
-    }
-
-    const file = new Blob([JSON.stringify(this.formDefinition.formDefinition)], {
+  public downloadFormDefinition(definition: FormDefinition): void {
+    const file = new Blob([JSON.stringify(definition.formDefinition)], {
       type: 'text/json',
     });
     const link = document.createElement('a');
-    link.download = `form_${this.formDefinition.name}.json`;
+    link.download = `form_${definition.name}.json`;
     link.href = window.URL.createObjectURL(file);
     link.click();
     window.URL.revokeObjectURL(link.href);
     link.remove();
   }
 
+  public modifyFormDefinition(definition: FormDefinition): void {
+    this.pendingChanges = false;
+
+    const form = JSON.stringify(
+      this.modifiedFormDefinition !== null ? this.modifiedFormDefinition : definition.formDefinition
+    );
+    const request: ModifyFormDefinitionRequest = {
+      id: definition.id,
+      name: definition.name,
+      formDefinition: form,
+    };
+    this.formManagementService.modifyFormDefinition(request).subscribe({
+      next: () => {
+        this.router.navigate(['/form-management']);
+        this.alertService.success('Form deployed');
+      },
+      error: () => {
+        this.alertService.error('Error deploying Form');
+      },
+    });
+  }
+
+  public onSelectedTab(tab: EDIT_TABS): void {
+    this.activeTab = tab;
+
+    if (tab === EDIT_TABS.BUILDER) {
+      return;
+    }
+
+    setTimeout(() => {
+      this.shellService.onMainContentResize();
+    });
+  }
+
+  public onOutputChange(event: {data: object | undefined}): void {
+    if (!event.data) {
+      return;
+    } else if (JSON.stringify(event.data) === this._activeOuput) {
+      return;
+    }
+
+    this._activeOuput = JSON.stringify(event.data);
+    this.jsonOutput$.next({value: this._activeOuput, language: 'json'});
+  }
+
+  public onValueChangeEvent(value: string, definition: FormDefinition, disabled: boolean): void {
+    if (this._changeActive || this.validJsonChange === false || disabled) {
+      return;
+    }
+
+    this._formDefinition$.next({
+      ...definition,
+      formDefinition: JSON.parse(value),
+    });
+  }
+
+  public onValidEvent(value: boolean, disabled: boolean): void {
+    if (this._changeActive || disabled) {
+      return;
+    }
+
+    if (this.validJsonChange === null) {
+      this.validJsonChange = value;
+      return;
+    }
+
+    this.validJsonChange = value;
+  }
+
   public showUploadModal(): void {
     this.showModal$.next(true);
   }
 
-  public showDuplicateModal(): void {
+  public showDuplicateModal(definition: FormDefinition): void {
     this.modalService.create({
       component: FormManagementDuplicateComponent,
       inputs: {
-        formToDuplicate: this.formDefinition,
+        formToDuplicate: definition,
       },
     });
   }
@@ -194,16 +265,12 @@ export class FormManagementEditComponent
       return;
     }
 
-    if (!this.formDefinition) {
-      return;
-    }
-
     const components = definition.components;
-    const currentDefinition = this.modifiedFormDefinition || this.formDefinition.formDefinition;
+    const currentDefinition = this.modifiedFormDefinition || definition.formDefinition;
     const newDefinition = {...currentDefinition, ...(components && {components})};
 
     this.modifiedFormDefinition = newDefinition;
-    this.formDefinition.formDefinition = newDefinition;
+    definition.formDefinition = newDefinition;
 
     this.reloading$.next(false);
   }
@@ -223,5 +290,23 @@ export class FormManagementEditComponent
         this.showUploadModal();
       }
     });
+  }
+
+  private loadFormDefinition(): void {
+    this.route.paramMap
+      .pipe(
+        take(1),
+        switchMap((paramMap: ParamMap) =>
+          this.formManagementService.getFormDefinition(paramMap.get('id') ?? '')
+        )
+      )
+      .subscribe((definition: FormDefinition) => {
+        this._formDefinition$.next(definition);
+        this.pageTitleService.setCustomPageTitle(definition.name);
+        this.jsonFormDefinition$.next({
+          value: JSON.stringify(definition.formDefinition),
+          language: 'json',
+        });
+      });
   }
 }

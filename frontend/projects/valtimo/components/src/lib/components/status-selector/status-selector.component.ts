@@ -42,7 +42,7 @@ import {CASES_WITHOUT_STATUS_KEY} from '../../constants';
 export class StatusSelectorComponent {
   @Input() public set statuses(value: InternalCaseStatus[]) {
     this._statuses$.next(
-      value.map(status => ({
+      (value || []).map(status => ({
         ...status,
         tagType: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
       }))

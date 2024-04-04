@@ -16,10 +16,8 @@
 
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
-import {ChoiceField, ChoiceFieldValue} from '../models';
 import {ActivatedRoute, Router} from '@angular/router';
-import {ChoiceFieldService} from '../choice-field.service';
-import {AlertService} from '@valtimo/components';
+import {AlertService, ChoiceFieldService, ChoiceField, ChoiceFieldValue} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-choice-field-value-detail',

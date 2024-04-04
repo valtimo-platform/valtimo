@@ -22,6 +22,9 @@ import {CustomerCase} from '../../models';
 import {CustomerService} from '../../services/customer.service';
 import {TableColumn} from '@valtimo/components';
 
+/**
+ * @deprecated Will be replace by new plugins
+ */
 @Component({
   selector: 'valtimo-cases-list',
   templateUrl: './cases-list.component.html',

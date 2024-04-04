@@ -58,7 +58,7 @@ export class ObjectManagementDetailContainerComponent implements OnInit, OnDestr
     private readonly tabService: TabService,
     private readonly pageTitleService: PageTitleService
   ) {
-    this.caseListColumn = this.configService.config.featureToggles.caseListColumn;
+    this.caseListColumn = this.configService.config.featureToggles?.caseListColumn ?? true;
   }
 
   ngOnInit(): void {

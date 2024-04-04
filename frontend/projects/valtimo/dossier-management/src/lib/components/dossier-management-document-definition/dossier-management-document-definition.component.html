@@ -21,7 +21,8 @@
     loadingDocumentDefinition: loadingDocumentDefinition$ | async,
     pendingChanges: pendingChanges$ | async,
     saveButtonDisabled: saveButtonDisabled$ | async,
-    selectedDocumentDefinition: selectedDocumentDefinition$ | async
+    selectedDocumentDefinition: selectedDocumentDefinition$ | async,
+    compactMode: compactMode$ | async
   } as obs"
 >
   <div class="cds--toolbar-content">
@@ -54,7 +55,8 @@
     [disabled]="!obs.editActive"
     (validEvent)="onValidEvent($event)"
     (valueChangeEvent)="onValueChangeEvent($event)"
-    heightStyle="calc(100vh - 316px)"
+    [fitPage]="true"
+    [fitPageExtraSpace]="96"
   >
   </valtimo-editor>
 

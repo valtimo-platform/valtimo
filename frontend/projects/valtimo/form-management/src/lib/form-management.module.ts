@@ -29,11 +29,15 @@ import {
   InputModule as vInputModule,
   VModalModule,
   TitleModule,
+  CarbonListModule,
+  PageTitleModule,
+  RenderInPageHeaderDirectiveModule,
+  EditorModule,
+  SpinnerModule,
 } from '@valtimo/components';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {FormManagementCreateComponent} from './form-management-create/form-management-create.component';
-import {FormManagementListComponent} from './form-management-list/form-management-list.component';
 import {FormManagementEditComponent} from './form-management-edit/form-management-edit.component';
 import {TranslateModule} from '@ngx-translate/core';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
@@ -41,16 +45,18 @@ import {FormManagementUploadComponent} from './form-management-upload/form-manag
 import {FormManagementDuplicateComponent} from './form-management-duplicate/form-management-duplicate.component';
 import {
   ButtonModule as cButtonModule,
+  DialogModule,
+  IconModule,
   InputModule,
   ModalModule,
   PlaceholderModule,
+  TabsModule,
 } from 'carbon-components-angular';
 
 @NgModule({
   declarations: [
     FormManagementComponent,
     FormManagementCreateComponent,
-    FormManagementListComponent,
     FormManagementEditComponent,
     FormManagementUploadComponent,
     FormManagementDuplicateComponent,
@@ -79,6 +85,13 @@ import {
     PlaceholderModule,
     cButtonModule,
     ValtimoCdsModalDirectiveModule,
+    CarbonListModule,
+    DialogModule,
+    RenderInPageHeaderDirectiveModule,
+    TabsModule,
+    EditorModule,
+    SpinnerModule,
+    IconModule
   ],
   exports: [FormManagementComponent],
 })

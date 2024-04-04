@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {FormManagementService} from '../form-management.service';
+import {FormManagementService} from '../services';
 import {AbstractControl, AsyncValidatorFn, ValidationErrors} from '@angular/forms';
 import {map, Observable} from 'rxjs';
 

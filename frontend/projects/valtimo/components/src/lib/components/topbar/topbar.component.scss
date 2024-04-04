@@ -28,6 +28,7 @@
   align-items: center;
   justify-content: center;
   margin-inline-end: var(--v-top-bar-user-name-spacing);
+  flex-shrink: 0;
 }
 
 ::ng-deep .cds--header__name {

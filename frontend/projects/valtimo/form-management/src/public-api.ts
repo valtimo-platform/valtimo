@@ -18,7 +18,7 @@
  * Public API Surface of form-management
  */
 
-export * from './lib/form-management.service';
+export * from './lib/services/form-management.service';
 export * from './lib/form-management.component';
 export * from './lib/form-management.module';
 export * from './lib/models';

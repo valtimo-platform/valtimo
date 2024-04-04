@@ -15,7 +15,11 @@
   -->
 
 <ng-container *ngIf="breadcrumbItems$ | async as breadcrumbItems">
-  <div class="breadcrumbs-container" *ngIf="breadcrumbItems.length > 0">
+  <div
+    class="breadcrumbs-container"
+    *ngIf="breadcrumbItems.length > 0"
+    [ngClass]="{'--compact': compactMode$ | async}"
+  >
     <cds-breadcrumb [items]="breadcrumbItems"></cds-breadcrumb>
   </div>
 </ng-container>

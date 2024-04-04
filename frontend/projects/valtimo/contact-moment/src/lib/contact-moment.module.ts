@@ -16,5 +16,8 @@
 
 import {NgModule} from '@angular/core';
 
+/**
+ * @deprecated Will be replace by new plugins
+ */
 @NgModule()
 export class ContactMomentModule {}

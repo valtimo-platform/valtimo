@@ -16,8 +16,7 @@
 
 import {Component} from '@angular/core';
 import {Router} from '@angular/router';
-import {ChoiceField} from '../models';
-import {ChoiceFieldService} from '../choice-field.service';
+import {ChoiceFieldService, ChoiceField} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-choice-field-list',

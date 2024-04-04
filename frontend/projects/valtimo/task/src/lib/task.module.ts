@@ -26,17 +26,23 @@ import {
   FormIoModule,
   ModalModule,
   PageHeaderModule,
+  RenderInPageHeaderDirectiveModule,
   SearchableDropdownSelectModule,
   SpinnerModule,
   WidgetModule,
 } from '@valtimo/components';
 import {HttpLoaderFactory} from '@valtimo/config';
 import {ProcessLinkModule} from '@valtimo/process-link';
-import {ContentSwitcherModule, LinkModule, TabsModule} from 'carbon-components-angular';
+import {
+  ContentSwitcherModule,
+  DropdownModule,
+  LinkModule,
+  TabsModule,
+} from 'carbon-components-angular';
 import {ToastrModule} from 'ngx-toastr';
-import {AssignUserToTaskComponent} from './assign-user-to-task/assign-user-to-task.component';
-import {TaskDetailModalComponent} from './task-detail-modal/task-detail-modal.component';
-import {TaskListComponent} from './task-list/task-list.component';
+import {AssignUserToTaskComponent} from './components/assign-user-to-task/assign-user-to-task.component';
+import {TaskDetailModalComponent} from './components/task-detail-modal/task-detail-modal.component';
+import {TaskListComponent} from './components/task-list/task-list.component';
 import {TaskRoutingModule} from './task-routing.module';
 
 @NgModule({
@@ -70,6 +76,8 @@ import {TaskRoutingModule} from './task-routing.module';
     ProcessLinkModule,
     TabsModule,
     ContentSwitcherModule,
+    RenderInPageHeaderDirectiveModule,
+    DropdownModule,
   ],
   exports: [TaskListComponent, TaskDetailModalComponent, AssignUserToTaskComponent],
 })

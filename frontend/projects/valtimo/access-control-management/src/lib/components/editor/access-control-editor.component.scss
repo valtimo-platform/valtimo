@@ -27,4 +27,9 @@
 .buttons-container {
   display: flex;
   flex-direction: row;
+  align-items: center;
+
+  button {
+    height: min-content;
+  }
 }

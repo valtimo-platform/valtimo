@@ -47,7 +47,7 @@ export class ObjectDetailContainerComponent implements OnInit, OnDestroy {
     private readonly configService: ConfigService,
     private readonly tabService: TabService
   ) {
-    this.caseListColumn = this.configService.config.featureToggles.caseListColumn;
+    this.caseListColumn = this.configService.config.featureToggles?.caseListColumn ?? true;
   }
 
   ngOnInit(): void {

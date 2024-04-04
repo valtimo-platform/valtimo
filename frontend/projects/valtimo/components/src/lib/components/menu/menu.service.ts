@@ -56,7 +56,7 @@ export class MenuService {
     const config = configService?.config;
     this.menuConfig = config?.menu;
     this.disableCaseCount = config?.featureToggles?.disableCaseCount;
-    this.enableObjectManagement = config?.featureToggles?.enableObjectManagement;
+    this.enableObjectManagement = config?.featureToggles?.enableObjectManagement ?? true;
   }
 
   private readonly currentRoute$ = this.router.events.pipe(
@@ -294,11 +294,11 @@ export class MenuService {
 
     timer(0, 5000).subscribe(() => {
       this.documentService.getOpenDocumentCount().subscribe(openDocumentCountList => {
-        openDocumentCountList.forEach(openDocumentCount =>
-          countMap
-            .get(openDocumentCount.documentDefinitionName)
-            .next(openDocumentCount.openDocumentCount)
-        );
+        openDocumentCountList.forEach(openDocumentCount => {
+          const mapEntry = countMap.get(openDocumentCount.documentDefinitionName);
+
+          if (mapEntry) mapEntry.next(openDocumentCount.openDocumentCount);
+        });
       });
     });
     return countMap;

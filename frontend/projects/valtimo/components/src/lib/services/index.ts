@@ -20,4 +20,8 @@ export * from './shell.service';
 export * from './stepper.service';
 export * from './user-interface.service';
 export * from './valtimo-modal.service';
+export * from './page-header.service';
 export * from './cds-theme.service';
+export * from './choice-field.service';
+export * from './page-subtitle.service';
+export * from './page-title.service';

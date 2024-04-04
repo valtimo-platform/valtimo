@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   AfterViewInit,
   Component,
@@ -24,11 +23,11 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {EditorService} from './editor.service';
-import {first, Subscription} from 'rxjs';
 import {editor} from 'monaco-editor';
+import {first, Subscription} from 'rxjs';
 import {EditorModel} from '../../models';
 import {ShellService} from '../../services/shell.service';
+import {EditorService} from './editor.service';
 
 declare const monaco: any;
 
@@ -57,6 +56,8 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   @Input() heightPx!: number;
   @Input() heightStyle!: string;
   @Input() jsonSchema?: string;
+  @Input() fitPage = false;
+  @Input() fitPageExtraSpace = 0;
 
   @Output() validEvent: EventEmitter<boolean> = new EventEmitter();
   @Output() valueChangeEvent: EventEmitter<string> = new EventEmitter();
@@ -141,7 +142,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       this._formatting = true;
       this._editor
         .getAction('editor.action.formatDocument')
-        .run()
+        ?.run()
         .finally(() => {
           this._formatting = false;
           this.setDisabled(this._disabled);

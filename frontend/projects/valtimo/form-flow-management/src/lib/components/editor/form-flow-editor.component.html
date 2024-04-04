@@ -21,6 +21,7 @@
     [jsonSchema]="formFlowSchemaJson"
     (validEvent)="onValid($event)"
     (valueChangeEvent)="onValueChange($event)"
+    [fitPage]="true"
   ></valtimo-editor>
 </ng-container>
 
@@ -32,7 +33,8 @@
         model: model$ | async,
         valid: valid$ | async,
         readOnly: readOnly$ | async,
-        versions: formFlowDefinitionVersionItems$ | async
+        versions: formFlowDefinitionVersionItems$ | async,
+        compactMode: compactMode$ | async
       } as obs"
     >
       <cds-dropdown
@@ -40,6 +42,7 @@
         [dropUp]="false"
         [skeleton]="obs.versions.isLoading"
         (selected)="loadFormFlowDefinitionId($event.item.formFlowDefinitionId)"
+        [size]="obs.compactMode ? 'sm' : 'md'"
       >
         <cds-dropdown-list [items]="obs.versions.value || []"></cds-dropdown-list>
       </cds-dropdown>
@@ -63,7 +66,7 @@
         <button
           [disabled]="!obs.valid || obs.readOnly"
           cdsButton="primary"
-          size="md"
+          [size]="obs.compactMode ? 'sm' : 'md'"
           (click)="updateFormFlowDefinition()"
         >
           {{ 'interface.save' | translate }}

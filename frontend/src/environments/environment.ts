@@ -31,7 +31,7 @@ import {
   ValtimoConfig,
 } from '@valtimo/config';
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
-import {emailExtensionInitializer, openZaakExtensionInitializer} from '@valtimo/open-zaak';
+import {openZaakExtensionInitializer} from '@valtimo/plugin';
 import {LOGO_BASE_64} from './logo';
 import {cspHeaderParamsDev} from './csp';
 
@@ -70,7 +70,7 @@ export const environment: ValtimoConfig = {
   logoSvgBase64: LOGO_BASE_64,
   applicationTitle: '',
   production: false,
-  initializers: [openZaakExtensionInitializer, emailExtensionInitializer],
+  initializers: [openZaakExtensionInitializer],
   authentication: authenticationKeycloak,
   menu: {
     menuItems: [
@@ -214,7 +214,7 @@ export const environment: ValtimoConfig = {
         sortable: true,
       },
       {
-        propertyName: 'assignee',
+        propertyName: 'valtimoAssignee.fullName',
         translationKey: 'valtimoAssignee.fullName',
       },
     ],
@@ -235,20 +235,18 @@ export const environment: ValtimoConfig = {
     leningen: ['Boom', 'Straatverlichting'],
   },
   featureToggles: {
-    disableFormFlow: false,
     enableHackathonCasesPage: true,
     showUserNameInTopBar: true,
     showPlantATreeButton: true,
     experimentalDmnEditing: true,
-    caseListColumn: true,
     largeLogoMargin: true,
     sortFilesByDate: true,
     disableCaseCount: false,
-    enableObjectManagement: true,
     returnToLastUrlAfterTokenExpiration: true,
-    enableTabManagement: true,
     useStartEventNameAsStartFormTitle: true,
     allowUserThemeSwitching: true,
+    enableCompactModeToggle: true,
+    enableUserNameInTopBarToggle: true,
   },
   customDossierHeader: {
     leningen: [
