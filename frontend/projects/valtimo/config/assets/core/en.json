@@ -376,13 +376,15 @@
     },
     "interface": {
       "title": "Interface",
-      "collapsibleMenu": "Navigation bar always collapsible",
       "themePreference": "Theme",
       "themes": {
         "light": "Light",
         "dark": "Dark (Beta)",
         "system": "System (Beta)"
-      }
+      },
+      "collapsibleMenu": "Navigation bar always collapsible",
+      "compactMode": "Compact mode",
+      "showUserName": "Show name of user"
     }
   },
   "decisions": {

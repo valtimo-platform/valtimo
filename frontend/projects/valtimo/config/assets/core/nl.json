@@ -375,13 +375,15 @@
     },
     "interface": {
       "title": "Interface",
-      "collapsibleMenu": "Navigatiebalk altijd inklapbaar",
       "themePreference": "Thema",
       "themes": {
         "light": "Licht",
         "dark": "Donker (Beta)",
         "system": "Systeem (Beta)"
-      }
+      },
+      "collapsibleMenu": "Navigatiebalk altijd inklapbaar",
+      "compactMode": "Compacte modus",
+      "showUserName": "Toon naam van gebruiker"
     }
   },
   "decisions": {

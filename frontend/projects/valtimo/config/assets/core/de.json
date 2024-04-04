@@ -375,13 +375,15 @@
     },
     "interface": {
       "title": "Interface",
-      "collapsibleMenu": "Navigationsleiste immer einklappbar",
       "themePreference": "Thema",
       "themes": {
         "light": "Hell",
         "dark": "Dunkel (Beta)",
         "system": "System (Beta)"
-      }
+      },
+      "collapsibleMenu": "Navigationsleiste immer einklappbar",
+      "compactMode": "Kompaktmodus",
+      "showUserName": "Benutzernamen anzeigen"
     }
   },
   "decisions": {
