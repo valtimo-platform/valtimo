@@ -190,6 +190,7 @@
 
 <ng-template #dossierListActions>
   <button
+    *ngIf="canCreateDocument$ | async"
     cdsButton="primary"
     [disabled]="listActionsComponent?.disableStartDossierButton$ | async"
     (click)="startDossier()"

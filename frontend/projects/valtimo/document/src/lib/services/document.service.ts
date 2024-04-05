@@ -288,6 +288,15 @@ export class DocumentService {
     );
   }
 
+  public findProcessDocumentDefinitionsByStartableByUser(
+    documentDefinitionName: string,
+    startableByUser: boolean
+  ): Observable<ProcessDocumentDefinition[]> {
+    return this.http.get<ProcessDocumentDefinition[]>(
+      `${this.valtimoEndpointUri}v1/process-document/definition/document/${documentDefinitionName}?startableByUser=${startableByUser}`
+    );
+  }
+
   public findProcessDocumentDefinitionsByVersion(
     documentDefinitionName: string,
     version: number
