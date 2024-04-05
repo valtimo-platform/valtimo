@@ -24,6 +24,7 @@ import {
   FormIoModule,
   ModalModule,
   ParagraphModule,
+  RenderInPageHeaderDirectiveModule,
   SearchableDropdownSelectModule,
   StepperModule,
   TitleModule,
@@ -48,6 +49,7 @@ import {
   LoadingModule,
   ModalModule as CarbonModalModule,
   ProgressIndicatorModule,
+  SelectModule,
   StructuredListModule,
   TilesModule,
 } from 'carbon-components-angular';
@@ -99,6 +101,8 @@ import {FormFlowConfigurationContainerComponent} from './components/form-flow-co
     ValtimoCdsModalDirectiveModule,
     StructuredListModule,
     TilesModule,
+    RenderInPageHeaderDirectiveModule,
+    SelectModule,
   ],
   exports: [
     ProcessLinkComponent,

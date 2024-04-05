@@ -607,3 +607,13 @@ valtimo-dossier-assign-user {
     color: var(--cds-text-secondary) !important;
   }
 }
+
+valtimo-form-link-process-diagram .container-fluid {
+  border: none !important;
+}
+
+.form-link-dossier-actions {
+  .cds--select-input {
+    background-color: var(--cds-field) !important;
+  }
+}

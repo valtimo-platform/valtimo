@@ -31,3 +31,9 @@ $border: 1px solid #dee2e6;
 .options {
   border-bottom: $border;
 }
+
+.form-link-dossier-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
