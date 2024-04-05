@@ -27,6 +27,10 @@
   flex-direction: row;
   gap: 16px;
   align-items: flex-end;
+
+  input:read-only {
+    color: var(--cds-text-disabled);
+  }
 }
 
 ::ng-deep .horizontal-inputs {
