@@ -52,7 +52,7 @@ import {
   TaskListColumnListItem,
   TaskListColumnModalCloseEvent,
   TaskListColumnModalType,
-} from '../../models';
+} from '@valtimo/task';
 import {distinctUntilChanged} from 'rxjs/operators';
 import {isEqual} from 'lodash';
 

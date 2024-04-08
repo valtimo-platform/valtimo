@@ -21,7 +21,9 @@
     tasks: tasks$ | async,
     fields: fields$ | async,
     visibleTabs: visibleTabs$ | async,
-    pagination: paginationForCurrentTaskType$ | async
+    pagination: paginationForCurrentTaskTypeForList$ | async,
+    taskListColumnsForCase: taskListColumnsForCase$ | async,
+    sortState: sortStateForCurrentTaskType$ | async
   } as obs"
   class="main-content"
 >
@@ -99,6 +101,7 @@
     [pagination]="obs.pagination"
     paginationIdentifier="taskList"
     lockedTooltipTranslationKey="task-list.rowLocked"
+    [initialSortState]="obs.sortState"
     (paginationClicked)="paginationClicked($event, obs.selectedTaskType)"
     (paginationSet)="paginationSet($event)"
     (rowClicked)="rowOpenTaskClick($event)"
@@ -193,6 +196,6 @@
       (selected)="setCaseDefinition($event)"
     >
       <cds-dropdown-list
-        [items]="obs.caseListItems"
+        [items]="obs.caseListItems || []"
       ></cds-dropdown-list></cds-dropdown></ng-template
 ></ng-container>
