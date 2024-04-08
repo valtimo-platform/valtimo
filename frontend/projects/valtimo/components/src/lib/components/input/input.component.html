@@ -54,7 +54,6 @@
     [step]="step"
     (ngModelChange)="onValueChange($event)"
     (keydown)="onKeydown($event)"
-    [attr.data-carbon-theme]="carbonTheme"
     [style.width.px]="widthPx"
     [placeholder]="placeholder"
     type="text"
@@ -76,7 +75,6 @@
     [rows]="rows"
     (keydown)="onKeydown($event)"
     (ngModelChange)="onValueChange($event)"
-    [attr.data-carbon-theme]="carbonTheme"
     [style.width.px]="widthPx"
   ></textarea>
 </ng-template>
@@ -105,7 +103,6 @@
         [step]="step"
         (keydown)="onKeydown($event)"
         (ngModelChange)="onValueChange($event)"
-        [attr.data-carbon-theme]="carbonTheme"
         [style.width.px]="widthPx"
         [type]="obs.showPassword ? 'text' : 'password'"
       />
@@ -138,7 +135,6 @@
     [step]="step"
     (keydown)="onKeydown($event)"
     (ngModelChange)="onValueChange($event)"
-    [attr.data-carbon-theme]="carbonTheme"
     [style.width.px]="widthPx"
     type="number"
   />
@@ -162,7 +158,6 @@
     [step]="step"
     (keydown)="onKeydown($event)"
     (ngModelChange)="onValueChange($event)"
-    [attr.data-carbon-theme]="carbonTheme"
     [style.width.px]="widthPx"
     type="text"
   />
@@ -175,7 +170,6 @@
       [name]="name"
       [ngModel]="inputValue$ | async"
       (ngModelChange)="onValueChange($event)"
-      [attr.data-carbon-theme]="carbonTheme"
     >
     </cds-checkbox>
   </div>

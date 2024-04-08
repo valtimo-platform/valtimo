@@ -421,6 +421,12 @@ valtimo-dossier-assign-user {
   z-index: 10040;
 }
 
+v-modal {
+  v-input {
+    background-color: var(--cds-field-02);
+  }
+}
+
 /* Inside main content */
 
 .main-content,
@@ -608,8 +614,11 @@ valtimo-dossier-assign-user {
   }
 }
 
-valtimo-form-link-process-diagram .container-fluid {
-  border: none !important;
+valtimo-form-link-process-diagram,
+valtimo-analyse-process-diagram {
+  .container-fluid {
+    border: none !important;
+  }
 }
 
 .form-link-dossier-actions {

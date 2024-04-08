@@ -79,3 +79,7 @@
     margin-left: 0;
   }
 }
+
+.p-5:has(> valtimo-dossier-detail-tab-notes) {
+  padding: 0 !important;
+}

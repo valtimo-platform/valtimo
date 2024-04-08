@@ -126,7 +126,11 @@
         "description": "Are you sure you want to delete this note?",
         "deletedMessage": "The note was deleted successfully."
       },
-      "editedMessage": "The note was edited successfully."
+      "editedMessage": "The note was edited successfully.",
+      "noResults": {
+        "title": "No notes",
+        "description": "There are no notes in this case."
+      }
     },
     "documenten": {
       "noProcessLinked": {
