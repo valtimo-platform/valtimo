@@ -114,6 +114,17 @@
     <valtimo-spinner></valtimo-spinner>
   }
 
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="interface.delete"
+    confirmButtonType="danger"
+    contentTranslationKey="interface.deleteConfirmation"
+    cancelButtonTextTranslationKey="interface.cancel"
+    [outputOnConfirm]="obs.formDefinition"
+    [showModalSubject$]="showDeleteModal$"
+    titleTranslationKey="dashboardManagement.delete"
+    (confirmEvent)="deleteFormDefinition($event)"
+  ></valtimo-confirmation-modal>
+
   <valtimo-form-management-upload
     [show$]="showModal$"
     (definitionUploaded)="setFormDefinition($event)"

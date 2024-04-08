@@ -89,7 +89,11 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
 
   public readonly statusFormGroup = this.fb.group({
     title: this.fb.control('', Validators.required),
-    key: this.fb.control('', [Validators.required, Validators.minLength(3), this.uniqueKeyValidator()]),
+    key: this.fb.control('', [
+      Validators.required,
+      Validators.minLength(3),
+      this.uniqueKeyValidator(),
+    ]),
     visibleInCaseListByDefault: this.fb.control(true, Validators.required),
     color: this.fb.control('', Validators.required),
   });

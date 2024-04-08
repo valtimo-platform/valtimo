@@ -45,7 +45,8 @@ export class DossierTabService implements OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly dossierTabApiService: DossierTabApiService
   ) {
-    this._tabManagementEnabled = this.configService.config.featureToggles?.enableTabManagement ?? true;
+    this._tabManagementEnabled =
+      this.configService.config.featureToggles?.enableTabManagement ?? true;
     this.openDocumentDefinitionNameSubscription();
   }
 

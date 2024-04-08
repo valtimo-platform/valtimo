@@ -78,6 +78,7 @@ export class FormManagementEditComponent
   public readonly jsonFormDefinition$ = new BehaviorSubject<EditorModel | null>(null);
   public readonly jsonOutput$ = new BehaviorSubject<EditorModel | null>(null);
   public readonly reloading$ = new BehaviorSubject<boolean>(false);
+  public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
   public readonly showModal$ = new BehaviorSubject<boolean>(false);
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
@@ -120,36 +121,12 @@ export class FormManagementEditComponent
     this._changeActive = false;
   }
 
-  public delete(definition: FormDefinition): void {
-    if (!this._alertSub.closed) {
-      return;
-    }
-    const mssg = 'Delete Form?';
-    const confirmations = [
-      {
-        label: 'Cancel',
-        class: 'btn btn-default',
-        value: false,
-      },
-      {
-        label: 'Delete',
-        class: 'btn btn-primary',
-        value: true,
-      },
-    ];
-    this.alertService.notification(mssg, confirmations);
-
-    this._alertSub = this.alertService
-      .getAlertConfirmChangeEmitter()
-      .pipe(first())
-      .subscribe(alert => {
-        if (alert.confirm === true) {
-          this.deleteFormDefinition(definition);
-        }
-      });
+  public delete(): void {
+    this.showDeleteModal$.next(true);
   }
 
   public deleteFormDefinition(definition: FormDefinition): void {
+    this.pendingChanges = false;
     this.formManagementService.deleteFormDefinition(definition.id).subscribe({
       next: () => {
         this.router.navigate(['/form-management']);
