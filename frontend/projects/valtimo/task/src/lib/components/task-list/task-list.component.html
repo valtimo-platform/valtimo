@@ -108,7 +108,7 @@
     (sortChanged)="sortChanged($event)"
   >
     <div tabs>
-      <ng-container *ngIf="!obs.visibleTabs">
+      <ng-container *ngIf="obs.visibleTabs">
         <ng-container
           *ngTemplateOutlet="
             configuredTabs;
@@ -116,29 +116,6 @@
           "
         ></ng-container>
       </ng-container>
-
-      <cds-tabs *ngIf="obs.visibleTabs" type="contained" class="valtimo-carbon-list__tabs">
-        <cds-tab
-          [heading]="'task-list.mine.title' | translate"
-          (selected)="tabChange('mine')"
-          [active]="obs.selectedTaskType === 'mine'"
-        >
-        </cds-tab>
-
-        <cds-tab
-          [heading]="'task-list.open.title' | translate"
-          (selected)="tabChange('open')"
-          [active]="obs.selectedTaskType === 'open'"
-        >
-        </cds-tab>
-
-        <cds-tab
-          [heading]="'task-list.all.title' | translate"
-          (selected)="tabChange('all')"
-          [active]="obs.selectedTaskType === 'all'"
-        >
-        </cds-tab>
-      </cds-tabs>
     </div>
 
     <valtimo-no-results

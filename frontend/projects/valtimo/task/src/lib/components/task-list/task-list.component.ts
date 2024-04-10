@@ -172,6 +172,12 @@ export class TaskListComponent implements OnInit {
 
   public readonly taskListColumnsForCase$ = this.taskListColumnService.taskListColumnsForCase$;
 
+  private readonly _DEFAULT_TASK_LIST_TABS: TaskListTab[] = [
+    TaskListTab.MINE,
+    TaskListTab.OPEN,
+    TaskListTab.ALL,
+  ];
+
   constructor(
     private readonly configService: ConfigService,
     private readonly documentService: DocumentService,
@@ -277,9 +283,15 @@ export class TaskListComponent implements OnInit {
   }
 
   private setVisibleTabs(): void {
-    const visibleTabs = this.configService.config?.visibleTaskListTabs || null;
-    this.visibleTabs$.next(visibleTabs);
-    if (visibleTabs) this.taskListService.setSelectedTaskType(visibleTabs[0]);
+    const visibleTabs = this.configService.config?.visibleTaskListTabs;
+
+    if (visibleTabs) {
+      this.visibleTabs$.next(visibleTabs);
+      this.taskListService.setSelectedTaskType(visibleTabs[0]);
+    } else {
+      this.visibleTabs$.next(this._DEFAULT_TASK_LIST_TABS);
+      this.taskListService.setSelectedTaskType(this._DEFAULT_TASK_LIST_TABS[0]);
+    }
   }
 
   private disableLoadingAnimation(): void {
