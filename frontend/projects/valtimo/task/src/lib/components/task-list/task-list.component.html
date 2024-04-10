@@ -191,7 +191,7 @@
         loadingCaseListItems: loadingCaseListItems$ | async,
         caseListItems: caseListItems$ | async
       } as obs"
-      [disabled]="obs.loadingCaseListItems || obs.caseListItems.length === 1"
+      [disabled]="obs.loadingCaseListItems || (obs.caseListItems || []).length === 1"
       [skeleton]="obs.loadingCaseListItems"
       (selected)="setCaseDefinition($event)"
     >
