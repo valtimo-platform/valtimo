@@ -134,8 +134,9 @@ export const environment: ValtimoConfig = {
           {link: ['/access-control'], title: 'Access Control', sequence: 12},
           {link: ['/translation-management'], title: 'Translations', sequence: 13},
           {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 14},
-          {link: ['/process-migration'], title: 'Process migration', sequence: 15},
-          {link: ['/choice-fields'], title: 'Choice fields', sequence: 16},
+          {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 15},
+          {link: ['/process-migration'], title: 'Process migration', sequence: 16},
+          {link: ['/choice-fields'], title: 'Choice fields', sequence: 17},
         ],
       },
       {

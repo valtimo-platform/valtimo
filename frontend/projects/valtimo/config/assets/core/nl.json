@@ -1403,6 +1403,23 @@
     "saveWithoutReload": "Opslaan",
     "saveWithReload": "Opslaan en opnieuw laden"
   },
+  "caseMigration": {
+    "warningBeta": "Dossier migratie is nog in bèta. Het migreren van dossiers kan onverwachte resultaten opleveren. Wees voorzichtig.",
+    "caseDefinition": "Dossier definitie",
+    "sourceDocumentDefinitionName": "Bron dossier definitienaam",
+    "sourceDocumentDefinitionVersion": "Bron dossier definitieversie",
+    "targetDocumentDefinitionName": "Doel dossier definitienaam",
+    "targetDocumentDefinitionVersion": "Doel dossier definitieversie",
+    "patches": "Patches",
+    "patchTooltip": "The old case can be migrated to the new case by using patches. Patches work by moving case properties from the source location to the target location. For example: source: '/oldLocation/firstName', target: '/newLocation/firstName'. A property can be removed by leaving the target empty. For example: source: '/gulden', target: ''. A property can be given a default value in the source field. For example, source: 'John', target: '/firstName'. A patch will always try to convert the type to the target type. For example, source: '/my/number', target: '/my/text'. A property can be set to [NULL] by using SpEL expressions. For example, source: '${null}', target: '/driversLicense'. A Spring bean can be called for more elaborate patches. For example, source: ${myBean.getAge(source.person.birthYear)}, target: '${myOtherBean.doMore(builder, sourceValue)}'",
+    "patchSource": "Bron dossier veld",
+    "patchTarget": "Doel dossier veld",
+    "errors": "Fouten",
+    "checkPatches": "Controleer patches",
+    "migrate": "Migreer dossiers",
+    "modalTitle": "Dossiers migreren",
+    "modalContent": "Weet je zeker dat je de dossiers wilt migreren? Sommige veranderingen kunnen niet ongedaan worden gemaakt."
+  },
   "formFlow": {
     "title": "Alle form flows",
     "key": "Sleutel",

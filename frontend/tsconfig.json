@@ -61,6 +61,8 @@
       "@valtimo/swagger/*": ["dist/valtimo/swagger/*"],
       "@valtimo/analyse": ["dist/valtimo/analyse"],
       "@valtimo/analyse/*": ["dist/valtimo/analyse/*"],
+      "@valtimo/case-migration": ["dist/valtimo/case-migration"],
+      "@valtimo/case-migration/*": ["dist/valtimo/case-migration/*"],
       "@valtimo/connector-management": ["dist/valtimo/connector-management"],
       "@valtimo/connector-management/*": ["dist/valtimo/connector-management/*"],
       "@valtimo/process-management": ["dist/valtimo/process-management"],
@@ -159,6 +161,12 @@
     },
     {
       "path": "./projects/valtimo/dossier/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/case-migration/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/case-migration/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/process/tsconfig.lib.json"
