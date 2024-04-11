@@ -113,7 +113,7 @@ export class DossierManagementUploadComponent implements OnInit, OnDestroy {
     }
 
     this._subscriptions.add(
-      control.valueChanges.subscribe((fileSet: Set<FileItem>) => {
+      this.form.get('file').valueChanges.subscribe((fileSet: Set<FileItem>) => {
         const [fileItem] = fileSet;
         if (!fileItem) {
           this._disabled$.next(true);
