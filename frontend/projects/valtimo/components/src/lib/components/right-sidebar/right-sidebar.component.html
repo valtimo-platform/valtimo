@@ -148,15 +148,13 @@
     </cds-list-header>
     <cds-list-row>
       <cds-list-column>
-        <cds-select
-          [disabled]="updatingUserSettings$ | async"
-          [ngModel]="selectedLanguage$ | async"
-          (ngModelChange)="updateUserLanguage($event)"
+        <cds-dropdown
+          [appendInline]="true"
+          (click)="$event.stopPropagation()"
+          (selected)="updateUserLanguage($event)"
         >
-          <option *ngFor="let lang of languageOptions$ | async" [value]="lang">
-            {{ 'settings.language.options.' + lang | translate }}
-          </option>
-        </cds-select>
+          <cds-dropdown-list [items]="languageListItems$ | async"></cds-dropdown-list>
+        </cds-dropdown>
       </cds-list-column>
     </cds-list-row>
   </cds-structured-list>
@@ -225,15 +223,14 @@
 
     <cds-list-row *ngIf="allowUserThemeSwitching">
       <cds-list-column>
-        <cds-select
+        <cds-dropdown
           [label]="'settings.interface.themePreference' | translate"
-          [ngModel]="preferredTheme$ | async"
-          (ngModelChange)="setPreferredTheme($event)"
+          [appendInline]="true"
+          (click)="$event.stopPropagation()"
+          (selected)="setPreferredTheme($event)"
         >
-          <option *ngFor="let option of themeOptions$ | async" [value]="option.value">
-            {{ option.name }}
-          </option>
-        </cds-select>
+          <cds-dropdown-list [items]="themeOptions$ | async"></cds-dropdown-list>
+        </cds-dropdown>
       </cds-list-column>
     </cds-list-row>
 
