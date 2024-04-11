@@ -236,9 +236,9 @@ property is not necessary then.
 
 #### If statements
 
-If an if statement contains a single expression, and is not likely to be expanded in the future,
-it is allowed to write it without curly brackets. If it is lengthy, or likely that more expressions
-are added inside the statement later on, always include curly brackets.
+If an if statement contains a single expression, and is not likely to be expanded in the future, it
+is allowed to write it without curly brackets. If it is lengthy, or likely that more expressions are
+added inside the statement later on, always include curly brackets.
 
 ```typescript
 // short expression readable without curly brackets

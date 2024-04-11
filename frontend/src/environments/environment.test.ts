@@ -148,7 +148,7 @@ export const environment: ValtimoConfig = {
   customDefinitionTables: {},
   featureToggles: {
     showUserNameInTopBar: true,
-    largeLogoMargin: true
+    largeLogoMargin: true,
   },
   csp: cspHeaderParamsTest,
 };

@@ -763,6 +763,76 @@
         }
       }
     },
+    "@valtimo/case-migration": {
+      "root": "projects/valtimo/case-migration",
+      "sourceRoot": "projects/valtimo/case-migration/src",
+      "projectType": "library",
+      "prefix": "valtimo",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/valtimo/case-migration/tsconfig.lib.json",
+            "project": "projects/valtimo/case-migration/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/case-migration/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.ts",
+            "tsConfig": "projects/valtimo/case-migration/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/case-migration/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/case-migration/src/**/*.ts",
+              "projects/valtimo/case-migration/src/**/*.html"
+            ]
+          }
+        },
+        "cypress-run": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "@valtimo/case-migration:serve",
+            "configFile": "projects/valtimo/case-migration/cypress.config.js"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "@valtimo/case-migration:serve:production"
+            }
+          }
+        },
+        "cypress-open": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "watch": true,
+            "headless": false,
+            "configFile": "projects/valtimo/case-migration/cypress.config.js"
+          }
+        },
+        "e2e": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "@valtimo/case-migration:serve",
+            "watch": true,
+            "headless": false
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "@valtimo/case-migration:serve:production"
+            }
+          }
+        }
+      }
+    },
     "@valtimo/process": {
       "root": "projects/valtimo/process",
       "sourceRoot": "projects/valtimo/process/src",

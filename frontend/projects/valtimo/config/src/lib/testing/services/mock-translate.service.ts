@@ -24,4 +24,8 @@ export class MockTranslateService {
   public stream(key: string): Observable<any> {
     return of(null);
   }
+
+  public instant(key: string): string {
+    return '';
+  }
 }

@@ -16,16 +16,48 @@
 
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
+import {TaskService} from './task.service';
+import {TaskListTab} from '@valtimo/config';
 
 @Injectable()
 export class TaskListService {
+  private readonly _ALL_CASES_ID = 'ALL_CASES';
   private readonly _caseDefinitionName$ = new BehaviorSubject<string | null>(null);
+  private readonly _selectedTaskType$ = new BehaviorSubject<TaskListTab>(TaskListTab.MINE);
+  private readonly _loadingStateForCaseDefinition$ = new BehaviorSubject<boolean>(false);
 
   public get caseDefinitionName$(): Observable<string | null> {
     return this._caseDefinitionName$.asObservable();
   }
 
+  public get selectedTaskType$(): Observable<TaskListTab> {
+    return this._selectedTaskType$.asObservable();
+  }
+
+  public get selectedTaskType(): TaskListTab {
+    return this._selectedTaskType$.getValue();
+  }
+
+  public get loadingStateForCaseDefinition$(): Observable<boolean> {
+    return this._loadingStateForCaseDefinition$.asObservable();
+  }
+
+  public get ALL_CASES_ID(): string {
+    return this._ALL_CASES_ID;
+  }
+
+  constructor(private readonly taskService: TaskService) {}
+
+  public setSelectedTaskType(type: TaskListTab): void {
+    this._selectedTaskType$.next(type);
+  }
+
   public setCaseDefinitionName(caseDefinitionName: string): void {
+    this._loadingStateForCaseDefinition$.next(true);
     this._caseDefinitionName$.next(caseDefinitionName);
+  }
+
+  public setLoadingStateForCaseDefinition(loading: boolean): void {
+    this._loadingStateForCaseDefinition$.next(loading);
   }
 }

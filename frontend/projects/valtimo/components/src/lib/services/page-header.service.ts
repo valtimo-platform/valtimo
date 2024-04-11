@@ -29,7 +29,7 @@ export class PageHeaderService {
     !!this.configService?.config?.featureToggles?.compactModeOnByDefault
   );
   private readonly _showUserNameInTopBar$ = new BehaviorSubject<boolean>(
-    !!this.configService?.config?.featureToggles?.showUserNameInTopBar
+    this.getDefaultShowUserNameInTopBarValue()
   );
   private readonly _pageActionsHasContent$ = new BehaviorSubject<boolean>(false);
   private readonly _pageHeadHeight$ = new BehaviorSubject<number | null>(null);
@@ -82,5 +82,15 @@ export class PageHeaderService {
 
   public setPageHeadHeight(height: number): void {
     this._pageHeadHeight$.next(height);
+  }
+
+  private getDefaultShowUserNameInTopBarValue(): boolean {
+    const featureToggles = this.configService?.config?.featureToggles;
+
+    if (featureToggles && featureToggles.hasOwnProperty('showUserNameInTopBar')) {
+      return featureToggles.showUserNameInTopBar;
+    }
+
+    return true;
   }
 }

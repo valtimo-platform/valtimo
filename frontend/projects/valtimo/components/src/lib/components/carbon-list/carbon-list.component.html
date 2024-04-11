@@ -100,8 +100,8 @@
 
 <ng-template #actionsMenuTemplate let-data="data">
   <cds-overflow-menu
-    [open]="currentOpenActionId === data.item.id"
-    (openChange)="handleActionOpenChange(data.item.id, $event)"
+    [open]="currentOpenActionId === data.item"
+    (openChange)="handleActionOpenChange(data.item, $event)"
     [flip]="true"
     [offset]="{x: 0, y: 50}"
     placement="bottom"

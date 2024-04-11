@@ -17,7 +17,14 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpParams, HttpResponse} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {AssigneeRequest, Task, TaskPageParams, TaskProcessLinkResult} from '../models';
+import {
+  AssigneeRequest,
+  SpecifiedTask,
+  Task,
+  TaskListColumn,
+  TaskPageParams,
+  TaskProcessLinkResult,
+} from '../models';
 import {
   BaseApiService,
   ConfigService,
@@ -54,7 +61,7 @@ export class TaskService extends BaseApiService {
     assigneeFilter: TaskListTab = TaskListTab.ALL,
     pageParams: TaskPageParams,
     caseDefinitionName?: string
-  ): Observable<Page<Task>> {
+  ): Observable<Page<Task> | Page<SpecifiedTask>> {
     let httpParams = new HttpParams()
       .set('filter', assigneeFilter.toUpperCase())
       .set('page', pageParams.page)
@@ -64,13 +71,17 @@ export class TaskService extends BaseApiService {
       httpParams = httpParams.append('sort', pageParams.sort);
     }
 
-    return this.httpClient.post<Page<Task>>(
-      this.getApiUrl('/v3/task'),
-      {
-        ...(caseDefinitionName && {caseDefinitionName}),
-      },
-      {params: httpParams}
-    );
+    if (caseDefinitionName) {
+      return this.httpClient.post<Page<SpecifiedTask>>(
+        this.getApiUrl('/v3/task'),
+        {
+          caseDefinitionName,
+        },
+        {params: httpParams}
+      );
+    }
+
+    return this.httpClient.post<Page<Task>>(this.getApiUrl('/v3/task'), {}, {params: httpParams});
   }
 
   public getTasks(): Observable<Task[]> {
@@ -112,6 +123,12 @@ export class TaskService extends BaseApiService {
   public getTaskProcessLinkV1(taskId: string): Observable<TaskProcessLinkResult> {
     return this.httpClient.get<TaskProcessLinkResult>(
       this.getApiUrl(`/v1/process-link/task/${taskId}`)
+    );
+  }
+
+  public getTaskListColumns(caseDefinitionName: string): Observable<TaskListColumn[]> {
+    return this.httpClient.get<TaskListColumn[]>(
+      this.getApiUrl(`/v1/case/${caseDefinitionName}/task-list-column`)
     );
   }
 

@@ -1404,6 +1404,23 @@
     "saveWithoutReload": "Speichern",
     "saveWithReload": "Speichern und neu laden"
   },
+  "caseMigration": {
+    "warningBeta": "Die Fallmigration befindet sich noch im Beta-Stadium. Die Migration von Fällen kann unerwartete Ergebnisse liefern. Bitte verwenden Sie es mit Vorsicht.",
+    "caseDefinition": "Case definition",
+    "sourceDocumentDefinitionName": "Quellfall-Definitionsnamen",
+    "sourceDocumentDefinitionVersion": "Quellfall-Definitionsversion",
+    "targetDocumentDefinitionName": "Ziel-Fall-Definitionsnamen",
+    "targetDocumentDefinitionVersion": "Ziel-Fall-Definitionsversion",
+    "patches": "Patches",
+    "patchTooltip": "The old case can be migrated to the new case by using patches. Patches work by moving case properties from the source location to the target location. For example: source: '/oldLocation/firstName', target: '/newLocation/firstName'. A property can be removed by leaving the target empty. For example: source: '/gulden', target: ''. A property can be given a default value in the source field. For example, source: 'John', target: '/firstName'. A patch will always try to convert the type to the target type. For example, source: '/my/number', target: '/my/text'. A property can be set to [NULL] by using SpEL expressions. For example, source: '${null}', target: '/driversLicense'. A Spring bean can be called for more elaborate patches. For example, source: ${myBean.getAge(source.person.birthYear)}, target: '${myOtherBean.doMore(builder, sourceValue)}'",
+    "patchSource": "Quellfallfeld",
+    "patchTarget": "Ziel-Fallfeld",
+    "errors": "Fehler",
+    "checkPatches": "Patches überprüfen",
+    "migrate": "Fälle migrieren",
+    "modalTitle": "Fälle migrieren",
+    "modalContent": "Sind Sie sicher, dass Sie die Fälle migrieren möchten? Einige Änderungen können nicht rückgängig gemacht werden."
+  },
   "formFlow": {
     "title": "Alle form flow",
     "key": "Schlüssel",

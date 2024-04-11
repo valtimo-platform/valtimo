@@ -15,4 +15,3 @@
  */
 
 export * from './task-management.model';
-export * from './task-management-columns.model';

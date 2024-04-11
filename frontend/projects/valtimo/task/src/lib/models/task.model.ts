@@ -70,4 +70,32 @@ interface TaskProcessLinkResult {
   };
 }
 
-export {AssigneeRequest, ListItemField, Task, TaskProcessLinkResult, TaskProcessLinkType};
+interface SpecifiedTask {
+  id: string;
+  businessKey: string;
+  processInstanceId: string;
+  name: string;
+  created: Date;
+  items: {key: string; value: any}[];
+}
+
+interface MappedSpecifiedTask {
+  id: string;
+  businessKey: string;
+  processInstanceId: string;
+  name: string;
+  created?: string;
+  locked?: boolean;
+  caseLocked?: boolean;
+  [key: string]: any;
+}
+
+export {
+  AssigneeRequest,
+  ListItemField,
+  Task,
+  TaskProcessLinkResult,
+  TaskProcessLinkType,
+  SpecifiedTask,
+  MappedSpecifiedTask,
+};

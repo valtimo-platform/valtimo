@@ -46,7 +46,7 @@ import {
   TaskListColumnDisplayTypeParameters,
   TaskListColumnModalCloseEvent,
   TaskListColumnModalType,
-} from '../../models';
+} from '@valtimo/task';
 import {TaskManagementColumnModalComponent} from '../task-management-column-modal/task-management-column-modal.component';
 
 @Component({

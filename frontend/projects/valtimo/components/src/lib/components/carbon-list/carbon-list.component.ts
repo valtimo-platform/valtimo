@@ -443,6 +443,9 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private get extraColumns(): TableHeaderItem[] {
     const emptyHeader = new TableHeaderItem();
+
+    emptyHeader.sortable = false;
+
     return [
       ...(this.movingRowsEnabled
         ? [

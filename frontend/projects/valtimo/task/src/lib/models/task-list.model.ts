@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
+import {TaskListTab} from '@valtimo/config';
+
 interface TaskPageParams {
   page: number;
   size: number;
@@ -21,4 +24,62 @@ interface TaskPageParams {
   sort?: string;
 }
 
-export {TaskPageParams};
+enum TaskListColumnDefaultSort {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
+
+interface TaskListColumnEnum {
+  [key: string]: string;
+}
+
+interface TaskListColumnDisplayTypeParameters {
+  enum?: TaskListColumnEnum;
+  dateFormat?: string;
+}
+
+interface TaskListColumnDisplayType {
+  type: string;
+  displayTypeParameters?: TaskListColumnDisplayTypeParameters;
+}
+
+interface TaskListColumn {
+  title?: string;
+  key: string;
+  path: string;
+  displayType: TaskListColumnDisplayType;
+  sortable: boolean;
+  defaultSort?: TaskListColumnDefaultSort;
+  order?: number;
+}
+
+type TaskListColumnModalType = 'edit' | 'add';
+
+type TaskListColumnModalCloseEvent = 'close' | 'refresh';
+
+interface TaskListColumnListItem extends ListItem {
+  key: string;
+}
+
+interface TaskListParams {
+  params: {
+    selectedTaskType: TaskListTab;
+    params: TaskPageParams;
+    caseDefinitionName?: string;
+    reload: boolean;
+  };
+  enableLoadingAnimation: boolean;
+}
+
+export {
+  TaskListColumn,
+  TaskListColumnDisplayType,
+  TaskListColumnDefaultSort,
+  TaskListColumnModalType,
+  TaskListColumnListItem,
+  TaskListColumnModalCloseEvent,
+  TaskListColumnDisplayTypeParameters,
+  TaskListColumnEnum,
+  TaskPageParams,
+  TaskListParams,
+};

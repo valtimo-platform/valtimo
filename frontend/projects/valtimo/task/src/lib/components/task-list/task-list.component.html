@@ -21,7 +21,9 @@
     tasks: tasks$ | async,
     fields: fields$ | async,
     visibleTabs: visibleTabs$ | async,
-    pagination: paginationForCurrentTaskType$ | async
+    pagination: paginationForCurrentTaskTypeForList$ | async,
+    taskListColumnsForCase: taskListColumnsForCase$ | async,
+    sortState: sortStateForCurrentTaskType$ | async
   } as obs"
   class="main-content"
 >
@@ -99,13 +101,14 @@
     [pagination]="obs.pagination"
     paginationIdentifier="taskList"
     lockedTooltipTranslationKey="task-list.rowLocked"
+    [initialSortState]="obs.sortState"
     (paginationClicked)="paginationClicked($event, obs.selectedTaskType)"
     (paginationSet)="paginationSet($event)"
     (rowClicked)="rowOpenTaskClick($event)"
     (sortChanged)="sortChanged($event)"
   >
     <div tabs>
-      <ng-container *ngIf="!obs.visibleTabs">
+      <ng-container *ngIf="obs.visibleTabs">
         <ng-container
           *ngTemplateOutlet="
             configuredTabs;
@@ -113,29 +116,6 @@
           "
         ></ng-container>
       </ng-container>
-
-      <cds-tabs *ngIf="obs.visibleTabs" type="contained" class="valtimo-carbon-list__tabs">
-        <cds-tab
-          [heading]="'task-list.mine.title' | translate"
-          (selected)="tabChange('mine')"
-          [active]="obs.selectedTaskType === 'mine'"
-        >
-        </cds-tab>
-
-        <cds-tab
-          [heading]="'task-list.open.title' | translate"
-          (selected)="tabChange('open')"
-          [active]="obs.selectedTaskType === 'open'"
-        >
-        </cds-tab>
-
-        <cds-tab
-          [heading]="'task-list.all.title' | translate"
-          (selected)="tabChange('all')"
-          [active]="obs.selectedTaskType === 'all'"
-        >
-        </cds-tab>
-      </cds-tabs>
     </div>
 
     <valtimo-no-results
@@ -188,11 +168,11 @@
         loadingCaseListItems: loadingCaseListItems$ | async,
         caseListItems: caseListItems$ | async
       } as obs"
-      [disabled]="obs.loadingCaseListItems || obs.caseListItems.length === 1"
+      [disabled]="obs.loadingCaseListItems || (obs.caseListItems || []).length === 1"
       [skeleton]="obs.loadingCaseListItems"
       (selected)="setCaseDefinition($event)"
     >
       <cds-dropdown-list
-        [items]="obs.caseListItems"
+        [items]="obs.caseListItems || []"
       ></cds-dropdown-list></cds-dropdown></ng-template
 ></ng-container>

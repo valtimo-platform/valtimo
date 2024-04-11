@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {TaskListColumn} from '../models/task-management-columns.model';
+import {TaskListColumn} from '@valtimo/task';
 
 @Injectable({
   providedIn: 'root',

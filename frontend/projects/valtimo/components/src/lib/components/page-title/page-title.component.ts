@@ -100,12 +100,15 @@ export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private openRouterTranslateSubscription(): void {
     this._subscriptions.add(
-      combineLatest([this.router.events, this.translateService.stream('key')]).subscribe(() => {
+      combineLatest([
+        this.router.events.pipe(startWith(null)),
+        this.translateService.stream('key'),
+      ]).subscribe(() => {
         const routeTitle =
           this.activatedRoute?.snapshot?.firstChild?.data?.title ||
           this.activatedRoute?.snapshot?.firstChild?.children[0]?.data?.title;
         const routeTitleTranslation = this.translateService.instant(routeTitle);
-        const routeTitlePageTranslationString = `pages.${routeTitle.toLowerCase()}.title`;
+        const routeTitlePageTranslationString = `pages.${routeTitle?.toLowerCase()}.title`;
         const routeTitlePageTranslation = this.translateService.instant(
           routeTitlePageTranslationString
         );

@@ -70,7 +70,11 @@ import {
   DOSSIER_LIST_NO_RESULTS_MESSAGE,
   DOSSIER_LIST_TABLE_TRANSLATIONS,
 } from '../../constants';
-import {CAN_VIEW_CASE_PERMISSION, DOSSIER_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
+import {
+  CAN_CREATE_CASE_PERMISSION,
+  CAN_VIEW_CASE_PERMISSION,
+  DOSSIER_DETAIL_PERMISSION_RESOURCE,
+} from '../../permissions';
 import {
   DossierBulkAssignService,
   DossierColumnService,
@@ -145,6 +149,14 @@ export class DossierListComponent implements OnInit, OnDestroy {
         this.pageTitleService.setCustomPageTitle(schema?.title, true);
       }
     })
+  );
+  public readonly canCreateDocument$: Observable<boolean> = this.documentDefinitionName$.pipe(
+    switchMap(documentDefinitionName =>
+      this.permissionService.requestPermission(CAN_CREATE_CASE_PERMISSION, {
+        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
+        identifier: documentDefinitionName,
+      })
+    )
   );
 
   public readonly searchFieldValues$ = this.parameterService.searchFieldValues$;

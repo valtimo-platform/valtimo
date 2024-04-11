@@ -91,7 +91,9 @@ export class DocumentService {
 
   // Document-calls
   public getAllDefinitions(): Observable<DocumentDefinitions> {
-    return this.http.get<DocumentDefinitions>(`${this.valtimoEndpointUri}v1/document-definition?size=1000`);
+    return this.http.get<DocumentDefinitions>(
+      `${this.valtimoEndpointUri}v1/document-definition?size=1000`
+    );
   }
 
   public queryDefinitions(params?: any): Observable<Page<DocumentDefinition>> {
@@ -285,6 +287,15 @@ export class DocumentService {
   ): Observable<ProcessDocumentDefinition[]> {
     return this.http.get<ProcessDocumentDefinition[]>(
       `${this.valtimoEndpointUri}v1/process-document/definition/document/${documentDefinitionName}`
+    );
+  }
+
+  public findProcessDocumentDefinitionsByStartableByUser(
+    documentDefinitionName: string,
+    startableByUser: boolean
+  ): Observable<ProcessDocumentDefinition[]> {
+    return this.http.get<ProcessDocumentDefinition[]>(
+      `${this.valtimoEndpointUri}v1/process-document/definition/document/${documentDefinitionName}?startableByUser=${startableByUser}`
     );
   }
 
