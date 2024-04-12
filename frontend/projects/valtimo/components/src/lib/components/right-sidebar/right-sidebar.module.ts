@@ -27,6 +27,7 @@ import {
   DropdownModule,
   GridModule,
   IconModule,
+  LayerModule,
   LinkModule,
   StructuredListModule,
   TabsModule,
@@ -59,6 +60,7 @@ import {
     TagModule,
     LinkModule,
     DropdownModule,
+    LayerModule,
   ],
   exports: [RightSidebarComponent],
 })

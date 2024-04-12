@@ -18,7 +18,7 @@
   <cds-panel [expanded]="panelExpanded$ | async">
     <div cdsGrid [condensed]="true">
       <div cdsRow>
-        <div cdsCol [columnNumbers]="{lg: 16}" class="menu-tabs">
+        <div cdsCol [columnNumbers]="{lg: 16}" class="menu-tabs" cdsLayer>
           <cds-tabs class="cds--tab--list--full-width">
             <cds-tab [heading]="'account.title' | translate">
               <ng-container *ngTemplateOutlet="accountTabTemplate"></ng-container>
@@ -228,6 +228,7 @@
           [appendInline]="true"
           (click)="$event.stopPropagation()"
           (selected)="setPreferredTheme($event)"
+          [dropUp]="false"
         >
           <cds-dropdown-list [items]="themeOptions$ | async"></cds-dropdown-list>
         </cds-dropdown>
