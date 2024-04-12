@@ -58,7 +58,7 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
   private initialized = false;
 
   constructor(
-    private processService: ProcessService,
+    private readonly processService: ProcessService,
     private readonly pageTitleService: PageTitleService
   ) {}
 

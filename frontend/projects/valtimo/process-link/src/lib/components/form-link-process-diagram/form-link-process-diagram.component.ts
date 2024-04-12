@@ -53,8 +53,8 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
   private processDefinitionId!: string;
 
   constructor(
-    private processService: ProcessService,
-    private route: ActivatedRoute,
+    private readonly processService: ProcessService,
+    private readonly route: ActivatedRoute,
     private readonly pageTitleService: PageTitleService
   ) {}
 

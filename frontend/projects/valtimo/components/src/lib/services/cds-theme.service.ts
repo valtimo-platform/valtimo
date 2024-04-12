@@ -18,8 +18,6 @@ import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {filter} from 'rxjs/operators';
 import {CurrentCarbonTheme, SelectableCarbonTheme} from '../models';
 
-// declare const monaco: any;
-
 @Injectable({
   providedIn: 'root',
 })
