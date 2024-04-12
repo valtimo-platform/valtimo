@@ -1,6 +1,9 @@
 import { Injector } from '@angular/core';
-import { FormioCustomComponentInfo, registerCustomFormioComponent} from '@formio/angular';
 import { FormIoIbanComponent } from './iban.component';
+import {
+  FormioCustomComponentInfo,
+  registerCustomFormioComponent
+} from '../../../modules';
 
 const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
   type: 'iban',
