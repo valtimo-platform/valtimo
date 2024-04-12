@@ -1,4 +1,4 @@
-import { AbstractControl, ValidatorFn , ValidationErrors } from '@angular/forms';
+import {AbstractControl, ValidatorFn, ValidationErrors} from '@angular/forms';
 
 /**
  * Custom iban validator for angular forms.
@@ -9,14 +9,18 @@ import { AbstractControl, ValidatorFn , ValidationErrors } from '@angular/forms'
  * @returns Null if the iban is valid or the value is an empty string, else return an object with isIbanValid property.
  */
 export function ibanValidator(): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null => {
-        const valueString = String(control.value);
-        if (valueString.match(/^$/)) {
-            return null;
-        }
-        const rearranged = valueString.substring(4, valueString.length) + valueString.substring(0, 4);
-        const numeric = Array.from(rearranged).map(c => (isNaN(parseInt(c)) ? (c.charCodeAt(0) - 55).toString() : c)).join('');
-        const remainder = Array.from(numeric).map(c => parseInt(c)).reduce((remainder, value) => (remainder * 10 + value) % 97, 0);
-        return remainder === 1 ? null : { isIbanValid: 'IBAN voldoet niet' };
+  return (control: AbstractControl): ValidationErrors | null => {
+    const valueString = String(control.value);
+    if (valueString.match(/^$/)) {
+      return null;
     }
+    const rearranged = valueString.substring(4, valueString.length) + valueString.substring(0, 4);
+    const numeric = Array.from(rearranged)
+      .map(c => (isNaN(parseInt(c)) ? (c.charCodeAt(0) - 55).toString() : c))
+      .join('');
+    const remainder = Array.from(numeric)
+      .map(c => parseInt(c))
+      .reduce((remainder, value) => (remainder * 10 + value) % 97, 0);
+    return remainder === 1 ? null : {isIbanValid: 'IBAN voldoet niet'};
+  };
 }

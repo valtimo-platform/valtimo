@@ -46,7 +46,7 @@ import {ReactiveFormsModule} from '@angular/forms';
     ResourceModule,
     RouterModule,
     DocumentenApiMetadataModalModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   declarations: [
     FormioComponent,
@@ -54,7 +54,7 @@ import {ReactiveFormsModule} from '@angular/forms';
     FormIoUploaderComponent,
     DocumentenApiUploaderComponent,
     FormIoCurrentUserComponent,
-    FormIoIbanComponent
+    FormIoIbanComponent,
   ],
   exports: [
     FormioComponent,
@@ -62,7 +62,7 @@ import {ReactiveFormsModule} from '@angular/forms';
     FormIoUploaderComponent,
     DocumentenApiUploaderComponent,
     FormIoCurrentUserComponent,
-    FormIoIbanComponent
+    FormIoIbanComponent,
   ],
   providers: [
     FormIoDomService,

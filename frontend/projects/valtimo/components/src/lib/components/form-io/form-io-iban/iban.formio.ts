@@ -1,9 +1,6 @@
-import { Injector } from '@angular/core';
-import { FormIoIbanComponent } from './iban.component';
-import {
-  FormioCustomComponentInfo,
-  registerCustomFormioComponent
-} from '../../../modules';
+import {Injector} from '@angular/core';
+import {FormIoIbanComponent} from './iban.component';
+import {FormioCustomComponentInfo, registerCustomFormioComponent} from '../../../modules';
 
 const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
   type: 'iban',
@@ -17,9 +14,9 @@ const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
     hideLabel: false,
     tableView: true,
     validate: {
-      required: true
-    }
-  }
+      required: true,
+    },
+  },
 };
 
 export function registerFormioIbanComponent(injector: Injector) {
