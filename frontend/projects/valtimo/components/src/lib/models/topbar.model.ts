@@ -14,15 +14,9 @@
  * limitations under the License.
  */
 
-enum SelectableCarbonTheme {
-  G10 = 'g10',
-  G90 = 'g90',
-  SYSTEM = 'system',
+interface TopbarLogo {
+  base64string: string;
+  isSvg: boolean;
 }
 
-enum CurrentCarbonTheme {
-  G10 = 'g10',
-  G90 = 'g90',
-}
-
-export {SelectableCarbonTheme, CurrentCarbonTheme};
+export {TopbarLogo};

@@ -13,117 +13,39 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<div
-  *ngIf="{
-    canAssign: canAssign$ | async,
-    canClaim: canClaim$ | async,
-    canHaveAssignee: canHaveAssignee$ | async,
-    document: document$ | async
-  } as obs"
-  class="main-content"
->
+<div class="main-content">
   <div class="container-fluid">
     <div class="col-12 px-0 mb-5">
-      <valtimo-widget>
-        <div class="card-header bg-light card-header-divider pb-2">
-          <div class="row">
-            <div class="col">
-              <ng-container
-                *ngTemplateOutlet="
-                  caseDetailHeader;
-                  context: {
-                    canHaveAssignee: obs.canHaveAssignee,
-                    document: obs.document,
-                    canAssign: obs.canAssign
-                  }
-                "
-              ></ng-container>
-            </div>
+      <ng-container *ngTemplateOutlet="tabs"></ng-container>
+      <ng-template #tabs>
+        <ng-container *ngIf="tabLoader">
+          <cds-tabs type="contained" class="case-detail-tabs">
+            <cds-tab
+              *ngFor="let tab of tabLoader.tabs"
+              [active]="tab.isActive()"
+              heading="{{ tab | tabTranslate | async }}"
+              [id]=""
+              (selected)="tabLoader.load(tab)"
+            ></cds-tab>
+          </cds-tabs>
+        </ng-container>
+      </ng-template>
 
-            <div class="btn-group mt-m3px mb-3 col-auto">
-              <valtimo-extension
-                module="dossier"
-                page="dossier-detail"
-                section="card-header"
-              ></valtimo-extension>
-
-              <ng-container
-                *ngTemplateOutlet="
-                  claimButton;
-                  context: {canClaim: obs.canClaim, canHaveAssignee: obs.canHaveAssignee}
-                "
-              ></ng-container>
-
-              <div class="dropdown">
-                <button
-                  [disabled]="processDocumentDefinitions.length === 0"
-                  [ngbTooltip]="processDocumentDefinitions.length === 0 ? 'No action' : null"
-                  aria-expanded="false"
-                  aria-haspopup="true"
-                  class="btn btn-primary dropdown-toggle"
-                  data-toggle="dropdown"
-                  id="startProcessDropdown"
-                  placement="bottom"
-                  type="button"
-                >
-                  <span>{{ 'dossier.startSubProcess' | translate }}</span>
-
-                  <i class="ml-1 mdi mdi-chevron-down"></i>
-                </button>
-
-                <div
-                  aria-labelledby="startProcessDropdown"
-                  class="dropdown-menu dropdown-menu-right"
-                >
-                  <button
-                    *ngFor="let processDocumentDefinition of processDocumentDefinitions"
-                    (click)="startProcess(processDocumentDefinition)"
-                    class="dropdown-item p"
-                    href="#"
-                  >
-                    {{
-                      (processDocumentDefinition?.id?.processDefinitionKey | translate) !==
-                      processDocumentDefinition?.id?.processDefinitionKey
-                        ? (processDocumentDefinition.id.processDefinitionKey | translate)
-                        : processDocumentDefinition.processName
-                    }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+      <div class="card-body bg-white p-5 position-relative tab-container">
+        <div *ngIf="loadingTabs$ | async" class="loading-container">
+          <cds-loading></cds-loading>
         </div>
 
-        <ul *ngIf="tabLoader" class="nav nav-tabs">
-          <li class="nav-item" *ngFor="let tab of tabLoader.tabs">
-            <a
-              [ngClass]="{active: tab.isActive()}"
-              (click)="tabLoader.load(tab)"
-              class="nav-link clickable"
-              data-toggle="tab"
-              id="{{ tab.name }}-tab"
-            >
-              {{ tab | tabTranslate | async }}
-            </a>
-          </li>
-        </ul>
+        <valtimo-no-results
+          *ngIf="noTabsConfigured$ | async"
+          [description]="'dossier.tabs.noResultsDescription' | translate"
+          [title]="'dossier.tabs.noResults' | translate"
+        ></valtimo-no-results>
 
-        <div class="card-body bg-white p-5 position-relative tab-container">
-          <div *ngIf="loadingTabs$ | async" class="loading-container">
-            <cds-loading></cds-loading>
-          </div>
+        <ng-template #tabContainer></ng-template>
 
-          <valtimo-no-results
-            *ngIf="noTabsConfigured$ | async"
-            [description]="'dossier.tabs.noResultsDescription' | translate"
-            [title]="'dossier.tabs.noResults' | translate"
-          ></valtimo-no-results>
-
-          <ng-template #tabContainer></ng-template>
-
-          <div class="clearfix"></div>
-        </div>
-      </valtimo-widget>
+        <div class="clearfix"></div>
+      </div>
     </div>
 
     <valtimo-dossier-supporting-process-start-modal
@@ -179,7 +101,7 @@
   let-document="document"
   let-canAssign="canAssign"
 >
-  <div class="row ml-0 mr-0 mt-1 mb-1" *ngIf="canHaveAssignee && document">
+  <div *ngIf="canHaveAssignee && document">
     <valtimo-dossier-assign-user
       *ngIf="canAssignLoaded$ | async"
       [assigneeFullName]="document?.assigneeFullName"
@@ -192,23 +114,92 @@
 </ng-template>
 
 <ng-template #claimButton let-canClaim="canClaim" let-canHaveAssignee="canHaveAssignee">
-  <div class="user-full-name" *ngIf="canClaim && canHaveAssignee">
-    <button
-      [disabled]="(isAssigning$ | async) || (isAssignedToCurrentUser$ | async)"
-      (click)="claimAssignee()"
-      aria-expanded="false"
-      aria-haspopup="true"
-      class="btn btn-space btn-primary mr-1"
-      placement="bottom"
-      type="button"
-    >
-      <span>{{ 'dossier.claimAssigneeCase' | translate }}</span>
-    </button>
-  </div>
+  <cds-overflow-menu-option
+    *ngIf="canClaim && canHaveAssignee"
+    [disabled]="(isAssigning$ | async) || (isAssignedToCurrentUser$ | async)"
+    (click)="claimAssignee()"
+  >
+    <span>{{ 'dossier.claimAssigneeCase' | translate }}</span>
+  </cds-overflow-menu-option>
+</ng-template>
+
+<ng-template #customStartTrigger>
+  <button
+    cdsButton="primary"
+    [disabled]="processDocumentDefinitions.length === 0"
+    [ngbTooltip]="processDocumentDefinitions.length === 0 ? 'No action' : null"
+  >
+    {{ 'dossier.startSubProcess' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="chevron--down" size="16"></svg>
+  </button>
 </ng-template>
 
 <ng-container renderInPageHeader [fullWidth]="true">
   <ng-template>
+    <div
+      class="dossier-actions"
+      [ngClass]="{'--compact': compactMode$ | async}"
+      *ngIf="{
+        assigneeId: assigneeId$ | async,
+        canAssign: canAssign$ | async,
+        canClaim: canClaim$ | async,
+        canHaveAssignee: canHaveAssignee$ | async,
+        document: document$ | async
+      } as obs"
+    >
+      <div class="dossier-assign-user" [ngClass]="{'--compact': compactMode$ | async}">
+        <ng-container
+          *ngTemplateOutlet="
+            caseDetailAssignee;
+            context: {
+              canHaveAssignee: obs.canHaveAssignee,
+              document: obs.document,
+              canAssign: obs.canAssign
+            }
+          "
+        ></ng-container>
+      </div>
+      <div class="buttons-container">
+        <cds-overflow-menu
+          *ngIf="obs.canHaveAssignee"
+          flip="true"
+          [offset]="{y: 48, x: 4}"
+          class="overflow-button assign-overflow"
+        >
+          <ng-container
+            *ngTemplateOutlet="
+              claimButton;
+              context: {canClaim: obs.canClaim, canHaveAssignee: obs.canHaveAssignee}
+            "
+          >
+          </ng-container>
+          <cds-overflow-menu-option (selected)="unassignAssignee()" [disabled]="!obs.assigneeId">
+            {{ 'assignDocument.remove' | translate }}
+          </cds-overflow-menu-option>
+        </cds-overflow-menu>
+
+        <cds-overflow-menu
+          valtimoCdsOverflowButton
+          [width]="250"
+          [customTrigger]="customStartTrigger"
+          [offset]="{y: 48, x: 37}"
+          class="overflow-button"
+        >
+          <cds-overflow-menu-option
+            *ngFor="let processDocumentDefinition of processDocumentDefinitions"
+            (click)="startProcess(processDocumentDefinition)"
+          >
+            {{
+              (processDocumentDefinition?.id?.processDefinitionKey | translate) !==
+              processDocumentDefinition?.id?.processDefinitionKey
+                ? (processDocumentDefinition.id.processDefinitionKey | translate)
+                : processDocumentDefinition.processName
+            }}
+          </cds-overflow-menu-option>
+        </cds-overflow-menu>
+      </div>
+    </div>
     <div *ngIf="caseStatus$ | async as caseStatus" class="dossier-detail-page-header">
       <cds-tag [type]="caseStatus.tagType">{{ caseStatus.title }}</cds-tag>
     </div>

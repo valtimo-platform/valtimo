@@ -23,10 +23,11 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {ProcessService, ProcessDefinition} from '@valtimo/process';
+import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {Heatpoint} from '../models';
 import BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
 import heatmap from 'heatmap.js-fixed/build/heatmap.js';
+import {PageTitleService} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-analyse-process-diagram',
@@ -56,9 +57,13 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
   public valueKey: string;
   private initialized = false;
 
-  constructor(private processService: ProcessService) {}
+  constructor(
+    private readonly processService: ProcessService,
+    private readonly pageTitleService: PageTitleService
+  ) {}
 
   ngOnInit() {
+    this.pageTitleService.disableReset();
     this.processService
       .getProcessDefinitions()
       .subscribe((processDefinitions: ProcessDefinition[]) => {
@@ -118,6 +123,7 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
     if (this.bpmnJS) {
       this.bpmnJS.destroy();
     }
+    this.pageTitleService.enableReset();
   }
 
   public loadProcessDefinition(processDefinitionKey: string): void {

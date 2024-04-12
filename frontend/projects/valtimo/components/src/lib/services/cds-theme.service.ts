@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Injectable, OnDestroy} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
-import {SelectableCarbonTheme} from '../models';
 import {filter} from 'rxjs/operators';
+import {CurrentCarbonTheme, SelectableCarbonTheme} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -26,9 +25,14 @@ export class CdsThemeService implements OnDestroy {
   private readonly _preferredTheme$ = new BehaviorSubject<SelectableCarbonTheme>(
     SelectableCarbonTheme.G10
   );
+  private readonly _currentTheme$ = new BehaviorSubject<CurrentCarbonTheme | null>(null);
 
-  public get preferredTheme$(): Observable<string> {
+  public get preferredTheme$(): Observable<SelectableCarbonTheme> {
     return this._preferredTheme$.pipe(filter(theme => !!theme));
+  }
+
+  public get currentTheme$(): Observable<CurrentCarbonTheme> {
+    return this._currentTheme$.pipe(filter(theme => !!theme));
   }
 
   private readonly _subscriptions = new Subscription();
@@ -51,24 +55,25 @@ export class CdsThemeService implements OnDestroy {
         switch (preferredTheme) {
           case SelectableCarbonTheme.SYSTEM:
             if (browserPrefersDarkMode) {
-              this.setThemeOnDocument(SelectableCarbonTheme.G90);
+              this.setThemeOnDocument(CurrentCarbonTheme.G90);
             } else {
-              this.setThemeOnDocument(SelectableCarbonTheme.G10);
+              this.setThemeOnDocument(CurrentCarbonTheme.G10);
             }
             break;
           case SelectableCarbonTheme.G10:
-            this.setThemeOnDocument(SelectableCarbonTheme.G10);
+            this.setThemeOnDocument(CurrentCarbonTheme.G10);
             break;
           case SelectableCarbonTheme.G90:
-            this.setThemeOnDocument(SelectableCarbonTheme.G90);
+            this.setThemeOnDocument(CurrentCarbonTheme.G90);
             break;
         }
       }
     );
   }
 
-  private setThemeOnDocument(theme: SelectableCarbonTheme): void {
+  private setThemeOnDocument(theme: CurrentCarbonTheme): void {
     document.documentElement.setAttribute('data-carbon-theme', theme);
+    this._currentTheme$.next(theme);
   }
 
   private getBrowserPrefersDarkModeObservable(signal?: AbortSignal): Observable<boolean> {

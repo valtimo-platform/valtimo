@@ -14,14 +14,25 @@
  * limitations under the License.
  */
 
+import {editor} from 'monaco-editor';
+
 interface EditorModel {
   value: string;
   language?: string;
   uri?: string;
 }
 
+type MonacoEditor = typeof editor;
+
 interface WindowWithMonaco extends Window {
-  monaco?: object;
+  monaco?: {
+    editor?: MonacoEditor;
+  };
 }
 
-export {EditorModel, WindowWithMonaco};
+enum MonacoTheme {
+  VS = 'vs',
+  VSDARK = 'vs-dark',
+}
+
+export {EditorModel, WindowWithMonaco, MonacoEditor, MonacoTheme};

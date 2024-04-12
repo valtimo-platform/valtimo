@@ -53,6 +53,7 @@ import {
   TimelineModule,
   TitleModule,
   UploaderModule,
+  ValtimoCdsOverflowButtonDirectiveModule,
   VModalModule,
   WidgetModule,
 } from '@valtimo/components';
@@ -64,6 +65,7 @@ import {TaskModule} from '@valtimo/task';
 import {
   ButtonModule as CarbonButtonModule,
   ComboBoxModule,
+  DialogModule,
   DropdownModule,
   IconModule,
   LoadingModule,
@@ -187,6 +189,8 @@ export type TabsFactory = () => Map<string, object>;
     StatusSelectorComponent,
     RenderInPageHeaderDirectiveModule,
     TagModule,
+    DialogModule,
+    ValtimoCdsOverflowButtonDirectiveModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

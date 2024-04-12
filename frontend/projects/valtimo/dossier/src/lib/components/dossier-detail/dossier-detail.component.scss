@@ -34,3 +34,52 @@
     margin: 0;
   }
 }
+
+.case-detail-tabs cds-tab {
+  display: none !important;
+}
+
+.cds--overflow-menu-options {
+  margin-top: 32px;
+}
+
+.assign-overflow {
+  margin-right: 8px;
+}
+
+.buttons-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.dossier-actions {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: flex-end;
+
+  &.--compact {
+    align-items: center;
+  }
+
+  ::ng-deep .version-selection {
+    width: 160px;
+
+    .cds--list-box__selection {
+      display: none;
+    }
+  }
+}
+
+.dossier-assign-user {
+  padding-bottom: 4px;
+  margin-left: -16px;
+
+  &.--compact {
+    margin-left: 0;
+  }
+}
+
+.p-5:has(> valtimo-dossier-detail-tab-notes) {
+  padding: 0 !important;
+}

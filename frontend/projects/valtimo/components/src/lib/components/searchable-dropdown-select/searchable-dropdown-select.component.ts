@@ -35,6 +35,7 @@ export class SearchableDropdownSelectComponent {
   @Input() hasSelection: boolean;
   @Input() width = 250;
   @Input() hasPermission = true;
+  @Input() showClearSelection = true;
 
   @Output() itemSelected = new EventEmitter();
   @Output() clearSelection = new EventEmitter();

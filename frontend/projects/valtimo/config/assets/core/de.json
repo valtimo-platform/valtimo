@@ -126,7 +126,11 @@
         "description": "Möchten Sie diese Notiz wirklich löschen?",
         "deletedMessage": "Die Notiz wurde erfolgreich gelöscht."
       },
-      "editedMessage": "Die Notiz wurde erfolgreich bearbeitet."
+      "editedMessage": "Die Notiz wurde erfolgreich bearbeitet.",
+      "noResults": {
+        "title": "Keine Notizen",
+        "description": "In diesem Dossier gibt es keine Notizen."
+      }
     },
     "documenten": {
       "noProcessLinked": {
@@ -375,12 +379,11 @@
     },
     "interface": {
       "title": "Interface",
-      "collapsibleMenu": "Navigationsleiste immer einklappbar",
       "themePreference": "Thema",
       "themes": {
         "light": "Hell",
-        "dark": "Dunkel",
-        "system": "System"
+        "dark": "Dunkel (Beta)",
+        "system": "System (Beta)"
       },
       "collapsibleMenu": "Navigationsleiste immer einklappbar",
       "compactMode": "Kompaktmodus",

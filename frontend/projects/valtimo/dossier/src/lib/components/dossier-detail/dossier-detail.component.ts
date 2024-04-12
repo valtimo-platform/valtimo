@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute, ParamMap, Params, Router} from '@angular/router';
 import {PermissionService} from '@valtimo/access-control';
-import {BreadcrumbService} from '@valtimo/components';
+import {BreadcrumbService, PageHeaderService, PageTitleService} from '@valtimo/components';
 import {ConfigService} from '@valtimo/config';
 import {
   CaseStatusService,
@@ -58,11 +58,13 @@ import {
   DOSSIER_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
 import {DossierService, DossierTabService} from '../../services';
+import {IconService} from 'carbon-components-angular';
+import {ChevronDown16} from '@carbon/icons';
 
 @Component({
   selector: 'valtimo-dossier-detail',
   templateUrl: './dossier-detail.component.html',
-  styleUrls: ['./dossier-detail.component.css'],
+  styleUrls: ['./dossier-detail.component.scss'],
   providers: [DossierTabService],
 })
 export class DossierDetailComponent implements AfterViewInit, OnDestroy {
@@ -189,6 +191,8 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
   public readonly loadingTabs$ = new BehaviorSubject<boolean>(true);
   public readonly noTabsConfigured$ = new BehaviorSubject<boolean>(false);
 
+  public readonly compactMode$ = this.pageHeaderService.compactMode$;
+
   private _snapshot: ParamMap;
   private _initialTabName: string;
 
@@ -205,7 +209,10 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     private readonly router: Router,
     private readonly dossierTabService: DossierTabService,
     private readonly dossierService: DossierService,
-    private readonly caseStatusService: CaseStatusService
+    private readonly caseStatusService: CaseStatusService,
+    private readonly pageTitleService: PageTitleService,
+    private readonly iconService: IconService,
+    private readonly pageHeaderService: PageHeaderService
   ) {
     this._snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this._snapshot.get('documentDefinitionName') || '';
@@ -216,10 +223,13 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     this.initTabLoader();
     this.initBreadcrumb();
     this.getAllAssociatedProcessDefinitions();
+    this.pageTitleService.disableReset();
+    this.iconService.registerAll([ChevronDown16]);
   }
 
   public ngOnDestroy(): void {
     this.breadcrumbService.clearSecondBreadcrumb();
+    this.pageTitleService.enableReset();
   }
 
   public getAllAssociatedProcessDefinitions(): void {
@@ -259,6 +269,28 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
         error: (): void => {
           this.isAssigning$.next(false);
           this.logger.debug('Something went wrong while assigning user to case');
+        },
+      });
+  }
+
+  public unassignAssignee(): void {
+    this.isAssigning$.next(true);
+
+    this.userId$
+      .pipe(
+        take(1),
+        switchMap((userId: string | undefined) =>
+          this.documentService.unassignHandlerFromDocument(this.documentId)
+        )
+      )
+      .subscribe({
+        next: (): void => {
+          this.isAssigning$.next(false);
+          this.dossierService.refresh();
+        },
+        error: (): void => {
+          this.isAssigning$.next(false);
+          this.logger.debug('Something went wrong while unassigning user from case');
         },
       });
   }

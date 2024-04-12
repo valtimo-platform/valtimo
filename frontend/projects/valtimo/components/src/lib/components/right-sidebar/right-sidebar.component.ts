@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {FormBuilder, FormControl, FormGroup} from '@angular/forms';
 import {TranslateService} from '@ngx-translate/core';
-import {SelectableCarbonTheme, ThemeOption, ValtimoVersion} from '../../models';
+import {SelectableCarbonTheme, ValtimoVersion} from '../../models';
 import {
   ConfigService,
   EmailNotificationSettings,
@@ -41,6 +41,7 @@ import {BehaviorSubject, combineLatest, Observable, Subscription, switchMap, tak
 import {VersionService} from '../version/version.service';
 import {CdsThemeService, PageHeaderService, ShellService} from '../../services';
 import {map, tap} from 'rxjs/operators';
+import {ListItem} from 'carbon-components-angular';
 
 @Component({
   selector: 'valtimo-right-sidebar',
@@ -89,6 +90,20 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   readonly selectedLanguage$ = new BehaviorSubject<string>('');
   readonly languageOptions$ = new BehaviorSubject<Array<string>>([]);
 
+  public readonly languageListItems$: Observable<ListItem[]> = combineLatest([
+    this.languageOptions$,
+    this.selectedLanguage$,
+    this.translate.stream('key'),
+  ]).pipe(
+    map(([languageOptions, selectedLanguage]) =>
+      languageOptions.map(languageKey => ({
+        content: this.translate.instant('settings.language.options.' + languageKey),
+        key: languageKey,
+        selected: selectedLanguage === languageKey,
+      }))
+    )
+  );
+
   readonly backendVersion$: Observable<ValtimoVersion> = this.versionService.getVersion();
 
   readonly userSubject$: Observable<UserIdentity> = this.userProviderService.getUserSubject();
@@ -134,19 +149,25 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
 
   public allowUserThemeSwitching!: boolean;
 
-  public readonly themeOptions$: Observable<ThemeOption[]> = this.translate.stream('key').pipe(
-    map(() => [
+  public readonly themeOptions$: Observable<ListItem[]> = combineLatest([
+    this.preferredTheme$,
+    this.translate.stream('key'),
+  ]).pipe(
+    map(([preferredTheme]) => [
       {
-        name: this.translate.instant('settings.interface.themes.light'),
-        value: SelectableCarbonTheme.G10,
+        content: this.translate.instant('settings.interface.themes.light'),
+        key: SelectableCarbonTheme.G10,
+        selected: preferredTheme === SelectableCarbonTheme.G10,
       },
       {
-        name: this.translate.instant('settings.interface.themes.dark'),
-        value: SelectableCarbonTheme.G90,
+        content: this.translate.instant('settings.interface.themes.dark'),
+        key: SelectableCarbonTheme.G90,
+        selected: preferredTheme === SelectableCarbonTheme.G90,
       },
       {
-        name: this.translate.instant('settings.interface.themes.system'),
-        value: SelectableCarbonTheme.SYSTEM,
+        content: this.translate.instant('settings.interface.themes.system'),
+        key: SelectableCarbonTheme.SYSTEM,
+        selected: preferredTheme === SelectableCarbonTheme.SYSTEM,
       },
     ])
   );
@@ -205,13 +226,17 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  updateUserLanguage(langKey: string, saveSettings = true): void {
+  updateUserLanguage(langKey: string | {item?: {key?: string}}, saveSettings = true): void {
+    const langKeyToUse = (langKey as any)?.item?.key
+      ? (langKey as any)?.item.key
+      : (langKey as string);
+
     this.translate
-      .use(langKey)
+      .use(langKeyToUse)
       .pipe(take(1))
       .subscribe(() => {
-        localStorage.setItem('langKey', langKey);
-        this.selectedLanguage$.next(langKey);
+        localStorage.setItem('langKey', langKeyToUse);
+        this.selectedLanguage$.next(langKeyToUse);
 
         if (saveSettings) {
           this.saveUserSettings();
@@ -243,9 +268,15 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     }
   }
 
-  setPreferredTheme(selectedTheme: string, saveSettings = true): void {
+  setPreferredTheme(selectedTheme: string | {item?: {key?: string}}, saveSettings = true): void {
     if (this.allowUserThemeSwitching) {
-      this.cdsThemeService.setPreferredTheme(selectedTheme as SelectableCarbonTheme);
+      if ((selectedTheme as any)?.item?.key) {
+        this.cdsThemeService.setPreferredTheme(
+          (selectedTheme as any).item?.key as SelectableCarbonTheme
+        );
+      } else {
+        this.cdsThemeService.setPreferredTheme(selectedTheme as SelectableCarbonTheme);
+      }
 
       if (saveSettings) {
         this.saveUserSettings();

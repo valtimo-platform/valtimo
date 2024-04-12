@@ -24,10 +24,11 @@ import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {HttpLoaderFactory} from '@valtimo/config';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {
+  DropdownModule,
   GridModule,
   IconModule,
+  LayerModule,
   LinkModule,
-  SelectModule,
   StructuredListModule,
   TabsModule,
   TagModule,
@@ -55,10 +56,11 @@ import {
     GridModule,
     TabsModule,
     StructuredListModule,
-    SelectModule,
     ToggleModule,
     TagModule,
     LinkModule,
+    DropdownModule,
+    LayerModule,
   ],
   exports: [RightSidebarComponent],
 })

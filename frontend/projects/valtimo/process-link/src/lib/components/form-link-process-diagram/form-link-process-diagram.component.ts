@@ -29,6 +29,7 @@ import BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
 import {ActivatedRoute} from '@angular/router';
 import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
+import {PageTitleService} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-form-link-process-diagram',
@@ -52,11 +53,13 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
   private processDefinitionId!: string;
 
   constructor(
-    private processService: ProcessService,
-    private route: ActivatedRoute
+    private readonly processService: ProcessService,
+    private readonly route: ActivatedRoute,
+    private readonly pageTitleService: PageTitleService
   ) {}
 
   ngOnInit() {
+    this.pageTitleService.disableReset();
     combineLatest([this.route.queryParams, this.processService.getProcessDefinitions()])
       .pipe(map(([queryParams, processDefinitions]) => ({queryParams, processDefinitions})))
       .subscribe(response => {
@@ -116,6 +119,7 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
     if (this.bpmnJS) {
       this.bpmnJS.destroy();
     }
+    this.pageTitleService.enableReset();
   }
 
   public loadProcessDefinition(processDefinitionKey: string): void {

@@ -31,3 +31,19 @@ $border: 1px solid #dee2e6;
 .options {
   border-bottom: $border;
 }
+
+.analyse-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: space-between;
+  .heatmap-toggle {
+    flex-grow: 0 !important;
+  }
+}
+
+.select {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}

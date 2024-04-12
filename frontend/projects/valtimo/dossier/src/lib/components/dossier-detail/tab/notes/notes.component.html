@@ -21,22 +21,33 @@
     loading: loading$ | async
   } as obs"
 >
-  <button
-    *ngIf="obs.canAdd"
-    [disabled]="obs.loading"
-    (click)="showAddModal()"
-    aria-expanded="false"
-    aria-haspopup="true"
-    class="btn btn-space btn-primary mr-1 add-note"
-    type="button"
-  >
-    <span>{{ 'dossier.notes.addNote' | translate }}</span>
+  <div class="cds--toolbar-content">
+    <button
+      cdsButton="primary"
+      *ngIf="obs.canAdd"
+      [disabled]="obs.loading"
+      (click)="showAddModal()"
+      aria-expanded="false"
+      aria-haspopup="true"
+    >
+      {{ 'dossier.notes.addNote' | translate }}
 
-    <i class="ml-1 icon mdi mdi-plus"></i>
-  </button>
+      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+    </button>
+  </div>
 
   <div *ngIf="timelineItems">
-    <valtimo-timeline [actions]="actions" [items]="timelineItems"></valtimo-timeline>
+    <valtimo-timeline
+      *ngIf="timelineItems.length > 0"
+      [actions]="actions"
+      [items]="timelineItems"
+    ></valtimo-timeline>
+    <valtimo-no-results
+      *ngIf="timelineItems.length === 0"
+      [description]="'dossier.notes.noResults.description' | translate"
+      [title]="'dossier.notes.noResults.title' | translate"
+      illustration="valtimo-layout/img/emptystate-no-result.svg"
+    ></valtimo-no-results>
   </div>
 
   <valtimo-spinner

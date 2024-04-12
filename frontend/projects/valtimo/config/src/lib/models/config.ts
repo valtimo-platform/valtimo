@@ -76,7 +76,9 @@ export interface OverrideFormioOptions extends FormioOptions {
 export interface ValtimoConfig {
   // eslint-disable-next-line
   logoSvgBase64?: string;
+  darkModeLogoSvgBase64?: string;
   logoPngBase64?: string;
+  darkModeLogoPngBase64?: string;
   applicationTitle?: string;
   initializers: ((injector: Injector) => () => void)[];
   menu: MenuConfig;
