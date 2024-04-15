@@ -27,7 +27,6 @@
     <v-form (valueChange)="formValueChange($event)">
       <v-input
               name="maxDurationInDays"
-              [type]="'number'"
               [min]="1"
               [title]="'maxDurationInDays' | pluginTranslate: pluginId | async"
               [margin]="true"
