@@ -26,6 +26,7 @@ import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-n
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
 import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
+import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -41,6 +42,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-niet-natuurlijk-persoon-zaak-rol': CreateNietNatuurlijkPersoonZaakRolComponent,
     'set-zaakopschorting': SetZaakopschortingComponent,
     'start-hersteltermijn': StartHersteltermijnConfigurationComponent,
+    'end-hersteltermijn': EndHersteltermijnComponent,
   },
   pluginTranslations: {
     nl: {
@@ -94,8 +96,10 @@ const zakenApiPluginSpecification: PluginSpecification = {
       startRecoveryPeriodInformation:
         'Deze actie start een hersteltermijn voor de zaak die aan dit proces is gekoppeld.',
       maxDurationInDays: 'Maximale duur in dagen',
-      maxDurationInDaysTooltip: 'De ingevoerde waarde vertegenwoordigt de maximale duur van de hersteltermijn in dagen.',
-      roltypeUrl: 'Roltype URL',
+      maxDurationInDaysTooltip:
+        'De ingevoerde waarde vertegenwoordigt de maximale duur van de hersteltermijn in dagen.',
+      'end-hersteltermijn': 'Beëindig hersteltermijn',
+      endHersteltermijnInformation: 'Beëindigt de momenteel lopende hersteltermijn van de Zaak',      roltypeUrl: 'Roltype URL',
       rolToelichting: 'Roltoelichting',
       inpBsn: 'Initiator BSN',
       anpIdentificatie: 'Ander natuurlijk persoon identificatie',
@@ -186,8 +190,10 @@ const zakenApiPluginSpecification: PluginSpecification = {
       startHersteltermijnInformation:
         'This action initiates a recovery period for the case associated with this process.',
       maxDurationInDays: 'Maximum duration in days',
-      maxDurationInDaysTooltip: 'The entered value represents the maximum duration of the recovery period in days.',
-      roltypeUrl: 'Role type URL',
+      maxDurationInDaysTooltip:
+        'The entered value represents the maximum duration of the recovery period in days.',
+      'end-hersteltermijn': 'End recovery period',
+      endHersteltermijnInformation: 'Ends the currently running recovery period of the Zaak',      roltypeUrl: 'Role type URL',
       rolToelichting: 'Role explanation',
       inpBsn: 'Initiator BSN',
       anpIdentificatie: 'Other natural person identification',
@@ -278,8 +284,10 @@ const zakenApiPluginSpecification: PluginSpecification = {
       startHersteltermijnInformation:
         'Diese Aktion startet eine Erholungszeit für den Fall, der mit diesem Prozess verknüpft ist.',
       maxDurationInDays: 'Maximale Dauer in Tagen',
-      maxDurationInDaysTooltip: 'Der eingegebene Wert stellt die maximale Dauer der Erholungszeit in Tagen dar.',
-      roltypeUrl: 'Rollentyp-URL',
+      maxDurationInDaysTooltip:
+        'Der eingegebene Wert stellt die maximale Dauer der Erholungszeit in Tagen dar.',
+      'end-hersteltermijn': 'Beenden Sie mit der Erholungsphase',
+      endHersteltermijnInformation: 'Beenden die aktuelle Erholungsphase des Case',      roltypeUrl: 'Rollentyp-URL',
       rolToelichting: 'Rollenerklärung',
       inpBsn: 'Initiator BSN',
       anpIdentificatie: 'Andere Identifizierung natürlicher Personen',
