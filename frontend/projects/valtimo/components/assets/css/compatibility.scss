@@ -111,6 +111,10 @@ valtimo-timeline {
 }
 
 valtimo-modal {
+  pointer-events: none;
+  .modal-dialog {
+    pointer-events: all;
+  }
   .modal-content {
     color: var(--cds-text-primary);
     .colored-header-grey {
@@ -133,6 +137,23 @@ valtimo-modal {
       background-color: var(--cds-layer) !important;
     }
 
+    .modal-header .close {
+      position: relative;
+      left: -14px;
+      top: 12px;
+      opacity: 1;
+
+      span {
+        color: var(--cds-icon-primary);
+        font-weight: 400;
+        font-size: 1.5rem;
+
+        &:hover {
+          color: var(--cds-icon-secondary);
+        }
+      }
+    }
+
     valtimo-searchable-dropdown-select h5 {
       color: var(--cds-text-secondary) !important;
     }
@@ -150,6 +171,21 @@ valtimo-modal {
   button {
     block-size: 48px !important;
     inline-size: 48px !important;
+  }
+  &.--compact {
+    button {
+      block-size: 32px !important;
+      inline-size: 32px !important;
+      min-block-size: 32px !important;
+    }
+  }
+}
+
+.case-detail-overflow {
+  &.--compact {
+    button {
+      min-block-size: 32px !important;
+    }
   }
 }
 
@@ -419,12 +455,6 @@ valtimo-dossier-assign-user {
 
 .modal-backdrop {
   z-index: 10040;
-}
-
-v-modal {
-  v-input {
-    background-color: var(--cds-field-02);
-  }
 }
 
 /* Inside main content */

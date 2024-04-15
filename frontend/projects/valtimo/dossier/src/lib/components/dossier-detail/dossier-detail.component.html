@@ -125,6 +125,7 @@
 
 <ng-template #customStartTrigger>
   <button
+    [size]="(compactMode$ | async) ? 'sm' : 'lg'"
     cdsButton="primary"
     [disabled]="processDocumentDefinitions.length === 0"
     [ngbTooltip]="processDocumentDefinitions.length === 0 ? 'No action' : null"
@@ -162,9 +163,10 @@
       </div>
       <div class="buttons-container">
         <cds-overflow-menu
+          [ngClass]="{'--compact': compactMode$ | async}"
           *ngIf="obs.canHaveAssignee"
           flip="true"
-          [offset]="{y: 48, x: 4}"
+          [offset]="(compactMode$ | async) ? {y: 48, x: -4} : {y: 48, x: 4}"
           class="overflow-button assign-overflow"
         >
           <ng-container
@@ -181,10 +183,11 @@
 
         <cds-overflow-menu
           valtimoCdsOverflowButton
+          [ngClass]="{'--compact': compactMode$ | async}"
           [width]="250"
           [customTrigger]="customStartTrigger"
-          [offset]="{y: 48, x: 37}"
-          class="overflow-button"
+          [offset]="{y: 48, x: 35}"
+          class="overflow-button case-detail-overflow"
         >
           <cds-overflow-menu-option
             *ngFor="let processDocumentDefinition of processDocumentDefinitions"
