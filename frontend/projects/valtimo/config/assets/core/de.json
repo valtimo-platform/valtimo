@@ -1337,7 +1337,10 @@
     "Cancel": "Stornieren",
     "Remove": "Entfernen",
     "Next": "Nächste",
-    "Previous": "Vorherige"
+    "Previous": "Vorherige",
+    "formioIbanComponent": {
+      "errorMessage": "Kein gültiges IBAN. Bitte geben Sie eine gültige IBAN ein."
+    }
   },
   "viewTypeConverter": {
     "Yes": "Ja",
