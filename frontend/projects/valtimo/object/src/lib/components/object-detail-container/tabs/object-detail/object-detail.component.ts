@@ -113,6 +113,10 @@ export class ObjectDetailComponent {
     private readonly objectManagementService: ObjectManagementService
   ) {}
 
+  public ngOnDestroy(): void {
+    this.breadcrumbService.clearSecondBreadcrumb();
+  }
+
   saveObject(): void {
     this.disableInput();
 
