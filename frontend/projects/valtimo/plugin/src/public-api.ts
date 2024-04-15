@@ -63,6 +63,7 @@ export * from './lib/plugins/zaken-api/components/create-niet-natuurlijk-persoon
 export * from './lib/plugins/zaken-api/components/create-zaak/create-zaak-configuration.component';
 export * from './lib/plugins/zaken-api/components/set-zaakopschorting/set-zaakopschorting.component';
 export * from './lib/plugins/zaken-api/components/start-hersteltermijn/start-hersteltermijn-configuration.component';
+export * from './lib/plugins/zaken-api/components/end-hersteltermijn/end-hersteltermijn.component';
 /* objecten api plugin */
 export * from './lib/plugins/objecten-api/objecten-api-plugin-module';
 export * from './lib/plugins/objecten-api/objecten-api-plugin.specification';
