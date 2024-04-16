@@ -230,15 +230,15 @@
   --v-modal-background-color: var(--cds-layer);
   --v-modal-transition: var(--v-transition-opacity-medium), var(--v-transition-right-medium);
   --v-modal-cursor: var(--v-cursor-default);
-  --v-modal-border-radius: var(--v-border-radius-lg);
+  --v-modal-border-radius: 0;
   --v-modal-padding-inline: var(--v-spacing-inline-2xl);
   --v-modal-header-bg-color: var(--cds-layer-02);
   --v-modal-header-padding-block: var(--v-spacing-block-xl);
-  --v-modal-header-border: 1px solid var(--v-color-grey-6);
+  --v-modal-header-border: none;
   --v-modal-header-min-height: var(--v-button-type-icon-height);
   --v-modal-footer-bg-color: var(--cds-layer-02);
   --v-modal-footer-padding-block: var(--v-spacing-block-xl);
-  --v-modal-footer-border: 1px solid var(--v-color-grey-6);
+  --v-modal-footer-border: none;
   --v-modal-header-overflow-width: var(--v-button-type-icon-width);
   --v-modal-header-overflow-gradient-width: var(--v-spacing-inline-2xl);
   --v-modal-header-overflow-gradient-bg-image: linear-gradient(
@@ -306,7 +306,7 @@
   --v-title-h1-line-height: var(--v-line-height-xl);
   --v-title-h1-font-size: var(--v-font-size-xl);
   --v-title-h1-margin-block-end: var(--v-spacing-block-2xl);
-  --v-title-h2-color: var(--v-color-grey-1);
+  --v-title-h2-color: var(--cds-text-primary);
   --v-title-h2-font-weight: var(--v-font-weight-light);
   --v-title-h2-line-height: var(--v-line-height-large);
   --v-title-h2-font-size: var(--v-font-size-large);

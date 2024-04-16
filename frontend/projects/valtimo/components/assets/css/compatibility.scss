@@ -457,6 +457,26 @@ valtimo-dossier-assign-user {
   z-index: 10040;
 }
 
+.v-modal {
+  max-height: 70% !important;
+  &-backdrop {
+    justify-content: space-around !important;
+  }
+  v-input input {
+    width: 100% !important;
+    background-color: var(--cds-field-02);
+  }
+  v-input {
+    width: 100% !important;
+  }
+  .v-select-container {
+    width: 100% !important;
+  }
+  .cds--combo-box {
+    background-color: var(--cds-layer-02);
+  }
+}
+
 /* Inside main content */
 
 .main-content,

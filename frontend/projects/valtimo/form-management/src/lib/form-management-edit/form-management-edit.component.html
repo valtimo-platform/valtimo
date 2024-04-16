@@ -25,7 +25,7 @@
     <ng-container renderInPageHeader [fullWidth]="true">
       <ng-template>
         <div class="valtimo-form-management-edit__header">
-          <cds-overflow-menu [attr.data-carbon-theme]="CARBON_THEME">
+          <cds-overflow-menu>
             <cds-overflow-menu-option (selected)="downloadFormDefinition(obs.formDefinition)">
               {{ 'Download' | translate }}
             </cds-overflow-menu-option>
@@ -66,7 +66,7 @@
       </ng-template>
     </ng-container>
 
-    <cds-tabs type="contained" [attr.data-carbon-theme]="CARBON_THEME">
+    <cds-tabs type="contained">
       <cds-tab [heading]="TABS.BUILDER | translate" (selected)="onSelectedTab(TABS.BUILDER)">
         <valtimo-form-io-builder
           *ngIf="(reloading$ | async) === false && activeTab === TABS.BUILDER"

@@ -52,11 +52,7 @@
     [type]="multiple ? 'multi' : 'single'"
     (clear)="clear()"
     (selected)="setSelected($event)"
-    [attr.data-carbon-theme]="carbonTheme"
   >
-    <cds-dropdown-list
-      [items]="vars.items"
-      [attr.data-carbon-theme]="carbonTheme"
-    ></cds-dropdown-list>
+    <cds-dropdown-list [items]="vars.items"></cds-dropdown-list>
   </cds-combo-box>
 </div>
