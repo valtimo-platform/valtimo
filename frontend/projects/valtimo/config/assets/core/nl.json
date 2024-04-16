@@ -1249,7 +1249,10 @@
     "Cancel": "Annuleren",
     "Remove": "Verwijderen",
     "Next": "Volgende",
-    "Previous": "Vorige"
+    "Previous": "Vorige",
+    "formioIbanComponent": {
+      "errorMessage": "Geen geldige IBAN. Voer een geldige IBAN in."
+    }
   },
   "viewTypeConverter": {
     "Yes": "Ja",

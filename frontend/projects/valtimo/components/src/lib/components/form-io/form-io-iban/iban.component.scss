@@ -1,0 +1,24 @@
+.ibanForm-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ibanForm-row {
+  display: flex;
+  gap: 10px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.form-control {
+  width: 100%;
+}
+
+::ng-deep .formio-component-iban .formio-errors[ref='messageContainer'] {
+  display: none !important;
+}

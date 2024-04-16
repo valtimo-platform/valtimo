@@ -32,6 +32,8 @@ import {DocumentenApiUploaderComponent} from './documenten-api-uploader/document
 import {DocumentenApiMetadataModalModule} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.module';
 import {FormIoCurrentUserComponent} from './form-io-current-user/form-io-current-user.component';
 import {ConfigService} from '@valtimo/config';
+import {FormIoIbanComponent} from './form-io-iban/iban.component';
+import {ReactiveFormsModule} from '@angular/forms';
 
 @NgModule({
   imports: [
@@ -44,6 +46,7 @@ import {ConfigService} from '@valtimo/config';
     ResourceModule,
     RouterModule,
     DocumentenApiMetadataModalModule,
+    ReactiveFormsModule,
   ],
   declarations: [
     FormioComponent,
@@ -51,6 +54,7 @@ import {ConfigService} from '@valtimo/config';
     FormIoUploaderComponent,
     DocumentenApiUploaderComponent,
     FormIoCurrentUserComponent,
+    FormIoIbanComponent,
   ],
   exports: [
     FormioComponent,
@@ -58,6 +62,7 @@ import {ConfigService} from '@valtimo/config';
     FormIoUploaderComponent,
     DocumentenApiUploaderComponent,
     FormIoCurrentUserComponent,
+    FormIoIbanComponent,
   ],
   providers: [
     FormIoDomService,

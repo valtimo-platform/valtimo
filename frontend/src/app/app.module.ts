@@ -35,6 +35,7 @@ import {
   registerFormioUploadComponent,
   UploaderModule,
   WidgetModule,
+  registerFormioIbanComponent,
 } from '@valtimo/components';
 import {ChoicefieldModule} from '@valtimo/choicefield';
 import {
@@ -266,5 +267,6 @@ export class AppModule {
     registerFormioUploadComponent(injector);
     registerFormioFileSelectorComponent(injector);
     registerDocumentenApiFormioUploadComponent(injector);
+    registerFormioIbanComponent(injector);
   }
 }
