@@ -475,6 +475,38 @@ valtimo-dossier-assign-user {
   .cds--combo-box {
     background-color: var(--cds-layer-02);
   }
+  &__footer {
+    padding-inline: 0 !important;
+    padding-block: 0 !important;
+    v-button {
+      .v-button--secondary {
+        &:hover {
+          background-color: var(--cds-button-secondary-hover) !important;
+        }
+      }
+      width: 100%;
+      display: flex;
+      button {
+        width: 100%;
+        border-radius: 0 !important;
+        display: flex !important;
+        flex: 0 1 100%;
+        align-items: baseline;
+        margin: 0;
+        block-size: 4rem;
+        max-inline-size: none;
+        padding-block-end: 2rem !important;
+        padding-inline-start: 0.875rem !important;
+        padding-block-start: 0.875rem !important;
+        font-family: inherit;
+        font-size: var(--cds-body-compact-01-font-size, 0.875rem) !important;
+        font-weight: var(--cds-body-compact-01-font-weight, 400) !important;
+        span {
+          display: none !important;
+        }
+      }
+    }
+  }
 }
 
 /* Inside main content */
