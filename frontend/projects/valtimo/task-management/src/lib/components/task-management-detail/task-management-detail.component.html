@@ -22,11 +22,7 @@
   class="task-management-detail"
 >
   <ng-container *ngIf="{columns: obs.activeTab === TAB_ENUM.COLUMNS} as activeTab">
-    <cds-tabs
-      class="dossier-management-tabs"
-      type="contained"
-      [attr.data-carbon-theme]="carbonTheme"
-    >
+    <cds-tabs class="dossier-management-tabs" type="contained">
       <cds-tab
         [active]="activeTab.columns"
         [heading]="'taskManagement.columns' | translate"

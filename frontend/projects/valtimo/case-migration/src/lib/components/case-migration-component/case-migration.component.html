@@ -58,7 +58,6 @@
         [disabled]="obs.sourceDocumentDefinitionNameItems.isLoading"
         [dropUp]="false"
         [skeleton]="obs.sourceDocumentDefinitionNameItems.isLoading"
-        [attr.data-carbon-theme]="CARBON_THEME"
         (selected)="sourceDocumentDefinitionNameSelected$.next($event.item.documentDefinitionName)"
       >
         <cds-dropdown-list
@@ -72,7 +71,6 @@
         [disabled]="obs.targetDocumentDefinitionNameItems.isLoading"
         [dropUp]="false"
         [skeleton]="obs.targetDocumentDefinitionNameItems.isLoading"
-        [attr.data-carbon-theme]="CARBON_THEME"
         (selected)="
           sourceDocumentDefinitionVersionSelected$.next($event.item.documentDefinitionVersion)
         "
@@ -93,7 +91,6 @@
         [disabled]="obs.targetDocumentDefinitionNameItems.isLoading"
         [dropUp]="false"
         [skeleton]="obs.targetDocumentDefinitionNameItems.isLoading"
-        [attr.data-carbon-theme]="CARBON_THEME"
         (selected)="targetDocumentDefinitionNameSelected$.next($event.item.documentDefinitionName)"
       >
         <cds-dropdown-list
@@ -107,7 +104,6 @@
         [disabled]="obs.targetDocumentDefinitionNameItems.isLoading"
         [dropUp]="false"
         [skeleton]="obs.targetDocumentDefinitionNameItems.isLoading"
-        [attr.data-carbon-theme]="CARBON_THEME"
         (selected)="
           targetDocumentDefinitionVersionSelected$.next($event.item.documentDefinitionVersion)
         "

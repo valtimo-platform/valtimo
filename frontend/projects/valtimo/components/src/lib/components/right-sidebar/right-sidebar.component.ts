@@ -200,7 +200,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
       })
     );
     this.allowUserThemeSwitching =
-      !!this.configService?.config?.featureToggles?.allowUserThemeSwitching;
+      !!this.configService?.config?.featureToggles?.allowUserThemeSwitching ?? true;
     this.enableCompactModeToggle =
       !!this.configService?.config?.featureToggles.enableCompactModeToggle;
     this.enableShowUserNameToggle =

@@ -111,6 +111,10 @@ valtimo-timeline {
 }
 
 valtimo-modal {
+  pointer-events: none;
+  .modal-dialog {
+    pointer-events: all;
+  }
   .modal-content {
     color: var(--cds-text-primary);
     .colored-header-grey {
@@ -133,6 +137,23 @@ valtimo-modal {
       background-color: var(--cds-layer) !important;
     }
 
+    .modal-header .close {
+      position: relative;
+      left: -14px;
+      top: 12px;
+      opacity: 1;
+
+      span {
+        color: var(--cds-icon-primary);
+        font-weight: 400;
+        font-size: 1.5rem;
+
+        &:hover {
+          color: var(--cds-icon-secondary);
+        }
+      }
+    }
+
     valtimo-searchable-dropdown-select h5 {
       color: var(--cds-text-secondary) !important;
     }
@@ -150,6 +171,21 @@ valtimo-modal {
   button {
     block-size: 48px !important;
     inline-size: 48px !important;
+  }
+  &.--compact {
+    button {
+      block-size: 32px !important;
+      inline-size: 32px !important;
+      min-block-size: 32px !important;
+    }
+  }
+}
+
+.case-detail-overflow {
+  &.--compact {
+    button {
+      min-block-size: 32px !important;
+    }
   }
 }
 
@@ -421,9 +457,55 @@ valtimo-dossier-assign-user {
   z-index: 10040;
 }
 
-v-modal {
-  v-input {
+.v-modal {
+  max-height: 70% !important;
+  &-backdrop {
+    justify-content: space-around !important;
+  }
+  v-input input {
+    width: 100% !important;
     background-color: var(--cds-field-02);
+  }
+  v-input {
+    width: 100% !important;
+  }
+  .v-select-container {
+    width: 100% !important;
+  }
+  .cds--combo-box {
+    background-color: var(--cds-layer-02);
+  }
+  &__footer {
+    padding-inline: 0 !important;
+    padding-block: 0 !important;
+    v-button {
+      .v-button--secondary {
+        &:hover {
+          background-color: var(--cds-button-secondary-hover) !important;
+        }
+      }
+      width: 100%;
+      display: flex;
+      button {
+        width: 100%;
+        border-radius: 0 !important;
+        display: flex !important;
+        flex: 0 1 100%;
+        align-items: baseline;
+        margin: 0;
+        block-size: 4rem;
+        max-inline-size: none;
+        padding-block-end: 2rem !important;
+        padding-inline-start: 0.875rem !important;
+        padding-block-start: 0.875rem !important;
+        font-family: inherit;
+        font-size: var(--cds-body-compact-01-font-size, 0.875rem) !important;
+        font-weight: var(--cds-body-compact-01-font-weight, 400) !important;
+        span {
+          display: none !important;
+        }
+      }
+    }
   }
 }
 
