@@ -24,7 +24,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {PageTitleService, PendingChangesComponent} from '@valtimo/components';
-import {ConfigService} from '@valtimo/config';
+import {CaseManagementTabConfig, ConfigService} from '@valtimo/config';
 import {
   combineLatest,
   distinctUntilChanged,
@@ -69,7 +69,8 @@ export class DossierManagementDetailContainerComponent
       this._activeTab = currentTab;
     })
   );
-  public readonly injectedCaseManagementTabs$ = this.tabService.injectedCaseManagementTabs$;
+  public readonly injectedCaseManagementTabs$: Observable<CaseManagementTabConfig[]> =
+    this.tabService.injectedCaseManagementTabs$;
   public readonly documentDefinitionTitle$ = this.pageTitleService.customPageTitle$;
   public readonly CARBON_THEME = 'g10';
   public readonly DossierManagementTabs = Object.values(TabEnum);

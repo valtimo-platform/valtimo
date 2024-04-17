@@ -19,7 +19,6 @@ import {CASE_TAB_TOKEN, CaseTabConfig, DefaultTabs} from '@valtimo/dossier';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
 import {ListItem} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
-
 import {TabEnum} from '../models/tab.enum';
 import {CASE_MANAGEMENT_TAB_TOKEN, CaseManagementTabConfig} from '@valtimo/config';
 
