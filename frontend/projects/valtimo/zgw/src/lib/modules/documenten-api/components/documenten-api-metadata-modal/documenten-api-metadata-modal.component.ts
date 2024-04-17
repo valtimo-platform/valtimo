@@ -38,7 +38,7 @@ import {
 } from 'rxjs';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ActivatedRoute} from '@angular/router';
-import {DocumentService} from 'dist/valtimo/document';
+import {DocumentService} from '@valtimo/document';
 import {KeycloakService} from 'keycloak-angular';
 import {tap} from 'rxjs/operators';
 import {CommonModule} from '@angular/common';

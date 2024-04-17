@@ -47,7 +47,7 @@ import {
   MoveRowEvent,
   PendingChangesComponent,
   ViewType,
-} from 'dist/valtimo/components';
+} from '@valtimo/components';
 import {DocumentenApiColumnModalComponent} from '../documenten-api-column-modal/documenten-api-column-modal.component';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
