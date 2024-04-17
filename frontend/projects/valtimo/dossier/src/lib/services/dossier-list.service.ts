@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Injectable} from '@angular/core';
+import {Documents, SpecifiedDocuments} from '@valtimo/document';
 import {BehaviorSubject, map, Observable, take} from 'rxjs';
 import {DossierColumnService} from '../services';
-import {Documents, SpecifiedDocuments} from '@valtimo/document';
 
 @Injectable()
 export class DossierListService {

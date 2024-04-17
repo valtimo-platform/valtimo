@@ -18,6 +18,7 @@ export * from './alert.model';
 export * from './button.model';
 export * from './carbon-list.model';
 export * from './carbon-pagination.model';
+export * from './carbon-tag.model';
 export * from './carbon-theme.model';
 export * from './choice-field.model';
 export * from './choicefield-value.model';

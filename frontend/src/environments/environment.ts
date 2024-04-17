@@ -28,7 +28,6 @@ import {
   ValtimoConfig,
 } from '@valtimo/config';
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
-import {openZaakExtensionInitializer} from '@valtimo/plugin';
 import {
   DARK_MODE_LOGO_BASE_64,
   DARK_MODE_LOGO_BASE_64_PNG,
@@ -75,7 +74,6 @@ export const environment: ValtimoConfig = {
   darkModeLogoPngBase64: DARK_MODE_LOGO_BASE_64_PNG,
   applicationTitle: '',
   production: false,
-  initializers: [openZaakExtensionInitializer],
   authentication: authenticationKeycloak,
   menu: {
     menuItems: [
@@ -200,6 +198,8 @@ export const environment: ValtimoConfig = {
       },
     ],
   },
+  caseFileUploadAcceptedFiles:
+    'image/png, image/jpeg, text/plain, application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/xml',
   visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.OPEN, TaskListTab.ALL],
   visibleDossierListTabs: [DossierListTab.ALL, DossierListTab.MINE, DossierListTab.OPEN],
   customTaskList: {
@@ -253,6 +253,7 @@ export const environment: ValtimoConfig = {
     allowUserThemeSwitching: true,
     enableCompactModeToggle: true,
     enableUserNameInTopBarToggle: true,
+    enableTabManagement: true,
   },
   customDossierHeader: {
     leningen: [

@@ -61,6 +61,7 @@ import {
   CarbonListItem,
   CarbonListTranslations,
   CarbonPaginatorConfig,
+  CarbonTag,
   ColumnConfig,
   DEFAULT_LIST_TRANSLATIONS,
   DEFAULT_PAGINATION,
@@ -86,7 +87,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('booleanTemplate') booleanTemplate: TemplateRef<any>;
   @ViewChild('moveRowsTemplate') moveRowsTemplate: TemplateRef<any>;
   @ViewChild('rowDisabled') rowDisabled: TemplateRef<any>;
-  @ViewChild('statusTemplate') statusTemplate: TemplateRef<any>;
+  @ViewChild('tagTemplate') tagTemplate: TemplateRef<any>;
   @ViewChild(Table) private _table: Table;
 
   private _completeDataSource: TableItem[][];
@@ -131,24 +132,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   public get pagination(): Pagination {
     return this._pagination;
-  }
-
-  // TODO: make this generic for tags not just case status
-  private _availableStatuses: {[key: string]: {title: string; tagType: TagType}};
-  @Input() set availableStatuses(value: InternalCaseStatus[]) {
-    this._availableStatuses = value.reduce(
-      (acc, curr) => ({
-        ...acc,
-        [curr.key]: {
-          title: curr.title,
-          tagType: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(curr.color),
-        },
-      }),
-      {}
-    );
-  }
-  public get availableStatuses(): {[key: string]: {title: string; tagType: TagType}} {
-    return this._availableStatuses;
   }
 
   @Input() loading: boolean;
@@ -221,6 +204,8 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     state: {name: '', direction: 'DESC'},
     isSorting: false,
   });
+  public readonly tagModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly tagModalData$ = new BehaviorSubject<CarbonTag[]>([]);
 
   public readonly CASES_WITHOUT_STATUS_KEY = CASES_WITHOUT_STATUS_KEY;
   public readonly ViewType = ViewType;
@@ -408,10 +393,10 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
                 data,
                 template: this.booleanTemplate,
               });
-            case ViewType.STATUS:
+            case ViewType.TAGS:
               return new TableItem({
-                data: {item, index, length: items.length},
-                template: this.statusTemplate,
+                data: {tags: item.tags},
+                template: this.tagTemplate,
               });
             default:
               return new TableItem({data: this.resolveObject(field, item) ?? '-', item});
@@ -471,6 +456,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
         ? [
             new TableHeaderItem({
               className: 'valtimo-carbon-list__actions',
+              sortable: false,
             }),
           ]
         : []),
@@ -507,6 +493,16 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.moveRow.emit(moveRowEvent);
     this.itemsReordered.emit(orderedItems);
+  }
+
+  public onTagClick(event: Event, tags: CarbonTag[]): void {
+    event.stopImmediatePropagation();
+    this.tagModalOpen$.next(true);
+    this.tagModalData$.next(tags);
+  }
+
+  public onCloseEvent(): void {
+    this.tagModalOpen$.next(false);
   }
 
   private getExtraItems(item: CarbonListItem, index: number, length: number): TableItem[] {

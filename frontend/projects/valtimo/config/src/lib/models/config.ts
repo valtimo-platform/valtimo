@@ -80,7 +80,8 @@ export interface ValtimoConfig {
   logoPngBase64?: string;
   darkModeLogoPngBase64?: string;
   applicationTitle?: string;
-  initializers: ((injector: Injector) => () => void)[];
+  /**@deprecated Initializers will be removed in the future. */
+  initializers?: ((injector: Injector) => () => void)[];
   menu: MenuConfig;
   authentication: Auth;
   production: boolean;
@@ -155,6 +156,7 @@ export interface FeedbackMailTo {
 
 export enum UploadProvider {
   S3,
+  /**@deprecated This upload provider will be removed in the future. */
   OPEN_ZAAK,
   DOCUMENTEN_API,
 }

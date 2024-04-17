@@ -38,12 +38,12 @@
 <ng-template #versionSelection let-obs="obs">
   <cds-dropdown
     class="version-selection"
-    [disabled]="obs.loadingVersion || obs.versionListItems.length === 1"
+    [disabled]="obs.loadingVersion || (obs.versionListItems.length || []) === 1"
     [skeleton]="obs.loadingVersion"
     (selected)="setVersion($event)"
     [size]="obs.compactMode ? 'sm' : 'md'"
   >
-    <cds-dropdown-list [items]="obs.versionListItems"></cds-dropdown-list>
+    <cds-dropdown-list [items]="obs.versionListItems || []"></cds-dropdown-list>
   </cds-dropdown>
 </ng-template>
 

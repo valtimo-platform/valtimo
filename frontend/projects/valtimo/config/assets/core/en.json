@@ -79,7 +79,9 @@
       "notes": "Notes",
       "MINE": "My cases",
       "OPEN": "Unassigned cases",
-      "ALL": "All cases"
+      "ALL": "All cases",
+      "componentNotFound": "Tab component not found",
+      "componentNotFoundMessage": "No component has been found for this tab. Please contact your system administrator."
     },
     "forms": {
       "globalSearchPlaceHolder": "Everything",
@@ -137,7 +139,11 @@
         "regularUser": "The document upload is not available for this case. Please contact an administrator",
         "adminRole": "The process for uploading documents has not been configured. Please configure this process on the case management page"
       },
-      "noZaakFound": "No files could be retrieved because no Zaak was for found for this case."
+      "navigateToCaseAdmin": "Configure Zaak",
+      "noZaakFoundTitle": "No Zaak found",
+      "noZaakFound": "No files could be retrieved because no Zaak was for found for this case.",
+      "noFilesTitle": "No files",
+      "noFiles": "No files found for this case."
     },
     "startSubProcess": "Start",
     "claimAssigneeCase": "Claim",
@@ -165,6 +171,9 @@
     "fillInMetadata": "File information",
     "cancel": "Cancel",
     "upload": "Upload",
+    "size": "Size",
+    "format": "File format",
+    "trefwoorden": "Keywords",
     "filename": "Filename",
     "filenameTooltip": "The name of the physical file in which the content of the document is captured, including extension",
     "confidentialityLevel": "Confidentiality level",
@@ -204,7 +213,27 @@
     "informatieobjecttypeTooltip": "A document type which is related to the zaak type of the current case",
     "additionalDate": "Additional document date",
     "additionalDateTooltip": "An additional date that can be added to the document as metadata. This additional date is optional. If 'Receipt date' is selected, the document status can only be set to 'definitive' or 'archived'.",
-    "noAdditionalDate": "No additional date"
+    "noAdditionalDate": "No additional date",
+    "delete": "Delete",
+    "download": "Download",
+    "application/octet-stream": "Unknown",
+    "application/json": "JSON",
+    "application/msword": "DOC",
+    "application/pdf": "PDF",
+    "application/vnd.ms-powerpoint": "PPT",
+    "application/vnd.ms-excel": "XLS",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": "PPTX",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "XLSX",
+    "audio/mpeg": "MP3",
+    "image/bmp": "BMP",
+    "image/gif": "GIF",
+    "image/jpeg": "JPEG",
+    "image/png": "PNG",
+    "image/svg+xml": "SVG",
+    "text/csv": "CSV",
+    "text/plain": "TXT",
+    "video/mp4": "MP4"
   },
   "summary": {
     "userTasksDoneState": "All done!",
@@ -593,6 +622,10 @@
         "key": "Status key",
         "visible": "Visible by default",
         "color": "Color"
+      },
+      "noResults": {
+        "title": "No statuses",
+        "description": "Add a status to start"
       }
     }
   },
@@ -796,6 +829,7 @@
     "warning": "Warning",
     "finish": "Finish",
     "add": "Add",
+    "tags": "Tags",
     "tagType": {
       "red": "Red",
       "magenta": "Magenta",
@@ -1268,7 +1302,7 @@
     "enum": "Enumeration",
     "arrayCount": "Count",
     "underscoresToSpaces": "Underscores to spaces",
-    "status": "Status"
+    "tags": "Tags"
   },
   "object": {
     "title": "Objects",

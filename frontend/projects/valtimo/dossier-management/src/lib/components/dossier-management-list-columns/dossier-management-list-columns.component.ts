@@ -225,7 +225,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
     ViewType.ENUM,
     ViewType.ARRAY_COUNT,
     ViewType.UNDERSCORES_TO_SPACES,
-    ViewType.STATUS,
+    ViewType.TAGS,
   ];
 
   readonly showDateFormat$ = this.formGroup.valueChanges.pipe(

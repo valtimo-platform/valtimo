@@ -66,7 +66,6 @@ import {DossierManagementDetailContainerActionsComponent} from './components/dos
 import {DossierManagementDetailContainerComponent} from './components/dossier-management-detail-container/dossier-management-detail-container.component';
 import {DossierManagementDetailComponent} from './components/dossier-management-detail/dossier-management-detail.component';
 import {DossierManagementDocumentDefinitionComponent} from './components/dossier-management-document-definition/dossier-management-document-definition.component';
-import {DossierManagementLinkProcessComponent} from './components/dossier-management-link-process/dossier-management-link-process.component';
 import {DossierManagementListColumnsComponent} from './components/dossier-management-list-columns/dossier-management-list-columns.component';
 import {DossierManagementListComponent} from './components/dossier-management-list/dossier-management-list.component';
 import {DossierManagementProcessesComponent} from './components/dossier-management-processes/dossier-management-processes.component';
@@ -91,7 +90,6 @@ import {DossierManagementCreateComponent} from './components/dossier-management-
     DossierManagementConnectModalComponent,
     DossierManagementRemoveModalComponent,
     DossierManagementUploadComponent,
-    DossierManagementLinkProcessComponent,
     DossierManagementSearchFieldsComponent,
     DossierManagementDetailContainerComponent,
     DossierManagementAssigneeComponent,

@@ -32,8 +32,7 @@ import {FormioForm} from '@formio/angular';
 import {UserProviderService} from '@valtimo/security';
 import {take} from 'rxjs/operators';
 import {CAN_VIEW_CASE_PERMISSION, DOSSIER_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
-import {DossierListService} from '../../services';
-import {StartModalService} from '../../services/start-modal.service';
+import {DossierListService, StartModalService} from '../../services';
 import {ConfigService} from '@valtimo/config';
 
 @Component({

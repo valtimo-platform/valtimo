@@ -26,3 +26,4 @@ export * from './lib/services';
 export * from './lib/translation';
 export * from './lib/utils';
 export * from './lib/testing';
+export * from './lib/zgw';

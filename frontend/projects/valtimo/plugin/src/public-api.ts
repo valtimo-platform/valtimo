@@ -42,7 +42,6 @@ export * from './lib/plugins/smart-documents/components/get-template-names/get-t
 /* documenten api plugin */
 export * from './lib/plugins/documenten-api/documenten-api-plugin.module';
 export * from './lib/plugins/documenten-api/documenten-api-plugin.specification';
-export * from './lib/plugins/documenten-api/services/documenten-api.service';
 export * from './lib/plugins/documenten-api/models/config';
 export * from './lib/plugins/documenten-api/components/store-temp-document/store-temp-document-configuration.component';
 export * from './lib/plugins/documenten-api/components/documenten-api-configuration/documenten-api-configuration.component';
@@ -69,8 +68,6 @@ export * from './lib/plugins/zaken-api/components/end-hersteltermijn/end-herstel
 export * from './lib/plugins/zaken-api/components/create-zaakeigenschap/create-zaakeigenschap.component';
 export * from './lib/plugins/zaken-api/components/update-zaakeigenschap/update-zaakeigenschap.component';
 export * from './lib/plugins/zaken-api/components/delete-zaakeigenschap/delete-zaakeigenschap.component';
-export * from './lib/plugins/zaken-api/components/open-zaak-extension/open-zaak-type-link-extension.component';
-export * from './lib/plugins/zaken-api/components/open-zaak-extension/open-zaak.extension.init';
 /* objecten api plugin */
 export * from './lib/plugins/objecten-api/objecten-api-plugin-module';
 export * from './lib/plugins/objecten-api/objecten-api-plugin.specification';
@@ -107,3 +104,6 @@ export * from './lib/plugins/besluiten-api/besluiten-api-plugin.specification';
 export * from './lib/plugins/besluiten-api/components/besluiten-api-configuration/besluiten-api-configuration.component';
 export * from './lib/plugins/besluiten-api/components/create-zaak-besluit/create-zaak-besluit-configuration.component';
 export * from './lib/plugins/besluiten-api/components/link-document-to-besluit/link-document-to-besluit-configuration.component';
+/* exact */
+export * from './lib/plugins/exact/exact.plugin.specification';
+export * from './lib/plugins/exact/exact-plugin.module';

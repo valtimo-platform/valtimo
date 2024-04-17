@@ -1,0 +1,134 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="carbon-document-table-wrapper"
+  *ngIf="{
+    loading: loading$ | async,
+    uploading: uploading$ | async,
+    relatedFiles: relatedFiles$ | async
+  } as obs"
+>
+  @if (!obs.loading && !obs.uploading && obs.relatedFiles) {
+    <ng-container
+      *ngTemplateOutlet="list; context: {relatedFiles: obs.relatedFiles}"
+    ></ng-container>
+  } @else {
+    <ng-container *ngTemplateOutlet="listLoading"></ng-container>
+  }
+</div>
+
+<valtimo-documenten-api-metadata-modal
+  [disabled$]="modalDisabled$"
+  [file$]="fileToBeUploaded$"
+  [hide$]="hideModal$"
+  [show$]="showModal$"
+  (metadata)="metadataSet($event)"
+></valtimo-documenten-api-metadata-modal>
+
+<ng-template #list let-relatedFiles="relatedFiles">
+  <valtimo-carbon-list
+    [actionItems]="actionItems"
+    [items]="relatedFiles"
+    [fields]="fields"
+    (rowClicked)="onRowClick($event)"
+    hideColumnHeader
+  >
+    <div carbonToolbarContent>
+      <input
+        [accept]="acceptedFiles"
+        (change)="onFileSelected($event)"
+        hidden
+        type="file"
+        #fileInput
+      />
+
+      <ng-container *ngTemplateOutlet="uploadButton"></ng-container>
+    </div>
+
+    @if (showZaakLinkWarning && isAdmin) {
+      <valtimo-no-results
+        [action]="navigateToCaseAdminButton"
+        description="{{ 'dossier.documenten.noZaakFound' | translate }}"
+        title="{{ 'dossier.documenten.noZaakFoundTitle' | translate }}"
+      ></valtimo-no-results>
+    } @else {
+      <valtimo-no-results
+        [action]="uploadButton"
+        description="{{ 'dossier.documenten.noFiles' | translate }}"
+        title="{{ 'dossier.documenten.noFilesTitle' | translate }}"
+      ></valtimo-no-results>
+    }
+  </valtimo-carbon-list>
+</ng-template>
+
+<ng-template #listLoading>
+  <valtimo-carbon-list [items]="[]" [fields]="fields" [loading]="true" hideColumnHeader>
+    <div carbonToolbarContent>
+      <ng-container *ngTemplateOutlet="uploadButton; context: {disabled: true}"></ng-container>
+    </div>
+  </valtimo-carbon-list>
+</ng-template>
+
+<ng-template #downloadButton let-index="index" let-item="item">
+  <div
+    *ngIf="{isDownloading: indexesIncludeIndex(downloadingFileIndexes$ | async, index)} as vars"
+    class="download-button-container"
+  >
+    <button
+      *ngIf="!vars.isDownloading"
+      cdsButton="primary"
+      size="sm"
+      (click)="downloadDocument(item, index)"
+    >
+      {{ 'interface.download' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
+    </button>
+
+    <cds-loading size="sm" *ngIf="vars.isDownloading"></cds-loading>
+  </div>
+</ng-template>
+
+<ng-template #dossierListActions>
+  <input [accept]="acceptedFiles" (change)="onFileSelected($event)" hidden type="file" #fileInput />
+  <ng-container *ngTemplateOutlet="uploadButton"></ng-container>
+</ng-template>
+
+<ng-template #uploadButton let-disabled="disabled">
+  <button
+    [disabled]="(uploadProcessLinkedSet && !uploadProcessLinked) || showZaakLinkWarning || disabled"
+    [vTooltip]="getUploadButtonTooltip() | translate"
+    (click)="onUploadButtonClick()"
+    cdsButton="primary"
+  >
+    {{ 'Upload' | translate }}
+    <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
+  </button>
+</ng-template>
+
+<ng-template #navigateToCaseAdminButton>
+  <button (click)="onNavigateToCaseAdminClick()" cdsButton="primary">
+    {{ 'dossier.documenten.navigateToCaseAdmin' | translate }}
+    <svg class="cds--btn__icon" cdsIcon="settings" size="16"></svg>
+  </button>
+</ng-template>
+
+<ng-template #sizeTemplate let-data="data">
+  <div class="documenten-api-documents-filesize-template">
+    {{ bytesToMegabytes(data.item.sizeInBytes) }}
+  </div>
+</ng-template>

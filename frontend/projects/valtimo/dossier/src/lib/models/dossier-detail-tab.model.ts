@@ -21,8 +21,6 @@ enum DefaultTabs {
   progress = 'progress',
   audit = 'audit',
   documents = 'documents',
-  contactMoments = 'contact-moments',
-  zaakobjecten = 'zaakobjecten',
   notes = 'notes',
 }
 

@@ -1,0 +1,18 @@
+.valtimo-tags-modal {
+  &__content {
+    max-height: 300px;
+  }
+
+  &__container {
+    width: 100%;
+    max-height: 100%;
+    overflow: auto;
+    background: var(--cds-layer-02);
+    padding: 16px;
+    border-radius: 8px;
+
+    & > *:first-child {
+      margin-left: 0 !important;
+    }
+  }
+}

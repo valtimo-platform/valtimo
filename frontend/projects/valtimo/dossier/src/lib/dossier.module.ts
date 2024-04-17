@@ -31,7 +31,6 @@ import {
   CarbonListModule,
   ConfirmationModalModule,
   DataListModule,
-  DocumentenApiMetadataModalModule,
   DropzoneModule,
   FilterSidebarModule,
   FormIoModule,
@@ -80,15 +79,11 @@ import {DossierAssignUserComponent} from './components/dossier-assign-user/dossi
 import {DossierBulkAssignModalComponent} from './components/dossier-bulk-assign-modal/dossier-bulk-assign-modal.component';
 import {DossierDetailComponent} from './components/dossier-detail/dossier-detail.component';
 import {DossierDetailTabAuditComponent} from './components/dossier-detail/tab/audit/audit.component';
-import {DossierDetailTabContactMomentsComponent} from './components/dossier-detail/tab/contact-moments/contact-moments.component';
-import {DossierDetailTabDocumentenApiDocumentsComponent} from './components/dossier-detail/tab/documenten-api-documents/documenten-api-documents.component';
 import {DossierDetailTabDocumentsComponent} from './components/dossier-detail/tab/documents/documents.component';
 import {DossierDetailTabNotesComponent} from './components/dossier-detail/tab/notes/notes.component';
-import {DossierDetailTabObjectTypeComponent} from './components/dossier-detail/tab/object-type/object-type.component';
 import {DossierDetailTabProgressComponent} from './components/dossier-detail/tab/progress/progress.component';
 import {DossierDetailTabS3DocumentsComponent} from './components/dossier-detail/tab/s3-documents/s3-documents.component';
 import {DossierDetailTabSummaryComponent} from './components/dossier-detail/tab/summary/summary.component';
-import {DossierDetailTabZaakobjectenComponent} from './components/dossier-detail/tab/zaakobjecten/zaakobjecten.component';
 import {DossierListActionsComponent} from './components/dossier-list-actions/dossier-list-actions.component';
 import {DossierListComponent} from './components/dossier-list/dossier-list.component';
 import {DossierProcessStartModalComponent} from './components/dossier-process-start-modal/dossier-process-start-modal.component';
@@ -99,6 +94,7 @@ import {TAB_MAP} from './constants';
 import {DossierBulkAssignService, DossierService} from './services';
 import {DossierDetailTabFormioComponent} from './components/dossier-detail/tab/formio/formio.component';
 import {TabTranslatePipeModule} from './pipes';
+import {DossierDetailTabNotFoundComponent} from './components/dossier-detail/tab/not-found/not-found.component';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -112,15 +108,12 @@ export type TabsFactory = () => Map<string, object>;
     DossierDetailTabProgressComponent,
     DossierDetailTabAuditComponent,
     DossierDetailTabDocumentsComponent,
-    DossierDetailTabContactMomentsComponent,
-    DossierDetailTabZaakobjectenComponent,
     DossierDetailTabNotesComponent,
     DossierUpdateComponent,
     DossierProcessStartModalComponent,
     DossierSupportingProcessStartModalComponent,
-    DossierDetailTabObjectTypeComponent,
-    DossierDetailTabDocumentenApiDocumentsComponent,
     DossierDetailTabS3DocumentsComponent,
+    DossierDetailTabNotFoundComponent,
     DossierAssignUserComponent,
     NoteModalComponent,
     DossierDetailTabFormioComponent,
@@ -164,7 +157,6 @@ export type TabsFactory = () => Map<string, object>;
     VModalModule,
     TitleModule,
     ButtonModule,
-    DocumentenApiMetadataModalModule,
     SearchableDropdownSelectModule,
     SearchFieldsModule,
     PageModule,

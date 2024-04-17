@@ -15,7 +15,7 @@
   -->
 
 <valtimo-dossier-detail-tab-s3-documents
-  *ngIf="s3UploadProvider || openZaakUploadProvider"
+  *ngIf="(s3UploadProvider$ | async) || (openZaakUploadProvider$ | async)"
 ></valtimo-dossier-detail-tab-s3-documents>
-<valtimo-dossier-detail-tab-documenten-api-documents *ngIf="documentenApiUploadProvider">
-</valtimo-dossier-detail-tab-documenten-api-documents>
+
+<ng-template #externalDocumentsTab></ng-template>
