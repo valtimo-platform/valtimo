@@ -33,7 +33,7 @@ export class GaugeDisplayComponent implements DisplayComponent {
     return [
       {
         group: 'value',
-        value: this.calculatePercentage(this.data.value, this.data.total), // total = 6
+        value: this.calculatePercentage(this.data.value, this.data.total),
       },
       {
         group: 'delta',
@@ -46,8 +46,8 @@ export class GaugeDisplayComponent implements DisplayComponent {
     return (value * 100.0) / (total || 100.0);
   }
 
-  public numberFormatter(value: number, total: number): number {
-    return Math.round(value * total) / 100.0;
+  public numberFormatter(value: number, total: number): string {
+    return Math.round(value * total) / 100.0 + ' XD';
   }
 
   GaugeChartOptions = {
@@ -55,7 +55,7 @@ export class GaugeDisplayComponent implements DisplayComponent {
     toolbar: false,
     height: '110px',
     gauge: {
-      numberFormatter: value => this.numberFormatter(value, this?.data?.total),
+      numberFormatter: value => this.numberFormatter(value, this.data.total),
       deltaArrow: {
         enabled: false,
       },

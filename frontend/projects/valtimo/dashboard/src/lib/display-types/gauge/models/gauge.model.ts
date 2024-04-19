@@ -22,10 +22,6 @@ interface GaugeData {
 interface GaugeDisplayTypeProperties {
   title: string;
   subtitle: string;
-  useKPI: boolean;
-  lowSeverityThreshold: number;
-  mediumSeverityThreshold: number;
-  highSeverityThreshold: number;
   label?: string;
 }
 
