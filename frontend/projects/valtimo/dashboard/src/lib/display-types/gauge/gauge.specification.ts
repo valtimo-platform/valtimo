@@ -26,7 +26,7 @@ export const gaugeSpecification: DisplayTypeSpecification = {
   height: 1,
   translations: {
     nl: {
-      title: 'Gauge',
+      title: 'Graadmeter',
       formTitle: 'Titel (vereist)',
       formTitleHelperText: 'De titel die wordt weergegeven in de widget',
       subtitle: 'Ondertitel',
@@ -52,7 +52,7 @@ export const gaugeSpecification: DisplayTypeSpecification = {
       highSeverityThreshold: 'High severity threshold (required)',
     },
     de: {
-      title: 'Gauge',
+      title: 'Messgerät',
       formTitle: 'Titel (erforderlich)',
       formTitleHelperText: 'Der im Widget angezeigte Titel',
       subtitle: 'Untertitel',

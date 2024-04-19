@@ -70,8 +70,8 @@ export class GaugeDisplayComponent implements DisplayComponent {
     {
       title: 'I work',
       resizable: false,
-      height: '100%',
-      width: '100%',
+      height: '100px',
+      width: '100px',
       gauge: {
         type: 'semi',
         status: 'danger'
