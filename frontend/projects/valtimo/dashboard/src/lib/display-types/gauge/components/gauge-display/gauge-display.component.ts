@@ -16,7 +16,7 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {DisplayComponent} from '../../../../models';
 import {GaugeData, GaugeDisplayTypeProperties} from '../../models';
-import {type ChartTabularData} from "@carbon/charts";
+import {type ChartTabularData} from '@carbon/charts';
 
 @Component({
   selector: 'valtimo-gauge-display',
@@ -39,11 +39,11 @@ export class GaugeDisplayComponent implements DisplayComponent {
         group: 'delta',
         value: 100.0,
       },
-    ]
+    ];
   }
 
   public calculatePercentage(value: number, total?: number): number {
-    return value * 100.0 / (total || 100.0);
+    return (value * 100.0) / (total || 100.0);
   }
 
   public numberFormatter(value: number, total: number): number {
@@ -53,10 +53,9 @@ export class GaugeDisplayComponent implements DisplayComponent {
   GaugeChartOptions = {
     resizable: false,
     toolbar: false,
-    height: '130px',
-    width: '100%',
+    height: '110px',
     gauge: {
-      numberFormatter: (value => this.numberFormatter(value, this?.data?.total)),
+      numberFormatter: value => this.numberFormatter(value, this?.data?.total),
       deltaArrow: {
         enabled: false,
       },

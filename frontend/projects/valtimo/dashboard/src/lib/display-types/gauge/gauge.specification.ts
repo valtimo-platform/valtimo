@@ -16,7 +16,7 @@
 
 import {DisplayTypeSpecification} from '../../models';
 import {DATA_FEATURES} from '../../constants';
-import {GaugeDisplayComponent, GaugeConfigurationComponent} from './components';
+import {GaugeConfigurationComponent, GaugeDisplayComponent} from './components';
 
 export const gaugeSpecification: DisplayTypeSpecification = {
   displayTypeKey: 'gauge',
