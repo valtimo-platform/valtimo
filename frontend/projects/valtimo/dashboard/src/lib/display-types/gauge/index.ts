@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,15 +14,7 @@
  * limitations under the License.
  */
 
-:root {
-  --vcds-color-100: #1a0a00;
-  --vcds-color-90: #803300;
-  --vcds-color-80: #803300;
-  --vcds-color-70: #b34800;
-  --vcds-color-60: #e65c00;
-  --vcds-color-50: #ff761a;
-  --vcds-color-40: #ff944d;
-  --vcds-color-30: #ffb380;
-  --vcds-color-20: #ffd1b3;
-  --vcds-color-10: #fff0e5;
-}
+export * from './gauge.module';
+export * from './gauge.specification';
+export * from './components';
+export * from './models';

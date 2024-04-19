@@ -17,3 +17,4 @@
 export * from './bar-chart';
 export * from './big-number';
 export * from './meter';
+export * from './gauge';
