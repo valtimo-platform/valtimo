@@ -14,15 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, OnInit, Output,} from '@angular/core';
 import {ConfigurationOutput, DisplayTypeConfigurationComponent} from '../../../../models';
 import {startWith, Subscription} from 'rxjs';
 import {FormBuilder, Validators} from '@angular/forms';
@@ -41,9 +33,6 @@ export class GaugeConfigurationComponent
     subtitle: this.fb.control(''),
     label: this.fb.control(''),
     useKPI: this.fb.control(false, [Validators.required]),
-    lowSeverityThreshold: this.fb.control(null),
-    mediumSeverityThreshold: this.fb.control(null),
-    highSeverityThreshold: this.fb.control(null),
   });
 
   @Input() displayTypeKey: string;
@@ -67,31 +56,11 @@ export class GaugeConfigurationComponent
     return this.form.get('label');
   }
 
-  public get useKPI() {
-    return this.form.get('useKPI');
-  }
-
-  public get lowSeverityThreshold() {
-    return this.form.get('lowSeverityThreshold');
-  }
-
-  public get mediumSeverityThreshold() {
-    return this.form.get('mediumSeverityThreshold');
-  }
-
-  public get highSeverityThreshold() {
-    return this.form.get('highSeverityThreshold');
-  }
-
   @Input() set prefillConfiguration(configurationValue: GaugeDisplayTypeProperties) {
     if (configurationValue) {
       this.title.setValue(configurationValue.title || '');
       this.subtitle.setValue(configurationValue.subtitle || '');
       this.label.setValue(configurationValue.label || '');
-      this.useKPI.setValue(configurationValue.useKPI || false);
-      this.lowSeverityThreshold.setValue(configurationValue.lowSeverityThreshold || null);
-      this.mediumSeverityThreshold.setValue(configurationValue.mediumSeverityThreshold || null);
-      this.highSeverityThreshold.setValue(configurationValue.highSeverityThreshold || null);
     }
   }
 
@@ -103,7 +72,6 @@ export class GaugeConfigurationComponent
 
   public ngOnInit(): void {
     this.openFormSubscription();
-    this.openKPISubscription();
   }
 
   public ngOnDestroy(): void {
@@ -114,28 +82,6 @@ export class GaugeConfigurationComponent
     this._subscriptions.add(
       this.form.valueChanges.pipe(startWith(this.form.value)).subscribe(formValue => {
         this.configurationEvent.emit({valid: this.form.valid, data: formValue});
-      })
-    );
-  }
-
-  private openKPISubscription(): void {
-    this._subscriptions.add(
-      this.useKPI.valueChanges.pipe(startWith(this.useKPI.value)).subscribe(useKpi => {
-        const validators = [Validators.required];
-
-        if (useKpi) {
-          this.lowSeverityThreshold.setValidators(validators);
-          this.mediumSeverityThreshold.setValidators(validators);
-          this.highSeverityThreshold.setValidators(validators);
-        } else {
-          this.lowSeverityThreshold.clearValidators();
-          this.mediumSeverityThreshold.clearValidators();
-          this.highSeverityThreshold.clearValidators();
-        }
-
-        this.lowSeverityThreshold.updateValueAndValidity();
-        this.mediumSeverityThreshold.updateValueAndValidity();
-        this.highSeverityThreshold.updateValueAndValidity();
       })
     );
   }

@@ -14,18 +14,23 @@
   ~ limitations under the License.
   -->
 
-<!--<section class="valtimo-gauge-widget__header">-->
-<!--  <h3 class="valtimo-gauge-widget__title">{{ displayTypeProperties.title }}</h3>-->
+<section class="valtimo-gauge-widget__header">
+  <h3 class="valtimo-gauge-widget__title">{{ displayTypeProperties.title }}</h3>
 
-<!--  <span *ngIf="displayTypeProperties.subtitle" class="valtimo-gauge-widget__subtitle">-->
-<!--    {{ displayTypeProperties.subtitle }}-->
-<!--  </span>-->
-<!--</section>-->
+  <span *ngIf="displayTypeProperties.subtitle" class="valtimo-gauge-widget__subtitle">
+    {{ displayTypeProperties.subtitle }}
+  </span>
+</section>
 
-<section>
-  <ibm-gauge-chart type="gauge" class="n-chart" [data]="GaugeChartData" [options]="GaugeChartOptions" #gaugeChart></ibm-gauge-chart>
+<section class="valtimo-gauge-widget__content">
+  <ibm-gauge-chart
+    type="gauge"
+    class="n-chart"
+    [data]="toGaugeData()"
+    [options]="GaugeChartOptions"
+  ></ibm-gauge-chart>
 
-<!--  <span *ngIf="displayTypeProperties.label" class="valtimo-gauge-widget__label">-->
-<!--    {{ displayTypeProperties.label }}-->
-<!--  </span>-->
+  <span *ngIf="displayTypeProperties.label" class="valtimo-gauge-widget__label">
+    {{ displayTypeProperties.label }}
+  </span>
 </section>

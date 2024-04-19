@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {DisplayComponent, WidgetSeverity} from '../../../../models';
+import {DisplayComponent} from '../../../../models';
 import {GaugeData, GaugeDisplayTypeProperties} from '../../models';
-
+import {type ChartTabularData} from "@carbon/charts";
 
 @Component({
   selector: 'valtimo-gauge-display',
@@ -29,55 +29,39 @@ export class GaugeDisplayComponent implements DisplayComponent {
   @Input() data: GaugeData;
   @Input() displayTypeProperties: GaugeDisplayTypeProperties;
 
-  // public get gaugeData() {
-  //   return [
-  //     {
-  //       group: 'value',
-  //       value: 42
-  //     },
-  //     {
-  //       group: 'delta',
-  //       value: -13.37
-  //     }
-  //   ];
-  // }
-  //
-  // public get gaugeOptions(): GaugeChartOptions {
-  //   return {
-  //     title: 'I work',
-  //     resizable: false,
-  //     height: '100%',
-  //     width: '100%',
-  //     gauge: {
-  //       type: 'semi',
-  //       status: 'danger'
-  //     }
-  //   };
-  // }
+  public toGaugeData(): ChartTabularData {
+    return [
+      {
+        group: 'value',
+        value: this.calculatePercentage(this.data.value, this.data.total), // total = 6
+      },
+      {
+        group: 'delta',
+        value: 100.0,
+      },
+    ]
+  }
 
-  GaugeChartData = [
-    {
-      group: 'value',
-      value: 42
+  public calculatePercentage(value: number, total?: number): number {
+    return value * 100.0 / (total || 100.0);
+  }
+
+  public numberFormatter(value: number, total: number): number {
+    return Math.round(value * total) / 100.0;
+  }
+
+  GaugeChartOptions = {
+    resizable: false,
+    toolbar: false,
+    height: '130px',
+    width: '100%',
+    gauge: {
+      numberFormatter: (value => this.numberFormatter(value, this?.data?.total)),
+      deltaArrow: {
+        enabled: false,
+      },
+      showPercentageSymbol: false,
+      type: 'semi',
     },
-    {
-      group: 'delta',
-      value: -13.37
-    }
-  ]
-
-  GaugeChartOptions =
-    {
-      title: 'I work',
-      resizable: false,
-      height: '100px',
-      width: '100px',
-      gauge: {
-        type: 'semi',
-        status: 'danger'
-      }
-    };
-
-
-
+  };
 }
