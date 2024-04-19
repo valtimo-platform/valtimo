@@ -16,7 +16,7 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {DisplayComponent} from '../../../../models';
 import {GaugeData, GaugeDisplayTypeProperties} from '../../models';
-import {type ChartTabularData} from '@carbon/charts';
+import {type ChartTabularData, GaugeChartOptions} from '@carbon/charts';
 
 @Component({
   selector: 'valtimo-gauge-display',
@@ -29,6 +29,8 @@ export class GaugeDisplayComponent implements DisplayComponent {
   @Input() data: GaugeData;
   @Input() displayTypeProperties: GaugeDisplayTypeProperties;
 
+  private DELTA: number = -1.0;
+
   public toGaugeData(): ChartTabularData {
     return [
       {
@@ -37,7 +39,7 @@ export class GaugeDisplayComponent implements DisplayComponent {
       },
       {
         group: 'delta',
-        value: 100.0,
+        value: this.DELTA,
       },
     ];
   }
@@ -46,16 +48,21 @@ export class GaugeDisplayComponent implements DisplayComponent {
     return (value * 100.0) / (total || 100.0);
   }
 
-  public numberFormatter(value: number, total: number): string {
-    return Math.round(value * total) / 100.0 + ' XD';
+  public numberFormatter(scope: GaugeDisplayComponent, value: number): string {
+    console.log(value);
+    if (value == scope.DELTA) {
+      return scope.data.total + ' ' + scope.displayTypeProperties.label;
+    } else {
+      return Math.round(value * scope.data.total) / 100.0 + '';
+    }
   }
 
-  GaugeChartOptions = {
+  gaugeChartOptions: GaugeChartOptions = {
     resizable: false,
-    toolbar: false,
+    toolbar: {enabled: false},
     height: '110px',
     gauge: {
-      numberFormatter: value => this.numberFormatter(value, this.data.total),
+      numberFormatter: value => this.numberFormatter(this, value),
       deltaArrow: {
         enabled: false,
       },
