@@ -75,11 +75,41 @@ export class CreateZaakBesluitConfigurationComponent
   readonly selectedCaseDefinitionId$ = new BehaviorSubject<string>('');
 
   readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
+  readonly selectedStartDateInputOption$ = new BehaviorSubject<InputOption>('selection');
+  readonly selectedExpirationDateInputOption$ = new BehaviorSubject<InputOption>('selection');
 
   readonly loading$ = new BehaviorSubject<boolean>(true);
 
   readonly pluginId$ = new BehaviorSubject<string>('');
   readonly inputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
+    filter(pluginId => !!pluginId),
+    switchMap(pluginId =>
+      combineLatest([
+        this.pluginTranslatePipe.transform('selection', pluginId),
+        this.pluginTranslatePipe.transform('text', pluginId),
+      ])
+    ),
+    map(([selectionTranslation, textTranslation]) => [
+      {value: 'selection', title: selectionTranslation},
+      {value: 'text', title: textTranslation},
+    ])
+  );
+
+  readonly startDateInputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
+    filter(pluginId => !!pluginId),
+    switchMap(pluginId =>
+      combineLatest([
+        this.pluginTranslatePipe.transform('selection', pluginId),
+        this.pluginTranslatePipe.transform('text', pluginId),
+      ])
+    ),
+    map(([selectionTranslation, textTranslation]) => [
+      {value: 'selection', title: selectionTranslation},
+      {value: 'text', title: textTranslation},
+    ])
+  );
+
+  readonly expirationDateInputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
     filter(pluginId => !!pluginId),
     switchMap(pluginId =>
       combineLatest([
@@ -191,6 +221,14 @@ export class CreateZaakBesluitConfigurationComponent
 
     if (formValue.inputTypeBesluitToggle) {
       this.selectedInputOption$.next(formValue.inputTypeBesluitToggle);
+    }
+
+    if (formValue.inputTypeStartingDateToggle) {
+      this.selectedStartDateInputOption$.next(formValue.inputTypeStartingDateToggle);
+    }
+
+    if (formValue.inputTypeExpirationDateToggle) {
+      this.selectedExpirationDateInputOption$.next(formValue.inputTypeExpirationDateToggle);
     }
   }
 
