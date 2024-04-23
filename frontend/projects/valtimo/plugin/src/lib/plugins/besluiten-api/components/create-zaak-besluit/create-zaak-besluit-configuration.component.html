@@ -119,7 +119,7 @@
         [disabled]="obs.disabled"
         [title]="'inputTypeStartingDateToggle' | pluginTranslate: obs.pluginId | async"
         [radioValues]="startDateInputTypeOptions$ | async"
-        [defaultValue]="selectedStartDateInputOption$ | async"
+        [defaultValue]="obs.prefill?.inputTypeStartingDateToggle"
         [margin]="true"
       >
       </v-radio>
@@ -127,7 +127,7 @@
         *ngIf="obs.selectedStartDateInputOption === 'text'"
         name="ingangsdatum"
         [title]="'ingangsdatum' | pluginTranslate: obs.pluginId | async"
-        [defaultDate]="obs.prefill?.ingangsdatum"
+        [defaultValue]="obs.prefill?.ingangsdatum"
         [disabled]="obs.disabled"
         [required]="true"
         [tooltip]="'ingangsdatumTooltip' | pluginTranslate: obs.pluginId | async"
@@ -151,7 +151,7 @@
         [disabled]="obs.disabled"
         [title]="'inputTypeExpirationDateToggle' | pluginTranslate: obs.pluginId | async"
         [radioValues]="expirationDateInputTypeOptions$ | async"
-        [defaultValue]="selectedExpirationDateInputOption$ | async"
+        [defaultValue]="obs.prefill?.inputTypeExpirationDateToggle"
         [margin]="true"
       >
       </v-radio>
@@ -159,7 +159,7 @@
         *ngIf="obs.selectedExpirationDateInputOption === 'text'"
         name="vervaldatum"
         [title]="'vervaldatum' | pluginTranslate: obs.pluginId | async"
-        [defaultDate]="obs.prefill?.vervaldatum"
+        [defaultValue]="obs.prefill?.vervaldatum"
         [disabled]="obs.disabled"
         [required]="false"
         [tooltip]="'vervaldatumTooltip' | pluginTranslate: obs.pluginId | async"
