@@ -63,10 +63,11 @@ export class CreateZaakBesluitConfigurationComponent
   ];
   readonly vervalredenenSelectItems$: Observable<Array<{id: Vervalredenen; text: string}>> =
     this.translateService.stream('key').pipe(
-      map(() =>
+      switchMap(() => this.pluginId$),
+      map(pluginId =>
         this.VERVALREDENEN.map(item => ({
           id: item,
-          text: this.pluginTranslationService.instant(item, this.pluginId),
+          text: this.pluginTranslationService.instant(item, pluginId),
         }))
       )
     );
