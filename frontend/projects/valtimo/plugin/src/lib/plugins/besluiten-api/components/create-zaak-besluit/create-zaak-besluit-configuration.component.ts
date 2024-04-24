@@ -247,8 +247,7 @@ export class CreateZaakBesluitConfigurationComponent
   }
 
   private handleValid(formValue: CreateZaakBesluitConfig): void {
-    let valid = !!formValue.besluittypeUrl;
-    valid = !!formValue.ingangsdatum;
+    const valid = !!formValue.besluittypeUrl && !!formValue.ingangsdatum;
 
     this.valid$.next(valid);
     this.valid.emit(valid);
