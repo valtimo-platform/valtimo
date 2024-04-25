@@ -1,7 +1,7 @@
 {
   "name": "@valtimo/dashboard",
   "license": "EUPL-1.2",
-  "version": "5.15.0",
+  "version": "5.15.2",
   "peerDependencies": {
     "@angular/common": "^13.2.3",
     "@angular/core": "^13.2.3"
@@ -13,8 +13,5 @@
     "@ngx-translate/core": "^14.0.0",
     "@ngx-translate/http-loader": "7.0.0",
     "tslib": "^2.0.0"
-  },
-  "devDependencies": {
-    "karma-moment": "^0.1.0"
   }
 }

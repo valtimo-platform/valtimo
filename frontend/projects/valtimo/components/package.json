@@ -1,7 +1,7 @@
 {
   "name": "@valtimo/components",
   "license": "EUPL-1.2",
-  "version": "5.15.0",
+  "version": "5.15.2",
   "peerDependencies": {
     "@angular/common": "^13.2.3",
     "@angular/core": "^13.2.3",
@@ -22,8 +22,5 @@
     "ngx-spinner": "^13.1.1",
     "tslib": "^2.0.0",
     "ng-multiselect-dropdown": "^0.3.8"
-  },
-  "devDependencies": {
-    "karma-moment": "^0.1.0"
   }
 }
