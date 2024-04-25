@@ -206,7 +206,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private setToken(token: string): void {
-    Formio.setUser(jwtDecode(token));
+    Formio.setUser(jwt_decode(token));
     Formio.setToken(token);
     localStorage.setItem(this._FORMIO_TOKEN_LOCAL_STORAGE_KEY, token);
     this.setTimerForTokenRefresh(token);
