@@ -22,6 +22,8 @@ import {BehaviorSubject, map, switchMap, tap} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
 import {DecisionStateService} from '../services';
 import {DecisionDeployComponent} from '../decision-deploy/decision-deploy.component';
+import {IconService} from 'carbon-components-angular';
+import {Upload16} from '@carbon/icons';
 
 @Component({
   selector: 'valtimo-decision-list',
@@ -62,10 +64,12 @@ export class DecisionListComponent {
 
   constructor(
     private decisionService: DecisionService,
+    private readonly iconService: IconService,
     private router: Router,
     private readonly configService: ConfigService,
     private readonly stateService: DecisionStateService
   ) {
+    this.iconService.registerAll([Upload16]);
     this.experimentalEditing = this.configService.config.featureToggles.experimentalDmnEditing;
   }
 
