@@ -628,6 +628,17 @@
       }
     }
   },
+  "zgw": {
+    "columns": {
+      "column": "Spalte",
+      "add": "Spalte hinzufügen",
+      "edit": "Spalte bearbeiten",
+      "deleteText": "Sind Sie sicher, dass Sie dieses Spalte löschen möchten?"
+    },
+    "tabs": {
+      "documentColumns": "Dokumentspalten"
+    }
+  },
   "task-list": {
     "fieldLabels": {
       "created": "Erstellt am",

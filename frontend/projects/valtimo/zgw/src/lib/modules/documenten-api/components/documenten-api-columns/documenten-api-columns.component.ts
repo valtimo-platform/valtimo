@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {CommonModule} from '@angular/common';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
+import {TranslateModule} from '@ngx-translate/core';
 import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  TemplateRef,
-  ViewChild,
-} from '@angular/core';
-import {DocumentenApiColumnService} from '../../services';
-import {
-  ConfiguredColumn,
-  DocumentenApiColumnModalType,
-  DocumentenApiColumnModalTypeCloseEvent,
-} from '../../models';
+  ActionItem,
+  CarbonListModule,
+  ColumnConfig,
+  ConfirmationModalModule,
+  PendingChangesComponent,
+  ViewType,
+} from '@valtimo/components';
+import {ButtonModule, IconModule, TagModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -35,23 +34,16 @@ import {
   Observable,
   Subject,
   switchMap,
+  take,
   tap,
 } from 'rxjs';
-import {ActivatedRoute} from '@angular/router';
 import {
-  ActionItem,
-  CarbonListModule,
-  ColumnConfig,
-  ConfirmationModalModule,
-  MoveRowDirection,
-  MoveRowEvent,
-  PendingChangesComponent,
-  ViewType,
-} from '@valtimo/components';
+  ConfiguredColumn,
+  DocumentenApiColumnModalType,
+  DocumentenApiColumnModalTypeCloseEvent,
+} from '../../models';
+import {DocumentenApiColumnService} from '../../services';
 import {DocumentenApiColumnModalComponent} from '../documenten-api-column-modal/documenten-api-column-modal.component';
-import {CommonModule} from '@angular/common';
-import {TranslateModule} from '@ngx-translate/core';
-import {ButtonModule, TagModule} from 'carbon-components-angular';
 
 @Component({
   selector: 'valtimo-documenten-api-columns',
@@ -67,14 +59,10 @@ import {ButtonModule, TagModule} from 'carbon-components-angular';
     ConfirmationModalModule,
     TagModule,
     ButtonModule,
+    IconModule,
   ],
 })
-export class DocumentenApiColumnsComponent
-  extends PendingChangesComponent
-  implements AfterViewInit
-{
-  @ViewChild('colorColumnTemplate') colorColumnTemplate: TemplateRef<any>;
-
+export class DocumentenApiColumnsComponent extends PendingChangesComponent {
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
 
   private readonly _documentDefinitionName$: Observable<string> = this.route.params.pipe(
@@ -88,37 +76,54 @@ export class DocumentenApiColumnsComponent
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
-
-  private _documentStatuses: ConfiguredColumn[] = [];
-
-  public readonly documentStatuses$: Observable<ConfiguredColumn[]> = combineLatest([
+  private readonly _documentColumns$: Observable<ConfiguredColumn[]> = combineLatest([
     this._documentDefinitionName$,
     this._reload$,
   ]).pipe(
     tap(([_, reload]) => {
-      if (reload === null) {
-        this.loading$.next(true);
-      }
+      if (reload === null) this.loading$.next(true);
     }),
     switchMap(([documentDefinitionName]) =>
       this.zgwDocumentColumnService.getConfiguredColumns(documentDefinitionName)
     ),
-    tap(statuses => {
-      this._documentStatuses = statuses;
-      this.usedKeys$.next(statuses.map(status => status.key));
+    tap(() => {
       this.loading$.next(false);
     })
   );
 
-  public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
+  public readonly enabledColumns$ = this._documentColumns$.pipe(
+    map((columns: ConfiguredColumn[]) =>
+      columns.filter((column: ConfiguredColumn) => column.enabled)
+    )
+  );
+
+  public readonly disabledColumns$ = this._documentColumns$.pipe(
+    map((columns: ConfiguredColumn[]) =>
+      columns.filter((column: ConfiguredColumn) => !column.enabled)
+    )
+  );
+
+  public readonly fields: ColumnConfig[] = [
+    {
+      key: 'key',
+      label: 'zgw.columns.column',
+      viewType: ViewType.TEXT,
+    },
+    //TODO: enable when sorting is BE supported
+    // {
+    //   key: 'sort',
+    //   label: 'interface.defaultSort',
+    //   viewType: ViewType.TEXT,
+    // },
+  ];
 
   public readonly ACTION_ITEMS: ActionItem[] = [
-    {
-      label: 'interface.edit',
-      callback: this.openEditModal.bind(this),
-      type: 'normal',
-    },
+    // TODO: enable when sorting is BE supported
+    // {
+    //   label: 'interface.edit',
+    //   callback: this.openEditModal.bind(this),
+    //   type: 'normal',
+    // },
     {
       label: 'interface.delete',
       callback: this.openDeleteModal.bind(this),
@@ -128,85 +133,54 @@ export class DocumentenApiColumnsComponent
 
   public readonly CARBON_THEME = 'g10';
 
-  public readonly statusModalType$ = new BehaviorSubject<DocumentenApiColumnModalType>('closed');
-  public readonly prefillStatus$ = new BehaviorSubject<ConfiguredColumn>(undefined);
+  public readonly columnModalType$ = new BehaviorSubject<DocumentenApiColumnModalType>('closed');
+  public readonly prefillColumn$ = new BehaviorSubject<ConfiguredColumn | undefined>(undefined);
 
-  public readonly columnToUpdate$ = new BehaviorSubject<ConfiguredColumn>(undefined);
-  public readonly showDisableModal$ = new Subject<boolean>();
+  public readonly columnToUpdate$ = new BehaviorSubject<ConfiguredColumn | undefined>(undefined);
+  public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly zgwDocumentColumnService: DocumentenApiColumnService
   ) {
     super();
-
-    this._documentDefinitionName$.subscribe(documentDefinitionName => {
-      zgwDocumentColumnService.getConfiguredColumns(documentDefinitionName).subscribe(
-        configuredColumns => {
-          console.log(configuredColumns);
-        },
-        error => {
-          console.error(error);
-        }
-      );
-    });
   }
 
-  public ngAfterViewInit(): void {
-    this.initFields();
-  }
-
-  public openDeleteModal(status: ConfiguredColumn): void {
-    this.columnToUpdate$.next(status);
-    this.showDisableModal$.next(true);
+  public openDeleteModal(column: ConfiguredColumn): void {
+    this.columnToUpdate$.next(column);
+    this.showDeleteModal$.next(true);
   }
 
   public openEditModal(status: ConfiguredColumn): void {
-    this.prefillStatus$.next(status);
-    this.statusModalType$.next('edit');
+    this.prefillColumn$.next(status);
+    this.columnModalType$.next('edit');
   }
 
   public openAddModal(): void {
-    this.statusModalType$.next('add');
+    this.columnModalType$.next('add');
   }
 
-  public closeModal(closeModalEvent: DocumentenApiColumnModalTypeCloseEvent): void {
-    if (closeModalEvent === 'closeAndRefresh') {
-      this.reload();
-    }
+  public onCloseModal(closeModalEvent: DocumentenApiColumnModalTypeCloseEvent): void {
+    if (closeModalEvent === 'closeAndRefresh') this.reload();
 
-    this.statusModalType$.next('closed');
+    this.columnModalType$.next('closed');
   }
 
-  public confirmDeleteStatus(status: ConfiguredColumn): void {
-    this.documentDefinitionName$
-      .pipe(
-        switchMap(documentDefinitionName =>
-          this.zgwDocumentColumnService.deleteConfiguredColumn(documentDefinitionName, status.key)
-        )
-      )
+  public confirmDeleteStatus(column: ConfiguredColumn, definitionName: string): void {
+    this.zgwDocumentColumnService
+      .updateColumn(definitionName, {...column, enabled: false})
       .subscribe(() => {
         this.reload();
       });
   }
 
-  public onMoveRowClick(event: MoveRowEvent): void {
-    const {direction, index} = event;
-
-    const orderedStatuses: ConfiguredColumn[] =
-      direction === MoveRowDirection.UP
-        ? this.swapStatuses(this._documentStatuses, index - 1, index)
-        : this.swapStatuses(this._documentStatuses, index, index + 1);
-
-    this.documentDefinitionName$
-      .pipe(
-        switchMap(documentDefinitionName =>
-          this.zgwDocumentColumnService.updateConfiguredColumns(
-            documentDefinitionName,
-            orderedStatuses
-          )
-        )
-      )
+  public onItemsReordered(
+    definitionName: string,
+    enabledColumns: ConfiguredColumn[],
+    disabledColumns: ConfiguredColumn[]
+  ): void {
+    this.zgwDocumentColumnService
+      .updateConfiguredColumns(definitionName, [...enabledColumns, ...disabledColumns])
       .subscribe(() => {
         this.reload(true);
       });
@@ -214,42 +188,5 @@ export class DocumentenApiColumnsComponent
 
   private reload(noAnimation = false): void {
     this._reload$.next(noAnimation ? 'noAnimation' : null);
-  }
-
-  private swapStatuses(
-    statuses: ConfiguredColumn[],
-    index1: number,
-    index2: number
-  ): ConfiguredColumn[] {
-    const temp = [...statuses];
-    temp[index1] = temp.splice(index2, 1, temp[index1])[0];
-
-    return temp;
-  }
-
-  private initFields(): void {
-    this.fields$.next([
-      {
-        key: 'title',
-        label: 'dossierManagement.statuses.columns.title',
-        viewType: ViewType.TEXT,
-      },
-      {
-        key: 'key',
-        label: 'dossierManagement.statuses.columns.key',
-        viewType: ViewType.TEXT,
-      },
-      {
-        key: 'visibleInCaseListByDefault',
-        label: 'dossierManagement.statuses.columns.visible',
-        viewType: ViewType.BOOLEAN,
-      },
-      {
-        viewType: ViewType.TEMPLATE,
-        template: this.colorColumnTemplate,
-        key: 'color',
-        label: 'dossierManagement.statuses.columns.color',
-      },
-    ]);
   }
 }

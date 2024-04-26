@@ -628,6 +628,17 @@
       }
     }
   },
+  "zgw": {
+    "columns": {
+      "column": "Kolom",
+      "add": "Kolom toevoegen",
+      "edit": "Kolom bewerken",
+      "deleteText": "Weet je zeker dat je deze kolom wilt verwijderen?"
+    },
+    "tabs": {
+      "documentColumns": "Document kolommen"
+    }
+  },
   "task-list": {
     "fieldLabels": {
       "created": "Aanmaakdatum",

@@ -501,7 +501,8 @@
       "listColumns": "List",
       "tabManagement": "Tabs",
       "document": "Document",
-      "statuses": "Statuses"
+      "statuses": "Statuses",
+      "zgw": "ZGW"
     },
     "tabManagement": {
       "columns": {
@@ -627,6 +628,17 @@
         "title": "No statuses",
         "description": "Add a status to start"
       }
+    }
+  },
+  "zgw": {
+    "columns": {
+      "column": "Column",
+      "add": "Add column",
+      "edit": "Edit column",
+      "deleteText": "Are you sure you want to delete this column?"
+    },
+    "tabs": {
+      "documentColumns": "Document columns"
     }
   },
   "task-list": {
@@ -810,6 +822,7 @@
     "save": "Save",
     "more": "More",
     "export": "Export",
+    "defaultSort": "Default sort",
     "list": {
       "itemsPerPage": "Items per page",
       "multipleSelect": "{{count}} items selected",
