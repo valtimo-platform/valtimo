@@ -18,12 +18,11 @@
   <ng-container *ngTemplateOutlet="loadingTemplate"></ng-container>
 </ng-container>
 <ng-container *ngIf="!loading">
-  <cds-accordion [attr.data-carbon-theme]="carbonTheme">
+  <cds-accordion>
     <cds-accordion-item
       [title]="'searchFields.searchButtonText' | translate"
       (selected)="toggleExpanded()"
       [expanded]="expanded$ | async"
-      [attr.data-carbon-theme]="carbonTheme"
     >
       <ng-container *ngTemplateOutlet="searchFieldsTemplate"></ng-container>
     </cds-accordion-item>

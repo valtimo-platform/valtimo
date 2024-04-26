@@ -28,3 +28,9 @@
   color: var(--v-color-black);
   font-size: var(--v-font-size-default);
 }
+
+.process-info-text {
+  display: flex;
+  height: 40px;
+  align-items: center;
+}

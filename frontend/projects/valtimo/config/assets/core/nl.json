@@ -79,7 +79,9 @@
       "notes": "Notities",
       "MINE": "Mijn dossiers",
       "OPEN": "Niet-toegewezen dossiers",
-      "ALL": "Alle dossiers"
+      "ALL": "Alle dossiers",
+      "componentNotFound": "Tab-component niet gevonden",
+      "componentNotFoundMessage": "Er is geen component beschikbaar voor dit tabblad. Neem contact op met de systeemnbeheerder."
     },
     "forms": {
       "globalSearchPlaceHolder": "Alles",
@@ -137,7 +139,11 @@
         "regularUser": "Het uploaden van documenten is in dit geval niet beschikbaar. Neem contact op met een beheerder",
         "adminRole": "Het proces voor het uploaden van documenten is niet geconfigureerd. Configureer dit proces op de casebeheerpagina"
       },
-      "noZaakFound": "Er konden geen bestanden worden opgehaald omdat er voor dit dossier geen Zaak is gevonden."
+      "navigateToCaseAdmin": "Configureer Zaak",
+      "noZaakFoundTitle": "Geen Zaak gevonden",
+      "noZaakFound": "Er konden geen bestanden worden opgehaald omdat er voor dit dossier geen Zaak is gevonden.",
+      "noFilesTitle": "Geen bestanden",
+      "noFiles": "Geen bestanden gevonden voor deze zaak."
     },
     "startSubProcess": "Start",
     "claimAssigneeCase": "Claimen",
@@ -160,11 +166,14 @@
     },
     "id": "Referentie ID",
     "createdBy": "Aangemaakt door",
-    "createdOn": "Aangemaakt op",
+    "createdOn": "Aanmaakdatum",
     "sequence": "Volgnummer",
     "fillInMetadata": "Informatie over dit bestand",
     "cancel": "Annuleren",
     "upload": "Uploaden",
+    "size": "Omvang",
+    "format": "Bestandsformaat",
+    "trefwoorden": "Trefwoorden",
     "filename": "Bestandsnaam",
     "filenameTooltip": "De naam van het fysieke bestand waarin de inhoud van het document is vastgelegd, inclusief extensie",
     "confidentialityLevel": "Vertrouwelijkheidsaanduiding",
@@ -204,7 +213,27 @@
     "informatieobjecttypeTooltip": "Een documenttype dat gerelateerd is aan het zaaktype van het huidige dossier",
     "additionalDate": "Aanvullende documentdatum",
     "additionalDateTooltip": "Een aanvullende datum die als metadata aan het document kan worden toegevoegd. Deze extra datum is optioneel. Als 'Ontvangstdatum' is geselecteerd, kan de documentstatus alleen worden ingesteld op 'definitief' of 'gearchiveerd'.",
-    "noAdditionalDate": "Geen aanvullende datum"
+    "noAdditionalDate": "Geen aanvullende datum",
+    "delete": "Verwijderen",
+    "download": "Downloaden",
+    "application/octet-stream": "Onbekend",
+    "application/json": "JSON",
+    "application/msword": "DOC",
+    "application/pdf": "PDF",
+    "application/vnd.ms-powerpoint": "PPT",
+    "application/vnd.ms-excel": "XLS",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": "PPTX",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "XLSX",
+    "audio/mpeg": "MP3",
+    "image/bmp": "BMP",
+    "image/gif": "GIF",
+    "image/jpeg": "JPEG",
+    "image/png": "PNG",
+    "image/svg+xml": "SVG",
+    "text/csv": "CSV",
+    "text/plain": "TXT",
+    "video/mp4": "MP4"
   },
   "summary": {
     "userTasksDoneState": "Helemaal bij!",
@@ -592,6 +621,10 @@
         "key": "Statussleutel",
         "visible": "Standaard zichtbaar",
         "color": "Kleur"
+      },
+      "noResults": {
+        "title": "Er zijn geen statussen",
+        "description": "Voeg een status toe om te beginnen"
       }
     }
   },
@@ -795,6 +828,7 @@
     "warning": "Waarschuwing",
     "finish": "Finish",
     "add": "Toevoegen",
+    "tags": "Tags",
     "tagType": {
       "red": "Rood",
       "magenta": "Magenta",
@@ -1267,7 +1301,7 @@
     "enum": "Opsomming",
     "arrayCount": "Hoeveelheid",
     "underscoresToSpaces": "Lage strepen naar spaties",
-    "status": "Status"
+    "tags": "Tags"
   },
   "object": {
     "title": "Objects",

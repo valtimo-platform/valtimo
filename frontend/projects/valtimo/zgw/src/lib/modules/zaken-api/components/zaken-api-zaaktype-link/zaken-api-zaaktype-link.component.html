@@ -1,0 +1,190 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="input-group mt-4 mb-2 align-items-center">
+  <div>
+    <h2>{{ 'openZaak.links' | translate }}</h2>
+  </div>
+</div>
+
+<ng-container
+  *ngIf="{
+    loading: loading$ | async,
+    zaakTypeLink: zaakTypeLink$ | async
+  } as obs"
+>
+  <ng-container *ngIf="obs.loading === false; else loading">
+    <ng-container *ngIf="obs.zaakTypeLink; else addSync">
+      <div class="card card-border card-contrast">
+        <div class="card-header card-header-contrast card-header-featured">
+          <div>
+            {{ this.selectedZaakType?.omschrijving || '-' }}
+          </div>
+          <div class="controls">
+            <button class="btn btn-danger ml-3" (click)="openModal(obs.zaakTypeLink)">
+              <i class="icon mdi mdi-pencil"></i>
+            </button>
+            <button class="btn btn-danger ml-3" (click)="removeZaakTypeLink()">
+              <i class="icon mdi mdi-delete"></i>
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row pt-3 mt-1">
+            <div class="col-3">
+              <strong>{{ 'openZaak.autoCreateForCase' | translate }}</strong>
+            </div>
+            <div class="col-3">
+              {{
+                obs.zaakTypeLink?.createWithDossier
+                  ? ('viewTypeConverter.Yes' | translate)
+                  : ('viewTypeConverter.No' | translate)
+              }}
+            </div>
+          </div>
+          <div class="row pt-3 mt-1">
+            <div class="col-3">
+              <strong>{{ 'openZaak.zakenApiPlugin' | translate }}</strong>
+            </div>
+            <div class="col-3">
+              {{ this.selectedPluginConfiguration?.title || '-' }}
+            </div>
+          </div>
+          <div class="row pt-3 mt-1">
+            <div class="col-3">
+              <strong>{{ 'openZaak.rsin' | translate }}</strong>
+            </div>
+            <div class="col-3">
+              {{ obs.zaakTypeLink?.rsin || '-' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+</ng-container>
+
+<ng-template #addSync>
+  <div class="text-right mt-5">
+    <button class="btn btn-primary" (click)="openModal(null)">
+      <i class="icon mdi mdi-plus mr-1"></i>{{ 'openZaak.linkZaakType' | translate }}
+    </button>
+  </div>
+</ng-template>
+
+<valtimo-modal
+  #openZaakTypeLinkModal
+  elementId="openZaakTypeLinkModal"
+  [title]="'Zaak types'"
+  subtitle="Connect Zaak type to Dossier"
+  showFooter="true"
+>
+  <div body>
+    <p>{{ 'openZaak.selectZaakTypeForCase' | translate }}</p>
+    <div class="input-group mb-3 mr-3 align-items-center">
+      <select class="form-control" [(ngModel)]="this.zaakTypeLinkRequest.zaakTypeUrl">
+        <option [ngValue]="null">{{ 'openZaak.selectZaakType' | translate }}</option>
+        <option *ngFor="let zaakType of zaakTypes" [ngValue]="zaakType.url">
+          {{ zaakType?.omschrijving || '-' }}
+        </option>
+      </select>
+    </div>
+
+    <p>{{ 'openZaak.selectZakenApiPluginForCase' | translate }}</p>
+    <div class="input-group mb-3 mr-3 align-items-center">
+      <select
+        class="form-control"
+        [(ngModel)]="this.zaakTypeLinkRequest.zakenApiPluginConfigurationId"
+      >
+        <option [ngValue]="null">{{ 'openZaak.selectZakenApiPlugin' | translate }}</option>
+        <option
+          *ngFor="let pluginConfiguration of pluginConfigurations"
+          [ngValue]="pluginConfiguration.id"
+        >
+          {{ pluginConfiguration?.title || '-' }}
+        </option>
+      </select>
+    </div>
+
+    <p>{{ 'openZaak.rsin' | translate }}</p>
+    <div class="input-group mb-3 mr-3 align-items-center">
+      <input
+        type="text"
+        id="name"
+        class="form-control"
+        placeholder="RSIN"
+        [(ngModel)]="this.zaakTypeLinkRequest.rsin"
+      />
+    </div>
+
+    <div class="setting-row">
+      <p>{{ 'openZaak.autoCreateForCase' | translate }}</p>
+      <div class="controls">
+        <div class="switch-button switch-button-success">
+          <input
+            type="checkbox"
+            [checked]="this.zaakTypeLinkRequest.createWithDossier"
+            name="createWithDossier"
+            id="createWithDossier"
+            (change)="
+              this.zaakTypeLinkRequest.createWithDossier =
+                !this.zaakTypeLinkRequest.createWithDossier
+            "
+          />
+          <span><label for="createWithDossier"></label></span>
+        </div>
+      </div>
+    </div>
+
+    <div
+      *ngIf="informatieObjectTypeSelectionEnabled && selectedZaakType"
+      class="input-group mb-3 align-items-center"
+    >
+      <select class="form-control" [(ngModel)]="selectedInformatieObjectTypeUrl">
+        <option [ngValue]="null" selected>{{ 'openZaak.selectInfoObjectType' | translate }}</option>
+        <option
+          *ngFor="let informatieObjectType of informatieObjectTypes"
+          [ngValue]="informatieObjectType.url"
+        >
+          {{ informatieObjectType?.omschrijving || '-' }}
+        </option>
+      </select>
+    </div>
+  </div>
+  <div footer>
+    <button
+      (click)="submit()"
+      class="btn btn-primary"
+      data-dismiss="modal"
+      [disabled]="!this.zaakTypeLinkRequest.zaakTypeUrl"
+    >
+      <i class="icon mdi mdi-save"></i>
+      {{ 'openZaak.save' | translate }}
+    </button>
+  </div>
+</valtimo-modal>
+
+<ng-template #loading>
+  <div class="mb-8">
+    <valtimo-spinner></valtimo-spinner>
+  </div>
+</ng-template>
+
+<ng-template #noConfigAvailable>
+  <div class="mb-8">
+    <h4>{{ 'openZaak.error.configNotFound' | translate }}</h4>
+  </div>
+</ng-template>

@@ -16,6 +16,14 @@
 
 .tab-container {
   min-height: 300px;
+
+  &:has(> .tab--no-margin) {
+    padding: 0 !important;
+  }
+
+  &:has(> .tab--no-min-height) {
+    min-height: unset;
+  }
 }
 
 .loading-container {
@@ -78,8 +86,4 @@
   &.--compact {
     margin-left: 0;
   }
-}
-
-.p-5:has(> valtimo-dossier-detail-tab-notes) {
-  padding: 0 !important;
 }

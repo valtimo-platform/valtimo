@@ -45,6 +45,8 @@ import {
   Documents,
   DocumentService,
   InternalCaseStatus,
+  InternalCaseStatusColor,
+  InternalCaseStatusUtils,
   SpecifiedDocuments,
 } from '@valtimo/document';
 import {Tab, Tabs} from 'carbon-components-angular';
@@ -196,7 +198,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
   private readonly _statusField: ListField = {
     label: 'document.status',
     key: 'internalStatus',
-    viewType: ViewType.STATUS,
+    viewType: ViewType.TAGS,
     sortable: true,
   };
   public readonly fields$: Observable<Array<ListField>> = combineLatest([
@@ -329,7 +331,6 @@ export class DossierListComponent implements OnInit, OnDestroy {
         const statusKeys: (string | null)[] = selectedStatuses.map((status: InternalCaseStatus) =>
           status.key === CASES_WITHOUT_STATUS_KEY ? null : status.key
         );
-
         if ((Object.keys(searchValues) || []).length > 0) {
           return forkJoin({
             documents:
@@ -351,6 +352,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
             hasEnvColumnConfig: obsEnv,
             hasApiColumnConfig: obsApi,
             isSearchResult: of(true),
+            selectedStatuses: of(selectedStatuses),
           });
         }
 
@@ -374,6 +376,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
           hasEnvColumnConfig: obsEnv,
           hasApiColumnConfig: obsApi,
           isSearchResult: of(false),
+          selectedStatuses: of(selectedStatuses),
         });
       }
     ),
@@ -408,18 +411,42 @@ export class DossierListComponent implements OnInit, OnDestroy {
         hasEnvColumnConfig: boolean;
         hasApiColumnConfig: boolean;
         isSearchResult: boolean;
+        selectedStatuses: InternalCaseStatus[];
       }) => {
         this.paginationService.setCollectionSize(res.documents);
         this.paginationService.checkPage(res.documents);
         this.updateNoResultsMessage(res.isSearchResult);
 
-        return this.listService.mapDocuments(
-          res.documents,
-          res.hasEnvColumnConfig,
-          res.hasApiColumnConfig
-        );
+        return {
+          data: this.listService.mapDocuments(
+            res.documents,
+            res.hasEnvColumnConfig,
+            res.hasApiColumnConfig
+          ),
+          statuses: res.selectedStatuses,
+        };
       }
     ),
+    map(res => {
+      if (!Array.isArray(res.data)) return res.data;
+
+      return res.data.map(item => {
+        const status = res.statuses.find(
+          (status: InternalCaseStatus) => status.key === item.internalStatus
+        );
+        if (!status) return item;
+
+        return {
+          ...item,
+          tags: [
+            {
+              content: status.title,
+              type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
+            },
+          ],
+        };
+      });
+    }),
     tap(() => {
       this.loadingAssigneeFilter = false;
       this.loadingDocumentItems = false;

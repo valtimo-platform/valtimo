@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, OnDestroy} from '@angular/core';
 import {BehaviorSubject, combineLatest, map, Observable, of, Subject, throwError} from 'rxjs';
 import {catchError, finalize, switchMap, take, tap} from 'rxjs/operators';
 import {ObjectService} from '../../../../services/object.service';
@@ -31,7 +31,7 @@ import {ObjectManagementService} from '@valtimo/object-management';
   templateUrl: './object-detail.component.html',
   styleUrls: ['./object-detail.component.scss'],
 })
-export class ObjectDetailComponent {
+export class ObjectDetailComponent implements OnDestroy {
   readonly loading$ = new BehaviorSubject<boolean>(true);
   readonly submission$ = new BehaviorSubject<any>({});
   readonly formValid$ = new BehaviorSubject<boolean>(false);

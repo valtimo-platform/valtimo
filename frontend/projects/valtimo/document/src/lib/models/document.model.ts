@@ -303,15 +303,6 @@ interface DocumentType {
   name: string;
 }
 
-interface UploadProcessLink {
-  processDefinitionKey: string;
-  processName: string;
-}
-
-interface UpdateUploadProcessLinkRequest {
-  processDefinitionKey: string;
-}
-
 interface CaseSettings {
   name?: string;
   canHaveAssignee: boolean;
@@ -428,6 +419,4 @@ export {
   TemplatePayload,
   TemplateResponse,
   UndeployDocumentDefinitionResult,
-  UpdateUploadProcessLinkRequest,
-  UploadProcessLink,
 };

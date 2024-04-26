@@ -49,15 +49,6 @@ interface StoreTempDocumentConfig {
   informatieobjecttype: string;
 }
 
-interface DocumentenApiVersion {
-  selectedVersion: string;
-}
-
-interface DocumentenApiManagementVersion {
-  selectedVersion: string;
-  detectedVersions: string;
-}
-
 export interface DownloadDocumentConfig {
   processVariableName: string;
 }
@@ -68,6 +59,4 @@ export {
   ConfidentialityLevel,
   DocumentLanguage,
   DocumentStatus,
-  DocumentenApiVersion,
-  DocumentenApiManagementVersion,
 };

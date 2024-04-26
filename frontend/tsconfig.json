@@ -45,16 +45,12 @@
       "@valtimo/dashboard-management/*": ["dist/valtimo/dashboard-management/*"],
       "@valtimo/document": ["dist/valtimo/document"],
       "@valtimo/document/*": ["dist/valtimo/document/*"],
+      "@valtimo/zgw": ["dist/valtimo/zgw"],
+      "@valtimo/zgw/*": ["dist/valtimo/zgw/*"],
       "@valtimo/account": ["dist/valtimo/account"],
       "@valtimo/account/*": ["dist/valtimo/account/*"],
       "@valtimo/choice-field": ["dist/valtimo/choice-field"],
       "@valtimo/choice-field/*": ["dist/valtimo/choice-field/*"],
-      "@valtimo/contact-moment": ["dist/valtimo/contact-moment"],
-      "@valtimo/contact-moment/*": ["dist/valtimo/contact-moment/*"],
-      "@valtimo/exact-plugin": [
-        "dist/valtimo/exact-plugin/valtimo-exact-plugin",
-        "dist/valtimo/exact-plugin"
-      ],
       "@valtimo/form": ["dist/valtimo/form"],
       "@valtimo/form/*": ["dist/valtimo/form/*"],
       "@valtimo/swagger": ["dist/valtimo/swagger"],
@@ -93,14 +89,12 @@
       "@valtimo/resource/*": ["dist/valtimo/resource/*"],
       "@valtimo/sse": ["dist/valtimo/sse"],
       "@valtimo/sse/*": ["dist/valtimo/sse/*"],
-      "@valtimo/customer": ["dist/valtimo/customer"],
-      "@valtimo/customer/*": ["dist/valtimo/customer/*"],
       "@valtimo/plugin-management": ["dist/valtimo/plugin-management"],
       "@valtimo/plugin-management/*": ["dist/valtimo/plugin-management/*"],
       "@valtimo/plugin": ["dist/valtimo/plugin"],
       "@valtimo/plugin/*": ["dist/valtimo/plugin/*"],
-      "@valtimo/exact-plugin": ["dist/valtimo/exact-plugin"],
-      "@valtimo/exact-plugin/*": ["dist/valtimo/exact-plugin/*"]
+      "@valtimo/zgw": ["dist/valtimo/zgw"],
+      "@valtimo/zgw/*": ["dist/valtimo/zgw/*"]
     }
   },
   "files": [],
@@ -191,6 +185,12 @@
     },
     {
       "path": "./projects/valtimo/document/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/zgw/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/zgw/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/account/tsconfig.lib.json"
@@ -313,12 +313,6 @@
       "path": "./projects/valtimo/user-interface/tsconfig.spec.json"
     },
     {
-      "path": "./projects/valtimo/customer/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/valtimo/customer/tsconfig.spec.json"
-    },
-    {
       "path": "./projects/valtimo/plugin-management/tsconfig.lib.json"
     },
     {
@@ -331,12 +325,6 @@
       "path": "./projects/valtimo/plugin/tsconfig.spec.json"
     },
     {
-      "path": "./projects/valtimo/exact-plugin/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/valtimo/exact-plugin/tsconfig.spec.json"
-    },
-    {
       "path": "./projects/valtimo/object-management/tsconfig.lib.json"
     },
     {
@@ -347,6 +335,12 @@
     },
     {
       "path": "./projects/valtimo/object/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/zgw/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/zgw/tsconfig.spec.json"
     }
   ]
 }

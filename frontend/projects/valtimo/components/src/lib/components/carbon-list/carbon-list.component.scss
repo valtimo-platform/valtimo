@@ -72,12 +72,26 @@ td:first-child {
     }
   }
 
+  &__expand-tag {
+    cursor: pointer;
+  }
+
   label {
     margin-bottom: 0 !important;
   }
 
-  ::ng-deep .status-template .cds--tag {
-    margin: 0;
+  ::ng-deep .tag-template {
+    .cds--tag {
+      margin: 0;
+
+      svg {
+        fill: var(--cds-background);
+      }
+    }
+
+    & > *:not(:last-child) {
+      margin-right: 8px;
+    }
   }
 }
 

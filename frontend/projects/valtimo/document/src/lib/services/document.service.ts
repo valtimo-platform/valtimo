@@ -25,7 +25,7 @@ import {
   SearchOperator,
 } from '@valtimo/config';
 import {InterceptorSkip} from '@valtimo/security';
-import {catchError, Observable, of, switchMap, tap} from 'rxjs';
+import {catchError, Observable, of, switchMap} from 'rxjs';
 
 import {
   AssignHandlerToDocumentResult,
@@ -53,12 +53,10 @@ import {
   ProcessDocumentDefinition,
   ProcessDocumentDefinitionRequest,
   ProcessDocumentInstance,
-  RelatedFile,
   SpecifiedDocuments,
   TemplatePayload,
   TemplateResponse,
   UndeployDocumentDefinitionResult,
-  UploadProcessLink,
 } from '../models';
 import {AdvancedDocumentSearchRequest} from '../models/advanced-document-search-request';
 import {DocumentSearchRequest} from '../models/document-search-request';
@@ -446,31 +444,6 @@ export class DocumentService {
     );
   }
 
-  public getLinkedUploadProcess(documentDefinitionName: string): Observable<UploadProcessLink> {
-    return this.http.get<UploadProcessLink>(
-      `${this.valtimoEndpointUri}v1/process-document/demo/${documentDefinitionName}/process`
-    );
-  }
-
-  public updateLinkedUploadProcess(
-    documentDefinitionName: string,
-    processDefinitionKey: string
-  ): Observable<UploadProcessLink> {
-    return this.http.put<UploadProcessLink>(
-      `${this.valtimoEndpointUri}v1/process-document/demo/${documentDefinitionName}/process`,
-      {
-        processDefinitionKey,
-        linkType: 'DOCUMENT_UPLOAD',
-      }
-    );
-  }
-
-  public deleteLinkedUploadProcess(documentDefinitionName: string): Observable<void> {
-    return this.http.delete<void>(
-      `${this.valtimoEndpointUri}v1/process-document/demo/${documentDefinitionName}/process`
-    );
-  }
-
   public getProcessDocumentDefinitionFromProcessInstanceId(
     processInstanceId: string
   ): Observable<ProcessDocumentDefinition> {
@@ -567,12 +540,6 @@ export class DocumentService {
   ): Observable<CaseListColumn> {
     return this.http.delete<CaseListColumn>(
       `${this.valtimoEndpointUri}management/v1/case/${documentDefinitionName}/list-column/${columnKey}`
-    );
-  }
-
-  public getZakenApiDocuments(documentId: string): Observable<Array<RelatedFile>> {
-    return this.http.get<Array<RelatedFile>>(
-      `${this.valtimoEndpointUri}v1/zaken-api/document/${documentId}/files`
     );
   }
 

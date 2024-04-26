@@ -20,11 +20,20 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
+  ViewContainerRef,
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {PageTitleService, PendingChangesComponent} from '@valtimo/components';
-import {ConfigService} from '@valtimo/config';
-import {filter, map, Observable, Subscription, tap} from 'rxjs';
+import {CaseManagementTabConfig, ConfigService} from '@valtimo/config';
+import {
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  map,
+  Observable,
+  Subscription,
+  tap,
+} from 'rxjs';
 import {TabEnum} from '../../models';
 import {DossierDetailService, TabService} from '../../services';
 import {DossierManagementDocumentDefinitionComponent} from '../dossier-management-document-definition/dossier-management-document-definition.component';
@@ -40,6 +49,8 @@ export class DossierManagementDetailContainerComponent
   extends PendingChangesComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
+  @ViewChild('contentContainer', {read: ViewContainerRef})
+  private _contentContainer: ViewContainerRef;
   @ViewChild(DossierManagementDocumentDefinitionComponent)
   private _documentDefinitionTab: DossierManagementDocumentDefinitionComponent;
 
@@ -58,6 +69,8 @@ export class DossierManagementDetailContainerComponent
       this._activeTab = currentTab;
     })
   );
+  public readonly injectedCaseManagementTabs$: Observable<CaseManagementTabConfig[]> =
+    this.tabService.injectedCaseManagementTabs$;
   public readonly documentDefinitionTitle$ = this.pageTitleService.customPageTitle$;
   public readonly CARBON_THEME = 'g10';
   public readonly DossierManagementTabs = Object.values(TabEnum);
@@ -67,7 +80,6 @@ export class DossierManagementDetailContainerComponent
   private _activeVersion: number | null;
   private _pendingVersion: number | null;
   private _subscriptions = new Subscription();
-
   constructor(
     private readonly dossierDetailService: DossierDetailService,
     private readonly route: ActivatedRoute,
@@ -87,6 +99,7 @@ export class DossierManagementDetailContainerComponent
 
   public ngAfterViewInit(): void {
     this.customModal = this._documentDefinitionTab.cancelModal;
+    this.openInjectedTabSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -95,7 +108,7 @@ export class DossierManagementDetailContainerComponent
     this.pageTitleService.enableReset();
   }
 
-  public displayBodyComponent(tab: TabEnum): void {
+  public displayBodyComponent(tab: TabEnum | string, isInjectedTab = false): void {
     if (this.pendingChanges) {
       this.onCanDeactivate();
     }
@@ -145,6 +158,25 @@ export class DossierManagementDetailContainerComponent
     this._subscriptions.add(
       this.dossierDetailService.selectedVersionNumber$.subscribe((versionNumber: number | null) => {
         this._activeVersion = versionNumber;
+      })
+    );
+  }
+
+  private openInjectedTabSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([
+        this.currentTab$.pipe(distinctUntilChanged()),
+        this.injectedCaseManagementTabs$,
+      ]).subscribe(([currentTab, injectedCaseManagementTabs]) => {
+        const findInjectedTab = injectedCaseManagementTabs.find(
+          injectedTab => injectedTab.translationKey === currentTab
+        );
+
+        if (findInjectedTab && this._contentContainer) {
+          this._contentContainer.createComponent(findInjectedTab.component);
+        } else {
+          this._contentContainer.clear();
+        }
       })
     );
   }

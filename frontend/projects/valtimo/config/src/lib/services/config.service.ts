@@ -39,6 +39,7 @@ export class ConfigService {
 
     return {
       ...config,
+      initializers: config.initializers || [],
       whitelistedDomains: config.whitelistedDomains.map(domain =>
         UrlUtils.formatUrlTrailingSlash(domain, false)
       ),
@@ -64,7 +65,7 @@ export class ConfigService {
   }
 
   public get initializers() {
-    return this.valtimoConfig.initializers;
+    return this.valtimoConfig?.initializers || [];
   }
 
   public addExtension(extension: Extension) {

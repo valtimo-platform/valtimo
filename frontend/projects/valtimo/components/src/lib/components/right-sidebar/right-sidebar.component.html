@@ -153,7 +153,7 @@
           (click)="$event.stopPropagation()"
           (selected)="updateUserLanguage($event)"
         >
-          <cds-dropdown-list [items]="languageListItems$ | async"></cds-dropdown-list>
+          <cds-dropdown-list [items]="(languageListItems$ | async) || []"></cds-dropdown-list>
         </cds-dropdown>
       </cds-list-column>
     </cds-list-row>
@@ -230,7 +230,7 @@
           (selected)="setPreferredTheme($event)"
           [dropUp]="false"
         >
-          <cds-dropdown-list [items]="themeOptions$ | async"></cds-dropdown-list>
+          <cds-dropdown-list [items]="(themeOptions$ | async) || []"></cds-dropdown-list>
         </cds-dropdown>
       </cds-list-column>
     </cds-list-row>

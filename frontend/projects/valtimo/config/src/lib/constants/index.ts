@@ -15,3 +15,4 @@
  */
 
 export * from './versions';
+export * from './case-management-tab-token';

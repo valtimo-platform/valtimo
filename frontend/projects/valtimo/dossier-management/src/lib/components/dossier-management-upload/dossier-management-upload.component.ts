@@ -133,6 +133,7 @@ export class DossierManagementUploadComponent implements OnInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
     this.resetModal();
   }
 
@@ -272,7 +273,6 @@ export class DossierManagementUploadComponent implements OnInit, OnDestroy {
       this.activeStep$.next(UPLOAD_STEP.PLUGINS);
       this.uploadStatus$.next(UPLOAD_STATUS.ACTIVE);
       this.showCheckboxError$.next(false);
-      this._subscriptions.unsubscribe();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 }

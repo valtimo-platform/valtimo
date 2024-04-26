@@ -79,7 +79,9 @@
       "notes": "Notizen",
       "MINE": "Meine Cases",
       "OPEN": "Nicht zugeordnete Cases",
-      "ALL": "Alle Cases"
+      "ALL": "Alle Cases",
+      "componentNotFound": "Tab-Komponente nicht gefunden",
+      "componentNotFoundMessage": "Für diese Registerkarte ist keine Komponente verfügbar. Wenden Sie sich an den Systemadministrator."
     },
     "forms": {
       "globalSearchPlaceHolder": "Alles",
@@ -137,7 +139,11 @@
         "regularUser": "Der Dokumenten-Upload steht für diesen Fall nicht zur Verfügung. Bitte wenden Sie sich an einen Administrator",
         "adminRole": "Der Prozess zum Hochladen von Dokumenten wurde nicht konfiguriert. Bitte konfigurieren Sie diesen Prozess auf der Fallverwaltungsseite"
       },
-      "noZaakFound": "Es konnten keine Dateien abgerufen werden, da für diese Zaak kein Fall gefunden wurde."
+      "navigateToCaseAdmin": "Zaak konfigurieren",
+      "noZaakFoundTitle": "Kein Zaak gefunden",
+      "noZaakFound": "Es konnten keine Dateien abgerufen werden, da für diese Zaak kein Fall gefunden wurde.",
+      "noFilesTitle": "Keine Dateien",
+      "noFiles": "Für diesen Fall wurden keine Dateien gefunden."
     },
     "startSubProcess": "Starten",
     "claimAssigneeCase": "Anmaßen",
@@ -165,6 +171,9 @@
     "fillInMetadata": "Informationen zu dieser Datei",
     "cancel": "Abbrechen",
     "upload": "Upload",
+    "size": "Umfang",
+    "format": "Datei Format",
+    "trefwoorden": "Schlüsselwörter",
     "filename": "Dateiname",
     "filenameTooltip": "Der Name der physischen Datei, in der der Inhalt des Dokuments erfasst wird, einschließlich Erweiterung",
     "confidentialityLevel": "Vertraulichkeitshinweis",
@@ -204,7 +213,27 @@
     "informatieobjecttypeTooltip": "Ein Dokumenttyp, der sich auf den Falltyp des aktuellen Falls bezieht",
     "additionalDate": "Zusätzliches Dokumentdatum",
     "additionalDateTooltip": "Ein zusätzliches Datum, das dem Dokument als Metadaten hinzugefügt werden kann. Dieses zusätzliche Datum ist optional. Wenn „Eingangsdatum“ ausgewählt ist, kann der Dokumentstatus nur auf 'final' oder 'archiviert' gesetzt werden.",
-    "noAdditionalDate": "Kein Zusatztermin"
+    "noAdditionalDate": "Kein Zusatztermin",
+    "delete": "Löschen",
+    "download": "Herunterladen",
+    "application/octet-stream": "Unbekannt",
+    "application/json": "JSON",
+    "application/msword": "DOC",
+    "application/pdf": "PDF",
+    "application/vnd.ms-powerpoint": "PPT",
+    "application/vnd.ms-excel": "XLS",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": "PPTX",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "XLSX",
+    "audio/mpeg": "MP3",
+    "image/bmp": "BMP",
+    "image/gif": "GIF",
+    "image/jpeg": "JPEG",
+    "image/png": "PNG",
+    "image/svg+xml": "SVG",
+    "text/csv": "CSV",
+    "text/plain": "TXT",
+    "video/mp4": "MP4"
   },
   "summary": {
     "userTasksDoneState": "Alles erledigt!",
@@ -592,6 +621,10 @@
         "key": "Statusschlüssel",
         "visible": "Standardmäßig sichtbar",
         "color": "Farbe"
+      },
+      "noResults": {
+        "title": "Keine Status gefunden",
+        "description": "Fügen Sie einen Status hinzu"
       }
     }
   },
@@ -794,6 +827,7 @@
     "warning": "Warnung",
     "finish": "Beenden",
     "add": "Hinzufügen",
+    "tags": "Tags",
     "tagType": {
       "red": "Rot",
       "magenta": "Magenta",
@@ -1266,7 +1300,7 @@
     "enum": "Aufzählung",
     "arrayCount": "Quantität",
     "underscoresToSpaces": "Unterstriche zu Leerzeichen",
-    "status": "Status"
+    "tags": "Tags"
   },
   "object": {
     "title": "Objekte",

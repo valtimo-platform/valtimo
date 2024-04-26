@@ -119,9 +119,6 @@ export * from './lib/components/dropzone/dropzone.component';
 export * from './lib/components/form-io/form-io-uploader/form-io-uploader.component';
 export * from './lib/components/form-io/form-io-uploader/form-io-uploader.formio';
 
-export * from './lib/components/form-io/documenten-api-uploader/documenten-api-uploader.component';
-export * from './lib/components/form-io/documenten-api-uploader/documenten-api-uploader.formio';
-
 export * from './lib/components/form-io/form-io-current-user/form-io-current-user.component';
 export * from './lib/components/form-io/form-io-current-user/form-io-current-user.formio';
 
@@ -131,6 +128,7 @@ export * from './lib/components/form-io/form-io-iban/iban.formio';
 export * from './lib/components/form-io/form-io-resource-selector/form-io-resource-selector.formio';
 
 export * from './lib/components/form-io/services/form-io-state.service';
+export * from './lib/components/form-io/services/form-io-dom.service';
 
 export * from './lib/components/webcam/webcam.module';
 export * from './lib/components/webcam/webcam.component';
@@ -143,9 +141,6 @@ export * from './lib/components/searchable-dropdown-select/searchable-dropdown-s
 
 export * from './lib/components/multiselect-dropdown/multiselect-dropdown.module';
 export * from './lib/components/multiselect-dropdown/multiselect-dropdown.component';
-
-export * from './lib/components/documenten-api-metadata-modal/documenten-api-metadata-modal.module';
-export * from './lib/components/documenten-api-metadata-modal/documenten-api-metadata-modal.component';
 
 export * from './lib/components/search-fields/search-fields.module';
 export * from './lib/components/search-fields/search-fields.component';
