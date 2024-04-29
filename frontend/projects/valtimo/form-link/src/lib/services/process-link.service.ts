@@ -81,6 +81,15 @@ export class ProcessLinkService {
       | FormFlowProcessLinkCreateRequestDto
       | PluginProcessLinkCreateDto
   ): Observable<null> {
+    const pluginProcessLinkCreateRequest = saveProcessLinkRequest as PluginProcessLinkCreateDto;
+    if (pluginProcessLinkCreateRequest.actionProperties) {
+      Object.keys(pluginProcessLinkCreateRequest.actionProperties).forEach(key => {
+        if (pluginProcessLinkCreateRequest.actionProperties[key] === '') {
+          pluginProcessLinkCreateRequest.actionProperties[key] = null;
+        }
+      });
+    }
+
     return this.http.post<null>(
       `${this.VALTIMO_ENDPOINT_URI}v1/process-link`,
       saveProcessLinkRequest
