@@ -32,7 +32,7 @@
 
             <cds-overflow-menu-option
               [disabled]="obs.formDefinition.readOnly"
-              (selected)="downloadFormDefinition(obs.formDefinition)"
+              (selected)="showUploadModal()"
             >
               {{ 'Upload' | translate }}
             </cds-overflow-menu-option>
