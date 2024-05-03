@@ -500,7 +500,8 @@
       "listColumns": "Lijst",
       "tabManagement": "Tabbladen",
       "document": "Document",
-      "statuses": "Statussen"
+      "statuses": "Statussen",
+      "zgw": "ZGW"
     },
     "tabManagement": {
       "columns": {
@@ -635,8 +636,31 @@
       "edit": "Kolom bewerken",
       "deleteText": "Weet je zeker dat je deze kolom wilt verwijderen?"
     },
+    "tags": {
+      "tag": "Trefwoord",
+      "add": "Trefwoord toevoegen",
+      "deleteText": "Weet je zeker dat je dit trefwoord wilt verwijderen?",
+      "deleteMultipleText": "Weet je zeker dat je deze trefwoorden wilt verwijderen?",
+      "addModal": {
+        "header": "Trefwoord toevoegen"
+      },
+      "list": {
+        "noResultsTitle": "Geen trefwoorden",
+        "noResultsDescription": "Voeg een trefwoord toe om te beginnen"
+      },
+      "search": {
+        "noResultsTitle": "Geen resultaten",
+        "noResultsDescription": "Probeer de zoekfilters aan te passen om te vinden wat je zoekt."
+      },
+      "fields": {
+        "value": "Trefwoord",
+        "valueRequired": "Trefwoord is verplicht.",
+        "valueMaxLength": "Trefwoord is te lang. Maximum lengte is {{ maxlength }} tekens."
+      }
+    },
     "tabs": {
-      "documentColumns": "Document kolommen"
+      "documentColumns": "Document kolommen",
+      "documentTags": "Document trefwoorden"
     }
   },
   "task-list": {

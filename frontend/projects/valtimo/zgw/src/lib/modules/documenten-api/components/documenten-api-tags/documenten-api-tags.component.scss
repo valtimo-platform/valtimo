@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-export enum ZgwTabEnum {
-  DOCUMENTEN_API_COLUMNS = 'documentenApiColumns',
-  DOCUMENTEN_API_TAGS = 'documentenApiTags',
+::ng-deep .cds-tag--no-margin {
+  margin: 0;
 }

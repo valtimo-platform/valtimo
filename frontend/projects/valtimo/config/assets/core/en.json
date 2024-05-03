@@ -637,8 +637,31 @@
       "edit": "Edit column",
       "deleteText": "Are you sure you want to delete this column?"
     },
+    "tags": {
+      "tag": "Tag",
+      "add": "Add tag",
+      "deleteText": "Are you sure you want to delete this tag?",
+      "deleteMultipleText": "Are you sure you want to delete these tags?",
+      "addModal": {
+        "header": "Add tag"
+      },
+      "list": {
+        "noResultsTitle": "No tags",
+        "noResultsDescription": "Add a tag to start"
+      },
+      "search": {
+        "noResultsTitle": "No results",
+        "noResultsDescription": "Try adjusting your search or filter options to find what you're looking for."
+      },
+      "fields": {
+        "value": "Tag",
+        "valueRequired": "Tag is required.",
+        "valueMaxLength": "Tag is too long. Maximum length is {{ maxlength }} characters."
+      }
+    },
     "tabs": {
-      "documentColumns": "Document columns"
+      "documentColumns": "Document columns",
+      "documentTags": "Document tags"
     }
   },
   "task-list": {

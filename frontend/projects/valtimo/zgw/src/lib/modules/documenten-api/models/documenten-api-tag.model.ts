@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-export enum ZgwTabEnum {
-  DOCUMENTEN_API_COLUMNS = 'documentenApiColumns',
-  DOCUMENTEN_API_TAGS = 'documentenApiTags',
+interface DocumentenApiTag {
+  value: string;
 }
+
+export {DocumentenApiTag};

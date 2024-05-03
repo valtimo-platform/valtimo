@@ -1,0 +1,104 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    loading: loading$ | async,
+    documentTags: documentTags$ | async,
+    addModalClosed: addModalClosed$ | async,
+    documentDefinitionName: documentDefinitionName$ | async,
+    selectedRowKeys: selectedRowKeys$ | async,
+    searchTerm: searchTerm$ | async,
+    showDeleteModal: showDeleteModal$ | async,
+    tagToDelete: tagToDelete$ | async
+  } as obs"
+>
+  <valtimo-carbon-list
+    [items]="obs.documentTags"
+    [fields]="FIELDS"
+    [header]="false"
+    [loading]="obs.loading"
+    [actionItems]="ACTION_ITEMS"
+    [showSelectionColumn]="true"
+    [isSearchable]="true"
+    [pagination]="pagination"
+    (paginationClicked)="paginationClicked($event)"
+    (paginationSet)="paginationSet($event)"
+    (search)="searchTermEntered($event)"
+  >
+    <ng-container carbonToolbarContent *ngTemplateOutlet="addButtton"></ng-container>
+
+    <ng-container carbonToolbarActions>
+      <button cdsButton="primary" (click)="showDeleteMultipleModal()">
+        {{ 'interface.delete' | translate }}
+        <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+      </button>
+    </ng-container>
+
+    <valtimo-no-results
+      *ngIf="obs.searchTerm === ''"
+      [action]="addButtton"
+      title="{{ 'zgw.tags.list.noResultsTitle' | translate }}"
+      description="{{ 'zgw.tags.list.noResultsDescription' | translate }}"
+    ></valtimo-no-results>
+
+    <valtimo-no-results
+      *ngIf="obs.searchTerm !== ''"
+      title="{{ 'zgw.tags.search.noResultsTitle' | translate }}"
+      description="{{ 'zgw.tags.search.noResultsDescription' | translate }}"
+      illustration="valtimo-layout/img/emptystate-no-result.svg"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+
+  <valtimo-documenten-api-tag-modal
+    [open]="!obs.addModalClosed"
+    [documentDefinitionName]="obs.documentDefinitionName"
+    (closeModalEvent)="closeModal($event)"
+  ></valtimo-documenten-api-tag-modal>
+
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="interface.delete"
+    confirmButtonType="danger"
+    contentTranslationKey="zgw.tags.deleteText"
+    [showModalSubject$]="obs.showDeleteModal"
+    titleTranslationKey="interface.delete"
+    [outputOnConfirm]="obs.tagToDelete"
+    (confirmEvent)="confirmDeleteTag($event)"
+  ></valtimo-confirmation-modal>
+
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="interface.delete"
+    confirmButtonType="danger"
+    [contentTranslationKey]="
+      obs.selectedRowKeys.length > 1 ? 'zgw.tags.deleteMultipleText' : 'zgw.tags.deleteText'
+    "
+    [showModalSubject$]="showDeleteMultipleModal$"
+    titleTranslationKey="interface.delete"
+    [outputOnConfirm]="{
+      documentDefinitionName: obs.documentDefinitionName,
+      tagIds: obs.selectedRowKeys,
+      itemsOnCurrentPage: obs.documentTags.length
+    }"
+    (confirmEvent)="confirmDeleteMultipleTag($event)"
+  ></valtimo-confirmation-modal>
+
+  <ng-template #addButtton>
+    <button cdsButton="primary" [disabled]="obs.loading" (click)="openAddModal()">
+      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+      {{ 'zgw.tags.add' | translate }}
+    </button>
+  </ng-template>
+</ng-container>

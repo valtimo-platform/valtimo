@@ -249,6 +249,11 @@ export class FormManagementEditComponent
     this.modifiedFormDefinition = newDefinition;
     definition.formDefinition = newDefinition;
 
+    this.jsonFormDefinition$.next({
+      value: JSON.stringify(newDefinition),
+      language: 'json',
+    });
+
     this.reloading$.next(false);
   }
 
