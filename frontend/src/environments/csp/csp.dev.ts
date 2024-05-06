@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CSPHeaderParams, DATA, SELF, UNSAFE_EVAL, UNSAFE_INLINE} from 'csp-header';
+import {CSPHeaderParams, DATA, SELF, UNSAFE_EVAL, UNSAFE_INLINE, BLOB} from 'csp-header';
 import {UrlUtils} from '@valtimo/config';
 import {authenticationKeycloak} from '../auth/keycloak-config.dev';
 
@@ -23,6 +23,7 @@ export const cspHeaderParamsDev: CSPHeaderParams = {
     'default-src': [SELF],
     'img-src': [SELF, DATA],
     'script-src': [SELF, UNSAFE_EVAL, UNSAFE_INLINE, 'https://cdn.form.io/'],
+    'worker-src': [SELF, BLOB],
     'font-src': [
       SELF,
       DATA,

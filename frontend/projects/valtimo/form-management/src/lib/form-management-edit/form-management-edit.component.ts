@@ -112,11 +112,12 @@ export class FormManagementEditComponent
   }
 
   public formBuilderChanged(event, definition: EditorModel): void {
-    this._changeActive = true;
-    this.modifiedFormDefinition = event.form;
     if (event.type === 'updateComponent') {
       return;
     }
+    this._changeActive = true;
+    this.modifiedFormDefinition = event.form;
+    this._formDefinition$.next(event.form);
     this.jsonFormDefinition$.next({...definition, value: JSON.stringify(event.form)});
     this._changeActive = false;
   }
@@ -208,11 +209,6 @@ export class FormManagementEditComponent
 
   public onValidEvent(value: boolean, disabled: boolean): void {
     if (this._changeActive || disabled) {
-      return;
-    }
-
-    if (this.validJsonChange === null) {
-      this.validJsonChange = value;
       return;
     }
 
