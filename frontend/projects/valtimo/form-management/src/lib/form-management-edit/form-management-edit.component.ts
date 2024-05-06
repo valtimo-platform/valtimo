@@ -64,8 +64,8 @@ export class FormManagementEditComponent
     filter((definition: FormDefinition | null) => !!definition),
     distinctUntilChanged(
       (prevFormDefinition, currFormDefinition) =>
-        JSON.stringify(prevFormDefinition?.formDefinition.components) ===
-        JSON.stringify(currFormDefinition?.formDefinition.components)
+        JSON.stringify(prevFormDefinition?.formDefinition?.components) ===
+        JSON.stringify(currFormDefinition?.formDefinition?.components)
     ),
     tap(() => {
       if (!this._editorInitialized) {
