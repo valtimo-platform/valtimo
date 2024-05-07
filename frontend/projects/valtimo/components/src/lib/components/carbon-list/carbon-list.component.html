@@ -153,6 +153,8 @@
 </ng-template>
 
 <ng-template #tagTemplate let-data="data">
+  <ng-container *ngIf="!data.tags">-</ng-container>
+
   <div *ngIf="data.tags" class="tag-template">
     <cds-tag *ngIf="!!data.tags[0].content" class="cds-tag--no-margin" [type]="data.tags[0].type">
       {{ data.tags[0].content }}
