@@ -14,10 +14,4 @@
  * limitations under the License.
  */
 
-import {Versions} from '../models';
-
-const VERSIONS: Versions = {
-  frontendLibraries: '12.1.0',
-};
-
-export {VERSIONS};
+export * from './documenten-api.service';
