@@ -89,6 +89,7 @@
         {{ 'dossierManagement.statuses.columns.color' | translate }}
 
         <cds-dropdown
+          [id]="'status-color-dropdown'"
           [appendInline]="false"
           [placeholder]="'dossierManagement.statuses.colorPlaceholder' | translate"
           (selected)="colorDropdownChange($event)"
