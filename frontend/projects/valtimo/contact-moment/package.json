@@ -1,7 +1,7 @@
 {
   "name": "@valtimo/contact-moment",
   "license": "EUPL-1.2",
-  "version": "11.2.0",
+  "version": "11.3.2",
   "peerDependencies": {
     "@angular/common": "^16.2.0",
     "@angular/core": "^16.2.0"
