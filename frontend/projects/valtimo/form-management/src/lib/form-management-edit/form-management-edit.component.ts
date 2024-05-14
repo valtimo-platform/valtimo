@@ -203,9 +203,13 @@ export class FormManagementEditComponent
       return;
     }
 
+    const parsedDefinition = JSON.parse(value);
+
+    this.modifiedFormDefinition = parsedDefinition;
+
     this._formDefinition$.next({
       ...definition,
-      formDefinition: JSON.parse(value),
+      formDefinition: parsedDefinition,
     });
   }
 
