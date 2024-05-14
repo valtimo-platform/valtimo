@@ -18,12 +18,11 @@ import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentService, RelatedFile, RelatedFileListItem} from '@valtimo/document';
 import {DownloadService, UploadProviderService} from '@valtimo/resource';
-import {ToastrService} from 'ngx-toastr';
 import {catchError, map, switchMap, take, tap} from 'rxjs/operators';
 import {BehaviorSubject, combineLatest, Observable, of, Subject} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 import {ConfigService} from '@valtimo/config';
-import {DocumentenApiMetadata, PromptService} from '@valtimo/components';
+import {DocumentenApiMetadata} from '@valtimo/components';
 import {UserProviderService} from '@valtimo/security';
 import {FileSortService} from '../../../../services/file-sort.service';
 import moment from 'moment';
@@ -45,6 +44,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
     {key: 'createdOn', label: 'Created on'},
     {key: 'createdBy', label: 'Created by'},
   ];
+  private readonly valtimoEndpointUri!: string;
 
   public showZaakLinkWarning: boolean;
   public isAdmin: boolean;
@@ -94,10 +94,8 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly documentService: DocumentService,
-    private readonly toastrService: ToastrService,
     private readonly uploadProviderService: UploadProviderService,
     private readonly downloadService: DownloadService,
-    private readonly promptService: PromptService,
     private readonly translateService: TranslateService,
     private readonly configService: ConfigService,
     private readonly userProviderService: UserProviderService,
@@ -106,6 +104,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
     const snapshot = this.route.snapshot.paramMap;
     this.documentId = snapshot.get('documentId') || '';
     this.documentDefinitionName = snapshot.get('documentDefinitionName') || '';
+    this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
   ngOnInit(): void {
@@ -124,7 +123,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
       this.downloadingFileIndexes$.next([...indexes, index]);
 
       const finished$: Observable<null> = this.downloadService.downloadFile(
-        `/api/v1/documenten-api/${relatedFile.pluginConfigurationId}/files/${relatedFile.fileId}/download`,
+        `${this.valtimoEndpointUri}/v1/documenten-api/${relatedFile.pluginConfigurationId}/files/${relatedFile.fileId}/download`,
         relatedFile.fileName
       );
 
@@ -146,7 +145,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
         tap(file => {
           this.uploadProviderService
             .uploadFileWithMetadata(file, this.documentId, metadata)
-            .subscribe(res => {
+            .subscribe(() => {
               this.refetchDocuments();
               this.uploading$.next(false);
               this.fileToBeUploaded$.next(null);
@@ -165,7 +164,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
       userIdentity => {
         this.isAdmin = userIdentity.roles.includes('ROLE_ADMIN');
       },
-      error => {
+      () => {
         this.isAdmin = false;
       }
     );
