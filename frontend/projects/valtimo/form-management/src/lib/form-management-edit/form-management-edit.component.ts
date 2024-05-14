@@ -29,7 +29,6 @@ import {
   BehaviorSubject,
   distinctUntilChanged,
   filter,
-  first,
   Subscription,
   switchMap,
   take,
@@ -60,6 +59,9 @@ export class FormManagementEditComponent
   public activeTab = EDIT_TABS.BUILDER;
 
   private readonly _formDefinition$ = new BehaviorSubject<FormDefinition | null>(null);
+  private get _formDefinition(): FormDefinition {
+    return this._formDefinition$.getValue();
+  }
   public readonly formDefinition$ = this._formDefinition$.pipe(
     filter((definition: FormDefinition | null) => !!definition),
     distinctUntilChanged(
@@ -117,7 +119,7 @@ export class FormManagementEditComponent
     }
     this._changeActive = true;
     this.modifiedFormDefinition = event.form;
-    this._formDefinition$.next(event.form);
+    this._formDefinition$.next({...this._formDefinition, formDefinition: event.form});
     this.jsonFormDefinition$.next({...definition, value: JSON.stringify(event.form)});
     this._changeActive = false;
   }
