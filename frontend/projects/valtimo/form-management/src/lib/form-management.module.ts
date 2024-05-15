@@ -18,23 +18,22 @@ import {NgModule} from '@angular/core';
 import {FormManagementComponent} from './form-management.component';
 import {FormManagementRoutingModule} from './form-management-routing.module';
 import {
-  DropzoneModule,
-  FormIoModule,
-  ListModule,
-  ModalModule as vcModalModule,
-  ValtimoCdsModalDirectiveModule,
-  WidgetModule,
   ButtonModule,
+  CarbonListModule,
+  ConfirmationModalModule,
+  DropzoneModule,
+  EditorModule,
+  FormIoModule,
   FormModule,
   InputModule as vInputModule,
-  VModalModule,
-  TitleModule,
-  CarbonListModule,
-  PageTitleModule,
+  ListModule,
+  ModalModule as vcModalModule,
   RenderInPageHeaderDirectiveModule,
-  EditorModule,
   SpinnerModule,
-  ConfirmationModalModule,
+  TitleModule,
+  ValtimoCdsModalDirectiveModule,
+  VModalModule,
+  WidgetModule,
 } from '@valtimo/components';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -52,6 +51,7 @@ import {
   ModalModule,
   PlaceholderModule,
   TabsModule,
+  TagModule,
 } from 'carbon-components-angular';
 
 @NgModule({
@@ -94,6 +94,7 @@ import {
     SpinnerModule,
     IconModule,
     ConfirmationModalModule,
+    TagModule,
   ],
   exports: [FormManagementComponent],
 })

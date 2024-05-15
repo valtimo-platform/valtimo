@@ -285,7 +285,6 @@
     "@valtimo/dashboard-management": "file:dist/valtimo/dashboard-management",
     "@valtimo/decision": "file:dist/valtimo/decision",
     "@valtimo/document": "file:dist/valtimo/document",
-    "@valtimo/zgw": "file:dist/valtimo/zgw",
     "@valtimo/dossier": "file:dist/valtimo/dossier",
     "@valtimo/dossier-management": "file:dist/valtimo/dossier-management",
     "@valtimo/form-flow-management": "file:dist/valtimo/form-flow-management",

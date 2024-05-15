@@ -65,9 +65,11 @@
   width: 100%;
   justify-content: space-between;
   align-items: flex-end;
+  padding-bottom: 4px;
 
   &.--compact {
-    align-items: center;
+    padding-bottom: 0;
+    align-items: flex-start;
   }
 
   ::ng-deep .version-selection {
@@ -79,11 +81,17 @@
   }
 }
 
-.dossier-assign-user {
-  padding-bottom: 4px;
-  margin-left: -16px;
+.dossier-status-assign {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+
+  .cds--tag {
+    margin: 0;
+    height: var(--cds-layout-size-height-md);
+  }
 
   &.--compact {
-    margin-left: 0;
+    align-items: center;
   }
 }

@@ -61,7 +61,7 @@ import {TranslateService} from '@ngx-translate/core';
 })
 export class DossierManagementStatusModalComponent implements OnInit, OnDestroy {
   @Input() public set type(value: StatusModalType) {
-    this._type.next(value);
+    this._type$.next(value);
 
     if (value === 'closed') {
       setTimeout(() => {
@@ -81,11 +81,9 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
 
   @Output() public closeModalEvent = new EventEmitter<StatusModalCloseEvent>();
 
-  private readonly _type = new BehaviorSubject<StatusModalType>(undefined);
+  private readonly _type$ = new BehaviorSubject<StatusModalType>(undefined);
   private readonly _typeAnimationDelay$ = new BehaviorSubject<StatusModalType>(undefined);
   private readonly _prefillStatus = new BehaviorSubject<InternalCaseStatus>(undefined);
-
-  public readonly isClosed$ = this._type.pipe(map(type => type === 'closed'));
 
   public readonly statusFormGroup = this.fb.group({
     title: this.fb.control('', Validators.required),
@@ -98,11 +96,14 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
     color: this.fb.control('', Validators.required),
   });
 
+  private _isEdit!: boolean;
+
   public readonly isEdit$ = combineLatest([this._typeAnimationDelay$, this._prefillStatus]).pipe(
     tap(([type, prefillStatus]) => {
       if (type === 'edit' && prefillStatus) this.prefillForm(prefillStatus);
     }),
-    map(([type]) => type === 'edit')
+    map(([type]) => type === 'edit'),
+    tap(isEdit => (this._isEdit = isEdit))
   );
 
   public readonly isAdd$ = this._typeAnimationDelay$.pipe(
@@ -111,6 +112,8 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
       if (isAdd) this.resetForm();
     })
   );
+
+  public readonly isClosed$ = this._type$.pipe(map(type => type === 'closed'));
 
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
 
@@ -347,7 +350,7 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
 
   private uniqueKeyValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null =>
-      this.usedKeys?.every((key: string) => key !== control.value)
+      this.usedKeys?.every((key: string) => key !== control.value) || this._isEdit
         ? null
         : {uniqueKey: {value: control.value}};
   }
