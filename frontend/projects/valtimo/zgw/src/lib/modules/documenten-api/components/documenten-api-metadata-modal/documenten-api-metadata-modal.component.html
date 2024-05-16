@@ -161,7 +161,7 @@
                 id="informatieobjecttype"
                 (selected)="informatieobjecttypeSelected($event)"
               >
-                <cds-dropdown-list [items]="obs.documentTypeItems"></cds-dropdown-list>
+                <cds-dropdown-list [items]="obs.documentTypeItems || []"></cds-dropdown-list>
               </cds-dropdown>
             </div>
           </ng-container>
@@ -206,7 +206,7 @@
               (selected)="tagsSelected($event)"
             >
               >
-              <cds-dropdown-list [items]="tagItems$ | async"></cds-dropdown-list>
+              <cds-dropdown-list [items]="(tagItems$ | async) || []"></cds-dropdown-list>
             </cds-combo-box>
           </div>
         </div>

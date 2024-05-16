@@ -295,18 +295,21 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
           documentDefinitionName
         )
     ),
-    switchMap(([params, firstChildParams, documentDefinitionName]) =>
-      this.documentService.getDocumentTypes(
-        params?.documentDefinitionName ||
-          firstChildParams?.documentDefinitionName ||
-          documentDefinitionName
-      )
+    switchMap(([params, firstChildParams, documentDefinitionName, informatieobjecttypeValue]) =>
+      combineLatest([
+        this.documentService.getDocumentTypes(
+          params?.documentDefinitionName ||
+            firstChildParams?.documentDefinitionName ||
+            documentDefinitionName
+        ),
+        of(informatieobjecttypeValue),
+      ])
     ),
-    map(documentTypes =>
+    map(([documentTypes, informatieobjecttypeValue]) =>
       documentTypes.map((type: any) => ({
         id: type.url,
         content: type.name,
-        selected: this.informatieobjecttypeFormControl.value?.toString() === type.name,
+        selected: informatieobjecttypeValue === type.url,
       }))
     )
   );
