@@ -54,8 +54,7 @@ export class ObjectListComponent {
   readonly objectManagementId$: Observable<string> = this.route.params.pipe(
     map(params => params.objectManagementId),
     tap(objectManagementId => {
-      if (!this._settingPageTitle && objectManagementId) {
-        this._settingPageTitle = true;
+      if (objectManagementId) {
         this.objectManagementService.getObjectById(objectManagementId).subscribe(objectType => {
           if (objectType.title) {
             this.pageTitleService.setCustomPageTitle(objectType.title);
@@ -233,8 +232,6 @@ export class ObjectListComponent {
       return this.setDefaultFields();
     })
   );
-
-  private _settingPageTitle = false;
 
   constructor(
     private readonly objectService: ObjectService,
