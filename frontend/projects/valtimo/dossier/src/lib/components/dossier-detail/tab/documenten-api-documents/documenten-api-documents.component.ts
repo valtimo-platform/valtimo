@@ -123,7 +123,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
       this.downloadingFileIndexes$.next([...indexes, index]);
 
       const finished$: Observable<null> = this.downloadService.downloadFile(
-        `${this.valtimoEndpointUri}/v1/documenten-api/${relatedFile.pluginConfigurationId}/files/${relatedFile.fileId}/download`,
+        `${this.valtimoEndpointUri}v1/documenten-api/${relatedFile.pluginConfigurationId}/files/${relatedFile.fileId}/download`,
         relatedFile.fileName
       );
 
