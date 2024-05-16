@@ -37,9 +37,9 @@ import {
 import {CARBON_CONSTANTS} from '@valtimo/components';
 import {
   AbstractControl,
+  AsyncValidatorFn,
   FormBuilder,
   ValidationErrors,
-  ValidatorFn,
   Validators,
 } from '@angular/forms';
 import {
@@ -90,20 +90,17 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
     key: this.fb.control('', [
       Validators.required,
       Validators.minLength(3),
-      this.uniqueKeyValidator(),
+      this.uniqueKeyValidator,
     ]),
     visibleInCaseListByDefault: this.fb.control(true, Validators.required),
     color: this.fb.control('', Validators.required),
   });
 
-  private _isEdit!: boolean;
-
   public readonly isEdit$ = combineLatest([this._typeAnimationDelay$, this._prefillStatus]).pipe(
     tap(([type, prefillStatus]) => {
       if (type === 'edit' && prefillStatus) this.prefillForm(prefillStatus);
     }),
-    map(([type]) => type === 'edit'),
-    tap(isEdit => (this._isEdit = isEdit))
+    map(([type]) => type === 'edit')
   );
 
   public readonly isAdd$ = this._typeAnimationDelay$.pipe(
@@ -348,11 +345,15 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
     this.statusFormGroup.patchValue({key: ''});
   }
 
-  private uniqueKeyValidator(): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null =>
-      this.usedKeys?.every((key: string) => key !== control.value) || this._isEdit
-        ? null
-        : {uniqueKey: {value: control.value}};
+  private uniqueKeyValidator(): AsyncValidatorFn {
+    return (control: AbstractControl): Observable<ValidationErrors | null> =>
+      combineLatest([this.isEdit$, control.valueChanges]).pipe(
+        map(([isEdit, keyValue]) =>
+          this.usedKeys?.every((key: string) => key !== keyValue) || isEdit
+            ? null
+            : {uniqueKey: {value: control.value}}
+        )
+      );
   }
 
   private disable(): void {
