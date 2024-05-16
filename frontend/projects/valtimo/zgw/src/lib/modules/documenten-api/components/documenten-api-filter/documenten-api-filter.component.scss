@@ -1,0 +1,30 @@
+:host {
+  .valtimo-documenten-api-filter {
+    display: flex;
+    flex-direction: column;
+    max-width: 880px;
+
+    &__form {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      align-items: flex-end;
+      padding: 16px;
+      gap: 16px;
+    }
+
+    &__dates {
+      display: flex;
+      gap: 16px;
+    }
+
+    &__footer {
+      display: flex;
+      padding: 0 16px 16px 16px;
+    }
+  }
+}
+
+::ng-deep .cds--date-picker.cds--date-picker--single .cds--date-picker__input {
+  inline-size: unset !important;
+  padding: 0 !important;
+}

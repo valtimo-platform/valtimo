@@ -31,21 +31,21 @@
   <section cdsModalContent>
     <form [formGroup]="tagFormGroup" class="tag-form">
       <cds-label
-              [invalidText]="
-        (value?.errors?.['required']
-          ? 'zgw.tags.fields.valueRequired'
-          : 'zgw.tags.fields.valueMaxLength'
-        ) | translate: {maxlength: value?.errors?.maxlength?.requiredLength}
-      "
-              [invalid]="value.dirty && value.invalid"
+        [invalidText]="
+          (value?.errors?.['required']
+            ? 'zgw.tags.fields.valueRequired'
+            : 'zgw.tags.fields.valueMaxLength'
+          ) | translate: {maxlength: value?.errors?.maxlength?.requiredLength}
+        "
+        [invalid]="value.dirty && value.invalid"
       >
         {{ 'zgw.tags.fields.value' | translate }}
 
         <input
-                cdsText
-                formControlName="value"
-                [attr.modal-primary-focus]="true"
-                [invalid]="value.dirty && value.invalid"
+          cdsText
+          formControlName="value"
+          [attr.modal-primary-focus]="true"
+          [invalid]="value.dirty && value.invalid"
         />
       </cds-label>
     </form>

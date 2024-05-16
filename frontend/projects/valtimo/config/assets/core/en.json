@@ -135,6 +135,10 @@
       }
     },
     "documenten": {
+      "deleteConfirmationModal": {
+        "title": "Delete document",
+        "content": "Are you sure you want to delete this document? This action cannot be undone."
+      },
       "noProcessLinked": {
         "regularUser": "The document upload is not available for this case. Please contact an administrator",
         "adminRole": "The process for uploading documents has not been configured. Please configure this process on the case management page"
@@ -168,20 +172,29 @@
     "createdBy": "Created by",
     "createdOn": "Created on",
     "sequence": "Sequence",
-    "fillInMetadata": "File information",
+    "fillInMetadata": "Add file metadata",
+    "editMetadata": "Edit file metadata",
     "cancel": "Cancel",
     "upload": "Upload",
+    "save": "Save",
     "size": "Size",
+    "tags": "Tags",
+    "tagsTooltip": "Tags are used for easy filtering and searching of documents. You can add multiple tags to a document",
+    "tagsPlaceholder": "Choose tags",
     "format": "File format",
     "trefwoorden": "Keywords",
     "filename": "Filename",
     "filenameTooltip": "The name of the physical file in which the content of the document is captured, including extension",
+    "filenamePlaceholder": "Add filename",
     "confidentialityLevel": "Confidentiality level",
     "confidentialityLevelTooltip": "Indication of the extent to which the document is intended for public access",
+    "confidentialityPlaceholder": "Choose confidentiality",
     "inputTitle": "Title",
     "inputTitleTooltip": "The name by which the document is formally known",
+    "inputTitlePlaceholder": "Add title",
     "inputDescription": "Description",
     "inputDescriptionTooltip": "A generic description of the content of the document",
+    "inputDescriptionPlaceholder": "Add description",
     "openbaar": "Public",
     "beperkt_openbaar": "Restricted public",
     "intern": "Internal",
@@ -192,8 +205,10 @@
     "zeer_geheim": "Very secret",
     "author": "Author",
     "authorTooltip": "The original author of the document",
+    "authorPlaceholder": "Add author",
     "status": "Status",
     "statusTooltip": "The current status of the document. 'In editing': the document is being worked on; 'To be confirmed': the document is finished but has yet to be confirmed; 'Definitive': the document has been received or confirmed by an authorized person; 'Archived': the document has been stored lastingly.",
+    "statusPlaceholder": "Choose status",
     "in_bewerking": "In editing",
     "ter_vaststelling": "To be confirmed",
     "definitief": "Definitive",
@@ -206,16 +221,19 @@
     "sendDateTooltip": "The date the document was sent",
     "language": "Language",
     "languageTooltip": "The language in which the document is written",
+    "languagePlaceholder": "Choose language",
     "nld": "Dutch",
     "eng": "English",
     "deu": "German",
     "informatieobjecttype": "Document type",
     "informatieobjecttypeTooltip": "A document type which is related to the zaak type of the current case",
-    "additionalDate": "Additional document date",
+    "informatieobjecttypePlaceholder": "Choose information object type",
+    "additionalDate": "Additional date",
     "additionalDateTooltip": "An additional date that can be added to the document as metadata. This additional date is optional. If 'Receipt date' is selected, the document status can only be set to 'definitive' or 'archived'.",
     "noAdditionalDate": "No additional date",
     "delete": "Delete",
     "download": "Download",
+    "edit": "Edit",
     "application/octet-stream": "Unknown",
     "application/json": "JSON",
     "application/msword": "DOC",
@@ -635,7 +653,37 @@
       "column": "Column",
       "add": "Add column",
       "edit": "Edit column",
-      "deleteText": "Are you sure you want to delete this column?"
+      "deleteText": "Are you sure you want to delete this column?",
+      "notSortable": "This column is not sortable",
+      "defaultWarning": "When selecting a default sort, the previous sort will be overwritten"
+    },
+    "documentColumns": {
+      "auteur": "Author",
+      "beschrijving": "Description",
+      "bestandsnaam": "File name",
+      "bestandsomvang": "File size",
+      "bronorganisatie": "Source organisation",
+      "creatiedatum": "Creation date",
+      "formaat": "Format",
+      "identificatie": "Id",
+      "informatieobjecttype": "Information object type",
+      "locked": "Locked",
+      "status": "Status",
+      "taal": "Language",
+      "titel": "Title",
+      "trefwoorden": "Tags",
+      "versie": "Version",
+      "vertrouwelijkheidaanduiding": "Confidentiality level"
+    },
+    "documents": {
+      "noResults": {
+        "filterTitle": "No documents found",
+        "filterDescription": "There are no documents that match your search criteria"
+      },
+      "noColumns": {
+        "description": "Please configure columns for this document",
+        "title": "No configured columns"
+      }
     },
     "tags": {
       "tag": "Tag",
@@ -879,6 +927,15 @@
       "warm-gray": "Warm gray",
       "high-contrast": "High contrast",
       "outline": "Outline"
+    },
+    "labels": {
+      "dateCreationFrom": "Date creation from",
+      "dateCreationTo": "Date creation to"
+    },
+    "sorting": {
+      "ascending": "Ascending",
+      "descending": "Descending",
+      "noDefault": "No default sort"
     }
   },
   "taskDetail": {

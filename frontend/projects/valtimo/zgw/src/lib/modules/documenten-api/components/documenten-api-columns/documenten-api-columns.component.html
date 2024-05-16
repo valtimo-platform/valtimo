@@ -18,34 +18,38 @@
   *ngIf="{
     columnModalType: columnModalType$ | async,
     columnToUpdate: columnToUpdate$ | async,
-    disabledColumns: disabledColumns$ | async,
     documentDefinitionName: documentDefinitionName$ | async,
-    enabledColumns: enabledColumns$ | async,
-    loading: loading$ | async
+    configuredColumns: configuredColumns$ | async,
+    configurableColumns: configurableColumns$ | async,
+    loading: loading$ | async,
+    prefillColumn: prefillColumn$ | async
   } as obs"
 >
   <valtimo-carbon-list
     [actionItems]="ACTION_ITEMS"
     [fields]="fields"
     [header]="false"
-    [items]="obs.enabledColumns"
-    [loading]="obs.loading"
+    [items]="obs.configuredColumns"
+    [loading]="obs.loading || !fields"
     [movingRowsEnabled]="true"
-    (rowClicked)="openEditModal($event)"
-    (itemsReordered)="onItemsReordered(obs.documentDefinitionName, $event, obs.disabledColumns)"
+    (itemsReordered)="onItemsReordered(obs.documentDefinitionName, $event)"
   >
     <ng-container carbonToolbarContent>
-      <button cdsButton="primary" [disabled]="obs.loading" (click)="openAddModal()">
-        <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-
-        {{ 'zgw.columns.add' | translate }}
-      </button>
+      <ng-container *ngTemplateOutlet="addButton"></ng-container>
     </ng-container>
+
+    <valtimo-no-results
+      [action]="addButton"
+      [description]="'zgw.documents.noColumns.description' | translate"
+      [title]="'zgw.documents.noColumns.title' | translate"
+    ></valtimo-no-results>
   </valtimo-carbon-list>
 
   <valtimo-documenten-api-column-modal
-    [availableColumns]="obs.disabledColumns"
+    [availableColumns]="obs.configurableColumns"
+    [configuredColumns]="obs.configuredColumns"
     [definitionName]="obs.documentDefinitionName"
+    [prefillColumn]="obs.prefillColumn"
     [type]="obs.columnModalType"
     (closeModal)="onCloseModal($event)"
   ></valtimo-documenten-api-column-modal>
@@ -60,3 +64,24 @@
     (confirmEvent)="confirmDeleteStatus($event, obs.documentDefinitionName)"
   ></valtimo-confirmation-modal>
 </ng-container>
+
+<ng-template #addButton>
+  <button cdsButton="primary" [disabled]="loading$ | async" (click)="openAddModal()">
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+
+    {{ 'zgw.columns.add' | translate }}
+  </button>
+</ng-template>
+
+<ng-template #columnKeyTemplate let-data="data">
+  {{ 'zgw.documentColumns.' + data.item.key | translate }}
+</ng-template>
+
+<ng-template #defaultSortTemplate let-data="data">
+  {{
+    data.item.defaultSort === null
+      ? '-'
+      : ('interface.sorting.' + (data.item.defaultSort === 'ASC' ? 'ascending' : 'descending')
+        | translate)
+  }}
+</ng-template>

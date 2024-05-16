@@ -14,21 +14,34 @@
  * limitations under the License.
  */
 
-.buttons {
+.documenten-metadata-form-columns-container {
   display: flex;
-  flex-direction: row;
-  width: 100%;
   justify-content: space-between;
 }
 
-.additional-date {
-  padding: 0;
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  margin-block-end: var(--v-input-margin);
+.documenten-metadata-form-column {
+  flex: 1;
+  margin-right: 1rem;
+}
 
-  .custom-control {
-    margin-bottom: 0;
-  }
+.documenten-metada-form-input {
+  margin-bottom: 18px !important;
+  width: 100% !important;
+}
+
+.documenten-metada-form-description-input {
+  width: 100%;
+}
+
+// Fix 100% width for date inputs
+::ng-deep .cds--date-picker,
+::ng-deep .cds--date-picker-container,
+::ng-deep .cds--date-picker__input,
+::ng-deep .cds--date-picker-input__wrapper,
+::ng-deep .cds--date-picker-input__wrapper > span {
+  width: 100%;
+}
+
+::ng-deep .cds--date-picker.cds--date-picker--single .cds--date-picker__input {
+  inline-size: 100%;
 }

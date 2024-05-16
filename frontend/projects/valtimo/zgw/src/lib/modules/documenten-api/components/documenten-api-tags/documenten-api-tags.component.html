@@ -73,7 +73,7 @@
     confirmButtonTextTranslationKey="interface.delete"
     confirmButtonType="danger"
     contentTranslationKey="zgw.tags.deleteText"
-    [showModalSubject$]="obs.showDeleteModal"
+    [showModalSubject$]="showDeleteModal$"
     titleTranslationKey="interface.delete"
     [outputOnConfirm]="obs.tagToDelete"
     (confirmEvent)="confirmDeleteTag($event)"

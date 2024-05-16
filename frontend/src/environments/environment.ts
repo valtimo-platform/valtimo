@@ -254,6 +254,7 @@ export const environment: ValtimoConfig = {
     enableCompactModeToggle: true,
     enableUserNameInTopBarToggle: true,
     enableTabManagement: true,
+    enableObjectManagement: true
   },
   customDossierHeader: {
     leningen: [

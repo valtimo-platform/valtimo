@@ -28,7 +28,7 @@ import {
 import {FormControl} from '@angular/forms';
 import {ArrowDown16, ArrowUp16, SettingsView16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {InternalCaseStatus, InternalCaseStatusUtils, SortState} from '@valtimo/document';
+import {SortState} from '@valtimo/document';
 import {
   IconService,
   OverflowMenu,
@@ -38,7 +38,6 @@ import {
   TableHeaderItem,
   TableItem,
   TableModel,
-  TagType,
 } from 'carbon-components-angular';
 import {get as _get} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
@@ -344,6 +343,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private _translatedFields$: Observable<ColumnConfig[]> = this.translateService.stream('key').pipe(
     switchMap(() => this._fields$),
+    filter((fields: ColumnConfig[]) => !!fields),
     map((fields: ColumnConfig[]) =>
       fields.map((field: ColumnConfig) => ({
         ...field,
@@ -372,16 +372,19 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     map((header: TableHeaderItem[]) => [...header, ...this.extraColumns])
   );
 
-  private readonly _tableItems$: Observable<TableItem[][]> = this._viewInitialized$.pipe(
-    switchMap(() => combineLatest([this._fields$, this._items$])),
-    filter(([fields, items]) => !!fields && !!items),
+  private readonly _tableItems$: Observable<TableItem[][]> = combineLatest([
+    this._fields$,
+    this._items$,
+    this._viewInitialized$,
+  ]).pipe(
+    filter(([fields, items, viewInitialized]) => !!fields && !!items && viewInitialized),
     map(([fields, items]) =>
       items.map((item: CarbonListItem, index: number) => [
         ...fields.map((field: ColumnConfig) => {
           switch (field.viewType) {
             case ViewType.TEMPLATE:
               return new TableItem({
-                data: {item, index, length: items.length},
+                data: {item, index, length: items.length, ...field.templateData},
                 template: field.template,
               });
             case ViewType.BOOLEAN:
@@ -395,9 +398,11 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
               });
             case ViewType.TAGS:
               return new TableItem({
-                data: {tags: item.tags},
+                data: {tags: item?.tags ?? []},
                 template: this.tagTemplate,
               });
+            case ViewType.DATE:
+              return new TableItem({data: this.resolveObject(field, item) ?? '-', item});
             default:
               return new TableItem({data: this.resolveObject(field, item) ?? '-', item});
           }
@@ -572,7 +577,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.paginationSet.emit(numberOfEntries);
   }
 
-  private resolveObject(definition: any, obj: any) {
+  private resolveObject(definition: any, obj: any, format?: string) {
     const definitionKey = definition.key;
     const customPropString = '$.';
     const key = definitionKey.includes(customPropString)

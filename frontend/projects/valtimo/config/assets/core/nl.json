@@ -135,9 +135,13 @@
       }
     },
     "documenten": {
+      "deleteConfirmationModal": {
+        "title": "Document verwijderen",
+        "content": "Weet u zeker dat u dit document wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden."
+      },
       "noProcessLinked": {
         "regularUser": "Het uploaden van documenten is in dit geval niet beschikbaar. Neem contact op met een beheerder",
-        "adminRole": "Het proces voor het uploaden van documenten is niet geconfigureerd. Configureer dit proces op de casebeheerpagina"
+        "adminRole": "Het proces voor het uploaden van documenten is niet geconfigureerd. Configureer dit proces op de dossierbeheerpagina"
       },
       "navigateToCaseAdmin": "Configureer Zaak",
       "noZaakFoundTitle": "Geen Zaak gevonden",
@@ -168,20 +172,29 @@
     "createdBy": "Aangemaakt door",
     "createdOn": "Aanmaakdatum",
     "sequence": "Volgnummer",
-    "fillInMetadata": "Informatie over dit bestand",
+    "fillInMetadata": "Voeg metadata van bestanden toe",
+    "editMetadata": "Metadata bewerken",
     "cancel": "Annuleren",
     "upload": "Uploaden",
+    "save": "Opslaan",
     "size": "Omvang",
+    "tags": "Labels",
+    "tagsTooltip": "Tags worden gebruikt voor het makkelijk zoeken en filteren van documenten. Je kunt meerdere tags aan een document toevoegen.",
+    "tagsPlaceholder": "Kies tags",
     "format": "Bestandsformaat",
     "trefwoorden": "Trefwoorden",
     "filename": "Bestandsnaam",
     "filenameTooltip": "De naam van het fysieke bestand waarin de inhoud van het document is vastgelegd, inclusief extensie",
+    "filenamePlaceholder": "Bestandsnaam toevoegen",
     "confidentialityLevel": "Vertrouwelijkheidsaanduiding",
     "confidentialityLevelTooltip": "Aanduiding van de mate waarin het document voor de openbaarheid bestemd is",
+    "confidentialityPlaceholder": "Vertrouwelijkheidaanduiding kiezen",
     "inputTitle": "Titel",
     "inputTitleTooltip": "De naam waaronder het document formeel bekend is",
+    "inputTitlePlaceholder": "Titel toevoegen",
     "inputDescription": "Beschrijving",
     "inputDescriptionTooltip": "Een generieke beschrijving van de inhoud van het document",
+    "inputDescriptionPlaceholder": "Beschrijving toevoegen",
     "openbaar": "Openbaar",
     "beperkt_openbaar": "Beperkt openbaar",
     "intern": "Intern",
@@ -192,8 +205,10 @@
     "zeer_geheim": "Zeer geheim",
     "author": "Auteur",
     "authorTooltip": "De oorspronkelijke auteur van het document",
+    "authorPlaceholder": "Voeg auteur toe",
     "status": "Status",
     "statusTooltip": "De huidige status van het document. 'In bewerking': aan het document wordt nog gewerkt; 'Ter vaststelling': het document is gereed, maar moet nog vastgesteld worden; 'Definitief': het document is door een bevoegd persoon vastgesteld dan wel ontvangen; 'Gearchiveerd': het document is duurzaam bewaarbaar gemaakt.",
+    "statusPlaceholder": "Kies status",
     "in_bewerking": "In bewerking",
     "ter_vaststelling": "Ter vaststelling",
     "definitief": "Definitief",
@@ -206,16 +221,19 @@
     "sendDateTooltip": "De datum waarop het document verzonden is",
     "language": "Taal",
     "languageTooltip": "De taal waarin het document is opgesteld",
+    "languagePlaceholder": "Kies een taal",
     "nld": "Nederlands",
     "eng": "Engels",
     "deu": "Duits",
     "informatieobjecttype": "Documenttype",
     "informatieobjecttypeTooltip": "Een documenttype dat gerelateerd is aan het zaaktype van het huidige dossier",
-    "additionalDate": "Aanvullende documentdatum",
+    "informatieobjecttypePlaceholder": "Kies het informatieobjecttype",
+    "additionalDate": "Aanvullende datum",
     "additionalDateTooltip": "Een aanvullende datum die als metadata aan het document kan worden toegevoegd. Deze extra datum is optioneel. Als 'Ontvangstdatum' is geselecteerd, kan de documentstatus alleen worden ingesteld op 'definitief' of 'gearchiveerd'.",
     "noAdditionalDate": "Geen aanvullende datum",
     "delete": "Verwijderen",
     "download": "Downloaden",
+    "edit": "Bewerking",
     "application/octet-stream": "Onbekend",
     "application/json": "JSON",
     "application/msword": "DOC",
@@ -634,7 +652,37 @@
       "column": "Kolom",
       "add": "Kolom toevoegen",
       "edit": "Kolom bewerken",
-      "deleteText": "Weet je zeker dat je deze kolom wilt verwijderen?"
+      "deleteText": "Weet je zeker dat je deze kolom wilt verwijderen?",
+      "notSortable": "Deze kolom is niet sorteerbaar",
+      "defaultWarning": "Als je een standaardsortering selecteert, wordt de bestaande standaardsortering overschreven"
+    },
+    "documentColumns": {
+      "auteur": "Auteur",
+      "beschrijving": "Beschrijving",
+      "bestandsnaam": "Bestandsnaam",
+      "bestandsomvang": "Bestandsomvang",
+      "bronorganisatie": "Bronorganisatie",
+      "creatiedatum": "Aanmaakdatum",
+      "formaat": "Formaat",
+      "identificatie": "Identificatie",
+      "informatieobjecttype": "Informatieobjecttype",
+      "locked": "Vergrendeld",
+      "status": "Status",
+      "taal": "Taal",
+      "titel": "Titel",
+      "trefwoorden": "Trefwoorden",
+      "versie": "Versie",
+      "vertrouwelijkheidaanduiding": "Vertrouwelijkheidaanduiding"
+    },
+    "documents": {
+      "noResults": {
+        "filterTitle": "Geen documenten gevonden",
+        "filterDescription": "Er zijn geen documenten die voldoen aan je zoekcriteria."
+      },
+      "noColumns": {
+        "description": "Configureer kolommen voor dit document",
+        "title": "Er zijn geen kolommen geconfigureerd voor deze zaak."
+      }
     },
     "tags": {
       "tag": "Trefwoord",
@@ -877,6 +925,15 @@
       "warm-gray": "Warm grijs",
       "high-contrast": "Hoog contrast",
       "outline": "Omlijnd"
+    },
+    "labels": {
+      "dateCreationFrom": "Aanmaakdatum van",
+      "dateCreationTo": "Aanmaakdatum tot"
+    },
+    "sorting": {
+      "ascending": "Oplopend",
+      "descending": "Aflopend",
+      "noDefault": "Geen standaardsortering"
     }
   },
   "taskDetail": {

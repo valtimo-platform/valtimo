@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {HttpClient, HttpParams} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/config';
-import {HttpClient} from '@angular/common/http';
+import {BaseApiService, ConfigService, Page} from '@valtimo/config';
 import {Observable} from 'rxjs';
 import {DocumentenApiRelatedFile} from '../models';
 
@@ -30,10 +29,27 @@ export class DocumentenApiDocumentService extends BaseApiService {
   ) {
     super(httpClient, configService);
   }
+  
+  public getFilteredZakenApiDocuments(
+    documentId: string,
+    paramsMap?: any
+  ): Observable<Page<DocumentenApiRelatedFile>> {
+    const params = new HttpParams({fromObject: paramsMap});
 
-  public getZakenApiDocuments(documentId: string): Observable<Array<DocumentenApiRelatedFile>> {
-    return this.httpClient.get<Array<DocumentenApiRelatedFile>>(
-      this.getApiUrl(`/v1/zaken-api/document/${documentId}/files`)
+    return !!paramsMap
+      ? this.httpClient.get<Page<DocumentenApiRelatedFile>>(
+          this.getApiUrl(`/v2/zaken-api/document/${documentId}/files`),
+          {params}
+        )
+      : this.httpClient.get<Page<DocumentenApiRelatedFile>>(
+          this.getApiUrl(`/v2/zaken-api/document/${documentId}/files`)
+        );
+  }
+
+  public updateDocument(file: any, metadata: any): Observable<void> {
+    return this.httpClient.put<void>(
+      this.getApiUrl(`/v1/documenten-api/${file.pluginConfigurationId}/files/${file.fileId}`),
+      metadata
     );
   }
 

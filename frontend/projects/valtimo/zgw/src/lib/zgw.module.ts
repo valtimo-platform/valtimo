@@ -13,8 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {RouterModule} from '@angular/router';
+import {FormioModule} from '@formio/angular';
+import {TranslateModule} from '@ngx-translate/core';
+import {DropzoneModule, FileSizeModule} from '@valtimo/components';
+import {
+  CASE_MANAGEMENT_TAB_TOKEN,
+  ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN,
+  ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,
+  ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
+} from '@valtimo/config';
+import {DocumentModule} from '@valtimo/document';
+import {ResourceModule} from '@valtimo/resource';
+import {DossierManagementZgwComponent} from './components';
 import {
   CustomerModule,
   DocumentenApiMetadataModalComponent,
@@ -25,20 +38,6 @@ import {
   DossierManagementLinkProcessComponent,
   ZakenApiZaaktypeLinkComponent,
 } from './modules';
-import {
-  CASE_MANAGEMENT_TAB_TOKEN,
-  ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN,
-  ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,
-  ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
-} from '@valtimo/config';
-import {CommonModule} from '@angular/common';
-import {FormioModule} from '@formio/angular';
-import {TranslateModule} from '@ngx-translate/core';
-import {RouterModule} from '@angular/router';
-import {DropzoneModule, FileSizeModule} from '@valtimo/components';
-import {DocumentModule} from '@valtimo/document';
-import {ResourceModule} from '@valtimo/resource';
-import {DossierManagementZgwComponent} from './components';
 
 @NgModule({
   imports: [

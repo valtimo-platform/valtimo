@@ -13,75 +13,81 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <div
   class="carbon-document-table-wrapper"
   *ngIf="{
     loading: loading$ | async,
+    fieldsLoading: fieldsLoading$ | async,
     uploading: uploading$ | async,
-    relatedFiles: relatedFiles$ | async
+    relatedFiles: relatedFiles$ | async,
+    fields: fields$ | async,
+    initialSortState: initialSortState$ | async
   } as obs"
 >
-  @if (!obs.loading && !obs.uploading && obs.relatedFiles) {
-    <ng-container
-      *ngTemplateOutlet="list; context: {relatedFiles: obs.relatedFiles}"
-    ></ng-container>
+  @if ((!obs.fieldsLoading && obs.fields.length) || obs.fieldsLoading) {
+    <valtimo-carbon-list
+      [actionItems]="actionItems"
+      [items]="obs.relatedFiles"
+      [fields]="obs.fields"
+      [loading]="obs.loading"
+      [initialSortState]="obs.initialSortState"
+      (rowClicked)="onRowClick($event)"
+      (sortChanged)="onSortChanged($event)"
+      hideColumnHeader
+    >
+      <div carbonToolbarContent>
+        <input
+          [accept]="acceptedFiles"
+          (change)="onFileSelected($event)"
+          hidden
+          type="file"
+          #fileInput
+        />
+
+        <button
+          [cdsOverflowMenu]="overflowFilter"
+          [customPane]="true"
+          [iconOnly]="true"
+          [flip]="true"
+          [offset]="{x: 0, y: 47}"
+          cdsButton="ghost"
+          placement="bottom"
+        >
+          <svg class="cds--btn__icon" cdsIcon="filter" size="16"></svg>
+        </button>
+
+        <ng-container *ngTemplateOutlet="uploadButton"></ng-container>
+      </div>
+
+      <ng-container *ngTemplateOutlet="noResults"></ng-container>
+    </valtimo-carbon-list>
   } @else {
-    <ng-container *ngTemplateOutlet="listLoading"></ng-container>
+    <valtimo-no-results
+      [action]="navigateToCaseAdminButton"
+      [description]="'zgw.documents.noColumns.description' | translate"
+      [title]="'zgw.documents.noColumns.title' | translate"
+    ></valtimo-no-results>
   }
 </div>
 
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="dashboardManagement.deleteModal.confirm"
+  contentTranslationKey="dossier.documenten.deleteConfirmationModal.content"
+  confirmButtonType="danger"
+  titleTranslationKey="dossier.documenten.deleteConfirmationModal.title"
+  [showModalSubject$]="showDeleteConfirmationModal$"
+  (confirmEvent)="deleteDocument()"
+>
+</valtimo-confirmation-modal>
+
 <valtimo-documenten-api-metadata-modal
+  [open]="showUploadModal$ | async"
   [disabled$]="modalDisabled$"
   [file$]="fileToBeUploaded$"
-  [hide$]="hideModal$"
-  [show$]="showModal$"
+  [isEditMode]="isEditMode$ | async"
+  (modalClose)="closeMetadataModal()"
   (metadata)="metadataSet($event)"
 ></valtimo-documenten-api-metadata-modal>
-
-<ng-template #list let-relatedFiles="relatedFiles">
-  <valtimo-carbon-list
-    [actionItems]="actionItems"
-    [items]="relatedFiles"
-    [fields]="fields"
-    (rowClicked)="onRowClick($event)"
-    hideColumnHeader
-  >
-    <div carbonToolbarContent>
-      <input
-        [accept]="acceptedFiles"
-        (change)="onFileSelected($event)"
-        hidden
-        type="file"
-        #fileInput
-      />
-
-      <ng-container *ngTemplateOutlet="uploadButton"></ng-container>
-    </div>
-
-    @if (showZaakLinkWarning && isAdmin) {
-      <valtimo-no-results
-        [action]="navigateToCaseAdminButton"
-        description="{{ 'dossier.documenten.noZaakFound' | translate }}"
-        title="{{ 'dossier.documenten.noZaakFoundTitle' | translate }}"
-      ></valtimo-no-results>
-    } @else {
-      <valtimo-no-results
-        [action]="uploadButton"
-        description="{{ 'dossier.documenten.noFiles' | translate }}"
-        title="{{ 'dossier.documenten.noFilesTitle' | translate }}"
-      ></valtimo-no-results>
-    }
-  </valtimo-carbon-list>
-</ng-template>
-
-<ng-template #listLoading>
-  <valtimo-carbon-list [items]="[]" [fields]="fields" [loading]="true" hideColumnHeader>
-    <div carbonToolbarContent>
-      <ng-container *ngTemplateOutlet="uploadButton; context: {disabled: true}"></ng-container>
-    </div>
-  </valtimo-carbon-list>
-</ng-template>
 
 <ng-template #downloadButton let-index="index" let-item="item">
   <div
@@ -103,9 +109,41 @@
   </div>
 </ng-template>
 
-<ng-template #dossierListActions>
-  <input [accept]="acceptedFiles" (change)="onFileSelected($event)" hidden type="file" #fileInput />
-  <ng-container *ngTemplateOutlet="uploadButton"></ng-container>
+<ng-template #noResults>
+  @if ((filter$ | async | keyvalue)?.length) {
+    <valtimo-no-results
+      [action]="resetFilterButton"
+      [description]="'zgw.documents.noResults.filterDescription' | translate"
+      [title]="'zgw.documents.noResults.filterTitle' | translate"
+    ></valtimo-no-results>
+  } @else if (showZaakLinkWarning && isAdmin) {
+    <valtimo-no-results
+      [action]="navigateToCaseAdminButton"
+      [description]="'dossier.documenten.noZaakFound' | translate"
+      [title]="'dossier.documenten.noZaakFoundTitle' | translate"
+    ></valtimo-no-results>
+  } @else {
+    <valtimo-no-results
+      [action]="uploadButton"
+      [description]="'dossier.documenten.noFiles' | translate"
+      [title]="'dossier.documenten.noFilesTitle' | translate"
+    ></valtimo-no-results>
+  }
+</ng-template>
+
+<ng-template #overflowFilter>
+  <valtimo-dossier-detail-tab-documenten-api-filter
+    [prefillFilter]="filter$ | async"
+    (filterEvent)="onFilterEvent($event)"
+  ></valtimo-dossier-detail-tab-documenten-api-filter>
+</ng-template>
+
+<ng-template #resetFilterButton>
+  <button cdsButton="primary" (click)="onFilterEvent(null)">
+    {{ 'Reset filter' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+  </button>
 </ng-template>
 
 <ng-template #uploadButton let-disabled="disabled">
@@ -120,15 +158,14 @@
   </button>
 </ng-template>
 
+<ng-template #translationTemplate let-data="data">
+  {{ 'document.' + data.item[data.key] | translate }}
+</ng-template>
+
 <ng-template #navigateToCaseAdminButton>
   <button (click)="onNavigateToCaseAdminClick()" cdsButton="primary">
     {{ 'dossier.documenten.navigateToCaseAdmin' | translate }}
+
     <svg class="cds--btn__icon" cdsIcon="settings" size="16"></svg>
   </button>
-</ng-template>
-
-<ng-template #sizeTemplate let-data="data">
-  <div class="documenten-api-documents-filesize-template">
-    {{ bytesToMegabytes(data.item.sizeInBytes) }}
-  </div>
 </ng-template>

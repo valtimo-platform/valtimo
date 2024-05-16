@@ -21,16 +21,30 @@
     </h3>
   </cds-modal-header>
 
-  <form cdsModalContent [formGroup]="formGroup">
+  <form
+    class="valtimo-documenten-api-column-modal__content"
+    cdsModalContent
+    [formGroup]="formGroup"
+  >
     <cds-dropdown
       formControlName="column"
       [label]="'zgw.columns.column' | translate"
       [dropUp]="false"
     >
-      <cds-dropdown-list [items]="availableColumns"></cds-dropdown-list>
+      <cds-dropdown-list
+        [items]="!prefillColumn ? (availableColumns$ | async) : prefillColumn"
+      ></cds-dropdown-list>
     </cds-dropdown>
 
-    <!-- TODO: Add default sort functionality when BE supports it -->
+    <cds-radio-group *ngIf="showRadioButtons" legend="Default sort" formControlName="defaultSort">
+      <cds-radio value="noDefault"> {{ 'interface.sorting.noDefault' | translate }} </cds-radio>
+
+      <cds-radio value="DESC"> {{ 'interface.sorting.descending' | translate }} </cds-radio>
+
+      <cds-radio value="ASC"> {{ 'interface.sorting.ascending' | translate }} </cds-radio>
+    </cds-radio-group>
+
+    <cds-inline-notification [notificationObj]="notificationObj$ | async"></cds-inline-notification>
   </form>
 
   <cds-modal-footer>
@@ -38,16 +52,8 @@
       {{ 'interface.cancel' | translate }}
     </button>
 
-    @if (type === 'add') {
-      <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="addColumn()">
-        {{ 'interface.add' | translate }}
-      </button>
-    } @else {
-      <!-- TODO: Enable when BE supports default sorting -->
-
-      <!-- <button cdsButton="primary" (click)="editColumn()">
-        {{ 'interface.save' | translate }}
-      </button> -->
-    }
+    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="updateColumn()">
+      {{ (type === 'add' ? 'interface.add' : 'interface.save') | translate }}
+    </button>
   </cds-modal-footer>
 </cds-modal>
