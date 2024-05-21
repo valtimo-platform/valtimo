@@ -26,7 +26,6 @@ import {
   ZakenApiZaaktypeLinkComponent,
 } from './modules';
 import {
-  CASE_MANAGEMENT_TAB_TOKEN,
   ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN,
   ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,
   ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
@@ -38,7 +37,6 @@ import {RouterModule} from '@angular/router';
 import {DropzoneModule, FileSizeModule} from '@valtimo/components';
 import {DocumentModule} from '@valtimo/document';
 import {ResourceModule} from '@valtimo/resource';
-import {DossierManagementZgwComponent} from './components';
 
 @NgModule({
   imports: [
@@ -56,14 +54,6 @@ import {DossierManagementZgwComponent} from './components';
   declarations: [DocumentenApiUploaderComponent],
   exports: [DocumentenApiUploaderComponent],
   providers: [
-    {
-      provide: CASE_MANAGEMENT_TAB_TOKEN,
-      useValue: {
-        translationKey: 'zgw.zgwTab',
-        component: DossierManagementZgwComponent,
-      },
-      multi: true,
-    },
     {
       provide: ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
       useValue: DossierDetailTabObjectTypeComponent,

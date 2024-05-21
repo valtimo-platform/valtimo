@@ -37,9 +37,9 @@ import {
 import {CARBON_CONSTANTS} from '@valtimo/components';
 import {
   AbstractControl,
+  AsyncValidatorFn,
   FormBuilder,
   ValidationErrors,
-  ValidatorFn,
   Validators,
 } from '@angular/forms';
 import {
@@ -61,7 +61,7 @@ import {TranslateService} from '@ngx-translate/core';
 })
 export class DossierManagementStatusModalComponent implements OnInit, OnDestroy {
   @Input() public set type(value: StatusModalType) {
-    this._type.next(value);
+    this._type$.next(value);
 
     if (value === 'closed') {
       setTimeout(() => {
@@ -81,18 +81,16 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
 
   @Output() public closeModalEvent = new EventEmitter<StatusModalCloseEvent>();
 
-  private readonly _type = new BehaviorSubject<StatusModalType>(undefined);
+  private readonly _type$ = new BehaviorSubject<StatusModalType>(undefined);
   private readonly _typeAnimationDelay$ = new BehaviorSubject<StatusModalType>(undefined);
   private readonly _prefillStatus = new BehaviorSubject<InternalCaseStatus>(undefined);
-
-  public readonly isClosed$ = this._type.pipe(map(type => type === 'closed'));
 
   public readonly statusFormGroup = this.fb.group({
     title: this.fb.control('', Validators.required),
     key: this.fb.control('', [
       Validators.required,
       Validators.minLength(3),
-      this.uniqueKeyValidator(),
+      this.uniqueKeyValidator,
     ]),
     visibleInCaseListByDefault: this.fb.control(true, Validators.required),
     color: this.fb.control('', Validators.required),
@@ -111,6 +109,8 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
       if (isAdd) this.resetForm();
     })
   );
+
+  public readonly isClosed$ = this._type$.pipe(map(type => type === 'closed'));
 
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
 
@@ -345,11 +345,15 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
     this.statusFormGroup.patchValue({key: ''});
   }
 
-  private uniqueKeyValidator(): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null =>
-      this.usedKeys?.every((key: string) => key !== control.value)
-        ? null
-        : {uniqueKey: {value: control.value}};
+  private uniqueKeyValidator(): AsyncValidatorFn {
+    return (control: AbstractControl): Observable<ValidationErrors | null> =>
+      combineLatest([this.isEdit$, control.valueChanges]).pipe(
+        map(([isEdit, keyValue]) =>
+          this.usedKeys?.every((key: string) => key !== keyValue) || isEdit
+            ? null
+            : {uniqueKey: {value: control.value}}
+        )
+      );
   }
 
   private disable(): void {

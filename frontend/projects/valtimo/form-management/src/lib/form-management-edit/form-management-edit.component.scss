@@ -20,6 +20,25 @@
     align-items: center;
     justify-content: flex-end;
     gap: 16px;
+    margin-left: auto;
+  }
+
+  &__header-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 4px;
+
+    .cds--tag {
+      margin: 0;
+      height: var(--cds-layout-size-height-md);
+    }
+
+    &.--compact {
+      align-items: flex-start;
+      padding-bottom: 0;
+    }
   }
 
   &__output .cds--tab-content {

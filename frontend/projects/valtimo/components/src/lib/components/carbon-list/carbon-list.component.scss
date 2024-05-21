@@ -36,6 +36,14 @@ td:first-child {
   padding-left: 25px;
 }
 
+::ng-deep tr:has(> td .locked) {
+  cursor: not-allowed;
+
+  td {
+    color: var(--cds-text-on-color-disabled);
+  }
+}
+
 .valtimo-carbon-list {
   ::ng-deep &__header--hidden thead {
     display: none;
@@ -93,8 +101,4 @@ td:first-child {
       margin-right: 8px;
     }
   }
-}
-
-.disabled {
-  cursor: not-allowed;
 }

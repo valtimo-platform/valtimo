@@ -40,7 +40,7 @@ export class TaskListPaginationService {
 
   public get paginationForCurrentTaskTypeForList$(): Observable<TaskPageParams> {
     return this._paginationForCurrentTaskType$.pipe(
-      map(pagination => ({...pagination, page: pagination.page + 1}))
+      map(pagination => ({...pagination, page: pagination?.page + 1 || 1}))
     );
   }
 
