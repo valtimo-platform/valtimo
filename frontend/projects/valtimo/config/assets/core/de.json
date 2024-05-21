@@ -178,7 +178,7 @@
     "upload": "Upload",
     "save": "Speichern",
     "size": "Umfang",
-    "tags": "Stichworte",
+    "tags": "Stichworte (optional)",
     "tagsTooltip": "Tags werden zum einfachen Filtern und Durchsuchen von Dokumenten verwendet. Sie können einem Dokument mehrere Tags hinzufügen.",
     "tagsPlaceholder": "Wählen Sie Tags aus",
     "format": "Datei Format",

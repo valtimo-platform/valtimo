@@ -178,7 +178,7 @@
     "upload": "Upload",
     "save": "Save",
     "size": "Size",
-    "tags": "Tags",
+    "tags": "Tags (optional)",
     "tagsTooltip": "Tags are used for easy filtering and searching of documents. You can add multiple tags to a document",
     "tagsPlaceholder": "Choose tags",
     "format": "File format",

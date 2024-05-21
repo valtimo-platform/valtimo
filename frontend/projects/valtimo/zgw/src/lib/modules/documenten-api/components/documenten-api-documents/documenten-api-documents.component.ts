@@ -344,6 +344,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
     this.isEditMode$.next(false);
     this.fileToBeUploaded$.next(event.target.files[0]);
     this.showUploadModal$.next(true);
+    this.resetFileInput();
   }
 
   public onNavigateToCaseAdminClick(): void {
@@ -393,6 +394,10 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
         queryParams: {...filter, ...sort},
       });
     });
+  }
+
+  private resetFileInput(): void {
+    this.fileInput.nativeElement.value = '';
   }
 
   private setUploadProcessLinked(): void {

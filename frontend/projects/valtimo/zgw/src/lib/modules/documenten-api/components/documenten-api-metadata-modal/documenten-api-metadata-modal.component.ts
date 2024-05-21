@@ -161,6 +161,8 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
     return this.documentenApiMetadataForm.get('trefwoorden');
   }
 
+  public readonly isDefinitiveStatus$ = new BehaviorSubject<boolean>(false);
+
   public readonly CONFIDENTIALITY_LEVELS: Array<ConfidentialityLevel> = [
     'openbaar',
     'beperkt_openbaar',
@@ -344,6 +346,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+    this.isDefinitiveStatus$.next(false);
   }
 
   public languageSelected(event: {item: {id: string}}) {
@@ -399,7 +402,6 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
         verzenddatum,
         trefwoorden,
       } = file;
-      console.log(file);
 
       if (verzenddatum) this.additionalDocumentDate$.next('sent');
       else if (ontvangstdatum) this.additionalDocumentDate$.next('received');
@@ -474,6 +476,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
       this._fileSubscription = this.file$.subscribe(file => {
         if (file) {
           this.prefillForm(file);
+          this.isDefinitiveStatus$.next(file.status === 'definitief' && this.isEditMode ? true : false);
         }
       });
     }
