@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {BehaviorSubject, distinctUntilChanged, Observable} from 'rxjs';
 import {ZgwTabEnum} from '../models';
 
 @Injectable({
@@ -23,11 +23,17 @@ import {ZgwTabEnum} from '../models';
 export class DossierManagementZgwService {
   public configuredTabKeys: string[];
 
-  private _currentTab$ = new BehaviorSubject<ZgwTabEnum>(ZgwTabEnum.DOCUMENTEN_API_COLUMNS);
+  private readonly _DEFAULT_TAB: ZgwTabEnum = ZgwTabEnum.DOCUMENTEN_API_COLUMNS;
+
+  private _currentTab$ = new BehaviorSubject<ZgwTabEnum>(this._DEFAULT_TAB);
   public get currentTab$(): Observable<ZgwTabEnum> {
-    return this._currentTab$.asObservable();
+    return this._currentTab$.pipe(distinctUntilChanged());
   }
   public set currentTab(tab: ZgwTabEnum) {
     this._currentTab$.next(tab);
+  }
+
+  public resetToDefaultTab(): void {
+    this._currentTab$.next(this._DEFAULT_TAB);
   }
 }

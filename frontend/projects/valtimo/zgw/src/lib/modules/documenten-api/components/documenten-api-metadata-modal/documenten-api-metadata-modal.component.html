@@ -188,27 +188,29 @@
             </cds-radio>
           </cds-radio-group>
 
-          <cds-text-label>
-            {{ 'document.tags' | translate }}
-            <cds-tooltip
-              [isOpen]="false"
-              [description]="'document.tagsTooltip' | translate"
-              [align]="'bottom-left'"
-            >
-              <i class="mdi mdi-help-circle-outline"></i>
-            </cds-tooltip>
-          </cds-text-label>
-          <div class="documenten-metada-form-input">
-            <cds-combo-box
-              [type]="'multi'"
-              [placeholder]="'document.tagsPlaceholder' | translate"
-              [disabled]="obs.disabled"
-              (selected)="tagsSelected($event)"
-            >
+          @if (supportsTrefwoorden) {
+            <cds-text-label>
+              {{ 'document.tags' | translate }}
+              <cds-tooltip
+                [isOpen]="false"
+                [description]="'document.tagsTooltip' | translate"
+                [align]="'bottom-left'"
               >
-              <cds-dropdown-list [items]="(tagItems$ | async) || []"></cds-dropdown-list>
-            </cds-combo-box>
-          </div>
+                <i class="mdi mdi-help-circle-outline"></i>
+              </cds-tooltip>
+            </cds-text-label>
+            <div class="documenten-metada-form-input">
+              <cds-combo-box
+                [type]="'multi'"
+                [placeholder]="'document.tagsPlaceholder' | translate"
+                [disabled]="obs.disabled"
+                (selected)="tagsSelected($event)"
+              >
+                >
+                <cds-dropdown-list [items]="(tagItems$ | async) || []"></cds-dropdown-list>
+              </cds-combo-box>
+            </div>
+          }
         </div>
 
         <div class="documenten-metadata-form-column">

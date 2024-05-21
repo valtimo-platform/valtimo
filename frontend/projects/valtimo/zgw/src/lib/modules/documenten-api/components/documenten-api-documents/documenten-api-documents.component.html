@@ -21,7 +21,8 @@
     uploading: uploading$ | async,
     relatedFiles: relatedFiles$ | async,
     fields: fields$ | async,
-    initialSortState: initialSortState$ | async
+    initialSortState: initialSortState$ | async,
+    supportedDocumentenApiFeatures: supportedDocumentenApiFeatures$ | async
   } as obs"
 >
   @if ((!obs.fieldsLoading && obs.fields.length) || obs.fieldsLoading) {
@@ -30,9 +31,13 @@
       [items]="obs.relatedFiles"
       [fields]="obs.fields"
       [loading]="obs.loading"
-      [initialSortState]="obs.initialSortState"
+      [initialSortState]="
+        obs?.supportedDocumentenApiFeatures?.supportsSortableColumns && obs.initialSortState
+      "
       (rowClicked)="onRowClick($event)"
-      (sortChanged)="onSortChanged($event)"
+      (sortChanged)="
+        obs?.supportedDocumentenApiFeatures?.supportsSortableColumns && onSortChanged($event)
+      "
       hideColumnHeader
     >
       <div carbonToolbarContent>
@@ -45,6 +50,7 @@
         />
 
         <button
+          *ngIf="obs?.supportedDocumentenApiFeatures?.supportsFilterableColumns"
           [cdsOverflowMenu]="overflowFilter"
           [customPane]="true"
           [iconOnly]="true"
@@ -68,6 +74,16 @@
       [title]="'zgw.documents.noColumns.title' | translate"
     ></valtimo-no-results>
   }
+
+  <valtimo-documenten-api-metadata-modal
+    [open]="showUploadModal$ | async"
+    [disabled$]="modalDisabled$"
+    [file$]="fileToBeUploaded$"
+    [isEditMode]="isEditMode$ | async"
+    [supportsTrefwoorden]="obs?.supportedDocumentenApiFeatures?.supportsTrefwoorden"
+    (modalClose)="closeMetadataModal()"
+    (metadata)="metadataSet($event)"
+  ></valtimo-documenten-api-metadata-modal>
 </div>
 
 <valtimo-confirmation-modal
@@ -79,15 +95,6 @@
   (confirmEvent)="deleteDocument()"
 >
 </valtimo-confirmation-modal>
-
-<valtimo-documenten-api-metadata-modal
-  [open]="showUploadModal$ | async"
-  [disabled$]="modalDisabled$"
-  [file$]="fileToBeUploaded$"
-  [isEditMode]="isEditMode$ | async"
-  (modalClose)="closeMetadataModal()"
-  (metadata)="metadataSet($event)"
-></valtimo-documenten-api-metadata-modal>
 
 <ng-template #downloadButton let-index="index" let-item="item">
   <div

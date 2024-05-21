@@ -15,7 +15,7 @@
  */
 import {CommonModule} from '@angular/common';
 import {Component, ElementRef, OnInit, TemplateRef, ViewChild} from '@angular/core';
-import {ActivatedRoute, ParamMap, Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {Filter16, TagGroup16, Upload16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
@@ -39,8 +39,9 @@ import {
   DOCUMENTEN_COLUMN_KEYS,
   DocumentenApiFilterModel,
   DocumentenApiRelatedFile,
+  SupportedDocumentenApiFeatures,
 } from '../../models';
-import {DocumentenApiColumnService} from '../../services';
+import {DocumentenApiColumnService, DocumentenApiVersionService} from '../../services';
 import {DocumentenApiDocumentService} from '../../services/documenten-api-document.service';
 import {DocumentenApiFilterComponent} from '../documenten-api-filter/documenten-api-filter.component';
 import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.component';
@@ -66,18 +67,37 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
   @ViewChild('fileInput') fileInput: ElementRef;
   @ViewChild('translationTemplate') translationTemplate: TemplateRef<any>;
 
-  public readonly fields$: Observable<ColumnConfig[]> = this.route.paramMap.pipe(
-    tap(() => this.fieldsLoading$.next(true)),
-    switchMap((paramMap: ParamMap) =>
-      this.documentenApiColumnService.getConfiguredColumns(
-        paramMap.get('documentDefinitionName') ?? ''
+  private readonly _documentDefinitionName$ = this.route.params.pipe(
+    map(params => params?.documentDefinitionName),
+    filter(caseDefinitionName => !!caseDefinitionName)
+  );
+
+  public readonly supportedDocumentenApiFeatures$ =
+    new BehaviorSubject<SupportedDocumentenApiFeatures | null>(null);
+
+  private readonly _supportedDocumentenApiFeatures$: Observable<SupportedDocumentenApiFeatures> =
+    this._documentDefinitionName$.pipe(
+      switchMap(caseDefinitionName =>
+        this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionName)
+      ),
+      tap(supportedDocumentenApiFeatures =>
+        this.supportedDocumentenApiFeatures$.next(supportedDocumentenApiFeatures)
       )
+    );
+
+  public readonly fields$: Observable<ColumnConfig[]> = this._documentDefinitionName$.pipe(
+    tap(() => this.fieldsLoading$.next(true)),
+    switchMap(documentDefinitionName =>
+      combineLatest([
+        this.documentenApiColumnService.getConfiguredColumns(documentDefinitionName),
+        this._supportedDocumentenApiFeatures$,
+      ])
     ),
-    map((columns: ConfiguredColumn[]) => {
+    map(([columns, supportedDocumentenApiFeatures]) => {
       const defaultSortColumn: ConfiguredColumn | undefined = columns.find(
         (column: ConfiguredColumn) => !!column.defaultSort
       );
-      if (!!defaultSortColumn) {
+      if (!!defaultSortColumn && supportedDocumentenApiFeatures.supportsSortableColumns) {
         this._sort$.next({sort: `${defaultSortColumn.key},${defaultSortColumn.defaultSort}`});
       }
 
@@ -90,7 +110,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
           templateData: {key: column.key},
         }),
         ...(column.key === DOCUMENTEN_COLUMN_KEYS.CREATIEDATUM && {format: 'DD-MM-YYYY'}),
-        sortable: column.sortable,
+        sortable: column.sortable && supportedDocumentenApiFeatures.supportsSortableColumns,
       }));
     }),
     tap(() => this.fieldsLoading$.next(false))
@@ -217,7 +237,8 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
     private readonly userProviderService: UserProviderService,
     private readonly iconService: IconService,
     private readonly documentenApiDocumentService: DocumentenApiDocumentService,
-    private readonly documentenApiColumnService: DocumentenApiColumnService
+    private readonly documentenApiColumnService: DocumentenApiColumnService,
+    private readonly documentenApiVersionService: DocumentenApiVersionService
   ) {
     this.iconService.register(Filter16);
   }

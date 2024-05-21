@@ -14,13 +14,28 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  ViewChild,
+  ViewContainerRef,
+} from '@angular/core';
 import {TabsModule} from 'carbon-components-angular';
 import {DossierManagementZgwService} from '../../services';
-import {ZgwTabEnum} from '../../models';
+import {ZgwTab, ZgwTabEnum} from '../../models';
 import {TranslateModule} from '@ngx-translate/core';
 import {CommonModule} from '@angular/common';
-import {DocumentenApiColumnsComponent, DocumentenApiTagsComponent} from '../../modules';
+import {
+  DocumentenApiColumnsComponent,
+  DocumentenApiTagsComponent,
+  DocumentenApiVersionService,
+  SupportedDocumentenApiFeatures,
+} from '../../modules';
+import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   templateUrl: './dossier-management-zgw.component.html',
@@ -35,12 +50,69 @@ import {DocumentenApiColumnsComponent, DocumentenApiTagsComponent} from '../../m
     DocumentenApiColumnsComponent,
   ],
 })
-export class DossierManagementZgwComponent {
-  public readonly ZgwTabEnum = ZgwTabEnum;
+export class DossierManagementZgwComponent implements AfterViewInit, OnDestroy {
+  @ViewChild('zgwTabContent', {read: ViewContainerRef})
+  private _zgwTabContent: ViewContainerRef;
 
-  public readonly currentTab$ = this.dossierManagementZgwService.currentTab$;
+  private readonly _viewInitialized$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private readonly dossierManagementZgwService: DossierManagementZgwService) {}
+  private readonly _supportedDocumentenApiFeatures$: Observable<SupportedDocumentenApiFeatures> =
+    this.route.params.pipe(
+      map(params => params?.name),
+      filter(caseDefinitionName => !!caseDefinitionName),
+      switchMap(caseDefinitionName =>
+        this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionName)
+      )
+    );
+
+  public readonly zgwTabs$: Observable<ZgwTab[]> = combineLatest([
+    this._viewInitialized$,
+    this.dossierManagementZgwService.currentTab$,
+    this._supportedDocumentenApiFeatures$,
+  ]).pipe(
+    filter(([viewInitialized]) => viewInitialized),
+    map(([_, currentTab, supportedDocumentenApiFeatures]) =>
+      [
+        {
+          class: 'no-padding-left-right no-padding-top-bottom',
+          headingTranslationKey: 'zgw.tabs.documentColumns',
+          tab: ZgwTabEnum.DOCUMENTEN_API_COLUMNS,
+          component: DocumentenApiColumnsComponent,
+        },
+        ...(supportedDocumentenApiFeatures.supportsTrefwoorden
+          ? [
+              {
+                class: 'no-padding-left-right no-padding-top-bottom',
+                headingTranslationKey: 'zgw.tabs.documentTags',
+                tab: ZgwTabEnum.DOCUMENTEN_API_TAGS,
+                component: DocumentenApiTagsComponent,
+              },
+            ]
+          : []),
+      ].map(zgwTab => ({...zgwTab, active: currentTab === zgwTab.tab}))
+    ),
+    tap(zgwTabs => {
+      const activeTab = zgwTabs.length > 1 ? zgwTabs.find(tab => tab.active) : zgwTabs[0];
+      this._zgwTabContent.clear();
+      this._zgwTabContent.createComponent(activeTab.component);
+      this.cdr.detectChanges();
+    })
+  );
+
+  constructor(
+    private readonly dossierManagementZgwService: DossierManagementZgwService,
+    private readonly cdr: ChangeDetectorRef,
+    private readonly documentenApiVersionService: DocumentenApiVersionService,
+    private readonly route: ActivatedRoute
+  ) {}
+
+  public ngAfterViewInit(): void {
+    this._viewInitialized$.next(true);
+  }
+
+  public ngOnDestroy(): void {
+    this.dossierManagementZgwService.resetToDefaultTab();
+  }
 
   public displayTab(tab: ZgwTabEnum): void {
     this.dossierManagementZgwService.currentTab = tab;

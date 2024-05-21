@@ -121,6 +121,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
   @Input() language: string;
   @Input() open = false;
   @Input() status: string;
+  @Input() supportsTrefwoorden = false;
 
   @Output() metadata: EventEmitter<DocumentenApiMetadata> = new EventEmitter();
   @Output() modalClose: EventEmitter<boolean> = new EventEmitter();

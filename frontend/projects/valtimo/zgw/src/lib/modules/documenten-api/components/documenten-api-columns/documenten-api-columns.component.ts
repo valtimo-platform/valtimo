@@ -146,7 +146,7 @@ export class DocumentenApiColumnsComponent implements AfterViewInit {
       },
       {
         key: 'defaultSort',
-        label: 'interface.defaultSort',
+        label: 'listColumn.defaultSort',
         viewType: ViewType.TEMPLATE,
         template: this.defaultSortTemplate,
       },
