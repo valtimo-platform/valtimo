@@ -29,30 +29,35 @@ import {TranslateService} from '@ngx-translate/core';
 export class BreadcrumbService {
   private _cachedQueryParams: {[routeMatchString: string]: Params} = {};
   private readonly _manualSecondBreadcrumb$ = new BehaviorSubject<BreadcrumbItem | null>(null);
+  private readonly _manualThirdBreadcrumb$ = new BehaviorSubject<BreadcrumbItem | null>(null);
   private readonly _breadcrumbItems$: Observable<Array<BreadcrumbItem>> = combineLatest([
     this.menuService.activeParentSequenceNumber$,
     this.menuService.menuItems$,
     this._manualSecondBreadcrumb$,
+    this._manualThirdBreadcrumb$,
     this.translateService.stream('key'),
     this.router.events.pipe(startWith(this.router)),
   ]).pipe(
-    map(([activeParentSequenceNumber, menuItems, manualSecondBreadcrumb]) => {
-      const activeParentBreadcrumbTitle = menuItems.find(
-        menuItem => `${menuItem.sequence}` === activeParentSequenceNumber
-      )?.title;
-      const activeParentBreadcrumbTitleTranslation =
-        activeParentBreadcrumbTitle && this.translateService.instant(activeParentBreadcrumbTitle);
-      const activeParentBreadcrumbItem = {
-        content: activeParentBreadcrumbTitleTranslation,
-      };
-      const secondBreadCrumb = this.getSecondBreadcrumb();
+    map(
+      ([activeParentSequenceNumber, menuItems, manualSecondBreadcrumb, manualThirdBreadcrumb]) => {
+        const activeParentBreadcrumbTitle = menuItems.find(
+          menuItem => `${menuItem.sequence}` === activeParentSequenceNumber
+        )?.title;
+        const activeParentBreadcrumbTitleTranslation =
+          activeParentBreadcrumbTitle && this.translateService.instant(activeParentBreadcrumbTitle);
+        const activeParentBreadcrumbItem = {
+          content: activeParentBreadcrumbTitleTranslation,
+        };
+        const secondBreadCrumb = this.getSecondBreadcrumb();
 
-      return [
-        ...(activeParentSequenceNumber ? [activeParentBreadcrumbItem] : []),
-        ...(manualSecondBreadcrumb ? [manualSecondBreadcrumb] : []),
-        ...(secondBreadCrumb && !manualSecondBreadcrumb ? [secondBreadCrumb] : []),
-      ];
-    }),
+        return [
+          ...(activeParentSequenceNumber ? [activeParentBreadcrumbItem] : []),
+          ...(manualSecondBreadcrumb ? [manualSecondBreadcrumb] : []),
+          ...(secondBreadCrumb && !manualSecondBreadcrumb ? [secondBreadCrumb] : []),
+          ...(!!manualThirdBreadcrumb ? [manualThirdBreadcrumb] : []),
+        ];
+      }
+    ),
     map(breadCrumbItems => this.matchCachedQueryParams(breadCrumbItems))
   );
 
@@ -75,6 +80,14 @@ export class BreadcrumbService {
 
   clearSecondBreadcrumb(): void {
     this._manualSecondBreadcrumb$.next(null);
+  }
+
+  setThirdBreadcrumb(breadcrumb: BreadcrumbItem): void {
+    this._manualThirdBreadcrumb$.next(breadcrumb);
+  }
+
+  clearThirdBreadcrumb(): void {
+    this._manualThirdBreadcrumb$.next(null);
   }
 
   cacheQueryParams(routeMatchString: string, params: Params): void {

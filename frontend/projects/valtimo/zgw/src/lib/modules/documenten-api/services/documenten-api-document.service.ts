@@ -29,7 +29,7 @@ export class DocumentenApiDocumentService extends BaseApiService {
   ) {
     super(httpClient, configService);
   }
-  
+
   public getFilteredZakenApiDocuments(
     documentId: string,
     paramsMap?: any

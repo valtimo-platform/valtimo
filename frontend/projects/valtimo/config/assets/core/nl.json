@@ -538,7 +538,8 @@
         "tabKeyLabel": "Sleutel",
         "tabNameLabel": "Tabblad naam (optioneel)",
         "title": "Nieuw tabblad toevoegen {{documentDefinitionName}}",
-        "uniqueKeyError": "De sleutel voor deze kolom moet uniek zijn."
+        "uniqueKeyError": "De sleutel voor deze kolom moet uniek zijn.",
+        "widgetsComponent": "Widgets component"
       },
       "titles": {
         "custom": "Nieuw tabblad toevoegen met aangepaste component",
@@ -644,6 +645,18 @@
       "noResults": {
         "title": "Er zijn geen statussen",
         "description": "Voeg een status toe om te beginnen"
+      }
+    }
+  },
+  "widgetTabManagement": {
+    "tab": {
+      "metadata": "<b>Aangemaakt door</b> {{createdBy}} | <b>Aangemaakt op</b> {{createdOn}} | <b>Sleutel</b> {{key}}",
+      "editButton": "Bewerk",
+      "editWidgetTab": "Bewerk widget tab",
+      "cancel": "Annuleren",
+      "save": "Opslaan",
+      "form": {
+        "tabName": "Tab naam"
       }
     }
   },

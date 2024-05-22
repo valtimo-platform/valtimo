@@ -538,7 +538,8 @@
         "tabKeyLabel": "Key",
         "tabNameLabel": "Tab name (Optional)",
         "title": "Neue Registerkarte hinzufügen {{documentDefinitionName}}",
-        "uniqueKeyError": "Der Schlüssel für diese Spalte muss eindeutig sein."
+        "uniqueKeyError": "Der Schlüssel für diese Spalte muss eindeutig sein.",
+        "widgetsComponent": "Widgets component"
       },
       "titles": {
         "custom": "Neue Registerkarte hinzufügen mit brauch component",
@@ -644,6 +645,18 @@
       "noResults": {
         "title": "Keine Status gefunden",
         "description": "Fügen Sie einen Status hinzu"
+      }
+    }
+  },
+  "widgetTabManagement": {
+    "tab": {
+      "metadata": "<b>Erstellt von</b> {{createdBy}} | <b>Erstellt am</b> {{createdOn}} | <b>Schlüssel</b> {{key}}",
+      "editButton": "Bearbeiten",
+      "editWidgetTab": "Bearbeiten widget tab",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "form": {
+        "tabName": "Tab name"
       }
     }
   },

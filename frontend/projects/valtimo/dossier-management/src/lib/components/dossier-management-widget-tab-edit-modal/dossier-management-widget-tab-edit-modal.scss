@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-.valtimo-documenten-api-column-modal__content {
+
+.edit-widget-tab-modal .form__row {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-end;
 }

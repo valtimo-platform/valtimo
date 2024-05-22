@@ -18,6 +18,7 @@ enum ApiTabType {
   STANDARD = 'standard',
   FORMIO = 'formio',
   CUSTOM = 'custom',
+  WIDGETS = 'widgets',
 }
 
 interface ApiTabItem {

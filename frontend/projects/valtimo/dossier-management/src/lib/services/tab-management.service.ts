@@ -17,14 +17,33 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
 import {ApiTabItem} from '@valtimo/dossier';
-import {BehaviorSubject, catchError, Observable, of, switchMap, take, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  map,
+  Observable,
+  of,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 
 @Injectable()
 export class TabManagementService {
   private _valtimoEndpointUri: string;
   private _caseDefinitionId: string;
 
-  public readonly tabs$ = new BehaviorSubject<ApiTabItem[]>([]);
+  private readonly _tabs$ = new BehaviorSubject<ApiTabItem[]>([]);
+
+  public get tabs$(): Observable<ApiTabItem[]> {
+    return combineLatest([this._tabs$, this.configService.featureToggles$]).pipe(
+      map(([tabs, featureToggles]) =>
+        tabs.filter(tab => (tab.type === 'widgets' ? featureToggles?.enableCaseWidgets : true))
+      )
+    );
+  }
+
   public readonly loading$ = new BehaviorSubject<boolean>(false);
 
   constructor(
@@ -40,7 +59,7 @@ export class TabManagementService {
       .pipe(take(1))
       .subscribe({
         next: (items: ApiTabItem[]) => {
-          this.tabs$.next(items);
+          this._tabs$.next(items);
           this.loading$.next(false);
         },
         error: error => {
@@ -54,7 +73,7 @@ export class TabManagementService {
       .pipe(
         tap(() => {
           this.loading$.next(true);
-          this.tabs$.next([]);
+          this._tabs$.next([]);
         }),
         switchMap((result: ApiTabItem | ApiTabItem[] | null) =>
           Array.isArray(result) ? of(result) : this.getTabList()
@@ -65,7 +84,7 @@ export class TabManagementService {
       .subscribe({
         next: (tabs: ApiTabItem[]) => {
           this.loading$.next(false);
-          this.tabs$.next(tabs);
+          this._tabs$.next(tabs);
         },
         error: error => {
           console.log(error);

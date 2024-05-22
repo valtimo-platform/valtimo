@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-.valtimo-documenten-api-column-modal__content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+
+export interface WidgetTabItem {
+  caseDefinitionName: string;
+  name: string;
+  key: string;
 }
