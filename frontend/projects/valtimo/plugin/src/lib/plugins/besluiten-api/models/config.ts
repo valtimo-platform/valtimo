@@ -37,6 +37,8 @@ interface CreateZaakBesluitConfig {
   uiterlijkeReactieDatum: string;
   createdBesluitUrl: string;
   inputTypeBesluitToggle?: InputOption;
+  inputTypeStartingDateToggle?: InputOption;
+  inputTypeExpirationDateToggle?: InputOption;
 }
 interface LinkDocumentToBesluitConfig {
   besluitUrl: string;
