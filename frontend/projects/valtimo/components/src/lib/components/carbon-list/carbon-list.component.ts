@@ -68,6 +68,7 @@ import {
   MoveRowDirection,
   MoveRowEvent,
   Pagination,
+  TAG_ELLIPSIS_LIMIT,
   ViewType,
 } from '../../models';
 import {ViewContentService} from '../view-content/view-content.service';
@@ -396,11 +397,9 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
                 data,
                 template: this.booleanTemplate,
               });
-            case ViewType.TAGS:
-              return new TableItem({
-                data: {tags: item?.tags ?? []},
-                template: this.tagTemplate,
-              });
+            case ViewType.TAGS: {
+              return this.resolveTagObject(item.tags);
+            }
             case ViewType.DATE:
               return new TableItem({data: this.resolveObject(field, item) ?? '-', item});
             default:
@@ -510,6 +509,14 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.tagModalOpen$.next(false);
   }
 
+  public handleActionOpenChange(actionId: string, isOpen: boolean): void {
+    if (isOpen) {
+      this.currentOpenActionId = actionId;
+    } else if (this.currentOpenActionId === actionId) {
+      this.currentOpenActionId = null;
+    }
+  }
+
   private getExtraItems(item: CarbonListItem, index: number, length: number): TableItem[] {
     return [
       ...(!!this.actions
@@ -577,7 +584,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.paginationSet.emit(numberOfEntries);
   }
 
-  private resolveObject(definition: any, obj: any, format?: string) {
+  private resolveObject(definition: any, obj: any) {
     const definitionKey = definition.key;
     const customPropString = '$.';
     const key = definitionKey.includes(customPropString)
@@ -594,11 +601,27 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     return temp;
   }
 
-  public handleActionOpenChange(actionId: string, isOpen: boolean): void {
-    if (isOpen) {
-      this.currentOpenActionId = actionId;
-    } else if (this.currentOpenActionId === actionId) {
-      this.currentOpenActionId = null;
-    }
+  private resolveTagObject(itemTags: CarbonTag[] | undefined): TableItem {
+    if (!itemTags || itemTags.length === 0)
+      return new TableItem({
+        data: {tags: []},
+        template: this.tagTemplate,
+      });
+
+    const tags = itemTags.map((tag: CarbonTag, index: number) =>
+      index === 0 ? {...tag, ellipsisContent: this.transformTagEllipsis(tag.content)} : tag
+    );
+
+    return new TableItem({
+      data: {tags},
+      template: this.tagTemplate,
+    });
+  }
+
+  private transformTagEllipsis(tagContent: string): string {
+    return (
+      tagContent.substring(0, TAG_ELLIPSIS_LIMIT - 1) +
+      (tagContent.length > TAG_ELLIPSIS_LIMIT ? '...' : '')
+    );
   }
 }

@@ -367,7 +367,11 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
 
   public onSortChanged(sortState: SortState): void {
     this._sort$.next(
-      sortState.isSorting ? {sort: `${sortState.state.name},${sortState.state.direction}`} : null
+      sortState.isSorting
+        ? {
+            sort: `${sortState.state.name === 'size' ? DOCUMENTEN_COLUMN_KEYS.BESTANDSOMVANG : sortState.state.name},${sortState.state.direction}`,
+          }
+        : null
     );
   }
 

@@ -19,4 +19,7 @@ import {TagType} from 'carbon-components-angular';
 export interface CarbonTag {
   content: string;
   type: TagType;
+  ellipsisContent?: string;
 }
+
+export const TAG_ELLIPSIS_LIMIT = 15;

@@ -160,7 +160,7 @@
       -
     } @else {
       <cds-tag *ngIf="!!data.tags[0].content" class="cds-tag--no-margin" [type]="data.tags[0].type">
-        {{ data.tags[0].content }}
+        {{ data.tags[0].ellipsisContent ?? data.tags[0].content }}
       </cds-tag>
 
       <cds-tag

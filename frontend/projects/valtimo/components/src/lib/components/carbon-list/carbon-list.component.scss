@@ -101,4 +101,8 @@ td:first-child {
       margin-right: 8px;
     }
   }
+
+  ::ng-deep .cds--tag {
+    white-space: nowrap;
+  }
 }
