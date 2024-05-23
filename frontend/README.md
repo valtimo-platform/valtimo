@@ -4,6 +4,11 @@ This project contains a collection of front end libraries that can be used in An
 implementation. These can be found under /projects/valtimo. To test the libraries, there's a
 reference implementation under /src/app.
 
+## Branching
+
+For more information on what branches to create while working in this project, please refer
+to [this page](https://github.com/valtimo-platform/valtimo-documentation/blob/next-minor/contributing/branching-and-release-strategy.md).
+
 ## Prerequisites:
 
 Install NVM, see https://github.com/nvm-sh/nvm
