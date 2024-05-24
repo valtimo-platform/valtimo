@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {PluginManagementStateService} from '../../services';
 import {take} from 'rxjs/operators';
-import {VModalComponent, ModalService} from '@valtimo/components';
-import {BehaviorSubject, Observable, Subject, Subscription} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 import {
   PluginConfigurationData,
   PluginConfiguration,
@@ -31,28 +30,21 @@ import {NGXLogger} from 'ngx-logger';
   templateUrl: './plugin-edit-modal.component.html',
   styleUrls: ['./plugin-edit-modal.component.scss'],
 })
-export class PluginEditModalComponent implements OnInit {
-  @ViewChild('pluginEditModal') pluginEditModal: VModalComponent;
+export class PluginEditModalComponent {
+  @Input() open = false;
+
+  @Output() closeModal: EventEmitter<boolean> = new EventEmitter();
 
   readonly inputDisabled$ = this.stateService.inputDisabled$;
   readonly selectedPluginConfiguration$: Observable<PluginConfiguration> =
     this.stateService.selectedPluginConfiguration$;
   readonly configurationValid$ = new BehaviorSubject<boolean>(false);
 
-  private showSubscription!: Subscription;
-  private hideSubscription!: Subscription;
-
   constructor(
     private readonly stateService: PluginManagementStateService,
-    private readonly modalService: ModalService,
     private readonly pluginManagementService: PluginManagementService,
     private readonly logger: NGXLogger
   ) {}
-
-  ngOnInit(): void {
-    this.openShowSubscription();
-    this.openHideSubscription();
-  }
 
   save(): void {
     this.stateService.saveEdit();
@@ -79,18 +71,16 @@ export class PluginEditModalComponent implements OnInit {
       });
   }
 
-  hide(): void {
-    this.modalService.closeModal(() => {
-      this.stateService.enableInput();
-      this.stateService.clear();
-    });
+  public hide(): void {
+    this.closeModal.emit();
+    this.stateService.enableInput();
   }
 
-  onPluginValid(valid: boolean): void {
+  public onPluginValid(valid: boolean): void {
     this.configurationValid$.next(valid);
   }
 
-  onPluginConfiguration(configuration: PluginConfigurationData): void {
+  public onPluginConfiguration(configuration: PluginConfigurationData): void {
     this.stateService.disableInput();
 
     this.stateService.selectedPluginConfiguration$
@@ -119,23 +109,5 @@ export class PluginEditModalComponent implements OnInit {
             }
           );
       });
-  }
-
-  private openShowSubscription(): void {
-    this.showSubscription = this.stateService.showModal$.subscribe(modalType => {
-      if (modalType === 'edit') {
-        this.show();
-      }
-    });
-  }
-
-  private openHideSubscription(): void {
-    this.hideSubscription = this.stateService.hideModal$.subscribe(() => {
-      this.hide();
-    });
-  }
-
-  private show(): void {
-    this.modalService.openModal(this.pluginEditModal);
   }
 }

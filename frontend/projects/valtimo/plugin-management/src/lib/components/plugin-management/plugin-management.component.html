@@ -44,6 +44,12 @@
   </ng-template>
 </ng-container>
 
-<valtimo-plugin-add-modal></valtimo-plugin-add-modal>
+<valtimo-plugin-add-modal
+  [open]="showAddModal$ | async"
+  (closeModal)="closeAddModal()"
+></valtimo-plugin-add-modal>
 
-<valtimo-plugin-edit-modal></valtimo-plugin-edit-modal>
+<valtimo-plugin-edit-modal
+  [open]="showEditModal$ | async"
+  (closeModal)="closeEditModal()"
+></valtimo-plugin-edit-modal>

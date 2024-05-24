@@ -27,7 +27,6 @@
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
-    [widthPx]="350"
     [required]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     placeholder="Object Token Authenticatie Plugin"
@@ -42,7 +41,6 @@
     [defaultValue]="obs.prefill?.clientId"
     [required]="true"
     [tooltip]="'tokenTooltip' | pluginTranslate: pluginId | async"
-    [fullWidth]="true"
   >
   </v-input>
 </v-form>

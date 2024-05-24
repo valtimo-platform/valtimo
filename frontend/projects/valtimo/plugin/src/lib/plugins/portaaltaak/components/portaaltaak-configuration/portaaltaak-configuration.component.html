@@ -29,7 +29,6 @@
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
-    [widthPx]="350"
     placeholder="Portaaltaak Plugin"
   >
   </v-input>
@@ -39,7 +38,6 @@
     <v-select
       [items]="notificatiesApiPluginSelectItems"
       [margin]="true"
-      [widthInPx]="350"
       name="notificatiesApiPluginConfiguration"
       [title]="'notificatiesApiPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
@@ -55,7 +53,6 @@
     <v-select
       [items]="objectManagementConfigurationItems"
       [margin]="true"
-      [widthInPx]="350"
       name="objectManagementConfigurationId"
       [title]="'objectManagementConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
@@ -69,7 +66,6 @@
     <v-select
       [items]="vars.processSelectItems"
       [margin]="true"
-      [widthInPx]="350"
       name="completeTaakProcess"
       [title]="'completeTaakProcess' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"

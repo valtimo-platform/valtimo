@@ -29,14 +29,12 @@
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
-    [widthPx]="350"
     placeholder="Zaken API Plugin"
   >
   </v-input>
   <v-input
     name="url"
     [title]="'url' | pluginTranslate: pluginId | async"
-    [fullWidth]="true"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.url"
@@ -52,7 +50,6 @@
       [loading]="!authObs.authenticationPluginSelectItems"
       [items]="authObs.authenticationPluginSelectItems"
       [margin]="true"
-      [widthInPx]="350"
       name="authenticationPluginConfiguration"
       [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"

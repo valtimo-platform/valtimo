@@ -33,36 +33,31 @@
 </div>
 
 <ng-template #cancelButton let-disabled="disabled">
-  <v-button (clickEvent)="cancel()" type="secondary" [disabled]="disabled">{{
-    cancelButtonTranslationKey
-      ? (cancelButtonTranslationKey | translate)
-      : ('stepper.cancelButtonText' | translate)
-  }}</v-button>
+  <button cdsButton="secondary" (click)="cancel()" [disabled]="disabled">
+    {{
+      cancelButtonTranslationKey
+        ? (cancelButtonTranslationKey | translate)
+        : ('stepper.cancelButtonText' | translate)
+    }}
+  </button>
 </ng-template>
 
 <ng-template #nextButton let-disabled="disabled">
-  <v-button
-    [disabled]="!nextButtonEnabled || disabled"
-    (clickEvent)="goToNextStep()"
-    mdiIcon="arrow-right"
-    >{{
+  <button cdsButton="primary" [disabled]="!nextButtonEnabled || disabled" (click)="goToNextStep()">
+    {{
       nextButtonTranslationKey
         ? (nextButtonTranslationKey | translate)
         : ('stepper.nextButtonText' | translate)
-    }}</v-button
-  >
+    }}
+  </button>
 </ng-template>
 
 <ng-template #completeButton let-disabled="disabled">
-  <v-button
-    [disabled]="!completeButtonEnabled || disabled"
-    (clickEvent)="complete()"
-    [mdiIcon]="completeButtonMdiIcon || 'check'"
-    type="success"
-    >{{
+  <button cdsButton="primary" [disabled]="!completeButtonEnabled || disabled" (click)="complete()">
+    {{
       completeButtonTranslationKey
         ? (completeButtonTranslationKey | translate)
         : ('stepper.completeButtonText' | translate)
-    }}</v-button
-  >
+    }}
+  </button>
 </ng-template>
