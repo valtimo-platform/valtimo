@@ -199,7 +199,7 @@
       </ng-container>
       <v-input class="hidden-input" name="uuid" [defaultValue]="uuid"> </v-input>
     </v-form>
-    <cds-modal valtimoCdsModal [open]="showMappingModals[uuid]">
+    <cds-modal cdsModal [open]="showMappingModals[uuid]">
       <cds-modal-header [showCloseButton]="true" (closeSelect)="closeMappingModal(uuid)">
         <h3 cdsModalHeaderHeading>{{ 'setMapping' | pluginTranslate: pluginId | async }}</h3>
       </cds-modal-header>
@@ -221,6 +221,7 @@
             [defaultValues]="mappings[uuid] || prefill?.mapping"
             [valueColumnTitle]="'target' | pluginTranslate: pluginId | async"
             [keyColumnTitle]="'source' | pluginTranslate: pluginId | async"
+            [fullWidth]="true"
           ></valtimo-carbon-multi-input>
         </div>
       </section>
