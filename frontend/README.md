@@ -15,7 +15,7 @@ Valtimo is the low-code platform for Business Process Automation. Our goal is to
 
 ### What are the 'Valtimo frontend libraries'?
 This repository contains:
-- A collection of Angular libraries that together form the Valtimo frontend
+- A collection of Angular libraries that together form the Valtimo frontend.
 - The `app` module, containing an Angular application, used for library development
 
 ### Starting the Valtimo platform
