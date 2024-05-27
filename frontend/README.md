@@ -33,7 +33,7 @@ Starting up the Valtimo platform requires three steps:
 Run the following command to install the dependencies: `npm install`.
 
 #### Build libraries
-Run the following command to build all the Valtimo libraries: `npm run libs-build-all`
+Run the following command to build all the Valtimo libraries: `npm run libs-build-all`.
 
 #### Start application
 - Run the following command to start the Angular application: `npm start`.
