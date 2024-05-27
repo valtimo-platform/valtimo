@@ -18,7 +18,7 @@ This repository contains:
 - A collection of Angular libraries that together form the Valtimo frontend
 - The `app` module, containing an Angular application, used for library development
 
-### Running the Valtimo libraries from source
+### Running the Valtimo platform
 Starting up the Valtimo platform requires three steps:
 1. Starting the supporting Docker containers: Keycloak and PostgreSQL. Instructions for starting the supporting services can be found [here](app/gzac/README.md#start-docker-containers-for-supporting-services).
 2. Starting the Valtimo backend. Instructions can be found in de README of the [backend libraries repository](https://github.com/valtimo-platform/valtimo-backend-libraries)
