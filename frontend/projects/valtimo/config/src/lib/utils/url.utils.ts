@@ -30,6 +30,14 @@ class UrlUtils {
     return url;
   }
 
+  static formatUrlStartWithSlash(url: string): string {
+    if (url && typeof url === 'string' && url.length > 0 && url[0] !== '/') {
+      return `/${url}`;
+    }
+
+    return `${url}`;
+  }
+
   static getUrlHost(urlString: string): string {
     let url!: URL;
 

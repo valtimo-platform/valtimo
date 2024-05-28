@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-export * from './candidate-user.model';
-export * from './dossier-parameters.model';
-export * from './search.model';
-export * from './tabs.model';
-export * from './dossier-detail-tab.model';
-export * from './tab-api.model';
-export * from './case-widget-display.model';
-export * from './case-widget.model';
+const WIDGET_WIDTH_1X = 320;
+const WIDGET_HEIGHT_1X = 50;
+
+export {WIDGET_WIDTH_1X, WIDGET_HEIGHT_1X};

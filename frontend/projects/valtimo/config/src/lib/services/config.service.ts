@@ -65,6 +65,10 @@ export class ConfigService {
     };
   }
 
+  public get featureToggles(): ValtimoConfig['featureToggles'] {
+    return this.config.featureToggles;
+  }
+
   public get config$(): Observable<ValtimoConfig> {
     return of(this.config);
   }

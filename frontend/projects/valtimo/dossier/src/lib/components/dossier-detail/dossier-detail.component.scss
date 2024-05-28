@@ -24,6 +24,10 @@
   &:has(> .tab--no-min-height) {
     min-height: unset;
   }
+
+  &:has(> .tab--no-background) {
+    background: transparent !important;
+  }
 }
 
 .loading-container {

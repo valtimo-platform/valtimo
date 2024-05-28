@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-export * from './candidate-user.model';
-export * from './dossier-parameters.model';
-export * from './search.model';
-export * from './tabs.model';
-export * from './dossier-detail-tab.model';
-export * from './tab-api.model';
-export * from './case-widget-display.model';
-export * from './case-widget.model';
+.widgets-container {
+  display: flex;
+  flex-grow: 0;
+  position: relative;
+  width: calc(100% + 16px);
+  margin-left: -8px;
+  margin-top: 8px;
+  overflow: hidden;
+}

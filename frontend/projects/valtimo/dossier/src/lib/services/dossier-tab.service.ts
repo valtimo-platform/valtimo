@@ -15,14 +15,15 @@
  */
 
 import {Inject, Injectable, OnDestroy, Optional, Type} from '@angular/core';
-import {ApiTabItem, ApiTabType, CaseTabConfig, TabImpl} from '../models';
+import {ApiTabItem, ApiTabType, CaseTabConfig, TabImpl, TabLoaderImpl} from '../models';
 import {CASE_TAB_TOKEN, DEFAULT_TAB_COMPONENTS, DEFAULT_TABS, TAB_MAP} from '../constants';
 import {ConfigService, ZGW_OBJECT_TYPE_COMPONENT_TOKEN} from '@valtimo/config';
 import {ActivatedRoute} from '@angular/router';
 import {DossierTabApiService} from './dossier-tab-api.service';
-import {BehaviorSubject, filter, map, Observable, Subscription} from 'rxjs';
+import {BehaviorSubject, filter, map, Observable, Subscription, switchMap} from 'rxjs';
 import {DossierDetailTabFormioComponent} from '../components/dossier-detail/tab/formio/formio.component';
 import {DossierDetailTabNotFoundComponent} from '../components/dossier-detail/tab/not-found/not-found.component';
+import {DossierDetailWidgetsComponent} from '../components/dossier-detail/tab/widgets/widgets.component';
 
 @Injectable()
 export class DossierTabService implements OnDestroy {
@@ -33,9 +34,21 @@ export class DossierTabService implements OnDestroy {
   );
   private readonly _tabs$ = new BehaviorSubject<Array<TabImpl> | null>(null);
   private readonly _subscriptions = new Subscription();
+  private readonly _tabLoader$ = new BehaviorSubject<TabLoaderImpl | null>(null);
 
   public get tabs$(): Observable<Array<TabImpl>> {
     return this._tabs$.pipe(filter(tabs => !!tabs));
+  }
+
+  public get activeTab$(): Observable<TabImpl> {
+    return this._tabLoader$.pipe(
+      filter(tabLoader => !!tabLoader),
+      switchMap(tabLoader => tabLoader.activeTab$)
+    );
+  }
+
+  public get activeTabKey$(): Observable<string> {
+    return this.activeTab$.pipe(map(tab => tab.name));
   }
 
   constructor(
@@ -55,6 +68,10 @@ export class DossierTabService implements OnDestroy {
 
   public ngOnDestroy() {
     this._subscriptions.unsubscribe();
+  }
+
+  public setTabLoader(tabLoader: TabLoaderImpl): void {
+    this._tabLoader$.next(tabLoader);
   }
 
   private getConfigurableTabs(documentDefinitionName: string): Map<string, object> {
@@ -153,6 +170,11 @@ export class DossierTabService implements OnDestroy {
           this.caseTabConfig[tab.contentKey],
           tab.contentKey,
           tab.name
+        );
+      case ApiTabType.WIDGETS:
+        return (
+          this.configService.featureToggles?.enableCaseWidgets &&
+          new TabImpl(tab.key, index, DossierDetailWidgetsComponent, tab.contentKey, tab.name)
         );
       default:
         return null;
