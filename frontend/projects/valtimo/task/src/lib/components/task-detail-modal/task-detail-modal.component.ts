@@ -68,7 +68,10 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
   @Output() assignmentOfTaskChanged = new EventEmitter();
 
   public readonly task$ = new BehaviorSubject<Task | null>(null);
+  public readonly taskInstanceId$ = new BehaviorSubject<string>(null);
   public readonly formDefinition$ = new BehaviorSubject<FormioForm>(undefined);
+  public readonly formDefinitionId$ = new BehaviorSubject<string>(undefined);
+  public readonly formName$ = new BehaviorSubject<string>(undefined);
   public readonly formFlowInstanceId$ = new BehaviorSubject<string>(undefined);
   public readonly page$ = new BehaviorSubject<any>(null);
   public readonly formioOptions$ = new BehaviorSubject<ValtimoFormioOptions>(null);
@@ -81,6 +84,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
 
   private readonly taskProcessLinkType$ = new BehaviorSubject<TaskProcessLinkType | null>(null);
   public readonly processLinkIsForm$ = this.taskProcessLinkType$.pipe(map(type => type === 'form'));
+  public readonly processLinkIsFormViewModel$ = this.taskProcessLinkType$.pipe(map(type => type === 'form-view-model'));
   public readonly processLinkIsFormFlow$ = this.taskProcessLinkType$.pipe(
     map(type => type === 'form-flow')
   );
@@ -135,6 +139,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     this.stateService.setDocumentId(documentId);
 
     this.task$.next(task);
+    this.taskInstanceId$.next(task.id);
     this.page$.next({
       title: task.name,
       subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task.created}`,
@@ -178,6 +183,8 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
                 },
               });
           }
+        } else if(taskProcessLinkType === 'form-view-model') {
+          this.completeTask();
         }
       });
   }
@@ -211,6 +218,13 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
             case 'form-flow':
               this.taskProcessLinkType$.next('form-flow');
               this.formFlowInstanceId$.next(res.properties.formFlowInstanceId);
+              break;
+            case 'form-view-model':
+              this.taskProcessLinkType$.next('form-view-model');
+              this.processLinkId$.next(res.processLinkId);
+              this.formDefinition$.next(res.properties.formDefinition);
+              this.formName$.next(res.properties.formName);
+              this.modal.show();
               break;
           }
           this.loading$.next(false);

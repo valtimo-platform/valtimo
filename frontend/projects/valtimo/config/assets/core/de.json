@@ -1501,7 +1501,11 @@
     "back": "Zurück",
     "next": "Nächste",
     "pluginDescription": "Plugin-Beschreibung",
-    "unlink": "Verknüpfung aufheben"
+    "unlink": "Verknüpfung aufheben",
+    "toggleViewModel": {
+      "title": "View Model ermöglicht?",
+      "checkboxDescription": "Aktiviert die Form View Model Formularverarbeitung"
+    }
   },
   "processLinkType": {
     "plugin": "Plugin",

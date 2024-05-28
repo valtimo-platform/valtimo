@@ -20,8 +20,12 @@
     loading: loading$ | async,
     page: page$ | async,
     task: task$ | async,
+    taskId: taskInstanceId$ | async,
     formDefinition: formDefinition$ | async,
+    formDefinitionId: formDefinitionId$ | async,
+    formName: formName$ | async,
     processLinkIsForm: processLinkIsForm$ | async,
+    processLinkIsFormViewModel: processLinkIsFormViewModel$ | async,
     formioOptions: formioOptions$ | async,
     processLinkIsFormFlow: processLinkIsFormFlow$ | async,
     formFlowInstanceId: formFlowInstanceId$ | async,
@@ -34,12 +38,23 @@
 >
   <div body *ngIf="obs.formDefinition && obs.processLinkIsForm">
     <valtimo-form-io
-      #form
-      [form]="obs.formDefinition"
-      (submit)="onSubmit($event)"
-      (change)="onChange($event)"
-      [options]="obs.formioOptions"
+            #form
+            [form]="obs.formDefinition"
+            (submit)="onSubmit($event)"
+            (change)="onChange($event)"
+            [options]="obs.formioOptions"
     ></valtimo-form-io>
+  </div>
+  <div body *ngIf="obs.formDefinition && obs.processLinkIsFormViewModel">
+    <valtimo-form-view-model
+            #form
+            [form]="obs.formDefinition"
+            [formName]="obs.formName"
+            [taskInstanceId]="obs.taskId"
+            (formSubmit)="onSubmit($event)"
+            (change)="onChange($event)"
+            [options]="obs.formioOptions"
+    ></valtimo-form-view-model>
   </div>
   <div body *ngIf="obs.processLinkIsFormFlow">
     <valtimo-form-flow

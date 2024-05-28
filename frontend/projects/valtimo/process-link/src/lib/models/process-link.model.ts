@@ -27,6 +27,7 @@ interface ProcessLink {
   };
   formDefinitionId?: string;
   formFlowDefinitionId?: string;
+  viewModelEnabled?: boolean;
 }
 
 type GetProcessLinkResponse = Array<ProcessLink>;
@@ -56,6 +57,7 @@ interface FormProcessLinkCreateRequestDto {
   activityType: string;
   processLinkType: string;
   formDefinitionId: string;
+  viewModelEnabled: boolean;
 }
 
 interface FormFlowProcessLinkCreateRequestDto {
@@ -93,6 +95,7 @@ interface FormFlowProcessLinkUpdateRequestDto {
 interface FormProcessLinkUpdateRequestDto {
   id: string;
   formDefinitionId: string;
+  viewModelEnabled: boolean;
 }
 
 export {

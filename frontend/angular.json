@@ -1841,6 +1841,76 @@
         }
       }
     },
+    "@valtimo/form-view-model": {
+      "projectType": "library",
+      "root": "projects/valtimo/form-view-model",
+      "sourceRoot": "projects/valtimo/form-view-model/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/valtimo/form-view-model/tsconfig.lib.json",
+            "project": "projects/valtimo/form-view-model/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/form-view-model/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.ts",
+            "tsConfig": "projects/valtimo/form-view-model/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/form-view-model/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/form-view-model/src/**/*.ts",
+              "projects/valtimo/form-view-model/src/**/*.html"
+            ]
+          }
+        },
+        "cypress-run": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "@valtimo/form-view-model:serve",
+            "configFile": "projects/valtimo/form-view-model/cypress.config.js"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "@valtimo/form-view-model:serve:production"
+            }
+          }
+        },
+        "cypress-open": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "watch": true,
+            "headless": false,
+            "configFile": "projects/valtimo/form-view-model/cypress.config.js"
+          }
+        },
+        "e2e": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "@valtimo/form-view-model:serve",
+            "watch": true,
+            "headless": false
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "@valtimo/form-view-model:serve:production"
+            }
+          }
+        }
+      }
+    },
     "@valtimo/form-flow-management": {
       "projectType": "library",
       "root": "projects/valtimo/form-flow-management",
