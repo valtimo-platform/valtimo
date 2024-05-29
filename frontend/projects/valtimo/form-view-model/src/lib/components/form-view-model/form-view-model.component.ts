@@ -79,14 +79,6 @@ export class FormViewModelComponent implements OnInit {
     this.readOnly$.next(readOnlyValue);
   }
 
-  @Input() set isStartForm(isStartFormValue: boolean) {
-    this.isStartForm$.next(isStartFormValue);
-  }
-
-  @Input() set processDefinitionKey(processDefinitionKeyValue: string) {
-    this.processDefinitionKey$.next(processDefinitionKeyValue);
-  }
-
   @Input() formRefresh$!: Subject<FormioRefreshValue>;
   @Output() formSubmit = new EventEmitter<any>();
 
@@ -102,8 +94,6 @@ export class FormViewModelComponent implements OnInit {
   public readonly change$ = new BehaviorSubject<any>(null);
   public readonly errors$ = new BehaviorSubject<Array<string>>([]);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
-  public readonly isStartForm$ = new BehaviorSubject<boolean>(false);
-  public readonly processDefinitionKey$ = new BehaviorSubject<string>(undefined);
 
   public readonly currentLanguage$ = this.translateService.stream('key').pipe(
     map(() => this.translateService.currentLang),
@@ -145,11 +135,7 @@ export class FormViewModelComponent implements OnInit {
   ) {}
 
   public ngOnInit(): void {
-    if (this.isStartForm$.value) {
-      this.loadInitialViewModelForStartForm();
-    } else {
-      this.loadInitialViewModel();
-    }
+    this.loadInitialViewModel();
   }
 
   public beforeSubmitHook(instance: FormViewModelComponent): (submission, callback) => void {
@@ -157,24 +143,10 @@ export class FormViewModelComponent implements OnInit {
   }
 
   public beforeSubmit(submission: any, callback: FormioSubmissionCallback): void {
-    combineLatest([this.formName$, this.taskInstanceId$, this.isStartForm$])
+    combineLatest([this.formName$, this.taskInstanceId$])
       .pipe(
         take(1),
-        switchMap(([formName, taskInstanceId, isStartForm]) =>
-          isStartForm ?
-            this.viewModelService.submitViewModelForStartForm(formName, taskInstanceId, submission.data).pipe(
-              take(1),
-              switchMap(response => {
-                callback(null, submission);
-                return of(response);
-              }),
-              catchError(error => {
-                this.handleFormError(error);
-                callback({message: error.error.error, component: null}, null);
-                return EMPTY; // return an empty observable to complete the stream
-              })
-            )
-            :
+        switchMap(([formName, taskInstanceId]) =>
           this.viewModelService.submitViewModel(formName, taskInstanceId, submission.data).pipe(
             take(1),
             switchMap(response => {
@@ -195,12 +167,12 @@ export class FormViewModelComponent implements OnInit {
   private handleFormError(error: HttpErrorResponse): void {
     const formInstance = this.formio.formio;
     const component = formInstance.getComponent(error.error?.component);
-    const submitComponent = formInstance.getComponent('submit');
     if (component == null) {
       this.errors$.next([error.error.error]);
     } else {
-      component?.setCustomValidity(error.error.error);
-      submitComponent.disabled = true;
+      setTimeout(() => {
+        component?.setCustomValidity(error.error.error);
+      }, 500);
     }
   }
 
@@ -267,54 +239,6 @@ export class FormViewModelComponent implements OnInit {
     ).subscribe();
   }
 
-  public loadInitialViewModelForStartForm(): void {
-    combineLatest([this.formName$, this.processDefinitionKey$])
-      .pipe(
-        take(1),
-        switchMap(([formName, processDefinitionKey]) =>
-          this.viewModelService.getViewModelForStartForm(formName, processDefinitionKey).pipe(
-            tap(viewModel => {
-              this.submission$.next({data: viewModel});
-              this.change$.pipe(take(1)).subscribe(() => {
-                this.loading$.next(false);
-              });
-            })
-          )
-        )
-      )
-      .subscribe();
-  }
-
-  public updateViewModelForStartForm(): void {
-    this.loading$.pipe(
-      take(1),
-      switchMap(updating => {
-        if (!updating) {
-          this.loading$.next(true);
-          return combineLatest([this.formName$, this.change$]).pipe(
-            take(1),
-            switchMap(([formName, change]) =>
-              this.viewModelService.updateViewModelForStartForm(formName, change.data).pipe(
-                tap({
-                  next: viewModel => {
-                    this.submission$.next({data: viewModel});
-                    this.loading$.next(false);
-                    this.errors$.next([]);
-                  },
-                  error: error => {
-                    this.loading$.next(false);
-                    this.handleFormError(error);
-                  }
-                })
-              )
-            )
-          );
-        }
-        return of(null);  // Fallback to return an observable if updating is true
-      })
-    ).subscribe();
-  }
-
   private handleChanges(): void {
     this.change$
       .pipe(
@@ -328,11 +252,7 @@ export class FormViewModelComponent implements OnInit {
         )
       )
       .subscribe(() => {
-        if (this.isStartForm$.value) {
-            this.updateViewModelForStartForm();
-        } else {
-          this.updateViewModel();
-        }
+        this.updateViewModel();
       });
   }
 }
