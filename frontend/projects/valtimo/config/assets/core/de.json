@@ -680,7 +680,7 @@
       "creatiedatum": "Erstellungsdatum",
       "formaat": "Format",
       "identificatie": "Identifikation",
-      "informatieobjecttype": "Informationsobjekttyp",
+      "informatieobjecttypeOmschrijving": "Informationsobjekttyp",
       "locked": "Locked",
       "status": "Status",
       "taal": "Sprache",
