@@ -34,6 +34,7 @@ import {take} from 'rxjs/operators';
 import {CAN_VIEW_CASE_PERMISSION, DOSSIER_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
 import {DossierListService, StartModalService} from '../../services';
 import {ConfigService} from '@valtimo/config';
+import {FormViewModelComponent} from '@valtimo/form-view-model';
 
 @Component({
   selector: 'valtimo-dossier-process-start-modal',
@@ -49,13 +50,16 @@ export class DossierProcessStartModalComponent implements OnInit {
   private _startEventName: string;
   private readonly _useStartEventNameAsStartFormTitle!: boolean;
   public formDefinition: FormioForm;
+  public formName: string;
   public formFlowInstanceId: string;
   public formioSubmission: FormioSubmission;
   private processLinkId: string;
   public options: ValtimoFormioOptions;
   public isAdmin: boolean;
+  public isFormViewModel = false;
   @ViewChild('form', {static: false}) form: FormioComponent;
   @ViewChild('processStartModal', {static: false}) modal: ModalComponent;
+  @ViewChild(FormViewModelComponent, {static: false}) formViewModel: FormViewModelComponent;
   @Output() formFlowComplete = new EventEmitter();
 
   constructor(
@@ -104,6 +108,12 @@ export class DossierProcessStartModalComponent implements OnInit {
               break;
             case 'form-flow':
               this.formFlowInstanceId = startProcessResult.properties.formFlowInstanceId;
+              break;
+            case 'form-view-model':
+              this.formDefinition = startProcessResult.properties.formDefinition;
+              this.formName = startProcessResult.properties.formName;
+              this.processLinkId = startProcessResult.processLinkId;
+              this.isFormViewModel = true;
               break;
           }
         }
