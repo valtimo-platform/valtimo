@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-export interface WidgetTabItem {
+export interface WidgetTabConfiguration {
   caseDefinitionName: string;
-  name: string;
   key: string;
 }

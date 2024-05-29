@@ -28,8 +28,8 @@ import {NotificationService} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
 import {CARBON_CONSTANTS} from '@valtimo/components';
-import {WidgetTabItem} from '../../models/widget-tab-item.type';
-import {WidgetTabManagementService} from '../../services';
+import {TabManagementService} from '../../services';
+import {ApiTabItem, ApiTabType} from '@valtimo/dossier';
 
 @Component({
   selector: 'valtimo-dossier-management-widget-tab-edit-modal',
@@ -41,7 +41,7 @@ import {WidgetTabManagementService} from '../../services';
 })
 export class DossierManagementWidgetTabEditModalComponent implements OnInit, OnDestroy {
   @Input() public showModal$: Observable<boolean>;
-  @Input() public widgetTab: WidgetTabItem;
+  @Input() public tabItem: ApiTabItem;
   @Output() public saveEvent = new EventEmitter<any>();
 
   public readonly open$ = new BehaviorSubject<boolean>(false);
@@ -58,7 +58,7 @@ export class DossierManagementWidgetTabEditModalComponent implements OnInit, OnD
 
   constructor(
     private readonly fb: FormBuilder,
-    private readonly widgetTabManagementService: WidgetTabManagementService
+    private readonly tabManagementService: TabManagementService
   ) {}
 
   public ngOnInit(): void {
@@ -80,12 +80,15 @@ export class DossierManagementWidgetTabEditModalComponent implements OnInit, OnD
   public saveWidgetTab(): void {
     this.disable();
 
-    this.widgetTabManagementService
-      .updateWidgetTab({
-        caseDefinitionName: this.widgetTab.caseDefinitionName,
-        key: this.widgetTab.key,
-        name: this.widgetTabName.value,
-      })
+    this.tabManagementService.editTab(
+        {
+          key: this.tabItem.key,
+          name: this.widgetTabName.value,
+          contentKey: '-',
+          type: ApiTabType.WIDGETS,
+        },
+        this.tabItem.key
+      )
       .subscribe(() => {
         this.saveEvent.emit();
         this.closeModal();
@@ -93,8 +96,8 @@ export class DossierManagementWidgetTabEditModalComponent implements OnInit, OnD
   }
 
   private setEditWidgetTabForm(): void {
-    if (this.widgetTab) {
-      this.widgetTabName?.setValue(this.widgetTab.name);
+    if (this.tabItem) {
+      this.widgetTabName?.setValue(this.tabItem.name);
     }
 
     this.enable();

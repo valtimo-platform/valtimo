@@ -18,8 +18,7 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
 import {Observable} from 'rxjs';
-import {WidgetTabItem} from '../models/widget-tab-item.type';
-import {ApiTabType} from '@valtimo/dossier';
+import {WidgetTabConfiguration} from '../models/widget-tab-item.type';
 
 @Injectable({
   providedIn: 'root',
@@ -34,20 +33,12 @@ export class WidgetTabManagementService {
     this.valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}`;
   }
 
-  public getWidgetTab(caseDefinitionName: string, widgetTabKey: string): Observable<WidgetTabItem> {
-    return this.http.get<WidgetTabItem>(
+  public getWidgetTabConfiguration(
+    caseDefinitionName: string,
+    widgetTabKey: string
+  ): Observable<WidgetTabConfiguration> {
+    return this.http.get<WidgetTabConfiguration>(
       `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionName}/widget-tab/${widgetTabKey}`
-    );
-  }
-
-  public updateWidgetTab(tab: WidgetTabItem): Observable<WidgetTabItem> {
-    if (tab.name === '') {
-      delete tab.name;
-    }
-
-    return this.http.put<WidgetTabItem>(
-      `${this.valtimoEndpointUri}management/v1/case-definition/${tab.caseDefinitionName}/tab/${tab.key}`,
-      {...tab, contentKey: '-', type: ApiTabType.WIDGETS}
     );
   }
 }

@@ -26,6 +26,8 @@ interface ApiTabItem {
   key: string;
   type: ApiTabType;
   contentKey: string;
+  createdOn?: string;
+  createdBy?: string;
 }
 
 export {ApiTabType, ApiTabItem};

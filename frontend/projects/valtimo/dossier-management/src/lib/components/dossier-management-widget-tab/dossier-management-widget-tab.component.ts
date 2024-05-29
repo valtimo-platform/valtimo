@@ -17,12 +17,13 @@
 import {AfterViewInit, Component, OnDestroy} from '@angular/core';
 import {BreadcrumbService, PageHeaderService, PageTitleService} from '@valtimo/components';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
-import {WidgetTabManagementService} from '../../services';
+import {TabManagementService, WidgetTabManagementService} from '../../services';
 import {ActivatedRoute} from '@angular/router';
-import {WidgetTabItem} from '../../models/widget-tab-item.type';
 import {TranslateService} from '@ngx-translate/core';
 import {Edit16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
+import {ApiTabItem} from '@valtimo/dossier';
+import moment from 'moment/moment';
 
 @Component({
   selector: 'valtimo-dossier-management-case-widgets',
@@ -31,7 +32,10 @@ import {IconService} from 'carbon-components-angular';
 export class DossierManagementWidgetTabComponent implements AfterViewInit, OnDestroy {
   public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
     map(params => params.name || ''),
-    filter(docDefName => !!docDefName)
+    filter(documentDefinitionName => !!documentDefinitionName),
+    tap(documentDefinitionName =>
+      this.tabManagementService.setCaseDefinitionId(documentDefinitionName)
+    )
   );
 
   public readonly tabWidgetKey$: Observable<string> = this.route.params.pipe(
@@ -41,26 +45,24 @@ export class DossierManagementWidgetTabComponent implements AfterViewInit, OnDes
 
   private readonly _refreshWidgetTabSubject$ = new BehaviorSubject<null>(null);
   public readonly showEditWidgetTabModal$ = new BehaviorSubject<boolean>(false);
-  public readonly currentWidgetTab$: Observable<WidgetTabItem> = combineLatest([
-    this.documentDefinitionName$,
+  public readonly currentWidgetTabItem$: Observable<ApiTabItem> = combineLatest([
     this.tabWidgetKey$,
     this.translateService.stream('key'),
     this._refreshWidgetTabSubject$,
   ]).pipe(
-    switchMap(([documentDefinitionName, tabWidgetKey]) =>
-      this.widgetTabManagementService.getWidgetTab(documentDefinitionName, tabWidgetKey)
-    ),
-    filter((widgetTabItem: WidgetTabItem) => !!widgetTabItem),
-    tap((widgetTabItem: WidgetTabItem) => {
+    switchMap(([tabKey]) => this.tabManagementService.getTab(tabKey)),
+    tap(tabItem => {
       const title =
-        widgetTabItem.name ||
-        this.translateService.instant(`widgetTabManagement.metadata.${widgetTabItem.key}`);
+        tabItem.name ||
+        this.translateService.instant(`widgetTabManagement.metadata.${tabItem.key}`);
       this.pageTitleService.setCustomPageTitle(title);
       this.pageTitleService.setCustomPageSubtitle(
         this.translateService.instant('widgetTabManagement.tab.metadata', {
-          createdBy: 'Test test',
-          createdOn: '19/06/mock 10:41',
-          key: widgetTabItem.key,
+          createdBy: tabItem?.createdBy || '-',
+          createdOn: !!tabItem?.createdOn
+            ? moment(tabItem?.createdOn).format('DD MMM YYYY HH:mm')
+            : '-',
+          key: tabItem.key,
         })
       );
     })
@@ -72,6 +74,7 @@ export class DossierManagementWidgetTabComponent implements AfterViewInit, OnDes
     private readonly iconService: IconService,
     private readonly pageTitleService: PageTitleService,
     private readonly route: ActivatedRoute,
+    private readonly tabManagementService: TabManagementService,
     private readonly widgetTabManagementService: WidgetTabManagementService,
     private readonly translateService: TranslateService,
     private readonly pageHeaderService: PageHeaderService

@@ -15,7 +15,7 @@
   -->
 
 <valtimo-dossier-management-widget-tab-edit-modal
-  [widgetTab]="currentWidgetTab$ | async"
+  [tabItem]="currentWidgetTabItem$ | async"
   [showModal$]="showEditWidgetTabModal$"
   (saveEvent)="refreshWidgetTab()"
 >

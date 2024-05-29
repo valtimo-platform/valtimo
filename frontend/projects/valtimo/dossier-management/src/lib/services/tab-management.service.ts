@@ -123,6 +123,12 @@ export class TabManagementService {
     this._caseDefinitionId = caseDefinitionId;
   }
 
+  public getTab(tabKey: string): Observable<ApiTabItem> {
+    return this.http.get<ApiTabItem>(
+      `${this._valtimoEndpointUri}/${this._caseDefinitionId}/tab/${tabKey}`
+    );
+  }
+
   private getTabList(): Observable<ApiTabItem[]> {
     return this.http.get<ApiTabItem[]>(`${this._valtimoEndpointUri}/${this._caseDefinitionId}/tab`);
   }
