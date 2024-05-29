@@ -37,7 +37,7 @@ import {FormioOptionsImpl, ValtimoFormioOptions} from '@valtimo/components';
 import moment from 'moment';
 import {FormioForm} from '@formio/angular';
 import {UserProviderService} from '@valtimo/security';
-import {BehaviorSubject, combineLatest, of, Subscription, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, of, repeat, Subscription, switchMap} from 'rxjs';
 import {PermissionService} from '@valtimo/access-control';
 
 moment.locale(localStorage.getItem('langKey') || '');
@@ -137,6 +137,7 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
       this.processService
         .getProcessInstanceTasks(processInstanceId)
         .pipe(
+          repeat({count: 5, delay: 1500}),
           switchMap(tasks =>
             combineLatest([
               of(tasks),
@@ -157,10 +158,36 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
             tasks.forEach((task, taskIndex) => {
               task.createdUnix = this.moment(task.created).unix();
               task.created = this.moment(task.created).format('DD MMM YYYY HH:mm');
+              if (!!task.due) {
+                task.dueUnix = this.moment(task.due).unix();
+              }
               task.isLocked = !permissions[taskIndex];
             });
-            this.tasks = this.tasks.concat(tasks);
-            this.tasks.sort((t1, t2) => t2.createdUnix - t1.createdUnix);
+            const newTasks = tasks.filter(newTask => !this.tasks.some(existingTask => existingTask.id === newTask.id));
+            this.tasks = this.tasks.concat(newTasks);
+            this.tasks.sort((t1, t2) => {
+
+              // high priority tasks on top
+              if (t2.priority - t1.priority !== 0) {
+                return t2.priority - t1.priority;
+              }
+
+              // task with approaching due date should be on top
+              const due1 = t1?.dueUnix || Number.MAX_VALUE;
+              const due2 = t2?.dueUnix || Number.MAX_VALUE;
+              if (due1 - due2 !== 0) {
+                return due1 - due2;
+              }
+
+              // oldest task on top
+              const createdCompare = (t2.createdUnix / 1000) - (t1.createdUnix / 1000);
+              if (createdCompare !== 0) {
+                return createdCompare;
+              }
+
+              // task with approximately the same age, are sorted by name
+              return t1.name.localeCompare(t2.name);
+            });
           }
 
           this.loadingTasks$.next(false);
