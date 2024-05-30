@@ -52,10 +52,7 @@
                 {{ 'interface.delete' | translate }}
               </cds-overflow-menu-option>
 
-              <cds-overflow-menu-option
-                [disabled]="obs.formDefinition.readOnly"
-                (selected)="showDuplicateModal(obs.formDefinition)"
-              >
+              <cds-overflow-menu-option (selected)="showDuplicateModal(obs.formDefinition)">
                 {{ 'formManagement.duplicate' | translate }}
               </cds-overflow-menu-option>
             </cds-overflow-menu>
