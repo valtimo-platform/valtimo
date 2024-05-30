@@ -15,7 +15,7 @@
   -->
 
 <valtimo-modal #processStartModal elementId="processStartModal" [title]="modalTitle">
-  <div body *ngIf="formDefinition && !isFormViewModel">
+  <div body *ngIf="formDefinition">
     <valtimo-form-io #form [form]="formDefinition" [options]="options" (submit)="onSubmit($event)">
     </valtimo-form-io>
   </div>
@@ -24,16 +24,6 @@
       [formFlowInstanceId]="formFlowInstanceId"
       (formFlowComplete)="formFlowSubmitted()"
     ></valtimo-form-flow>
-  </div>
-  <div body *ngIf="formDefinition && isFormViewModel">
-    <valtimo-form-view-model
-      [form]="formDefinition"
-      [options]="options"
-      [isStartForm]="true"
-      [formName]="formName"
-      [processDefinitionKey]="processDefinitionKey"
-      (formSubmit)="onSubmit($event)"
-    ></valtimo-form-view-model>
   </div>
   <div body *ngIf="!formFlowInstanceId && !formDefinition && isAdmin">
     <div

@@ -96,7 +96,6 @@ import {DossierDetailTabFormioComponent} from './components/dossier-detail/tab/f
 import {TabTranslatePipeModule} from './pipes';
 import {DossierDetailTabNotFoundComponent} from './components/dossier-detail/tab/not-found/not-found.component';
 import {DossierDetailWidgetsComponent} from './components/dossier-detail/tab/widgets/widgets.component';
-import {FormViewModelModule} from '@valtimo/form-view-model';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -186,7 +185,6 @@ export type TabsFactory = () => Map<string, object>;
     DialogModule,
     ValtimoCdsOverflowButtonDirectiveModule,
     DossierDetailWidgetsComponent,
-    FormViewModelModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

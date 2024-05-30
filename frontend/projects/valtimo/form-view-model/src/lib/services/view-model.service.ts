@@ -31,7 +31,7 @@ export class ViewModelService extends BaseApiService {
   }
 
   public getViewModel(formName: string, taskInstanceId: string): Observable<ViewModel> {
-    return this.httpClient.get<any>(this.getApiUrl('/v1/form/view-model/user-task'), {
+    return this.httpClient.get<any>(this.getApiUrl('/v1/form/view-model'), {
       params: {
         formName,
         taskInstanceId,
@@ -45,7 +45,7 @@ export class ViewModelService extends BaseApiService {
     taskInstanceId: string,
     viewModel: ViewModel
   ): Observable<ViewModel> {
-    return this.httpClient.post(this.getApiUrl(`/v1/form/view-model/user-task`), viewModel, {
+    return this.httpClient.post(this.getApiUrl(`/v1/form/view-model`), viewModel, {
       params: {
         formName,
         taskInstanceId,
@@ -59,46 +59,10 @@ export class ViewModelService extends BaseApiService {
     taskInstanceId: string,
     viewModel: ViewModel
   ): Observable<ViewModel> {
-    return this.httpClient.post(this.getApiUrl(`/v1/form/view-model/submit/user-task`), viewModel, {
+    return this.httpClient.post(this.getApiUrl(`/v1/form/view-model/submit`), viewModel, {
       params: {
         formName,
         taskInstanceId,
-      },
-      headers: new HttpHeaders().set(InterceptorSkip, '400'),
-    });
-  }
-
-  public getViewModelForStartForm(formName: string, processDefinitionKey: string): Observable<ViewModel> {
-    return this.httpClient.get<any>(this.getApiUrl('/v1/form/view-model/start-form'), {
-      params: {
-        formName,
-        processDefinitionKey
-      },
-      headers: new HttpHeaders().set(InterceptorSkip, '400'),
-    });
-  }
-
-  public updateViewModelForStartForm(
-    formName: string,
-    viewModel: ViewModel
-  ): Observable<ViewModel> {
-    return this.httpClient.post(this.getApiUrl(`/v1/form/view-model/start-form`), viewModel, {
-      params: {
-        formName
-      },
-      headers: new HttpHeaders().set(InterceptorSkip, '400'),
-    });
-  }
-
-  public submitViewModelForStartForm(
-    formName: string,
-    processDefinitionKey: string,
-    viewModel: ViewModel
-  ): Observable<ViewModel> {
-    return this.httpClient.post(this.getApiUrl(`/v1/form/view-model/submit/start-form`), viewModel, {
-      params: {
-        formName,
-        processDefinitionKey
       },
       headers: new HttpHeaders().set(InterceptorSkip, '400'),
     });

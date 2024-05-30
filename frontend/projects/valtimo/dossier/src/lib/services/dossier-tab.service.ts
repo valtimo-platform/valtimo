@@ -173,7 +173,7 @@ export class DossierTabService implements OnDestroy {
         );
       case ApiTabType.WIDGETS:
         return (
-          this.configService.config.featureToggles.enableCaseWidgets &&
+          this.configService.featureToggles?.enableCaseWidgets &&
           new TabImpl(tab.key, index, DossierDetailWidgetsComponent, tab.contentKey, tab.name)
         );
       default:
