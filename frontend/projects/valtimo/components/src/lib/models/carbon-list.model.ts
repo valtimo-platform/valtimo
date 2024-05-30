@@ -57,6 +57,7 @@ interface CarbonListBatchText {
 interface ActionItem {
   label: string;
   callback: (_) => void;
+  disabledCallback?: (_) => boolean;
   iconClass?: string;
   type?: 'normal' | 'danger';
 }

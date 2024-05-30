@@ -125,6 +125,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
     {
       label: 'document.edit',
       callback: this.onEditMetadata.bind(this),
+      disabledCallback: this.editDisabled.bind(this),
       type: 'normal',
     },
     {
@@ -377,6 +378,10 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
 
   public refetchDocuments(): void {
     this._refetch$.next(null);
+  }
+
+  private editDisabled(file: DocumentenApiRelatedFile): boolean {
+    return file.status === 'definitief';
   }
 
   private downloadDocument(relatedFile: DocumentenApiRelatedFile, forceDownload: boolean): void {

@@ -108,7 +108,11 @@
     (click)="$event.stopPropagation()"
   >
     @for (action of data.actions; track action.label) {
-      <cds-overflow-menu-option [type]="action.type" (selected)="action.callback(data.item)">
+      <cds-overflow-menu-option
+        [disabled]="action.disabledCallback ? action.disabledCallback(data.item) : false"
+        [type]="action.type"
+        (selected)="action.callback(data.item)"
+      >
         <i *ngIf="!!action.iconClass" [ngClass]="action.iconClass"></i>
 
         {{ action.label | translate }}
