@@ -1,8 +1,18 @@
 import {Injectable, OnDestroy} from '@angular/core';
-import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription, take} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  debounceTime,
+  filter,
+  map,
+  Observable,
+  Subscription,
+  take,
+} from 'rxjs';
 import {
   CaseWidgetConfigurationBin,
   CaseWidgetContentHeightsPx,
+  CaseWidgetContentHeightsPxWithContainerWidth,
   CaseWidgetPackResult,
   CaseWidgetWidthsPx,
   CaseWidgetWithUuid,
@@ -12,12 +22,19 @@ import pack from 'bin-pack-with-constraints';
 
 @Injectable({providedIn: 'root'})
 export class DossierWidgetsLayoutService implements OnDestroy {
+  // about 60fps
+  private readonly _DEBOUNCE_LAYOUT: number = 16.66;
+
   private readonly _containerWidthSubject$ = new BehaviorSubject<number | null>(null);
   private readonly _widgetsSubject$ = new BehaviorSubject<CaseWidgetWithUuid[] | null>(null);
-  private readonly _widgetsContentHeightsSubject$ = new BehaviorSubject<CaseWidgetContentHeightsPx>(
-    {}
-  );
+  private readonly _widgetsContentHeightsSubject$ =
+    new BehaviorSubject<CaseWidgetContentHeightsPxWithContainerWidth>({});
   private readonly _packResult$ = new BehaviorSubject<CaseWidgetPackResult | null>(null);
+  private readonly _caseWidgetDataLoaded$ = new BehaviorSubject<string[]>([]);
+
+  private get _widgetsContentHeights(): CaseWidgetContentHeightsPxWithContainerWidth {
+    return this._widgetsContentHeightsSubject$.getValue();
+  }
 
   private get _containerWidth$(): Observable<number> {
     return this._containerWidthSubject$.pipe(filter(width => width !== null));
@@ -36,7 +53,7 @@ export class DossierWidgetsLayoutService implements OnDestroy {
     return this._widgetsSubject$.pipe(filter(widgets => widgets !== null));
   }
 
-  private get _widgetsContentHeights$(): Observable<CaseWidgetContentHeightsPx> {
+  private get _widgetsContentHeights$(): Observable<CaseWidgetContentHeightsPxWithContainerWidth> {
     return combineLatest([this._widgetsContentHeightsSubject$, this._widgets$]).pipe(
       filter(
         ([widgetsContentHeights, widgets]) =>
@@ -47,13 +64,26 @@ export class DossierWidgetsLayoutService implements OnDestroy {
   }
 
   public get widgetsContentHeightsRounded$(): Observable<CaseWidgetContentHeightsPx> {
-    return this._widgetsContentHeights$.pipe(
-      map(widgetsContentHeights =>
+    return combineLatest([
+      this._widgets$,
+      this._widgetsContentHeights$,
+      this._containerWidth$,
+    ]).pipe(
+      // wait until all widget heights for current container width are available
+      filter(
+        ([widgets, contentHeights, containerWidth]) =>
+          Object.keys(contentHeights).filter(
+            uuid => contentHeights[uuid].containerWidth === containerWidth
+          ).length === widgets.length
+      ),
+      // map all heights to intervals of WIDGET_HEIGHT_1X (higher than or equal to widget height)
+      map(([_, widgetsContentHeights]) =>
         Object.keys(widgetsContentHeights).reduce(
           (acc, curr) => ({
             ...acc,
             [curr]:
-              Math.ceil((widgetsContentHeights[curr] + 16) / WIDGET_HEIGHT_1X) * WIDGET_HEIGHT_1X,
+              Math.ceil((widgetsContentHeights[curr].height + 16) / WIDGET_HEIGHT_1X) *
+              WIDGET_HEIGHT_1X,
           }),
           {}
         )
@@ -77,6 +107,12 @@ export class DossierWidgetsLayoutService implements OnDestroy {
     return this._packResult$.pipe(filter(result => result !== null));
   }
 
+  public get dataLoadedForAllWidgets$(): Observable<boolean> {
+    return combineLatest([this._caseWidgetDataLoaded$, this._widgets$]).pipe(
+      map(([caseWidgetDataLoaded, widgets]) => caseWidgetDataLoaded.length === widgets.length)
+    );
+  }
+
   private readonly _subscriptions = new Subscription();
 
   constructor() {
@@ -96,10 +132,28 @@ export class DossierWidgetsLayoutService implements OnDestroy {
   }
 
   public setWidgetContentHeight(uuid: string, height: number): void {
-    this._widgetsContentHeightsSubject$.pipe(take(1)).subscribe(widgetsContentHeights => {
-      if (widgetsContentHeights[uuid] !== height) {
-        this._widgetsContentHeightsSubject$.next({...widgetsContentHeights, [uuid]: height});
+    this._containerWidth$.pipe(take(1)).subscribe(containerWidth => {
+      const contentHeight = this._widgetsContentHeights[uuid];
+
+      if (
+        !contentHeight ||
+        contentHeight.height !== height ||
+        contentHeight.containerWidth !== containerWidth
+      ) {
+        this._widgetsContentHeightsSubject$.next({
+          ...this._widgetsContentHeights,
+          [uuid]: {
+            height: height,
+            containerWidth,
+          },
+        });
       }
+    });
+  }
+
+  public setCaseWidgetDataLoaded(uuid: string): void {
+    this._caseWidgetDataLoaded$.pipe(take(1)).subscribe(caseWidgetDataLoaded => {
+      this._caseWidgetDataLoaded$.next([...caseWidgetDataLoaded, uuid]);
     });
   }
 
@@ -108,6 +162,7 @@ export class DossierWidgetsLayoutService implements OnDestroy {
     this._widgetsSubject$.next(null);
     this._widgetsContentHeightsSubject$.next({});
     this._packResult$.next(null);
+    this._caseWidgetDataLoaded$.next([]);
   }
 
   private getPackResult(
@@ -157,32 +212,37 @@ export class DossierWidgetsLayoutService implements OnDestroy {
         this._containerWidth$,
         this.widgetsContentHeightsRounded$,
         this.caseWidgetWidthsPx$,
-      ]).subscribe(([widgets, containerWidth, contentHeights, widgetWidths]) => {
-        const configurationBins: CaseWidgetConfigurationBin[] = widgets.map(widget => ({
-          configurationKey: widget.uuid,
-          width: widgetWidths[widget.uuid],
-          height: contentHeights[widget.uuid],
-        }));
-        const heightConstraint = this.getHeightConstraint(
-          configurationBins,
-          this.getAmountOfMinWidthColumns(containerWidth)
-        );
-        const resultWithoutHeightConstraint = this.getPackResult(configurationBins, containerWidth);
-        const resultWithHeightConstraint = this.getPackResult(
-          configurationBins,
-          containerWidth,
-          heightConstraint
-        );
-        const resultWithHeightConstraintExceedsBoundary = this.checkIfPackResultExceedsBoundary(
-          resultWithHeightConstraint,
-          containerWidth
-        );
-        const resultToUse = resultWithHeightConstraintExceedsBoundary
-          ? resultWithoutHeightConstraint
-          : resultWithHeightConstraint;
+      ])
+        .pipe(debounceTime(this._DEBOUNCE_LAYOUT))
+        .subscribe(([widgets, containerWidth, contentHeights, widgetWidths]) => {
+          const configurationBins: CaseWidgetConfigurationBin[] = widgets.map(widget => ({
+            configurationKey: widget.uuid,
+            width: widgetWidths[widget.uuid],
+            height: contentHeights[widget.uuid],
+          }));
+          const heightConstraint = this.getHeightConstraint(
+            configurationBins,
+            this.getAmountOfMinWidthColumns(containerWidth)
+          );
+          const resultWithoutHeightConstraint = this.getPackResult(
+            configurationBins,
+            containerWidth
+          );
+          const resultWithHeightConstraint = this.getPackResult(
+            configurationBins,
+            containerWidth,
+            heightConstraint
+          );
+          const resultWithHeightConstraintExceedsBoundary = this.checkIfPackResultExceedsBoundary(
+            resultWithHeightConstraint,
+            containerWidth
+          );
+          const resultToUse = resultWithHeightConstraintExceedsBoundary
+            ? resultWithoutHeightConstraint
+            : resultWithHeightConstraint;
 
-        this._packResult$.next(resultToUse);
-      })
+          this._packResult$.next(resultToUse);
+        })
     );
   }
 }

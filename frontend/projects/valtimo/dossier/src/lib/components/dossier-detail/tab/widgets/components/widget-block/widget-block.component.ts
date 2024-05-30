@@ -91,8 +91,6 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
 
   private readonly _caseWidgetWidthsPx$ = this.dossierWidgetsLayoutService.caseWidgetWidthsPx$;
 
-  public readonly loadingWidgetData$ = new BehaviorSubject<boolean>(true);
-
   private readonly _documentId$ = this.route.params.pipe(
     map(params => params?.documentId),
     filter(documentId => !!documentId)
@@ -108,7 +106,9 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     switchMap(([widget, tabkey, documentId]) =>
       this.widgetsApiService.getWidgetData(documentId, tabkey, widget.key)
     ),
-    tap(() => this.loadingWidgetData$.next(false))
+    tap(() => {
+      this.dossierWidgetsLayoutService.setCaseWidgetDataLoaded(this._widgetUuid);
+    })
   );
 
   private readonly _subscriptions = new Subscription();
@@ -129,6 +129,7 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     this.openWidgetWidthSubscription();
     this.openContentHeightObserver();
     this.openWidgetHeightSubscription();
+    this.setInitialWidgetHeight();
   }
 
   public ngOnDestroy(): void {
@@ -182,5 +183,12 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
         widgetContentHeight
       );
     }
+  }
+
+  private setInitialWidgetHeight(): void {
+    this.dossierWidgetsLayoutService.setWidgetContentHeight(
+      this._widgetUuid,
+      this._widgetBlockContentRef.nativeElement.offsetHeight
+    );
   }
 }
