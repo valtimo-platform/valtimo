@@ -51,7 +51,7 @@ import {
   ProgressIndicatorModule,
   SelectModule,
   StructuredListModule,
-  TilesModule, ToggleModule,
+  TilesModule,
 } from 'carbon-components-angular';
 import {ChooseProcessLinkTypeComponent} from './components/choose-process-link-type';
 import {SelectFormComponent} from './components/select-form';
@@ -103,7 +103,6 @@ import {FormFlowConfigurationContainerComponent} from './components/form-flow-co
     TilesModule,
     RenderInPageHeaderDirectiveModule,
     SelectModule,
-    ToggleModule,
   ],
   exports: [
     ProcessLinkComponent,

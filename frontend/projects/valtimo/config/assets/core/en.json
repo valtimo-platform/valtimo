@@ -1504,11 +1504,7 @@
     "back": "Go back",
     "next": "Next",
     "pluginDescription": "Plugin description",
-    "unlink": "Unlink",
-    "toggleViewModel": {
-      "title": "View Model enabled?",
-      "checkboxDescription": "Enables Form View Model form processing"
-    }
+    "unlink": "Unlink"
   },
   "processLinkType": {
     "plugin": "Plugin",

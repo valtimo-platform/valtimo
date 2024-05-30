@@ -1505,11 +1505,7 @@
     "back": "Terug",
     "next": "Volgende",
     "pluginDescription": "Plugin-omschrijving",
-    "unlink": "Ontkoppelen",
-    "toggleViewModel": {
-      "title": "View Model ingeschakeld?",
-      "checkboxDescription": "Activeert Form View Model form afhandeling"
-    }
+    "unlink": "Ontkoppelen"
   },
   "processLinkType": {
     "plugin": "Plugin",

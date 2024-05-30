@@ -22,7 +22,6 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {take} from 'rxjs/operators';
-import {ConfigService} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-process-link-modal',
@@ -43,17 +42,12 @@ export class ProcessLinkModalComponent {
   public readonly hideProgressIndicator$ = this.stateService.hideProgressIndicator$;
   public readonly saving$ = this.stateService.saving$;
   public readonly typeOfSelectedProcessLink$ = this.stateService.typeOfSelectedProcessLink$;
-  public readonly viewModelEnabled$ = this.stateService.viewModelEnabled$;
-
-  public readonly showViewModelToggle = this.configService.config.featureToggles.enableFormViewModel;
 
   constructor(
     private readonly stateService: ProcessLinkStateService,
     private readonly stepService: ProcessLinkStepService,
     private readonly buttonService: ProcessLinkButtonService,
-    private readonly processLinkService: ProcessLinkService,
-    private readonly processLinkStateService: ProcessLinkStateService,
-    private readonly configService: ConfigService
+    private readonly processLinkService: ProcessLinkService
   ) {}
 
   closeModal(): void {
@@ -86,9 +80,4 @@ export class ProcessLinkModalComponent {
       );
     });
   }
-
-  public toggleCheckedChange(value: boolean): void {
-    this.processLinkStateService.setViewModelEnabled(value);
-  }
-
 }

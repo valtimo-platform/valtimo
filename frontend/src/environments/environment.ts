@@ -256,7 +256,6 @@ export const environment: ValtimoConfig = {
     enableTabManagement: true,
     enableObjectManagement: true,
     enableCaseWidgets: true,
-    enableFormViewModel: true,
   },
   customDossierHeader: {
     leningen: [
