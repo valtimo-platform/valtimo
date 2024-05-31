@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
-export * from './bar-chart';
-export * from './big-number';
-export * from './donut';
-export * from './gauge';
-export * from './meter';
-export * from './text';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {DisplayComponent} from '../../../../models';
+import {TextDisplayTypeProperties} from '../../models';
 
+@Component({
+  selector: 'valtimo-text-display',
+  templateUrl: './text-display.component.html',
+  styleUrls: ['./text-display.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class TextDisplayComponent implements DisplayComponent {
+  @Input() displayTypeKey: string;
+  @Input() displayTypeProperties: TextDisplayTypeProperties;
+  data: null;
+}

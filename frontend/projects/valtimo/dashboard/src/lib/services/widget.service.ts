@@ -58,6 +58,7 @@ export class WidgetService {
   private setSupportedDisplayTypes(
     supportedDisplayTypes: Array<DisplayTypeSpecification | null>
   ): void {
+    console.log(supportedDisplayTypes)
     this._supportedDisplayTypes$.next(supportedDisplayTypes.filter(displayType => !!displayType));
   }
 

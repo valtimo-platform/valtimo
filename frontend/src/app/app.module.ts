@@ -58,6 +58,7 @@ import {
   DonutModule,
   GaugeModule,
   MeterModule,
+  TextModule,
   TestDataSourceModule,
 } from '@valtimo/dashboard';
 import {DashboardManagementModule} from '@valtimo/dashboard-management';
@@ -222,6 +223,7 @@ export function tabsFactory() {
     DonutModule,
     GaugeModule,
     MeterModule,
+    TextModule,
     TestDataSourceModule,
     CaseCountDataSourceModule,
     AccessControlManagementModule,

@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-export * from './bar-chart';
-export * from './big-number';
-export * from './donut';
-export * from './gauge';
-export * from './meter';
-export * from './text';
-
+export * from './components';
+export * from './text.module';
+export * from './text.specification';
+export * from './models';
