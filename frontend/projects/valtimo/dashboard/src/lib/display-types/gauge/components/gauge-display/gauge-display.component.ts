@@ -16,7 +16,9 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {DisplayComponent} from '../../../../models';
 import {GaugeData, GaugeDisplayTypeProperties} from '../../models';
-import {type ChartTabularData, GaugeChartOptions} from '@carbon/charts';
+import {type ChartTabularData, DonutChartOptions, GaugeChartOptions} from '@carbon/charts';
+import {map, Observable} from "rxjs";
+import {CdsThemeService} from "@valtimo/components"
 
 @Component({
   selector: 'valtimo-gauge-display',
@@ -30,6 +32,27 @@ export class GaugeDisplayComponent implements DisplayComponent {
   @Input() displayTypeProperties: GaugeDisplayTypeProperties;
 
   private DELTA: number = -1.0;
+
+  readonly donutChartOptions$: Observable<DonutChartOptions> = this.themeService.currentTheme$.pipe(
+    map(currentTheme => ({
+      resizable: true,
+      toolbar: {enabled: false},
+      height: '110px',
+      theme: currentTheme == 'g10' ? 'g20' : 'g100',
+      gauge: {
+        alignment: 'center',
+        numberFormatter: value => this.numberFormatter(this, value),
+        deltaArrow: {
+          enabled: false,
+        },
+        showPercentageSymbol: false,
+        type: 'semi',
+      },
+    })),
+  );
+
+  constructor(private readonly themeService: CdsThemeService) {
+  }
 
   public toGaugeData(): ChartTabularData {
     return [
@@ -56,19 +79,4 @@ export class GaugeDisplayComponent implements DisplayComponent {
       return Math.round(value * scope.data.total) / 100.0 + '';
     }
   }
-
-  gaugeChartOptions: GaugeChartOptions = {
-    resizable: true,
-    toolbar: {enabled: false},
-    height: '110px',
-    gauge: {
-      alignment: 'center',
-      numberFormatter: value => this.numberFormatter(this, value),
-      deltaArrow: {
-        enabled: false,
-      },
-      showPercentageSymbol: false,
-      type: 'semi',
-    },
-  };
 }

@@ -17,6 +17,8 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {DisplayComponent} from '../../../../models';
 import {DonutData, DonutDisplayTypeProperties} from '../../models';
 import {type ChartTabularData, DonutChartOptions} from '@carbon/charts';
+import {CdsThemeService} from "@valtimo/components"
+import {map, Observable} from "rxjs";
 
 @Component({
   selector: 'valtimo-donut-display',
@@ -29,22 +31,12 @@ export class DonutDisplayComponent implements DisplayComponent {
   @Input() data: DonutData;
   @Input() displayTypeProperties: DonutDisplayTypeProperties;
 
-  public toDonutData(): ChartTabularData {
-    let formattedValues = [];
-    this.data.values.forEach(value => {
-      formattedValues.push({
-        group: value.label,
-        value: value.value
-      })
-    })
-    return formattedValues;
-  }
-
-  public getDonutChartOptions(): DonutChartOptions{
-    return {
+  readonly donutChartOptions$: Observable<DonutChartOptions> = this.themeService.currentTheme$.pipe(
+    map(currentTheme => ({
       resizable: true,
       toolbar: {enabled: false},
       height: '300px',
+      theme: currentTheme,
       donut: {
         alignment: 'center',
         center: {
@@ -56,6 +48,20 @@ export class DonutDisplayComponent implements DisplayComponent {
           enabled: false
         }
       }
-    };
+    })),
+  );
+
+  constructor(private readonly themeService: CdsThemeService) {
+  }
+
+  public toDonutData(): ChartTabularData {
+    let formattedValues = [];
+    this.data.values.forEach(value => {
+      formattedValues.push({
+        group: value.label,
+        value: value.value
+      })
+    })
+    return formattedValues;
   }
 }

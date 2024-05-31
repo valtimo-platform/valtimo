@@ -27,6 +27,6 @@
     type="donut"
     class="n-chart"
     [data]="toDonutData()"
-    [options]="getDonutChartOptions()"
+    [options]="donutChartOptions$ | async"
   ></ibm-donut-chart>
 </section>
