@@ -58,10 +58,11 @@ export class GaugeDisplayComponent implements DisplayComponent {
   }
 
   gaugeChartOptions: GaugeChartOptions = {
-    resizable: false,
+    resizable: true,
     toolbar: {enabled: false},
     height: '110px',
     gauge: {
+      alignment: 'center',
       numberFormatter: value => this.numberFormatter(this, value),
       deltaArrow: {
         enabled: false,
