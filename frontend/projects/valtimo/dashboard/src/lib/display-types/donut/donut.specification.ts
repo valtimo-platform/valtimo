@@ -53,5 +53,5 @@ export const donutSpecification: DisplayTypeSpecification = {
       labelHelperText: 'Die im Widget angezeigte Beschriftung',
     },
   },
-  requiredDataFeatures: [DATA_FEATURES.NUMBER],
+  requiredDataFeatures: [DATA_FEATURES.NUMBERS],
 };
