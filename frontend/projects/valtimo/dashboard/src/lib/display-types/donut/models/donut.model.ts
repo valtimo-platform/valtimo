@@ -14,8 +14,19 @@
  * limitations under the License.
  */
 
-export * from './bar-chart';
-export * from './big-number';
-export * from './donut';
-export * from './gauge';
-export * from './meter';
+interface DonutData {
+  values: DonutItem[];
+}
+
+interface DonutItem {
+  value: number;
+  label: string;
+}
+
+interface DonutDisplayTypeProperties {
+  title: string;
+  subtitle: string;
+  label?: string;
+}
+
+export {DonutData, DonutItem, DonutDisplayTypeProperties};
