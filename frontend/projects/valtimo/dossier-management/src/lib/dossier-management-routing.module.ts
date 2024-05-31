@@ -20,6 +20,7 @@ import {ROLE_ADMIN} from '@valtimo/config';
 import {AuthGuardService} from '@valtimo/security';
 import {DossierManagementDetailContainerComponent} from './components/dossier-management-detail-container/dossier-management-detail-container.component';
 import {DossierManagementListComponent} from './components/dossier-management-list/dossier-management-list.component';
+import {DossierManagementWidgetTabComponent} from './components/dossier-management-widget-tab/dossier-management-widget-tab.component';
 
 const routes: Routes = [
   {
@@ -27,6 +28,17 @@ const routes: Routes = [
     component: DossierManagementListComponent,
     canActivate: [AuthGuardService],
     data: {title: 'Dossiers', roles: [ROLE_ADMIN]},
+  },
+  {
+    path: 'dossier-management/dossier/:name/widget-tab/:key',
+    component: DossierManagementWidgetTabComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Widget tab',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+      customPageSubtitle: true,
+    },
   },
   {
     path: 'dossier-management/dossier/:name',

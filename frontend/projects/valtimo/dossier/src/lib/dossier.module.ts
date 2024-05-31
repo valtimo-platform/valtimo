@@ -95,6 +95,7 @@ import {DossierBulkAssignService, DossierService} from './services';
 import {DossierDetailTabFormioComponent} from './components/dossier-detail/tab/formio/formio.component';
 import {TabTranslatePipeModule} from './pipes';
 import {DossierDetailTabNotFoundComponent} from './components/dossier-detail/tab/not-found/not-found.component';
+import {DossierDetailWidgetsComponent} from './components/dossier-detail/tab/widgets/widgets.component';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -183,6 +184,7 @@ export type TabsFactory = () => Map<string, object>;
     TagModule,
     DialogModule,
     ValtimoCdsOverflowButtonDirectiveModule,
+    DossierDetailWidgetsComponent,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

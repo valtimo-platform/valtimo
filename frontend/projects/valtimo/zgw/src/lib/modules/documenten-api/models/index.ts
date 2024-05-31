@@ -20,3 +20,4 @@ export * from './documenten-api-column-modal.model';
 export * from './documenten-api.model';
 export * from './documenten-api-link-process.model';
 export * from './documenten-api-version.model';
+export * from './documenten-api-filter.model';

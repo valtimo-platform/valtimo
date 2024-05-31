@@ -20,11 +20,11 @@
   [disabled]="inputDisabled$ | async"
   [returnToFirstStepSubject$]="returnToFirstStepSubject$"
 >
-  <v-modal #pluginAddModal (closeEvent)="hide()">
-    <div role="header">
+  <cds-modal #pluginAddModal [open]="open">
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="hide()">
       <v-stepper-header></v-stepper-header>
-    </div>
-    <div role="content">
+    </cds-modal-header>
+    <section cdsModalContent>
       <v-stepper-content>
         <v-stepper-step titleTranslationKey="pluginManagement.addSteps.step0">
           <valtimo-plugin-add-select></valtimo-plugin-add-select>
@@ -36,9 +36,9 @@
           ></valtimo-plugin-configure>
         </v-stepper-step>
       </v-stepper-content>
-    </div>
-    <div role="footer">
-      <v-stepper-footer>
+    </section>
+    <cds-modal-footer>
+      <v-stepper-footer class="stepper-footer">
         <v-stepper-footer-step
           nextButtonTranslationKey="pluginManagement.addSteps.step1"
           [nextButtonEnabled]="selectedPluginDefinition$ | async"
@@ -48,6 +48,6 @@
           [completeButtonEnabled]="configurationValid$ | async"
         ></v-stepper-footer-step>
       </v-stepper-footer>
-    </div>
-  </v-modal>
+    </cds-modal-footer>
+  </cds-modal>
 </v-stepper-container>

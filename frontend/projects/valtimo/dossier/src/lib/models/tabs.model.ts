@@ -16,7 +16,7 @@
 
 import {ComponentFactoryResolver, ComponentRef, ViewContainerRef} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
-import {take} from 'rxjs';
+import {BehaviorSubject, filter, Observable, take} from 'rxjs';
 
 export interface TabLoader<T_TAB extends Tab> {
   tabs: T_TAB[];
@@ -27,6 +27,7 @@ export interface TabLoader<T_TAB extends Tab> {
 }
 
 export class TabLoaderImpl implements TabLoader<TabImpl> {
+  private readonly _activeTab$ = new BehaviorSubject<TabImpl | null>(null);
   private readonly _tabs: TabImpl[] = null;
   private readonly _componentFactoryResolver: ComponentFactoryResolver = null;
   private readonly _viewContainerRef: ViewContainerRef = null;
@@ -51,6 +52,10 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
 
   public get tabs(): TabImpl[] {
     return this._tabs;
+  }
+
+  public get activeTab$(): Observable<TabImpl> {
+    return this._activeTab$.pipe(filter(tab => !!tab));
   }
 
   public initial(tabName?: string): void {
@@ -109,6 +114,7 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
   private setActive(tab: TabImpl): void {
     tab.activate();
     this._activeTab = tab;
+    this._activeTab$.next(tab);
   }
 }
 

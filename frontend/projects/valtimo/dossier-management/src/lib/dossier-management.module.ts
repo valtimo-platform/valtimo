@@ -64,6 +64,7 @@ import {DossierManagementAssigneeComponent} from './components/dossier-managemen
 import {DossierManagementConnectModalComponent} from './components/dossier-management-connect-modal/dossier-management-connect-modal.component';
 import {DossierManagementDetailContainerActionsComponent} from './components/dossier-management-detail-container-actions/dossier-management-detail-container-actions.component';
 import {DossierManagementDetailContainerComponent} from './components/dossier-management-detail-container/dossier-management-detail-container.component';
+import {DossierManagementWidgetTabComponent} from './components/dossier-management-widget-tab/dossier-management-widget-tab.component';
 import {DossierManagementDetailComponent} from './components/dossier-management-detail/dossier-management-detail.component';
 import {DossierManagementDocumentDefinitionComponent} from './components/dossier-management-document-definition/dossier-management-document-definition.component';
 import {DossierManagementListColumnsComponent} from './components/dossier-management-list-columns/dossier-management-list-columns.component';
@@ -82,6 +83,7 @@ import {TabManagementService} from './services';
 import {DossierManagementStatusesComponent} from './components/dossier-management-statuses/dossier-management-statuses.component';
 import {DossierManagementStatusModalComponent} from './components/dossier-management-statuses/dossier-management-status-modal/dossier-management-status-modal.component';
 import {DossierManagementCreateComponent} from './components/dossier-management-create/dossier-management-create.component';
+import {DossierManagementWidgetTabEditModalComponent} from './components/dossier-management-widget-tab-edit-modal/dossier-management-widget-tab-edit-modal';
 
 @NgModule({
   declarations: [
@@ -92,6 +94,8 @@ import {DossierManagementCreateComponent} from './components/dossier-management-
     DossierManagementUploadComponent,
     DossierManagementSearchFieldsComponent,
     DossierManagementDetailContainerComponent,
+    DossierManagementWidgetTabComponent,
+    DossierManagementWidgetTabEditModalComponent,
     DossierManagementAssigneeComponent,
     DossierManagementListColumnsComponent,
     DossierManagementTabsComponent,

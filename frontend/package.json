@@ -294,6 +294,7 @@
     "@valtimo/dossier-management": "file:dist/valtimo/dossier-management",
     "@valtimo/form-flow-management": "file:dist/valtimo/form-flow-management",
     "@valtimo/form-management": "file:dist/valtimo/form-management",
+    "@valtimo/form-view-model": "file:dist/valtimo/form-view-model",
     "@valtimo/keycloak": "file:dist/valtimo/keycloak",
     "@valtimo/layout": "file:dist/valtimo/layout",
     "@valtimo/migration": "file:dist/valtimo/migration",

@@ -45,7 +45,6 @@ import {
   Documents,
   DocumentService,
   InternalCaseStatus,
-  InternalCaseStatusColor,
   InternalCaseStatusUtils,
   SpecifiedDocuments,
 } from '@valtimo/document';
@@ -432,7 +431,8 @@ export class DossierListComponent implements OnInit, OnDestroy {
 
       return res.data.map(item => {
         const status = res.statuses.find(
-          (status: InternalCaseStatus) => status.key === item.internalStatus
+          (status: InternalCaseStatus) =>
+            status.key === item.internalStatus || status.key === item.status
         );
         if (!status) return item;
 

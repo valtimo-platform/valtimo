@@ -14,193 +14,306 @@
   ~ limitations under the License.
   -->
 
-<v-modal
+<cds-modal
   #documentenApiMetadataModal
-  (closeEvent)="hide()"
-  *ngIf="{file: file$ | async, disabled: disabled$ | async, valid: valid$ | async} as obs"
+  [open]="open"
+  [size]="modalSize"
+  *ngIf="{
+    file: file$ | async,
+    disabled: disabled$ | async,
+    isDefinitiveStatus: isDefinitiveStatus$ | async,
+    languageItems: languageItems$ | async,
+    statusItems: statusItems$ | async,
+    tagItems: tagItems$ | async,
+    userEmail: userEmail$ | async
+  } as obs"
 >
-  <div role="header">
-    <div class="edit-configuration-title">
-      <v-title [center]="true" [fullWidth]="true" [margin]="false" type="h2">{{
-        'document.fillInMetadata' | translate
-      }}</v-title>
-    </div>
-  </div>
-  <div role="content">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    @if (isEditMode) {
+      <h3 cdsModalHeaderHeading>
+        {{ 'document.editMetadata' | translate }}
+      </h3>
+    } @else {
+      <h3 cdsModalHeaderHeading>
+        {{ 'document.fillInMetadata' | translate }}
+      </h3>
+    }
+  </cds-modal-header>
+  <section cdsModalContent class="cds--modal-content">
     <ng-container *ngTemplateOutlet="metadataForm; context: {obs: obs}"></ng-container>
-  </div>
-  <div role="footer">
-    <div class="buttons">
-      <v-button (clickEvent)="cancel()" [disabled]="obs.disabled" type="secondary">{{
-        'document.cancel' | translate
-      }}</v-button>
-      <v-button
-        (clickEvent)="save()"
-        [disabled]="obs.disabled || !obs.valid"
-        mdiIcon="upload"
-        type="success"
-        >{{ 'document.upload' | translate }}</v-button
-      >
-    </div>
-  </div>
-</v-modal>
+  </section>
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled">
+      {{ 'document.cancel' | translate }}
+    </button>
+    <button
+      cdsButton="primary"
+      type="submit"
+      [disabled]="obs.disabled || !documentenApiMetadataForm.valid || obs.isDefinitiveStatus"
+      (click)="save()"
+    >
+      {{ 'document.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>
 
 <ng-template #metadataForm let-obs="obs">
-  <ng-container *ngIf="showForm$ | async">
-    <v-form
-      (valueChange)="formValueChange($event)"
+  <ng-container>
+    <form
       *ngIf="additionalDocumentDate$ | async as additionalDate"
+      [formGroup]="documentenApiMetadataForm"
     >
-      <v-input
-        [defaultValue]="filename || obs.file?.name"
-        [disabled]="obs.disabled || disableFilename"
-        [fullWidth]="true"
-        [margin]="true"
-        [required]="true"
-        [title]="'document.filename' | translate"
-        [tooltip]="'document.filenameTooltip' | translate"
-        name="filename"
-      >
-      </v-input>
-      <v-input
-        [defaultValue]="documentTitle"
-        [disabled]="obs.disabled || disableDocumentTitle"
-        [margin]="true"
-        [required]="true"
-        [title]="'document.inputTitle' | translate"
-        [tooltip]="'document.inputTitleTooltip' | translate"
-        [widthPx]="400"
-        name="title"
-      >
-      </v-input>
-      <v-input
-        [defaultValue]="author || (userEmail$ | async)"
-        [disabled]="obs.disabled || disableAuthor"
-        [margin]="true"
-        [required]="true"
-        [title]="'document.author' | translate"
-        [tooltip]="'document.authorTooltip' | translate"
-        [widthPx]="300"
-        name="author"
-      >
-      </v-input>
-      <v-select
-        *ngIf="languageItems$ | async as languageItems"
-        [defaultSelectionId]="language || languageItems[0].id"
-        [disabled]="obs.disabled || disableLanguage"
-        [items]="languageItems"
-        [margin]="true"
-        [required]="true"
-        [title]="'document.language' | translate"
-        [tooltip]="'document.languageTooltip' | translate"
-        [widthInPx]="200"
-        name="language"
-      ></v-select>
-      <ng-container *ngIf="{documentTypeItems: documentTypeItems$ | async} as obs">
-        <v-select
-          [defaultSelectionId]="documentType"
-          [disabled]="obs.disabled || disableDocumentType"
-          [items]="obs.documentTypeItems"
-          [loading]="!obs.documentTypeItems"
-          [margin]="true"
-          [required]="true"
-          [title]="'document.informatieobjecttype' | translate"
-          [tooltip]="'document.informatieobjecttypeTooltip' | translate"
-          [widthInPx]="200"
-          name="informatieobjecttype"
-        ></v-select>
-      </ng-container>
-      <v-date-picker
-        [defaultDateIsToday]="true"
-        [disabled]="obs.disabled"
-        [margin]="true"
-        [required]="true"
-        [title]="'document.creationDate' | translate"
-        [tooltip]="'document.creationDateTooltip' | translate"
-        [widthPx]="100"
-        name="creationDate"
-      ></v-date-picker>
-      <ng-container
-        *ngTemplateOutlet="additionalDatePicker; context: {additionalDate: additionalDate}"
-      ></ng-container>
-      <v-date-picker
-        *ngIf="additionalDate === 'received'"
-        [defaultDateIsToday]="true"
-        [disabled]="obs.disabled"
-        [margin]="true"
-        [title]="'document.receiptDate' | translate"
-        [tooltip]="'document.receiptDateTooltip' | translate"
-        [widthPx]="100"
-        name="receiptDate"
-      ></v-date-picker>
-      <v-date-picker
-        *ngIf="additionalDate === 'sent'"
-        [defaultDateIsToday]="true"
-        [disabled]="obs.disabled"
-        [margin]="true"
-        [title]="'document.sendDate' | translate"
-        [tooltip]="'document.sendDateTooltip' | translate"
-        [widthPx]="100"
-        name="sendDate"
-      ></v-date-picker>
-      <v-select
-        [defaultSelectionId]="status"
-        [disabled]="obs.disabled || disableStatus"
-        [items]="statusItems$ | async"
-        [margin]="true"
-        [required]="true"
-        [title]="'document.status' | translate"
-        [tooltip]="'document.statusTooltip' | translate"
-        [widthInPx]="200"
-        [clearSelectionSubject$]="clearStatusSelection$"
-        name="status"
-      ></v-select>
-      <v-input
-        [defaultValue]="description"
-        [disabled]="obs.disabled || disableDescription"
-        [fullWidth]="true"
-        [margin]="true"
-        [title]="'document.inputDescription' | translate"
-        [tooltip]="'document.inputDescriptionTooltip' | translate"
-        [required]="true"
-        name="description"
-      >
-      </v-input>
-      <v-select
-        [defaultSelectionId]="confidentialityLevel"
-        [disabled]="obs.disabled || disableConfidentialityLevel"
-        [items]="confidentialityLevelItems$ | async"
-        [margin]="true"
-        [title]="'document.confidentialityLevel' | translate"
-        [tooltip]="'document.confidentialityLevelTooltip' | translate"
-        [widthInPx]="200"
-        [required]="true"
-        name="confidentialityLevel"
-      ></v-select>
-    </v-form>
-  </ng-container>
-</ng-template>
+      <div class="documenten-metadata-form-columns-container">
+        <div class="documenten-metadata-form-column">
+          <cds-text-label class="documenten-metada-form-input">
+            {{ 'document.filename' | translate }}
+            <cds-tooltip
+              [isOpen]="false"
+              [description]="'document.filenameTooltip' | translate"
+              [align]="'bottom-left'"
+            >
+              <i class="mdi mdi-help-circle-outline"></i>
+            </cds-tooltip>
+            <input
+              [value]="filename"
+              [disabled]="obs.disabled || disableFilename"
+              [placeholder]="'document.filenamePlaceholder' | translate"
+              [required]="true"
+              cdsText
+              type="text"
+              id="bestandsnaam"
+              formControlName="bestandsnaam"
+            />
+          </cds-text-label>
+          <cds-text-label class="documenten-metada-form-input">
+            {{ 'document.author' | translate }}
+            <cds-tooltip
+              [isOpen]="false"
+              [description]="'document.authorTooltip' | translate"
+              [align]="'bottom-left'"
+            >
+              <i class="mdi mdi-help-circle-outline"></i>
+            </cds-tooltip>
+            <input
+              [value]="author"
+              [disabled]="obs.disabled || disableAuthor"
+              [placeholder]="'document.authorPlaceholder' | translate"
+              [required]="true"
+              cdsText
+              id="auteur"
+              formControlName="auteur"
+            />
+          </cds-text-label>
+          <cds-text-label>
+            {{ 'document.language' | translate }}
+            <cds-tooltip
+              [isOpen]="false"
+              [description]="'document.languageTooltip' | translate"
+              [align]="'bottom-left'"
+            >
+              <i class="mdi mdi-help-circle-outline"></i>
+            </cds-tooltip>
+          </cds-text-label>
+          <div class="documenten-metada-form-input">
+            <cds-dropdown
+              *ngIf="obs.languageItems"
+              [placeholder]="'document.languagePlaceholder' | translate"
+              [disabled]="obs.disabled || disableLanguage"
+              id="language"
+              (selected)="languageSelected($event)"
+            >
+              <cds-dropdown-list [items]="obs.languageItems || []"></cds-dropdown-list>
+            </cds-dropdown>
+          </div>
+          <cds-label>
+            {{ 'document.confidentialityLevel' | translate }}
+            <cds-tooltip
+              [isOpen]="false"
+              [description]="'document.confidentialityLevelTooltip' | translate"
+              [align]="'bottom-left'"
+            >
+              <i class="mdi mdi-help-circle-outline"></i>
+            </cds-tooltip>
+          </cds-label>
+          <div class="documenten-metada-form-input">
+            <cds-dropdown
+              [placeholder]="'document.confidentialityPlaceholder' | translate"
+              [disabled]="obs.disabled || disableConfidentialityLevel"
+              id="vertrouwelijkheidaanduiding"
+              (selected)="confidentialityLevelSelected($event)"
+            >
+              <cds-dropdown-list [items]="confidentialityLevelItems$ | async"></cds-dropdown-list>
+            </cds-dropdown>
+          </div>
+          <ng-container *ngIf="{documentTypeItems: documentTypeItems$ | async} as obs">
+            <cds-label>
+              {{ 'document.informatieobjecttype' | translate }}
+              <cds-tooltip
+                [isOpen]="false"
+                [description]="'document.informatieobjecttypeTooltip' | translate"
+                [align]="'bottom-left'"
+              >
+                <i class="mdi mdi-help-circle-outline"></i>
+              </cds-tooltip>
+            </cds-label>
+            <div class="documenten-metada-form-input">
+              <cds-dropdown
+                [placeholder]="'document.informatieobjecttypePlaceholder' | translate"
+                [disabled]="obs.disabled || disableDocumentType"
+                id="informatieobjecttype"
+                (selected)="informatieobjecttypeSelected($event)"
+              >
+                <cds-dropdown-list [items]="obs.documentTypeItems || []"></cds-dropdown-list>
+              </cds-dropdown>
+            </div>
+          </ng-container>
+          <cds-text-label name="'additionalDate'">
+            {{ 'document.additionalDate' | translate }}
+            <cds-tooltip
+              [isOpen]="false"
+              [description]="'document.additionalDateTooltip' | translate"
+              [align]="'bottom-left'"
+            >
+              <i class="mdi mdi-help-circle-outline"></i>
+            </cds-tooltip>
+          </cds-text-label>
+          <cds-radio-group [orientation]="'horizontal'" class="documenten-metada-form-input">
+            <cds-radio
+              *ngFor="let option of ADDITONAL_DOCUMENT_DATE_OPTIONS"
+              [value]="option.value"
+              [checked]="additionalDate === option.value"
+              [required]="true"
+              (click)="setAdditionalDate(option.value)"
+              name="radio-inline"
+            >
+              {{ option.translationKey | translate }}
+            </cds-radio>
+          </cds-radio-group>
+          @if (supportsTrefwoorden) {
+            <cds-text-label>
+              {{ 'document.tags' | translate }}
+              <cds-tooltip
+                [isOpen]="false"
+                [description]="'document.tagsTooltip' | translate"
+                [align]="'bottom-left'"
+              >
+                <i class="mdi mdi-help-circle-outline"></i>
+              </cds-tooltip>
+            </cds-text-label>
+            <div class="documenten-metada-form-input">
+              <cds-combo-box
+                [type]="'multi'"
+                [placeholder]="'document.tagsPlaceholder' | translate"
+                [disabled]="obs.disabled || obs.tagItems.length === 0"
+                (selected)="tagsSelected($event)"
+              >
+                >
+                <cds-dropdown-list [items]="obs.tagItems || []"></cds-dropdown-list>
+              </cds-combo-box>
+            </div>
+          }
+        </div>
 
-<ng-template #additionalDatePicker let-additionalDate="additionalDate">
-  <v-input-label
-    [title]="'document.additionalDate' | translate"
-    [name]="'additionalDate'"
-    [tooltip]="'document.additionalDateTooltip' | translate"
-    [required]="true"
-  >
-  </v-input-label>
-  <div class="col-12 col-sm-8 col-lg-6 form-check mt-1 additional-date">
-    <label
-      class="custom-control custom-radio custom-control-inline"
-      *ngFor="let option of ADDITONAL_DOCUMENT_DATE_OPTIONS"
-      (click)="setAdditionalDate(option.value)"
-    >
-      <input
-        class="custom-control-input"
-        type="radio"
-        name="radio-inline"
-        [checked]="additionalDate === option.value"
-      /><span class="custom-control-label">{{ option.translationKey | translate }}</span>
-    </label>
-  </div>
+        <div class="documenten-metadata-form-column">
+          <cds-text-label>
+            {{ 'document.inputTitle' | translate }}
+            <input
+              [disabled]="obs.disabled || disableDocumentTitle"
+              [placeholder]="'document.inputTitlePlaceholder' | translate"
+              [required]="true"
+              cdsText
+              class="documenten-metada-form-input"
+              id="titel"
+              formControlName="titel"
+            />
+            <cds-tooltip
+              [isOpen]="false"
+              [description]="'document.inputTitleTooltip' | translate"
+              [align]="'bottom'"
+            >
+              <i class="mdi mdi-help-circle-outline"></i>
+            </cds-tooltip>
+          </cds-text-label>
+          <cds-textarea-label>
+            {{ 'document.inputDescription' | translate }}
+            <textarea
+              [disabled]="obs.disabled || disableDescription"
+              [placeholder]="'document.inputDescriptionPlaceholder' | translate"
+              [required]="true"
+              [rows]="5"
+              cdsTextArea
+              class="documenten-metada-form-description-input documenten-metada-form-input"
+              id="beschrijving"
+              formControlName="beschrijving"
+            ></textarea>
+            <cds-tooltip
+              [isOpen]="false"
+              [description]="'document.inputDescriptionTooltip' | translate"
+              [align]="'bottom'"
+            >
+              <i class="mdi mdi-help-circle-outline"></i>
+            </cds-tooltip>
+          </cds-textarea-label>
+          <cds-label>
+            {{ 'document.creationDate' | translate }}
+            <cds-tooltip
+              [isOpen]="false"
+              [description]="'document.creationDateTooltip' | translate"
+              [align]="'bottom'"
+            >
+              <i class="mdi mdi-help-circle-outline"></i>
+            </cds-tooltip>
+            <div class="documenten-metada-form-input">
+              <cds-date-picker
+                [disabled]="obs.disabled"
+                [placeholder]="'DD-MM-YYYY'"
+                [dateFormat]="'d-m-Y'"
+                id="creatiedatum"
+                formControlName="creatiedatum"
+              >
+              </cds-date-picker>
+            </div>
+          </cds-label>
+          <cds-label>
+            {{ 'document.status' | translate }}
+            <cds-tooltip
+              [isOpen]="false"
+              [description]="'document.statusTooltip' | translate"
+              [align]="'bottom'"
+            >
+              <i class="mdi mdi-help-circle-outline"></i>
+            </cds-tooltip>
+          </cds-label>
+          <div class="documenten-metada-form-input">
+            <cds-dropdown
+              [placeholder]="'document.statusPlaceholder' | translate"
+              [disabled]="obs.disabled || disableStatus"
+              id="status"
+              (selected)="statusSelected($event)"
+            >
+              <cds-dropdown-list [items]="obs.statusItems || []"></cds-dropdown-list>
+            </cds-dropdown>
+          </div>
+          <cds-date-picker
+            *ngIf="additionalDate === 'received'"
+            [disabled]="obs.disabled"
+            [label]="'document.additionalDate' | translate"
+            [placeholder]="'DD-MM-YYYY'"
+            [dateFormat]="'d-m-Y'"
+            id="ontvangstdatum"
+            formControlName="ontvangstdatum"
+          ></cds-date-picker>
+          <cds-date-picker
+            *ngIf="additionalDate === 'sent'"
+            [disabled]="obs.disabled"
+            [label]="'document.additionalDate' | translate"
+            [placeholder]="'DD-MM-YYYY'"
+            [dateFormat]="'d-m-Y'"
+            id="verzenddatum"
+            formControlName="verzenddatum"
+          ></cds-date-picker>
+        </div>
+      </div>
+    </form>
+  </ng-container>
 </ng-template>

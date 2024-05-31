@@ -17,20 +17,43 @@
 import {RelatedFile} from '@valtimo/document';
 
 interface DocumentenApiRelatedFile extends RelatedFile {
-  size?: string;
-  title?: string;
-  language?: string;
-  identification?: string;
-  description?: string;
+  auteur?: string;
+  beschrijving?: string;
+  bestandsnaam?: string;
+  bestandsomvang?: number;
+  bronorganisatie?: string;
+  creatiedatum?: Date;
+  formaat?: string;
+  identificatie?: string;
   informatieobjecttype?: string;
-  trefwoorden?: Array<String>;
-  format?: string;
+  locked?: boolean;
   status?: string;
-  confidentialityLevel?: string;
+  taal?: string;
+  titel?: String;
+  trefwoorden?: string[];
+  versie?: number;
+  vertrouwelijkheidaanduiding?: string;
+  tags?: {content: string}[];
 }
 
-type DocumentenApiRelatedFileListItem = Omit<DocumentenApiRelatedFile, 'createdOn'> & {
-  createdOn: string;
-};
+enum DOCUMENTEN_COLUMN_KEYS {
+  AUTEUR = 'auteur',
+  BESCHRIJVING = 'beschrijving',
+  BESTANDSNAAM = 'bestandsnaam',
+  BESTANDSOMVANG = 'bestandsomvang',
+  BRONORGANISATIE = 'bronorganisatie',
+  CREATIEDATUM = 'creatiedatum',
+  FORMAAT = 'formaat',
+  IDENTIFICATIE = 'identificatie',
+  INFORMATIEOBJECTTYPE = 'informatieobjecttype',
+  LOCKED = 'locked',
+  STATUS = 'status',
+  TAAL = 'taal',
+  TITEL = 'titel',
+  TREFWOORDEN = 'trefwoorden',
+  VERSIE = 'versie',
+  VERTROUWELIJKHEIDAANDUIDING = 'vertrouwelijkheidaanduiding',
+  TAGS = 'tags',
+}
 
-export {DocumentenApiRelatedFile, DocumentenApiRelatedFileListItem};
+export {DocumentenApiRelatedFile, DOCUMENTEN_COLUMN_KEYS};

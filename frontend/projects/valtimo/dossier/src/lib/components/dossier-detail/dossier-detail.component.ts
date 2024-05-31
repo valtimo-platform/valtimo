@@ -316,6 +316,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
           this.route
         );
         this.tabLoader.initial(this._initialTabName);
+        this.dossierTabService.setTabLoader(this.tabLoader);
         this.loadingTabs$.next(false);
       } else {
         this.noTabsConfigured$.next(true);

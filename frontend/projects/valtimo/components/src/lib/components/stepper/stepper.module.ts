@@ -24,6 +24,7 @@ import {StepperStepComponent} from './stepper-step/stepper-step.component';
 import {TranslateModule} from '@ngx-translate/core';
 import {StepperFooterStepComponent} from './stepper-footer-step/stepper-footer-step.component';
 import {ButtonModule} from '../button/button.module';
+import {ButtonModule as CarbonButtonModule} from 'carbon-components-angular';
 
 /**
  * @deprecated Migrate old design to Carbon
@@ -37,7 +38,12 @@ import {ButtonModule} from '../button/button.module';
     StepperStepComponent,
     StepperFooterStepComponent,
   ],
-  imports: [CommonModule, TranslateModule, ButtonModule],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    ButtonModule,
+    CarbonButtonModule
+  ],
   exports: [
     StepperContainerComponent,
     StepperContentComponent,

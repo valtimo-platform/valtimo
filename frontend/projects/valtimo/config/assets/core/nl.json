@@ -135,9 +135,13 @@
       }
     },
     "documenten": {
+      "deleteConfirmationModal": {
+        "title": "Document verwijderen",
+        "content": "Weet u zeker dat u dit document wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden."
+      },
       "noProcessLinked": {
         "regularUser": "Het uploaden van documenten is in dit geval niet beschikbaar. Neem contact op met een beheerder",
-        "adminRole": "Het proces voor het uploaden van documenten is niet geconfigureerd. Configureer dit proces op de casebeheerpagina"
+        "adminRole": "Het proces voor het uploaden van documenten is niet geconfigureerd. Configureer dit proces op de dossierbeheerpagina"
       },
       "navigateToCaseAdmin": "Configureer Zaak",
       "noZaakFoundTitle": "Geen Zaak gevonden",
@@ -157,7 +161,11 @@
       "noFormSpecified": "Voor dit tabblad is geen formulierdefinitie opgegeven.",
       "formNotFound": "De formulierdefinitie '{{formDefinitionName}}' kan niet worden gevonden."
     },
-    "rowLocked": "Je hebt geen toegang tot dit dossier"
+    "rowLocked": "Je hebt geen toegang tot dit dossier",
+    "widgets": {
+      "noWidgets": "Geen widgets",
+      "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien."
+    }
   },
   "document": {
     "title": {
@@ -168,20 +176,29 @@
     "createdBy": "Aangemaakt door",
     "createdOn": "Aanmaakdatum",
     "sequence": "Volgnummer",
-    "fillInMetadata": "Informatie over dit bestand",
+    "fillInMetadata": "Voeg metadata van bestanden toe",
+    "editMetadata": "Metadata bewerken",
     "cancel": "Annuleren",
     "upload": "Uploaden",
+    "save": "Opslaan",
     "size": "Omvang",
+    "tags": "Trefwoorden (optioneel)",
+    "tagsTooltip": "Tags worden gebruikt voor het makkelijk zoeken en filteren van documenten. Je kunt meerdere tags aan een document toevoegen.",
+    "tagsPlaceholder": "Kies tags",
     "format": "Bestandsformaat",
     "trefwoorden": "Trefwoorden",
     "filename": "Bestandsnaam",
     "filenameTooltip": "De naam van het fysieke bestand waarin de inhoud van het document is vastgelegd, inclusief extensie",
+    "filenamePlaceholder": "Bestandsnaam toevoegen",
     "confidentialityLevel": "Vertrouwelijkheidsaanduiding",
     "confidentialityLevelTooltip": "Aanduiding van de mate waarin het document voor de openbaarheid bestemd is",
+    "confidentialityPlaceholder": "Vertrouwelijkheidaanduiding kiezen",
     "inputTitle": "Titel",
     "inputTitleTooltip": "De naam waaronder het document formeel bekend is",
+    "inputTitlePlaceholder": "Titel toevoegen",
     "inputDescription": "Beschrijving",
     "inputDescriptionTooltip": "Een generieke beschrijving van de inhoud van het document",
+    "inputDescriptionPlaceholder": "Beschrijving toevoegen",
     "openbaar": "Openbaar",
     "beperkt_openbaar": "Beperkt openbaar",
     "intern": "Intern",
@@ -192,8 +209,10 @@
     "zeer_geheim": "Zeer geheim",
     "author": "Auteur",
     "authorTooltip": "De oorspronkelijke auteur van het document",
+    "authorPlaceholder": "Voeg auteur toe",
     "status": "Status",
     "statusTooltip": "De huidige status van het document. 'In bewerking': aan het document wordt nog gewerkt; 'Ter vaststelling': het document is gereed, maar moet nog vastgesteld worden; 'Definitief': het document is door een bevoegd persoon vastgesteld dan wel ontvangen; 'Gearchiveerd': het document is duurzaam bewaarbaar gemaakt.",
+    "statusPlaceholder": "Kies status",
     "in_bewerking": "In bewerking",
     "ter_vaststelling": "Ter vaststelling",
     "definitief": "Definitief",
@@ -206,16 +225,19 @@
     "sendDateTooltip": "De datum waarop het document verzonden is",
     "language": "Taal",
     "languageTooltip": "De taal waarin het document is opgesteld",
+    "languagePlaceholder": "Kies een taal",
     "nld": "Nederlands",
     "eng": "Engels",
     "deu": "Duits",
     "informatieobjecttype": "Documenttype",
     "informatieobjecttypeTooltip": "Een documenttype dat gerelateerd is aan het zaaktype van het huidige dossier",
-    "additionalDate": "Aanvullende documentdatum",
+    "informatieobjecttypePlaceholder": "Kies het informatieobjecttype",
+    "additionalDate": "Aanvullende datum",
     "additionalDateTooltip": "Een aanvullende datum die als metadata aan het document kan worden toegevoegd. Deze extra datum is optioneel. Als 'Ontvangstdatum' is geselecteerd, kan de documentstatus alleen worden ingesteld op 'definitief' of 'gearchiveerd'.",
     "noAdditionalDate": "Geen aanvullende datum",
     "delete": "Verwijderen",
     "download": "Downloaden",
+    "edit": "Bewerken",
     "application/octet-stream": "Onbekend",
     "application/json": "JSON",
     "application/msword": "DOC",
@@ -500,7 +522,8 @@
       "listColumns": "Lijst",
       "tabManagement": "Tabbladen",
       "document": "Document",
-      "statuses": "Statussen"
+      "statuses": "Statussen",
+      "zgw": "ZGW"
     },
     "tabManagement": {
       "columns": {
@@ -519,7 +542,8 @@
         "tabKeyLabel": "Sleutel",
         "tabNameLabel": "Tabblad naam (optioneel)",
         "title": "Nieuw tabblad toevoegen {{documentDefinitionName}}",
-        "uniqueKeyError": "De sleutel voor deze kolom moet uniek zijn."
+        "uniqueKeyError": "De sleutel voor deze kolom moet uniek zijn.",
+        "widgetsComponent": "Widgets component"
       },
       "titles": {
         "custom": "Nieuw tabblad toevoegen met aangepaste component",
@@ -626,6 +650,82 @@
         "title": "Er zijn geen statussen",
         "description": "Voeg een status toe om te beginnen"
       }
+    }
+  },
+  "widgetTabManagement": {
+    "tab": {
+      "metadata": "<b>Aangemaakt door</b> {{createdBy}} | <b>Aangemaakt op</b> {{createdOn}} | <b>Sleutel</b> {{key}}",
+      "editButton": "Bewerk",
+      "editWidgetTab": "Bewerk widget tab",
+      "cancel": "Annuleren",
+      "save": "Opslaan",
+      "form": {
+        "tabName": "Tab naam"
+      }
+    }
+  },
+  "zgw": {
+    "columns": {
+      "column": "Kolom",
+      "add": "Kolom toevoegen",
+      "edit": "Kolom bewerken",
+      "deleteText": "Weet je zeker dat je deze kolom wilt verwijderen?",
+      "notSortable": "Deze kolom is niet sorteerbaar",
+      "defaultWarning": "Als je een standaardsortering selecteert, wordt de bestaande standaardsortering overschreven"
+    },
+    "documentColumns": {
+      "auteur": "Auteur",
+      "beschrijving": "Beschrijving",
+      "bestandsnaam": "Bestandsnaam",
+      "bestandsomvang": "Bestandsomvang",
+      "bronorganisatie": "Bronorganisatie",
+      "creatiedatum": "Aanmaakdatum",
+      "formaat": "Formaat",
+      "identificatie": "Identificatie",
+      "informatieobjecttypeOmschrijving": "Informatieobjecttype",
+      "locked": "Vergrendeld",
+      "status": "Status",
+      "taal": "Taal",
+      "titel": "Titel",
+      "trefwoorden": "Trefwoorden",
+      "versie": "Versie",
+      "vertrouwelijkheidaanduiding": "Vertrouwelijkheidaanduiding"
+    },
+    "documents": {
+      "noResults": {
+        "filterTitle": "Geen documenten gevonden",
+        "filterDescription": "Er zijn geen documenten die voldoen aan je zoekcriteria."
+      },
+      "noColumns": {
+        "description": "Configureer kolommen voor dit document",
+        "title": "Er zijn geen kolommen geconfigureerd voor deze zaak."
+      }
+    },
+    "tags": {
+      "tag": "Trefwoord",
+      "add": "Trefwoord toevoegen",
+      "deleteText": "Weet je zeker dat je dit trefwoord wilt verwijderen?",
+      "deleteMultipleText": "Weet je zeker dat je deze trefwoorden wilt verwijderen?",
+      "addModal": {
+        "header": "Trefwoord toevoegen"
+      },
+      "list": {
+        "noResultsTitle": "Geen trefwoorden",
+        "noResultsDescription": "Voeg een trefwoord toe om te beginnen"
+      },
+      "search": {
+        "noResultsTitle": "Geen resultaten",
+        "noResultsDescription": "Probeer de zoekfilters aan te passen om te vinden wat je zoekt."
+      },
+      "fields": {
+        "value": "Trefwoord",
+        "valueRequired": "Trefwoord is verplicht.",
+        "valueMaxLength": "Trefwoord is te lang. Maximum lengte is {{ maxlength }} tekens."
+      }
+    },
+    "tabs": {
+      "documentColumns": "Document kolommen",
+      "documentTags": "Document trefwoorden"
     }
   },
   "task-list": {
@@ -842,6 +942,15 @@
       "warm-gray": "Warm grijs",
       "high-contrast": "Hoog contrast",
       "outline": "Omlijnd"
+    },
+    "labels": {
+      "dateCreationFrom": "Aanmaakdatum van",
+      "dateCreationTo": "Aanmaakdatum tot"
+    },
+    "sorting": {
+      "ascending": "Oplopend",
+      "descending": "Aflopend",
+      "noDefault": "Geen standaardsortering"
     }
   },
   "taskDetail": {
@@ -1266,8 +1375,8 @@
     "displayTypeTooltip": "Deze optie bepaalt hoe de gegevens uiteindelijk in de tabel worden weergegeven.",
     "displayTypeParameters": "Parameters",
     "sortable": "Sorteerbaar",
-    "defaultSort": "Standaard sorteren",
-    "defaultSortTitle": "Standaard sortering (optioneel)",
+    "defaultSort": "Standaardsortering",
+    "defaultSortTitle": "Standaardsortering (optioneel)",
     "defaultSortTooltip": "Als dit veld een waarde heeft, wordt de tabel standaard gesorteerd op deze eigenschap, in de opgegeven richting. Slechts één kolom tegelijk kan deze eigenschap hebben. Bij het aanmaken van een nieuwe kolom, als voor een andere kolom al een standaardsortering is opgegeven, is dit invoerveld uitgeschakeld.",
     "selectDefaultSort": "Selecteer een standaard sortering",
     "sortableYes": "Ja",

@@ -14,25 +14,17 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="currentTab$ | async as currentTab">
-  <ng-container
-    *ngIf="{
-      documentenApiColumnsActive: currentTab === ZgwTabEnum.DOCUMENTEN_API_COLUMNS
-    } as vars"
-  >
-    <cds-tabs class="dossier-management-tabs">
-      <cds-tab
-        class="no-padding-left-right no-padding-top-bottom"
-        [active]="vars.documentenApiColumnsActive"
-        [heading]="'dossierManagement.tabs.zgw' | translate"
-        (selected)="displayTab(ZgwTabEnum.DOCUMENTEN_API_COLUMNS)"
-      ></cds-tab
-    ></cds-tabs>
+<cds-tabs class="dossier-management-tabs">
+  @for (zgwTab of (zgwTabs$ | async) || []; track zgwTab.tab) {
+    <cds-tab
+      [class]="zgwTab.class"
+      [active]="zgwTab.active"
+      [heading]="zgwTab.headingTranslationKey | translate"
+      (selected)="displayTab(zgwTab.tab)"
+    ></cds-tab>
+  }
+</cds-tabs>
 
-    <div class="dossier-management-zgw__content">
-      <valtimo-documenten-api-columns
-        *ngIf="vars.documentenApiColumnsActive"
-      ></valtimo-documenten-api-columns>
-    </div>
-  </ng-container>
-</ng-container>
+<div class="dossier-management-zgw__content">
+  <ng-template #zgwTabContent></ng-template>
+</div>

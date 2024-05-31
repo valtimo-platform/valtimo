@@ -18,6 +18,7 @@ enum ApiTabType {
   STANDARD = 'standard',
   FORMIO = 'formio',
   CUSTOM = 'custom',
+  WIDGETS = 'widgets',
 }
 
 interface ApiTabItem {
@@ -25,6 +26,8 @@ interface ApiTabItem {
   key: string;
   type: ApiTabType;
   contentKey: string;
+  createdOn?: string;
+  createdBy?: string;
 }
 
 export {ApiTabType, ApiTabItem};

@@ -29,7 +29,6 @@
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
-    [widthPx]="350"
     placeholder="Verzoek Plugin"
   >
   </v-input>
@@ -39,7 +38,6 @@
     <v-select
       [items]="vars.notificatiePluginSelectItems"
       [margin]="true"
-      [widthInPx]="350"
       name="notificatiesApiPluginConfiguration"
       [title]="'notificatiesApiPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
@@ -53,7 +51,6 @@
     <v-select
       [items]="vars.processSelectItems"
       [margin]="true"
-      [widthInPx]="350"
       name="processToStart"
       [title]="'processToStart' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"
@@ -71,7 +68,6 @@
     [defaultValue]="obs.prefill?.rsin"
     [required]="true"
     [tooltip]="'rsinTooltip' | pluginTranslate: pluginId | async"
-    [widthPx]="350"
     placeholder=""
   >
   </v-input>
@@ -111,7 +107,6 @@
         [defaultValue]="prefill?.type"
         [required]="true"
         [tooltip]="'typeTooltip' | pluginTranslate: pluginId | async"
-        [widthPx]="350"
         [smallMargin]="true"
         placeholder=""
       >
@@ -120,7 +115,6 @@
         <v-select
           [items]="vars.documentSelectItems"
           [smallMargin]="true"
-          [widthInPx]="350"
           name="caseDefinitionName"
           [title]="'caseDefinitionName' | pluginTranslate: pluginId | async"
           [disabled]="obs.disabled"
@@ -136,7 +130,6 @@
         <v-select
           [items]="vars.objectManagementSelectItems"
           [smallMargin]="true"
-          [widthInPx]="350"
           name="objectManagementId"
           [title]="'objectManagementId' | pluginTranslate: pluginId | async"
           [disabled]="obs.disabled"
@@ -152,7 +145,6 @@
           (rolTypeSelectItemsObservables[uuid].items | async)
         "
         [smallMargin]="true"
-        [widthInPx]="350"
         name="initiatorRoltypeUrl"
         [title]="'initiatorRoltypeUrl' | pluginTranslate: pluginId | async"
         [disabled]="obs.disabled || !rolTypeSelectItemsObservables[uuid]?.caseDefinitionName"
@@ -168,7 +160,6 @@
         [defaultValue]="prefill?.initiatorRolDescription || 'Initiator'"
         [required]="true"
         [tooltip]="'initiatorRolDescriptionTooltip' | pluginTranslate: pluginId | async"
-        [widthPx]="350"
         [smallMargin]="true"
         placeholder=""
       >
@@ -177,7 +168,6 @@
         <v-select
           [items]="vars.processSelectItems"
           [smallMargin]="true"
-          [widthInPx]="350"
           name="processDefinitionKey"
           [title]="'processDefinitionKey' | pluginTranslate: pluginId | async"
           [disabled]="obs.disabled"
@@ -209,7 +199,7 @@
       </ng-container>
       <v-input class="hidden-input" name="uuid" [defaultValue]="uuid"> </v-input>
     </v-form>
-    <cds-modal valtimoCdsModal [open]="showMappingModals[uuid]">
+    <cds-modal cdsModal [open]="showMappingModals[uuid]">
       <cds-modal-header [showCloseButton]="true" (closeSelect)="closeMappingModal(uuid)">
         <h3 cdsModalHeaderHeading>{{ 'setMapping' | pluginTranslate: pluginId | async }}</h3>
       </cds-modal-header>

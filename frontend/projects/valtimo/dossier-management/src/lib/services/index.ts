@@ -18,3 +18,4 @@ export * from './tab.service';
 export * from './tab-management.service';
 export * from './dossier-export.service';
 export * from './dossier-detail.service';
+export * from './widget-tab-management.service';

@@ -108,7 +108,11 @@
     (click)="$event.stopPropagation()"
   >
     @for (action of data.actions; track action.label) {
-      <cds-overflow-menu-option [type]="action.type" (selected)="action.callback(data.item)">
+      <cds-overflow-menu-option
+        [disabled]="action.disabledCallback ? action.disabledCallback(data.item) : false"
+        [type]="action.type"
+        (selected)="action.callback(data.item)"
+      >
         <i *ngIf="!!action.iconClass" [ngClass]="action.iconClass"></i>
 
         {{ action.label | translate }}
@@ -118,7 +122,7 @@
 </ng-template>
 
 <ng-template #rowDisabled let-data="data">
-  <div *ngIf="data.locked" class="disabled">
+  <div *ngIf="data.locked" class="locked">
     <span
       class="float-right badge badge-pill badge-secondary bg-grey"
       ngbTooltip="{{ lockedTooltipTranslationKey | translate }}"
@@ -153,19 +157,25 @@
 </ng-template>
 
 <ng-template #tagTemplate let-data="data">
-  <div *ngIf="data.tags" class="tag-template">
-    <cds-tag *ngIf="!!data.tags[0].content" class="cds-tag--no-margin" [type]="data.tags[0].type">
-      {{ data.tags[0].content }}
-    </cds-tag>
+  <ng-container *ngIf="!data.tags">-</ng-container>
 
-    <cds-tag
-      *ngIf="data.tags.length > 1"
-      class="cds-tag--no-margin valtimo-carbon-list__expand-tag"
-      type="high-contrast"
-      (click)="onTagClick($event, data.tags)"
-    >
-      {{ data.tags.length - 1 }} <svg cdsIcon="add" size="16"></svg>
-    </cds-tag>
+  <div *ngIf="data.tags" class="tag-template">
+    @if (data.tags.length === 0) {
+      -
+    } @else {
+      <cds-tag *ngIf="!!data.tags[0].content" class="cds-tag--no-margin" [type]="data.tags[0].type">
+        {{ data.tags[0].ellipsisContent ?? data.tags[0].content }}
+      </cds-tag>
+
+      <cds-tag
+        *ngIf="data.tags.length > 1"
+        class="cds-tag--no-margin valtimo-carbon-list__expand-tag"
+        type="high-contrast"
+        (click)="onTagClick($event, data.tags)"
+      >
+        {{ data.tags.length - 1 }} <svg cdsIcon="add" size="16"></svg>
+      </cds-tag>
+    }
   </div>
 </ng-template>
 

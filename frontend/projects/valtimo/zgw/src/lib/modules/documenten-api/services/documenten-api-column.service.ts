@@ -16,7 +16,7 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService} from '@valtimo/config';
-import {Observable, of} from 'rxjs';
+import {Observable} from 'rxjs';
 import {ConfiguredColumn} from '../models';
 
 @Injectable({
@@ -32,22 +32,31 @@ export class DocumentenApiColumnService extends BaseApiService {
 
   public getConfiguredColumns(caseDefinitionName: string): Observable<ConfiguredColumn[]> {
     return this.http.get<ConfiguredColumn[]>(
+      this.getApiUrl(`/v1/case-definition/${caseDefinitionName}/zgw-document-column`)
+    );
+  }
+
+  public getAdminConfiguredColumns(caseDefinitionName: string): Observable<ConfiguredColumn[]> {
+    return this.http.get<ConfiguredColumn[]>(
       this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/zgw-document-column`)
     );
   }
 
-  public updateColumnOrder(
-    caseDefinitionName: string,
-    columns: ConfiguredColumn[]
-  ): Observable<void> {
-    return this.http.put<void>(
-      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/zgw-document-column`),
-      columns
+  public getAdminConfigurableColumns(caseDefinition: string): Observable<ConfiguredColumn[]> {
+    return this.http.get<ConfiguredColumn[]>(
+      this.getApiUrl(`/management/v1/case-definition/${caseDefinition}/zgw-document-column-key`)
+    );
+  }
+
+  public deleteColumn(caseDefinitionName: string, columnKey: string): Observable<void> {
+    return this.http.delete<void>(
+      this.getApiUrl(
+        `/management/v1/case-definition/${caseDefinitionName}/zgw-document-column/${columnKey}`
+      )
     );
   }
 
   public updateColumn(caseDefinitionName: string, column: ConfiguredColumn): Observable<void> {
-    delete column.key;
     return this.http.put<void>(
       this.getApiUrl(
         `/management/v1/case-definition/${caseDefinitionName}/zgw-document-column/${column.key}`
@@ -56,14 +65,13 @@ export class DocumentenApiColumnService extends BaseApiService {
     );
   }
 
-  public deleteConfiguredColumn(caseDefinitionKey: string, statusKey: string): Observable<null> {
-    return of(null);
-  }
-
   public updateConfiguredColumns(
     caseDefinitionKey: string,
     orderColumns: ConfiguredColumn[]
   ): Observable<null> {
-    return of(null);
+    return this.http.put<null>(
+      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionKey}/zgw-document-column`),
+      orderColumns
+    );
   }
 }

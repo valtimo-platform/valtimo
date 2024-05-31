@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output} from '@angular/core';
 
 import {
   AdditionalDocumentDate,
@@ -31,6 +31,7 @@ import {
   map,
   Observable,
   of,
+  startWith,
   Subject,
   Subscription,
   switchMap,
@@ -43,19 +44,35 @@ import {KeycloakService} from 'keycloak-angular';
 import {tap} from 'rxjs/operators';
 import {CommonModule} from '@angular/common';
 import {
-  ButtonModule,
-  DatePickerModule,
-  FormModule,
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import {
   InputLabelModule,
   InputModule,
   ModalService,
-  SelectItem,
   SelectModule,
-  TitleModule,
   ValtimoModalService,
-  VModalComponent,
-  VModalModule,
 } from '@valtimo/components';
+
+import {
+  ButtonModule,
+  ComboBoxModule,
+  DatePickerModule,
+  DropdownModule,
+  IconModule,
+  InputModule as CarbonInputModule,
+  ListItem,
+  ModalModule,
+  RadioModule,
+  TagModule,
+  TooltipModule,
+} from 'carbon-components-angular';
+import {DocumentenApiDocumentService} from '../../services';
+import {DocumentenApiTagService} from '../../services/documenten-api-tag.service';
 
 @Component({
   selector: 'valtimo-documenten-api-metadata-modal',
@@ -63,49 +80,90 @@ import {
   styleUrls: ['./documenten-api-metadata-modal.component.scss'],
   standalone: true,
   imports: [
-    CommonModule,
-    TranslateModule,
-    VModalModule,
-    TitleModule,
     ButtonModule,
-    TranslateModule,
-    FormModule,
-    InputModule,
-    SelectModule,
+    CarbonInputModule,
+    ComboBoxModule,
+    CommonModule,
     DatePickerModule,
+    DropdownModule,
+    IconModule,
     InputLabelModule,
+    InputModule,
+    ModalModule,
+    RadioModule,
+    ReactiveFormsModule,
+    SelectModule,
+    TagModule,
+    TooltipModule,
+    TranslateModule,
   ],
 })
-export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
-  @ViewChild('documentenApiMetadataModal') documentenApiMetadataModal: VModalComponent;
-
-  @Input() show$!: Observable<null>;
-  @Input() hide$!: Observable<null>;
+export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() disabled$!: Observable<boolean>;
-  @Input() file$!: Observable<File>;
+  @Input() file$!: Observable<any>;
 
-  @Input() documentTitle = '';
-  @Input() disableDocumentTitle: boolean;
-  @Input() filename: string;
-  @Input() disableFilename: boolean;
   @Input() author: string;
-  @Input() disableAuthor: boolean;
-  @Input() status: string;
-  @Input() disableStatus: boolean;
-  @Input() language: string;
-  @Input() disableLanguage: boolean;
-  @Input() documentType: string;
-  @Input() disableDocumentType: boolean;
-  @Input() description: string;
-  @Input() disableDescription: boolean;
   @Input() confidentialityLevel: string;
+  @Input() description: string;
+  @Input() disableAuthor: boolean;
   @Input() disableConfidentialityLevel: boolean;
-  @Input() trefwoorden: boolean;
+  @Input() disableDescription: boolean;
+  @Input() disableDocumentTitle: boolean;
+  @Input() disableDocumentType: boolean;
+  @Input() disableFilename: boolean;
+  @Input() disableLanguage: boolean;
+  @Input() disableStatus: boolean;
+  @Input() documentTitle = '';
+  @Input() documentType: string;
   @Input() disableTrefwoorden: boolean;
+  @Input() filename: string;
+  @Input() isEditMode: boolean;
+  @Input() language: string;
+  @Input() open = false;
+  @Input() status: string;
+  @Input() supportsTrefwoorden = false;
 
   @Output() metadata: EventEmitter<DocumentenApiMetadata> = new EventEmitter();
+  @Output() modalClose: EventEmitter<boolean> = new EventEmitter();
 
-  readonly CONFIDENTIALITY_LEVELS: Array<ConfidentialityLevel> = [
+  public documentenApiMetadataForm: FormGroup = this.fb.group({
+    bestandsnaam: this.fb.control('', Validators.required),
+    titel: this.fb.control('', Validators.required),
+    auteur: this.fb.control('', Validators.required),
+    beschrijving: this.fb.control('', Validators.required),
+    taal: this.fb.control('', Validators.required),
+    informatieobjecttype: this.fb.control('', Validators.required),
+    status: this.fb.control('', Validators.required),
+    vertrouwelijkheidaanduiding: this.fb.control('', Validators.required),
+    creatiedatum: this.fb.control('', Validators.required),
+    ontvangstdatum: this.fb.control(''),
+    verzenddatum: this.fb.control(''),
+    trefwoorden: this.fb.control([]),
+  });
+
+  public get confidentialityLevelFormControl(): AbstractControl<string> {
+    return this.documentenApiMetadataForm.get('vertrouwelijkheidaanduiding');
+  }
+
+  public get informatieobjecttypeFormControl(): AbstractControl<string> {
+    return this.documentenApiMetadataForm.get('informatieobjecttype');
+  }
+
+  public get languageFormControl(): AbstractControl<string> {
+    return this.documentenApiMetadataForm.get('taal');
+  }
+
+  public get statusFormControl(): AbstractControl<string> {
+    return this.documentenApiMetadataForm.get('status');
+  }
+
+  public get tagFormControl(): AbstractControl<string[]> {
+    return this.documentenApiMetadataForm.get('trefwoorden');
+  }
+
+  public readonly isDefinitiveStatus$ = new BehaviorSubject<boolean>(false);
+
+  public readonly CONFIDENTIALITY_LEVELS: Array<ConfidentialityLevel> = [
     'openbaar',
     'beperkt_openbaar',
     'intern',
@@ -115,17 +173,22 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     'geheim',
     'zeer_geheim',
   ];
-  readonly confidentialityLevelItems$: Observable<Array<SelectItem>> = this.translateService
-    .stream('key')
-    .pipe(
-      map(() =>
-        this.CONFIDENTIALITY_LEVELS.map(confidentialityLevel => ({
-          id: confidentialityLevel,
-          text: this.translateService.instant(`document.${confidentialityLevel}`),
-        }))
-      )
-    );
-  readonly ADDITONAL_DOCUMENT_DATE_OPTIONS: Array<{
+  public readonly confidentialityLevelItems$: Observable<Array<ListItem>> = combineLatest([
+    this.confidentialityLevelFormControl.valueChanges.pipe(
+      startWith(this.confidentialityLevelFormControl.value)
+    ),
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([currentConfidentialityLevel]) =>
+      this.CONFIDENTIALITY_LEVELS.map(confidentialityLevel => ({
+        id: confidentialityLevel,
+        content: this.translateService.instant(`document.${confidentialityLevel}`),
+        selected: currentConfidentialityLevel === confidentialityLevel,
+      }))
+    )
+  );
+
+  public readonly ADDITONAL_DOCUMENT_DATE_OPTIONS: Array<{
     value: AdditionalDocumentDate;
     translationKey: string;
   }> = [
@@ -142,21 +205,22 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
       translationKey: 'document.receiptDate',
     },
   ];
-  readonly clearStatusSelection$ = new Subject<null>();
-  readonly additionalDocumentDate$ = new BehaviorSubject<AdditionalDocumentDate>('neither');
-  readonly STATUSES: Array<DocumentStatus> = [
+  public readonly clearStatusSelection$ = new Subject<null>();
+  public readonly additionalDocumentDate$ = new BehaviorSubject<AdditionalDocumentDate>('neither');
+  public readonly STATUSES: Array<DocumentStatus> = [
     'in_bewerking',
     'ter_vaststelling',
     'definitief',
     'gearchiveerd',
   ];
-  readonly RECEIPT_STATUSES: Array<DocumentStatus> = ['definitief', 'gearchiveerd'];
-  readonly formData$ = new BehaviorSubject<DocumentenApiMetadata>(null);
-  readonly statusItems$: Observable<Array<SelectItem>> = combineLatest([
+  public readonly RECEIPT_STATUSES: Array<DocumentStatus> = ['definitief', 'gearchiveerd'];
+  public readonly formData$ = new BehaviorSubject<DocumentenApiMetadata>(null);
+  public readonly statusItems$: Observable<Array<ListItem>> = combineLatest([
     this.additionalDocumentDate$,
+    this.statusFormControl.valueChanges.pipe(startWith(this.statusFormControl.value)),
     this.translateService.stream('key'),
   ]).pipe(
-    tap(([additionalDocumentDate]) => {
+    tap(([additionalDocumentDate, currentStatus]) => {
       this.formData$.pipe(take(1)).subscribe(formData => {
         if (
           additionalDocumentDate === 'received' &&
@@ -166,28 +230,65 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
         }
       });
     }),
-    map(([additionalDocumentDate]) =>
+    map(([additionalDocumentDate, currentStatus]) =>
       (additionalDocumentDate === 'received' ? this.RECEIPT_STATUSES : this.STATUSES).map(
         status => ({
           id: status,
-          text: this.translateService.instant(`document.${status}`),
+          content: this.translateService.instant(`document.${status}`),
+          selected: currentStatus === status,
         })
       )
     )
   );
-  readonly LANGUAGES: Array<DocumentLanguage> = ['nld', 'eng', 'deu'];
-  readonly languageItems$: Observable<Array<SelectItem>> = this.translateService.stream('key').pipe(
-    map(() =>
-      this.LANGUAGES.map(language => ({
-        id: language,
-        text: this.translateService.instant(`document.${language}`),
+
+  public readonly documentDefinitionName$: Observable<string> = from(
+    this.route.params.pipe(map(params => params?.documentDefinitionName))
+  );
+
+  public readonly tagItems$: Observable<Array<ListItem>> = combineLatest([
+    this.documentDefinitionName$,
+    this.tagFormControl.valueChanges.pipe(startWith(this.tagFormControl.value)),
+  ]).pipe(
+    filter(([documentDefinitionName]) => !!documentDefinitionName),
+    switchMap(([documentDefinitionName, tagFormControlValue]) =>
+      combineLatest([
+        this.documentenApiTagService.getTags(documentDefinitionName),
+        of(tagFormControlValue),
+      ])
+    ),
+    map(([tags, tagFormControlValue]) =>
+      tags.map(tag => ({
+        id: tag.value,
+        content: tag.value,
+        selected: !!tagFormControlValue ? tagFormControlValue.includes(tag.value) : false,
       }))
     )
   );
-  readonly documentTypeItems$: Observable<Array<SelectItem>> = combineLatest([
+
+  public readonly LANGUAGES: Array<DocumentLanguage> = ['nld', 'eng', 'deu'];
+  public languageItems$: Observable<Array<ListItem>> = combineLatest([
+    this.languageFormControl.valueChanges.pipe(startWith(this.languageFormControl.value)),
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([currentLanguage]) => {
+      return this.LANGUAGES.map(
+        (language: any) =>
+          ({
+            content: this.translateService.instant(`document.${language}`),
+            id: language,
+            selected: currentLanguage === language,
+          }) as ListItem
+      );
+    })
+  );
+
+  public readonly documentTypeItems$: Observable<Array<ListItem>> = combineLatest([
     this.route?.params || of(null),
     this.route?.firstChild?.params || of(null),
     this.valtimoModalService.documentDefinitionName$,
+    this.informatieobjecttypeFormControl.valueChanges.pipe(
+      startWith(this.informatieobjecttypeFormControl.value)
+    ),
   ]).pipe(
     filter(
       ([params, firstChildParams, documentDefinitionName]) =>
@@ -197,98 +298,193 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
           documentDefinitionName
         )
     ),
-    switchMap(([params, firstChildParams, documentDefinitionName]) =>
-      this.documentService.getDocumentTypes(
-        params?.documentDefinitionName ||
-          firstChildParams?.documentDefinitionName ||
-          documentDefinitionName
-      )
+    switchMap(([params, firstChildParams, documentDefinitionName, informatieobjecttypeValue]) =>
+      combineLatest([
+        this.documentService.getDocumentTypes(
+          params?.documentDefinitionName ||
+            firstChildParams?.documentDefinitionName ||
+            documentDefinitionName
+        ),
+        of(informatieobjecttypeValue),
+      ])
     ),
-    map(documentTypes => documentTypes.map(type => ({id: type.url, text: type.name})))
+    map(([documentTypes, informatieobjecttypeValue]) =>
+      documentTypes.map((type: any) => ({
+        id: type.url,
+        content: type.name,
+        selected: informatieobjecttypeValue === type.url,
+      }))
+    )
   );
-  readonly showForm$: Observable<boolean> = this.modalService.modalVisible$;
-  readonly valid$ = new BehaviorSubject<boolean>(false);
-  readonly userEmail$ = from(this.keycloakService.loadUserProfile()).pipe(
+  public readonly userEmail$ = from(this.keycloakService.loadUserProfile()).pipe(
     map(userProfile => userProfile?.email || '')
   );
 
-  private showSubscription!: Subscription;
-  private hideSubscription!: Subscription;
+  private readonly modalSize = 'lg';
+  private _subscriptions = new Subscription();
+  private _fileSubscription!: Subscription;
 
   constructor(
-    private readonly modalService: ModalService,
-    private readonly translateService: TranslateService,
     private readonly route: ActivatedRoute,
     private readonly documentService: DocumentService,
+    private readonly documentenApiDocumentService: DocumentenApiDocumentService,
+    private readonly documentenApiTagService: DocumentenApiTagService,
+    private readonly fb: FormBuilder,
     private readonly keycloakService: KeycloakService,
+    private readonly modalService: ModalService,
+    private readonly translateService: TranslateService,
     private readonly valtimoModalService: ValtimoModalService
   ) {}
 
-  ngOnInit(): void {
-    this.openShowSubscription();
-    this.openHideSubscription();
+  public ngOnInit(): void {
+    this.openFileSubscription();
   }
 
-  ngOnDestroy(): void {
-    this.showSubscription?.unsubscribe();
-    this.hideSubscription?.unsubscribe();
+  public ngOnChanges(): void {
+    this.openFileSubscription();
   }
 
-  hide(): void {
-    this.formData$.next(null);
-    this.valid$.next(false);
-    this.additionalDocumentDate$.next('neither');
-    this.modalService.closeModal();
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+    this.isDefinitiveStatus$.next(false);
   }
 
-  cancel(): void {
-    this.hide();
-  }
-
-  save(): void {
-    combineLatest([this.valid$, this.formData$])
-      .pipe(take(1))
-      .subscribe(([valid, formData]) => {
-        if (valid) {
-          this.metadata.emit(formData);
-        }
+  public languageSelected(event: {item: {id: string}}) {
+    if (event.item.id) {
+      this.documentenApiMetadataForm.patchValue({
+        taal: event.item.id,
       });
+    }
   }
 
-  formValueChange(data: DocumentenApiMetadata): void {
-    this.formData$.next(data);
-    this.setValid(data);
+  public tagsSelected(event: Array<ListItem>) {
+    this.tagFormControl.patchValue(event.filter(tag => tag.selected).map(tag => tag.id));
   }
 
-  setAdditionalDate(value: AdditionalDocumentDate): void {
-    this.additionalDocumentDate$.next(value);
+  public confidentialityLevelSelected(event: {item: {id: string}}) {
+    if (event.item.id) {
+      this.documentenApiMetadataForm.patchValue({
+        vertrouwelijkheidaanduiding: event.item.id,
+      });
+    }
   }
 
-  private setValid(data: DocumentenApiMetadata): void {
-    this.valid$.next(
-      !!(
-        data.filename &&
-        data.title &&
-        data.author &&
-        data.creationDate &&
-        data.status &&
-        data.language &&
-        data.informatieobjecttype &&
-        data.description &&
-        data.confidentialityLevel
-      )
+  public statusSelected(event: {item: {id: string}}) {
+    if (event.item.id) {
+      this.documentenApiMetadataForm.patchValue({
+        status: event.item.id,
+      });
+    }
+  }
+
+  public informatieobjecttypeSelected(event: {item: {id: string}}) {
+    if (event.item.id) {
+      this.documentenApiMetadataForm.patchValue({
+        informatieobjecttype: event.item.id,
+      });
+    }
+  }
+
+  public prefillForm(file) {
+    this.prefillFilenameAndAuthor();
+    if (file) {
+      const {
+        bestandsnaam,
+        titel,
+        auteur,
+        beschrijving,
+        taal,
+        informatieobjecttype,
+        status,
+        vertrouwelijkheidaanduiding,
+        creatiedatum,
+        ontvangstdatum,
+        verzenddatum,
+        trefwoorden,
+      } = file;
+
+      if (verzenddatum) this.additionalDocumentDate$.next('sent');
+      else if (ontvangstdatum) this.additionalDocumentDate$.next('received');
+      else this.additionalDocumentDate$.next('neither');
+
+      this.documentenApiMetadataForm.patchValue({
+        bestandsnaam,
+        titel,
+        auteur,
+        beschrijving,
+        taal,
+        informatieobjecttype,
+        status,
+        vertrouwelijkheidaanduiding,
+        creatiedatum,
+        ontvangstdatum,
+        verzenddatum,
+        trefwoorden,
+      });
+    }
+  }
+
+  public save(): void {
+    this.formatDate('creatiedatum');
+    this.formatDate('verzenddatum');
+    this.formatDate('ontvangstdatum');
+
+    if (this.documentenApiMetadataForm.valid)
+      this.metadata.emit(this.documentenApiMetadataForm.value);
+
+    this.closeModal();
+  }
+
+  public closeModal(): void {
+    this.additionalDocumentDate$.next('neither');
+    this.modalClose.emit();
+    this.clearForm();
+  }
+
+  private clearForm(): void {
+    this.documentenApiMetadataForm.reset();
+  }
+
+  private prefillFilenameAndAuthor() {
+    this._subscriptions.add(
+      combineLatest([this.file$, this.userEmail$])
+        .pipe(
+          tap(([file, userEmail]) => {
+            this.documentenApiMetadataForm.patchValue({
+              bestandsnaam: file?.name || file?.bestandsnaam,
+              auteur: userEmail,
+            });
+          })
+        )
+        .subscribe()
     );
   }
 
-  private openShowSubscription(): void {
-    this.showSubscription = this.show$.subscribe(() => {
-      this.modalService.openModal(this.documentenApiMetadataModal);
-    });
+  private formatDate(controlName: string) {
+    const control = this.documentenApiMetadataForm.controls[controlName];
+    if (control.value) {
+      const date = new Date(control.value);
+      this.documentenApiMetadataForm.patchValue({
+        [controlName]: `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`,
+      });
+    }
   }
 
-  private openHideSubscription(): void {
-    this.hideSubscription = this.hide$.subscribe(() => {
-      this.hide();
-    });
+  private openFileSubscription(): void {
+    this._fileSubscription?.unsubscribe();
+    if (this.file$) {
+      this._fileSubscription = this.file$.subscribe(file => {
+        if (file) {
+          this.prefillForm(file);
+          this.isDefinitiveStatus$.next(
+            file.status === 'definitief' && this.isEditMode ? true : false
+          );
+        }
+      });
+    }
+  }
+
+  private setAdditionalDate(value: AdditionalDocumentDate): void {
+    this.additionalDocumentDate$.next(value);
   }
 }

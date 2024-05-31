@@ -14,42 +14,39 @@
   ~ limitations under the License.
   -->
 
-<v-modal
+<cds-modal
   #pluginEditModal
-  (closeEvent)="hide()"
+  [open]="open"
+  (close)="hide()"
   *ngIf="{selectedConfiguration: selectedPluginConfiguration$ | async} as obs"
 >
-  <div role="header">
-    <div class="edit-configuration-title">
-      <v-title [margin]="false" type="h2">{{
-        obs.selectedConfiguration?.title +
-          ' - ' +
-          ('title' | pluginTranslate: obs.selectedConfiguration?.pluginDefinition?.key | async)
-      }}</v-title>
-    </div>
-  </div>
-  <div role="content">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="hide()">
+    {{
+      obs.selectedConfiguration?.title +
+        ' - ' +
+        ('title' | pluginTranslate: obs.selectedConfiguration?.pluginDefinition?.key | async)
+    }}
+  </cds-modal-header>
+  <section cdsModalContent>
     <valtimo-plugin-edit
       (valid)="onPluginValid($event)"
       (configuration)="onPluginConfiguration($event)"
     ></valtimo-plugin-edit>
-  </div>
-  <div role="footer">
-    <div class="edit-plugin-buttons">
-      <v-button
-        [disabled]="inputDisabled$ | async"
-        (clickEvent)="delete()"
-        [mdiIcon]="'delete'"
-        type="danger"
-        >{{ 'pluginManagement.remove' | translate }}</v-button
-      >
-      <v-button
-        [disabled]="(configurationValid$ | async) === false || (inputDisabled$ | async)"
-        (clickEvent)="save()"
-        [mdiIcon]="'check'"
-        type="success"
-        >{{ 'pluginManagement.save' | translate }}</v-button
-      >
-    </div>
-  </div>
-</v-modal>
+  </section>
+  <cds-modal-footer>
+    <button
+      cdsButton="danger"
+      (click)="delete()"
+      [disabled]="inputDisabled$ | async"
+    >
+      {{ 'pluginManagement.remove' | translate }}
+    </button>
+    <button
+      cdsButton="primary"
+      [disabled]="(configurationValid$ | async) === false || (inputDisabled$ | async)"
+      (click)="save()"
+    >
+      {{ 'pluginManagement.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

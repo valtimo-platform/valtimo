@@ -29,6 +29,8 @@ export abstract class BaseApiService {
   }
 
   public getApiUrl(urlPart: string): string {
-    return `${UrlUtils.formatUrlTrailingSlash(this._valtimoEndpointUri, false)}${urlPart}`;
+    const urlWithStartSlash = UrlUtils.formatUrlStartWithSlash(urlPart);
+    const urlFormattedWithTrailingSlash = `${UrlUtils.formatUrlTrailingSlash(this._valtimoEndpointUri, false)}${urlWithStartSlash}`;
+    return urlFormattedWithTrailingSlash;
   }
 }

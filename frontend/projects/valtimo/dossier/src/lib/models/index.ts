@@ -20,3 +20,5 @@ export * from './search.model';
 export * from './tabs.model';
 export * from './dossier-detail-tab.model';
 export * from './tab-api.model';
+export * from './case-widget-display.model';
+export * from './case-widget.model';

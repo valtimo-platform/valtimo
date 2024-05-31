@@ -146,21 +146,29 @@
         canAssign: canAssign$ | async,
         canClaim: canClaim$ | async,
         canHaveAssignee: canHaveAssignee$ | async,
-        document: document$ | async
+        document: document$ | async,
+        caseStatus: caseStatus$ | async
       } as obs"
     >
-      <div class="dossier-assign-user" [ngClass]="{'--compact': compactMode$ | async}">
-        <ng-container
-          *ngTemplateOutlet="
-            caseDetailAssignee;
-            context: {
-              canHaveAssignee: obs.canHaveAssignee,
-              document: obs.document,
-              canAssign: obs.canAssign
-            }
-          "
-        ></ng-container>
+      <div class="dossier-status-assign" [ngClass]="{'--compact': compactMode$ | async}">
+        @if (obs.caseStatus) {
+          <cds-tag size="sm" [type]="obs.caseStatus.tagType">{{ obs.caseStatus.title }}</cds-tag>
+        }
+
+        <div class="dossier-assign-user" [ngClass]="{'--compact': compactMode$ | async}">
+          <ng-container
+            *ngTemplateOutlet="
+              caseDetailAssignee;
+              context: {
+                canHaveAssignee: obs.canHaveAssignee,
+                document: obs.document,
+                canAssign: obs.canAssign
+              }
+            "
+          ></ng-container>
+        </div>
       </div>
+
       <div class="buttons-container">
         <cds-overflow-menu
           [ngClass]="{'--compact': compactMode$ | async}"
@@ -202,9 +210,6 @@
           </cds-overflow-menu-option>
         </cds-overflow-menu>
       </div>
-    </div>
-    <div *ngIf="caseStatus$ | async as caseStatus" class="dossier-detail-page-header">
-      <cds-tag [type]="caseStatus.tagType">{{ caseStatus.title }}</cds-tag>
     </div>
   </ng-template>
 </ng-container>

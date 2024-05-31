@@ -135,6 +135,10 @@
       }
     },
     "documenten": {
+      "deleteConfirmationModal": {
+        "title": "Dokument löschen",
+        "content": "Möchten Sie dieses Dokument wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+      },
       "noProcessLinked": {
         "regularUser": "Der Dokumenten-Upload steht für diesen Fall nicht zur Verfügung. Bitte wenden Sie sich an einen Administrator",
         "adminRole": "Der Prozess zum Hochladen von Dokumenten wurde nicht konfiguriert. Bitte konfigurieren Sie diesen Prozess auf der Fallverwaltungsseite"
@@ -157,7 +161,11 @@
       "noFormSpecified": "Für diese Registerkarte wurde keine Formulardefinition angegeben.",
       "formNotFound": "Die Formulardefinition '{{formDefinitionName}}' konnte nicht gefunden werden."
     },
-    "rowLocked": "Kein Zugriff zu dieser Fall!"
+    "rowLocked": "Kein Zugriff zu dieser Fall!",
+    "widgets": {
+      "noWidgets": "Keine Widgets",
+      "noWidgetsDescription": "Für dieses Tab sind keine Widgets konfiguriert, oder Sie verfügen nicht über die entsprechenden Berechtigungen, um sie anzuzeigen."
+    }
   },
   "document": {
     "title": {
@@ -168,20 +176,29 @@
     "createdBy": "Erstellt von",
     "createdOn": "Erstellt am",
     "sequence": "Abfolge",
-    "fillInMetadata": "Informationen zu dieser Datei",
+    "fillInMetadata": "Dateimetadaten hinzufügen",
+    "editMetadata": "Dateimetadaten bearbeiten",
     "cancel": "Abbrechen",
     "upload": "Upload",
+    "save": "Speichern",
     "size": "Umfang",
+    "tags": "Stichworte (optional)",
+    "tagsTooltip": "Tags werden zum einfachen Filtern und Durchsuchen von Dokumenten verwendet. Sie können einem Dokument mehrere Tags hinzufügen.",
+    "tagsPlaceholder": "Wählen Sie Tags aus",
     "format": "Datei Format",
     "trefwoorden": "Schlüsselwörter",
     "filename": "Dateiname",
     "filenameTooltip": "Der Name der physischen Datei, in der der Inhalt des Dokuments erfasst wird, einschließlich Erweiterung",
+    "filenamePlaceholder": "Dateinamen hinzufügen",
     "confidentialityLevel": "Vertraulichkeitshinweis",
     "confidentialityLevelTooltip": "Angabe, inwieweit das Dokument für die Öffentlichkeit bestimmt ist",
+    "confidentialityPlaceholder": "Wählen Sie Vertraulichkeit",
     "inputTitle": "Titel",
     "inputTitleTooltip": "Der Name, unter dem das Dokument offiziell bekannt ist",
+    "inputTitlePlaceholder": "Titel hinzufügen",
     "inputDescription": "Beschreibung",
     "inputDescriptionTooltip": "Eine allgemeine Beschreibung des Inhalts des Dokuments",
+    "inputDescriptionPlaceholder": "Beschreibung hinzufügen",
     "openbaar": "Öffentlichkeit",
     "beperkt_openbaar": "Eingeschränkt_öffentlich",
     "intern": "Intern",
@@ -192,8 +209,10 @@
     "zeer_geheim": "Sehr geheim",
     "author": "Autor",
     "authorTooltip": "Der ursprüngliche Autor des Dokuments",
+    "authorPlaceholder": "Autor hinzufügen",
     "status": "Status",
     "statusTooltip": "Der aktuelle Status des Dokuments. 'In Bearbeitung': Das Dokument wird noch bearbeitet; 'Zu bestimmen': Das Dokument ist fertig, muss aber noch festgelegt werden; 'Final': Das Dokument wurde von einer autorisierten Person erstellt oder erhalten; 'Archiviert': Das Dokument wurde dauerhaft gespeichert.",
+    "statusPlaceholder": "Wählen Sie den Status",
     "in_bewerking": "In Bearbeitung",
     "ter_vaststelling": "Zu bestimmen",
     "definitief": "Final",
@@ -206,16 +225,19 @@
     "sendDateTooltip": "Das Datum, an dem das Dokument gesendet wurde",
     "language": "Sprache",
     "languageTooltip": "Die Sprache, in der das Dokument geschrieben ist",
+    "languagePlaceholder": "Sprache wählen",
     "nld": "Niederländisch",
     "eng": "Englisch",
     "deu": "Deutsch",
     "informatieobjecttype": "Dokumententyp",
     "informatieobjecttypeTooltip": "Ein Dokumenttyp, der sich auf den Falltyp des aktuellen Falls bezieht",
-    "additionalDate": "Zusätzliches Dokumentdatum",
+    "informatieobjecttypePlaceholder": "Choose information object type",
+    "additionalDate": "Zusätzliches Datum",
     "additionalDateTooltip": "Ein zusätzliches Datum, das dem Dokument als Metadaten hinzugefügt werden kann. Dieses zusätzliche Datum ist optional. Wenn „Eingangsdatum“ ausgewählt ist, kann der Dokumentstatus nur auf 'final' oder 'archiviert' gesetzt werden.",
     "noAdditionalDate": "Kein Zusatztermin",
     "delete": "Löschen",
     "download": "Herunterladen",
+    "edit": "Bearbeiten",
     "application/octet-stream": "Unbekannt",
     "application/json": "JSON",
     "application/msword": "DOC",
@@ -500,7 +522,8 @@
       "listColumns": "Aufführen",
       "tabManagement": "Tabs",
       "document": "Dokument",
-      "statuses": "Status"
+      "statuses": "Status",
+      "zgw": "ZGW"
     },
     "tabManagement": {
       "columns": {
@@ -519,7 +542,8 @@
         "tabKeyLabel": "Key",
         "tabNameLabel": "Tab name (Optional)",
         "title": "Neue Registerkarte hinzufügen {{documentDefinitionName}}",
-        "uniqueKeyError": "Der Schlüssel für diese Spalte muss eindeutig sein."
+        "uniqueKeyError": "Der Schlüssel für diese Spalte muss eindeutig sein.",
+        "widgetsComponent": "Widgets component"
       },
       "titles": {
         "custom": "Neue Registerkarte hinzufügen mit brauch component",
@@ -626,6 +650,80 @@
         "title": "Keine Status gefunden",
         "description": "Fügen Sie einen Status hinzu"
       }
+    }
+  },
+  "widgetTabManagement": {
+    "tab": {
+      "metadata": "<b>Erstellt von</b> {{createdBy}} | <b>Erstellt am</b> {{createdOn}} | <b>Schlüssel</b> {{key}}",
+      "editButton": "Bearbeiten",
+      "editWidgetTab": "Bearbeiten widget tab",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "form": {
+        "tabName": "Tab name"
+      }
+    }
+  },
+  "zgw": {
+    "columns": {
+      "column": "Spalte",
+      "add": "Spalte hinzufügen",
+      "edit": "Spalte bearbeiten",
+      "deleteText": "Sind Sie sicher, dass Sie dieses Spalte löschen möchten?"
+    },
+    "documentColumns": {
+      "auteur": "Autor",
+      "beschrijving": "Beschreibung",
+      "bestandsnaam": "Dateiname",
+      "bestandsomvang": "Dateigröße",
+      "bronorganisatie": "Quellorganisation",
+      "creatiedatum": "Erstellungsdatum",
+      "formaat": "Format",
+      "identificatie": "Identifikation",
+      "informatieobjecttypeOmschrijving": "Informationsobjekttyp",
+      "locked": "Locked",
+      "status": "Status",
+      "taal": "Sprache",
+      "titel": "Titel",
+      "trefwoorden": "Stichworte",
+      "versie": "Ausführung",
+      "vertrouwelijkheidaanduiding": "Vertraulichkeitsstufen"
+    },
+    "documents": {
+      "noResults": {
+        "filterTitle": "Keine Dokumente gefunden",
+        "filterDescription": "Es sind keine Dokumente vorhanden, die Ihren Suchkriterien entsprechen"
+      },
+      "noColumns": {
+        "description": "Bitte konfigurieren Sie Spalten für dieses Dokument",
+        "title": "Keine konfigurierten Spalten"
+      }
+    },
+    "tags": {
+      "tag": "Schlüsselwört",
+      "add": "Schlüsselwört hinzufügen",
+      "deleteText": "Sind Sie sicher, dass Sie dieses Schlüsselwört löschen möchten?",
+      "deleteMultipleText": "Sind Sie sicher, dass Sie diese Schlüsselwörter löschen möchten?",
+      "addModal": {
+        "header": "Schlüsselwört hinzufügen"
+      },
+      "list": {
+        "noResultsTitle": "Kein Schlüsselwörter gefunden",
+        "noResultsDescription": "Fügen Sie ein Schlüsselwört hinzu"
+      },
+      "search": {
+        "noResultsTitle": "Keine Ergebnisse",
+        "noResultsDescription": "Versuchen Sie, die Suchfilter anzupassen, um das Gesuchte zu finden."
+      },
+      "fields": {
+        "value": "Schlüsselwört",
+        "valueRequired": "Schlüsselwort ist erforderlich.",
+        "valueMaxLength": "Das Schlüsselwort ist zu lang. Die maximale Länge beträgt {{ maxlength }} Zeichen."
+      }
+    },
+    "tabs": {
+      "documentColumns": "Dokumentspalten",
+      "documentTags": "Dokumentschlüsselwörter"
     }
   },
   "task-list": {
@@ -841,6 +939,15 @@
       "warm-gray": "Warmes Grau",
       "high-contrast": "Hoher Kontrast",
       "outline": "Umrissen"
+    },
+    "labels": {
+      "dateCreationFrom": "Datum der Erstellung von",
+      "dateCreationTo": "Datum der Erstellung bis"
+    },
+    "sorting": {
+      "ascending": "Aufsteigend",
+      "descending": "Absteigend",
+      "noDefault": "Keine Standardsortierung"
     }
   },
   "taskDetail": {
