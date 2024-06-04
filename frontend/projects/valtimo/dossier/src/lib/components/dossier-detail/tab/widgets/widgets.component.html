@@ -32,7 +32,9 @@
       <div class="loading-container">
         <cds-loading></cds-loading>
       </div>
-    } @else if (!obs.widgetConfiguration.widgets || obs.widgetConfiguration.widgets.length === 0) {
+    }
+
+    @if (!obs.widgetConfiguration.widgets || obs.widgetConfiguration.widgets.length === 0) {
       <valtimo-no-results
         [title]="'dossier.widgets.noWidgets' | translate"
         [description]="'dossier.widgets.noWidgetsDescription' | translate"
