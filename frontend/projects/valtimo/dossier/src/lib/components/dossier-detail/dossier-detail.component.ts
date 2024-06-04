@@ -193,6 +193,9 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
+  public readonly tabHorizontalOverflowDisabled =
+    this.dossierTabService.tabHorizontalOverflowDisabled;
+
   private _snapshot: ParamMap;
   private _initialTabName: string;
 

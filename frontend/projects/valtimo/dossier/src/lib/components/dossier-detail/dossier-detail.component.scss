@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+.main-content--no-horizontal-overflow {
+  overflow-x: hidden;
+}
+
 .tab-container {
   min-height: 300px;
 

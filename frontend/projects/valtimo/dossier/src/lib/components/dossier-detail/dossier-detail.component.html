@@ -13,7 +13,10 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<div class="main-content">
+<div
+  class="main-content"
+  [ngClass]="{'main-content--no-horizontal-overflow': tabHorizontalOverflowDisabled()}"
+>
   <div class="container-fluid">
     <div class="col-12 px-0 mb-5">
       <ng-container *ngTemplateOutlet="tabs"></ng-container>

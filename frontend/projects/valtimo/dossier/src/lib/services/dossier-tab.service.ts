@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Inject, Injectable, OnDestroy, Optional, Type} from '@angular/core';
+import {Inject, Injectable, OnDestroy, Optional, Signal, signal, Type} from '@angular/core';
 import {ApiTabItem, ApiTabType, CaseTabConfig, TabImpl, TabLoaderImpl} from '../models';
 import {CASE_TAB_TOKEN, DEFAULT_TAB_COMPONENTS, DEFAULT_TABS, TAB_MAP} from '../constants';
 import {ConfigService, ZGW_OBJECT_TYPE_COMPONENT_TOKEN} from '@valtimo/config';
@@ -35,6 +35,11 @@ export class DossierTabService implements OnDestroy {
   private readonly _tabs$ = new BehaviorSubject<Array<TabImpl> | null>(null);
   private readonly _subscriptions = new Subscription();
   private readonly _tabLoader$ = new BehaviorSubject<TabLoaderImpl | null>(null);
+  private readonly _tabHorizontalOverflowDisabled = signal(false);
+
+  public get tabHorizontalOverflowDisabled(): Signal<boolean> {
+    return this._tabHorizontalOverflowDisabled.asReadonly();
+  }
 
   public get tabs$(): Observable<Array<TabImpl>> {
     return this._tabs$.pipe(filter(tabs => !!tabs));
@@ -72,6 +77,14 @@ export class DossierTabService implements OnDestroy {
 
   public setTabLoader(tabLoader: TabLoaderImpl): void {
     this._tabLoader$.next(tabLoader);
+  }
+
+  public disableTabHorizontalOverflow(): void {
+    this._tabHorizontalOverflowDisabled.set(true);
+  }
+
+  public enableTabHorizontalOverflow(): void {
+    this._tabHorizontalOverflowDisabled.set(false);
   }
 
   private getConfigurableTabs(documentDefinitionName: string): Map<string, object> {
