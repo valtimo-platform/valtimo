@@ -493,13 +493,17 @@ export class DossierListComponent implements OnInit, OnDestroy {
     this.searchService.search(searchFieldValues);
   }
 
-  public rowClick(document: any): void {
+  public rowClick(item: any): void {
     this.listService.documentDefinitionName$.pipe(take(1)).subscribe(documentDefinitionName => {
       this.breadcrumbService.cacheQueryParams(
         `/dossiers/${documentDefinitionName}`,
         this.route.snapshot.queryParams
       );
-      this.router.navigate([`/dossiers/${documentDefinitionName}/document/${document.id}`]);
+      if (item.ctrlClick) {
+        window.open(`/dossiers/${documentDefinitionName}/document/${item.id}`, '_blank');
+      } else {
+        this.router.navigate([`/dossiers/${documentDefinitionName}/document/${item.id}`]);
+      }
     });
   }
 
