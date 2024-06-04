@@ -16,4 +16,6 @@
 
 type ModalData = any;
 
-export {ModalData};
+type ModalCloseEventType = 'close' | 'closeAndRefresh';
+
+export {ModalData, ModalCloseEventType};

@@ -1,4 +1,5 @@
 enum CaseWidgetDisplayTypeKey {
+  TEXT = 'text',
   BOOLEAN = 'boolean',
   CURRENCY = 'currency',
   DATE = 'date',

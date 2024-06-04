@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,8 +14,28 @@
  * limitations under the License.
  */
 
-export * from './list-column.model';
-export * from './status.model';
-export * from './tab.enum';
-export * from './widget-content.model';
-export * from './widget-wizard.model';
+.valtimo-widget-wizard-content {
+  display: flex;
+  flex-direction: column;
+
+  > *:first-child {
+    margin-bottom: 16px;
+  }
+
+  &__input {
+    max-width: 288px;
+  }
+
+  &__heading {
+    display: flex;
+    align-items: center;
+  }
+
+  #addColumn-header {
+    padding: 0 !important;
+  }
+
+  .cds--tabs__nav-item {
+    padding-right: 0 !important;
+  }
+}

@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
+import {CaseWidgetsRes} from '@valtimo/dossier';
 import {Observable} from 'rxjs';
-import {WidgetTabConfiguration} from '../models/widget-tab-item.type';
 
 @Injectable({
   providedIn: 'root',
@@ -36,9 +35,16 @@ export class WidgetTabManagementService {
   public getWidgetTabConfiguration(
     caseDefinitionName: string,
     widgetTabKey: string
-  ): Observable<WidgetTabConfiguration> {
-    return this.http.get<WidgetTabConfiguration>(
+  ): Observable<CaseWidgetsRes> {
+    return this.http.get<CaseWidgetsRes>(
       `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionName}/widget-tab/${widgetTabKey}`
+    );
+  }
+
+  public updateWidgets(tab: CaseWidgetsRes): Observable<any> {
+    return this.http.post<any>(
+      `${this.valtimoEndpointUri}management/v1/case-definition/${tab.caseDefinitionName}/widget-tab/${tab.key}`,
+      tab
     );
   }
 }

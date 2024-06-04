@@ -662,6 +662,76 @@
       "form": {
         "tabName": "Tab naam"
       }
+    },
+    "list": {
+      "add": "Widget toevoegen"
+    },
+    "wizard": {
+      "title": "Widget aanmaken",
+      "steps": {
+        "content": "Kies widgetinhoud",
+        "style": "Kies widgetstijl",
+        "type": "Kies widgettype",
+        "width": "Kies widgetbreedte"
+      }
+    },
+    "types": {
+      "description": "Kies het widgettype dat je wilt configureren.",
+      "fields": {
+        "title": "Velden",
+        "description": "Tekstgegevens met inhoud en een label"
+      }
+    },
+    "width": {
+      "description": "Selecteer de gewenste breedte voor de widget. Houd er rekening mee dat er niet meer dan 4 kolommen met inhoud naast elkaar mogen staan.",
+      "quarter": {
+        "title": "1/4",
+        "description": "Eén kolom inhoud"
+      },
+      "half": {
+        "title": "Half",
+        "description": "Twee kolommen inhoud"
+      },
+      "threeQuarters": {
+        "title": "3/4",
+        "description": "Drie kolommen inhoud"
+      },
+      "fullWidth": {
+        "title": "Volle-breedte",
+        "description": "Vier kolommen inhoud"
+      }
+    },
+    "style": {
+      "description": "Selecteer de gewenste stijl voor de widget",
+      "default": {
+        "title": "Standaard",
+        "description": "Voor reguliere inhoud"
+      },
+      "highContrast": {
+        "title": "Hoog contrast",
+        "description": "Voor inhoud met een hogere prioriteit"
+      }
+    },
+    "content": {
+      "description": "Voer de inhoud voor elke kolom in. Houd er rekening mee dat niet alle velden even hoog zijn. Zorg ervoor dat de gegevens op een gelijke manier worden verdeeld voor het beste resultaat.",
+      "widgetTitle": "Widget titel",
+      "widgetTitlePlaceholder": "Kies een korte naam",
+      "column": "Kolom {{number}}",
+      "fields": {
+        "add": "Veld toevoegen",
+        "addEnum": "Enum-waarde toevoegen",
+        "currencyCode": "Valutacode",
+        "digitsInfo": "Getalformaat",
+        "display": "Weergave",
+        "format": "Formaat",
+        "key": "Sleutel",
+        "title": "Titel",
+        "titlePlaceholder": "Kies een titel",
+        "type": "Type",
+        "typePlaceholder": "Kies type",
+        "value": "Waarde",
+        "valuePlaceholder": "Pad naar waarde"
+      }
     }
   },
   "zgw": {
@@ -951,7 +1021,8 @@
       "ascending": "Oplopend",
       "descending": "Aflopend",
       "noDefault": "Geen standaardsortering"
-    }
+    },
+    "key": "Sleutel"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",

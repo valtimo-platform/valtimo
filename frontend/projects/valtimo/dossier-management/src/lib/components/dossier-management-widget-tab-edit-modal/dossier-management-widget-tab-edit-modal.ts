@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   ChangeDetectionStrategy,
   Component,
@@ -24,12 +23,12 @@ import {
   Output,
   ViewEncapsulation,
 } from '@angular/core';
-import {NotificationService} from 'carbon-components-angular';
-import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 import {TabManagementService} from '../../services';
 import {ApiTabItem, ApiTabType} from '@valtimo/dossier';
+import {NotificationService} from 'carbon-components-angular';
+import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 
 @Component({
   selector: 'valtimo-dossier-management-widget-tab-edit-modal',
@@ -50,7 +49,7 @@ export class DossierManagementWidgetTabEditModalComponent implements OnInit, OnD
     name: this.fb.control('', [Validators.required]),
   });
 
-  public get widgetTabName(): AbstractControl<string, string> {
+  public get widgetTabName(): AbstractControl<string | null, string | null> | null {
     return this.editWidgetTabForm.get('name');
   }
 
@@ -80,10 +79,11 @@ export class DossierManagementWidgetTabEditModalComponent implements OnInit, OnD
   public saveWidgetTab(): void {
     this.disable();
 
-    this.tabManagementService.editTab(
+    this.tabManagementService
+      .editTab(
         {
           key: this.tabItem.key,
-          name: this.widgetTabName.value,
+          name: this.widgetTabName?.value,
           contentKey: '-',
           type: ApiTabType.WIDGETS,
         },

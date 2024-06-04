@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-export * from './list-column.model';
-export * from './status.model';
-export * from './tab.enum';
-export * from './widget-content.model';
-export * from './widget-wizard.model';
+import {EventEmitter} from '@angular/core';
+
+interface WidgetContentComponent {
+  columnData: object;
+  changeEvent: EventEmitter<{data: any; valid: boolean}>;
+}
+
+export {WidgetContentComponent};

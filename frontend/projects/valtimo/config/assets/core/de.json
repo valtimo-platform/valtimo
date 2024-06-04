@@ -662,6 +662,76 @@
       "form": {
         "tabName": "Tab name"
       }
+    },
+    "list": {
+      "add": "Widget hinzufügen"
+    },
+    "wizard": {
+      "title": "Widget erstellen",
+      "steps": {
+        "content": "Wählen Sie den Widget-Inhalt",
+        "style": "Wählen Sie den Widget-Stil",
+        "type": "Wählen Sie den Widget-Typ",
+        "width": "Wählen Sie die Widget-Breite"
+      }
+    },
+    "types": {
+      "description": "Wählen Sie den Widget-Typ aus, den Sie konfigurieren möchten.",
+      "fields": {
+        "title": "Felder",
+        "description": "Textdaten mit Inhalt und einer Beschriftung"
+      }
+    },
+    "width": {
+      "description": "Wählen Sie die gewünschte Breite für das Widget aus. Beachten Sie, dass nicht mehr als 4 Inhaltsspalten nebeneinander liegen dürfen.",
+      "quarter": {
+        "title": "1/4",
+        "description": "Eine Spalte mit Inhalt"
+      },
+      "half": {
+        "title": "Half",
+        "description": "Zwei Inhaltsspalten"
+      },
+      "threeQuarters": {
+        "title": "3/4",
+        "description": "Drei Inhaltsspalten"
+      },
+      "fullWidth": {
+        "title": "Gesamtbreite",
+        "description": "Vier Inhaltsspalten"
+      }
+    },
+    "style": {
+      "description": "Wählen Sie den gewünschten Stil für das Widget aus",
+      "default": {
+        "title": "Standard",
+        "description": "Für reguläre Inhalte"
+      },
+      "highContrast": {
+        "title": "Hoher Kontrast",
+        "description": "Für Inhalte mit höherer Priorität"
+      }
+    },
+    "content": {
+      "description": "Geben Sie den Inhalt für jede Spalte ein. Beachten Sie, dass nicht alle Felder die gleiche Höhe haben. Um das beste Ergebnis zu erzielen, stellen Sie sicher, dass die Artikel richtig verteilt sind.",
+      "widgetTitle": "Widget-Titel",
+      "widgetTitlePlaceholder": "Wählen Sie einen Kurznamen",
+      "column": "Spalte {{number}}",
+      "fields": {
+        "add": "Feld hinzufügen",
+        "addEnum": "Enum-Wert hinzufügen",
+        "currencyCode": "Währungscode",
+        "digitsInfo": "Zahlenformat",
+        "display": "Anzeige",
+        "format": "Format",
+        "key": "Schlüssel",
+        "title": "Titel",
+        "titlePlaceholder": "Wählen Sie einen Titel",
+        "type": "Type",
+        "typePlaceholder": "Wählen Sie Typ",
+        "value": "Wert",
+        "valuePlaceholder": "Weg zum Wert"
+      }
     }
   },
   "zgw": {
@@ -948,7 +1018,8 @@
       "ascending": "Aufsteigend",
       "descending": "Absteigend",
       "noDefault": "Keine Standardsortierung"
-    }
+    },
+    "key": "Schlüssel"
   },
   "taskDetail": {
     "taskCreated": "Erstellt",

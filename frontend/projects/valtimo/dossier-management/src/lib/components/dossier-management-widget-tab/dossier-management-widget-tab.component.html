@@ -21,6 +21,13 @@
 >
 </valtimo-dossier-management-widget-tab-edit-modal>
 
+<valtimo-dossier-management-widgets-editor
+  [documentDefinitionName]="documentDefinitionName$ | async"
+  [tabWidgetKey]="tabWidgetKey$ | async"
+  [currentWidgetTab]="currentWidgetTab$ | async"
+  (changeSaved)="refreshWidgetTab()"
+></valtimo-dossier-management-widgets-editor>
+
 <ng-container renderInPageHeader>
   <ng-template>
     <button

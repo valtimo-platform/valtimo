@@ -94,14 +94,17 @@ interface CaseWidgetXY {
 }
 
 export {
-  FieldsCaseWidget,
   CaseWidget,
-  CaseWidgetsRes,
-  CaseWidgetWithUuid,
-  CaseWidgetWidthsPx,
+  CaseWidgetConfigurationBin,
   CaseWidgetContentHeightsPx,
   CaseWidgetContentHeightsPxWithContainerWidth,
-  CaseWidgetConfigurationBin,
   CaseWidgetPackResult,
+  CaseWidgetsRes,
+  CaseWidgetType,
+  CaseWidgetWidth,
+  CaseWidgetWidthsPx,
+  CaseWidgetWithUuid,
   CaseWidgetXY,
+  FieldsCaseWidget,
+  FieldsCaseWidgetValue,
 };

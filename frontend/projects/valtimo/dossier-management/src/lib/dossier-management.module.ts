@@ -84,6 +84,7 @@ import {DossierManagementStatusesComponent} from './components/dossier-managemen
 import {DossierManagementStatusModalComponent} from './components/dossier-management-statuses/dossier-management-status-modal/dossier-management-status-modal.component';
 import {DossierManagementCreateComponent} from './components/dossier-management-create/dossier-management-create.component';
 import {DossierManagementWidgetTabEditModalComponent} from './components/dossier-management-widget-tab-edit-modal/dossier-management-widget-tab-edit-modal';
+import { DossierManagementWidgetsEditorComponent } from './components/dossier-management-widget-tab/dossier-management-widgets-editor/dossier-management-widgets-editor.component';
 
 @NgModule({
   declarations: [
@@ -158,6 +159,7 @@ import {DossierManagementWidgetTabEditModalComponent} from './components/dossier
     ConfirmationModalModule,
     ToggleModule,
     TooltipModule,
+    DossierManagementWidgetsEditorComponent
   ],
   providers: [TabManagementService],
 })
