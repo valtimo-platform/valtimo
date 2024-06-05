@@ -24,12 +24,12 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
+import {CaseWidget, CaseWidgetsRes} from '@valtimo/dossier';
 import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
 import {BehaviorSubject, Subject, take} from 'rxjs';
 import {AVAILABLE_WIDGETS, WidgetStyle} from '../../../models';
 import {WidgetTabManagementService, WidgetWizardService} from '../../../services';
 import {DossierManagementWidgetWizardComponent} from '../../dossier-management-widget-wizard/dossier-management-widget-wizard.component';
-import {CaseWidget, CaseWidgetsRes} from '@valtimo/dossier';
 
 @Component({
   selector: 'valtimo-dossier-management-widgets-editor',
@@ -111,15 +111,7 @@ export class DossierManagementWidgetsEditorComponent {
     this.widgetWizardService.selectedWidget.set(
       AVAILABLE_WIDGETS.find(available => available.type === tabWidget.type) ?? null
     );
-    this.widgetWizardService.widgetContent.set(
-      tabWidget.properties.columns.reduce(
-        (acc, curr, index) => ({
-          ...acc,
-          [index]: curr,
-        }),
-        {}
-      )
-    );
+    this.widgetWizardService.widgetContent.set(tabWidget.properties);
     this.addModalOpen$.next(true);
   }
 

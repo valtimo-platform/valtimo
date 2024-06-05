@@ -15,10 +15,16 @@
  */
 
 import {EventEmitter} from '@angular/core';
+import {FieldsCaseWidgetValue} from '@valtimo/dossier';
 
 interface WidgetContentComponent {
-  columnData: object;
-  changeEvent: EventEmitter<{data: any; valid: boolean}>;
+  changeValidEvent: EventEmitter<boolean>;
 }
 
-export {WidgetContentComponent};
+interface WidgetFieldsContent {
+  columns: FieldsCaseWidgetValue[][];
+}
+
+type WidgetContentProperties = WidgetFieldsContent;
+
+export {WidgetContentComponent, WidgetContentProperties};

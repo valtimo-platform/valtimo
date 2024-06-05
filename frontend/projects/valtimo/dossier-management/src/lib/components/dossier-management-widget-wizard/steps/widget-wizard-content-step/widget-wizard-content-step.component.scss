@@ -14,28 +14,3 @@
  * limitations under the License.
  */
 
-.valtimo-widget-wizard-content {
-  display: flex;
-  flex-direction: column;
-
-  > *:first-child {
-    margin-bottom: 16px;
-  }
-
-  &__input {
-    max-width: 288px;
-  }
-
-  &__heading {
-    display: flex;
-    align-items: center;
-  }
-
-  #addColumn-header {
-    padding: 0 !important;
-  }
-
-  .cds--tabs__nav-item {
-    padding-right: 0 !important;
-  }
-}

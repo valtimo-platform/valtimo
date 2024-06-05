@@ -102,6 +102,7 @@ interface CaseWidgetXY {
 }
 
 export {
+  BasicCaseWidget,
   CaseWidget,
   CaseWidgetConfigurationBin,
   CaseWidgetContentHeightsPx,

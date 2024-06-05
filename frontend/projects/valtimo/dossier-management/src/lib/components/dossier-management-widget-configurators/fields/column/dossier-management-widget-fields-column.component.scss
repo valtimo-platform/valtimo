@@ -13,29 +13,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-.valtimo-dossier-management-widget-field {
+ .valtimo-dossier-management-widget-field-column {
   display: flex;
   flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background: var(--cds-layer-01);
 
-  > *:first-child {
-    margin-bottom: 16px;
+  &__container {
+    display: grid;
+    grid-template-columns: 140px 2fr 2fr auto 32px;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px;
+    background: var(--cds-layer-02);
   }
 
-  &__input {
-    max-width: 288px;
-  }
-
-  &__heading {
+  &__delete-button {
     display: flex;
     align-items: center;
+    justify-content: center;
+    padding: 0;
+    align-self: center;
+
+    &.enum {
+      align-self: flex-end;
+    }
   }
 
-  #addColumn-header {
-    padding: 0 !important;
+  &__options {
+    display: flex;
+    gap: 16px;
   }
 
-  .cds--tabs__nav-item {
-    padding-right: 0 !important;
+  &__enum {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    &-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      align-items: flex-end;
+      gap: 16px;
+    }
   }
 }
