@@ -403,8 +403,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
             case ViewType.TAGS: {
               return this.resolveTagObject(item.tags);
             }
-            case ViewType.DATE:
-              return new TableItem({data: this.resolveObject(field, item) ?? '-', item});
             default:
               return new TableItem({data: this.resolveObject(field, item) ?? '-', item});
           }

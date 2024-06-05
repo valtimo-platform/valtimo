@@ -25,7 +25,7 @@
     *ngIf="{
       loading:
         obs.loadingWidgetConfiguration ||
-        (obs.widgetConfiguration.widgets.length > 0 && !obs.dataLoadedForAllWidgets)
+        (obs.widgetConfiguration?.widgets.length > 0 && !obs.dataLoadedForAllWidgets)
     } as vars"
   >
     @if (vars.loading) {
@@ -34,7 +34,7 @@
       </div>
     }
 
-    @if (!obs.widgetConfiguration.widgets || obs.widgetConfiguration.widgets.length === 0) {
+    @if (!obs.widgetConfiguration?.widgets || obs.widgetConfiguration?.widgets.length === 0) {
       <valtimo-no-results
         [title]="'dossier.widgets.noWidgets' | translate"
         [description]="'dossier.widgets.noWidgetsDescription' | translate"

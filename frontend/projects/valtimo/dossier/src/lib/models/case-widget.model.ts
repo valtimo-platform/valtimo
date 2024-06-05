@@ -18,6 +18,7 @@ import {CaseWidgetDisplayType} from '.';
 
 enum CaseWidgetType {
   FIELDS = 'fields',
+  TABLE = 'table',
 }
 
 type CaseWidgetWidth = 1 | 2 | 3 | 4;
@@ -43,11 +44,18 @@ interface FieldsCaseWidget extends BasicCaseWidget {
   };
 }
 
-type CaseWidget = FieldsCaseWidget;
-
-interface CaseWidgetWithUuid extends CaseWidget {
-  uuid: string;
+interface TableCaseWidget extends BasicCaseWidget {
+  type: CaseWidgetType.TABLE;
+  properties: {
+    columns: FieldsCaseWidgetValue[];
+  };
 }
+
+type CaseWidget = FieldsCaseWidget | TableCaseWidget;
+
+type CaseWidgetWithUuid = CaseWidget & {
+  uuid: string;
+};
 
 interface CaseWidgetsRes {
   caseDefinitionName: string;
@@ -107,4 +115,5 @@ export {
   CaseWidgetXY,
   FieldsCaseWidget,
   FieldsCaseWidgetValue,
+  TableCaseWidget,
 };

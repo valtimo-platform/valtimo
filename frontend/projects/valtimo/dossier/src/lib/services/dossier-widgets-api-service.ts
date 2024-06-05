@@ -40,9 +40,18 @@ export class DossierWidgetsApiService extends BaseApiService {
     );
   }
 
-  public getWidgetData(documentId: string, tabKey: string, widgetKey): Observable<object> {
+  public getWidgetData(
+    documentId: string,
+    tabKey: string,
+    widgetKey: string,
+    queryParams?: string
+  ): Observable<object> {
     return this.httpClient.get<object>(
-      this.getApiUrl(`v1/document/${documentId}/widget-tab/${tabKey}/widget/${widgetKey}`)
+      this.getApiUrl(
+        !queryParams
+          ? `v1/document/${documentId}/widget-tab/${tabKey}/widget/${widgetKey}`
+          : `v1/document/${documentId}/widget-tab/${tabKey}/widget/${widgetKey}?${queryParams}`
+      )
     );
   }
 }

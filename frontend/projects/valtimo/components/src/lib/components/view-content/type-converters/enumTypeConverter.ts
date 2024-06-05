@@ -17,11 +17,11 @@
 import {TypeConverter} from './type-converters.model';
 
 export class EnumTypeConverter implements TypeConverter {
-  getTypeString(): string {
+  public getTypeString(): string {
     return 'enum';
   }
 
-  convert(value: any, definition: any): string {
+  public convert(value: any, definition: any): string {
     return definition.enum[value];
   }
 }

@@ -13,17 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {inject} from '@angular/core';
 import {TypeConverter} from './type-converters.model';
+import {CurrencyPipe} from '@angular/common';
 
-export class StringReplaceUnderscoreTypeConverter implements TypeConverter {
-  public regExpStringRemoveUnderscore = /_/g;
+export class CurrencyTypeConverter implements TypeConverter {
+  private readonly _currencyPipe = inject(CurrencyPipe);
 
   public getTypeString(): string {
-    return 'stringReplaceUnderscore';
+    return 'currency';
   }
 
   public convert(value: any, definition: any): string {
-    return value.replace(this.regExpStringRemoveUnderscore, ' ');
+    if (!value) {
+      return '-';
+    }
+
+    return (
+      this._currencyPipe.transform(
+        value,
+        definition.currencyCode,
+        definition.display,
+        definition.digitsInfo
+      ) ?? ''
+    );
   }
 }

@@ -34,6 +34,7 @@ import {CarbonListComponent} from './carbon-list.component';
 import {CarbonListFilterPipe} from './CarbonListFilterPipe.directive';
 import {CarbonNoResultsComponent} from './no-results/carbon-no-results.component';
 import {CarbonTagsModalComponent} from './tags-modal/tags-modal.component';
+import {ViewContentModule} from '../view-content/view-content.module';
 
 @NgModule({
   declarations: [
@@ -59,6 +60,7 @@ import {CarbonTagsModalComponent} from './tags-modal/tags-modal.component';
     TagModule,
     ModalModule,
     ValtimoCdsModalDirectiveModule,
+    ViewContentModule,
   ],
   exports: [CarbonListComponent, CarbonListFilterPipe, CarbonNoResultsComponent],
 })

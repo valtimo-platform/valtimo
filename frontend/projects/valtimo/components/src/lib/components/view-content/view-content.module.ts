@@ -15,9 +15,12 @@
  */
 
 import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {CommonModule, CurrencyPipe, DecimalPipe, PercentPipe} from '@angular/common';
+import {ViewContentService} from './view-content.service';
+import {TYPE_PROVIDERS} from './type-converters/type-converters.model';
 
 @NgModule({
   imports: [CommonModule],
+  providers: [CurrencyPipe, DecimalPipe, PercentPipe, ViewContentService, ...TYPE_PROVIDERS],
 })
 export class ViewContentModule {}

@@ -14,16 +14,41 @@
  * limitations under the License.
  */
 
-import {TypeConverter} from './type-converters.model';
+.valtimo-widget-table {
+  padding: 16px;
 
-export class StringReplaceUnderscoreTypeConverter implements TypeConverter {
-  public regExpStringRemoveUnderscore = /_/g;
+  &__content {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
 
-  public getTypeString(): string {
-    return 'stringReplaceUnderscore';
+    valtimo-carbon-list {
+      width: 100%;
+    }
   }
 
-  public convert(value: any, definition: any): string {
-    return value.replace(this.regExpStringRemoveUnderscore, ' ');
+  .cds--data-table > thead {
+    background: transparent !important;
+  }
+
+  .cds--table-header-label > span {
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--cds-text-secondary);
+  }
+
+  &--transparent {
+    background: transparent !important;
+  }
+
+  &--title {
+    border: none !important;
+    font-style: italic;
+  }
+
+  .widget-title {
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 24px;
   }
 }

@@ -13,23 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {inject, Injectable} from '@angular/core';
+import {TYPE_CONVERTER_TOKEN, TypeConverter} from './type-converters/type-converters.model';
 
-import {Injectable} from '@angular/core';
-import {StringTypeConverter} from './type-converters/stringTypeConverter';
-import {TYPE_CONVERTERS, TypeConverter} from './type-converters/type-converters.model';
-
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class ViewContentService {
-  private converters: {[key: string]: TypeConverter} = {};
-  private defaultConverter: TypeConverter;
-
-  constructor() {
-    this.defaultConverter = new StringTypeConverter();
-
-    TYPE_CONVERTERS.forEach(converter => this.addConverter(converter));
-  }
+  private readonly converters = inject(TYPE_CONVERTER_TOKEN);
 
   public get(value: any, definition: any) {
     const separator = ':';
@@ -50,19 +39,15 @@ export class ViewContentService {
       );
     }
 
-    if (typeof this.converters[definition.viewType] !== 'undefined') {
-      return this.converters[definition.viewType].convert(value, definition);
+    const converter: TypeConverter | undefined = this.converters.find(
+      converter => converter.getTypeString() === definition.viewType
+    );
+
+    if (!!converter) {
+      return converter.convert(value, definition);
     }
 
-    return this.defaultConverter.convert(value, definition);
-  }
-
-  public addConverter(converter: TypeConverter) {
-    if (typeof this.converters[converter.getTypeString()] !== 'undefined') {
-      throw new Error('Converter with name ' + converter.getTypeString() + ' already exists');
-    }
-
-    this.converters[converter.getTypeString()] = converter;
+    return this.converters[0].convert(value, definition);
   }
 
   getSeparatorIndex(definition, separator) {

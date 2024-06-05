@@ -13,17 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {PercentPipe} from '@angular/common';
+import {inject} from '@angular/core';
 import {TypeConverter} from './type-converters.model';
 
-export class StringReplaceUnderscoreTypeConverter implements TypeConverter {
-  public regExpStringRemoveUnderscore = /_/g;
+export class PercentTypeConverter implements TypeConverter {
+  private readonly _percentPipe = inject(PercentPipe);
 
   public getTypeString(): string {
-    return 'stringReplaceUnderscore';
+    return 'percent';
   }
 
   public convert(value: any, definition: any): string {
-    return value.replace(this.regExpStringRemoveUnderscore, ' ');
+    if (!value) {
+      return '-';
+    }
+
+    return this._percentPipe.transform(value, definition.digitsInfo) ?? '';
   }
 }

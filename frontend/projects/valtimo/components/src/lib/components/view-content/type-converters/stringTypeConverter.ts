@@ -17,11 +17,11 @@
 import {TypeConverter} from './type-converters.model';
 
 export class StringTypeConverter implements TypeConverter {
-  getTypeString(): string {
+  public getTypeString(): string {
     return 'string';
   }
 
-  convert(value: any, definition: any): string {
+  public convert(value: any, definition: any): string {
     return value;
   }
 }

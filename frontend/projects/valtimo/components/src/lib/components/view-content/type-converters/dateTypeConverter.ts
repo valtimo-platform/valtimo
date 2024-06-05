@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {TypeConverter} from './type-converters.model';
 import moment from 'moment';
+import {TypeConverter} from './type-converters.model';
 
-moment.locale(localStorage.getItem('langKey'));
+moment.locale(localStorage.getItem('langKey') ?? 'nl-NL');
 
 export class DateTypeConverter implements TypeConverter {
-  getTypeString(): string {
+  public getTypeString(): string {
     return 'date';
   }
 
-  convert(value: any, definition: any): string {
+  public convert(value: any, definition: any): string {
     if (!value) {
       return '-';
     }

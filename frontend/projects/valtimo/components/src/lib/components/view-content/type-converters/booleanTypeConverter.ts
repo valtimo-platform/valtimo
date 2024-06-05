@@ -17,11 +17,11 @@
 import {TypeConverter} from './type-converters.model';
 
 export class BooleanTypeConverter implements TypeConverter {
-  getTypeString(): string {
+  public getTypeString(): string {
     return 'boolean';
   }
 
-  convert(value: any, definition: any): string {
+  public convert(value: any, definition: any): string {
     const enumeration = definition?.enum;
 
     if (enumeration && Array.isArray(enumeration) && enumeration.length > 1) {

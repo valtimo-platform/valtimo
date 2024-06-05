@@ -20,22 +20,59 @@ import {DateTypeConverter} from './dateTypeConverter';
 import {EnumTypeConverter} from './enumTypeConverter';
 import {StringReplaceUnderscoreTypeConverter} from './stringReplaceUnderscoreTypeConverter';
 import {RelatedFilesTypeConverter} from './relatedFilesTypeConverter';
+import {NumberTypeConverter} from './numberTypeConverter';
+import {InjectionToken} from '@angular/core';
+import {PercentTypeConverter} from './percentTypeConverter';
+import {CurrencyTypeConverter} from './currencyTypeConverter';
 
-const stringTypeConverter = new StringTypeConverter();
-const booleanTypeConverter = new BooleanTypeConverter();
-const dateTypeConverter = new DateTypeConverter();
-const enumTypeConverter = new EnumTypeConverter();
-const stringReplaceUnderscoreTypeConverter = new StringReplaceUnderscoreTypeConverter();
-const relatedFilesTypeConverter = new RelatedFilesTypeConverter();
+export const TYPE_CONVERTER_TOKEN = new InjectionToken<TypeConverter[]>('Type Converter');
 
-// TODO: Via injection
-export const TYPE_CONVERTERS: Array<TypeConverter> = [
-  stringTypeConverter,
-  booleanTypeConverter,
-  dateTypeConverter,
-  enumTypeConverter,
-  stringReplaceUnderscoreTypeConverter,
-  relatedFilesTypeConverter,
+export const TYPE_PROVIDERS = [
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: StringTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: BooleanTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: DateTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: EnumTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: StringReplaceUnderscoreTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: RelatedFilesTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: NumberTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: PercentTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: CurrencyTypeConverter,
+    multi: true,
+  },
 ];
 
 export interface TypeConverter {

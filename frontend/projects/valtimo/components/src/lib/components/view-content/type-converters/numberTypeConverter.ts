@@ -13,17 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {DecimalPipe} from '@angular/common';
+import {inject} from '@angular/core';
 import {TypeConverter} from './type-converters.model';
 
-export class StringReplaceUnderscoreTypeConverter implements TypeConverter {
-  public regExpStringRemoveUnderscore = /_/g;
+export class NumberTypeConverter implements TypeConverter {
+  private readonly _decimalPipe = inject(DecimalPipe);
 
   public getTypeString(): string {
-    return 'stringReplaceUnderscore';
+    return 'number';
   }
 
   public convert(value: any, definition: any): string {
-    return value.replace(this.regExpStringRemoveUnderscore, ' ');
+    if (!value) {
+      return '-';
+    }
+
+    return this._decimalPipe.transform(value, definition.digitsInfo) ?? '';
   }
 }

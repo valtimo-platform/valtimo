@@ -97,7 +97,7 @@ export class DossierManagementWidgetTabEditModalComponent implements OnInit, OnD
 
   private setEditWidgetTabForm(): void {
     if (this.tabItem) {
-      this.widgetTabName?.setValue(this.tabItem.name);
+      this.widgetTabName?.setValue(this.tabItem.name ?? '');
     }
 
     this.enable();

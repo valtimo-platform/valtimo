@@ -17,9 +17,11 @@
 <ng-container
   *ngIf="{
     caseWidgetXY: caseWidgetXY$ | async,
+    documentId: documentId$ | async,
     packResultAvailable: packResultAvailable$ | async,
-    widgetData: widgetData$ | async,
-    widgetConfiguration: widget$ | async
+    tabKey: tabKey$ | async,
+    widgetConfiguration: widget$ | async,
+    widgetData: widgetData$ | async
   } as obs"
 >
   <div
@@ -29,7 +31,17 @@
     [style.left.px]="obs.caseWidgetXY?.x"
   >
     <div #widgetBlockContent class="widget-block__content">
-      {{ stringifiedWidget$ | async }}
+      @switch (obs.widgetConfiguration.type) {
+        @case (CaseWidgetType.TABLE) {
+          <valtimo-widget-table
+            [documentId]="obs.documentId"
+            [tabKey]="obs.tabKey"
+            [widgetConfiguration]="obs.widgetConfiguration"
+            [widgetData]="obs.widgetData"
+            (paginationEvent)="onPaginationEvent($event)"
+          ></valtimo-widget-table>
+        }
+      }
     </div>
   </div>
 </ng-container>

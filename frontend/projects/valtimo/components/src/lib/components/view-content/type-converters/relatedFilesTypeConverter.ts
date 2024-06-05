@@ -17,11 +17,11 @@
 import {TypeConverter} from './type-converters.model';
 
 export class RelatedFilesTypeConverter implements TypeConverter {
-  getTypeString(): string {
+  public getTypeString(): string {
     return 'relatedFiles';
   }
 
-  convert(value: any, definition: any): string {
+  public convert(value: any, definition: any): string {
     return value?.length || '-';
   }
 }

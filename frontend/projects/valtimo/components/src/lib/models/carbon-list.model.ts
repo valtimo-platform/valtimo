@@ -20,9 +20,12 @@ enum ViewType {
   ACTION = 'dropdownActions',
   ARRAY_COUNT = 'arrayCount',
   BOOLEAN = 'boolean',
+  CURRENCY = 'currency',
   DATE = 'date',
-  TAGS = 'tags',
   ENUM = 'enum',
+  NUMBER = 'number',
+  PERCENT = 'percent',
+  TAGS = 'tags',
   TEMPLATE = 'template',
   TEXT = 'text',
   UNDERSCORES_TO_SPACES = 'underscoresToSpaces',
@@ -65,8 +68,11 @@ interface ActionItem {
 interface ColumnConfig extends ListField {
   viewType: string | ViewType;
   className?: string;
-  format?: string;
+  currencyCode?: string;
+  digitsInfo?: string;
+  display?: string;
   enum?: Array<string> | {[key: string]: string};
+  format?: string;
   template?: TemplateRef<any>;
   templateData?: object;
 }
