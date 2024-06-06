@@ -14,28 +14,23 @@
  * limitations under the License.
  */
 
-.valtimo-dossier-management-widget-field {
+.valtimo-dossier-management-widget-custom {
   display: flex;
   flex-direction: column;
 
-  > *:first-child, > *:nth-child(2)  {
+  > *:first-child {
     margin-bottom: 16px;
   }
 
-  &__input {
-    max-width: 288px;
-  }
+  .dropdown-label {
+    label {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
 
-  &__heading {
-    display: flex;
-    align-items: center;
-  }
-
-  #addColumn-header {
-    padding: 0 !important;
-  }
-
-  .cds--tabs__nav-item {
-    padding-right: 0 !important;
+    cds-dropdown {
+      margin-top: 8px;
+    }
   }
 }

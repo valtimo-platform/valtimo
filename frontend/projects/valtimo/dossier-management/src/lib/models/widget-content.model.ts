@@ -25,6 +25,10 @@ interface WidgetFieldsContent {
   columns: FieldsCaseWidgetValue[][];
 }
 
-type WidgetContentProperties = WidgetFieldsContent;
+interface WidgetCustomContent {
+  componentKey: string
+}
 
-export {WidgetContentComponent, WidgetContentProperties};
+type WidgetContentProperties = WidgetFieldsContent | WidgetCustomContent;
+
+export {WidgetContentComponent, WidgetContentProperties, WidgetFieldsContent, WidgetCustomContent};

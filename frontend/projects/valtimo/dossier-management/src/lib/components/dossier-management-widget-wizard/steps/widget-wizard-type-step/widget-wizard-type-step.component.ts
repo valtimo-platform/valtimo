@@ -15,13 +15,7 @@
  */
 
 import {CommonModule} from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Output,
-  ViewEncapsulation,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, ViewEncapsulation} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {AVAILABLE_WIDGETS, WidgetTypeSelection} from '../../../../models';
 import {TilesModule} from 'carbon-components-angular';
@@ -42,6 +36,11 @@ export class WidgetWizardTypeStepComponent {
   constructor(private readonly widgetWizardService: WidgetWizardService) {}
 
   public onSelectedEvent(event: {value: WidgetTypeSelection}): void {
+    if (event.value.type !== this.widgetWizardService.selectedWidget()?.type) {
+      this.widgetWizardService.widgetContent.set(null);
+      this.widgetWizardService.widgetTitle.set(null);
+    }
+
     this.widgetWizardService.selectedWidget.set(event.value);
   }
 }

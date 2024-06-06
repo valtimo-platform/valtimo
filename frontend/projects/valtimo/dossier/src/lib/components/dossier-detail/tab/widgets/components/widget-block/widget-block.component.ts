@@ -46,7 +46,12 @@ import {ActivatedRoute} from '@angular/router';
 import {LoadingModule, TilesModule} from 'carbon-components-angular';
 import {WidgetTableComponent} from '../table/widget-table.component';
 import {WidgetCustomComponent} from '../custom/widget-custom.component';
-import {CarbonListModule, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
+import {
+  CARBON_THEME,
+  CarbonListModule,
+  CdsThemeService,
+  CurrentCarbonTheme,
+} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {WidgetFieldComponent} from '../field/widget-field.component';
 
@@ -133,11 +138,11 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     map(([currentTheme, widgetConfiguration]) => {
       return currentTheme === CurrentCarbonTheme.G10
         ? widgetConfiguration.highContrast
-          ? CurrentCarbonTheme.G90
-          : CurrentCarbonTheme.G10
+          ? CARBON_THEME.G100
+          : CARBON_THEME.G10
         : widgetConfiguration.highContrast
-          ? CurrentCarbonTheme.G10
-          : CurrentCarbonTheme.G90;
+          ? CARBON_THEME.WHITE
+          : CARBON_THEME.G90;
     })
   );
 

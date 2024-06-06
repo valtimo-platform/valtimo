@@ -28,10 +28,10 @@ import {
 } from '@angular/core';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
+import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {ButtonModule, IconModule, InputModule, TabsModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, debounceTime, map, Subscription} from 'rxjs';
-import {WidgetContentComponent} from '../../../models';
+import {WidgetContentComponent, WidgetFieldsContent} from '../../../models';
 import {WidgetWizardService} from '../../../services';
 import {DossierManagementWidgetFieldsColumnComponent} from './column/dossier-management-widget-fields-column.component';
 import {FieldsCaseWidgetValue} from '@valtimo/dossier';
@@ -68,11 +68,11 @@ export class DossierManagementWidgetFieldsComponent
   public readonly selectedTabIndex = -1;
   public readonly theme$ = this.cdsThemeService.currentTheme$.pipe(
     map((theme: CurrentCarbonTheme) =>
-      theme === CurrentCarbonTheme.G10 ? 'white' : CurrentCarbonTheme.G90
+      theme === CurrentCarbonTheme.G10 ? CARBON_THEME.WHITE : CARBON_THEME.G90
     )
   );
   public readonly selectedWidgetContent = computed(() =>
-    this.widgetWizardService.widgetContent()?.columns.reduce(
+    (this.widgetWizardService.widgetContent() as WidgetFieldsContent)?.columns.reduce(
       (acc, curr, index) => ({
         ...acc,
         [index]: curr,
@@ -101,7 +101,8 @@ export class DossierManagementWidgetFieldsComponent
           this.changeValidEvent.emit(formValid && contentValid);
         })
     );
-    const widgetContent = this.widgetWizardService.widgetContent()?.columns;
+    const widgetContent = (this.widgetWizardService.widgetContent() as WidgetFieldsContent)
+      ?.columns;
     if (!widgetContent) return;
 
     this.columns.set(Object.keys(widgetContent).map(() => null));
@@ -125,8 +126,10 @@ export class DossierManagementWidgetFieldsComponent
     this.widgetWizardService.widgetContent.update(content => {
       if (!content) return null;
 
+      const widgetContent = content as WidgetFieldsContent;
+
       let tempIndex = index;
-      let tempContent = {...content};
+      let tempContent = {...widgetContent};
       while (tempIndex < this.columns().length - 1) {
         tempContent.columns[tempIndex] = tempContent.columns[tempIndex + 1];
         tempIndex++;
@@ -158,7 +161,7 @@ export class DossierManagementWidgetFieldsComponent
     this.widgetWizardService.widgetContent.update(content => {
       if (!content) return {columns: [event.data]};
 
-      const columns = content?.columns.map((column, index) =>
+      const columns = (content as WidgetFieldsContent)?.columns.map((column, index) =>
         index === columnIndex ? event.data : column
       );
       return {

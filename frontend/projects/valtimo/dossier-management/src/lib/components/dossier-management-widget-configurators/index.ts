@@ -15,3 +15,4 @@
  */
 
 export * from './fields/dossier-management-widget-fields.component';
+export * from './custom/dossier-management-widget-custom.component'

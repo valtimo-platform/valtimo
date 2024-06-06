@@ -683,6 +683,10 @@
       "fields": {
         "title": "Fields",
         "description": "Text data with content and a label"
+      },
+      "custom": {
+        "title": "Custom component",
+        "description": "For complex content"
       }
     },
     "width": {
@@ -734,6 +738,10 @@
         "typePlaceholder": "Choose type",
         "value": "Value",
         "valuePlaceholder": "Path to value"
+      },
+      "custom": {
+        "selectComponent": "Angular component",
+        "placeholder": "Select a component"
       }
     }
   },

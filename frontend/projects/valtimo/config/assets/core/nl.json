@@ -682,6 +682,10 @@
       "fields": {
         "title": "Velden",
         "description": "Tekstgegevens met inhoud en een label"
+      },
+      "custom": {
+        "title": "Eigen component",
+        "description": "Voor complexe inhoud"
       }
     },
     "width": {
@@ -733,6 +737,10 @@
         "typePlaceholder": "Kies type",
         "value": "Waarde",
         "valuePlaceholder": "Pad naar waarde"
+      },
+      "custom": {
+        "selectComponent": "Angular-component",
+        "placeholder": "Selecteer een component"
       }
     }
   },

@@ -682,6 +682,10 @@
       "fields": {
         "title": "Felder",
         "description": "Textdaten mit Inhalt und einer Beschriftung"
+      },
+      "custom": {
+        "title": "Benutzerdefinierte Komponente",
+        "description": "Für komplexe Inhalte"
       }
     },
     "width": {
@@ -733,6 +737,10 @@
         "typePlaceholder": "Wählen Sie Typ",
         "value": "Wert",
         "valuePlaceholder": "Weg zum Wert"
+      },
+      "custom": {
+        "selectComponent": "Angular-komponente",
+        "placeholder": "Wählen Sie eine Komponente aus"
       }
     }
   },

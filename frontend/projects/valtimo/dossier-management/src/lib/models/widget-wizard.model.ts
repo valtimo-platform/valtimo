@@ -15,9 +15,12 @@
  */
 
 import {Type} from '@angular/core';
-import {DossierManagementWidgetFieldsComponent} from '../components/dossier-management-widget-configurators/fields/dossier-management-widget-fields.component';
 import {WidgetContentComponent} from './widget-content.model';
 import {CaseWidgetType} from '@valtimo/dossier';
+import {
+  DossierManagementWidgetCustomComponent,
+  DossierManagementWidgetFieldsComponent
+} from '../components/dossier-management-widget-configurators';
 
 enum WidgetWizardStep {
   TYPE,
@@ -46,6 +49,13 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     illustrationUrl: 'valtimo-layout/img/widget-management/types/fields.svg',
     type: CaseWidgetType.FIELDS,
     component: DossierManagementWidgetFieldsComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.types.custom.title',
+    descriptionKey: 'widgetTabManagement.types.custom.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/angular.svg',
+    type: CaseWidgetType.CUSTOM,
+    component: DossierManagementWidgetCustomComponent,
   },
 ];
 
