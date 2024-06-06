@@ -14,7 +14,17 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, Input, TemplateRef} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  OnDestroy,
+  signal,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
 
 @Component({
   selector: 'valtimo-no-results',
@@ -22,9 +32,40 @@ import {ChangeDetectionStrategy, Component, Input, TemplateRef} from '@angular/c
   styleUrls: ['./carbon-no-results.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CarbonNoResultsComponent {
+export class CarbonNoResultsComponent implements AfterViewInit, OnDestroy {
+  @ViewChild('noResults') private _noResultsRef: ElementRef<HTMLDivElement>;
+
   @Input() action: TemplateRef<any>;
   @Input() description: string;
   @Input() illustration = 'valtimo-layout/img/no-results.svg';
   @Input() title: string;
+  @Input() smallPadding = false;
+  @Input() collapseVertically = false;
+
+  public readonly renderVertically = signal(false);
+
+  private _observer!: ResizeObserver;
+
+  public ngAfterViewInit(): void {
+    if (this.collapseVertically) this.openWidthObserver();
+  }
+
+  public ngOnDestroy(): void {
+    this._observer?.disconnect();
+  }
+
+  private openWidthObserver(): void {
+    this._observer = new ResizeObserver(event => {
+      this.observerMutation(event);
+    });
+    this._observer.observe(this._noResultsRef.nativeElement);
+  }
+
+  private observerMutation(event: Array<ResizeObserverEntry>): void {
+    const elementWidth = event[0]?.borderBoxSize[0]?.inlineSize;
+
+    if (typeof elementWidth === 'number' && elementWidth !== 0) {
+      this.renderVertically.set(elementWidth < 480);
+    }
+  }
 }

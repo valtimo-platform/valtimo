@@ -16,20 +16,15 @@
 
 <ng-container
   *ngIf="{
-    caseWidgetXY: caseWidgetXY$ | async,
+    caseWidgetPackResult: caseWidgetPackResult$ | async,
     documentId: documentId$ | async,
-    packResultAvailable: packResultAvailable$ | async,
     tabKey: tabKey$ | async,
     widgetConfiguration: widget$ | async,
-    widgetData: widgetData$ | async
+    widgetData: widgetData$ | async,
+    theme: theme$ | async
   } as obs"
 >
-  <div
-    #widgetBlock
-    class="widget-block"
-    [style.top.px]="obs.caseWidgetXY?.y"
-    [style.left.px]="obs.caseWidgetXY?.x"
-  >
+  <div #widgetBlock class="widget-block" [attr.data-carbon-theme]="obs.theme">
     <div #widgetBlockContent class="widget-block__content">
       @switch (obs.widgetConfiguration.type) {
         @case (CaseWidgetType.TABLE) {
@@ -38,8 +33,19 @@
             [tabKey]="obs.tabKey"
             [widgetConfiguration]="obs.widgetConfiguration"
             [widgetData]="obs.widgetData"
-            (paginationEvent)="onPaginationEvent($event)"
           ></valtimo-widget-table>
+        }
+        @case (CaseWidgetType.CUSTOM) {
+          <valtimo-widget-custom [widgetConfig]="obs.widgetConfiguration"></valtimo-widget-custom>
+        }
+        @default {
+          <div class="widget-block__not-available">
+            <valtimo-no-results
+              [collapseVertically]="true"
+              [description]="'dossier.widgets.noWidget' | translate"
+              [smallPadding]="true"
+            ></valtimo-no-results>
+          </div>
         }
       }
     </div>

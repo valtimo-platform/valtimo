@@ -164,7 +164,9 @@
     "rowLocked": "Kein Zugriff zu dieser Fall!",
     "widgets": {
       "noWidgets": "Keine Widgets",
-      "noWidgetsDescription": "Für dieses Tab sind keine Widgets konfiguriert, oder Sie verfügen nicht über die entsprechenden Berechtigungen, um sie anzuzeigen."
+      "noWidgetsDescription": "Für dieses Tab sind keine Widgets konfiguriert, oder Sie verfügen nicht über die entsprechenden Berechtigungen, um sie anzuzeigen.",
+      "noCustomComponent": "Widget nicht verfügbar",
+      "noCustomComponentDescription": "Die für dieses Widget konfigurierte Komponente konnte nicht gefunden werden."
     }
   },
   "document": {

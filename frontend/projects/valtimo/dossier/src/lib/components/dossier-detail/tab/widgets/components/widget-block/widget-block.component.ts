@@ -25,13 +25,14 @@ import {
   ViewChild,
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {CaseWidgetWithUuid, CaseWidgetXY, CaseWidgetType} from '../../../../../../models';
+import {CaseWidgetPackResult, CaseWidgetType, CaseWidgetWithUuid} from '../../../../../../models';
 import {
   BehaviorSubject,
   combineLatest,
   filter,
   map,
   Observable,
+  of,
   Subscription,
   switchMap,
   tap,
@@ -42,15 +43,26 @@ import {
   DossierWidgetsLayoutService,
 } from '../../../../../../services';
 import {ActivatedRoute} from '@angular/router';
-import {LoadingModule} from 'carbon-components-angular';
+import {LoadingModule, TilesModule} from 'carbon-components-angular';
 import {WidgetTableComponent} from '../table/widget-table.component';
+import {WidgetCustomComponent} from '../custom/widget-custom.component';
+import {CarbonListModule, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
+import {TranslateModule} from '@ngx-translate/core';
 
 @Component({
   selector: 'valtimo-dossier-widget-block',
   templateUrl: './widget-block.component.html',
   styleUrls: ['./widget-block.component.scss'],
   standalone: true,
-  imports: [CommonModule, LoadingModule, WidgetTableComponent],
+  imports: [
+    CommonModule,
+    LoadingModule,
+    WidgetTableComponent,
+    WidgetCustomComponent,
+    CarbonListModule,
+    TranslateModule,
+    TilesModule,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
@@ -68,22 +80,30 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     return this._widget$.pipe(filter(widget => widget !== null));
   }
 
-  public readonly packResultAvailable$ = new BehaviorSubject<boolean>(false);
+  public readonly caseWidgetPackResult$: Observable<CaseWidgetPackResult> =
+    this.dossierWidgetsLayoutService.packResult$.pipe(
+      tap(packResult => {
+        const widgetPackResult = packResult.items.find(
+          packItem => packItem.item.configurationKey === this._widgetUuid
+        );
 
-  public readonly caseWidgetXY$: Observable<CaseWidgetXY> = combineLatest([
-    this.dossierWidgetsLayoutService.packResult$,
-    this.packResultAvailable$,
-  ]).pipe(
-    map(([packResult, packResultAvailable]) => {
-      const widgetPackResult = packResult.items.find(
-        packItem => packItem.item.configurationKey === this._widgetUuid
-      );
+        if (!widgetPackResult) return;
 
-      if (widgetPackResult && !packResultAvailable) this.packResultAvailable$.next(true);
+        this.renderer.setStyle(
+          this._widgetBlockRef.nativeElement,
+          'top',
+          `${widgetPackResult.y}px`
+        );
 
-      return widgetPackResult ? {x: widgetPackResult.x, y: widgetPackResult.y} : {x: 0, y: 0};
-    })
-  );
+        this.renderer.setStyle(
+          this._widgetBlockRef.nativeElement,
+          'left',
+          `${widgetPackResult.x}px`
+        );
+
+        this.dossierWidgetsLayoutService.setCaseWidgetXYSet(this._widgetUuid);
+      })
+    );
 
   private readonly _caseWidgetWidthsPx$ = this.dossierWidgetsLayoutService.caseWidgetWidthsPx$;
   public readonly CaseWidgetType = CaseWidgetType;
@@ -95,16 +115,27 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
 
   public readonly tabKey$: Observable<string> = this.dossierTabService.activeTabKey$;
 
-  public readonly widgetData$ = combineLatest([
-    this.widget$,
-    this.tabKey$,
-    this.documentId$,
-  ]).pipe(
+  public readonly widgetData$ = combineLatest([this.widget$, this.tabKey$, this.documentId$]).pipe(
     switchMap(([widget, tabkey, documentId]) =>
-      this.widgetsApiService.getWidgetData(documentId, tabkey, widget.key)
+      // custom component widgets do not fetch additional data
+      widget.type === 'custom'
+        ? of({})
+        : this.widgetsApiService.getWidgetData(documentId, tabkey, widget.key)
     ),
     tap(() => {
       this.dossierWidgetsLayoutService.setCaseWidgetDataLoaded(this._widgetUuid);
+    })
+  );
+
+  public readonly theme$ = combineLatest([this.cdsThemeService.currentTheme$, this.widget$]).pipe(
+    map(([currentTheme, widgetConfiguration]) => {
+      return currentTheme === CurrentCarbonTheme.G10
+        ? widgetConfiguration.highContrast
+          ? CurrentCarbonTheme.G90
+          : CurrentCarbonTheme.G10
+        : widgetConfiguration.highContrast
+          ? CurrentCarbonTheme.G10
+          : CurrentCarbonTheme.G90;
     })
   );
 
@@ -119,7 +150,8 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     private readonly renderer: Renderer2,
     private readonly dossierTabService: DossierTabService,
     private readonly route: ActivatedRoute,
-    private readonly widgetsApiService: DossierWidgetsApiService
+    private readonly widgetsApiService: DossierWidgetsApiService,
+    private readonly cdsThemeService: CdsThemeService
   ) {}
 
   public ngAfterViewInit(): void {

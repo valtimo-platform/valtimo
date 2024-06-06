@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-const WIDGET_WIDTH_1X = 320;
-const WIDGET_HEIGHT_1X = 16;
+import {InjectionToken} from '@angular/core';
+import {CustomCaseWidgetConfig} from '../models';
 
-export {WIDGET_WIDTH_1X, WIDGET_HEIGHT_1X};
+const CUSTOM_CASE_WIDGET_TOKEN = new InjectionToken<CustomCaseWidgetConfig>(
+  'Specify a component to display per configured custom case widget component key.'
+);
+
+export {CUSTOM_CASE_WIDGET_TOKEN};

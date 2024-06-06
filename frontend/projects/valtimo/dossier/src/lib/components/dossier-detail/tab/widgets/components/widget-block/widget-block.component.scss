@@ -20,4 +20,10 @@
   padding: 8px;
   overflow-wrap: break-word;
   height: min-content;
+  background-color: var(--cds-layer-01);
+  background-clip: content-box;
+
+  &__not-available {
+    padding: 16px;
+  }
 }

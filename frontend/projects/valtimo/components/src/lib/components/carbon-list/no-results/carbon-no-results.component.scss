@@ -20,6 +20,10 @@
   padding: 100px 0;
   gap: 64px;
 
+  &--small-padding {
+    padding: 24px 0;
+  }
+
   img {
     height: 150px;
     padding-left: calc(40% - 214px);
@@ -50,5 +54,20 @@
 
   h4 {
     width: 75%;
+  }
+}
+
+.valtimo-no-results--render-vertically {
+  flex-direction: column;
+  gap: 24px;
+
+  .valtimo-no-results__content {
+    align-items: center;
+    width: 100%;
+  }
+
+  .valtimo-no-results__title,
+  .valtimo-no-results__description {
+    text-align: center;
   }
 }

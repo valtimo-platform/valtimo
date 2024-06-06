@@ -38,6 +38,7 @@ import {
 } from '@valtimo/components';
 import {
   CASE_TAB_TOKEN,
+  CUSTOM_CASE_WIDGET_TOKEN,
   DefaultTabs,
   DossierDetailTabAuditComponent,
   DossierDetailTabDocumentsComponent,
@@ -263,6 +264,12 @@ export function tabsFactory() {
           component: CustomFormFlowComponent,
         },
       ],
+    },
+    {
+      provide: CUSTOM_CASE_WIDGET_TOKEN,
+      useValue: {
+        caseWidgetComponent: CustomDossierTabComponent,
+      },
     },
   ],
   bootstrap: [AppComponent],

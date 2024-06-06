@@ -17,7 +17,7 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, HostBinding, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, delay, filter, map, Observable, switchMap, tap} from 'rxjs';
 import {
   DossierTabService,
   DossierWidgetsApiService,
@@ -65,8 +65,7 @@ export class DossierDetailWidgetsComponent implements OnInit, OnDestroy {
     tap(() => this.loadingWidgetConfiguration$.next(false))
   );
 
-  public readonly dataLoadedForAllWidgets$ =
-    this.dossierWidgetsLayoutService.dataLoadedForAllWidgets$;
+  public readonly loaded$ = this.dossierWidgetsLayoutService.loaded$.pipe(delay(0));
 
   constructor(
     private readonly route: ActivatedRoute,

@@ -15,14 +15,7 @@
  */
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input, signal, ViewEncapsulation} from '@angular/core';
-import {
-  CarbonListItem,
-  CarbonListModule,
-  CdsThemeService,
-  ColumnConfig,
-  CurrentCarbonTheme,
-  ViewType,
-} from '@valtimo/components';
+import {CarbonListItem, CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
 import {Page} from '@valtimo/config';
 import {PaginationModel, PaginationModule, TilesModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, of, switchMap} from 'rxjs';
@@ -93,26 +86,12 @@ export class WidgetTableComponent {
             .pipe(map((res: Page<CarbonListItem>) => res.content))
     )
   );
-  public readonly theme$ = this.cdsThemeService.currentTheme$.pipe(
-    map((currentTheme: CurrentCarbonTheme) => {
-      return currentTheme === CurrentCarbonTheme.G10
-        ? this.widgetConfiguration.highContrast
-          ? CurrentCarbonTheme.G90
-          : CurrentCarbonTheme.G10
-        : this.widgetConfiguration.highContrast
-          ? CurrentCarbonTheme.G10
-          : CurrentCarbonTheme.G90;
-    })
-  );
 
   public readonly paginationModel = signal<PaginationModel>(new PaginationModel());
 
   private paginationInit = false;
 
-  constructor(
-    private readonly cdsThemeService: CdsThemeService,
-    private readonly dossierWidgetsApiService: DossierWidgetsApiService
-  ) {}
+  constructor(private readonly dossierWidgetsApiService: DossierWidgetsApiService) {}
 
   public onSelectPage(page: number): void {
     if (!this.paginationInit) {

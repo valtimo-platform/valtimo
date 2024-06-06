@@ -3,6 +3,7 @@ import {
   BehaviorSubject,
   combineLatest,
   debounceTime,
+  distinctUntilChanged,
   filter,
   map,
   Observable,
@@ -30,7 +31,8 @@ export class DossierWidgetsLayoutService implements OnDestroy {
   private readonly _widgetsContentHeightsSubject$ =
     new BehaviorSubject<CaseWidgetContentHeightsPxWithContainerWidth>({});
   private readonly _packResult$ = new BehaviorSubject<CaseWidgetPackResult | null>(null);
-  private readonly _caseWidgetDataLoaded$ = new BehaviorSubject<string[]>([]);
+  private readonly _caseWidgetDataLoadedSubject$ = new BehaviorSubject<string[] | null>(null);
+  private readonly _caseWidgetXYSetSubject$ = new BehaviorSubject<string[] | null>(null);
 
   private get _widgetsContentHeights(): CaseWidgetContentHeightsPxWithContainerWidth {
     return this._widgetsContentHeightsSubject$.getValue();
@@ -104,12 +106,32 @@ export class DossierWidgetsLayoutService implements OnDestroy {
   }
 
   public get packResult$(): Observable<CaseWidgetPackResult> {
-    return this._packResult$.pipe(filter(result => result !== null));
+    return this._packResult$.pipe(
+      filter(result => result !== null),
+      debounceTime(100)
+    );
   }
 
-  public get dataLoadedForAllWidgets$(): Observable<boolean> {
-    return combineLatest([this._caseWidgetDataLoaded$, this._widgets$]).pipe(
-      map(([caseWidgetDataLoaded, widgets]) => caseWidgetDataLoaded.length === widgets.length)
+  private get _caseWidgetDataLoaded$(): Observable<string[]> {
+    return this._caseWidgetDataLoadedSubject$.pipe(filter(loaded => loaded !== null));
+  }
+
+  private get _caseWidgetXYSet$(): Observable<string[]> {
+    return this._caseWidgetXYSetSubject$.pipe(filter(loaded => loaded !== null));
+  }
+
+  public get loaded$(): Observable<boolean> {
+    return combineLatest([
+      this._caseWidgetDataLoaded$,
+      this._caseWidgetXYSet$,
+      this._widgets$,
+    ]).pipe(
+      map(
+        ([caseWidgetDataLoaded, caseWidgetXYSet, widgets]) =>
+          caseWidgetDataLoaded?.length === widgets.length &&
+          caseWidgetXYSet?.length === widgets.length
+      ),
+      distinctUntilChanged()
     );
   }
 
@@ -152,8 +174,18 @@ export class DossierWidgetsLayoutService implements OnDestroy {
   }
 
   public setCaseWidgetDataLoaded(uuid: string): void {
-    this._caseWidgetDataLoaded$.pipe(take(1)).subscribe(caseWidgetDataLoaded => {
-      this._caseWidgetDataLoaded$.next([...caseWidgetDataLoaded, uuid]);
+    this._caseWidgetDataLoadedSubject$.pipe(take(1)).subscribe(caseWidgetDataLoaded => {
+      if (!(caseWidgetDataLoaded || []).includes(uuid)) {
+        this._caseWidgetDataLoadedSubject$.next([...(caseWidgetDataLoaded || []), uuid]);
+      }
+    });
+  }
+
+  public setCaseWidgetXYSet(uuid: string): void {
+    this._caseWidgetXYSetSubject$.pipe(take(1)).subscribe(caseWidgetXYSet => {
+      if (!(caseWidgetXYSet || []).includes(uuid)) {
+        this._caseWidgetXYSetSubject$.next([...(caseWidgetXYSet || []), uuid]);
+      }
     });
   }
 
@@ -162,7 +194,8 @@ export class DossierWidgetsLayoutService implements OnDestroy {
     this._widgetsSubject$.next(null);
     this._widgetsContentHeightsSubject$.next({});
     this._packResult$.next(null);
-    this._caseWidgetDataLoaded$.next([]);
+    this._caseWidgetDataLoadedSubject$.next(null);
+    this._caseWidgetXYSetSubject$.next(null);
   }
 
   private getPackResult(
@@ -241,7 +274,7 @@ export class DossierWidgetsLayoutService implements OnDestroy {
             ? resultWithoutHeightConstraint
             : resultWithHeightConstraint;
 
-          this._packResult$.next(resultToUse);
+          if (resultToUse.height !== 0) this._packResult$.next(resultToUse);
         })
     );
   }

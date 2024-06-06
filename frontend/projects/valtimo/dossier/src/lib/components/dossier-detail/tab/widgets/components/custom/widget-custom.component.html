@@ -14,25 +14,18 @@
   ~ limitations under the License.
   -->
 
-<cds-tile
-  *ngIf="{
-    fields: fields$ | async,
-    widgetData: widgetData$ | async
-  } as obs"
-  class="valtimo-widget-table"
->
-  <span class="widget-title">{{ widgetConfiguration?.title }}</span>
+<div class="custom-widget">
+  <h4 class="custom-widget__title">{{ (widgetConfig$ | async)?.title || '-' }}</h4>
 
-  <section class="valtimo-widget-table__content">
-    <valtimo-carbon-list
-      [loading]="!obs.widgetData || !obs.fields"
-      [header]="false"
-      [hideToolbar]="true"
-      [fields]="obs.fields"
-      [items]="obs.widgetData"
-    ></valtimo-carbon-list>
+  <div class="custom-widget__content">
+    <ng-template #customWidgetContainer></ng-template>
 
-    <cds-pagination-nav [model]="paginationModel()" (selectPage)="onSelectPage($event)">
-    </cds-pagination-nav>
-  </section>
-</cds-tile>
+    @if (noCustomComponentAvailable()) {
+      <valtimo-no-results
+        [collapseVertically]="true"
+        [description]="'dossier.widgets.noCustomComponentDescription' | translate"
+        [smallPadding]="true"
+      ></valtimo-no-results>
+    }
+  </div>
+</div>
