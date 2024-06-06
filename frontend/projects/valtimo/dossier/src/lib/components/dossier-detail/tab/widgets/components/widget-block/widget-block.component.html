@@ -35,9 +35,18 @@
             [widgetData]="obs.widgetData"
           ></valtimo-widget-table>
         }
+
         @case (CaseWidgetType.CUSTOM) {
           <valtimo-widget-custom [widgetConfig]="obs.widgetConfiguration"></valtimo-widget-custom>
         }
+
+        @case (CaseWidgetType.FIELDS) {
+          <valtimo-widget-field
+            [widgetConfiguration]="obs.widgetConfiguration"
+            [widgetData]="obs.widgetData"
+          ></valtimo-widget-field>
+        }
+
         @default {
           <div class="widget-block__not-available">
             <valtimo-no-results
