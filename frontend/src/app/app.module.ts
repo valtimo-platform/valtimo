@@ -130,6 +130,7 @@ import {
   registerDocumentenApiFormioUploadComponent,
   ZgwModule,
 } from '@valtimo/zgw';
+import {FormViewModelModule} from '../../projects/valtimo/form-view-model/src/lib/form-view-model.module';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -227,6 +228,7 @@ export function tabsFactory() {
     CustomFormFlowComponent,
     TaskManagementModule,
     ZgwModule,
+    FormViewModelModule,
   ],
   providers: [
     FormioComponent,

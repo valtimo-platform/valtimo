@@ -14,7 +14,18 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Inject,
+  OnDestroy,
+  OnInit,
+  Optional,
+  Output,
+  ViewChild,
+  ViewContainerRef,
+  ViewEncapsulation,
+} from '@angular/core';
 import {PermissionService} from '@valtimo/access-control';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
 import {FormFlowService, FormSubmissionResult, ProcessLinkService} from '@valtimo/process-link';
@@ -34,6 +45,9 @@ import {take} from 'rxjs/operators';
 import {CAN_VIEW_CASE_PERMISSION, DOSSIER_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
 import {DossierListService, StartModalService} from '../../services';
 import {ConfigService} from '@valtimo/config';
+import {FORM_VIEW_MODEL_TOKEN} from '@valtimo/config';
+import {FormViewModel} from '@valtimo/config';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'valtimo-dossier-process-start-modal',
@@ -41,7 +55,7 @@ import {ConfigService} from '@valtimo/config';
   styleUrls: ['./dossier-process-start-modal.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class DossierProcessStartModalComponent implements OnInit {
+export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
   public processDefinitionKey: string;
   public processDefinitionId: string;
   public documentDefinitionName: string;
@@ -49,14 +63,20 @@ export class DossierProcessStartModalComponent implements OnInit {
   private _startEventName: string;
   private readonly _useStartEventNameAsStartFormTitle!: boolean;
   public formDefinition: FormioForm;
+  public formName: string;
   public formFlowInstanceId: string;
   public formioSubmission: FormioSubmission;
   private processLinkId: string;
   public options: ValtimoFormioOptions;
   public isAdmin: boolean;
+  public isFormViewModel = false;
   @ViewChild('form', {static: false}) form: FormioComponent;
   @ViewChild('processStartModal', {static: false}) modal: ModalComponent;
+  @ViewChild('formViewModelComponent', {static: true, read: ViewContainerRef})
+  public formViewModelDynamicContainer: ViewContainerRef;
   @Output() formFlowComplete = new EventEmitter();
+
+  private _subscriptions = new Subscription();
 
   constructor(
     private route: ActivatedRoute,
@@ -69,7 +89,8 @@ export class DossierProcessStartModalComponent implements OnInit {
     private permissionService: PermissionService,
     private listService: DossierListService,
     private startModalService: StartModalService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel
   ) {
     this._useStartEventNameAsStartFormTitle =
       this.configService.config.featureToggles?.useStartEventNameAsStartFormTitle;
@@ -77,6 +98,10 @@ export class DossierProcessStartModalComponent implements OnInit {
 
   ngOnInit() {
     this.isUserAdmin();
+  }
+
+  ngOnDestroy() {
+    this._subscriptions.unsubscribe();
   }
 
   private loadProcessLink() {
@@ -101,9 +126,18 @@ export class DossierProcessStartModalComponent implements OnInit {
             case 'form':
               this.formDefinition = startProcessResult.properties.prefilledForm;
               this.processLinkId = startProcessResult.processLinkId;
+              this.isFormViewModel = false;
               break;
             case 'form-flow':
               this.formFlowInstanceId = startProcessResult.properties.formFlowInstanceId;
+              this.isFormViewModel = false;
+              break;
+            case 'form-view-model':
+              this.formDefinition = startProcessResult.properties.formDefinition;
+              this.formName = startProcessResult.properties.formName;
+              this.processLinkId = startProcessResult.processLinkId;
+              this.isFormViewModel = true;
+              this.setFormViewModelComponent();
               break;
           }
         }
@@ -185,5 +219,24 @@ export class DossierProcessStartModalComponent implements OnInit {
           this.listService.forceRefresh();
         }
       });
+  }
+
+  private setFormViewModelComponent() {
+    if (!this.formViewModel.component) return;
+    this.formViewModelDynamicContainer.clear();
+    const formViewModelComponent = this.formViewModelDynamicContainer.createComponent(
+      this.formViewModel.component
+    );
+    formViewModelComponent.instance.form = this.formDefinition;
+    formViewModelComponent.instance.formName = this.formName;
+    formViewModelComponent.instance.isStartForm = true;
+    formViewModelComponent.instance.processDefinitionKey = this.processDefinitionKey;
+    formViewModelComponent.instance.documentDefinitionName = this.documentDefinitionName;
+    this._subscriptions.add(
+      formViewModelComponent.instance.formSubmit.subscribe(() => {
+        this.listService.forceRefresh();
+        this.modal.hide();
+      })
+    );
   }
 }

@@ -16,65 +16,72 @@
 
 <valtimo-modal
   #taskDetailModal
-  *ngIf="{
-    loading: loading$ | async,
-    page: page$ | async,
-    task: task$ | async,
-    formDefinition: formDefinition$ | async,
-    processLinkIsForm: processLinkIsForm$ | async,
-    formioOptions: formioOptions$ | async,
-    processLinkIsFormFlow: processLinkIsFormFlow$ | async,
-    formFlowInstanceId: formFlowInstanceId$ | async,
-    errorMessage: errorMessage$ | async
-  } as obs"
   elementId="taskDetailModal"
-  [title]="obs.page?.title"
-  [subtitle]="obs.page?.subtitle"
+  [title]="(page$ | async)?.title"
+  [subtitle]="(page$ | async)?.subtitle"
   [templateBelowSubtitle]="assignUserToTask"
 >
-  <div body *ngIf="obs.formDefinition && obs.processLinkIsForm">
-    <valtimo-form-io
-      #form
-      [form]="obs.formDefinition"
-      (submit)="onSubmit($event)"
-      (change)="onChange($event)"
-      [options]="obs.formioOptions"
-    ></valtimo-form-io>
-  </div>
-  <div body *ngIf="obs.processLinkIsFormFlow">
-    <valtimo-form-flow
-      #formFlow
-      [formIoFormData]="formIoFormData$"
-      [formFlowInstanceId]="obs.formFlowInstanceId"
-      (formFlowComplete)="completeTask()"
-    ></valtimo-form-flow>
-  </div>
-  <div body *ngIf="obs.loading">
-    <div class="text-black mb-0 p-3 text-center">
-      {{ 'formManagement.loading' | translate }}
-    </div>
-  </div>
   <div
     body
-    *ngIf="
-      obs.loading === false && !obs.formDefinition && !obs.formFlowInstanceId && !obs.errorMessage
-    "
+    *ngIf="{
+      loading: loading$ | async,
+      page: page$ | async,
+      task: task$ | async,
+      taskId: taskInstanceId$ | async,
+      formDefinition: formDefinition$ | async,
+      formDefinitionId: formDefinitionId$ | async,
+      formName: formName$ | async,
+      processLinkIsForm: processLinkIsForm$ | async,
+      processLinkIsFormViewModel: processLinkIsFormViewModel$ | async,
+      formioOptions: formioOptions$ | async,
+      processLinkIsFormFlow: processLinkIsFormFlow$ | async,
+      formFlowInstanceId: formFlowInstanceId$ | async,
+      errorMessage: errorMessage$ | async
+    } as obs"
   >
-    <div class="bg-warning text-black mb-0 p-3 text-center">
-      {{
-        (isAdmin$ | async)
-          ? ('formManagement.noFormDefinitionFoundAdmin' | translate)
-          : ('formManagement.noFormDefinitionFoundUser' | translate)
-      }}
+    <div *ngIf="obs.formDefinition && obs.processLinkIsForm">
+      <valtimo-form-io
+        #form
+        [form]="obs.formDefinition"
+        (submit)="onSubmit($event)"
+        (change)="onChange($event)"
+        [options]="obs.formioOptions"
+      ></valtimo-form-io>
     </div>
-  </div>
-  <div body *ngIf="obs.errorMessage">
-    <div class="bg-danger text-black mb-0 p-3 text-center">
-      {{ obs.errorMessage }}
+    <div *ngIf="obs.processLinkIsFormFlow">
+      <valtimo-form-flow
+        #formFlow
+        [formIoFormData]="formIoFormData$"
+        [formFlowInstanceId]="obs.formFlowInstanceId"
+        (formFlowComplete)="completeTask()"
+      ></valtimo-form-flow>
+    </div>
+    <div *ngIf="obs.loading">
+      <div class="text-black mb-0 p-3 text-center">
+        {{ 'formManagement.loading' | translate }}
+      </div>
+    </div>
+    <div
+      *ngIf="
+        obs.loading === false && !obs.formDefinition && !obs.formFlowInstanceId && !obs.errorMessage
+      "
+    >
+      <div class="bg-warning text-black mb-0 p-3 text-center">
+        {{
+          (isAdmin$ | async)
+            ? ('formManagement.noFormDefinitionFoundAdmin' | translate)
+            : ('formManagement.noFormDefinitionFoundUser' | translate)
+        }}
+      </div>
+    </div>
+    <div *ngIf="obs.errorMessage">
+      <div class="bg-danger text-black mb-0 p-3 text-center">
+        {{ obs.errorMessage }}
+      </div>
     </div>
   </div>
   <div footer>
-    <div class="mb-0 p-3 text-center" *ngIf="!!obs.formDefinition">
+    <div class="mb-0 p-3 text-center" *ngIf="!!(formDefinition$ | async)">
       <button
         class="btn btn-secondary btn-space"
         type="button"
@@ -84,6 +91,9 @@
         {{ 'formManagement.gotoProcessLinksButton' | translate }}
       </button>
     </div>
+  </div>
+  <div body>
+    <ng-template #formViewModelComponent></ng-template>
   </div>
 </valtimo-modal>
 

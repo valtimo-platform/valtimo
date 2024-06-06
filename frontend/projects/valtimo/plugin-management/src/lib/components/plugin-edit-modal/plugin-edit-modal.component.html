@@ -34,11 +34,7 @@
     ></valtimo-plugin-edit>
   </section>
   <cds-modal-footer>
-    <button
-      cdsButton="danger"
-      (click)="delete()"
-      [disabled]="inputDisabled$ | async"
-    >
+    <button cdsButton="danger" (click)="delete()" [disabled]="inputDisabled$ | async">
       {{ 'pluginManagement.remove' | translate }}
     </button>
     <button

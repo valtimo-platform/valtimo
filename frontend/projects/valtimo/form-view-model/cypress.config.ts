@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
-export * from './versions';
-export * from './case-management-tab-token';
-export * from './form-view-model-token';
+import {defineConfig} from 'cypress';
+
+export default defineConfig({
+  e2e: {
+    baseUrl: 'http://localhost:4200',
+    supportFile: false,
+  },
+});

@@ -13,11 +13,13 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <valtimo-modal #processStartModal elementId="processStartModal" [title]="modalTitle">
-  <div body *ngIf="formDefinition">
+  <div body *ngIf="formDefinition && !isFormViewModel">
     <valtimo-form-io #form [form]="formDefinition" [options]="options" (submit)="onSubmit($event)">
     </valtimo-form-io>
+  </div>
+  <div body>
+    <ng-template #formViewModelComponent></ng-template>
   </div>
   <div body *ngIf="formFlowInstanceId">
     <valtimo-form-flow

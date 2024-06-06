@@ -163,10 +163,11 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
               }
               task.isLocked = !permissions[taskIndex];
             });
-            const newTasks = tasks.filter(newTask => !this.tasks.some(existingTask => existingTask.id === newTask.id));
+            const newTasks = tasks.filter(
+              newTask => !this.tasks.some(existingTask => existingTask.id === newTask.id)
+            );
             this.tasks = this.tasks.concat(newTasks);
             this.tasks.sort((t1, t2) => {
-
               // high priority tasks on top
               if (t2.priority - t1.priority !== 0) {
                 return t2.priority - t1.priority;
@@ -180,7 +181,7 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
               }
 
               // oldest task on top
-              const createdCompare = (t2.createdUnix / 1000) - (t1.createdUnix / 1000);
+              const createdCompare = t2.createdUnix / 1000 - t1.createdUnix / 1000;
               if (createdCompare !== 0) {
                 return createdCompare;
               }

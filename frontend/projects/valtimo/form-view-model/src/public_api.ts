@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
-export * from './versions';
-export * from './case-management-tab-token';
-export * from './form-view-model-token';
+/*
+ * Public API Surface of form view model
+ */
+
+export * from './lib/components/form-view-model/form-view-model.component';

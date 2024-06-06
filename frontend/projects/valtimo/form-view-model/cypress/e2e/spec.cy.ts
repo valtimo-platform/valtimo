@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
-export * from './versions';
-export * from './case-management-tab-token';
-export * from './form-view-model-token';
+describe('My First Test', () => {
+  it('Visits the initial project page', () => {
+    cy.visit('/')
+    cy.contains('app is running!')
+  })
+})

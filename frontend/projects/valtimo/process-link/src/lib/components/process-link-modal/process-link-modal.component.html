@@ -74,6 +74,15 @@
         *ngIf="obs.currentStepId === 'selectForm' || obs.typeOfSelectedProgressLink === 'form'"
       >
         <valtimo-select-form></valtimo-select-form>
+        <br />
+        <cds-toggle
+          *ngIf="showViewModelToggle"
+          [label]="'processLinkConfiguration.toggleViewModel.title' | translate"
+          [onText]="'processLinkConfiguration.toggleViewModel.checkboxDescription' | translate"
+          [offText]="'processLinkConfiguration.toggleViewModel.checkboxDescription' | translate"
+          [checked]="viewModelEnabled$ | async"
+          (checkedChange)="toggleCheckedChange($event)"
+        ></cds-toggle>
       </ng-container>
       <ng-container
         *ngIf="

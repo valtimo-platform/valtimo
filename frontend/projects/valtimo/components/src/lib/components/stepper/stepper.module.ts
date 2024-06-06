@@ -38,12 +38,7 @@ import {ButtonModule as CarbonButtonModule} from 'carbon-components-angular';
     StepperStepComponent,
     StepperFooterStepComponent,
   ],
-  imports: [
-    CommonModule,
-    TranslateModule,
-    ButtonModule,
-    CarbonButtonModule
-  ],
+  imports: [CommonModule, TranslateModule, ButtonModule, CarbonButtonModule],
   exports: [
     StepperContainerComponent,
     StepperContentComponent,

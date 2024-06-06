@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
-export * from './versions';
-export * from './case-management-tab-token';
-export * from './form-view-model-token';
+import {Type} from '@angular/core';
+
+interface FormViewModel {
+  component: Type<any>;
+}
+
+export {FormViewModel};

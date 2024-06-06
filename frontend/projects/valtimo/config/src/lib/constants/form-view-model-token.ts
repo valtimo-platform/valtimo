@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
-export * from './versions';
-export * from './case-management-tab-token';
-export * from './form-view-model-token';
+import {InjectionToken} from '@angular/core';
+import {FormViewModel} from '../models';
+
+const FORM_VIEW_MODEL_TOKEN = new InjectionToken<FormViewModel>(
+  'Specify the form view model component.'
+);
+
+export {FORM_VIEW_MODEL_TOKEN};

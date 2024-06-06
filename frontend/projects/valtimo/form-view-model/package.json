@@ -1,0 +1,13 @@
+{
+  "name": "@valtimo/form-view-model",
+  "license": "EUPL-1.2",
+  "version": "12.0.0",
+  "peerDependencies": {
+    "@angular/common": "^17.2.2",
+    "@angular/core": "^17.2.2"
+  },
+  "dependencies": {
+    "formiojs": "^4.18.0",
+    "@formio/angular": "7.0.0"
+  }
+}

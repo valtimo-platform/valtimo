@@ -46,7 +46,10 @@
       class="v-multi-input__row"
       *ngFor="let value of values$ | async as values; trackBy: trackByFn; let i = index"
     >
-      <div class="full-width" [ngClass]="{'v-multi-input__row-form--invisible': value.expanded === false}">
+      <div
+        class="full-width"
+        [ngClass]="{'v-multi-input__row-form--invisible': value.expanded === false}"
+      >
         <ng-container
           *ngTemplateOutlet="
             formTemplate;
