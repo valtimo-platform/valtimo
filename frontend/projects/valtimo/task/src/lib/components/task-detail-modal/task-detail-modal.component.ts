@@ -240,29 +240,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
               break;
           }
           this.loading$.next(false);
-        } else {
-          this.getLegacyTaskProcessLink(taskId);
         }
-      },
-      error: _ => {
-        this.getLegacyTaskProcessLink(taskId);
-      },
-    });
-  }
-
-  private getLegacyTaskProcessLink(taskId: string): void {
-    this.taskService.getTaskProcessLinkV1(taskId).subscribe({
-      next: resV1 => {
-        switch (resV1?.type) {
-          case 'form':
-            this.taskProcessLinkType$.next('form');
-            break;
-          case 'form-flow':
-            this.taskProcessLinkType$.next('form-flow');
-            this.formFlowInstanceId$.next(resV1.properties.formFlowInstanceId);
-            break;
-        }
-        this.loading$.next(false);
       },
       error: _ => {
         this.loading$.next(false);
