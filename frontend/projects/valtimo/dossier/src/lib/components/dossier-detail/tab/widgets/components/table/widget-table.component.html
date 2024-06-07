@@ -23,16 +23,19 @@
 >
   <span class="widget-title">{{ widgetConfiguration?.title }}</span>
 
-  <section class="valtimo-widget-table__content">
+  <section *ngIf="obs.widgetData && obs.fields" class="valtimo-widget-table__content">
     <valtimo-carbon-list
-      [loading]="!obs.widgetData || !obs.fields"
       [header]="false"
       [hideToolbar]="true"
       [fields]="obs.fields"
-      [items]="obs.widgetData"
+      [items]="obs.widgetData || []"
     ></valtimo-carbon-list>
 
-    <cds-pagination-nav [model]="paginationModel()" (selectPage)="onSelectPage($event)">
+    <cds-pagination-nav
+      *ngIf="showPagination$ | async"
+      [model]="paginationModel()"
+      (selectPage)="onSelectPage($event)"
+    >
     </cds-pagination-nav>
   </section>
 </cds-tile>

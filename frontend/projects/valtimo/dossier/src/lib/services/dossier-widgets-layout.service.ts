@@ -15,6 +15,7 @@ import {
   CaseWidgetContentHeightsPx,
   CaseWidgetContentHeightsPxWithContainerWidth,
   CaseWidgetPackResult,
+  CaseWidgetPackResultItemsByRow,
   CaseWidgetWidthsPx,
   CaseWidgetWithUuid,
 } from '../models';
@@ -105,6 +106,12 @@ export class DossierWidgetsLayoutService implements OnDestroy {
     );
   }
 
+  private readonly _widthOverrides$ = new BehaviorSubject<CaseWidgetWidthsPx>({});
+
+  public get widthOverrides$(): Observable<CaseWidgetWidthsPx> {
+    return this._widthOverrides$.asObservable();
+  }
+
   public get packResult$(): Observable<CaseWidgetPackResult> {
     return this._packResult$.pipe(
       filter(result => result !== null),
@@ -154,19 +161,19 @@ export class DossierWidgetsLayoutService implements OnDestroy {
   }
 
   public setWidgetContentHeight(uuid: string, height: number): void {
-    this._containerWidth$.pipe(take(1)).subscribe(containerWidth => {
-      const contentHeight = this._widgetsContentHeights[uuid];
+    this._containerWidth$.pipe(take(1)).subscribe(currentContainerWidth => {
+      const storedContentHeight = this._widgetsContentHeights[uuid];
 
       if (
-        !contentHeight ||
-        contentHeight.height !== height ||
-        contentHeight.containerWidth !== containerWidth
+        !storedContentHeight ||
+        storedContentHeight.height !== height ||
+        storedContentHeight.containerWidth !== currentContainerWidth
       ) {
         this._widgetsContentHeightsSubject$.next({
           ...this._widgetsContentHeights,
           [uuid]: {
             height: height,
-            containerWidth,
+            containerWidth: currentContainerWidth,
           },
         });
       }
@@ -238,6 +245,48 @@ export class DossierWidgetsLayoutService implements OnDestroy {
     return !!result.items.find(item => item.width + item.x > maxWidth);
   }
 
+  private getWidthOverrides(result: CaseWidgetPackResult): CaseWidgetWidthsPx {
+    const resultToUseItems = result.items;
+
+    const itemsByRow: CaseWidgetPackResultItemsByRow = resultToUseItems.reduce((acc, item) => {
+      const rowKey = `${item.y}`;
+
+      if (acc[rowKey]) {
+        return {...acc, [rowKey]: [...acc[rowKey], item]};
+      }
+
+      return {...acc, [rowKey]: [item]};
+    }, {});
+
+    const rowYsThatDoNotFillWidth = Object.keys(itemsByRow).reduce((acc, rowY) => {
+      const rowItems = itemsByRow[rowY];
+      const lastRowItem = rowItems[rowItems.length - 1];
+      const lastRowItemDoesNotFillLength = lastRowItem.width + lastRowItem.x < result.width;
+
+      return lastRowItemDoesNotFillLength ? [...acc, rowY] : acc;
+    }, []);
+
+    const rowYsThatDoNotFillWidthWithFullWidthAfter: string[] = rowYsThatDoNotFillWidth.reduce(
+      (acc, rowY) => {
+        const allRowYs = Object.keys(itemsByRow);
+        const rowYIndex = allRowYs.findIndex(itemRowY => itemRowY === rowY);
+        const rowYsAfter = allRowYs.slice(rowYIndex);
+        const fullWidthRowAfter = rowYsAfter.find(rowY => !rowYsThatDoNotFillWidth.includes(rowY));
+
+        return !!fullWidthRowAfter ? [...acc, rowY] : acc;
+      },
+      []
+    );
+
+    return rowYsThatDoNotFillWidthWithFullWidthAfter.reduce((acc, rowY) => {
+      const rowItems = itemsByRow[rowY];
+      const lastRowItem = rowItems[rowItems.length - 1];
+      const newWidth = result.width - lastRowItem.x;
+
+      return {...acc, [lastRowItem.item.configurationKey]: newWidth};
+    }, {});
+  }
+
   private openPackSubscription(): void {
     this._subscriptions.add(
       combineLatest([
@@ -273,8 +322,12 @@ export class DossierWidgetsLayoutService implements OnDestroy {
           const resultToUse = resultWithHeightConstraintExceedsBoundary
             ? resultWithoutHeightConstraint
             : resultWithHeightConstraint;
+          const widthOverrides = this.getWidthOverrides(resultToUse);
 
-          if (resultToUse.height !== 0) this._packResult$.next(resultToUse);
+          if (resultToUse.height !== 0) {
+            this._packResult$.next(resultToUse);
+            this._widthOverrides$.next(widthOverrides);
+          }
         })
     );
   }

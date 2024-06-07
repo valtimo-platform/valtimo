@@ -113,6 +113,8 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     );
 
   private readonly _caseWidgetWidthsPx$ = this.dossierWidgetsLayoutService.caseWidgetWidthsPx$;
+  private readonly _widthOverrides$ = this.dossierWidgetsLayoutService.widthOverrides$;
+
   public readonly CaseWidgetType = CaseWidgetType;
 
   public readonly documentId$ = this.route.params.pipe(
@@ -175,13 +177,16 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
 
   private openWidgetWidthSubscription(): void {
     this._subscriptions.add(
-      this._caseWidgetWidthsPx$.subscribe(caseWidgetsWidths => {
-        const widgetWidth = caseWidgetsWidths[this._widgetUuid];
+      combineLatest([this._caseWidgetWidthsPx$, this._widthOverrides$]).subscribe(
+        ([caseWidgetsWidths, widthOverrides]) => {
+          const widgetWidth =
+            widthOverrides[this._widgetUuid] || caseWidgetsWidths[this._widgetUuid];
 
-        if (widgetWidth) {
-          this.renderer.setStyle(this._widgetBlockRef.nativeElement, 'width', `${widgetWidth}px`);
+          if (widgetWidth) {
+            this.renderer.setStyle(this._widgetBlockRef.nativeElement, 'width', `${widgetWidth}px`);
+          }
         }
-      })
+      )
     );
   }
 

@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, Input, signal, ViewEncapsulation} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import {CarbonListItem, CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
 import {Page} from '@valtimo/config';
 import {PaginationModel, PaginationModule, TilesModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, of, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
 import {FieldsCaseWidgetValue, TableCaseWidget} from '../../../../../../models';
 import {DossierWidgetsApiService} from '../../../../../../services';
 
@@ -44,16 +51,16 @@ export class WidgetTableComponent {
         label: column.title,
         viewType: column.displayProperties?.type ?? ViewType.TEXT,
         className: `valtimo-widget-table--transparent`,
-        ...(!!column.displayProperties['format'] && {
+        ...(!!column.displayProperties?.['format'] && {
           format: column.displayProperties['format'],
         }),
-        ...(!!column.displayProperties['digitsInfo'] && {
+        ...(!!column.displayProperties?.['digitsInfo'] && {
           digitsInfo: column.displayProperties['digitsInfo'],
         }),
-        ...(!!column.displayProperties['display'] && {
+        ...(!!column.displayProperties?.['display'] && {
           display: column.displayProperties['display'],
         }),
-        ...(!!column.displayProperties['currencyCode'] && {
+        ...(!!column.displayProperties?.['currencyCode'] && {
           currencyCode: column.displayProperties['currencyCode'],
         }),
       }))
@@ -63,35 +70,74 @@ export class WidgetTableComponent {
     return this._widgetConfiguration;
   }
 
+  private readonly _initialNumberOfElementsSubject$ = new BehaviorSubject<number>(null);
+
+  private get _initialNumberOfElements$(): Observable<number> {
+    return this._initialNumberOfElementsSubject$.pipe(
+      filter(numberOfElements => numberOfElements !== null)
+    );
+  }
+
+  public readonly showPagination$ = new BehaviorSubject<boolean>(false);
+
   private _widgetData$ = new BehaviorSubject<CarbonListItem[] | null>(null);
   @Input({required: true}) set widgetData(value: Page<CarbonListItem> | null) {
     if (!value) return;
 
+    this.showPagination$.next(value.totalElements > value.size);
+    this._initialNumberOfElementsSubject$.next(value.numberOfElements);
     this._widgetData$.next(value.content);
     this.paginationModel.set({
       currentPage: 1,
       totalDataLength: Math.ceil(value.totalElements / value.size),
       pageLength: value.size,
     });
+    this.cdr.detectChanges();
   }
 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
   private readonly _queryParams$ = new BehaviorSubject<string | null>(null);
-  public readonly widgetData$ = combineLatest([this._widgetData$, this._queryParams$]).pipe(
-    switchMap(([data, queryParams]) =>
-      !queryParams
-        ? of(data)
-        : this.dossierWidgetsApiService
-            .getWidgetData(this.documentId, this.tabKey, this.widgetConfiguration.key, queryParams)
-            .pipe(map((res: Page<CarbonListItem>) => res.content))
-    )
-  );
 
   public readonly paginationModel = signal<PaginationModel>(new PaginationModel());
 
+  public readonly widgetData$ = combineLatest([
+    this._widgetData$,
+    this._queryParams$,
+    this._initialNumberOfElements$,
+  ]).pipe(
+    switchMap(([data, queryParams, initialNumberOfElements]) =>
+      combineLatest([
+        !queryParams
+          ? of(data)
+          : this.dossierWidgetsApiService
+              .getWidgetData(
+                this.documentId,
+                this.tabKey,
+                this.widgetConfiguration.key,
+                queryParams
+              )
+              .pipe(map((res: Page<CarbonListItem>) => res.content)),
+        of(initialNumberOfElements),
+      ])
+    ),
+    filter(([items]) => !!items),
+    map(([items, initialNumberOfElements]) => {
+      if (items.length === initialNumberOfElements) {
+        return items;
+      }
+
+      const rows = new Array<number>(initialNumberOfElements).fill(null);
+
+      return rows.map((_, index) => items[index] || {});
+    })
+  );
+
   private paginationInit = false;
 
-  constructor(private readonly dossierWidgetsApiService: DossierWidgetsApiService) {}
+  constructor(
+    private readonly dossierWidgetsApiService: DossierWidgetsApiService,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
 
   public onSelectPage(page: number): void {
     if (!this.paginationInit) {

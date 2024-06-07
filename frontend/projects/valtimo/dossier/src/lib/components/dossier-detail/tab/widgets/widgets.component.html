@@ -21,23 +21,30 @@
     loaded: loaded$ | async
   } as obs"
 >
-  @if (!obs.loaded) {
-    <div class="loading-container">
-      <cds-loading></cds-loading>
+  <ng-container
+    *ngIf="{
+      noWidgetsConfigured:
+        obs.widgetConfiguration?.widgets && obs.widgetConfiguration.widgets.length === 0
+    } as vars"
+  >
+    @if (!obs.loaded && !vars.noWidgetsConfigured) {
+      <div class="loading-container">
+        <cds-loading></cds-loading>
+      </div>
+    }
+
+    @if (vars.noWidgetsConfigured) {
+      <valtimo-no-results
+        [title]="'dossier.widgets.noWidgets' | translate"
+        [description]="'dossier.widgets.noWidgetsDescription' | translate"
+        illustration="valtimo-layout/img/no-widgets.svg"
+      ></valtimo-no-results>
+    }
+
+    <div [style.visibility]="!obs.loaded ? 'hidden' : 'visible'">
+      <valtimo-dossier-widgets-container
+        [widgets]="obs.widgetConfiguration?.widgets || []"
+      ></valtimo-dossier-widgets-container>
     </div>
-  }
-
-  @if (obs.loaded && (obs.widgetConfiguration?.widgets || []).length === 0) {
-    <valtimo-no-results
-      [title]="'dossier.widgets.noWidgets' | translate"
-      [description]="'dossier.widgets.noWidgetsDescription' | translate"
-      illustration="valtimo-layout/img/no-widgets.svg"
-    ></valtimo-no-results>
-  }
-
-  <div [style.visibility]="!obs.loaded ? 'hidden' : 'visible'">
-    <valtimo-dossier-widgets-container
-      [widgets]="obs.widgetConfiguration?.widgets || []"
-    ></valtimo-dossier-widgets-container>
-  </div>
+  </ng-container>
 </ng-container>
