@@ -338,5 +338,9 @@
     "tslint-config-prettier": "1.18.0",
     "typescript": "5.3.3",
     "webpack-bundle-analyzer": "4.10.1"
+  },
+  "optionalDependencies" : {
+    "@nx/nx-linux-x64-gnu": "18.2.3",
+    "@nx/nx-darwin-arm64": "18.2.3"
   }
 }
