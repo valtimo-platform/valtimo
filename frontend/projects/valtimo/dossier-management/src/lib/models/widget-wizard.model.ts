@@ -19,7 +19,8 @@ import {WidgetContentComponent} from './widget-content.model';
 import {CaseWidgetType} from '@valtimo/dossier';
 import {
   DossierManagementWidgetCustomComponent,
-  DossierManagementWidgetFieldsComponent
+  DossierManagementWidgetFieldsComponent,
+  DossierManagementWidgetFormioComponent,
 } from '../components/dossier-management-widget-configurators';
 
 enum WidgetWizardStep {
@@ -56,6 +57,13 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     illustrationUrl: 'valtimo-layout/img/widget-management/types/angular.svg',
     type: CaseWidgetType.CUSTOM,
     component: DossierManagementWidgetCustomComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.types.formio.title',
+    descriptionKey: 'widgetTabManagement.types.formio.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/formio.svg',
+    type: CaseWidgetType.FORMIO,
+    component: DossierManagementWidgetFormioComponent,
   },
 ];
 

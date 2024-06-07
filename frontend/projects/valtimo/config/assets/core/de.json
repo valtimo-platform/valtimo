@@ -686,6 +686,10 @@
       "custom": {
         "title": "Benutzerdefinierte Komponente",
         "description": "Für komplexe Inhalte"
+      },
+      "formio": {
+        "title": "Form.io",
+        "description": "Ausgefülltes Form.io-Formular"
       }
     },
     "width": {
@@ -741,6 +745,10 @@
       "custom": {
         "selectComponent": "Angular-komponente",
         "placeholder": "Wählen Sie eine Komponente aus"
+      },
+      "formio": {
+        "selectForm": "Formulardefinition",
+        "placeholder": "Wählen Sie eine Formulardefinition aus"
       }
     }
   },

@@ -21,6 +21,7 @@ enum CaseWidgetType {
   FIELDS = 'fields',
   TABLE = 'table',
   CUSTOM = 'custom',
+  FORMIO = 'formio',
 }
 
 type CaseWidgetWidth = 1 | 2 | 3 | 4;
@@ -61,7 +62,7 @@ interface CustomCaseWidget extends BasicCaseWidget {
   };
 }
 
-type CaseWidget = FieldsCaseWidget | CustomCaseWidget  |TableCaseWidget;
+type CaseWidget = FieldsCaseWidget | CustomCaseWidget | TableCaseWidget;
 
 type CaseWidgetWithUuid = CaseWidget & {
   uuid: string;

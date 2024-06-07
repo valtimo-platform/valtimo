@@ -687,6 +687,10 @@
       "custom": {
         "title": "Custom component",
         "description": "For complex content"
+      },
+      "formio": {
+        "title": "Form.io",
+        "description": "Prefilled Form.io form"
       }
     },
     "width": {
@@ -742,6 +746,10 @@
       "custom": {
         "selectComponent": "Angular component",
         "placeholder": "Select a component"
+      },
+      "formio": {
+        "selectForm": "Form definition",
+        "placeholder": "Select a form definition"
       }
     }
   },

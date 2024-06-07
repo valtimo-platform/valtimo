@@ -26,9 +26,19 @@ interface WidgetFieldsContent {
 }
 
 interface WidgetCustomContent {
-  componentKey: string
+  componentKey: string;
 }
 
-type WidgetContentProperties = WidgetFieldsContent | WidgetCustomContent;
+interface WidgetFormioContent {
+  formDefinition: string;
+}
 
-export {WidgetContentComponent, WidgetContentProperties, WidgetFieldsContent, WidgetCustomContent};
+type WidgetContentProperties = WidgetFieldsContent | WidgetCustomContent | WidgetFormioContent;
+
+export {
+  WidgetContentComponent,
+  WidgetContentProperties,
+  WidgetFieldsContent,
+  WidgetCustomContent,
+  WidgetFormioContent,
+};

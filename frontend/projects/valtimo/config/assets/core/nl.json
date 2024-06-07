@@ -686,6 +686,10 @@
       "custom": {
         "title": "Eigen component",
         "description": "Voor complexe inhoud"
+      },
+      "formio": {
+        "title": "Form.io",
+        "description": "Ingevuld Form.io-formulier"
       }
     },
     "width": {
@@ -741,6 +745,10 @@
       "custom": {
         "selectComponent": "Angular-component",
         "placeholder": "Selecteer een component"
+      },
+      "formio": {
+        "selectForm": "Formulierdefinitie",
+        "placeholder": "Selecteer een formulierdefinitie"
       }
     }
   },

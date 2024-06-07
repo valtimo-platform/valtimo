@@ -18,26 +18,24 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
-  Inject,
   OnDestroy,
   OnInit,
-  Optional,
   Output,
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {DropdownModule, InputModule, SelectModule} from 'carbon-components-angular';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {WidgetContentComponent, WidgetCustomContent} from '../../../models';
+import {WidgetContentComponent, WidgetFormioContent} from '../../../models';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {WidgetWizardService} from '../../../services';
-import {CUSTOM_CASE_WIDGET_TOKEN, CustomCaseWidgetConfig} from '@valtimo/dossier';
 import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
+import {FormDefinitionOption, FormService} from '@valtimo/form';
 
 @Component({
-  templateUrl: './dossier-management-widget-custom.component.html',
-  styleUrls: ['./dossier-management-widget-custom.component.scss'],
+  templateUrl: './dossier-management-widget-formio.component.html',
+  styleUrls: ['./dossier-management-widget-formio.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
@@ -49,7 +47,7 @@ import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
     DropdownModule,
   ],
 })
-export class DossierManagementWidgetCustomComponent
+export class DossierManagementWidgetFormioComponent
   implements WidgetContentComponent, OnDestroy, OnInit
 {
   @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
@@ -68,51 +66,48 @@ export class DossierManagementWidgetCustomComponent
     )
   );
 
-  private readonly _selectedCustomComponentKey$ = new BehaviorSubject<string | null>(null);
-  private readonly _customCaseWidgetConfig$ = new BehaviorSubject<CustomCaseWidgetConfig | null>(
-    null
-  );
+  private readonly _selectedFormDefinitionId$ = new BehaviorSubject<string | null>(null);
 
-  public readonly componentListItems$: Observable<ListItem[]> = combineLatest([
-    this._customCaseWidgetConfig$,
-    this._selectedCustomComponentKey$,
+  private readonly _formDefinitionOptions$ = new BehaviorSubject<FormDefinitionOption[]>([]);
+
+  public readonly formListItems$: Observable<ListItem[]> = combineLatest([
+    this._formDefinitionOptions$,
+    this._selectedFormDefinitionId$,
   ]).pipe(
-    filter(([config]) => !!config),
-    map(([config, selectedKey]) =>
-      Object.keys(config).reduce(
-        (acc, curr) => [...acc, {content: curr, selected: curr === selectedKey}],
-        []
-      )
+    filter(([options]) => !!options),
+    map(([options, selectedFormId]) =>
+      options.map(option => ({
+        content: option.name,
+        id: option.id,
+        selected: option.id === selectedFormId,
+      }))
     )
   );
 
   private readonly _subscriptions = new Subscription();
 
   constructor(
-    @Optional()
-    @Inject(CUSTOM_CASE_WIDGET_TOKEN)
-    private readonly customCaseWidgetConfig: CustomCaseWidgetConfig,
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
-    private readonly widgetWizardService: WidgetWizardService
-  ) {
-    if (customCaseWidgetConfig) this._customCaseWidgetConfig$.next(customCaseWidgetConfig);
-  }
+    private readonly widgetWizardService: WidgetWizardService,
+    private readonly formService: FormService
+  ) {}
 
   public componentDropDownChange(event: {
-    item: {content: string; selected: boolean};
+    item: {id: string; selected: boolean};
     isUpdate: boolean;
   }): void {
-    const componentKey = event?.item?.content;
+    const formDefinitionId = event?.item?.id;
 
-    if (!componentKey) return;
+    if (!formDefinitionId) return;
 
-    this._selectedCustomComponentKey$.next(componentKey);
-    this.widgetWizardService.widgetContent.set({componentKey});
+    this._selectedFormDefinitionId$.next(formDefinitionId);
+    this.widgetWizardService.widgetContent.set({formDefinition: formDefinitionId});
     this.changeValidEvent.emit(true);
   }
 
   public ngOnInit(): void {
+    this.fetchFormDefinition();
     this.openTitleSubscription();
     this.prefill();
   }
@@ -129,13 +124,19 @@ export class DossierManagementWidgetCustomComponent
     );
   }
 
+  private fetchFormDefinition(): void {
+    this.formService.getAllFormDefinitions().subscribe(definitions => {
+      this._formDefinitionOptions$.next(definitions);
+    });
+  }
+
   private prefill(): void {
-    const componentKey = (this.widgetWizardService.widgetContent() as WidgetCustomContent)
-      ?.componentKey;
+    const formDefinitionId = (this.widgetWizardService.widgetContent() as WidgetFormioContent)
+      ?.formDefinition;
 
-    if (!componentKey || Object.keys(this.customCaseWidgetConfig || {}).length === 0) return;
+    if (!formDefinitionId) return;
 
-    this._selectedCustomComponentKey$.next(componentKey);
+    this._selectedFormDefinitionId$.next(formDefinitionId);
     this.changeValidEvent.emit(true);
   }
 }

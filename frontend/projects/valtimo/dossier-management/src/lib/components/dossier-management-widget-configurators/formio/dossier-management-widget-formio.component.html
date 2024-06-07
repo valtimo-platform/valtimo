@@ -15,7 +15,7 @@
   -->
 
 <form
-  class="valtimo-dossier-management-widget-custom"
+  class="valtimo-dossier-management-widget-formio"
   [formGroup]="form"
   [attr.data-carbon-theme]="theme$ | async"
 >
@@ -31,16 +31,16 @@
   </cds-text-label>
 
   <cds-label class="dropdown-label">
-    {{ 'widgetTabManagement.content.custom.selectComponent' | translate }}
+    {{ 'widgetTabManagement.content.formio.selectForm' | translate }}
 
     <cds-dropdown
-      *ngIf="componentListItems$ | async as componentListItems"
+      *ngIf="formListItems$ | async as formListItems"
       [appendInline]="false"
-      [placeholder]="'widgetTabManagement.content.custom.placeholder' | translate"
-      [disabled]="componentListItems.length === 0"
+      [placeholder]="'widgetTabManagement.content.formio.placeholder' | translate"
+      [disabled]="formListItems.length === 0"
       (selected)="componentDropDownChange($event)"
     >
-      <cds-dropdown-list [items]="componentListItems"> </cds-dropdown-list>
+      <cds-dropdown-list [items]="formListItems"> </cds-dropdown-list>
     </cds-dropdown>
   </cds-label>
 </form>

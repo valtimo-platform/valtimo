@@ -54,7 +54,7 @@ export class DossierManagementWidgetsEditorComponent {
   private _currentWidgetTab: CaseWidgetsRes;
   @Input() public set currentWidgetTab(value: CaseWidgetsRes) {
     this._currentWidgetTab = value;
-    this.items$.next(value.widgets);
+    this.items$.next(value?.widgets);
   }
   public get currentWidgetTab(): CaseWidgetsRes {
     return this._currentWidgetTab;
