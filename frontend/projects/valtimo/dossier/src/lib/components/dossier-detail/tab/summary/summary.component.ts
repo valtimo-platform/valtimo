@@ -119,6 +119,7 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
     this._subscriptions.add(
       this.documentService
         .findProcessDocumentInstances(documentId)
+        .pipe(repeat({count: 5, delay: 1500}))
         .subscribe(processDocumentInstances => {
           this.processDocumentInstances = processDocumentInstances;
           this.processDocumentInstances.forEach(instance => {
@@ -137,7 +138,6 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
       this.processService
         .getProcessInstanceTasks(processInstanceId)
         .pipe(
-          repeat({count: 5, delay: 1500}),
           switchMap(tasks =>
             combineLatest([
               of(tasks),
@@ -169,19 +169,19 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
             this.tasks = this.tasks.concat(newTasks);
             this.tasks.sort((t1, t2) => {
               // high priority tasks on top
-              if (t2.priority - t1.priority !== 0) {
+              if (t2.priority != t1.priority) {
                 return t2.priority - t1.priority;
               }
 
-              // task with approaching due date should be on top
+              // task with approaching due date on top
               const due1 = t1?.dueUnix || Number.MAX_VALUE;
               const due2 = t2?.dueUnix || Number.MAX_VALUE;
-              if (due1 - due2 !== 0) {
+              if (due1 !== due2) {
                 return due1 - due2;
               }
 
-              // oldest task on top
-              const createdCompare = t2.createdUnix / 1000 - t1.createdUnix / 1000;
+              // new task on top
+              const createdCompare = (t2.createdUnix / 5000) - (t1.createdUnix / 5000);
               if (createdCompare !== 0) {
                 return createdCompare;
               }
