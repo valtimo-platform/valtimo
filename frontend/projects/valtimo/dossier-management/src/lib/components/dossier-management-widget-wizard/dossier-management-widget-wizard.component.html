@@ -86,7 +86,7 @@
     <button
       class="valtimo-dossier-management-widget-wizard__back"
       cdsButton="secondary"
-      [disabled]="currentStep() === WidgetWizardSteps.TYPE"
+      [disabled]="backButtonDisabled()"
       (click)="onBackButtonClick()"
     >
       {{ 'interface.back' | translate }}

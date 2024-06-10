@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, EventEmitter, Output} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, Signal} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
+import {CaseWidgetType, CaseWidgetWidth} from '@valtimo/dossier';
 import {TilesModule} from 'carbon-components-angular';
 import {WidgetWizardService} from '../../../../services';
-import {CaseWidgetWidth} from '@valtimo/dossier';
 
 @Component({
   selector: 'valtimo-widget-wizard-width-step',
@@ -29,7 +28,15 @@ import {CaseWidgetWidth} from '@valtimo/dossier';
   imports: [CommonModule, TranslateModule, TilesModule],
 })
 export class WidgetWizardWidthStepComponent {
-  public readonly widgetWidth = this.widgetWizardService.widgetWidth();
+  public readonly fieldsEditMode: Signal<boolean> = computed(
+    () =>
+      this.widgetWizardService.editMode() &&
+      this.widgetWizardService.selectedWidget()?.type === CaseWidgetType.FIELDS
+  );
+  public readonly fieldsColumnsLength: Signal<number> = computed(
+    () => this.widgetWizardService.widgetContent()?.['columns']?.length ?? 0
+  );
+  public readonly widgetWidth = this.widgetWizardService.widgetWidth;
 
   constructor(private readonly widgetWizardService: WidgetWizardService) {}
 

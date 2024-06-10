@@ -21,6 +21,7 @@ import {
   EventEmitter,
   Input,
   Output,
+  Signal,
   signal,
   ViewEncapsulation,
 } from '@angular/core';
@@ -51,6 +52,11 @@ import {WIDGET_STEPS} from './steps';
 })
 export class DossierManagementWidgetWizardComponent {
   @Input() public open = false;
+  @Input() public set editMode(value: boolean) {
+    if (!value) return;
+
+    this.currentStep.set(WidgetWizardStep.WIDTH);
+  }
   @Output() public closeEvent = new EventEmitter<any>();
 
   public readonly WidgetWizardSteps = WidgetWizardStep;
@@ -70,15 +76,18 @@ export class DossierManagementWidgetWizardComponent {
 
   public readonly steps$: Observable<Step[]> = combineLatest([
     toObservable(this._secondaryLabels),
+    toObservable(this.widgetWizardService.editMode),
     this.translateService.stream('key'),
   ]).pipe(
-    map(([secondaryLabels]) => {
+    map(([secondaryLabels, editMode]) => {
       return [
         {
           label: this.translateService.instant('widgetTabManagement.wizard.steps.type'),
           ...(secondaryLabels[WidgetWizardStep.TYPE] && {
             secondaryLabel: this.translateService.instant(secondaryLabels[WidgetWizardStep.TYPE]),
           }),
+          disabled: editMode,
+          complete: editMode,
         },
         {
           label: this.translateService.instant('widgetTabManagement.wizard.steps.width'),
@@ -107,6 +116,11 @@ export class DossierManagementWidgetWizardComponent {
 
   private readonly _contentStepValid = signal<boolean>(false);
   public readonly currentStep = signal<WidgetWizardStep>(WidgetWizardStep.TYPE);
+  public readonly backButtonDisabled: Signal<boolean> = computed(
+    () =>
+      (this.widgetWizardService.editMode() && this.currentStep() === WidgetWizardStep.WIDTH) ||
+      this.currentStep() === WidgetWizardStep.TYPE
+  );
   public nextButtonDisabled = computed(() => {
     switch (this.currentStep()) {
       case WidgetWizardStep.TYPE:

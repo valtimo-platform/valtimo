@@ -22,6 +22,7 @@ import {
   signal,
   ViewEncapsulation,
 } from '@angular/core';
+import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListItem, CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
 import {Page} from '@valtimo/config';
 import {PaginationModel, PaginationModule, TilesModule} from 'carbon-components-angular';
@@ -36,7 +37,7 @@ import {DossierWidgetsApiService} from '../../../../../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [CommonModule, CarbonListModule, PaginationModule, TilesModule],
+  imports: [CommonModule, CarbonListModule, PaginationModule, TilesModule, TranslateModule],
 })
 export class WidgetTableComponent {
   @Input({required: true}) public documentId: string;
@@ -46,11 +47,11 @@ export class WidgetTableComponent {
   @Input({required: true}) public set widgetConfiguration(value: TableCaseWidget) {
     this._widgetConfiguration = value;
     this.fields$.next(
-      value.properties.columns.map((column: FieldsCaseWidgetValue) => ({
+      value.properties.columns.map((column: FieldsCaseWidgetValue, index: number) => ({
         key: column.key,
         label: column.title,
         viewType: column.displayProperties?.type ?? ViewType.TEXT,
-        className: `valtimo-widget-table--transparent`,
+        className: `valtimo-widget-table--transparent ${index === 0 && value.properties.firstColumnAsTitle ? 'valtimo-widget-table--title' : ''}`,
         ...(!!column.displayProperties?.['format'] && {
           format: column.displayProperties['format'],
         }),
@@ -87,12 +88,16 @@ export class WidgetTableComponent {
     this.showPagination$.next(value.totalElements > value.size);
     this._initialNumberOfElementsSubject$.next(value.numberOfElements);
     this._widgetData$.next(value.content);
-    this.paginationModel.set({
-      currentPage: 1,
-      totalDataLength: Math.ceil(value.totalElements / value.size),
-      pageLength: value.size,
-    });
-    this.cdr.detectChanges();
+
+    this.paginationModel.set(
+      value.totalPages < 2
+        ? null
+        : {
+            currentPage: 1,
+            totalDataLength: Math.ceil(value.totalElements / value.size),
+            pageLength: value.size,
+          }
+    );
   }
 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
@@ -132,19 +137,12 @@ export class WidgetTableComponent {
     })
   );
 
-  private paginationInit = false;
-
   constructor(
     private readonly dossierWidgetsApiService: DossierWidgetsApiService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
   public onSelectPage(page: number): void {
-    if (!this.paginationInit) {
-      this.paginationInit = true;
-      return;
-    }
-
     this._queryParams$.next(`page=${page - 1}&size=${this.paginationModel().pageLength}`);
     this.paginationModel.update((model: PaginationModel) => ({
       ...model,

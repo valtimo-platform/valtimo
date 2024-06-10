@@ -15,7 +15,7 @@
  */
 
 .valtimo-widget-table {
-  padding: 24px;
+  padding: 24px 24px 0 24px;
 
   &__content {
     display: flex;
@@ -27,8 +27,25 @@
     }
   }
 
-  .cds--data-table > thead {
-    background: transparent !important;
+  &__pagination {
+    padding: 8px 0;
+  }
+
+  .cds--data-table {
+    & > thead {
+      background: transparent !important;
+    }
+
+    td,
+    tr,
+    th {
+      display: flex;
+      width: 100%;
+    }
+
+    tr {
+      gap: 16px;
+    }
   }
 
   .cds--table-header-label > span {

@@ -83,7 +83,7 @@ export class DossierManagementWidgetFieldsComponent
   public readonly activeTab = signal<number>(0);
 
   private readonly _subscriptions = new Subscription();
-  private readonly _contentValid = new BehaviorSubject<boolean>(false);
+  private readonly _contentValid = signal<boolean>(this.widgetWizardService.editMode());
 
   constructor(
     private readonly cdsThemeService: CdsThemeService,
@@ -93,13 +93,10 @@ export class DossierManagementWidgetFieldsComponent
 
   public ngOnInit(): void {
     this._subscriptions.add(
-      combineLatest([this.form.valueChanges, this._contentValid])
-        .pipe(debounceTime(100))
-        .subscribe(([formValid, contentValid]) => {
-          if (formValid)
-            this.widgetWizardService.widgetTitle.set(this.form.get('widgetTitle')?.value ?? '');
-          this.changeValidEvent.emit(formValid && contentValid);
-        })
+      this.form.valueChanges.pipe(debounceTime(100)).subscribe(formValue => {
+        this.widgetWizardService.widgetTitle.set(formValue.widgetTitle ?? '');
+        this.changeValidEvent.emit(this.form.valid && this._contentValid());
+      })
     );
     const widgetContent = (this.widgetWizardService.widgetContent() as WidgetFieldsContent)
       ?.columns;
@@ -110,7 +107,9 @@ export class DossierManagementWidgetFieldsComponent
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+    this.changeValidEvent.emit(false);
     this.form.reset();
+    this._contentValid.set(false);
   }
 
   public onAddColumnClick(): void {
@@ -168,6 +167,7 @@ export class DossierManagementWidgetFieldsComponent
         columns: columnIndex > columns.length - 1 ? [...columns, event.data] : columns,
       };
     });
-    this._contentValid.next(event.valid);
+    this._contentValid.set(event.valid);
+    this.changeValidEvent.emit(event.valid && this.form.valid);
   }
 }

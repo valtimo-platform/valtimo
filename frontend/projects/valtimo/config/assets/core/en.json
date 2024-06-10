@@ -163,6 +163,7 @@
     },
     "rowLocked": "You don't have access to this case",
     "widgets": {
+      "noData": "No data found",
       "noWidgets": "No widgets",
       "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",
       "noWidget": "Widget not found",

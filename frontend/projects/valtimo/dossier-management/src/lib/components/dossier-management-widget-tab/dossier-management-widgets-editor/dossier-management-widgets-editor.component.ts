@@ -89,7 +89,8 @@ export class DossierManagementWidgetsEditorComponent {
 
   public readonly items$ = new BehaviorSubject<CarbonListItem[]>([]);
 
-  public readonly addModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly isWizardOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly isEditMode = this.widgetWizardService.editMode;
   public readonly deleteModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly deleteRowKey$ = new Subject<number>();
 
@@ -99,7 +100,7 @@ export class DossierManagementWidgetsEditorComponent {
   ) {}
 
   public openAddModal(): void {
-    this.addModalOpen$.next(true);
+    this.isWizardOpen$.next(true);
   }
 
   private editWidget(tabWidget: any): void {
@@ -112,7 +113,8 @@ export class DossierManagementWidgetsEditorComponent {
       AVAILABLE_WIDGETS.find(available => available.type === tabWidget.type) ?? null
     );
     this.widgetWizardService.widgetContent.set(tabWidget.properties);
-    this.addModalOpen$.next(true);
+    this.widgetWizardService.editMode.set(true);
+    this.isWizardOpen$.next(true);
   }
 
   public onDeleteConfirm(widgetKey: string): void {
@@ -133,7 +135,8 @@ export class DossierManagementWidgetsEditorComponent {
   }
 
   public onCloseEvent(event: any, widgets: any[]): void {
-    this.addModalOpen$.next(false);
+    this.widgetWizardService.resetWizard();
+    this.isWizardOpen$.next(false);
 
     if (!event) return;
 

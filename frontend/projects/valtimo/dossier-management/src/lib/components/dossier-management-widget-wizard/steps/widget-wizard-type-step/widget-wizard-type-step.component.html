@@ -23,7 +23,7 @@
     <cds-selection-tile
       class="valtimo-widget-wizard-step__tile"
       [value]="widgetType"
-      [selected]="widgetType.type === selectedWidget?.type"
+      [selected]="widgetType.type === selectedWidget()?.type"
     >
       <h3>{{ widgetType.titleKey | translate }}</h3>
 

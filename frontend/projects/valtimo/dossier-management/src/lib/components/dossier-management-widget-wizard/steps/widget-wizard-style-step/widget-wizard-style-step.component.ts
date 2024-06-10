@@ -30,7 +30,7 @@ import {WidgetStyle} from '../../../../models';
 })
 export class WidgetWizardStyleStepComponent {
   public readonly WidgetStyle = WidgetStyle;
-  public readonly widgetStyle = this.widgetWizardService.widgetStyle();
+  public readonly widgetStyle = this.widgetWizardService.widgetStyle;
 
   constructor(private readonly widgetWizardService: WidgetWizardService) {}
 

@@ -27,11 +27,14 @@ export class WidgetWizardService {
     },
   }));
 
+  public readonly editMode: WritableSignal<boolean> = signal(false);
+
   public resetWizard(): void {
     this.selectedWidget.set(null);
     this.widgetWidth.set(null);
     this.widgetStyle.set(null);
     this.widgetContent.set(null);
     this.widgetTitle.set(null);
+    this.editMode.set(false);
   }
 }

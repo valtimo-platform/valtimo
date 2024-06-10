@@ -22,7 +22,7 @@
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
     [value]="WidgetStyle.DEFAULT"
-    [selected]="widgetStyle === WidgetStyle.DEFAULT"
+    [selected]="widgetStyle() === WidgetStyle.DEFAULT"
   >
     <h3>{{ 'widgetTabManagement.style.default.title' | translate }}</h3>
 
@@ -37,7 +37,7 @@
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
     [value]="WidgetStyle.HIGH_CONTRAST"
-    [selected]="widgetStyle === WidgetStyle.HIGH_CONTRAST"
+    [selected]="widgetStyle() === WidgetStyle.HIGH_CONTRAST"
   >
     <h3>{{ 'widgetTabManagement.style.highContrast.title' | translate }}</h3>
 

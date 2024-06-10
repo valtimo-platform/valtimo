@@ -31,7 +31,7 @@ import {WidgetWizardService} from '../../../../services';
 })
 export class WidgetWizardTypeStepComponent {
   public readonly availableWidgets = AVAILABLE_WIDGETS;
-  public readonly selectedWidget = this.widgetWizardService.selectedWidget();
+  public readonly selectedWidget = this.widgetWizardService.selectedWidget;
 
   constructor(private readonly widgetWizardService: WidgetWizardService) {}
 

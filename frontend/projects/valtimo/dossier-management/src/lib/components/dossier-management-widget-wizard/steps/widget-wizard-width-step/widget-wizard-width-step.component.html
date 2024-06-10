@@ -13,6 +13,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+
 <cds-tile-group
   [multiple]="false"
   (selected)="onSelectedEvent($event)"
@@ -21,7 +22,8 @@
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
     [value]="1"
-    [selected]="widgetWidth === 1"
+    [selected]="widgetWidth() === 1"
+    [disabled]="fieldsEditMode() && fieldsColumnsLength() > 1"
   >
     <h3>{{ 'widgetTabManagement.width.quarter.title' | translate }}</h3>
 
@@ -36,7 +38,8 @@
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
     [value]="2"
-    [selected]="widgetWidth === 2"
+    [selected]="widgetWidth() === 2"
+    [disabled]="fieldsEditMode() && fieldsColumnsLength() > 2"
   >
     <h3>{{ 'widgetTabManagement.width.half.title' | translate }}</h3>
 
@@ -51,7 +54,8 @@
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
     [value]="3"
-    [selected]="widgetWidth === 3"
+    [selected]="widgetWidth() === 3"
+    [disabled]="fieldsEditMode() && fieldsColumnsLength() > 3"
   >
     <h3>{{ 'widgetTabManagement.width.threeQuarters.title' | translate }}</h3>
 
@@ -66,7 +70,7 @@
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
     [value]="4"
-    [selected]="widgetWidth === 4"
+    [selected]="widgetWidth() === 4"
   >
     <h3>{{ 'widgetTabManagement.width.fullWidth.title' | translate }}</h3>
 

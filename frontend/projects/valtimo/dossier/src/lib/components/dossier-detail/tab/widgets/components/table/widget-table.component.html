@@ -29,10 +29,17 @@
       [hideToolbar]="true"
       [fields]="obs.fields"
       [items]="obs.widgetData || []"
-    ></valtimo-carbon-list>
+    >
+      <valtimo-no-results
+        [collapseVertically]="true"
+        [description]="'dossier.widgets.noDataFound' | translate"
+        [smallPadding]="true"
+      ></valtimo-no-results>
+    </valtimo-carbon-list>
 
     <cds-pagination-nav
-      *ngIf="showPagination$ | async"
+      *ngIf="paginationModel()"
+      class="valtimo-widget-table__pagination"
       [model]="paginationModel()"
       (selectPage)="onSelectPage($event)"
     >
