@@ -69,9 +69,7 @@ export class DossierManagementWidgetCustomComponent
   );
 
   private readonly _selectedCustomComponentKey$ = new BehaviorSubject<string | null>(null);
-  private readonly _customCaseWidgetConfig$ = new BehaviorSubject<CustomCaseWidgetConfig | null>(
-    null
-  );
+  private readonly _customCaseWidgetConfig$ = new BehaviorSubject<CustomCaseWidgetConfig>({});
 
   public readonly componentListItems$: Observable<ListItem[]> = combineLatest([
     this._customCaseWidgetConfig$,
