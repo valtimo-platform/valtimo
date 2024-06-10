@@ -499,11 +499,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         `/dossiers/${documentDefinitionName}`,
         this.route.snapshot.queryParams
       );
-      if (item.ctrlClick) {
-        window.open(`/dossiers/${documentDefinitionName}/document/${item.id}`, '_blank');
-      } else {
-        this.router.navigate([`/dossiers/${documentDefinitionName}/document/${item.id}`]);
-      }
+      this.router.navigate([`/dossiers/${documentDefinitionName}/document/${item.id}`]);
     });
   }
 
