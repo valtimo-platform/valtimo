@@ -115,14 +115,8 @@ export class TaskService extends BaseApiService {
     return this.httpClient.get<TaskProcessLinkResult>(
       this.getApiUrl(`/v2/process-link/task/${taskId}`),
       {
-        headers: {[InterceptorSkip]: ''},
+        headers: {[InterceptorSkip]: '404'},
       }
-    );
-  }
-
-  public getTaskProcessLinkV1(taskId: string): Observable<TaskProcessLinkResult> {
-    return this.httpClient.get<TaskProcessLinkResult>(
-      this.getApiUrl(`/v1/process-link/task/${taskId}`)
     );
   }
 
