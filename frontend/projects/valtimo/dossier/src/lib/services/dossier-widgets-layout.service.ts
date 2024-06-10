@@ -127,16 +127,28 @@ export class DossierWidgetsLayoutService implements OnDestroy {
     return this._caseWidgetXYSetSubject$.pipe(filter(loaded => loaded !== null));
   }
 
+  private readonly _widgetsWithExternalData$ = new BehaviorSubject<string[]>([]);
+  private readonly _widgetsWithExternalDataReady$ = new BehaviorSubject<string[]>([]);
+
   public get loaded$(): Observable<boolean> {
     return combineLatest([
       this._caseWidgetDataLoaded$,
       this._caseWidgetXYSet$,
       this._widgets$,
+      this._widgetsWithExternalData$,
+      this._widgetsWithExternalDataReady$,
     ]).pipe(
       map(
-        ([caseWidgetDataLoaded, caseWidgetXYSet, widgets]) =>
+        ([
+          caseWidgetDataLoaded,
+          caseWidgetXYSet,
+          widgets,
+          widgetsWithExternalData,
+          widgetsWithExternalDataReady,
+        ]) =>
           caseWidgetDataLoaded?.length === widgets.length &&
-          caseWidgetXYSet?.length === widgets.length
+          caseWidgetXYSet?.length === widgets.length &&
+          widgetsWithExternalData.length === widgetsWithExternalDataReady.length
       ),
       distinctUntilChanged()
     );
@@ -154,6 +166,18 @@ export class DossierWidgetsLayoutService implements OnDestroy {
 
   public setWidgets(widgets: CaseWidgetWithUuid[]): void {
     this._widgetsSubject$.next(widgets);
+  }
+
+  public setWidgetWithExternalData(uuid: string): void {
+    this._widgetsWithExternalData$.pipe(take(1)).subscribe(widgetsWithExternalData => {
+      this._widgetsWithExternalData$.next([...widgetsWithExternalData, uuid]);
+    });
+  }
+
+  public setWidgetWithExternalDataReady(uuid: string): void {
+    this._widgetsWithExternalDataReady$.pipe(take(1)).subscribe(widgetsWithExternalDataReady => {
+      this._widgetsWithExternalDataReady$.next([...widgetsWithExternalDataReady, uuid]);
+    });
   }
 
   public setContainerWidth(width: number): void {
@@ -203,6 +227,8 @@ export class DossierWidgetsLayoutService implements OnDestroy {
     this._packResult$.next(null);
     this._caseWidgetDataLoadedSubject$.next(null);
     this._caseWidgetXYSetSubject$.next(null);
+    this._widgetsWithExternalData$.next([]);
+    this._widgetsWithExternalDataReady$.next([]);
   }
 
   private getPackResult(

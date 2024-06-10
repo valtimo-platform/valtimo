@@ -78,8 +78,8 @@ export class DossierManagementWidgetFormioComponent
     map(([options, selectedFormId]) =>
       options.map(option => ({
         content: option.name,
-        id: option.id,
-        selected: option.id === selectedFormId,
+        id: option.name,
+        selected: option.name === selectedFormId,
       }))
     )
   );

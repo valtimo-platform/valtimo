@@ -47,6 +47,13 @@
           ></valtimo-widget-field>
         }
 
+        @case (CaseWidgetType.FORMIO) {
+          <valtimo-widget-formio
+            [widgetConfiguration]="obs.widgetConfiguration"
+            [documentId]="obs.documentId"
+          ></valtimo-widget-formio>
+        }
+
         @default {
           <div class="widget-block__not-available">
             <valtimo-no-results

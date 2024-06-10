@@ -63,9 +63,20 @@ interface CustomCaseWidget extends BasicCaseWidget {
   };
 }
 
-type CaseWidget = FieldsCaseWidget | CustomCaseWidget | TableCaseWidget;
+interface FormioCaseWidget extends BasicCaseWidget {
+  type: CaseWidgetType.FORMIO;
+  properties: {
+    formDefinition: string;
+  };
+}
+
+type CaseWidget = FieldsCaseWidget | CustomCaseWidget | TableCaseWidget | FormioCaseWidget;
 
 type CaseWidgetWithUuid = CaseWidget & {
+  uuid: string;
+};
+
+type FormioCaseWidgetWidgetWithUuid = FormioCaseWidget & {
   uuid: string;
 };
 
@@ -143,4 +154,5 @@ export {
   TableCaseWidget,
   CaseWidgetPackResultItem,
   CaseWidgetPackResultItemsByRow,
+  FormioCaseWidgetWidgetWithUuid,
 };
