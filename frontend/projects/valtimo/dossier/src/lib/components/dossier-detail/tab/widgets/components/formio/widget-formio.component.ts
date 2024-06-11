@@ -60,7 +60,7 @@ export class WidgetFormioComponent {
     switchMap(([config, documentId]) =>
       combineLatest([
         this.formService.getFormDefinitionByNamePreFilled(
-          config.properties.formDefinition,
+          config.properties.formDefinitionName,
           documentId
         ),
         of(config),

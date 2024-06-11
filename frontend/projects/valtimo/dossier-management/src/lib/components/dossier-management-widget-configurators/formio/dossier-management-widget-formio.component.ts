@@ -102,7 +102,7 @@ export class DossierManagementWidgetFormioComponent
     if (!formDefinitionId) return;
 
     this._selectedFormDefinitionId$.next(formDefinitionId);
-    this.widgetWizardService.widgetContent.set({formDefinition: formDefinitionId});
+    this.widgetWizardService.widgetContent.set({formDefinitionName: formDefinitionId});
     this.changeValidEvent.emit(true);
   }
 
@@ -132,7 +132,7 @@ export class DossierManagementWidgetFormioComponent
 
   private prefill(): void {
     const formDefinitionId = (this.widgetWizardService.widgetContent() as WidgetFormioContent)
-      ?.formDefinition;
+      ?.formDefinitionName;
 
     if (!formDefinitionId) return;
 
