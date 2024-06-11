@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,3 +14,35 @@
  * limitations under the License.
  */
 
+import {FieldsCaseWidgetValue} from './case-widget.model';
+
+interface WidgetFieldsContent {
+  columns: FieldsCaseWidgetValue[][];
+}
+
+interface WidgetTableContent {
+  columns: FieldsCaseWidgetValue[];
+  firstColumnAsTitle: boolean;
+}
+
+interface WidgetCustomContent {
+  componentKey: string;
+}
+
+interface WidgetFormioContent {
+  formDefinition: string;
+}
+
+type WidgetContentProperties =
+  | WidgetFieldsContent
+  | WidgetTableContent
+  | WidgetCustomContent
+  | WidgetFormioContent;
+
+export {
+  WidgetContentProperties,
+  WidgetFieldsContent,
+  WidgetCustomContent,
+  WidgetFormioContent,
+  WidgetTableContent,
+};

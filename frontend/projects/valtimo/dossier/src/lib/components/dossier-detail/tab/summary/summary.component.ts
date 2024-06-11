@@ -181,7 +181,7 @@ export class DossierDetailTabSummaryComponent implements OnInit, OnDestroy {
               }
 
               // new task on top
-              const createdCompare = (t2.createdUnix / 5000) - (t1.createdUnix / 5000);
+              const createdCompare = t2.createdUnix / 5000 - t1.createdUnix / 5000;
               if (createdCompare !== 0) {
                 return createdCompare;
               }

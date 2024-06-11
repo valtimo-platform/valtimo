@@ -15,30 +15,7 @@
  */
 
 import {EventEmitter} from '@angular/core';
-import {FieldsCaseWidgetValue} from '@valtimo/dossier';
 
-interface WidgetContentComponent {
+export interface WidgetContentComponent {
   changeValidEvent: EventEmitter<boolean>;
 }
-
-interface WidgetFieldsContent {
-  columns: FieldsCaseWidgetValue[][];
-}
-
-interface WidgetCustomContent {
-  componentKey: string;
-}
-
-interface WidgetFormioContent {
-  formDefinition: string;
-}
-
-type WidgetContentProperties = WidgetFieldsContent | WidgetCustomContent | WidgetFormioContent;
-
-export {
-  WidgetContentComponent,
-  WidgetContentProperties,
-  WidgetFieldsContent,
-  WidgetCustomContent,
-  WidgetFormioContent,
-};

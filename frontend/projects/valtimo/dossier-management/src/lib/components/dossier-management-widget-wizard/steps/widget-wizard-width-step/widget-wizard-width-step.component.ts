@@ -16,7 +16,7 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed, Signal} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {CaseWidgetType, CaseWidgetWidth} from '@valtimo/dossier';
+import {CaseWidgetWidth} from '@valtimo/dossier';
 import {TilesModule} from 'carbon-components-angular';
 import {WidgetWizardService} from '../../../../services';
 
@@ -28,11 +28,6 @@ import {WidgetWizardService} from '../../../../services';
   imports: [CommonModule, TranslateModule, TilesModule],
 })
 export class WidgetWizardWidthStepComponent {
-  public readonly fieldsEditMode: Signal<boolean> = computed(
-    () =>
-      this.widgetWizardService.editMode() &&
-      this.widgetWizardService.selectedWidget()?.type === CaseWidgetType.FIELDS
-  );
   public readonly fieldsColumnsLength: Signal<number> = computed(
     () => this.widgetWizardService.widgetContent()?.['columns']?.length ?? 0
   );

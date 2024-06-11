@@ -339,7 +339,7 @@
     "typescript": "5.3.3",
     "webpack-bundle-analyzer": "4.10.1"
   },
-  "optionalDependencies" : {
+  "optionalDependencies": {
     "@nx/nx-linux-x64-gnu": "18.2.3",
     "@nx/nx-darwin-arm64": "18.2.3"
   }

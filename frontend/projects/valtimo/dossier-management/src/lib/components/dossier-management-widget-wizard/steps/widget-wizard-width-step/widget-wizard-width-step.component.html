@@ -23,7 +23,7 @@
     class="valtimo-widget-wizard-step__tile"
     [value]="1"
     [selected]="widgetWidth() === 1"
-    [disabled]="fieldsEditMode() && fieldsColumnsLength() > 1"
+    [disabled]="fieldsColumnsLength() > 1"
   >
     <h3>{{ 'widgetTabManagement.width.quarter.title' | translate }}</h3>
 
@@ -39,7 +39,7 @@
     class="valtimo-widget-wizard-step__tile"
     [value]="2"
     [selected]="widgetWidth() === 2"
-    [disabled]="fieldsEditMode() && fieldsColumnsLength() > 2"
+    [disabled]="fieldsColumnsLength() > 2"
   >
     <h3>{{ 'widgetTabManagement.width.half.title' | translate }}</h3>
 
@@ -55,7 +55,7 @@
     class="valtimo-widget-wizard-step__tile"
     [value]="3"
     [selected]="widgetWidth() === 3"
-    [disabled]="fieldsEditMode() && fieldsColumnsLength() > 3"
+    [disabled]="fieldsColumnsLength() > 3"
   >
     <h3>{{ 'widgetTabManagement.width.threeQuarters.title' | translate }}</h3>
 

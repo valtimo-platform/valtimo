@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -22,16 +22,16 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {TranslateModule} from '@ngx-translate/core';
-import {DropdownModule, InputModule, SelectModule} from 'carbon-components-angular';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {WidgetContentComponent, WidgetFormioContent} from '../../../models';
+import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
-import {WidgetWizardService} from '../../../services';
-import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
-import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
+import {WidgetFormioContent} from '@valtimo/dossier';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
+import {DropdownModule, InputModule, SelectModule} from 'carbon-components-angular';
+import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
+import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
+import {WidgetContentComponent} from '../../../models';
+import {WidgetWizardService} from '../../../services';
 
 @Component({
   templateUrl: './dossier-management-widget-formio.component.html',
@@ -56,7 +56,7 @@ export class DossierManagementWidgetFormioComponent
     widgetTitle: this.fb.control(this.widgetWizardService.widgetTitle(), Validators.required),
   });
 
-  public get widgetTitle(): AbstractControl<string> {
+  public get widgetTitle(): AbstractControl<string | null> | null {
     return this.form.get('widgetTitle');
   }
 
@@ -118,7 +118,7 @@ export class DossierManagementWidgetFormioComponent
 
   private openTitleSubscription(): void {
     this._subscriptions.add(
-      this.widgetTitle.valueChanges.subscribe(title => {
+      this.widgetTitle?.valueChanges.subscribe(title => {
         this.widgetWizardService.widgetTitle.set(title);
       })
     );

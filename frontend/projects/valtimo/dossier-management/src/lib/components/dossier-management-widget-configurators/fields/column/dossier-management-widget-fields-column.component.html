@@ -13,7 +13,8 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-  <form
+
+<form
   *ngIf="inputTheme$ | async as inputTheme"
   class="valtimo-dossier-management-widget-field-column"
   [formGroup]="formGroup"
@@ -109,7 +110,10 @@
               </cds-text-label>
             }
             @case (CaseWidgetDisplayTypeKey.ENUM) {
-              <div class="valtimo-dossier-management-widget-field-column__enum" formArrayName="values">
+              <div
+                class="valtimo-dossier-management-widget-field-column__enum"
+                formArrayName="values"
+              >
                 @for (rowValue of formRow.get('values')?.controls; track $index) {
                   <form
                     [formGroup]="rowValue"

@@ -66,6 +66,7 @@ export class WidgetTableComponent {
         }),
       }))
     );
+    this.cdr.detectChanges();
   }
   public get widgetConfiguration(): TableCaseWidget {
     return this._widgetConfiguration;
@@ -98,6 +99,7 @@ export class WidgetTableComponent {
             pageLength: value.size,
           }
     );
+    this.cdr.detectChanges();
   }
 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);

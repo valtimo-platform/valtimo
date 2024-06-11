@@ -18,7 +18,8 @@
   display: flex;
   flex-direction: column;
 
-  > *:first-child, > *:nth-child(2)  {
+  > *:first-child,
+  > *:nth-child(2) {
     margin-bottom: 16px;
   }
 

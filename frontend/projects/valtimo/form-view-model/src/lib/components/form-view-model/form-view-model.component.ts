@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, EventEmitter, Input, OnInit, Output, ViewChild,} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import moment from 'moment';
 import {
   BehaviorSubject,
@@ -30,7 +30,13 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {FormioComponent, FormioModule, FormioOptions, FormioSubmission, FormioSubmissionCallback,} from '@formio/angular';
+import {
+  FormioComponent,
+  FormioModule,
+  FormioOptions,
+  FormioSubmission,
+  FormioSubmissionCallback,
+} from '@formio/angular';
 import {FormioRefreshValue} from '@formio/angular/formio.common';
 import {ViewModelService} from '../../services';
 import {distinctUntilChanged, map} from 'rxjs/operators';

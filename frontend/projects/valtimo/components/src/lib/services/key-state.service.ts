@@ -1,9 +1,9 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { fromEvent, merge, Observable, Subject } from 'rxjs';
-import { map, takeUntil } from 'rxjs/operators';
+import {Injectable, OnDestroy} from '@angular/core';
+import {fromEvent, merge, Observable, Subject} from 'rxjs';
+import {map, takeUntil} from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class KeyStateService implements OnDestroy {
   private _isCtrlOrCmdPressed: boolean = false;

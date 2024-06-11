@@ -24,7 +24,7 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import {CaseWidget, CaseWidgetsRes} from '@valtimo/dossier';
+import {BasicCaseWidget, CaseWidget, CaseWidgetsRes} from '@valtimo/dossier';
 import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
 import {BehaviorSubject, Subject, take} from 'rxjs';
 import {AVAILABLE_WIDGETS, WidgetStyle} from '../../../models';
@@ -49,12 +49,13 @@ import {DossierManagementWidgetWizardComponent} from '../../dossier-management-w
   ],
 })
 export class DossierManagementWidgetsEditorComponent {
-  @Input() public documentDefinitionName;
-  @Input() public tabWidgetKey;
+  @Input() public documentDefinitionName: string;
+  @Input() public tabWidgetKey: string;
   private _currentWidgetTab: CaseWidgetsRes;
   @Input() public set currentWidgetTab(value: CaseWidgetsRes) {
     this._currentWidgetTab = value;
     this.items$.next(value?.widgets);
+    this._usedKeys = value?.widgets.map(widget => widget.key);
   }
   public get currentWidgetTab(): CaseWidgetsRes {
     return this._currentWidgetTab;
@@ -69,8 +70,8 @@ export class DossierManagementWidgetsEditorComponent {
       viewType: ViewType.TEXT,
     },
     {
-      key: 'name',
-      label: 'interface.name',
+      key: 'title',
+      label: 'interface.title',
       viewType: ViewType.TEXT,
     },
   ];
@@ -94,6 +95,8 @@ export class DossierManagementWidgetsEditorComponent {
   public readonly deleteModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly deleteRowKey$ = new Subject<number>();
 
+  private _usedKeys: string[];
+
   constructor(
     private readonly widgetTabManagementService: WidgetTabManagementService,
     private readonly widgetWizardService: WidgetWizardService
@@ -103,7 +106,7 @@ export class DossierManagementWidgetsEditorComponent {
     this.isWizardOpen$.next(true);
   }
 
-  private editWidget(tabWidget: any): void {
+  private editWidget(tabWidget: CaseWidget): void {
     this.widgetWizardService.widgetTitle.set(tabWidget.title);
     this.widgetWizardService.widgetStyle.set(
       tabWidget.highContrast ? WidgetStyle.HIGH_CONTRAST : WidgetStyle.DEFAULT
@@ -114,6 +117,7 @@ export class DossierManagementWidgetsEditorComponent {
     );
     this.widgetWizardService.widgetContent.set(tabWidget.properties);
     this.widgetWizardService.editMode.set(true);
+    this.widgetWizardService.widgetKey.set(tabWidget.key);
     this.isWizardOpen$.next(true);
   }
 
@@ -134,20 +138,21 @@ export class DossierManagementWidgetsEditorComponent {
     this.deleteModalOpen$.next(true);
   }
 
-  public onCloseEvent(event: any, widgets: any[]): void {
-    this.widgetWizardService.resetWizard();
+  public onCloseEvent(widgetResult: BasicCaseWidget, existingWidgets: CaseWidget[]): void {
     this.isWizardOpen$.next(false);
+    this.widgetWizardService.resetWizard();
 
-    if (!event) return;
+    if (!widgetResult) return;
 
-    const isEdit = widgets.findIndex(widget => widget.key === event.key) !== -1;
     this.widgetTabManagementService
       .updateWidgets({
         caseDefinitionName: this.documentDefinitionName,
         key: this.tabWidgetKey,
-        widgets: isEdit
-          ? widgets.map(widget => (widget.key === event.key ? event : widget))
-          : [...widgets, event],
+        widgets: !!widgetResult.key
+          ? existingWidgets.map((widget: BasicCaseWidget) =>
+              widget.key === widgetResult.key ? widgetResult : widget
+            )
+          : [...existingWidgets, {...widgetResult, key: this.getUniqueKey(widgetResult.title)}],
       })
       .pipe(take(1))
       .subscribe(() => {
@@ -165,5 +170,37 @@ export class DossierManagementWidgetsEditorComponent {
       .subscribe(() => {
         this.changeSaved.emit();
       });
+  }
+
+  private getUniqueKey(widgetName: string): string {
+    const dashCaseKey = `${widgetName}`
+      .toLowerCase()
+      .replace(/[^a-z0-9-_]+|-[^a-z0-9]+/g, '-')
+      .replace(/_[-_]+/g, '_')
+      .replace(/^[^a-z]+/g, '');
+    const usedKeys = this._usedKeys;
+
+    if (!usedKeys.includes(dashCaseKey)) {
+      return dashCaseKey;
+    }
+
+    return this.getUniqueKeyWithNumber(dashCaseKey, usedKeys);
+  }
+
+  private getUniqueKeyWithNumber(dashCaseKey: string, usedKeys: string[]): string {
+    const numbersFromCurrentKey = (dashCaseKey.match(/^\d+|\d+\b|\d+(?=\w)/g) || []).map(
+      (numberValue: string) => +numberValue
+    );
+    const lastNumberFromCurrentKey =
+      numbersFromCurrentKey.length > 0 && numbersFromCurrentKey[numbersFromCurrentKey.length - 1];
+    const newKey = lastNumberFromCurrentKey
+      ? `${dashCaseKey.replace(`${lastNumberFromCurrentKey}`, `${lastNumberFromCurrentKey + 1}`)}`
+      : `${dashCaseKey}-1`;
+
+    if (usedKeys.includes(newKey)) {
+      return this.getUniqueKeyWithNumber(newKey, usedKeys);
+    }
+
+    return newKey;
   }
 }

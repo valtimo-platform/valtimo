@@ -55,11 +55,16 @@
     }
 
     &__tile {
+      .cds--tile {
+        height: 100%;
+      }
+
       .cds--tile-content {
         display: flex;
         flex-direction: column;
         max-width: 260px;
         gap: 16px;
+        justify-content: space-between;
       }
 
       .cds--tile:not(.cds--tile--disabled) .cds--tile-content {

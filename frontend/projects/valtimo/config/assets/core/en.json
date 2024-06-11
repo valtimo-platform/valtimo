@@ -1046,7 +1046,8 @@
     "editor": {
       "visualEditor": "Visual editor"
     },
-    "key": "Key"
+    "key": "Key",
+    "title": "Title"
   },
   "taskDetail": {
     "taskCreated": "Created",

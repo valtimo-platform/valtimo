@@ -29,12 +29,12 @@ import {
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
+import {FieldsCaseWidgetValue, WidgetFieldsContent} from '@valtimo/dossier';
 import {ButtonModule, IconModule, InputModule, TabsModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, debounceTime, map, Subscription} from 'rxjs';
-import {WidgetContentComponent, WidgetFieldsContent} from '../../../models';
+import {debounceTime, map, Subscription} from 'rxjs';
+import {WidgetContentComponent} from '../../../models';
 import {WidgetWizardService} from '../../../services';
 import {DossierManagementWidgetFieldsColumnComponent} from './column/dossier-management-widget-fields-column.component';
-import {FieldsCaseWidgetValue} from '@valtimo/dossier';
 
 @Component({
   templateUrl: './dossier-management-widget-fields.component.html',

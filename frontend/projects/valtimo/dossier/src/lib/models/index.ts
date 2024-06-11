@@ -15,10 +15,11 @@
  */
 
 export * from './candidate-user.model';
-export * from './dossier-parameters.model';
-export * from './search.model';
-export * from './tabs.model';
-export * from './dossier-detail-tab.model';
-export * from './tab-api.model';
+export * from './case-widget-content.model';
 export * from './case-widget-display.model';
 export * from './case-widget.model';
+export * from './dossier-detail-tab.model';
+export * from './dossier-parameters.model';
+export * from './search.model';
+export * from './tab-api.model';
+export * from './tabs.model';
