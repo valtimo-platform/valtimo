@@ -25,8 +25,6 @@ import {
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
-  Renderer2,
-  ChangeDetectorRef,
 } from '@angular/core';
 import {Router} from '@angular/router';
 import {
@@ -34,29 +32,23 @@ import {
   FormioOptionsImpl,
   FormIoStateService,
   FormioSubmission,
-  ModalComponent,
   ValtimoFormioOptions,
   ValtimoModalService,
 } from '@valtimo/components';
-import {Task, TaskProcessLinkType} from '../../models';
+import {IntermediateSaveRequest, IntermediateSubmission, Task, TaskProcessLinkType,} from '../../models';
 import {FormFlowComponent, FormSubmissionResult, ProcessLinkService} from '@valtimo/process-link';
 import {FormioForm} from '@formio/angular';
 import moment from 'moment';
 import {ToastrService} from 'ngx-toastr';
-import {filter, map, take} from 'rxjs/operators';
+import {distinctUntilChanged, map, switchMap, take} from 'rxjs/operators';
 import {TaskService} from '../../services/task.service';
-import {
-  BehaviorSubject,
-  combineLatest,
-  distinctUntilChanged,
-  Observable,
-  Subscription,
-  tap,
-} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription, tap} from 'rxjs';
 import {UserProviderService} from '@valtimo/security';
 import {DocumentService} from '@valtimo/document';
 import {TranslateService} from '@ngx-translate/core';
-import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
+import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
+import {TaskIntermediateSaveService} from '../../services/task-intermediate-save.service';
+import {Modal} from 'carbon-components-angular';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -69,17 +61,20 @@ moment.locale(localStorage.getItem('langKey') || '');
 export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
   @ViewChild('form') form: FormioComponent;
   @ViewChild('formFlow') formFlow: FormFlowComponent;
-  @ViewChild('taskDetailModal') modal: ModalComponent;
+  @ViewChild('taskDetailModal') modal: Modal;
   @ViewChild('formViewModelComponent', {static: true, read: ViewContainerRef})
   public formViewModelDynamicContainer: ViewContainerRef;
   @Output() formSubmit = new EventEmitter();
   @Output() assignmentOfTaskChanged = new EventEmitter();
+
+  public intermediateSaveEnabled = false;
 
   public readonly task$ = new BehaviorSubject<Task | null>(null);
   public readonly taskInstanceId$ = new BehaviorSubject<string>(null);
   public readonly formDefinition$ = new BehaviorSubject<FormioForm>(undefined);
   public readonly formDefinitionId$ = new BehaviorSubject<string>(undefined);
   public readonly formName$ = new BehaviorSubject<string>(undefined);
+  public readonly submission$ = new BehaviorSubject<any>({});
   public readonly formFlowInstanceId$ = new BehaviorSubject<string>(undefined);
   public readonly page$ = new BehaviorSubject<any>(null);
   public readonly formioOptions$ = new BehaviorSubject<ValtimoFormioOptions>(null);
@@ -89,6 +84,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     .pipe(map(userIdentity => userIdentity?.roles?.includes('ROLE_ADMIN')));
   public readonly formIoFormData$ = new BehaviorSubject<any>(null);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly showConfirmationModal$ = new BehaviorSubject<boolean>(false);
 
   private readonly taskProcessLinkType$ = new BehaviorSubject<TaskProcessLinkType | null>(null);
   public readonly processLinkIsForm$ = this.taskProcessLinkType$.pipe(map(type => type === 'form'));
@@ -113,23 +109,25 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     private readonly stateService: FormIoStateService,
     private readonly documentService: DocumentService,
     private readonly translateService: TranslateService,
-    @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel
+    @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel,
+    private readonly taskIntermediateSaveService: TaskIntermediateSaveService,
+    private readonly configService: ConfigService
   ) {
     const options = new FormioOptionsImpl();
     options.disableAlerts = true;
     this.formioOptions$.next(options);
+
+    this.intermediateSaveEnabled = this.configService.featureToggles.enableIntermediateSave;
   }
 
   public ngAfterViewInit(): void {
     this._subscriptions.add(
-      this.modal.modalShowing$
+      this.modal.close
         .pipe(
           distinctUntilChanged(),
-          tap(modalShowing => {
-            if (!modalShowing) {
-              if (this.formFlow) {
-                this.formFlow.saveData();
-              }
+          tap(() => {
+            if (this.formFlow) {
+              this.formFlow.saveData();
             }
           })
         )
@@ -158,12 +156,12 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
 
     //only load from formlink when process link failed for backwards compatibility
     if (!this.taskProcessLinkType$.getValue()) {
-      this.modal.show();
+      this.openModal();
     }
   }
 
   public gotoProcessLinkScreen(): void {
-    this.modal.hide();
+    this.closeModal();
     this.router.navigate(['process-links']);
   }
 
@@ -205,7 +203,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
       this.toastr.success(
         `${task.name} ${this.translateService.instant('taskDetail.taskCompleted')}`
       );
-      this.modal.hide();
+      this.closeModal();
       this.task$.next(null);
       this.formSubmit.emit();
     });
@@ -224,6 +222,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
             case 'form':
               this.taskProcessLinkType$.next('form');
               this.processLinkId$.next(res.processLinkId);
+              this.getCurrentProgress();
               this.setFormDefinitionAndOpenModal(res.properties.prefilledForm);
               break;
             case 'form-flow':
@@ -235,7 +234,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
               this.processLinkId$.next(res.processLinkId);
               this.formDefinition$.next(res.properties.formDefinition);
               this.formName$.next(res.properties.formName);
-              this.modal.show();
+              this.openModal();
               this.setFormViewModelComponent();
               break;
           }
@@ -256,7 +255,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
   private setFormDefinitionAndOpenModal(formDefinition: any): void {
     this.taskProcessLinkType$.next('form');
     this.formDefinition$.next(formDefinition);
-    this.modal.show();
+    this.openModal();
   }
 
   private setDocumentDefinitionNameInService(task: Task): void {
@@ -282,8 +281,73 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
     this._subscriptions.add(
       formViewModelComponent.instance.formSubmit.subscribe(() => {
         this.completeTask();
-        this.modal.hide();
+        this.closeModal();
       })
     );
+  }
+
+  private getCurrentProgress(): void {
+    this._subscriptions.add(
+      this.taskInstanceId$.pipe(
+        switchMap((taskInstanceId: string) =>
+          this.taskIntermediateSaveService
+            .getIntermediateSubmission(taskInstanceId)
+        ))
+        .subscribe({
+          next: (intermediateSubmission: IntermediateSubmission) => {
+            this.submission$.next({data: intermediateSubmission.submission});
+          },
+          error: () => {
+            this.submission$.next({data: {}});
+          },
+        })
+    );
+  }
+
+  protected saveCurrentProgress(): void {
+    const intermediateSaveRequest: IntermediateSaveRequest = {
+      submission: this.submission$.getValue().data,
+      taskInstanceId: this.taskInstanceId$.getValue(),
+    };
+
+    this._subscriptions.add(
+      this.taskIntermediateSaveService
+        .storeIntermediateSubmission(intermediateSaveRequest)
+        .subscribe({
+          next: () => {
+            this.toastr.success(
+              this.translateService.instant('formManagement.intermediateSave.success')
+            );
+          },
+          error: () => {
+            this.toastr.error(
+              this.translateService.instant('formManagement.intermediateSave.error')
+            );
+          },
+        })
+    );
+  }
+
+  protected clearCurrentProgress(): void {
+    this._subscriptions.add(
+      this.taskInstanceId$.pipe(
+        switchMap((taskInstanceId: string) =>
+          this.taskIntermediateSaveService
+            .clearIntermediateSubmission(taskInstanceId)
+        ))
+        .subscribe({
+          next: () => {
+            this.submission$.next({data: {}});
+          },
+        })
+    );
+  }
+
+  private openModal(): void {
+    this.modal.open = true;
+  }
+
+  protected closeModal(): void {
+    this.modal.open = false;
   }
 }

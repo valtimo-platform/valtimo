@@ -481,6 +481,13 @@
       "formBuilder": "Form builder",
       "jsonEditor": "JSON editor",
       "output": "Output"
+    },
+    "intermediateSave": {
+      "save": "Save progress",
+      "clear": "Clear input fields",
+      "clearConfirm": "Are you sure you want to clear your input fields? This action cannot be undone.",
+      "success": "Progress saved successfully",
+      "error": "Failed to save progress"
     }
   },
   "dossierManagement": {

@@ -23,8 +23,8 @@ import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {
   CamundaFormModule,
   CarbonListModule,
+  ConfirmationModalModule,
   FormIoModule,
-  ModalModule,
   PageHeaderModule,
   RenderInPageHeaderDirectiveModule,
   SearchableDropdownSelectModule,
@@ -34,10 +34,14 @@ import {
 import {HttpLoaderFactory} from '@valtimo/config';
 import {ProcessLinkModule} from '@valtimo/process-link';
 import {
+  ButtonModule,
   ContentSwitcherModule,
   DropdownModule,
+  IconModule,
   LinkModule,
+  ModalModule,
   TabsModule,
+  TooltipModule,
 } from 'carbon-components-angular';
 import {ToastrModule} from 'ngx-toastr';
 import {AssignUserToTaskComponent} from './components/assign-user-to-task/assign-user-to-task.component';
@@ -78,6 +82,10 @@ import {TaskRoutingModule} from './task-routing.module';
     ContentSwitcherModule,
     RenderInPageHeaderDirectiveModule,
     DropdownModule,
+    ButtonModule,
+    IconModule,
+    TooltipModule,
+    ConfirmationModalModule,
   ],
   exports: [TaskListComponent, TaskDetailModalComponent, AssignUserToTaskComponent],
 })

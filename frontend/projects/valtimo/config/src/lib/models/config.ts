@@ -137,6 +137,7 @@ export interface ValtimoConfig {
     enableUserNameInTopBarToggle?: boolean;
     enableCaseWidgets?: boolean;
     enableFormViewModel?: boolean;
+    enableIntermediateSave?: boolean;
   };
   visibleTaskListTabs?: Array<TaskListTab>;
   visibleDossierListTabs?: Array<DossierListTab>;

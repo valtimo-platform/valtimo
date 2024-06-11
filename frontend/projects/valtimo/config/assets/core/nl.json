@@ -480,6 +480,13 @@
       "formBuilder": "Formulier editor",
       "jsonEditor": "JSON editor",
       "output": "Uitvoer"
+    },
+    "intermediateSave": {
+      "save": "Voortgang opslaan",
+      "clear": "Invoervelden wissen",
+      "clearConfirm": "Weet u zeker dat u uw invoervelden wilt wissen? Deze actie kan niet ongedaan worden gemaakt.",
+      "success": "Voortgang succesvol opgeslagen",
+      "error": "Voortgang kon niet worden opgeslagen"
     }
   },
   "dossierManagement": {

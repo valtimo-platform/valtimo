@@ -13,16 +13,45 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
-<valtimo-modal
-  #taskDetailModal
-  elementId="taskDetailModal"
-  [title]="(page$ | async)?.title"
-  [subtitle]="(page$ | async)?.subtitle"
-  [templateBelowSubtitle]="assignUserToTask"
->
+<cds-modal #taskDetailModal id="taskDetailModal">
+  <cds-modal-header (closeSelect)="closeModal()">
+    <div class="cds-modal-header">
+      <div class="title-container">
+        <p class="cds--modal-header__heading cds--type-beta">{{ (page$ | async)?.title }}</p>
+        <p class="cds--modal-header__label cds--type-delta">{{ (page$ | async)?.subtitle }}</p>
+      </div>
+      <div
+        *ngIf="intermediateSaveEnabled && !(formFlowInstanceId$ | async)"
+        class="save-buttons-margin"
+      >
+        <cds-tooltip
+          [caret]="true"
+          [description]="'formManagement.intermediateSave.save' | translate"
+        >
+          <button
+            cdsButton="ghost"
+            iconOnly="true"
+            cdsIcon="save"
+            (click)="saveCurrentProgress()"
+          ></button>
+        </cds-tooltip>
+        <cds-tooltip
+          [caret]="true"
+          [description]="'formManagement.intermediateSave.clear' | translate"
+        >
+          <button
+            cdsButton="ghost"
+            iconOnly="true"
+            cdsIcon="trash-can"
+            (click)="showConfirmationModal$.next(true)"
+          ></button>
+        </cds-tooltip>
+      </div>
+    </div>
+  </cds-modal-header>
   <div
     body
+    class="cds--modal-content pb-1"
     *ngIf="{
       loading: loading$ | async,
       page: page$ | async,
@@ -31,6 +60,8 @@
       formDefinition: formDefinition$ | async,
       formDefinitionId: formDefinitionId$ | async,
       formName: formName$ | async,
+      formIoFormData: formIoFormData$ | async,
+      submission: submission$ | async,
       processLinkIsForm: processLinkIsForm$ | async,
       processLinkIsFormViewModel: processLinkIsFormViewModel$ | async,
       formioOptions: formioOptions$ | async,
@@ -43,6 +74,7 @@
       <valtimo-form-io
         #form
         [form]="obs.formDefinition"
+        [submission]="obs.submission"
         (submit)="onSubmit($event)"
         (change)="onChange($event)"
         [options]="obs.formioOptions"
@@ -81,7 +113,10 @@
     </div>
   </div>
   <div footer>
-    <div class="mb-0 p-3 text-center" *ngIf="!!(formDefinition$ | async)">
+    <div
+      class="mb-0 p-3 text-center"
+      *ngIf="!(formDefinition$ | async) && !(formFlowInstanceId$ | async)"
+    >
       <button
         class="btn btn-secondary btn-space"
         type="button"
@@ -95,7 +130,17 @@
   <div body>
     <ng-template #formViewModelComponent></ng-template>
   </div>
-</valtimo-modal>
+</cds-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="showConfirmationModal$"
+  (confirmEvent)="clearCurrentProgress()"
+  (cancelEvent)="showConfirmationModal$.next(false)"
+  cancelButtonType="ghost"
+  confirmButtonTextTranslationKey="interface.confirm"
+  titleTranslationKey="formManagement.intermediateSave.clear"
+  contentTranslationKey="formManagement.intermediateSave.clearConfirm"
+></valtimo-confirmation-modal>
 
 <ng-template #assignUserToTask>
   <ng-container *ngIf="task$ | async as task">

@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,22 +14,16 @@
  * limitations under the License.
  */
 
-#taskDetailModal {
-  .formio-component-submit {
-    text-align: right;
-  }
+export interface IntermediateSubmission {
+  submission: object;
+  taskInstanceId: string;
+  createdBy: string;
+  createdOn: string;
+  editedBy: string;
+  editedOn: string;
 }
 
-.cds-modal-header {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-}
-
-.title-container {
-  width: 50%;
-}
-
-.save-buttons-margin {
-  margin-top: -15px;
+export interface IntermediateSaveRequest {
+  submission: object;
+  taskInstanceId: string;
 }
