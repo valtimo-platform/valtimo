@@ -21,7 +21,7 @@
         <p class="cds--modal-header__label cds--type-delta">{{ (page$ | async)?.subtitle }}</p>
       </div>
       <div
-        *ngIf="intermediateSaveEnabled && !(formFlowInstanceId$ | async)"
+        *ngIf="intermediateSaveEnabled && (formFlowInstanceId$ | async) === undefined"
         class="save-buttons-margin"
       >
         <cds-tooltip
@@ -112,11 +112,14 @@
       </div>
     </div>
   </div>
-  <div footer>
-    <div
-      class="mb-0 p-3 text-center"
-      *ngIf="!(formDefinition$ | async) && !(formFlowInstanceId$ | async)"
-    >
+  <div
+    footer
+    *ngIf="{
+      formDefinition: formDefinition$ | async,
+      formFlowInstanceId: formFlowInstanceId$ | async
+    } as obs"
+  >
+    <div class="mb-0 p-3 text-center" *ngIf="!obs.formDefinition && !obs.formFlowInstanceId">
       <button
         class="btn btn-secondary btn-space"
         type="button"

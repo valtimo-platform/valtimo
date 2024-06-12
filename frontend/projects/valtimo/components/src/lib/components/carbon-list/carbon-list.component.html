@@ -156,6 +156,14 @@
   </div>
 </ng-template>
 
+<ng-template #dragAndDropTemplate let-data="data">
+  <div class="valtimo-carbon-list__draggable">
+    <button cdsButton="ghost" [iconOnly]="true" size="sm" (mousedown)="onDragStart($event, data)">
+      <svg cdsIcon="draggable" size="16" class="cds--btn__icon"></svg>
+    </button>
+  </div>
+</ng-template>
+
 <ng-template #tagTemplate let-data="data">
   <ng-container *ngIf="!data.tags">-</ng-container>
 

@@ -17,6 +17,7 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnDestroy,
@@ -26,7 +27,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {FormControl} from '@angular/forms';
-import {ArrowDown16, ArrowUp16, SettingsView16} from '@carbon/icons';
+import {ArrowDown16, ArrowUp16, Draggable16, SettingsView16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {SortState} from '@valtimo/document';
 import {
@@ -74,36 +75,40 @@ import {
 import {ViewContentService} from '../view-content/view-content.service';
 import {CarbonListFilterPipe} from './CarbonListFilterPipe.directive';
 import {KeyStateService} from '../../services/key-state.service';
+import {CarbonListDragAndDropService} from './services';
 
 @Component({
   selector: 'valtimo-carbon-list',
   templateUrl: './carbon-list.component.html',
   styleUrls: ['./carbon-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [CarbonListFilterPipe],
+  providers: [CarbonListFilterPipe, CarbonListDragAndDropService],
 })
 export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('actionsMenuTemplate') actionsMenuTemplate: TemplateRef<OverflowMenu>;
   @ViewChild('actionTemplate') actionTemplate: TemplateRef<any>;
   @ViewChild('booleanTemplate') booleanTemplate: TemplateRef<any>;
   @ViewChild('moveRowsTemplate') moveRowsTemplate: TemplateRef<any>;
+  @ViewChild('dragAndDropTemplate') dragAndDropTemplate: TemplateRef<any>;
   @ViewChild('rowDisabled') rowDisabled: TemplateRef<any>;
   @ViewChild('tagTemplate') tagTemplate: TemplateRef<any>;
   @ViewChild(Table) private _table: Table;
 
   private _completeDataSource: TableItem[][];
-  private readonly _items$ = new BehaviorSubject<CarbonListItem[]>([]);
-  private _items: CarbonListItem[];
-  public items$ = new BehaviorSubject<TableItem[][]>([]);
-  public currentOpenActionId: string | null = null;
 
-  @Input() set items(value: CarbonListItem[]) {
-    this._items = value;
-    this._items$.next(value);
+  private readonly _items$ = new BehaviorSubject<CarbonListItem[]>([]);
+  private get _items(): CarbonListItem[] {
+    return this._items$.getValue();
   }
   public get items(): CarbonListItem[] {
     return this._items;
   }
+
+  @Input() set items(value: CarbonListItem[]) {
+    this._items$.next(value);
+  }
+
+  public currentOpenActionId: string | null = null;
 
   private readonly _fields$ = new BehaviorSubject<ColumnConfig[]>([]);
   @Input() set fields(value: ColumnConfig[]) {
@@ -157,6 +162,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() hideToolbar = false;
   @Input() lockedTooltipTranslationKey = '';
   @Input() movingRowsEnabled: boolean;
+  @Input() dragAndDrop = false;
 
   @Output() rowClicked = new EventEmitter<any>();
   @Output() paginationClicked = new EventEmitter<number>();
@@ -243,9 +249,11 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly logger: NGXLogger,
     private readonly translateService: TranslateService,
     private readonly viewContentService: ViewContentService,
-    private readonly keyStateService: KeyStateService
+    private readonly keyStateService: KeyStateService,
+    private readonly dragAndDropService: CarbonListDragAndDropService,
+    private readonly elementRef: ElementRef
   ) {
-    this.iconService.registerAll([ArrowDown16, ArrowUp16, SettingsView16]);
+    this.iconService.registerAll([ArrowDown16, ArrowUp16, SettingsView16, Draggable16]);
   }
 
   public ngOnInit(): void {
@@ -280,15 +288,29 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public ngAfterViewInit(): void {
     this._viewInitialized$.next(true);
+    this.openDragAndDropSubscription();
   }
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
+  public openDragAndDropSubscription(): void {
+    this._subscriptions.add(
+      this.dragAndDropService.dragAndDropEvents$.subscribe(dragAndDropEvent => {
+        const reorderedItems = this.swapItems(
+          this._items,
+          dragAndDropEvent.startIndex,
+          dragAndDropEvent.newIndex
+        );
+        this.itemsReordered.emit(reorderedItems);
+      })
+    );
+  }
+
   public onRowClick(index: number): void {
     const item = this._table.model.data[index][0]['item'];
-    item.ctrlClick = this.keyStateService.getCtrlOrCmdState();
+    if (item) item.ctrlClick = this.keyStateService.getCtrlOrCmdState();
 
     if (!item || item?.locked) {
       return;
@@ -337,6 +359,14 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  public onDragStart(
+    mouseEvent: MouseEvent,
+    carbonEvent: {index: number; item: CarbonListItem; length: number}
+  ): void {
+    this.dragAndDropService.setCarbonListElementRef(this.elementRef);
+    this.dragAndDropService.startDrag(mouseEvent.y, carbonEvent.index);
+  }
+
   private buildPaginationModel(): void {
     this.paginationModel = {
       currentPage: this.pagination.page,
@@ -373,7 +403,11 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
           })
       )
     ),
-    map((header: TableHeaderItem[]) => [...header, ...this.extraColumns])
+    map((header: TableHeaderItem[]) => [
+      ...this.dragAndDropHeaderColumns,
+      ...header,
+      ...this.extraColumns,
+    ])
   );
 
   private readonly _tableItems$: Observable<TableItem[][]> = combineLatest([
@@ -384,6 +418,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     filter(([fields, items, viewInitialized]) => !!fields && !!items && viewInitialized),
     map(([fields, items]) =>
       items.map((item: CarbonListItem, index: number) => [
+        ...this.getDragAndDropItemsItems(item, index, items.length),
         ...fields.map((field: ColumnConfig) => {
           switch (field.viewType) {
             case ViewType.TEMPLATE:
@@ -430,6 +465,23 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     }),
     startWith(new TableModel())
   );
+
+  private get dragAndDropHeaderColumns(): TableHeaderItem[] {
+    const emptyHeader = new TableHeaderItem();
+
+    emptyHeader.sortable = false;
+
+    return [
+      ...(this.dragAndDrop
+        ? [
+            new TableHeaderItem({
+              className: 'valtimo-carbon-list__actions',
+              sortable: false,
+            }),
+          ]
+        : []),
+    ];
+  }
 
   private get extraColumns(): TableHeaderItem[] {
     const emptyHeader = new TableHeaderItem();
@@ -518,6 +570,18 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  private getDragAndDropItemsItems(
+    item: CarbonListItem,
+    index: number,
+    length: number
+  ): TableItem[] {
+    return [
+      ...(!!this.dragAndDrop
+        ? [new TableItem({data: {item, index, length}, template: this.dragAndDropTemplate})]
+        : []),
+    ];
+  }
+
   private getExtraItems(item: CarbonListItem, index: number, length: number): TableItem[] {
     return [
       ...(!!this.actions
@@ -596,10 +660,11 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private swapItems(items: CarbonListItem[], index1: number, index2: number): CarbonListItem[] {
-    const temp = [...items];
-    temp[index1] = temp.splice(index2, 1, temp[index1])[0];
+    const itemToInsert = items[index1];
+    const filteredItems = items.filter((_, index) => index !== index1);
+    filteredItems.splice(index2, 0, itemToInsert);
 
-    return temp;
+    return filteredItems;
   }
 
   private resolveTagObject(itemTags: CarbonTag[] | undefined): TableItem {

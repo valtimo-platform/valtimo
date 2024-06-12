@@ -110,6 +110,11 @@ interface CarbonListNoResultsMessage {
   title: string;
 }
 
+interface DragAndDropEvent {
+  startIndex: number;
+  newIndex: number;
+}
+
 export {
   ActionItem,
   CarbonListBatchText,
@@ -123,4 +128,5 @@ export {
   MoveRowEvent,
   ViewType,
   CarbonListNoResultsMessage,
+  DragAndDropEvent,
 };
