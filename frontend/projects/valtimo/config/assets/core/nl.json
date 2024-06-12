@@ -486,7 +486,9 @@
       "clear": "Invoervelden wissen",
       "clearConfirm": "Weet u zeker dat u uw invoervelden wilt wissen? Deze actie kan niet ongedaan worden gemaakt.",
       "success": "Voortgang succesvol opgeslagen",
-      "error": "Voortgang kon niet worden opgeslagen"
+      "error": "Voortgang kon niet worden opgeslagen",
+      "lastSavedBy": "Laatst opgeslagen door",
+      "on": "op"
     }
   },
   "dossierManagement": {

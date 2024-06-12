@@ -486,7 +486,9 @@
       "clear": "Eingabefelder löschen",
       "clearConfirm": "Sind Sie sicher, dass Sie Ihre Eingabefelder löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
       "success": "Fortschritt erfolgreich gespeichert",
-      "error": "Fortschritt konnte nicht gespeichert werden"
+      "error": "Fortschritt konnte nicht gespeichert werden",
+      "lastSavedBy": "Zuletzt gespeichert von",
+      "on": "An"
     }
   },
   "dossierManagement": {

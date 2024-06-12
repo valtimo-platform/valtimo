@@ -68,6 +68,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
   @Output() assignmentOfTaskChanged = new EventEmitter();
 
   public intermediateSaveEnabled = false;
+  public currentIntermediateSave: IntermediateSubmission = null;
 
   public readonly task$ = new BehaviorSubject<Task | null>(null);
   public readonly taskInstanceId$ = new BehaviorSubject<string>(null);
@@ -296,6 +297,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
         .subscribe({
           next: (intermediateSubmission: IntermediateSubmission) => {
             this.submission$.next({data: intermediateSubmission.submission});
+            this.currentIntermediateSave = intermediateSubmission;
           },
           error: () => {
             this.submission$.next({data: {}});
@@ -314,10 +316,11 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
       this.taskIntermediateSaveService
         .storeIntermediateSubmission(intermediateSaveRequest)
         .subscribe({
-          next: () => {
+          next: (intermediateSubmission) => {
             this.toastr.success(
               this.translateService.instant('formManagement.intermediateSave.success')
             );
+            this.currentIntermediateSave = intermediateSubmission;
           },
           error: () => {
             this.toastr.error(
@@ -338,6 +341,7 @@ export class TaskDetailModalComponent implements AfterViewInit, OnDestroy {
         .subscribe({
           next: () => {
             this.submission$.next({data: {}});
+            this.currentIntermediateSave = null;
           },
         })
     );

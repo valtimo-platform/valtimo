@@ -19,6 +19,13 @@
       <div class="title-container">
         <p class="cds--modal-header__heading cds--type-beta">{{ (page$ | async)?.title }}</p>
         <p class="cds--modal-header__label cds--type-delta">{{ (page$ | async)?.subtitle }}</p>
+        <p class="cds--modal-header__label cds--type-delta" *ngIf="currentIntermediateSave">
+          {{ 'formManagement.intermediateSave.lastSavedBy' | translate }}: {{ currentIntermediateSave?.editedBy ?
+                currentIntermediateSave?.editedBy : currentIntermediateSave.createdBy }}
+          {{ 'formManagement.intermediateSave.on' | translate }}: {{ currentIntermediateSave?.editedOn ?
+                currentIntermediateSave?.editedOn : currentIntermediateSave.createdOn | date: 'short' }}
+        </p>
+        <ng-container *ngTemplateOutlet="assignUserToTask"></ng-container>
       </div>
       <div
         *ngIf="intermediateSaveEnabled && (formFlowInstanceId$ | async) === undefined"

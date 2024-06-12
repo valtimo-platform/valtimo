@@ -487,7 +487,9 @@
       "clear": "Clear input fields",
       "clearConfirm": "Are you sure you want to clear your input fields? This action cannot be undone.",
       "success": "Progress saved successfully",
-      "error": "Failed to save progress"
+      "error": "Failed to save progress",
+      "lastSavedBy": "Last saved by",
+      "on": "on"
     }
   },
   "dossierManagement": {
