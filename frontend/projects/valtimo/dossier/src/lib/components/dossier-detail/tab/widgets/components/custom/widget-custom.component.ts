@@ -17,6 +17,7 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   Inject,
   Input,
@@ -64,7 +65,8 @@ export class WidgetCustomComponent implements AfterViewInit, OnDestroy {
   constructor(
     @Optional()
     @Inject(CUSTOM_CASE_WIDGET_TOKEN)
-    private readonly customCaseWidgetConfig: CustomCaseWidgetConfig
+    private readonly customCaseWidgetConfig: CustomCaseWidgetConfig,
+    private readonly cdr: ChangeDetectorRef
   ) {
     if (customCaseWidgetConfig) this._customCaseWidgetConfig$.next(customCaseWidgetConfig);
   }
@@ -89,7 +91,10 @@ export class WidgetCustomComponent implements AfterViewInit, OnDestroy {
             return;
           }
 
-          this._customWidgetContainerRef.createComponent(customComponent);
+          const componentRef = this._customWidgetContainerRef.createComponent(customComponent);
+
+          componentRef.changeDetectorRef.detectChanges();
+          this.cdr.detectChanges();
         }
       )
     );
