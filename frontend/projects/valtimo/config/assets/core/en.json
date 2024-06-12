@@ -637,8 +637,7 @@
     "documentDefinition": {
       "cancelModal": {
         "title": "Leaving the editor",
-        "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost. When saving, beware that removing or changing an attribute can break the case definition.",
-        "keepEditing": "Keep editing"
+        "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost. When saving, beware that removing or changing an attribute can break the case definition."
       },
       "saveModalContent": "Are you sure you want to save the Document definition? Removing or changing an attribute can break the case definition."
     },
@@ -687,6 +686,10 @@
         "type": "Choose widget type",
         "width": "Choose widget width"
       }
+    },
+    "notification": {
+      "success": "Widget configuration updated successfully",
+      "error": "Widget configuration failed to update"
     },
     "types": {
       "description": "Choose the widget type you want to configure.",
@@ -761,7 +764,12 @@
         "selectForm": "Form definition",
         "placeholder": "Select a form definition"
       }
-    }
+    },
+    "cancelModal": {
+      "title": "Leaving the editor",
+      "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost. When saving, beware that removing or changing an attribute can break the widget configuration."
+    },
+    "saveModalContent": "Are you sure you want to save the widget configuration? Removing or changing an attribute can break the widget configuration."
   },
   "zgw": {
     "columns": {
@@ -1020,12 +1028,15 @@
     },
     "pendingChanges": {
       "title": "Leaving page",
-      "content": "You are leaving the page. Any unsaved changes will be lost. Are you sure you want to continue?"
+      "content": "You are leaving the page. Any unsaved changes will be lost. Are you sure you want to continue?",
+      "keepEditing": "Keep editing"
     },
     "required": "required",
     "filter": "Filter...",
     "back": "Back",
     "warning": "Warning",
+    "success": "Success",
+    "error": "Error",
     "finish": "Finish",
     "add": "Add",
     "tags": "Tags",
@@ -1053,7 +1064,8 @@
       "noDefault": "No default sort"
     },
     "editor": {
-      "visualEditor": "Visual editor"
+      "visualEditor": "Visual editor",
+      "jsonEditor": "JSON editor"
     },
     "key": "Key",
     "title": "Title"

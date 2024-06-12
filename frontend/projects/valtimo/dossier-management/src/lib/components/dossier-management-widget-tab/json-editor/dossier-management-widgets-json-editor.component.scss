@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,10 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-const CARBON_CONSTANTS = {
-  modalAnimationMs: 240,
-  notificationDuration: 4000
-};
-
-export {CARBON_CONSTANTS};
+.cds--toolbar-content {
+  background: var(--cds-layer);
+}

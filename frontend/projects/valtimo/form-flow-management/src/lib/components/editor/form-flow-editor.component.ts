@@ -31,7 +31,7 @@ import {
   tap,
 } from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
-import {EditorModel, PageHeaderService, PageTitleService} from '@valtimo/components';
+import {CARBON_CONSTANTS, EditorModel, PageHeaderService, PageTitleService} from '@valtimo/components';
 import {FormFlowDefinition, FormFlowDefinitionId, LoadedValue} from '../../models';
 import {NotificationService} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
@@ -233,7 +233,7 @@ export class FormFlowEditorComponent implements OnInit, OnDestroy {
         key,
       }),
       type: 'success',
-      duration: 4000,
+      duration: CARBON_CONSTANTS.notificationDuration,
       showClose: true,
       title: this.translateService.instant('formFlow.savedSuccessTitle'),
     });

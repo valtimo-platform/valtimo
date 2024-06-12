@@ -636,10 +636,9 @@
     "documentDefinition": {
       "cancelModal": {
         "title": "De editor verlaten",
-        "content": "Weet je zeker dat je de editor wilt verlaten? Er kunnen niet-opgeslagen wijzigingen zijn die verloren gaan. Houd er bij het opslaan rekening mee dat het verwijderen of wijzigen van een attribuut de zaakdefinitie kan beschadigen.",
-        "keepEditing": "Blijf bewerken"
+        "content": "Weet je zeker dat je de editor wilt verlaten? Er kunnen niet-opgeslagen wijzigingen zijn die verloren gaan. Houd er bij het opslaan rekening mee dat het verwijderen of wijzigen van een attribuut de dossierdefinitie kan beschadigen."
       },
-      "saveModalContent": "Weet je zeker dat je de documentdefinitie wilt opslaan? Het verwijderen of wijzigen van een attribuut kan de zaakdefinitie verbreken."
+      "saveModalContent": "Weet je zeker dat je de dossierdefinitie wilt opslaan? Het verwijderen of wijzigen van een attribuut kan de dossierdefinitie verbreken."
     },
     "statuses": {
       "withoutStatus": "Toon dossiers zonder status",
@@ -686,6 +685,10 @@
         "type": "Kies widgettype",
         "width": "Kies widgetbreedte"
       }
+    },
+    "notification": {
+      "success": "Widgetconfiguratie succesvol bijgewerkt",
+      "error": "Widgetconfiguratie kan niet worden bijgewerkt"
     },
     "types": {
       "description": "Kies het widgettype dat je wilt configureren.",
@@ -760,7 +763,12 @@
         "selectForm": "Formulierdefinitie",
         "placeholder": "Selecteer een formulierdefinitie"
       }
-    }
+    },
+    "cancelModal": {
+      "title": "De editor verlaten",
+      "content": "Weet je zeker dat je de editor wilt verlaten? Er kunnen niet-opgeslagen wijzigingen zijn die verloren gaan. Houd er bij het opslaan rekening mee dat het verwijderen of wijzigen van een attribuut de widget configuratie kan beschadigen."
+    },
+    "saveModalContent": "Weet je zeker dat je de widget configuratie wilt opslaan? Het verwijderen of wijzigen van een attribuut kan de widget configuratie verbreken."
   },
   "zgw": {
     "columns": {
@@ -1018,12 +1026,15 @@
     },
     "pendingChanges": {
       "title": "Pagina verlaten",
-      "content": "Je gaat de pagina verlaten. Alle niet-opgeslagen wijzigingen gaan verloren. Weet je zeker dat je door wilt gaan?"
+      "content": "Je gaat de pagina verlaten. Alle niet-opgeslagen wijzigingen gaan verloren. Weet je zeker dat je door wilt gaan?",
+      "keepEditing": "Blijf bewerken"
     },
     "required": "vereist",
     "filter": "Filteren...",
     "back": "Terug",
     "warning": "Waarschuwing",
+    "success": "Succes",
+    "error": "Fout",
     "finish": "Finish",
     "add": "Toevoegen",
     "tags": "Tags",
@@ -1051,7 +1062,11 @@
       "noDefault": "Geen standaardsortering"
     },
     "key": "Sleutel",
-    "title": "Titel"
+    "title": "Titel",
+    "editor": {
+      "visualEditor": "Visuele editor",
+      "jsonEditor": "JSON editor"
+    }
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",

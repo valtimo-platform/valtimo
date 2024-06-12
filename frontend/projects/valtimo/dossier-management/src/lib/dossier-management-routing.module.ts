@@ -33,6 +33,7 @@ const routes: Routes = [
     path: 'dossier-management/dossier/:name/widget-tab/:key',
     component: DossierManagementWidgetTabComponent,
     canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Widget tab',
       roles: [ROLE_ADMIN],

@@ -21,12 +21,41 @@
 >
 </valtimo-dossier-management-widget-tab-edit-modal>
 
-<valtimo-dossier-management-widgets-editor
-  [documentDefinitionName]="documentDefinitionName$ | async"
-  [tabWidgetKey]="tabWidgetKey$ | async"
-  [currentWidgetTab]="currentWidgetTab$ | async"
-  (changeSaved)="refreshWidgetTab()"
-></valtimo-dossier-management-widgets-editor>
+<cds-tabs type="contained">
+  <cds-tab
+    [active]="activeTab() === WidgetEditorTab.VISUAL"
+    [heading]="'interface.editor.visualEditor' | translate"
+    (selected)="displayBodyComponent(WidgetEditorTab.VISUAL)"
+  >
+  </cds-tab>
+
+  <cds-tab
+    [active]="activeTab() === WidgetEditorTab.JSON"
+    [heading]="'interface.editor.jsonEditor' | translate"
+    (selected)="displayBodyComponent(WidgetEditorTab.JSON)"
+  >
+  </cds-tab>
+</cds-tabs>
+
+@switch (activeContent()) {
+  @case (WidgetEditorTab.VISUAL) {
+    <valtimo-dossier-management-widgets-editor
+      [documentDefinitionName]="documentDefinitionName$ | async"
+      [tabWidgetKey]="tabWidgetKey$ | async"
+      [currentWidgetTab]="currentWidgetTab$ | async"
+      (changeSaved)="refreshWidgetTab()"
+    ></valtimo-dossier-management-widgets-editor>
+  }
+  @case (WidgetEditorTab.JSON) {
+    <valtimo-dossier-management-widgets-json-editor
+      [currentWidgetTab]="currentWidgetTab$ | async"
+      (canDeactivate)="onJsonCanDeactivate($event)"
+      (changeSaved)="refreshWidgetTab()"
+      (customModalLoaded)="onCustomModalLoaded($event)"
+      (pendingChangesUpdate)="onPendingChangesUpdate($event)"
+    ></valtimo-dossier-management-widgets-json-editor>
+  }
+}
 
 <ng-container renderInPageHeader>
   <ng-template>

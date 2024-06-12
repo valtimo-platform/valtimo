@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
@@ -24,7 +25,7 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import {BasicCaseWidget, CaseWidget, CaseWidgetsRes} from '@valtimo/dossier';
+import {BasicCaseWidget, CaseWidget, CaseWidgetType, CaseWidgetsRes} from '@valtimo/dossier';
 import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
 import {BehaviorSubject, Subject, take} from 'rxjs';
 import {AVAILABLE_WIDGETS, WidgetStyle} from '../../../models';
@@ -34,7 +35,6 @@ import {DossierManagementWidgetWizardComponent} from '../../dossier-management-w
 @Component({
   selector: 'valtimo-dossier-management-widgets-editor',
   templateUrl: './dossier-management-widgets-editor.component.html',
-  styleUrls: ['./dossier-management-widgets-editor.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
@@ -80,6 +80,7 @@ export class DossierManagementWidgetsEditorComponent {
     {
       label: 'interface.edit',
       callback: this.editWidget.bind(this),
+      disabledCallback: this.disableEdit.bind(this),
     },
     {
       label: 'interface.delete',
@@ -170,6 +171,10 @@ export class DossierManagementWidgetsEditorComponent {
       .subscribe(() => {
         this.changeSaved.emit();
       });
+  }
+
+  private disableEdit(widget: BasicCaseWidget): boolean {
+    return widget.type === CaseWidgetType.TABLE;
   }
 
   private getUniqueKey(widgetName: string): string {

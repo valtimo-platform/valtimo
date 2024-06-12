@@ -636,8 +636,7 @@
     "documentDefinition": {
       "cancelModal": {
         "title": "Verlassen des Editors",
-        "content": "Sind Sie sicher, dass Sie den Editor verlassen möchten? Möglicherweise gehen nicht gespeicherte Änderungen verloren. Beachten Sie beim Speichern, dass das Entfernen oder Ändern eines Attributs die Falldefinition zerstören kann.",
-        "keepEditing": "Bearbeiten Sie weiter"
+        "content": "Sind Sie sicher, dass Sie den Editor verlassen möchten? Möglicherweise gehen nicht gespeicherte Änderungen verloren. Beachten Sie beim Speichern, dass das Entfernen oder Ändern eines Attributs die Falldefinition zerstören kann."
       },
       "saveModalContent": "Sind Sie sicher, dass Sie die Dokumentdefinition speichern möchten? Das Entfernen oder Ändern eines Attributs kann die Falldefinition zerstören."
     },
@@ -686,6 +685,10 @@
         "type": "Wählen Sie den Widget-Typ",
         "width": "Wählen Sie die Widget-Breite"
       }
+    },
+    "notification": {
+      "success": "Widget-Konfiguration erfolgreich aktualisiert",
+      "error": "Die Widget-Konfiguration konnte nicht aktualisiert werden"
     },
     "types": {
       "description": "Wählen Sie den Widget-Typ aus, den Sie konfigurieren möchten.",
@@ -760,7 +763,12 @@
         "selectForm": "Formulardefinition",
         "placeholder": "Wählen Sie eine Formulardefinition aus"
       }
-    }
+    },
+    "cancelModal": {
+      "title": "Verlassen des Editors",
+      "content": "Sind Sie sicher, dass Sie den Editor verlassen möchten? Möglicherweise gehen nicht gespeicherte Änderungen verloren. Beachten Sie beim Speichern, dass das Entfernen oder Ändern eines Attributs die Widget-Konfiguration zerstören kann."
+    },
+    "saveModalContent": "Sind Sie sicher, dass Sie die Widget-Konfiguration speichern möchten? Das Entfernen oder Ändern eines Attributs kann die Widget-Konfiguration zerstören."
   },
   "zgw": {
     "columns": {
@@ -1015,12 +1023,15 @@
     },
     "pendingChanges": {
       "title": "Seite verlassen",
-      "content": "Sie verlassen die Seite. Alle nicht gespeicherten Änderungen gehen verloren. Sind Sie sicher, dass Sie fortfahren möchten?"
+      "content": "Sie verlassen die Seite. Alle nicht gespeicherten Änderungen gehen verloren. Sind Sie sicher, dass Sie fortfahren möchten?",
+      "keepEditing": "Bearbeiten Sie weiter"
     },
     "required": "erforderlich",
     "filter": "Filter...",
     "back": "Zurück",
     "warning": "Warnung",
+    "success": "Erfolg",
+    "error": "Fehler",
     "finish": "Beenden",
     "add": "Hinzufügen",
     "tags": "Tags",
@@ -1048,7 +1059,11 @@
       "noDefault": "Keine Standardsortierung"
     },
     "key": "Schlüssel",
-    "title": "Titel"
+    "title": "Titel",
+    "editor": {
+      "visualEditor": "Visuell editor",
+      "jsonEditor": "JSON editor"
+    }
   },
   "taskDetail": {
     "taskCreated": "Erstellt",

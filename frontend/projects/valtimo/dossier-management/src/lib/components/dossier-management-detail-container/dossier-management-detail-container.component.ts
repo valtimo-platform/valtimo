@@ -98,7 +98,7 @@ export class DossierManagementDetailContainerComponent
   }
 
   public ngAfterViewInit(): void {
-    this.customModal = this._documentDefinitionTab.cancelModal;
+    if (this._documentDefinitionTab) this.customModal = this._documentDefinitionTab.cancelModal;
     this.openInjectedTabSubscription();
   }
 
@@ -109,6 +109,9 @@ export class DossierManagementDetailContainerComponent
   }
 
   public displayBodyComponent(tab: TabEnum | string, isInjectedTab = false): void {
+    if (!this.customModal && !!this._documentDefinitionTab)
+      this.customModal = this._documentDefinitionTab.cancelModal;
+
     if (this.pendingChanges) {
       this.onCanDeactivate();
     }
@@ -182,6 +185,6 @@ export class DossierManagementDetailContainerComponent
   }
 
   protected onCanDeactivate(): void {
-    this._documentDefinitionTab.onCanDeactivate();
+    this._documentDefinitionTab?.onCanDeactivate();
   }
 }

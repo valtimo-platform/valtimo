@@ -23,12 +23,19 @@ import {
   Output,
   ViewEncapsulation,
 } from '@angular/core';
-import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
-import {CARBON_CONSTANTS} from '@valtimo/components';
+import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
+import {CARBON_CONSTANTS, ValtimoCdsModalDirectiveModule} from '@valtimo/components';
 import {TabManagementService} from '../../services';
 import {ApiTabItem, ApiTabType} from '@valtimo/dossier';
-import {NotificationService} from 'carbon-components-angular';
+import {
+  ButtonModule,
+  InputModule,
+  ModalModule,
+  NotificationService,
+} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {CommonModule} from '@angular/common';
+import {TranslateModule} from '@ngx-translate/core';
 
 @Component({
   selector: 'valtimo-dossier-management-widget-tab-edit-modal',
@@ -37,6 +44,16 @@ import {BehaviorSubject, Observable, Subscription} from 'rxjs';
   encapsulation: ViewEncapsulation.None,
   providers: [NotificationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    CommonModule,
+    TranslateModule,
+    ModalModule,
+    ValtimoCdsModalDirectiveModule,
+    ReactiveFormsModule,
+    InputModule,
+    ButtonModule,
+  ],
 })
 export class DossierManagementWidgetTabEditModalComponent implements OnInit, OnDestroy {
   @Input() public showModal$: Observable<boolean>;

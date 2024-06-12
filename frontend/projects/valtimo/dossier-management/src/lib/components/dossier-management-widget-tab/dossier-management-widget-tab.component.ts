@@ -13,23 +13,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {AfterViewInit, Component, OnDestroy} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {Edit16} from '@carbon/icons';
-import {TranslateService} from '@ngx-translate/core';
-import {BreadcrumbService, PageHeaderService, PageTitleService} from '@valtimo/components';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {
+  BreadcrumbService,
+  ConfirmationModalComponent,
+  PageHeaderService,
+  PageTitleService,
+  PendingChangesComponent,
+  RenderInPageHeaderDirectiveModule,
+} from '@valtimo/components';
 import {ApiTabItem} from '@valtimo/dossier';
-import {IconService} from 'carbon-components-angular';
+import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
 import moment from 'moment/moment';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
-
-import {TabManagementService, WidgetTabManagementService} from '../../services';
+import {WidgetEditorTab} from '../../models';
+import {
+  TabManagementService,
+  WidgetJsonEditorService,
+  WidgetTabManagementService,
+} from '../../services';
+import {DossierManagementWidgetTabEditModalComponent} from '../dossier-management-widget-tab-edit-modal/dossier-management-widget-tab-edit-modal';
+import {DossierManagementWidgetsEditorComponent} from './editor/dossier-management-widgets-editor.component';
+import {DossierManagementWidgetsJsonEditorComponent} from './json-editor/dossier-management-widgets-json-editor.component';
 
 @Component({
   selector: 'valtimo-dossier-management-case-widgets',
   templateUrl: './dossier-management-widget-tab.component.html',
+  styleUrl: './dossier-management-widget-tab.component.scss',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    TranslateModule,
+    DossierManagementWidgetsEditorComponent,
+    DossierManagementWidgetTabEditModalComponent,
+    DossierManagementWidgetsJsonEditorComponent,
+    RenderInPageHeaderDirectiveModule,
+    ButtonModule,
+    IconModule,
+    TabsModule,
+  ],
 })
-export class DossierManagementWidgetTabComponent implements AfterViewInit, OnDestroy {
+export class DossierManagementWidgetTabComponent
+  extends PendingChangesComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
     map(params => params.name || ''),
     filter(documentDefinitionName => !!documentDefinitionName),
@@ -77,7 +116,13 @@ export class DossierManagementWidgetTabComponent implements AfterViewInit, OnDes
     )
   );
 
+  public readonly WidgetEditorTab = WidgetEditorTab;
+  public readonly activeTab = signal<WidgetEditorTab | null>(WidgetEditorTab.VISUAL);
+  public readonly activeContent = signal<WidgetEditorTab | null>(WidgetEditorTab.VISUAL);
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
+
+  private _pendingTab: WidgetEditorTab | null = null;
+
   constructor(
     private readonly breadcrumbService: BreadcrumbService,
     private readonly iconService: IconService,
@@ -86,8 +131,15 @@ export class DossierManagementWidgetTabComponent implements AfterViewInit, OnDes
     private readonly tabManagementService: TabManagementService,
     private readonly widgetTabManagementService: WidgetTabManagementService,
     private readonly translateService: TranslateService,
-    private readonly pageHeaderService: PageHeaderService
-  ) {}
+    private readonly pageHeaderService: PageHeaderService,
+    private readonly widgetJsonEditorService: WidgetJsonEditorService
+  ) {
+    super();
+  }
+
+  public ngOnInit(): void {
+    this.pageTitleService.disableReset();
+  }
 
   public ngAfterViewInit(): void {
     this.iconService.registerAll([Edit16]);
@@ -96,10 +148,26 @@ export class DossierManagementWidgetTabComponent implements AfterViewInit, OnDes
 
   public ngOnDestroy(): void {
     this.breadcrumbService.clearThirdBreadcrumb();
+    this.pageTitleService.disableReset();
+  }
+
+  public displayBodyComponent(tab: WidgetEditorTab): void {
+    if (this.pendingChanges && tab !== this.activeTab()) {
+      this._pendingTab = this.activeTab();
+      this.activeTab.set(tab);
+      this.onCanDeactivate();
+      return;
+    }
+    this.activeTab.set(tab);
+    this.activeContent.set(tab);
   }
 
   public editWidgetTab(): void {
     this.showEditWidgetTabModal();
+  }
+
+  public onPendingChangesUpdate(changeActive: boolean): void {
+    this.pendingChanges = changeActive;
   }
 
   private showEditWidgetTabModal(): void {
@@ -107,7 +175,35 @@ export class DossierManagementWidgetTabComponent implements AfterViewInit, OnDes
   }
 
   public refreshWidgetTab(): void {
+    if (this.pendingChanges) this.onCustomConfirm();
     this._refreshWidgetTabSubject$.next(null);
+  }
+
+  public onCustomModalLoaded(modal: ConfirmationModalComponent): void {
+    if (!!this.customModal) return;
+
+    this.customModal = modal;
+  }
+
+  public onJsonCanDeactivate(canDeactivate: boolean): void {
+    if (canDeactivate) {
+      this.onCustomConfirm();
+      return;
+    }
+
+    this.onCustomCancel();
+  }
+
+  protected onCancelRedirect(): void {
+    this.activeTab.set(this._pendingTab);
+  }
+
+  protected onConfirmRedirect(): void {
+    this.activeContent.set(this.activeTab());
+  }
+
+  protected onCanDeactivate(): void {
+    this.widgetJsonEditorService.showPendingModal.set(true);
   }
 
   private initBreadcrumb(): void {

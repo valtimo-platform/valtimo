@@ -20,28 +20,24 @@
     items: items$ | async
   } as obs"
 >
-  <cds-tabs type="contained">
-    <cds-tab [heading]="'interface.editor.visualEditor' | translate">
-      <valtimo-carbon-list
-        [actionItems]="ACTION_ITEMS"
-        [fields]="FIELDS"
-        [header]="false"
-        [items]="obs.items"
-        [dragAndDrop]="true"
-        (itemsReordered)="onItemsReordered($event)"
-      >
-        <ng-container carbonToolbarContent>
-          <ng-container *ngTemplateOutlet="addWidgetButton"></ng-container>
-        </ng-container>
+  <valtimo-carbon-list
+    [actionItems]="ACTION_ITEMS"
+    [fields]="FIELDS"
+    [header]="false"
+    [items]="obs.items"
+    [movingRowsEnabled]="true"
+    (itemsReordered)="onItemsReordered($event)"
+  >
+    <ng-container carbonToolbarContent>
+      <ng-container *ngTemplateOutlet="addWidgetButton"></ng-container>
+    </ng-container>
 
-        <valtimo-no-results
-          [action]="addWidgetButton"
-          description="Click here to configure widgets"
-          title="No widgets have been configured"
-        ></valtimo-no-results>
-      </valtimo-carbon-list>
-    </cds-tab>
-  </cds-tabs>
+    <valtimo-no-results
+      [action]="addWidgetButton"
+      description="Click here to configure widgets"
+      title="No widgets have been configured"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
 
   <ng-template #addWidgetButton>
     <button cdsButton="primary" (click)="openAddModal()">

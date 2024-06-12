@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-const CARBON_CONSTANTS = {
-  modalAnimationMs: 240,
-  notificationDuration: 4000
-};
+import {Injectable, signal} from '@angular/core';
 
-export {CARBON_CONSTANTS};
+@Injectable({
+  providedIn: 'root',
+})
+export class WidgetJsonEditorService {
+  public readonly showPendingModal = signal<boolean>(false);
+}
