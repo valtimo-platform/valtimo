@@ -26,43 +26,53 @@
 >
   <div #widgetBlock class="widget-block" [attr.data-carbon-theme]="obs.theme">
     <div #widgetBlockContent class="widget-block__content">
-      @switch (obs.widgetConfiguration.type) {
-        @case (CaseWidgetType.TABLE) {
-          <valtimo-widget-table
-            [documentId]="obs.documentId"
-            [tabKey]="obs.tabKey"
-            [widgetConfiguration]="obs.widgetConfiguration"
-            [widgetData]="obs.widgetData"
-          ></valtimo-widget-table>
-        }
+      @if (obs.widgetData) {
+        @switch (obs.widgetConfiguration.type) {
+          @case (CaseWidgetType.TABLE) {
+            <valtimo-widget-table
+              [documentId]="obs.documentId"
+              [tabKey]="obs.tabKey"
+              [widgetConfiguration]="obs.widgetConfiguration"
+              [widgetData]="obs.widgetData"
+            ></valtimo-widget-table>
+          }
 
-        @case (CaseWidgetType.CUSTOM) {
-          <valtimo-widget-custom [widgetConfig]="obs.widgetConfiguration"></valtimo-widget-custom>
-        }
+          @case (CaseWidgetType.CUSTOM) {
+            <valtimo-widget-custom [widgetConfig]="obs.widgetConfiguration"></valtimo-widget-custom>
+          }
 
-        @case (CaseWidgetType.FIELDS) {
-          <valtimo-widget-field
-            [widgetConfiguration]="obs.widgetConfiguration"
-            [widgetData]="obs.widgetData"
-          ></valtimo-widget-field>
-        }
+          @case (CaseWidgetType.FIELDS) {
+            <valtimo-widget-field
+              [widgetConfiguration]="obs.widgetConfiguration"
+              [widgetData]="obs.widgetData"
+            ></valtimo-widget-field>
+          }
 
-        @case (CaseWidgetType.FORMIO) {
-          <valtimo-widget-formio
-            [widgetConfiguration]="obs.widgetConfiguration"
-            [documentId]="obs.documentId"
-          ></valtimo-widget-formio>
-        }
+          @case (CaseWidgetType.FORMIO) {
+            <valtimo-widget-formio
+              [widgetConfiguration]="obs.widgetConfiguration"
+              [documentId]="obs.documentId"
+            ></valtimo-widget-formio>
+          }
 
-        @default {
-          <div class="widget-block__not-available">
-            <valtimo-no-results
-              [collapseVertically]="true"
-              [description]="'dossier.widgets.noWidget' | translate"
-              [smallPadding]="true"
-            ></valtimo-no-results>
-          </div>
+          @default {
+            <div class="widget-block__not-available">
+              <valtimo-no-results
+                [collapseVertically]="true"
+                [description]="'dossier.widgets.noWidget' | translate"
+                [smallPadding]="true"
+              ></valtimo-no-results>
+            </div>
+          }
         }
+      } @else {
+        <div class="widget-block__not-available">
+          <valtimo-no-results
+            [collapseVertically]="true"
+            [description]="'dossier.widgets.noData' | translate"
+            [smallPadding]="true"
+          ></valtimo-no-results>
+        </div>
       }
     </div>
   </div>

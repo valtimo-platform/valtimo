@@ -66,11 +66,9 @@ export class DossierManagementWidgetsJsonEditorComponent implements AfterViewIni
   @ViewChild('pendingChangesModal') public pendingChangesModal: ConfirmationModalComponent;
 
   private _currentWidgetTab: CaseWidgetsRes;
-  private _currentWidgetKeys: string[];
   @Input() public set currentWidgetTab(value: CaseWidgetsRes) {
     if (!value) return;
     this._currentWidgetTab = value;
-    this._currentWidgetKeys = value.widgets.map((widget: BasicCaseWidget) => widget.key);
     this.jsonModel.set({
       value: JSON.stringify(value),
       language: 'json',
@@ -92,6 +90,8 @@ export class DossierManagementWidgetsJsonEditorComponent implements AfterViewIni
 
   private readonly _widgetConfig = signal<CaseWidgetsRes | null>(null);
 
+  private _editorInit = false;
+  private _pendingChanges = false;
   private readonly _jsonValid = signal<boolean>(false);
   private readonly _jsonSchemaInvalid = signal<boolean>(false);
   public readonly saveButtonDisabled: Signal<boolean> = computed(
@@ -142,7 +142,7 @@ export class DossierManagementWidgetsJsonEditorComponent implements AfterViewIni
       value: JSON.stringify(this._currentWidgetTab),
     }));
     this.widgetJsonEditorService.showPendingModal.set(false);
-    this.pendingChangesUpdate.emit(false);
+    this.setPendingChanges(false);
     this.canDeactivate.emit(true);
   }
 
@@ -165,7 +165,7 @@ export class DossierManagementWidgetsJsonEditorComponent implements AfterViewIni
           });
           this.widgetJsonEditorService.showPendingModal.set(false);
           this.editActive.set(false);
-          this.pendingChangesUpdate.emit(false);
+          this.setPendingChanges(false);
           this.changeSaved.emit();
           this.canDeactivate.emit(true);
         },
@@ -182,7 +182,7 @@ export class DossierManagementWidgetsJsonEditorComponent implements AfterViewIni
   }
 
   public onCancelClick(): void {
-    if (!this._widgetConfig()) {
+    if (!this._widgetConfig() || !this._pendingChanges) {
       this.editActive.set(false);
       return;
     }
@@ -203,6 +203,11 @@ export class DossierManagementWidgetsJsonEditorComponent implements AfterViewIni
   }
 
   public onValueChangeEvent(value: string) {
+    if (!this._editorInit) {
+      this._editorInit = true;
+      return;
+    }
+
     const widgetConfig: CaseWidgetsRes = JSON.parse(value);
     const editedWidgetKeys: string[] = widgetConfig.widgets.map(
       (widget: BasicCaseWidget) => widget.key
@@ -211,13 +216,17 @@ export class DossierManagementWidgetsJsonEditorComponent implements AfterViewIni
     this._jsonSchemaInvalid.set(
       widgetConfig.key !== this._currentWidgetTab.key ||
         widgetConfig.caseDefinitionName !== this._currentWidgetTab.caseDefinitionName ||
-        !this._currentWidgetKeys.every((key: string) => editedWidgetKeys.includes(key)) ||
         new Set(editedWidgetKeys).size !== editedWidgetKeys.length
     );
 
     if (!this._jsonValid() || !this.editActive()) return;
 
     this._widgetConfig.set(JSON.parse(value));
-    this.pendingChangesUpdate.emit(true);
+    this.setPendingChanges(true);
+  }
+
+  private setPendingChanges(changes: boolean): void {
+    this._pendingChanges = changes;
+    this.pendingChangesUpdate.emit(changes);
   }
 }

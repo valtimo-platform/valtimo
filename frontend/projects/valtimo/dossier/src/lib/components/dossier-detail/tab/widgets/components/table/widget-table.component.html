@@ -23,26 +23,29 @@
 >
   <span class="widget-title">{{ widgetConfiguration?.title }}</span>
 
-  <section *ngIf="obs.widgetData && obs.fields" class="valtimo-widget-table__content">
-    <valtimo-carbon-list
-      [header]="false"
-      [hideToolbar]="true"
-      [fields]="obs.fields"
-      [items]="obs.widgetData || []"
-    >
-      <valtimo-no-results
-        [collapseVertically]="true"
-        [description]="'dossier.widgets.noDataFound' | translate"
-        [smallPadding]="true"
-      ></valtimo-no-results>
-    </valtimo-carbon-list>
+  @if (obs.widgetData && obs.fields && obs.widgetData.length) {
+    <section class="valtimo-widget-table__content">
+      <valtimo-carbon-list
+        [header]="false"
+        [hideToolbar]="true"
+        [fields]="obs.fields"
+        [items]="obs.widgetData"
+      >
+      </valtimo-carbon-list>
 
-    <cds-pagination-nav
-      *ngIf="paginationModel()"
-      class="valtimo-widget-table__pagination"
-      [model]="paginationModel()"
-      (selectPage)="onSelectPage($event)"
-    >
-    </cds-pagination-nav>
-  </section>
+      <cds-pagination-nav
+        *ngIf="paginationModel()"
+        class="valtimo-widget-table__pagination"
+        [model]="paginationModel()"
+        (selectPage)="onSelectPage($event)"
+      >
+      </cds-pagination-nav>
+    </section>
+  } @else {
+    <valtimo-no-results
+      [collapseVertically]="true"
+      [description]="'dossier.widgets.noData' | translate"
+      [smallPadding]="true"
+    ></valtimo-no-results>
+  }
 </cds-tile>

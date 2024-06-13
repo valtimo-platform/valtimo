@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService} from '@valtimo/config';
-import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {CaseWidgetsRes} from '../models';
+import {InterceptorSkip} from '@valtimo/security';
 
 @Injectable({
   providedIn: 'root',
@@ -51,7 +51,8 @@ export class DossierWidgetsApiService extends BaseApiService {
         !queryParams
           ? `v1/document/${documentId}/widget-tab/${tabKey}/widget/${widgetKey}`
           : `v1/document/${documentId}/widget-tab/${tabKey}/widget/${widgetKey}?${queryParams}`
-      )
+      ),
+      {headers: new HttpHeaders().set(InterceptorSkip, '404')}
     );
   }
 }

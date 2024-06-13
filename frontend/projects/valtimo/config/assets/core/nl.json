@@ -675,7 +675,11 @@
       }
     },
     "list": {
-      "add": "Widget toevoegen"
+      "add": "Widget toevoegen",
+      "noResults": {
+        "title": "Er zijn geen widgets geconfigureerd",
+        "description": "Klik hier om widgets te configureren"
+      }
     },
     "wizard": {
       "title": "Widget aanmaken",

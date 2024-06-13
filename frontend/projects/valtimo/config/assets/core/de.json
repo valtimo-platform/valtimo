@@ -675,7 +675,11 @@
       }
     },
     "list": {
-      "add": "Widget hinzufügen"
+      "add": "Widget hinzufügen",
+      "noResults": {
+        "title": "Es wurden keine Widgets konfiguriert",
+        "description": "Klicken Sie hier, um Widgets zu konfigurieren"
+      }
     },
     "wizard": {
       "title": "Widget erstellen",

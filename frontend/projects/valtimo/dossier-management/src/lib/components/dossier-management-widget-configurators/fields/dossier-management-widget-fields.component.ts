@@ -83,7 +83,7 @@ export class DossierManagementWidgetFieldsComponent
   public readonly activeTab = signal<number>(0);
 
   private readonly _subscriptions = new Subscription();
-  private readonly _contentValid = signal<boolean>(this.widgetWizardService.editMode());
+  private readonly _contentValid = signal<boolean>(false);
 
   constructor(
     private readonly cdsThemeService: CdsThemeService,

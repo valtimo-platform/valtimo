@@ -676,7 +676,11 @@
       }
     },
     "list": {
-      "add": "Add widget"
+      "add": "Add widget",
+      "noResults": {
+        "title": "No widgets have been configured",
+        "description": "Click here to configure widgets"
+      }
     },
     "wizard": {
       "title": "Create widget",

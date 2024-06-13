@@ -35,6 +35,7 @@ import {
 import {LoadingModule, TilesModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   filter,
   map,
@@ -54,6 +55,7 @@ import {WidgetCustomComponent} from '../custom/widget-custom.component';
 import {WidgetFieldComponent} from '../field/widget-field.component';
 import {WidgetFormioComponent} from '../formio/widget-formio.component';
 import {WidgetTableComponent} from '../table/widget-table.component';
+import {HttpErrorResponse} from '@angular/common/http';
 
 @Component({
   selector: 'valtimo-dossier-widget-block',
@@ -125,15 +127,25 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
 
   public readonly tabKey$: Observable<string> = this.dossierTabService.activeTabKey$;
 
-  public readonly widgetData$ = combineLatest([this.widget$, this.tabKey$, this.documentId$]).pipe(
+  public readonly widgetData$: Observable<any[] | {} | null> = combineLatest([
+    this.widget$,
+    this.tabKey$,
+    this.documentId$,
+  ]).pipe(
     switchMap(([widget, tabkey, documentId]) =>
       // custom component and formio widgets do not fetch additional data
       widget.type === CaseWidgetType.CUSTOM || widget.type === CaseWidgetType.FORMIO
         ? of({})
-        : this.widgetsApiService.getWidgetData(documentId, tabkey, widget.key)
+        : this.widgetsApiService.getWidgetData(documentId, tabkey, widget.key, widget.type)
     ),
     tap(() => {
       this.dossierWidgetsLayoutService.setCaseWidgetDataLoaded(this._widgetUuid);
+    }),
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 404)
+        this.dossierWidgetsLayoutService.setCaseWidgetDataLoaded(this._widgetUuid);
+
+      return of(null);
     })
   );
 

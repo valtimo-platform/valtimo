@@ -293,6 +293,7 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
       rowsControl.push(this.getRowForm(row), {emitEvent: false});
     });
 
+    this.columnUpdateEvent.emit({data: this.columnData, valid: true});
     this.cdr.detectChanges();
   }
 
