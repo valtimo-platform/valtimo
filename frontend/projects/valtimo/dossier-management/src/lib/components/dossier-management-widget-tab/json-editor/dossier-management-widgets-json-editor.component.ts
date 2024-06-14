@@ -208,6 +208,8 @@ export class DossierManagementWidgetsJsonEditorComponent implements AfterViewIni
       return;
     }
 
+    this.setPendingChanges(true);
+
     const widgetConfig: CaseWidgetsRes = JSON.parse(value);
     const editedWidgetKeys: string[] = widgetConfig.widgets.map(
       (widget: BasicCaseWidget) => widget.key
@@ -222,11 +224,15 @@ export class DossierManagementWidgetsJsonEditorComponent implements AfterViewIni
     if (!this._jsonValid() || !this.editActive()) return;
 
     this._widgetConfig.set(JSON.parse(value));
-    this.setPendingChanges(true);
   }
 
   private setPendingChanges(changes: boolean): void {
     this._pendingChanges = changes;
     this.pendingChangesUpdate.emit(changes);
+
+    if (changes) return;
+
+    this._widgetConfig.set(null);
+    this._editorInit = false;
   }
 }
