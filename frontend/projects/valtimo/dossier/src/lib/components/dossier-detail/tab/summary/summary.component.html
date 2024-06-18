@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<div class="container-fluid" *ngIf="{loadingTasks: loadingTasks$ | async} as obs">
+<div class="container-fluid">
   <div class="row py-4">
     <div class="col-sm-12 col-md-8 col-xl-9">
       <div *ngIf="document">
@@ -25,59 +25,5 @@
         </div>
       </div>
     </div>
-
-    <!--Current user tasks right side-->
-    <div class="col-sm-12 col-md-4 col-xl-3">
-      <h4 class="user-tasks-title">{{ 'summary.userTasks' | translate }}</h4>
-      <ng-container *ngIf="!obs.loadingTasks; else loadingTasksTemplate">
-        <ng-container *ngIf="!tasks.length">
-          <valtimo-widget>
-            <div class="p-3">
-              <img class="float-left" src="assets/audit-2.png" height="25" />
-              <span class="float-right">{{ 'summary.userTasksDoneState' | translate }}</span>
-              <div class="clearfix"></div>
-            </div>
-          </valtimo-widget>
-        </ng-container>
-
-        <ng-container *ngFor="let task of tasks">
-          <valtimo-widget>
-            <div
-              *ngIf="!task.isLocked"
-              class="p-3 clickable hoverable"
-              (click)="rowTaskClick(task)"
-            >
-              <span class="float-right badge badge-pill badge-primary">{{
-                'summary.taskOpen' | translate
-              }}</span>
-              <strong>{{ task.name }}</strong>
-              <div class="mt-1">{{ 'summary.taskCreated' | translate }} {{ task.created }}</div>
-            </div>
-            <div class="p-3 hoverable" *ngIf="task.isLocked">
-              <span
-                class="float-right badge badge-pill badge-secondary bg-grey"
-                ngbTooltip="{{ 'summary.taskLocked' | translate }}"
-              >
-                <i class="icon mdi mdi-lock"></i>
-              </span>
-              <strong>{{ task.name }}</strong>
-              <div>{{ 'summary.taskCreated' | translate }} {{ task.created }}</div>
-            </div>
-          </valtimo-widget>
-        </ng-container>
-      </ng-container>
-
-      <valtimo-task-detail-modal
-        #taskDetail
-        (formSubmit)="init()"
-        (assignmentOfTaskChanged)="init()"
-      ></valtimo-task-detail-modal>
-    </div>
   </div>
 </div>
-
-<ng-template #loadingTasksTemplate>
-  <div class="loading-container">
-    <cds-loading size="sm"></cds-loading>
-  </div>
-</ng-template>

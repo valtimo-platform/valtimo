@@ -28,6 +28,7 @@ interface ApiTabItem {
   contentKey: string;
   createdOn?: string;
   createdBy?: string;
+  showTasks?: boolean;
 }
 
 export {ApiTabType, ApiTabItem};

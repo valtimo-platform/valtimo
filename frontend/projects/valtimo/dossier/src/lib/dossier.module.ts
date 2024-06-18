@@ -96,6 +96,8 @@ import {DossierDetailTabFormioComponent} from './components/dossier-detail/tab/f
 import {TabTranslatePipeModule} from './pipes';
 import {DossierDetailTabNotFoundComponent} from './components/dossier-detail/tab/not-found/not-found.component';
 import {DossierDetailWidgetsComponent} from './components/dossier-detail/tab/widgets/widgets.component';
+import {DossierDetailTaskListComponent} from './components/dossier-detail-task-list/dossier-detail-task-list.component';
+
 export type TabsFactory = () => Map<string, object>;
 
 @NgModule({
@@ -184,6 +186,7 @@ export type TabsFactory = () => Map<string, object>;
     DialogModule,
     ValtimoCdsOverflowButtonDirectiveModule,
     DossierDetailWidgetsComponent,
+    DossierDetailTaskListComponent,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

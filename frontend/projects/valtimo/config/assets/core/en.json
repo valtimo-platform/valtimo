@@ -261,7 +261,7 @@
     "video/mp4": "MP4"
   },
   "summary": {
-    "userTasksDoneState": "All done!",
+    "userTasksDoneState": "All tasks have been completed",
     "taskLocked": "You don't have access to this task",
     "userTasks": "User tasks",
     "taskOpen": "Open",
@@ -543,7 +543,8 @@
         "content": "Content",
         "key": "Tab key",
         "name": "Tab name",
-        "type": "Type"
+        "type": "Type",
+        "showTasks": "Task list visible"
       },
       "addModal": {
         "addTab": "Add tab",
@@ -556,7 +557,10 @@
         "tabNameLabel": "Tab name (optional)",
         "title": "Add new tab in {{documentDefinitionName}}",
         "uniqueKeyError": "The key for this column must be unique.",
-        "widgetsComponent": "Widgets component"
+        "widgetsComponent": "Widgets component",
+        "visibleTitle": "Task list visible on tab",
+        "visible": "Visible",
+        "invisible": "Not visible"
       },
       "titles": {
         "custom": "Add new tab with custom component",

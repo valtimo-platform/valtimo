@@ -139,19 +139,23 @@ export class TabImpl implements Tab {
   private readonly _contentKey: string;
   private readonly _title: string;
   private _active = false;
+  private _showTasks = false;
 
-  constructor(name: string, sequence: number, component: any, contentKey?: string, title?: string) {
+  constructor(
+    name: string,
+    sequence: number,
+    component: any,
+    contentKey?: string,
+    title?: string,
+    showTasks: boolean = false
+  ) {
     this._name = name;
     this._sequence = sequence;
     this._component = component;
 
-    if (contentKey) {
-      this._contentKey = contentKey;
-    }
-
-    if (title) {
-      this._title = title;
-    }
+    if (contentKey) this._contentKey = contentKey;
+    if (title) this._title = title;
+    if (showTasks) this._showTasks = showTasks;
   }
 
   public get name(): string {
@@ -172,6 +176,10 @@ export class TabImpl implements Tab {
 
   public get title(): string {
     return this._title;
+  }
+
+  public get showTasks(): boolean {
+    return this._showTasks;
   }
 
   public activate(): void {

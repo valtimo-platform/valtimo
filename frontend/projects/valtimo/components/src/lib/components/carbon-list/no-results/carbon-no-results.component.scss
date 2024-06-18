@@ -27,6 +27,7 @@
   img {
     height: 150px;
     padding-left: calc(40% - 214px);
+    object-fit: contain;
   }
 
   &__content {

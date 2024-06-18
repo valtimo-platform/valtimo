@@ -42,6 +42,7 @@ export class DossierManagementEditTabModalComponent {
       name: this.fb.control(value.name),
       key: this.fb.control({value: value.key, disabled: true}, Validators.required),
       contentKey: this.fb.control(value.contentKey, Validators.required),
+      showTasks: this.fb.control(value.showTasks, Validators.required),
     });
   }
   public get tab(): ApiTabItem {
@@ -63,12 +64,12 @@ export class DossierManagementEditTabModalComponent {
   }
 
   public editTab(): void {
-    const {contentKey, name} = this.form.getRawValue();
+    const {contentKey, name, showTasks} = this.form.getRawValue();
 
     if (!contentKey) {
       return;
     }
 
-    this.closeModalEvent.emit({...this.tab, name, contentKey});
+    this.closeModalEvent.emit({...this.tab, name, contentKey, showTasks});
   }
 }

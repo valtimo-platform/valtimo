@@ -261,7 +261,7 @@
     "video/mp4": "MP4"
   },
   "summary": {
-    "userTasksDoneState": "Helemaal bij!",
+    "userTasksDoneState": "Alle taken zijn afgerond",
     "taskLocked": "Je hebt geen toegang tot deze taak",
     "userTasks": "Taken",
     "taskOpen": "Open",
@@ -542,7 +542,8 @@
         "content": "Inhoud",
         "key": "Tab sleutel",
         "name": "Tab naam",
-        "type": "Type"
+        "type": "Type",
+        "showTasks": "Takenlijst zichtbaar"
       },
       "addModal": {
         "addTab": "Tabblad toevoegen",
@@ -555,7 +556,10 @@
         "tabNameLabel": "Tabblad naam (optioneel)",
         "title": "Nieuw tabblad toevoegen {{documentDefinitionName}}",
         "uniqueKeyError": "De sleutel voor deze kolom moet uniek zijn.",
-        "widgetsComponent": "Widgets component"
+        "widgetsComponent": "Widgets component",
+        "visibleTitle": "Takenlijst zichtbaar op tabblad",
+        "visible": "Zichtbaar",
+        "invisible": "Niet zichtbaar"
       },
       "titles": {
         "custom": "Nieuw tabblad toevoegen met aangepaste component",

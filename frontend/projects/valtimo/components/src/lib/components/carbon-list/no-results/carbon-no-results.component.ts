@@ -41,6 +41,7 @@ export class CarbonNoResultsComponent implements AfterViewInit, OnDestroy {
   @Input() title: string;
   @Input() smallPadding = false;
   @Input() collapseVertically = false;
+  @Input() alwaysRenderVertically = false;
 
   public readonly renderVertically = signal(false);
 

@@ -89,6 +89,7 @@ export class DossierManagementAddTabModalComponent {
     name: this.fb.control(null),
     key: this.fb.control('', [Validators.required, this.uniqueKeyValidator()]),
     contentKey: this.fb.control('', Validators.required),
+    showTasks: this.fb.control(false, Validators.required),
   });
   public readonly selectedTabType$ = new BehaviorSubject<ApiTabType | null>(null);
 
@@ -102,7 +103,7 @@ export class DossierManagementAddTabModalComponent {
   }
 
   public addTab(type: ApiTabType): void {
-    let {contentKey, key, name} = this.form.getRawValue();
+    let {contentKey, key, name, showTasks} = this.form.getRawValue();
     if (!contentKey) {
       contentKey = '-';
     }
@@ -110,7 +111,7 @@ export class DossierManagementAddTabModalComponent {
     if (!key) {
       return;
     }
-    this.closeModalEvent.emit({name, key, contentKey, type});
+    this.closeModalEvent.emit({name, key, contentKey, type, showTasks});
   }
 
   public backClick(): void {

@@ -261,7 +261,7 @@
     "video/mp4": "MP4"
   },
   "summary": {
-    "userTasksDoneState": "Alles erledigt!",
+    "userTasksDoneState": "Alle Aufgaben sind erledigt",
     "taskLocked": "Kein Zugriff zu dieser Aufgabe!",
     "userTasks": "Aufgaben",
     "taskOpen": "Öffnen",
@@ -542,7 +542,8 @@
         "content": "Inhalt",
         "key": "Tab Schlüssel",
         "name": "Tab name",
-        "type": "Typ"
+        "type": "Typ",
+        "showTasks": "Aufgabenliste sichtbar"
       },
       "addModal": {
         "addTab": "Hinzufügen Tab",
@@ -555,7 +556,10 @@
         "tabNameLabel": "Tab name (Optional)",
         "title": "Neue Registerkarte hinzufügen {{documentDefinitionName}}",
         "uniqueKeyError": "Der Schlüssel für diese Spalte muss eindeutig sein.",
-        "widgetsComponent": "Widgets component"
+        "widgetsComponent": "Widgets component",
+        "visibleTitle": "Aufgabenliste auf Registerkarte sichtbar",
+        "visible": "Sichtbar",
+        "invisible": "Nicht sichtbar"
       },
       "titles": {
         "custom": "Neue Registerkarte hinzufügen mit brauch component",

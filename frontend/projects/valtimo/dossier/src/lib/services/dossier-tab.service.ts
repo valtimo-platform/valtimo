@@ -15,7 +15,14 @@
  */
 
 import {Inject, Injectable, OnDestroy, Optional, Signal, signal, Type} from '@angular/core';
-import {ApiTabItem, ApiTabType, CaseTabConfig, TabImpl, TabLoaderImpl} from '../models';
+import {
+  ApiTabItem,
+  ApiTabType,
+  CaseTabConfig,
+  DefaultTabs,
+  TabImpl,
+  TabLoaderImpl,
+} from '../models';
 import {CASE_TAB_TOKEN, DEFAULT_TAB_COMPONENTS, DEFAULT_TABS, TAB_MAP} from '../constants';
 import {ConfigService, ZGW_OBJECT_TYPE_COMPONENT_TOKEN} from '@valtimo/config';
 import {ActivatedRoute} from '@angular/router';
@@ -54,6 +61,14 @@ export class DossierTabService implements OnDestroy {
 
   public get activeTabKey$(): Observable<string> {
     return this.activeTab$.pipe(map(tab => tab.name));
+  }
+
+  public get showTaskList$(): Observable<boolean> {
+    return this._tabLoader$.pipe(
+      filter(tabLoader => !!tabLoader),
+      switchMap(tabLoader => tabLoader.activeTab$),
+      map(activeTab => !!activeTab?.showTasks || activeTab.contentKey === DefaultTabs.summary)
+    );
   }
 
   constructor(
@@ -166,7 +181,8 @@ export class DossierTabService implements OnDestroy {
           index,
           DEFAULT_TAB_COMPONENTS[tab.contentKey],
           tab.contentKey,
-          tab.name
+          tab.name,
+          tab.showTasks
         );
       case ApiTabType.FORMIO:
         return new TabImpl(
@@ -174,7 +190,8 @@ export class DossierTabService implements OnDestroy {
           index,
           DossierDetailTabFormioComponent,
           tab.contentKey,
-          tab.name
+          tab.name,
+          tab.showTasks
         );
       case ApiTabType.CUSTOM:
         return new TabImpl(
@@ -182,12 +199,20 @@ export class DossierTabService implements OnDestroy {
           index,
           this.caseTabConfig[tab.contentKey],
           tab.contentKey,
-          tab.name
+          tab.name,
+          tab.showTasks
         );
       case ApiTabType.WIDGETS:
         return (
           this.configService.featureToggles?.enableCaseWidgets &&
-          new TabImpl(tab.key, index, DossierDetailWidgetsComponent, tab.contentKey, tab.name)
+          new TabImpl(
+            tab.key,
+            index,
+            DossierDetailWidgetsComponent,
+            tab.contentKey,
+            tab.name,
+            tab.showTasks
+          )
         );
       default:
         return null;
