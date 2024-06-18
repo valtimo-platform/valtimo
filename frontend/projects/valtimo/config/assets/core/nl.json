@@ -754,10 +754,19 @@
         "key": "Sleutel",
         "title": "Titel",
         "titlePlaceholder": "Kies een titel",
-        "type": "Type",
+        "type": "Weergavetype",
         "typePlaceholder": "Kies type",
         "value": "Waarde",
         "valuePlaceholder": "Pad naar waarde"
+      },
+      "displayType": {
+        "text": "Tekst",
+        "boolean": "Ja/Nee",
+        "currency": "Valuta",
+        "date": "Datum",
+        "enum": "Opsomming",
+        "number": "Nummer",
+        "percent": "Percentage"
       },
       "custom": {
         "selectComponent": "Angular-component",

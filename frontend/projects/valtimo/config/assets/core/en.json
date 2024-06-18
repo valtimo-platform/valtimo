@@ -755,10 +755,19 @@
         "key": "Key",
         "title": "Title",
         "titlePlaceholder": "Choose a title",
-        "type": "Type",
+        "type": "Display type",
         "typePlaceholder": "Choose type",
         "value": "Value",
         "valuePlaceholder": "Path to value"
+      },
+      "displayType": {
+        "text": "Text",
+        "boolean": "Yes/No",
+        "currency": "Currency",
+        "date": "Date",
+        "enum": "Enumeration",
+        "number": "Number",
+        "percent": "Percentage"
       },
       "custom": {
         "selectComponent": "Angular component",

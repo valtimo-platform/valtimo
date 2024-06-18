@@ -25,3 +25,4 @@ export * from './cds-theme.service';
 export * from './choice-field.service';
 export * from './page-subtitle.service';
 export * from './page-title.service';
+export * from './key-generator.service';

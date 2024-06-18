@@ -38,6 +38,7 @@
       [appendInline]="false"
       [placeholder]="'widgetTabManagement.content.formio.placeholder' | translate"
       [disabled]="formListItems.length === 0"
+      [dropUp]="false"
       (selected)="componentDropDownChange($event)"
     >
       <cds-dropdown-list [items]="formListItems"> </cds-dropdown-list>

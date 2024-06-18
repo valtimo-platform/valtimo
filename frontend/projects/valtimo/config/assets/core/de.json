@@ -754,10 +754,19 @@
         "key": "Schlüssel",
         "title": "Titel",
         "titlePlaceholder": "Wählen Sie einen Titel",
-        "type": "Type",
+        "type": "Anzeigetyp",
         "typePlaceholder": "Wählen Sie Typ",
         "value": "Wert",
         "valuePlaceholder": "Weg zum Wert"
+      },
+      "displayType": {
+        "text": "Text",
+        "boolean": "Ja/Nein",
+        "currency": "Währung",
+        "date": "Datum",
+        "enum": "Aufzählung",
+        "number": "Nummer",
+        "percent": "Prozentsatz"
       },
       "custom": {
         "selectComponent": "Angular-komponente",

@@ -35,7 +35,7 @@ import {
   Validators,
 } from '@angular/forms';
 import {TrashCan16} from '@carbon/icons';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {
   CaseWidgetCurrencyDisplayType,
@@ -46,6 +46,7 @@ import {
   FieldsCaseWidgetValue,
 } from '@valtimo/dossier';
 import {
+  AccordionModule,
   ButtonModule,
   DropdownModule,
   IconModule,
@@ -53,8 +54,8 @@ import {
   InputModule,
   ListItem,
 } from 'carbon-components-angular';
-import {debounceTime, map, Subscription} from 'rxjs';
-import {WidgetContentComponent} from '../../../../models';
+import {debounceTime, Observable, Subscription} from 'rxjs';
+import {WidgetWizardService} from '../../../../services';
 
 @Component({
   selector: 'valtimo-dossier-management-widget-fields-column',
@@ -71,6 +72,7 @@ import {WidgetContentComponent} from '../../../../models';
     InputModule,
     ReactiveFormsModule,
     IconModule,
+    AccordionModule,
   ],
 })
 export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnDestroy {
@@ -93,29 +95,53 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
   }
 
   public displayTypeItems: ListItem[] = [
-    {content: CaseWidgetDisplayTypeKey.TEXT, selected: true},
     {
-      content: CaseWidgetDisplayTypeKey.BOOLEAN,
+      content: this.translateService.instant(
+        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.TEXT}`
+      ),
+      id: CaseWidgetDisplayTypeKey.TEXT,
+      selected: true,
+    },
+    {
+      content: this.translateService.instant(
+        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.BOOLEAN}`
+      ),
+      id: CaseWidgetDisplayTypeKey.BOOLEAN,
       selected: false,
     },
     {
-      content: CaseWidgetDisplayTypeKey.CURRENCY,
+      content: this.translateService.instant(
+        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.CURRENCY}`
+      ),
+      id: CaseWidgetDisplayTypeKey.CURRENCY,
       selected: false,
     },
     {
-      content: CaseWidgetDisplayTypeKey.DATE,
+      content: this.translateService.instant(
+        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.DATE}`
+      ),
+      id: CaseWidgetDisplayTypeKey.DATE,
       selected: false,
     },
     {
-      content: CaseWidgetDisplayTypeKey.ENUM,
+      content: this.translateService.instant(
+        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.ENUM}`
+      ),
+      id: CaseWidgetDisplayTypeKey.ENUM,
       selected: false,
     },
     {
-      content: CaseWidgetDisplayTypeKey.NUMBER,
+      content: this.translateService.instant(
+        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.NUMBER}`
+      ),
+      id: CaseWidgetDisplayTypeKey.NUMBER,
       selected: false,
     },
     {
-      content: CaseWidgetDisplayTypeKey.PERCENT,
+      content: this.translateService.instant(
+        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.PERCENT}`
+      ),
+      id: CaseWidgetDisplayTypeKey.PERCENT,
       selected: false,
     },
   ];
@@ -127,17 +153,13 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
 
     return this.displayTypeItems.map((item: ListItem) => ({
       ...item,
-      selected: typeControlValue.content === item.content && typeControlValue.selected,
+      selected: typeControlValue.id === item.id && typeControlValue.selected,
     }));
   }
 
   public readonly CaseWidgetDisplayTypeKey = CaseWidgetDisplayTypeKey;
 
-  public readonly inputTheme$ = this.cdsThemeService.currentTheme$.pipe(
-    map((theme: CurrentCarbonTheme) =>
-      theme === CurrentCarbonTheme.G10 ? 'white' : CurrentCarbonTheme.G90
-    )
-  );
+  public readonly inputTheme$: Observable<CurrentCarbonTheme> = this.cdsThemeService.currentTheme$;
 
   private _subscriptions = new Subscription();
 
@@ -145,7 +167,8 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
     private readonly cdsThemeService: CdsThemeService,
     private readonly cdr: ChangeDetectorRef,
     private readonly fb: FormBuilder,
-    private readonly iconService: IconService
+    private readonly iconService: IconService,
+    private readonly translateService: TranslateService
   ) {
     this.iconService.register(TrashCan16);
   }
@@ -175,7 +198,8 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
     );
   }
 
-  public onDeleteRowClick(formArray: FormArray, index: number): void {
+  public onDeleteRowClick(event: Event, formArray: FormArray, index: number): void {
+    event.stopImmediatePropagation();
     if (!formArray) return;
 
     formArray.removeAt(index);
@@ -188,7 +212,7 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
 
     extraControlKeys.forEach((controlKey: string) => formRow.removeControl(controlKey));
 
-    switch (event.item.content) {
+    switch (event.item.id) {
       case CaseWidgetDisplayTypeKey.BOOLEAN:
         break;
       case CaseWidgetDisplayTypeKey.CURRENCY:
@@ -239,7 +263,12 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
     return this.fb.group({
       type: this.fb.control<ListItem>(
         {
-          content: row.displayProperties?.type ?? CaseWidgetDisplayTypeKey.TEXT,
+          content: this.translateService.instant(
+            this.translateService.instant(
+              `widgetTabManagement.content.displayType.${row.displayProperties?.type ?? CaseWidgetDisplayTypeKey.TEXT}`
+            )
+          ),
+          id: row.displayProperties?.type ?? CaseWidgetDisplayTypeKey.TEXT,
           selected: true,
         },
         Validators.required
@@ -299,33 +328,27 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
 
   private openFormSubscription(): void {
     this._subscriptions.add(
-      this.formGroup
-        .get('rows')
-        ?.valueChanges.pipe(debounceTime(100))
-        .subscribe((rows: any) => {
-          const mappedRows: FieldsCaseWidgetValue[] = rows.map((row: any | null) => ({
-            key: row.title.replace(/\W+/g, '-').replace(/\-$/, '').toLowerCase(),
-            title: row.title,
-            value: row.content,
-            ...(!!row?.type.content &&
-              row?.type.content !== CaseWidgetDisplayTypeKey.TEXT && {
-                displayProperties: {
-                  type: row.type.content,
-                  ...(!!row?.currencyCode && {currentCode: row.currencyCode}),
-                  ...(!!row?.display && {display: row.display}),
-                  ...(!!row?.digitsInfo && {digitsInfo: row.digitsInfo}),
-                  ...(!!row?.format && {format: row.format}),
-                  ...(!!row?.values && {
-                    values: row.values?.reduce(
-                      (acc, curr) => ({...acc, [curr.key]: curr.value}),
-                      {}
-                    ),
-                  }),
-                },
-              }),
-          }));
-          this.columnUpdateEvent.emit({data: mappedRows, valid: this.formGroup.valid});
-        })
+      this.formRows?.valueChanges.pipe(debounceTime(100)).subscribe((rows: any) => {
+        const mappedRows: FieldsCaseWidgetValue[] = rows.map((row: any | null) => ({
+          key: row.title.replace(/\W+/g, '-').replace(/\-$/, '').toLowerCase(),
+          title: row.title,
+          value: row.content,
+          ...(!!row?.type.id &&
+            row?.type.id !== CaseWidgetDisplayTypeKey.TEXT && {
+              displayProperties: {
+                type: row.type.id,
+                ...(!!row?.currencyCode && {currencyCode: row.currencyCode}),
+                ...(!!row?.display && {display: row.display}),
+                ...(!!row?.digitsInfo && {digitsInfo: row.digitsInfo}),
+                ...(!!row?.format && {format: row.format}),
+                ...(!!row?.values && {
+                  values: row.values?.reduce((acc, curr) => ({...acc, [curr.key]: curr.value}), {}),
+                }),
+              },
+            }),
+        }));
+        this.columnUpdateEvent.emit({data: mappedRows, valid: this.formGroup.valid});
+      })
     );
   }
 }

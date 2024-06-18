@@ -17,16 +17,35 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 16px;
-  background: var(--cds-layer-01);
 
   &__container {
+    background: var(--cds-layer-01);
+
+    .cds--accordion__content {
+      display: flex;
+      flex-direction: column;
+      padding-inline-end: 20px;
+      gap: 16px;
+
+      button {
+        padding: 8px;
+      }
+    }
+  }
+
+  &__content {
     display: grid;
-    grid-template-columns: 140px 2fr 2fr auto 32px;
-    align-items: flex-start;
+    grid-template-columns: 1fr 1fr 180px;
+    align-items: flex-end;
     gap: 16px;
-    padding: 16px;
-    background: var(--cds-layer-02);
+  }
+
+  &__title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 8px;
   }
 
   &__delete-button {
@@ -42,7 +61,8 @@
   }
 
   &__options {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
   }
 
