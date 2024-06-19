@@ -483,7 +483,7 @@
     },
     "intermediateSave": {
       "save": "Fortschritt speichern",
-      "clear": "Eingabefelder löschen",
+      "clear": "Letzte Änderungen zurücknehmen",
       "clearConfirm": "Sind Sie sicher, dass Sie Ihre Eingabefelder löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
       "success": "Fortschritt erfolgreich gespeichert",
       "error": "Fortschritt konnte nicht gespeichert werden",

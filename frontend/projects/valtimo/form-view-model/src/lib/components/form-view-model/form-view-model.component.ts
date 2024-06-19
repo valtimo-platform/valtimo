@@ -232,7 +232,6 @@ export class FormViewModelComponent implements OnInit {
     const component = formInstance.getComponent(error.error?.component);
     const submitComponent = formInstance.getComponent('submit');
     if (component == null) {
-      this.errors$.next([error.error.error]);
     } else {
       component?.setCustomValidity(error.error.error);
       submitComponent.disabled = true;
@@ -249,7 +248,6 @@ export class FormViewModelComponent implements OnInit {
     }
 
     if (object.changed) {
-      this.submission$.next(this.submission);
       this.handleChanges();
     }
   }

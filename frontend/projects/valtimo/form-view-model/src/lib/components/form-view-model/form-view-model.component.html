@@ -22,11 +22,21 @@
     form: form$ | async,
     tokenSetInLocalStorage: tokenSetInLocalStorage$ | async,
     formioOptions: formioOptions$ | async,
-    loading: loading$ | async
+    loading: loading$ | async,
+    errors: errors$ | async
   } as obs"
 >
   <div *ngIf="obs.loading" class="loading-icon">
     <i class="fa fa-spinner fa-spin"></i>
+  </div>
+  <div *ngIf="obs.errors.length > 0" class="alert alert-danger pt-5 pb-5 mb-2">
+    <ol>
+      @for (error of obs.errors; track error) {
+        <li class="pl-2">
+          {{ error }}
+        </li>
+      }
+    </ol>
   </div>
   <formio
     #formio

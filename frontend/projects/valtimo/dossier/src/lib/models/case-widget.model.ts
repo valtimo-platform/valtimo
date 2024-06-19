@@ -28,7 +28,7 @@ enum CaseWidgetType {
   TABLE = 'table',
   CUSTOM = 'custom',
   FORMIO = 'formio',
-  COLLECTION = 'collection'
+  COLLECTION = 'collection',
 }
 
 type CaseWidgetWidth = 1 | 2 | 3 | 4;
