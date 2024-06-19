@@ -35,12 +35,7 @@ import {
   ValtimoFormioOptions,
   ValtimoModalService,
 } from '@valtimo/components';
-import {
-  IntermediateSaveRequest,
-  IntermediateSubmission,
-  Task,
-  TaskProcessLinkType,
-} from '../../models';
+import {IntermediateSaveRequest, IntermediateSubmission, Task, TaskProcessLinkType,} from '../../models';
 import {FormFlowComponent, FormSubmissionResult, ProcessLinkService} from '@valtimo/process-link';
 import {FormioForm} from '@formio/angular';
 import moment from 'moment';
@@ -104,7 +99,6 @@ export class TaskDetailModalComponent implements OnDestroy {
 
   private readonly processLinkId$ = new BehaviorSubject<string>(undefined);
 
-  private _subscriptions = new Subscription();
   private _fvmSubmissionSubscription: Subscription;
   private _submissionSubscription: Subscription;
 
@@ -133,7 +127,6 @@ export class TaskDetailModalComponent implements OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
     this._fvmSubmissionSubscription?.unsubscribe();
     this._submissionSubscription?.unsubscribe();
   }
@@ -368,7 +361,6 @@ export class TaskDetailModalComponent implements OnDestroy {
 
   protected closeModal(): void {
     this.modal.open = false;
-    this._subscriptions.unsubscribe();
     this._fvmSubmissionSubscription?.unsubscribe();
     this._submissionSubscription?.unsubscribe();
 
