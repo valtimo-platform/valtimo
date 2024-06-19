@@ -22,4 +22,4 @@ export interface CarbonTag {
   ellipsisContent?: string;
 }
 
-export const TAG_ELLIPSIS_LIMIT = 15;
+export const TAG_ELLIPSIS_LIMIT = 20;

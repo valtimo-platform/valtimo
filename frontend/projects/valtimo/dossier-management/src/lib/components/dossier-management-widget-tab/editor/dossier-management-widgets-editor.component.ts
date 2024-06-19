@@ -16,7 +16,7 @@
 
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   ActionItem,
   CarbonListItem,
@@ -28,8 +28,8 @@ import {
 } from '@valtimo/components';
 import {BasicCaseWidget, CaseWidget, CaseWidgetsRes} from '@valtimo/dossier';
 import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
-import {BehaviorSubject, Subject, take} from 'rxjs';
-import {AVAILABLE_WIDGETS, WidgetStyle} from '../../../models';
+import {BehaviorSubject, Observable, Subject, combineLatest, map, take} from 'rxjs';
+import {AVAILABLE_WIDGETS, WidgetStyle, WidgetTypeTags} from '../../../models';
 import {WidgetTabManagementService, WidgetWizardService} from '../../../services';
 import {DossierManagementWidgetWizardComponent} from '../../dossier-management-widget-wizard/dossier-management-widget-wizard.component';
 
@@ -54,8 +54,10 @@ export class DossierManagementWidgetsEditorComponent {
   @Input() public tabWidgetKey: string;
   private _currentWidgetTab: CaseWidgetsRes;
   @Input() public set currentWidgetTab(value: CaseWidgetsRes) {
+    if (!value) return;
+
     this._currentWidgetTab = value;
-    this.items$.next(value?.widgets);
+    this._items$.next(value?.widgets);
     this._usedKeys = value?.widgets.map(widget => widget.key);
   }
   public get currentWidgetTab(): CaseWidgetsRes {
@@ -66,14 +68,29 @@ export class DossierManagementWidgetsEditorComponent {
 
   public readonly FIELDS: ColumnConfig[] = [
     {
+      key: 'title',
+      label: 'interface.title',
+      viewType: ViewType.TEXT,
+    },
+    {
+      key: 'tags',
+      label: 'widgetTabManagement.columns.type',
+      viewType: ViewType.TAGS,
+    },
+    {
       key: 'key',
       label: 'interface.key',
       viewType: ViewType.TEXT,
     },
     {
-      key: 'title',
-      label: 'interface.title',
+      key: 'widthTranslation',
+      label: 'widgetTabManagement.columns.width',
       viewType: ViewType.TEXT,
+    },
+    {
+      key: 'highContrast',
+      label: 'widgetTabManagement.columns.highContrast',
+      viewType: ViewType.BOOLEAN,
     },
   ];
 
@@ -89,7 +106,24 @@ export class DossierManagementWidgetsEditorComponent {
     },
   ];
 
-  public readonly items$ = new BehaviorSubject<CarbonListItem[]>([]);
+  private readonly _items$ = new BehaviorSubject<CarbonListItem[]>([]);
+  public readonly items$: Observable<CarbonListItem[]> = combineLatest([
+    this._items$,
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([items]) =>
+      items.map(item => ({
+        ...item,
+        widthTranslation: this.translateService.instant(this.getWidthTranslationKey(item.width)),
+        tags: [
+          {
+            content: this.translateService.instant(`widgetTabManagement.types.${item.type}.title`),
+            type: WidgetTypeTags[item.type],
+          },
+        ],
+      }))
+    )
+  );
 
   public readonly isWizardOpen$ = new BehaviorSubject<boolean>(false);
   public readonly isEditMode = this.widgetWizardService.editMode;
@@ -100,6 +134,7 @@ export class DossierManagementWidgetsEditorComponent {
 
   constructor(
     private readonly keyGeneratorService: KeyGeneratorService,
+    private readonly translateService: TranslateService,
     private readonly widgetTabManagementService: WidgetTabManagementService,
     private readonly widgetWizardService: WidgetWizardService
   ) {}
@@ -178,5 +213,20 @@ export class DossierManagementWidgetsEditorComponent {
       .subscribe(() => {
         this.changeSaved.emit();
       });
+  }
+
+  private getWidthTranslationKey(width: number): string {
+    switch (width) {
+      case 1:
+        return 'widgetTabManagement.width.quarter.title';
+      case 2:
+        return 'widgetTabManagement.width.half.title';
+      case 3:
+        return 'widgetTabManagement.width.threeQuarters.title';
+      case 4:
+        return 'widgetTabManagement.width.fullWidth.title';
+      default:
+        return '-';
+    }
   }
 }

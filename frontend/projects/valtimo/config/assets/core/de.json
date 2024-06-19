@@ -678,6 +678,11 @@
         "tabName": "Tab name"
       }
     },
+    "columns": {
+      "highContrast": "Hoher Kontrast",
+      "type": "Typ",
+      "width": "Breite"
+    },
     "list": {
       "add": "Widget hinzufügen",
       "noResults": {

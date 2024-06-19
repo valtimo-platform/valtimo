@@ -14,7 +14,20 @@
  * limitations under the License.
  */
 
-export enum WidgetEditorTab {
+import {CaseWidgetType} from '@valtimo/dossier';
+import {TagType} from 'carbon-components-angular';
+
+enum WidgetEditorTab {
   VISUAL = 'visual',
   JSON = 'json',
 }
+
+const WidgetTypeTags: {[key: string]: TagType} = {
+  [CaseWidgetType.COLLECTION]: 'teal',
+  [CaseWidgetType.CUSTOM]: 'magenta',
+  [CaseWidgetType.FIELDS]: 'blue',
+  [CaseWidgetType.FORMIO]: 'green',
+  [CaseWidgetType.TABLE]: 'purple',
+};
+
+export {WidgetEditorTab, WidgetTypeTags};

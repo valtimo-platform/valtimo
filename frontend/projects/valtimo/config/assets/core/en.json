@@ -679,6 +679,11 @@
         "tabName": "Tab name"
       }
     },
+    "columns": {
+      "highContrast": "High contrast",
+      "type": "Type",
+      "width": "Width"
+    },
     "list": {
       "add": "Add widget",
       "noResults": {

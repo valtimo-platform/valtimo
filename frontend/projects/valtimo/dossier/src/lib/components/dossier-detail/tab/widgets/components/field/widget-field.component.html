@@ -25,10 +25,10 @@
   <div
     #widgetField
     [ngClass]="{
-      'widget-field__render-vertically': renderVertically() == 1,
-      'widget-field__render-two-columns': renderVertically() == 2,
-      'widget-field__render-three-columns': renderVertically() == 3,
-      'widget-field__container': renderVertically() == 4
+      'widget-field__render-vertically': renderVertically() === 1,
+      'widget-field__render-two-columns': renderVertically() === 2,
+      'widget-field__render-three-columns': renderVertically() === 3,
+      'widget-field__container': renderVertically() === 4
     }"
   >
     @for (column of obs?.widgetPropertyValue; track column.key) {
