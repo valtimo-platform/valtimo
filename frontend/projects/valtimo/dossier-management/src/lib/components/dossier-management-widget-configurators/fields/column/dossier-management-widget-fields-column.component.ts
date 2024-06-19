@@ -78,6 +78,7 @@ import {WidgetWizardService} from '../../../../services';
 export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnDestroy {
   @HostBinding('class') public readonly class = 'valtimo-dossier-management-widget-field-column';
   @Input({required: true}) public columnData: FieldsCaseWidgetValue[];
+  @Input() public addTranslateKey = 'widgetTabManagement.content.fields.add';
 
   @Output() public columnUpdateEvent = new EventEmitter<{
     data: FieldsCaseWidgetValue[];

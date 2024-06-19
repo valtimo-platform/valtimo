@@ -6,6 +6,7 @@ import {
   CaseWidgetWidth,
   WidgetContentProperties,
 } from '@valtimo/dossier';
+import {DossierManagementWidgetTableComponent} from '../components/dossier-management-widget-configurators';
 
 @Injectable({
   providedIn: 'root',

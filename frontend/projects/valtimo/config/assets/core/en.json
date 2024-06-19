@@ -712,6 +712,10 @@
       "formio": {
         "title": "Form.io",
         "description": "Prefilled Form.io form"
+      },
+      "table": {
+        "title": "Table",
+        "description": "Create a table"
       }
     },
     "width": {
@@ -780,6 +784,16 @@
       "formio": {
         "selectForm": "Form definition",
         "placeholder": "Select a form definition"
+      },
+      "table": {
+        "addColumn": "Add column",
+        "defaultPageSize": "Rows per page",
+        "defaultPageSizePlaceholder": "Choose amount of rows per page",
+        "collection": "Path to table data",
+        "collectionPlaceholder": "Specify the path to table data",
+        "columns": "Columns",
+        "options": "Options",
+        "firstColumnAsTitle": "First column is the title of the row"
       }
     },
     "cancelModal": {
@@ -1085,7 +1099,9 @@
       "jsonEditor": "JSON editor"
     },
     "key": "Key",
-    "title": "Title"
+    "title": "Title",
+    "yes": "Yes",
+    "no": "No"
   },
   "taskDetail": {
     "taskCreated": "Created",

@@ -711,6 +711,10 @@
       "formio": {
         "title": "Form.io",
         "description": "Ingevuld Form.io-formulier"
+      },
+      "table": {
+        "title": "Tabel",
+        "description": "Maak een table aan"
       }
     },
     "width": {
@@ -779,6 +783,16 @@
       "formio": {
         "selectForm": "Formulierdefinitie",
         "placeholder": "Selecteer een formulierdefinitie"
+      },
+      "table": {
+        "addColumn": "Kolom toevoegen",
+        "defaultPageSize": "Rijen per pagina",
+        "defaultPageSizePlaceholder": "Kies het aantal rijen per pagina",
+        "collection": "Pad naar tabeldata",
+        "collectionPlaceholder": "Geef het pad naar de tabelgegevens op",
+        "columns": "Kolommen",
+        "options": "Opties",
+        "firstColumnAsTitle": "Eerste kolom is de titel van de rij"
       }
     },
     "cancelModal": {
@@ -1078,12 +1092,14 @@
       "descending": "Aflopend",
       "noDefault": "Geen standaardsortering"
     },
-    "key": "Sleutel",
-    "title": "Titel",
     "editor": {
       "visualEditor": "Visuele editor",
       "jsonEditor": "JSON editor"
-    }
+    },
+    "key": "Sleutel",
+    "title": "Titel",
+    "yes": "Ja",
+    "no": "Nee"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",

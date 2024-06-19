@@ -22,7 +22,9 @@ interface WidgetFieldsContent {
 
 interface WidgetTableContent {
   columns: FieldsCaseWidgetValue[];
+  collection: string;
   firstColumnAsTitle: boolean;
+  defaultPageSize: number;
 }
 
 interface WidgetCustomContent {
