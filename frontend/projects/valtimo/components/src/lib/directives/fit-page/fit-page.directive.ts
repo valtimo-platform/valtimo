@@ -43,7 +43,7 @@ export class FitPageDirective implements AfterViewInit, OnDestroy {
           this.renderer.setStyle(
             nativeElement,
             'height',
-            `calc(100vh - ${compactMode ? 128 : 144}px - ${pageHeadHeight + this.extraSpace}px)`
+            `calc(100vh - ${compactMode ? 104 : 120}px - ${pageHeadHeight + this.extraSpace}px)`
           );
         }
       })

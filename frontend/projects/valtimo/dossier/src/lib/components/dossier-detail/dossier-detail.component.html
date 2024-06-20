@@ -22,7 +22,7 @@
       <ng-container *ngTemplateOutlet="tabs"></ng-container>
       <ng-template #tabs>
         <ng-container *ngIf="tabLoader">
-          <cds-tabs type="contained" class="case-detail-tabs">
+          <cds-tabs type="inline" class="case-detail-tabs">
             <cds-tab
               *ngFor="let tab of tabLoader.tabs"
               [active]="tab.isActive()"
