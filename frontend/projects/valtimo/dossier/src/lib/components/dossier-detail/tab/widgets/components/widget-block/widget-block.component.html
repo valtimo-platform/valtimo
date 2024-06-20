@@ -37,6 +37,14 @@
             ></valtimo-widget-table>
           }
 
+          @case (CaseWidgetType.COLLECTION) {
+            <valtimo-widget-collection
+              [collapseVertically]="true"
+              [widgetConfiguration]="obs.widgetConfiguration"
+              [widgetData]="obs.widgetData"
+            ></valtimo-widget-collection>
+          }
+
           @case (CaseWidgetType.CUSTOM) {
             <valtimo-widget-custom [widgetConfig]="obs.widgetConfiguration"></valtimo-widget-custom>
           }

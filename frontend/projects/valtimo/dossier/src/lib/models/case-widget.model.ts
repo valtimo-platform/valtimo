@@ -17,6 +17,7 @@
 import {CaseWidgetDisplayType} from '.';
 import {Type} from '@angular/core';
 import {
+  WidgetCollectionContent,
   WidgetContentProperties,
   WidgetCustomContent,
   WidgetFieldsContent,
@@ -27,8 +28,8 @@ enum CaseWidgetType {
   FIELDS = 'fields',
   TABLE = 'table',
   CUSTOM = 'custom',
-  FORMIO = 'formio',
   COLLECTION = 'collection',
+  FORMIO = 'formio',
 }
 
 type CaseWidgetWidth = 1 | 2 | 3 | 4;
@@ -54,6 +55,11 @@ interface FieldsCaseWidget extends BasicCaseWidget {
   properties: WidgetFieldsContent;
 }
 
+interface CollectionCaseWidget extends BasicCaseWidget {
+  type: CaseWidgetType.COLLECTION;
+  properties: WidgetCollectionContent;
+}
+
 interface TableCaseWidget extends BasicCaseWidget {
   type: CaseWidgetType.TABLE;
   properties: WidgetTableContent;
@@ -71,7 +77,12 @@ interface FormioCaseWidget extends BasicCaseWidget {
   };
 }
 
-type CaseWidget = FieldsCaseWidget | CustomCaseWidget | TableCaseWidget | FormioCaseWidget;
+type CaseWidget =
+  | FieldsCaseWidget
+  | CollectionCaseWidget
+  | CustomCaseWidget
+  | TableCaseWidget
+  | FormioCaseWidget;
 
 type CaseWidgetWithUuid = CaseWidget & {
   uuid: string;
@@ -150,6 +161,7 @@ export {
   CaseWidgetXY,
   FieldsCaseWidget,
   FieldsCaseWidgetValue,
+  CollectionCaseWidget,
   CustomCaseWidgetConfig,
   CustomCaseWidget,
   TableCaseWidget,

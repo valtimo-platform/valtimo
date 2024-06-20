@@ -20,6 +20,10 @@ interface WidgetFieldsContent {
   columns: FieldsCaseWidgetValue[][];
 }
 
+interface WidgetCollectionContent {
+  fields: any;
+}
+
 interface WidgetTableContent {
   columns: FieldsCaseWidgetValue[];
   collection: string;
@@ -39,7 +43,8 @@ type WidgetContentProperties =
   | WidgetFieldsContent
   | WidgetTableContent
   | WidgetCustomContent
-  | WidgetFormioContent;
+  | WidgetFormioContent
+  | WidgetCollectionContent;
 
 export {
   WidgetContentProperties,
@@ -47,4 +52,5 @@ export {
   WidgetCustomContent,
   WidgetFormioContent,
   WidgetTableContent,
+  WidgetCollectionContent,
 };

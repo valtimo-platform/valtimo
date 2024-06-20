@@ -61,6 +61,7 @@ import {WidgetCustomComponent} from '../custom/widget-custom.component';
 import {WidgetFieldComponent} from '../field/widget-field.component';
 import {WidgetFormioComponent} from '../formio/widget-formio.component';
 import {WidgetTableComponent} from '../table/widget-table.component';
+import {WidgetCollectionComponent} from '../collection/widget-collection.component';
 
 @Component({
   selector: 'valtimo-dossier-widget-block',
@@ -77,6 +78,7 @@ import {WidgetTableComponent} from '../table/widget-table.component';
     TilesModule,
     WidgetFieldComponent,
     WidgetFormioComponent,
+    WidgetCollectionComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
