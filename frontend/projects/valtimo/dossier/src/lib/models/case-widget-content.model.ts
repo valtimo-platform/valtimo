@@ -15,13 +15,45 @@
  */
 
 import {FieldsCaseWidgetValue} from './case-widget.model';
+import {CaseWidgetDisplayType} from './case-widget-display.model';
 
 interface WidgetFieldsContent {
   columns: FieldsCaseWidgetValue[][];
 }
 
+type CollectionCaseWidgetFieldWidth = 'full' | 'half';
+
+interface CollectionCaseWidgetField {
+  key: string;
+  title: string;
+  value: string;
+  width: CollectionCaseWidgetFieldWidth;
+  displayProperties?: CaseWidgetDisplayType;
+}
+
+interface CollectionCaseWidgetTitle {
+  value: string;
+  displayProperties?: CaseWidgetDisplayType;
+}
+
 interface WidgetCollectionContent {
-  fields: any;
+  collection: string;
+  defaultPageSize: number;
+  title: CollectionCaseWidgetTitle;
+  fields: CollectionCaseWidgetField[];
+}
+
+interface CollectionWidgetResolvedField {
+  key: string;
+  title: string;
+  value: string;
+  width: CollectionCaseWidgetFieldWidth;
+}
+
+interface CollectionCaseWidgetCardData {
+  title: string;
+  fields: {[key: string]: string};
+  hidden?: boolean;
 }
 
 interface WidgetTableContent {
@@ -53,4 +85,9 @@ export {
   WidgetFormioContent,
   WidgetTableContent,
   WidgetCollectionContent,
+  CollectionCaseWidgetField,
+  CollectionCaseWidgetFieldWidth,
+  CollectionWidgetResolvedField,
+  CollectionCaseWidgetTitle,
+  CollectionCaseWidgetCardData,
 };

@@ -39,7 +39,8 @@
 
           @case (CaseWidgetType.COLLECTION) {
             <valtimo-widget-collection
-              [collapseVertically]="true"
+              [documentId]="obs.documentId"
+              [tabKey]="obs.tabKey"
               [widgetConfiguration]="obs.widgetConfiguration"
               [widgetData]="obs.widgetData"
             ></valtimo-widget-collection>

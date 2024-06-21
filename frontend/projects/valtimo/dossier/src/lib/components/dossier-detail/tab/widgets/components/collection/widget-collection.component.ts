@@ -34,11 +34,18 @@ import {
   PaginationModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {CollectionCaseWidget} from '../../../../../../models';
-import {BehaviorSubject, combineLatest, filter, map, Observable} from 'rxjs';
-import {CarbonListItem, CarbonListModule, ViewContentService} from '@valtimo/components';
+import {
+  CollectionCaseWidget,
+  CollectionCaseWidgetCardData,
+  CollectionCaseWidgetField,
+  CollectionCaseWidgetTitle,
+  CollectionWidgetResolvedField,
+} from '../../../../../../models';
+import {BehaviorSubject, combineLatest, filter, map, Observable, of, switchMap, tap} from 'rxjs';
+import {CarbonListModule, ViewContentService} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {Page} from '@valtimo/config';
+import {DossierWidgetsApiService} from '../../../../../../services';
 
 @Component({
   selector: 'valtimo-widget-collection',
@@ -52,7 +59,6 @@ import {Page} from '@valtimo/config';
     InputModule,
     PaginationModule,
     TilesModule,
-    WidgetCollectionComponent,
     CarbonListModule,
     TranslateModule,
   ],
@@ -61,18 +67,28 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
   @HostBinding('class') public readonly class = 'valtimo-widget-collection';
   @ViewChild('widgetCollection') private _widgetCollectionRef: ElementRef<HTMLDivElement>;
 
-  @Input() collapseVertically = false;
+  @Input({required: true}) public documentId: string;
+  @Input({required: true}) public tabKey: string;
   @Input() public set widgetConfiguration(value: CollectionCaseWidget) {
     if (!value) return;
     this.widgetConfiguration$.next(value);
   }
   public readonly showPagination$ = new BehaviorSubject<boolean>(false);
 
-  @Input() public set widgetData(value: Page<CarbonListItem> | null) {
+  private readonly _initialNumberOfElementsSubject$ = new BehaviorSubject<number>(null);
+
+  private get _initialNumberOfElements$(): Observable<number> {
+    return this._initialNumberOfElementsSubject$.pipe(
+      filter(numberOfElements => numberOfElements !== null)
+    );
+  }
+
+  @Input() public set widgetData(value: Page<CollectionCaseWidgetCardData> | null) {
     if (!value) return;
 
     this.showPagination$.next(value.totalElements > value.size);
-    this.widgetData$.next(value.content);
+    this._initialNumberOfElementsSubject$.next(value.numberOfElements);
+    this._widgetDataSubject$.next(value.content);
 
     this.paginationModel.set(
       value.totalPages < 0
@@ -86,50 +102,75 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  public readonly widgetTitle = signal('-');
+
   public readonly widgetConfiguration$ = new BehaviorSubject<CollectionCaseWidget | null>(null);
   public readonly paginationModel = signal<PaginationModel>(new PaginationModel());
   public readonly amountOfColumns = signal(0);
-  private widgetData$ = new BehaviorSubject<CarbonListItem[] | null>(null);
 
-  public readonly widgetPropertyValue$: Observable<{title: string; value: string}[][]> =
-    combineLatest([this.widgetConfiguration$, this.widgetData$]).pipe(
-      filter(([widget, widgetData]) => !!widget && !!widgetData),
-      map(([widget, widgetData]) =>
-        widgetData.map(widgetFieldData =>
-          widget?.properties.fields.reduce(
-            (columnFields, property) => [
-              ...columnFields,
-              ...(widgetFieldData.hasOwnProperty(property.key)
-                ? [
-                    {
-                      title: property.title,
-                      value: this.viewContentService.get(widgetFieldData[property.key], {
-                        ...widgetFieldData[property.key].displayProperties,
-                        viewType: widgetFieldData[property.key].displayProperties?.type,
-                      })
-                        ? widgetFieldData[property.key]
-                        : '-',
-                      width: property.width,
-                    },
-                  ]
-                : []),
-            ],
-            []
-          )
-        )
-      )
-    );
+  private readonly _widgetDataSubject$ = new BehaviorSubject<CollectionCaseWidgetCardData[]>(null);
+
+  private readonly _queryParams$ = new BehaviorSubject<string | null>(null);
+
+  private readonly _widgetData$: Observable<CollectionCaseWidgetCardData[]> = combineLatest([
+    this._widgetDataSubject$,
+    this._queryParams$,
+    this._initialNumberOfElements$,
+    this.widgetConfiguration$,
+  ]).pipe(
+    switchMap(([data, queryParams, initialNumberOfElements, widgetConfiguration]) =>
+      combineLatest([
+        !queryParams
+          ? of(data)
+          : this.widgetApiService
+              .getWidgetData(this.documentId, this.tabKey, widgetConfiguration.key, queryParams)
+              .pipe(map((res: Page<CollectionCaseWidgetCardData>) => res.content)),
+        of(initialNumberOfElements),
+      ])
+    ),
+    filter(([items]) => !!items),
+    map(([items, initialNumberOfElements]) => {
+      if (items.length === initialNumberOfElements) {
+        return items;
+      }
+
+      const rows = new Array<number>(initialNumberOfElements).fill(null);
+
+      return rows.map((_, index) => items[index] || {...items[0], hidden: true});
+    })
+  );
+
+  public readonly collectionWidgetCards$: Observable<
+    {title: string; fields: CollectionWidgetResolvedField[]; key: number; hidden: boolean}[]
+  > = combineLatest([this.widgetConfiguration$, this._widgetData$]).pipe(
+    filter(([widgetConfig, widgetData]) => !!widgetConfig && !!widgetData),
+    tap(([widgetConfig]) => this.widgetTitle.set(widgetConfig.title)),
+    map(([widgetConfig, widgetData]) =>
+      widgetData.map((cardData, index) => ({
+        hidden: cardData.hidden,
+        key: index,
+        title: this.getCardTitle(widgetConfig.properties.title),
+        fields: widgetConfig?.properties.fields.reduce(
+          (cardFieldsAccumulator, currentField, index) => [
+            ...cardFieldsAccumulator,
+            this.getCardField(currentField, cardData),
+          ],
+          []
+        ),
+      }))
+    )
+  );
 
   private _observer!: ResizeObserver;
-  private readonly _queryParams$ = new BehaviorSubject<string | null>(null);
 
   constructor(
     private readonly viewContentService: ViewContentService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly widgetApiService: DossierWidgetsApiService
   ) {}
 
   public ngAfterViewInit(): void {
-    if (this.collapseVertically) this.openWidthObserver();
+    this.openWidthObserver();
   }
 
   public ngOnDestroy(): void {
@@ -142,6 +183,23 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
       ...model,
       currentPage: page,
     }));
+  }
+
+  private getCardField(
+    field: CollectionCaseWidgetField,
+    data: CollectionCaseWidgetCardData
+  ): CollectionWidgetResolvedField {
+    const resolvedValue = this.viewContentService.get(data.fields[field.key], {
+      ...field.displayProperties,
+      viewType: field.displayProperties.type,
+    });
+
+    return {
+      key: field.key,
+      title: field.title,
+      width: field.width,
+      value: resolvedValue || data.fields[field.key],
+    };
   }
 
   private openWidthObserver(): void {
@@ -165,5 +223,23 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
         this.amountOfColumns.set(4);
       }
     }
+  }
+
+  private getCardTitle(collectionCaseWidgetTitle: CollectionCaseWidgetTitle): string {
+    const widgetTitleValue = collectionCaseWidgetTitle.value;
+    const widgetTitleDisplayProperties = collectionCaseWidgetTitle.displayProperties;
+
+    if (!widgetTitleDisplayProperties && widgetTitleValue) {
+      return widgetTitleValue;
+    } else if (widgetTitleDisplayProperties && widgetTitleValue) {
+      const convertedTitle = this.viewContentService.get(widgetTitleValue, {
+        ...widgetTitleDisplayProperties,
+        viewType: widgetTitleDisplayProperties.type,
+      });
+
+      if (convertedTitle) return convertedTitle;
+    }
+
+    return '-';
   }
 }

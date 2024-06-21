@@ -43,6 +43,10 @@
     padding: 16px;
     width: 100%;
     gap: 16px;
+
+    &--hidden {
+      visibility: hidden;
+    }
   }
 
   &__card-title {

@@ -17,10 +17,10 @@
 <ng-container
   *ngIf="{
     widgetConfiguration: widgetConfiguration$ | async,
-    widgetPropertyValue: widgetPropertyValue$ | async
+    collectionWidgetCards: collectionWidgetCards$ | async
   } as obs"
 >
-  <span class="valtimo-widget-collection__title">Main title</span>
+  <span class="valtimo-widget-collection__title">{{ widgetTitle() }}</span>
 
   <div
     #widgetCollection
@@ -31,20 +31,25 @@
       'valtimo-widget-collection__container': amountOfColumns() === 4
     }"
   >
-    @for (field of obs?.widgetPropertyValue; track field.key) {
-      <div class="valtimo-widget-collection__card">
-        @for (property of field; track property.value) {
+    @for (card of obs?.collectionWidgetCards; track card.key) {
+      <div
+        class="valtimo-widget-collection__card"
+        [ngClass]="{'valtimo-widget-collection__card--hidden': card.hidden}"
+      >
+        <span class="valtimo-widget-collection__card-title">{{ card.title }}</span>
+
+        @for (field of card.fields; track field.key) {
           <div
             [ngClass]="{
-              'valtimo-widget-collection__full-width-input': property?.width === 'full',
-              'valtimo-widget-collection__half-width-input': property?.width === 'half'
+              'valtimo-widget-collection__full-width-input': field?.width === 'full',
+              'valtimo-widget-collection__half-width-input': field?.width === 'half'
             }"
           >
             <cds-label>
-              {{ property?.title }}
+              {{ field?.title }}
 
               <input
-                [value]="property?.value"
+                [value]="field?.value"
                 [readonly]="true"
                 class="valtimo-widget-collection__card-input"
                 cdsText
@@ -56,8 +61,16 @@
     }
   </div>
 
+  @if (!obs?.collectionWidgetCards.length) {
+    <valtimo-no-results
+      [collapseVertically]="true"
+      [description]="'dossier.widgets.noData' | translate"
+      [smallPadding]="true"
+    ></valtimo-no-results>
+  }
+
   <cds-pagination-nav
-    *ngIf="paginationModel()"
+    *ngIf="paginationModel() && (showPagination$ | async)"
     class="valtimo-widget-collection__pagination"
     [model]="paginationModel()"
     (selectPage)="onSelectPage($event)"
