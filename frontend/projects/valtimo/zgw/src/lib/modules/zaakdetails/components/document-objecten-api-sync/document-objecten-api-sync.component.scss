@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-export * from './documenten-api';
-export * from './objecten-api';
-export * from './contactmomenten';
-export * from './haalcentraal-brp';
-export * from './zaakdetails';
-export * from './zaken-api';
+.card-header,
+.setting-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+}

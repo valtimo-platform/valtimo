@@ -23,6 +23,7 @@ import {
   DossierDetailTabDocumentenApiDocumentsComponent,
   DossierDetailTabObjectTypeComponent,
   DossierManagementLinkProcessComponent,
+  DocumentObjectenApiSyncComponent,
   ZakenApiZaaktypeLinkComponent,
 } from './modules';
 import {
@@ -67,6 +68,7 @@ import {ResourceModule} from '@valtimo/resource';
       useValue: [
         DossierManagementLinkProcessComponent,
         DocumentenApiVersionComponent,
+        DocumentObjectenApiSyncComponent,
         ZakenApiZaaktypeLinkComponent,
       ],
     },
