@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {map, Observable} from 'rxjs';
 import {
   ProcessDefinition,
   ProcessDefinitionStartForm,
@@ -146,10 +146,9 @@ export class ProcessService {
   }
 
   getProcessInstanceTasks(id: string): Observable<ProcessInstanceTask[]> {
-    return this.http.get<ProcessInstanceTask[]>(
-      `${this.valtimoEndpointUri}v1/process/${id}/tasks`,
-      {}
-    );
+    return this.http
+      .get<ProcessInstanceTask[]>(`${this.valtimoEndpointUri}v1/process/${id}/tasks`, {})
+      .pipe(map(res => res || []));
   }
 
   getProcessInstanceVariables(id: string, variableNames: Array<any>): Observable<any> {

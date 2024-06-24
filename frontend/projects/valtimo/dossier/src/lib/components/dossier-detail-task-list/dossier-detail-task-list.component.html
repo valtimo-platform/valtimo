@@ -14,7 +14,10 @@
   ~ limitations under the License.
   -->
 
-<div class="task-list" *ngIf="{loadingTasks: loadingTasks$ | async} as obs">
+<div
+  class="task-list"
+  *ngIf="{loadingTasks: loadingTasks$ | async, tasks: processInstanceTasks$ | async} as obs"
+>
   <h2 class="task-list__title">{{ 'summary.userTasks' | translate }}</h2>
 
   <div
@@ -22,19 +25,19 @@
     cdsLayer="1"
     *ngIf="!obs.loadingTasks; else loadingTasksTemplate"
   >
-    @if (!(tasks || []).length) {
+    @if (!(obs.tasks || []).length) {
       <ng-container *ngTemplateOutlet="noTasksTemplate"></ng-container>
     }
 
-    @for (task of tasks || []; track task.id) {
+    @for (task of obs.tasks || []; track task.id) {
       <ng-container *ngTemplateOutlet="taskTemplate; context: {task: task}"></ng-container>
     }
   </div>
 
   <valtimo-task-detail-modal
     #taskDetail
-    (formSubmit)="init()"
-    (assignmentOfTaskChanged)="init()"
+    (formSubmit)="refresh()"
+    (assignmentOfTaskChanged)="refresh()"
   ></valtimo-task-detail-modal>
 </div>
 
