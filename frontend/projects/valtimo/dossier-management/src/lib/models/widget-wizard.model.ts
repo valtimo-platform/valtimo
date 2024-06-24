@@ -18,6 +18,7 @@ import {Type} from '@angular/core';
 import {WidgetContentComponent} from './widget-content.model';
 import {CaseWidgetType} from '@valtimo/dossier';
 import {
+  DossierManagementWidgetCollectionComponent,
   DossierManagementWidgetCustomComponent,
   DossierManagementWidgetFieldsComponent,
   DossierManagementWidgetFormioComponent,
@@ -72,6 +73,13 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     illustrationUrl: 'valtimo-layout/img/widget-management/types/table.svg',
     type: CaseWidgetType.TABLE,
     component: DossierManagementWidgetTableComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.types.collection.title',
+    descriptionKey: 'widgetTabManagement.types.collection.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/collection.svg',
+    type: CaseWidgetType.COLLECTION,
+    component: DossierManagementWidgetCollectionComponent,
   },
 ];
 

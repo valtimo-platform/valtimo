@@ -21,3 +21,4 @@ export * from './tab.service';
 export * from './widget-json-editor.service';
 export * from './widget-tab-management.service';
 export * from './widget-wizard.service';
+export * from './widget-fields.service';

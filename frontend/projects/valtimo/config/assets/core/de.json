@@ -720,6 +720,10 @@
       "table": {
         "title": "Tabelle",
         "description": "Erstellen Sie eine Tabelle"
+      },
+      "collection": {
+        "title": "Kollektion",
+        "description": "Erstellen Sie eine Kollektion"
       }
     },
     "width": {
@@ -798,6 +802,16 @@
         "columns": "Säulen",
         "options": "Optionen",
         "firstColumnAsTitle": "Die erste Spalte ist der Titel der Zeile"
+      },
+      "collection": {
+        "defaultPageSize": "Karten pro Seite",
+        "defaultPageSizePlaceholder": "Wählen Sie die Anzahl der karten pro Seite",
+        "collection": "Pfad zu den Kollektionendaten",
+        "collectionPlaceholder": "Geben Sie den Pfad zu den Kollektionendaten an",
+        "cardTitle": "Kartentitel",
+        "cardFields": "Kartenfelder",
+        "fieldWidth": "Feldbreite",
+        "fieldWidthPlaceholder": "Wählen Sie die Feldbreite"
       }
     },
     "cancelModal": {

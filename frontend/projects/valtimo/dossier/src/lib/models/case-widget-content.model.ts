@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {FieldsCaseWidgetValue} from './case-widget.model';
 import {CaseWidgetDisplayType} from './case-widget-display.model';
+import {CollectionFieldWidth, FieldsCaseWidgetValue} from './case-widget.model';
 
 interface WidgetFieldsContent {
   columns: FieldsCaseWidgetValue[][];
@@ -80,8 +80,8 @@ type WidgetContentProperties =
 
 export {
   WidgetContentProperties,
-  WidgetFieldsContent,
   WidgetCustomContent,
+  WidgetFieldsContent,
   WidgetFormioContent,
   WidgetTableContent,
   WidgetCollectionContent,

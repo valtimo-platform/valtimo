@@ -13,61 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-.valtimo-dossier-management-widget-field-column {
+
+.valtimo-dossier-management-widget-collection {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 
-  &__item,
-  &__cotainer {
-    background: var(--cds-layer-01);
-  }
-
-  &__item .cds--accordion__content {
-    padding-inline-end: 20px;
-  }
-
-  &__container {
+  &__form {
     display: flex;
+    gap: 16px;
+  }
+
+  &__subtitle {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 22px;
+  }
+
+  &__card {
     flex-direction: column;
-    gap: 16px;
-  }
-
-  &__content {
-    display: grid;
-    grid-template-columns: 1fr 1fr 180px;
-    align-items: flex-end;
-    gap: 16px;
-
-    &--collection {
-      grid-template-columns: 1fr 1fr 180px 180px;
-    }
-  }
-
-  &__title {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 8px;
-  }
-
-  &__delete-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    align-self: center;
-
-    &.enum {
-      align-self: flex-end;
-    }
-  }
-
-  &__options {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
+
+    &-title {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      align-items: flex-end;
+    }
+
+    &-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
   }
 
   &__enum {

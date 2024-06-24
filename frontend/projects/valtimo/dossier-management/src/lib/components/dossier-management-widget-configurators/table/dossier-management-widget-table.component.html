@@ -57,13 +57,11 @@
   {{ 'widgetTabManagement.content.table.columns' | translate }}
 </span>
 
-<section class="valtimo-dossier-management-widget-table__columns">
-  <valtimo-dossier-management-widget-fields-column
-    [addTranslateKey]="'widgetTabManagement.content.table.addColumn'"
-    [columnData]="content()?.columns"
-    (columnUpdateEvent)="onColumnUpdateEvent($event)"
-  ></valtimo-dossier-management-widget-fields-column>
-</section>
+<valtimo-dossier-management-widget-fields-column
+  [addTranslateKey]="'widgetTabManagement.content.table.addColumn'"
+  [columnData]="content()?.columns"
+  (columnUpdateEvent)="onColumnUpdateEvent($event)"
+></valtimo-dossier-management-widget-fields-column>
 
 <section class="valtimo-dossier-management-widget-table__toggle">
   <span class="valtimo-dossier-management-widget-table__subtitle">

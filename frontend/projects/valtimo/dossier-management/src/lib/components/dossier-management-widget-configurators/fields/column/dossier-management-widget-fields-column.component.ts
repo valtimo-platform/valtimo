@@ -24,6 +24,7 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  TemplateRef,
   ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -48,6 +49,7 @@ import {
 import {
   AccordionModule,
   ButtonModule,
+  Dropdown,
   DropdownModule,
   IconModule,
   IconService,
@@ -55,7 +57,7 @@ import {
   ListItem,
 } from 'carbon-components-angular';
 import {debounceTime, Observable, Subscription} from 'rxjs';
-import {WidgetWizardService} from '../../../../services';
+import {WidgetFieldsService} from '../../../../services';
 
 @Component({
   selector: 'valtimo-dossier-management-widget-fields-column',
@@ -79,6 +81,7 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
   @HostBinding('class') public readonly class = 'valtimo-dossier-management-widget-field-column';
   @Input({required: true}) public columnData: FieldsCaseWidgetValue[];
   @Input() public addTranslateKey = 'widgetTabManagement.content.fields.add';
+  @Input() public fieldWidthDropdown?: TemplateRef<Dropdown>;
 
   @Output() public columnUpdateEvent = new EventEmitter<{
     data: FieldsCaseWidgetValue[];
@@ -95,67 +98,10 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
     return this.formGroup.get('rows') as FormArray;
   }
 
-  public displayTypeItems: ListItem[] = [
-    {
-      content: this.translateService.instant(
-        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.TEXT}`
-      ),
-      id: CaseWidgetDisplayTypeKey.TEXT,
-      selected: true,
-    },
-    {
-      content: this.translateService.instant(
-        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.BOOLEAN}`
-      ),
-      id: CaseWidgetDisplayTypeKey.BOOLEAN,
-      selected: false,
-    },
-    {
-      content: this.translateService.instant(
-        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.CURRENCY}`
-      ),
-      id: CaseWidgetDisplayTypeKey.CURRENCY,
-      selected: false,
-    },
-    {
-      content: this.translateService.instant(
-        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.DATE}`
-      ),
-      id: CaseWidgetDisplayTypeKey.DATE,
-      selected: false,
-    },
-    {
-      content: this.translateService.instant(
-        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.ENUM}`
-      ),
-      id: CaseWidgetDisplayTypeKey.ENUM,
-      selected: false,
-    },
-    {
-      content: this.translateService.instant(
-        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.NUMBER}`
-      ),
-      id: CaseWidgetDisplayTypeKey.NUMBER,
-      selected: false,
-    },
-    {
-      content: this.translateService.instant(
-        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.PERCENT}`
-      ),
-      id: CaseWidgetDisplayTypeKey.PERCENT,
-      selected: false,
-    },
-  ];
+  public displayTypeItems: ListItem[] = this.widgetFieldsService.displayTypeItems;
 
   public getDisplayItemsSelected(row: AbstractControl): ListItem[] {
-    const typeControlValue: ListItem = row.get('type')?.value;
-
-    if (!typeControlValue) return this.displayTypeItems;
-
-    return this.displayTypeItems.map((item: ListItem) => ({
-      ...item,
-      selected: typeControlValue.id === item.id && typeControlValue.selected,
-    }));
+    return this.widgetFieldsService.getDisplayItemsSelected(row);
   }
 
   public readonly CaseWidgetDisplayTypeKey = CaseWidgetDisplayTypeKey;
@@ -169,7 +115,8 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
     private readonly cdr: ChangeDetectorRef,
     private readonly fb: FormBuilder,
     private readonly iconService: IconService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly widgetFieldsService: WidgetFieldsService
   ) {
     this.iconService.register(TrashCan16);
   }
@@ -207,41 +154,7 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
   }
 
   public onTypeSelected(formRow: FormGroup, event: {item: ListItem}): void {
-    const extraControlKeys = Object.keys(formRow.controls).filter(
-      (key: string) => !['title', 'content', 'type'].includes(key)
-    );
-
-    extraControlKeys.forEach((controlKey: string) => formRow.removeControl(controlKey));
-
-    switch (event.item.id) {
-      case CaseWidgetDisplayTypeKey.BOOLEAN:
-        break;
-      case CaseWidgetDisplayTypeKey.CURRENCY:
-        formRow.addControl('currencyCode', this.fb.control(''));
-        formRow.addControl('display', this.fb.control(''));
-        formRow.addControl('digitsInfo', this.fb.control(''));
-        break;
-      case CaseWidgetDisplayTypeKey.DATE:
-        formRow.addControl('format', this.fb.control(''));
-        break;
-      case CaseWidgetDisplayTypeKey.ENUM:
-        formRow.addControl(
-          'values',
-          this.fb.array(
-            [
-              this.fb.group({
-                key: this.fb.control('', Validators.required),
-                value: this.fb.control('', Validators.required),
-              }),
-            ],
-            Validators.required
-          )
-        );
-        break;
-      default:
-        formRow.addControl('digitsInfo', this.fb.control(''));
-        break;
-    }
+    this.widgetFieldsService.onDisplayTypeSelected(['title', 'content', 'type'], formRow, event);
   }
 
   public onAddEnumValueClick(valuesFormArray: FormArray): void {

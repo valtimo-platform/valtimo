@@ -18,15 +18,23 @@
   class="valtimo-dossier-management-widget-field-column"
   [formGroup]="formGroup"
 >
-  <cds-accordion formArrayName="rows" [align]="'start'">
+  <cds-accordion formArrayName="rows" align="start" size="sm">
     @for (formRow of formRows.controls; track $index) {
-      <form [formGroup]="formRow">
-        <cds-accordion-item
-          [title]="fieldTitle"
-          [context]="{index: $index, title: formRow.get('title')?.value}"
+      <cds-accordion-item
+        [title]="fieldTitle"
+        [context]="{index: $index, title: formRow.get('title')?.value}"
+        class="valtimo-dossier-management-widget-field-column__item"
+      >
+        <form
+          [formGroup]="formRow"
           class="valtimo-dossier-management-widget-field-column__container"
         >
-          <div class="valtimo-dossier-management-widget-field-column__content">
+          <div
+            class="valtimo-dossier-management-widget-field-column__content"
+            [class.valtimo-dossier-management-widget-field-column__content--collection]="
+              !!fieldWidthDropdown
+            "
+          >
             <cds-text-label>
               {{ 'widgetTabManagement.content.fields.title' | translate }}
 
@@ -61,6 +69,10 @@
             >
               <cds-dropdown-list [items]="getDisplayItemsSelected(formRow)"></cds-dropdown-list>
             </cds-dropdown>
+
+            <ng-container
+              *ngTemplateOutlet="fieldWidthDropdown; context: {index: $index}"
+            ></ng-container>
           </div>
 
           <div class="valtimo-dossier-management-widget-field-column__options">
@@ -154,7 +166,7 @@
                         [disabled]="$count === 1"
                         [iconOnly]="true"
                         class="valtimo-dossier-management-widget-field-column__delete-button enum"
-                        (click)="onDeleteRowClick(formRow.get('values'), $index)"
+                        (click)="onDeleteRowClick($event, formRow.get('values'), $index)"
                       >
                         <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
                       </button>
@@ -200,8 +212,8 @@
               }
             }
           </div>
-        </cds-accordion-item>
-      </form>
+        </form>
+      </cds-accordion-item>
     }
   </cds-accordion>
 

@@ -720,6 +720,10 @@
       "table": {
         "title": "Tabel",
         "description": "Maak een table aan"
+      },
+      "collection": {
+        "title": "Collectie",
+        "description": "Maak een collectie aan"
       }
     },
     "width": {
@@ -798,6 +802,16 @@
         "columns": "Kolommen",
         "options": "Opties",
         "firstColumnAsTitle": "Eerste kolom is de titel van de rij"
+      },
+      "collection": {
+        "defaultPageSize": "Kaarten per pagina",
+        "defaultPageSizePlaceholder": "Kies het aantal kaarten per pagina",
+        "collection": "Pad naar collectiedata",
+        "collectionPlaceholder": "Geef het pad naar de collectiegegevens op",
+        "cardTitle": "Kaarttitel",
+        "cardFields": "Kaart-velden",
+        "fieldWidth": "Veldbreedte",
+        "fieldWidthPlaceholder": "Kies veldbreedte"
       }
     },
     "cancelModal": {

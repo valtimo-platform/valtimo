@@ -721,6 +721,10 @@
       "table": {
         "title": "Table",
         "description": "Create a table"
+      },
+      "collection": {
+        "title": "Collection",
+        "description": "Create a collection"
       }
     },
     "width": {
@@ -799,6 +803,16 @@
         "columns": "Columns",
         "options": "Options",
         "firstColumnAsTitle": "First column is the title of the row"
+      },
+      "collection": {
+        "defaultPageSize": "Cards per page",
+        "defaultPageSizePlaceholder": "Choose amount of cards per page",
+        "collection": "Path to collection data",
+        "collectionPlaceholder": "Specify the path to collection data",
+        "cardTitle": "Card title",
+        "cardFields": "Card fields",
+        "fieldWidth": "Field width",
+        "fieldWidthPlaceholder": "Choose field width"
       }
     },
     "cancelModal": {

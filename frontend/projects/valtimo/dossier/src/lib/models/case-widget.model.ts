@@ -33,6 +33,7 @@ enum CaseWidgetType {
 }
 
 type CaseWidgetWidth = 1 | 2 | 3 | 4;
+type CollectionFieldWidth = 'half' | 'full';
 
 interface BasicCaseWidget {
   type: CaseWidgetType;
@@ -159,6 +160,7 @@ export {
   CaseWidgetWidthsPx,
   CaseWidgetWithUuid,
   CaseWidgetXY,
+  CollectionFieldWidth,
   FieldsCaseWidget,
   FieldsCaseWidgetValue,
   CollectionCaseWidget,

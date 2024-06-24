@@ -61,7 +61,7 @@
     }
   </div>
 
-  @if (!obs?.collectionWidgetCards.length) {
+  @if (!obs?.collectionWidgetCards?.length) {
     <valtimo-no-results
       [collapseVertically]="true"
       [description]="'dossier.widgets.noData' | translate"

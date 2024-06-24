@@ -35,6 +35,7 @@ import {
   TilesModule,
 } from 'carbon-components-angular';
 import {
+  CaseWidgetDisplayTypeKey,
   CollectionCaseWidget,
   CollectionCaseWidgetCardData,
   CollectionCaseWidgetField,
@@ -42,7 +43,7 @@ import {
   CollectionWidgetResolvedField,
 } from '../../../../../../models';
 import {BehaviorSubject, combineLatest, filter, map, Observable, of, switchMap, tap} from 'rxjs';
-import {CarbonListModule, ViewContentService} from '@valtimo/components';
+import {CarbonListModule, ViewContentService, ViewType} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {Page} from '@valtimo/config';
 import {DossierWidgetsApiService} from '../../../../../../services';
@@ -149,9 +150,12 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
       widgetData.map((cardData, index) => ({
         hidden: cardData.hidden,
         key: index,
-        title: this.getCardTitle(widgetConfig.properties.title),
+        title: this.getCardTitle({
+          value: cardData.title,
+          displayProperties: widgetConfig.properties.title.displayProperties,
+        }),
         fields: widgetConfig?.properties.fields.reduce(
-          (cardFieldsAccumulator, currentField, index) => [
+          (cardFieldsAccumulator, currentField) => [
             ...cardFieldsAccumulator,
             this.getCardField(currentField, cardData),
           ],
@@ -191,7 +195,7 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
   ): CollectionWidgetResolvedField {
     const resolvedValue = this.viewContentService.get(data.fields[field.key], {
       ...field.displayProperties,
-      viewType: field.displayProperties.type,
+      viewType: field.displayProperties?.type ?? CaseWidgetDisplayTypeKey.TEXT,
     });
 
     return {
