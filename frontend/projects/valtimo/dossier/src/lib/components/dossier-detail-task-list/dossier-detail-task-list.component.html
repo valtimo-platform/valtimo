@@ -23,14 +23,14 @@
   <div
     class="task-list__tasks-container"
     cdsLayer="1"
-    *ngIf="!obs.loadingTasks; else loadingTasksTemplate"
+    *ngIf="!obs.loadingTasks && obs.tasks; else loadingTasksTemplate"
   >
-    @if (!(obs.tasks || []).length) {
+    @if (obs.tasks.length === 0) {
       <ng-container *ngTemplateOutlet="noTasksTemplate"></ng-container>
-    }
-
-    @for (task of obs.tasks || []; track task.id) {
-      <ng-container *ngTemplateOutlet="taskTemplate; context: {task: task}"></ng-container>
+    } @else {
+      @for (task of obs.tasks; track task.id) {
+        <ng-container *ngTemplateOutlet="taskTemplate; context: {task: task}"></ng-container>
+      }
     }
   </div>
 
