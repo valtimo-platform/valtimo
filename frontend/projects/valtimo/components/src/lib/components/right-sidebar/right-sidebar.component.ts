@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {HttpClient} from '@angular/common/http';
 import {
   Component,
   ElementRef,
@@ -33,10 +32,10 @@ import {
   UserIdentity,
   UserSettings,
   UserSettingsService,
+  ValtimoConfig,
   VERSIONS,
 } from '@valtimo/config';
 import {UserProviderService} from '@valtimo/security';
-import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, Observable, Subscription, switchMap, take} from 'rxjs';
 import {VersionService} from '../version/version.service';
 import {CdsThemeService, PageHeaderService, ShellService} from '../../services';
@@ -64,16 +63,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
       });
   }
 
-  public frequencies: Array<any> = [
-    'emailNotificationOnMonday',
-    'emailNotificationOnTuesday',
-    'emailNotificationOnWednesday',
-    'emailNotificationOnThursday',
-    'emailNotificationOnFriday',
-    'emailNotificationOnSaturday',
-    'emailNotificationOnSunday',
-  ];
-  public settingsForm: FormGroup = this.formBuilder.group({
+  public readonly settingsForm: FormGroup = this.formBuilder.group({
     taskNotifications: new FormControl(false),
     emailNotifications: new FormControl(false),
     emailNotificationOnMonday: new FormControl(false),
@@ -84,40 +74,38 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     emailNotificationOnSaturday: new FormControl(false),
     emailNotificationOnSunday: new FormControl(false),
   });
-  public overrideFeedbackMenuItemToMailTo: FeedbackMailTo;
-  readonly panelExpanded$ = this.shellService.panelExpanded$;
 
-  readonly selectedLanguage$ = new BehaviorSubject<string>('');
-  readonly languageOptions$ = new BehaviorSubject<Array<string>>([]);
+  public readonly panelExpanded$ = this.shellService.panelExpanded$;
+
+  private readonly _selectedLanguage$ = new BehaviorSubject<string>('');
+  private readonly _languageOptions$ = new BehaviorSubject<Array<string>>([]);
 
   public readonly languageListItems$: Observable<ListItem[]> = combineLatest([
-    this.languageOptions$,
-    this.selectedLanguage$,
-    this.translate.stream('key'),
+    this._languageOptions$,
+    this._selectedLanguage$,
+    this.translateService.stream('key'),
   ]).pipe(
     map(([languageOptions, selectedLanguage]) =>
       languageOptions.map(languageKey => ({
-        content: this.translate.instant('settings.language.options.' + languageKey),
+        content: this.translateService.instant('settings.language.options.' + languageKey),
         key: languageKey,
         selected: selectedLanguage === languageKey,
       }))
     )
   );
 
-  readonly backendVersion$: Observable<ValtimoVersion> = this.versionService.getVersion();
+  public readonly backendVersion$: Observable<ValtimoVersion> = this.versionService.getVersion();
+  public readonly userSubject$: Observable<UserIdentity> =
+    this.userProviderService.getUserSubject();
+  public readonly updatingSettings$ = new BehaviorSubject<boolean>(true);
+  public readonly updatingUserSettings$ = new BehaviorSubject<boolean>(true);
 
-  readonly userSubject$: Observable<UserIdentity> = this.userProviderService.getUserSubject();
-
-  readonly updatingSettings$ = new BehaviorSubject<boolean>(true);
-
-  readonly updatingUserSettings$ = new BehaviorSubject<boolean>(true);
-
-  private readonly emailNotificationSettings$ = new BehaviorSubject<EmailNotificationSettings>(
+  private readonly _emailNotificationSettings$ = new BehaviorSubject<EmailNotificationSettings>(
     undefined
   );
 
-  readonly emailNotificationSettingsWithSideEffects$: Observable<EmailNotificationSettings> =
-    this.emailNotificationSettings$.pipe(
+  public readonly emailNotificationSettingsWithSideEffects$: Observable<EmailNotificationSettings> =
+    this._emailNotificationSettings$.pipe(
       tap(results => {
         if (results) {
           this.settingsForm.setValue(results);
@@ -126,117 +114,92 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
       })
     );
 
-  readonly collapsibleWidescreenMenu$ = this.shellService.collapsibleWidescreenMenu$;
+  public readonly collapsibleWidescreenMenu$ = this.shellService.collapsibleWidescreenMenu$;
+  public readonly compactMode$ = this.pageHeaderService.compactMode$;
+  public readonly showUserNameInTopBar$ = this.pageHeaderService.showUserNameInTopBar$;
 
-  readonly preferredTheme$ = this.cdsThemeService.preferredTheme$;
+  private readonly _preferredTheme$ = this.cdsThemeService.preferredTheme$;
 
-  readonly compactMode$ = this.pageHeaderService.compactMode$;
-
-  readonly showUserNameInTopBar$ = this.pageHeaderService.showUserNameInTopBar$;
-
-  readonly frontendVersion!: string;
-
-  private formSubscription!: Subscription;
-
-  private hideValtimoVersionsForNonAdmins =
-    this.configService?.config?.featureToggles?.hideValtimoVersionsForNonAdmins || false;
-
-  readonly isAdmin$: Observable<boolean> = this.userProviderService
-    .getUserSubject()
-    .pipe(map(userIdentity => userIdentity?.roles.includes('ROLE_ADMIN')));
+  public frontendVersion!: string;
 
   public showValtimoVersions = true;
 
-  public allowUserThemeSwitching!: boolean;
-
   public readonly themeOptions$: Observable<ListItem[]> = combineLatest([
-    this.preferredTheme$,
-    this.translate.stream('key'),
+    this._preferredTheme$,
+    this.translateService.stream('key'),
   ]).pipe(
     map(([preferredTheme]) => [
       {
-        content: this.translate.instant('settings.interface.themes.light'),
+        content: this.translateService.instant('settings.interface.themes.light'),
         key: SelectableCarbonTheme.G10,
         selected: preferredTheme === SelectableCarbonTheme.G10,
       },
       {
-        content: this.translate.instant('settings.interface.themes.dark'),
+        content: this.translateService.instant('settings.interface.themes.dark'),
         key: SelectableCarbonTheme.G90,
         selected: preferredTheme === SelectableCarbonTheme.G90,
       },
       {
-        content: this.translate.instant('settings.interface.themes.system'),
+        content: this.translateService.instant('settings.interface.themes.system'),
         key: SelectableCarbonTheme.SYSTEM,
         selected: preferredTheme === SelectableCarbonTheme.SYSTEM,
       },
     ])
   );
 
+  public overrideFeedbackMenuItemToMailTo!: FeedbackMailTo;
+  public allowUserThemeSwitching = true;
+  public enableCompactModeToggle = true;
+  public enableShowUserNameToggle = false;
+  public showPlantATreeButton = false;
+  public resetUrl!: string;
+
+  private _hideValtimoVersionsForNonAdmins = false;
+
+  private readonly _isAdmin$: Observable<boolean> = this.userProviderService
+    .getUserSubject()
+    .pipe(map(userIdentity => userIdentity?.roles.includes('ROLE_ADMIN')));
+
   private readonly _subscriptions = new Subscription();
 
-  public enableCompactModeToggle = false;
-  public enableShowUserNameToggle = false;
-
   constructor(
-    public translate: TranslateService,
+    private readonly translateService: TranslateService,
     private readonly userProviderService: UserProviderService,
     private readonly formBuilder: FormBuilder,
     private readonly versionService: VersionService,
-    private readonly http: HttpClient,
-    private readonly logger: NGXLogger,
     private readonly shellService: ShellService,
     private readonly elementRef: ElementRef,
     private readonly configService: ConfigService,
     private readonly userSettingsService: UserSettingsService,
     private readonly pageHeaderService: PageHeaderService,
     private readonly cdsThemeService: CdsThemeService
-  ) {
-    this.frontendVersion = VERSIONS?.frontendLibraries;
-    this._subscriptions.add(
-      this.isAdmin$.subscribe(isAdmin => {
-        if (this.hideValtimoVersionsForNonAdmins && !isAdmin) {
-          this.showValtimoVersions = false;
-        }
-      })
-    );
-    this.allowUserThemeSwitching =
-      !!this.configService?.config?.featureToggles?.allowUserThemeSwitching ?? true;
-    this.enableCompactModeToggle =
-      !!this.configService?.config?.featureToggles.enableCompactModeToggle;
-    this.enableShowUserNameToggle =
-      !!this.configService?.config?.featureToggles.enableUserNameInTopBarToggle;
-  }
+  ) {}
 
-  showPlantATreeButton: boolean;
-  resetUrl: string;
-
-  ngOnInit(): void {
+  public ngOnInit(): void {
+    this.initSettings();
+    this.initFrontendVersion();
+    this.openShowVersionsSubscription();
     this.setLanguage();
     this.loadEmailNotificationSettings();
     this.openFormSubscription();
-    this.showPlantATreeButton = this.configService.config.featureToggles?.showPlantATreeButton;
-    this.resetUrl = this.configService.config.changePasswordUrl?.endpointUri;
-    this.overrideFeedbackMenuItemToMailTo =
-      this.configService.config?.overrideFeedbackMenuItemToMailTo;
     this.getUserSettings();
   }
 
-  ngOnDestroy(): void {
-    this.formSubscription?.unsubscribe();
+  public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  updateUserLanguage(langKey: string | {item?: {key?: string}}, saveSettings = true): void {
+  public updateUserLanguage(langKey: string | {item?: {key?: string}}, saveSettings = true): void {
     const langKeyToUse = (langKey as any)?.item?.key
       ? (langKey as any)?.item.key
       : (langKey as string);
 
-    this.translate
+    this.translateService
       .use(langKeyToUse)
       .pipe(take(1))
       .subscribe(() => {
         localStorage.setItem('langKey', langKeyToUse);
-        this.selectedLanguage$.next(langKeyToUse);
+        this._selectedLanguage$.next(langKeyToUse);
 
         if (saveSettings) {
           this.saveUserSettings();
@@ -244,7 +207,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
       });
   }
 
-  setCollapsibleWidescreenMenu(collapsible: boolean, saveSettings = true): void {
+  public setCollapsibleWidescreenMenu(collapsible: boolean, saveSettings = true): void {
     this.shellService.setCollapsibleWidescreenMenu(collapsible);
 
     if (saveSettings) {
@@ -252,7 +215,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     }
   }
 
-  setCompactMode(compactMode: boolean, saveSettings = true): void {
+  public setCompactMode(compactMode: boolean, saveSettings = true): void {
     this.pageHeaderService.setCompactMode(compactMode);
 
     if (saveSettings) {
@@ -260,7 +223,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     }
   }
 
-  setShowUserName(showUserName: boolean, saveSettings = true): void {
+  public setShowUserName(showUserName: boolean, saveSettings = true): void {
     this.pageHeaderService.setShowUserNameInTopBar(showUserName);
 
     if (saveSettings) {
@@ -268,7 +231,10 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     }
   }
 
-  setPreferredTheme(selectedTheme: string | {item?: {key?: string}}, saveSettings = true): void {
+  public setPreferredTheme(
+    selectedTheme: string | {item?: {key?: string}},
+    saveSettings = true
+  ): void {
     if (this.allowUserThemeSwitching) {
       if ((selectedTheme as any)?.item?.key) {
         this.cdsThemeService.setPreferredTheme(
@@ -284,54 +250,83 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     }
   }
 
-  logout(): void {
+  public logout(): void {
     this.userProviderService.logout();
   }
 
-  private openFormSubscription(): void {
-    this.formSubscription = combineLatest([
-      this.emailNotificationSettings$,
-      this.settingsForm.valueChanges,
-      this.updatingSettings$,
-    ])
-      .pipe(
-        tap(([settings, formValue, updatingSettings]) => {
-          if (settings && formValue) {
-            const settingsStringified = JSON.stringify(this.sortObjectAlphabetically(settings));
-            const formStringified = JSON.stringify(this.sortObjectAlphabetically(formValue));
+  private initSettings(): void {
+    const config: ValtimoConfig = this.configService?.config;
+    const featureToggles = config?.featureToggles || {};
 
-            if (settingsStringified !== formStringified && !updatingSettings) {
-              this.updatingSettings$.next(true);
-              this.userProviderService.updateEmailNotificationSettings(formValue).subscribe(
-                results => {
-                  this.emailNotificationSettings$.next(results);
-                  this.updatingSettings$.next(false);
-                },
-                () => {
-                  this.emailNotificationSettings$.next(settings);
-                  this.updatingSettings$.next(false);
-                }
-              );
+    this.resetUrl = config?.changePasswordUrl?.endpointUri;
+    this.overrideFeedbackMenuItemToMailTo = config?.overrideFeedbackMenuItemToMailTo;
+
+    this.enableShowUserNameToggle = !!featureToggles.enableUserNameInTopBarToggle;
+    this.showPlantATreeButton = !!featureToggles.showPlantATreeButton;
+
+    if (featureToggles.hasOwnProperty('allowUserThemeSwitching')) {
+      this.allowUserThemeSwitching = !!featureToggles.allowUserThemeSwitching;
+    }
+
+    if (featureToggles.hasOwnProperty('enableCompactModeToggle')) {
+      this.enableCompactModeToggle = !!featureToggles.enableCompactModeToggle;
+    }
+
+    if (featureToggles.hasOwnProperty('hideValtimoVersionsForNonAdmins')) {
+      this._hideValtimoVersionsForNonAdmins = !!featureToggles.hideValtimoVersionsForNonAdmins;
+    }
+  }
+
+  private initFrontendVersion(): void {
+    this.frontendVersion = VERSIONS?.frontendLibraries;
+  }
+
+  private openFormSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([
+        this._emailNotificationSettings$,
+        this.settingsForm.valueChanges,
+        this.updatingSettings$,
+      ])
+        .pipe(
+          tap(([settings, formValue, updatingSettings]) => {
+            if (settings && formValue) {
+              const settingsStringified = JSON.stringify(this.sortObjectAlphabetically(settings));
+              const formStringified = JSON.stringify(this.sortObjectAlphabetically(formValue));
+
+              if (settingsStringified !== formStringified && !updatingSettings) {
+                this.updatingSettings$.next(true);
+                this.userProviderService.updateEmailNotificationSettings(formValue).subscribe(
+                  results => {
+                    this._emailNotificationSettings$.next(results);
+                    this.updatingSettings$.next(false);
+                  },
+                  () => {
+                    this._emailNotificationSettings$.next(settings);
+                    this.updatingSettings$.next(false);
+                  }
+                );
+              }
             }
-          }
-        })
-      )
-      .subscribe();
+          })
+        )
+        .subscribe()
+    );
   }
 
   private loadEmailNotificationSettings(): void {
     this.userProviderService.getEmailNotificationSettings().subscribe(results => {
       if (results) {
-        this.emailNotificationSettings$.next(results);
+        this._emailNotificationSettings$.next(results);
       } else {
-        this.emailNotificationSettings$.next(this.settingsForm.value);
+        this._emailNotificationSettings$.next(this.settingsForm.value);
       }
     });
   }
 
   private setLanguage(): void {
-    this.selectedLanguage$.next(this.translate.currentLang);
-    this.languageOptions$.next(this.translate.langs);
+    this._selectedLanguage$.next(this.translateService.currentLang);
+    this._languageOptions$.next(this.translateService.langs);
   }
 
   private sortObjectAlphabetically(jsObject: object): object {
@@ -362,11 +357,11 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     this.updatingUserSettings$.next(true);
 
     combineLatest([
-      this.selectedLanguage$,
+      this._selectedLanguage$,
       this.collapsibleWidescreenMenu$,
       this.compactMode$,
       this.showUserNameInTopBar$,
-      this.preferredTheme$,
+      this._preferredTheme$,
     ])
       .pipe(
         take(1),
@@ -393,7 +388,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   }
 
   private setUserSettings(settings: UserSettings): void {
-    this.selectedLanguage$.next(settings.languageCode);
+    this._selectedLanguage$.next(settings.languageCode);
     this.updateUserLanguage(settings.languageCode, false);
     this.setCollapsibleWidescreenMenu(settings.collapsibleWidescreenMenu, false);
     if (this.enableCompactModeToggle) this.setCompactMode(settings.compactMode, false);
@@ -401,5 +396,15 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     if (settings.preferredTheme && this.allowUserThemeSwitching) {
       this.setPreferredTheme(settings.preferredTheme, false);
     }
+  }
+
+  private openShowVersionsSubscription(): void {
+    this._subscriptions.add(
+      this._isAdmin$.subscribe(isAdmin => {
+        if (this._hideValtimoVersionsForNonAdmins && !isAdmin) {
+          this.showValtimoVersions = false;
+        }
+      })
+    );
   }
 }

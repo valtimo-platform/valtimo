@@ -163,7 +163,7 @@
     },
     "rowLocked": "Kein Zugriff zu dieser Fall!",
     "widgets": {
-      "noDataFound": "Keine Data gefunden",
+      "noData": "Keine Data gefunden",
       "noWidgets": "Keine Widgets",
       "noWidgetsDescription": "Für dieses Tab sind keine Widgets konfiguriert, oder Sie verfügen nicht über die entsprechenden Berechtigungen, um sie anzuzeigen.",
       "noCustomComponent": "Widget nicht verfügbar",

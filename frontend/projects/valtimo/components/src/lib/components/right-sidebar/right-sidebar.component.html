@@ -23,6 +23,7 @@
             <cds-tab [heading]="'account.title' | translate">
               <ng-container *ngTemplateOutlet="accountTabTemplate"></ng-container>
             </cds-tab>
+
             <cds-tab [heading]="'settings.title' | translate">
               <ng-container *ngTemplateOutlet="settingsTabTemplate"></ng-container>
             </cds-tab>
@@ -35,14 +36,20 @@
 
 <ng-template #accountTabTemplate>
   <ng-container *ngTemplateOutlet="accountInformationTemplate"></ng-container>
+
   <ng-container *ngTemplateOutlet="linksTemplate"></ng-container>
 </ng-template>
 
 <ng-template #settingsTabTemplate>
   <ng-container *ngTemplateOutlet="languageSettingsTemplate"></ng-container>
+
   <ng-container *ngTemplateOutlet="interfaceSettingsTemplate"></ng-container>
+
   <ng-container *ngTemplateOutlet="notificationSettingsTemplate"></ng-container>
-  <ng-container *ngTemplateOutlet="versionTemplate"></ng-container>
+
+  @if (showValtimoVersions) {
+    <ng-container *ngTemplateOutlet="versionTemplate"></ng-container>
+  }
 </ng-template>
 
 <ng-template #accountInformationTemplate>
@@ -50,6 +57,7 @@
     <cds-list-header>
       <cds-list-column>{{ 'account.informationTitle' | translate }}</cds-list-column>
     </cds-list-header>
+
     <cds-list-row>
       <cds-list-column>
         <ng-container *ngTemplateOutlet="accountInformationTableTemplate"></ng-container>
@@ -67,12 +75,14 @@
           <cds-tag type="blue">{{ userSubject.email }}</cds-tag>
         </cds-list-column>
       </cds-list-row>
+
       <cds-list-row>
         <cds-list-column
           >{{ 'interface.username' | translate }}
           <cds-tag type="blue">{{ userSubject.username }}</cds-tag>
         </cds-list-column>
       </cds-list-row>
+
       <cds-list-row>
         <cds-list-column
           >{{ 'interface.name' | translate }}
@@ -88,6 +98,7 @@
     <cds-list-header>
       <cds-list-column>{{ 'account.quickLinks' | translate }}</cds-list-column>
     </cds-list-header>
+
     <cds-list-row>
       <cds-list-column>
         <ng-container *ngTemplateOutlet="linksTableTemplate"></ng-container>
@@ -106,6 +117,7 @@
           }}</a>
         </cds-list-column>
       </cds-list-row>
+
       <cds-list-row>
         <cds-list-column *ngIf="!overrideFeedbackMenuItemToMailTo; else feedbackMailTo">
           <a href="https://www.valtimo.nl/feedback" target="_blank" cdsLink>{{
@@ -113,11 +125,13 @@
           }}</a>
         </cds-list-column>
       </cds-list-row>
+
       <cds-list-row *ngIf="resetUrl">
         <cds-list-column>
           <a [href]="resetUrl" cdsLink>{{ 'account.links.resetPassword' | translate }}</a>
         </cds-list-column>
       </cds-list-row>
+
       <cds-list-row>
         <cds-list-column>
           <a href="javascript:void(0)" cdsLink (click)="logout()">{{
@@ -125,6 +139,7 @@
           }}</a>
         </cds-list-column>
       </cds-list-row>
+
       <cds-list-row *ngIf="showPlantATreeButton">
         <cds-list-column>
           <a
@@ -146,6 +161,7 @@
     <cds-list-header>
       <cds-list-column>{{ 'settings.language.title' | translate }}</cds-list-column>
     </cds-list-header>
+
     <cds-list-row>
       <cds-list-column>
         <cds-dropdown
@@ -167,6 +183,7 @@
     <cds-list-header>
       <cds-list-column>{{ 'settings.notification.title' | translate }}</cds-list-column>
     </cds-list-header>
+
     <cds-list-row>
       <cds-list-column>
         <form [formGroup]="settingsForm" class="toggle-group">
@@ -184,6 +201,7 @@
         </form>
       </cds-list-column>
     </cds-list-row>
+
     <cds-list-row>
       <cds-list-column>
         <form [formGroup]="settingsForm" class="toggle-group">
@@ -209,6 +227,7 @@
     <cds-list-header>
       <cds-list-column>{{ 'settings.interface.title' | translate }}</cds-list-column>
     </cds-list-header>
+
     <cds-list-row>
       <cds-list-column>
         <cds-toggle
@@ -273,6 +292,7 @@
       <cds-list-header>
         <cds-list-column>{{ 'settings.version.title' | translate }}</cds-list-column>
       </cds-list-header>
+
       <cds-list-row *ngIf="obs.backendVersion">
         <cds-list-column>
           <div class="build-information">
@@ -285,6 +305,7 @@
           </div>
         </cds-list-column>
       </cds-list-row>
+
       <cds-list-row *ngIf="frontendVersion">
         <cds-list-column>
           <div class="build-information">

@@ -163,7 +163,7 @@
     },
     "rowLocked": "Je hebt geen toegang tot dit dossier",
     "widgets": {
-      "noDataFound": "Geen data gevonden",
+      "noData": "Geen data gevonden",
       "noWidgets": "Geen widgets",
       "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",
       "noWidget": "Widget niet beschikbaar",

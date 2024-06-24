@@ -251,7 +251,6 @@ export const environment: ValtimoConfig = {
     returnToLastUrlAfterTokenExpiration: true,
     useStartEventNameAsStartFormTitle: true,
     allowUserThemeSwitching: true,
-    enableCompactModeToggle: true,
     enableUserNameInTopBarToggle: true,
     enableTabManagement: true,
     enableObjectManagement: true,
