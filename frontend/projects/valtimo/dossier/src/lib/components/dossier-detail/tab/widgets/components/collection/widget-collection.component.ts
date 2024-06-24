@@ -43,7 +43,7 @@ import {
   CollectionWidgetResolvedField,
 } from '../../../../../../models';
 import {BehaviorSubject, combineLatest, filter, map, Observable, of, switchMap, tap} from 'rxjs';
-import {CarbonListModule, ViewContentService, ViewType} from '@valtimo/components';
+import {CarbonListModule, ViewContentService} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {Page} from '@valtimo/config';
 import {DossierWidgetsApiService} from '../../../../../../services';
@@ -152,7 +152,7 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
         key: index,
         title: this.getCardTitle({
           value: cardData.title,
-          displayProperties: widgetConfig.properties.title.displayProperties,
+          displayProperties: widgetConfig?.properties?.title?.displayProperties,
         }),
         fields: widgetConfig?.properties.fields.reduce(
           (cardFieldsAccumulator, currentField) => [
