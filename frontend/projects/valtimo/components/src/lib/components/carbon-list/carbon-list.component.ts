@@ -309,13 +309,16 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public onRowClick(index: number): void {
-    const item = this._table.model.data[index][0]['item'];
-    if (item) item.ctrlClick = this.keyStateService.getCtrlOrCmdState();
+    const rowData = this._table.model.data[index];
+    const firstItemWithData = rowData.find(item => !!item['item']);
+    const firstItem = firstItemWithData?.['item'];
 
-    if (!item || item?.locked) {
+    if (firstItem) firstItem.ctrlClick = this.keyStateService.getCtrlOrCmdState();
+
+    if (!firstItem || firstItem?.locked) {
       return;
     }
-    this.rowClicked.emit(item);
+    this.rowClicked.emit(firstItem);
   }
 
   public onSelectPage(page: number): void {
