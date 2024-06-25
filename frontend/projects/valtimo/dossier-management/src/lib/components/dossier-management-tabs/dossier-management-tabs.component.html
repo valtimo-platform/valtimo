@@ -21,9 +21,9 @@
   [fields]="obs.fields"
   [header]="false"
   [loading]="obs.loading"
-  [movingRowsEnabled]="true"
   (rowClicked)="onRowClicked($event)"
-  (moveRow)="onMoveRowClick($event)"
+  [dragAndDrop]="true"
+  (itemsReordered)="onItemsReorderedEvent($event)"
 >
   <ng-container carbonToolbarContent>
     <ng-container [ngTemplateOutlet]="addTabButton"></ng-container>

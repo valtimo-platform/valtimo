@@ -48,3 +48,7 @@
     gap: 24px;
   }
 }
+
+.cds--popover--open {
+  z-index: 999999 !important;
+}

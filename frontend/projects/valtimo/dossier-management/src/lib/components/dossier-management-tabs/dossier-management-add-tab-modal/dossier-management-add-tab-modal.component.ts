@@ -29,9 +29,9 @@ import {
   Validators,
 } from '@angular/forms';
 import {Code16, Development16, TableBuilt16, WatsonHealthPageScroll16} from '@carbon/icons';
-import {ApiTabItem, ApiTabType} from '@valtimo/dossier';
+import {ApiTabItem, ApiTabType, TabSelectItem} from '@valtimo/dossier';
 import {IconService} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
 import {TabService} from '../../../services';
 import {ConfigService} from '@valtimo/config';
 
@@ -49,7 +49,8 @@ export class DossierManagementAddTabModalComponent {
   @Output() closeModalEvent = new EventEmitter<Partial<ApiTabItem> | null>();
 
   public readonly ApiTabType = ApiTabType;
-  public readonly tabTypes$ = combineLatest([
+
+  public readonly tabTypes$: Observable<TabSelectItem[]> = combineLatest([
     this.tabService.disableAddTabs$,
     this.configService.featureToggles$,
   ]).pipe(
@@ -59,18 +60,24 @@ export class DossierManagementAddTabModalComponent {
         title: 'dossierManagement.tabManagement.addModal.standardTab',
         type: ApiTabType.STANDARD,
         disabled: disabled.standard,
+        disabledTooltipTranslationKey:
+          'dossierManagement.tabManagement.addModal.standardTabDisabled',
       },
       {
         icon: 'page-scroll',
         title: 'dossierManagement.tabManagement.addModal.formIOComponent',
         type: ApiTabType.FORMIO,
         disabled: disabled.formIO,
+        disabledTooltipTranslationKey:
+          'dossierManagement.tabManagement.addModal.formIOComponentDisabled',
       },
       {
         icon: 'code',
         title: 'dossierManagement.tabManagement.addModal.customComponent',
         type: ApiTabType.CUSTOM,
         disabled: disabled.custom,
+        disabledTooltipTranslationKey:
+          'dossierManagement.tabManagement.addModal.customComponentDisabled',
       },
       ...(featureToggles?.enableCaseWidgets
         ? [

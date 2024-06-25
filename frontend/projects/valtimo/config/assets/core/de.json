@@ -547,10 +547,13 @@
       },
       "addModal": {
         "addTab": "Hinzufügen Tab",
-        "customComponent": "Brauch component",
-        "description": "Wählen Sie eine der drei Optionen aus, um Ihrer Falldefinition eine neue Registerkarte hinzuzufügen",
+        "customComponent": "Benutzerdefinierte Komponente",
+        "customComponentDisabled": "Keine benutzerdefinierten Komponenten verfügbar",
+        "description": "Wählen Sie eine der Optionen aus, um Ihrer Falldefinition eine neue Registerkarte hinzuzufügen",
         "formIOComponent": "FormIO Komponente",
+        "formIOComponentDisabled": "Keine Form.io-Formulardefinitionen verfügbar",
         "standardTab": "Tab standard",
+        "standardTabDisabled": "Alle Standardregisterkarten wurden Ihrer Konfiguration bereits hinzugefügt",
         "tabContentLabel": "Inhalte auswählen",
         "tabKeyLabel": "Key",
         "tabNameLabel": "Tab name (Optional)",
@@ -564,7 +567,8 @@
       "titles": {
         "custom": "Neue Registerkarte hinzufügen mit brauch component",
         "formio": "Neue Registerkarte hinzufügen mit FormIO Komponente",
-        "standard": "Neue Registerkarte hinzufügen mit Standardinhalte"
+        "standard": "Neue Registerkarte hinzufügen mit Standardinhalte",
+        "widgets": "Neue Registerkarte mit Widgets hinzufügen"
       },
       "contentLabels": {
         "custom": "Brauch component auswählen",

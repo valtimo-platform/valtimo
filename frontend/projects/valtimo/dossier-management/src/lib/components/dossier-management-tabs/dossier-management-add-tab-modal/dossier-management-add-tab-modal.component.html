@@ -36,16 +36,25 @@
       <span> {{ 'dossierManagement.tabManagement.addModal.description' | translate }} </span>
 
       <div *ngIf="tabTypes$ | async as tabTypes" class="valtimo-add-tab-modal__types">
-        <button
+        <cds-tooltip
           *ngFor="let tabType of tabTypes"
-          cdsButton="secondary"
-          [disabled]="tabType.disabled"
-          (click)="onTabTypeSelect(tabType.type)"
+          [caret]="true"
+          enterDelayMs="0"
+          leaveDelayMs="0"
+          [description]="tabType.disabledTooltipTranslationKey | translate"
+          [disabled]="!tabType.disabled"
+          align="bottom"
         >
-          {{ tabType.title | translate }}
+          <button
+            cdsButton="secondary"
+            [disabled]="tabType.disabled"
+            (click)="onTabTypeSelect(tabType.type)"
+          >
+            {{ tabType.title | translate }}
 
-          <svg [cdsIcon]="tabType.icon" size="16" class="cds--btn__icon"></svg>
-        </button>
+            <svg [cdsIcon]="tabType.icon" size="16" class="cds--btn__icon"></svg>
+          </button>
+        </cds-tooltip>
       </div>
     </ng-template>
   </section>

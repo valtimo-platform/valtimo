@@ -549,9 +549,12 @@
       "addModal": {
         "addTab": "Add tab",
         "customComponent": "Custom component",
-        "description": "Select one of the three options to add a new tab in your case definition",
+        "customComponentDisabled": "No custom components available",
+        "description": "Select one of the options to add a new tab to your case definition",
         "formIOComponent": "FormIO component",
+        "formIOComponentDisabled": "No Form.io form definitions available",
         "standardTab": "Standard tab",
+        "standardTabDisabled": "All standard tabs have already been added to your configuration",
         "tabContentLabel": "Choose content",
         "tabKeyLabel": "Key",
         "tabNameLabel": "Tab name (optional)",
@@ -565,7 +568,8 @@
       "titles": {
         "custom": "Add new tab with custom component",
         "formio": "Add new tab with FormIO component",
-        "standard": "Add new tab with standard content"
+        "standard": "Add new tab with standard content",
+        "widgets": "Add a new tab with widgets"
       },
       "contentLabels": {
         "custom": "Choose custom component",

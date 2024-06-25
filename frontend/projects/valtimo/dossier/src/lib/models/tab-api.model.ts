@@ -31,4 +31,12 @@ interface ApiTabItem {
   showTasks?: boolean;
 }
 
-export {ApiTabType, ApiTabItem};
+interface TabSelectItem {
+  icon: string;
+  title: string;
+  type: ApiTabType;
+  disabled: boolean;
+  disabledTooltipTranslationKey?: string;
+}
+
+export {ApiTabType, ApiTabItem, TabSelectItem};

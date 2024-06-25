@@ -548,9 +548,12 @@
       "addModal": {
         "addTab": "Tabblad toevoegen",
         "customComponent": "Aangepaste component",
-        "description": "Selecteer een van de drie opties om een ​​nieuw tabblad toe te voegen aan uw casusdefinitie",
+        "customComponentDisabled": "Geen aangepaste componenten beschikbaar",
+        "description": "Selecteer een van de opties om een nieuw tabblad toe te voegen aan uw dossierdefinitie",
         "formIOComponent": "FormIO component",
-        "standardTab": "Standaard tabblad",
+        "formIOComponentDisabled": "Geen Form.io-formulierdefinities beschikbaar",
+        "standardTab": "Standaardtabblad",
+        "standardTabDisabled": "Alle standaardtabbladen zijn al toegevoegd aan je configuratie",
         "tabContentLabel": "Kies inhoud",
         "tabKeyLabel": "Sleutel",
         "tabNameLabel": "Tabblad naam (optioneel)",
@@ -564,7 +567,8 @@
       "titles": {
         "custom": "Nieuw tabblad toevoegen met aangepaste component",
         "formio": "Nieuw tabblad toevoegen met FormIO component",
-        "standard": "Nieuw tabblad toevoegen met standaard inhoud"
+        "standard": "Nieuw tabblad toevoegen met standaard inhoud",
+        "widgets": "Nieuw tabblad met widgets toevoegen"
       },
       "contentLabels": {
         "custom": "Kies aangepaste component",
