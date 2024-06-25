@@ -19,6 +19,7 @@ import {
   ChangeDetectorRef,
   Component,
   Input,
+  signal,
   TemplateRef,
   ViewChild,
   ViewEncapsulation,
@@ -84,9 +85,11 @@ export class DossierManagementTabsComponent implements AfterViewInit {
       this.tabService.configuredContentKeys = tabs.map((tab: ApiTabItem) => tab.contentKey);
       this.tabService.configuredTabKeys = tabs.map((tab: ApiTabItem) => tab.key);
       this.lastItemIndex$.next(tabs.length - 1);
+      this.dragAndDropDisabled.set(false);
     })
   );
   public readonly tab$ = new BehaviorSubject<ApiTabItem | null>(null);
+  public readonly dragAndDropDisabled = signal(false);
 
   constructor(
     private readonly cd: ChangeDetectorRef,
@@ -187,6 +190,8 @@ export class DossierManagementTabsComponent implements AfterViewInit {
 
   public onItemsReorderedEvent(reorderedItems: ApiTabItem[]): void {
     if (!reorderedItems) return;
+
+    this.dragAndDropDisabled.set(true);
 
     this.tabManagementService.dispatchAction(
       this.tabManagementService.editTabsOrder(reorderedItems)

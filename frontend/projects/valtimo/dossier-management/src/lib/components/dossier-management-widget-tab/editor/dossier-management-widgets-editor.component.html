@@ -26,6 +26,7 @@
     [header]="false"
     [items]="obs.items"
     [dragAndDrop]="true"
+    [dragAndDropDisabled]="dragAndDropDisabled()"
     (itemsReordered)="onItemsReordered($event)"
   >
     <ng-container carbonToolbarContent>

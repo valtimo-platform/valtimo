@@ -23,6 +23,7 @@
   [loading]="obs.loading"
   (rowClicked)="onRowClicked($event)"
   [dragAndDrop]="true"
+  [dragAndDropDisabled]="dragAndDropDisabled()"
   (itemsReordered)="onItemsReorderedEvent($event)"
 >
   <ng-container carbonToolbarContent>

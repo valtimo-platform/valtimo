@@ -163,6 +163,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() lockedTooltipTranslationKey = '';
   @Input() movingRowsEnabled: boolean;
   @Input() dragAndDrop = false;
+  @Input() dragAndDropDisabled = false;
 
   @Output() rowClicked = new EventEmitter<any>();
   @Output() paginationClicked = new EventEmitter<number>();
@@ -366,6 +367,8 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     mouseEvent: MouseEvent,
     carbonEvent: {index: number; item: CarbonListItem; length: number}
   ): void {
+    if (this.dragAndDropDisabled) return;
+
     this.dragAndDropService.setCarbonListElementRef(this.elementRef);
     this.dragAndDropService.startDrag(mouseEvent.y, carbonEvent.index);
   }

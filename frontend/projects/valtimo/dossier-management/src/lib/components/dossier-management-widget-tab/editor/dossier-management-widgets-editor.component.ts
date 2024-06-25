@@ -15,7 +15,14 @@
  */
 
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  signal,
+} from '@angular/core';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   ActionItem,
@@ -28,7 +35,7 @@ import {
 } from '@valtimo/components';
 import {BasicCaseWidget, CaseWidget, CaseWidgetsRes} from '@valtimo/dossier';
 import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
-import {BehaviorSubject, Observable, Subject, combineLatest, map, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subject, take} from 'rxjs';
 import {AVAILABLE_WIDGETS, WidgetStyle, WidgetTypeTags} from '../../../models';
 import {WidgetTabManagementService, WidgetWizardService} from '../../../services';
 import {DossierManagementWidgetWizardComponent} from '../../dossier-management-widget-wizard/dossier-management-widget-wizard.component';
@@ -59,6 +66,7 @@ export class DossierManagementWidgetsEditorComponent {
     this._currentWidgetTab = value;
     this._items$.next(value?.widgets);
     this._usedKeys = value?.widgets.map(widget => widget.key);
+    this.dragAndDropDisabled.set(false);
   }
   public get currentWidgetTab(): CaseWidgetsRes {
     return this._currentWidgetTab;
@@ -129,6 +137,8 @@ export class DossierManagementWidgetsEditorComponent {
   public readonly isEditMode = this.widgetWizardService.editMode;
   public readonly deleteModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly deleteRowKey$ = new Subject<number>();
+
+  public readonly dragAndDropDisabled = signal(false);
 
   private _usedKeys: string[];
 
@@ -204,6 +214,8 @@ export class DossierManagementWidgetsEditorComponent {
   }
 
   public onItemsReordered(widgets: CaseWidget[]): void {
+    this.dragAndDropDisabled.set(true);
+
     this.widgetTabManagementService
       .updateWidgets({
         ...this.currentWidgetTab,
