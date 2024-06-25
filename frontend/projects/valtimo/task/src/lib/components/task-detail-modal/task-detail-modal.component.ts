@@ -35,12 +35,7 @@ import {
   ValtimoFormioOptions,
   ValtimoModalService,
 } from '@valtimo/components';
-import {
-  IntermediateSaveRequest,
-  IntermediateSubmission,
-  Task,
-  TaskProcessLinkType,
-} from '../../models';
+import {IntermediateSaveRequest, IntermediateSubmission, Task, TaskProcessLinkType,} from '../../models';
 import {FormFlowComponent, FormSubmissionResult, ProcessLinkService} from '@valtimo/process-link';
 import {FormioForm} from '@formio/angular';
 import moment from 'moment';
@@ -324,7 +319,8 @@ export class TaskDetailModalComponent implements OnDestroy {
 
   protected saveCurrentProgress(): void {
     const intermediateSaveRequest: IntermediateSaveRequest = {
-      submission: this.submission$.getValue().data,
+      submission: this.submission$.getValue().data ?
+        this.submission$.getValue().data : this.formIoFormData$.getValue(),
       taskInstanceId: this.taskInstanceId$.getValue(),
     };
 
