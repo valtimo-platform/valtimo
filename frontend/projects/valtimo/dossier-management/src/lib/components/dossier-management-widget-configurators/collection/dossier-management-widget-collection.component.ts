@@ -103,7 +103,7 @@ export class DossierManagementWidgetCollectionComponent
       {
         content: this.translateService.instant(
           this.translateService.instant(
-            `widgetTabManagement.content.displayType.${(this.widgetWizardService.widgetContent() as WidgetCollectionContent)?.title.displayProperties?.type ?? CaseWidgetDisplayTypeKey.TEXT}`
+            `widgetTabManagement.content.displayType.${(this.widgetWizardService.widgetContent() as WidgetCollectionContent)?.title?.displayProperties?.type ?? CaseWidgetDisplayTypeKey.TEXT}`
           )
         ),
         id:
