@@ -13,9 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {PercentPipe} from '@angular/common';
+import {PercentPipe, registerLocaleData} from '@angular/common';
 import {inject} from '@angular/core';
 import {TypeConverter} from './type-converters.model';
+import moment from 'moment/moment';
+import localeNl from '@angular/common/locales/nl';
+import localeDe from '@angular/common/locales/nl';
+
+registerLocaleData(localeNl, 'nl');
+registerLocaleData(localeDe, 'de');
 
 export class PercentTypeConverter implements TypeConverter {
   private readonly _percentPipe = inject(PercentPipe);
@@ -29,6 +35,12 @@ export class PercentTypeConverter implements TypeConverter {
       return '-';
     }
 
-    return this._percentPipe.transform(value, definition.digitsInfo) ?? '';
+    return (
+      this._percentPipe.transform(
+        !!definition?.digitsInfo ? value / 100 : value,
+        definition.digitsInfo,
+        moment.locale(localStorage.getItem('langKey'))
+      ) ?? ''
+    );
   }
 }

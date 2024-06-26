@@ -13,9 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {DecimalPipe} from '@angular/common';
+import {DecimalPipe, registerLocaleData} from '@angular/common';
 import {inject} from '@angular/core';
 import {TypeConverter} from './type-converters.model';
+import moment from 'moment';
+import localeNl from '@angular/common/locales/nl';
+import localeDe from '@angular/common/locales/nl';
+
+registerLocaleData(localeNl, 'nl');
+registerLocaleData(localeDe, 'de');
 
 export class NumberTypeConverter implements TypeConverter {
   private readonly _decimalPipe = inject(DecimalPipe);
@@ -29,6 +35,12 @@ export class NumberTypeConverter implements TypeConverter {
       return '-';
     }
 
-    return this._decimalPipe.transform(value, definition.digitsInfo) ?? '';
+    return (
+      this._decimalPipe.transform(
+        value,
+        definition.digitsInfo,
+        moment.locale(localStorage.getItem('langKey'))
+      ) ?? ''
+    );
   }
 }

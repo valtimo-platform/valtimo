@@ -15,7 +15,13 @@
  */
 import {inject} from '@angular/core';
 import {TypeConverter} from './type-converters.model';
-import {CurrencyPipe} from '@angular/common';
+import moment from 'moment';
+import {CurrencyPipe, registerLocaleData} from '@angular/common';
+import localeNl from '@angular/common/locales/nl';
+import localeDe from '@angular/common/locales/nl';
+
+registerLocaleData(localeNl, 'nl');
+registerLocaleData(localeDe, 'de');
 
 export class CurrencyTypeConverter implements TypeConverter {
   private readonly _currencyPipe = inject(CurrencyPipe);
@@ -32,9 +38,10 @@ export class CurrencyTypeConverter implements TypeConverter {
     return (
       this._currencyPipe.transform(
         value,
-        definition.currencyCode,
+        definition.currencyCode ?? 'EUR',
         definition.display,
-        definition.digitsInfo
+        definition.digitsInfo,
+        moment.locale(localStorage.getItem('langKey'))
       ) ?? ''
     );
   }
