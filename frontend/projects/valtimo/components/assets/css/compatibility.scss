@@ -639,6 +639,21 @@ valtimo-dossier-assign-user {
 
 /* FormIO */
 
+valtimo-dossier-widgets-container {
+  .formio-component {
+    .form-group {
+      margin-bottom: 0;
+    }
+    p {
+      color: var(--cds-text-primary);
+    }
+    input.form-control {
+      border: none !important;
+      background-color: unset !important;
+    }
+  }
+}
+
 .card.card-border {
   border: none;
   background-color: var(--cds-background);
