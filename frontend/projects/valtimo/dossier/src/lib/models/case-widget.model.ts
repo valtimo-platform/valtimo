@@ -134,6 +134,11 @@ interface CaseWidgetPackResult {
   items: CaseWidgetPackResultItem[];
 }
 
+interface MaxRectsResult extends CaseWidgetConfigurationBin {
+  x: number;
+  y: number;
+}
+
 interface CaseWidgetPackResultItemsByRow {
   [rowY: string]: CaseWidgetPackResultItem[];
 }
@@ -170,4 +175,5 @@ export {
   CaseWidgetPackResultItem,
   CaseWidgetPackResultItemsByRow,
   FormioCaseWidgetWidgetWithUuid,
+  MaxRectsResult,
 };

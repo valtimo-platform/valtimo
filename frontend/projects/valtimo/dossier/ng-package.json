@@ -11,6 +11,7 @@
     "@ngx-translate/core",
     "@ngx-translate/http-loader",
     "bin-pack-with-constraints",
-    "uuid"
+    "uuid",
+    "rects-bin-pack"
   ]
 }

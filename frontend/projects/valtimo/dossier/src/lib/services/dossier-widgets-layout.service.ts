@@ -21,6 +21,7 @@ import {
 } from '../models';
 import {WIDGET_HEIGHT_1X, WIDGET_WIDTH_1X} from '../constants';
 import pack from 'bin-pack-with-constraints';
+import {packBins} from '../utils';
 
 @Injectable({providedIn: 'root'})
 export class DossierWidgetsLayoutService implements OnDestroy {
@@ -328,26 +329,7 @@ export class DossierWidgetsLayoutService implements OnDestroy {
             width: widgetWidths[widget.uuid],
             height: contentHeights[widget.uuid],
           }));
-          const heightConstraint = this.getHeightConstraint(
-            configurationBins,
-            this.getAmountOfMinWidthColumns(containerWidth)
-          );
-          const resultWithoutHeightConstraint = this.getPackResult(
-            configurationBins,
-            containerWidth
-          );
-          const resultWithHeightConstraint = this.getPackResult(
-            configurationBins,
-            containerWidth,
-            heightConstraint
-          );
-          const resultWithHeightConstraintExceedsBoundary = this.checkIfPackResultExceedsBoundary(
-            resultWithHeightConstraint,
-            containerWidth
-          );
-          const resultToUse = resultWithHeightConstraintExceedsBoundary
-            ? resultWithoutHeightConstraint
-            : resultWithHeightConstraint;
+          const resultToUse = packBins(configurationBins, containerWidth);
           const widthOverrides = this.getWidthOverrides(resultToUse);
 
           if (resultToUse.height !== 0) {
