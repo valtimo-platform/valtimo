@@ -14,12 +14,7 @@
   ~ limitations under the License.
   -->
 
-<div
-  *ngIf="{packResult: packResult$ | async} as obs"
-  #widgetsContainer
-  class="widgets-container"
-  [style.height.px]="obs.packResult?.height"
->
+<div #widgetsContainer class="widgets-container">
   @for (widget of widgetsWithUuids$ | async; track widget.uuid) {
     <valtimo-dossier-widget-block [widget]="widget"></valtimo-dossier-widget-block>
   }

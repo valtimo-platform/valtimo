@@ -62,7 +62,7 @@ export class DossierDetailWidgetsComponent implements OnInit, OnDestroy {
     tap(() => this.loadingWidgetConfiguration$.next(false))
   );
 
-  public readonly loaded$ = this.dossierWidgetsLayoutService.loaded$.pipe(delay(300));
+  public readonly loaded$ = this.dossierWidgetsLayoutService.loaded$.pipe(delay(400));
 
   constructor(
     private readonly route: ActivatedRoute,

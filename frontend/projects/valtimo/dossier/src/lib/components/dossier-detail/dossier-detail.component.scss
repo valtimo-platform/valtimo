@@ -110,6 +110,7 @@
 }
 
 .tab-content-container {
+  overflow: hidden;
   display: flex;
   gap: 24px;
 }

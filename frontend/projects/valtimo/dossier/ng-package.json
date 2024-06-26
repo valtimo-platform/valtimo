@@ -10,8 +10,7 @@
     "moment",
     "@ngx-translate/core",
     "@ngx-translate/http-loader",
-    "bin-pack-with-constraints",
     "uuid",
-    "rects-bin-pack"
+    "muuri"
   ]
 }

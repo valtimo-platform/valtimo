@@ -24,6 +24,7 @@ import {
   OnDestroy,
   Renderer2,
   ViewChild,
+  ViewContainerRef,
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
@@ -46,12 +47,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import {
-  CaseWidgetPackResult,
-  CaseWidgetType,
-  CaseWidgetWithUuid,
-  WidgetTableContent,
-} from '../../../../../../models';
+import {CaseWidgetType, CaseWidgetWithUuid, WidgetTableContent} from '../../../../../../models';
 import {
   DossierTabService,
   DossierWidgetsApiService,
@@ -62,6 +58,7 @@ import {WidgetFieldComponent} from '../field/widget-field.component';
 import {WidgetFormioComponent} from '../formio/widget-formio.component';
 import {WidgetTableComponent} from '../table/widget-table.component';
 import {WidgetCollectionComponent} from '../collection/widget-collection.component';
+import {WIDGET_HEIGHT_1X} from '../../../../../../constants';
 
 @Component({
   selector: 'valtimo-dossier-widget-block',
@@ -97,33 +94,38 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     return this._widget$.pipe(filter(widget => widget !== null));
   }
 
-  public readonly caseWidgetPackResult$: Observable<CaseWidgetPackResult> =
-    this.dossierWidgetsLayoutService.packResult$.pipe(
-      tap(packResult => {
-        const widgetPackResult = packResult.items.find(
-          packItem => packItem.item.configurationKey === this._widgetUuid
-        );
+  private readonly _viewContainerRefSubject$ = new BehaviorSubject<ViewContainerRef | null>(null);
 
-        if (!widgetPackResult) return;
+  private get _viewContainerRef$(): Observable<ViewContainerRef> {
+    return this._viewContainerRefSubject$.pipe(filter(ref => !!ref));
+  }
 
-        this.renderer.setStyle(
-          this._widgetBlockRef.nativeElement,
-          'top',
-          `${widgetPackResult.y}px`
-        );
+  private readonly _contentHeight$ = new BehaviorSubject<number>(0);
 
-        this.renderer.setStyle(
-          this._widgetBlockRef.nativeElement,
-          'left',
-          `${widgetPackResult.x}px`
-        );
+  public readonly blockHeightPx$ = combineLatest([
+    this._contentHeight$,
+    this._viewContainerRef$,
+  ]).pipe(
+    filter(([contentHeight]) => contentHeight !== 0),
+    tap(([contentHeight, viewRef]) => {
+      const blockHeight = Math.ceil((contentHeight + 16) / WIDGET_HEIGHT_1X) * WIDGET_HEIGHT_1X;
 
-        this.dossierWidgetsLayoutService.setCaseWidgetXYSet(this._widgetUuid);
-      })
-    );
+      this.renderer.setStyle(viewRef.element.nativeElement, 'height', `${blockHeight}px`);
+    })
+  );
 
-  private readonly _caseWidgetWidthsPx$ = this.dossierWidgetsLayoutService.caseWidgetWidthsPx$;
-  private readonly _widthOverrides$ = this.dossierWidgetsLayoutService.widthOverrides$;
+  public readonly blockWidthPercentage$ = combineLatest([
+    this.dossierWidgetsLayoutService.amountOfColumns$,
+    this.widget$,
+    this._viewContainerRef$,
+  ]).pipe(
+    tap(([amountOfColumns, widget, viewRef]) => {
+      const percentage =
+        widget.width > amountOfColumns ? 100 : (widget.width / amountOfColumns) * 100;
+
+      this.renderer.setStyle(viewRef.element.nativeElement, 'width', `${percentage}%`);
+    })
+  );
 
   public readonly CaseWidgetType = CaseWidgetType;
 
@@ -183,56 +185,22 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private readonly dossierWidgetsLayoutService: DossierWidgetsLayoutService,
-    private readonly renderer: Renderer2,
     private readonly dossierTabService: DossierTabService,
     private readonly route: ActivatedRoute,
     private readonly widgetsApiService: DossierWidgetsApiService,
-    private readonly cdsThemeService: CdsThemeService
+    private readonly cdsThemeService: CdsThemeService,
+    private readonly renderer: Renderer2,
+    private readonly viewRef: ViewContainerRef
   ) {}
 
   public ngAfterViewInit(): void {
-    this.openWidgetWidthSubscription();
+    this._viewContainerRefSubject$.next(this.viewRef);
     this.openContentHeightObserver();
-    this.openWidgetHeightSubscription();
-    this.setInitialWidgetHeight();
   }
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
     this._observer?.disconnect();
-  }
-
-  private openWidgetWidthSubscription(): void {
-    this._subscriptions.add(
-      combineLatest([this._caseWidgetWidthsPx$, this._widthOverrides$]).subscribe(
-        ([caseWidgetsWidths, widthOverrides]) => {
-          const widgetWidth =
-            widthOverrides[this._widgetUuid] || caseWidgetsWidths[this._widgetUuid];
-
-          if (widgetWidth) {
-            this.renderer.setStyle(this._widgetBlockRef.nativeElement, 'width', `${widgetWidth}px`);
-          }
-        }
-      )
-    );
-  }
-
-  private openWidgetHeightSubscription(): void {
-    this._subscriptions.add(
-      this.dossierWidgetsLayoutService.widgetsContentHeightsRounded$.subscribe(
-        caseWidgetContentHeights => {
-          const widgetHeight = caseWidgetContentHeights[this._widgetUuid];
-
-          if (widgetHeight) {
-            this.renderer.setStyle(
-              this._widgetBlockRef.nativeElement,
-              'height',
-              `${widgetHeight}px`
-            );
-          }
-        }
-      )
-    );
   }
 
   private openContentHeightObserver(): void {
@@ -246,18 +214,8 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
     const widgetContentHeight = event[0]?.borderBoxSize[0]?.blockSize;
 
     if (typeof widgetContentHeight === 'number' && widgetContentHeight !== 0) {
-      this.dossierWidgetsLayoutService.setWidgetContentHeight(
-        this._widgetUuid,
-        widgetContentHeight
-      );
+      this._contentHeight$.next(widgetContentHeight);
     }
-  }
-
-  private setInitialWidgetHeight(): void {
-    this.dossierWidgetsLayoutService.setWidgetContentHeight(
-      this._widgetUuid,
-      this._widgetBlockContentRef.nativeElement.offsetHeight
-    );
   }
 
   private getPageSizeParam(widgetConfiguration: CaseWidgetWithUuid): string {
