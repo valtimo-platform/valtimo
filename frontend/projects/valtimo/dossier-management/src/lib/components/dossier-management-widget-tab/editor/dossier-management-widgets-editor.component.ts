@@ -149,11 +149,7 @@ export class DossierManagementWidgetsEditorComponent {
     private readonly widgetWizardService: WidgetWizardService
   ) {}
 
-  public openAddModal(): void {
-    this.isWizardOpen$.next(true);
-  }
-
-  private editWidget(tabWidget: CaseWidget): void {
+  public editWidget(tabWidget: CaseWidget): void {
     this.widgetWizardService.widgetTitle.set(tabWidget.title);
     this.widgetWizardService.widgetStyle.set(
       tabWidget.highContrast ? WidgetStyle.HIGH_CONTRAST : WidgetStyle.DEFAULT
@@ -168,6 +164,10 @@ export class DossierManagementWidgetsEditorComponent {
     this.isWizardOpen$.next(true);
   }
 
+  public openAddModal(): void {
+    this.isWizardOpen$.next(true);
+  }
+
   public onDeleteConfirm(widgetKey: string): void {
     this.widgetTabManagementService
       .updateWidgets({
@@ -178,11 +178,6 @@ export class DossierManagementWidgetsEditorComponent {
       .subscribe(() => {
         this.changeSaved.emit();
       });
-  }
-
-  private deleteWidget(tabWidget: any): void {
-    this.deleteRowKey$.next(tabWidget.key);
-    this.deleteModalOpen$.next(true);
   }
 
   public onCloseEvent(widgetResult: BasicCaseWidget, existingWidgets: CaseWidget[]): void {
@@ -225,6 +220,11 @@ export class DossierManagementWidgetsEditorComponent {
       .subscribe(() => {
         this.changeSaved.emit();
       });
+  }
+
+  private deleteWidget(tabWidget: any): void {
+    this.deleteRowKey$.next(tabWidget.key);
+    this.deleteModalOpen$.next(true);
   }
 
   private getWidthTranslationKey(width: number): string {
