@@ -26,11 +26,12 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
+import {CarbonListModule, ViewContentService} from '@valtimo/components';
 import {CommonModule} from '@angular/common';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
 import {FieldsCaseWidget} from '../../../../../../models';
 import {InputModule} from 'carbon-components-angular';
-import {ViewContentService} from '@valtimo/components';
+import {TranslateModule} from '@ngx-translate/core';
 
 @Component({
   selector: 'valtimo-widget-field',
@@ -39,7 +40,7 @@ import {ViewContentService} from '@valtimo/components';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [CommonModule, WidgetFieldComponent, InputModule],
+  imports: [CommonModule, WidgetFieldComponent, InputModule, TranslateModule, CarbonListModule],
 })
 export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
   @HostBinding('class') public readonly class = 'widget-field';
@@ -51,10 +52,12 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
     if (!value) return;
     this.widgetConfiguration$.next(value);
   }
+  public readonly isEmptyWidgetData$ = new BehaviorSubject<boolean>(false);
 
   @Input() public set widgetData(value: object) {
     if (!value) return;
     this.widgetData$.next(value);
+    this.isEmptyWidgetData$.next(this.checkEmptyWidgetData(value));
   }
 
   public readonly renderVertically = signal(0);
@@ -121,5 +124,9 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
         this.renderVertically.set(4);
       }
     }
+  }
+
+  private checkEmptyWidgetData(widgetData: Object): boolean {
+    return widgetData && Object.keys(widgetData).length === 0;
   }
 }
