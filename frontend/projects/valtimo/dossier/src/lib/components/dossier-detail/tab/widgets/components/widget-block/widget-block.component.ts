@@ -147,7 +147,9 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
             documentId,
             tabkey,
             widget.key,
-            widget.type === CaseWidgetType.TABLE ? this.getPageSizeParam(widget) : undefined
+            widget.type === CaseWidgetType.TABLE || widget.type === CaseWidgetType.COLLECTION
+              ? this.getPageSizeParam(widget)
+              : undefined
           )
     ),
     tap(() => {
