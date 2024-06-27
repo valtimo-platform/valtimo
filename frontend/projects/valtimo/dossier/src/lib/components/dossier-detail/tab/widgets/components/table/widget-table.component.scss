@@ -46,6 +46,16 @@
       width: 100%;
     }
 
+    td {
+      white-space: nowrap;
+      overflow: hidden;
+
+      span {
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+    }
+
     tr {
       gap: 16px;
     }

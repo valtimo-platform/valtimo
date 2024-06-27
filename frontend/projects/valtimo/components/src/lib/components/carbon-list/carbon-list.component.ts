@@ -72,9 +72,9 @@ import {
   TAG_ELLIPSIS_LIMIT,
   ViewType,
 } from '../../models';
+import {KeyStateService} from '../../services/key-state.service';
 import {ViewContentService} from '../view-content/view-content.service';
 import {CarbonListFilterPipe} from './CarbonListFilterPipe.directive';
-import {KeyStateService} from '../../services/key-state.service';
 import {CarbonListDragAndDropService} from './services';
 
 @Component({
@@ -92,6 +92,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('dragAndDropTemplate') dragAndDropTemplate: TemplateRef<any>;
   @ViewChild('rowDisabled') rowDisabled: TemplateRef<any>;
   @ViewChild('tagTemplate') tagTemplate: TemplateRef<any>;
+  @ViewChild('defaultTemplate') defaultTemplate: TemplateRef<any>;
   @ViewChild(Table) private _table: Table;
 
   private _completeDataSource: TableItem[][];
@@ -445,7 +446,12 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
               return this.resolveTagObject(item.tags);
             }
             default:
-              return new TableItem({data: this.resolveObject(field, item) ?? '-', item});
+              return new TableItem({
+                title: this.resolveObject(field, item) ?? '-',
+                data: this.resolveObject(field, item) ?? '-',
+                template: this.defaultTemplate,
+                item,
+              });
           }
         }),
         ...this.getExtraItems(item, index, items.length),

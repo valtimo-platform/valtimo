@@ -193,6 +193,10 @@
   </div>
 </ng-template>
 
+<ng-template #defaultTemplate let-data="data">
+  <span>{{ data }}</span>
+</ng-template>
+
 <valtimo-tags-modal
   [open]="tagModalOpen$ | async"
   [tags]="tagModalData$ | async"
