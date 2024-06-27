@@ -28,17 +28,7 @@ import {CaseWidget, CaseWidgetWithUuid} from '../../../../../../models';
 import {WidgetBlockComponent} from '../widget-block/widget-block.component';
 import {DossierWidgetsLayoutService} from '../../../../../../services';
 import {v4 as uuid} from 'uuid';
-import {
-  BehaviorSubject,
-  combineLatest,
-  debounceTime,
-  delay,
-  filter,
-  Observable,
-  Subject,
-  Subscription,
-  take,
-} from 'rxjs';
+import {BehaviorSubject, delay, take} from 'rxjs';
 import Muuri from 'muuri';
 
 @Component({
@@ -62,16 +52,6 @@ export class WidgetsContainerComponent implements AfterViewInit, OnDestroy {
 
   private _observer!: ResizeObserver;
 
-  private readonly _muuriSubject$ = new BehaviorSubject<Muuri | null>(null);
-
-  private get _muuri$(): Observable<Muuri> {
-    return this._muuriSubject$.pipe(filter(muuri => !!muuri));
-  }
-
-  private readonly _triggerMuuriLayout$ = new Subject<null>();
-
-  private readonly _subscriptions = new Subscription();
-
   constructor(private readonly dossierWidgetsLayoutService: DossierWidgetsLayoutService) {}
 
   public ngAfterViewInit(): void {
@@ -81,23 +61,10 @@ export class WidgetsContainerComponent implements AfterViewInit, OnDestroy {
     this._observer.observe(this._widgetsContainerRef.nativeElement);
 
     this.initMuuri();
-    this.openMuuriLayoutSubscription();
   }
 
   public ngOnDestroy(): void {
     this._observer?.disconnect();
-    this._subscriptions.unsubscribe();
-  }
-
-  private openMuuriLayoutSubscription(): void {
-    this._subscriptions.add(
-      combineLatest([this._muuri$, this._triggerMuuriLayout$])
-        .pipe(debounceTime(150))
-        .subscribe(([muuri]) => {
-          muuri.refreshItems();
-          muuri.layout();
-        })
-    );
   }
 
   private observerMutation(event: Array<ResizeObserverEntry>): void {
@@ -105,13 +72,13 @@ export class WidgetsContainerComponent implements AfterViewInit, OnDestroy {
 
     if (typeof containerWidth === 'number' && containerWidth !== 0) {
       this.dossierWidgetsLayoutService.setContainerWidth(containerWidth);
-      this._triggerMuuriLayout$.next(null);
+      this.dossierWidgetsLayoutService.triggerMuuriLayout();
     }
   }
 
   private initMuuri(): void {
     this.dossierWidgetsLayoutService.loaded$.pipe(take(1), delay(300)).subscribe(() => {
-      this._muuriSubject$.next(
+      this.dossierWidgetsLayoutService.setMuuri(
         new Muuri(this._widgetsContainerRef.nativeElement, {
           layout: {
             fillGaps: true,

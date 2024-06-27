@@ -111,6 +111,7 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
       const blockHeight = Math.ceil((contentHeight + 16) / WIDGET_HEIGHT_1X) * WIDGET_HEIGHT_1X;
 
       this.renderer.setStyle(viewRef.element.nativeElement, 'height', `${blockHeight}px`);
+      this.dossierWidgetsLayoutService.triggerMuuriLayout();
     })
   );
 
@@ -124,6 +125,7 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
         widget.width > amountOfColumns ? 100 : (widget.width / amountOfColumns) * 100;
 
       this.renderer.setStyle(viewRef.element.nativeElement, 'width', `${percentage}%`);
+      this.dossierWidgetsLayoutService.triggerMuuriLayout();
     })
   );
 

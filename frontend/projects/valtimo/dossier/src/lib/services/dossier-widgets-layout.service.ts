@@ -1,13 +1,30 @@
-import {Injectable} from '@angular/core';
-import {BehaviorSubject, combineLatest, filter, map, Observable, take} from 'rxjs';
+import {Injectable, OnDestroy} from '@angular/core';
+import {
+  BehaviorSubject,
+  combineLatest,
+  debounceTime,
+  filter,
+  map,
+  Observable,
+  Subject,
+  Subscription,
+  take,
+} from 'rxjs';
 import {CaseWidgetWithUuid} from '../models';
 import {WIDGET_WIDTH_1X} from '../constants';
+import Muuri from 'muuri';
 
 @Injectable({providedIn: 'root'})
-export class DossierWidgetsLayoutService {
+export class DossierWidgetsLayoutService implements OnDestroy {
   private readonly _containerWidthSubject$ = new BehaviorSubject<number | null>(null);
   private readonly _widgetsSubject$ = new BehaviorSubject<CaseWidgetWithUuid[] | null>(null);
   private readonly _caseWidgetDataLoadedSubject$ = new BehaviorSubject<string[] | null>(null);
+  private readonly _muuriSubject$ = new BehaviorSubject<Muuri | null>(null);
+  private readonly _triggerMuuriLayout$ = new Subject<null>();
+
+  private get _muuri$(): Observable<Muuri> {
+    return this._muuriSubject$.pipe(filter(muuri => !!muuri));
+  }
 
   private get _containerWidth$(): Observable<number> {
     return this._containerWidthSubject$.pipe(filter(width => width !== null));
@@ -30,6 +47,8 @@ export class DossierWidgetsLayoutService {
   private readonly _widgetsWithExternalData$ = new BehaviorSubject<string[]>([]);
   private readonly _widgetsWithExternalDataReady$ = new BehaviorSubject<string[]>([]);
 
+  private readonly _subscriptions = new Subscription();
+
   public get loaded$(): Observable<boolean> {
     return combineLatest([
       this._caseWidgetDataLoaded$,
@@ -45,6 +64,22 @@ export class DossierWidgetsLayoutService {
       ),
       filter(loaded => !!loaded)
     );
+  }
+
+  constructor() {
+    this.openMuuriSubscription();
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
+
+  public setMuuri(muuri: Muuri): void {
+    this._muuriSubject$.next(muuri);
+  }
+
+  public triggerMuuriLayout(): void {
+    this._triggerMuuriLayout$.next(null);
   }
 
   public setWidgets(widgets: CaseWidgetWithUuid[]): void {
@@ -81,5 +116,17 @@ export class DossierWidgetsLayoutService {
     this._caseWidgetDataLoadedSubject$.next(null);
     this._widgetsWithExternalData$.next([]);
     this._widgetsWithExternalDataReady$.next([]);
+    this._muuriSubject$.next(null);
+  }
+
+  private openMuuriSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([this._muuri$, this._triggerMuuriLayout$])
+        .pipe(debounceTime(150))
+        .subscribe(([muuri]) => {
+          muuri.refreshItems();
+          muuri.layout();
+        })
+    );
   }
 }
