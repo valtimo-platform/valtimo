@@ -548,7 +548,7 @@
       "addModal": {
         "addTab": "Hinzufügen Tab",
         "customComponent": "Benutzerdefinierte Komponente",
-        "customComponentDisabled": "Keine benutzerdefinierten Komponenten verfügbar",
+        "customComponentDisabled": "Es sind keine benutzerdefinierten Komponenten verfügbar oder sie wurden bereits alle hinzugefügt.",
         "description": "Wählen Sie eine der Optionen aus, um Ihrer Falldefinition eine neue Registerkarte hinzuzufügen",
         "formIOComponent": "FormIO Komponente",
         "formIOComponentDisabled": "Keine Form.io-Formulardefinitionen verfügbar",

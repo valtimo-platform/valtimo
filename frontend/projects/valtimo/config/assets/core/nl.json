@@ -548,7 +548,7 @@
       "addModal": {
         "addTab": "Tabblad toevoegen",
         "customComponent": "Aangepaste component",
-        "customComponentDisabled": "Geen aangepaste componenten beschikbaar",
+        "customComponentDisabled": "Er zijn geen aangepaste componenten beschikbaar, of ze zijn allemaal al toegevoegd.",
         "description": "Selecteer een van de opties om een nieuw tabblad toe te voegen aan uw dossierdefinitie",
         "formIOComponent": "FormIO component",
         "formIOComponentDisabled": "Geen Form.io-formulierdefinities beschikbaar",

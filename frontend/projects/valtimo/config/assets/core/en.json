@@ -549,7 +549,7 @@
       "addModal": {
         "addTab": "Add tab",
         "customComponent": "Custom component",
-        "customComponentDisabled": "No custom components available",
+        "customComponentDisabled": "There are no custom components available, or they have all been added already.",
         "description": "Select one of the options to add a new tab to your case definition",
         "formIOComponent": "FormIO component",
         "formIOComponentDisabled": "No Form.io form definitions available",
