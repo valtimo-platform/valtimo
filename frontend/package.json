@@ -100,6 +100,7 @@
     "libs:build:migration": "ng build @valtimo/migration",
     "libs:build:dossier-management": "ng build @valtimo/dossier-management",
     "libs:build:bootstrap": "ng build @valtimo/bootstrap",
+    "libs:build:copy-version": "npm run copy-frontend-version",
     "libs:build:open-zaak": "ng build @valtimo/open-zaak",
     "libs:build:customer": "ng build @valtimo/customer",
     "libs:build:exact-plugin": "ng build @valtimo/exact-plugin",
@@ -180,7 +181,8 @@
     "libs:lint:open-zaak": "ng lint @valtimo/open-zaak",
     "libs:lint:resource": "ng lint @valtimo/resource",
     "libs:lint:customer": "ng lint @valtimo/customer",
-    "libs:lint:exact-plugin": "ng lint @valtimo/exact-plugin"
+    "libs:lint:exact-plugin": "ng lint @valtimo/exact-plugin",
+    "copy-frontend-version": "node scripts/copy-frontend-version.js"
   },
   "private": true,
   "dependencies": {
