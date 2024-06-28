@@ -14,7 +14,17 @@
   ~ limitations under the License.
   -->
 
-<div #widgetContainer [class.loading]="isLoading$ | async" class="widget-container">
+<ng-container *ngIf="{loaded: loaded$ | async} as obs">
+  <div *ngIf="!obs.loaded" class="loading-container">
+    <cds-loading></cds-loading>
+  </div>
+</ng-container>
+
+<div
+  #widgetContainer
+  class="widget-container"
+  [ngClass]="{'widget-container__visible': loaded$ | async}"
+>
   <ng-container *ngIf="widgetConfigurations$ | async as widgetConfigurations">
     <ng-container *ngFor="let config of widgetConfigurations">
       <div #widgetConfiguration [id]="config.key" class="widget-configuration">
@@ -32,5 +42,3 @@
     ></valtimo-no-results>
   </ng-container>
 </div>
-
-<cds-loading *ngIf="isLoading$ | async" class="widget-loader"></cds-loading>

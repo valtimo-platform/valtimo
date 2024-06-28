@@ -38,12 +38,16 @@ export class WidgetDashboardComponent {
     loading: true,
   });
 
+  public readonly selectedDashboardKey$ = new BehaviorSubject<string>('');
+
   constructor(
     private readonly dashboardService: DashboardService,
     private readonly widgetApiService: WidgetApiService
   ) {}
 
   public onTabSelected(dashboardKey: string): void {
+    this.selectedDashboardKey$.next(dashboardKey);
+
     this.widgetApiService
       .getWidgetData(dashboardKey)
       .pipe(

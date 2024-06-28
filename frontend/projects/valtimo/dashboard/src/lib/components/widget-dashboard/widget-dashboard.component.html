@@ -39,6 +39,7 @@
         (selected)="onTabSelected(dashboard.key)"
       >
         <valtimo-widget-dashboard-content
+          *ngIf="(selectedDashboardKey$ | async) === dashboard.key"
           [dashboard]="dashboard"
           [widgetData]="activeWidgetData$ | async"
         ></valtimo-widget-dashboard-content>

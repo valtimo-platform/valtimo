@@ -26,11 +26,13 @@ import {
   ViewChildren,
   ViewContainerRef,
 } from '@angular/core';
-import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
-import {take} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
+import {delay, map, take} from 'rxjs/operators';
 import {Dashboard, DashboardWidgetConfiguration, DisplayComponent, WidgetData} from '../../models';
 import {WidgetService} from '../../services';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
+import {WIDGET_1X_HEIGHT} from '../../constants';
+import Muuri from 'muuri';
 
 @Component({
   selector: 'valtimo-widget-dashboard-content',
@@ -46,11 +48,11 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
   private _widgetConfigurationContentVcRefs: QueryList<ViewContainerRef>;
   @ViewChild('widgetContainer') private _widgetContainerRef: ElementRef<HTMLDivElement>;
 
-  public readonly isLoading$ = new BehaviorSubject<boolean>(true);
+  private readonly _isLoading$ = new BehaviorSubject<boolean>(true);
   private _widgetData$ = new BehaviorSubject<WidgetData[]>([]);
 
   @Input() set widgetData(value: {data: WidgetData[]; loading: boolean}) {
-    this.isLoading$.next(value.loading);
+    this._isLoading$.next(value.loading);
     this._widgetData$.next(value.data);
   }
   @Input() set dashboard(value: Dashboard) {
@@ -63,6 +65,27 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
   private _observer!: ResizeObserver;
   private _subscriptions = new Subscription();
 
+  private readonly _muuri$ = this.layoutService.muuriSubject$;
+
+  private _creatingMuuri = false;
+
+  private get _muuriInitialized$(): Observable<boolean> {
+    return this._muuri$.pipe(map(muuri => !!muuri));
+  }
+
+  private readonly _noResults$ = new BehaviorSubject<boolean>(false);
+
+  public readonly loaded$ = combineLatest([
+    this._isLoading$,
+    this._muuriInitialized$,
+    this._noResults$,
+  ]).pipe(
+    map(
+      ([isLoading, muuriInitialized, noResults]) => !isLoading && (muuriInitialized || noResults)
+    ),
+    delay(400)
+  );
+
   constructor(
     private readonly layoutService: WidgetLayoutService,
     private readonly widgetService: WidgetService,
@@ -74,7 +97,7 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
       this.observerMutation(event);
     });
     this._observer.observe(this._widgetContainerRef.nativeElement);
-    this.openPackResultSubscription();
+    this.openWidgetSizeSubscription();
     this.renderWidgets();
   }
 
@@ -104,25 +127,43 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
     }
   }
 
-  private openPackResultSubscription(): void {
+  private openWidgetSizeSubscription(): void {
     this._subscriptions.add(
-      this.layoutService.widgetPackResult$.subscribe(packResult => {
-        this.renderer.setStyle(
-          this._widgetContainerRef.nativeElement,
-          'height',
-          `${packResult.height}px`
-        );
-
+      combineLatest([
+        this.layoutService.amountOfColumns$,
+        this.widgetConfigurations$,
+        this.widgetService.supportedDisplayTypes$,
+        this._muuri$,
+      ]).subscribe(([amountOfColumns, widgetConfigurations, supportedDisplayTypes, muuri]) => {
         this._widgetConfigurationRefs.toArray().forEach(widgetConfigurationRef => {
           const nativeElement = widgetConfigurationRef.nativeElement;
-          const configPackResult = packResult.items.find(
-            result => result.item.configurationKey === nativeElement.id
+          const widgetConfiguration = widgetConfigurations.find(
+            config => config.key === nativeElement.id
           );
-          this.renderer.setStyle(nativeElement, 'height', `${configPackResult?.height}px`);
-          this.renderer.setStyle(nativeElement, 'width', `${configPackResult?.width}px`);
-          this.renderer.setStyle(nativeElement, 'left', `${configPackResult?.x}px`);
-          this.renderer.setStyle(nativeElement, 'top', `${configPackResult?.y}px`);
+          const specification = supportedDisplayTypes.find(
+            type => type.displayTypeKey === widgetConfiguration.displayType
+          );
+          const widthPercentage =
+            specification.width > amountOfColumns
+              ? 100
+              : (specification.width / amountOfColumns) * 100;
+          this.renderer.setStyle(
+            nativeElement,
+            'height',
+            `${WIDGET_1X_HEIGHT * specification.height}px`
+          );
+          this.renderer.setStyle(nativeElement, 'width', `${widthPercentage}%`);
         });
+
+        if (widgetConfigurations.length > 0) {
+          if (!muuri) {
+            this.initMuuri();
+          } else {
+            this.layoutService.triggerMuuriLayout();
+          }
+        } else {
+          this._noResults$.next(true);
+        }
       })
     );
   }
@@ -158,5 +199,22 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
         });
       })
     );
+  }
+
+  private initMuuri(): void {
+    if (!this._widgetContainerRef || this._creatingMuuri) return;
+
+    this._creatingMuuri = true;
+
+    this.layoutService.setMuuri(
+      new Muuri(this._widgetContainerRef.nativeElement, {
+        layout: {
+          fillGaps: true,
+        },
+        layoutOnResize: false,
+      })
+    );
+
+    this._creatingMuuri = false;
   }
 }

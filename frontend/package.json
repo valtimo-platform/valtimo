@@ -223,7 +223,6 @@
     "@ngx-translate/core": "15.0.0",
     "@ngx-translate/http-loader": "8.0.0",
     "@webcomponents/custom-elements": "1.6.0",
-    "bin-pack-with-constraints": "1.0.1",
     "bootstrap": "4.6.2",
     "bpmn-js": "6.5.1",
     "bpmn-js-properties-panel": "0.46.0",
