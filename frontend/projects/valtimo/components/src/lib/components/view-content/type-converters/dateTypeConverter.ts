@@ -28,6 +28,6 @@ export class DateTypeConverter implements TypeConverter {
       return '-';
     }
 
-    return moment(value).format(definition?.format || 'DD-MM-YYYY, hh:mm A');
+    return moment(value).format(definition?.format || 'DD-MM-YYYY');
   }
 }
