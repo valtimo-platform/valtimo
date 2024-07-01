@@ -70,7 +70,7 @@
   let-document="document"
   let-canAssign="canAssign"
 >
-  <div class="row" *ngIf="customDossierHeaderItems.length > 0; else defaultTitle">
+  <div class="row" *ngIf="(customDossierHeaderItems || []).length > 0">
     <span
       *ngFor="let item of customDossierHeaderItems"
       [ngClass]="{
@@ -80,7 +80,7 @@
         h4: item.textSize === 'sm',
         h5: item.textSize === 'xs'
       }"
-      class="mb-0 mt-0 pb-2 align-self-end col-xl-{{ item.columnSize }} col-lg-{{
+      class="mb-0 mt-0 align-self-end col-xl-{{ item.columnSize }} col-lg-{{
         item.columnSize * 2
       }} {{ item.customClass }}"
     >
@@ -98,10 +98,6 @@
       context: {canHaveAssignee: canHaveAssignee, document: document, canAssign: canAssign}
     "
   ></ng-container>
-</ng-template>
-
-<ng-template #defaultTitle>
-  <div class="row ml-0 mr-0">{{ documentDefinitionNameTitle?.trim() }}</div>
 </ng-template>
 
 <ng-template
@@ -159,7 +155,10 @@
         caseStatus: caseStatus$ | async
       } as obs"
     >
-      <div class="dossier-status-assign" [ngClass]="{'--compact': compactMode$ | async}">
+      <div
+        class="dossier-status-assign-custom-title"
+        [ngClass]="{'--compact': compactMode$ | async}"
+      >
         @if (obs.caseStatus) {
           <cds-tag size="sm" [type]="obs.caseStatus.tagType">{{ obs.caseStatus.title }}</cds-tag>
         }
@@ -176,6 +175,8 @@
             "
           ></ng-container>
         </div>
+
+        <ng-container *ngTemplateOutlet="caseDetailHeader"></ng-container>
       </div>
 
       <div class="buttons-container">

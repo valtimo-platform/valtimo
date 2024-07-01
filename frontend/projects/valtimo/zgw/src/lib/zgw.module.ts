@@ -36,6 +36,7 @@ import {
   DossierDetailTabDocumentenApiDocumentsComponent,
   DossierDetailTabObjectTypeComponent,
   DossierManagementLinkProcessComponent,
+  DocumentObjectenApiSyncComponent,
   ZakenApiZaaktypeLinkComponent,
 } from './modules';
 
@@ -76,6 +77,7 @@ import {
       useValue: [
         DossierManagementLinkProcessComponent,
         DocumentenApiVersionComponent,
+        DocumentObjectenApiSyncComponent,
         ZakenApiZaaktypeLinkComponent,
       ],
     },

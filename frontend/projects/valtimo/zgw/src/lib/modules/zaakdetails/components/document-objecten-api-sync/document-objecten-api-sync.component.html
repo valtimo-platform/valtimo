@@ -1,0 +1,146 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="input-group mt-4 mb-2 align-items-center">
+  <div>
+    <h2>{{ 'zaakdetails.title' | translate }}</h2>
+  </div>
+</div>
+
+<ng-container
+  *ngIf="{
+    loading: loading$ | async,
+    documentObjectenApiSync: documentObjectenApiSync$ | async
+  } as obs"
+>
+  <ng-container *ngIf="obs.loading === false; else loading">
+    <ng-container *ngIf="obs.documentObjectenApiSync; else addSync">
+      <div class="card card-border card-contrast">
+        <div class="card-header card-header-contrast card-header-featured">
+          <div>
+            {{ obs.documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
+          </div>
+          <div class="controls">
+            <button class="btn btn-danger ml-3" (click)="showModal()">
+              <i class="icon mdi mdi-pencil"></i>
+            </button>
+            <button class="btn btn-danger ml-3" (click)="remove()">
+              <i class="icon mdi mdi-delete"></i>
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row pt-3 mt-1">
+            <div class="col-3">
+              <strong>{{ 'zaakdetails.enabled' | translate }}</strong>
+            </div>
+            <div class="col-3">
+              {{
+                obs.documentObjectenApiSync?.enabled
+                  ? ('zaakdetails.yes' | translate)
+                  : ('zaakdetails.no' | translate)
+              }}
+            </div>
+          </div>
+          <div class="row pt-3 mt-1">
+            <div class="col-3">
+              <strong>{{ 'zaakdetails.objectManagementConfigurationTitle' | translate }}</strong>
+            </div>
+            <div class="col-3">
+              {{ obs.documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+  <ng-container *ngTemplateOutlet="modal; context: {obs: obs}"></ng-container>
+</ng-container>
+
+<ng-template #addSync>
+  <div class="text-right mt-5">
+    <button class="btn btn-primary" (click)="showModal()">
+      <i class="icon mdi mdi-plus mr-1"></i>{{ 'zaakdetails.submitButton' | translate }}
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #modal let-obs="obs">
+  <cds-modal
+    valtimoCdsModal
+    [title]="'zaakdetails.editModal.title' | translate"
+    [open]="modalShowing$ | async"
+    [showFooter]="true"
+  >
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="onModalClose()">
+      <h3 cdsModalHeaderHeading>
+        {{ 'zaakdetails.editModal.title' | translate }}
+      </h3>
+    </cds-modal-header>
+
+    <section cdsModalContent>
+      <form [formGroup]="formGroup">
+        <v-select
+          *ngIf="objectManagementConfigurationItems$ | async as objectManagementConfigurations"
+          [appendInline]="false"
+          [dropUp]="false"
+          [items]="objectManagementConfigurations"
+          [defaultSelectionId]="objectManagementConfigurationId.getRawValue()"
+          [placeholder]="
+            'zaakdetails.editModal.objectManagementConfigurationPlaceholder' | translate
+          "
+          [title]="'zaakdetails.editModal.objectManagementConfiguration' | translate"
+          [disabled]="false"
+          [margin]="true"
+          [required]="true"
+          name="objectManagementConfigurationId"
+          [carbonTheme]="currentTheme$ | async"
+          (selectedChange)="configSelected($event)"
+        ></v-select>
+
+        <cds-checkbox formControlName="enabled"
+          >{{ 'zaakdetails.editModal.enabled' | translate }}
+        </cds-checkbox>
+      </form>
+    </section>
+
+    <cds-modal-footer>
+      <ng-container *ngTemplateOutlet="buttonsFooterModal; context: {obs: obs}"></ng-container>
+    </cds-modal-footer>
+  </cds-modal>
+</ng-template>
+
+<ng-template #buttonsFooterModal let-obs="obs">
+  <button cdsButton="secondary" (click)="onModalClose()" [disabled]="false">
+    {{ 'interface.cancel' | translate }}
+  </button>
+
+  <button cdsButton="primary" [disabled]="!formGroup.valid" (click)="submit()">
+    {{ 'searchFieldsOverview.submit' | translate }}
+  </button>
+</ng-template>
+
+<ng-template #loading>
+  <div class="mb-8">
+    <valtimo-spinner></valtimo-spinner>
+  </div>
+</ng-template>
+
+<ng-template #noConfigAvailable>
+  <div class="mb-8">
+    <h4>{{ 'zaakdetails.error.configNotFound' | translate }}</h4>
+  </div>
+</ng-template>

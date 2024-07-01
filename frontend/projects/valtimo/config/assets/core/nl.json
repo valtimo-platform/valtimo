@@ -1029,6 +1029,20 @@
     "selectInfoObjectType": "Kies informatieobject-type",
     "save": "Opslaan"
   },
+  "zaakdetails": {
+    "title": "Zaakdetail-synchronisatie",
+    "enabled": "Ingeschakeld",
+    "yes": "Ja",
+    "no": "Nee",
+    "objectManagementConfigurationTitle": "Object management-configuratie",
+    "submitButton": "Configureer zaakdetail-synchronisatie",
+    "editModal": {
+      "title": "Voeg zaakdetail-synchronisatie toe",
+      "objectManagementConfiguration": "Object management-configuratie",
+      "objectManagementConfigurationPlaceholder": "Selecteer een object management-configuratie",
+      "enabled": "Ingeschakeld"
+    }
+  },
   "interface": {
     "mainMenu": "Hoofdmenu",
     "toggleMenu": "Menu",

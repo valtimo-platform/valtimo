@@ -148,12 +148,8 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
     });
   }
 
-  public exportPermissions(model: EditorModel): void {
-    this.accessControlExportService.downloadJson(
-      JSON.parse(model.value),
-      'separate',
-      this._roleKey
-    );
+  public exportPermissions(): void {
+    this.accessControlExportService.exportRoles({type: 'separate', roleKeys: [this._roleKey]}).subscribe()
   }
 
   private openRoleKeySubscription(): void {

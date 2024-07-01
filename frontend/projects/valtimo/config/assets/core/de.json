@@ -1027,6 +1027,20 @@
     "selectInfoObjectType": "Wählen Sie den Typ des Informationsobjekts",
     "save": "Speichern"
   },
+  "zaakdetails": {
+    "title": "Fall-Detail-Synchronisation",
+    "enabled": "Aktiviert",
+    "yes": "Ja",
+    "no": "Nein",
+    "objectManagementConfigurationTitle": "Objektverwaltungskonfiguration",
+    "submitButton": "Fall-Detail-Synchronisation konfigurieren",
+    "editModal": {
+      "title": "Fall-Detail-Synchronisation hinzufügen",
+      "objectManagementConfiguration": "Objektverwaltungskonfiguration",
+      "objectManagementConfigurationPlaceholder": "Wählen Sie eine Objektverwaltungskonfiguration",
+      "enabled": "Aktiviert"
+    }
+  },
   "interface": {
     "mainMenu": "Hauptmenü",
     "toggleMenu": "Menü",
