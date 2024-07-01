@@ -29,8 +29,8 @@
           {{ 'formManagement.intermediateSave.on' | translate }}:
           {{
             currentIntermediateSave?.editedOn
-              ? (currentIntermediateSave?.editedOn | date: 'short')
-              : (currentIntermediateSave.createdOn | date: 'short')
+              ? currentIntermediateSave?.editedOn
+              : currentIntermediateSave.createdOn
           }}
         </p>
         <ng-container *ngTemplateOutlet="assignUserToTask"></ng-container>

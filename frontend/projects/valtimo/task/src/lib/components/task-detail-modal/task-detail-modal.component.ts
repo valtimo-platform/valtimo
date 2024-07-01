@@ -306,7 +306,7 @@ export class TaskDetailModalComponent implements OnDestroy {
       .subscribe({
         next: (intermediateSubmission: IntermediateSubmission) => {
           this.submission$.next({data: intermediateSubmission.submission});
-          this.currentIntermediateSave = intermediateSubmission;
+          this.currentIntermediateSave = this.formatIntermediateSubmission(intermediateSubmission);
 
           if (formViewModelComponentRef) {
             formViewModelComponentRef.instance.submission = {
@@ -332,7 +332,7 @@ export class TaskDetailModalComponent implements OnDestroy {
           this.toastr.success(
             this.translateService.instant('formManagement.intermediateSave.success')
           );
-          this.currentIntermediateSave = intermediateSubmission;
+          this.currentIntermediateSave = this.formatIntermediateSubmission(intermediateSubmission);
         },
         error: () => {
           this.toastr.error(this.translateService.instant('formManagement.intermediateSave.error'));
@@ -354,6 +354,15 @@ export class TaskDetailModalComponent implements OnDestroy {
           this.currentIntermediateSave = null;
         },
       });
+  }
+
+  private formatIntermediateSubmission(intermediateSubmission: IntermediateSubmission): IntermediateSubmission {
+    intermediateSubmission.createdOn = moment(intermediateSubmission.createdOn).format('DD MMM YYYY HH:mm');
+    if (intermediateSubmission.editedOn) {
+      intermediateSubmission.editedOn = moment(new Date(intermediateSubmission.editedOn)).format('DD MMM YYYY HH:mm');
+    }
+
+    return intermediateSubmission;
   }
 
   private openModal(): void {

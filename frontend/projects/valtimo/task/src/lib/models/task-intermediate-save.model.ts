@@ -19,8 +19,8 @@ export interface IntermediateSubmission {
   taskInstanceId: string;
   createdBy: string;
   createdOn: string;
-  editedBy: string;
-  editedOn: string;
+  editedBy?: string;
+  editedOn?: string;
 }
 
 export interface IntermediateSaveRequest {
