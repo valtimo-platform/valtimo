@@ -15,9 +15,16 @@
  */
 
 import {ComponentFactoryResolver, Inject, Injectable, ViewContainerRef} from '@angular/core';
-import {Extension, ExtensionLoader, ExtensionPoint, VALTIMO_CONFIG, ValtimoConfig} from '../models';
+import {
+  Extension,
+  ExtensionLoader,
+  ExtensionPoint,
+  VALTIMO_CONFIG,
+  ValtimoConfig,
+  ValtimoConfigFeatureToggles,
+} from '../models';
 import {UrlUtils} from '../utils';
-import {Observable, of} from 'rxjs';
+import {map, Observable, of} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -106,5 +113,17 @@ export class ConfigService {
     extensionPoint: ExtensionPoint
   ) {
     return this.extensionLoader.loadAndClearExtensionPoint(viewContainerRef, extensionPoint);
+  }
+
+  public getFeatureToggleObservable(
+    featureToggle: keyof ValtimoConfigFeatureToggles
+  ): Observable<boolean> {
+    return this.featureToggles$.pipe(
+      map(featureToggles => !!(featureToggles && featureToggles[featureToggle]))
+    );
+  }
+
+  public getFeatureToggle(featureToggle: keyof ValtimoConfigFeatureToggles): boolean {
+    return !!(this.featureToggles && this.featureToggles[featureToggle]);
   }
 }

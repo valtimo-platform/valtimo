@@ -66,6 +66,9 @@ moment.locale(localStorage.getItem('langKey') || '');
 export class TaskListComponent implements OnInit {
   @ViewChild('taskDetail') private readonly _taskDetail: TaskDetailModalComponent;
 
+  private readonly _enableTaskFiltering$: Observable<boolean> =
+    this.configService.getFeatureToggleObservable('enableTaskFiltering');
+
   public readonly selectedTaskType$ = this.taskListService.selectedTaskType$;
   public readonly fields$ = this.taskListColumnService.fields$;
   public readonly loadingTasks$ = new BehaviorSubject<boolean>(true);

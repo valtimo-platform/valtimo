@@ -257,6 +257,7 @@ export const environment: ValtimoConfig = {
     enableCaseWidgets: true,
     enableFormViewModel: true,
     enableIntermediateSave: true,
+    enableTaskFiltering: true,
   },
   customDossierHeader: {
     leningen: [

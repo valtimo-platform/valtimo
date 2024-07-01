@@ -20,13 +20,14 @@ import {MenuConfig} from './menu.config';
 import {CSPHeaderParams} from 'csp-header';
 import {FormioOptions} from '@formio/angular';
 
-export const VALTIMO_CONFIG = new InjectionToken<ValtimoConfig>('valtimoConfig');
+const VALTIMO_CONFIG = new InjectionToken<ValtimoConfig>('valtimoConfig');
 
 // eslint-disable-next-line
-export const INITIALIZERS = new InjectionToken<(() => Function)[]>('initializers');
-export declare type Direction = 'ASC' | 'DESC';
+const INITIALIZERS = new InjectionToken<(() => Function)[]>('initializers');
 
-export interface DefinitionColumn {
+declare type Direction = 'ASC' | 'DESC';
+
+interface DefinitionColumn {
   propertyName: string;
   translationKey: string;
   sortable?: boolean;
@@ -38,7 +39,7 @@ export interface DefinitionColumn {
   key?: string;
 }
 
-export interface CustomDossierHeaderItem {
+interface CustomDossierHeaderItem {
   labelTranslationKey?: string;
   propertyPaths?: Array<string>;
   columnSize?: number;
@@ -48,32 +49,57 @@ export interface CustomDossierHeaderItem {
   modifier?: string;
 }
 
-export interface CustomTaskList {
+interface CustomTaskList {
   fields: Array<DefinitionColumn>;
   defaultSortedColumn?: SortState;
 }
 
-export interface CustomLeftSidebar {
+interface CustomLeftSidebar {
   defaultMenuWidth?: number;
   maxMenuWidth?: number;
   minMenuWidth?: number;
 }
 
-export interface Sort {
+interface Sort {
   name: string;
   direction: Direction;
 }
 
-export interface SortState {
+interface SortState {
   state: Sort;
   isSorting: boolean;
 }
 
-export interface OverrideFormioOptions extends FormioOptions {
+interface OverrideFormioOptions extends FormioOptions {
   [key: string]: any;
 }
 
-export interface ValtimoConfig {
+interface ValtimoConfigFeatureToggles {
+  applicationTitleAsSuffix?: boolean;
+  enableHackathonCasesPage?: boolean;
+  showUserNameInTopBar?: boolean;
+  showPlantATreeButton?: boolean;
+  experimentalDmnEditing?: boolean;
+  disableCaseCount?: boolean;
+  caseListColumn?: boolean;
+  enableObjectManagement?: boolean;
+  largeLogoMargin?: boolean;
+  sortFilesByDate?: boolean;
+  returnToLastUrlAfterTokenExpiration?: boolean;
+  enableTabManagement?: boolean;
+  hideValtimoVersionsForNonAdmins?: boolean;
+  useStartEventNameAsStartFormTitle?: boolean;
+  allowUserThemeSwitching?: boolean;
+  enableCompactModeToggle?: boolean;
+  compactModeOnByDefault?: boolean;
+  enableUserNameInTopBarToggle?: boolean;
+  enableCaseWidgets?: boolean;
+  enableFormViewModel?: boolean;
+  enableIntermediateSave?: boolean;
+  enableTaskFiltering?: boolean;
+}
+
+interface ValtimoConfig {
   // eslint-disable-next-line
   logoSvgBase64?: string;
   darkModeLogoSvgBase64?: string;
@@ -116,29 +142,7 @@ export interface ValtimoConfig {
     [definitionNameId: string]: Array<CustomDossierHeaderItem>;
   };
   translationResources?: Array<string>;
-  featureToggles?: {
-    applicationTitleAsSuffix?: boolean;
-    enableHackathonCasesPage?: boolean;
-    showUserNameInTopBar?: boolean;
-    showPlantATreeButton?: boolean;
-    experimentalDmnEditing?: boolean;
-    disableCaseCount?: boolean;
-    caseListColumn?: boolean;
-    enableObjectManagement?: boolean;
-    largeLogoMargin?: boolean;
-    sortFilesByDate?: boolean;
-    returnToLastUrlAfterTokenExpiration?: boolean;
-    enableTabManagement?: boolean;
-    hideValtimoVersionsForNonAdmins?: boolean;
-    useStartEventNameAsStartFormTitle?: boolean;
-    allowUserThemeSwitching?: boolean;
-    enableCompactModeToggle?: boolean;
-    compactModeOnByDefault?: boolean;
-    enableUserNameInTopBarToggle?: boolean;
-    enableCaseWidgets?: boolean;
-    enableFormViewModel?: boolean;
-    enableIntermediateSave?: boolean;
-  };
+  featureToggles?: ValtimoConfigFeatureToggles;
   visibleTaskListTabs?: Array<TaskListTab>;
   visibleDossierListTabs?: Array<DossierListTab>;
   customTaskList?: CustomTaskList;
@@ -151,33 +155,53 @@ export interface ValtimoConfig {
   formioOptions?: OverrideFormioOptions;
 }
 
-export interface FeedbackMailTo {
+interface FeedbackMailTo {
   email?: string;
   subjectTranslationKey: string;
   bodyTranslationKey: string;
 }
 
-export enum UploadProvider {
+enum UploadProvider {
   S3,
   /**@deprecated This upload provider will be removed in the future. */
   OPEN_ZAAK,
   DOCUMENTEN_API,
 }
 
-export enum TaskListTab {
+enum TaskListTab {
   MINE = 'mine',
   OPEN = 'open',
   ALL = 'all',
 }
 
-export enum DossierListTab {
+enum DossierListTab {
   MINE = 'MINE',
   OPEN = 'OPEN',
   ALL = 'ALL',
 }
 
-export enum Language {
+enum Language {
   NL = 'nl',
   EN = 'en',
   DE = 'de',
 }
+
+export {
+  VALTIMO_CONFIG,
+  INITIALIZERS,
+  Direction,
+  DefinitionColumn,
+  CustomDossierHeaderItem,
+  CustomTaskList,
+  CustomLeftSidebar,
+  Sort,
+  SortState,
+  OverrideFormioOptions,
+  ValtimoConfigFeatureToggles,
+  ValtimoConfig,
+  FeedbackMailTo,
+  UploadProvider,
+  TaskListTab,
+  DossierListTab,
+  Language,
+};
