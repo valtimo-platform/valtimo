@@ -75,12 +75,13 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
                 ? [
                     {
                       title: property.title,
-                      value: !!widgetData[property.key]
-                        ? this.viewContentService.get(widgetData[property.key], {
-                            ...property.displayProperties,
-                            viewType: property.displayProperties?.type,
-                          })
-                        : '-',
+                      value:
+                        widgetData[property.key] !== null && widgetData[property.key] !== undefined
+                          ? this.viewContentService.get(widgetData[property.key], {
+                              ...property.displayProperties,
+                              viewType: property.displayProperties?.type ?? 'text',
+                            })
+                          : '-',
                     },
                   ]
                 : []),
@@ -96,7 +97,7 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
   constructor(private viewContentService: ViewContentService) {}
 
   public ngAfterViewInit(): void {
-    if (this.collapseVertically) this.openWidthObserver();
+    if (this.collapseVertically && this._widgetFieldRef) this.openWidthObserver();
   }
 
   public ngOnDestroy(): void {
