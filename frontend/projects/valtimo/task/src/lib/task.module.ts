@@ -28,6 +28,7 @@ import {
   PageHeaderModule,
   RenderInPageHeaderDirectiveModule,
   SearchableDropdownSelectModule,
+  SearchFieldsModule,
   SpinnerModule,
   WidgetModule,
 } from '@valtimo/components';
@@ -86,6 +87,7 @@ import {TaskRoutingModule} from './task-routing.module';
     IconModule,
     TooltipModule,
     ConfirmationModalModule,
+    SearchFieldsModule,
   ],
   exports: [TaskListComponent, TaskDetailModalComponent, AssignUserToTaskComponent],
 })

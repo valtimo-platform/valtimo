@@ -23,11 +23,28 @@
     visibleTabs: visibleTabs$ | async,
     pagination: paginationForCurrentTaskTypeForList$ | async,
     taskListColumnsForCase: taskListColumnsForCase$ | async,
-    sortState: sortStateForCurrentTaskType$ | async
+    sortState: sortStateForCurrentTaskType$ | async,
+    searchFields: searchFields$ | async,
+    enableTaskFiltering: enableTaskFiltering$ | async,
+    loadingSearchFields: loadingSearchFields$ | async,
+    caseDefinitionName: caseDefinitionName$ | async
   } as obs"
   class="main-content"
 >
   <div class="container-fluid">
+    @if (
+      obs.enableTaskFiltering && obs.caseDefinitionName && obs.caseDefinitionName !== ALL_CASES_ID
+    ) {
+      <ng-container
+        *ngTemplateOutlet="
+          searchFields;
+          context: {
+            obs: obs
+          }
+        "
+      ></ng-container>
+    }
+
     <ng-container
       *ngTemplateOutlet="
         tasksList;
@@ -158,6 +175,18 @@
       </cds-tabs>
     </div>
   </valtimo-carbon-list>
+</ng-template>
+
+<ng-template #searchFields let-obs="obs">
+  <div class="mb-3">
+    <valtimo-search-fields
+      [searchFields]="obs.searchFields"
+      [inputDisabled]="obs.loadingSearchFields"
+      [documentDefinitionName]="obs.caseDefinitionName"
+      (doSearch)="search($event)"
+    >
+    </valtimo-search-fields>
+  </div>
 </ng-template>
 
 <ng-container renderInPageHeader [fullWidth]="true">

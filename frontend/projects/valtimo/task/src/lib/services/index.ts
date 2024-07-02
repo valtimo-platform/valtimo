@@ -18,3 +18,4 @@ export * from './task.service';
 export * from './task-list.service';
 export * from './task-list-column.service';
 export * from './task-list-pagination.service';
+export * from './task-list-search.service';

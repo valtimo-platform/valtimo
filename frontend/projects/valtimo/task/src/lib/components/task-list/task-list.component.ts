@@ -28,12 +28,20 @@ import {
   MappedSpecifiedTask,
   SpecifiedTask,
   Task,
+  TaskListOtherFilters,
   TaskListParams,
   TaskPageParams,
 } from '../../models';
 import {TaskDetailModalComponent} from '../task-detail-modal/task-detail-modal.component';
 import {BehaviorSubject, combineLatest, Observable, of, switchMap, tap} from 'rxjs';
-import {ConfigService, Page, SortState, TaskListTab} from '@valtimo/config';
+import {
+  ConfigService,
+  Page,
+  SearchField,
+  SearchFieldValues,
+  SortState,
+  TaskListTab,
+} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
 import {distinctUntilChanged, filter, map, take} from 'rxjs/operators';
 import {PermissionService} from '@valtimo/access-control';
@@ -42,7 +50,12 @@ import {
   CAN_VIEW_TASK_PERMISSION,
   TASK_DETAIL_PERMISSION_RESOURCE,
 } from '../../task-permissions';
-import {TaskListColumnService, TaskListPaginationService, TaskListService} from '../../services';
+import {
+  TaskListColumnService,
+  TaskListPaginationService,
+  TaskListSearchService,
+  TaskListService,
+} from '../../services';
 import {isEqual} from 'lodash';
 import {ListItem} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
@@ -61,13 +74,13 @@ moment.locale(localStorage.getItem('langKey') || '');
     TaskListColumnService,
     TaskListPaginationService,
     TaskListSortService,
+    TaskListSearchService,
   ],
 })
 export class TaskListComponent implements OnInit {
   @ViewChild('taskDetail') private readonly _taskDetail: TaskDetailModalComponent;
 
-  private readonly _enableTaskFiltering$: Observable<boolean> =
-    this.configService.getFeatureToggleObservable('enableTaskFiltering');
+  public readonly ALL_CASES_ID = this.taskListService.ALL_CASES_ID;
 
   public readonly selectedTaskType$ = this.taskListService.selectedTaskType$;
   public readonly fields$ = this.taskListColumnService.fields$;
@@ -86,14 +99,17 @@ export class TaskListComponent implements OnInit {
 
   private readonly _reload$ = new BehaviorSubject<boolean>(true);
 
+  public readonly caseDefinitionName$ = this.taskListService.caseDefinitionName$;
+
   public readonly tasks$: Observable<Task[] | MappedSpecifiedTask[]> = combineLatest([
     this.taskListService.loadingStateForCaseDefinition$,
     this.selectedTaskType$,
     this.taskListPaginationService.paginationForCurrentTaskType$,
     this.taskListSortService.sortStringForCurrentTaskType$,
-    this.taskListService.caseDefinitionName$,
+    this.caseDefinitionName$,
     this._enableLoadingAnimation$,
     this._reload$,
+    this.taskListSearchService.otherFilters$,
   ]).pipe(
     filter(([loadingStateForCaseDefinition]) => loadingStateForCaseDefinition === false),
     map(
@@ -105,6 +121,7 @@ export class TaskListComponent implements OnInit {
         caseDefinitionName,
         enableLoadingAnimation,
         reload,
+        otherFilters,
       ]) =>
         this.getTaskListParams(
           paginationForSelectedTaskType,
@@ -112,7 +129,8 @@ export class TaskListComponent implements OnInit {
           selectedTaskType,
           caseDefinitionName,
           enableLoadingAnimation,
-          reload
+          reload,
+          otherFilters
         )
     ),
     distinctUntilChanged((previous, current) => isEqual(previous.params, current.params)),
@@ -124,7 +142,8 @@ export class TaskListComponent implements OnInit {
         this.taskService.queryTasksPageV3(
           params.selectedTaskType,
           params.params,
-          params.caseDefinitionName
+          params.caseDefinitionName,
+          params.otherFilters
         ),
         of(!!params.caseDefinitionName),
       ])
@@ -150,9 +169,8 @@ export class TaskListComponent implements OnInit {
   );
 
   public readonly loadingCaseListItems$ = new BehaviorSubject<boolean>(true);
-  private readonly _selectedCaseDefinitionId$ = new BehaviorSubject<string>(
-    this.taskListService.ALL_CASES_ID
-  );
+  private readonly _selectedCaseDefinitionId$ = new BehaviorSubject<string>(this.ALL_CASES_ID);
+
   public readonly caseListItems$: Observable<ListItem[]> = combineLatest([
     this.documentService.getAllDefinitions(),
     this._selectedCaseDefinitionId$,
@@ -161,8 +179,8 @@ export class TaskListComponent implements OnInit {
     map(([documentDefinitionRes, selectedCaseDefinitionId]) => [
       {
         content: this.translateService.instant('task-list.allCases'),
-        id: this.taskListService.ALL_CASES_ID,
-        selected: selectedCaseDefinitionId === this.taskListService.ALL_CASES_ID,
+        id: this.ALL_CASES_ID,
+        selected: selectedCaseDefinitionId === this.ALL_CASES_ID,
       },
       ...documentDefinitionRes.content.map(documentDefinition => ({
         id: documentDefinition.id.name,
@@ -174,6 +192,12 @@ export class TaskListComponent implements OnInit {
   );
 
   public readonly taskListColumnsForCase$ = this.taskListColumnService.taskListColumnsForCase$;
+
+  public readonly enableTaskFiltering$: Observable<boolean> =
+    this.taskListSearchService.enableTaskFiltering$;
+  public readonly loadingSearchFields$ = this.taskListSearchService.loadingSearchFields$;
+  public readonly searchFields$: Observable<SearchField[]> =
+    this.taskListSearchService.searchFields$;
 
   private readonly _DEFAULT_TASK_LIST_TABS: TaskListTab[] = [
     TaskListTab.MINE,
@@ -191,7 +215,8 @@ export class TaskListComponent implements OnInit {
     private readonly translateService: TranslateService,
     private readonly taskListColumnService: TaskListColumnService,
     private readonly taskListPaginationService: TaskListPaginationService,
-    private readonly taskListSortService: TaskListSortService
+    private readonly taskListSortService: TaskListSortService,
+    private readonly taskListSearchService: TaskListSearchService
   ) {}
 
   public ngOnInit(): void {
@@ -270,6 +295,12 @@ export class TaskListComponent implements OnInit {
     this._reload$.next(!this._reload$.getValue());
   }
 
+  public search(searchFieldValues: SearchFieldValues): void {
+    if (!searchFieldValues) return;
+
+    this.taskListSearchService.setOtherFilters(searchFieldValues);
+  }
+
   private updateTaskListPaginationAfterResponse(newCollectionSize: number): void {
     this.taskListPaginationService.paginationForCurrentTaskType$
       .pipe(take(1))
@@ -311,7 +342,8 @@ export class TaskListComponent implements OnInit {
     selectedTaskType: TaskListTab,
     caseDefinitionName: string,
     enableLoadingAnimation: boolean,
-    reload: boolean
+    reload: boolean,
+    otherFilters?: TaskListOtherFilters
   ): TaskListParams {
     const params = {
       ...paginationForSelectedTaskType,
@@ -325,8 +357,8 @@ export class TaskListComponent implements OnInit {
         reload,
         selectedTaskType,
         params,
-        ...(caseDefinitionName &&
-          caseDefinitionName !== this.taskListService.ALL_CASES_ID && {caseDefinitionName}),
+        ...(caseDefinitionName && caseDefinitionName !== this.ALL_CASES_ID && {caseDefinitionName}),
+        ...(otherFilters && {otherFilters}),
       },
       enableLoadingAnimation,
     };

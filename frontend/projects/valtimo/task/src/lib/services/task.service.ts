@@ -22,6 +22,8 @@ import {
   SpecifiedTask,
   Task,
   TaskListColumn,
+  TaskListOtherFilters,
+  TaskListSearchField,
   TaskPageParams,
   TaskProcessLinkResult,
 } from '../models';
@@ -60,7 +62,8 @@ export class TaskService extends BaseApiService {
   public queryTasksPageV3(
     assigneeFilter: TaskListTab = TaskListTab.ALL,
     pageParams: TaskPageParams,
-    caseDefinitionName?: string
+    caseDefinitionName?: string,
+    otherFilters?: TaskListOtherFilters
   ): Observable<Page<Task> | Page<SpecifiedTask>> {
     let httpParams = new HttpParams()
       .set('filter', assigneeFilter.toUpperCase())
@@ -72,6 +75,10 @@ export class TaskService extends BaseApiService {
     }
 
     if (caseDefinitionName) {
+      if ((otherFilters || []).length > 0) {
+        return this.searchTasks(httpParams, caseDefinitionName, otherFilters);
+      }
+
       return this.httpClient.post<Page<SpecifiedTask>>(
         this.getApiUrl('/v3/task'),
         {
@@ -82,6 +89,21 @@ export class TaskService extends BaseApiService {
     }
 
     return this.httpClient.post<Page<Task>>(this.getApiUrl('/v3/task'), {}, {params: httpParams});
+  }
+
+  private searchTasks(
+    params: HttpParams,
+    caseDefinitionName: string,
+    otherFilters: TaskListOtherFilters
+  ): Observable<Page<SpecifiedTask>> {
+    return this.httpClient.post<Page<SpecifiedTask>>(
+      this.getApiUrl(`/v1/document-definition/${caseDefinitionName}/task/search`),
+      {
+        caseDefinitionName,
+        ...(otherFilters && {otherFilters}),
+      },
+      {params}
+    );
   }
 
   public getTasks(): Observable<Task[]> {
@@ -128,5 +150,11 @@ export class TaskService extends BaseApiService {
 
   public getConfigCustomTaskList(): CustomTaskList {
     return this.configService.config.customTaskList;
+  }
+
+  public getTaskListSearchFields(caseDefinitionName: string): Observable<TaskListSearchField[]> {
+    return this.httpClient.get<TaskListSearchField[]>(
+      this.getApiUrl(`v1/search/field/TaskListSearchColumns/${caseDefinitionName}`)
+    );
   }
 }
