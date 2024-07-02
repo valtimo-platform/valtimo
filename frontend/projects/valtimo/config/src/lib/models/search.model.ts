@@ -83,6 +83,7 @@ type AssigneeFilter = 'OPEN' | 'MINE' | 'ALL';
 interface SearchFilter {
   key: string;
   values: Array<string>;
+  multiValue?: boolean;
 }
 
 interface SearchFilterRange {

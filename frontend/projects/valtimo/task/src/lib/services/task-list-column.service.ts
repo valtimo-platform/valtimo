@@ -59,8 +59,9 @@ export class TaskListColumnService {
     {
       key: 'createTime',
       label: `task-list.fieldLabels.created`,
-      viewType: ViewType.TEXT,
+      viewType: ViewType.DATE,
       sortable: true,
+      format: 'DD MMM YYYY HH:mm',
     },
     {
       key: 'name',

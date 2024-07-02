@@ -74,12 +74,38 @@ export class TaskListSearchService {
     private readonly taskService: TaskService
   ) {}
 
-  public setOtherFilters(searchFieldValues: SearchFieldValues): void {
+  public setSearchFieldValues(searchFieldValues: SearchFieldValues): void {
     this._otherFilters$.next(this.mapSearchValuesToFilters(searchFieldValues));
+  }
+
+  public setOtherFilters(otherFilters: TaskListOtherFilters): void {
+    this._otherFilters$.next(otherFilters);
   }
 
   public resetOtherFilters(): void {
     this._otherFilters$.next([]);
+  }
+
+  public mapOtherFilterToSearchValues(otherFilters: TaskListOtherFilters): SearchFieldValues {
+    return otherFilters.reduce((acc, curr) => {
+      const filter = curr as any;
+
+      if (filter.rangeFrom) {
+        return {
+          ...acc,
+          [filter.key]: {
+            start: filter.rangeFrom,
+            end: filter.rangeTo,
+          },
+        };
+      } else if (filter.multiValue) {
+        return {...acc, [filter.key]: filter.values};
+      } else if (Array.isArray(filter.values) && filter.values.length > 0 && !filter.multiValue) {
+        return {...acc, [filter.key]: filter.values[0]};
+      }
+
+      return acc;
+    }, {});
   }
 
   private mapSearchValuesToFilters(values: SearchFieldValues): TaskListOtherFilters {
@@ -90,9 +116,9 @@ export class TaskListSearchService {
       if (searchValue.start) {
         filters.push({key: valueKey, rangeFrom: searchValue.start, rangeTo: searchValue.end});
       } else if (Array.isArray(searchValue)) {
-        filters.push({key: valueKey, values: searchValue});
+        filters.push({key: valueKey, values: searchValue, multiValue: true});
       } else {
-        filters.push({key: valueKey, values: [searchValue]});
+        filters.push({key: valueKey, values: [searchValue], multiValue: false});
       }
     });
 

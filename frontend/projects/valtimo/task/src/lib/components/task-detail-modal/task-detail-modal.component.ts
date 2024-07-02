@@ -35,7 +35,12 @@ import {
   ValtimoFormioOptions,
   ValtimoModalService,
 } from '@valtimo/components';
-import {IntermediateSaveRequest, IntermediateSubmission, Task, TaskProcessLinkType,} from '../../models';
+import {
+  IntermediateSaveRequest,
+  IntermediateSubmission,
+  Task,
+  TaskProcessLinkType,
+} from '../../models';
 import {FormFlowComponent, FormSubmissionResult, ProcessLinkService} from '@valtimo/process-link';
 import {FormioForm} from '@formio/angular';
 import moment from 'moment';
@@ -319,8 +324,9 @@ export class TaskDetailModalComponent implements OnDestroy {
 
   protected saveCurrentProgress(): void {
     const intermediateSaveRequest: IntermediateSaveRequest = {
-      submission: this.submission$.getValue().data ?
-        this.submission$.getValue().data : this.formIoFormData$.getValue(),
+      submission: this.submission$.getValue().data
+        ? this.submission$.getValue().data
+        : this.formIoFormData$.getValue(),
       taskInstanceId: this.taskInstanceId$.getValue(),
     };
 
@@ -356,10 +362,16 @@ export class TaskDetailModalComponent implements OnDestroy {
       });
   }
 
-  private formatIntermediateSubmission(intermediateSubmission: IntermediateSubmission): IntermediateSubmission {
-    intermediateSubmission.createdOn = moment(intermediateSubmission.createdOn).format('DD MMM YYYY HH:mm');
+  private formatIntermediateSubmission(
+    intermediateSubmission: IntermediateSubmission
+  ): IntermediateSubmission {
+    intermediateSubmission.createdOn = moment(intermediateSubmission.createdOn).format(
+      'DD MMM YYYY HH:mm'
+    );
     if (intermediateSubmission.editedOn) {
-      intermediateSubmission.editedOn = moment(new Date(intermediateSubmission.editedOn)).format('DD MMM YYYY HH:mm');
+      intermediateSubmission.editedOn = moment(new Date(intermediateSubmission.editedOn)).format(
+        'DD MMM YYYY HH:mm'
+      );
     }
 
     return intermediateSubmission;

@@ -17,7 +17,7 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {SearchField, SearchFieldBoolean, SearchFieldValues} from '@valtimo/config';
 import {BehaviorSubject, combineLatest, map, Observable, Subject, Subscription, take} from 'rxjs';
-import {CARBON_THEME, SelectItem} from '../../models';
+import {SelectItem} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
