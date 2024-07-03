@@ -41,6 +41,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
     });
   }
   @Input() public setValuesSubject$!: Observable<SearchFieldValues>;
+  @Input() public clearValuesSubject$!: Observable<null>;
   @Input() public defaultValues!: SearchFieldValues;
   @Input() public inputDisabled = false;
   @Input() public externalSearchField = false;
@@ -67,9 +68,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
 
   private readonly _documentDefinitionName$ = new BehaviorSubject<string>('');
 
-  private documentDefinitionNameSubscription!: Subscription;
-  private dropdownSubscription!: Subscription;
-  private valuesSubjectSubscription!: Subscription;
+  private readonly _subscriptions = new Subscription();
 
   private readonly BOOLEAN_POSITIVE: SearchFieldBoolean = 'booleanPositive';
   private readonly BOOLEAN_NEGATIVE: SearchFieldBoolean = 'booleanNegative';
@@ -102,14 +101,13 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     this.openDocumentDefinitionNameSubscription();
     this.openValuesSubjectSubscription();
+    this.openClearSubscription();
     this.openDropdownSubscription();
     this.setDefaultValues();
   }
 
   public ngOnDestroy(): void {
-    this.documentDefinitionNameSubscription?.unsubscribe();
-    this.valuesSubjectSubscription?.unsubscribe();
-    this.dropdownSubscription?.unsubscribe();
+    this._subscriptions.unsubscribe();
   }
 
   public singleValueChange(searchFieldKey: string, value: any, isDateTime?: boolean): void {
@@ -193,53 +191,70 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   private openDocumentDefinitionNameSubscription(): void {
-    this.documentDefinitionNameSubscription = this._documentDefinitionName$.subscribe(() => {
-      this.collapse();
-      this.clear();
-    });
+    this._subscriptions.add(
+      this._documentDefinitionName$.subscribe(() => {
+        this.collapse();
+        this.clear();
+      })
+    );
   }
 
   private openValuesSubjectSubscription(): void {
     if (this.setValuesSubject$) {
-      this.valuesSubjectSubscription = this.setValuesSubject$.subscribe(values => {
-        if (Object.keys(values || {}).length > 0) {
-          this.values$.next(values);
+      this._subscriptions.add(
+        this.setValuesSubject$.subscribe(values => {
+          if (Object.keys(values || {}).length > 0) {
+            this.values$.next(values);
+            this.search();
+            this.expand();
+          }
+        })
+      );
+    }
+  }
+
+  private openClearSubscription(): void {
+    if (this.clearValuesSubject$) {
+      this._subscriptions.add(
+        this.clearValuesSubject$.subscribe(values => {
+          this.values$.next({});
           this.search();
-          this.expand();
-        }
-      });
+        })
+      );
     }
   }
 
   private openDropdownSubscription(): void {
-    this.dropdownSubscription = combineLatest([this._documentDefinitionName$, this.searchFields$])
-      .pipe(
-        map(([documentDefinitionName, searchFields]) =>
-          searchFields
-            ?.filter(searchField => searchField.dropdownDataProvider)
-            .map(searchField =>
-              this.documentService
-                .getDropdownData(
-                  searchField.dropdownDataProvider,
-                  documentDefinitionName,
-                  searchField.key
-                )
-                .subscribe(dropdownData => {
-                  if (dropdownData) {
-                    this.dropdownSelectItemsMap[searchField.key] = Object.keys(dropdownData).map(
-                      dropdownFieldKey => ({
-                        id: dropdownFieldKey,
-                        text: dropdownData[dropdownFieldKey],
-                      })
-                    );
-                  } else {
-                    this.dropdownSelectItemsMap[searchField.key] = [];
-                  }
-                })
-            )
+    this._subscriptions.add(
+      combineLatest([this._documentDefinitionName$, this.searchFields$])
+        .pipe(
+          map(([documentDefinitionName, searchFields]) =>
+            searchFields
+              ?.filter(searchField => searchField.dropdownDataProvider)
+              .map(searchField =>
+                this.documentService
+                  .getDropdownData(
+                    searchField.dropdownDataProvider,
+                    documentDefinitionName,
+                    searchField.key
+                  )
+                  .subscribe(dropdownData => {
+                    if (dropdownData) {
+                      this.dropdownSelectItemsMap[searchField.key] = Object.keys(dropdownData).map(
+                        dropdownFieldKey => ({
+                          id: dropdownFieldKey,
+                          text: dropdownData[dropdownFieldKey],
+                        })
+                      );
+                    } else {
+                      this.dropdownSelectItemsMap[searchField.key] = [];
+                    }
+                  })
+              )
+          )
         )
-      )
-      .subscribe();
+        .subscribe()
+    );
   }
 
   private collapse(): void {

@@ -16,13 +16,15 @@
 
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
-import {SortState, TaskListTab} from '@valtimo/config';
+import {Direction, SortState, TaskListTab} from '@valtimo/config';
 import {TaskService} from './task.service';
 import {map, take} from 'rxjs/operators';
 import {TaskListService} from './task-list.service';
 
 @Injectable()
 export class TaskListSortService {
+  private readonly _overrideSortState$ = new BehaviorSubject<SortState | null>(null);
+
   private readonly _sortState$ = new BehaviorSubject<{[key in TaskListTab]: SortState | null}>({
     [TaskListTab.ALL]: this._defaultSortState,
     [TaskListTab.MINE]: this._defaultSortState,
@@ -42,6 +44,14 @@ export class TaskListSortService {
     return this.sortStateForCurrentTaskType$.pipe(
       map(sortState => (sortState ? this.getSortString(sortState) : null))
     );
+  }
+
+  public get overrideSortState$(): Observable<SortState | null> {
+    return this._overrideSortState$.asObservable();
+  }
+
+  public get overrideSortStateString$(): Observable<string | null> {
+    return this._overrideSortState$.pipe(map(state => (state ? this.getSortString(state) : null)));
   }
 
   private get _defaultSortState(): SortState | null {
@@ -96,6 +106,29 @@ export class TaskListSortService {
 
       this._sortState$.next(sortStatesCopy);
     });
+  }
+
+  public getSortStateFromSortString(sortString?: string): SortState | null {
+    const splitString = sortString && sortString.split(',');
+    if (splitString?.length > 1) {
+      return {
+        isSorting: true,
+        state: {
+          name: splitString[0],
+          direction: splitString[1] as Direction,
+        },
+      };
+    }
+
+    return null;
+  }
+
+  public setOverrideSortState(state: SortState): void {
+    this._overrideSortState$.next(state);
+  }
+
+  public resetOverrideSortState(): void {
+    this._overrideSortState$.next(null);
   }
 
   private getSortString(sort: SortState | null): string {

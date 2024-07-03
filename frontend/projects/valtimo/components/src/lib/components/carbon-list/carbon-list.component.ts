@@ -151,6 +151,10 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() header: boolean;
   @Input() hideColumnHeader: boolean;
   @Input() initialSortState: SortState;
+  @Input() set sortState(value: SortState) {
+    if (!value) return;
+    this.sort$.next(value);
+  }
   @Input() isSearchable = false;
   @Input() enableSingleSelection = false;
   /**

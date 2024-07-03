@@ -17,6 +17,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  HostListener,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -34,7 +35,7 @@ import {
   TaskPageParams,
 } from '../../models';
 import {TaskDetailModalComponent} from '../task-detail-modal/task-detail-modal.component';
-import {BehaviorSubject, combineLatest, Observable, of, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, of, Subject, switchMap, tap} from 'rxjs';
 import {
   ConfigService,
   Page,
@@ -84,6 +85,13 @@ moment.locale(localStorage.getItem('langKey') || '');
 export class TaskListComponent implements OnInit, OnDestroy {
   @ViewChild('taskDetail') private readonly _taskDetail: TaskDetailModalComponent;
 
+  @HostListener('window:popstate', ['$event'])
+  private onPopState() {
+    setTimeout(() => {
+      this.setParamsFromQueryParams();
+    });
+  }
+
   public readonly ALL_CASES_ID = this.taskListService.ALL_CASES_ID;
 
   public readonly selectedTaskType$ = this.taskListService.selectedTaskType$;
@@ -101,6 +109,8 @@ export class TaskListComponent implements OnInit, OnDestroy {
   public readonly sortStateForCurrentTaskType$ =
     this.taskListSortService.sortStateForCurrentTaskType$;
 
+  public readonly overrideSortState$ = this.taskListSortService.overrideSortState$;
+
   private readonly _reload$ = new BehaviorSubject<boolean>(true);
 
   public readonly caseDefinitionName$ = this.taskListService.caseDefinitionName$;
@@ -114,6 +124,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     this._enableLoadingAnimation$,
     this._reload$,
     this.taskListSearchService.otherFilters$,
+    this.taskListSortService.overrideSortStateString$,
   ]).pipe(
     filter(([loadingStateForCaseDefinition]) => loadingStateForCaseDefinition === false),
     map(
@@ -126,10 +137,11 @@ export class TaskListComponent implements OnInit, OnDestroy {
         enableLoadingAnimation,
         reload,
         otherFilters,
+        overrideSortStateString,
       ]) =>
         this.getTaskListParams(
           paginationForSelectedTaskType,
-          sortStringForSelectedTaskType,
+          overrideSortStateString || sortStringForSelectedTaskType,
           selectedTaskType,
           caseDefinitionName,
           enableLoadingAnimation,
@@ -211,6 +223,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
   ];
 
   public readonly setSearchFieldValuesSubject$ = new BehaviorSubject<SearchFieldValues>({});
+  public readonly clearSearchFieldValuesSubject$ = new Subject<null>();
 
   constructor(
     private readonly configService: ConfigService,
@@ -295,11 +308,13 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   public sortChanged(sortState: SortState): void {
+    this.taskListSortService.setOverrideSortState(sortState);
     this.taskListSortService.updateSortState(this.taskListService.selectedTaskType, sortState);
   }
 
   public setCaseDefinition(definition: {item: {id: string}}): void {
     if (definition.item.id) {
+      this.taskListSortService.resetOverrideSortState();
       this.loadingTasks$.next(true);
       this.taskListService.setCaseDefinitionName(definition.item.id);
     }
@@ -466,15 +481,24 @@ export class TaskListComponent implements OnInit, OnDestroy {
       this._selectedCaseDefinitionId$.next(decodedParams.caseDefinitionName);
     }
 
-    if (decodedParams.otherFilters) {
+    if (decodedParams.otherFilters?.length > 0) {
       const searchFieldValues = this.taskListSearchService.mapOtherFilterToSearchValues(
         decodedParams.otherFilters
       );
       this.setSearchFieldValuesSubject$.next(searchFieldValues);
+    } else {
+      this.clearSearchFieldValuesSubject$.next(null);
     }
 
     if (decodedParams.selectedTaskType)
       this.taskListService.setSelectedTaskType(decodedParams.selectedTaskType);
+
+    if (decodedParams.params?.sort) {
+      const stateFromSortString = this.taskListSortService.getSortStateFromSortString(
+        decodedParams.params.sort
+      );
+      if (stateFromSortString) this.taskListSortService.setOverrideSortState(stateFromSortString);
+    }
 
     if (decodedParams.params)
       this.taskListPaginationService.updateTaskPagination(

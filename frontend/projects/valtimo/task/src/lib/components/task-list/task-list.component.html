@@ -24,6 +24,7 @@
     pagination: paginationForCurrentTaskTypeForList$ | async,
     taskListColumnsForCase: taskListColumnsForCase$ | async,
     sortState: sortStateForCurrentTaskType$ | async,
+    overrideSortState: overrideSortState$ | async,
     searchFields: searchFields$ | async,
     enableTaskFiltering: enableTaskFiltering$ | async,
     loadingSearchFields: loadingSearchFields$ | async,
@@ -118,7 +119,7 @@
     [pagination]="obs.pagination"
     paginationIdentifier="taskList"
     lockedTooltipTranslationKey="task-list.rowLocked"
-    [initialSortState]="obs.sortState"
+    [sortState]="obs.overrideSortState || obs.sortState"
     (paginationClicked)="paginationClicked($event, obs.selectedTaskType)"
     (paginationSet)="paginationSet($event)"
     (rowClicked)="rowOpenTaskClick($event)"
@@ -184,6 +185,7 @@
       [inputDisabled]="obs.loadingSearchFields"
       [documentDefinitionName]="obs.caseDefinitionName"
       [setValuesSubject$]="setSearchFieldValuesSubject$"
+      [clearValuesSubject$]="clearSearchFieldValuesSubject$"
       (doSearch)="search($event)"
     >
     </valtimo-search-fields>
