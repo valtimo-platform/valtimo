@@ -846,6 +846,7 @@
       "creatiedatum": "Aanmaakdatum",
       "formaat": "Formaat",
       "identificatie": "Identificatie",
+      "informatieobjecttype": "Informatieobjecttype",
       "informatieobjecttypeOmschrijving": "Informatieobjecttype",
       "locked": "Vergrendeld",
       "status": "Status",

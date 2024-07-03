@@ -847,6 +847,7 @@
       "creatiedatum": "Creation date",
       "formaat": "Format",
       "identificatie": "Id",
+      "informatieobjecttype": "Information object type",
       "informatieobjecttypeOmschrijving": "Information object type",
       "locked": "Locked",
       "status": "Status",
