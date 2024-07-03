@@ -49,7 +49,7 @@ export class AccessControlExportService {
     );
   }
 
-  public downloadJson(permissions: Array<object>, type: RoleExport, roleKey?: string): void {
+  private downloadJson(permissions: Array<object>, type: RoleExport, roleKey?: string): void {
     const sJson = JSON.stringify({permissions}, null, 2);
     const element = document.createElement('a');
     element.setAttribute('href', 'data:text/json;charset=UTF-8,' + encodeURIComponent(sJson));

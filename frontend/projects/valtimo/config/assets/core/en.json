@@ -1030,6 +1030,20 @@
     "selectInfoObjectType": "Select information object type",
     "save": "Save"
   },
+  "zaakdetails": {
+    "title": "Case detail synchronisation",
+    "enabled": "Enabled",
+    "yes": "Yes",
+    "no": "No",
+    "objectManagementConfigurationTitle": "Object management configuration",
+    "submitButton": "Configure case detail synchronisation",
+    "editModal": {
+      "title": "Add case detail synchronisation",
+      "objectManagementConfiguration": "Object management configuration",
+      "objectManagementConfigurationPlaceholder": "Select an object management configuration",
+      "enabled": "Enabled"
+    }
+  },
   "interface": {
     "mainMenu": "Main menu",
     "toggleMenu": "Menu",
