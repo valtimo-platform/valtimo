@@ -65,41 +65,36 @@ export class TaskService extends BaseApiService {
     caseDefinitionName?: string,
     otherFilters?: TaskListOtherFilters
   ): Observable<Page<Task> | Page<SpecifiedTask>> {
-    let httpParams = new HttpParams()
-      .set('filter', assigneeFilter.toUpperCase())
-      .set('page', pageParams.page)
-      .set('size', pageParams.size);
+    let httpParams = new HttpParams().set('page', pageParams.page).set('size', pageParams.size);
 
     if (pageParams.sort) {
       httpParams = httpParams.append('sort', pageParams.sort);
     }
 
-    if (caseDefinitionName) {
-      if ((otherFilters || []).length > 0) {
-        return this.searchTasks(httpParams, caseDefinitionName, otherFilters);
-      }
-
-      return this.httpClient.post<Page<SpecifiedTask>>(
-        this.getApiUrl('/v3/task'),
-        {
-          caseDefinitionName,
-        },
-        {params: httpParams}
-      );
+    if (caseDefinitionName && (otherFilters || []).length > 0) {
+      return this.searchTasks(httpParams, caseDefinitionName, otherFilters, assigneeFilter);
     }
 
-    return this.httpClient.post<Page<Task>>(this.getApiUrl('/v3/task'), {}, {params: httpParams});
+    httpParams = httpParams.append('filter', assigneeFilter.toUpperCase());
+
+    return this.httpClient.post<Page<Task>>(
+      this.getApiUrl('/v3/task'),
+      {...(caseDefinitionName && {caseDefinitionName})},
+      {params: httpParams}
+    );
   }
 
   private searchTasks(
     params: HttpParams,
     caseDefinitionName: string,
-    otherFilters: TaskListOtherFilters
+    otherFilters: TaskListOtherFilters,
+    assigneeFilter: TaskListTab = TaskListTab.ALL
   ): Observable<Page<SpecifiedTask>> {
     return this.httpClient.post<Page<SpecifiedTask>>(
       this.getApiUrl(`/v1/document-definition/${caseDefinitionName}/task/search`),
       {
         caseDefinitionName,
+        assigneeFilter: assigneeFilter.toUpperCase(),
         ...(otherFilters && {otherFilters}),
       },
       {params}
