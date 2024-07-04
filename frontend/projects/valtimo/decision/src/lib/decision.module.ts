@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,11 @@ import {
   SpinnerModule,
   WidgetModule,
   SelectModule,
+  CarbonListModule,
 } from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {DecisionModelerComponent} from './decision-modeler/decision-modeler.component';
+import {ButtonModule, IconModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [
@@ -50,6 +52,9 @@ import {DecisionModelerComponent} from './decision-modeler/decision-modeler.comp
     FormsModule,
     SelectModule,
     SpinnerModule,
+    CarbonListModule,
+    ButtonModule,
+    IconModule,
   ],
   exports: [DecisionComponent, DecisionModelerComponent],
 })

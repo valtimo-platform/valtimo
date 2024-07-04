@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,9 +41,9 @@ export class VerzoekPluginService {
 
   getRoltypesByDocumentDefinitionName(documentDefinitionName: string): Observable<Array<Roltype>> {
     return this.http
-      .get<Array<Roltype>>(
-        `${this.valtimoEndpointUri}v1/case-definition/${documentDefinitionName}/zaaktype/roltype`
-      )
+      .get<
+        Array<Roltype>
+      >(`${this.valtimoEndpointUri}v1/case-definition/${documentDefinitionName}/zaaktype/roltype`)
       .pipe(catchError(() => of([])));
   }
 }

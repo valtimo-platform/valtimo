@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 import {TemplateRef} from '@angular/core';
-import {TableRowSize} from 'carbon-components-angular';
+import { CarbonTag } from './carbon-tag.model';
 
 enum ViewType {
   ACTION = 'dropdownActions',
   ARRAY_COUNT = 'arrayCount',
   BOOLEAN = 'boolean',
   DATE = 'date',
+  TAGS = 'tags',
   ENUM = 'enum',
   TEMPLATE = 'template',
   TEXT = 'text',
@@ -40,6 +41,7 @@ interface CarbonListPaginationTranslations {
 interface CarbonListItem {
   [key: string]: any;
   locked?: boolean;
+  tags?: CarbonTag[];
 }
 
 interface CarbonListTranslations {
@@ -61,11 +63,20 @@ interface ActionItem {
 
 interface ColumnConfig extends ListField {
   viewType: string | ViewType;
-  actions?: ActionItem[];
   className?: string;
   format?: string;
   enum?: Array<string> | {[key: string]: string};
   template?: TemplateRef<any>;
+}
+
+enum MoveRowDirection {
+  UP = 'UP',
+  DOWN = 'DOWN',
+}
+
+interface MoveRowEvent {
+  direction: MoveRowDirection;
+  index: number;
 }
 
 const DEFAULT_LIST_TRANSLATIONS: CarbonListTranslations = {
@@ -85,6 +96,12 @@ interface ListField {
   sortable?: boolean;
 }
 
+interface CarbonListNoResultsMessage {
+  description: string;
+  isSearchResult: boolean;
+  title: string;
+}
+
 export {
   ActionItem,
   CarbonListBatchText,
@@ -94,5 +111,8 @@ export {
   ColumnConfig,
   DEFAULT_LIST_TRANSLATIONS,
   ListField,
+  MoveRowDirection,
+  MoveRowEvent,
   ViewType,
+  CarbonListNoResultsMessage,
 };

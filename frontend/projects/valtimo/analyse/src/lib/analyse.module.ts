@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,21 @@ import {AnalyseComponent} from './analyse.component';
 import {CommonModule} from '@angular/common';
 import {AnalyseRoutingModule} from './analyse-routing.module';
 import {ProcessModule} from '@valtimo/process';
-import {WidgetModule} from '@valtimo/components';
+import {RenderInPageHeaderDirectiveModule, WidgetModule} from '@valtimo/components';
 import {AnalyseProcessDiagramComponent} from './analyse-process-diagram/analyse-process-diagram.component';
+import {SelectModule, ToggleModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [AnalyseComponent, AnalyseProcessDiagramComponent],
-  imports: [CommonModule, AnalyseRoutingModule, ProcessModule, WidgetModule],
+  imports: [
+    CommonModule,
+    AnalyseRoutingModule,
+    ProcessModule,
+    WidgetModule,
+    SelectModule,
+    RenderInPageHeaderDirectiveModule,
+    ToggleModule,
+  ],
   exports: [AnalyseComponent],
 })
 export class AnalyseModule {}

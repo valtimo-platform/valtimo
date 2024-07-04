@@ -18,16 +18,20 @@
     "@formio/angular",
     "ngx-spinner",
     "ng-multiselect-dropdown",
-    "formiojs",
     "@carbon/icons",
     "@carbon/grid",
     "@carbon/styles",
+    "@carbon/themes",
     "carbon-components",
     "carbon-components-angular",
     "monaco-editor",
     "ngx-skeleton-loader",
     "@mdi/font",
     "uuid",
-    "flatpickr"
+    "flatpickr",
+    "lodash",
+    "jwt-decode",
+    "formiojs",
+    "deepmerge-ts"
   ]
 }

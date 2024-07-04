@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,10 @@
 export * from './lib/components/dossier-bulk-assign-modal/dossier-bulk-assign-modal.component';
 export * from './lib/components/dossier-detail/dossier-detail.component';
 export * from './lib/components/dossier-detail/tab/audit/audit.component';
-export * from './lib/components/dossier-detail/tab/contact-moments/contact-moments.component';
 export * from './lib/components/dossier-detail/tab/documents/documents.component';
 export * from './lib/components/dossier-detail/tab/notes/notes.component';
 export * from './lib/components/dossier-detail/tab/progress/progress.component';
 export * from './lib/components/dossier-detail/tab/summary/summary.component';
-export * from './lib/components/dossier-detail/tab/zaakobjecten/zaakobjecten.component';
 export * from './lib/components/dossier-list/dossier-list.component';
 export * from './lib/constants';
 export * from './lib/dossier.module';

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,9 @@ export class OpenZaakService {
   }
 
   getZaakTypes(): Observable<ZaakType[]> {
-    return this.http.get<ZaakType[]>(`${this.valtimoApiConfig.endpointUri}v1/openzaak/zaaktype`);
+    return this.http.get<ZaakType[]>(
+      `${this.valtimoApiConfig.endpointUri}management/v1/zgw/zaaktype`
+    );
   }
 
   getBesluittypen(): Observable<any> {
@@ -71,12 +73,15 @@ export class OpenZaakService {
     );
   }
 
-  getZaakTypeLink(id: string): Observable<ZaakTypeLink> {
+  getZaakTypeLink(documentDefinitionName: string): Observable<ZaakTypeLink> {
     return this.http.get<ZaakTypeLink>(
-      `${this.valtimoApiConfig.endpointUri}v1/openzaak/link/${id}`
+      `${this.valtimoApiConfig.endpointUri}management/v1/zaak-type-link/${documentDefinitionName}`
     );
   }
 
+  /**
+   * @deprecated This method will be removed in the future.
+   */
   getInformatieObjectTypeLink(id: string): Observable<InformatieObjectTypeLink> {
     return this.http.get<InformatieObjectTypeLink>(
       `${this.valtimoApiConfig.endpointUri}v1/openzaak/informatie-object-type-link/${id}`
@@ -84,9 +89,15 @@ export class OpenZaakService {
   }
 
   createZaakTypeLink(request: CreateZaakTypeLinkRequest): Observable<any> {
-    return this.http.post<any>(`${this.valtimoApiConfig.endpointUri}v1/openzaak/link`, request);
+    return this.http.post<any>(
+      `${this.valtimoApiConfig.endpointUri}management/v1/zaak-type-link`,
+      request
+    );
   }
 
+  /**
+   * @deprecated This method will be removed in the future.
+   */
   createInformatieObjectTypeLink(request: CreateInformatieObjectTypeLinkRequest): Observable<any> {
     return this.http.post<any>(
       `${this.valtimoApiConfig.endpointUri}v1/openzaak/informatie-object-type-link`,
@@ -94,10 +105,15 @@ export class OpenZaakService {
     );
   }
 
-  deleteZaakTypeLink(id: string): Observable<any> {
-    return this.http.delete<any>(`${this.valtimoApiConfig.endpointUri}v1/openzaak/link/${id}`);
+  deleteZaakTypeLink(documentDefinitionName: string): Observable<any> {
+    return this.http.delete<any>(
+      `${this.valtimoApiConfig.endpointUri}management/v1/zaak-type-link/${documentDefinitionName}`
+    );
   }
 
+  /**
+   * @deprecated This method will be removed in the future.
+   */
   deleteInformatieObjectTypeLink(id: string): Observable<any> {
     return this.http.delete<any>(
       `${this.valtimoApiConfig.endpointUri}v1/openzaak/informatie-object-type-link/${id}`
@@ -106,7 +122,7 @@ export class OpenZaakService {
 
   getZaakTypeLinkListByProcess(processDefinitionKey: string): Observable<Array<ZaakTypeLink>> {
     return this.http.get<Array<ZaakTypeLink>>(
-      `${this.valtimoApiConfig.endpointUri}v1/openzaak/link/process/${processDefinitionKey}`
+      `${this.valtimoApiConfig.endpointUri}management/v1/zaak-type-link/process/${processDefinitionKey}`
     );
   }
 

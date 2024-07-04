@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,75 +14,116 @@
  * limitations under the License.
  */
 
-.formbuilder .btn.formcomponent.drag-copy,
-.btn.formcomponent.gu-mirror {
-  font-weight: normal;
-  background-color: silver;
-  border-color: silver;
-  color: white;
-}
-
-.formbuilder .btn.formcomponent.drag-copy,
-.btn.formcomponent.gu-mirror {
-  &:hover,
-  &:active {
-    box-shadow: none;
+.valtimo-form-management-edit {
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-left: auto;
   }
 
-  &:active {
+  &__header-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 4px;
+
+    .cds--tag {
+      margin: 0;
+      height: var(--cds-layout-size-height-md);
+    }
+
+    &.--compact {
+      align-items: flex-start;
+      padding-bottom: 0;
+    }
+  }
+
+  &__output .cds--tab-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    > * {
+      min-width: 100% !important;
+    }
+  }
+
+  .formbuilder .btn.formcomponent.drag-copy,
+  .btn.formcomponent.gu-mirror {
+    font-weight: normal;
     background-color: silver;
     border-color: silver;
-  }
-}
-
-.formbuilder-header {
-  padding-left: 18px;
-  padding-right: 18px;
-  font-size: 18px;
-  height: 80px;
-  border: 1px solid #dee2e6;
-  border-bottom: 0;
-
-  .formbuilder-title {
-    margin-top: 21px;
-    margin-bottom: 7px;
+    color: white;
   }
 
-  .formbuilder-subtitle {
-    margin-top: 0px;
-    margin-bottom: 12px;
-  }
-}
-
-.formbuilder {
-  background: white;
-  padding: 1rem;
-  border: 1px solid #dee2e6;
-  margin-right: 0 !important;
-  margin-left: 0 !important;
-
-  .form-builder-panel .builder-group-button {
-    &[aria-expanded='false'],
-    &[aria-expanded=''] {
-      color: #a9a9a9;
+  .formbuilder .btn.formcomponent.drag-copy,
+  .btn.formcomponent.gu-mirror {
+    &:hover,
+    &:active {
+      box-shadow: none;
     }
 
-    &[aria-expanded='true'] {
-      color: black;
+    &:active {
+      background-color: silver;
+      border-color: silver;
     }
   }
 
-  .drag-and-drop-alert {
-    display: none;
+  .formbuilder-header {
+    padding-left: 18px;
+    padding-right: 18px;
+    font-size: 18px;
+    height: 80px;
+    border: 1px solid #dee2e6;
+    border-bottom: 0;
+
+    .formbuilder-title {
+      margin-top: 21px;
+      margin-bottom: 7px;
+    }
+
+    .formbuilder-subtitle {
+      margin-top: 0px;
+      margin-bottom: 12px;
+    }
   }
 
-  .formarea {
-    padding: 10px;
-    border: solid 1px silver;
-    background-color: white;
-  }
-}
+  .formbuilder {
+    background: white;
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
 
-.increase-size {
-  font-size: 1rem;
+    .form-builder-panel .builder-group-button {
+      &[aria-expanded='false'],
+      &[aria-expanded=''] {
+        color: #a9a9a9;
+      }
+
+      &[aria-expanded='true'] {
+        color: black;
+      }
+    }
+
+    .drag-and-drop-alert {
+      display: none;
+    }
+
+    .formarea {
+      padding: 10px;
+      border: solid 1px silver;
+      background-color: white;
+    }
+  }
+
+  .increase-size {
+    font-size: 1rem;
+  }
+
+  .cds--tab-content {
+    background: white !important;
+  }
 }

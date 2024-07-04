@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,3 +22,5 @@ export * from './lib/security.module';
 export * from './lib/error/error';
 export * from './lib/error/error.component';
 export * from './lib/user-provider.service';
+export * from './lib/constants';
+export * from './lib/initializers';

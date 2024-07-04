@@ -68,7 +68,8 @@
               "src/styles.scss",
               "node_modules/flatpickr/dist/flatpickr.css",
               "dist/valtimo/components/assets/css/carbon.scss",
-              "dist/valtimo/components/assets/css/carbon-beagle-compatibility.scss",
+              "dist/valtimo/components/assets/css/color.scss",
+              "dist/valtimo/components/assets/css/compatibility.scss",
               "dist/valtimo/components/assets/css/design-tokens.css"
             ],
             "scripts": [
@@ -88,7 +89,6 @@
               "swagger-ui",
               "bpmn-js-properties-panel",
               "lodash",
-              "formiojs",
               "hammerjs",
               "camunda-bpmn-moddle/lib",
               "object-refs",
@@ -103,12 +103,6 @@
           },
           "configurations": {
             "production": {
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
-                }
-              ],
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
@@ -130,12 +124,6 @@
               ]
             },
             "test": {
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.test.ts"
-                }
-              ],
               "outputHashing": "all",
               "sourceMap": false,
               "extractLicenses": true,
@@ -158,18 +146,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "valtimo-angular-console:build"
+            "buildTarget": "valtimo-angular-console:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "valtimo-angular-console:build:production"
+              "buildTarget": "valtimo-angular-console:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "valtimo-angular-console:build"
+            "buildTarget": "valtimo-angular-console:build"
           }
         },
         "test": {
@@ -473,6 +461,76 @@
         }
       }
     },
+    "@valtimo/task-management": {
+      "root": "projects/valtimo/task-management",
+      "sourceRoot": "projects/valtimo/task-management/src",
+      "projectType": "library",
+      "prefix": "valtimo",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/valtimo/task-management/tsconfig.lib.json",
+            "project": "projects/valtimo/task-management/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/task-management/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.ts",
+            "tsConfig": "projects/valtimo/task-management/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/task-management/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/task-management/src/**/*.ts",
+              "projects/valtimo/task-management/src/**/*.html"
+            ]
+          }
+        },
+        "cypress-run": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "@valtimo/task-management:serve",
+            "configFile": "projects/valtimo/task-management/cypress.config.js"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "@valtimo/task-management:serve:production"
+            }
+          }
+        },
+        "cypress-open": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "watch": true,
+            "headless": false,
+            "configFile": "projects/valtimo/task-management/cypress.config.js"
+          }
+        },
+        "e2e": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "@valtimo/task-management:serve",
+            "watch": true,
+            "headless": false
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "@valtimo/task-management:serve:production"
+            }
+          }
+        }
+      }
+    },
     "@valtimo/access-control": {
       "projectType": "library",
       "root": "projects/valtimo/access-control",
@@ -693,21 +751,21 @@
         }
       }
     },
-    "@valtimo/choicefield": {
-      "root": "projects/valtimo/choicefield",
-      "sourceRoot": "projects/valtimo/choicefield/src",
+    "@valtimo/case-migration": {
+      "root": "projects/valtimo/case-migration",
+      "sourceRoot": "projects/valtimo/case-migration/src",
       "projectType": "library",
       "prefix": "valtimo",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/valtimo/choicefield/tsconfig.lib.json",
-            "project": "projects/valtimo/choicefield/ng-package.json"
+            "tsConfig": "projects/valtimo/case-migration/tsconfig.lib.json",
+            "project": "projects/valtimo/case-migration/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/valtimo/choicefield/tsconfig.lib.prod.json"
+              "tsConfig": "projects/valtimo/case-migration/tsconfig.lib.prod.json"
             }
           }
         },
@@ -715,28 +773,28 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "src/test.ts",
-            "tsConfig": "projects/valtimo/choicefield/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/choicefield/karma.conf.js"
+            "tsConfig": "projects/valtimo/case-migration/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/case-migration/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/valtimo/choicefield/src/**/*.ts",
-              "projects/valtimo/choicefield/src/**/*.html"
+              "projects/valtimo/case-migration/src/**/*.ts",
+              "projects/valtimo/case-migration/src/**/*.html"
             ]
           }
         },
         "cypress-run": {
           "builder": "@cypress/schematic:cypress",
           "options": {
-            "devServerTarget": "@valtimo/choicefield:serve",
-            "configFile": "projects/valtimo/choicefield/cypress.config.js"
+            "devServerTarget": "@valtimo/case-migration:serve",
+            "configFile": "projects/valtimo/case-migration/cypress.config.js"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "@valtimo/choicefield:serve:production"
+              "devServerTarget": "@valtimo/case-migration:serve:production"
             }
           }
         },
@@ -745,19 +803,19 @@
           "options": {
             "watch": true,
             "headless": false,
-            "configFile": "projects/valtimo/choicefield/cypress.config.js"
+            "configFile": "projects/valtimo/case-migration/cypress.config.js"
           }
         },
         "e2e": {
           "builder": "@cypress/schematic:cypress",
           "options": {
-            "devServerTarget": "@valtimo/choicefield:serve",
+            "devServerTarget": "@valtimo/case-migration:serve",
             "watch": true,
             "headless": false
           },
           "configurations": {
             "production": {
-              "devServerTarget": "@valtimo/choicefield:serve:production"
+              "devServerTarget": "@valtimo/case-migration:serve:production"
             }
           }
         }
@@ -828,76 +886,6 @@
           "configurations": {
             "production": {
               "devServerTarget": "@valtimo/process:serve:production"
-            }
-          }
-        }
-      }
-    },
-    "@valtimo/view-configurator": {
-      "root": "projects/valtimo/view-configurator",
-      "sourceRoot": "projects/valtimo/view-configurator/src",
-      "projectType": "library",
-      "prefix": "valtimo",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "tsConfig": "projects/valtimo/view-configurator/tsconfig.lib.json",
-            "project": "projects/valtimo/view-configurator/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/valtimo/view-configurator/tsconfig.lib.prod.json"
-            }
-          }
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "src/test.ts",
-            "tsConfig": "projects/valtimo/view-configurator/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/view-configurator/karma.conf.js"
-          }
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/view-configurator/src/**/*.ts",
-              "projects/valtimo/view-configurator/src/**/*.html"
-            ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/view-configurator:serve",
-            "configFile": "projects/valtimo/view-configurator/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/view-configurator:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/view-configurator/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/view-configurator:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/view-configurator:serve:production"
             }
           }
         }
@@ -1123,21 +1111,21 @@
         }
       }
     },
-    "@valtimo/contact-moment": {
-      "root": "projects/valtimo/contact-moment",
-      "sourceRoot": "projects/valtimo/contact-moment/src",
+    "@valtimo/zgw": {
+      "root": "projects/valtimo/zgw",
+      "sourceRoot": "projects/valtimo/zgw/src",
       "projectType": "library",
       "prefix": "valtimo",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/valtimo/contact-moment/tsconfig.lib.json",
-            "project": "projects/valtimo/contact-moment/ng-package.json"
+            "tsConfig": "projects/valtimo/zgw/tsconfig.lib.json",
+            "project": "projects/valtimo/zgw/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/valtimo/contact-moment/tsconfig.lib.prod.json"
+              "tsConfig": "projects/valtimo/zgw/tsconfig.lib.prod.json"
             }
           }
         },
@@ -1145,28 +1133,28 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "src/test.ts",
-            "tsConfig": "projects/valtimo/contact-moment/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/contact-moment/karma.conf.js"
+            "tsConfig": "projects/valtimo/zgw/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/zgw/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/valtimo/contact-moment/src/**/*.ts",
-              "projects/valtimo/contact-moment/src/**/*.html"
+              "projects/valtimo/zgw/src/**/*.ts",
+              "projects/valtimo/zgw/src/**/*.html"
             ]
           }
         },
         "cypress-run": {
           "builder": "@cypress/schematic:cypress",
           "options": {
-            "devServerTarget": "@valtimo/contact-moment:serve",
-            "configFile": "projects/valtimo/contact-moment/cypress.config.js"
+            "devServerTarget": "@valtimo/zgw:serve",
+            "configFile": "projects/valtimo/zgw/cypress.config.js"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "@valtimo/contact-moment:serve:production"
+              "devServerTarget": "@valtimo/zgw:serve:production"
             }
           }
         },
@@ -1175,19 +1163,19 @@
           "options": {
             "watch": true,
             "headless": false,
-            "configFile": "projects/valtimo/contact-moment/cypress.config.js"
+            "configFile": "projects/valtimo/zgw/cypress.config.js"
           }
         },
         "e2e": {
           "builder": "@cypress/schematic:cypress",
           "options": {
-            "devServerTarget": "@valtimo/contact-moment:serve",
+            "devServerTarget": "@valtimo/zgw:serve",
             "watch": true,
             "headless": false
           },
           "configurations": {
             "production": {
-              "devServerTarget": "@valtimo/contact-moment:serve:production"
+              "devServerTarget": "@valtimo/zgw:serve:production"
             }
           }
         }
@@ -1893,21 +1881,21 @@
         }
       }
     },
-    "@valtimo/form-link": {
+    "@valtimo/form-flow-management": {
       "projectType": "library",
-      "root": "projects/valtimo/form-link",
-      "sourceRoot": "projects/valtimo/form-link/src",
+      "root": "projects/valtimo/form-flow-management",
+      "sourceRoot": "projects/valtimo/form-flow-management/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/valtimo/form-link/tsconfig.lib.json",
-            "project": "projects/valtimo/form-link/ng-package.json"
+            "tsConfig": "projects/valtimo/form-flow-management/tsconfig.lib.json",
+            "project": "projects/valtimo/form-flow-management/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/valtimo/form-link/tsconfig.lib.prod.json"
+              "tsConfig": "projects/valtimo/form-flow-management/tsconfig.lib.prod.json"
             }
           }
         },
@@ -1915,28 +1903,28 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "src/test.ts",
-            "tsConfig": "projects/valtimo/form-link/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/form-link/karma.conf.js"
+            "tsConfig": "projects/valtimo/form-flow-management/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/form-flow-management/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/valtimo/form-link/src/**/*.ts",
-              "projects/valtimo/form-link/src/**/*.html"
+              "projects/valtimo/form-flow-management/src/**/*.ts",
+              "projects/valtimo/form-flow-management/src/**/*.html"
             ]
           }
         },
         "cypress-run": {
           "builder": "@cypress/schematic:cypress",
           "options": {
-            "devServerTarget": "@valtimo/form-link:serve",
-            "configFile": "projects/valtimo/form-link/cypress.config.js"
+            "devServerTarget": "@valtimo/form-flow-management:serve",
+            "configFile": "projects/valtimo/form-flow-management/cypress.config.js"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "@valtimo/form-link:serve:production"
+              "devServerTarget": "@valtimo/form-flow-management:serve:production"
             }
           }
         },
@@ -1945,19 +1933,89 @@
           "options": {
             "watch": true,
             "headless": false,
-            "configFile": "projects/valtimo/form-link/cypress.config.js"
+            "configFile": "projects/valtimo/form-flow-management/cypress.config.js"
           }
         },
         "e2e": {
           "builder": "@cypress/schematic:cypress",
           "options": {
-            "devServerTarget": "@valtimo/form-link:serve",
+            "devServerTarget": "@valtimo/form-flow-management:serve",
             "watch": true,
             "headless": false
           },
           "configurations": {
             "production": {
-              "devServerTarget": "@valtimo/form-link:serve:production"
+              "devServerTarget": "@valtimo/form-flow-management:serve:production"
+            }
+          }
+        }
+      }
+    },
+    "@valtimo/process-link": {
+      "projectType": "library",
+      "root": "projects/valtimo/process-link",
+      "sourceRoot": "projects/valtimo/process-link/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/valtimo/process-link/tsconfig.lib.json",
+            "project": "projects/valtimo/process-link/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/process-link/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.ts",
+            "tsConfig": "projects/valtimo/process-link/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/process-link/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/process-link/src/**/*.ts",
+              "projects/valtimo/process-link/src/**/*.html"
+            ]
+          }
+        },
+        "cypress-run": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "@valtimo/process-link:serve",
+            "configFile": "projects/valtimo/process-link/cypress.config.js"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "@valtimo/process-link:serve:production"
+            }
+          }
+        },
+        "cypress-open": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "watch": true,
+            "headless": false,
+            "configFile": "projects/valtimo/process-link/cypress.config.js"
+          }
+        },
+        "e2e": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "@valtimo/process-link:serve",
+            "watch": true,
+            "headless": false
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "@valtimo/process-link:serve:production"
             }
           }
         }
@@ -2313,76 +2371,6 @@
         }
       }
     },
-    "@valtimo/open-zaak": {
-      "projectType": "library",
-      "root": "projects/valtimo/open-zaak",
-      "sourceRoot": "projects/valtimo/open-zaak/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "tsConfig": "projects/valtimo/open-zaak/tsconfig.lib.json",
-            "project": "projects/valtimo/open-zaak/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/valtimo/open-zaak/tsconfig.lib.prod.json"
-            }
-          }
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "src/test.ts",
-            "tsConfig": "projects/valtimo/open-zaak/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/open-zaak/karma.conf.js"
-          }
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/open-zaak/src/**/*.ts",
-              "projects/valtimo/open-zaak/src/**/*.html"
-            ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/open-zaak:serve",
-            "configFile": "projects/valtimo/open-zaak/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/open-zaak:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/open-zaak/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/open-zaak:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/open-zaak:serve:production"
-            }
-          }
-        }
-      }
-    },
     "@valtimo/resource": {
       "projectType": "library",
       "root": "projects/valtimo/resource",
@@ -2448,76 +2436,6 @@
           "configurations": {
             "production": {
               "devServerTarget": "@valtimo/resource:serve:production"
-            }
-          }
-        }
-      }
-    },
-    "@valtimo/customer": {
-      "projectType": "library",
-      "root": "projects/valtimo/customer",
-      "sourceRoot": "projects/customer/resource/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "tsConfig": "projects/valtimo/customer/tsconfig.lib.json",
-            "project": "projects/valtimo/customer/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/valtimo/customer/tsconfig.lib.prod.json"
-            }
-          }
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "src/test.ts",
-            "tsConfig": "projects/valtimo/customer/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/customer/karma.conf.js"
-          }
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/customer/src/**/*.ts",
-              "projects/valtimo/customer/src/**/*.html"
-            ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/customer:serve",
-            "configFile": "projects/valtimo/customer/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/customer:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/customer/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/customer:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/customer:serve:production"
             }
           }
         }
@@ -2659,46 +2577,6 @@
             "production": {
               "devServerTarget": "@valtimo/plugin:serve:production"
             }
-          }
-        }
-      }
-    },
-    "@valtimo/exact-plugin": {
-      "projectType": "library",
-      "root": "projects/valtimo/exact-plugin",
-      "sourceRoot": "projects/valtimo/exact-plugin/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "project": "projects/valtimo/exact-plugin/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/valtimo/exact-plugin/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/valtimo/exact-plugin/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "src/test.ts",
-            "tsConfig": "projects/valtimo/exact-plugin/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/exact-plugin/karma.conf.js"
-          }
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/exact-plugin/**/*.ts",
-              "projects/valtimo/exact-plugin/**/*.html"
-            ]
           }
         }
       }

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -17,23 +17,28 @@
 <div
   *ngIf="{
     currentLanguage: currentLanguage$ | async,
-    formioOptions: formioOptions$ | async
+    formioOptions: formioOptions$ | async,
+    submission: submission$ | async,
+    readOnly: readOnly$ | async,
+    form: form$ | async,
+    errors: errors$ | async,
+    tokenSetInLocalStorage: tokenSetInLocalStorage$ | async
   } as obs"
 >
-  <div *ngIf="errors.length > 0" class="alert alert-danger pt-5 pb-5 mb-2">
+  <div *ngIf="obs.errors.length > 0" class="alert alert-danger pt-5 pb-5 mb-2">
     <ol>
-      <li *ngFor="let error of errors">
+      <li *ngFor="let error of obs.errors">
         {{ error }}
       </li>
     </ol>
   </div>
   <formio
-    *ngIf="obs.formioOptions"
-    [submission]="submission"
-    [form]="formDefinition"
+    *ngIf="obs.formioOptions && obs.form && obs.tokenSetInLocalStorage"
+    [submission]="obs.submission"
+    [form]="obs.form"
     [refresh]="refreshForm"
     [options]="obs.formioOptions"
-    [readOnly]="readOnly"
+    [readOnly]="obs.readOnly"
     (submit)="onSubmit($event)"
     (ready)="formReady($event)"
     (change)="onChange($event)"

@@ -1,0 +1,74 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<valtimo-carbon-list
+  *ngIf="{
+    loading: loading$ | async,
+    documentStatuses: documentStatuses$ | async
+  } as obs"
+  [items]="obs.documentStatuses"
+  [fields]="fields$ | async"
+  [header]="false"
+  [loading]="obs.loading"
+  [movingRowsEnabled]="true"
+  [actionItems]="ACTION_ITEMS"
+  (rowClicked)="openEditModal($event)"
+  (moveRow)="onMoveRowClick($event)"
+>
+  <ng-container
+    carbonToolbarContent
+    *ngTemplateOutlet="buttons; context: {obs: obs}"
+  ></ng-container>
+
+  <valtimo-no-results
+          [description]="'dossierManagement.statuses.noResults.description' | translate"
+          [title]="'dossierManagement.statuses.noResults.title' | translate"
+  ></valtimo-no-results>
+</valtimo-carbon-list>
+
+<valtimo-dossier-management-status-modal
+  [type]="statusModalType$ | async"
+  [prefill]="prefillStatus$ | async"
+  [usedKeys]="usedKeys$ | async"
+  [documentDefinitionName]="documentDefinitionName$ | async"
+  (closeModalEvent)="closeModal($event)"
+></valtimo-dossier-management-status-modal>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="dossierManagement.statuses.deleteText"
+  [outputOnConfirm]="statusToDelete$ | async"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="interface.delete"
+  (confirmEvent)="confirmDeleteStatus($event)"
+></valtimo-confirmation-modal>
+
+<ng-template #buttons let-obs="obs">
+  <div class="dossier-management-search-fields__buttons">
+    <button cdsButton="primary" [disabled]="obs.loading" (click)="openAddModal()">
+      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+
+      {{ 'dossierManagement.statuses.add' | translate }}
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #colorColumnTemplate let-data="data">
+  <cds-tag class="cds-tag--no-margin" [type]="data?.item?.tagType">
+    {{ 'interface.tagType.' + data?.item?.tagType | translate }}
+  </cds-tag>
+</ng-template>

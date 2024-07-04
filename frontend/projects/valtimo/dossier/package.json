@@ -1,15 +1,15 @@
 {
   "name": "@valtimo/dossier",
   "license": "EUPL-1.2",
-  "version": "11.2.0",
+  "version": "12.0.0",
   "peerDependencies": {
-    "@angular/common": "^16.2.0",
-    "@angular/core": "^16.2.0"
+    "@angular/common": "^17.2.2",
+    "@angular/core": "^17.2.2"
   },
   "dependencies": {
     "ngx-csv": "0.3.2",
-    "ngx-toastr": "17.0.2",
-    "moment": "2.29.4",
+    "ngx-toastr": "18.0.0",
+    "moment": "2.30.1",
     "@ngx-translate/core": "15.0.0",
     "@ngx-translate/http-loader": "8.0.0",
     "tslib": "2.6.2"

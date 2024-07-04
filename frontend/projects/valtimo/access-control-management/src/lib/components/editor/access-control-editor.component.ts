@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/co
 import {AccessControlService} from '../../services/access-control.service';
 import {BehaviorSubject, filter, finalize, map, Subscription, switchMap, take, tap} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
-import {EditorModel, PageTitleService} from '@valtimo/components';
+import {EditorModel, PageHeaderService, PageTitleService} from '@valtimo/components';
 import {Role} from '../../models';
 import {NotificationService} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
@@ -38,6 +38,7 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
   public readonly showEditModal$ = new BehaviorSubject<boolean>(false);
   public readonly selectedRowKeys$ = new BehaviorSubject<Array<string> | null>(null);
+  public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
   private _roleKeySubscription!: Subscription;
   private _roleKey!: string;
@@ -50,7 +51,8 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly notificationService: NotificationService,
     private readonly translateService: TranslateService,
-    private readonly accessControlExportService: AccessControlExportService
+    private readonly accessControlExportService: AccessControlExportService,
+    private readonly pageHeaderService: PageHeaderService
   ) {}
 
   public ngOnInit(): void {
@@ -141,12 +143,8 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
     });
   }
 
-  public exportPermissions(model: EditorModel): void {
-    this.accessControlExportService.downloadJson(
-      JSON.parse(model.value),
-      'separate',
-      this._roleKey
-    );
+  public exportPermissions(): void {
+    this.accessControlExportService.exportRoles({type: 'separate', roleKeys: [this._roleKey]}).subscribe()
   }
 
   private openRoleKeySubscription(): void {

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
   <cds-panel [expanded]="panelExpanded$ | async">
     <div cdsGrid [condensed]="true">
       <div cdsRow>
-        <div cdsCol [columnNumbers]="{lg: 16}" class="menu-tabs">
+        <div cdsCol [columnNumbers]="{lg: 16}" class="menu-tabs" cdsLayer>
           <cds-tabs class="cds--tab--list--full-width">
             <cds-tab [heading]="'account.title' | translate">
               <ng-container *ngTemplateOutlet="accountTabTemplate"></ng-container>
@@ -148,15 +148,15 @@
     </cds-list-header>
     <cds-list-row>
       <cds-list-column>
-        <cds-select
-          [disabled]="updatingUserSettings$ | async"
-          [ngModel]="selectedLanguage$ | async"
-          (ngModelChange)="updateUserLanguage($event)"
+        <cds-dropdown
+          [id]="'language-dropdown'"
+          [appendInline]="true"
+          [dropUp]="false"
+          (click)="$event.stopPropagation()"
+          (selected)="updateUserLanguage($event)"
         >
-          <option *ngFor="let lang of languageOptions$ | async" [value]="lang">
-            {{ 'settings.language.options.' + lang | translate }}
-          </option>
-        </cds-select>
+          <cds-dropdown-list [items]="(languageListItems$ | async) || []"></cds-dropdown-list>
+        </cds-dropdown>
       </cds-list-column>
     </cds-list-row>
   </cds-structured-list>
@@ -218,6 +218,48 @@
           [disabled]="updatingUserSettings$ | async"
           [ngModel]="collapsibleWidescreenMenu$ | async"
           (ngModelChange)="setCollapsibleWidescreenMenu($event)"
+        >
+        </cds-toggle>
+      </cds-list-column>
+    </cds-list-row>
+
+    <cds-list-row *ngIf="allowUserThemeSwitching">
+      <cds-list-column>
+        <cds-dropdown
+          [label]="'settings.interface.themePreference' | translate"
+          [appendInline]="true"
+          (click)="$event.stopPropagation()"
+          (selected)="setPreferredTheme($event)"
+          [dropUp]="false"
+        >
+          <cds-dropdown-list [items]="(themeOptions$ | async) || []"></cds-dropdown-list>
+        </cds-dropdown>
+      </cds-list-column>
+    </cds-list-row>
+
+    <cds-list-row *ngIf="enableCompactModeToggle">
+      <cds-list-column>
+        <cds-toggle
+          [label]="'settings.interface.compactMode' | translate"
+          [onText]="'interface.on' | translate"
+          [offText]="'interface.off' | translate"
+          [disabled]="updatingUserSettings$ | async"
+          [ngModel]="compactMode$ | async"
+          (ngModelChange)="setCompactMode($event)"
+        >
+        </cds-toggle>
+      </cds-list-column>
+    </cds-list-row>
+
+    <cds-list-row *ngIf="enableShowUserNameToggle">
+      <cds-list-column>
+        <cds-toggle
+          [label]="'settings.interface.showUserName' | translate"
+          [onText]="'interface.on' | translate"
+          [offText]="'interface.off' | translate"
+          [disabled]="updatingUserSettings$ | async"
+          [ngModel]="showUserNameInTopBar$ | async"
+          (ngModelChange)="setShowUserName($event)"
         >
         </cds-toggle>
       </cds-list-column>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   AfterViewInit,
   Component,
@@ -24,11 +23,11 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {EditorService} from './editor.service';
-import {first, Subscription} from 'rxjs';
 import {editor} from 'monaco-editor';
+import {first, Subscription} from 'rxjs';
 import {EditorModel} from '../../models';
 import {ShellService} from '../../services/shell.service';
+import {EditorService} from './editor.service';
 
 declare const monaco: any;
 
@@ -56,11 +55,15 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   @Input() widthPx!: number;
   @Input() heightPx!: number;
   @Input() heightStyle!: string;
+  @Input() jsonSchema?: string;
+  @Input() fitPage = false;
+  @Input() fitPageExtraSpace = 0;
 
   @Output() validEvent: EventEmitter<boolean> = new EventEmitter();
   @Output() valueChangeEvent: EventEmitter<string> = new EventEmitter();
 
   private _disabled!: boolean;
+  private _formatting = false;
   private _editor: editor.IStandaloneCodeEditor;
   private _editorOptions: editor.IEditorOptions;
   private _model: EditorModel;
@@ -99,18 +102,30 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   private updateModel(): void {
     if (this._editor && this._model && monaco?.editor) {
-      const model = monaco.editor.createModel(
-        this._model.value,
-        this._model.language,
-        this._model.uri
-      );
+      let model = null;
+      if (this._model.uri) {
+        model = monaco.editor.getModel(monaco.Uri.parse(this._model.uri));
+        if (model != null) {
+          model.setValue(this._model.value);
+        }
+      }
+
+      if (model == null) {
+        model = monaco.editor.createModel(
+          this._model.value,
+          this._model.language,
+          this._model.uri == null ? null : monaco.Uri.parse(this._model.uri)
+        );
+      }
 
       this._editor.setModel(model);
+      this.initJsonSchemaValidation();
+      this.formatDocument();
     }
   }
 
   private setDisabled(disabled: boolean): void {
-    if (!this._editor) {
+    if (!this._editor || this._formatting) {
       return;
     }
 
@@ -124,11 +139,15 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   private formatDocument = (): void => {
     if (this.formatOnLoad && this._editor) {
       this.setDisabled(false);
-      this._editor.getAction('editor.action.formatDocument').run();
+      this._formatting = true;
+      this._editor
+        .getAction('editor.action.formatDocument')
+        ?.run()
+        .finally(() => {
+          this._formatting = false;
+          this.setDisabled(this._disabled);
+        });
       this.checkValidity();
-      setTimeout(() => {
-        this.setDisabled(this._disabled);
-      }, 100);
     }
   };
 
@@ -163,5 +182,26 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
     this.setEditorEvents();
     this.updateModel();
+  }
+
+  private initJsonSchemaValidation() {
+    if (!!this.jsonSchema && !!this._model.uri) {
+      const id = this.jsonSchema['$id'];
+      const key = id.split('.')[0];
+      monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+        validate: true,
+        schemas: [
+          {
+            uri: id,
+            fileMatch: ['*.' + key + '.json'],
+            schema: this.jsonSchema,
+          },
+        ],
+      });
+    } else {
+      monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+        validate: true,
+      });
+    }
   }
 }

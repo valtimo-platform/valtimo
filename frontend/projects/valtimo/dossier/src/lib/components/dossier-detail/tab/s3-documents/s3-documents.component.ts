@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {DocumentService, RelatedFile} from '@valtimo/document';
+import {DocumentService, FileSortService, RelatedFile} from '@valtimo/document';
 import {DownloadService, ResourceDto, UploadProviderService} from '@valtimo/resource';
 import {ToastrService} from 'ngx-toastr';
 import {map, switchMap} from 'rxjs/operators';
@@ -24,7 +24,6 @@ import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 import {ConfigService} from '@valtimo/config';
 import {PromptService} from '@valtimo/components';
-import {FileSortService} from '../../../../services/file-sort.service';
 
 @Component({
   selector: 'valtimo-dossier-detail-tab-s3-documents',

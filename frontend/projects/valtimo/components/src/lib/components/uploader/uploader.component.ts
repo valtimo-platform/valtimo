@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,21 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {S3Service, S3Resource} from '@valtimo/resource';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {S3Resource, S3Service} from '@valtimo/resource';
 
 @Component({
   selector: 'valtimo-uploader',
   templateUrl: './uploader.component.html',
   styleUrls: ['./uploader.component.css'],
 })
-export class UploaderComponent implements OnInit {
+export class UploaderComponent {
   public resources: any = [];
   @Output() resourcesChanged: EventEmitter<any> = new EventEmitter();
   @Output() resourceRegistered: EventEmitter<S3Resource> = new EventEmitter();
   @Input() showFileList = true;
 
   constructor(private s3Service: S3Service) {}
-
-  ngOnInit() {}
 
   onFileFieldChange(files) {
     for (const file of files) {

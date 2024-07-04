@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AfterContentInit, Component, OnDestroy, OnInit} from '@angular/core';
+import {AfterContentInit, Component, OnDestroy} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {Alert, AlertType} from '../../models';
 import {AlertService} from './alert.service';
@@ -27,7 +27,7 @@ declare var $;
   templateUrl: './alert.component.html',
   styleUrls: ['./alert.component.css'],
 })
-export class AlertComponent implements OnInit, AfterContentInit, OnDestroy {
+export class AlertComponent implements AfterContentInit, OnDestroy {
   alerts: Alert[] = [];
   subscription: Subscription;
   autoCloseInMS: number;
@@ -35,8 +35,6 @@ export class AlertComponent implements OnInit, AfterContentInit, OnDestroy {
   constructor(private alertService: AlertService) {
     this.autoCloseInMS = 5000;
   }
-
-  ngOnInit() {}
 
   ngAfterContentInit() {
     this.subscription = this.alertService.onAlert().subscribe(alert => {

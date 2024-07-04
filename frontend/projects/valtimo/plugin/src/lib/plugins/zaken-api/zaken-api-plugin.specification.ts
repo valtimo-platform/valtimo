@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,11 @@ import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuu
 import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
+import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
+import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
+import {CreateZaakeigenschapComponent} from './components/create-zaakeigenschap/create-zaakeigenschap.component';
+import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/update-zaakeigenschap.component';
+import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -39,6 +44,11 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-natuurlijk-persoon-zaak-rol': CreateNatuurlijkPersoonZaakRolComponent,
     'create-niet-natuurlijk-persoon-zaak-rol': CreateNietNatuurlijkPersoonZaakRolComponent,
     'set-zaakopschorting': SetZaakopschortingComponent,
+    'start-hersteltermijn': StartHersteltermijnConfigurationComponent,
+    'end-hersteltermijn': EndHersteltermijnComponent,
+    'create-zaakeigenschap': CreateZaakeigenschapComponent,
+    'update-zaakeigenschap': UpdateZaakeigenschapComponent,
+    'delete-zaakeigenschap': DeleteZaakeigenschapComponent,
   },
   pluginTranslations: {
     nl: {
@@ -88,6 +98,26 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - natuurlijk persoon',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - niet natuurlijk persoon',
       'set-zaakopschorting': 'Schort een zaak op',
+      'start-hersteltermijn': 'Start hersteltermijn',
+      startRecoveryPeriodInformation:
+        'Deze actie start een hersteltermijn voor de zaak die aan dit proces is gekoppeld.',
+      maxDurationInDays: 'Maximale duur in dagen',
+      maxDurationInDaysTooltip:
+        'De ingevoerde waarde vertegenwoordigt de maximale duur van de hersteltermijn in dagen.',
+      'end-hersteltermijn': 'Beëindig hersteltermijn',
+      endHersteltermijnInformation: 'Beëindigt de momenteel lopende hersteltermijn van de Zaak',
+      'create-zaakeigenschap': 'Creëer zaakeigenschap',
+      'update-zaakeigenschap': 'Bijwerken zaakeigenschap',
+      'delete-zaakeigenschap': 'Verwijder zaakeigenschap',
+      eigenschapUrl: 'Eigenschap URL',
+      eigenschapUrlTooltip: 'URL-referentie naar de eigenschap.',
+      eigenschapValue: 'Eigenschap waarde',
+      eigenschapValueTooltip: 'De waarde van de zaakeigenschap',
+      eigenschapUrlSelect: 'Eigenschap',
+      eigenschapUrlSelectTooltip: 'Selecteer een eigenschap.',
+      inputTypeEigenschapToggle: 'Invoertype eigenschap-URL',
+      caseDefinitionTooltipEigenschap:
+        'Selecteer de dossierdefinitie waarvan u een eigenschap wilt selecteren. Als er slechts één eigenschap beschikbaar is, wordt deze standaard geselecteerd.',
       roltypeUrl: 'Roltype URL',
       rolToelichting: 'Roltoelichting',
       inpBsn: 'Initiator BSN',
@@ -175,6 +205,26 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - natural person',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - not a natural person',
       'set-zaakopschorting': 'Suspend case',
+      'start-hersteltermijn': 'Start recovery period',
+      startHersteltermijnInformation:
+        'This action initiates a recovery period for the case associated with this process.',
+      maxDurationInDays: 'Maximum duration in days',
+      maxDurationInDaysTooltip:
+        'The entered value represents the maximum duration of the recovery period in days.',
+      'end-hersteltermijn': 'End recovery period',
+      endHersteltermijnInformation: 'Ends the currently running recovery period of the Zaak',
+      'create-zaakeigenschap': 'Create zaakeigenschap',
+      'update-zaakeigenschap': 'Update zaakeigenschap',
+      'delete-zaakeigenschap': 'Delete zaakeigenschap',
+      eigenschapUrl: 'Property URL',
+      eigenschapUrlTooltip: 'URL reference to the eigenschap.',
+      eigenschapValue: 'Eigenschap value',
+      eigenschapValueTooltip: 'The value of the zaakeigenschap',
+      eigenschapUrlSelect: 'Eigenschap',
+      eigenschapUrlSelectTooltip: 'Select a eigenschap.',
+      inputTypeEigenschapToggle: 'Input type eigenschap-URL',
+      caseDefinitionTooltipEigenschap:
+        'Select the case definition from which you want to select an eigenschap. If only one eigenschap is available, it will be selected by default.',
       roltypeUrl: 'Role type URL',
       rolToelichting: 'Role explanation',
       inpBsn: 'Initiator BSN',
@@ -262,6 +312,26 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol erstellen – natürliche Person',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Zaakrol erstellen – keine natürliche Person',
       'set-zaakopschorting': 'Einen Fall aussetzen',
+      'start-hersteltermijn': 'Beginnen Sie mit der Erholungsphase',
+      startHersteltermijnInformation:
+        'Diese Aktion startet eine Erholungszeit für den Fall, der mit diesem Prozess verknüpft ist.',
+      maxDurationInDays: 'Maximale Dauer in Tagen',
+      maxDurationInDaysTooltip:
+        'Der eingegebene Wert stellt die maximale Dauer der Erholungszeit in Tagen dar.',
+      'end-hersteltermijn': 'Beenden Sie mit der Erholungsphase',
+      endHersteltermijnInformation: 'Beenden die aktuelle Erholungsphase des Case',
+      'create-zaakeigenschap': 'Zaakeigenschaft erstellen',
+      'update-zaakeigenschap': 'Zaakeigenschaft aktualisieren',
+      'delete-zaakeigenschap': 'Zaakeigenschaft löschen',
+      eigenschapUrl: 'Eigenschafts-URL',
+      eigenschapUrlTooltip: 'URL-Referenz zur Eigenschaft.',
+      eigenschapValue: 'Eigenschaftswert',
+      eigenschapValueTooltip: 'Der Wert der Zaakeigenschaft',
+      inputTypeEigenschapToggle: 'Eingabetyp eigenschap-URL',
+      eigenschapUrlSelect: 'Eigenschap',
+      eigenschapUrlSelectTooltip: 'Wählen Sie den eigenschap aus.',
+      caseDefinitionTooltipEigenschap:
+        'Wählen Sie die eigenschap aus, aus der Sie einen eigenschap auswählen möchten. Wenn nur ein Statustyp verfügbar ist, wird dieser standardmäßig ausgewählt.',
       roltypeUrl: 'Rollentyp-URL',
       rolToelichting: 'Rollenerklärung',
       inpBsn: 'Initiator BSN',

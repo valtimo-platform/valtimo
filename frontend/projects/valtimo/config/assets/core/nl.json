@@ -79,7 +79,9 @@
       "notes": "Notities",
       "MINE": "Mijn dossiers",
       "OPEN": "Niet-toegewezen dossiers",
-      "ALL": "Alle dossiers"
+      "ALL": "Alle dossiers",
+      "componentNotFound": "Tab-component niet gevonden",
+      "componentNotFoundMessage": "Er is geen component beschikbaar voor dit tabblad. Neem contact op met de systeemnbeheerder."
     },
     "forms": {
       "globalSearchPlaceHolder": "Alles",
@@ -126,14 +128,22 @@
         "description": "Weet je zeker dat je deze notitie wilt verwijderen?",
         "deletedMessage": "De notitie is met succes verwijderd."
       },
-      "editedMessage": "De notitie is met succes bewerkt."
+      "editedMessage": "De notitie is met succes bewerkt.",
+      "noResults": {
+        "title": "Geen notities",
+        "description": "Er zijn geen notities in dit dossier."
+      }
     },
     "documenten": {
       "noProcessLinked": {
         "regularUser": "Het uploaden van documenten is in dit geval niet beschikbaar. Neem contact op met een beheerder",
         "adminRole": "Het proces voor het uploaden van documenten is niet geconfigureerd. Configureer dit proces op de casebeheerpagina"
       },
-      "noZaakFound": "Er konden geen bestanden worden opgehaald omdat er voor dit dossier geen Zaak is gevonden."
+      "navigateToCaseAdmin": "Configureer Zaak",
+      "noZaakFoundTitle": "Geen Zaak gevonden",
+      "noZaakFound": "Er konden geen bestanden worden opgehaald omdat er voor dit dossier geen Zaak is gevonden.",
+      "noFilesTitle": "Geen bestanden",
+      "noFiles": "Geen bestanden gevonden voor deze zaak."
     },
     "startSubProcess": "Start",
     "claimAssigneeCase": "Claimen",
@@ -156,11 +166,14 @@
     },
     "id": "Referentie ID",
     "createdBy": "Aangemaakt door",
-    "createdOn": "Aangemaakt op",
+    "createdOn": "Aanmaakdatum",
     "sequence": "Volgnummer",
     "fillInMetadata": "Informatie over dit bestand",
     "cancel": "Annuleren",
     "upload": "Uploaden",
+    "size": "Omvang",
+    "format": "Bestandsformaat",
+    "trefwoorden": "Trefwoorden",
     "filename": "Bestandsnaam",
     "filenameTooltip": "De naam van het fysieke bestand waarin de inhoud van het document is vastgelegd, inclusief extensie",
     "confidentialityLevel": "Vertrouwelijkheidsaanduiding",
@@ -200,7 +213,27 @@
     "informatieobjecttypeTooltip": "Een documenttype dat gerelateerd is aan het zaaktype van het huidige dossier",
     "additionalDate": "Aanvullende documentdatum",
     "additionalDateTooltip": "Een aanvullende datum die als metadata aan het document kan worden toegevoegd. Deze extra datum is optioneel. Als 'Ontvangstdatum' is geselecteerd, kan de documentstatus alleen worden ingesteld op 'definitief' of 'gearchiveerd'.",
-    "noAdditionalDate": "Geen aanvullende datum"
+    "noAdditionalDate": "Geen aanvullende datum",
+    "delete": "Verwijderen",
+    "download": "Downloaden",
+    "application/octet-stream": "Onbekend",
+    "application/json": "JSON",
+    "application/msword": "DOC",
+    "application/pdf": "PDF",
+    "application/vnd.ms-powerpoint": "PPT",
+    "application/vnd.ms-excel": "XLS",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": "PPTX",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "XLSX",
+    "audio/mpeg": "MP3",
+    "image/bmp": "BMP",
+    "image/gif": "GIF",
+    "image/jpeg": "JPEG",
+    "image/png": "PNG",
+    "image/svg+xml": "SVG",
+    "text/csv": "CSV",
+    "text/plain": "TXT",
+    "video/mp4": "MP4"
   },
   "summary": {
     "userTasksDoneState": "Helemaal bij!",
@@ -263,8 +296,10 @@
     "task": {
       "title": "Taak"
     },
-    "noDashboards": "Er zijn geen dashboards geconfigureerd.",
-    "noWidgets": "Er zijn geen widgets geconfigureerd voor dit dashboard."
+    "noDashboards": "Geen dashboards",
+    "noDashboardsDescription": "Het kan zijn dat de systeembeheerder nog geen dashboards heeft geconfigureerd, of je hebt niet de juiste rechten om dashboards te zien.",
+    "noWidgets": "Geen widgets",
+    "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit dashboard, of je hebt niet de juiste rechten om deze te zien."
   },
   "dashboardManagement": {
     "addDashboard": "Nieuw dashboard toevoegen",
@@ -373,7 +408,15 @@
     },
     "interface": {
       "title": "Interface",
-      "collapsibleMenu": "Navigatiebalk altijd inklapbaar"
+      "themePreference": "Thema",
+      "themes": {
+        "light": "Licht",
+        "dark": "Donker (Beta)",
+        "system": "Systeem (Beta)"
+      },
+      "collapsibleMenu": "Navigatiebalk altijd inklapbaar",
+      "compactMode": "Compacte modus",
+      "showUserName": "Toon naam van gebruiker"
     }
   },
   "decisions": {
@@ -407,7 +450,12 @@
     "delete": "Verwijderen",
     "deploy": "Deploy",
     "duplicate": "Dupliceren",
-    "readOnly": "Alleen-lezen"
+    "readOnly": "Alleen-lezen",
+    "tabs": {
+      "formBuilder": "Formulier editor",
+      "jsonEditor": "JSON editor",
+      "output": "Uitvoer"
+    }
   },
   "dossierManagement": {
     "version": "Versie: ",
@@ -451,7 +499,8 @@
       "searchFields": "Zoekvelden",
       "listColumns": "Lijst",
       "tabManagement": "Tabbladen",
-      "document": "Document"
+      "document": "Document",
+      "statuses": "Statussen"
     },
     "tabManagement": {
       "columns": {
@@ -499,6 +548,11 @@
     "importDefinition": {
       "title": "Case-definitie importeren",
       "overwriteWarning": "Als je case-definitie configuraties, modellen en/of definities bevat met een naam of identifier die al op je systeem aanwezig zijn, worden deze overschreven.",
+      "startUpload": "Begin het uploaden",
+      "checkbox": {
+        "message": "Ik begrijp dat configuraties mogelijk worden overschreven",
+        "error": "Dit veld is verplicht"
+      },
       "info": {
         "title": "Let op",
         "message": "Zorg er vóór het importeren voor dat de plug-inconfiguraties waarnaar wordt verwezen in proceslinks aanwezig zijn."
@@ -519,9 +573,58 @@
         "title": "Het bestand bevat een fout."
       },
       "steps": {
-        "accessControl": "Vergeet niet de rechten in Access Control in te stellen. Zonder de juiste rechten is uw nieuwe casusdefinitie niet toegankelijk.",
-        "dashboard": "Je kunt widgets voor dit proces op het dashboard plaatsen. Deze kun je configureren onder 'dashboards'.",
-        "plugins": "Dit proces maakt mogelijk gebruik van plugins. Zorg dat je deze goed instelt."
+        "accessControl": {
+          "message": "Vergeet niet de rechten in Access Control in te stellen. Zonder de juiste rechten is uw nieuwe casusdefinitie niet toegankelijk.",
+          "title": "Access control"
+        },
+        "dashboard": {
+          "message": "Je kunt widgets voor dit proces op het dashboard plaatsen. Deze kun je configureren onder 'dashboards'.",
+          "title": "Dashboard"
+        },
+        "plugins": {
+          "message": "Dit proces maakt mogelijk gebruik van plugins. Zorg dat je deze goed instelt.",
+          "title": "Plugin configuraties"
+        }
+      }
+    },
+    "createDefinition": {
+      "idError": "Deze definitienaam is al in gebruik. Wijzig dit naar een unieke naam",
+      "modalTitle": "Dossierdefinitie maken",
+      "name": "Dossierdefinitienaam",
+      "namePlaceholder": "De naam van de dossierdefinitie wordt hier automatisch gegenereerd",
+      "nameTooltip": "De naam wordt gebruikt voor de systeemnamen, $id etc. Er zijn geen spaties of speciale tekens toegestaan behalve “-”.",
+      "title": "Dossierdefinitietitel",
+      "titlePlaceholder": "Voer hier de titel in",
+      "titleTooltip": "De titel wordt gebruikt voor de naam van de definitie in de interface"
+    },
+    "documentDefinition": {
+      "cancelModal": {
+        "title": "De editor verlaten",
+        "content": "Weet je zeker dat je de editor wilt verlaten? Er kunnen niet-opgeslagen wijzigingen zijn die verloren gaan. Houd er bij het opslaan rekening mee dat het verwijderen of wijzigen van een attribuut de zaakdefinitie kan beschadigen.",
+        "keepEditing": "Blijf bewerken"
+      },
+      "saveModalContent": "Weet je zeker dat je de documentdefinitie wilt opslaan? Het verwijderen of wijzigen van een attribuut kan de zaakdefinitie verbreken."
+    },
+    "statuses": {
+      "withoutStatus": "Toon dossiers zonder status",
+      "searchFieldTitle": "Status",
+      "add": "Status toevoegen",
+      "edit": "Status bewerken",
+      "visibleTitle": "Standaardzichtbaarheid in dossierlijst",
+      "visible": "Zichtbaar",
+      "invisible": "Niet zichtbaar",
+      "deleteText": "Weet je zeker dat je deze status wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
+      "keyAutoGenerated": "De sleutel wordt automatisch gegenereerd",
+      "colorPlaceholder": "Kies een kleur",
+      "columns": {
+        "title": "Statusnaam",
+        "key": "Statussleutel",
+        "visible": "Standaard zichtbaar",
+        "color": "Kleur"
+      },
+      "noResults": {
+        "title": "Er zijn geen statussen",
+        "description": "Voeg een status toe om te beginnen"
       }
     }
   },
@@ -554,7 +657,8 @@
     },
     "goToCase": "Ga naar dossier",
     "caseLocked": "Je hebt geen toegang tot dit dossier",
-    "rowLocked": "Je hebt geen toegang tot deze taak"
+    "rowLocked": "Je hebt geen toegang tot deze taak",
+    "allCases": "Alle dossiers"
   },
   "Task": "Taak",
   "Tasks": "Taken",
@@ -583,6 +687,7 @@
   "Create new Form": "Maak nieuw Formulier",
   "Form Builder": "Formulier Bouwer",
   "Process links": "Proceskoppelingen",
+  "Translations": "Vertalingen",
   "uploadFormDefinition": "Upload formulier-definitie",
   "Process migration": "Procesmigratie",
   "Process migration warning": "<b>Let op:</b> Bij het migreren van een proces worden de candidate groups van de lopende proces instanties niet meegenomen. Dit kan gedaan worden in de database indien nodig. (Voorbeeld: wanneer een specifieke gebruikerstaak op de ROLE_USER stond en de candidate group voor deze taak is veranderd in het proces naar ROLE_ADMIN blijft de taak beschikbaar voor ROLE_USER. Enkel nieuw gestartte processen krijgen de nieuwe candidate group)",
@@ -621,7 +726,8 @@
     "readOnlySystemProcessWarningMessage": "Dit is een systeemproces, daarmee is het gemarkeerd als alleen-lezen. Dit proces is wel te gebruiken maar niet aan te passen."
   },
   "processCaseConnection": {
-    "noProcesses": "Er zijn nog geen processen gekoppeld aan deze Case definition.",
+    "noProcessesTitle": "Geen processen",
+    "noProcessesDescription": "Er zijn nog geen processen gekoppeld aan deze Case definitie",
     "processCreatesCase": "Proces maakt nieuw dossier aan",
     "processCreatesCaseTooltip": "Wanneer deze optie is geselecteerd wordt bij het starten van dit proces een nieuw dossier aangemaakt. Hiervoor moet er een startformulier gekoppeld zijn aan de eerste stap in het proces.",
     "startableWithinCase": "Kan gestart worden binnen bestaand dossier",
@@ -629,6 +735,14 @@
   },
   "openZaak": {
     "links": "Gekoppeld zaak type",
+    "documentenApi": {
+      "title": "Documenten API",
+      "documentenApiVersion": "De Documenten API-plugin gebruikt versie",
+      "noVersionWarningTitle": "Geen Documenten API-plugin versie gedetecteerd",
+      "noVersionWarningMessage": "Configureer de Documenten API-plugin versie en configureer het uploadproces",
+      "multipleVersionsWarningTitle": "Meerdere Documenten API-plugins gedetecteerd",
+      "multipleVersionsWarningMessage": "Het uploadproces is gekoppelt aan meerdere Documenten API's met verschillende versies"
+    },
     "success": {
       "serviceTaskLinked": "Servicetaak gekoppeld",
       "serviceTaskLinkUpdated": "Servicetaak-link bijgewerkt",
@@ -644,8 +758,26 @@
     "autoCreateForCase": "Automatisch aanmaken voor elk dossier",
     "selectZaakTypeForCase": "Kies zaaktype voor dossier",
     "selectZaakType": "Kies zaaktype",
+    "selectZakenApiPluginForCase": "Kies Zaken Api plugin voor aanmaken zaak",
+    "selectZakenApiPlugin": "Kies Zaken Api plugin",
+    "zakenApiPlugin": "Zaken Api plugin",
+    "rsin": "RSIN gebruikt bij aanmaken zaak",
     "selectInfoObjectType": "Kies informatieobject-type",
     "save": "Opslaan"
+  },
+  "zaakdetails": {
+    "title": "Zaakdetail-synchronisatie",
+    "enabled": "Ingeschakeld",
+    "yes": "Ja",
+    "no": "Nee",
+    "objectManagementConfigurationTitle": "Object management-configuratie",
+    "submitButton": "Configureer zaakdetail-synchronisatie",
+    "editModal": {
+      "title": "Voeg zaakdetail-synchronisatie toe",
+      "objectManagementConfiguration": "Object management-configuratie",
+      "objectManagementConfigurationPlaceholder": "Selecteer een object management-configuratie",
+      "enabled": "Ingeschakeld"
+    }
   },
   "interface": {
     "mainMenu": "Hoofdmenu",
@@ -679,6 +811,7 @@
     "deleteConfirmation": "Weet u zeker dat u wilt verwijderen?",
     "cancel": "Annuleren",
     "close": "Sluiten",
+    "discard": "Weggooien",
     "next": "Volgende",
     "skip": "Overslaan",
     "confirm": "Bevestigen",
@@ -705,7 +838,25 @@
     },
     "required": "vereist",
     "filter": "Filteren...",
-    "back": "Terug"
+    "back": "Terug",
+    "warning": "Waarschuwing",
+    "finish": "Finish",
+    "add": "Toevoegen",
+    "tags": "Tags",
+    "tagType": {
+      "red": "Rood",
+      "magenta": "Magenta",
+      "purple": "Paars",
+      "blue": "Blauw",
+      "cyan": "Cyaan",
+      "teal": "Blauwgroen",
+      "green": "Groen",
+      "gray": "Grijs",
+      "cool-gray": "Koel grijs",
+      "warm-gray": "Warm grijs",
+      "high-contrast": "Hoog contrast",
+      "outline": "Omlijnd"
+    }
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",
@@ -1094,7 +1245,9 @@
     "configFile": "Configuratiebestand",
     "dropdownListValues": "Dropdown lijst waarden",
     "id": "ID",
-    "text": "Text"
+    "text": "Text",
+    "noSearchfieldsTitle": "Geen zoekvelden",
+    "noSearchfieldsDescription": "Er zijn geen zoekvelden geconfigureerd voor dit dossiertype."
   },
   "searchFieldsOverviewTooltips": {
     "title": "De titel is een optioneel veld dat wordt weergegeven als een label voor het huidige zoekveld. Als de titel niet is ingesteld, is de standaardwaarde de sleutelvertaling van het zoekveld (als er geen vertaling beschikbaar is, wordt de oorspronkelijke sleutelwaarde weergegeven).",
@@ -1136,9 +1289,9 @@
     "sortableAsc": "Oplopend",
     "sortableDesc": "Aflopend",
     "hasEnvConfigWarningTitle": "Dit dossiertype heeft al een kolomconfiguratie",
-    "hasEnvConfigWarning": "Dit dossiertype heeft al een kolomconfiguratie beschikbaar in de omgevingsconfiguratie van de applicatie. Om het configureren van de kolommen voor dit dossiertype via de gebruikersinterface mogelijk te maken, moet deze omgevingsconfiguratie verwijderd worden.",
-    "noConfigWarningTitle": "Geen kolommen geconfigureerd",
-    "noConfigWarning": "Er zijn geen kolommen geconfigureerd voor dit dossiertype. Klik op de knop hierboven om een kolom toe te voegen.",
+    "hasEnvConfigWarning": "Dit dossiertype heeft al een kolomconfiguratie in de omgevingsconfiguratie. Verwijder deze om kolommen hier te configureren.",
+    "noConfigWarningTitle": "Geen kolommen",
+    "noConfigWarning": "Er zijn geen kolommen geconfigureerd voor dit dossiertype.",
     "addButtonText": "Kolom toevoegen",
     "editColumnTitle": "Kolom bewerken",
     "close": "Sluiten",
@@ -1161,7 +1314,8 @@
     "boolean": "Ja/nee",
     "enum": "Opsomming",
     "arrayCount": "Hoeveelheid",
-    "underscoresToSpaces": "Lage strepen naar spaties"
+    "underscoresToSpaces": "Lage strepen naar spaties",
+    "tags": "Tags"
   },
   "object": {
     "title": "Objects",
@@ -1233,7 +1387,10 @@
     "Cancel": "Annuleren",
     "Remove": "Verwijderen",
     "Next": "Volgende",
-    "Previous": "Vorige"
+    "Previous": "Vorige",
+    "formioIbanComponent": {
+      "errorMessage": "Geen geldige IBAN. Voer een geldige IBAN in."
+    }
   },
   "viewTypeConverter": {
     "Yes": "Ja",
@@ -1307,5 +1464,47 @@
       "description": "Klik op <strong>Nieuw script toevoegen</strong> om te beginnen met het ontwerpen van uw script",
       "title": "Geen scripts toegevoegd"
     }
+  },
+  "translationManagement": {
+    "add": "Vertaling toevoegen",
+    "modalTitle": "Vertalingen opslaan",
+    "modalContent": "Het weergeven van nieuwe vertalingen in de applicatie vereist mogelijk een herladen van de pagina.",
+    "saveWithoutReload": "Opslaan",
+    "saveWithReload": "Opslaan en opnieuw laden"
+  },
+  "caseMigration": {
+    "warningBeta": "Dossier migratie is nog in bèta. Het migreren van dossiers kan onverwachte resultaten opleveren. Wees voorzichtig.",
+    "caseDefinition": "Dossier definitie",
+    "sourceDocumentDefinitionName": "Bron dossier definitienaam",
+    "sourceDocumentDefinitionVersion": "Bron dossier definitieversie",
+    "targetDocumentDefinitionName": "Doel dossier definitienaam",
+    "targetDocumentDefinitionVersion": "Doel dossier definitieversie",
+    "patches": "Patches",
+    "patchTooltip": "The old case can be migrated to the new case by using patches. Patches work by moving case properties from the source location to the target location. For example: source: '/oldLocation/firstName', target: '/newLocation/firstName'. A property can be removed by leaving the target empty. For example: source: '/gulden', target: ''. A property can be given a default value in the source field. For example, source: 'John', target: '/firstName'. A patch will always try to convert the type to the target type. For example, source: '/my/number', target: '/my/text'. A property can be set to [NULL] by using SpEL expressions. For example, source: '${null}', target: '/driversLicense'. A Spring bean can be called for more elaborate patches. For example, source: ${myBean.getAge(source.person.birthYear)}, target: '${myOtherBean.doMore(builder, sourceValue)}'",
+    "patchSource": "Bron dossier veld",
+    "patchTarget": "Doel dossier veld",
+    "errors": "Fouten",
+    "checkPatches": "Controleer patches",
+    "migrate": "Migreer dossiers",
+    "modalTitle": "Dossiers migreren",
+    "modalContent": "Weet je zeker dat je de dossiers wilt migreren? Sommige veranderingen kunnen niet ongedaan worden gemaakt."
+  },
+  "formFlow": {
+    "title": "Alle form flows",
+    "key": "Sleutel",
+    "version": "Versie",
+    "readOnly": "Alleen lezen",
+    "add": "Nieuwe form flow toevoegen",
+    "deleteModalContent": "Weet je zeker dat je deze form flow wilt verwijderen?",
+    "savedSuccessTitle": "Succesvol opgeslagen",
+    "savedSuccessTitleMessage": "{{key}} is succesvol opgeslagen",
+    "noResults": {
+      "description": "Klik op <strong>Nieuwe form flow toevoegen</strong> om te beginnen met het ontwerpen van je form flow",
+      "title": "Geen formulierstromen toegevoegd"
+    }
+  },
+  "taskManagement": {
+    "columns": "Kolommen",
+    "caseName": "Dossiernaam"
   }
 }

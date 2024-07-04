@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,9 @@ import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output} fr
 import {editProductAanvragenConnectorForm} from './edit-product-aanvragen-connector.form';
 import {FormMappingService, FormTranslationService} from '@valtimo/form';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
-import {ExtendedComponentSchema} from 'formiojs';
+import {ExtendedComponentSchema, FormioForm, FormioRefreshValue} from '@formio/angular';
 import {BehaviorSubject, combineLatest, Subject, Subscription} from 'rxjs';
 import {ConnectorProperties} from '@valtimo/config';
-import {FormioForm, FormioRefreshValue} from '@formio/angular';
 import {FormioOptions} from '@formio/angular/formio.common';
 import {cloneDeep} from 'lodash';
 import {TranslateService} from '@ngx-translate/core';
@@ -29,6 +28,9 @@ import {map, switchMap, tap} from 'rxjs/operators';
 import {ConnectorManagementService} from '../../services/connector-management/connector-management.service';
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
 
+/**
+ * @deprecated Use the new plugin framework
+ */
 @Component({
   selector: 'valtimo-edit-product-aanvragen-connector',
   templateUrl: './edit-product-aanvragen-connector.component.html',

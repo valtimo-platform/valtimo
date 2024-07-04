@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -18,10 +18,6 @@
   <div class="container-fluid">
     <div class="text-right">
       <div class="btn-group mt-m3px mb-3">
-        <button (click)="this.deploy.openModal()" class="btn btn-secondary btn-space mr-0">
-          <i class="icon mdi mdi-upload mr-1"></i>
-          {{ 'Upload' | translate }}
-        </button>
         <!--        <button-->
         <!--          *ngIf="experimentalEditing"-->
         <!--          class="btn btn-primary btn-space"-->
@@ -33,6 +29,5 @@
       </div>
     </div>
     <valtimo-decision-list #decisionList></valtimo-decision-list>
-    <valtimo-decision-deploy #decisionDeploy></valtimo-decision-deploy>
   </div>
 </div>

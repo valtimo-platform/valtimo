@@ -1,0 +1,200 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  class="case-count-configuration-form"
+  *ngIf="{
+    sourceDocumentDefinitionNameItems: sourceDocumentDefinitionNameItems$ | async,
+    sourceDocumentDefinitionVersionItems: sourceDocumentDefinitionVersionItems$ | async,
+    targetDocumentDefinitionNameItems: targetDocumentDefinitionNameItems$ | async,
+    targetDocumentDefinitionVersionItems: targetDocumentDefinitionVersionItems$ | async,
+    sourceDocumentDefinitionNameSelected: sourceDocumentDefinitionNameSelected$ | async,
+    sourceDocumentDefinitionVersionSelected: sourceDocumentDefinitionVersionSelected$ | async,
+    targetDocumentDefinitionNameSelected: targetDocumentDefinitionNameSelected$ | async,
+    targetDocumentDefinitionVersionSelected: targetDocumentDefinitionVersionSelected$ | async,
+    patchItems: patchItems$ | async,
+    errors: errors$ | async,
+    showConfirmationModal: showConfirmationModal$
+  } as obs"
+>
+  <ng-container>
+    <div class="pb-2">
+      <cds-notification
+        [notificationObj]="{
+          type: 'warning',
+          title: 'caseMigration.warningBeta' | translate,
+          showClose: false
+        }"
+      >
+      </cds-notification>
+    </div>
+  </ng-container>
+
+  <ng-container>
+    <div class="input-group mt-4 mb-2 align-items-center">
+      <div>
+        <h2>{{ 'caseMigration.caseDefinition' | translate }}</h2>
+      </div>
+    </div>
+
+    <div class="row m-0">
+      <cds-dropdown
+        class="pr-2 pb-2"
+        [label]="'caseMigration.sourceDocumentDefinitionName' | translate"
+        [style.width.px]="350"
+        [disabled]="obs.sourceDocumentDefinitionNameItems.isLoading"
+        [dropUp]="false"
+        [skeleton]="obs.sourceDocumentDefinitionNameItems.isLoading"
+        (selected)="sourceDocumentDefinitionNameSelected$.next($event.item.documentDefinitionName)"
+      >
+        <cds-dropdown-list
+          [items]="obs.sourceDocumentDefinitionNameItems.value || []"
+        ></cds-dropdown-list>
+      </cds-dropdown>
+      <cds-dropdown
+        class="pr-2 pb-2"
+        [label]="'caseMigration.sourceDocumentDefinitionVersion' | translate"
+        [style.width.px]="300"
+        [disabled]="obs.targetDocumentDefinitionNameItems.isLoading"
+        [dropUp]="false"
+        [skeleton]="obs.targetDocumentDefinitionNameItems.isLoading"
+        (selected)="
+          sourceDocumentDefinitionVersionSelected$.next($event.item.documentDefinitionVersion)
+        "
+      >
+        <cds-dropdown-list
+          [items]="obs.sourceDocumentDefinitionVersionItems || []"
+        ></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
+  </ng-container>
+
+  <ng-container>
+    <div class="row m-0">
+      <cds-dropdown
+        class="pr-2 pb-2"
+        [label]="'caseMigration.targetDocumentDefinitionName' | translate"
+        [style.width.px]="350"
+        [disabled]="obs.targetDocumentDefinitionNameItems.isLoading"
+        [dropUp]="false"
+        [skeleton]="obs.targetDocumentDefinitionNameItems.isLoading"
+        (selected)="targetDocumentDefinitionNameSelected$.next($event.item.documentDefinitionName)"
+      >
+        <cds-dropdown-list
+          [items]="obs.targetDocumentDefinitionNameItems.value || []"
+        ></cds-dropdown-list>
+      </cds-dropdown>
+      <cds-dropdown
+        class="pr-2 pb-2"
+        [label]="'caseMigration.targetDocumentDefinitionVersion' | translate"
+        [style.width.px]="300"
+        [disabled]="obs.targetDocumentDefinitionNameItems.isLoading"
+        [dropUp]="false"
+        [skeleton]="obs.targetDocumentDefinitionNameItems.isLoading"
+        (selected)="
+          targetDocumentDefinitionVersionSelected$.next($event.item.documentDefinitionVersion)
+        "
+      >
+        <cds-dropdown-list
+          [items]="obs.targetDocumentDefinitionVersionItems || []"
+        ></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
+  </ng-container>
+
+  <ng-container>
+    <div class="pt-2 pb-2">
+      <div class="input-group mt-4 mb-2 align-items-center">
+        <div>
+          <h2>{{ 'caseMigration.patches' | translate }}</h2>
+        </div>
+      </div>
+      <valtimo-carbon-multi-input
+        type="keyValue"
+        (valueChange)="mappingValueChange($event)"
+        [title]="' '"
+        [tooltip]="'caseMigration.patchTooltip' | translate"
+        [defaultValues]="[]"
+        [keyColumnTitle]="'caseMigration.patchSource' | translate"
+        [valueColumnTitle]="'caseMigration.patchTarget' | translate"
+        [fullWidth]="true"
+      ></valtimo-carbon-multi-input>
+    </div>
+  </ng-container>
+
+  <ng-container>
+    <div class="pt-2">
+      <div *ngIf="obs.errors?.length >= 1" class="input-group mt-4 mb-2 align-items-center">
+        <div>
+          <h2>{{ 'caseMigration.errors' | translate }}</h2>
+        </div>
+      </div>
+
+      <div class="pb-2" *ngFor="let error of obs.errors">
+        <cds-notification
+          [notificationObj]="{
+            type: 'error',
+            title: error,
+            showClose: false
+          }"
+        >
+        </cds-notification>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-container>
+    <button
+      class="mt-2 mb-2 mr-2"
+      cdsButton="secondary"
+      size="md"
+      (click)="checkPatches()"
+      [disabled]="
+        !obs.sourceDocumentDefinitionNameSelected ||
+        !obs.sourceDocumentDefinitionVersionSelected ||
+        !obs.targetDocumentDefinitionNameSelected ||
+        !obs.targetDocumentDefinitionVersionSelected
+      "
+    >
+      {{ 'caseMigration.checkPatches' | translate }}
+    </button>
+    <button
+      class="mt-2 mb-2 ml-2"
+      cdsButton="primary"
+      size="md"
+      (click)="showConfirmationModal$.next(true)"
+      [disabled]="
+        !obs.sourceDocumentDefinitionNameSelected ||
+        !obs.sourceDocumentDefinitionVersionSelected ||
+        !obs.targetDocumentDefinitionNameSelected ||
+        !obs.targetDocumentDefinitionVersionSelected
+      "
+    >
+      {{ 'caseMigration.migrate' | translate }}
+      <svg class="cds--btn__icon" cdsIcon="watsonHealthStackedMove" size="16"></svg>
+    </button>
+  </ng-container>
+
+  <valtimo-confirmation-modal
+    [showModalSubject$]="obs.showConfirmationModal"
+    (confirmEvent)="migrate()"
+    (cancelEvent)="showConfirmationModal$.next(false)"
+    cancelButtonType="ghost"
+    confirmButtonTextTranslationKey="caseMigration.modalTitle"
+    titleTranslationKey="caseMigration.modalTitle"
+    contentTranslationKey="caseMigration.modalContent"
+  ></valtimo-confirmation-modal>
+</ng-container>

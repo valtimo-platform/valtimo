@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -317,8 +317,8 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
       const selectedDataSource = dataSources.find(source => source.key === selectedDataSourceKey);
       const availableDataFeatures = selectedDataSource?.dataFeatures;
       const compatibleDisplayTypes = supportedDisplayTypes.filter(displayType => {
-        const supportedDataFeatures = displayType.requiredDataFeatures.filter(
-          feature => availableDataFeatures?.includes(feature)
+        const supportedDataFeatures = displayType.requiredDataFeatures.filter(feature =>
+          availableDataFeatures?.includes(feature)
         );
         return supportedDataFeatures.length === displayType.requiredDataFeatures.length;
       });

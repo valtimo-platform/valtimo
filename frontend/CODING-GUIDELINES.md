@@ -231,3 +231,23 @@ linked to a route and not used elsewhere), do not define it.
 
 When a component does not separate styling, do not create a stylesheet for it. The `styleUrls`
 property is not necessary then.
+
+### Conditionals
+
+#### If statements
+
+If an if statement contains a single expression, and is not likely to be expanded in the future, it
+is allowed to write it without curly brackets. If it is lengthy, or likely that more expressions are
+added inside the statement later on, always include curly brackets.
+
+```typescript
+// short expression readable without curly brackets
+if (selectedTheme) this._preferredTheme$.next(selectedTheme);
+```
+
+```typescript
+// longer expression is more readable with curly brackets. Leaves room for expansion in the future.
+if (selectedTheme) {
+  this.themeService.parseThemeAndSaveAccentColorsInApi(selectedTheme);
+}
+```

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -13,31 +13,41 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<div
+<ng-container
   *ngIf="{
     canAdd: canAdd$ | async,
     notes: notes$ | async,
     pagination: pagination$ | async,
     loading: loading$ | async
   } as obs"
-  class="notes"
 >
-  <button
-    *ngIf="obs.canAdd"
-    [disabled]="obs.loading"
-    (click)="showAddModal()"
-    aria-expanded="false"
-    aria-haspopup="true"
-    class="btn btn-space btn-primary mr-1 add-note"
-    type="button"
-  >
-    <span>{{ 'dossier.notes.addNote' | translate }}</span>
+  <div class="cds--toolbar-content">
+    <button
+      cdsButton="primary"
+      *ngIf="obs.canAdd"
+      [disabled]="obs.loading"
+      (click)="showAddModal()"
+      aria-expanded="false"
+      aria-haspopup="true"
+    >
+      {{ 'dossier.notes.addNote' | translate }}
 
-    <i class="ml-1 icon mdi mdi-plus"></i>
-  </button>
+      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+    </button>
+  </div>
 
   <div *ngIf="timelineItems">
-    <valtimo-timeline [actions]="actions" [items]="timelineItems"></valtimo-timeline>
+    <valtimo-timeline
+      *ngIf="timelineItems.length > 0"
+      [actions]="actions"
+      [items]="timelineItems"
+    ></valtimo-timeline>
+    <valtimo-no-results
+      *ngIf="timelineItems.length === 0"
+      [description]="'dossier.notes.noResults.description' | translate"
+      [title]="'dossier.notes.noResults.title' | translate"
+      illustration="valtimo-layout/img/emptystate-no-result.svg"
+    ></valtimo-no-results>
   </div>
 
   <valtimo-spinner
@@ -60,7 +70,7 @@
       (pageChange)="paginationClicked($event)"
     ></ngb-pagination>
   </div>
-</div>
+</ng-container>
 
 <valtimo-note-modal
   [customData]="customData$ | async"

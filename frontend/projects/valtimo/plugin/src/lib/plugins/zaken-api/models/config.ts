@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,6 +68,27 @@ interface SetZaakopschortingConfig {
   toelichtingOpschorting: string;
 }
 
+interface StartHersteltermijnConfig {
+  maxDurationInDays: string;
+}
+
+interface CreateZaakeigenschapConfig {
+  eigenschapUrl: string;
+  eigenschapValue: string;
+  inputTypeEigenschapToggle?: InputOption;
+}
+
+interface UpdateZaakeigenschapConfig {
+  eigenschapUrl: string;
+  eigenschapValue: string;
+  inputTypeEigenschapToggle?: InputOption;
+}
+
+interface DeleteZaakeigenschapConfig {
+  eigenschapUrl: string;
+  inputTypeEigenschapToggle?: InputOption;
+}
+
 export {
   ZakenApiConfig,
   LinkDocumentToZaakConfig,
@@ -77,4 +98,8 @@ export {
   CreateNatuurlijkePersoonZaakRolConfig,
   CreateNietNatuurlijkePersoonZaakRolConfig,
   SetZaakopschortingConfig,
+  StartHersteltermijnConfig,
+  CreateZaakeigenschapConfig,
+  UpdateZaakeigenschapConfig,
+  DeleteZaakeigenschapConfig,
 };

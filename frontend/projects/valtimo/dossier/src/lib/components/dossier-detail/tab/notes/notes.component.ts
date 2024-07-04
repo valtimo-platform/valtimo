@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, OnInit} from '@angular/core';
+import {Component, HostBinding, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {Pagination, TimelineItem, TimelineItemImpl, PromptService} from '@valtimo/components';
+import {Pagination, PromptService, TimelineItem, TimelineItemImpl} from '@valtimo/components';
 import {Page} from '@valtimo/config';
 import moment from 'moment';
 import {ToastrService} from 'ngx-toastr';
@@ -38,6 +38,8 @@ import {NotesService} from '../../../../services/notes.service';
   styleUrls: ['./notes.component.scss'],
 })
 export class DossierDetailTabNotesComponent implements OnInit {
+  @HostBinding('class.tab--no-margin') noMargin = true;
+
   public timelineItems: TimelineItem[] = [];
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);

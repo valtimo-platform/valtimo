@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 <cds-header [useRouter]="false" (mouseenter)="mouseEnter()" (mouseleave)="mouseLeave()">
   <a
-    *ngIf="logoBase64"
+    *ngIf="logoBase64$ | async as logoBase64"
     class="logo-link"
     [ngClass]="{'logo-link--large-margin': largeLogoMargin}"
     [routerLink]="['/']"
@@ -30,7 +30,10 @@
     (selected)="toggleSideBar()"
   ></cds-hamburger>
   <cds-header-global>
+    <ng-container #headerVcr></ng-container>
+
     <ng-container *ngTemplateOutlet="userFullName"></ng-container>
+
     <cds-header-action
       title="action"
       [active]="panelExpanded$ | async"
@@ -44,7 +47,7 @@
 <ng-template #userFullName>
   <div
     class="user-full-name"
-    *ngIf="showUserNameInTopBar && {userFullName: userFullName$ | async} as obs"
+    *ngIf="(showUserNameInTopBar$ | async) && {userFullName: userFullName$ | async} as obs"
   >
     <v-paragraph [loading]="!obs.userFullName">{{ obs.userFullName }}</v-paragraph>
   </div>

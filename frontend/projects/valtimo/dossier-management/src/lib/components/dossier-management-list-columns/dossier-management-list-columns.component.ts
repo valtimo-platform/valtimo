@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {AfterViewInit, Component, TemplateRef, ViewChild} from '@angular/core';
+import {AfterViewInit, Component} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
 import {ActivatedRoute} from '@angular/router';
+import {ArrowDown16, ArrowUp16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {ColumnConfig, MultiInputValues, ViewType} from '@valtimo/components';
-import {ConfigService, DefinitionColumn} from '@valtimo/config';
+import {
+  ActionItem,
+  ColumnConfig,
+  MoveRowDirection,
+  MoveRowEvent,
+  MultiInputValues,
+  ViewType,
+} from '@valtimo/components';
+import {ConfigService} from '@valtimo/config';
 import {
   CaseListColumn,
   CaseListColumnView,
   DisplayTypeParameters,
   DocumentService,
 } from '@valtimo/document';
+import {IconService} from 'carbon-components-angular';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
 import {
   BehaviorSubject,
@@ -41,8 +50,6 @@ import {
 } from 'rxjs';
 import {take} from 'rxjs/operators';
 import {ListColumnModal} from '../../models';
-import {IconService} from 'carbon-components-angular';
-import {ArrowDown16, ArrowUp16} from '@carbon/icons';
 
 @Component({
   selector: 'valtimo-dossier-management-list-columns',
@@ -50,105 +57,64 @@ import {ArrowDown16, ArrowUp16} from '@carbon/icons';
   styleUrls: ['./dossier-management-list-columns.component.scss'],
 })
 export class DossierManagementListColumnsComponent implements AfterViewInit {
-  @ViewChild('moveRowButtons', {read: TemplateRef})
-  public moveRowButtonsTemplateRef: TemplateRef<any>;
   readonly downloadName$ = new BehaviorSubject<string>('');
   readonly downloadUrl$ = new BehaviorSubject<SafeUrl>(undefined);
 
-  private readonly COLUMNS: Array<DefinitionColumn> = [
+  public readonly actionItems: ActionItem[] = [
     {
-      viewType: 'string',
-      sortable: false,
-      propertyName: 'title',
-      translationKey: 'title',
-    },
-    {
-      viewType: 'string',
-      sortable: false,
-      propertyName: 'key',
-      translationKey: 'key',
-    },
-    {
-      viewType: 'string',
-      sortable: false,
-      propertyName: 'path',
-      translationKey: 'path',
-    },
-    {
-      viewType: 'string',
-      sortable: false,
-      propertyName: 'displayType',
-      translationKey: 'displayType',
-    },
-    {
-      viewType: 'string',
-      sortable: false,
-      propertyName: 'displayTypeParameters',
-      translationKey: 'displayTypeParameters',
-    },
-    {
-      viewType: 'string',
-      sortable: false,
-      propertyName: 'sortable',
-      translationKey: 'sortable',
-    },
-    {
-      viewType: 'string',
-      sortable: false,
-      propertyName: 'defaultSort',
-      translationKey: 'defaultSort',
+      label: 'interface.delete',
+      callback: this.deleteRow.bind(this),
+      type: 'danger',
     },
   ];
-
-  private readonly _lastColumnTemplate$ = new BehaviorSubject<TemplateRef<any> | null>(null);
-
   public readonly loadingCaseListColumns$ = new BehaviorSubject<boolean>(true);
-  public readonly loadingFields$ = new BehaviorSubject<boolean>(true);
 
   public readonly lastItemIndex$ = new BehaviorSubject<number>(-1);
 
-  readonly fields$: Observable<Array<ColumnConfig>> = combineLatest([
-    this._lastColumnTemplate$,
-    this.translateService.stream('key'),
-  ]).pipe(
-    filter(([lastColumnTemplate]) => !!lastColumnTemplate),
-    map(
-      ([lastColumnTemplate]) =>
-        [
-          ...this.COLUMNS.map(column => ({
-            key: column.propertyName,
-            label: this.translateService.instant(`listColumn.${column.translationKey}`),
-            sortable: column.sortable,
-            ...(column.viewType && {viewType: column.viewType}),
-            ...(column.enum && {enum: column.enum}),
-          })),
-          {
-            className: 'dossier-list-columns__actions',
-            key: '',
-            label: '',
-            sortable: false,
-            template: lastColumnTemplate,
-            viewType: ViewType.TEMPLATE,
-          },
-          {
-            actions: [
-              {
-                label: 'interface.delete',
-                callback: this.deleteRow.bind(this),
-                type: 'danger',
-              },
-            ],
-            className: 'dossier-list-columns__actions',
-            key: '',
-            label: '',
-            viewType: ViewType.ACTION,
-          },
-        ] as Array<ColumnConfig>
-    ),
-    tap(() => {
-      this.loadingFields$.next(false);
-    })
-  );
+  public readonly fields: Array<ColumnConfig> = [
+    {
+      viewType: 'string',
+      sortable: false,
+      key: 'title',
+      label: 'listColumn.title',
+    },
+    {
+      viewType: 'string',
+      sortable: false,
+      key: 'key',
+      label: 'listColumn.key',
+    },
+    {
+      viewType: 'string',
+      sortable: false,
+      key: 'path',
+      label: 'listColumn.path',
+    },
+    {
+      viewType: 'string',
+      sortable: false,
+      key: 'displayType',
+      label: 'listColumn.displayType',
+    },
+    {
+      viewType: 'string',
+      sortable: false,
+      key: 'displayTypeParameters',
+      label: 'listColumn.displayTypeParameters',
+    },
+    {
+      viewType: 'string',
+      sortable: false,
+      key: 'sortable',
+      label: 'listColumn.sortable',
+    },
+    {
+      viewType: 'string',
+      sortable: false,
+      key: 'defaultSort',
+      label: 'listColumn.defaultSort',
+    },
+  ];
 
   readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
     map(params => params.name || ''),
@@ -259,6 +225,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
     ViewType.ENUM,
     ViewType.ARRAY_COUNT,
     ViewType.UNDERSCORES_TO_SPACES,
+    ViewType.TAGS,
   ];
 
   readonly showDateFormat$ = this.formGroup.valueChanges.pipe(
@@ -380,8 +347,6 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
 
   public ngAfterViewInit(): void {
     this.iconService.registerAll([ArrowDown16, ArrowUp16]);
-
-    this._lastColumnTemplate$.next(this.moveRowButtonsTemplateRef);
   }
 
   openModal(modalType: ListColumnModal): void {
@@ -422,16 +387,10 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
     }
   }
 
-  moveRow(
-    caseListColumnRowIndex: number,
-    moveUp: boolean,
-    clickEvent: MouseEvent,
-    documentDefinitionName: string
-  ): void {
+  onMoveRowEvent(event: MoveRowEvent, documentDefinitionName: string): void {
     const caseListColumns = [...this.cachedCaseListColumns];
-    const caseListColumnRow = caseListColumns[caseListColumnRowIndex];
-
-    clickEvent.stopPropagation();
+    const caseListColumnRow = caseListColumns[event.index];
+    const moveUp: boolean = event.direction === MoveRowDirection.UP;
 
     const caseListColumnIndex = caseListColumns.findIndex(
       field => field.key === caseListColumnRow.key

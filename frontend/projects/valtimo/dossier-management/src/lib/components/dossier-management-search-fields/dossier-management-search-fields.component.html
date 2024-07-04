@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -29,94 +29,91 @@
   <ng-container *ngTemplateOutlet="modal; context: {obs: obs}"></ng-container>
 </ng-container>
 
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="dossierManagement.statuses.deleteText"
+  [outputOnConfirm]="selectedDeleteSearchField$ | async"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="interface.delete"
+  (confirmEvent)="onDeleteSelectedSearchFieldConfirm($event)"
+></valtimo-confirmation-modal>
+
 <ng-template #buttons let-obs="obs">
-  <div class="dossier-management-search-fields__buttons">
-    <a
-      cdsLink
-      class="center-link"
-      [disabled]="
-        !obs.downloadUrl || !obs.downloadName || obs.searchFields.length <= 0 || obs.disableInput
-      "
-      [download]="obs.downloadName"
-      [href]="obs.downloadUrl"
-    >
-      {{ 'searchFields.downloadButtonText' | translate }}
-    </a>
+  <button
+    cdsButton="ghost"
+    iconOnly="true"
+    [disabled]="
+      !obs.downloadUrl || !obs.downloadName || obs.searchFields?.length <= 0 || obs.disableInput
+    "
+    [download]="obs.downloadName"
+    [href]="obs.downloadUrl"
+  >
+    <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
+  </button>
 
-    <button
-      cdsButton="primary"
-      [disabled]="loadingSearchFields || obs.disableInput"
-      (click)="searchFieldClicked($event, true)"
-    >
-      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  <button
+    cdsButton="primary"
+    [disabled]="loadingSearchFields || obs.disableInput"
+    (click)="searchFieldClicked($event, true)"
+  >
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
 
-      {{ 'searchFieldsOverview.addRow' | translate }}
-    </button>
-  </div>
+    {{ 'searchFieldsOverview.addRow' | translate }}
+  </button>
 </ng-template>
 
 <ng-template #list let-obs="obs">
   <valtimo-carbon-list
-    *ngIf="obs.searchFields; else loading"
+    [actionItems]="actionItems"
     [fields]="fields"
-    [items]="obs.searchFields"
     [header]="false"
+    [items]="obs.searchFields"
+    [loading]="!obs.searchFields"
+    [movingRowsEnabled]="true"
     (rowClicked)="searchFieldClicked($event, false)"
+    (moveRow)="onMoveRowClick($event, obs.documentDefinitionName)"
   >
     <ng-container
       carbonToolbarContent
       *ngTemplateOutlet="buttons; context: {obs: obs}"
     ></ng-container>
+
+    <valtimo-no-results
+      [title]="'searchFieldsOverview.noSearchfieldsTitle' | translate"
+      [description]="'searchFieldsOverview.noSearchfieldsDescription' | translate"
+    ></valtimo-no-results>
   </valtimo-carbon-list>
 </ng-template>
 
-<ng-template #loading><valtimo-carbon-list [loading]="true"></valtimo-carbon-list></ng-template>
-
-<ng-template #moveRowButtons let-data="data">
-  <div
-    *ngIf="{
-      disableInput: disableInput$ | async,
-      documentDefinitionName: documentDefinitionName$ | async
-    } as obs"
-    class="dossier-management-search-fields__move-buttons"
-  >
-    <button
-      cdsButton="tertiary"
-      [disabled]="data.index === 0 || obs.disableInput"
-      [iconOnly]="true"
-      size="sm"
-      (click)="moveRow(data.index, true, $event, obs.documentDefinitionName)"
-    >
-      <svg cdsIcon="arrow--up" size="16" class="cds--btn__icon"></svg>
-    </button>
-
-    <button
-      cdsButton="tertiary"
-      [disabled]="data.index === data.length - 1 || obs.disableInput"
-      [iconOnly]="true"
-      size="sm"
-      (click)="moveRow(data.index, false, $event, obs.documentDefinitionName)"
-    >
-      <svg cdsIcon="arrow--down" size="16" class="cds--btn__icon"></svg>
-    </button>
-  </div>
-</ng-template>
-
 <ng-template #modal let-obs="obs">
-  <valtimo-modal
-    #searchFieldModal
-    elementId="searchFieldModal"
+  <cds-modal
+    valtimoCdsModal
     [title]="
       searchFieldActionTypeIsAdd
         ? ('searchFieldsOverview.addRow' | translate)
         : ('searchFieldsOverview.edit' | translate)
     "
+    [open]="modalShowing$ | async"
     [showFooter]="true"
   >
-    <div body class="mt-2">
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="onModalClose()">
+      <h3 cdsModalHeaderHeading>
+        {{
+          (searchFieldActionTypeIsAdd ? 'searchFieldsOverview.addRow' : 'searchFieldsOverview.edit')
+            | translate
+        }}
+      </h3>
+    </cds-modal-header>
+
+    <section cdsModalContent>
       <v-form
         (valueChange)="formValueChange($event)"
-        *ngIf="showSearchFieldsForm && {searchField: selectedSearchField$ | async} as searchObs"
+        *ngIf="
+          (showFields$ | async) && {
+            searchField: selectedSearchField$ | async
+          } as searchObs
+        "
       >
         <v-input
           name="title"
@@ -127,8 +124,10 @@
           [required]="false"
           [fullWidth]="true"
           [tooltip]="'searchFieldsOverviewTooltips.title' | translate"
+          [carbonTheme]="CARBON_THEME"
         >
         </v-input>
+
         <v-input
           name="key"
           [title]="'searchFieldsOverview.key' | translate"
@@ -138,8 +137,10 @@
           [required]="true"
           [widthPx]="200"
           [tooltip]="'searchFieldsOverviewTooltips.key' | translate"
+          [carbonTheme]="CARBON_THEME"
         >
         </v-input>
+
         <v-input
           name="path"
           [title]="'searchFieldsOverview.path' | translate"
@@ -149,10 +150,14 @@
           [required]="true"
           [fullWidth]="true"
           [tooltip]="'searchFieldsOverviewTooltips.path' | translate"
+          [carbonTheme]="CARBON_THEME"
         >
         </v-input>
+
         <v-select
           *ngIf="dataTypeItems$ | async as dataTypeItems"
+          [appendInline]="true"
+          [dropUp]="false"
           [items]="dataTypeItems"
           [placeholder]="'searchFieldsOverview.searchFieldPlaceholder' | translate"
           [title]="'searchFieldsOverview.dataType' | translate"
@@ -163,9 +168,13 @@
           [defaultSelectionId]="searchObs.searchField?.dataType"
           [widthInPx]="200"
           [tooltip]="'searchFieldsOverviewTooltips.dataType' | translate"
+          [carbonTheme]="CARBON_THEME"
         ></v-select>
+
         <v-select
           *ngIf="(showMatchTypes$ | async) && (matchTypeItems$ | async) as matchTypeItems"
+          [appendInline]="true"
+          [dropUp]="false"
           [items]="matchTypeItems"
           [placeholder]="'searchFieldsOverview.searchFieldPlaceholder' | translate"
           [title]="'searchFieldsOverview.matchType' | translate"
@@ -176,9 +185,13 @@
           [defaultSelectionId]="searchObs.searchField?.matchType"
           [widthInPx]="200"
           [tooltip]="'searchFieldsOverviewTooltips.matchType' | translate"
+          [carbonTheme]="CARBON_THEME"
         ></v-select>
+
         <v-select
           *ngIf="fieldTypeItems$ | async as fieldTypeItems"
+          [appendInline]="true"
+          [dropUp]="false"
           [items]="fieldTypeItems"
           [placeholder]="'searchFieldsOverview.searchFieldPlaceholder' | translate"
           [title]="'searchFieldsOverview.fieldType' | translate"
@@ -189,12 +202,16 @@
           [defaultSelectionId]="searchObs.searchField?.fieldType"
           [widthInPx]="200"
           [tooltip]="'searchFieldsOverviewTooltips.fieldType' | translate"
+          [carbonTheme]="CARBON_THEME"
         ></v-select>
+
         <v-select
           *ngIf="
             (fieldTypeIsDropdown$ | async) &&
             (dropdownDataProviderNames$ | async) as dropdownDataProviderNames
           "
+          [appendInline]="true"
+          [dropUp]="false"
           [items]="dropdownDataProviderNames"
           [placeholder]="'searchFieldsOverview.searchFieldPlaceholder' | translate"
           [title]="'searchFieldsOverview.dropdownDataProvider' | translate"
@@ -205,7 +222,9 @@
           [defaultSelectionId]="searchObs.searchField?.dropdownDataProvider"
           [widthInPx]="200"
           [tooltip]="'searchFieldsOverviewTooltips.dropdownDataProvider' | translate"
+          [carbonTheme]="CARBON_THEME"
         ></v-select>
+
         <valtimo-carbon-multi-input
           *ngIf="
             (showInputDropdownTable$ | async) &&
@@ -220,8 +239,10 @@
           [required]="false"
           [tooltip]="'searchFieldsOverviewTooltips.dropdownListValues' | translate"
           (valueChange)="dropdownDatalistChange($event)"
+          [carbonTheme]="CARBON_THEME"
         >
         </valtimo-carbon-multi-input>
+
         <v-table
           *ngIf="
             (showReadonlyDropdownTable$ | async) &&
@@ -233,36 +254,27 @@
           [itemsTranslationKey]="'searchFieldsOverview'"
           [showPagination]="false"
           [mobileBreakpointPx]="200"
+          [carbonTheme]="CARBON_THEME"
         ></v-table>
       </v-form>
-    </div>
-    <div footer>
-      <div class="col-12 p-0">
-        <ng-container *ngTemplateOutlet="buttonsFooterModal; context: {obs: obs}"></ng-container>
-      </div>
-    </div>
-  </valtimo-modal>
+    </section>
+
+    <cds-modal-footer>
+      <ng-container *ngTemplateOutlet="buttonsFooterModal; context: {obs: obs}"></ng-container>
+    </cds-modal-footer>
+  </cds-modal>
 </ng-template>
 
 <ng-template #buttonsFooterModal let-obs="obs">
-  <div class="buttons-container" *ngIf="{searchField: selectedSearchField$ | async} as searchObs">
-    <div class="right-buttons">
-      <button
-        class="btn btn-space btn-secondary"
-        *ngIf="!searchFieldActionTypeIsAdd"
-        [disabled]="obs.disableInput"
-        (click)="deleteSelectedSearchField(searchObs.searchField)"
-      >
-        {{ 'searchFieldsOverview.delete' | translate }}
-      </button>
-      <button
-        (click)="saveSearchField(obs.documentDefinitionName)"
-        type="button"
-        class="btn btn-primary btn-space mr-0"
-        [disabled]="obs.disableInput || !obs.valid"
-      >
-        {{ 'searchFieldsOverview.submit' | translate }}
-      </button>
-    </div>
-  </div>
+  <button cdsButton="secondary" (click)="onModalClose()" [disabled]="obs.disableInput">
+    {{ 'interface.cancel' | translate }}
+  </button>
+
+  <button
+    cdsButton="primary"
+    [disabled]="obs.disableInput || !obs.valid"
+    (click)="saveSearchField(obs.documentDefinitionName)"
+  >
+    {{ 'searchFieldsOverview.submit' | translate }}
+  </button>
 </ng-template>

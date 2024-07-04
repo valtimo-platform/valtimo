@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -72,6 +72,20 @@
       [defaultSelectionId]="obs.prefill?.authenticationPluginConfiguration"
       [required]="true"
       [tooltip]="'authenticationPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
+    ></v-select>
+  </ng-container>
+  <ng-container *ngIf="{apiVersionItems: apiVersionItems$ | async} as pObs">
+    <v-select
+      [loading]="!pObs.apiVersionItems"
+      [items]="pObs.apiVersionItems"
+      [margin]="true"
+      [widthInPx]="350"
+      name="apiVersion"
+      [title]="'apiVersion' | pluginTranslate: pluginId | async"
+      [disabled]="obs.disabled"
+      [defaultSelectionId]="obs.prefill?.apiVersion"
+      [required]="false"
+      [tooltip]="'apiVersionTooltip' | pluginTranslate: pluginId | async"
     ></v-select>
   </ng-container>
 </v-form>

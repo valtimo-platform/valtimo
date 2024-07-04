@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,23 +123,23 @@
   --v-backdrop-filter-medium-blur: blur(7px);
   --v-backdrop-filter-medium-blur-hover: blur(5px);
   /* button */
-  --v-button-font-color: var(--v-color-white);
-  --v-button-icon-container-bg-color: var(--v-color-white);
-  --v-button-primary-bg-color: var(--v-color-accent-1);
-  --v-button-primary-hover-bg-color: var(--v-color-accent-1-lighter);
-  --v-button-primary-active-bg-color: var(--v-color-accent-1-darker);
-  --v-button-secondary-bg-color: var(--v-color-accent-1-light-background);
-  --v-button-secondary-font-color: var(--v-color-accent-1);
-  --v-button-secondary-border: solid 1px var(--v-color-accent-1);
-  --v-button-secondary-margin: -1px;
-  --v-button-secondary-icon-color: var(--v-color-white);
-  --v-button-secondary-icon-container-bg-color: var(--v-color-accent-1);
-  --v-button-secondary-active-border: solid 1px var(--v-color-accent-1-darker);
+  --v-button-font-color: var(--cds-text-on-color);
+  --v-button-icon-container-bg-color: var(--cds-icon-on-color);
+  --v-button-primary-bg-color: var(--vcds-color-60);
+  --v-button-primary-hover-bg-color: var(--vcds-color-70);
+  --v-button-primary-active-bg-color: var(--vcds-color-80);
+  --v-button-secondary-bg-color: var(--cds-button-secondary);
+  --v-button-secondary-font-color: var(--cds-text-on-color);
+  --v-button-secondary-border: 0;
+  --v-button-secondary-margin: 0;
+  --v-button-secondary-icon-color: var(--cds-icon-on-color);
+  --v-button-secondary-icon-container-bg-color: var(--vcds-color-60);
+  --v-button-secondary-active-border: 0;
   --v-button-success-bg-color: var(--v-color-accent-2);
   --v-button-success-hover-bg-color: var(--v-color-accent-2-lighter);
   --v-button-success-active-bg-color: var(--v-color-accent-2-darker);
-  --v-button-disabled-bg-color: var(--v-color-grey-4);
-  --v-button-disabled-font-color: var(--v-color-grey-2);
+  --v-button-disabled-bg-color: var(--cds-button-disabled);
+  --v-button-disabled-font-color: var(--cds-text-on-color-disabled);
   --v-button-icon-circle-width: 24px;
   --v-button-text-font-size: var(--v-font-size-smaller);
   --v-button-type-icon-width: 35px;
@@ -152,9 +152,9 @@
   --v-button-type-icon-danger-color: var(--v-color-accent-3);
   --v-button-type-icon-danger-color-hover: var(--v-color-accent-3-lighter);
   --v-button-type-icon-danger-color-active: var(--v-color-accent-3-darker);
-  --v-button-danger-bg-color: var(--v-color-accent-3);
-  --v-button-danger-hover-bg-color: var(--v-color-accent-3-lighter);
-  --v-button-danger-active-bg-color: var(--v-color-accent-3-darker);
+  --v-button-danger-bg-color: var(--cds-button-danger-primary);
+  --v-button-danger-hover-bg-color: var(--cds-button-danger-hover);
+  --v-button-danger-active-bg-color: var(--cds-button-danger-active);
   --v-button-type-icon-grey-bg-color: var(--v-color-grey-1);
   --v-button-type-icon-grey-bg-color-hover: var(--v-color-grey-2);
   --v-button-type-icon-grey-bg-color-active: var(--v-color-grey-0);
@@ -215,11 +215,11 @@
   --v-select-dropdown-box-shadow: var(--v-box-shadow-heavier);
   /* modal */
   --v-modal-z-index: 9999;
-  --v-modal-backdrop-color: var(--v-color-backdrop);
-  --v-modal-backdrop-color-hover: var(--v-color-backdrop-hover);
+  --v-modal-backdrop-color: var(--cds-overlay, rgba(22, 22, 22, 0.5));
+  --v-modal-backdrop-color-hover: var(--cds-overlay, rgba(22, 22, 22, 0.5));
   --v-modal-backdrop-filter: none;
   --v-modal-backdrop-filter-hover: none;
-  --v-modal-backdrop-transition: var(--v-transition-bg-medium);
+  --v-modal-backdrop-transition: var(--v-transition-backdrop-medium);
   --v-modal-backdrop-cursor: var(--v-cursor-clickable);
   --v-modal-backdrop-cursor-disappearing: var(--v-cursor-default);
   --v-modal-backdrop-padding-inline: var(--v-spacing-inline-md);
@@ -227,24 +227,24 @@
   --v-modal-max-width: 650px;
   --v-modal-min-height: 150px;
   --v-modal-box-shadow: var(--v-box-shadow-medium);
-  --v-modal-background-color: var(--v-color-grey-7);
-  --v-modal-transition: var(--v-transition-opacity-medium), var(--v-transition-right-medium);
+  --v-modal-background-color: var(--cds-layer);
+  --v-modal-transition: opacity 240ms cubic-bezier(0, 0, 0.3, 1), visibility 0ms linear;
   --v-modal-cursor: var(--v-cursor-default);
-  --v-modal-border-radius: var(--v-border-radius-lg);
+  --v-modal-border-radius: 0;
   --v-modal-padding-inline: var(--v-spacing-inline-2xl);
-  --v-modal-header-bg-color: var(--v-color-grey-8);
+  --v-modal-header-bg-color: var(--cds-layer-02);
   --v-modal-header-padding-block: var(--v-spacing-block-xl);
-  --v-modal-header-border: 1px solid var(--v-color-grey-6);
+  --v-modal-header-border: none;
   --v-modal-header-min-height: var(--v-button-type-icon-height);
-  --v-modal-footer-bg-color: var(--v-color-grey-8);
+  --v-modal-footer-bg-color: var(--cds-layer-02);
   --v-modal-footer-padding-block: var(--v-spacing-block-xl);
-  --v-modal-footer-border: 1px solid var(--v-color-grey-6);
+  --v-modal-footer-border: none;
   --v-modal-header-overflow-width: var(--v-button-type-icon-width);
   --v-modal-header-overflow-gradient-width: var(--v-spacing-inline-2xl);
   --v-modal-header-overflow-gradient-bg-image: linear-gradient(
     to right,
-    var(--v-color-grey-8-transparant),
-    var(--v-color-grey-8)
+    transparent,
+    var(--cds-layer-02)
   );
   --v-modal-content-padding-block-start: var(--v-spacing-block-2xl);
   --v-modal-content-padding-block-end: var(--v-spacing-block-xl);
@@ -306,7 +306,7 @@
   --v-title-h1-line-height: var(--v-line-height-xl);
   --v-title-h1-font-size: var(--v-font-size-xl);
   --v-title-h1-margin-block-end: var(--v-spacing-block-2xl);
-  --v-title-h2-color: var(--v-color-grey-1);
+  --v-title-h2-color: var(--cds-text-primary);
   --v-title-h2-font-weight: var(--v-font-weight-light);
   --v-title-h2-line-height: var(--v-line-height-large);
   --v-title-h2-font-size: var(--v-font-size-large);

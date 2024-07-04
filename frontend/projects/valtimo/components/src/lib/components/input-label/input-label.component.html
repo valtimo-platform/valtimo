@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
   class="v-input-label-container"
   [ngClass]="{'v-input-label-container--large-margin': largeMargin}"
 >
-  <cds-label [disabled]="disabled" [attr.data-carbon-theme]="carbonTheme">
+  <cds-label [disabled]="disabled">
     <span class="label-with-tooltip">
       {{ displayTitle$ | async }}
       <v-tooltip-icon *ngIf="tooltip" [disabled]="disabled" [tooltip]="tooltip"></v-tooltip-icon>

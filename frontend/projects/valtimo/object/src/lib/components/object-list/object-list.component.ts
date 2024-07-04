@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,8 +54,7 @@ export class ObjectListComponent {
   readonly objectManagementId$: Observable<string> = this.route.params.pipe(
     map(params => params.objectManagementId),
     tap(objectManagementId => {
-      if (!this._settingPageTitle && objectManagementId) {
-        this._settingPageTitle = true;
+      if (objectManagementId) {
         this.objectManagementService.getObjectById(objectManagementId).subscribe(objectType => {
           if (objectType.title) {
             this.pageTitleService.setCustomPageTitle(objectType.title);
@@ -162,15 +161,13 @@ export class ObjectListComponent {
         });
       }
     }),
-    map(
-      res =>
-        res?.content?.map(
-          record =>
-            record?.items?.reduce(
-              (obj, item) => Object.assign(obj, {objectId: record.id}, {[item.key]: item.value}),
-              {}
-            )
+    map(res =>
+      res?.content?.map(record =>
+        record?.items?.reduce(
+          (obj, item) => Object.assign(obj, {objectId: record.id}, {[item.key]: item.value}),
+          {}
         )
+      )
     ),
     tap(() => this.loading$.next(false))
   );
@@ -235,8 +232,6 @@ export class ObjectListComponent {
       return this.setDefaultFields();
     })
   );
-
-  private _settingPageTitle = false;
 
   constructor(
     private readonly objectService: ObjectService,
@@ -328,7 +323,7 @@ export class ObjectListComponent {
     return keys.map(key => ({
       label: `${this.translateService.instant(`object.labels.${key}`)}`,
       key,
-      sortable: true,
+      sortable: false,
       type: 'string',
     }));
   }

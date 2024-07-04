@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 export * from './dossier-bulk-assign.service';
 export * from './dossier-column.service';
-export * from './zaakobjecten.service';
 export * from './dossier-parameter.service';
 export * from './dossier-list.service';
 export * from './dossier-list-assignee.service';
@@ -25,3 +24,5 @@ export * from './dossier-list-search.service';
 export * from './dossier-tab.service';
 export * from './dossier.service';
 export * from './dossier-tab-api.service';
+export * from './dossier-list-status.service';
+export * from './start-modal.service';

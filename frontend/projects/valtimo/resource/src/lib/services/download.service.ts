@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ export class DownloadService {
     private configService: ConfigService
   ) {}
 
-  downloadFile(url: string, name: string): Observable<null> {
+  downloadFile(url: string, name: string, forceDownload?: boolean): Observable<null> {
     const finishedSubject$ = new Subject<null>();
 
     if (
@@ -39,10 +39,10 @@ export class DownloadService {
       // if download url is on backend use angular to get the content so access token is used
       this.http.get(url, {responseType: 'blob'}).subscribe(content => {
         const downloadUrl = window.URL.createObjectURL(content);
-        if (this.isFileTypeSupportedForNewWindow(name)) {
-          this.openBlobInNewTab(downloadUrl, name);
-        } else {
+        if (!this.isFileTypeSupportedForNewWindow(name) || forceDownload) {
           this.openDownloadLink(downloadUrl, name);
+        } else {
+          this.openBlobInNewTab(downloadUrl, name);
         }
         finishedSubject$.next(null);
       });

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,20 @@
  */
 
 import {NgModule} from '@angular/core';
-import {LayoutComponent} from './layout.component';
+import {LayoutComponent} from './components/layout/layout.component';
 import {
   AlertModule,
   LeftSidebarModule,
   MenuRoutingModule,
   PageHeaderModule,
+  PromptModule,
   RightSidebarModule,
   TopbarModule,
 } from '@valtimo/components';
 import {RouterModule} from '@angular/router';
-import {LayoutPublicComponent} from './layout-public/layout-public.component';
-import {LayoutInternalComponent} from './layout-internal/layout-internal.component';
+import {LayoutPublicComponent} from './components/layout-public/layout-public.component';
+import {LayoutInternalComponent} from './components/layout-internal/layout-internal.component';
 import {CommonModule} from '@angular/common';
-import {PromptModule} from '@valtimo/components';
 
 @NgModule({
   declarations: [LayoutComponent, LayoutPublicComponent, LayoutInternalComponent],

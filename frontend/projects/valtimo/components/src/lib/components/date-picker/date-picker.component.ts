@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  HostBinding,
   Input,
   OnDestroy,
   Output,
@@ -43,13 +44,17 @@ import CustomLocale = flatpickr.CustomLocale;
   styleUrls: ['./date-picker.component.scss'],
 })
 export class DatePickerComponent implements AfterViewInit, OnDestroy {
+  @HostBinding('class.full-width') fullWidthClass = false;
+
   @ViewChild('datePickerElement') datePickerElement!: ElementRef<HTMLInputElement>;
 
   @Input() public name = '';
   @Input() public title = '';
   @Input() public titleTranslationKey = '';
   @Input() public widthPx!: number;
-  @Input() public fullWidth = false;
+  @Input() public set fullWidth(value: boolean) {
+    this.fullWidthClass = value;
+  }
   @Input() public margin = false;
   @Input() public disabled = false;
   @Input() public tooltip = '';

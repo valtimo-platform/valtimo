@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@
  */
 
 export * from './lib/models';
-export * from './lib/task.service';
+export * from './lib/services/task.service';
 export * from './lib/task.module';
-export * from './lib/task-detail-modal/task-detail-modal.component';
-export * from './lib/task-list/task-list.component';
-export * from './lib/assign-user-to-task/assign-user-to-task.component';
+export * from './lib/components/task-detail-modal/task-detail-modal.component';
+export * from './lib/components/task-list/task-list.component';
+export * from './lib/components/assign-user-to-task/assign-user-to-task.component';
 export * from './lib/task-permissions';

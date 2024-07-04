@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import {
   createCustomFormioComponent,
   FormioCustomComponentInfo,
   registerCustomFormioComponentWithClass,
-} from '@formio/angular';
+} from '../../../modules';
 import {FormIoUploaderComponent} from './form-io-uploader.component';
 import {formIoUploaderEditForm} from './form-io-uploader-edit-form';
 
@@ -42,8 +42,14 @@ export function registerFormioUploadComponent(injector: Injector) {
   // override setValue function to allow for setting an array value
   class UploaderComponent extends originalUploadComponent {
     setValue(value): boolean {
-      if (this._customAngularElement?.value) {
-        this._customAngularElement.value = value;
+      if (!this._customAngularElement) {
+        return false;
+      }
+
+      let componentValue = this._customAngularElement?.value;
+
+      if (componentValue) {
+        componentValue = value;
       }
 
       return true;

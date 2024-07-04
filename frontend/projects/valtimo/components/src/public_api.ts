@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ export * from './lib/constants';
 export * from './lib/pipes';
 export * from './lib/services';
 export * from './lib/guards';
+export * from './lib/modules';
 
 /*
 components
@@ -59,7 +60,7 @@ export * from './lib/components/page-header/page-header.module';
 
 export * from './lib/components/page-title/page-title.component';
 export * from './lib/components/page-title/page-title.module';
-export * from './lib/components/page-title/page-title.service';
+export * from './lib/services/page-title.service';
 
 export * from './lib/components/breadcrumb-navigation/breadcrumb-navigation.component';
 export * from './lib/components/breadcrumb-navigation/breadcrumb-navigation.module';
@@ -118,15 +119,16 @@ export * from './lib/components/dropzone/dropzone.component';
 export * from './lib/components/form-io/form-io-uploader/form-io-uploader.component';
 export * from './lib/components/form-io/form-io-uploader/form-io-uploader.formio';
 
-export * from './lib/components/form-io/documenten-api-uploader/documenten-api-uploader.component';
-export * from './lib/components/form-io/documenten-api-uploader/documenten-api-uploader.formio';
-
 export * from './lib/components/form-io/form-io-current-user/form-io-current-user.component';
 export * from './lib/components/form-io/form-io-current-user/form-io-current-user.formio';
+
+export * from './lib/components/form-io/form-io-iban/iban.component';
+export * from './lib/components/form-io/form-io-iban/iban.formio';
 
 export * from './lib/components/form-io/form-io-resource-selector/form-io-resource-selector.formio';
 
 export * from './lib/components/form-io/services/form-io-state.service';
+export * from './lib/components/form-io/services/form-io-dom.service';
 
 export * from './lib/components/webcam/webcam.module';
 export * from './lib/components/webcam/webcam.component';
@@ -139,9 +141,6 @@ export * from './lib/components/searchable-dropdown-select/searchable-dropdown-s
 
 export * from './lib/components/multiselect-dropdown/multiselect-dropdown.module';
 export * from './lib/components/multiselect-dropdown/multiselect-dropdown.component';
-
-export * from './lib/components/documenten-api-metadata-modal/documenten-api-metadata-modal.module';
-export * from './lib/components/documenten-api-metadata-modal/documenten-api-metadata-modal.component';
 
 export * from './lib/components/search-fields/search-fields.module';
 export * from './lib/components/search-fields/search-fields.component';
@@ -222,6 +221,12 @@ export * from './lib/components/radio/radio.module';
 
 // Pending Changes
 export * from './lib/components/pending-changes/pending-changes.component';
+export * from './lib/components/pending-changes/pending-changes.service';
+
+// Choice fields
+export * from './lib/services/choice-field.service';
+export * from './lib/models/choice-field.model';
+export * from './lib/models/choicefield-value.model';
 
 /*
 directives
@@ -236,6 +241,12 @@ export * from './lib/directives/tooltip/tooltip.module';
 // render in page header
 export * from './lib/directives/render-in-page-header/render-in-page-header.directive';
 export * from './lib/directives/render-in-page-header/render-in-page-header-directive.module';
+// render page header
+export * from './lib/directives/render-page-header/render-page-header.directive';
+export * from './lib/directives/render-page-header/render-page-header-directive.module';
+// fit page
+export * from './lib/directives/fit-page/fit-page.directive';
+export * from './lib/directives/fit-page/fit-page-directive.module';
 // digit only
 export * from './lib/directives/digit-only/digit-only.directive';
 // command click
@@ -244,3 +255,5 @@ export * from './lib/directives/command-click/command-click-directive.module';
 // cds overflow button
 export * from './lib/directives/valtimo-cds-overflow-button/valtimo-cds-overflow-button.directive';
 export * from './lib/directives/valtimo-cds-overflow-button/valtimo-cds-overflow-button-directive.module';
+// status selector
+export * from './lib/components/status-selector/status-selector.component';

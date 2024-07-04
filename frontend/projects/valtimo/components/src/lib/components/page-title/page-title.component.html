@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,55 +14,43 @@
   ~ limitations under the License.
   -->
 
-<div [ngClass]="{'--no-margin': hidePageTitle}" class="page-title-container">
+<div
+  [ngClass]="{'--no-margin': hidePageTitle || isCompact, '--compact': isCompact}"
+  class="page-title-container"
+>
   <ng-container
     *ngIf="
       hidePageTitle === false && {
         title: translatedTitle$ | async,
         hasCustomPageTitle: hasCustomPageTitle$ | async,
-        hasCustomPageSubtitle: hasCustomPageSubtitle$ | async,
         customPageTitle: customPageTitle$ | async,
-        customPageTitleSet: customPageTitleSet$ | async,
-        customPageSubtitle: customPageSubtitle$ | async,
-        customPageSubtitleSet: customPageSubtitleSet$ | async
+        customPageTitleSet: customPageTitleSet$ | async
       } as obs
     "
   >
-    <div class="skeleton-container" *ngIf="obs.hasCustomPageTitle && !obs.customPageTitleSet">
-      <cds-skeleton-placeholder></cds-skeleton-placeholder>
-    </div>
-
-    <h2
-      *ngIf="obs.hasCustomPageTitle ? obs.customPageTitleSet : obs.title !== ''"
-      [title]="obs.hasCustomPageTitle ? obs.customPageTitle : obs.title"
-      class="page-title"
-    >
-      {{ obs.hasCustomPageTitle ? obs.customPageTitle : obs.title }}
-    </h2>
-
     <div
-      *ngIf="obs.hasCustomPageSubtitle && !obs.customPageSubtitleSet"
-      class="subtitle-skeleton-container"
+      class="skeleton-container"
+      *ngIf="obs.hasCustomPageTitle && !obs.customPageTitleSet"
+      [ngClass]="{'--compact': isCompact}"
     >
       <cds-skeleton-placeholder></cds-skeleton-placeholder>
     </div>
 
-    <span
-      *ngIf="obs.hasCustomPageSubtitle && obs.customPageSubtitleSet"
-      [innerHtml]="obs.customPageSubtitle"
-      [title]="obs.customPageSubtitle"
-      class="page-subtitle"
-    >
-    </span>
+    <ng-container *ngIf="obs.hasCustomPageTitle ? obs.customPageTitleSet : obs.title !== ''">
+      @if (!isCompact) {
+        <h2 [title]="obs.hasCustomPageTitle ? obs.customPageTitle : obs.title" class="page-title">
+          {{ obs.hasCustomPageTitle ? obs.customPageTitle : obs.title }}
+        </h2>
+      } @else {
+        <span
+          [title]="obs.hasCustomPageTitle ? obs.customPageTitle : obs.title"
+          class="cds--breadcrumb compact-page-title"
+        >
+          {{ obs.hasCustomPageTitle ? obs.customPageTitle : obs.title }}
+        </span>
+      }
+    </ng-container>
   </ng-container>
 
-  <div
-    [ngClass]="{
-      'page-actions--visible': hasPageActions$ | async,
-      'page-actions--full-width': pageActionsFullWidth$ | async
-    }"
-    class="page-actions"
-  >
-    <ng-container #pageActionsVcr></ng-container>
-  </div>
+  <ng-container #subtitleVcr></ng-container>
 </div>

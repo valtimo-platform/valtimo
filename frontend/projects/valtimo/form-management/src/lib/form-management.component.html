@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,26 +14,32 @@
   ~ limitations under the License.
   -->
 
-<div class="main-content pt-0">
-  <div class="container-fluid">
-    <div class="text-right">
-      <div class="btn-group mt-m3px mb-3">
-        <button
-          [routerLink]="'create'"
-          [queryParams]="{upload: 'true'}"
-          class="btn btn-secondary btn-space"
-        >
-          <i class="icon mdi mdi-upload mr-1"></i>
-          {{ 'Upload' | translate }}
-        </button>
-        <button [routerLink]="'create'" class="btn btn-primary btn-space mr-0">
-          <i class="icon mdi mdi-plus mr-1"></i>
-          <span>{{ 'Create new Form' | translate }}</span>
-        </button>
-      </div>
-    </div>
-    <valtimo-widget>
-      <valtimo-form-management-list></valtimo-form-management-list>
-    </valtimo-widget>
-  </div>
-</div>
+<valtimo-carbon-list
+  [fields]="formDefinitionFields"
+  [header]="false"
+  [isSearchable]="true"
+  [items]="formDefinitions"
+  [pagination]="pagination"
+  paginationIdentifier="formManagementList"
+  (paginationClicked)="paginationClicked($event)"
+  (paginationSet)="paginationSet($event)"
+  (rowClicked)="editFormDefinition($event)"
+  (search)="searchTermEntered($event)"
+>
+  <ng-container carbonToolbarContent>
+    <button
+      cdsButton="ghost"
+      [iconOnly]="true"
+      [routerLink]="'create'"
+      [queryParams]="{upload: 'true'}"
+    >
+      <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
+    </button>
+
+    <button cdsButton="primary" [routerLink]="'create'">
+      {{ 'Create new Form' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+    </button>
+  </ng-container>
+</valtimo-carbon-list>

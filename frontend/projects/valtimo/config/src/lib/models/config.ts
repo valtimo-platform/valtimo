@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@
 import {InjectionToken, Injector} from '@angular/core';
 import {Auth} from './security.config';
 import {MenuConfig} from './menu.config';
+import {CSPHeaderParams} from 'csp-header';
+import {FormioOptions} from '@formio/angular';
 
 export const VALTIMO_CONFIG = new InjectionToken<ValtimoConfig>('valtimoConfig');
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line
 export const INITIALIZERS = new InjectionToken<(() => Function)[]>('initializers');
 export declare type Direction = 'ASC' | 'DESC';
 
@@ -67,12 +69,19 @@ export interface SortState {
   isSorting: boolean;
 }
 
+export interface OverrideFormioOptions extends FormioOptions {
+  [key: string]: any;
+}
+
 export interface ValtimoConfig {
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line
   logoSvgBase64?: string;
+  darkModeLogoSvgBase64?: string;
   logoPngBase64?: string;
+  darkModeLogoPngBase64?: string;
   applicationTitle?: string;
-  initializers: ((injector: Injector) => () => void)[];
+  /**@deprecated Initializers will be removed in the future. */
+  initializers?: ((injector: Injector) => () => void)[];
   menu: MenuConfig;
   authentication: Auth;
   production: boolean;
@@ -109,13 +118,11 @@ export interface ValtimoConfig {
   translationResources?: Array<string>;
   featureToggles?: {
     applicationTitleAsSuffix?: boolean;
-    disableFormFlow?: boolean;
     enableHackathonCasesPage?: boolean;
     showUserNameInTopBar?: boolean;
     showPlantATreeButton?: boolean;
     experimentalDmnEditing?: boolean;
     disableCaseCount?: boolean;
-    caseSearchFields?: boolean;
     caseListColumn?: boolean;
     enableObjectManagement?: boolean;
     largeLogoMargin?: boolean;
@@ -123,6 +130,11 @@ export interface ValtimoConfig {
     returnToLastUrlAfterTokenExpiration?: boolean;
     enableTabManagement?: boolean;
     hideValtimoVersionsForNonAdmins?: boolean;
+    useStartEventNameAsStartFormTitle?: boolean;
+    allowUserThemeSwitching?: boolean;
+    enableCompactModeToggle?: boolean;
+    compactModeOnByDefault?: boolean;
+    enableUserNameInTopBarToggle?: boolean;
   };
   visibleTaskListTabs?: Array<TaskListTab>;
   visibleDossierListTabs?: Array<DossierListTab>;
@@ -132,6 +144,8 @@ export interface ValtimoConfig {
     [definitionNameId: string]: Array<string>;
   };
   overrideFeedbackMenuItemToMailTo?: FeedbackMailTo;
+  csp?: CSPHeaderParams;
+  formioOptions?: OverrideFormioOptions;
 }
 
 export interface FeedbackMailTo {
@@ -142,6 +156,7 @@ export interface FeedbackMailTo {
 
 export enum UploadProvider {
   S3,
+  /**@deprecated This upload provider will be removed in the future. */
   OPEN_ZAAK,
   DOCUMENTEN_API,
 }

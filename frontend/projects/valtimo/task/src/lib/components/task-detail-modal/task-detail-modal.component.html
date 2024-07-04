@@ -1,0 +1,99 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<valtimo-modal
+  #taskDetailModal
+  *ngIf="{
+    loading: loading$ | async,
+    page: page$ | async,
+    task: task$ | async,
+    formDefinition: formDefinition$ | async,
+    processLinkIsForm: processLinkIsForm$ | async,
+    formioOptions: formioOptions$ | async,
+    processLinkIsFormFlow: processLinkIsFormFlow$ | async,
+    formFlowInstanceId: formFlowInstanceId$ | async,
+    errorMessage: errorMessage$ | async
+  } as obs"
+  elementId="taskDetailModal"
+  [title]="obs.page?.title"
+  [subtitle]="obs.page?.subtitle"
+  [templateBelowSubtitle]="assignUserToTask"
+>
+  <div body *ngIf="obs.formDefinition && obs.processLinkIsForm">
+    <valtimo-form-io
+      #form
+      [form]="obs.formDefinition"
+      (submit)="onSubmit($event)"
+      (change)="onChange($event)"
+      [options]="obs.formioOptions"
+    ></valtimo-form-io>
+  </div>
+  <div body *ngIf="obs.processLinkIsFormFlow">
+    <valtimo-form-flow
+      #formFlow
+      [formIoFormData]="formIoFormData$"
+      [formFlowInstanceId]="obs.formFlowInstanceId"
+      (formFlowComplete)="completeTask()"
+    ></valtimo-form-flow>
+  </div>
+  <div body *ngIf="obs.loading">
+    <div class="text-black mb-0 p-3 text-center">
+      {{ 'formManagement.loading' | translate }}
+    </div>
+  </div>
+  <div
+    body
+    *ngIf="
+      obs.loading === false && !obs.formDefinition && !obs.formFlowInstanceId && !obs.errorMessage
+    "
+  >
+    <div class="bg-warning text-black mb-0 p-3 text-center">
+      {{
+        (isAdmin$ | async)
+          ? ('formManagement.noFormDefinitionFoundAdmin' | translate)
+          : ('formManagement.noFormDefinitionFoundUser' | translate)
+      }}
+    </div>
+  </div>
+  <div body *ngIf="obs.errorMessage">
+    <div class="bg-danger text-black mb-0 p-3 text-center">
+      {{ obs.errorMessage }}
+    </div>
+  </div>
+  <div footer>
+    <div class="mb-0 p-3 text-center" *ngIf="!!obs.formDefinition">
+      <button
+        class="btn btn-secondary btn-space"
+        type="button"
+        (click)="gotoProcessLinkScreen()"
+        id="process-link-button"
+      >
+        {{ 'formManagement.gotoProcessLinksButton' | translate }}
+      </button>
+    </div>
+  </div>
+</valtimo-modal>
+
+<ng-template #assignUserToTask>
+  <ng-container *ngIf="task$ | async as task">
+    <valtimo-assign-user-to-task
+      *ngIf="task && assignmentOfTaskChanged"
+      [taskId]="task.id"
+      [assigneeId]="task.assignee"
+      (assignmentOfTaskChanged)="assignmentOfTaskChanged.emit()"
+    ></valtimo-assign-user-to-task>
+  </ng-container>
+</ng-template>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
-import {ChoiceFieldService} from '../choice-field.service';
-import {ChoiceField} from '../models';
-import {AlertService, PageTitleService} from '@valtimo/components';
+import {AlertService, PageTitleService, ChoiceFieldService, ChoiceField} from '@valtimo/components';
 import {Subscription} from 'rxjs';
 import {first} from 'rxjs/operators';
 

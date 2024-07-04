@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import {PluginSpecification} from '../../models';
 import {SmartDocumentsConfigurationComponent} from './components/smart-documents-configuration/smart-documents-configuration.component';
 import {SMART_DOCUMENTS_PLUGIN_LOGO_BASE64} from './assets';
 import {GenerateDocumentConfigurationComponent} from './components/generate-document-configuration/generate-document-configuration.component';
-import { GetTemplateNamesComponent } from './components/get-template-names/get-template-names.component';
+import {GetTemplateNamesComponent} from './components/get-template-names/get-template-names.component';
 
 const smartDocumentsPluginSpecification: PluginSpecification = {
   pluginId: 'smartdocuments',
@@ -43,6 +43,8 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       templateGroup: 'Template groep',
       templateName: 'Template naam',
       templateGroupName: 'Template groepsnaam',
+      resultingTemplateNameListProcessVariableName:
+        'Naam van process variable om lijst in op te slaan',
       templateDataTooltip:
         'De rechter value-kolom ondersteunt ook het gebruik van procesvariabelen zoals pv: en doc:',
       format: 'Documentformaat',
@@ -67,6 +69,8 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       templateGroup: 'Template group',
       templateName: 'Template name',
       templateGroupName: 'Template group name',
+      resultingTemplateNameListProcessVariableName: 'Name of process variable to save the list in',
+
       format: 'Document format',
       templateData: 'Template data',
       templateDataTooltip:
@@ -91,6 +95,8 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
       templateGroup: 'Template gruppe',
       templateName: 'Template name',
       templateGroupName: 'Template gruppe name',
+      resultingTemplateNameListProcessVariableName:
+        'Name der Prozessvariable, um die Liste zu speichern',
       format: 'Dokumentformat',
       templateData: 'Templatedaten',
       templateDataTooltip:

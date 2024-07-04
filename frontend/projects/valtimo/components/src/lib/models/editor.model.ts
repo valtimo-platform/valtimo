@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,25 @@
  * limitations under the License.
  */
 
-import {Uri} from 'monaco-editor';
+import {editor} from 'monaco-editor';
 
 interface EditorModel {
   value: string;
   language?: string;
-  uri?: Uri;
+  uri?: string;
 }
+
+type MonacoEditor = typeof editor;
 
 interface WindowWithMonaco extends Window {
-  monaco?: object;
+  monaco?: {
+    editor?: MonacoEditor;
+  };
 }
 
-export {EditorModel, WindowWithMonaco};
+enum MonacoTheme {
+  VS = 'vs',
+  VSDARK = 'vs-dark',
+}
+
+export {EditorModel, WindowWithMonaco, MonacoEditor, MonacoTheme};

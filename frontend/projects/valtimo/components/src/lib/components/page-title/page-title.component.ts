@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 import {
   AfterViewInit,
   Component,
+  HostBinding,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -35,8 +36,9 @@ import {
   startWith,
   Subscription,
   switchMap,
+  tap,
 } from 'rxjs';
-import {PageTitleService} from './page-title.service';
+import {PageHeaderService, PageSubtitleService, PageTitleService} from '../../services';
 
 @Component({
   selector: 'valtimo-page-title',
@@ -44,9 +46,12 @@ import {PageTitleService} from './page-title.service';
   styleUrls: ['./page-title.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class PageTitleComponent implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild('pageActionsVcr', {static: true, read: ViewContainerRef})
-  private readonly _pageActionsVcr!: ViewContainerRef;
+export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
+  @HostBinding('class.valtimo-page-title--compact') isCompact!: boolean;
+
+  @ViewChild('subtitleVcr', {static: true, read: ViewContainerRef})
+  private readonly _subtitleVcr!: ViewContainerRef;
+
   public hidePageTitle = false;
   public readonly appTitle = this.configService?.config?.applicationTitle || 'Valtimo';
   public readonly hasCustomPageTitle$: Observable<boolean> = this.router.events.pipe(
@@ -54,17 +59,8 @@ export class PageTitleComponent implements OnInit, OnDestroy, AfterViewInit {
     switchMap(() => this.activatedRoute.firstChild.data),
     map(data => !!data?.customPageTitle)
   );
-  public readonly hasCustomPageSubtitle$: Observable<boolean> = this.router.events.pipe(
-    startWith(this.router),
-    switchMap(() => this.activatedRoute.firstChild.data),
-    map(data => !!data?.customPageSubtitle)
-  );
   public readonly customPageTitle$ = this.pageTitleService.customPageTitle$;
   public readonly customPageTitleSet$ = this.pageTitleService.customPageTitleSet$;
-  public readonly customPageSubtitle$ = this.pageTitleService.customPageSubtitle$;
-  public readonly customPageSubtitleSet$ = this.pageTitleService.customPageSubtitleSet$;
-  public readonly hasPageActions$ = this.pageTitleService.hasPageActions$;
-  public readonly pageActionsFullWidth$ = this.pageTitleService.pageActionsFullWidth$;
   public readonly translatedTitle$ = new BehaviorSubject<string>('');
   private appTitleAsSuffix =
     this.configService?.config?.featureToggles?.applicationTitleAsSuffix || false;
@@ -72,7 +68,8 @@ export class PageTitleComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly _hidePageTitle$: Observable<boolean> = this.router.events.pipe(
     startWith(this.router),
     switchMap(() => this.activatedRoute.firstChild.data),
-    map(data => !!data?.hidePageTitle)
+    map(data => !!data?.hidePageTitle),
+    tap(hidden => this.pageTitleService.setPageTitleHidden(hidden))
   );
 
   constructor(
@@ -82,30 +79,36 @@ export class PageTitleComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly translateService: TranslateService,
     private readonly logger: NGXLogger,
     private readonly configService: ConfigService,
-    private readonly pageTitleService: PageTitleService
+    private readonly pageTitleService: PageTitleService,
+    private readonly pageHeaderService: PageHeaderService,
+    private readonly pageSubtitleService: PageSubtitleService
   ) {}
 
   public ngOnInit(): void {
     this.openRouterTranslateSubscription();
     this.openHidePageTitleSubscription();
+    this.openCompactModeSubscription();
   }
 
   public ngAfterViewInit(): void {
-    this.pageTitleService.setPageActionsViewContainerRef(this._pageActionsVcr);
+    this.pageSubtitleService.setTitleViewContainerRef(this._subtitleVcr);
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
   private openRouterTranslateSubscription(): void {
     this._subscriptions.add(
-      combineLatest([this.router.events, this.translateService.stream('key')]).subscribe(() => {
+      combineLatest([
+        this.router.events.pipe(startWith(null)),
+        this.translateService.stream('key'),
+      ]).subscribe(() => {
         const routeTitle =
           this.activatedRoute?.snapshot?.firstChild?.data?.title ||
           this.activatedRoute?.snapshot?.firstChild?.children[0]?.data?.title;
         const routeTitleTranslation = this.translateService.instant(routeTitle);
-        const routeTitlePageTranslationString = `pages.${routeTitle.toLowerCase()}.title`;
+        const routeTitlePageTranslationString = `pages.${routeTitle?.toLowerCase()}.title`;
         const routeTitlePageTranslation = this.translateService.instant(
           routeTitlePageTranslationString
         );
@@ -138,6 +141,14 @@ export class PageTitleComponent implements OnInit, OnDestroy, AfterViewInit {
     this._subscriptions.add(
       this._hidePageTitle$.subscribe(hidePageTitle => {
         this.hidePageTitle = hidePageTitle;
+      })
+    );
+  }
+
+  private openCompactModeSubscription(): void {
+    this._subscriptions.add(
+      this.pageHeaderService.compactMode$.subscribe(compactMode => {
+        this.isCompact = compactMode;
       })
     );
   }

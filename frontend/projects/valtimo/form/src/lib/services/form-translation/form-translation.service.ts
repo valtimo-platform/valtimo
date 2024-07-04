@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 
 import {Injectable} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
-import {FormioForm} from '@formio/angular';
+import {ExtendedComponentSchema, FormioForm} from '@formio/angular';
 import {FormMappingService} from '../form-mapping/form-mapping.service';
-import {ExtendedComponentSchema} from 'formiojs';
 
 @Injectable({
   providedIn: 'root',

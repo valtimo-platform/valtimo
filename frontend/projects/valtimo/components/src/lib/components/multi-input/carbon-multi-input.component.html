@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@
           : deleteRowText
         : ('interface.deleteRow' | translate)
   } as vars"
-  [ngClass]="{'v-multi-input--margin': margin}"
+  [ngClass]="{'v-multi-input--margin': margin, 'v-multi-input--no-delete-button': hideDeleteButton}"
   class="v-multi-input"
 >
   <v-input-label
@@ -63,6 +63,12 @@
         ></ng-container>
       </ng-container>
 
+      <ng-container *ngIf="type === 'arbitraryAmount'">
+        <ng-container
+          *ngTemplateOutlet="arbitraryAmountValue; context: {value: value, index: i}"
+        ></ng-container>
+      </ng-container>
+
       <button
         *ngIf="!hideDeleteButton"
         cdsButton="danger"
@@ -93,7 +99,7 @@
 </div>
 
 <ng-template #singleValue let-value="value">
-  <div class="v-multi-input__input">
+  <div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
     <input
       cdsText
       [defaultValue]="value.value"
@@ -104,7 +110,7 @@
 </ng-template>
 
 <ng-template #keyValue let-value="value" let-index="index">
-  <div class="v-multi-input__input">
+  <div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
     <cds-label *ngIf="index === 0 && keyColumnTitle && valueColumnTitle">{{
       keyColumnTitle
     }}</cds-label>
@@ -116,7 +122,7 @@
       (input)="onValueChange(value, $event.target.value, 'key')"
     />
   </div>
-  <div class="v-multi-input__input">
+  <div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
     <cds-label *ngIf="index === 0 && keyColumnTitle && valueColumnTitle">{{
       valueColumnTitle
     }}</cds-label>
@@ -125,6 +131,25 @@
       [defaultValue]="value.value"
       [disabled]="disabled"
       (input)="onValueChange(value, $event.target.value, 'value')"
+    />
+  </div>
+</ng-template>
+
+<ng-template #arbitraryAmountValue let-value="value" let-index="index">
+  <div
+    class="v-multi-input__input"
+    [ngClass]="{'--full-width': fullWidth}"
+    *ngFor="let _ of amountOfArbitraryValuesArray$ | async; index as i"
+  >
+    <cds-label *ngIf="index === 0">{{
+      arbitraryAmountTitles ? arbitraryAmountTitles[i] : ''
+    }}</cds-label>
+
+    <input
+      cdsText
+      [defaultValue]="value ? value['' + i] : ''"
+      [disabled]="disabled"
+      (input)="onValueChange(value, $event.target.value, 'arbitrary', i)"
     />
   </div>
 </ng-template>
@@ -144,7 +169,10 @@
   <div [style.minWidth.px]="dropdownWidth" class="v-multi-input__input">
     <cds-label *ngIf="index === 0 && dropdownColumnTitle">{{ dropdownColumnTitle }}</cds-label>
 
-    <cds-dropdown (selected)="onValueChange(value, $event.item.id, 'dropdown')">
+    <cds-dropdown
+      (selected)="onValueChange(value, $event.item.id, 'dropdown')"
+      [appendInline]="true"
+    >
       <cds-dropdown-list
         [items]="getDropdownItemsForRow(index) | async"
         type="multi"

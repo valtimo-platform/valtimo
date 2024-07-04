@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,13 @@ import {
   ParagraphModule,
 } from '@valtimo/components';
 import {GenerateDocumentConfigurationComponent} from './components/generate-document-configuration/generate-document-configuration.component';
-import { GetTemplateNamesComponent } from './components/get-template-names/get-template-names.component';
+import {GetTemplateNamesComponent} from './components/get-template-names/get-template-names.component';
 
 @NgModule({
   declarations: [
-      SmartDocumentsConfigurationComponent,
-      GenerateDocumentConfigurationComponent,
-      GetTemplateNamesComponent
+    SmartDocumentsConfigurationComponent,
+    GenerateDocumentConfigurationComponent,
+    GetTemplateNamesComponent,
   ],
   imports: [
     CommonModule,
@@ -43,9 +43,10 @@ import { GetTemplateNamesComponent } from './components/get-template-names/get-t
     CarbonMultiInputModule,
     ParagraphModule,
   ],
-  exports: [SmartDocumentsConfigurationComponent,
-      GenerateDocumentConfigurationComponent,
-      GetTemplateNamesComponent
+  exports: [
+    SmartDocumentsConfigurationComponent,
+    GenerateDocumentConfigurationComponent,
+    GetTemplateNamesComponent,
   ],
 })
 export class SmartDocumentsPluginModule {}

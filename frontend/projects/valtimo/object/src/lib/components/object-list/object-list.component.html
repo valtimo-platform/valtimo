@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -23,16 +23,13 @@
   } as obs"
 >
   <div class="main-content pt-0">
-    <div class="container-fluid pr-0 pl-0">
-      <div class="text-right">
-        <div class="btn-group mt-m3px mb-3 mr-0">
-          <ng-container *ngTemplateOutlet="buttons; context: {obs: obs}"></ng-container>
-        </div>
+    <div class="container-fluid">
+      <div class="col-12 px-0 mb-5">
+        <ng-container *ngIf="obs.loading === false; else loading">
+          <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
+          <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
+        </ng-container>
       </div>
-      <ng-container *ngIf="obs.loading === false; else loading">
-        <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
-        <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
-      </ng-container>
     </div>
   </div>
   <ng-container *ngTemplateOutlet="createNewModal"></ng-container>
@@ -64,28 +61,24 @@
 </ng-template>
 
 <ng-template #list let-obs="obs">
-  <valtimo-widget>
-    <valtimo-list
-      [items]="obs.objectConfiguration"
-      [fields]="obs.fields"
-      [viewMode]="true"
-      [header]="true"
-      [pagination]="obs.pagination"
-      paginationIdentifier="objectConfigurationList"
-      (paginationClicked)="paginationClicked($event)"
-      (paginationSet)="paginationSet($event)"
-      (rowClicked)="redirectToDetails($event)"
-    >
-      <div header>
-        <h3 class="list-header-title">
-          {{ 'object.title' | translate }}
-          <sup class="ml-1 badge badge-pill badge-primary">{{
-            obs.objectConfiguration?.length || 0
-          }}</sup>
-        </h3>
-      </div>
-    </valtimo-list>
-  </valtimo-widget>
+  <valtimo-carbon-list
+    [items]="obs.objectConfiguration"
+    [fields]="obs.fields"
+    [header]="false"
+    [pagination]="obs.pagination"
+    paginationIdentifier="objectConfigurationList"
+    (paginationClicked)="paginationClicked($event)"
+    (paginationSet)="paginationSet($event)"
+    (rowClicked)="redirectToDetails($event)"
+  >
+    <ng-container carbonToolbarContent>
+      <button cdsButton="primary" (click)="openModal()">
+        {{ 'object.createObject' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+      </button>
+    </ng-container>
+  </valtimo-carbon-list>
 </ng-template>
 
 <ng-template #createNewModal>
@@ -142,5 +135,5 @@
 </ng-template>
 
 <ng-template #loading>
-  <div class="loading-icon"><cds-loading></cds-loading></div>
+  <valtimo-carbon-list [loading]="true"> </valtimo-carbon-list>
 </ng-template>

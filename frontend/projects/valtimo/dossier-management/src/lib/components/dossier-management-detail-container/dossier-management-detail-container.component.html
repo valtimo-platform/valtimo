@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,89 +14,139 @@
   ~ limitations under the License.
   -->
 
-<div class="dossier-management-detail-container">
-  <ng-container *ngTemplateOutlet="tabs"></ng-container>
-</div>
-
-<ng-template #tabs>
+<div
+  *ngIf="{
+    currentTab: currentTab$ | async,
+    injectedTabs: injectedCaseManagementTabs$ | async
+  } as obs"
+  class="dossier-management-detail-container"
+>
+  <valtimo-documenten-api></valtimo-documenten-api>
   <cds-tabs
     class="dossier-management-tabs"
     type="contained"
     [attr.data-carbon-theme]="CARBON_THEME"
   >
     <cds-tab
-      *ngIf="{active: currentTab === TabEnum.DOCUMENT} as vars"
       class="no-padding-left-right no-padding-top-bottom"
-      [active]="vars.active"
+      [active]="obs.currentTab === TabEnum.DOCUMENT"
       [heading]="'dossierManagement.tabs.document' | translate"
       (selected)="displayBodyComponent(TabEnum.DOCUMENT)"
     >
-      <valtimo-dossier-management-document-definition
-        *ngIf="vars.active"
-      ></valtimo-dossier-management-document-definition>
     </cds-tab>
+
     <cds-tab
-      *ngIf="{active: currentTab === TabEnum.CASE} as vars"
       class="no-padding-left-right main-content"
-      [active]="vars.active"
+      [active]="obs.currentTab === TabEnum.CASE"
       [heading]="'dossierManagement.tabs.cases' | translate"
       (selected)="displayBodyComponent(TabEnum.CASE)"
     >
-      <valtimo-dossier-management-detail *ngIf="vars.active"></valtimo-dossier-management-detail>
     </cds-tab>
+
     <cds-tab
-      *ngIf="{active: currentTab === TabEnum.PROCESSES} as vars"
       class="no-padding-left-right main-content"
-      [active]="vars.active"
+      [active]="obs.currentTab === TabEnum.PROCESSES"
       [heading]="'dossierManagement.tabs.processes' | translate"
       (selected)="displayBodyComponent(TabEnum.PROCESSES)"
     >
-      <valtimo-dossier-management-processes
-        *ngIf="vars.active"
-      ></valtimo-dossier-management-processes>
     </cds-tab>
+
     <cds-tab
-      *ngIf="{active: currentTab === TabEnum.SEARCH} as vars"
       class="main-content no-padding-left-right no-padding-bottom"
-      [active]="vars.active"
+      [active]="obs.currentTab === TabEnum.SEARCH"
       [heading]="'dossierManagement.tabs.searchFields' | translate"
       (selected)="displayBodyComponent(TabEnum.SEARCH)"
     >
-      <valtimo-dossier-management-search-fields
-        *ngIf="vars.active"
-      ></valtimo-dossier-management-search-fields>
     </cds-tab>
+
     <cds-tab
-      *ngIf="{active: currentTab === TabEnum.LIST} as vars"
+      *ngIf="caseListColumn"
       class="no-padding-left-right no-padding-top-bottom"
-      [active]="vars.active"
+      [active]="obs.currentTab === TabEnum.LIST"
       [heading]="'dossierManagement.tabs.listColumns' | translate"
       (selected)="displayBodyComponent(TabEnum.LIST)"
     >
-      <valtimo-dossier-management-list-columns
-        *ngIf="vars.active"
-      ></valtimo-dossier-management-list-columns>
     </cds-tab>
+
     <cds-tab
-      *ngIf="{active: currentTab === TabEnum.TABS} as vars"
+      *ngIf="tabManagementEnabled"
       class="no-padding-left-right no-padding-top-bottom"
-      [active]="vars.active"
+      [active]="obs.currentTab === TabEnum.TABS"
       [heading]="'dossierManagement.tabs.tabManagement' | translate"
       (selected)="displayBodyComponent(TabEnum.TABS)"
     >
-      <valtimo-dossier-management-tabs
-        *ngIf="vars.active"
-        [documentDefinitionName]="documentDefinitionName$ | async"
-      ></valtimo-dossier-management-tabs>
     </cds-tab>
+
+    <cds-tab
+      *ngIf="{active: obs.currentTab === TabEnum.STATUSES} as vars"
+      class="no-padding-left-right no-padding-top-bottom"
+      [active]="vars.active"
+      [heading]="'dossierManagement.tabs.statuses' | translate"
+      (selected)="displayBodyComponent(TabEnum.STATUSES)"
+    >
+      <valtimo-dossier-management-statuses
+        *ngIf="vars.active"
+      ></valtimo-dossier-management-statuses>
+    </cds-tab>
+
+    @for (injectedTab of obs.injectedTabs; track injectedTab.translationKey) {
+      <cds-tab
+        class="no-padding-left-right no-padding-top-bottom"
+        [active]="obs.currentTab === injectedTab.translationKey"
+        [heading]="injectedTab.translationKey | translate"
+        (selected)="displayBodyComponent(injectedTab.translationKey, true)"
+      >
+      </cds-tab>
+    }
   </cds-tabs>
-</ng-template>
+
+  <div class="dossier-management-detail-container__content">
+    <ng-template #contentContainer></ng-template>
+
+    <valtimo-dossier-management-document-definition
+      *ngIf="
+        (obs.currentTab === TabEnum.DOCUMENT && !pendingChanges) || pendingTab === TabEnum.DOCUMENT
+      "
+      [documentDefinitionName]="documentDefinitionName$ | async"
+      (pendingChangesUpdate)="onPendingChangesUpdate($event)"
+      (cancelRedirect)="onCancelRedirectEvent()"
+      (confirmRedirect)="onConfirmRedirectEvent()"
+    ></valtimo-dossier-management-document-definition>
+
+    <valtimo-dossier-management-detail
+      *ngIf="(obs.currentTab === TabEnum.CASE && !pendingChanges) || pendingTab === TabEnum.CASE"
+    ></valtimo-dossier-management-detail>
+
+    <valtimo-dossier-management-processes
+      *ngIf="
+        (obs.currentTab === TabEnum.PROCESSES && !pendingChanges) ||
+        pendingTab === TabEnum.PROCESSES
+      "
+    ></valtimo-dossier-management-processes>
+
+    <valtimo-dossier-management-search-fields
+      *ngIf="
+        (obs.currentTab === TabEnum.SEARCH && !pendingChanges) || pendingTab === TabEnum.SEARCH
+      "
+    ></valtimo-dossier-management-search-fields>
+
+    <valtimo-dossier-management-list-columns
+      *ngIf="(obs.currentTab === TabEnum.LIST && !pendingChanges) || pendingTab === TabEnum.LIST"
+    ></valtimo-dossier-management-list-columns>
+
+    <valtimo-dossier-management-tabs
+      *ngIf="(obs.currentTab === TabEnum.TABS && !pendingChanges) || pendingTab === TabEnum.TABS"
+      [documentDefinitionName]="documentDefinitionName$ | async"
+    ></valtimo-dossier-management-tabs>
+  </div>
+</div>
 
 <ng-container renderInPageHeader [fullWidth]="true">
   <ng-template>
     <valtimo-dossier-management-detail-container-actions
       [documentDefinitionTitle]="documentDefinitionTitle$ | async"
       [documentDefinitionName]="documentDefinitionName$ | async"
+      (versionSet)="onVersionSet($event)"
     ></valtimo-dossier-management-detail-container-actions>
   </ng-template>
 </ng-container>

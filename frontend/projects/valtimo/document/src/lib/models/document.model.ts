@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,11 @@ interface DefinitionId {
   version: number;
 }
 
+interface CreateDocumentDefinitionResponse {
+  documentDefinition: DocumentDefinition;
+  errors: string[];
+}
+
 interface Documents {
   content: Document[];
   empty: boolean;
@@ -109,6 +114,7 @@ interface Document {
   relatedFiles: RelatedFile[];
   assigneeFullName: string;
   assigneeId: string;
+  internalStatus?: string;
 }
 
 interface DocumentDefinitionId {
@@ -137,7 +143,7 @@ interface ProcessDocumentInstanceId {
 interface ProcessDocumentInstance {
   id: ProcessDocumentInstanceId;
   processName: string;
-  isActive: boolean;
+  active: boolean;
   version: number;
   latestVersion: number;
   startedBy: string;
@@ -297,15 +303,6 @@ interface DocumentType {
   name: string;
 }
 
-interface UploadProcessLink {
-  processDefinitionKey: string;
-  processName: string;
-}
-
-interface UpdateUploadProcessLinkRequest {
-  processDefinitionKey: string;
-}
-
 interface CaseSettings {
   name?: string;
   canHaveAssignee: boolean;
@@ -358,11 +355,26 @@ interface LoadedValue<T> {
   value?: T;
 }
 
+interface TemplatePayload {
+  documentDefinitionId: string;
+  documentDefinitionTitle: string;
+}
+
+interface TemplateResponse {
+  $id: string;
+  $schema: string;
+  additionalProperties: boolean;
+  properties: {[key: string]: {[key: string]: string}};
+  title: string;
+  type: string;
+}
+
 export {
   AssignHandlerToDocumentResult,
   CaseListColumn,
   CaseListColumnView,
   CaseSettings,
+  CreateDocumentDefinitionResponse,
   DefinitionId,
   DisplayType,
   DisplayTypeParameters,
@@ -370,14 +382,15 @@ export {
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
   DocumentDefinitionId,
-  DocumentDefinitionVersionsResult,
   DocumentDefinitions,
+  DocumentDefinitionVersionsResult,
   DocumentResult,
   DocumentRole,
   DocumentRoles,
+  Documents,
   DocumentSendMessageRequest,
   DocumentType,
-  Documents,
+  LoadedValue,
   ModifyDocumentAndCompleteTaskRequest,
   ModifyDocumentAndCompleteTaskRequestImpl,
   ModifyDocumentAndCompleteTaskResult,
@@ -391,7 +404,6 @@ export {
   NewDocumentAndStartProcessResult,
   NewDocumentRequest,
   NewDocumentRequestImpl,
-  LoadedValue,
   OpenDocumentCount,
   Page,
   Pageable,
@@ -404,7 +416,7 @@ export {
   RelatedFileListItem,
   SortResult,
   SpecifiedDocuments,
+  TemplatePayload,
+  TemplateResponse,
   UndeployDocumentDefinitionResult,
-  UpdateUploadProcessLinkRequest,
-  UploadProcessLink,
 };

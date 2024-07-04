@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 
 @Component({
   selector: 'valtimo-data-list',
   templateUrl: './data-list.component.html',
   styleUrls: ['./data-list.component.css'],
 })
-export class DataListComponent implements OnInit {
+export class DataListComponent {
   @Input() collection?: Array<any>;
   @Input() object?: any;
-
-  constructor() {}
-
-  ngOnInit() {}
 }

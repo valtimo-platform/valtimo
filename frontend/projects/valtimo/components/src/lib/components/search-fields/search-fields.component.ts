@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {SearchField, SearchFieldBoolean, SearchFieldValues} from '@valtimo/config';
 import {BehaviorSubject, combineLatest, map, Observable, Subject, Subscription, take} from 'rxjs';
-import {SelectItem} from '../../models';
+import {CARBON_THEME, SelectItem} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
+import {IconService} from 'carbon-components-angular';
+import {ChevronDown16, ChevronUp16} from '@carbon/icons';
 
 @Component({
   selector: 'valtimo-search-fields',
@@ -27,29 +29,28 @@ import {DocumentService} from '@valtimo/document';
   styleUrls: ['./search-fields.component.scss'],
 })
 export class SearchFieldsComponent implements OnInit, OnDestroy {
-  @Input() loading: boolean;
-  @Input() set searchFields(fields: Array<SearchField>) {
+  @Input() public loading!: boolean;
+  @Input() public set searchFields(fields: Array<SearchField>) {
     this.searchFields$.next(fields);
   }
-  @Input() set documentDefinitionName(documentDefinitionName: string) {
-    this.documentDefinitionName$.pipe(take(1)).subscribe(currentDocumentDefinitionName => {
+  @Input() public set documentDefinitionName(documentDefinitionName: string) {
+    this._documentDefinitionName$.pipe(take(1)).subscribe(currentDocumentDefinitionName => {
       if (currentDocumentDefinitionName !== documentDefinitionName) {
-        this.documentDefinitionName$.next(documentDefinitionName);
+        this._documentDefinitionName$.next(documentDefinitionName);
       }
     });
   }
-  @Input() setValuesSubject$: Observable<SearchFieldValues>;
-  @Input() defaultValues: SearchFieldValues;
-  @Input() inputDisabled = false;
-  @Output() doSearch: EventEmitter<SearchFieldValues> = new EventEmitter<SearchFieldValues>();
+  @Input() public setValuesSubject$!: Observable<SearchFieldValues>;
+  @Input() public defaultValues!: SearchFieldValues;
+  @Input() public inputDisabled = false;
+  @Input() public externalSearchField = false;
 
-  readonly documentDefinitionName$ = new BehaviorSubject<string>('');
+  @Output() public doSearch: EventEmitter<SearchFieldValues> =
+    new EventEmitter<SearchFieldValues>();
 
-  readonly searchFields$ = new BehaviorSubject<Array<SearchField>>([]);
-
-  readonly values$ = new BehaviorSubject<SearchFieldValues>({});
-
-  readonly hasValidValues$: Observable<boolean> = this.values$.pipe(
+  public readonly searchFields$ = new BehaviorSubject<Array<SearchField>>([]);
+  public readonly values$ = new BehaviorSubject<SearchFieldValues>({});
+  public readonly hasValidValues$: Observable<boolean> = this.values$.pipe(
     map(values => {
       const hasValues = (Object.keys(values) || []).length > 0;
       const rangeValues =
@@ -61,9 +62,10 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
       return !!(hasValues && rangeValues.length === validRangeValues.length);
     })
   );
+  public readonly expanded$ = new BehaviorSubject<boolean>(false);
+  public readonly clear$ = new Subject<null>();
 
-  readonly expanded$ = new BehaviorSubject<boolean>(false);
-  readonly clear$ = new Subject<null>();
+  private readonly _documentDefinitionName$ = new BehaviorSubject<string>('');
 
   private documentDefinitionNameSubscription!: Subscription;
   private dropdownSubscription!: Subscription;
@@ -72,37 +74,45 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   private readonly BOOLEAN_POSITIVE: SearchFieldBoolean = 'booleanPositive';
   private readonly BOOLEAN_NEGATIVE: SearchFieldBoolean = 'booleanNegative';
 
-  readonly BOOLEANTYPES: Array<SearchFieldBoolean> = [this.BOOLEAN_POSITIVE, this.BOOLEAN_NEGATIVE];
-  readonly booleanItems$: Observable<Array<SelectItem>> = this.translateService.stream('key').pipe(
-    map(() =>
-      this.BOOLEANTYPES.map(type => ({
-        id: type,
-        text: this.translateService.instant(`searchFields.${type}`),
-      }))
-    )
-  );
+  private readonly _BOOLEAN_TYPES: Array<SearchFieldBoolean> = [
+    this.BOOLEAN_POSITIVE,
+    this.BOOLEAN_NEGATIVE,
+  ];
+  public readonly booleanItems$: Observable<Array<SelectItem>> = this.translateService
+    .stream('key')
+    .pipe(
+      map(() =>
+        this._BOOLEAN_TYPES.map(type => ({
+          id: type,
+          text: this.translateService.instant(`searchFields.${type}`),
+        }))
+      )
+    );
 
-  readonly dropdownSelectItemsMap: Map<string, Array<SelectItem>> = new Map();
+  public readonly dropdownSelectItemsMap: Map<string, Array<SelectItem>> = new Map();
 
   constructor(
     private readonly documentService: DocumentService,
-    private readonly translateService: TranslateService
-  ) {}
+    private readonly translateService: TranslateService,
+    private readonly iconService: IconService
+  ) {
+    this.iconService.registerAll([ChevronDown16, ChevronUp16]);
+  }
 
-  ngOnInit() {
+  public ngOnInit(): void {
     this.openDocumentDefinitionNameSubscription();
     this.openValuesSubjectSubscription();
     this.openDropdownSubscription();
     this.setDefaultValues();
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this.documentDefinitionNameSubscription?.unsubscribe();
     this.valuesSubjectSubscription?.unsubscribe();
     this.dropdownSubscription?.unsubscribe();
   }
 
-  singleValueChange(searchFieldKey: string, value: any, isDateTime?: boolean): void {
+  public singleValueChange(searchFieldKey: string, value: any, isDateTime?: boolean): void {
     this.values$.pipe(take(1)).subscribe(values => {
       if (value || Number.isInteger(value)) {
         this.values$.next({...values, [searchFieldKey]: this.getSingleValue(value, isDateTime)});
@@ -114,7 +124,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
     });
   }
 
-  multipleValueChange(searchFieldKey: string, value: any, isDateTime?: boolean): void {
+  public multipleValueChange(searchFieldKey: string, value: any, isDateTime?: boolean): void {
     this.values$.pipe(take(1)).subscribe(values => {
       if (value.start && value.end) {
         this.values$.next({
@@ -137,24 +147,27 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
     });
   }
 
-  toggleExpanded(): void {
+  public toggleExpanded(): void {
     this.expanded$.pipe(take(1)).subscribe(expanded => {
       this.expanded$.next(!expanded);
     });
   }
 
-  search(): void {
+  public search(): void {
     this.values$.pipe(take(1)).subscribe(values => {
       this.doSearch.emit(values);
     });
   }
 
-  clear(): void {
+  public clear(): void {
     this.clear$.next(null);
     this.doSearch.emit({});
   }
 
-  getDefaultBooleanSelectionId(values: SearchFieldValues, searchFieldKey: string): string | null {
+  public getDefaultBooleanSelectionId(
+    values: SearchFieldValues,
+    searchFieldKey: string
+  ): string | null {
     const searchFieldValue = values[searchFieldKey];
 
     if (searchFieldValue === true) {
@@ -180,7 +193,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   private openDocumentDefinitionNameSubscription(): void {
-    this.documentDefinitionNameSubscription = this.documentDefinitionName$.subscribe(() => {
+    this.documentDefinitionNameSubscription = this._documentDefinitionName$.subscribe(() => {
       this.collapse();
       this.clear();
     });
@@ -199,32 +212,31 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   private openDropdownSubscription(): void {
-    this.dropdownSubscription = combineLatest([this.documentDefinitionName$, this.searchFields$])
+    this.dropdownSubscription = combineLatest([this._documentDefinitionName$, this.searchFields$])
       .pipe(
-        map(
-          ([documentDefinitionName, searchFields]) =>
-            searchFields
-              ?.filter(searchField => searchField.dropdownDataProvider)
-              .map(searchField =>
-                this.documentService
-                  .getDropdownData(
-                    searchField.dropdownDataProvider,
-                    documentDefinitionName,
-                    searchField.key
-                  )
-                  .subscribe(dropdownData => {
-                    if (dropdownData) {
-                      this.dropdownSelectItemsMap[searchField.key] = Object.keys(dropdownData).map(
-                        dropdownFieldKey => ({
-                          id: dropdownFieldKey,
-                          text: dropdownData[dropdownFieldKey],
-                        })
-                      );
-                    } else {
-                      this.dropdownSelectItemsMap[searchField.key] = [];
-                    }
-                  })
-              )
+        map(([documentDefinitionName, searchFields]) =>
+          searchFields
+            ?.filter(searchField => searchField.dropdownDataProvider)
+            .map(searchField =>
+              this.documentService
+                .getDropdownData(
+                  searchField.dropdownDataProvider,
+                  documentDefinitionName,
+                  searchField.key
+                )
+                .subscribe(dropdownData => {
+                  if (dropdownData) {
+                    this.dropdownSelectItemsMap[searchField.key] = Object.keys(dropdownData).map(
+                      dropdownFieldKey => ({
+                        id: dropdownFieldKey,
+                        text: dropdownData[dropdownFieldKey],
+                      })
+                    );
+                  } else {
+                    this.dropdownSelectItemsMap[searchField.key] = [];
+                  }
+                })
+            )
         )
       )
       .subscribe();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import {DossierDetailTabProgressComponent} from '../components/dossier-detail/ta
 import {DossierDetailTabAuditComponent} from '../components/dossier-detail/tab/audit/audit.component';
 import {DossierDetailTabDocumentsComponent} from '../components/dossier-detail/tab/documents/documents.component';
 import {DefaultTabComponents, DefaultTabs} from '../models';
-import {DossierDetailTabContactMomentsComponent} from '../components/dossier-detail/tab/contact-moments/contact-moments.component';
-import {DossierDetailTabZaakobjectenComponent} from '../components/dossier-detail/tab/zaakobjecten/zaakobjecten.component';
 import {DossierDetailTabNotesComponent} from '../components/dossier-detail/tab/notes/notes.component';
 
 const TAB_MAP = new InjectionToken<Map<string, object>>('TabMap');
@@ -38,8 +36,6 @@ const DEFAULT_TAB_COMPONENTS: DefaultTabComponents = {
   [DefaultTabs.progress]: DossierDetailTabProgressComponent,
   [DefaultTabs.audit]: DossierDetailTabAuditComponent,
   [DefaultTabs.documents]: DossierDetailTabDocumentsComponent,
-  [DefaultTabs.contactMoments]: DossierDetailTabContactMomentsComponent,
-  [DefaultTabs.zaakobjecten]: DossierDetailTabZaakobjectenComponent,
   [DefaultTabs.notes]: DossierDetailTabNotesComponent,
 };
 

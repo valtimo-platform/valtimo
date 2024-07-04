@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -37,24 +37,22 @@
   >
   </v-input-label>
   <cds-combo-box
+    [appendInline]="appendInline"
     [clearSelectionTitle]="vars.clearText"
     [clearSelectionsTitle]="vars.clearAllText"
     [disabled]="disabled || loading || vars.items.length === 0"
+    [dropUp]="dropUp"
     [placeholder]="
       loading
         ? vars.loadingText
         : vars.items.length === 0
-        ? vars.notFoundText
-        : vars.placeholderText
+          ? vars.notFoundText
+          : vars.placeholderText
     "
     [type]="multiple ? 'multi' : 'single'"
     (clear)="clear()"
     (selected)="setSelected($event)"
-    [attr.data-carbon-theme]="carbonTheme"
   >
-    <cds-dropdown-list
-      [items]="vars.items"
-      [attr.data-carbon-theme]="carbonTheme"
-    ></cds-dropdown-list>
+    <cds-dropdown-list [items]="vars.items"></cds-dropdown-list>
   </cds-combo-box>
 </div>

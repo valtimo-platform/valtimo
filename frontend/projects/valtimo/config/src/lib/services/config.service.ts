@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ export class ConfigService {
 
     return {
       ...config,
+      initializers: config.initializers || [],
       whitelistedDomains: config.whitelistedDomains.map(domain =>
         UrlUtils.formatUrlTrailingSlash(domain, false)
       ),
@@ -64,7 +65,7 @@ export class ConfigService {
   }
 
   public get initializers() {
-    return this.valtimoConfig.initializers;
+    return this.valtimoConfig?.initializers || [];
   }
 
   public addExtension(extension: Extension) {

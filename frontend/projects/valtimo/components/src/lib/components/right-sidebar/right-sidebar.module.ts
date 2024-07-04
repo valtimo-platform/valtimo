@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,11 @@ import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {HttpLoaderFactory} from '@valtimo/config';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {
+  DropdownModule,
   GridModule,
   IconModule,
+  LayerModule,
   LinkModule,
-  SelectModule,
   StructuredListModule,
   TabsModule,
   TagModule,
@@ -55,10 +56,11 @@ import {
     GridModule,
     TabsModule,
     StructuredListModule,
-    SelectModule,
     ToggleModule,
     TagModule,
     LinkModule,
+    DropdownModule,
+    LayerModule,
   ],
   exports: [RightSidebarComponent],
 })

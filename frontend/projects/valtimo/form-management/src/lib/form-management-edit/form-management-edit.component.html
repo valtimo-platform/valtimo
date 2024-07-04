@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -13,61 +13,137 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+<ng-container
+  *ngIf="{
+    formDefinition: formDefinition$ | async,
+    jsonFormDefinition: jsonFormDefinition$ | async,
+    jsonOutput: jsonOutput$ | async,
+    compactMode: compactMode$ | async
+  } as obs"
+>
+  @if (obs.formDefinition) {
+    <ng-container renderInPageHeader [fullWidth]="true">
+      <ng-template>
+        <div
+          class="valtimo-form-management-edit__header-container"
+          [ngClass]="{'--compact': obs.compactMode}"
+        >
+          @if (obs.formDefinition.readOnly) {
+            <cds-tag size="sm" type="blue">{{ 'formManagement.readOnly' | translate }}</cds-tag>
+          }
 
-<div class="main-content pt-0">
-  <div class="container-fluid" *ngIf="formDefinition">
-    <div class="btn-group mt-m3px mb-3 float-right">
-      <button class="btn btn-primary btn-space" (click)="downloadFormDefinition()">
-        <i class="icon mdi mdi-download mr-1"></i>
-        {{ 'Download' | translate }}
-      </button>
-      <button
-        class="btn btn-secondary btn-space"
-        (click)="showUploadModal()"
-        [disabled]="formDefinition.readOnly"
-      >
-        <i class="icon mdi mdi-upload mr-1"></i>
-        {{ 'Upload' | translate }}
-      </button>
-      <button
-        class="btn btn-danger btn-space"
-        (click)="delete()"
-        [disabled]="formDefinition.readOnly"
-      >
-        <i class="icon mdi mdi-delete mr-1"></i>{{ 'formManagement.delete' | translate }}
-      </button>
-      <button
-        class="btn btn-success btn-space"
-        (click)="modifyFormDefinition()"
-        [disabled]="formDefinition.readOnly"
-      >
-        <i class="icon mdi mdi-upload mr-1"></i>{{ 'formManagement.deploy' | translate }}
-      </button>
-      <button class="btn btn-secondary btn-space" (click)="showDuplicateModal()">
-        <i class="icon mdi mdi-content-duplicate mr-1"></i
-        >{{ 'formManagement.duplicate' | translate }}
-      </button>
-    </div>
-    <div class="clearfix"></div>
-    <div class="bg-light formbuilder-header overflow-auto">
-      <h3 class="formbuilder-title">
-        <div *ngIf="formDefinition.readOnly" class="pull-right">
-          <span class="badge badge-pill badge-info increase-size">{{
-            'formManagement.readOnly' | translate
-          }}</span>
+          <div class="valtimo-form-management-edit__header">
+            <cds-overflow-menu>
+              <cds-overflow-menu-option (selected)="downloadFormDefinition(obs.formDefinition)">
+                {{ 'Download' | translate }}
+              </cds-overflow-menu-option>
+
+              <cds-overflow-menu-option
+                [disabled]="obs.formDefinition.readOnly"
+                (selected)="showUploadModal()"
+              >
+                {{ 'Upload' | translate }}
+              </cds-overflow-menu-option>
+
+              <cds-overflow-menu-option
+                [disabled]="obs.formDefinition.readOnly"
+                (selected)="delete(obs.formDefinition)"
+              >
+                {{ 'interface.delete' | translate }}
+              </cds-overflow-menu-option>
+
+              <cds-overflow-menu-option (selected)="showDuplicateModal(obs.formDefinition)">
+                {{ 'formManagement.duplicate' | translate }}
+              </cds-overflow-menu-option>
+            </cds-overflow-menu>
+
+            <button
+              cdsButton="primary"
+              [disabled]="obs.formDefinition.readOnly || !validJsonChange"
+              [size]="obs.compactMode ? 'sm' : 'md'"
+              (click)="modifyFormDefinition(obs.formDefinition)"
+            >
+              {{ 'interface.save' | translate }}
+
+              <svg class="cds--btn__icon" cdsIcon="save" size="16"></svg>
+            </button>
+          </div>
         </div>
-      </h3>
-    </div>
-    <ng-container *ngIf="(reloading$ | async) === false">
-      <valtimo-form-io-builder
-        [form]="formDefinition.formDefinition"
-        (change)="formBuilderChanged($event)"
-      ></valtimo-form-io-builder>
+      </ng-template>
     </ng-container>
-  </div>
-</div>
 
-<valtimo-form-management-upload
-  [show$]="showModal$"
-  (definitionUploaded)="setFormDefinition($event)"
-></valtimo-form-management-upload>
+    <cds-tabs type="contained">
+      <cds-tab [heading]="TABS.BUILDER | translate" (selected)="onSelectedTab(TABS.BUILDER)">
+        <valtimo-form-io-builder
+          *ngIf="(reloading$ | async) === false && activeTab === TABS.BUILDER"
+          [form]="obs.formDefinition.formDefinition"
+          (change)="formBuilderChanged($event, obs.jsonFormDefinition)"
+        ></valtimo-form-io-builder>
+      </cds-tab>
+
+      <cds-tab [heading]="TABS.EDITOR | translate" (selected)="onSelectedTab(TABS.EDITOR)">
+        <ng-container
+          *ngTemplateOutlet="
+            jsonEditor;
+            context: {
+              data: {
+                disabled: obs.formDefinition.readOnly,
+                formDefinition: obs.formDefinition,
+                model: obs.jsonFormDefinition
+              }
+            }
+          "
+        ></ng-container>
+      </cds-tab>
+
+      <cds-tab
+        [heading]="TABS.OUTPUT | translate"
+        (selected)="onSelectedTab(TABS.OUTPUT)"
+        class="valtimo-form-management-edit__output"
+      >
+        <valtimo-form-io
+          [form]="obs.formDefinition.formDefinition"
+          (change)="onOutputChange($event)"
+        ></valtimo-form-io>
+
+        <ng-container
+          *ngTemplateOutlet="
+            jsonEditor;
+            context: {
+              data: {disabled: true, formDefinition: obs.formDefinition, model: obs.jsonOutput}
+            }
+          "
+        ></ng-container>
+      </cds-tab>
+    </cds-tabs>
+  } @else {
+    <valtimo-spinner></valtimo-spinner>
+  }
+
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="interface.delete"
+    confirmButtonType="danger"
+    contentTranslationKey="interface.deleteConfirmation"
+    cancelButtonTextTranslationKey="interface.cancel"
+    [outputOnConfirm]="obs.formDefinition"
+    [showModalSubject$]="showDeleteModal$"
+    titleTranslationKey="dashboardManagement.delete"
+    (confirmEvent)="deleteFormDefinition($event)"
+  ></valtimo-confirmation-modal>
+
+  <valtimo-form-management-upload
+    [show$]="showModal$"
+    (definitionUploaded)="setFormDefinition($event)"
+  ></valtimo-form-management-upload>
+
+  <ng-template #jsonEditor let-data="data">
+    <valtimo-editor
+      [model]="data.model"
+      [disabled]="data.disabled"
+      (validEvent)="onValidEvent($event, data.disabled)"
+      (valueChangeEvent)="onValueChangeEvent($event, data.formDefinition, data.disabled)"
+      [fitPage]="true"
+      [fitPageExtraSpace]="80"
+    ></valtimo-editor>
+  </ng-template>
+</ng-container>

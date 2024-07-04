@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import {
   ValtimoCdsModalDirectiveModule,
   WidgetModule,
   TooltipIconModule,
+  CarbonListModule,
 } from '@valtimo/components';
 import {ObjectDetailContainerComponent} from './components/object-detail-container/object-detail-container.component';
 import {ObjectDetailComponent} from './components/object-detail-container/tabs/object-detail/object-detail.component';
@@ -61,6 +62,7 @@ import {ReactiveFormsModule} from '@angular/forms';
     ConfirmationModalModule,
     SearchFieldsModule,
     ValtimoCdsModalDirectiveModule,
+    CarbonListModule,
   ],
   exports: [],
 })

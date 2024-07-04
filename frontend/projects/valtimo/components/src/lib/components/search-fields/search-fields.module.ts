@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,19 @@ import {SearchFieldsComponent} from './search-fields.component';
 import {SpinnerModule} from '../spinner/spinner.module';
 import {WidgetModule} from '../widget/widget.module';
 import {TranslateModule} from '@ngx-translate/core';
-import {ButtonModule} from '../button/button.module';
 import {DatePickerModule} from '../date-picker/date-picker.module';
 import {FormModule} from '../form/form.module';
 import {InputLabelModule} from '../input-label/input-label.module';
 import {InputModule} from '../input/input.module';
 import {ParagraphModule} from '../paragraph/paragraph.module';
 import {SelectModule} from '../select/select.module';
+import {
+  AccordionModule,
+  ButtonModule,
+  IconModule,
+  LayerModule,
+  LoadingModule,
+} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [SearchFieldsComponent],
@@ -42,6 +48,11 @@ import {SelectModule} from '../select/select.module';
     ParagraphModule,
     ButtonModule,
     SelectModule,
+    AccordionModule,
+    LayerModule,
+    ButtonModule,
+    IconModule,
+    LoadingModule,
   ],
   exports: [SearchFieldsComponent],
 })

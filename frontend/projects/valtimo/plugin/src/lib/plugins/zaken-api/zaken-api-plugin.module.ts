@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,11 @@ import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-n
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
 import {LoadingModule, ToggleModule} from 'carbon-components-angular';
+import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
+import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
+import {CreateZaakeigenschapComponent} from './components/create-zaakeigenschap/create-zaakeigenschap.component';
+import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/update-zaakeigenschap.component';
+import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
 
 @NgModule({
   declarations: [
@@ -47,6 +52,11 @@ import {LoadingModule, ToggleModule} from 'carbon-components-angular';
     CreateNietNatuurlijkPersoonZaakRolComponent,
     CreateZaakConfigurationComponent,
     SetZaakopschortingComponent,
+    StartHersteltermijnConfigurationComponent,
+    EndHersteltermijnComponent,
+    CreateZaakeigenschapComponent,
+    UpdateZaakeigenschapComponent,
+    DeleteZaakeigenschapComponent,
   ],
   imports: [
     CommonModule,
@@ -70,6 +80,11 @@ import {LoadingModule, ToggleModule} from 'carbon-components-angular';
     CreateNatuurlijkPersoonZaakRolComponent,
     CreateNietNatuurlijkPersoonZaakRolComponent,
     SetZaakopschortingComponent,
+    StartHersteltermijnConfigurationComponent,
+    EndHersteltermijnComponent,
+    CreateZaakeigenschapComponent,
+    UpdateZaakeigenschapComponent,
+    DeleteZaakeigenschapComponent,
   ],
 })
 export class ZakenApiPluginModule {}

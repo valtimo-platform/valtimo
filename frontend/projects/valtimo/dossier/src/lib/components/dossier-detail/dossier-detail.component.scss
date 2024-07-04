@@ -1,0 +1,97 @@
+/*
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.tab-container {
+  min-height: 300px;
+
+  &:has(> .tab--no-margin) {
+    padding: 0 !important;
+  }
+
+  &:has(> .tab--no-min-height) {
+    min-height: unset;
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+}
+
+.dossier-detail-page-header {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  padding-bottom: 5px;
+
+  ::ng-deep .cds--tag {
+    margin: 0;
+  }
+}
+
+.case-detail-tabs cds-tab {
+  display: none !important;
+}
+
+.cds--overflow-menu-options {
+  margin-top: 32px;
+}
+
+.assign-overflow {
+  margin-right: 8px;
+}
+
+.buttons-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.dossier-actions {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-bottom: 4px;
+
+  &.--compact {
+    padding-bottom: 0;
+    align-items: flex-start;
+  }
+
+  ::ng-deep .version-selection {
+    width: 160px;
+
+    .cds--list-box__selection {
+      display: none;
+    }
+  }
+}
+
+.dossier-status-assign-custom-title {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+
+  .cds--tag {
+    margin: 0;
+    height: var(--cds-layout-size-height-md);
+  }
+
+  &.--compact {
+    align-items: center;
+  }
+}

@@ -79,7 +79,9 @@
       "notes": "Notizen",
       "MINE": "Meine Cases",
       "OPEN": "Nicht zugeordnete Cases",
-      "ALL": "Alle Cases"
+      "ALL": "Alle Cases",
+      "componentNotFound": "Tab-Komponente nicht gefunden",
+      "componentNotFoundMessage": "Für diese Registerkarte ist keine Komponente verfügbar. Wenden Sie sich an den Systemadministrator."
     },
     "forms": {
       "globalSearchPlaceHolder": "Alles",
@@ -126,14 +128,22 @@
         "description": "Möchten Sie diese Notiz wirklich löschen?",
         "deletedMessage": "Die Notiz wurde erfolgreich gelöscht."
       },
-      "editedMessage": "Die Notiz wurde erfolgreich bearbeitet."
+      "editedMessage": "Die Notiz wurde erfolgreich bearbeitet.",
+      "noResults": {
+        "title": "Keine Notizen",
+        "description": "In diesem Dossier gibt es keine Notizen."
+      }
     },
     "documenten": {
       "noProcessLinked": {
         "regularUser": "Der Dokumenten-Upload steht für diesen Fall nicht zur Verfügung. Bitte wenden Sie sich an einen Administrator",
         "adminRole": "Der Prozess zum Hochladen von Dokumenten wurde nicht konfiguriert. Bitte konfigurieren Sie diesen Prozess auf der Fallverwaltungsseite"
       },
-      "noZaakFound": "Es konnten keine Dateien abgerufen werden, da für diese Zaak kein Fall gefunden wurde."
+      "navigateToCaseAdmin": "Zaak konfigurieren",
+      "noZaakFoundTitle": "Kein Zaak gefunden",
+      "noZaakFound": "Es konnten keine Dateien abgerufen werden, da für diese Zaak kein Fall gefunden wurde.",
+      "noFilesTitle": "Keine Dateien",
+      "noFiles": "Für diesen Fall wurden keine Dateien gefunden."
     },
     "startSubProcess": "Starten",
     "claimAssigneeCase": "Anmaßen",
@@ -161,6 +171,9 @@
     "fillInMetadata": "Informationen zu dieser Datei",
     "cancel": "Abbrechen",
     "upload": "Upload",
+    "size": "Umfang",
+    "format": "Datei Format",
+    "trefwoorden": "Schlüsselwörter",
     "filename": "Dateiname",
     "filenameTooltip": "Der Name der physischen Datei, in der der Inhalt des Dokuments erfasst wird, einschließlich Erweiterung",
     "confidentialityLevel": "Vertraulichkeitshinweis",
@@ -200,7 +213,27 @@
     "informatieobjecttypeTooltip": "Ein Dokumenttyp, der sich auf den Falltyp des aktuellen Falls bezieht",
     "additionalDate": "Zusätzliches Dokumentdatum",
     "additionalDateTooltip": "Ein zusätzliches Datum, das dem Dokument als Metadaten hinzugefügt werden kann. Dieses zusätzliche Datum ist optional. Wenn „Eingangsdatum“ ausgewählt ist, kann der Dokumentstatus nur auf 'final' oder 'archiviert' gesetzt werden.",
-    "noAdditionalDate": "Kein Zusatztermin"
+    "noAdditionalDate": "Kein Zusatztermin",
+    "delete": "Löschen",
+    "download": "Herunterladen",
+    "application/octet-stream": "Unbekannt",
+    "application/json": "JSON",
+    "application/msword": "DOC",
+    "application/pdf": "PDF",
+    "application/vnd.ms-powerpoint": "PPT",
+    "application/vnd.ms-excel": "XLS",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": "PPTX",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "XLSX",
+    "audio/mpeg": "MP3",
+    "image/bmp": "BMP",
+    "image/gif": "GIF",
+    "image/jpeg": "JPEG",
+    "image/png": "PNG",
+    "image/svg+xml": "SVG",
+    "text/csv": "CSV",
+    "text/plain": "TXT",
+    "video/mp4": "MP4"
   },
   "summary": {
     "userTasksDoneState": "Alles erledigt!",
@@ -263,8 +296,10 @@
     "task": {
       "title": "Aufgabe"
     },
-    "noDashboards": "Es sind keine Dashboards konfiguriert.",
-    "noWidgets": "Für dieses Dashboard wurden keine Widgets konfiguriert."
+    "noDashboards": "Keine Dashboards",
+    "noDashboardsDescription": "Ihr Systemadministrator hat möglicherweise noch keine Dashboards konfiguriert oder Sie verfügen möglicherweise nicht über die entsprechenden Berechtigungen zum Anzeigen von Dashboards.",
+    "noWidgets": "Keine Widgets",
+    "noWidgetsDescription": "Für dieses Dashboard sind keine Widgets konfiguriert, oder Sie verfügen nicht über die entsprechenden Berechtigungen, um sie anzuzeigen."
   },
   "dashboardManagement": {
     "addDashboard": "Neues Dashboard hinzufügen",
@@ -373,7 +408,15 @@
     },
     "interface": {
       "title": "Interface",
-      "collapsibleMenu": "Navigationsleiste immer einklappbar"
+      "themePreference": "Thema",
+      "themes": {
+        "light": "Hell",
+        "dark": "Dunkel (Beta)",
+        "system": "System (Beta)"
+      },
+      "collapsibleMenu": "Navigationsleiste immer einklappbar",
+      "compactMode": "Kompaktmodus",
+      "showUserName": "Benutzernamen anzeigen"
     }
   },
   "decisions": {
@@ -407,7 +450,12 @@
     "delete": "Löschen",
     "deploy": "Deploy",
     "duplicate": "Duplizieren",
-    "readOnly": "Schreibgeschützt"
+    "readOnly": "Schreibgeschützt",
+    "tabs": {
+      "formBuilder": "Formulareditor",
+      "jsonEditor": "JSON-Editor",
+      "output": "Output"
+    }
   },
   "dossierManagement": {
     "version": "Version: ",
@@ -451,7 +499,8 @@
       "searchFields": "Suchfelder",
       "listColumns": "Aufführen",
       "tabManagement": "Tabs",
-      "document": "Dokument"
+      "document": "Dokument",
+      "statuses": "Status"
     },
     "tabManagement": {
       "columns": {
@@ -499,6 +548,11 @@
     "importDefinition": {
       "title": "Casedefinition importieren",
       "overwriteWarning": "Wenn Ihre Casedefinition Konfigurationen, Modelle und/oder Definitionen mit demselben Namen oder derselben Kennung enthält wie bereits auf Ihrem System, werden diese überschrieben.",
+      "startUpload": "Upload starten",
+      "checkbox": {
+        "message": "Ich verstehe, dass Konfigurationen überschrieben werden können",
+        "error": "Das Feld ist obligatorisch"
+      },
       "info": {
         "title": "Aufmerksamkeit",
         "message": "Bitte stellen Sie vor dem Import sicher, dass die Plugin-Konfigurationen, auf die in den Prozesslinks verwiesen wird, vorhanden sind."
@@ -519,9 +573,58 @@
         "title": "Die Datei enthält einen Fehler."
       },
       "steps": {
-        "accessControl": "Vergessen Sie nicht, die Rechte in der Access Control festzulegen. Ohne die entsprechenden Rechte ist Ihre neue Falldefinition nicht zugänglich.",
-        "dashboard": "Wenn Sie möchten, dass Widgets auf Ihrem Dashboard angezeigt werden, müssen Sie diese manuell konfigurieren. Tun Sie dies über 'dashboard configuration'",
-        "plugins": "Dieser Prozess kann Plugins verwenden. Stellen Sie sicher, dass Sie sie richtig konfigurieren."
+        "accessControl": {
+          "message": "Vergessen Sie nicht, die Rechte in der Access Control festzulegen. Ohne die entsprechenden Rechte ist Ihre neue Falldefinition nicht zugänglich.",
+          "titlle": "Access control"
+        },
+        "dashboard": {
+          "message": "Wenn Sie möchten, dass Widgets auf Ihrem Dashboard angezeigt werden, müssen Sie diese manuell konfigurieren. Tun Sie dies über 'dashboard configuration'",
+          "title": "Dashboard"
+        },
+        "plugins": {
+          "message": "Dieser Prozess kann Plugins verwenden. Stellen Sie sicher, dass Sie sie richtig konfigurieren.",
+          "title": "Plugin Konfigurationen"
+        }
+      }
+    },
+    "createDefinition": {
+      "idError": "Dieser Definitionsname wird bereits verwendet. Bitte ändern Sie ihn in einen eindeutigen Namen",
+      "modalTitle": "Casedefinition erstellen",
+      "name": "Name der Casedefinition",
+      "namePlaceholder": "Der Name der Casedefinition wird hier automatisch generiert",
+      "nameTooltip": "Der Name wird für den Systemnamen, $id usw. verwendet. Außer „-“ sind keine Leerzeichen oder Sonderzeichen erlaubt.",
+      "title": "Titel der Casedefinition",
+      "titlePlaceholder": "Geben Sie hier den Titel ein",
+      "titleTooltip": "Der Titel wird als sichtbarer Name der Casedefinition in der Benutzeroberfläche verwendet"
+    },
+    "documentDefinition": {
+      "cancelModal": {
+        "title": "Verlassen des Editors",
+        "content": "Sind Sie sicher, dass Sie den Editor verlassen möchten? Möglicherweise gehen nicht gespeicherte Änderungen verloren. Beachten Sie beim Speichern, dass das Entfernen oder Ändern eines Attributs die Falldefinition zerstören kann.",
+        "keepEditing": "Bearbeiten Sie weiter"
+      },
+      "saveModalContent": "Sind Sie sicher, dass Sie die Dokumentdefinition speichern möchten? Das Entfernen oder Ändern eines Attributs kann die Falldefinition zerstören."
+    },
+    "statuses": {
+      "withoutStatus": "Dateien ohne Status anzeigen",
+      "searchFieldTitle": "Status",
+      "add": "Status hinzufügen",
+      "edit": "Status bearbeiten",
+      "visibleTitle": "Standardsichtbarkeit in der Fallliste",
+      "visible": "Sichtbar",
+      "invisible": "Nicht sichtbar",
+      "deleteText": "Sind Sie sicher, dass Sie diesen Status löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "keyAutoGenerated": "Der Schlüssel wird automatisch generiert",
+      "colorPlaceholder": "Wähle eine Farbe",
+      "columns": {
+        "title": "Statusname",
+        "key": "Statusschlüssel",
+        "visible": "Standardmäßig sichtbar",
+        "color": "Farbe"
+      },
+      "noResults": {
+        "title": "Keine Status gefunden",
+        "description": "Fügen Sie einen Status hinzu"
       }
     }
   },
@@ -554,7 +657,8 @@
     },
     "goToCase": "Gehen Sie zum Fall",
     "caseLocked": "Kein Zugriff zu dieser Fall!",
-    "rowLocked": "Kein Zugriff zu dieser Aufgabe!"
+    "rowLocked": "Kein Zugriff zu dieser Aufgabe!",
+    "allCases": "Alle Fälle"
   },
   "Task": "Aufgabe",
   "Tasks": "Aufgaben",
@@ -583,6 +687,7 @@
   "Create new Form": "Neues Formular erstellen",
   "Form Builder": "Formular-Builder",
   "Process links": "Prozess-Verknüpfungen",
+  "Translations": "Übersetzungen",
   "uploadFormDefinition": "Formular-Definition hochladen",
   "Process migration": "Prozess-Migration",
   "Process migration warning": "<b>Warnung:</b> Wenn ein Prozess migriert wird, werden die User-Gruppen der laufenden Instanzen nicht geupdatet. Dies kann bei Bedarf in der Datenbank erfolgen. (Zum Beispiel, wenn eine spezifische User-Aufgabe für ROLE_USER offen ist und die User-Gruppe für die User-Aufgabe wird im Prozess auf ROLE_ADMIN angepasst, wird diese Aufgabe nachwievor für ROLE_USER verfügbar sein. Nur neu gestartete Prozesse werden die neue User-Gruppe berücksichtigen.)",
@@ -621,7 +726,8 @@
     "readOnlySystemProcessWarningMessage": "Dies ist ein Systemprozess, daher ist er als schreibgeschützt gekennzeichnet. Dieser Prozess kann verwendet, aber nicht geändert werden."
   },
   "processCaseConnection": {
-    "noProcesses": "Mit dieser Falldefinition sind noch keine Prozesse verbunden.",
+    "noProcessesTitle": "Keine Prozesse",
+    "noProcessesDescription": "Mit dieser Falldefinition sind noch keine Prozesse verbunden",
     "processCreatesCase": "Prozess erstellt neuen Case",
     "processCreatesCaseTooltip": "Wenn diese Option ausgewählt ist, wird eine neue Case erstellt, wenn dieser Prozess gestartet wird. Dazu muss ein Startformular mit dem ersten Prozessschritt verknüpft werden.",
     "startableWithinCase": "Kann im bestehenden Case gestartet werden",
@@ -629,6 +735,14 @@
   },
   "openZaak": {
     "links": "OpenZaak Links",
+    "documentenApi": {
+      "title": "Documenten API",
+      "documentenApiVersion": "Das Documenten-API-Plugin verwendet die Version",
+      "noVersionWarningTitle": "Kein Documenten-API-Plugin version erkannt",
+      "noVersionWarningMessage": "Konfigurieren Sie die Version des Documents API-Plugins und konfigurieren Sie den Upload-Prozess",
+      "multipleVersionsWarningTitle": "Mehrere Documenten-API-Plugins erkannt",
+      "multipleVersionsWarningMessage": "Der Upload-Prozess verknüpft mehrere Documenten-APIs mit unterschiedlichen Versionen"
+    },
     "success": {
       "serviceTaskLinked": "Service task verknüpft",
       "serviceTaskLinkUpdated": "Link zur service task aktualisiert",
@@ -644,8 +758,26 @@
     "autoCreateForCase": "Für jeden Case automatisch erstellen",
     "selectZaakTypeForCase": "Wählen Sie den Zaaktyp für die Case",
     "selectZaakType": "Zaaktyp wählen",
+    "selectZakenApiPluginForCase": "Wählen Sie den Zaken Api plugin für die Case",
+    "selectZakenApiPlugin": "Zaken Api plugin wählen",
+    "zakenApiPlugin": "Zaken Api plugin",
+    "rsin": "RSIN ",
     "selectInfoObjectType": "Wählen Sie den Typ des Informationsobjekts",
     "save": "Speichern"
+  },
+  "zaakdetails": {
+    "title": "Fall-Detail-Synchronisation",
+    "enabled": "Aktiviert",
+    "yes": "Ja",
+    "no": "Nein",
+    "objectManagementConfigurationTitle": "Objektverwaltungskonfiguration",
+    "submitButton": "Fall-Detail-Synchronisation konfigurieren",
+    "editModal": {
+      "title": "Fall-Detail-Synchronisation hinzufügen",
+      "objectManagementConfiguration": "Objektverwaltungskonfiguration",
+      "objectManagementConfigurationPlaceholder": "Wählen Sie eine Objektverwaltungskonfiguration",
+      "enabled": "Aktiviert"
+    }
   },
   "interface": {
     "mainMenu": "Hauptmenü",
@@ -657,7 +789,6 @@
     "edit": "Bearbeiten",
     "noItemsFound": "Keine Elemente gefunden",
     "clearAll": "Alles löschen",
-    "clearAll": "Löschen",
     "show": "Zeig",
     "items": "Elemente",
     "of": "von",
@@ -679,6 +810,7 @@
     "deleteConfirmation": "Sind Sie sicher, dass Sie löschen möchten?",
     "cancel": "Absagen",
     "close": "Schließen",
+    "discard": "Verwerfen",
     "next": "Nächste",
     "skip": "Springen",
     "confirm": "Bestätigen",
@@ -705,7 +837,25 @@
     },
     "required": "erforderlich",
     "filter": "Filter...",
-    "back": "Zurück"
+    "back": "Zurück",
+    "warning": "Warnung",
+    "finish": "Beenden",
+    "add": "Hinzufügen",
+    "tags": "Tags",
+    "tagType": {
+      "red": "Rot",
+      "magenta": "Magenta",
+      "purple": "Lila",
+      "blue": "Blau",
+      "cyan": "Cyan",
+      "teal": "Blaugrün",
+      "green": "Grün",
+      "gray": "Grau",
+      "cool-gray": "Kühles Grau",
+      "warm-gray": "Warmes Grau",
+      "high-contrast": "Hoher Kontrast",
+      "outline": "Umrissen"
+    }
   },
   "taskDetail": {
     "taskCreated": "Erstellt",
@@ -1094,7 +1244,9 @@
     "configFile": "Konfigurationsdatei",
     "dropdownListValues": "Dropdown-Listenwerte",
     "id": "ID",
-    "text": "Text"
+    "text": "Text",
+    "noSearchfieldsTitle": "Keine Suchfelder",
+    "noSearchfieldsDescription": "Innerhalb dieser case definition wurden noch keine Suchfelder konfiguriert."
   },
   "searchFieldsOverviewTooltips": {
     "title": "Der Titel ist ein optionales Feld, das als Bezeichnung für das aktuelle Suchfeld erscheint. Wenn der Titel nicht festgelegt ist, ist der Standardwert die Übersetzung des Suchfeldschlüssels (wenn keine Übersetzung verfügbar ist, wird der ursprüngliche Schlüsselwert angezeigt).",
@@ -1136,9 +1288,9 @@
     "sortableAsc": "Aufsteigend",
     "sortableDesc": "Absteigend",
     "hasEnvConfigWarningTitle": "Dieser Dossiertyp hat bereits eine Spaltenkonfiguration",
-    "hasEnvConfigWarning": "Für diesen Dossiertyp ist bereits eine Spaltenkonfiguration in der Umgebungskonfiguration der Anwendung verfügbar. Um die Konfiguration der Spalten für diesen Dossiertyp über die Benutzeroberfläche zu ermöglichen, muss diese Umgebungskonfiguration entfernt werden.",
-    "noConfigWarningTitle": "Keine Spalten konfiguriert",
-    "noConfigWarning": "Für diesen Dateityp sind keine Spalten konfiguriert. Klicken Sie auf die Schaltfläche oben, um eine Spalte hinzuzufügen.",
+    "hasEnvConfigWarning": "Für diesen Dossiertyp ist bereits eine Spaltenkonfiguration in der Umgebungskonfiguration verfügbar. Löschen Sie diese Option, um hier Spalten hinzuzufügen.",
+    "noConfigWarningTitle": "Keine Spalten",
+    "noConfigWarning": "Für diesen Dateityp sind keine Spalten konfiguriert.",
     "addButtonText": "Spalte hinzufügen",
     "editColumnTitle": "Spalte bearbeiten",
     "close": "Nahe",
@@ -1161,7 +1313,8 @@
     "boolean": "Ja/nein",
     "enum": "Aufzählung",
     "arrayCount": "Quantität",
-    "underscoresToSpaces": "Unterstriche zu Leerzeichen"
+    "underscoresToSpaces": "Unterstriche zu Leerzeichen",
+    "tags": "Tags"
   },
   "object": {
     "title": "Objekte",
@@ -1232,7 +1385,10 @@
     "Cancel": "Stornieren",
     "Remove": "Entfernen",
     "Next": "Nächste",
-    "Previous": "Vorherige"
+    "Previous": "Vorherige",
+    "formioIbanComponent": {
+      "errorMessage": "Kein gültiges IBAN. Bitte geben Sie eine gültige IBAN ein."
+    }
   },
   "viewTypeConverter": {
     "Yes": "Ja",
@@ -1306,5 +1462,47 @@
       "description": "Klicken Sie auf <strong>Neues Skript hinzufügen</strong>, um mit dem Entwerfen Ihres Skripts zu beginnen",
       "title": "Keine Skripte hinzugefügt"
     }
+  },
+  "translationManagement": {
+    "add": "Übersetzung hinzufügen",
+    "modalTitle": "Übersetzungen speichern",
+    "modalContent": "Die Anzeige neuer Übersetzungen in der Anwendung erfordert möglicherweise ein Neuladen der Seite.",
+    "saveWithoutReload": "Speichern",
+    "saveWithReload": "Speichern und neu laden"
+  },
+  "caseMigration": {
+    "warningBeta": "Die Fallmigration befindet sich noch im Beta-Stadium. Die Migration von Fällen kann unerwartete Ergebnisse liefern. Bitte verwenden Sie es mit Vorsicht.",
+    "caseDefinition": "Case definition",
+    "sourceDocumentDefinitionName": "Quellfall-Definitionsnamen",
+    "sourceDocumentDefinitionVersion": "Quellfall-Definitionsversion",
+    "targetDocumentDefinitionName": "Ziel-Fall-Definitionsnamen",
+    "targetDocumentDefinitionVersion": "Ziel-Fall-Definitionsversion",
+    "patches": "Patches",
+    "patchTooltip": "The old case can be migrated to the new case by using patches. Patches work by moving case properties from the source location to the target location. For example: source: '/oldLocation/firstName', target: '/newLocation/firstName'. A property can be removed by leaving the target empty. For example: source: '/gulden', target: ''. A property can be given a default value in the source field. For example, source: 'John', target: '/firstName'. A patch will always try to convert the type to the target type. For example, source: '/my/number', target: '/my/text'. A property can be set to [NULL] by using SpEL expressions. For example, source: '${null}', target: '/driversLicense'. A Spring bean can be called for more elaborate patches. For example, source: ${myBean.getAge(source.person.birthYear)}, target: '${myOtherBean.doMore(builder, sourceValue)}'",
+    "patchSource": "Quellfallfeld",
+    "patchTarget": "Ziel-Fallfeld",
+    "errors": "Fehler",
+    "checkPatches": "Patches überprüfen",
+    "migrate": "Fälle migrieren",
+    "modalTitle": "Fälle migrieren",
+    "modalContent": "Sind Sie sicher, dass Sie die Fälle migrieren möchten? Einige Änderungen können nicht rückgängig gemacht werden."
+  },
+  "formFlow": {
+    "title": "Alle form flow",
+    "key": "Schlüssel",
+    "version": "Version",
+    "readOnly": "Nur lesen",
+    "add": "Neuen Formularablauf hinzufügen",
+    "deleteModalContent": "Sind Sie sicher, dass Sie diesen Formularablauf löschen möchten?",
+    "savedSuccessTitle": "Erfolgreich gespeichert",
+    "savedSuccessTitleMessage": "{{key}} wurde erfolgreich gespeichert",
+    "noResults": {
+      "description": "Klicken Sie auf <strong>Neuen Formularablauf hinzufügen</strong>, um mit dem Entwerfen Ihres Formularablaufs zu beginnen",
+      "title": "Keine form flow hinzugefügt"
+    }
+  },
+  "taskManagement": {
+    "columns": "Säulen",
+    "caseName": "Fallname"
   }
 }

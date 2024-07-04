@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup} from '@angular/forms';
-import {ChoiceField, ChoiceFieldValue} from '../models';
 import {ActivatedRoute, Router} from '@angular/router';
-import {ChoiceFieldService} from '../choice-field.service';
+import {ChoiceFieldService, ChoiceField, ChoiceFieldValue} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-choice-field-value-list',
@@ -81,10 +80,13 @@ export class ChoiceFieldValueListComponent implements OnInit {
     this.service.get(id).subscribe(result => {
       this.choiceField = result;
       this.service
-        .queryValues(this.choiceField.keyName, {page: this.pageParam, size: this.pagination.size})
-        .subscribe(values => {
-          this.pagination.collectionSize = values.headers.get('x-total-count');
-          this.choiceFieldValues = values.body;
+        .queryValuesPage(this.choiceField.keyName, {
+          page: this.pageParam,
+          size: this.pagination.size,
+        })
+        .subscribe(page => {
+          this.pagination.collectionSize = page.totalElements;
+          this.choiceFieldValues = page.content;
           this.choiceFieldValues.forEach(choiceFieldValue => {
             choiceFieldValue.deprecatedDisplayString = choiceFieldValue.deprecated ? 'Yes' : 'No';
           });

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,16 @@
 }
 
 valtimo-searchable-dropdown-select {
-  font-size: 13px;
+  color: var(--cds-text-helper) !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px !important;
+  line-height: 18px !important;
+}
+
+h5 {
+  font-size: 14px !important;
 }
 
 :host .dossier-candidates-dropdown h5 {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,39 +28,43 @@ import {
   BpmnJsDiagramModule,
   ButtonModule,
   CamundaFormModule,
+  CarbonListModule,
   ConfirmationModalModule,
   DataListModule,
-  DocumentenApiMetadataModalModule,
   DropzoneModule,
   FilterSidebarModule,
   FormIoModule,
   FormModule as VFormModule,
   InputLabelModule,
   InputModule,
+  IsArrayPipe,
   ListModule,
   ModalModule,
   PageModule,
   ParagraphModule,
+  RenderInPageHeaderDirectiveModule,
   SearchableDropdownSelectModule,
   SearchFieldsModule,
   SelectModule,
   SpinnerModule,
+  StatusSelectorComponent,
   TableModule,
   TimelineModule,
   TitleModule,
   UploaderModule,
+  ValtimoCdsOverflowButtonDirectiveModule,
   VModalModule,
   WidgetModule,
-  CarbonListModule,
 } from '@valtimo/components';
 import {ConfigModule, HttpLoaderFactory} from '@valtimo/config';
 import {FormModule} from '@valtimo/form';
-import {FormLinkModule} from '@valtimo/form-link';
+import {ProcessLinkModule} from '@valtimo/process-link';
 import {ProcessModule} from '@valtimo/process';
 import {TaskModule} from '@valtimo/task';
 import {
   ButtonModule as CarbonButtonModule,
   ComboBoxModule,
+  DialogModule,
   DropdownModule,
   IconModule,
   LoadingModule,
@@ -68,21 +72,18 @@ import {
   SelectModule as CarbonSelectModule,
   SkeletonModule,
   TabsModule,
+  TagModule,
 } from 'carbon-components-angular';
 import {NoteModalComponent} from './components/note-modal/note-modal.component';
 import {DossierAssignUserComponent} from './components/dossier-assign-user/dossier-assign-user.component';
 import {DossierBulkAssignModalComponent} from './components/dossier-bulk-assign-modal/dossier-bulk-assign-modal.component';
 import {DossierDetailComponent} from './components/dossier-detail/dossier-detail.component';
 import {DossierDetailTabAuditComponent} from './components/dossier-detail/tab/audit/audit.component';
-import {DossierDetailTabContactMomentsComponent} from './components/dossier-detail/tab/contact-moments/contact-moments.component';
-import {DossierDetailTabDocumentenApiDocumentsComponent} from './components/dossier-detail/tab/documenten-api-documents/documenten-api-documents.component';
 import {DossierDetailTabDocumentsComponent} from './components/dossier-detail/tab/documents/documents.component';
 import {DossierDetailTabNotesComponent} from './components/dossier-detail/tab/notes/notes.component';
-import {DossierDetailTabObjectTypeComponent} from './components/dossier-detail/tab/object-type/object-type.component';
 import {DossierDetailTabProgressComponent} from './components/dossier-detail/tab/progress/progress.component';
 import {DossierDetailTabS3DocumentsComponent} from './components/dossier-detail/tab/s3-documents/s3-documents.component';
 import {DossierDetailTabSummaryComponent} from './components/dossier-detail/tab/summary/summary.component';
-import {DossierDetailTabZaakobjectenComponent} from './components/dossier-detail/tab/zaakobjecten/zaakobjecten.component';
 import {DossierListActionsComponent} from './components/dossier-list-actions/dossier-list-actions.component';
 import {DossierListComponent} from './components/dossier-list/dossier-list.component';
 import {DossierProcessStartModalComponent} from './components/dossier-process-start-modal/dossier-process-start-modal.component';
@@ -93,6 +94,7 @@ import {TAB_MAP} from './constants';
 import {DossierBulkAssignService, DossierService} from './services';
 import {DossierDetailTabFormioComponent} from './components/dossier-detail/tab/formio/formio.component';
 import {TabTranslatePipeModule} from './pipes';
+import {DossierDetailTabNotFoundComponent} from './components/dossier-detail/tab/not-found/not-found.component';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -106,15 +108,12 @@ export type TabsFactory = () => Map<string, object>;
     DossierDetailTabProgressComponent,
     DossierDetailTabAuditComponent,
     DossierDetailTabDocumentsComponent,
-    DossierDetailTabContactMomentsComponent,
-    DossierDetailTabZaakobjectenComponent,
     DossierDetailTabNotesComponent,
     DossierUpdateComponent,
     DossierProcessStartModalComponent,
     DossierSupportingProcessStartModalComponent,
-    DossierDetailTabObjectTypeComponent,
-    DossierDetailTabDocumentenApiDocumentsComponent,
     DossierDetailTabS3DocumentsComponent,
+    DossierDetailTabNotFoundComponent,
     DossierAssignUserComponent,
     NoteModalComponent,
     DossierDetailTabFormioComponent,
@@ -158,7 +157,6 @@ export type TabsFactory = () => Map<string, object>;
     VModalModule,
     TitleModule,
     ButtonModule,
-    DocumentenApiMetadataModalModule,
     SearchableDropdownSelectModule,
     SearchFieldsModule,
     PageModule,
@@ -169,7 +167,7 @@ export type TabsFactory = () => Map<string, object>;
     LoadingModule,
     CarbonButtonModule,
     IconModule,
-    FormLinkModule,
+    ProcessLinkModule,
     CarbonModalModule,
     CarbonSelectModule,
     ConfirmationModalModule,
@@ -178,7 +176,13 @@ export type TabsFactory = () => Map<string, object>;
     ComboBoxModule,
     TabTranslatePipeModule,
     CarbonListModule,
+    IsArrayPipe,
     SkeletonModule,
+    StatusSelectorComponent,
+    RenderInPageHeaderDirectiveModule,
+    TagModule,
+    DialogModule,
+    ValtimoCdsOverflowButtonDirectiveModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

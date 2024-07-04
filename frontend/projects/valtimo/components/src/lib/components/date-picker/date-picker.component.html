@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -37,11 +37,10 @@
     #datePickerElement
     cdsText
     [ngClass]="{
-      'v-date-picker--full-width': fullWidth,
+      'v-date-picker--full-width': fullWidthClass,
       'v-date-picker--margin': margin
     }"
     [ngModel]="dateValue$ | async"
-    [attr.data-carbon-theme]="carbonTheme"
     [disabled]="disabled"
     [style.width.px]="widthPx + 20"
     type="text"

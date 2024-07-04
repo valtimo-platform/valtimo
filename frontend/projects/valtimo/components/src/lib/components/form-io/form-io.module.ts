@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,10 @@ import {FormIoDomService} from './services/form-io-dom.service';
 import {FileSizeModule} from '../file-size/file-size.module';
 import {ResourceModule} from '@valtimo/resource';
 import {RouterModule} from '@angular/router';
-import {DocumentenApiUploaderComponent} from './documenten-api-uploader/documenten-api-uploader.component';
-import {DocumentenApiMetadataModalModule} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.module';
 import {FormIoCurrentUserComponent} from './form-io-current-user/form-io-current-user.component';
 import {ConfigService} from '@valtimo/config';
+import {FormIoIbanComponent} from './form-io-iban/iban.component';
+import {ReactiveFormsModule} from '@angular/forms';
 
 @NgModule({
   imports: [
@@ -43,21 +43,21 @@ import {ConfigService} from '@valtimo/config';
     FileSizeModule,
     ResourceModule,
     RouterModule,
-    DocumentenApiMetadataModalModule,
+    ReactiveFormsModule,
   ],
   declarations: [
     FormioComponent,
     FormioBuilderComponent,
     FormIoUploaderComponent,
-    DocumentenApiUploaderComponent,
     FormIoCurrentUserComponent,
+    FormIoIbanComponent,
   ],
   exports: [
     FormioComponent,
     FormioBuilderComponent,
     FormIoUploaderComponent,
-    DocumentenApiUploaderComponent,
     FormIoCurrentUserComponent,
+    FormIoIbanComponent,
   ],
   providers: [
     FormIoDomService,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,40 @@
  * limitations under the License.
  */
 
-import {Injectable} from '@angular/core';
-import {Subject} from 'rxjs';
-import {WindowWithMonaco} from '../../models';
+import {Inject, Injectable, OnDestroy} from '@angular/core';
+import {combineLatest, filter, map, Subject, Subscription} from 'rxjs';
+import {CurrentCarbonTheme, MonacoTheme, WindowWithMonaco} from '../../models';
+import {DOCUMENT} from '@angular/common';
+import {CdsThemeService} from '../../services';
 
 @Injectable({
   providedIn: 'root',
 })
-export class EditorService {
-  public loadingFinished$ = new Subject<null>();
+export class EditorService implements OnDestroy {
+  public readonly loadingFinished$ = new Subject<null>();
+
+  public readonly monacoEditor$ = this.loadingFinished$.pipe(
+    map(() => (this.document.defaultView as WindowWithMonaco)?.monaco?.editor),
+    filter(editor => !!editor)
+  );
 
   private _loaded = false;
 
   get loaded(): boolean {
     return this._loaded;
+  }
+
+  private readonly _subscriptions = new Subscription();
+
+  constructor(
+    @Inject(DOCUMENT) private readonly document: Document,
+    private readonly cdsThemeService: CdsThemeService
+  ) {
+    this.openThemeSubscription();
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
   }
 
   public load(): void {
@@ -59,5 +79,19 @@ export class EditorService {
   private finishLoading(): void {
     this._loaded = true;
     this.loadingFinished$.next(null);
+  }
+
+  private openThemeSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([this.monacoEditor$, this.cdsThemeService.currentTheme$]).subscribe(
+        ([editor, currentTheme]) => {
+          if (currentTheme === CurrentCarbonTheme.G10) {
+            editor.setTheme(MonacoTheme.VS);
+          } else {
+            editor.setTheme(MonacoTheme.VSDARK);
+          }
+        }
+      )
+    );
   }
 }

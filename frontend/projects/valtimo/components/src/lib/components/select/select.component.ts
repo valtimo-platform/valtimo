@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public defaultSelectionId!: string;
   @Input() public defaultSelectionIds!: Array<string>;
   @Input() public disabled = false;
+  @Input() public dropUp?: boolean;
   @Input() public multiple = false;
   @Input() public margin = false;
   @Input() public widthInPx!: number;
@@ -71,6 +72,7 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public placeholder = '';
   @Input() public smallMargin = false;
   @Input() public carbonTheme = 'g10';
+  @Input() public appendInline = true;
 
   @Output() public selectedChange: EventEmitter<SelectedValue> = new EventEmitter();
 

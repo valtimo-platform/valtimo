@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -23,6 +23,9 @@
     schema: schema$ | async,
     showAssignModal: showAssignModal$ | async,
     selectedDocumentIds: selectedDocumentIds$ | async,
+    statuses: statuses$ | async,
+    selectedStatuses: selectedStatuses$ | async,
+    showStatusSelector: showStatusSelector$ | async,
     loaded:
       !loadingFields &&
       !loadingPagination &&
@@ -62,7 +65,16 @@
       [documentDefinitionName]="documentDefinitionName$ | async"
       [defaultValues]="searchFieldValues$ | async"
       [inputDisabled]="!obs.loaded"
-    ></valtimo-search-fields>
+      [externalSearchField]="obs.showStatusSelector"
+    >
+      <valtimo-status-selector
+        *ngIf="obs.showStatusSelector"
+        [statuses]="obs.statuses"
+        [selectedStatuses]="obs.selectedStatuses"
+        [disabled]="!obs.loaded"
+        (selectedStatusesChangeEvent)="onSelectedStatusesChange($event)"
+      ></valtimo-status-selector>
+    </valtimo-search-fields>
   </div>
 </ng-template>
 
@@ -109,7 +121,6 @@
     <cds-tabs
       *ngIf="!visibleDossierTabs; else configuredTabs"
       type="contained"
-      data-carbon-theme="g10"
       class="dossier-list-tabs"
     >
       <cds-tab
@@ -177,6 +188,7 @@
 
 <ng-template #dossierListActions>
   <button
+    *ngIf="canCreateDocument$ | async"
     cdsButton="primary"
     [disabled]="listActionsComponent?.disableStartDossierButton$ | async"
     (click)="startDossier()"

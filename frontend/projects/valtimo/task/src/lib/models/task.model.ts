@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,4 +70,32 @@ interface TaskProcessLinkResult {
   };
 }
 
-export {AssigneeRequest, ListItemField, Task, TaskProcessLinkResult, TaskProcessLinkType};
+interface SpecifiedTask {
+  id: string;
+  businessKey: string;
+  processInstanceId: string;
+  name: string;
+  created: Date;
+  items: {key: string; value: any}[];
+}
+
+interface MappedSpecifiedTask {
+  id: string;
+  businessKey: string;
+  processInstanceId: string;
+  name: string;
+  created?: string;
+  locked?: boolean;
+  caseLocked?: boolean;
+  [key: string]: any;
+}
+
+export {
+  AssigneeRequest,
+  ListItemField,
+  Task,
+  TaskProcessLinkResult,
+  TaskProcessLinkType,
+  SpecifiedTask,
+  MappedSpecifiedTask,
+};

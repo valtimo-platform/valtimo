@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 import {Router} from '@angular/router';
-import {ChoiceField} from '../models';
-import {ChoiceFieldService} from '../choice-field.service';
+import {ChoiceFieldService, ChoiceField} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-choice-field-list',
   templateUrl: './choice-field-list.component.html',
   styleUrls: ['./choice-field-list.component.css'],
 })
-export class ChoiceFieldListComponent implements OnInit {
+export class ChoiceFieldListComponent {
   public choiceFields: Array<ChoiceField> = [];
   public pagination = {
     collectionSize: 0,
@@ -52,17 +51,17 @@ export class ChoiceFieldListComponent implements OnInit {
     private service: ChoiceFieldService
   ) {}
 
-  ngOnInit() {}
-
   paginationSet() {
     this.initData();
   }
 
   private initData() {
-    this.service.query({page: this.pageParam, size: this.pagination.size}).subscribe(results => {
-      this.pagination.collectionSize = results.headers.get('x-total-count');
-      this.choiceFields = results.body;
-    });
+    this.service
+      .queryPage({page: this.pageParam, size: this.pagination.size})
+      .subscribe(results => {
+        this.pagination.collectionSize = results.totalElements;
+        this.choiceFields = results.content;
+      });
   }
 
   public rowClick(data) {

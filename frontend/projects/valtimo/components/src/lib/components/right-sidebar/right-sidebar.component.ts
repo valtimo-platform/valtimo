@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {FormBuilder, FormControl, FormGroup} from '@angular/forms';
 import {TranslateService} from '@ngx-translate/core';
-import {ValtimoVersion} from '../../models';
+import {SelectableCarbonTheme, ValtimoVersion} from '../../models';
 import {
   ConfigService,
   EmailNotificationSettings,
@@ -39,8 +39,9 @@ import {UserProviderService} from '@valtimo/security';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, Observable, Subscription, switchMap, take} from 'rxjs';
 import {VersionService} from '../version/version.service';
-import {ShellService} from '../../services/shell.service';
+import {CdsThemeService, PageHeaderService, ShellService} from '../../services';
 import {map, tap} from 'rxjs/operators';
+import {ListItem} from 'carbon-components-angular';
 
 @Component({
   selector: 'valtimo-right-sidebar',
@@ -89,6 +90,20 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   readonly selectedLanguage$ = new BehaviorSubject<string>('');
   readonly languageOptions$ = new BehaviorSubject<Array<string>>([]);
 
+  public readonly languageListItems$: Observable<ListItem[]> = combineLatest([
+    this.languageOptions$,
+    this.selectedLanguage$,
+    this.translate.stream('key'),
+  ]).pipe(
+    map(([languageOptions, selectedLanguage]) =>
+      languageOptions.map(languageKey => ({
+        content: this.translate.instant('settings.language.options.' + languageKey),
+        key: languageKey,
+        selected: selectedLanguage === languageKey,
+      }))
+    )
+  );
+
   readonly backendVersion$: Observable<ValtimoVersion> = this.versionService.getVersion();
 
   readonly userSubject$: Observable<UserIdentity> = this.userProviderService.getUserSubject();
@@ -113,6 +128,12 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
 
   readonly collapsibleWidescreenMenu$ = this.shellService.collapsibleWidescreenMenu$;
 
+  readonly preferredTheme$ = this.cdsThemeService.preferredTheme$;
+
+  readonly compactMode$ = this.pageHeaderService.compactMode$;
+
+  readonly showUserNameInTopBar$ = this.pageHeaderService.showUserNameInTopBar$;
+
   readonly frontendVersion!: string;
 
   private formSubscription!: Subscription;
@@ -126,6 +147,36 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
 
   public showValtimoVersions = true;
 
+  public allowUserThemeSwitching!: boolean;
+
+  public readonly themeOptions$: Observable<ListItem[]> = combineLatest([
+    this.preferredTheme$,
+    this.translate.stream('key'),
+  ]).pipe(
+    map(([preferredTheme]) => [
+      {
+        content: this.translate.instant('settings.interface.themes.light'),
+        key: SelectableCarbonTheme.G10,
+        selected: preferredTheme === SelectableCarbonTheme.G10,
+      },
+      {
+        content: this.translate.instant('settings.interface.themes.dark'),
+        key: SelectableCarbonTheme.G90,
+        selected: preferredTheme === SelectableCarbonTheme.G90,
+      },
+      {
+        content: this.translate.instant('settings.interface.themes.system'),
+        key: SelectableCarbonTheme.SYSTEM,
+        selected: preferredTheme === SelectableCarbonTheme.SYSTEM,
+      },
+    ])
+  );
+
+  private readonly _subscriptions = new Subscription();
+
+  public enableCompactModeToggle = false;
+  public enableShowUserNameToggle = false;
+
   constructor(
     public translate: TranslateService,
     private readonly userProviderService: UserProviderService,
@@ -136,14 +187,24 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     private readonly shellService: ShellService,
     private readonly elementRef: ElementRef,
     private readonly configService: ConfigService,
-    private readonly userSettingsService: UserSettingsService
+    private readonly userSettingsService: UserSettingsService,
+    private readonly pageHeaderService: PageHeaderService,
+    private readonly cdsThemeService: CdsThemeService
   ) {
     this.frontendVersion = VERSIONS?.frontendLibraries;
-    this.isAdmin$.subscribe(isAdmin => {
-      if (this.hideValtimoVersionsForNonAdmins && !isAdmin) {
-        this.showValtimoVersions = false;
-      }
-    });
+    this._subscriptions.add(
+      this.isAdmin$.subscribe(isAdmin => {
+        if (this.hideValtimoVersionsForNonAdmins && !isAdmin) {
+          this.showValtimoVersions = false;
+        }
+      })
+    );
+    this.allowUserThemeSwitching =
+      !!this.configService?.config?.featureToggles?.allowUserThemeSwitching ?? true;
+    this.enableCompactModeToggle =
+      !!this.configService?.config?.featureToggles.enableCompactModeToggle;
+    this.enableShowUserNameToggle =
+      !!this.configService?.config?.featureToggles.enableUserNameInTopBarToggle;
   }
 
   showPlantATreeButton: boolean;
@@ -162,15 +223,20 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.formSubscription?.unsubscribe();
+    this._subscriptions.unsubscribe();
   }
 
-  updateUserLanguage(langKey: string, saveSettings = true): void {
+  updateUserLanguage(langKey: string | {item?: {key?: string}}, saveSettings = true): void {
+    const langKeyToUse = (langKey as any)?.item?.key
+      ? (langKey as any)?.item.key
+      : (langKey as string);
+
     this.translate
-      .use(langKey)
+      .use(langKeyToUse)
       .pipe(take(1))
       .subscribe(() => {
-        localStorage.setItem('langKey', langKey);
-        this.selectedLanguage$.next(langKey);
+        localStorage.setItem('langKey', langKeyToUse);
+        this.selectedLanguage$.next(langKeyToUse);
 
         if (saveSettings) {
           this.saveUserSettings();
@@ -183,6 +249,38 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
 
     if (saveSettings) {
       this.saveUserSettings();
+    }
+  }
+
+  setCompactMode(compactMode: boolean, saveSettings = true): void {
+    this.pageHeaderService.setCompactMode(compactMode);
+
+    if (saveSettings) {
+      this.saveUserSettings();
+    }
+  }
+
+  setShowUserName(showUserName: boolean, saveSettings = true): void {
+    this.pageHeaderService.setShowUserNameInTopBar(showUserName);
+
+    if (saveSettings) {
+      this.saveUserSettings();
+    }
+  }
+
+  setPreferredTheme(selectedTheme: string | {item?: {key?: string}}, saveSettings = true): void {
+    if (this.allowUserThemeSwitching) {
+      if ((selectedTheme as any)?.item?.key) {
+        this.cdsThemeService.setPreferredTheme(
+          (selectedTheme as any).item?.key as SelectableCarbonTheme
+        );
+      } else {
+        this.cdsThemeService.setPreferredTheme(selectedTheme as SelectableCarbonTheme);
+      }
+
+      if (saveSettings) {
+        this.saveUserSettings();
+      }
     }
   }
 
@@ -263,14 +361,30 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   private saveUserSettings(): void {
     this.updatingUserSettings$.next(true);
 
-    combineLatest([this.selectedLanguage$, this.collapsibleWidescreenMenu$])
+    combineLatest([
+      this.selectedLanguage$,
+      this.collapsibleWidescreenMenu$,
+      this.compactMode$,
+      this.showUserNameInTopBar$,
+      this.preferredTheme$,
+    ])
       .pipe(
         take(1),
-        switchMap(([languageCode, collapsibleWidescreenMenu]) =>
-          this.userSettingsService.saveUserSettings({
-            collapsibleWidescreenMenu,
+        switchMap(
+          ([
             languageCode,
-          })
+            collapsibleWidescreenMenu,
+            compactMode,
+            showUserNameInTopBar,
+            preferredTheme,
+          ]) =>
+            this.userSettingsService.saveUserSettings({
+              collapsibleWidescreenMenu,
+              languageCode,
+              ...(this.enableCompactModeToggle && {compactMode}),
+              ...(this.enableShowUserNameToggle && {showUserNameInTopBar}),
+              ...(this.allowUserThemeSwitching && {preferredTheme}),
+            })
         )
       )
       .subscribe(() => {
@@ -282,5 +396,10 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
     this.selectedLanguage$.next(settings.languageCode);
     this.updateUserLanguage(settings.languageCode, false);
     this.setCollapsibleWidescreenMenu(settings.collapsibleWidescreenMenu, false);
+    if (this.enableCompactModeToggle) this.setCompactMode(settings.compactMode, false);
+    if (this.enableShowUserNameToggle) this.setShowUserName(settings.showUserNameInTopBar, false);
+    if (settings.preferredTheme && this.allowUserThemeSwitching) {
+      this.setPreferredTheme(settings.preferredTheme, false);
+    }
   }
 }

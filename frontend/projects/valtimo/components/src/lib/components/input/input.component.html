@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@
   <input
     *ngIf="isText"
     [ngClass]="{
-      'v-input--full-width': fullWidth,
+      'v-input--full-width': fullWidthClass,
       'v-input--margin': margin,
       'v-input--small-margin': smallMargin
     }"
@@ -54,7 +54,6 @@
     [step]="step"
     (ngModelChange)="onValueChange($event)"
     (keydown)="onKeydown($event)"
-    [attr.data-carbon-theme]="carbonTheme"
     [style.width.px]="widthPx"
     [placeholder]="placeholder"
     type="text"
@@ -65,7 +64,7 @@
   <textarea
     *ngIf="isTextarea"
     [ngClass]="{
-      'v-input--full-width': fullWidth,
+      'v-input--full-width': fullWidthClass,
       'v-input--margin': margin,
       'v-input--small-margin': smallMargin
     }"
@@ -76,7 +75,6 @@
     [rows]="rows"
     (keydown)="onKeydown($event)"
     (ngModelChange)="onValueChange($event)"
-    [attr.data-carbon-theme]="carbonTheme"
     [style.width.px]="widthPx"
   ></textarea>
 </ng-template>
@@ -86,7 +84,7 @@
     <div
       *ngIf="{showPassword: showPassword$ | async} as obs"
       [ngClass]="{
-        'v-input--full-width': fullWidth,
+        'v-input--full-width': fullWidthClass,
         'v-input--margin': margin,
         'v-input--small-margin': smallMargin
       }"
@@ -94,7 +92,7 @@
     >
       <input
         [ngClass]="{
-          'v-input--full-width': fullWidth
+          'v-input--full-width': fullWidthClass
         }"
         cdsText
         [disabled]="disabled"
@@ -105,7 +103,6 @@
         [step]="step"
         (keydown)="onKeydown($event)"
         (ngModelChange)="onValueChange($event)"
-        [attr.data-carbon-theme]="carbonTheme"
         [style.width.px]="widthPx"
         [type]="obs.showPassword ? 'text' : 'password'"
       />
@@ -124,7 +121,7 @@
   <input
     *ngIf="isNumber"
     [ngClass]="{
-      'v-input--full-width': fullWidth,
+      'v-input--full-width': fullWidthClass,
       'v-input--margin': margin,
       'v-input--small-margin': smallMargin,
       'v-input--hide-spinbox': hideNumberSpinBox
@@ -138,7 +135,6 @@
     [step]="step"
     (keydown)="onKeydown($event)"
     (ngModelChange)="onValueChange($event)"
-    [attr.data-carbon-theme]="carbonTheme"
     [style.width.px]="widthPx"
     type="number"
   />
@@ -148,7 +144,7 @@
   <input
     *ngIf="isDigitOnly"
     [ngClass]="{
-      'v-input--full-width': fullWidth,
+      'v-input--full-width': fullWidthClass,
       'v-input--margin': margin,
       'v-input--small-margin': smallMargin
     }"
@@ -162,7 +158,6 @@
     [step]="step"
     (keydown)="onKeydown($event)"
     (ngModelChange)="onValueChange($event)"
-    [attr.data-carbon-theme]="carbonTheme"
     [style.width.px]="widthPx"
     type="text"
   />
@@ -175,7 +170,6 @@
       [name]="name"
       [ngModel]="inputValue$ | async"
       (ngModelChange)="onValueChange($event)"
-      [attr.data-carbon-theme]="carbonTheme"
     >
     </cds-checkbox>
   </div>

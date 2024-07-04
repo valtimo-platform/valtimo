@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,20 @@ import {CommonModule} from '@angular/common';
 import {PageHeaderComponent} from './page-header.component';
 import {PageTitleModule} from '../page-title/page-title.module';
 import {BreadcrumbNavigationModule} from '../breadcrumb-navigation/breadcrumb-navigation.module';
+import {RenderPageHeaderDirectiveModule} from '../../directives/render-page-header/render-page-header-directive.module';
+import {PageActionsComponent} from '../page-actions/page-actions.component';
+import {PageSubtitleComponent} from '../page-subtitle/page-subtitle.component';
 
 @NgModule({
   declarations: [PageHeaderComponent],
-  imports: [CommonModule, PageTitleModule, BreadcrumbNavigationModule],
+  imports: [
+    CommonModule,
+    PageTitleModule,
+    BreadcrumbNavigationModule,
+    RenderPageHeaderDirectiveModule,
+    PageActionsComponent,
+    PageSubtitleComponent,
+  ],
   exports: [PageHeaderComponent],
 })
 export class PageHeaderModule {}

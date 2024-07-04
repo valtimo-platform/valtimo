@@ -1,10 +1,10 @@
 {
   "name": "@valtimo/swagger",
   "license": "EUPL-1.2",
-  "version": "11.2.0",
+  "version": "12.0.0",
   "peerDependencies": {
-    "@angular/common": "^16.2.0",
-    "@angular/core": "^16.2.0"
+    "@angular/common": "^17.2.2",
+    "@angular/core": "^17.2.2"
   },
   "dependencies": {
     "swagger-ui": "5.4.2",

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,15 @@ import {
   OnDestroy,
   OnInit,
   Output,
-  ViewChild,
 } from '@angular/core';
 import {AbstractControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {WarningFilled16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {CARBON_CONSTANTS, ModalComponent} from '@valtimo/components';
+import {CARBON_CONSTANTS} from '@valtimo/components';
 import {DocumentDefinitionCreateRequest, DocumentService} from '@valtimo/document';
-import {FileItem} from 'carbon-components-angular';
+import {FileItem, IconService, NotificationContent} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
-
-import {DossierImportService} from '../../services/dossier-import.service';
+import {DossierManagementService} from '../../services/dossier-management.service';
 import {STEPS, UPLOAD_STATUS, UPLOAD_STEP} from './dossier-management-upload.constants';
 
 @Component({
@@ -40,8 +39,6 @@ import {STEPS, UPLOAD_STATUS, UPLOAD_STEP} from './dossier-management-upload.con
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DossierManagementUploadComponent implements OnInit, OnDestroy {
-  @ViewChild('uploadDefinitionModal') modal: ModalComponent;
-
   @Input() open = false;
   @Output() closeModal = new EventEmitter<boolean>();
 
@@ -60,23 +57,54 @@ export class DossierManagementUploadComponent implements OnInit, OnDestroy {
       )
     )
   );
-  public readonly nextButtonDisabled$ = combineLatest([this.activeStep$, this._disabled$]).pipe(
-    map(([activeStep, disabled]) => ![UPLOAD_STEP.PLUGINS].includes(activeStep) && disabled)
+  public readonly isStepAfterUpload$: Observable<boolean> = this.activeStep$.pipe(
+    map(
+      (activeStep: UPLOAD_STEP) =>
+        ![UPLOAD_STEP.PLUGINS, UPLOAD_STEP.FILE_SELECT].includes(activeStep)
+    )
   );
+  public readonly showCloseButton$: Observable<boolean> = this.activeStep$.pipe(
+    map((activeStep: UPLOAD_STEP) =>
+      [UPLOAD_STEP.PLUGINS, UPLOAD_STEP.FILE_SELECT, UPLOAD_STEP.FILE_UPLOAD].includes(activeStep)
+    )
+  );
+  public readonly nextButtonDisabled$: Observable<boolean> = combineLatest([
+    this.activeStep$,
+    this._disabled$,
+  ]).pipe(map(([activeStep, disabled]) => activeStep !== UPLOAD_STEP.PLUGINS && disabled));
+  public readonly notificationObj$: Observable<NotificationContent> = combineLatest([
+    this.translateService.stream('interface.warning'),
+    this.translateService.stream('dossierManagement.importDefinition.overwriteWarning'),
+  ]).pipe(
+    map(([title, message]) => ({
+      type: 'warning',
+      title,
+      message,
+      showClose: false,
+      lowContrast: true,
+    }))
+  );
+  public readonly showCheckboxError$ = new BehaviorSubject<boolean>(false);
   public readonly uploadStatus$ = new BehaviorSubject<UPLOAD_STATUS>(UPLOAD_STATUS.ACTIVE);
-  private readonly _importFile$ = new BehaviorSubject<string | FormData>('');
+
   public form: FormGroup = this.fb.group({
     file: this.fb.control(new Set<any>(), [Validators.required]),
   });
 
+  private _checked = false;
+
+  private readonly _importFile$ = new BehaviorSubject<string | FormData>('');
   private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly documentService: DocumentService,
-    private readonly dossierImportService: DossierImportService,
+    private readonly dossierManagementService: DossierManagementService,
     private readonly fb: FormBuilder,
+    private readonly iconService: IconService,
     private readonly translateService: TranslateService
-  ) {}
+  ) {
+    this.iconService.register(WarningFilled16);
+  }
 
   public ngOnInit(): void {
     const control: AbstractControl | null = this.form.get('file');
@@ -85,10 +113,12 @@ export class DossierManagementUploadComponent implements OnInit, OnDestroy {
     }
 
     this._subscriptions.add(
-      control.valueChanges.subscribe((fileSet: Set<FileItem>) => {
+      this.form.get('file').valueChanges.subscribe((fileSet: Set<FileItem>) => {
         const [fileItem] = fileSet;
         if (!fileItem) {
           this._disabled$.next(true);
+          this.showCheckboxError$.next(false);
+          this._checked = false;
           return;
         }
 
@@ -103,6 +133,7 @@ export class DossierManagementUploadComponent implements OnInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
     this.resetModal();
   }
 
@@ -126,12 +157,27 @@ export class DossierManagementUploadComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (activeStep === UPLOAD_STEP.FILE_SELECT && !this._checked) {
+      this.showCheckboxError$.next(true);
+      return;
+    }
+
     this.activeStep$.next(STEPS[nextIndex]);
     if (STEPS[nextIndex] !== UPLOAD_STEP.FILE_UPLOAD) {
       return;
     }
 
     this.uploadDefinition();
+  }
+
+  public onCheckedChange(checked: boolean): void {
+    this._checked = checked;
+
+    if (!checked) {
+      return;
+    }
+
+    this.showCheckboxError$.next(false);
   }
 
   private setJsonFile(fileItem: FileItem | undefined): void {
@@ -179,7 +225,7 @@ export class DossierManagementUploadComponent implements OnInit, OnDestroy {
       .pipe(
         switchMap((file: string | FormData) =>
           file instanceof FormData
-            ? this.dossierImportService.importDocumentDefinitionZip(file)
+            ? this.dossierManagementService.importDocumentDefinitionZip(file)
             : this.documentService.createDocumentDefinitionForManagement(
                 new DocumentDefinitionCreateRequest(file)
               )
@@ -226,7 +272,7 @@ export class DossierManagementUploadComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.activeStep$.next(UPLOAD_STEP.PLUGINS);
       this.uploadStatus$.next(UPLOAD_STATUS.ACTIVE);
-      this._subscriptions.unsubscribe();
+      this.showCheckboxError$.next(false);
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 }

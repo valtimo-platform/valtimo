@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,9 +50,11 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       bestuursorgaanTooltip:
         'Een orgaan van een rechtspersoon krachtens publiekrecht ingesteld of een persoon of college, met enig openbaar gezag bekleed onder wiens verantwoordelijkheid het besluit vastgesteld is.',
       ingangsdatum: 'Ingangsdatum',
-      ingangsdatumTooltip: 'Ingangsdatum van de werkingsperiode van het besluit.',
+      ingangsdatumTooltip:
+        'Ingangsdatum van de werkingsperiode van het besluit. Ondersteunt de value resolver, bijv: pv:ingangsdatum of doc:/besluit/ingangsdatum. Ondersteunende datum voorbeelden: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Selecteer Tekst om de document of proces variabel property te gebruiken en Selectie om een datum uit een kalender te selecteren',
       vervaldatum: 'Vervaldatum',
-      vervaldatumTooltip: 'Datum waarop de werkingsperiode van het besluit eindigt.',
+      vervaldatumTooltip:
+        'Datum waarop de werkingsperiode van het besluit eindigt. Ondersteunt de value resolver, bijv: pv:vervaldatum of doc:/besluit/vervaldatum. Ondersteunende datum voorbeelden: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Selecteer Tekst om de document of proces variabel property te gebruiken en Selectie om een datum uit een kalender te selecteren',
       vervalreden: 'Vervalreden',
       vervalredenTooltip:
         'De omschrijving die aangeeft op grond waarvan het besluit is of komt te vervallen.',
@@ -76,6 +78,8 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       documentUrl: 'Document URL',
       documentUrlTooltip: 'URL-referentie naar het document',
       inputTypeBesluitToggle: 'Invoertype Besluit-URL',
+      inputTypeStartingDateToggle: 'Invoertype Begindatum',
+      inputTypeExpirationDateToggle: 'Invoertype vervaldatum',
       text: 'Tekst',
       selection: 'Selectie',
       caseDefinition: 'Dossierdefinitie',
@@ -105,9 +109,11 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       bestuursorgaanTooltip:
         'A body of a legal person established under public law or a person or body with any public authority under whose responsibility the decision has been adopted.',
       ingangsdatum: 'Starting date',
-      ingangsdatumTooltip: 'Commencement date of the effective period of the besluit.',
+      ingangsdatumTooltip:
+        'Commencement date of the effective period of the besluit. Supports the value resolver eg: pv:ingangsdatum or doc:/besluit/ingangsdatum. Supporting date format examples: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Select Text to use document or process variable property and Selection to select a date from a calendar.',
       vervaldatum: 'Expiration date',
-      vervaldatumTooltip: 'Date on which the period of operation of the besluit ends.',
+      vervaldatumTooltip:
+        'Date on which the period of operation of the besluit ends. Supports the value resolver eg: pv:vervaldatum or doc:/besluit/vervaldatum. Supporting date format examples: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Select Text to use document or process variable property and Selection to select a date from a calendar.',
       vervalreden: 'Reason for expiry',
       vervalredenTooltip:
         'The description that indicates on the basis of which the decision has been or will be cancelled.',
@@ -132,6 +138,8 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       documentUrl: 'Document URL',
       documentUrlTooltip: 'URL reference to the document',
       inputTypeBesluitToggle: 'Input type Besluit-URL',
+      inputTypeStartingDateToggle: 'Input type start date',
+      inputTypeExpirationDateToggle: 'Input type expiration date',
       text: 'Text',
       selection: 'Selection',
       caseDefinition: 'Case definition',
@@ -162,9 +170,11 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       bestuursorgaanTooltip:
         'Eine Körperschaft einer juristischen Person des öffentlichen Rechts oder eine Person oder Körperschaft einer öffentlichen Behörde, unter deren Verantwortung die Entscheidung getroffen wurde.',
       ingangsdatum: 'Anfangsdatum',
-      ingangsdatumTooltip: 'Datum des Beginns der Geltungsdauer der Entscheidung.',
+      ingangsdatumTooltip:
+        'Datum des Beginns der Geltungsdauer der Entscheidung. Unterstützt den Werteauflöser, z. B.: pv:ingangsdatum oder doc:/besluit/ingangdatum. Beispiele für unterstützende Datumsformate: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Wählen Sie Text, um die Dokument- oder Prozessvariableneigenschaft zu verwenden, und Auswahl, um ein Datum aus einem Kalender auszuwählen',
       vervaldatum: 'Verfallsdatum',
-      vervaldatumTooltip: 'Datum, an dem die Geltungsdauer der Entscheidung endet.',
+      vervaldatumTooltip:
+        'Datum, an dem die Geltungsdauer der Entscheidung endet. Unterstützt den Werteauflöser, z. B.: pv:vervaldatum oder doc:/besluit/vervaldatum. Beispiele für unterstützende Datumsformate: 2024-04-01, 2024-04-01T12:10:00, 2024-04-01T12:10:06.069Z. Wählen Sie Text, um die Dokument- oder Prozessvariableneigenschaft zu verwenden, und Auswahl, um ein Datum aus einem Kalender auszuwählen',
       vervalreden: 'Ablaufgrund',
       vervalredenTooltip:
         'Die Beschreibung, auf deren Grundlage die Entscheidung aufgehoben wurde oder wird.',
@@ -189,6 +199,8 @@ const besluitenApiPluginSpecification: PluginSpecification = {
       documentUrl: 'Document URL',
       documentUrlTooltip: 'URL-Referenz zum document',
       inputTypeBesluitToggle: 'Eingabetyp Besluit-URL',
+      inputTypeStartingDateToggle: 'Eingabetyp Begindatum',
+      inputTypeExpirationDateToggle: 'Eingabetyp Einddatum',
       text: 'Text',
       selection: 'Auswahl',
       caseDefinition: 'Falltyp',

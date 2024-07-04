@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,65 +13,99 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ComponentRef} from '@angular/core';
+import {ComponentRef, inject} from '@angular/core';
 import {UrlTree} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {ModalButtonType, ModalService} from 'carbon-components-angular';
 import {Observable, Subject} from 'rxjs';
+import {PendingChangesService} from './pending-changes.service';
 
 export class PendingChangesComponent {
-  protected pendingChanges = false;
-  private _activeModal: ComponentRef<any> | null = null;
+  protected customModal: any = null;
+  protected readonly deactivateSubject = new Subject<boolean>();
 
-  constructor(
-    protected readonly modalService: ModalService,
-    protected readonly translateService: TranslateService
-  ) {}
+  private _activeModal: ComponentRef<any> | null = null;
+  private _modalService: ModalService;
+  private _pendingChangesService: PendingChangesService;
+  private _translateService: TranslateService;
+
+  protected set pendingChanges(value: boolean) {
+    this._pendingChangesService.pendingChanges = value;
+  }
+
+  protected get pendingChanges(): boolean {
+    return this._pendingChangesService.pendingChanges;
+  }
+
+  constructor() {
+    this._modalService = inject(ModalService);
+    this._pendingChangesService = inject(PendingChangesService);
+    this._translateService = inject(TranslateService);
+  }
 
   public canDeactivate():
     | Observable<boolean | UrlTree>
     | Promise<boolean | UrlTree>
     | boolean
     | UrlTree {
-    if (!this.pendingChanges) {
+    if (!this._pendingChangesService.pendingChanges) {
       return true;
     }
-
-    const deactivateSubject = new Subject<boolean>();
 
     if (!!this._activeModal) {
       return false;
     }
 
-    this._activeModal = this.modalService.show({
-      title: this.translateService.instant('interface.pendingChanges.title'),
-      content: this.translateService.instant('interface.pendingChanges.content'),
+    if (!!this.customModal) {
+      this.onCanDeactivate();
+      this._activeModal = this.customModal;
+      return this.deactivateSubject;
+    }
+
+    this._activeModal = this._modalService.show({
+      title: this._translateService.instant('interface.pendingChanges.title'),
+      content: this._translateService.instant('interface.pendingChanges.content'),
       showCloseButton: false,
       buttons: [
         {
-          text: this.translateService.instant('interface.cancel'),
+          text: this._translateService.instant('interface.cancel'),
           type: ModalButtonType.secondary,
           click: () => {
             this.onCancelRedirect();
-            deactivateSubject.next(false);
+            this.deactivateSubject.next(false);
             this._activeModal = null;
           },
         },
         {
-          text: this.translateService.instant('interface.confirm'),
+          text: this._translateService.instant('interface.confirm'),
           type: ModalButtonType.primary,
           click: () => {
             this.onConfirmRedirect();
-            deactivateSubject.next(true);
+            this.deactivateSubject.next(true);
             this._activeModal = null;
+            this.pendingChanges = false;
           },
         },
       ],
       close: () => false,
     });
 
-    return deactivateSubject;
+    return this.deactivateSubject;
   }
+
+  protected onCustomCancel(): void {
+    this._activeModal = null;
+    this.deactivateSubject.next(false);
+    this.onCancelRedirect();
+  }
+
+  protected onCustomConfirm(): void {
+    this._activeModal = null;
+    this.deactivateSubject.next(true);
+    this.onConfirmRedirect();
+  }
+
+  protected onCanDeactivate(): void {}
 
   protected onCancelRedirect(): void {}
 

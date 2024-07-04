@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
   ~ limitations under the License.
   -->
 <cds-table-container
-  *ngIf="
-    (viewInitialized$ | async) && {
-      sort: sort$ | async
-    } as obs
-  "
+  *ngIf="{
+    sort: sort$ | async,
+    model: model$ | async,
+    viewInitialized: viewInitialized$ | async
+  } as obs"
   class="valtimo-carbon-list"
 >
   <cds-table-header *ngIf="header">
@@ -30,7 +30,7 @@
   <cds-table-toolbar
     *ngIf="!hideToolbar"
     class="valtimo-carbon-list__toolbar"
-    [model]="model"
+    [model]="obs.model"
     [batchText]="batchText$ | async"
   >
     <cds-table-toolbar-actions>
@@ -50,21 +50,25 @@
 
   <cds-table
     *ngIf="!!obs.sort"
+    [ngClass]="{
+      'valtimo-carbon-list__header--hidden': hideColumnHeader,
+      'valtimo-carbon-list--unclickable': !this.rowClicked.observed
+    }"
     [enableSingleSelect]="enableSingleSelect"
-    [model]="loading ? skeletonModel : model"
+    [model]="loading || !obs.viewInitialized ? skeletonModel : obs.model"
     [showSelectionColumn]="showSelectionColumn"
     [skeleton]="loading"
     [striped]="striped"
-    (sort)="onSort(model.header[$event])"
+    (sort)="onSort(obs.model.header[$event])"
     (rowClick)="onRowClick($event)"
   >
     <tbody cdsTableBody>
       <tr class="valtimo-carbon-list__no-results">
-        <td [attr.colspan]="model.header.length + (showSelectionColumn ? 1 : 0)">
+        <td [attr.colspan]="obs.model.header.length + (showSelectionColumn ? 1 : 0)">
           <ng-content></ng-content>
         </td>
 
-        <td [attr.colspan]="model.header.length + (showSelectionColumn ? 1 : 0)">
+        <td [attr.colspan]="obs.model.header.length + (showSelectionColumn ? 1 : 0)">
           {{ 'list.noResults' | translate }}
         </td>
       </tr>
@@ -82,7 +86,7 @@
   ></cds-pagination>
 </cds-table-container>
 
-<ng-template #actionItem let-data="data">
+<ng-template #actionTemplate let-data="data">
   <i
     class="clickable"
     [ngClass]="data.iconClass"
@@ -91,25 +95,30 @@
 </ng-template>
 
 <ng-template #booleanTemplate let-data="data">
-  {{ 'viewTypeConverter.' + data | translate }}
+  {{ data | translate }}
 </ng-template>
 
-<ng-template #actionsMenu let-data="data">
-  <cds-overflow-menu (click)="$event.stopPropagation()">
-    <cds-overflow-menu-option
-      *ngFor="let action of data.actions"
-      [type]="action.type"
-      (selected)="action.callback(data.item)"
-    >
-      <i *ngIf="!!action.iconClass" [ngClass]="action.iconClass"></i>
+<ng-template #actionsMenuTemplate let-data="data">
+  <cds-overflow-menu
+    [open]="currentOpenActionId === data.item"
+    (openChange)="handleActionOpenChange(data.item, $event)"
+    [flip]="true"
+    [offset]="{x: 0, y: 50}"
+    placement="bottom"
+    (click)="$event.stopPropagation()"
+  >
+    @for (action of data.actions; track action.label) {
+      <cds-overflow-menu-option [type]="action.type" (selected)="action.callback(data.item)">
+        <i *ngIf="!!action.iconClass" [ngClass]="action.iconClass"></i>
 
-      {{ action.label | translate }}
-    </cds-overflow-menu-option>
+        {{ action.label | translate }}
+      </cds-overflow-menu-option>
+    }
   </cds-overflow-menu>
 </ng-template>
 
 <ng-template #rowDisabled let-data="data">
-  <div *ngIf="data.locked" class="disabled">
+  <div *ngIf="data.locked" class="locked">
     <span
       class="float-right badge badge-pill badge-secondary bg-grey"
       ngbTooltip="{{ lockedTooltipTranslationKey | translate }}"
@@ -118,3 +127,56 @@
     </span>
   </div>
 </ng-template>
+
+<ng-template #moveRowsTemplate let-data="data">
+  <div class="valtimo-carbon-list__move-rows">
+    <button
+      cdsButton="tertiary"
+      [disabled]="data.index === 0"
+      [iconOnly]="true"
+      size="sm"
+      (click)="onMoveUpClick($event, data)"
+    >
+      <svg cdsIcon="arrow--up" size="16" class="cds--btn__icon"></svg>
+    </button>
+
+    <button
+      cdsButton="tertiary"
+      [disabled]="data.index === data.length - 1"
+      [iconOnly]="true"
+      size="sm"
+      (click)="onMoveDownClick($event, data)"
+    >
+      <svg cdsIcon="arrow--down" size="16" class="cds--btn__icon"></svg>
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #tagTemplate let-data="data">
+  <ng-container *ngIf="!data.tags">-</ng-container>
+
+  <div *ngIf="data.tags" class="tag-template">
+    @if (data.tags.length === 0) {
+      -
+    } @else {
+      <cds-tag *ngIf="!!data.tags[0].content" class="cds-tag--no-margin" [type]="data.tags[0].type">
+        {{ data.tags[0].content }}
+      </cds-tag>
+
+      <cds-tag
+        *ngIf="data.tags.length > 1"
+        class="cds-tag--no-margin valtimo-carbon-list__expand-tag"
+        type="high-contrast"
+        (click)="onTagClick($event, data.tags)"
+      >
+        {{ data.tags.length - 1 }} <svg cdsIcon="add" size="16"></svg>
+      </cds-tag>
+    }
+  </div>
+</ng-template>
+
+<valtimo-tags-modal
+  [open]="tagModalOpen$ | async"
+  [tags]="tagModalData$ | async"
+  (closeEvent)="onCloseEvent()"
+></valtimo-tags-modal>

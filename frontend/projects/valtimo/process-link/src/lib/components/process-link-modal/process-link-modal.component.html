@@ -1,0 +1,143 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="process-link-modal-container"
+  *ngIf="{
+    showModal: showModal$ | async,
+    processStepName: processStepName$ | async,
+    steps: steps$ | async,
+    currentStepIndex: currentStepIndex$ | async,
+    currentStepId: currentStepId$ | async,
+    showSaveButton: showSaveButton$ | async,
+    enableSaveButton: enableSaveButton$ | async,
+    showBackButton: showBackButton$ | async,
+    showNextButton: showNextButton$ | async,
+    enableNextButton: enableNextButton$ | async,
+    saving: saving$ | async,
+    hideProgressIndicator: hideProgressIndicator$ | async,
+    typeOfSelectedProgressLink: typeOfSelectedProcessLink$ | async
+  } as obs"
+>
+  <cds-modal valtimoCdsModal [open]="obs.showModal" size="lg">
+    <cds-modal-header (closeSelect)="closeModal()">
+      <h2 cdsModalHeaderLabel>{{ 'processLinkConfiguration.configureStep' | translate }}</h2>
+      <h3 cdsModalHeaderHeading>
+        {{
+          'processLinkConfiguration.modalTitle'
+            | translate: {processStepName: obs.processStepName || '-'}
+        }}
+      </h3>
+      <div class="process-link-progress" *ngIf="!obs.typeOfSelectedProgressLink">
+        <ng-container *ngTemplateOutlet="progressIndicator; context: {obs: obs}"></ng-container>
+      </div>
+    </cds-modal-header>
+    <section cdsModalContent>
+      <ng-container *ngTemplateOutlet="stepContent; context: {obs: obs}"></ng-container>
+    </section>
+    <ng-template *ngTemplateOutlet="footer; context: {obs: obs}"></ng-template>
+  </cds-modal>
+</div>
+
+<ng-template #progressIndicator let-obs="obs">
+  <cds-progress-indicator
+    *ngIf="obs.steps && !obs.hideProgressIndicator"
+    [steps]="obs.steps"
+    [current]="obs.currentStepIndex"
+    spacing="equal"
+  ></cds-progress-indicator>
+</ng-template>
+
+<ng-template #stepContent let-obs="obs">
+  <div class="cds-loading-container" *ngIf="obs.saving">
+    <cds-loading></cds-loading>
+  </div>
+  <div [ngClass]="{hidden: obs.saving}">
+    <ng-container>
+      <ng-container *ngIf="obs.currentStepId === 'chooseProcessLinkType'">
+        <valtimo-choose-process-link-type></valtimo-choose-process-link-type>
+      </ng-container>
+      <ng-container
+        *ngIf="obs.currentStepId === 'selectForm' || obs.typeOfSelectedProgressLink === 'form'"
+      >
+        <valtimo-select-form></valtimo-select-form>
+      </ng-container>
+      <ng-container
+        *ngIf="
+          obs.currentStepId === 'selectFormFlow' || obs.typeOfSelectedProgressLink === 'form-flow'
+        "
+      >
+        <valtimo-select-form-flow></valtimo-select-form-flow>
+      </ng-container>
+      <ng-container *ngIf="obs.currentStepId === 'choosePluginConfiguration'">
+        <valtimo-select-plugin-configuration></valtimo-select-plugin-configuration>
+      </ng-container>
+      <ng-container *ngIf="obs.currentStepId === 'choosePluginAction'">
+        <valtimo-select-plugin-action></valtimo-select-plugin-action>
+      </ng-container>
+      <ng-container
+        *ngIf="
+          obs.currentStepId === 'configurePluginAction' ||
+          obs.typeOfSelectedProgressLink === 'plugin'
+        "
+      >
+        <valtimo-plugin-action-configuration></valtimo-plugin-action-configuration>
+      </ng-container>
+    </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #footer let-obs="obs">
+  <cds-modal-footer *ngIf="!obs.saving">
+    <div class="cancel-button">
+      <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled">
+        {{ 'processLinkConfiguration.cancel' | translate }}
+      </button>
+    </div>
+    <div class="navigation-buttons">
+      <button
+        *ngIf="obs.showBackButton && !obs.saving"
+        cdsButton="secondary"
+        (click)="backButtonClick()"
+      >
+        {{ 'processLinkConfiguration.back' | translate }}
+      </button>
+      <button
+        cdsButton="primary"
+        *ngIf="obs.showNextButton && !obs.saving"
+        [disabled]="obs.enableNextButton === false"
+        (click)="nextButtonClick()"
+      >
+        {{ 'processLinkConfiguration.next' | translate }}
+      </button>
+      <button
+        cdsButton="danger--primary"
+        *ngIf="obs.typeOfSelectedProgressLink"
+        (click)="unlinkButtonClick()"
+      >
+        {{ 'processLinkConfiguration.unlink' | translate }}
+      </button>
+      <button
+        cdsButton="primary"
+        *ngIf="(obs.showSaveButton && !obs.saving) || obs.typeOfSelectedProgressLink"
+        [disabled]="obs.enableSaveButton === false"
+        (click)="saveButtonClick()"
+      >
+        {{ 'processLinkConfiguration.complete' | translate }}
+      </button>
+    </div>
+  </cds-modal-footer>
+</ng-template>

@@ -1,0 +1,86 @@
+/*!
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.btn-back {
+  position: absolute;
+}
+
+.cards-container {
+  display: flex;
+  flex-flow: row wrap;
+  width: 100%;
+}
+
+.card {
+  width: calc(33.3% - 20px);
+  margin-right: 30px;
+
+  &:nth-child(3n + 3) {
+    margin-right: 0;
+  }
+}
+
+.card-header {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  flex-direction: row;
+}
+
+.action-tiles {
+  margin-top: 24px;
+  width: calc(100% + 8px);
+  margin-left: -8px;
+}
+
+::ng-deep {
+  .choose-plugin-action cds-selection-tile {
+    display: flex;
+    width: calc(33.3% - 8px);
+  }
+
+  .choose-plugin-action .cds--tile {
+    width: 100%;
+  }
+
+  .choose-plugin-action cds-tile-group fieldset {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .choose-plugin-action cds-selection-tile {
+    margin-left: 8px;
+  }
+
+  .choose-plugin-action cds-selection-tile:nth-child(n + 4) {
+    margin-top: 8px;
+  }
+
+  .action-tiles .cds--tile {
+    background-color: var(--cds-layer-02, #ffffff);
+
+    &:hover {
+      background: var(--cds-layer-hover);
+    }
+  }
+}

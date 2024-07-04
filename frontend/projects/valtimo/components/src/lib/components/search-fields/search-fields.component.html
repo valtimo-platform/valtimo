@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,49 +14,55 @@
   ~ limitations under the License.
   -->
 
-<div class="search fields">
-  <ng-container *ngIf="loading">
-    <ng-container *ngTemplateOutlet="loadingTemplate"></ng-container>
-  </ng-container>
-  <ng-container *ngIf="!loading">
-    <ng-container *ngTemplateOutlet="searchFieldsTemplate"></ng-container>
-  </ng-container>
-</div>
+<ng-container *ngIf="loading">
+  <ng-container *ngTemplateOutlet="loadingTemplate"></ng-container>
+</ng-container>
+<ng-container *ngIf="!loading">
+  <cds-accordion>
+    <cds-accordion-item
+      [title]="'searchFields.searchButtonText' | translate"
+      (selected)="toggleExpanded()"
+      [expanded]="expanded$ | async"
+    >
+      <ng-container *ngTemplateOutlet="searchFieldsTemplate"></ng-container>
+    </cds-accordion-item>
+  </cds-accordion>
+</ng-container>
 
 <ng-template #loadingTemplate>
-  <valtimo-spinner></valtimo-spinner>
+  <div class="loading-container"><cds-loading></cds-loading></div>
 </ng-template>
 
 <ng-template #searchFieldsTemplate>
-  <valtimo-widget>
-    <div class="row">
-      <div class="col-12">
-        <ng-container *ngTemplateOutlet="buttonAccordion"></ng-container>
-      </div>
-    </div>
-    <div
-      class="row p-3"
-      [ngClass]="{'row--hidden': (expanded$ | async) === false}"
-      *ngIf="searchFields$ | async as searchFields"
+  <ng-container *ngIf="searchFields$ | async as searchFields">
+    <ng-container
+      *ngIf="{
+        noSearchFields: (!searchFields || searchFields.length === 0) && !externalSearchField
+      } as vars"
     >
-      <ng-container *ngFor="let searchField of searchFields; let i = index">
-        <div class="col-4">
-          <ng-container
-            *ngTemplateOutlet="searchFieldTemplate; context: {searchField: searchField}"
-          ></ng-container>
-        </div>
-        <div class="w-100" *ngIf="(i + 1) % 3 === 0"></div>
-      </ng-container>
-      <div class="col-12">
+      <div
+        *ngIf="!vars.noSearchFields"
+        class="search-fields-container"
+        [ngClass]="{'search-fields-container--hidden': (expanded$ | async) === false}"
+      >
+        <ng-content></ng-content>
+
+        <ng-container *ngFor="let searchField of searchFields">
+          <div class="search-field-container">
+            <ng-container
+              *ngTemplateOutlet="searchFieldTemplate; context: {searchField: searchField}"
+            ></ng-container>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="meta-container" *ngIf="expanded$ | async">
         <ng-container
-          *ngTemplateOutlet="
-            buttonsTemplate;
-            context: {noSearchFields: !searchFields || searchFields.length === 0}
-          "
+          *ngTemplateOutlet="buttonsTemplate; context: {noSearchFields: vars.noSearchFields}"
         ></ng-container>
       </div>
-    </div>
-  </valtimo-widget>
+    </ng-container>
+  </ng-container>
 </ng-template>
 
 <ng-template #searchFieldTemplate let-searchField="searchField">
@@ -228,6 +234,7 @@
     (keyup.enter)="search()"
     [defaultValue]="values[searchField.key]"
     [disabled]="inputDisabled"
+    [carbonTheme]="carbonTheme"
   >
   </v-input>
 </ng-template>
@@ -254,6 +261,7 @@
     (keyup.enter)="search()"
     [defaultValue]="values[searchField.key]"
     [disabled]="inputDisabled"
+    [carbonTheme]="carbonTheme"
   >
   </v-input>
 </ng-template>
@@ -278,6 +286,7 @@
     (keyup.enter)="search()"
     [defaultDate]="values[searchField.key]"
     [disabled]="inputDisabled"
+    [carbonTheme]="carbonTheme"
   ></v-date-picker>
 </ng-template>
 
@@ -306,6 +315,7 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
+        [carbonTheme]="carbonTheme"
       >
       </v-input>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
@@ -316,6 +326,7 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
+        [carbonTheme]="carbonTheme"
       >
       </v-input>
     </v-form>
@@ -349,6 +360,7 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
+        [carbonTheme]="carbonTheme"
       >
       </v-input>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
@@ -361,6 +373,7 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
+        [carbonTheme]="carbonTheme"
       >
       </v-input>
     </v-form>
@@ -392,6 +405,7 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
+        [carbonTheme]="carbonTheme"
       ></v-date-picker>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-date-picker
@@ -401,6 +415,7 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
+        [carbonTheme]="carbonTheme"
       ></v-date-picker>
     </v-form>
   </ng-container>
@@ -425,13 +440,14 @@
       [items]="booleanItems"
       [margin]="false"
       [required]="false"
-      [widthInPx]="200"
       [name]="searchField.key"
       [clearSelectionSubject$]="clear$"
       (selectedChange)="singleValueChange(searchField.key, $event)"
       (keyup.enter)="search()"
       [defaultSelectionId]="getDefaultBooleanSelectionId(values, searchField.key)"
       [disabled]="inputDisabled"
+      [carbonTheme]="carbonTheme"
+      [appendInline]="false"
     ></v-select>
   </ng-container>
 </ng-template>
@@ -457,6 +473,7 @@
     (keyup.enter)="search()"
     [defaultDate]="values[searchField.key]"
     [disabled]="inputDisabled"
+    [carbonTheme]="carbonTheme"
   ></v-date-picker>
 </ng-template>
 
@@ -486,6 +503,7 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
+        [carbonTheme]="carbonTheme"
       ></v-date-picker>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-date-picker
@@ -496,6 +514,7 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
+        [carbonTheme]="carbonTheme"
       ></v-date-picker>
     </v-form>
   </ng-container>
@@ -522,13 +541,14 @@
       [items]="searchFieldSelectItems"
       [margin]="false"
       [required]="false"
-      [widthInPx]="200"
       [name]="searchField.key"
       [clearSelectionSubject$]="clear$"
       (selectedChange)="singleValueChange(searchField.key, $event)"
       (keyup.enter)="search()"
       [defaultSelectionId]="values[searchField.key]"
       [disabled]="inputDisabled"
+      [carbonTheme]="carbonTheme"
+      [appendInline]="false"
     ></v-select>
   </ng-container>
 </ng-template>
@@ -555,13 +575,14 @@
       [margin]="false"
       [multiple]="true"
       [required]="false"
-      [widthInPx]="200"
       [name]="searchField.key"
       [clearSelectionSubject$]="clear$"
       (selectedChange)="multipleValueChange(searchField.key, $event)"
       (keyup.enter)="search()"
       [defaultSelectionIds]="values[searchField.key]"
       [disabled]="inputDisabled"
+      [carbonTheme]="carbonTheme"
+      [appendInline]="false"
     ></v-select>
   </ng-container>
 </ng-template>
@@ -576,28 +597,34 @@
   <ng-container
     *ngTemplateOutlet="noSearchFieldsTemplate; context: {noSearchFields: noSearchFields}"
   ></ng-container>
-  <div class="buttons-container" *ngIf="{expanded: expanded$ | async} as obs">
+
+  <div class="buttons-container" *ngIf="!noSearchFields && {expanded: expanded$ | async} as obs">
     <div class="right-buttons">
       <button
+        *ngIf="obs.expanded"
+        cdsButton="tertiary"
         (click)="clear()"
         [disabled]="loading || noSearchFields || inputDisabled"
         type="button"
         id="clear"
-        class="btn btn-space btn-secondary"
-        *ngIf="obs.expanded"
       >
+        <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+
         {{ 'searchFields.clearButtonText' | translate }}
       </button>
+
       <button
+        *ngIf="obs.expanded"
+        cdsButton="primary"
         (click)="search()"
         [disabled]="
           loading || noSearchFields || (hasValidValues$ | async) === false || inputDisabled
         "
         type="button"
         id="search"
-        class="btn btn-space btn-primary"
-        *ngIf="obs.expanded"
       >
+        <svg cdsIcon="search" size="16" class="cds--btn__icon"></svg>
+
         {{ 'searchFields.searchButtonText' | translate }}
       </button>
     </div>
@@ -605,25 +632,9 @@
 </ng-template>
 
 <ng-template #noSearchFieldsTemplate let-noSearchFields="noSearchFields">
-  <div class="w-100 mb-3" *ngIf="noSearchFields">
+  <div class="no-search-fields-message" *ngIf="noSearchFields">
     <v-paragraph [fullWidth]="true" [center]="true">{{
       'searchFields.noneConfigured' | translate
     }}</v-paragraph>
-  </div>
-</ng-template>
-
-<ng-template #buttonAccordion>
-  <div class="buttons-container" *ngIf="{expanded: expanded$ | async} as obs">
-    <button
-      [disabled]="loading || inputDisabled"
-      type="button"
-      class="accordion-button"
-      (click)="toggleExpanded()"
-      [ngClass]="
-        obs.expanded ? 'mdi mdi-chevron-right accordion-button--active' : 'mdi mdi-chevron-down'
-      "
-    >
-      {{ 'searchFields.searchButtonText' | translate }}
-    </button>
   </div>
 </ng-template>

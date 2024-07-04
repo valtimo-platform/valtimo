@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ export * from './lib/components/connector-modal/connector-modal.component';
 export * from './lib/components/edit-connector-properties/edit-connector-properties.component';
 export * from './lib/components/modify-connector/modify-connector.component';
 export * from './lib/components/multi-value-connector-property/multi-value-connector-property.component';
-export * from './lib/extension/connector-management.extension.init';
 export * from './lib/services/connector-management/connector-management.service';
 export * from './lib/services/object-api-sync/object-api-sync.service';
 export * from './lib/services/connector-management-state/connector-management-state.service';

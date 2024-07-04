@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,38 @@
 .valtimo-no-results {
   display: flex;
   justify-content: center;
-  padding: calc((100 / 16) * 1rem) 0;
-  gap: 4rem;
+  padding: 100px 0;
+  gap: 64px;
+
+  img {
+    height: 150px;
+    padding-left: calc(40% - 214px);
+  }
 
   &__content {
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: center;
+    color: var(--cds-text-primary);
+    gap: 8px;
+    width: 60%;
+  }
+
+  &__content:has(button) {
+    justify-content: space-between;
   }
 
   &__title {
-    font-size: 1.75rem;
+    font-size: 28px;
+  }
+
+  span {
+    font-size: 16px;
+    line-height: 24px;
+    width: 75%;
+  }
+
+  h4 {
+    width: 75%;
   }
 }

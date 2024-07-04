@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,11 +39,7 @@ export class DossierDetailTabProgressComponent {
       ),
       map(processDocumentInstances =>
         processDocumentInstances.sort((a, b) =>
-          a.isActive === b.isActive
-            ? b.startedOn.getTime() - a.startedOn.getTime()
-            : a.isActive
-            ? -1
-            : 1
+          a.active === b.active ? b.startedOn.getTime() - a.startedOn.getTime() : a.active ? -1 : 1
         )
       ),
       tap(processDocumentInstances => {

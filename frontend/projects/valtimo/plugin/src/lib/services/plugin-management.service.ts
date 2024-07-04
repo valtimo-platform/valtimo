@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,22 +126,21 @@ export class PluginManagementService {
     pluginConfigurations$: Observable<Array<PluginConfiguration>>
   ): Observable<Array<PluginConfigurationWithLogo>> {
     return combineLatest([pluginConfigurations$, this.pluginService.pluginSpecifications$]).pipe(
-      map(
-        ([pluginConfigurations, pluginSpecifications]) =>
-          pluginConfigurations?.map(pluginConfiguration => {
-            const pluginSpecification = pluginSpecifications.find(
-              specification => specification.pluginId === pluginConfiguration?.pluginDefinition?.key
-            );
+      map(([pluginConfigurations, pluginSpecifications]) =>
+        pluginConfigurations?.map(pluginConfiguration => {
+          const pluginSpecification = pluginSpecifications.find(
+            specification => specification.pluginId === pluginConfiguration?.pluginDefinition?.key
+          );
 
-            return {
-              ...pluginConfiguration,
-              ...(pluginSpecification?.pluginLogoBase64 && {
-                pluginLogoBase64: this.sanitizer.bypassSecurityTrustResourceUrl(
-                  pluginSpecification?.pluginLogoBase64
-                ),
-              }),
-            };
-          })
+          return {
+            ...pluginConfiguration,
+            ...(pluginSpecification?.pluginLogoBase64 && {
+              pluginLogoBase64: this.sanitizer.bypassSecurityTrustResourceUrl(
+                pluginSpecification?.pluginLogoBase64
+              ),
+            }),
+          };
+        })
       )
     );
   }

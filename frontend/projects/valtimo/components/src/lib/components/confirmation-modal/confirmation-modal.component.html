@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -24,7 +24,8 @@
     titleTranslation: titleTranslationKey | translate,
     contentTranslation: contentTranslationKey | translate,
     confirmButtonTranslation: confirmButtonTextTranslationKey | translate,
-    cancelButtonTranslation: cancelButtonTextTranslationKey | translate
+    cancelButtonTranslation: cancelButtonTextTranslationKey | translate,
+    optionalButtonTranslation: optionalButtonTextTranslationKey | translate
   } as obs"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
@@ -58,7 +59,26 @@
             obs.cancelTranslation
         }}
       </button>
-      <button [attr.modal-primary-focus]="true" [cdsButton]="confirmButtonType" (click)="confirm()">
+      <div *ngIf="spacerAfterCancelButton" class="modal-spacer"></div>
+      <button
+        *ngIf="showOptionalButton"
+        [attr.modal-primary-focus]="true"
+        [cdsButton]="optionalButtonType"
+        (click)="onOptional()"
+      >
+        {{
+          (optionalButtonTextTranslationKey !== obs.optionalButtonTranslation
+            ? obs.optionalButtonTranslation
+            : '') ||
+            optionalButtonText ||
+            obs.deleteTranslation
+        }}
+      </button>
+      <button
+        [attr.modal-primary-focus]="true"
+        [cdsButton]="confirmButtonType"
+        (click)="onConfirm()"
+      >
         {{
           (confirmButtonTextTranslationKey !== obs.confirmButtonTranslation
             ? obs.confirmButtonTranslation

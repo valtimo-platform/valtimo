@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,17 +26,23 @@ import {
   FormIoModule,
   ModalModule,
   PageHeaderModule,
+  RenderInPageHeaderDirectiveModule,
   SearchableDropdownSelectModule,
   SpinnerModule,
   WidgetModule,
 } from '@valtimo/components';
 import {HttpLoaderFactory} from '@valtimo/config';
-import {FormLinkModule} from '@valtimo/form-link';
-import {ContentSwitcherModule, LinkModule, TabsModule} from 'carbon-components-angular';
+import {ProcessLinkModule} from '@valtimo/process-link';
+import {
+  ContentSwitcherModule,
+  DropdownModule,
+  LinkModule,
+  TabsModule,
+} from 'carbon-components-angular';
 import {ToastrModule} from 'ngx-toastr';
-import {AssignUserToTaskComponent} from './assign-user-to-task/assign-user-to-task.component';
-import {TaskDetailModalComponent} from './task-detail-modal/task-detail-modal.component';
-import {TaskListComponent} from './task-list/task-list.component';
+import {AssignUserToTaskComponent} from './components/assign-user-to-task/assign-user-to-task.component';
+import {TaskDetailModalComponent} from './components/task-detail-modal/task-detail-modal.component';
+import {TaskListComponent} from './components/task-list/task-list.component';
 import {TaskRoutingModule} from './task-routing.module';
 
 @NgModule({
@@ -67,9 +73,11 @@ import {TaskRoutingModule} from './task-routing.module';
     FormIoModule,
     ModalModule,
     LinkModule,
-    FormLinkModule,
+    ProcessLinkModule,
     TabsModule,
     ContentSwitcherModule,
+    RenderInPageHeaderDirectiveModule,
+    DropdownModule,
   ],
   exports: [TaskListComponent, TaskDetailModalComponent, AssignUserToTaskComponent],
 })

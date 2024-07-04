@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Injectable} from '@angular/core';
-import {ConfigService, MenuConfig, MenuIncludeService, MenuItem} from '@valtimo/config';
-import {NGXLogger} from 'ngx-logger';
-import {UserProviderService} from '@valtimo/security';
-import {NavigationEnd, NavigationStart, ResolveEnd, Router} from '@angular/router';
-import {BehaviorSubject, combineLatest, Observable, Subject, timer} from 'rxjs';
-import {DocumentDefinitions, DocumentService} from '@valtimo/document';
-import {filter, map, take} from 'rxjs/operators';
-import {KeycloakService} from 'keycloak-angular';
 import {HttpClient} from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {NavigationEnd, NavigationStart, ResolveEnd, Router} from '@angular/router';
+import {ConfigService, MenuConfig, MenuIncludeService, MenuItem} from '@valtimo/config';
+import {DocumentDefinitions, DocumentService} from '@valtimo/document';
+import {UserProviderService} from '@valtimo/security';
+import {KeycloakService} from 'keycloak-angular';
+import {NGXLogger} from 'ngx-logger';
+import {BehaviorSubject, combineLatest, Observable, Subject, timer} from 'rxjs';
+import {filter, map, take} from 'rxjs/operators';
+import {PendingChangesService} from '../pending-changes/pending-changes.service';
 
 @Injectable({
   providedIn: 'root',
@@ -45,17 +45,18 @@ export class MenuService {
   constructor(
     private readonly configService: ConfigService,
     private readonly documentService: DocumentService,
-    private readonly userProviderService: UserProviderService,
+    private readonly http: HttpClient,
+    private readonly keycloakService: KeycloakService,
     private readonly logger: NGXLogger,
     private readonly menuIncludeService: MenuIncludeService,
+    private readonly pendingChangesService: PendingChangesService,
     private readonly router: Router,
-    private readonly keycloakService: KeycloakService,
-    private http: HttpClient
+    private readonly userProviderService: UserProviderService
   ) {
     const config = configService?.config;
     this.menuConfig = config?.menu;
     this.disableCaseCount = config?.featureToggles?.disableCaseCount;
-    this.enableObjectManagement = config?.featureToggles?.enableObjectManagement;
+    this.enableObjectManagement = config?.featureToggles?.enableObjectManagement ?? true;
   }
 
   private readonly currentRoute$ = this.router.events.pipe(
@@ -80,11 +81,12 @@ export class MenuService {
       this.currentRoute$,
       this.menuItems$,
     ]).pipe(
+      filter(() => !this.pendingChangesService.pendingChanges),
       filter(
         ([dossierItemsAppended, objectsItemsAppended]) =>
           dossierItemsAppended || objectsItemsAppended
       ),
-      map(([dossierItemsAppended, objectsItemsAppended, currentRoute, menuItems]) => {
+      map(([_1, _2, currentRoute, menuItems]) => {
         let closestSequence = '0';
         let highestDifference = 0;
 
@@ -292,11 +294,11 @@ export class MenuService {
 
     timer(0, 5000).subscribe(() => {
       this.documentService.getOpenDocumentCount().subscribe(openDocumentCountList => {
-        openDocumentCountList.forEach(openDocumentCount =>
-          countMap
-            .get(openDocumentCount.documentDefinitionName)
-            .next(openDocumentCount.openDocumentCount)
-        );
+        openDocumentCountList.forEach(openDocumentCount => {
+          const mapEntry = countMap.get(openDocumentCount.documentDefinitionName);
+
+          if (mapEntry) mapEntry.next(openDocumentCount.openDocumentCount);
+        });
       });
     });
     return countMap;

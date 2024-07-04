@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
  */
 
 export * from './lib/models';
-export * from './lib/document.service';
+export * from './lib/services';
 export * from './lib/document.module';
-export * from './lib/document-search-request';
-export * from './lib/advanced-document-search-request';
+export * from './lib/utils';

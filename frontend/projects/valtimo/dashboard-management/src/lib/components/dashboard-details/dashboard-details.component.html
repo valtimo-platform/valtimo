@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -26,10 +26,13 @@
 >
   <div class="dashboard-detail-table">
     <valtimo-carbon-list
-      [items]="obs.widgetData"
+      [actionItems]="actionItems"
       [fields]="fields"
       [header]="false"
+      [items]="obs.widgetData"
       [loading]="obs.loading"
+      [movingRowsEnabled]="true"
+      (moveRow)="onMoveRowClick($event)"
     >
       <div carbonToolbarContent>
         <ng-container [ngTemplateOutlet]="addWidgetButton"></ng-container>
@@ -60,31 +63,13 @@
   </valtimo-edit-dashboard-modal>
 </ng-container>
 
-<ng-template #moveButtonsTemplate let-data="data">
-  <div class="move-buttons-container">
-    <button
-      cdsButton="tertiary"
-      [disabled]="data.index === 0"
-      [iconOnly]="true"
-      (click)="onArrowUpClick(data)"
-    >
-      <svg cdsIcon="arrow--up" size="16" class="cds--btn__icon"></svg>
-    </button>
-
-    <button
-      cdsButton="tertiary"
-      [disabled]="(lastItemIndex$ | async) === data.index"
-      [iconOnly]="true"
-      (click)="onArrowDownClick(data)"
-    >
-      <svg cdsIcon="arrow--down" size="16" class="cds--btn__icon"></svg>
-    </button>
-  </div>
-</ng-template>
-
 <ng-container renderInPageHeader>
   <ng-template>
-    <button cdsButton="tertiary" size="md" (click)="editDashboard()">
+    <button
+      cdsButton="tertiary"
+      [size]="(compactMode$ | async) ? 'sm' : 'md'"
+      (click)="editDashboard()"
+    >
       {{ 'dashboardManagement.widgets.editButton' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>

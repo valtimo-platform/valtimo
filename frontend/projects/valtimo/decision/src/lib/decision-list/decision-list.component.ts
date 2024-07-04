@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, ViewChild} from '@angular/core';
 import {Decision} from '../models';
 import {DecisionService} from '../decision.service';
 import {Router} from '@angular/router';
 import {BehaviorSubject, map, switchMap, tap} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
 import {DecisionStateService} from '../services';
+import {DecisionDeployComponent} from '../decision-deploy/decision-deploy.component';
+import {IconService} from 'carbon-components-angular';
+import {Upload16} from '@carbon/icons';
 
 @Component({
   selector: 'valtimo-decision-list',
@@ -28,6 +31,8 @@ import {DecisionStateService} from '../services';
   styleUrls: ['./decision-list.component.scss'],
 })
 export class DecisionListComponent {
+  @ViewChild('decisionDeploy') deploy: DecisionDeployComponent;
+
   public fields = [
     {key: 'key', label: 'Key'},
     {key: 'name', label: 'Name'},
@@ -59,10 +64,12 @@ export class DecisionListComponent {
 
   constructor(
     private decisionService: DecisionService,
+    private readonly iconService: IconService,
     private router: Router,
     private readonly configService: ConfigService,
     private readonly stateService: DecisionStateService
   ) {
+    this.iconService.registerAll([Upload16]);
     this.experimentalEditing = this.configService.config.featureToggles.experimentalDmnEditing;
   }
 

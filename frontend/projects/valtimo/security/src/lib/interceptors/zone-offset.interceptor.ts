@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import moment from 'moment';
 export class ZoneOffsetInterceptor implements HttpInterceptor {
   public intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const modifiedReq = req.clone({
-      headers: req.headers.set('Zone-Offset', this.getFormattedZoneOffset()),
+      headers: req.headers.set('X-Timezone-Offset', this.getFormattedZoneOffset()),
     });
     return next.handle(modifiedReq);
   }

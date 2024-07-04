@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,6 @@
  * limitations under the License.
  */
 
-$valtimo-blue-100: #002547;
-$valtimo-blue-90: #002c54;
-$valtimo-blue-80: #003361;
-$valtimo-blue-70: #286198;
-$valtimo-blue-60: #2b79bd;
-$valtimo-blue-50: #61aedf;
-$valtimo-blue-40: #8acff2;
-$valtimo-blue-30: #aadcf6;
-$valtimo-blue-20: #c9e9f9;
-$valtimo-blue-10: #e9f6fd;
-
 @use '@carbon/styles/scss/themes';
 @use '@carbon/colors';
 
@@ -38,57 +27,78 @@ $darkThemeVariables: (
 );
 
 $lightThemeOverwriteVariables: (
-  active-primary: $valtimo-blue-80,
-  active-tertiary: $valtimo-blue-80,
-  // Blue 70
-  link-02: $valtimo-blue-70,
-  support-04: $valtimo-blue-70,
-  hover-primary-text: $valtimo-blue-70,
-  link-secondary: $valtimo-blue-70,
-  support-info: $valtimo-blue-70,
-  link-primary-hover: $valtimo-blue-70,
-  // Blue 60
-  interactive-01: $valtimo-blue-60,
-  interactive-03: $valtimo-blue-60,
-  interactive-04: $valtimo-blue-60,
-  link-01: $valtimo-blue-60,
-  focus: $valtimo-blue-60,
-  background-brand: $valtimo-blue-60,
-  interactive: $valtimo-blue-60,
-  border-interactive: $valtimo-blue-60,
-  link-primary: $valtimo-blue-60,
-  brand-01: $valtimo-blue-60,
-  brand-03: $valtimo-blue-60,
-  // Blue 50
-  inverse-support-04: $valtimo-blue-50,
-  support-info-inverse: $valtimo-blue-50,
-  // Blue 40
-  inverse-link: $valtimo-blue-40,
-  link-inverse: $valtimo-blue-40,
-  // Blue 20
-  highlight: $valtimo-blue-20,
+  // Color 80
+  active-primary: var(--vcds-color-80),
+  active-tertiary: var(--vcds-color-80),
+  // Color 70
+  link-02: var(--vcds-color-70),
+  support-04: var(--vcds-color-70),
+  hover-primary-text: var(--vcds-color-70),
+  link-secondary: var(--vcds-color-70),
+  support-info: var(--vcds-color-70),
+  link-primary-hover: var(--vcds-color-70),
+  // Color 60
+  interactive-01: var(--vcds-color-60),
+  interactive-03: var(--vcds-color-60),
+  interactive-04: var(--vcds-color-60),
+  link-01: var(--vcds-color-60),
+  focus: var(--vcds-color-60),
+  background-brand: var(--vcds-color-60),
+  interactive: var(--vcds-color-60),
+  border-interactive: var(--vcds-color-60),
+  link-primary: var(--vcds-color-60),
+  brand-01: var(--vcds-color-60),
+  brand-03: var(--vcds-color-60),
+  // Color 50
+  inverse-support-04: var(--vcds-color-50),
+  support-info-inverse: var(--vcds-color-50),
+  // Color 40
+  inverse-link: var(--vcds-color-40),
+  link-inverse: var(--vcds-color-40),
+  // Color 20
+  highlight: var(--vcds-color-20)
+);
+
+$darkThemeOverwriteVariables: (
+  // Color 80
+  active-primary: var(--vcds-color-80),
+  active-tertiary: var(--vcds-color-80),
+  highlight: var(--vcds-color-80),
+  // Color 70
+  inverse-support-04: var(--vcds-color-70),
+  support-info-inverse: var(--vcds-color-70),
+  // Color 60
+  interactive-01: var(--vcds-color-60),
+  background-brand: var(--vcds-color-60),
+  brand-01: var(--vcds-color-60),
+  brand-03: var(--vcds-color-60),
+  // Color 50
+  support-04: var(--vcds-color-50),
+  support-info: var(--vcds-color-50),
+  interactive-04: var(--vcds-color-50),
+  interactive: var(--vcds-color-50),
+  border-interactive: var(--vcds-color-50),
+  // Color 40
+  link-01: var(--vcds-color-40),
+  link-primary: var(--vcds-color-40),
+  // Color 30
+  link-02: var(--vcds-color-30),
+  hover-primary-text: var(--vcds-color-30),
+  link-secondary: var(--vcds-color-30),
+  link-primary-hover: var(--vcds-color-30)
 );
 
 @use '@carbon/styles/scss/theme' with (
-  $theme: map-merge(themes.$white, $lightThemeOverwriteVariables)
+  $theme: map-merge(themes.$g10, $lightThemeOverwriteVariables)
 );
 
 @use '@carbon/styles/scss/components/button/tokens' as button-tokens with (
-  $button-primary-active: $valtimo-blue-80,
-  $button-tertiary-active: $valtimo-blue-80,
-  $button-primary-hover: $valtimo-blue-70,
-  $button-tertiary-hover: $valtimo-blue-70,
-  $button-primary: $valtimo-blue-60,
-  $button-tertiary: $valtimo-blue-60
-);
-
-@use '@carbon/styles/scss/components/tag/tokens' as tag-tokens with (
-  $tag-color-blue: $valtimo-blue-80,
-  $tag-background-blue: $valtimo-blue-20
-);
-
-@use '@carbon/styles/scss/components/notification/tokens' as notification-tokens with (
-  $notification-background-info: $valtimo-blue-10
+  $button-primary-active: var(--vcds-color-80),
+  $button-tertiary-active: var(--vcds-color-80),
+  $button-primary-hover: var(--vcds-color-70),
+  $button-tertiary-hover: var(--vcds-color-70),
+  $button-primary: var(--vcds-color-60),
+  $button-tertiary: var(--vcds-color-60)
 );
 
 @use '@carbon/styles';
@@ -102,71 +112,22 @@ $lightThemeOverwriteVariables: (
 }
 
 @each $name, $variable in $darkThemeVariables {
-  //to be enhanced with the dark theme overwrite when implementing the Dark Theme
   [data-carbon-theme='#{$name}'] {
-    @include theme.theme($variable);
+    @include theme.theme($variable, $darkThemeOverwriteVariables);
   }
 }
 
-body {
-  background-color: colors.$gray-10;
-}
+/* default Valtimo colors */
 
-.cds {
-  &--link--disabled {
-    pointer-events: none;
-  }
-
-  &--text-input:read-only {
-    color: theme.$text-primary;
-    border-color: theme.$border-subtle-01;
-    outline: none;
-  }
-
-  &--data-table {
-    &-container {
-      padding-top: 0 !important;
-    }
-
-    tr {
-      cursor: pointer;
-    }
-  }
-
-  &--modal.is-visible {
-    z-index: 10001 !important;
-  }
-
-  &--inline-notification__text-wrapper {
-    width: 100%;
-  }
-
-  &--overflow-menu-options__btn {
-    min-width: 100%;
-  }
-
-  &--list-box {
-    &__field {
-      z-index: 1;
-    }
-
-    &__wrapper {
-      z-index: 100001 !important;
-    }
-  }
-}
-
-.valtimo-carbon-list {
-  .cds--checkbox-label,
-  .cds--pagination__text {
-    margin-bottom: 0 !important;
-  }
-
-  &__tabs cds-tab {
-    display: none !important;
-  }
-}
-
-.hide-after::after {
-  display: none;
+:root {
+  --vcds-color-100: #002547;
+  --vcds-color-90: #002c54;
+  --vcds-color-80: #003361;
+  --vcds-color-70: #286198;
+  --vcds-color-60: #2b79bd;
+  --vcds-color-50: #61aedf;
+  --vcds-color-40: #8acff2;
+  --vcds-color-30: #aadcf6;
+  --vcds-color-20: #c9e9f9;
+  --vcds-color-10: #e9f6fd;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {
+  ArbitraryInputTitles,
   ListItemWithId,
   MultiInputKeyValue,
   MultiInputOutput,
@@ -36,6 +37,11 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   @Input() public title = '';
   @Input() public titleTranslationKey = '';
   @Input() public type: MultiInputType = 'value';
+  @Input() public set arbitraryValueAmount(value: number) {
+    this._amountOfArbitraryValues = value;
+    this.amountOfArbitraryValuesArray$.next(this.getArrayOfXLength(value));
+  }
+  @Input() public arbitraryAmountTitles!: ArbitraryInputTitles;
   @Input() public initialAmountOfRows = 1;
   @Input() public minimumAmountOfRows = 1;
   @Input() public maxRows = null;
@@ -58,9 +64,13 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   }
   @Input() public dropdownWidth = 250;
   @Input() public fullWidth = false;
+  @Input() public carbonTheme = 'g10';
 
   @Output() public valueChange: EventEmitter<MultiInputOutput> = new EventEmitter();
   @Output() public allValuesValidEvent: EventEmitter<boolean> = new EventEmitter();
+
+  private _amountOfArbitraryValues!: number;
+  public readonly amountOfArbitraryValuesArray$ = new BehaviorSubject<Array<0>>([]);
 
   public readonly values$ = new BehaviorSubject<MultiInputValues>([]);
   public readonly mappedValues$: Observable<MultiInputOutput> = this.values$.pipe(
@@ -73,13 +83,18 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
               case 'value':
                 return value;
               case 'keyValue':
-                return (value as MultiInputKeyValue).value && (value as MultiInputKeyValue).key;
+                return (value as MultiInputKeyValue).value || (value as MultiInputKeyValue).key;
               case 'keyDropdownValue':
                 return (
                   (value as MultiInputKeyValue).value &&
                   (value as MultiInputKeyValue).key &&
                   (value as MultiInputKeyValue).dropdown
                 );
+              case 'arbitraryAmount':
+                const objectValues = Object.values(value as MultiInputKeyValue);
+                const positiveValuesAmount = objectValues.filter(objectValue => !!objectValue);
+
+                return objectValues.length === positiveValuesAmount.length;
             }
           }) as MultiInputOutput
     )
@@ -139,7 +154,8 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   public onValueChange(
     templateValue: MultiInputKeyValue,
     inputValue: string,
-    change: 'key' | 'value' | 'dropdown'
+    change: 'key' | 'value' | 'dropdown' | 'arbitrary',
+    arbitraryIndex?: number
   ): void {
     this.values$.pipe(take(1)).subscribe(values => {
       this.values$.next(
@@ -151,6 +167,8 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
               return {...stateValue, key: inputValue};
             } else if (change === 'dropdown') {
               return {...stateValue, dropdown: inputValue};
+            } else if (change === 'arbitrary') {
+              return {...stateValue, [arbitraryIndex]: inputValue};
             }
           }
           return stateValue;
@@ -172,6 +190,18 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   }
 
   private getEmptyValue(): MultiInputKeyValue {
+    if (this.type === 'arbitraryAmount') {
+      const emptyValue = {
+        uuid: uuidv4(),
+      };
+
+      this.getArrayOfXLength(this._amountOfArbitraryValues).forEach((_, index) => {
+        emptyValue[`${index}`] = '';
+      });
+
+      return emptyValue;
+    }
+
     return {
       key: '',
       value: '',
@@ -185,6 +215,10 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
       return {key: valueToMap.key, value: valueToMap.value};
     } else if (this.type === 'keyDropdownValue') {
       return {key: valueToMap.key, value: valueToMap.value, dropdown: valueToMap.dropdown};
+    } else if (this.type === 'arbitraryAmount') {
+      const objCopy = {...valueToMap};
+      delete objCopy.uuid;
+      return objCopy;
     }
 
     return valueToMap.value;
@@ -197,5 +231,9 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
         this.allValuesValidEvent.emit(values.length === mappedValues.length);
       }
     );
+  }
+
+  private getArrayOfXLength(length: number): Array<0> {
+    return Array(length).fill(0);
   }
 }

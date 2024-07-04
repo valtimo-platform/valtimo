@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,11 +34,7 @@ interface GenerateDocumentConfig {
 
 interface GetTemplateNamesConfig {
   templateGroupName: string;
+  resultingTemplateNameListProcessVariableName: string;
 }
 
-export {
-  SmartDocumentsConfig,
-  GenerateDocumentConfig,
-  GetTemplateNamesConfig,
-  DocumentFormat
-};
+export {SmartDocumentsConfig, GenerateDocumentConfig, GetTemplateNamesConfig, DocumentFormat};

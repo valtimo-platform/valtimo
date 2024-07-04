@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -223,15 +223,16 @@
                 [disabled]="obs.disabled"
               ></v-tooltip-icon>
             </span>
-            <valtimo-carbon-multi-input
-              *ngIf="showMappingModalsDelay[uuid]"
-              type="keyValue"
-              (valueChange)="mappingValueChange($event, uuid)"
-              [defaultValues]="mappings[uuid] || prefill?.mapping"
-              [valueColumnTitle]="'target' | pluginTranslate: pluginId | async"
-              [keyColumnTitle]="'source' | pluginTranslate: pluginId | async"
-            ></valtimo-carbon-multi-input>
           </cds-label>
+          <valtimo-carbon-multi-input
+            *ngIf="showMappingModalsDelay[uuid]"
+            type="keyValue"
+            (valueChange)="mappingValueChange($event, uuid)"
+            [defaultValues]="mappings[uuid] || prefill?.mapping"
+            [valueColumnTitle]="'target' | pluginTranslate: pluginId | async"
+            [keyColumnTitle]="'source' | pluginTranslate: pluginId | async"
+            [fullWidth]="true"
+          ></valtimo-carbon-multi-input>
         </div>
       </section>
       <cds-modal-footer>

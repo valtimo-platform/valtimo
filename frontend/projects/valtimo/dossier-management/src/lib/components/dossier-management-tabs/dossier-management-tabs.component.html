@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -16,11 +16,14 @@
 
 <valtimo-carbon-list
   *ngIf="{fields: fields$ | async, loading: loading$ | async, tabs: tabs$ | async} as obs"
+  [actionItems]="actionItems"
   [items]="obs.tabs"
   [fields]="obs.fields"
   [header]="false"
   [loading]="obs.loading"
+  [movingRowsEnabled]="true"
   (rowClicked)="onRowClicked($event)"
+  (moveRow)="onMoveRowClick($event)"
 >
   <ng-container carbonToolbarContent>
     <ng-container [ngTemplateOutlet]="addTabButton"></ng-container>
@@ -55,30 +58,6 @@
 
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
   </button>
-</ng-template>
-
-<ng-template #moveButtonsTemplate let-data="data">
-  <div class="move-buttons-container">
-    <button
-      cdsButton="tertiary"
-      [disabled]="data.index === 0"
-      [iconOnly]="true"
-      size="sm"
-      (click)="onArrowClick('UP', data.index, $event)"
-    >
-      <svg cdsIcon="arrow--up" size="16" class="cds--btn__icon"></svg>
-    </button>
-
-    <button
-      cdsButton="tertiary"
-      [disabled]="(lastItemIndex$ | async) === data.index"
-      [iconOnly]="true"
-      size="sm"
-      (click)="onArrowClick('DOWN', data.index, $event)"
-    >
-      <svg cdsIcon="arrow--down" size="16" class="cds--btn__icon"></svg>
-    </button>
-  </div>
 </ng-template>
 
 <valtimo-dossier-management-add-tab-modal

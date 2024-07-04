@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import {CASE_TAB_TOKEN, CaseTabConfig, DefaultTabs} from '@valtimo/dossier';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
 import {ListItem} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
-
 import {TabEnum} from '../models/tab.enum';
+import {CASE_MANAGEMENT_TAB_TOKEN, CaseManagementTabConfig} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',
@@ -28,11 +28,17 @@ import {TabEnum} from '../models/tab.enum';
 export class TabService {
   public configuredTabKeys: string[];
 
-  private _currentTab$ = new BehaviorSubject<TabEnum>(TabEnum.DOCUMENT);
-  public get currentTab$(): Observable<TabEnum> {
+  private _injectedCaseManagementTabs$ = new BehaviorSubject<CaseManagementTabConfig[]>([]);
+
+  public get injectedCaseManagementTabs$(): Observable<CaseManagementTabConfig[]> {
+    return this._injectedCaseManagementTabs$.asObservable();
+  }
+
+  private _currentTab$ = new BehaviorSubject<TabEnum | string>(TabEnum.DOCUMENT);
+  public get currentTab$(): Observable<TabEnum | string> {
     return this._currentTab$.asObservable();
   }
-  public set currentTab(tab: TabEnum) {
+  public set currentTab(tab: TabEnum | string) {
     this._currentTab$.next(tab);
   }
 
@@ -99,7 +105,22 @@ export class TabService {
 
   constructor(
     @Optional() @Inject(CASE_TAB_TOKEN) private readonly caseTabConfig: CaseTabConfig,
+    @Optional()
+    @Inject(CASE_MANAGEMENT_TAB_TOKEN)
+    private readonly caseManagementTabConfig: CaseManagementTabConfig[],
     private readonly formService: FormService,
     private readonly translateService: TranslateService
-  ) {}
+  ) {
+    this.setInjectedCaseManagementTabs(this.caseManagementTabConfig);
+  }
+
+  private setInjectedCaseManagementTabs(
+    caseManagementTabConfig?: CaseManagementTabConfig[] | CaseManagementTabConfig
+  ): void {
+    if (!caseManagementTabConfig) return;
+
+    this._injectedCaseManagementTabs$.next(
+      Array.isArray(caseManagementTabConfig) ? caseManagementTabConfig : [caseManagementTabConfig]
+    );
+  }
 }

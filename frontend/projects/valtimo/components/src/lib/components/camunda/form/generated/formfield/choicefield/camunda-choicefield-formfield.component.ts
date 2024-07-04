@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 import {Component, OnInit} from '@angular/core';
 import {UntypedFormGroup} from '@angular/forms';
 import {FormField} from '../formfield.model';
-import {ChoicefieldService} from '@valtimo/choicefield';
+import {ChoiceFieldService} from '../../../../../../services';
 
 @Component({
   selector: 'valtimo-camunda-choicefield-formfield',
@@ -28,13 +28,13 @@ export class CamundaChoicefieldFormfieldComponent implements OnInit {
   public formField: FormField;
   public choicefieldValues: Array<any> = [];
 
-  constructor(private choicefieldService: ChoicefieldService) {}
+  constructor(private choiceFieldService: ChoiceFieldService) {}
 
   ngOnInit(): void {
-    this.choicefieldService
-      .getChoiceFieldValuesByName(this.formField.properties['choicefield'])
+    this.choiceFieldService
+      .queryValuesPage(this.formField.properties['choicefield'])
       .subscribe(data => {
-        this.choicefieldValues = data;
+        this.choicefieldValues = data.content;
       });
   }
 }

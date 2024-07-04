@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {NgModule} from '@angular/core';
-import {Router, RouterModule, Routes} from '@angular/router';
+import {RouterModule, Routes} from '@angular/router';
 import {pendingChangesGuard} from '@valtimo/components';
 import {ROLE_ADMIN, RouterUtils} from '@valtimo/config';
 import {AuthGuardService} from '@valtimo/security';
@@ -45,11 +45,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forChild(routes)],
+  imports: [RouterModule.forRoot(routes, RouterUtils.getRouterExtraOptions())],
   exports: [RouterModule],
 })
-export class FormManagementRoutingModule {
-  constructor(private router: Router) {
-    RouterUtils.configureRouter(this.router);
-  }
-}
+export class FormManagementRoutingModule {}

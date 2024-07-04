@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,22 +18,26 @@ import {NgModule} from '@angular/core';
 import {FormManagementComponent} from './form-management.component';
 import {FormManagementRoutingModule} from './form-management-routing.module';
 import {
-  DropzoneModule,
-  FormIoModule,
-  ListModule,
-  ModalModule as vcModalModule,
-  ValtimoCdsModalDirectiveModule,
-  WidgetModule,
   ButtonModule,
+  CarbonListModule,
+  ConfirmationModalModule,
+  DropzoneModule,
+  EditorModule,
+  FormIoModule,
   FormModule,
   InputModule as vInputModule,
-  VModalModule,
+  ListModule,
+  ModalModule as vcModalModule,
+  RenderInPageHeaderDirectiveModule,
+  SpinnerModule,
   TitleModule,
+  ValtimoCdsModalDirectiveModule,
+  VModalModule,
+  WidgetModule,
 } from '@valtimo/components';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {FormManagementCreateComponent} from './form-management-create/form-management-create.component';
-import {FormManagementListComponent} from './form-management-list/form-management-list.component';
 import {FormManagementEditComponent} from './form-management-edit/form-management-edit.component';
 import {TranslateModule} from '@ngx-translate/core';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
@@ -41,16 +45,19 @@ import {FormManagementUploadComponent} from './form-management-upload/form-manag
 import {FormManagementDuplicateComponent} from './form-management-duplicate/form-management-duplicate.component';
 import {
   ButtonModule as cButtonModule,
+  DialogModule,
+  IconModule,
   InputModule,
   ModalModule,
   PlaceholderModule,
+  TabsModule,
+  TagModule,
 } from 'carbon-components-angular';
 
 @NgModule({
   declarations: [
     FormManagementComponent,
     FormManagementCreateComponent,
-    FormManagementListComponent,
     FormManagementEditComponent,
     FormManagementUploadComponent,
     FormManagementDuplicateComponent,
@@ -79,6 +86,15 @@ import {
     PlaceholderModule,
     cButtonModule,
     ValtimoCdsModalDirectiveModule,
+    CarbonListModule,
+    DialogModule,
+    RenderInPageHeaderDirectiveModule,
+    TabsModule,
+    EditorModule,
+    SpinnerModule,
+    IconModule,
+    ConfirmationModalModule,
+    TagModule,
   ],
   exports: [FormManagementComponent],
 })

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,9 @@ import {ConnectorManagementService} from '../../services/connector-management/co
 import {ConnectorManagementStateService} from '../../services/connector-management-state/connector-management-state.service';
 import {Pagination, TableColumn} from '@valtimo/components';
 
+/**
+ * @deprecated Use the new plugin framework
+ */
 @Component({
   selector: 'valtimo-connector-management',
   templateUrl: './connector-management.component.html',

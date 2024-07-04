@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {BreakpointObserver} from '@angular/cdk/layout';
 import {
   AfterViewInit,
   Component,
@@ -22,14 +22,13 @@ import {
   OnDestroy,
   ViewChild,
 } from '@angular/core';
-import {TranslateService} from '@ngx-translate/core';
+import {Router} from '@angular/router';
+import {MenuItem} from '@valtimo/config';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
-import {ConfigService, MenuItem} from '@valtimo/config';
-import {MenuService} from '../menu/menu.service';
+
 import {ShellService} from '../../services/shell.service';
-import {BreakpointObserver} from '@angular/cdk/layout';
-import {Router} from '@angular/router';
+import {MenuService} from '../menu/menu.service';
 
 @Component({
   selector: 'valtimo-left-sidebar',
@@ -70,9 +69,7 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
   private _lastLargeScreen!: boolean;
 
   constructor(
-    private readonly translateService: TranslateService,
     private readonly elementRef: ElementRef,
-    private readonly configService: ConfigService,
     private readonly menuService: MenuService,
     private readonly shellService: ShellService,
     private readonly breakpointObserver: BreakpointObserver,

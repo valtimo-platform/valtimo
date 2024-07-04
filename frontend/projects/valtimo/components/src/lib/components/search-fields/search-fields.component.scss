@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-.w-100 {
-  height: 15px;
-
-  &:last-child {
-    display: none;
-  }
-}
+@use '@carbon/colors';
 
 ::ng-deep .multiple-search-fields {
   display: flex !important;
@@ -36,37 +30,58 @@
 .buttons-container {
   width: 100%;
   display: flex;
-  flex-direction: row;
   justify-content: flex-end;
 }
 
 .right-buttons {
   display: flex;
   flex-direction: row;
+  gap: 16px;
+}
 
-  v-button:last-child {
-    margin-left: 8px;
+.search-fields-container {
+  padding-bottom: 16px;
+  padding-top: 16px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, 1fr);
+
+  &--hidden {
+    display: none;
   }
 }
 
-.row--hidden {
-  display: none;
-}
-
-.accordion-button {
-  display: block;
+.meta-container {
   width: 100%;
-  padding: 15px;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  background: #f8f9f9;
-  text-align: left;
-  transition: background 0.2s;
-  font-size: 1.2rem;
-  color: #404040;
+  padding-bottom: 16px;
 }
 
-.accordion-button--active {
-  background: #f1f1f1;
+.loading-container {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.no-search-fields-message {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.search-fields-tile {
+  padding: 0;
+}
+
+::ng-deep .cds--accordion {
+  background-color: var(--cds-layer);
+}
+
+::ng-deep .cds--accordion__item {
+  border-inline-start: 1px solid var(--cds-border-subtle);
+  border-inline-end: 1px solid var(--cds-border-subtle);
+}
+
+::ng-deep .cds--accordion__content {
+  padding: 0 16px;
 }

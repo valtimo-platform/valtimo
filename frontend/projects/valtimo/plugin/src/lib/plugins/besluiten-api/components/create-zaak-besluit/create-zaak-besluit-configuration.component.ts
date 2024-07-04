@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,10 +63,11 @@ export class CreateZaakBesluitConfigurationComponent
   ];
   readonly vervalredenenSelectItems$: Observable<Array<{id: Vervalredenen; text: string}>> =
     this.translateService.stream('key').pipe(
-      map(() =>
+      switchMap(() => this.pluginId$),
+      map(pluginId =>
         this.VERVALREDENEN.map(item => ({
           id: item,
-          text: this.pluginTranslationService.instant(item, this.pluginId),
+          text: this.pluginTranslationService.instant(item, pluginId),
         }))
       )
     );
@@ -75,11 +76,41 @@ export class CreateZaakBesluitConfigurationComponent
   readonly selectedCaseDefinitionId$ = new BehaviorSubject<string>('');
 
   readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
+  readonly selectedStartDateInputOption$ = new BehaviorSubject<InputOption>('selection');
+  readonly selectedExpirationDateInputOption$ = new BehaviorSubject<InputOption>('selection');
 
   readonly loading$ = new BehaviorSubject<boolean>(true);
 
   readonly pluginId$ = new BehaviorSubject<string>('');
   readonly inputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
+    filter(pluginId => !!pluginId),
+    switchMap(pluginId =>
+      combineLatest([
+        this.pluginTranslatePipe.transform('selection', pluginId),
+        this.pluginTranslatePipe.transform('text', pluginId),
+      ])
+    ),
+    map(([selectionTranslation, textTranslation]) => [
+      {value: 'selection', title: selectionTranslation},
+      {value: 'text', title: textTranslation},
+    ])
+  );
+
+  readonly startDateInputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
+    filter(pluginId => !!pluginId),
+    switchMap(pluginId =>
+      combineLatest([
+        this.pluginTranslatePipe.transform('selection', pluginId),
+        this.pluginTranslatePipe.transform('text', pluginId),
+      ])
+    ),
+    map(([selectionTranslation, textTranslation]) => [
+      {value: 'selection', title: selectionTranslation},
+      {value: 'text', title: textTranslation},
+    ])
+  );
+
+  readonly expirationDateInputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
     filter(pluginId => !!pluginId),
     switchMap(pluginId =>
       combineLatest([
@@ -192,6 +223,14 @@ export class CreateZaakBesluitConfigurationComponent
     if (formValue.inputTypeBesluitToggle) {
       this.selectedInputOption$.next(formValue.inputTypeBesluitToggle);
     }
+
+    if (formValue.inputTypeStartingDateToggle) {
+      this.selectedStartDateInputOption$.next(formValue.inputTypeStartingDateToggle);
+    }
+
+    if (formValue.inputTypeExpirationDateToggle) {
+      this.selectedExpirationDateInputOption$.next(formValue.inputTypeExpirationDateToggle);
+    }
   }
 
   oneSelectItem(selectItems: Array<SelectItem>): boolean {
@@ -208,7 +247,7 @@ export class CreateZaakBesluitConfigurationComponent
   }
 
   private handleValid(formValue: CreateZaakBesluitConfig): void {
-    const valid = !!formValue.besluittypeUrl;
+    const valid = !!formValue.besluittypeUrl && !!formValue.ingangsdatum;
 
     this.valid$.next(valid);
     this.valid.emit(valid);

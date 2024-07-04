@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ export class ObjectManagementDetailContainerComponent implements OnInit, OnDestr
     private readonly tabService: TabService,
     private readonly pageTitleService: PageTitleService
   ) {
-    this.caseListColumn = this.configService.config.featureToggles.caseListColumn;
+    this.caseListColumn = this.configService.config.featureToggles?.caseListColumn ?? true;
   }
 
   ngOnInit(): void {

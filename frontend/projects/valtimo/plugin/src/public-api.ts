@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ export * from './lib/plugins/smart-documents/components/get-template-names/get-t
 /* documenten api plugin */
 export * from './lib/plugins/documenten-api/documenten-api-plugin.module';
 export * from './lib/plugins/documenten-api/documenten-api-plugin.specification';
+export * from './lib/plugins/documenten-api/models/config';
 export * from './lib/plugins/documenten-api/components/store-temp-document/store-temp-document-configuration.component';
 export * from './lib/plugins/documenten-api/components/documenten-api-configuration/documenten-api-configuration.component';
 export * from './lib/plugins/documenten-api/components/store-uploaded-document/store-uploaded-document-configuration.component';
@@ -62,6 +63,11 @@ export * from './lib/plugins/zaken-api/components/create-natuurlijk-persoon-zaak
 export * from './lib/plugins/zaken-api/components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
 export * from './lib/plugins/zaken-api/components/create-zaak/create-zaak-configuration.component';
 export * from './lib/plugins/zaken-api/components/set-zaakopschorting/set-zaakopschorting.component';
+export * from './lib/plugins/zaken-api/components/start-hersteltermijn/start-hersteltermijn-configuration.component';
+export * from './lib/plugins/zaken-api/components/end-hersteltermijn/end-hersteltermijn.component';
+export * from './lib/plugins/zaken-api/components/create-zaakeigenschap/create-zaakeigenschap.component';
+export * from './lib/plugins/zaken-api/components/update-zaakeigenschap/update-zaakeigenschap.component';
+export * from './lib/plugins/zaken-api/components/delete-zaakeigenschap/delete-zaakeigenschap.component';
 /* objecten api plugin */
 export * from './lib/plugins/objecten-api/objecten-api-plugin-module';
 export * from './lib/plugins/objecten-api/objecten-api-plugin.specification';
@@ -98,3 +104,6 @@ export * from './lib/plugins/besluiten-api/besluiten-api-plugin.specification';
 export * from './lib/plugins/besluiten-api/components/besluiten-api-configuration/besluiten-api-configuration.component';
 export * from './lib/plugins/besluiten-api/components/create-zaak-besluit/create-zaak-besluit-configuration.component';
 export * from './lib/plugins/besluiten-api/components/link-document-to-besluit/link-document-to-besluit-configuration.component';
+/* exact */
+export * from './lib/plugins/exact/exact.plugin.specification';
+export * from './lib/plugins/exact/exact-plugin.module';

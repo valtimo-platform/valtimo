@@ -1,0 +1,15 @@
+<cds-modal valtimoCdsModal [title]="'interface.tags' | translate" size="xs" [open]="open">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()">
+    <h3 cdsModalHeading>{{ 'interface.tags' | translate }}</h3>
+  </cds-modal-header>
+
+  <section cdsModalContent class="valtimo-tags-modal__content">
+    <div class="valtimo-tags-modal__container">
+      @for (tag of tags; track tag.content) {
+        <cds-tag [type]="tag.type">
+          {{ tag.content }}
+        </cds-tag>
+      }
+    </div>
+  </section>
+</cds-modal>

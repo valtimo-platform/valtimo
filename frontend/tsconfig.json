@@ -27,6 +27,8 @@
       "@valtimo/components/*": ["dist/valtimo/components/*"],
       "@valtimo/task": ["dist/valtimo/task"],
       "@valtimo/task/*": ["dist/valtimo/task/*"],
+      "@valtimo/task-management": ["dist/valtimo/task-management"],
+      "@valtimo/task-management/*": ["dist/valtimo/task-management/*"],
       "@valtimo/access-control": ["dist/valtimo/access-control"],
       "@valtimo/access-control/*": ["dist/valtimo/access-control/*"],
       "@valtimo/access-control-management": ["dist/valtimo/access-control-management"],
@@ -35,12 +37,8 @@
       "@valtimo/security/*": ["dist/valtimo/security/*"],
       "@valtimo/dossier": ["dist/valtimo/dossier"],
       "@valtimo/dossier/*": ["dist/valtimo/dossier/*"],
-      "@valtimo/choicefield": ["dist/valtimo/choicefield"],
-      "@valtimo/choicefield/*": ["dist/valtimo/choicefield/*"],
       "@valtimo/process": ["dist/valtimo/process"],
       "@valtimo/process/*": ["dist/valtimo/process/*"],
-      "@valtimo/view-configurator": ["dist/valtimo/view-configurator"],
-      "@valtimo/view-configurator/*": ["dist/valtimo/view-configurator/*"],
       "@valtimo/dashboard": ["dist/valtimo/dashboard"],
       "@valtimo/dashboard/*": ["dist/valtimo/dashboard/*"],
       "@valtimo/dashboard-management": ["dist/valtimo/dashboard-management"],
@@ -49,22 +47,20 @@
       "@valtimo/script-management/*": ["dist/valtimo/script-management/*"],
       "@valtimo/document": ["dist/valtimo/document"],
       "@valtimo/document/*": ["dist/valtimo/document/*"],
+      "@valtimo/zgw": ["dist/valtimo/zgw"],
+      "@valtimo/zgw/*": ["dist/valtimo/zgw/*"],
       "@valtimo/account": ["dist/valtimo/account"],
       "@valtimo/account/*": ["dist/valtimo/account/*"],
       "@valtimo/choice-field": ["dist/valtimo/choice-field"],
       "@valtimo/choice-field/*": ["dist/valtimo/choice-field/*"],
-      "@valtimo/contact-moment": ["dist/valtimo/contact-moment"],
-      "@valtimo/contact-moment/*": ["dist/valtimo/contact-moment/*"],
-      "@valtimo/exact-plugin": [
-        "dist/valtimo/exact-plugin/valtimo-exact-plugin",
-        "dist/valtimo/exact-plugin"
-      ],
       "@valtimo/form": ["dist/valtimo/form"],
       "@valtimo/form/*": ["dist/valtimo/form/*"],
       "@valtimo/swagger": ["dist/valtimo/swagger"],
       "@valtimo/swagger/*": ["dist/valtimo/swagger/*"],
       "@valtimo/analyse": ["dist/valtimo/analyse"],
       "@valtimo/analyse/*": ["dist/valtimo/analyse/*"],
+      "@valtimo/case-migration": ["dist/valtimo/case-migration"],
+      "@valtimo/case-migration/*": ["dist/valtimo/case-migration/*"],
       "@valtimo/connector-management": ["dist/valtimo/connector-management"],
       "@valtimo/connector-management/*": ["dist/valtimo/connector-management/*"],
       "@valtimo/process-management": ["dist/valtimo/process-management"],
@@ -75,12 +71,14 @@
       "@valtimo/milestone/*": ["dist/valtimo/milestone/*"],
       "@valtimo/form-management": ["dist/valtimo/form-management"],
       "@valtimo/form-management/*": ["dist/valtimo/form-management/*"],
+      "@valtimo/form-flow-management": ["dist/valtimo/form-flow-management"],
+      "@valtimo/form-flow-management/*": ["dist/valtimo/form-flow-management/*"],
       "@valtimo/object-management": ["dist/valtimo/object-management"],
       "@valtimo/object-management/*": ["dist/valtimo/object-management/*"],
       "@valtimo/object": ["dist/valtimo/object"],
       "@valtimo/object/*": ["dist/valtimo/object/*"],
-      "@valtimo/form-link": ["dist/valtimo/form-link"],
-      "@valtimo/form-link/*": ["dist/valtimo/form-link/*"],
+      "@valtimo/process-link": ["dist/valtimo/process-link"],
+      "@valtimo/process-link/*": ["dist/valtimo/process-link/*"],
       "@valtimo/migration": ["dist/valtimo/migration"],
       "@valtimo/migration/*": ["dist/valtimo/migration/*"],
       "@valtimo/dossier-management": ["dist/valtimo/dossier-management"],
@@ -89,19 +87,16 @@
       "@valtimo/keycloak/*": ["dist/valtimo/keycloak/*"],
       "@valtimo/bootstrap": ["dist/valtimo/bootstrap/valtimo-bootstrap", "dist/valtimo/bootstrap"],
       "@valtimo/config": ["dist/valtimo/config/valtimo-config", "dist/valtimo/config"],
-      "@valtimo/open-zaak": ["dist/valtimo/open-zaak/valtimo-openzaak", "dist/valtimo/open-zaak"],
       "@valtimo/resource": ["dist/valtimo/resource"],
       "@valtimo/resource/*": ["dist/valtimo/resource/*"],
       "@valtimo/sse": ["dist/valtimo/sse"],
       "@valtimo/sse/*": ["dist/valtimo/sse/*"],
-      "@valtimo/customer": ["dist/valtimo/customer"],
-      "@valtimo/customer/*": ["dist/valtimo/customer/*"],
       "@valtimo/plugin-management": ["dist/valtimo/plugin-management"],
       "@valtimo/plugin-management/*": ["dist/valtimo/plugin-management/*"],
       "@valtimo/plugin": ["dist/valtimo/plugin"],
       "@valtimo/plugin/*": ["dist/valtimo/plugin/*"],
-      "@valtimo/exact-plugin": ["dist/valtimo/exact-plugin"],
-      "@valtimo/exact-plugin/*": ["dist/valtimo/exact-plugin/*"]
+      "@valtimo/zgw": ["dist/valtimo/zgw"],
+      "@valtimo/zgw/*": ["dist/valtimo/zgw/*"]
     }
   },
   "files": [],
@@ -134,6 +129,12 @@
       "path": "./projects/valtimo/task/tsconfig.spec.json"
     },
     {
+      "path": "./projects/valtimo/task-management/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/task-management/tsconfig.spec.json"
+    },
+    {
       "path": "./projects/valtimo/access-control/tsconfig.lib.json"
     },
     {
@@ -158,22 +159,16 @@
       "path": "./projects/valtimo/dossier/tsconfig.spec.json"
     },
     {
-      "path": "./projects/valtimo/choicefield/tsconfig.lib.json"
+      "path": "./projects/valtimo/case-migration/tsconfig.lib.json"
     },
     {
-      "path": "./projects/valtimo/choicefield/tsconfig.spec.json"
+      "path": "./projects/valtimo/case-migration/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/process/tsconfig.lib.json"
     },
     {
       "path": "./projects/valtimo/process/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/valtimo/view-configurator/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/valtimo/view-configurator/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/dashboard/tsconfig.lib.json"
@@ -192,6 +187,12 @@
     },
     {
       "path": "./projects/valtimo/document/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/zgw/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/zgw/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/account/tsconfig.lib.json"
@@ -260,10 +261,16 @@
       "path": "./projects/valtimo/form-management/tsconfig.spec.json"
     },
     {
-      "path": "./projects/valtimo/form-link/tsconfig.lib.json"
+      "path": "./projects/valtimo/form-flow-management/tsconfig.lib.json"
     },
     {
-      "path": "./projects/valtimo/form-link/tsconfig.spec.json"
+      "path": "./projects/valtimo/form-flow-management/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/process-link/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/process-link/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/migration/tsconfig.lib.json"
@@ -296,12 +303,6 @@
       "path": "./projects/valtimo/config/tsconfig.spec.json"
     },
     {
-      "path": "./projects/valtimo/open-zaak/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/valtimo/open-zaak/tsconfig.spec.json"
-    },
-    {
       "path": "./projects/valtimo/resource/tsconfig.lib.json"
     },
     {
@@ -312,12 +313,6 @@
     },
     {
       "path": "./projects/valtimo/user-interface/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/valtimo/customer/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/valtimo/customer/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/plugin-management/tsconfig.lib.json"
@@ -332,12 +327,6 @@
       "path": "./projects/valtimo/plugin/tsconfig.spec.json"
     },
     {
-      "path": "./projects/valtimo/exact-plugin/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/valtimo/exact-plugin/tsconfig.spec.json"
-    },
-    {
       "path": "./projects/valtimo/object-management/tsconfig.lib.json"
     },
     {
@@ -348,6 +337,12 @@
     },
     {
       "path": "./projects/valtimo/object/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/zgw/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/zgw/tsconfig.spec.json"
     }
   ]
 }

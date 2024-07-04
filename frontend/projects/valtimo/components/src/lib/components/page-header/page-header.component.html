@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,7 +14,29 @@
   ~ limitations under the License.
   -->
 
-<div class="page-head" [ngClass]="{'page-head--hidden': (showPageHeader$ | async) === false}">
-  <valtimo-breadcrumb-navigation></valtimo-breadcrumb-navigation>
-  <valtimo-page-title></valtimo-page-title>
+<div
+  #pageHead
+  class="page-head"
+  [ngClass]="{
+    '--hidden': (showPageHeader$ | async) === false,
+    '--compact': compactMode$ | async,
+    '--no-content': (compactMode$ | async) && (pageActionsHasContent$ | async) === false,
+    '--no-margin': pageTitleHidden$ | async
+  }"
+>
+  <ng-container #contentVcr></ng-container>
+
+  <valtimo-page-subtitle></valtimo-page-subtitle>
+
+  <valtimo-page-actions></valtimo-page-actions>
 </div>
+
+<ng-container renderPageHeader>
+  <ng-template>
+    <div class="page-header-container" [ngClass]="{'--compact': compactMode$ | async}">
+      <valtimo-breadcrumb-navigation></valtimo-breadcrumb-navigation>
+
+      <valtimo-page-title></valtimo-page-title>
+    </div>
+  </ng-template>
+</ng-container>

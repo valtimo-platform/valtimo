@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ export interface AuthProviders {
 
 export interface Auth {
   module: any;
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line
   initializer: (injector: Injector) => Function;
   authProviders: AuthProviders;
   options: any;

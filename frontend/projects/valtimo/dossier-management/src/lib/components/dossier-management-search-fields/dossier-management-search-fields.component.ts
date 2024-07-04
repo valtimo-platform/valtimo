@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,23 @@
  */
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   OnDestroy,
   OnInit,
   Output,
-  TemplateRef,
-  ViewChild,
 } from '@angular/core';
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
 import {ActivatedRoute} from '@angular/router';
 import {ArrowDown16, ArrowUp16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {
+  ActionItem,
+  CARBON_CONSTANTS,
   ColumnConfig,
-  ModalComponent,
+  MoveRowDirection,
+  MoveRowEvent,
   MultiInputOutput,
   MultiInputValues,
   SelectItem,
@@ -62,22 +64,38 @@ import {
   selector: 'valtimo-dossier-management-search-fields',
   templateUrl: './dossier-management-search-fields.component.html',
   styleUrls: ['./dossier-management-search-fields.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild('moveRowButtons') public moveRowButtonsTemplateRef: TemplateRef<any>;
-  @ViewChild('searchFieldModal') modal: ModalComponent;
-
   @Output() searchField: EventEmitter<SearchField> = new EventEmitter();
 
   public readonly downloadName$ = new BehaviorSubject<string>('');
   public readonly downloadUrl$ = new BehaviorSubject<SafeUrl | undefined>(undefined);
   public readonly disableInput$ = new BehaviorSubject<boolean>(false);
   public readonly selectedSearchField$ = new BehaviorSubject<SearchField | undefined>(undefined);
+  public readonly selectedDeleteSearchField$ = new BehaviorSubject<SearchField | undefined>(
+    undefined
+  );
   public readonly formData$ = new BehaviorSubject<SearchField | null>(null);
   public readonly valid$ = new BehaviorSubject<boolean>(false);
+  public readonly showFields$ = new BehaviorSubject<boolean>(false);
+  public readonly modalShowing$ = new BehaviorSubject<boolean>(false);
+  public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
 
   private _subscriptions = new Subscription();
 
+  public readonly actionItems: ActionItem[] = [
+    {
+      label: 'interface.edit',
+      callback: this.showEditModal.bind(this),
+      type: 'normal',
+    },
+    {
+      callback: this.showDeleteModal.bind(this),
+      label: 'interface.delete',
+      type: 'danger',
+    },
+  ];
   public readonly fields: ColumnConfig[] = [
     {
       viewType: ViewType.TEXT,
@@ -111,7 +129,7 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     },
   ];
 
-  readonly dropdownColumns$ = new BehaviorSubject<Array<TableColumn>>([
+  public readonly dropdownColumns$ = new BehaviorSubject<Array<TableColumn>>([
     {
       labelTranslationKey: 'searchFieldsOverview.id',
       dataKey: 'key',
@@ -129,16 +147,19 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     'datetime',
     'boolean',
   ];
-  readonly dataTypeItems$: Observable<Array<SelectItem>> = this.translateService.stream('key').pipe(
-    map(() =>
-      this.DATA_TYPES.map(dataType => ({
-        id: dataType,
-        text: this.translateService.instant(`searchFields.${dataType}`),
-      }))
-    )
-  );
 
-  readonly dataTypeIsBoolean$ = new BehaviorSubject<boolean>(false);
+  public readonly dataTypeItems$: Observable<Array<SelectItem>> = this.translateService
+    .stream('key')
+    .pipe(
+      map(() =>
+        this.DATA_TYPES.map(dataType => ({
+          id: dataType,
+          text: this.translateService.instant(`searchFields.${dataType}`),
+        }))
+      )
+    );
+
+  public readonly dataTypeIsBoolean$ = new BehaviorSubject<boolean>(false);
   private readonly dataTypeIsText$ = new BehaviorSubject<boolean>(false);
   private readonly ALL_FIELD_TYPES: Array<SearchFieldFieldType> = [
     'single',
@@ -148,7 +169,7 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
   ];
   private readonly NON_TEXT_FIELD_TYPES: Array<SearchFieldFieldType> = ['single', 'range'];
   private readonly BOOLEAN_FIELD_TYPES: Array<SearchFieldFieldType> = ['single'];
-  readonly fieldTypeItems$: Observable<Array<SelectItem>> = combineLatest([
+  public readonly fieldTypeItems$: Observable<Array<SelectItem>> = combineLatest([
     this.dataTypeIsBoolean$,
     this.dataTypeIsText$,
     this.translateService.stream('key'),
@@ -174,7 +195,7 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
   );
 
   private readonly MATCH_TYPES: Array<SearchFieldMatchType> = ['exact', 'like'];
-  readonly matchTypeItems$: Observable<Array<SelectItem>> = this.translateService
+  public readonly matchTypeItems$: Observable<Array<SelectItem>> = this.translateService
     .stream('key')
     .pipe(
       map(() =>
@@ -186,16 +207,16 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     );
 
   private _documentDefinitionName: string;
-  readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
+  public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
     map(params => params.name || ''),
     filter(docDefName => !!docDefName),
     tap((documentDefinitionName: string) => (this._documentDefinitionName = documentDefinitionName))
   );
 
   private cachedSearchFields!: Array<SearchField>;
-  searchFieldActionTypeIsAdd: boolean;
-  loadingSearchFields = true;
-  showSearchFieldsForm = false;
+
+  public searchFieldActionTypeIsAdd: boolean;
+  public loadingSearchFields = true;
 
   private readonly refreshSearchFields$ = new BehaviorSubject<null>(null);
 
@@ -208,7 +229,7 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     ),
     tap(searchFields => {
       this.documentDefinitionName$.pipe(take(1)).subscribe(documentDefinitionName => {
-        if (searchFields && Array.isArray(searchFields) && searchFields.length > 0) {
+        if (searchFields && Array.isArray(searchFields) && searchFields?.length > 0) {
           this.setDownload(documentDefinitionName, searchFields);
         }
       });
@@ -219,7 +240,7 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     })
   );
 
-  readonly translatedSearchFields$: Observable<Array<SearchField>> = combineLatest([
+  public readonly translatedSearchFields$: Observable<Array<SearchField>> = combineLatest([
     this.searchFields$,
     this.translateService.stream('key'),
   ]).pipe(
@@ -234,9 +255,9 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     )
   );
 
-  readonly fieldTypeIsDropdown$ = new BehaviorSubject<boolean>(false);
+  public readonly fieldTypeIsDropdown$ = new BehaviorSubject<boolean>(false);
 
-  readonly dropdownDataProviderNames$: Observable<Array<SelectItem>> = combineLatest([
+  public readonly dropdownDataProviderNames$: Observable<Array<SelectItem>> = combineLatest([
     this.documentService.getDropdownDataProviders(),
     this.translateService.stream('key'),
   ]).pipe(
@@ -250,7 +271,7 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
 
   private readonly modifiedDropdownValues$ = new BehaviorSubject<MultiInputValues>([]);
 
-  readonly initialDropdownValues$: Observable<MultiInputValues> = combineLatest([
+  public readonly initialDropdownValues$: Observable<MultiInputValues> = combineLatest([
     this.documentDefinitionName$,
     this.formData$,
   ]).pipe(
@@ -282,7 +303,7 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     })
   );
 
-  readonly showMatchTypes$: Observable<boolean> = combineLatest([
+  public readonly showMatchTypes$: Observable<boolean> = combineLatest([
     this.dataTypeIsText$,
     this.fieldTypeIsDropdown$,
   ]).pipe(map(([dataTypeIsText, fieldTypeIsDropdown]) => dataTypeIsText && !fieldTypeIsDropdown));
@@ -315,6 +336,8 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     )
   );
 
+  public readonly CARBON_THEME = 'white';
+
   constructor(
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
@@ -331,29 +354,6 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
 
   public ngAfterViewInit(): void {
     this.openModalShowingSubscription();
-
-    this.fields.push(
-      {
-        key: '',
-        label: '',
-        viewType: ViewType.TEMPLATE,
-        template: this.moveRowButtonsTemplateRef,
-      },
-      {
-        viewType: ViewType.ACTION,
-        sortable: false,
-        key: '',
-        label: '',
-        className: 'list-actions',
-        actions: [
-          {
-            callback: this.deleteSelectedSearchField.bind(this),
-            label: 'interface.delete',
-            type: 'danger',
-          },
-        ],
-      }
-    );
   }
 
   public ngOnDestroy(): void {
@@ -367,7 +367,8 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
         const searchFieldToSelect = this.cachedSearchFields.find(
           field => field.key === searchField.key
         );
-        this.selectedSearchField$.next(searchFieldToSelect);
+        this.selectedSearchField$.next(searchFieldToSelect || ({} as SearchField));
+        this.showModal();
       }
     });
   }
@@ -386,21 +387,16 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     this.modifiedDropdownValues$.next(data as MultiInputValues);
   }
 
-  public moveRow(
-    searchFieldRowIndex: number,
-    moveUp: boolean,
-    clickEvent: MouseEvent,
-    documentDefinitionName: string
-  ): void {
+  public onMoveRowClick(moveEvent: MoveRowEvent, documentDefinitionName: string): void {
+    const {index, direction} = moveEvent;
+    const moveUp = direction === MoveRowDirection.UP;
     const searchFields = [...this.cachedSearchFields];
-    const searchFieldRow = searchFields[searchFieldRowIndex];
-
-    clickEvent.stopPropagation();
+    const searchFieldRow = searchFields[index];
 
     const searchFieldIndex = searchFields.findIndex(field => field.key === searchFieldRow.key);
     const foundSearchField = {...searchFields[searchFieldIndex]};
     const filteredSearchFields = searchFields.filter(field => field.key !== searchFieldRow.key);
-    const multipleSearchFields = searchFields.length > 1;
+    const multipleSearchFields = searchFields?.length > 1;
 
     if (multipleSearchFields && moveUp && searchFieldIndex > 0) {
       const searchFieldBeforeKey = `${searchFields[searchFieldIndex - 1].key}`;
@@ -409,7 +405,7 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
       );
       filteredSearchFields.splice(searchFieldBeforeIndex, 0, foundSearchField);
       this.updateSearchFields(documentDefinitionName, filteredSearchFields);
-    } else if (multipleSearchFields && !moveUp && searchFieldIndex < searchFields.length) {
+    } else if (multipleSearchFields && !moveUp && searchFieldIndex < searchFields?.length) {
       const searchFieldAfterKey = `${searchFields[searchFieldIndex + 1].key}`;
       const searchFieldAfterIndex = filteredSearchFields.findIndex(
         field => field.key === searchFieldAfterKey
@@ -419,7 +415,7 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     }
   }
 
-  public deleteSelectedSearchField(selectedSearchField: SearchField): void {
+  public onDeleteSelectedSearchFieldConfirm(selectedSearchField: SearchField): void {
     this.disableInput();
 
     if (this.dropdownDataProviderSupportsUpdates(selectedSearchField?.dropdownDataProvider)) {
@@ -533,6 +529,10 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
     );
   }
 
+  public onModalClose(): void {
+    this.hideModal();
+  }
+
   private nextIfChanged(behaviourSubject$: BehaviorSubject<any>, value: any) {
     if (JSON.stringify(behaviourSubject$.value) !== JSON.stringify(value)) {
       behaviourSubject$.next(value);
@@ -550,7 +550,8 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
       data.dataType &&
       validMatchType &&
       validDropdownDataProvider &&
-      data.path
+      data.path &&
+      data.fieldType
     );
     const keyIsUnique =
       !this.searchFieldActionTypeIsAdd ||
@@ -569,23 +570,23 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
 
   private openSelectedSearchFieldSubscription(): void {
     this._subscriptions.add(
-      this.selectedSearchField$.subscribe(() => {
-        this.showModal();
+      this.selectedSearchField$.subscribe(selectedSearchField => {
+        if (selectedSearchField) this.showModal();
       })
     );
   }
 
   private openModalShowingSubscription(): void {
     this._subscriptions.add(
-      this.modal.modalShowing$.subscribe(modalShowing => {
+      this.modalShowing$.subscribe(modalShowing => {
         if (modalShowing) {
           setTimeout(() => {
-            this.showSearchFieldsForm = true;
+            this.showFields$.next(true);
           }, 0);
         } else {
           setTimeout(() => {
-            this.showSearchFieldsForm = false;
-          }, 150);
+            this.showFields$.next(false);
+          }, CARBON_CONSTANTS.modalAnimationMs);
         }
       })
     );
@@ -610,14 +611,23 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
   }
 
   private showModal(): void {
-    this.modal?.show();
+    this.modalShowing$.next(true);
   }
 
   private hideModal(): void {
-    this.modal?.hide();
+    this.modalShowing$.next(false);
   }
 
   private refreshSearchFields(): void {
     this.refreshSearchFields$.next(null);
+  }
+
+  private showDeleteModal(searchField: SearchField): void {
+    this.selectedDeleteSearchField$.next(searchField);
+    this.showDeleteModal$.next(true);
+  }
+
+  private showEditModal(searchField: SearchField): void {
+    this.searchFieldClicked(searchField, false);
   }
 }

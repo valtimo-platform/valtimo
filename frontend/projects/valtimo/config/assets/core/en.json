@@ -79,7 +79,9 @@
       "notes": "Notes",
       "MINE": "My cases",
       "OPEN": "Unassigned cases",
-      "ALL": "All cases"
+      "ALL": "All cases",
+      "componentNotFound": "Tab component not found",
+      "componentNotFoundMessage": "No component has been found for this tab. Please contact your system administrator."
     },
     "forms": {
       "globalSearchPlaceHolder": "Everything",
@@ -126,14 +128,22 @@
         "description": "Are you sure you want to delete this note?",
         "deletedMessage": "The note was deleted successfully."
       },
-      "editedMessage": "The note was edited successfully."
+      "editedMessage": "The note was edited successfully.",
+      "noResults": {
+        "title": "No notes",
+        "description": "There are no notes in this case."
+      }
     },
     "documenten": {
       "noProcessLinked": {
         "regularUser": "The document upload is not available for this case. Please contact an administrator",
         "adminRole": "The process for uploading documents has not been configured. Please configure this process on the case management page"
       },
-      "noZaakFound": "No files could be retrieved because no Zaak was for found for this case."
+      "navigateToCaseAdmin": "Configure Zaak",
+      "noZaakFoundTitle": "No Zaak found",
+      "noZaakFound": "No files could be retrieved because no Zaak was for found for this case.",
+      "noFilesTitle": "No files",
+      "noFiles": "No files found for this case."
     },
     "startSubProcess": "Start",
     "claimAssigneeCase": "Claim",
@@ -161,6 +171,9 @@
     "fillInMetadata": "File information",
     "cancel": "Cancel",
     "upload": "Upload",
+    "size": "Size",
+    "format": "File format",
+    "trefwoorden": "Keywords",
     "filename": "Filename",
     "filenameTooltip": "The name of the physical file in which the content of the document is captured, including extension",
     "confidentialityLevel": "Confidentiality level",
@@ -200,7 +213,27 @@
     "informatieobjecttypeTooltip": "A document type which is related to the zaak type of the current case",
     "additionalDate": "Additional document date",
     "additionalDateTooltip": "An additional date that can be added to the document as metadata. This additional date is optional. If 'Receipt date' is selected, the document status can only be set to 'definitive' or 'archived'.",
-    "noAdditionalDate": "No additional date"
+    "noAdditionalDate": "No additional date",
+    "delete": "Delete",
+    "download": "Download",
+    "application/octet-stream": "Unknown",
+    "application/json": "JSON",
+    "application/msword": "DOC",
+    "application/pdf": "PDF",
+    "application/vnd.ms-powerpoint": "PPT",
+    "application/vnd.ms-excel": "XLS",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": "PPTX",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "XLSX",
+    "audio/mpeg": "MP3",
+    "image/bmp": "BMP",
+    "image/gif": "GIF",
+    "image/jpeg": "JPEG",
+    "image/png": "PNG",
+    "image/svg+xml": "SVG",
+    "text/csv": "CSV",
+    "text/plain": "TXT",
+    "video/mp4": "MP4"
   },
   "summary": {
     "userTasksDoneState": "All done!",
@@ -263,8 +296,10 @@
     "task": {
       "title": "Task"
     },
-    "noDashboards": "No dashboards have been configured.",
-    "noWidgets": "No widgets have been configured for this dashboard."
+    "noDashboards": "No dashboards",
+    "noDashboardsDescription": "It's possible that the system administrator hasn't configured any dashboards yet, or you don't have the rights to view dashboards.",
+    "noWidgets": "No widgets",
+    "noWidgetsDescription": "There are no widgets configured for this dashboard, or you don't have the rights to view them."
   },
   "dashboardManagement": {
     "addDashboard": "Add new dashboard",
@@ -374,7 +409,15 @@
     },
     "interface": {
       "title": "Interface",
-      "collapsibleMenu": "Navigation bar always collapsible"
+      "themePreference": "Theme",
+      "themes": {
+        "light": "Light",
+        "dark": "Dark (Beta)",
+        "system": "System (Beta)"
+      },
+      "collapsibleMenu": "Navigation bar always collapsible",
+      "compactMode": "Compact mode",
+      "showUserName": "Show name of user"
     }
   },
   "decisions": {
@@ -408,7 +451,12 @@
     "delete": "Delete",
     "deploy": "Deploy",
     "duplicate": "Duplicate",
-    "readOnly": "Read-only"
+    "readOnly": "Read-only",
+    "tabs": {
+      "formBuilder": "Form builder",
+      "jsonEditor": "JSON editor",
+      "output": "Output"
+    }
   },
   "dossierManagement": {
     "version": "Version: ",
@@ -452,7 +500,8 @@
       "searchFields": "Search Fields",
       "listColumns": "List",
       "tabManagement": "Tabs",
-      "document": "Document"
+      "document": "Document",
+      "statuses": "Statuses"
     },
     "tabManagement": {
       "columns": {
@@ -500,6 +549,11 @@
     "importDefinition": {
       "title": "Import case definition",
       "overwriteWarning": "If your case definition contains configurations, models and/or definitions with the same name or identifier as already on your system, they will be overwritten.",
+      "startUpload": "Start upload",
+      "checkbox": {
+        "message": "I understand that configurations may be overwritten",
+        "error": "This field is mandatory"
+      },
       "info": {
         "title": "Attention",
         "message": "Before importing, please make sure the plugin configurations that are referenced in process links are present."
@@ -520,9 +574,58 @@
         "title": "The file contains an error."
       },
       "steps": {
-        "accessControl": "Don't forget to set the rights in Access Control. Without the proper rights your new case definition won't be accessible.",
-        "dashboard": "If you want widgets to appear on your dashboard, you'll have to manually configure these. Do this via 'dashboard configuration'",
-        "plugins": "This process may use plugins. Make sure you configure them correctly."
+        "accessControl": {
+          "message": "Don't forget to set the rights in Access Control. Without the proper rights your new case definition won't be accessible.",
+          "title": "Access control"
+        },
+        "dashboard": {
+          "message": "If you want widgets to appear on your dashboard, you'll have to manually configure these. Do this via 'dashboard configuration'",
+          "title": "Dashboard"
+        },
+        "plugins": {
+          "message": "This process may use plugins. Make sure you configure them correctly.",
+          "title": "Plugin Configuration"
+        }
+      }
+    },
+    "createDefinition": {
+      "idError": "This definition name is already in use. Please change to a unique name",
+      "modalTitle": "Create case definition",
+      "name": "Case definition name",
+      "namePlaceholder": "Case definition name will be auto-generated here",
+      "nameTooltip": "The name is used for the system names, $id etc. No spaces or special characters are allowed other than “-”.",
+      "title": "Case definition title",
+      "titlePlaceholder": "Enter title here",
+      "titleTooltip": "The title is used for the visible name of the case definition in the UI"
+    },
+    "documentDefinition": {
+      "cancelModal": {
+        "title": "Leaving the editor",
+        "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost. When saving, beware that removing or changing an attribute can break the case definition.",
+        "keepEditing": "Keep editing"
+      },
+      "saveModalContent": "Are you sure you want to save the Document definition? Removing or changing an attribute can break the case definition."
+    },
+    "statuses": {
+      "withoutStatus": "Show cases without a status",
+      "searchFieldTitle": "Status",
+      "add": "Add status",
+      "edit": "Edit status",
+      "visibleTitle": "Default visibility in case list",
+      "visible": "Visible",
+      "invisible": "Not visible",
+      "deleteText": "Are you sure you want to delete this status? This action cannot be undone.",
+      "keyAutoGenerated": "Key will be auto-generated",
+      "colorPlaceholder": "Choose a color",
+      "columns": {
+        "title": "Status name",
+        "key": "Status key",
+        "visible": "Visible by default",
+        "color": "Color"
+      },
+      "noResults": {
+        "title": "No statuses",
+        "description": "Add a status to start"
       }
     }
   },
@@ -555,7 +658,8 @@
     },
     "goToCase": "Go to case",
     "caseLocked": "You don't have access to this case",
-    "rowLocked": "You don't have access to this task"
+    "rowLocked": "You don't have access to this task",
+    "allCases": "All cases"
   },
   "Task": "Task",
   "Tasks": "Tasks",
@@ -584,6 +688,7 @@
   "Create new Form": "Create new Form",
   "Form Builder": "Form Builder",
   "Process links": "Process links",
+  "Translations": "Translations",
   "uploadFormDefinition": "Upload form definition",
   "Process migration": "Process migration",
   "Process migration warning": "<b>Warning:</b> When migrating a process, the candidate groups of running instances will not be updated. This can be done in the database if necessary. (For example if a specific user task is open for ROLE_USER and the candidate group for the user task is updated in the process to ROLE_ADMIN, this user task is still accessible for ROLE_USER. Only newly started processes will use the updated candidate group)",
@@ -622,7 +727,8 @@
     "readOnlySystemProcessWarningMessage": "This is a system process, so it is marked as read-only. This process can be used but not modified."
   },
   "processCaseConnection": {
-    "noProcesses": "There are no processes connected yet to this Case definition",
+    "noProcessesTitle": "No processes",
+    "noProcessesDescription": "There are no processes connected to this Case definition yet",
     "processCreatesCase": "Process creates new case",
     "processCreatesCaseTooltip": "When this option is selected, a new case is created when this process is started. For this to be possible, a start form must be linked to the first step in the process.",
     "startableWithinCase": "Can be started within existing case",
@@ -630,6 +736,14 @@
   },
   "openZaak": {
     "links": "Connected zaak type",
+    "documentenApi": {
+      "title": "Documenten API",
+      "documentenApiVersion": "The Documenten API plugin is using version",
+      "noVersionWarningTitle": "No Documents API plugin version detected",
+      "noVersionWarningMessage": "Please configure the Documents API plugin version and configure the upload process",
+      "multipleVersionsWarningTitle": "Multiple Documenten API plugins detected",
+      "multipleVersionsWarningMessage": "The upload process links to multiple Documenten APIs with different versions"
+    },
     "success": {
       "serviceTaskLinked": "Service task linked",
       "serviceTaskLinkUpdated": "Service task link updated",
@@ -645,8 +759,26 @@
     "autoCreateForCase": "Automatically create for each case",
     "selectZaakTypeForCase": "Select zaak type for case",
     "selectZaakType": "Select zaak type",
+    "selectZakenApiPluginForCase": "Select Zaken Api plugin for case",
+    "selectZakenApiPlugin": "Select Zaken Api plugin",
+    "zakenApiPlugin": "Zaken Api plugin",
+    "rsin": "RSIN used when creating the Zaak in the Zaken Api",
     "selectInfoObjectType": "Select information object type",
     "save": "Save"
+  },
+  "zaakdetails": {
+    "title": "Case detail synchronisation",
+    "enabled": "Enabled",
+    "yes": "Yes",
+    "no": "No",
+    "objectManagementConfigurationTitle": "Object management configuration",
+    "submitButton": "Configure case detail synchronisation",
+    "editModal": {
+      "title": "Add case detail synchronisation",
+      "objectManagementConfiguration": "Object management configuration",
+      "objectManagementConfigurationPlaceholder": "Select an object management configuration",
+      "enabled": "Enabled"
+    }
   },
   "interface": {
     "mainMenu": "Main menu",
@@ -680,6 +812,7 @@
     "deleteConfirmation": "Are you sure you want to delete?",
     "cancel": "Cancel",
     "close": "Close",
+    "discard": "Discard",
     "next": "Next",
     "skip": "Skip",
     "confirm": "Confirm",
@@ -706,7 +839,25 @@
     },
     "required": "required",
     "filter": "Filter...",
-    "back": "Back"
+    "back": "Back",
+    "warning": "Warning",
+    "finish": "Finish",
+    "add": "Add",
+    "tags": "Tags",
+    "tagType": {
+      "red": "Red",
+      "magenta": "Magenta",
+      "purple": "Purple",
+      "blue": "Blue",
+      "cyan": "Cyan",
+      "teal": "Teal",
+      "green": "Green",
+      "gray": "Gray",
+      "cool-gray": "Cool gray",
+      "warm-gray": "Warm gray",
+      "high-contrast": "High contrast",
+      "outline": "Outline"
+    }
   },
   "taskDetail": {
     "taskCreated": "Created",
@@ -1095,7 +1246,9 @@
     "configFile": "Config file",
     "dropdownListValues": "Dropdown list values",
     "id": "ID",
-    "text": "Text"
+    "text": "Text",
+    "noSearchfieldsTitle": "No search fields",
+    "noSearchfieldsDescription": "There are no search fields configured for this case type."
   },
   "searchFieldsOverviewTooltips": {
     "title": "The title is an optional field that appears as a label for the current search field. When the title is not set, the default value will be the search field key translation (if there is no translation available, the original key value will be displayed).",
@@ -1137,9 +1290,9 @@
     "sortableAsc": "Ascending",
     "sortableDesc": "Descending",
     "hasEnvConfigWarningTitle": "Case type already has a column configuration",
-    "hasEnvConfigWarning": "This case type already has a column configuration available in the environment configuration of the application. In order to enable configuring the columns for this case type through the user interface, remove this environment configuration.",
-    "noConfigWarningTitle": "No columns configured",
-    "noConfigWarning": "There are no columns configured for this dossier type. Click the button above to add a column.",
+    "hasEnvConfigWarning": "This case type already has a column configuration in the environment configuration. Delete this in order to add columns here.",
+    "noConfigWarningTitle": "No columns",
+    "noConfigWarning": "There are no columns configured for this case type.",
     "addButtonText": "Add column",
     "editColumnTitle": "Edit column",
     "close": "Close",
@@ -1162,7 +1315,8 @@
     "boolean": "Yes/no",
     "enum": "Enumeration",
     "arrayCount": "Count",
-    "underscoresToSpaces": "Underscores to spaces"
+    "underscoresToSpaces": "Underscores to spaces",
+    "tags": "Tags"
   },
   "object": {
     "title": "Objects",
@@ -1231,7 +1385,10 @@
     "Cancel": "Cancel",
     "Remove": "Remove",
     "Next": "Next",
-    "Previous": "Previous"
+    "Previous": "Previous",
+    "formioIbanComponent": {
+      "errorMessage": "Not a valid IBAN. Please enter a valid IBAN."
+    }
   },
   "viewTypeConverter": {
     "Yes": "Yes",
@@ -1305,5 +1462,47 @@
       "description": "Click on <strong>Add New Script</strong> to start designing your script",
       "title": "No Scripts Added"
     }
+  },
+  "translationManagement": {
+    "add": "Add translation",
+    "modalTitle": "Save translations",
+    "modalContent": "Displaying new translations in the application might require a page reload.",
+    "saveWithoutReload": "Save",
+    "saveWithReload": "Save and reload"
+  },
+  "caseMigration": {
+    "warningBeta": "Case migration is still in beta. Migrating cases might give unexpected results. Please use with care.",
+    "caseDefinition": "Case definition",
+    "sourceDocumentDefinitionName": "Source case definition name",
+    "sourceDocumentDefinitionVersion": "Source case definition version",
+    "targetDocumentDefinitionName": "Target case definition name",
+    "targetDocumentDefinitionVersion": "Target case definition version",
+    "patches": "Patches ",
+    "patchTooltip": "The old case can be migrated to the new case by using patches. Patches work by moving case properties from the source location to the target location. For example: source: '/oldLocation/firstName', target: '/newLocation/firstName'. A property can be removed by leaving the target empty. For example: source: '/gulden', target: ''. A property can be given a default value in the source field. For example, source: 'John', target: '/firstName'. A patch will always try to convert the type to the target type. For example, source: '/my/number', target: '/my/text'. A property can be set to [NULL] by using SpEL expressions. For example, source: '${null}', target: '/driversLicense'. A Spring bean can be called for more elaborate patches. For example, source: ${myBean.getAge(source.person.birthYear)}, target: '${myOtherBean.doMore(builder, sourceValue)}'",
+    "patchSource": "Source case field",
+    "patchTarget": "Target case field",
+    "errors": "Errors",
+    "checkPatches": "Verify patches",
+    "migrate": "Migrate cases",
+    "modalTitle": "Migrate cases",
+    "modalContent": "Are you sure you migrate the cases? Some changes can not be undone."
+  },
+  "formFlow": {
+    "title": "All form flows",
+    "key": "Key",
+    "version": "Version",
+    "readOnly": "Read only",
+    "add": "Add new form flow",
+    "deleteModalContent": "Are you sure you want to delete this form flow?",
+    "savedSuccessTitle": "Saved successfully",
+    "savedSuccessTitleMessage": "{{key}} was saved successfully",
+    "noResults": {
+      "description": "Click <strong>Add new form flow</strong> to start designing your form flow",
+      "title": "No form flows added"
+    }
+  },
+  "taskManagement": {
+    "columns": "Columns",
+    "caseName": "Case name"
   }
 }

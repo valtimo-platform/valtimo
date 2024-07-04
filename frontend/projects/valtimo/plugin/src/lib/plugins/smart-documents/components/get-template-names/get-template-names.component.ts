@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
-import {GetTemplateNamesConfig, } from "../../models";
-import {FunctionConfigurationComponent} from "../../../../models"
+import {GetTemplateNamesConfig} from '../../models';
+import {FunctionConfigurationComponent} from '../../../../models';
 @Component({
   selector: 'valtimo-get-template-names',
   templateUrl: './get-template-names.component.html',
@@ -32,7 +32,6 @@ export class GetTemplateNamesComponent
   @Output() configuration: EventEmitter<GetTemplateNamesConfig> =
     new EventEmitter<GetTemplateNamesConfig>();
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-
 
   private readonly formValue$ = new BehaviorSubject<GetTemplateNamesConfig | null>(null);
   private saveSubscription!: Subscription;
@@ -52,7 +51,9 @@ export class GetTemplateNamesComponent
   }
 
   private handleValid(formValue: GetTemplateNamesConfig): void {
-    const valid = !!(formValue.templateGroupName);
+    const valid = !!(
+      formValue.templateGroupName && formValue.resultingTemplateNameListProcessVariableName
+    );
 
     this.valid$.next(valid);
     this.valid.emit(valid);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,8 @@ export * from './lib/config.module';
 export * from './lib/constants';
 export * from './lib/extension/extension.component';
 export * from './lib/models';
-export * from './lib/services/config.service';
-export * from './lib/services/menu-include.service';
-export * from './lib/services/user-settings.service';
-export * from './lib/translation/multi-translate-http-loader-factory';
+export * from './lib/services';
+export * from './lib/translation';
 export * from './lib/utils';
 export * from './lib/testing';
+export * from './lib/zgw';

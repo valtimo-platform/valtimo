@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {ConnectorProperties} from '@valtimo/config';
 
+/**
+ * @deprecated Use the new plugin framework
+ */
 @Component({
   selector: 'valtimo-edit-connector-form',
   templateUrl: './edit-connector-form.component.html',

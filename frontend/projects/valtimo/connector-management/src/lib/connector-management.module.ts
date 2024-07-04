@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,9 @@ import {EditConnectorFormComponent} from './components/edit-connector-form/edit-
 import {EditTaakConnectorComponent} from './components/edit-taak-connector/edit-taak-connector.component';
 import {AddConnectorConfigureComponent} from './components/add-connector-configure/add-connector-configure.component';
 
+/**
+ * @deprecated Use the new plugin framework
+ */
 @NgModule({
   providers: [ConnectorManagementStateService],
   declarations: [

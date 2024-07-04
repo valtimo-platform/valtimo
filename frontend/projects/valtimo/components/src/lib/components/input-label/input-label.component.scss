@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,10 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-block-end: var(--v-input-title-margin);
 }
 
 .v-input-label-container--large-margin {
-  margin-block-end: var(--v-input-title-margin-large);
+  margin-block-end: var(--v-input-title-margin);
 }
 
 .v-input-label {

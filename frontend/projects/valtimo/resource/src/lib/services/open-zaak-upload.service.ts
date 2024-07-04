@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,9 @@ export class OpenZaakUploadService implements UploadService {
 
   checkUploadProcessLink(caseDefinitionKey: string): Observable<boolean> {
     return this.http
-      .get<{processCaseLinkExists: boolean}>(
+      .get<{
+        processCaseLinkExists: boolean;
+      }>(
         `${this.valtimoApiConfig.endpointUri}v1/uploadprocess/case/${caseDefinitionKey}/check-link`
       )
       .pipe(map(res => res.processCaseLinkExists));

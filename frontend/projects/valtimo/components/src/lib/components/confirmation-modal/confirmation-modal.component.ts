@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,45 +23,57 @@ import {BehaviorSubject, Observable, Subscription} from 'rxjs';
   styleUrls: ['./confirmation-modal.component.scss'],
 })
 export class ConfirmationModalComponent implements OnInit, OnDestroy {
-  @Input() titleTranslationKey = '';
-  @Input() title = '';
-  @Input() content = '';
-  @Input() contentTranslationKey = '';
-  @Input() confirmButtonText = '';
-  @Input() confirmButtonTextTranslationKey = '';
-  @Input() confirmButtonType = ModalButtonType.primary;
-  @Input() cancelButtonText = '';
-  @Input() cancelButtonTextTranslationKey = '';
-  @Input() cancelButtonType = ModalButtonType.secondary;
-  @Input() showModalSubject$: Observable<boolean>;
-  @Input() outputOnConfirm: any = {};
+  @Input() public titleTranslationKey = '';
+  @Input() public title = '';
+  @Input() public content = '';
+  @Input() public contentTranslationKey = '';
+  @Input() public confirmButtonText = '';
+  @Input() public confirmButtonTextTranslationKey = '';
+  @Input() public confirmButtonType = ModalButtonType.primary;
+  @Input() public showOptionalButton = false;
+  @Input() public optionalButtonText = '';
+  @Input() public optionalButtonTextTranslationKey = '';
+  @Input() public optionalButtonType = ModalButtonType.tertiary;
+  @Input() public cancelButtonText = '';
+  @Input() public cancelButtonTextTranslationKey = '';
+  @Input() public cancelButtonType = ModalButtonType.secondary;
+  @Input() public showModalSubject$: Observable<boolean>;
+  @Input() public outputOnConfirm: any = {};
+  @Input() public outputOnOptional: any = {};
+  @Input() public spacerAfterCancelButton = false;
 
-  @Output() confirmEvent: EventEmitter<any> = new EventEmitter();
-  @Output() cancelEvent: EventEmitter<void> = new EventEmitter();
+  @Output() public confirmEvent = new EventEmitter<any>();
+  @Output() public optionalEvent = new EventEmitter<void>();
+  @Output() public cancelEvent = new EventEmitter<void>();
 
-  readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
 
-  private showModalSubscription!: Subscription;
+  private _showModalSubscription!: Subscription;
 
-  closeModal(): void {
-    this.modalOpen$.next(false);
-    this.cancelEvent.emit();
-  }
-
-  confirm(): void {
-    this.modalOpen$.next(false);
-    this.confirmEvent.emit(this.outputOnConfirm);
-  }
-
-  ngOnInit(): void {
+  public ngOnInit(): void {
     if (this.showModalSubject$) {
-      this.showModalSubscription = this.showModalSubject$.subscribe(showModal => {
+      this._showModalSubscription = this.showModalSubject$.subscribe(showModal => {
         this.modalOpen$.next(showModal);
       });
     }
   }
 
-  ngOnDestroy(): void {
-    this.showModalSubscription?.unsubscribe();
+  public ngOnDestroy(): void {
+    this._showModalSubscription?.unsubscribe();
+  }
+
+  public closeModal(): void {
+    this.modalOpen$.next(false);
+    this.cancelEvent.emit();
+  }
+
+  public onConfirm(): void {
+    this.modalOpen$.next(false);
+    this.confirmEvent.emit(this.outputOnConfirm);
+  }
+
+  public onOptional(): void {
+    this.modalOpen$.next(false);
+    this.optionalEvent.emit(this.outputOnOptional);
   }
 }

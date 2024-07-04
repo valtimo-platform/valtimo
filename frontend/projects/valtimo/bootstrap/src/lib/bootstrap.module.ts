@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@
 import {APP_INITIALIZER, Injector, NgModule} from '@angular/core';
 import {NGXLogger} from 'ngx-logger';
 import {initialize, initializerFactory} from './init';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService, INITIALIZERS} from '@valtimo/config';
 import {TranslateService} from '@ngx-translate/core';
-import {INITIALIZERS} from '@valtimo/config';
+import {initializeCsp} from '@valtimo/security';
+import {DOCUMENT} from '@angular/common';
+import {DomSanitizer} from '@angular/platform-browser';
 
 @NgModule({
   declarations: [],
@@ -35,6 +37,12 @@ import {INITIALIZERS} from '@valtimo/config';
       provide: INITIALIZERS,
       useFactory: initializerFactory,
       deps: [ConfigService, Injector, NGXLogger, TranslateService],
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeCsp,
+      multi: true,
+      deps: [NGXLogger, ConfigService, DOCUMENT, DomSanitizer],
     },
   ],
   exports: [],

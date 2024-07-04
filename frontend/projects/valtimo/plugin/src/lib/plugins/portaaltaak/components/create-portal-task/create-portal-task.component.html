@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -110,5 +110,15 @@
     [disabled]="obs.disabled"
     [tooltip]="'identificationValueTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
+  ></v-input>
+  <v-input
+    name="verloopDurationInDays"
+    [type]="'number'"
+    [title]="'verloopDurationInDays' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.verloopDurationInDays?.toString()"
+    [disabled]="obs.disabled"
+    [tooltip]="'verloopDurationInDaysTooltip' | pluginTranslate: pluginId | async"
+    [required]="false"
   ></v-input>
 </v-form>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, ElementRef, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
+import {Component, ElementRef, EventEmitter, Output, ViewChild} from '@angular/core';
 import {ProcessManagementService} from '../process-management.service';
 import {AlertService} from '@valtimo/components';
 
@@ -23,7 +23,7 @@ import {AlertService} from '@valtimo/components';
   templateUrl: './process-management-upload.component.html',
   styleUrls: ['./process-management-upload.component.scss'],
 })
-export class ProcessManagementUploadComponent implements OnInit {
+export class ProcessManagementUploadComponent {
   public bpmn: File | null = null;
   @Output() reload = new EventEmitter();
   @ViewChild('bpmnFile') bpmnFile: ElementRef;
@@ -32,8 +32,6 @@ export class ProcessManagementUploadComponent implements OnInit {
     private processManagementService: ProcessManagementService,
     private alertService: AlertService
   ) {}
-
-  ngOnInit() {}
 
   onChange(files: FileList): void {
     this.bpmn = files.item(0);

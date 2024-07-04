@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,23 @@ td:first-child {
   padding-left: 25px;
 }
 
+::ng-deep tr:has(> td .locked) {
+  cursor: not-allowed;
+
+  td {
+    color: var(--cds-text-on-color-disabled);
+  }
+}
+
 .valtimo-carbon-list {
+  ::ng-deep &__header--hidden thead {
+    display: none;
+  }
+
+  ::ng-deep &--unclickable tr {
+    cursor: default;
+  }
+
   &__toolbar:empty {
     display: none;
   }
@@ -52,11 +68,37 @@ td:first-child {
     }
   }
 
+  &__move-rows {
+    width: 100%;
+    justify-content: flex-end;
+    display: flex;
+    flex-direction: row;
+    position: relative;
+
+    button:not(:last-child) {
+      margin-right: 8px;
+    }
+  }
+
+  &__expand-tag {
+    cursor: pointer;
+  }
+
   label {
     margin-bottom: 0 !important;
   }
-}
 
-.disabled {
-  cursor: not-allowed;
+  ::ng-deep .tag-template {
+    .cds--tag {
+      margin: 0;
+
+      svg {
+        fill: var(--cds-background);
+      }
+    }
+
+    & > *:not(:last-child) {
+      margin-right: 8px;
+    }
+  }
 }

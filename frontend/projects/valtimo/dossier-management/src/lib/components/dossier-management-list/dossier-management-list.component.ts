@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,18 @@
  */
 import {Component} from '@angular/core';
 import {Router} from '@angular/router';
-import {Upload16} from '@carbon/icons';
+import {Search20, TrashCan20, Upload16} from '@carbon/icons';
 import {ColumnConfig, MenuService, Pagination, ViewType} from '@valtimo/components';
-import {DocumentDefinition, DocumentService, Page} from '@valtimo/document';
+import {
+  DocumentDefinition,
+  DocumentService,
+  Page,
+  TemplatePayload,
+  CreateDocumentDefinitionResponse,
+} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import moment from 'moment';
-import {BehaviorSubject, map, Observable, switchMap} from 'rxjs';
+import {BehaviorSubject, map, Observable, switchMap, take} from 'rxjs';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -63,7 +69,8 @@ export class DossierManagementListComponent {
     {key: 'readOnly', label: 'fieldLabels.readOnly', viewType: ViewType.BOOLEAN},
   ];
 
-  public readonly showModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showCreateModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showUploadModal$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private readonly documentService: DocumentService,
@@ -71,17 +78,31 @@ export class DossierManagementListComponent {
     private readonly menuService: MenuService,
     private readonly router: Router
   ) {
-    this.iconService.registerAll([Upload16]);
+    this.iconService.registerAll([Search20, TrashCan20, Upload16]);
   }
 
-  public onCloseModal(definitionUploaded: boolean): void {
-    this.showModal$.next(false);
+  public onCloseUploadModal(definitionUploaded: boolean): void {
+    this.showUploadModal$.next(false);
 
     if (!definitionUploaded) {
       return;
     }
     this._refreshData$.next(null);
     this.menuService.reload();
+  }
+
+  public onCloseCreateModal(templatePayload: TemplatePayload | null): void {
+    this.showCreateModal$.next(false);
+    if (!templatePayload) {
+      return;
+    }
+
+    this.documentService
+      .createDocumentDefinitionTemplate(templatePayload)
+      .pipe(take(1))
+      .subscribe((response: CreateDocumentDefinitionResponse) => {
+        this.redirectToDetails(response.documentDefinition);
+      });
   }
 
   public paginationClicked(page: number): void {
@@ -98,7 +119,11 @@ export class DossierManagementListComponent {
     this.router.navigate(['/dossier-management/dossier', documentDefinition.id.name]);
   }
 
-  public showModal(): void {
-    this.showModal$.next(true);
+  public showUploadModal(): void {
+    this.showUploadModal$.next(true);
+  }
+
+  public showCreateModal(): void {
+    this.showCreateModal$.next(true);
   }
 }

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -15,17 +15,14 @@
   -->
 
 <div class="col-12 px-0 mb-5">
-  <valtimo-widget *ngIf="documentDefinition$ | async">
+  <valtimo-widget>
     <div class="row pt-4 mb-5 pb-4 pl-2 pr-2">
       <div class="col-10 offset-1">
-        <valtimo-dossier-management-link-process></valtimo-dossier-management-link-process>
+        <ng-template #extensions></ng-template>
 
-        <valtimo-extension
-          module="dossier-management"
-          page="dossier"
-          section="right-panel"
-        ></valtimo-extension>
-        <valtimo-dossier-management-assignee></valtimo-dossier-management-assignee>
+        <valtimo-dossier-management-assignee
+          *ngIf="documentDefinition$ | async"
+        ></valtimo-dossier-management-assignee>
       </div>
     </div>
   </valtimo-widget>

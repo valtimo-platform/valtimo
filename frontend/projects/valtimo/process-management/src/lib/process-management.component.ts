@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, ViewChild} from '@angular/core';
 import {ProcessManagementListComponent} from './process-management-list/process-management-list.component';
 
 @Component({
@@ -22,10 +22,6 @@ import {ProcessManagementListComponent} from './process-management-list/process-
   templateUrl: './process-management.component.html',
   styleUrls: ['./process-management.component.scss'],
 })
-export class ProcessManagementComponent implements OnInit {
+export class ProcessManagementComponent {
   @ViewChild('processManagementList') processManagementList: ProcessManagementListComponent;
-
-  constructor() {}
-
-  ngOnInit() {}
 }

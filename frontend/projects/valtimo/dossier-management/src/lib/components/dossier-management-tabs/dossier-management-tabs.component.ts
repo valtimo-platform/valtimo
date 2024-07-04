@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,13 @@ import {
 } from '@angular/core';
 import {ArrowDown16, ArrowUp16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {ColumnConfig, ViewType} from '@valtimo/components';
+import {
+  ActionItem,
+  ColumnConfig,
+  MoveRowDirection,
+  MoveRowEvent,
+  ViewType,
+} from '@valtimo/components';
 import {ApiTabItem} from '@valtimo/dossier';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, map, Observable, tap} from 'rxjs';
@@ -56,6 +62,13 @@ export class DossierManagementTabsComponent implements AfterViewInit {
     return this._documentDefinitionName;
   }
 
+  public actionItems: ActionItem[] = [
+    {
+      label: 'interface.delete',
+      callback: this.openDeleteConfirmationModal.bind(this),
+      type: 'danger',
+    },
+  ];
   public readonly deleteRowKey$ = new BehaviorSubject<string | null>(null);
   public readonly showDeleteModal$: Observable<boolean> = this.deleteRowKey$.pipe(
     map((key: string | null) => !!key)
@@ -110,26 +123,6 @@ export class DossierManagementTabsComponent implements AfterViewInit {
         key: '',
         label: 'dossierManagement.tabManagement.columns.content',
       },
-      {
-        className: 'valtimo-dossier-management-tabs__actions',
-        key: '',
-        label: '',
-        template: this.moveButtonsTemplate,
-        viewType: ViewType.TEMPLATE,
-      },
-      {
-        actions: [
-          {
-            label: 'interface.delete',
-            callback: this.openDeleteConfirmationModal.bind(this),
-            type: 'danger',
-          },
-        ],
-        className: 'valtimo-dossier-management-tabs__actions',
-        key: '',
-        label: '',
-        viewType: ViewType.ACTION,
-      },
     ]);
 
     this.cd.detectChanges();
@@ -139,10 +132,11 @@ export class DossierManagementTabsComponent implements AfterViewInit {
     return this.translateService.instant(key) !== key;
   }
 
-  public onArrowClick(direction: 'UP' | 'DOWN', index: number, event: Event): void {
-    event.stopImmediatePropagation();
+  public onMoveRowClick(event: MoveRowEvent): void {
+    const {direction, index} = event;
+
     const orderedTabs: ApiTabItem[] =
-      direction === 'UP'
+      direction === MoveRowDirection.UP
         ? this.swapTabs(this._tabs, index - 1, index)
         : this.swapTabs(this._tabs, index, index + 1);
 

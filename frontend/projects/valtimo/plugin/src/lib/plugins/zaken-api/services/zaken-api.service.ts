@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import {Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {ConfigService} from '@valtimo/config';
 import {ResultaatType, StatusType} from '../models';
+import {Eigenschap} from '../models/eigenschap';
 
 @Injectable({
   providedIn: 'root',
@@ -44,6 +45,14 @@ export class ZakenApiService {
   ): Observable<Array<ResultaatType>> {
     return this.http.get<Array<ResultaatType>>(
       `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionId}/zaaktype/resultaattype`
+    );
+  }
+
+  public getEigenschappenByCaseDefinition(
+    caseDefinitionName: string
+  ): Observable<Array<Eigenschap>> {
+    return this.http.get<Array<Eigenschap>>(
+      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionName}/catalogi-eigenschappen`
     );
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, OnDestroy} from '@angular/core';
 import {BehaviorSubject, combineLatest, map, Observable, of, Subject, throwError} from 'rxjs';
 import {catchError, finalize, switchMap, take, tap} from 'rxjs/operators';
 import {ObjectService} from '../../../../services/object.service';
@@ -31,7 +31,7 @@ import {ObjectManagementService} from '@valtimo/object-management';
   templateUrl: './object-detail.component.html',
   styleUrls: ['./object-detail.component.scss'],
 })
-export class ObjectDetailComponent {
+export class ObjectDetailComponent implements OnDestroy {
   readonly loading$ = new BehaviorSubject<boolean>(true);
   readonly submission$ = new BehaviorSubject<any>({});
   readonly formValid$ = new BehaviorSubject<boolean>(false);
@@ -112,6 +112,10 @@ export class ObjectDetailComponent {
     private readonly breadcrumbService: BreadcrumbService,
     private readonly objectManagementService: ObjectManagementService
   ) {}
+
+  public ngOnDestroy(): void {
+    this.breadcrumbService.clearSecondBreadcrumb();
+  }
 
   saveObject(): void {
     this.disableInput();

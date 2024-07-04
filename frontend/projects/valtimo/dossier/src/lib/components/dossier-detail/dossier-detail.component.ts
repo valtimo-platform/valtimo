@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,16 +25,23 @@ import {
 } from '@angular/core';
 import {ActivatedRoute, ParamMap, Params, Router} from '@angular/router';
 import {PermissionService} from '@valtimo/access-control';
-import {BreadcrumbService} from '@valtimo/components';
+import {BreadcrumbService, PageHeaderService, PageTitleService} from '@valtimo/components';
 import {ConfigService} from '@valtimo/config';
-import {Document, DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
+import {
+  CaseStatusService,
+  Document,
+  DocumentService,
+  InternalCaseStatus,
+  InternalCaseStatusUtils,
+  ProcessDocumentDefinition,
+} from '@valtimo/document';
 import {KeycloakService} from 'keycloak-angular';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
   combineLatest,
-  from,
+  filter,
   map,
   Observable,
   of,
@@ -51,11 +58,13 @@ import {
   DOSSIER_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
 import {DossierService, DossierTabService} from '../../services';
+import {IconService} from 'carbon-components-angular';
+import {ChevronDown16} from '@carbon/icons';
 
 @Component({
   selector: 'valtimo-dossier-detail',
   templateUrl: './dossier-detail.component.html',
-  styleUrls: ['./dossier-detail.component.css'],
+  styleUrls: ['./dossier-detail.component.scss'],
   providers: [DossierTabService],
 })
 export class DossierDetailComponent implements AfterViewInit, OnDestroy {
@@ -76,6 +85,12 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
 
   public readonly assigneeId$ = new BehaviorSubject<string>('');
 
+  private readonly _caseStatusKey$ = new BehaviorSubject<string | null | 'NOT_AVAILABLE'>(null);
+
+  public readonly caseStatusKey$: Observable<string | 'NOT_AVAILABLE'> = this._caseStatusKey$.pipe(
+    filter(key => !!key)
+  );
+
   public readonly document$: Observable<Document | null> =
     this.dossierService.refreshDocument$.pipe(
       switchMap(() => this.route.params),
@@ -87,6 +102,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
         if (document) {
           this.assigneeId$.next(document.assigneeId);
           this.document = document;
+          this._caseStatusKey$.next(document?.internalStatus || 'NOT_AVAILABLE');
 
           if (
             this.configService.config.customDossierHeader?.hasOwnProperty(
@@ -106,7 +122,28 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     map(params => params.documentDefinitionName || '')
   );
 
-  public readonly userId$: Observable<string | undefined> = from(
+  public readonly caseStatus$: Observable<InternalCaseStatus | undefined> =
+    this.documentDefinitionName$.pipe(
+      filter(documentDefinitionName => !!documentDefinitionName),
+      switchMap(documentDefinitionName =>
+        combineLatest([
+          this.caseStatusService.getInternalCaseStatuses(documentDefinitionName),
+          this.caseStatusKey$,
+        ])
+      ),
+      map(
+        ([statuses, key]) => key !== 'NOT_AVAILABLE' && statuses.find(status => status?.key === key)
+      ),
+      map(
+        status =>
+          status && {
+            ...status,
+            tagType: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
+          }
+      )
+    );
+
+  public readonly userId$: Observable<string | undefined> = of(
     this.keyCloakService.isLoggedIn()
   ).pipe(
     switchMap(() => this.keyCloakService.loadUserProfile()),
@@ -154,6 +191,8 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
   public readonly loadingTabs$ = new BehaviorSubject<boolean>(true);
   public readonly noTabsConfigured$ = new BehaviorSubject<boolean>(false);
 
+  public readonly compactMode$ = this.pageHeaderService.compactMode$;
+
   private _snapshot: ParamMap;
   private _initialTabName: string;
 
@@ -169,7 +208,11 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly dossierTabService: DossierTabService,
-    private readonly dossierService: DossierService
+    private readonly dossierService: DossierService,
+    private readonly caseStatusService: CaseStatusService,
+    private readonly pageTitleService: PageTitleService,
+    private readonly iconService: IconService,
+    private readonly pageHeaderService: PageHeaderService
   ) {
     this._snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this._snapshot.get('documentDefinitionName') || '';
@@ -180,19 +223,20 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     this.initTabLoader();
     this.initBreadcrumb();
     this.getAllAssociatedProcessDefinitions();
+    this.pageTitleService.disableReset();
+    this.iconService.registerAll([ChevronDown16]);
   }
 
   public ngOnDestroy(): void {
     this.breadcrumbService.clearSecondBreadcrumb();
+    this.pageTitleService.enableReset();
   }
 
   public getAllAssociatedProcessDefinitions(): void {
     this.documentService
-      .findProcessDocumentDefinitions(this.documentDefinitionName)
+      .findProcessDocumentDefinitionsByStartableByUser(this.documentDefinitionName, true)
       .subscribe((processDocumentDefinitions: ProcessDocumentDefinition[]) => {
-        this.processDocumentDefinitions = processDocumentDefinitions.filter(
-          processDocumentDefinition => processDocumentDefinition.startableByUser
-        );
+        this.processDocumentDefinitions = processDocumentDefinitions;
 
         this.processDefinitionListFields = [
           {
@@ -225,6 +269,28 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
         error: (): void => {
           this.isAssigning$.next(false);
           this.logger.debug('Something went wrong while assigning user to case');
+        },
+      });
+  }
+
+  public unassignAssignee(): void {
+    this.isAssigning$.next(true);
+
+    this.userId$
+      .pipe(
+        take(1),
+        switchMap((userId: string | undefined) =>
+          this.documentService.unassignHandlerFromDocument(this.documentId)
+        )
+      )
+      .subscribe({
+        next: (): void => {
+          this.isAssigning$.next(false);
+          this.dossierService.refresh();
+        },
+        error: (): void => {
+          this.isAssigning$.next(false);
+          this.logger.debug('Something went wrong while unassigning user from case');
         },
       });
   }
@@ -278,8 +344,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
 
   private getStringFromDocumentPath(item, path): string {
     const prefix = item['propertyPaths'].indexOf(path) > 0 ? ' ' : '';
-    let string =
-      path.split('.').reduce((o, i) => o[i], this.document?.content) || item['noValueText'] || '';
+    let string = this.getNestedProperty(this.document.content, path, item['noValueText']) || '';
     const dateFormats = [moment.ISO_8601, 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD'];
     switch (item['modifier']) {
       case 'age': {
@@ -295,6 +360,12 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
       }
     }
     return prefix + string;
+  }
+
+  private getNestedProperty(obj: any, path: string, defaultValue: any): any {
+    return (
+      path.split('.').reduce((currentObject, key) => currentObject?.[key], obj) || defaultValue
+    );
   }
 
   private setBreadcrumb(): void {

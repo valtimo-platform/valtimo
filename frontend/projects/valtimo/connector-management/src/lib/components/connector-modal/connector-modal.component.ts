@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,9 @@ import {ConnectorManagementStateService} from '../../services/connector-manageme
 import {take} from 'rxjs/operators';
 import {VModalComponent, ModalService} from '@valtimo/components';
 
+/**
+ * @deprecated Use the new plugin framework
+ */
 @Component({
   selector: 'valtimo-connector-modal',
   templateUrl: './connector-modal.component.html',

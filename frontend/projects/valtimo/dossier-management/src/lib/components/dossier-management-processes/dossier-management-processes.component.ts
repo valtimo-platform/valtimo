@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import {Component, ViewChild} from '@angular/core';
 import {ActivatedRoute, ParamMap} from '@angular/router';
 import {Link16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {ColumnConfig, ViewType} from '@valtimo/components';
+import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
 import {DocumentDefinition, DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
 import {IconService, NotificationService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable, switchMap} from 'rxjs';
@@ -54,6 +54,13 @@ export class DossierManagementProcessesComponent {
     )
   );
 
+  public readonly actionItems: ActionItem[] = [
+    {
+      label: 'dossierManagement.unlinkProcess',
+      callback: this.deleteProcessDocumentDefinition.bind(this),
+      type: 'danger',
+    },
+  ];
   public readonly fields: ColumnConfig[] = [
     {
       key: 'processName',
@@ -69,19 +76,6 @@ export class DossierManagementProcessesComponent {
       key: 'startableByUser',
       label: 'processCaseConnection.startableWithinCase',
       viewType: ViewType.BOOLEAN,
-    },
-    {
-      key: '',
-      label: '',
-      viewType: ViewType.ACTION,
-      className: 'dossier-management-processes_actions',
-      actions: [
-        {
-          label: 'dossierManagement.unlinkProcess',
-          callback: this.deleteProcessDocumentDefinition.bind(this),
-          type: 'danger',
-        },
-      ],
     },
   ];
 

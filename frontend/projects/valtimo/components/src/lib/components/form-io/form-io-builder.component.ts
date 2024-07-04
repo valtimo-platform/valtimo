@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
  */
 
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {Components} from '@formio/angular';
-import {distinctUntilChanged, map} from 'rxjs/operators';
-import {Observable} from 'rxjs';
+import {Components} from 'formiojs';
+import {delay, distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {FormioOptions} from '@formio/angular/formio.common';
 import {FormIoStateService} from './services/form-io-state.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'valtimo-form-io-builder',
@@ -53,7 +53,9 @@ export class FormioBuilderComponent implements OnInit {
 
       this.triggerRebuild.emit(options);
       return options;
-    })
+    }),
+    delay(1000),
+    tap((options) => this.triggerRebuild.emit(options))
   );
 
   constructor(

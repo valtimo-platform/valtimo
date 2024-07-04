@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-// This file can be replaced during build by using the `fileReplacements` array.
-// `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
-// The list of file replacements can be found in `angular.json`.
 import {NgxLoggerLevel} from 'ngx-logger';
 import {
   DefinitionColumn,
@@ -31,9 +28,13 @@ import {
   ValtimoConfig,
 } from '@valtimo/config';
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
-import {emailExtensionInitializer, openZaakExtensionInitializer} from '@valtimo/open-zaak';
-import {connectorLinkExtensionInitializer} from '@valtimo/connector-management';
-import {LOGO_BASE_64} from './logo';
+import {
+  DARK_MODE_LOGO_BASE_64,
+  DARK_MODE_LOGO_BASE_64_PNG,
+  LOGO_BASE_64,
+  LOGO_BASE_64_PNG,
+} from './logo';
+import {cspHeaderParamsDev} from './csp';
 
 const defaultDefinitionColumns: Array<DefinitionColumn> = [
   {
@@ -68,13 +69,11 @@ const defaultDefinitionColumns: Array<DefinitionColumn> = [
 
 export const environment: ValtimoConfig = {
   logoSvgBase64: LOGO_BASE_64,
+  darkModeLogoSvgBase64: DARK_MODE_LOGO_BASE_64,
+  logoPngBase64: LOGO_BASE_64_PNG,
+  darkModeLogoPngBase64: DARK_MODE_LOGO_BASE_64_PNG,
   applicationTitle: '',
   production: false,
-  initializers: [
-    openZaakExtensionInitializer,
-    emailExtensionInitializer,
-    connectorLinkExtensionInitializer,
-  ],
   authentication: authenticationKeycloak,
   menu: {
     menuItems: [
@@ -122,23 +121,26 @@ export const environment: ValtimoConfig = {
           {title: 'Basics', textClass: 'text-dark font-weight-bold c-default', sequence: 1},
           {link: ['/processes'], title: 'Processes', sequence: 2},
           {link: ['/form-management'], title: 'Forms', sequence: 3},
-          {link: ['/script'], title: 'Scripts', sequence: 4},
-          {link: ['/decision-tables'], title: 'Decision tables', sequence: 5},
-          {link: ['/dossier-management'], title: 'Dossiers', sequence: 6},
+          {link: ['/form-flow-management'], title: 'Form Flows', sequence: 4},
+          {link: ['/script'], title: 'Scripts', sequence: 5},
+          {link: ['/decision-tables'], title: 'Decision tables', sequence: 6},
+          {link: ['/dossier-management'], title: 'Dossiers', sequence: 7},
+          {link: ['/task-management'], title: 'Tasks', sequence: 8},
           {
             link: ['/object-management'],
             title: 'Objects',
-            sequence: 7,
+            sequence: 9,
             includeFunction: IncludeFunction.ObjectManagementEnabled,
           },
-          {link: ['/connectors'], title: 'Connectors', sequence: 8},
-          {link: ['/plugins'], title: 'Plugins', sequence: 9},
-          {link: ['/process-links'], title: 'Process links', sequence: 10},
-          {link: ['/dashboard-management'], title: 'Dashboard configuration', sequence: 11},
-          {link: ['/access-control'], title: 'Access Control', sequence: 12},
-          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 13},
-          {link: ['/process-migration'], title: 'Process migration', sequence: 14},
-          {link: ['/choice-fields'], title: 'Choice fields', sequence: 15},
+          {link: ['/plugins'], title: 'Plugins', sequence: 10},
+          {link: ['/process-links'], title: 'Process links', sequence: 11},
+          {link: ['/dashboard-management'], title: 'Dashboard', sequence: 12},
+          {link: ['/access-control'], title: 'Access Control', sequence: 13},
+          {link: ['/translation-management'], title: 'Translations', sequence: 14},
+          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 15},
+          {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 16},
+          {link: ['/process-migration'], title: 'Process migration', sequence: 17},
+          {link: ['/choice-fields'], title: 'Choice fields', sequence: 18},
         ],
       },
       {
@@ -197,6 +199,8 @@ export const environment: ValtimoConfig = {
       },
     ],
   },
+  caseFileUploadAcceptedFiles:
+    'image/png, image/jpeg, text/plain, application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/xml',
   visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.OPEN, TaskListTab.ALL],
   visibleDossierListTabs: [DossierListTab.ALL, DossierListTab.MINE, DossierListTab.OPEN],
   customTaskList: {
@@ -217,7 +221,7 @@ export const environment: ValtimoConfig = {
         sortable: true,
       },
       {
-        propertyName: 'assignee',
+        propertyName: 'valtimoAssignee.fullName',
         translationKey: 'valtimoAssignee.fullName',
       },
     ],
@@ -238,17 +242,18 @@ export const environment: ValtimoConfig = {
     leningen: ['Boom', 'Straatverlichting'],
   },
   featureToggles: {
-    disableFormFlow: false,
     enableHackathonCasesPage: true,
     showUserNameInTopBar: true,
     showPlantATreeButton: true,
     experimentalDmnEditing: true,
-    caseListColumn: true,
     largeLogoMargin: true,
     sortFilesByDate: true,
     disableCaseCount: false,
-    enableObjectManagement: true,
     returnToLastUrlAfterTokenExpiration: true,
+    useStartEventNameAsStartFormTitle: true,
+    allowUserThemeSwitching: true,
+    enableCompactModeToggle: true,
+    enableUserNameInTopBarToggle: true,
     enableTabManagement: true,
   },
   customDossierHeader: {
@@ -259,6 +264,15 @@ export const environment: ValtimoConfig = {
         textSize: 'sm',
       },
     ],
+  },
+  csp: cspHeaderParamsDev,
+  formioOptions: {
+    languageOverride: {
+      'en-US': {
+        decimalSeparator: ':',
+        delimiter: ':',
+      },
+    },
   },
 };
 

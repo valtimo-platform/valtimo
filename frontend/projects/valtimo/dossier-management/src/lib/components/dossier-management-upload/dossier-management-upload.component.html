@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -18,24 +18,22 @@
   *ngIf="{
     activeStep: activeStep$ | async,
     backButtonEnabled: backButtonEnabled$ | async,
+    isStepAfterUpload: isStepAfterUpload$ | async,
     nextButtonDisabled: nextButtonDisabled$ | async,
+    notificationObj: notificationObj$ | async,
+    showCheckboxError: showCheckboxError$ | async,
+    showCloseButton: showCloseButton$ | async,
     uploadStatus: uploadStatus$ | async
   } as obs"
   valtimoCdsModal
   [open]="open"
-  size="md"
   showFooter="true"
   class="valtimo-definition-uploader"
   (close)="onCloseModal()"
 >
   <cds-modal-header
-    showCloseButton="true"
-    (closeSelect)="
-      onCloseModal(
-        ![UPLOAD_STEP.PLUGINS, UPLOAD_STEP.FILE_SELECT].includes(obs.activeStep) &&
-          obs.uploadStatus !== UPLOAD_STATUS.ERROR
-      )
-    "
+    [showCloseButton]="obs.showCloseButton"
+    (closeSelect)="onCloseModal(obs.isStepAfterUpload && obs.uploadStatus !== UPLOAD_STATUS.ERROR)"
   >
     <h3 cdsModalHeaderHeading>
       {{ 'dossierManagement.importDefinition.title' | translate }}
@@ -45,34 +43,53 @@
   <section [ngSwitch]="obs.activeStep" cdsModalContent class="valtimo-definition-uploader__content">
     <ng-template ngSwitchDefault>
       <valtimo-dossier-management-upload-step
+        [message]="
+          'dossierManagement.importDefinition.steps.' + obs.activeStep + '.message' | translate
+        "
+        [title]="
+          'dossierManagement.importDefinition.steps.' + obs.activeStep + '.title' | translate
+        "
         [illustration]="'valtimo-layout/img/' + obs.activeStep + '.svg'"
       >
-        {{ 'dossierManagement.importDefinition.steps.' + obs.activeStep | translate }}
-
-        <span *ngIf="obs.activeStep === UPLOAD_STEP.PLUGINS">
-          {{ 'dossierManagement.importDefinition.overwriteWarning' | translate }}
-        </span>
       </valtimo-dossier-management-upload-step>
     </ng-template>
 
-    <ng-container *ngSwitchCase="UPLOAD_STEP.FILE_SELECT">
-      <form [formGroup]="form">
-        <cds-file-uploader
-          [accept]="acceptedFiles"
-          [buttonText]="'dossierManagement.importDefinition.upload.buttonText' | translate"
-          [description]="'dossierManagement.importDefinition.upload.description' | translate"
-          [multiple]="false"
-          [title]="'dossierManagement.importDefinition.upload.title' | translate"
-          buttonType="primary"
-          formControlName="file"
-          class="valtimo-definition-uploader__file-uploader"
-        >
-        </cds-file-uploader>
-      </form>
-    </ng-container>
+    <form *ngSwitchCase="UPLOAD_STEP.FILE_SELECT" [formGroup]="form">
+      <cds-file-uploader
+        [accept]="acceptedFiles"
+        [buttonText]="'dossierManagement.importDefinition.upload.buttonText' | translate"
+        [description]="'dossierManagement.importDefinition.upload.description' | translate"
+        [multiple]="false"
+        [title]="'dossierManagement.importDefinition.upload.title' | translate"
+        buttonType="primary"
+        formControlName="file"
+        class="valtimo-definition-uploader__file-uploader"
+      >
+      </cds-file-uploader>
+
+      <ng-container *ngIf="!obs.nextButtonDisabled">
+        <cds-inline-notification [notificationObj]="obs.notificationObj"></cds-inline-notification>
+
+        <div class="valtimo-uploader__checkbox">
+          <cds-checkbox
+            [class.valtimo-definition-uploader__checkbox--invalid]="obs.showCheckboxError"
+            (checkedChange)="onCheckedChange($event)"
+          >
+            {{ 'dossierManagement.importDefinition.checkbox.message' | translate }}
+          </cds-checkbox>
+
+          <div *ngIf="obs.showCheckboxError" class="valtimo-definition-uploader__error">
+            <svg cdsIcon="warning--filled" size="16"></svg>
+
+            {{ 'dossierManagement.importDefinition.checkbox.error' | translate }}
+          </div>
+        </div>
+      </ng-container>
+    </form>
 
     <cds-progress-bar
       *ngSwitchCase="UPLOAD_STEP.FILE_UPLOAD"
+      class="valtimo-definition-uploader__progress-bar"
       [label]="'dossierManagement.importDefinition.progressBar.label' | translate"
       [status]="obs.uploadStatus"
       [helperText]="
@@ -81,21 +98,17 @@
     ></cds-progress-bar>
   </section>
 
-  <cds-modal-footer class="valtimo-definition-uploader__footer">
+  <cds-modal-footer
+    class="valtimo-definition-uploader__footer"
+    [class.valtimo-definition-uploader__footer--double]="obs.activeStep === UPLOAD_STEP.PLUGINS"
+  >
     <button
       *ngIf="obs.uploadStatus !== UPLOAD_STATUS.ERROR && obs.activeStep !== UPLOAD_STEP.FILE_UPLOAD"
       class="valtimo-definition-uploader__cancel"
       cdsButton="ghost"
-      (click)="
-        onCloseModal(![UPLOAD_STEP.PLUGINS, UPLOAD_STEP.FILE_SELECT].includes(obs.activeStep))
-      "
+      (click)="onCloseModal(obs.isStepAfterUpload)"
     >
-      {{
-        ([UPLOAD_STEP.PLUGINS, UPLOAD_STEP.FILE_SELECT].includes(obs.activeStep)
-          ? 'interface.cancel'
-          : 'interface.skip'
-        ) | translate
-      }}
+      {{ (obs.isStepAfterUpload ? 'interface.skip' : 'interface.cancel') | translate }}
     </button>
 
     <div class="valtimo-definition-uploader__actions">
@@ -113,7 +126,12 @@
         [disabled]="obs.nextButtonDisabled"
         (click)="onNextClick(obs.activeStep)"
       >
-        {{ 'interface.next' | translate }}
+        {{
+          (obs.activeStep === UPLOAD_STEP.FILE_SELECT
+            ? 'dossierManagement.importDefinition.startUpload'
+            : 'interface.next'
+          ) | translate
+        }}
       </button>
 
       <button
@@ -122,7 +140,7 @@
         cdsButton="primary"
         (click)="onCloseModal(true)"
       >
-        {{ 'interface.close' | translate }}
+        {{ 'interface.finish' | translate }}
       </button>
     </div>
   </cds-modal-footer>

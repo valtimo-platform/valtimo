@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 
 import {Component, ViewChild} from '@angular/core';
-import {DecisionDeployComponent} from './decision-deploy/decision-deploy.component';
 import {DecisionListComponent} from './decision-list/decision-list.component';
 import {ConfigService} from '@valtimo/config';
 
@@ -31,6 +30,5 @@ export class DecisionComponent {
     this.experimentalEditing = this.configService.config.featureToggles.experimentalDmnEditing;
   }
 
-  @ViewChild('decisionDeploy') deploy: DecisionDeployComponent;
   @ViewChild('decisionList') list: DecisionListComponent;
 }

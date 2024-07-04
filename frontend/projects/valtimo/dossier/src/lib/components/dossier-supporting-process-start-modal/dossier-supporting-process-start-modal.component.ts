@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,11 @@ import {
   ModalComponent,
   ValtimoFormioOptions,
 } from '@valtimo/components';
-import {ActivatedRoute, Router} from '@angular/router';
+import {Router} from '@angular/router';
 import {ProcessService} from '@valtimo/process';
-import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
-import {FormFlowService, FormSubmissionResult, ProcessLinkService} from '@valtimo/form-link';
-import {NGXLogger} from 'ngx-logger';
-import {noop, Observable} from 'rxjs';
+import {ProcessDocumentDefinition} from '@valtimo/document';
+import {FormSubmissionResult, ProcessLinkService} from '@valtimo/process-link';
+import {BehaviorSubject, combineLatest, Observable, switchMap} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {UserProviderService} from '@valtimo/security';
 
@@ -39,97 +38,113 @@ import {UserProviderService} from '@valtimo/security';
   encapsulation: ViewEncapsulation.None,
 })
 export class DossierSupportingProcessStartModalComponent {
-  public processDefinitionKey: string;
-  public documentDefinitionName: string;
-  public processName: string;
-  public formDefinition: FormioForm;
-  public formioSubmission: FormioSubmission;
-  private processLinkId: string;
-  public options: ValtimoFormioOptions;
-  public submission: object;
-  public processDefinitionId: string;
-  public formFlowInstanceId: string;
+  @ViewChild('form', {static: false}) form: FormioComponent;
+  @ViewChild('supportingProcessStartModal', {static: false}) modal: ModalComponent;
 
-  readonly isAdmin$: Observable<boolean> = this.userProviderService
+  @Output() formSubmit = new EventEmitter();
+
+  public readonly processDefinitionKey$ = new BehaviorSubject<string>('');
+  public readonly documentDefinitionName$ = new BehaviorSubject<string>('');
+  public readonly processName$ = new BehaviorSubject<string>('');
+  public readonly formDefinition$ = new BehaviorSubject<FormioForm>(undefined);
+  public readonly formioSubmission$ = new BehaviorSubject<FormioSubmission>(undefined);
+  public readonly processLinkId$ = new BehaviorSubject<string>('');
+  public readonly options$ = new BehaviorSubject<ValtimoFormioOptions>(undefined);
+  public readonly submission$ = new BehaviorSubject<object>(undefined);
+  public readonly processDefinitionId$ = new BehaviorSubject<string>(undefined);
+  public readonly formFlowInstanceId$ = new BehaviorSubject<string>(undefined);
+  public readonly documentId$ = new BehaviorSubject<string>(undefined);
+
+  public readonly isAdmin$: Observable<boolean> = this.userProviderService
     .getUserSubject()
     .pipe(map(userIdentity => userIdentity?.roles?.includes('ROLE_ADMIN')));
 
-  @ViewChild('form', {static: false}) form: FormioComponent;
-  @ViewChild('supportingProcessStartModal', {static: false}) modal: ModalComponent;
-  @Output() formSubmit = new EventEmitter();
-
-  private documentId: string;
-
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private processService: ProcessService,
-    private processLinkService: ProcessLinkService,
-    private documentService: DocumentService,
-    private formFlowService: FormFlowService,
-    private logger: NGXLogger,
+    private readonly router: Router,
+    private readonly processService: ProcessService,
+    private readonly processLinkService: ProcessLinkService,
     private readonly userProviderService: UserProviderService
   ) {}
 
-  private loadProcessLink() {
-    this.processLinkId = null;
-    this.formDefinition = null;
-    this.formFlowInstanceId = null;
-    this.processService
-      .getProcessDefinitionStartProcessLink(this.processDefinitionId, this.documentId, null)
-      .pipe(take(1))
+  private loadProcessLink(): void {
+    combineLatest([this.processDefinitionId$, this.documentId$])
+      .pipe(
+        take(1),
+        switchMap(([processDefinitionId, documentId]) =>
+          this.processService.getProcessDefinitionStartProcessLink(
+            processDefinitionId,
+            documentId,
+            null
+          )
+        )
+      )
       .subscribe(startProcessResult => {
         if (startProcessResult) {
           switch (startProcessResult.type) {
             case 'form':
-              this.formDefinition = startProcessResult.properties.prefilledForm;
-              this.processLinkId = startProcessResult.processLinkId;
+              this.formDefinition$.next(startProcessResult.properties.prefilledForm);
+              this.processLinkId$.next(startProcessResult.processLinkId);
               break;
             case 'form-flow':
-              this.formFlowInstanceId = startProcessResult.properties.formFlowInstanceId;
+              this.formFlowInstanceId$.next(startProcessResult.properties.formFlowInstanceId);
               break;
           }
+          this.modal.show();
         }
-        this.modal.show();
       });
   }
 
-  openModal(processDocumentDefinition: ProcessDocumentDefinition, documentId: string) {
-    this.documentId = documentId;
-    this.documentDefinitionName = processDocumentDefinition.id.documentDefinitionId.name;
-    this.processDefinitionKey = processDocumentDefinition.id.processDefinitionKey;
-    this.processDefinitionId = processDocumentDefinition.latestVersionId;
-    this.processName = processDocumentDefinition.processName;
-    this.options = new FormioOptionsImpl();
-    this.options.disableAlerts = true;
+  public openModal(processDocumentDefinition: ProcessDocumentDefinition, documentId: string): void {
+    this.documentId$.next(documentId);
+    this.documentDefinitionName$.next(processDocumentDefinition.id.documentDefinitionId.name);
+    this.processDefinitionKey$.next(processDocumentDefinition.id.processDefinitionKey);
+    this.processDefinitionId$.next(processDocumentDefinition.latestVersionId);
+    this.processName$.next(processDocumentDefinition.processName);
+
     const formioBeforeSubmit: FormioBeforeSubmit = function (submission, callback) {
       callback(null, submission);
     };
-    this.options.setHooks(formioBeforeSubmit);
+
+    const options = new FormioOptionsImpl();
+    options.disableAlerts = true;
+    options.setHooks(formioBeforeSubmit);
+
+    this.options$.next(options);
+
     this.loadProcessLink();
   }
 
-  public onSubmit(submission: FormioSubmission) {
-    this.formioSubmission = submission;
-    this.processLinkService
-      .submitForm(this.processLinkId, submission.data, this.documentId)
-      .subscribe({
-        next: (formSubmissionResult: FormSubmissionResult) => {
-          this.formSubmitted();
-        },
-        error: errors => {
-          this.form.showErrors(errors);
-        },
-      });
+  public onSubmit(submission: FormioSubmission): void {
+    this.formioSubmission$.next(submission);
+
+    if (this.processLinkId$.getValue()) {
+      combineLatest([this.processLinkId$, this.documentId$])
+        .pipe(
+          take(1),
+          switchMap(([processLinkId, documentId]) =>
+            this.processLinkService.submitForm(processLinkId, submission.data, documentId)
+          )
+        )
+        .subscribe({
+          next: (formSubmissionResult: FormSubmissionResult) => {
+            this.formSubmitted();
+          },
+          error: errors => {
+            this.form.showErrors(errors);
+          },
+        });
+    }
   }
 
-  public formSubmitted() {
+  public formSubmitted(): void {
     this.modal.hide();
     this.formSubmit.emit();
   }
 
-  public gotoProcessLinkScreen(): void {
+  public gotoFormLinkScreen(): void {
     this.modal.hide();
-    this.router.navigate(['process-links'], {queryParams: {process: this.processDefinitionKey}});
+    this.router.navigate(['process-links'], {
+      queryParams: {process: this.processDefinitionKey$.getValue()},
+    });
   }
 }

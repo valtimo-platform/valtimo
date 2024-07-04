@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2023 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,72 @@
  * limitations under the License.
  */
 
-export class TaskList {
-  public tasks = [];
-  fields = [];
-  pagination = {
-    collectionSize: 0,
-    page: 1,
-    size: 10,
-  };
-  page = 0;
+import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
+import {TaskListTab} from '@valtimo/config';
+
+interface TaskPageParams {
+  page: number;
+  size: number;
+  collectionSize?: number;
+  sort?: string;
 }
+
+enum TaskListColumnDefaultSort {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
+
+interface TaskListColumnEnum {
+  [key: string]: string;
+}
+
+interface TaskListColumnDisplayTypeParameters {
+  enum?: TaskListColumnEnum;
+  dateFormat?: string;
+}
+
+interface TaskListColumnDisplayType {
+  type: string;
+  displayTypeParameters?: TaskListColumnDisplayTypeParameters;
+}
+
+interface TaskListColumn {
+  title?: string;
+  key: string;
+  path: string;
+  displayType: TaskListColumnDisplayType;
+  sortable: boolean;
+  defaultSort?: TaskListColumnDefaultSort;
+  order?: number;
+}
+
+type TaskListColumnModalType = 'edit' | 'add';
+
+type TaskListColumnModalCloseEvent = 'close' | 'refresh';
+
+interface TaskListColumnListItem extends ListItem {
+  key: string;
+}
+
+interface TaskListParams {
+  params: {
+    selectedTaskType: TaskListTab;
+    params: TaskPageParams;
+    caseDefinitionName?: string;
+    reload: boolean;
+  };
+  enableLoadingAnimation: boolean;
+}
+
+export {
+  TaskListColumn,
+  TaskListColumnDisplayType,
+  TaskListColumnDefaultSort,
+  TaskListColumnModalType,
+  TaskListColumnListItem,
+  TaskListColumnModalCloseEvent,
+  TaskListColumnDisplayTypeParameters,
+  TaskListColumnEnum,
+  TaskPageParams,
+  TaskListParams,
+};
