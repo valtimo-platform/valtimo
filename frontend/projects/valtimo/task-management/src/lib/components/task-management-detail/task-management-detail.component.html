@@ -16,20 +16,29 @@
 
 <div
   *ngIf="{
+    activeTab: activeTab$ | async,
     documentDefinitionName: setDocumentDefinitionName$ | async,
-    activeTab: activeTab$ | async
+    enableTaskFiltering: enableTaskFiltering$ | async
   } as obs"
   class="task-management-detail"
 >
-  <ng-container *ngIf="{columns: obs.activeTab === TAB_ENUM.COLUMNS} as activeTab">
-    <cds-tabs class="dossier-management-tabs" type="contained">
-      <cds-tab
-        [active]="activeTab.columns"
-        [heading]="'taskManagement.columns' | translate"
-        (selected)="setActiveTab(TAB_ENUM.COLUMNS)"
-      ></cds-tab>
-    </cds-tabs>
+  <cds-tabs class="dossier-management-tabs" type="contained">
+    <cds-tab
+      [active]="obs.activeTab === TAB_ENUM.COLUMNS"
+      [heading]="'taskManagement.columns' | translate"
+      (selected)="setActiveTab(TAB_ENUM.COLUMNS)"
+    >
+      <valtimo-task-management-columns> </valtimo-task-management-columns>
+    </cds-tab>
 
-    <valtimo-task-management-columns *ngIf="activeTab.columns"> </valtimo-task-management-columns>
-  </ng-container>
+    @if (obs.enableTaskFiltering) {
+      <cds-tab
+        [active]="obs.activeTab === TAB_ENUM.SEARCH_FIELDS"
+        [heading]="'taskManagement.searchFields' | translate"
+        (selected)="setActiveTab(TAB_ENUM.SEARCH_FIELDS)"
+      >
+        <valtimo-task-management-search-fields> </valtimo-task-management-search-fields>
+      </cds-tab>
+    }
+  </cds-tabs>
 </div>

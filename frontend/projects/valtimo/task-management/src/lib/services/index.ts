@@ -16,3 +16,4 @@
 
 export * from './task-management.service';
 export * from './task-management-api.service';
+export * from './task-management-search-fields.service';

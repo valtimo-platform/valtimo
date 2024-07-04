@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from '@angular/core';
-import {CARBON_THEME, CarbonListModule, PageTitleService} from '@valtimo/components';
 import {CommonModule} from '@angular/common';
-import {TranslateModule} from '@ngx-translate/core';
-import {filter, map, Observable, switchMap, tap} from 'rxjs';
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
+import {TranslateModule} from '@ngx-translate/core';
+import {CARBON_THEME, CarbonListModule, PageTitleService} from '@valtimo/components';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
 import {TabsModule} from 'carbon-components-angular';
-import {TaskManagementService} from '../../services';
+import {filter, map, Observable, switchMap, tap} from 'rxjs';
 import {TaskManagementTab} from '../../models';
+import {TaskManagementService} from '../../services';
 import {TaskManagementColumnsComponent} from '../task-management-columns';
+import {TaskManagementSearchFieldsComponent} from '../task-management-search-fields/task-management-search-fields.component';
+import {ConfigService} from '@valtimo/config';
 
 @Component({
   templateUrl: './task-management-detail.component.html',
@@ -37,12 +38,16 @@ import {TaskManagementColumnsComponent} from '../task-management-columns';
     TranslateModule,
     TabsModule,
     TaskManagementColumnsComponent,
+    TaskManagementSearchFieldsComponent,
   ],
   providers: [TaskManagementService],
   encapsulation: ViewEncapsulation.None,
 })
 export class TaskManagementDetailComponent {
   @Input() public carbonTheme: CARBON_THEME = CARBON_THEME.G10;
+
+  public readonly enableTaskFiltering$: Observable<boolean> =
+    this.configService.getFeatureToggleObservable('enableTaskFiltering');
 
   public readonly setDocumentDefinitionName$: Observable<DocumentDefinition> =
     this.route.params.pipe(
@@ -61,9 +66,10 @@ export class TaskManagementDetailComponent {
   public readonly TAB_ENUM = TaskManagementTab;
 
   constructor(
-    private readonly route: ActivatedRoute,
+    private readonly configService: ConfigService,
     private readonly documentService: DocumentService,
     private readonly pageTitleService: PageTitleService,
+    private readonly route: ActivatedRoute,
     private readonly taskManagementService: TaskManagementService
   ) {}
 

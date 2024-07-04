@@ -1478,6 +1478,7 @@
     "number": "Nummer",
     "date": "Datum",
     "datetime": "Datum und zeit",
+    "time": "Zeit",
     "boolean": "Ja / Nein",
     "numberRange": "Zahlenfolge",
     "dateRange": "Datumsbereich",
@@ -1528,6 +1529,7 @@
     "dropdownListValues": "Dropdown-Listenwerte",
     "id": "ID",
     "text": "Text",
+    "textContains": "Text enthält",
     "noSearchfieldsTitle": "Keine Suchfelder",
     "noSearchfieldsDescription": "Innerhalb dieser case definition wurden noch keine Suchfelder konfiguriert."
   },
@@ -1775,6 +1777,7 @@
   },
   "taskManagement": {
     "columns": "Säulen",
+    "searchFields": "Suchfelder",
     "caseName": "Fallname"
   }
 }

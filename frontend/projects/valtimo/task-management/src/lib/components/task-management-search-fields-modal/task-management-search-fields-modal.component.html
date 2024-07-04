@@ -1,0 +1,93 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<cds-modal [open]="open" showFooter="true">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
+    <h3 cdsModalHeaderHeading>
+      {{ (!prefillData ? 'searchFieldsOverview.add' : 'searchFieldsOverview.edit') | translate }}
+    </h3>
+  </cds-modal-header>
+
+  <section cdsModalContent>
+    <form [formGroup]="form" class="valtimo-task-management-search-fields-modal__content">
+      <cds-text-label>
+        {{ 'searchFieldsOverview.title' | translate }}
+
+        <input cdsText type="text" formControlName="title" />
+      </cds-text-label>
+
+      <cds-text-label>
+        {{ 'searchFieldsOverview.key' | translate }}
+
+        <input cdsText type="text" formControlName="key" />
+      </cds-text-label>
+
+      <cds-text-label>
+        {{ 'searchFieldsOverview.path' | translate }}
+
+        <input cdsText type="text" formControlName="path" />
+      </cds-text-label>
+
+      <cds-dropdown
+        formControlName="dataType"
+        [dropUp]="false"
+        [label]="'searchFieldsOverview.dataType' | translate"
+      >
+        <cds-dropdown-list [items]="dataTypeItems$ | async"></cds-dropdown-list>
+      </cds-dropdown>
+
+      @if (dataTypeValue === TaskListSearchFieldDataType.TEXT) {
+        <cds-dropdown
+          formControlName="matchType"
+          [dropUp]="false"
+          [label]="'searchFieldsOverview.matchType' | translate"
+        >
+          <cds-dropdown-list [items]="matchTypeItems$ | async"></cds-dropdown-list>
+        </cds-dropdown>
+      }
+
+      <cds-dropdown
+        formControlName="fieldType"
+        [dropUp]="false"
+        [label]="'searchFieldsOverview.fieldType' | translate"
+      >
+        <cds-dropdown-list [items]="fieldTypeItems$ | async"></cds-dropdown-list>
+      </cds-dropdown>
+
+      @if (
+        [
+          TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN,
+          TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN
+        ].contains(fieldTypeValue)
+      ) {
+        <cds-text-label>
+          {{ 'searchFieldsOverview.dropdownDataProvider' | translate }}
+
+          <input cdsText type="text" formControlName="dropdownDataProvider" />
+        </cds-text-label>
+      }
+    </form>
+  </section>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="onCancel()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button cdsButton="primary" [disabled]="form.invalid" (click)="onSave()">
+      {{ 'interface.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>
