@@ -13,6 +13,7 @@
     "@ngx-translate/core",
     "@ngx-translate/http-loader",
     "@carbon/charts-angular",
-    "muuri"
+    "muuri",
+    "@types/topojson"
   ]
 }

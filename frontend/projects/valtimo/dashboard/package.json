@@ -16,6 +16,7 @@
     "@ngx-translate/http-loader": "8.0.0",
     "tslib": "2.6.2",
     "muuri": "0.9.5",
-    "@carbon/charts-angular": "1.17.3"
+    "@carbon/charts-angular": "1.17.3",
+    "@types/topojson": "3.2.6"
   }
 }

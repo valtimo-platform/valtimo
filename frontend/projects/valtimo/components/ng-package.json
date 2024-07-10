@@ -33,6 +33,7 @@
     "jwt-decode",
     "formiojs",
     "deepmerge-ts",
-    "@carbon/charts-angular"
+    "@carbon/charts-angular",
+    "@types/topojson"
   ]
 }

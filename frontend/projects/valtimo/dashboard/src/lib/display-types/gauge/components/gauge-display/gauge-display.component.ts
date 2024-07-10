@@ -16,7 +16,7 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {DisplayComponent} from '../../../../models';
 import {GaugeData, GaugeDisplayTypeProperties} from '../../models';
-import {type ChartTabularData, GaugeChartOptions} from '@carbon/charts';
+import {type ChartTabularData, GaugeChartOptions} from '@carbon/charts-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable} from 'rxjs';
 import {CdsThemeService} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';

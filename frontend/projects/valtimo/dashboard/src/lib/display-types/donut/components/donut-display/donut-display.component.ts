@@ -16,7 +16,7 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {DisplayComponent} from '../../../../models';
 import {DonutData, DonutDisplayTypeProperties} from '../../models';
-import {type ChartTabularData, DonutChartOptions} from '@carbon/charts';
+import {type ChartTabularData, DonutChartOptions} from '@carbon/charts-angular';
 import {CdsThemeService} from '@valtimo/components';
 import {BehaviorSubject, filter, map, Observable} from 'rxjs';
 

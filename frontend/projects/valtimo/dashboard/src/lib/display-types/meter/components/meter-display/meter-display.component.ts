@@ -16,7 +16,7 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {DisplayComponent} from '../../../../models';
 import {MeterData, MeterDisplayTypeProperties} from '../../models';
-import {type ChartTabularData, MeterChartOptions} from '@carbon/charts';
+import {type ChartTabularData, MeterChartOptions} from '@carbon/charts-angular';
 import {CdsThemeService} from '@valtimo/components';
 import {BehaviorSubject, combineLatest, filter, map, Observable} from 'rxjs';
 
