@@ -1141,6 +1141,7 @@
       "jsonEditor": "JSON editor"
     },
     "key": "Key",
+    "value": "Value",
     "title": "Title",
     "yes": "Yes",
     "no": "No"

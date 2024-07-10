@@ -36,6 +36,11 @@ enum TaskListSearchFieldMatchType {
   EXACT = 'EXACT',
 }
 
+enum TaskListSearchDropdownDataProvider {
+  DATABASE = 'dropdownDatabaseDataProvider',
+  JSON = 'dropdownJsonFileDataProvider',
+}
+
 interface TaskListSearchField {
   id: string;
   ownerId: string;
@@ -47,11 +52,18 @@ interface TaskListSearchField {
   order: number;
   matchType: TaskListSearchFieldMatchType;
   dropdownDataProvider?: string;
+  dropdownValues?: TaskListSearchDropdownValue;
+}
+
+interface TaskListSearchDropdownValue {
+  [key: string]: string;
 }
 
 export {
+  TaskListSearchDropdownDataProvider,
   TaskListSearchFieldDataType,
   TaskListSearchFieldFieldType,
   TaskListSearchFieldMatchType,
   TaskListSearchField,
+  TaskListSearchDropdownValue,
 };

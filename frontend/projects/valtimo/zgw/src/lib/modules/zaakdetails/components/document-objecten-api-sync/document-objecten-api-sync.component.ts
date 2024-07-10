@@ -83,7 +83,7 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
       )
     );
   private readonly modalShowing$ = new BehaviorSubject<boolean>(false);
-  public readonly currentTheme$ = this.cdsThemeService.currentTheme$
+  public readonly currentTheme$ = this.cdsThemeService.currentTheme$;
   public readonly formGroup = new FormGroup({
     objectManagementConfigurationId: new FormControl('', Validators.required),
     enabled: new FormControl(true),

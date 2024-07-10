@@ -289,16 +289,14 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
       return this.documentService
         .getDropdownData(formData.dropdownDataProvider, documentDefinitionName, formData.key)
         .pipe(
-          map(dropdownData => {
-            if (dropdownData) {
-              return Object.keys(dropdownData).map(dropdownFieldKey => ({
-                key: dropdownFieldKey,
-                value: dropdownData[dropdownFieldKey],
-              }));
-            }
-
-            return [];
-          })
+          map(dropdownData =>
+            dropdownData
+              ? Object.keys(dropdownData).map(dropdownFieldKey => ({
+                  key: dropdownFieldKey,
+                  value: dropdownData[dropdownFieldKey],
+                }))
+              : []
+          )
         );
     })
   );

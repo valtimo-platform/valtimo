@@ -149,7 +149,9 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
   }
 
   public exportPermissions(): void {
-    this.accessControlExportService.exportRoles({type: 'separate', roleKeys: [this._roleKey]}).subscribe()
+    this.accessControlExportService
+      .exportRoles({type: 'separate', roleKeys: [this._roleKey]})
+      .subscribe();
   }
 
   private openRoleKeySubscription(): void {

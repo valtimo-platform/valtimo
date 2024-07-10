@@ -232,7 +232,7 @@ export class FormViewModelComponent implements OnInit {
     const component = formInstance.getComponent(error.error?.component);
     const submitComponent = formInstance.getComponent('submit');
     if (component == null) {
-      this.errors$.next([error.error.error])
+      this.errors$.next([error.error.error]);
     } else {
       component?.setCustomValidity(error.error.error);
       submitComponent.disabled = true;

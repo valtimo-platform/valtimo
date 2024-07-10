@@ -18,7 +18,7 @@
   *ngIf="{
     fieldModalOpen: fieldModalOpen$ | async,
     fields: fields$ | async,
-    keyToDelete: keyToDelete$ | async,
+    itemToDelete: itemToDelete$ | async,
     prefillData: prefillData$ | async,
     searchFields: searchFields$ | async
   } as obs"
@@ -41,6 +41,7 @@
   </valtimo-carbon-list>
 
   <valtimo-task-management-search-fields-modal
+    [documentDefinitionName]="documentDefinitionName$ | async"
     [open]="obs.fieldModalOpen"
     [prefillData]="obs.prefillData"
     (closeEvent)="onCloseEvent($event, obs.prefillData)"
@@ -50,7 +51,7 @@
     confirmButtonTextTranslationKey="interface.delete"
     confirmButtonType="danger"
     contentTranslationKey="searchFieldsOverview.deleteSearchFieldConfirmation"
-    [outputOnConfirm]="obs.keyToDelete"
+    [outputOnConfirm]="obs.itemToDelete"
     [showModalSubject$]="deleteModalOpen$"
     titleTranslationKey="searchFieldsOverview.deleteSearchField"
     (confirmEvent)="onDeleteFieldConfirm($event)"

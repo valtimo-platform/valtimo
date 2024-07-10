@@ -14,8 +14,30 @@
  * limitations under the License.
  */
 
-.valtimo-task-management-search-fields-modal__content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.valtimo-task-management-search-fields-modal {
+  &__content,
+  &__dropdown-values {
+    display: flex;
+    gap: 16px;
+  }
+
+  &__content {
+    flex-direction: column;
+  }
+
+  &__dropdown-values {
+    align-items: flex-end;
+    gap: 16px;
+  }
+
+  &__label {
+    display: flex;
+    gap: 4px;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
 }

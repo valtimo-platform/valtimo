@@ -39,11 +39,9 @@
           'accessControl.roles.editMetadata' | translate
         }}</cds-overflow-menu-option>
 
-        <cds-overflow-menu-option
-          [disabled]="obs.moreDisabled"
-          (selected)="exportPermissions()"
-          >{{ 'interface.export' | translate }}</cds-overflow-menu-option
-        >
+        <cds-overflow-menu-option [disabled]="obs.moreDisabled" (selected)="exportPermissions()">{{
+          'interface.export' | translate
+        }}</cds-overflow-menu-option>
 
         <cds-overflow-menu-option
           [disabled]="obs.moreDisabled"

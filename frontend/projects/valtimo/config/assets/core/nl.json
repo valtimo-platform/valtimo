@@ -1139,6 +1139,7 @@
       "jsonEditor": "JSON editor"
     },
     "key": "Sleutel",
+    "value": "Waarde",
     "title": "Titel",
     "yes": "Ja",
     "no": "Nee"

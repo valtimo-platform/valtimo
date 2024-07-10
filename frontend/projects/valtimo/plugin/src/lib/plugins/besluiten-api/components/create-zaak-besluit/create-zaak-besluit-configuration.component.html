@@ -115,24 +115,24 @@
       >
       </v-input>
       <v-radio
-              name="inputTypeStartingDateToggle"
-              [disabled]="obs.disabled"
-              [title]="'inputTypeStartingDateToggle' | pluginTranslate: obs.pluginId | async"
-              [radioValues]="startDateInputTypeOptions$ | async"
-              [defaultValue]="obs.prefill?.inputTypeStartingDateToggle"
-              [margin]="true"
+        name="inputTypeStartingDateToggle"
+        [disabled]="obs.disabled"
+        [title]="'inputTypeStartingDateToggle' | pluginTranslate: obs.pluginId | async"
+        [radioValues]="startDateInputTypeOptions$ | async"
+        [defaultValue]="obs.prefill?.inputTypeStartingDateToggle"
+        [margin]="true"
       >
       </v-radio>
       <v-input
-              *ngIf="obs.selectedStartDateInputOption === 'text'"
-              name="ingangsdatum"
-              [title]="'ingangsdatum' | pluginTranslate: obs.pluginId | async"
-              [defaultValue]="obs.prefill?.ingangsdatum"
-              [disabled]="obs.disabled"
-              [required]="true"
-              [tooltip]="'ingangsdatumTooltip' | pluginTranslate: obs.pluginId | async"
-              [widthPx]="350"
-              [margin]="true"
+        *ngIf="obs.selectedStartDateInputOption === 'text'"
+        name="ingangsdatum"
+        [title]="'ingangsdatum' | pluginTranslate: obs.pluginId | async"
+        [defaultValue]="obs.prefill?.ingangsdatum"
+        [disabled]="obs.disabled"
+        [required]="true"
+        [tooltip]="'ingangsdatumTooltip' | pluginTranslate: obs.pluginId | async"
+        [widthPx]="350"
+        [margin]="true"
       >
       </v-input>
       <v-date-picker
@@ -147,24 +147,24 @@
         [margin]="true"
       ></v-date-picker>
       <v-radio
-              name="inputTypeExpirationDateToggle"
-              [disabled]="obs.disabled"
-              [title]="'inputTypeExpirationDateToggle' | pluginTranslate: obs.pluginId | async"
-              [radioValues]="expirationDateInputTypeOptions$ | async"
-              [defaultValue]="obs.prefill?.inputTypeExpirationDateToggle"
-              [margin]="true"
+        name="inputTypeExpirationDateToggle"
+        [disabled]="obs.disabled"
+        [title]="'inputTypeExpirationDateToggle' | pluginTranslate: obs.pluginId | async"
+        [radioValues]="expirationDateInputTypeOptions$ | async"
+        [defaultValue]="obs.prefill?.inputTypeExpirationDateToggle"
+        [margin]="true"
       >
       </v-radio>
       <v-input
-              *ngIf="obs.selectedExpirationDateInputOption === 'text'"
-              name="vervaldatum"
-              [title]="'vervaldatum' | pluginTranslate: obs.pluginId | async"
-              [defaultValue]="obs.prefill?.vervaldatum"
-              [disabled]="obs.disabled"
-              [required]="false"
-              [tooltip]="'vervaldatumTooltip' | pluginTranslate: obs.pluginId | async"
-              [widthPx]="350"
-              [margin]="true"
+        *ngIf="obs.selectedExpirationDateInputOption === 'text'"
+        name="vervaldatum"
+        [title]="'vervaldatum' | pluginTranslate: obs.pluginId | async"
+        [defaultValue]="obs.prefill?.vervaldatum"
+        [disabled]="obs.disabled"
+        [required]="false"
+        [tooltip]="'vervaldatumTooltip' | pluginTranslate: obs.pluginId | async"
+        [widthPx]="350"
+        [margin]="true"
       >
       </v-input>
       <v-date-picker

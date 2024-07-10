@@ -19,15 +19,29 @@ import {ActivatedRoute} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   ActionItem,
-  CarbonListItem,
   CarbonListModule,
   ColumnConfig,
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import {TaskListSearchField} from '@valtimo/task';
+import {DocumentService} from '@valtimo/document';
+import {
+  TaskListSearchDropdownValue,
+  TaskListSearchField,
+  TaskListSearchFieldFieldType,
+} from '@valtimo/task';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, take, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  of,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {TaskManagementSearchFieldsService} from '../../services';
 import {TaskManagementSearchFieldsModalComponent} from '../task-management-search-fields-modal/task-management-search-fields-modal.component';
 
@@ -47,7 +61,7 @@ import {TaskManagementSearchFieldsModalComponent} from '../task-management-searc
   ],
 })
 export class TaskManagementSearchFieldsComponent {
-  private readonly _documentDefinitionName$: Observable<string> = this.route.params.pipe(
+  public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
     map(params => params.name || ''),
     filter(docDefName => !!docDefName),
     tap((docDefName: string) => this.searchFieldsService.setDocumentDefinitionName(docDefName))
@@ -56,9 +70,13 @@ export class TaskManagementSearchFieldsComponent {
   private readonly _refresh$ = new BehaviorSubject<null>(null);
 
   public readonly searchFields$: Observable<TaskListSearchField[]> = combineLatest([
-    this._documentDefinitionName$,
+    this.documentDefinitionName$,
     this._refresh$,
-  ]).pipe(switchMap(() => this.searchFieldsService.getTaskListSearchFields()));
+    this.trasnlateService.stream('key'),
+  ]).pipe(
+    switchMap(() => this.searchFieldsService.getTaskListSearchFields()),
+    map((searchFields: TaskListSearchField[]) => this.mapTranslations(searchFields))
+  );
 
   public readonly fields$: Observable<ColumnConfig[]> = this.trasnlateService.stream('key').pipe(
     map(() => [
@@ -78,12 +96,12 @@ export class TaskManagementSearchFieldsComponent {
         viewType: ViewType.TEXT,
       },
       {
-        key: 'dataType',
+        key: 'dataTypeTranslation',
         label: 'searchFieldsOverview.dataType',
         viewType: ViewType.TEXT,
       },
       {
-        key: 'fieldType',
+        key: 'fieldTypeTranslation',
         label: 'searchFieldsOverview.fieldType',
         viewType: ViewType.TEXT,
       },
@@ -92,7 +110,7 @@ export class TaskManagementSearchFieldsComponent {
 
   public readonly deleteModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly fieldModalOpen$ = new BehaviorSubject<boolean>(false);
-  public readonly keyToDelete$ = new BehaviorSubject<string | null>(null);
+  public readonly itemToDelete$ = new BehaviorSubject<TaskListSearchField | null>(null);
   public readonly prefillData$ = new BehaviorSubject<TaskListSearchField | null>(null);
 
   public readonly ACTION_ITEMS: ActionItem[] = [
@@ -109,12 +127,25 @@ export class TaskManagementSearchFieldsComponent {
   ];
 
   constructor(
+    private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
     private readonly searchFieldsService: TaskManagementSearchFieldsService,
     private readonly trasnlateService: TranslateService
   ) {}
 
   public editField(item: TaskListSearchField): void {
+    if (!!item.dropdownDataProvider) {
+      this.documentService
+        .getDropdownData(item.dropdownDataProvider, item.ownerId, item.key)
+        .pipe(take(1))
+        .subscribe(dropdownValues => {
+          item.dropdownValues = dropdownValues as TaskListSearchDropdownValue;
+          this.prefillData$.next(item);
+          this.fieldModalOpen$.next(true);
+        });
+
+      return;
+    }
     this.prefillData$.next(item);
     this.fieldModalOpen$.next(true);
   }
@@ -138,25 +169,79 @@ export class TaskManagementSearchFieldsComponent {
     this.prefillData$.next(null);
     if (!searchField) return;
 
+    const hasDropdownValues: boolean =
+      searchField.fieldType === TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN ||
+      searchField.fieldType === TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN;
+
     (!prefillData
       ? this.searchFieldsService.createTaskListSearchField(searchField)
       : this.searchFieldsService.updateTaskListSearchField(searchField)
     )
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        switchMap((field: TaskListSearchField) => {
+          return hasDropdownValues
+            ? this.documentService.postDropdownData(
+                field.dropdownDataProvider ?? '',
+                field.ownerId,
+                field.key,
+                searchField.dropdownValues ?? {}
+              )
+            : of(field);
+        })
+      )
       .subscribe(() => this._refresh$.next(null));
   }
 
-  public onDeleteFieldConfirm(key: string | null): void {
-    if (!key) return;
+  public onDeleteFieldConfirm(item: TaskListSearchField | null): void {
+    if (!item) return;
 
     this.searchFieldsService
-      .deleteTaskListSearchField(key)
-      .pipe(take(1))
+      .deleteTaskListSearchField(item.key)
+      .pipe(
+        take(1),
+        switchMap(() =>
+          item.dropdownDataProvider
+            ? this.documentService.deleteDropdownData(
+                item.dropdownDataProvider,
+                item.ownerId,
+                item.key
+              )
+            : of()
+        )
+      )
       .subscribe(() => this._refresh$.next(null));
   }
 
   private deleteField(item: TaskListSearchField): void {
-    this.keyToDelete$.next(item.key);
+    this.itemToDelete$.next(item);
     this.deleteModalOpen$.next(true);
+  }
+
+  private mapTranslations(
+    searchFields: TaskListSearchField[]
+  ): (TaskListSearchField & {dataTypeTranslation: string; fieldTypeTranslation: string})[] {
+    return searchFields.map((searchField: TaskListSearchField) => ({
+      ...searchField,
+      dataTypeTranslation: this.trasnlateService.instant(
+        `searchFields.${searchField.dataType.toLowerCase()}`
+      ),
+      fieldTypeTranslation: this.trasnlateService.instant(
+        `searchFieldsOverview.${this.fieldTypeTranslation(searchField.fieldType)}`
+      ),
+    }));
+  }
+
+  private fieldTypeTranslation(fieldType: TaskListSearchFieldFieldType): string {
+    switch (fieldType) {
+      case TaskListSearchFieldFieldType.TEXT_CONTAINS:
+        return 'textContains';
+      case TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN:
+        return 'single-select-dropdown';
+      case TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN:
+        return 'multi-select-dropdown';
+      default:
+        return fieldType;
+    }
   }
 }
