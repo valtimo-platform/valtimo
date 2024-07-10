@@ -14,4 +14,24 @@
   ~ limitations under the License.
   -->
 
-meter works
+<section class="valtimo-donut-widget__header">
+  <h3 class="valtimo-donut-widget__title">{{ displayTypeProperties.title }}</h3>
+
+  <span *ngIf="displayTypeProperties.subtitle" class="valtimo-donut-widget__subtitle">
+    {{ displayTypeProperties.subtitle }}
+  </span>
+</section>
+
+<section class="valtimo-donut-widget__content">
+  <ng-container *ngIf="meterData$ | async as meterData">
+    @if (meterData.length > 0) {
+      <ibm-meter-chart [data]="meterData" [options]="meterChartOptions$ | async"></ibm-meter-chart>
+    } @else {
+      <valtimo-no-results
+        [collapseVertically]="true"
+        [description]="'dossier.widgets.noData' | translate"
+        [smallPadding]="true"
+      ></valtimo-no-results>
+    }
+  </ng-container>
+</section>

@@ -317,8 +317,13 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
       const selectedDataSource = dataSources.find(source => source.key === selectedDataSourceKey);
       const availableDataFeatures = selectedDataSource?.dataFeatures;
       const compatibleDisplayTypes = supportedDisplayTypes.filter(displayType => {
-        const supportedDataFeatures = displayType.requiredDataFeatures.filter(feature =>
-          availableDataFeatures?.includes(feature)
+        const supportedDataFeatures = displayType.requiredDataFeatures.filter(
+          requiredDataFeature =>
+            !!availableDataFeatures?.some(
+              availableDataFeature =>
+                this.trimAndToUpperCase(availableDataFeature) ===
+                this.trimAndToUpperCase(requiredDataFeature)
+            )
         );
         return supportedDataFeatures.length === displayType.requiredDataFeatures.length;
       });
@@ -335,5 +340,9 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
   private enable(): void {
     this.disabled$.next(false);
     this.form.enable();
+  }
+
+  private trimAndToUpperCase(text: string): string {
+    return `${text}`.trim().toUpperCase();
   }
 }

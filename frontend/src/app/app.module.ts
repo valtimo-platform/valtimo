@@ -52,12 +52,14 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {CustomFormExampleComponent} from './custom-form-example/custom-form-example.component';
 import {StartProcessCustomFormComponent} from './start-process-custom-form/start-process-custom-form.component';
 import {
-  BarChartModule,
   BigNumberModule,
   CaseCountDataSourceModule,
+  CaseCountsDataSourceModule,
+  CaseGroupByDataSourceModule,
   DashboardModule,
+  DonutModule,
+  GaugeModule,
   MeterModule,
-  TestDataSourceModule,
 } from '@valtimo/dashboard';
 import {DashboardManagementModule} from '@valtimo/dashboard-management';
 import {DocumentModule} from '@valtimo/document';
@@ -130,7 +132,7 @@ import {
   registerDocumentenApiFormioUploadComponent,
   ZgwModule,
 } from '@valtimo/zgw';
-import {FormViewModelModule} from '../../projects/valtimo/form-view-model/src/lib/form-view-model.module';
+import {FormViewModelModule} from '@valtimo/form-view-model';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -218,10 +220,12 @@ export function tabsFactory() {
     ObjectModule,
     ObjectManagementModule,
     BigNumberModule,
-    BarChartModule,
+    DonutModule,
+    GaugeModule,
     MeterModule,
-    TestDataSourceModule,
     CaseCountDataSourceModule,
+    CaseCountsDataSourceModule,
+    CaseGroupByDataSourceModule,
     AccessControlManagementModule,
     FormFlowManagementModule,
     TranslationManagementModule,

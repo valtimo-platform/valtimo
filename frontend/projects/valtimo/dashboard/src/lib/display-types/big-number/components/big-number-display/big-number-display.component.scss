@@ -26,11 +26,17 @@
 }
 
 .valtimo-big-number-widget {
+  &__title,
+  &__subtitle {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   &__title {
     font-size: 20px;
     margin-bottom: 12px;
   }
-
   &__subtitle {
     font-size: 14px;
   }

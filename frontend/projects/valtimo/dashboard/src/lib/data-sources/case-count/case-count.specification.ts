@@ -36,7 +36,7 @@ export const caseCountDataSourceSpecification: DataSourceSpecification = {
       value: 'Wert',
       conditions: 'Bedingungen',
       conditionsHelperText:
-        "Geben Sie optionale Bedingungen zum Abrufen der Anzahl der Fälle für den ausgewählten Falltyp an. Zum Beispiel: 'case:createdBy', 'Gleich', 'test@test.com'.",
+        "Geben Sie optionale Bedingungen zum Abrufen der Anzahl der Fälle für den ausgewählten Falltyp an. Zum Beispiel: 'case:createdBy', 'Gleich', 'test@test.com'. Zum Vergleichen mit leeren Werten kann als Wert '${null}' eingegeben werden. Zum Vergleichen mit dem aktuellen Datum kann als Wert '${localDateTimeNow}' eingegeben werden. Damit wird beispielsweise auch folgende Logik unterstützt: '${localDateTimeNow.minusWeeks(2)}'.",
       addCondition: 'Bedingung hinzufügen',
     },
     en: {
@@ -54,7 +54,7 @@ export const caseCountDataSourceSpecification: DataSourceSpecification = {
       value: 'Value',
       conditions: 'Conditions',
       conditionsHelperText:
-        "Specify optional conditions for retrieving the number of cases for the selected case type. For example: 'case:createdBy', 'Equal to', 'test@test.com'.",
+        "Specify optional conditions for retrieving the number of cases for the selected case type. For example: 'case:createdBy', 'Equal to', 'test@test.com'. To compare with empty values, '${null}' can be entered as a value. To compare with the current date, '${localDateTimeNow}' can be entered as a value. This also supports, for example, the following logic: '${localDateTimeNow.minusWeeks(2)}'.",
       addCondition: 'Add condition',
     },
     nl: {
@@ -72,7 +72,7 @@ export const caseCountDataSourceSpecification: DataSourceSpecification = {
       value: 'Waarde',
       conditions: 'Condities',
       conditionsHelperText:
-        "Geef optionele condities op voor het ophalen van het aantal zaken voor het geselecteerde zaaktype. Bijvoorbeeld: 'case:createdBy', 'Gelijk aan', 'test@test.com'.",
+        "Geef optionele condities op voor het ophalen van het aantal zaken voor het geselecteerde zaaktype. Bijvoorbeeld: 'case:createdBy', 'Gelijk aan', 'test@test.com'. Voor het vergelijken met lege waardes kan '${null}' ingevuld worden als waarde. Voor het vergelijken met de huidige datum kan '${localDateTimeNow}' ingevuld worden als waarde. Deze ondersteunt ook bijvoorbeeld de volgende logica: '${localDateTimeNow.minusWeeks(2)}'.",
       addCondition: 'Conditie toevoegen',
     },
   },

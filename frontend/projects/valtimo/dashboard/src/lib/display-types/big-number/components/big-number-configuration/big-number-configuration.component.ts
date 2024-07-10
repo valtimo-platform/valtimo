@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {ConfigurationOutput, DisplayTypeConfigurationComponent} from '../../../../models';
 import {startWith, Subscription} from 'rxjs';
-import {FormBuilder, Validators} from '@angular/forms';
+import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
 import {BigNumberDisplayTypeProperties} from '../../models';
 
 @Component({
@@ -45,7 +45,7 @@ export class BigNumberConfigurationComponent
     highSeverityThreshold: this.fb.control(null),
   });
 
-  @Input() displayTypeKey: string;
+  @Input() public readonly displayTypeKey: string;
   @Input() set disabled(disabledValue: boolean) {
     if (disabledValue) {
       this.form.disable();
@@ -54,31 +54,31 @@ export class BigNumberConfigurationComponent
     }
   }
 
-  public get title() {
+  public get title(): AbstractControl<string> {
     return this.form.get('title');
   }
 
-  public get subtitle() {
+  public get subtitle(): AbstractControl<string> {
     return this.form.get('subtitle');
   }
 
-  public get label() {
+  public get label(): AbstractControl<string> {
     return this.form.get('label');
   }
 
-  public get useKPI() {
+  public get useKPI(): AbstractControl<boolean> {
     return this.form.get('useKPI');
   }
 
-  public get lowSeverityThreshold() {
+  public get lowSeverityThreshold(): AbstractControl<number> {
     return this.form.get('lowSeverityThreshold');
   }
 
-  public get mediumSeverityThreshold() {
+  public get mediumSeverityThreshold(): AbstractControl<number> {
     return this.form.get('mediumSeverityThreshold');
   }
 
-  public get highSeverityThreshold() {
+  public get highSeverityThreshold(): AbstractControl<number> {
     return this.form.get('highSeverityThreshold');
   }
 

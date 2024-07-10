@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export * from './models';
-export * from './components';
-export * from './bar-chart.specification';
 export * from './bar-chart.module';
+export * from './bar-chart.specification';
+export * from './components';
+export * from './models';

@@ -16,13 +16,29 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {MeterDisplayComponent} from './components/meter-display/meter-display.component';
 import {DISPLAY_TYPE_TOKEN} from '../../constants';
 import {meterSpecification} from './meter.specification';
+import {ReactiveFormsModule} from '@angular/forms';
+import {WidgetTranslatePipeModule} from '../../pipes';
+import {CheckboxModule, InputModule} from 'carbon-components-angular';
+import {MeterConfigurationComponent, MeterDisplayComponent} from './components';
+import {ChartsModule} from '@carbon/charts-angular';
+import {CarbonListModule} from '@valtimo/components';
+import {TranslateModule} from '@ngx-translate/core';
 
 @NgModule({
-  declarations: [MeterDisplayComponent],
-  imports: [CommonModule],
+  declarations: [MeterDisplayComponent, MeterConfigurationComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    WidgetTranslatePipeModule,
+    InputModule,
+    CheckboxModule,
+    CommonModule,
+    ChartsModule,
+    CarbonListModule,
+    TranslateModule,
+  ],
   exports: [MeterDisplayComponent],
   providers: [{provide: DISPLAY_TYPE_TOKEN, useValue: meterSpecification, multi: true}],
 })

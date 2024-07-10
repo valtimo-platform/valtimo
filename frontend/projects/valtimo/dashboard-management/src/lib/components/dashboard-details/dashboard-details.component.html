@@ -20,7 +20,8 @@
       currentDashboard: currentDashboard$ | async,
       editWidgetConfiguration: editWidgetConfiguration$ | async,
       loading: loading$ | async,
-      widgetData: widgetData$ | async
+      widgetData: widgetData$ | async,
+      dragAndDropDisabled: dragAndDropDisabled$ | async
     } as obs
   "
 >
@@ -31,8 +32,10 @@
       [header]="false"
       [items]="obs.widgetData"
       [loading]="obs.loading"
-      [movingRowsEnabled]="true"
-      (moveRow)="onMoveRowClick($event)"
+      [dragAndDrop]="true"
+      [dragAndDropDisabled]="obs.dragAndDropDisabled"
+      (itemsReordered)="onItemsReordered($event)"
+      (rowClicked)="editWidget($event)"
     >
       <div carbonToolbarContent>
         <ng-container [ngTemplateOutlet]="addWidgetButton"></ng-container>

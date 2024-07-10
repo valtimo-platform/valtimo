@@ -1,0 +1,91 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<form
+  class="case-count-configuration-form"
+  *ngIf="{
+    documentItems: documentItems$ | async,
+    operatorItems: operatorItems$,
+    formValue: formValue$ | async
+  } as obs"
+  [formGroup]="form"
+>
+  <div class="form__element">
+    <cds-dropdown
+      [appendInline]="true"
+      formControlName="documentDefinition"
+      [helperText]="'documentDefinitionHelperText' | widgetTranslate: dataSourceKey | async"
+      [invalidText]="'documentDefinitionHelperText' | widgetTranslate: dataSourceKey | async"
+      [invalid]="documentDefinition.dirty && documentDefinition.invalid"
+      [label]="'documentDefinition' | widgetTranslate: dataSourceKey | async"
+      (selected)="documentDefinitionSelected($event)"
+    >
+      <cds-dropdown-list [items]="obs?.documentItems || []" type="multi"></cds-dropdown-list>
+    </cds-dropdown>
+  </div>
+
+  <div class="form__element">
+    <cds-label
+      [helperText]="'pathHelperText' | widgetTranslate: dataSourceKey | async"
+      [invalidText]="'pathHelperText' | widgetTranslate: dataSourceKey | async"
+      [invalid]="path.dirty && path.invalid"
+    >
+      {{ 'path' | widgetTranslate: dataSourceKey | async }}
+
+      <input cdsText formControlName="path" [invalid]="path.dirty && path.invalid" />
+    </cds-label>
+  </div>
+
+  <div class="form__element conditions-multi-input">
+    <cds-label
+      [helperText]="'conditionsHelperText' | widgetTranslate: dataSourceKey | async"
+      class="conditions-label"
+      >{{ 'conditions' | widgetTranslate: dataSourceKey | async }}</cds-label
+    >
+    <valtimo-carbon-multi-input
+      [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
+      [defaultValues]="obs.formValue?.queryConditions"
+      [dropdownColumnTitle]="'operator' | widgetTranslate: dataSourceKey | async"
+      [dropdownItems]="operatorItems$ | async"
+      [fullWidth]="true"
+      [initialAmountOfRows]="0"
+      [keyColumnTitle]="'path' | widgetTranslate: dataSourceKey | async"
+      [minimumAmountOfRows]="0"
+      [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
+      type="keyDropdownValue"
+      (valueChange)="conditionsValueChange($event)"
+    ></valtimo-carbon-multi-input>
+  </div>
+
+  <div class="form__element conditions-multi-input">
+    <cds-label
+      [helperText]="'enumHelperText' | widgetTranslate: dataSourceKey | async"
+      class="conditions-label"
+      >{{ 'enum' | widgetTranslate: dataSourceKey | async }}</cds-label
+    >
+    <valtimo-carbon-multi-input
+      [addRowText]="'addDisplay' | widgetTranslate: dataSourceKey | async"
+      [defaultValues]="obs.formValue?.enum"
+      [fullWidth]="true"
+      [initialAmountOfRows]="0"
+      [keyColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
+      [minimumAmountOfRows]="0"
+      [valueColumnTitle]="'displayValue' | widgetTranslate: dataSourceKey | async"
+      type="keyValue"
+      (valueChange)="enumValueChange($event)"
+    ></valtimo-carbon-multi-input>
+  </div>
+</form>

@@ -118,6 +118,8 @@ $darkThemeOverwriteVariables: (
   }
 }
 
+@import '~node_modules/@carbon/charts-angular/styles.min.css';
+
 /* default Valtimo colors */
 
 :root {

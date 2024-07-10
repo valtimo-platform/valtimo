@@ -17,6 +17,7 @@
 const DATA_FEATURES = {
   NUMBER: 'number',
   TOTAL: 'total',
+  NUMBERS: 'numbers',
 };
 
 export {DATA_FEATURES};

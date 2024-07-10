@@ -16,9 +16,9 @@
 
 import {EventEmitter} from '@angular/core';
 
-interface ConfigurationOutput {
+interface ConfigurationOutput<T = object> {
   valid: boolean;
-  data: object;
+  data: T;
 }
 
 interface ConfigurationComponent {

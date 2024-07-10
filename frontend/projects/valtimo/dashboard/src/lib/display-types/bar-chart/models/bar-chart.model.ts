@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-interface BarChartData {
+interface BarChartItem {
   value: number;
+  label: string;
+}
+
+interface BarChartData {
+  values: BarChartItem[];
 }
 
 interface BarChartDisplayTypeProperties {
   title: string;
+  subtitle: string;
 }
 
-export {BarChartData, BarChartDisplayTypeProperties};
+export {BarChartData, BarChartItem, BarChartDisplayTypeProperties};

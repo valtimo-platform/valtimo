@@ -14,4 +14,27 @@
   ~ limitations under the License.
   -->
 
-bar chart works
+<section class="valtimo-donut-widget__header">
+  <h3 class="valtimo-donut-widget__title">{{ displayTypeProperties.title }}</h3>
+
+  <span *ngIf="displayTypeProperties.subtitle" class="valtimo-donut-widget__subtitle">
+    {{ displayTypeProperties.subtitle }}
+  </span>
+</section>
+
+<section class="valtimo-donut-widget__content">
+  <ng-container *ngIf="barChartData$ | async as barChartData">
+    @if (barChartData.length > 0) {
+      <ibm-bar-chart
+        [data]="barChartData"
+        [options]="barChartChartOptions$ | async"
+      ></ibm-bar-chart>
+    } @else {
+      <valtimo-no-results
+        [collapseVertically]="true"
+        [description]="'dossier.widgets.noData' | translate"
+        [smallPadding]="true"
+      ></valtimo-no-results>
+    }
+  </ng-container>
+</section>

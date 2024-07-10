@@ -15,15 +15,13 @@
  */
 
 import {DatePipe} from '@angular/common';
-import {AfterViewInit, Component, TemplateRef, ViewChild, ViewEncapsulation} from '@angular/core';
+import {AfterViewInit, Component, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ArrowDown16, ArrowUp16, Edit16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {
   ActionItem,
   ColumnConfig,
-  MoveRowDirection,
-  MoveRowEvent,
   PageHeaderService,
   PageTitleService,
   ViewType,
@@ -80,8 +78,9 @@ export class DashboardDetailsComponent implements AfterViewInit {
 
   public readonly lastItemIndex$ = new BehaviorSubject<number>(0);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly dragAndDropDisabled$ = new BehaviorSubject<boolean>(false);
 
-  public readonly _refreshWidgetsSubject$ = new BehaviorSubject<MoveRowEvent | null>(null);
+  public readonly _refreshWidgetsSubject$ = new BehaviorSubject<DashboardWidget[] | null>(null);
 
   private _widgetData: DashboardWidget[] | null = null;
   public readonly widgetData$: Observable<DashboardWidget[]> = combineLatest([
@@ -89,24 +88,23 @@ export class DashboardDetailsComponent implements AfterViewInit {
     this._refreshWidgetsSubject$,
   ]).pipe(
     switchMap(([dashboardKey, refreshWidgets]) => {
-      this.loading$.next(true);
       if (!this._widgetData || !refreshWidgets) {
+        this.loading$.next(true);
         return this.dashboardManagementService.getDashboardWidgetConfiguration(dashboardKey);
       }
 
-      const {direction, index} = refreshWidgets;
+      this.dragAndDropDisabled$.next(true);
 
       return this.dashboardManagementService.updateDashboardWidgetConfigurations(
         dashboardKey,
-        direction === MoveRowDirection.UP
-          ? this.swapWidgets(this._widgetData, index - 1, index)
-          : this.swapWidgets(this._widgetData, index, index + 1)
+        refreshWidgets
       );
     }),
     tap((data: DashboardWidget[]) => {
       this._widgetData = data;
       this.lastItemIndex$.next(data.length - 1);
       this.loading$.next(false);
+      this.dragAndDropDisabled$.next(false);
     })
   );
 
@@ -117,6 +115,7 @@ export class DashboardDetailsComponent implements AfterViewInit {
     new BehaviorSubject<DashboardWidgetConfiguration | null>(null);
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
+
   constructor(
     private readonly dashboardManagementService: DashboardManagementService,
     private readonly datePipe: DatePipe,
@@ -150,8 +149,16 @@ export class DashboardDetailsComponent implements AfterViewInit {
     this._refreshDashboardSubject$.next(null);
   }
 
-  public onMoveRowClick(moveEvent: MoveRowEvent): void {
-    this._refreshWidgetsSubject$.next(moveEvent);
+  public onItemsReordered(items: DashboardWidget[]): void {
+    if (!items) return;
+
+    this._refreshWidgetsSubject$.next(items);
+  }
+
+  public editWidget(event: DashboardWidgetConfiguration): void {
+    this.editWidgetConfiguration$.next({...event});
+    this.modalType = 'edit';
+    this.showModal();
   }
 
   private setFields(): void {
@@ -162,12 +169,6 @@ export class DashboardDetailsComponent implements AfterViewInit {
         label: 'Name',
       },
     ];
-  }
-
-  private editWidget(event: DashboardWidgetConfiguration): void {
-    this.editWidgetConfiguration$.next({...event});
-    this.modalType = 'edit';
-    this.showModal();
   }
 
   private deleteWidget(event: DashboardWidgetConfiguration): void {
@@ -182,16 +183,5 @@ export class DashboardDetailsComponent implements AfterViewInit {
 
   private showEditDashboardModal(): void {
     this.showEditDashboardModal$.next(true);
-  }
-
-  private swapWidgets(
-    dashboardWidgets: DashboardWidget[],
-    index1: number,
-    index2: number
-  ): DashboardWidget[] {
-    const temp = [...dashboardWidgets];
-    temp[index1] = temp.splice(index2, 1, temp[index1])[0];
-
-    return temp;
   }
 }

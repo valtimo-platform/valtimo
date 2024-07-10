@@ -63,12 +63,3 @@
 .pie-label {
   font-size: 16px !important;
 }
-
-.widget.widget-tile svg.ngx-charts {
-  margin-left: -1.5rem !important;
-}
-
-svg.ngx-charts {
-  margin: 0;
-  padding: 0;
-}

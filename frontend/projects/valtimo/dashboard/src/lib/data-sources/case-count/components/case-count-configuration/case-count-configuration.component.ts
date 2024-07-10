@@ -23,10 +23,10 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import {ConfigurationOutput, DataSourceConfigurationComponent} from '../../../../models';
+import {ConfigurationOutput, DataSourceConfigurationComponent, Operator} from '../../../../models';
 import {BehaviorSubject, combineLatest, map, Observable, startWith, Subscription} from 'rxjs';
 import {FormBuilder, Validators} from '@angular/forms';
-import {CaseCountConfiguration, Operator} from '../../models';
+import {CaseCountConfiguration} from '../../models';
 import {DocumentService} from '@valtimo/document';
 import {ListItem} from 'carbon-components-angular';
 import {ListItemWithId, MultiInputKeyValue, MultiInputValues} from '@valtimo/components';
@@ -119,7 +119,9 @@ export class CaseCountConfigurationComponent
     }
   }
 
-  @Output() public configurationEvent = new EventEmitter<ConfigurationOutput>();
+  @Output() public configurationEvent = new EventEmitter<
+    ConfigurationOutput<CaseCountConfiguration>
+  >();
 
   private _subscriptions = new Subscription();
 
@@ -173,7 +175,7 @@ export class CaseCountConfigurationComponent
       ]).subscribe(([formValue, allConditionsValid]) => {
         this.configurationEvent.emit({
           valid: this.form.valid && allConditionsValid,
-          data: formValue,
+          data: formValue as CaseCountConfiguration,
         });
       })
     );

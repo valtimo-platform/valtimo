@@ -14,24 +14,11 @@
  * limitations under the License.
  */
 
-interface QueryCondition {
-  queryPath: string;
-  queryOperator: string;
-  queryValue: string;
-}
+import {QueryCondition} from '../../../models';
 
 interface CaseCountConfiguration {
   documentDefinition: string;
-  queryConditions: Array<QueryCondition>;
+  queryConditions: QueryCondition[];
 }
 
-enum Operator {
-  NOT_EQUAL_TO = '!=',
-  EQUAL_TO = '==',
-  GREATER_THAN = '>',
-  GREATER_THAN_OR_EQUAL_TO = '>=',
-  LESS_THAN = '<',
-  LESS_THAN_OR_EQUAL_TO = '<=',
-}
-
-export {CaseCountConfiguration, QueryCondition, Operator};
+export {CaseCountConfiguration};

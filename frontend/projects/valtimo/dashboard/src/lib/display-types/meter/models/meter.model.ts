@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-interface MeterData {
+interface MeterItem {
   value: number;
+  label: string;
+}
+
+interface MeterData {
+  values: MeterItem[];
 }
 
 interface MeterDisplayTypeProperties {
   title: string;
+  subtitle: string;
 }
 
-export {MeterData, MeterDisplayTypeProperties};
+export {MeterData, MeterItem, MeterDisplayTypeProperties};

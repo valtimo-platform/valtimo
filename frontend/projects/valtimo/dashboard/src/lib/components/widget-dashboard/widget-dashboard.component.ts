@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {Component, ViewEncapsulation} from '@angular/core';
-import {BehaviorSubject, Observable, take, tap} from 'rxjs';
+import {BehaviorSubject, Observable, tap} from 'rxjs';
 import {Dashboard, WidgetData} from '../../models';
 import {DashboardService} from '../../services';
 import {WidgetApiService} from '../../services/widget-api.service';
@@ -47,15 +47,10 @@ export class WidgetDashboardComponent {
 
   public onTabSelected(dashboardKey: string): void {
     this.selectedDashboardKey$.next(dashboardKey);
+    this.activeWidgetData$.next({data: [], loading: true});
 
     this.widgetApiService
       .getWidgetData(dashboardKey)
-      .pipe(
-        tap(() => {
-          this.activeWidgetData$.next({data: [], loading: true});
-        }),
-        take(1)
-      )
       .subscribe((data: WidgetData[]) => this.activeWidgetData$.next({data, loading: false}));
   }
 

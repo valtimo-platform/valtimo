@@ -1,0 +1,54 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<form [formGroup]="form">
+  <div class="form__element">
+    <cds-label
+      [helperText]="'formTitleHelperText' | widgetTranslate: displayTypeKey | async"
+      [invalidText]="'formTitleHelperText' | widgetTranslate: displayTypeKey | async"
+      [invalid]="title.dirty && title.invalid"
+    >
+      {{ 'formTitle' | widgetTranslate: displayTypeKey | async }}
+
+      <input cdsText formControlName="title" [invalid]="title.dirty && title.invalid" />
+    </cds-label>
+  </div>
+
+  <div class="form__element">
+    <cds-label
+      [helperText]="'subtitleHelperText' | widgetTranslate: displayTypeKey | async"
+      [invalidText]="'subtitleHelperText' | widgetTranslate: displayTypeKey | async"
+      [invalid]="subtitle.dirty && subtitle.invalid"
+    >
+      {{ 'subtitle' | widgetTranslate: displayTypeKey | async }}
+
+      <input cdsText formControlName="subtitle" [invalid]="subtitle.dirty && subtitle.invalid" />
+    </cds-label>
+  </div>
+
+  <div class="form__element">
+    <cds-label
+      [helperText]="'labelHelperText' | widgetTranslate: displayTypeKey | async"
+      [invalidText]="'labelHelperText' | widgetTranslate: displayTypeKey | async"
+      [invalid]="label.dirty && label.invalid"
+    >
+      {{ 'label' | widgetTranslate: displayTypeKey | async }}
+
+      <input cdsText formControlName="label" [invalid]="label.dirty && label.invalid" />
+    </cds-label>
+  </div>
+
+</form>

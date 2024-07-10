@@ -28,4 +28,19 @@ interface DataSourceSpecification {
   };
 }
 
-export {DataSourceSpecification};
+enum Operator {
+  NOT_EQUAL_TO = '!=',
+  EQUAL_TO = '==',
+  GREATER_THAN = '>',
+  GREATER_THAN_OR_EQUAL_TO = '>=',
+  LESS_THAN = '<',
+  LESS_THAN_OR_EQUAL_TO = '<=',
+}
+
+interface QueryCondition {
+  queryPath: string;
+  queryOperator: string;
+  queryValue: string;
+}
+
+export {DataSourceSpecification, Operator, QueryCondition};

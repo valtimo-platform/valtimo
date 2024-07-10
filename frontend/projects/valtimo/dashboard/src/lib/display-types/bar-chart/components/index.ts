@@ -14,4 +14,5 @@
  * limitations under the License.
  */
 
+export * from './bar-chart-configuration';
 export * from './bar-chart-display';

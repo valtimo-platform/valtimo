@@ -34,6 +34,7 @@
     "flatpickr": "4.6.13",
     "lodash": "4.17.21",
     "jwt-decode": "4.0.0",
-    "deepmerge-ts": "5.1.0"
+    "deepmerge-ts": "5.1.0",
+    "@carbon/charts-angular": "1.17.3"
   }
 }

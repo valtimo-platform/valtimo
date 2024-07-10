@@ -1,0 +1,101 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<form
+  class="case-counts-configuration-form"
+  *ngIf="{
+    documentItems: documentItems$ | async,
+    operatorItems: operatorItems$,
+    queryItemsValue: queryItemsValue$ | async
+  } as obs"
+  [formGroup]="form"
+>
+  <div class="form__element">
+    <cds-dropdown
+      [appendInline]="true"
+      formControlName="documentDefinition"
+      [helperText]="'documentDefinitionHelperText' | widgetTranslate: dataSourceKey | async"
+      [invalidText]="'documentDefinitionHelperText' | widgetTranslate: dataSourceKey | async"
+      [invalid]="documentDefinition.dirty && documentDefinition.invalid"
+      [label]="'documentDefinition' | widgetTranslate: dataSourceKey | async"
+      (selected)="documentDefinitionSelected($event)"
+    >
+      <cds-dropdown-list [items]="obs?.documentItems || []" type="multi"></cds-dropdown-list>
+    </cds-dropdown>
+  </div>
+
+  <cds-label class="conditions__label">{{
+    'counts' | widgetTranslate: dataSourceKey | async
+  }}</cds-label>
+
+  <p class="conditions__helper-text cds--form__helper-text">
+    {{ 'countsHelperText' | widgetTranslate: dataSourceKey | async }}
+  </p>
+
+  @for (_ of queryItemsList$ | async; track $index; let i = $index) {
+    <cds-tile class="count-tile" cdsLayer="1">
+      <div class="count-tile__input">
+        <v-input
+          [title]="'countTitle' | widgetTranslate: dataSourceKey | async"
+          [margin]="true"
+          [defaultValue]="obs.queryItemsValue[i]?.label"
+          [disabled]="formDisabled"
+          [required]="true"
+          [fullWidth]="true"
+          (valueChange)="labelValueChange(i, $event)"
+        >
+        </v-input>
+
+        <valtimo-carbon-multi-input
+          [disabled]="formDisabled"
+          [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
+          [defaultValues]="obs.queryItemsValue[i]?.queryConditions"
+          [dropdownColumnTitle]="'operator' | widgetTranslate: dataSourceKey | async"
+          [dropdownItems]="operatorItems$ | async"
+          [fullWidth]="true"
+          [initialAmountOfRows]="1"
+          [keyColumnTitle]="'path' | widgetTranslate: dataSourceKey | async"
+          [minimumAmountOfRows]="1"
+          [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
+          type="keyDropdownValue"
+          (valueChange)="conditionsValueChange(i, $event)"
+        ></valtimo-carbon-multi-input>
+      </div>
+
+      <div class="count-tile__delete-button">
+        <cds-icon-button
+          [disabled]="formDisabled || i < 2"
+          (click)="deleteCount(i)"
+          kind="danger"
+          size="sm"
+        >
+          <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+        </cds-icon-button>
+      </div>
+    </cds-tile>
+  }
+
+  <button
+    class="add-count-button"
+    cdsButton="primary"
+    [disabled]="formDisabled"
+    (click)="addQueryItem()"
+  >
+    {{ 'Aantal toevoegen' }}
+
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</form>

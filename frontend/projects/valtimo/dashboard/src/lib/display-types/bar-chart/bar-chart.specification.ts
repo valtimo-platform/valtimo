@@ -15,23 +15,43 @@
  */
 
 import {DisplayTypeSpecification} from '../../models';
-import {BarChartDisplayComponent} from './components/bar-chart-display/bar-chart-display.component';
+import {DATA_FEATURES} from '../../constants';
+import {BarChartConfigurationComponent, BarChartDisplayComponent} from './components';
 
 export const barChartSpecification: DisplayTypeSpecification = {
   displayTypeKey: 'bar-chart',
   displayComponent: BarChartDisplayComponent,
+  configurationComponent: BarChartConfigurationComponent,
   width: 1,
   height: 2,
   translations: {
     nl: {
       title: 'Staafdiagram',
+      formTitle: 'Titel (vereist)',
+      formTitleHelperText: 'De titel die wordt weergegeven in de widget',
+      subtitle: 'Ondertitel',
+      subtitleHelperText: 'De ondertitel weergegeven in de widget',
+      label: 'Label',
+      labelHelperText: 'Het label dat wordt weergegeven in de widget',
     },
     en: {
       title: 'Bar chart',
+      formTitle: 'Title (required)',
+      formTitleHelperText: 'The title displayed in the widget',
+      subtitle: 'Subtitle',
+      subtitleHelperText: 'The subtitle displayed in the widget',
+      label: 'Label',
+      labelHelperText: 'The label displayed in the widget',
     },
     de: {
       title: 'Balkendiagramm',
+      formTitle: 'Titel (erforderlich)',
+      formTitleHelperText: 'Der im Widget angezeigte Titel',
+      subtitle: 'Untertitel',
+      subtitleHelperText: 'Der im Widget angezeigte Untertitel',
+      label: 'Beschriftung',
+      labelHelperText: 'Die im Widget angezeigte Beschriftung',
     },
   },
-  requiredDataFeatures: [],
+  requiredDataFeatures: [DATA_FEATURES.NUMBERS],
 };
