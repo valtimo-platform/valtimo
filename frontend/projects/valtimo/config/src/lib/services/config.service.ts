@@ -14,19 +14,27 @@
  * limitations under the License.
  */
 
-import {ComponentFactoryResolver, Inject, Injectable, OnDestroy, OnInit, ViewContainerRef} from '@angular/core';
+import {
+  ComponentFactoryResolver,
+  Inject,
+  Injectable,
+  OnDestroy,
+  OnInit,
+  ViewContainerRef,
+} from '@angular/core';
 import {
   Extension,
   ExtensionLoader,
   ExtensionPoint,
   UserSettings,
   VALTIMO_CONFIG,
-  ValtimoConfig, ValtimoConfigFeatureToggleNames,
+  ValtimoConfig,
+  ValtimoConfigFeatureToggleNames,
   ValtimoConfigFeatureToggles,
 } from '../models';
 import {UrlUtils} from '../utils';
 import {map, Observable, of, Subscription, switchMap} from 'rxjs';
-import {HttpClient} from "@angular/common/http";
+import {HttpClient} from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -40,11 +48,10 @@ export class ConfigService implements OnInit, OnDestroy {
 
   public readonly featureToggles?: ValtimoConfigFeatureToggles = this.valtimoConfig.featureToggles;
 
-
   constructor(
     private readonly http: HttpClient,
     @Inject(VALTIMO_CONFIG) private valtimoConfig: ValtimoConfig,
-    private componentFactoryResolver: ComponentFactoryResolver,
+    private componentFactoryResolver: ComponentFactoryResolver
   ) {
     this.extensionLoader = new ExtensionLoader(componentFactoryResolver);
     this.valtimoApiUri = this.config?.valtimoApi?.endpointUri;
@@ -86,7 +93,7 @@ export class ConfigService implements OnInit, OnDestroy {
         ),
       }),
       applicationTitle: config.applicationTitle || this.DEFAULT_APPLICATION_TITLE,
-      featureToggles: this.featureToggles
+      featureToggles: this.featureToggles,
     };
   }
 
@@ -99,11 +106,13 @@ export class ConfigService implements OnInit, OnDestroy {
       map(userSettings =>
         Object.fromEntries(
           Object.keys(ValtimoConfigFeatureToggleNames).map(key =>
-            userSettings[key] !== undefined ? [key, userSettings[key]] : [key, this.featureToggles[key]]
+            userSettings[key] !== undefined
+              ? [key, userSettings[key]]
+              : [key, this.featureToggles[key]]
           )
         )
       )
-    )
+    );
   }
 
   public get initializers() {
@@ -150,13 +159,16 @@ export class ConfigService implements OnInit, OnDestroy {
   }
 
   public setFeatureToggle(key: string, enabled: boolean): void {
-    this.getUserSettings().pipe(
-      switchMap(userSettings => this.saveUserSettings({
-          ...userSettings,
-          [key]: enabled
-        }
-      )),
-    ).subscribe();
+    this.getUserSettings()
+      .pipe(
+        switchMap(userSettings =>
+          this.saveUserSettings({
+            ...userSettings,
+            [key]: enabled,
+          })
+        )
+      )
+      .subscribe();
   }
 
   getUserSettings(): Observable<UserSettings> {
@@ -172,7 +184,7 @@ export class ConfigService implements OnInit, OnDestroy {
       this.featureToggles$.subscribe(featureToggles =>
         Object.entries(featureToggles)
           .filter(([key, _]) => !!this.featureToggles[key])
-          .map(([key, value]) => this.featureToggles[key] = value)
+          .map(([key, value]) => (this.featureToggles[key] = value))
       )
     );
   }

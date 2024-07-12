@@ -148,13 +148,18 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
   );
 
   public overrideFeedbackMenuItemToMailTo!: FeedbackMailTo;
-  public allowUserThemeSwitching$ = this.configService?.getFeatureToggleObservable('allowUserThemeSwitching');
-  public enableCompactModeToggle$ = this.configService?.getFeatureToggleObservable('enableCompactModeToggle');
+  public allowUserThemeSwitching$ =
+    this.configService?.getFeatureToggleObservable('allowUserThemeSwitching');
+  public enableCompactModeToggle$ =
+    this.configService?.getFeatureToggleObservable('enableCompactModeToggle');
   public enableShowUserNameToggle = false;
-  public showPlantATreeButton$ = this.configService?.getFeatureToggleObservable('showPlantATreeButton');
+  public showPlantATreeButton$ =
+    this.configService?.getFeatureToggleObservable('showPlantATreeButton');
   public resetUrl!: string;
 
-  private hideValtimoVersionsForNonAdmins$ = this.configService?.getFeatureToggleObservable('hideValtimoVersionsForNonAdmins');
+  private hideValtimoVersionsForNonAdmins$ = this.configService?.getFeatureToggleObservable(
+    'hideValtimoVersionsForNonAdmins'
+  );
 
   private readonly _isAdmin$: Observable<boolean> = this.userProviderService
     .getUserSubject()
@@ -347,7 +352,7 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
       this.compactMode$,
       this.showUserNameInTopBar$,
       this._preferredTheme$,
-      this.userSettingsService.getUserSettings()
+      this.userSettingsService.getUserSettings(),
     ])
       .pipe(
         take(1),
@@ -388,11 +393,13 @@ export class RightSidebarComponent implements OnInit, OnDestroy {
 
   private openShowVersionsSubscription(): void {
     this._subscriptions.add(
-      combineLatest([this._isAdmin$, this.hideValtimoVersionsForNonAdmins$]).subscribe(([isAdmin, hideValtimoVersionsForNonAdmins]) => {
-        if (hideValtimoVersionsForNonAdmins && !isAdmin) {
-          this.showValtimoVersions = false;
+      combineLatest([this._isAdmin$, this.hideValtimoVersionsForNonAdmins$]).subscribe(
+        ([isAdmin, hideValtimoVersionsForNonAdmins]) => {
+          if (hideValtimoVersionsForNonAdmins && !isAdmin) {
+            this.showValtimoVersions = false;
+          }
         }
-      })
+      )
     );
   }
 }

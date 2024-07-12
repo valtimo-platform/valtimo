@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ValtimoConfigFeatureToggles} from "./config";
+import {ValtimoConfigFeatureToggles} from './config';
 
 interface UserSettings extends ValtimoConfigFeatureToggles {
   collapsibleWidescreenMenu?: boolean;
