@@ -1771,6 +1771,76 @@
         }
       }
     },
+    "@valtimo/feature-management": {
+      "projectType": "library",
+      "root": "projects/valtimo/feature-management",
+      "sourceRoot": "projects/valtimo/feature-management/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/valtimo/feature-management/tsconfig.lib.json",
+            "project": "projects/valtimo/feature-management/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/feature-management/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.ts",
+            "tsConfig": "projects/valtimo/feature-management/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/feature-management/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/feature-management/src/**/*.ts",
+              "projects/valtimo/feature-management/src/**/*.html"
+            ]
+          }
+        },
+        "cypress-run": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "@valtimo/feature-management:serve",
+            "configFile": "projects/valtimo/feature-management/cypress.config.js"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "@valtimo/feature-management:serve:production"
+            }
+          }
+        },
+        "cypress-open": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "watch": true,
+            "headless": false,
+            "configFile": "projects/valtimo/feature-management/cypress.config.js"
+          }
+        },
+        "e2e": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "@valtimo/feature-management:serve",
+            "watch": true,
+            "headless": false
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "@valtimo/feature-management:serve:production"
+            }
+          }
+        }
+      }
+    },
     "@valtimo/form-management": {
       "projectType": "library",
       "root": "projects/valtimo/form-management",

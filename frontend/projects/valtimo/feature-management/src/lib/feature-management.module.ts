@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {NgModule} from '@angular/core';
+import {FeatureManagementComponent} from './components';
+import {FeatureManagementRoutingModule} from './feature-management-routing.module';
 
-import {ValtimoConfigFeatureToggles} from "./config";
-
-interface UserSettings extends ValtimoConfigFeatureToggles {
-  collapsibleWidescreenMenu?: boolean;
-  languageCode?: string;
-  compactMode?: boolean;
-  preferredTheme?: string;
-}
-
-export {UserSettings};
+@NgModule({
+  imports: [FeatureManagementRoutingModule, FeatureManagementComponent],
+})
+export class FeatureManagementModule {}

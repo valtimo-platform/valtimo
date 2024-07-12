@@ -673,6 +673,43 @@
       }
     }
   },
+  "featureManagement": {
+    "title": "Feature toggles",
+    "toggle": {
+      "showPlantATreeButton": "Show 'Plant a tree' button",
+      "showPlantATreeButtonDescription": "If enabled, a 'Plant a tree' button will appear in the right sidebar.",
+      "enableObjectManagement": "Enable object management",
+      "enableObjectManagementDescription": "If enabled, a new menuitem 'objects' will appear in the left sidebar menu. This menu item can have one or more submenu items depending on the configuration.",
+      "applicationTitleAsSuffix": "Application title as suffix",
+      "applicationTitleAsSuffixDescription": "By default, the application title is shown in the browser tab as a prefix e.g. 'Valtimo - Processes'. With this featureToggle it is possible to change this to 'Processes - Valtimo'.",
+      "showUserNameInTopBar": "Show user in top bar",
+      "showUserNameInTopBarDescription": "If enabled, the full name of the user currently logged in is shown in the top bar next to the user menu button.",
+      "experimentalDmnEditing": "Experimental DMN editing",
+      "experimentalDmnEditingDescription": "If enabled, it is possible to edit DMN tables from the ui from the admin page. This feature is experimental, please refer to the release notes for known issues.",
+      "disableCaseCount": "Disable case coung",
+      "disableCaseCountDescription": "If set to true, showing the number of open cases in the menu is disabled.",
+      "caseListColumn": "Case list column",
+      "caseListColumnDescription": "If enabled, the column list tab will be shown on the case management page. Enabled by default when not configured.",
+      "sortFilesByDate": "Sort files by date",
+      "sortFilesByDateDescription": "If enabled, files under the documents tab on a case detail page will be sorted by date in descending order.",
+      "largeLogoMargin": "Large logo margin",
+      "largeLogoMarginDescription": "If enabled, the logo on the left in the top bar will have a large margin around it. This works well for logo's that are bigger horizontally than they are vertically.",
+      "returnToLastUrlAfterTokenExpiration": "Return to last url after token expiration",
+      "returnToLastUrlAfterTokenExpirationDescription": "If enabled, the user will be returned to the page they were last on before they were automatically logged out after their refresh token expired.",
+      "enableCompactModeToggle": "Enable compact mode",
+      "enableCompactModeToggleDescription": "If enabled, the user can toggle compact mode in the user settings. When both toggles are enabled, this will free up vertical space by moving the breadcrumbs and page title to the top header next to the logo. More information can be found here",
+      "hideValtimoVersionsForNonAdmins": "Hide valtimo versions for non admins",
+      "hideValtimoVersionsForNonAdminsDescription": "If enabled, the Valtimo version information in the right sidebar will only be visible for admins and will be hidden for any other users.",
+      "enableTabManagement": "Enable tab management",
+      "enableTabManagementDescription": "If enabled, tabs will be configured for each case type in the back-end. Enabled by default when not configured. For more information on this option, visit this page . If disabled, the tabs for each case type will be the same, and will be configured from the AppModule. For information on this option, visit this page.",
+      "useStartEventNameAsStartFormTitle": "Use start event name as start form title",
+      "useStartEventNameAsStartFormTitleDescription": "If enabled, BPMN start event names will be used as title for start forms instead of the standard Start - ${process-name} format.",
+      "allowUserThemeSwitching": "Allow user theme switching",
+      "allowUserThemeSwitchingDescription": "If enabled, a new dropdown will appear in user settings, where the user can switch between themes. This feature toggle is enabled by default.",
+      "on": "On",
+      "off": "Off"
+    }
+  },
   "widgetTabManagement": {
     "tab": {
       "metadata": "<b>Created by</b> {{createdBy}} | <b>Created on</b> {{createdOn}} | <b>Key</b> {{key}}",

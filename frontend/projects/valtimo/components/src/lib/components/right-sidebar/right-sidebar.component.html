@@ -140,7 +140,7 @@
         </cds-list-column>
       </cds-list-row>
 
-      <cds-list-row *ngIf="showPlantATreeButton">
+      <cds-list-row *ngIf="showPlantATreeButton$ | async">
         <cds-list-column>
           <a
             class="text-success"
@@ -242,7 +242,7 @@
       </cds-list-column>
     </cds-list-row>
 
-    <cds-list-row *ngIf="allowUserThemeSwitching">
+    <cds-list-row *ngIf="allowUserThemeSwitching$ | async">
       <cds-list-column>
         <cds-dropdown
           [label]="'settings.interface.themePreference' | translate"
@@ -256,7 +256,7 @@
       </cds-list-column>
     </cds-list-row>
 
-    <cds-list-row *ngIf="enableCompactModeToggle">
+    <cds-list-row *ngIf="enableCompactModeToggle$ | async">
       <cds-list-column>
         <cds-toggle
           [label]="'settings.interface.compactMode' | translate"

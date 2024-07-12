@@ -672,6 +672,43 @@
       }
     }
   },
+  "featureManagement": {
+    "title": "Funktionsschalter",
+    "toggle": {
+      "showPlantATreeButton": "'Pflanze einen Baum' Schaltfläche anzeigen",
+      "showPlantATreeButtonDescription": "Wenn aktiviert, erscheint eine 'Pflanze einen Baum' Schaltfläche in der rechten Seitenleiste.",
+      "enableObjectManagement": "Objektverwaltung aktivieren",
+      "enableObjectManagementDescription": "Wenn aktiviert, erscheint ein neues Menüelement 'Objekte' im linken Seitenmenü. Dieses Menüelement kann je nach Konfiguration ein oder mehrere Untermenüelemente haben.",
+      "applicationTitleAsSuffix": "Applikationstitel als Suffix",
+      "applicationTitleAsSuffixDescription": "Standardmäßig wird der Applikationstitel im Browser-Tab als Präfix angezeigt, z.B. 'Valtimo - Prozesse'. Mit diesem Funktionsschalter kann dies in 'Prozesse - Valtimo' geändert werden.",
+      "showUserNameInTopBar": "Benutzer in der oberen Leiste anzeigen",
+      "showUserNameInTopBarDescription": "Wenn aktiviert, wird der vollständige Name des aktuell angemeldeten Benutzers in der oberen Leiste neben der Benutzermenütaste angezeigt.",
+      "experimentalDmnEditing": "Experimentelle DMN-Bearbeitung",
+      "experimentalDmnEditingDescription": "Wenn aktiviert, ist es möglich, DMN-Tabellen über die Benutzeroberfläche von der Administrationsseite aus zu bearbeiten. Diese Funktion ist experimentell, bitte lesen Sie die Versionshinweise für bekannte Probleme.",
+      "disableCaseCount": "Fallanzahl deaktivieren",
+      "disableCaseCountDescription": "Wenn auf wahr gesetzt, wird die Anzeige der Anzahl der offenen Fälle im Menü deaktiviert.",
+      "caseListColumn": "Fällelisten-Spalte",
+      "caseListColumnDescription": "Wenn aktiviert, wird das Spaltenlisten-Tab auf der Fallverwaltungsseite angezeigt. Standardmäßig aktiviert, wenn nicht konfiguriert.",
+      "sortFilesByDate": "Dateien nach Datum sortieren",
+      "sortFilesByDateDescription": "Wenn aktiviert, werden Dateien im Dokumenten-Tab auf einer Falldetailseite nach Datum in absteigender Reihenfolge sortiert.",
+      "largeLogoMargin": "Großer Logoabstand",
+      "largeLogoMarginDescription": "Wenn aktiviert, hat das Logo links in der oberen Leiste einen großen Abstand darum herum. Dies funktioniert gut für Logos, die horizontal größer als vertikal sind.",
+      "returnToLastUrlAfterTokenExpiration": "Zur letzten URL nach Token-Ablauf zurückkehren",
+      "returnToLastUrlAfterTokenExpirationDescription": "Wenn aktiviert, wird der Benutzer auf die Seite zurückgeführt, auf der er sich zuletzt befand, bevor er nach dem Ablauf seines Refresh-Tokens automatisch abgemeldet wurde.",
+      "enableCompactModeToggle": "Kompaktmodus aktivieren",
+      "enableCompactModeToggleDescription": "Wenn aktiviert, kann der Benutzer den Kompaktmodus in den Benutzereinstellungen umschalten. Wenn beide Schalter aktiviert sind, wird vertikaler Platz freigegeben, indem die Brotkrümel und der Seitentitel in die obere Kopfzeile neben dem Logo verschoben werden. Weitere Informationen finden Sie hier.",
+      "hideValtimoVersionsForNonAdmins": "Valtimo-Versionen für Nicht-Administratoren ausblenden",
+      "hideValtimoVersionsForNonAdminsDescription": "Wenn aktiviert, sind die Valtimo-Versionsinformationen in der rechten Seitenleiste nur für Administratoren sichtbar und werden für alle anderen Benutzer ausgeblendet.",
+      "enableTabManagement": "Tab-Verwaltung aktivieren",
+      "enableTabManagementDescription": "Wenn aktiviert, werden Tabs für jeden Falltyp im Backend konfiguriert. Standardmäßig aktiviert, wenn nicht konfiguriert. Für weitere Informationen zu dieser Option besuchen Sie diese Seite. Wenn deaktiviert, sind die Tabs für jeden Falltyp gleich und werden aus dem AppModule konfiguriert. Für Informationen zu dieser Option besuchen Sie diese Seite.",
+      "useStartEventNameAsStartFormTitle": "Startereignisname als Startformular-Titel verwenden",
+      "useStartEventNameAsStartFormTitleDescription": "Wenn aktiviert, werden BPMN-Startereignisnamen als Titel für Startformulare verwendet, anstatt des Standardformats Start - ${process-name}.",
+      "allowUserThemeSwitching": "Benutzern das Wechseln des Themas erlauben",
+      "allowUserThemeSwitchingDescription": "Wenn aktiviert, erscheint ein neues Dropdown-Menü in den Benutzereinstellungen, wo der Benutzer zwischen Themen wechseln kann. Dieser Funktionsschalter ist standardmäßig aktiviert.",
+      "on": "Ein",
+      "off": "Aus"
+    }
+  },
   "widgetTabManagement": {
     "tab": {
       "metadata": "<b>Erstellt von</b> {{createdBy}} | <b>Erstellt am</b> {{createdOn}} | <b>Schlüssel</b> {{key}}",

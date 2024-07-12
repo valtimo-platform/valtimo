@@ -99,6 +99,31 @@ interface ValtimoConfigFeatureToggles {
   enableTaskFiltering?: boolean;
 }
 
+enum ValtimoConfigFeatureToggleNames {
+  applicationTitleAsSuffix = 'applicationTitleAsSuffix',
+  enableHackathonCasesPage = 'enableHackathonCasesPage',
+  showUserNameInTopBar = 'showUserNameInTopBar',
+  showPlantATreeButton = 'showPlantATreeButton',
+  experimentalDmnEditing = 'experimentalDmnEditing',
+  disableCaseCount = 'disableCaseCount',
+  caseListColumn = 'caseListColumn',
+  enableObjectManagement = 'enableObjectManagement',
+  largeLogoMargin = 'largeLogoMargin',
+  sortFilesByDate = 'sortFilesByDate',
+  returnToLastUrlAfterTokenExpiration = 'returnToLastUrlAfterTokenExpiration',
+  enableTabManagement = 'enableTabManagement',
+  hideValtimoVersionsForNonAdmins = 'hideValtimoVersionsForNonAdmins',
+  useStartEventNameAsStartFormTitle = 'useStartEventNameAsStartFormTitle',
+  allowUserThemeSwitching = 'allowUserThemeSwitching',
+  enableCompactModeToggle = 'enableCompactModeToggle',
+  compactModeOnByDefault = 'compactModeOnByDefault',
+  enableUserNameInTopBarToggle = 'enableUserNameInTopBarToggle',
+  enableCaseWidgets = 'enableCaseWidgets',
+  enableFormViewModel = 'enableFormViewModel',
+  enableIntermediateSave = 'enableIntermediateSave',
+  enableTaskFiltering = 'enableTaskFiltering',
+}
+
 interface ValtimoConfig {
   // eslint-disable-next-line
   logoSvgBase64?: string;
@@ -198,6 +223,7 @@ export {
   SortState,
   OverrideFormioOptions,
   ValtimoConfigFeatureToggles,
+  ValtimoConfigFeatureToggleNames,
   ValtimoConfig,
   FeedbackMailTo,
   UploadProvider,

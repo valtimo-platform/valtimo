@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-import {ValtimoConfigFeatureToggles} from "./config";
+import {defineConfig} from 'cypress';
 
-interface UserSettings extends ValtimoConfigFeatureToggles {
-  collapsibleWidescreenMenu?: boolean;
-  languageCode?: string;
-  compactMode?: boolean;
-  preferredTheme?: string;
-}
-
-export {UserSettings};
+export default defineConfig({
+  e2e: {
+    baseUrl: 'http://localhost:4200',
+    supportFile: false,
+  },
+});

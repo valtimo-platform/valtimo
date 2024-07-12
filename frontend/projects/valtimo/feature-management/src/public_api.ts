@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-import {ValtimoConfigFeatureToggles} from "./config";
+/*
+ * Public API Surface of feature
+ */
 
-interface UserSettings extends ValtimoConfigFeatureToggles {
-  collapsibleWidescreenMenu?: boolean;
-  languageCode?: string;
-  compactMode?: boolean;
-  preferredTheme?: string;
-}
-
-export {UserSettings};
+export * from './lib/feature-management.module';
+export * from './lib/components';
+export * from './lib/models';

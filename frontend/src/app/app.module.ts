@@ -124,6 +124,7 @@ import {ObjectModule} from '@valtimo/object';
 import {AccessControlManagementModule} from '@valtimo/access-control-management';
 import {FormFlowManagementModule} from '@valtimo/form-flow-management';
 import {CustomFormFlowComponent} from '@src/app/custom-form-flow-component/custom-form-flow.component';
+import {FeatureManagementModule} from '@valtimo/feature-management';
 import {TaskManagementModule} from '@valtimo/task-management';
 import {CaseMigrationModule} from '@valtimo/case-migration';
 import {
@@ -230,6 +231,7 @@ export function tabsFactory() {
     FormFlowManagementModule,
     TranslationManagementModule,
     CustomFormFlowComponent,
+    FeatureManagementModule,
     TaskManagementModule,
     ZgwModule,
     FormViewModelModule,

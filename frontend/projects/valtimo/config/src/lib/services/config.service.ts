@@ -14,31 +14,48 @@
  * limitations under the License.
  */
 
-import {ComponentFactoryResolver, Inject, Injectable, ViewContainerRef} from '@angular/core';
+import {ComponentFactoryResolver, Inject, Injectable, OnDestroy, OnInit, ViewContainerRef} from '@angular/core';
 import {
   Extension,
   ExtensionLoader,
   ExtensionPoint,
+  UserSettings,
   VALTIMO_CONFIG,
-  ValtimoConfig,
+  ValtimoConfig, ValtimoConfigFeatureToggleNames,
   ValtimoConfigFeatureToggles,
 } from '../models';
 import {UrlUtils} from '../utils';
-import {map, Observable, of} from 'rxjs';
+import {map, Observable, of, Subscription, switchMap} from 'rxjs';
+import {HttpClient} from "@angular/common/http";
 
 @Injectable({
   providedIn: 'root',
 })
-export class ConfigService {
+export class ConfigService implements OnInit, OnDestroy {
   private readonly extensionLoader: ExtensionLoader;
   private readonly extensions: Array<Extension> = [];
   private readonly DEFAULT_APPLICATION_TITLE = 'Valtimo';
+  private readonly valtimoApiUri!: string;
+  private readonly _subscriptions = new Subscription();
+
+  public readonly featureToggles?: ValtimoConfigFeatureToggles = this.valtimoConfig.featureToggles;
+
 
   constructor(
+    private readonly http: HttpClient,
     @Inject(VALTIMO_CONFIG) private valtimoConfig: ValtimoConfig,
-    private componentFactoryResolver: ComponentFactoryResolver
+    private componentFactoryResolver: ComponentFactoryResolver,
   ) {
     this.extensionLoader = new ExtensionLoader(componentFactoryResolver);
+    this.valtimoApiUri = this.config?.valtimoApi?.endpointUri;
+  }
+
+  public ngOnInit(): void {
+    this.getFeatureToggles();
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
   }
 
   public get config(): ValtimoConfig {
@@ -69,11 +86,8 @@ export class ConfigService {
         ),
       }),
       applicationTitle: config.applicationTitle || this.DEFAULT_APPLICATION_TITLE,
+      featureToggles: this.featureToggles
     };
-  }
-
-  public get featureToggles(): ValtimoConfig['featureToggles'] {
-    return this.config.featureToggles;
   }
 
   public get config$(): Observable<ValtimoConfig> {
@@ -81,7 +95,15 @@ export class ConfigService {
   }
 
   public get featureToggles$(): Observable<ValtimoConfig['featureToggles']> {
-    return of(this.config.featureToggles);
+    return this.getUserSettings().pipe(
+      map(userSettings =>
+        Object.fromEntries(
+          Object.keys(ValtimoConfigFeatureToggleNames).map(key =>
+            userSettings[key] !== undefined ? [key, userSettings[key]] : [key, this.featureToggles[key]]
+          )
+        )
+      )
+    )
   }
 
   public get initializers() {
@@ -125,5 +147,33 @@ export class ConfigService {
 
   public getFeatureToggle(featureToggle: keyof ValtimoConfigFeatureToggles): boolean {
     return !!(this.featureToggles && this.featureToggles[featureToggle]);
+  }
+
+  public setFeatureToggle(key: string, enabled: boolean): void {
+    this.getUserSettings().pipe(
+      switchMap(userSettings => this.saveUserSettings({
+          ...userSettings,
+          [key]: enabled
+        }
+      )),
+    ).subscribe();
+  }
+
+  getUserSettings(): Observable<UserSettings> {
+    return this.http.get<UserSettings>(`${this.valtimoApiUri}v1/user/settings`);
+  }
+
+  saveUserSettings(settings: UserSettings): Observable<any> {
+    return this.http.put(`${this.valtimoApiUri}v1/user/settings`, settings);
+  }
+
+  private getFeatureToggles(): void {
+    this._subscriptions.add(
+      this.featureToggles$.subscribe(featureToggles =>
+        Object.entries(featureToggles)
+          .filter(([key, _]) => !!this.featureToggles[key])
+          .map(([key, value]) => this.featureToggles[key] = value)
+      )
+    );
   }
 }

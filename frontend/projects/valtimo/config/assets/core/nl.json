@@ -672,6 +672,43 @@
       }
     }
   },
+  "featureManagement": {
+    "title": "Functie schakelaars",
+    "toggle": {
+      "showPlantATreeButton": "Toon 'Plant een boom' knop",
+      "showPlantATreeButtonDescription": "Indien ingeschakeld, verschijnt er een 'Plant een boom' knop in de rechter zijbalk.",
+      "enableObjectManagement": "Objectbeheer inschakelen",
+      "enableObjectManagementDescription": "Indien ingeschakeld, verschijnt er een nieuw menu-item 'objecten' in het linkermenu. Dit menu-item kan één of meer submenu-items hebben, afhankelijk van de configuratie.",
+      "applicationTitleAsSuffix": "Applicatietitel als achtervoegsel",
+      "applicationTitleAsSuffixDescription": "Standaard wordt de applicatietitel als voorvoegsel weergegeven in het browsertabblad, bijv. 'Valtimo - Processen'. Met deze functie schakelaar is het mogelijk om dit te veranderen in 'Processen - Valtimo'.",
+      "showUserNameInTopBar": "Toon gebruiker in bovenbalk",
+      "showUserNameInTopBarDescription": "Indien ingeschakeld, wordt de volledige naam van de ingelogde gebruiker weergegeven in de bovenbalk naast de gebruikersmenuknop.",
+      "experimentalDmnEditing": "Experimentele DMN-bewerking",
+      "experimentalDmnEditingDescription": "Indien ingeschakeld, is het mogelijk om DMN-tabellen te bewerken vanuit de UI vanaf de beheerderspagina. Deze functie is experimenteel, raadpleeg de release-opmerkingen voor bekende problemen.",
+      "disableCaseCount": "Aantal zaken uitschakelen",
+      "disableCaseCountDescription": "Indien ingesteld op waar, wordt het tonen van het aantal open zaken in het menu uitgeschakeld.",
+      "caseListColumn": "Zakenlijst kolom",
+      "caseListColumnDescription": "Indien ingeschakeld, wordt het kolommenlijsttabblad weergegeven op de zaakbeheerpagina. Standaard ingeschakeld wanneer niet geconfigureerd.",
+      "sortFilesByDate": "Sorteer bestanden op datum",
+      "sortFilesByDateDescription": "Indien ingeschakeld, worden bestanden onder het documenttabblad op een zaaksdetailpagina gesorteerd op datum in aflopende volgorde.",
+      "largeLogoMargin": "Grote logo marge",
+      "largeLogoMarginDescription": "Indien ingeschakeld, krijgt het logo links in de bovenbalk een grote marge eromheen. Dit werkt goed voor logo's die horizontaal groter zijn dan verticaal.",
+      "returnToLastUrlAfterTokenExpiration": "Keer terug naar laatste url na token-verloop",
+      "returnToLastUrlAfterTokenExpirationDescription": "Indien ingeschakeld, wordt de gebruiker teruggebracht naar de pagina waar hij of zij zich het laatst bevond voordat hij of zij automatisch werd uitgelogd nadat het vernieuwings-token was verlopen.",
+      "enableCompactModeToggle": "Compacte modus inschakelen",
+      "enableCompactModeToggleDescription": "Indien ingeschakeld, kan de gebruiker de compacte modus in de gebruikersinstellingen in- en uitschakelen. Wanneer beide schakelaars zijn ingeschakeld, komt er meer verticale ruimte vrij door de broodkruimels en paginatitel naar de bovenste header naast het logo te verplaatsen. Meer informatie is hier te vinden.",
+      "hideValtimoVersionsForNonAdmins": "Valtimo-versies verbergen voor niet-beheerders",
+      "hideValtimoVersionsForNonAdminsDescription": "Indien ingeschakeld, is de Valtimo-versie-informatie in de rechterzijbalk alleen zichtbaar voor beheerders en verborgen voor andere gebruikers.",
+      "enableTabManagement": "Tabbeheer inschakelen",
+      "enableTabManagementDescription": "Indien ingeschakeld, worden tabbladen geconfigureerd voor elk zaaktype in de back-end. Standaard ingeschakeld wanneer niet geconfigureerd. Voor meer informatie over deze optie, bezoek deze pagina. Indien uitgeschakeld, zijn de tabbladen voor elk zaaktype hetzelfde en worden ze geconfigureerd vanuit de AppModule. Voor informatie over deze optie, bezoek deze pagina.",
+      "useStartEventNameAsStartFormTitle": "Gebruik naam startgebeurtenis als startformulier titel",
+      "useStartEventNameAsStartFormTitleDescription": "Indien ingeschakeld, worden BPMN-startgebeurtenisnamen gebruikt als titel voor startformulieren in plaats van het standaardformaat Start - ${process-name}.",
+      "allowUserThemeSwitching": "Gebruikers thema's laten wisselen",
+      "allowUserThemeSwitchingDescription": "Indien ingeschakeld, verschijnt er een nieuwe dropdown in de gebruikersinstellingen, waar de gebruiker tussen thema's kan schakelen. Deze functie schakelaar is standaard ingeschakeld.",
+      "on": "Aan",
+      "off": "Uit"
+    }
+  },
   "widgetTabManagement": {
     "tab": {
       "metadata": "<b>Aangemaakt door</b> {{createdBy}} | <b>Aangemaakt op</b> {{createdOn}} | <b>Sleutel</b> {{key}}",

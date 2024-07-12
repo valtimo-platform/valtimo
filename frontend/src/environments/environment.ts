@@ -140,6 +140,7 @@ export const environment: ValtimoConfig = {
           {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 15},
           {link: ['/process-migration'], title: 'Process migration', sequence: 16},
           {link: ['/choice-fields'], title: 'Choice fields', sequence: 17},
+          {link: ['/feature-management'], title: 'Feature management', sequence: 18},
         ],
       },
       {

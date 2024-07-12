@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-import {ValtimoConfigFeatureToggles} from "./config";
-
-interface UserSettings extends ValtimoConfigFeatureToggles {
-  collapsibleWidescreenMenu?: boolean;
-  languageCode?: string;
-  compactMode?: boolean;
-  preferredTheme?: string;
-}
-
-export {UserSettings};
+describe('My First Test', () => {
+  it('Visits the initial project page', () => {
+    cy.visit('/')
+    cy.contains('app is running!')
+  })
+})

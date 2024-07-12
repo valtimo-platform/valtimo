@@ -67,6 +67,8 @@
       "@valtimo/decision/*": ["dist/valtimo/decision/*"],
       "@valtimo/milestone": ["dist/valtimo/milestone"],
       "@valtimo/milestone/*": ["dist/valtimo/milestone/*"],
+      "@valtimo/feature-management": ["dist/valtimo/feature-management"],
+      "@valtimo/feature-management/*": ["dist/valtimo/feature-management/*"],
       "@valtimo/form-management": ["dist/valtimo/form-management"],
       "@valtimo/form-management/*": ["dist/valtimo/form-management/*"],
       "@valtimo/form-flow-management": ["dist/valtimo/form-flow-management"],
