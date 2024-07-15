@@ -241,7 +241,7 @@ export class TaskManagementSearchFieldsComponent {
       case TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN:
         return 'multi-select-dropdown';
       default:
-        return fieldType;
+        return fieldType.toLowerCase();
     }
   }
 }

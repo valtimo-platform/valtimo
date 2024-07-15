@@ -32,12 +32,14 @@
     (rowClicked)="editField($event)"
   >
     <ng-container carbonToolbarContent>
-      <button cdsButton="primary" (click)="onAddButtonClick()">
-        <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-
-        {{ 'searchFieldsOverview.add' | translate }}
-      </button>
+      <ng-container [ngTemplateOutlet]="addButton"></ng-container>
     </ng-container>
+
+    <valtimo-no-results
+      [action]="addButton"
+      [description]="'searchFieldsOverview.noSearchfieldsDescription' | translate"
+      [title]="'searchFieldsOverview.noSearchfieldsTitle' | translate"
+    ></valtimo-no-results>
   </valtimo-carbon-list>
 
   <valtimo-task-management-search-fields-modal
@@ -57,3 +59,11 @@
     (confirmEvent)="onDeleteFieldConfirm($event)"
   ></valtimo-confirmation-modal>
 </ng-container>
+
+<ng-template #addButton>
+  <button cdsButton="primary" (click)="onAddButtonClick()">
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+
+    {{ 'searchFieldsOverview.add' | translate }}
+  </button>
+</ng-template>

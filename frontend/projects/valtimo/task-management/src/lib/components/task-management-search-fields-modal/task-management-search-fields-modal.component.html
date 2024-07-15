@@ -26,12 +26,11 @@
         <span class="valtimo-task-management-search-fields-modal__label">
           {{ 'searchFieldsOverview.title' | translate }}
 
-          <cds-tooltip
-            align="right"
-            [description]="'searchFieldsOverviewTooltips.title' | translate"
-          >
-            <svg cdsIcon="information--filled" size="16"></svg>
-          </cds-tooltip>
+          <svg
+            cdsIcon="information--filled"
+            size="16"
+            [vTooltip]="'searchFieldsOverviewTooltips.title' | translate"
+          ></svg>
         </span>
 
         <input cdsText type="text" formControlName="title" />
@@ -41,9 +40,11 @@
         <span class="valtimo-task-management-search-fields-modal__label">
           {{ 'searchFieldsOverview.key' | translate }}
 
-          <cds-tooltip align="right" [description]="'searchFieldsOverviewTooltips.key' | translate">
-            <svg cdsIcon="information--filled" size="16"></svg>
-          </cds-tooltip>
+          <svg
+            cdsIcon="information--filled"
+            size="16"
+            [vTooltip]="'searchFieldsOverviewTooltips.key' | translate"
+          ></svg>
         </span>
 
         <input cdsText type="text" formControlName="key" />
@@ -53,12 +54,11 @@
         <span class="valtimo-task-management-search-fields-modal__label">
           {{ 'searchFieldsOverview.path' | translate }}
 
-          <cds-tooltip
-            align="right"
-            [description]="'searchFieldsOverviewTooltips.path' | translate"
-          >
-            <svg cdsIcon="information--filled" size="16"></svg>
-          </cds-tooltip>
+          <svg
+            cdsIcon="information--filled"
+            size="16"
+            [vTooltip]="'searchFieldsOverviewTooltips.path' | translate"
+          ></svg>
         </span>
 
         <input cdsText type="text" formControlName="path" />
@@ -79,71 +79,71 @@
       </cds-dropdown>
 
       @if (
-        fieldTypeValue === TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN ||
-        fieldTypeValue === TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN
+        dataTypeValue === TaskListSearchFieldDataType.TEXT &&
+        (fieldTypeValue === TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN ||
+          fieldTypeValue === TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN)
       ) {
         <cds-dropdown formControlName="dropdownDataProvider" [label]="dropdownDataProviderLabel">
           <cds-dropdown-list [items]="dataProviderItems$ | async"></cds-dropdown-list>
         </cds-dropdown>
-      }
 
-      @if (dropdownDataProviderValue === TaskListSearchDropdownDataProvider.DATABASE) {
-        <div
-          class="valtimo-task-management-search-fields-modal__list"
-          formArrayName="dropdownValues"
-        >
-          <cds-label class="valtimo-task-management-search-fields-modal__label">
-            {{ 'searchFieldsOverview.dropdownListValues' | translate }}
+        @if (dropdownDataProviderValue === TaskListSearchDropdownDataProvider.DATABASE) {
+          <div
+            class="valtimo-task-management-search-fields-modal__list"
+            formArrayName="dropdownValues"
+          >
+            <cds-label class="valtimo-task-management-search-fields-modal__label">
+              {{ 'searchFieldsOverview.dropdownListValues' | translate }}
 
-            <cds-tooltip
-              align="right"
-              [description]="'searchFieldsOverviewTooltips.dropdownListValues' | translate"
-            >
-              <svg cdsIcon="information--filled" size="16"></svg>
-            </cds-tooltip>
-          </cds-label>
+              <svg
+                cdsIcon="information--filled"
+                size="16"
+                [vTooltip]="'searchFieldsOverviewTooltips.dropdownListValues' | translate"
+              ></svg>
+            </cds-label>
 
-          @for (dropdownValue of dropdownValuesArray?.controls; track $index) {
-            <form
-              [formGroup]="dropdownValue"
-              class="valtimo-task-management-search-fields-modal__dropdown-values"
-            >
-              <cds-text-label>
-                {{ 'interface.key' | translate }}
-
-                <input cdsText type="text" formControlName="key" />
-              </cds-text-label>
-
-              <cds-text-label>
-                {{ 'interface.value' | translate }}
-
-                <input cdsText type="text" formControlName="value" />
-              </cds-text-label>
-
-              <button
-                cdsButton="danger"
-                [disabled]="$count === 1"
-                [iconOnly]="true"
-                (click)="removeDropdownValue($index)"
+            @for (dropdownValue of dropdownValuesArray?.controls; track $index) {
+              <form
+                [formGroup]="dropdownValue"
+                class="valtimo-task-management-search-fields-modal__dropdown-values"
               >
-                <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
-              </button>
-            </form>
-          }
+                <cds-text-label>
+                  {{ 'interface.key' | translate }}
 
-          <button cdsButton="primary" (click)="addDropdownValue()">
-            {{ 'interface.addRow' | translate }}
+                  <input cdsText type="text" formControlName="key" />
+                </cds-text-label>
 
-            <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-          </button>
-        </div>
-      } @else if (dropdownDataProviderValue === TaskListSearchDropdownDataProvider.JSON) {
-        <valtimo-carbon-list
-          [header]="false"
-          [hideToolbar]="true"
-          [fields]="DROPDOWN_FIELDS"
-          [items]="dropdownReadonlyItems$ | async"
-        ></valtimo-carbon-list>
+                <cds-text-label>
+                  {{ 'interface.value' | translate }}
+
+                  <input cdsText type="text" formControlName="value" />
+                </cds-text-label>
+
+                <button
+                  cdsButton="danger"
+                  [disabled]="$count === 1"
+                  [iconOnly]="true"
+                  (click)="removeDropdownValue($index)"
+                >
+                  <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+                </button>
+              </form>
+            }
+
+            <button cdsButton="primary" (click)="addDropdownValue()">
+              {{ 'interface.addRow' | translate }}
+
+              <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+            </button>
+          </div>
+        } @else if (dropdownDataProviderValue === TaskListSearchDropdownDataProvider.JSON) {
+          <valtimo-carbon-list
+            [header]="false"
+            [hideToolbar]="true"
+            [fields]="DROPDOWN_FIELDS"
+            [items]="dropdownReadonlyItems$ | async"
+          ></valtimo-carbon-list>
+        }
       }
     </form>
   </section>
@@ -163,9 +163,11 @@
   <span class="valtimo-task-management-search-fields-modal__label">
     {{ 'searchFieldsOverview.dataType' | translate }}
 
-    <cds-tooltip align="right" [description]="'searchFieldsOverviewTooltips.dataType' | translate">
-      <svg cdsIcon="information--filled" size="16"></svg>
-    </cds-tooltip>
+    <svg
+      cdsIcon="information--filled"
+      size="16"
+      [vTooltip]="'searchFieldsOverviewTooltips.dataType' | translate"
+    ></svg>
   </span>
 </ng-template>
 
@@ -173,9 +175,11 @@
   <span class="valtimo-task-management-search-fields-modal__label">
     {{ 'searchFieldsOverview.fieldType' | translate }}
 
-    <cds-tooltip align="right" [description]="'searchFieldsOverviewTooltips.fieldType' | translate">
-      <svg cdsIcon="information--filled" size="16"></svg>
-    </cds-tooltip>
+    <svg
+      cdsIcon="information--filled"
+      size="16"
+      [vTooltip]="'searchFieldsOverviewTooltips.fieldType' | translate"
+    ></svg>
   </span>
 </ng-template>
 
@@ -183,9 +187,11 @@
   <span class="valtimo-task-management-search-fields-modal__label">
     {{ 'searchFieldsOverview.matchType' | translate }}
 
-    <cds-tooltip align="right" [description]="'searchFieldsOverviewTooltips.matchType' | translate">
-      <svg cdsIcon="information--filled" size="16"></svg>
-    </cds-tooltip>
+    <svg
+      cdsIcon="information--filled"
+      size="16"
+      [vTooltip]="'searchFieldsOverviewTooltips.matchType' | translate"
+    ></svg>
   </span>
 </ng-template>
 
@@ -193,11 +199,10 @@
   <span class="valtimo-task-management-search-fields-modal__label">
     {{ 'searchFieldsOverview.dropdownDataProvider' | translate }}
 
-    <cds-tooltip
-      align="right"
-      [description]="'searchFieldsOverviewTooltips.dropdownDataProvider' | translate"
-    >
-      <svg cdsIcon="information--filled" size="16"></svg>
-    </cds-tooltip>
+    <svg
+      cdsIcon="information--filled"
+      size="16"
+      [vTooltip]="'searchFieldsOverviewTooltips.dropdownDataProvider' | translate"
+    ></svg>
   </span>
 </ng-template>

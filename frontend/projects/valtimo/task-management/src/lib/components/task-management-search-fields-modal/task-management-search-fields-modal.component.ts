@@ -24,7 +24,13 @@ import {
 } from '@angular/forms';
 import {InformationFilled16, TrashCan16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {CARBON_CONSTANTS, CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
+import {
+  CARBON_CONSTANTS,
+  CarbonListModule,
+  ColumnConfig,
+  TooltipModule as VTooltipModule,
+  ViewType,
+} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {
   TaskListSearchDropdownDataProvider,
@@ -42,7 +48,6 @@ import {
   InputModule,
   ListItem,
   ModalModule,
-  TooltipModule,
 } from 'carbon-components-angular';
 import {
   BehaviorSubject,
@@ -70,7 +75,7 @@ import {
     ReactiveFormsModule,
     IconModule,
     CarbonListModule,
-    TooltipModule,
+    VTooltipModule,
   ],
 })
 export class TaskManagementSearchFieldsModalComponent {
@@ -509,6 +514,9 @@ export class TaskManagementSearchFieldsModalComponent {
 
   private resetForm(): void {
     setTimeout(() => {
+      while (!!this.dropdownValuesArray?.length) {
+        this.dropdownValuesArray.removeAt(0);
+      }
       this.form.reset();
       this.form.enable();
     }, CARBON_CONSTANTS.modalAnimationMs);
