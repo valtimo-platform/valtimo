@@ -32,6 +32,7 @@ import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, map, Observable, tap} from 'rxjs';
 import {TabManagementService, TabService} from '../../services';
 import {Router} from '@angular/router';
+import {ConfigService} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-dossier-management-tabs',
@@ -90,6 +91,7 @@ export class DossierManagementTabsComponent implements AfterViewInit {
   );
   public readonly tab$ = new BehaviorSubject<ApiTabItem | null>(null);
   public readonly dragAndDropDisabled = signal(false);
+  public readonly enableCaseWidgets = this.configService.getFeatureToggle('enableCaseWidgets');
 
   constructor(
     private readonly cd: ChangeDetectorRef,
@@ -97,11 +99,13 @@ export class DossierManagementTabsComponent implements AfterViewInit {
     private readonly tabManagementService: TabManagementService,
     private readonly tabService: TabService,
     private readonly translateService: TranslateService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly configService: ConfigService
   ) {}
 
   public ngAfterViewInit(): void {
     this.iconService.registerAll([ArrowDown16, ArrowUp16]);
+
     this.fields$.next([
       {
         key: 'name',
@@ -125,11 +129,15 @@ export class DossierManagementTabsComponent implements AfterViewInit {
         key: '',
         label: 'dossierManagement.tabManagement.columns.content',
       },
-      {
-        viewType: ViewType.BOOLEAN,
-        key: 'showTasks',
-        label: 'dossierManagement.tabManagement.columns.showTasks',
-      },
+      ...(this.enableCaseWidgets
+        ? [
+            {
+              viewType: ViewType.BOOLEAN,
+              key: 'showTasks',
+              label: 'dossierManagement.tabManagement.columns.showTasks',
+            },
+          ]
+        : []),
     ]);
 
     this.cd.detectChanges();
@@ -199,6 +207,8 @@ export class DossierManagementTabsComponent implements AfterViewInit {
   }
 
   private addTab(tab: Partial<ApiTabItem>): void {
+    if (!this.enableCaseWidgets) delete tab.showTasks;
+
     this.tabManagementService.dispatchAction(this.tabManagementService.addTab(tab));
   }
 
@@ -207,6 +217,8 @@ export class DossierManagementTabsComponent implements AfterViewInit {
   }
 
   private editTab(tab: ApiTabItem): void {
+    if (!this.enableCaseWidgets) delete tab.showTasks;
+
     this.tabManagementService.dispatchAction(this.tabManagementService.editTab(tab, tab.key));
   }
 }

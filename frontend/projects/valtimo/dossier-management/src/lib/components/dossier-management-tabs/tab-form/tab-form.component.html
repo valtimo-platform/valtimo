@@ -48,12 +48,14 @@
     <cds-dropdown-list></cds-dropdown-list>
   </cds-combo-box>
 
-  <cds-toggle
-    [label]="'dossierManagement.tabManagement.addModal.visibleTitle' | translate"
-    [onText]="'dossierManagement.tabManagement.addModal.visible' | translate"
-    [offText]="'dossierManagement.tabManagement.addModal.invisible' | translate"
-    [checked]="showTasks?.value"
-    (checkedChange)="toggleCheckedChange($event)"
-    [disabled]="disableTaskListVisibleToggle()"
-  ></cds-toggle>
+  @if (enableCaseWidgets$ | async) {
+    <cds-toggle
+      [label]="'dossierManagement.tabManagement.addModal.visibleTitle' | translate"
+      [onText]="'dossierManagement.tabManagement.addModal.visible' | translate"
+      [offText]="'dossierManagement.tabManagement.addModal.invisible' | translate"
+      [checked]="showTasks?.value"
+      (checkedChange)="toggleCheckedChange($event)"
+      [disabled]="disableTaskListVisibleToggle()"
+    ></cds-toggle>
+  }
 </form>

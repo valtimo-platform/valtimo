@@ -19,6 +19,7 @@ import {ApiTabType, DefaultTabs} from '@valtimo/dossier';
 import {ListItem} from 'carbon-components-angular';
 import {combineLatest, map, startWith, Subscription} from 'rxjs';
 import {TabService} from '../../../services';
+import {ConfigService} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-tab-form',
@@ -56,11 +57,15 @@ export class TabFormComponent implements OnInit, OnDestroy {
 
   public showTasks!: AbstractControl<boolean>;
 
+  public readonly enableCaseWidgets$ =
+    this.configService.getFeatureToggleObservable('enableCaseWidgets');
+
   private _searchActive: boolean;
 
   private _subscriptions = new Subscription();
 
   constructor(
+    private readonly configService: ConfigService,
     private readonly tabService: TabService,
     private readonly formGroupDirective: FormGroupDirective
   ) {}
