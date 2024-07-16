@@ -15,26 +15,38 @@
  */
 
 import {Injectable} from '@angular/core';
-import {ConfigService, Page} from '@valtimo/config';
+import {BaseApiService, ConfigService} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {Note} from '../models/notes.model';
+import {Observable, switchMap} from 'rxjs';
 import {ApiTabItem} from '../models';
 
 @Injectable({
   providedIn: 'root',
 })
-export class DossierTabApiService {
-  private readonly VALTIMO_API_ENDPOINT_URI = this.configService.config.valtimoApi.endpointUri;
-
+export class DossierTabApiService extends BaseApiService {
   constructor(
-    private readonly configService: ConfigService,
-    private readonly http: HttpClient
-  ) {}
+    protected readonly httpClient: HttpClient,
+    protected readonly configService: ConfigService
+  ) {
+    super(httpClient, configService);
+  }
 
-  public getDossierTabs(documentDefinitionName): Observable<Array<ApiTabItem>> {
-    return this.http.get<Array<ApiTabItem>>(
-      `${this.VALTIMO_API_ENDPOINT_URI}v1/case-definition/${documentDefinitionName}/tab`
-    );
+  public getDossierTabs(
+    documentDefinitionName: string,
+    documentId: string
+  ): Observable<Array<ApiTabItem>> {
+    return this.configService
+      .getFeatureToggleObservable('enableCaseWidgets')
+      .pipe(
+        switchMap(enableCaseWidgets =>
+          enableCaseWidgets
+            ? this.httpClient.get<Array<ApiTabItem>>(
+                this.getApiUrl(`v1/document/${documentId}/tab`)
+              )
+            : this.httpClient.get<Array<ApiTabItem>>(
+                this.getApiUrl(`v1/case-definition/${documentDefinitionName}/tab`)
+              )
+        )
+      );
   }
 }

@@ -27,7 +27,15 @@ import {CASE_TAB_TOKEN, DEFAULT_TAB_COMPONENTS, DEFAULT_TABS, TAB_MAP} from '../
 import {ConfigService, ZGW_OBJECT_TYPE_COMPONENT_TOKEN} from '@valtimo/config';
 import {ActivatedRoute} from '@angular/router';
 import {DossierTabApiService} from './dossier-tab-api.service';
-import {BehaviorSubject, filter, map, Observable, Subscription, switchMap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+} from 'rxjs';
 import {DossierDetailTabFormioComponent} from '../components/dossier-detail/tab/formio/formio.component';
 import {DossierDetailTabNotFoundComponent} from '../components/dossier-detail/tab/not-found/not-found.component';
 import {DossierDetailWidgetsComponent} from '../components/dossier-detail/tab/widgets/widgets.component';
@@ -38,6 +46,10 @@ export class DossierTabService implements OnDestroy {
   private readonly _documentDefinitionName$: Observable<string> = this.route.params.pipe(
     map(params => params?.documentDefinitionName),
     filter(documentDefinitionName => !!documentDefinitionName)
+  );
+  private readonly _documentId$: Observable<string> = this.route.params.pipe(
+    map(params => params?.documentId),
+    filter(documentId => !!documentId)
   );
   private readonly _tabs$ = new BehaviorSubject<Array<TabImpl> | null>(null);
   private readonly _subscriptions = new Subscription();
@@ -133,13 +145,15 @@ export class DossierTabService implements OnDestroy {
 
   private openDocumentDefinitionNameSubscription(): void {
     this._subscriptions.add(
-      this._documentDefinitionName$.subscribe(documentDefinitionName => {
-        if (this._tabManagementEnabled) {
-          this.setApiTabs(documentDefinitionName);
-        } else {
-          this.setEnvironmentTabs(documentDefinitionName);
+      combineLatest([this._documentDefinitionName$, this._documentId$]).subscribe(
+        ([documentDefinitionName, documentId]) => {
+          if (this._tabManagementEnabled) {
+            this.setApiTabs(documentDefinitionName, documentId);
+          } else {
+            this.setEnvironmentTabs(documentDefinitionName);
+          }
         }
-      })
+      )
     );
   }
 
@@ -149,8 +163,8 @@ export class DossierTabService implements OnDestroy {
     this._tabs$.next(allEnvironmentTabs);
   }
 
-  private setApiTabs(documentDefinitionName: string): void {
-    this.dossierTabApiService.getDossierTabs(documentDefinitionName).subscribe({
+  private setApiTabs(documentDefinitionName: string, documentId: string): void {
+    this.dossierTabApiService.getDossierTabs(documentDefinitionName, documentId).subscribe({
       next: tabs => {
         const supportedTabs = tabs.filter(tab => this.filterTab(tab));
         const mappedTabs = supportedTabs.map((tab, index) => this.mapTab(tab, index));
