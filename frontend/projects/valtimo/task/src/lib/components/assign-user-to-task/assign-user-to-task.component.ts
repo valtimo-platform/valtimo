@@ -113,7 +113,8 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
 
   public getAssignedUserName(users: NamedUser[], userId: string): string {
     if (users && userId) {
-      const findUser = users.find(user => user.id === userId);
+      const findUser =
+        users.find(user => user.id === userId) || users.find(user => user.userName === userId);
       return findUser ? findUser.label : userId;
     }
     return userId || '-';

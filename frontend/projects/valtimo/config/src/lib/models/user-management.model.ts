@@ -34,4 +34,5 @@ export interface NamedUser {
   firstName: string;
   lastName: string;
   label: string;
+  userName: string;
 }
