@@ -790,6 +790,7 @@
         "boolean": "Ja/Nee",
         "currency": "Valuta",
         "date": "Datum",
+        "datetime": "Datum en tijd",
         "enum": "Opsomming",
         "number": "Nummer",
         "percent": "Percentage"

@@ -136,6 +136,19 @@
             />
           </cds-text-label>
         }
+        @case (CaseWidgetDisplayTypeKey.DATE_TIME) {
+          <cds-text-label>
+            {{ 'widgetTabManagement.content.fields.format' | translate }}
+
+            <input
+              cdsText
+              [attr.data-carbon-theme]="obs.theme"
+              [placeholder]="'widgetTabManagement.content.fields.formatPlaceholder' | translate"
+              type="text"
+              formControlName="format"
+            />
+          </cds-text-label>
+        }
         @case (CaseWidgetDisplayTypeKey.ENUM) {
           <div class="valtimo-dossier-management-widget-collection__enum" formArrayName="values">
             @for (rowValue of cardForm.get('values')?.controls; track $index) {

@@ -3,6 +3,7 @@ enum CaseWidgetDisplayTypeKey {
   BOOLEAN = 'boolean',
   CURRENCY = 'currency',
   DATE = 'date',
+  DATE_TIME = 'datetime',
   ENUM = 'enum',
   NUMBER = 'number',
   PERCENT = 'percent',
@@ -21,6 +22,11 @@ interface CaseWidgetCurrencyDisplayType {
 
 interface CaseWidgetDateDisplayType {
   type: CaseWidgetDisplayTypeKey.DATE;
+  format?: string;
+}
+
+interface CaseWidgetDateTimeDisplayType {
+  type: CaseWidgetDisplayTypeKey.DATE_TIME;
   format?: string;
 }
 
@@ -45,6 +51,7 @@ type CaseWidgetDisplayType =
   | CaseWidgetBooleanDisplayType
   | CaseWidgetCurrencyDisplayType
   | CaseWidgetDateDisplayType
+  | CaseWidgetDateTimeDisplayType
   | CaseWidgetEnumDisplayType
   | CaseWidgetNumberDisplayType
   | CaseWidgetPercentDisplayType;
@@ -55,6 +62,7 @@ export {
   CaseWidgetBooleanDisplayType,
   CaseWidgetCurrencyDisplayType,
   CaseWidgetDateDisplayType,
+  CaseWidgetDateTimeDisplayType,
   CaseWidgetEnumDisplayType,
   CaseWidgetNumberDisplayType,
   CaseWidgetPercentDisplayType,

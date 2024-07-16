@@ -41,6 +41,7 @@ import {CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {
   CaseWidgetCurrencyDisplayType,
   CaseWidgetDateDisplayType,
+  CaseWidgetDateTimeDisplayType,
   CaseWidgetDisplayTypeKey,
   CaseWidgetEnumDisplayType,
   CaseWidgetNumberDisplayType,
@@ -210,6 +211,11 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
       ...(row.displayProperties?.type === CaseWidgetDisplayTypeKey.DATE && {
         format: this.fb.control<string>(
           (row.displayProperties as CaseWidgetDateDisplayType).format ?? ''
+        ),
+      }),
+      ...(row.displayProperties?.type === CaseWidgetDisplayTypeKey.DATE_TIME && {
+        format: this.fb.control<string>(
+          (row.displayProperties as CaseWidgetDateTimeDisplayType).format ?? ''
         ),
       }),
       ...(row.displayProperties?.type === CaseWidgetDisplayTypeKey.ENUM && {

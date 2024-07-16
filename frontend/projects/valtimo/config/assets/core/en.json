@@ -791,6 +791,7 @@
         "boolean": "Yes/No",
         "currency": "Currency",
         "date": "Date",
+        "datetime": "Date and time",
         "enum": "Enumeration",
         "number": "Number",
         "percent": "Percentage"

@@ -39,6 +39,7 @@ import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/compon
 import {
   CaseWidgetCurrencyDisplayType,
   CaseWidgetDateDisplayType,
+  CaseWidgetDateTimeDisplayType,
   CaseWidgetDisplayTypeKey,
   CaseWidgetEnumDisplayType,
   CollectionFieldWidth,
@@ -249,6 +250,9 @@ export class DossierManagementWidgetCollectionComponent
         }),
         ...(title.displayProperties?.type === CaseWidgetDisplayTypeKey.DATE && {
           format: (title.displayProperties as CaseWidgetDateDisplayType).format,
+        }),
+        ...(title.displayProperties?.type === CaseWidgetDisplayTypeKey.DATE_TIME && {
+          format: (title.displayProperties as CaseWidgetDateTimeDisplayType).format,
         }),
         ...(title.displayProperties?.type === CaseWidgetDisplayTypeKey.ENUM && {
           values: Object.entries((title.displayProperties as CaseWidgetEnumDisplayType).values).map(

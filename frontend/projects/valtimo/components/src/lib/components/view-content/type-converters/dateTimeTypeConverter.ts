@@ -13,21 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {DecimalPipe, registerLocaleData} from '@angular/common';
-import {inject} from '@angular/core';
-import {TypeConverter} from './type-converters.model';
 import moment from 'moment';
-import localeNl from '@angular/common/locales/nl';
-import localeDe from '@angular/common/locales/nl';
+import {TypeConverter} from './type-converters.model';
 
-registerLocaleData(localeNl, 'nl');
-registerLocaleData(localeDe, 'de');
-
-export class NumberTypeConverter implements TypeConverter {
-  private readonly _decimalPipe = inject(DecimalPipe);
-
+export class DateTimeTypeConverter implements TypeConverter {
   public getTypeString(): string {
-    return 'number';
+    return 'datetime';
   }
 
   public convert(value: any, definition: any): string {
@@ -35,12 +26,9 @@ export class NumberTypeConverter implements TypeConverter {
       return '-';
     }
 
-    return (
-      this._decimalPipe.transform(
-        value,
-        definition.digitsInfo,
-        moment.locale(localStorage.getItem('langKey') ?? 'nl')
-      ) ?? ''
-    );
+    const dateValue = moment(value);
+    return (dateValue.isValid() ? dateValue : moment(value, 'DD-MM-YYYY, h:m:s'))
+      .locale(localStorage.getItem('langKey') ?? 'nl')
+      .format(definition?.format || 'DD-MM-YYYY, h:m:s');
   }
 }

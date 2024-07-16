@@ -790,6 +790,7 @@
         "boolean": "Ja/Nein",
         "currency": "Währung",
         "date": "Datum",
+        "datetime": "Datum und zeit",
         "enum": "Aufzählung",
         "number": "Nummer",
         "percent": "Prozentsatz"

@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {InjectionToken} from '@angular/core';
 
-import {StringTypeConverter} from './stringTypeConverter';
 import {BooleanTypeConverter} from './booleanTypeConverter';
+import {CurrencyTypeConverter} from './currencyTypeConverter';
+import {DateTimeTypeConverter} from './dateTimeTypeConverter';
 import {DateTypeConverter} from './dateTypeConverter';
 import {EnumTypeConverter} from './enumTypeConverter';
-import {StringReplaceUnderscoreTypeConverter} from './stringReplaceUnderscoreTypeConverter';
-import {RelatedFilesTypeConverter} from './relatedFilesTypeConverter';
 import {NumberTypeConverter} from './numberTypeConverter';
-import {InjectionToken} from '@angular/core';
 import {PercentTypeConverter} from './percentTypeConverter';
-import {CurrencyTypeConverter} from './currencyTypeConverter';
+import {RelatedFilesTypeConverter} from './relatedFilesTypeConverter';
+import {StringReplaceUnderscoreTypeConverter} from './stringReplaceUnderscoreTypeConverter';
+import {StringTypeConverter} from './stringTypeConverter';
 
 export const TYPE_CONVERTER_TOKEN = new InjectionToken<TypeConverter[]>('Type Converter');
 
@@ -41,6 +42,11 @@ export const TYPE_PROVIDERS = [
   {
     provide: TYPE_CONVERTER_TOKEN,
     useClass: DateTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: DateTimeTypeConverter,
     multi: true,
   },
   {

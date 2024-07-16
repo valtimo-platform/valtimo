@@ -39,6 +39,13 @@ export class WidgetFieldsService {
     },
     {
       content: this.translateService.instant(
+        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.DATE_TIME}`
+      ),
+      id: CaseWidgetDisplayTypeKey.DATE_TIME,
+      selected: false,
+    },
+    {
+      content: this.translateService.instant(
         `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.ENUM}`
       ),
       id: CaseWidgetDisplayTypeKey.ENUM,
@@ -98,6 +105,9 @@ export class WidgetFieldsService {
         formGroup.addControl('digitsInfo', this.fb.control(''));
         break;
       case CaseWidgetDisplayTypeKey.DATE:
+        formGroup.addControl('format', this.fb.control(''));
+        break;
+      case CaseWidgetDisplayTypeKey.DATE_TIME:
         formGroup.addControl('format', this.fb.control(''));
         break;
       case CaseWidgetDisplayTypeKey.ENUM:

@@ -16,8 +16,6 @@
 import moment from 'moment';
 import {TypeConverter} from './type-converters.model';
 
-moment.locale(localStorage.getItem('langKey') ?? 'nl-NL');
-
 export class DateTypeConverter implements TypeConverter {
   public getTypeString(): string {
     return 'date';
@@ -28,6 +26,9 @@ export class DateTypeConverter implements TypeConverter {
       return '-';
     }
 
-    return moment(value).format(definition?.format || 'DD-MM-YYYY');
+    const dateValue = moment(value);
+    return (dateValue.isValid() ? dateValue : moment(value, 'DD-MM-YYYY'))
+      .locale(localStorage.getItem('langKey') ?? 'nl')
+      .format(definition?.format || 'DD-MM-YYYY');
   }
 }

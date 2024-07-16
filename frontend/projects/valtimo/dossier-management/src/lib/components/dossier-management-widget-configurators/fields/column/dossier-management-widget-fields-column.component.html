@@ -135,6 +135,21 @@
                   />
                 </cds-text-label>
               }
+              @case (CaseWidgetDisplayTypeKey.DATE_TIME) {
+                <cds-text-label>
+                  {{ 'widgetTabManagement.content.fields.format' | translate }}
+
+                  <input
+                    cdsText
+                    [attr.data-carbon-theme]="inputTheme"
+                    [placeholder]="
+                      'widgetTabManagement.content.fields.formatPlaceholder' | translate
+                    "
+                    type="text"
+                    formControlName="format"
+                  />
+                </cds-text-label>
+              }
               @case (CaseWidgetDisplayTypeKey.ENUM) {
                 <div
                   class="valtimo-dossier-management-widget-field-column__enum"
