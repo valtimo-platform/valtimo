@@ -640,6 +640,13 @@ valtimo-dossier-assign-user {
 /* FormIO */
 
 valtimo-dossier-widgets-container {
+  .formio-widget {
+    h4,
+    dd,
+    dt {
+      color: var(--cds-text-primary) !important;
+    }
+  }
   .formio-component {
     .form-group {
       margin-bottom: 0;
