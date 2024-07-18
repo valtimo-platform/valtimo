@@ -22,7 +22,7 @@ import {
   SearchFilter,
   SearchFilterRange,
 } from '@valtimo/config';
-import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, map, Observable, of, switchMap, tap} from 'rxjs';
 import {TaskListService} from './task-list.service';
 import {TaskListOtherFilters, TaskListSearchField} from '../models';
 import {TaskService} from './task.service';
@@ -32,9 +32,6 @@ export class TaskListSearchService {
   private readonly _loadingSearchFields$ = new BehaviorSubject<boolean>(true);
   private readonly _otherFilters$ = new BehaviorSubject<TaskListOtherFilters>([]);
 
-  public readonly enableTaskFiltering$: Observable<boolean> =
-    this.configService.getFeatureToggleObservable('enableTaskFiltering');
-
   public get loadingSearchFields$(): Observable<boolean> {
     return this._loadingSearchFields$.asObservable();
   }
@@ -43,30 +40,28 @@ export class TaskListSearchService {
     return this._otherFilters$.asObservable();
   }
 
-  public readonly searchFields$: Observable<SearchField[]> = combineLatest([
-    this.taskListService.caseDefinitionName$,
-    this.enableTaskFiltering$,
-  ]).pipe(
-    tap(() => this._loadingSearchFields$.next(true)),
-    switchMap(([caseDefinitionName, enableTaskFiltering]) =>
-      caseDefinitionName && enableTaskFiltering
-        ? this.taskService.getTaskListSearchFields(caseDefinitionName)
-        : of([] as TaskListSearchField[])
-    ),
-    map(searchFields =>
-      searchFields.map(searchField => {
-        const fieldTypeLowerCase = searchField.fieldType?.toLowerCase();
+  public readonly searchFields$: Observable<SearchField[]> =
+    this.taskListService.caseDefinitionName$.pipe(
+      tap(() => this._loadingSearchFields$.next(true)),
+      switchMap(caseDefinitionName =>
+        caseDefinitionName
+          ? this.taskService.getTaskListSearchFields(caseDefinitionName)
+          : of([] as TaskListSearchField[])
+      ),
+      map(searchFields =>
+        searchFields.map(searchField => {
+          const fieldTypeLowerCase = searchField.fieldType?.toLowerCase();
 
-        return {
-          ...searchField,
-          dataType: searchField.dataType?.toLowerCase(),
-          fieldType: fieldTypeLowerCase === 'text_contains' ? 'single' : fieldTypeLowerCase,
-          matchType: searchField?.matchType?.toLowerCase(),
-        } as unknown as SearchField;
-      })
-    ),
-    tap(() => this._loadingSearchFields$.next(false))
-  );
+          return {
+            ...searchField,
+            dataType: searchField.dataType?.toLowerCase(),
+            fieldType: fieldTypeLowerCase === 'text_contains' ? 'single' : fieldTypeLowerCase,
+            matchType: searchField?.matchType?.toLowerCase(),
+          } as unknown as SearchField;
+        })
+      ),
+      tap(() => this._loadingSearchFields$.next(false))
+    );
 
   constructor(
     private readonly configService: ConfigService,

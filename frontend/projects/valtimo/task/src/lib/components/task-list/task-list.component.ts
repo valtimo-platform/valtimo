@@ -210,8 +210,6 @@ export class TaskListComponent implements OnInit, OnDestroy {
 
   public readonly taskListColumnsForCase$ = this.taskListColumnService.taskListColumnsForCase$;
 
-  public readonly enableTaskFiltering$: Observable<boolean> =
-    this.taskListSearchService.enableTaskFiltering$;
   public readonly loadingSearchFields$ = this.taskListSearchService.loadingSearchFields$;
   public readonly searchFields$: Observable<SearchField[]> =
     this.taskListSearchService.searchFields$;

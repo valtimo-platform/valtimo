@@ -46,9 +46,6 @@ import {ConfigService} from '@valtimo/config';
 export class TaskManagementDetailComponent {
   @Input() public carbonTheme: CARBON_THEME = CARBON_THEME.G10;
 
-  public readonly enableTaskFiltering$: Observable<boolean> =
-    this.configService.getFeatureToggleObservable('enableTaskFiltering');
-
   public readonly setDocumentDefinitionName$: Observable<DocumentDefinition> =
     this.route.params.pipe(
       map(params => params.name || ''),

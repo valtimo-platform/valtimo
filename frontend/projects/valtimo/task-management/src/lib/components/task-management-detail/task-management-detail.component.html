@@ -18,7 +18,6 @@
   *ngIf="{
     activeTab: activeTab$ | async,
     documentDefinitionName: setDocumentDefinitionName$ | async,
-    enableTaskFiltering: enableTaskFiltering$ | async
   } as obs"
   class="task-management-detail"
 >
@@ -31,7 +30,6 @@
       <valtimo-task-management-columns> </valtimo-task-management-columns>
     </cds-tab>
 
-    @if (obs.enableTaskFiltering) {
       <cds-tab
         [active]="obs.activeTab === TAB_ENUM.SEARCH_FIELDS"
         [heading]="'taskManagement.searchFields' | translate"
@@ -39,6 +37,6 @@
       >
         <valtimo-task-management-search-fields> </valtimo-task-management-search-fields>
       </cds-tab>
-    }
+    
   </cds-tabs>
 </div>

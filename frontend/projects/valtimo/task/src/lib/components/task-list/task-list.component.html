@@ -26,16 +26,13 @@
     sortState: sortStateForCurrentTaskType$ | async,
     overrideSortState: overrideSortState$ | async,
     searchFields: searchFields$ | async,
-    enableTaskFiltering: enableTaskFiltering$ | async,
     loadingSearchFields: loadingSearchFields$ | async,
     caseDefinitionName: caseDefinitionName$ | async
   } as obs"
   class="main-content"
 >
   <div class="container-fluid">
-    @if (
-      obs.enableTaskFiltering && obs.caseDefinitionName && obs.caseDefinitionName !== ALL_CASES_ID
-    ) {
+    @if (obs.caseDefinitionName && obs.caseDefinitionName !== ALL_CASES_ID) {
       <ng-container
         *ngTemplateOutlet="
           searchFields;

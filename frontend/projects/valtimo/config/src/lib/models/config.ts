@@ -96,7 +96,6 @@ interface ValtimoConfigFeatureToggles {
   enableCaseWidgets?: boolean;
   enableFormViewModel?: boolean;
   enableIntermediateSave?: boolean;
-  enableTaskFiltering?: boolean;
 }
 
 interface ValtimoConfig {
