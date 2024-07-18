@@ -234,8 +234,6 @@ export class TaskManagementSearchFieldsComponent {
 
   private fieldTypeTranslation(fieldType: TaskListSearchFieldFieldType): string {
     switch (fieldType) {
-      case TaskListSearchFieldFieldType.TEXT_CONTAINS:
-        return 'textContains';
       case TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN:
         return 'single-select-dropdown';
       case TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN:

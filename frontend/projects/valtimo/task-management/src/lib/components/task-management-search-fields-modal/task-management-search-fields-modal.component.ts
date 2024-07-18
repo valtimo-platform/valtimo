@@ -248,10 +248,6 @@ export class TaskManagementSearchFieldsModalComponent {
     map(([dataTypeValue, fieldTypeValue]) =>
       [
         {
-          content: this.translateService.instant('searchFieldsOverview.textContains'),
-          id: TaskListSearchFieldFieldType.TEXT_CONTAINS,
-        },
-        {
           content: this.translateService.instant('searchFieldsOverview.single'),
           id: TaskListSearchFieldFieldType.SINGLE,
         },

@@ -24,7 +24,6 @@ enum TaskListSearchFieldDataType {
 }
 
 enum TaskListSearchFieldFieldType {
-  TEXT_CONTAINS = 'TEXT_CONTAINS',
   SINGLE = 'SINGLE',
   RANGE = 'RANGE',
   SINGLE_SELECT_DROPDOWN = 'SINGLE_SELECT_DROPDOWN',
