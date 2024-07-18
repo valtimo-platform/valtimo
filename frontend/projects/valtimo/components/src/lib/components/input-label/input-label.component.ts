@@ -28,6 +28,8 @@ export class InputLabelComponent {
   @Input() public tooltip = '';
   @Input() public largeMargin = false;
   @Input() public small = false;
+  @Input() public noMargin = false;
+
   @Input() public set title(value: string) {
     this._title$.next(value);
   }

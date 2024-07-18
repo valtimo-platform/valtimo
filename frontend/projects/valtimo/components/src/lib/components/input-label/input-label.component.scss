@@ -24,6 +24,14 @@
   margin-block-end: var(--v-input-title-margin);
 }
 
+.v-input-label-container--no-margin {
+  margin-block-end: 0;
+
+  ::ng-deep .cds--label {
+    margin: 0;
+  }
+}
+
 .v-input-label {
   margin: 0;
   font-size: var(--v-input-title-font-size);

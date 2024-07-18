@@ -16,7 +16,10 @@
 
 <div
   class="v-input-label-container"
-  [ngClass]="{'v-input-label-container--large-margin': largeMargin}"
+  [ngClass]="{
+    'v-input-label-container--large-margin': largeMargin,
+    'v-input-label-container--no-margin': noMargin
+  }"
 >
   <cds-label [disabled]="disabled">
     <span class="label-with-tooltip">

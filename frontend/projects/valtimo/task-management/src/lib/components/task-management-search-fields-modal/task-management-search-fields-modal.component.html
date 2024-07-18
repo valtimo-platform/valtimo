@@ -22,85 +22,102 @@
 
   <section cdsModalContent>
     <form [formGroup]="form" class="valtimo-task-management-search-fields-modal__content">
-      <cds-text-label>
-        <span class="valtimo-task-management-search-fields-modal__label">
-          {{ 'searchFieldsOverview.title' | translate }}
-
-          <svg
-            cdsIcon="information--filled"
-            size="16"
-            [vTooltip]="'searchFieldsOverviewTooltips.title' | translate"
-          ></svg>
-        </span>
+      <div class="valtimo-task-management-search-fields-modal__input">
+        <v-input-label
+          [title]="'searchFieldsOverview.title' | translate"
+          [tooltip]="'searchFieldsOverviewTooltips.title' | translate"
+        >
+        </v-input-label>
 
         <input cdsText type="text" formControlName="title" />
-      </cds-text-label>
+      </div>
 
-      <cds-text-label>
-        <span class="valtimo-task-management-search-fields-modal__label">
-          {{ 'searchFieldsOverview.key' | translate }}
-
-          <svg
-            cdsIcon="information--filled"
-            size="16"
-            [vTooltip]="'searchFieldsOverviewTooltips.key' | translate"
-          ></svg>
-        </span>
+      <div class="valtimo-task-management-search-fields-modal__input">
+        <v-input-label
+          [title]="'searchFieldsOverview.key' | translate"
+          [tooltip]="'searchFieldsOverviewTooltips.key' | translate"
+        >
+        </v-input-label>
 
         <input cdsText type="text" formControlName="key" />
-      </cds-text-label>
+      </div>
 
-      <cds-text-label>
-        <span class="valtimo-task-management-search-fields-modal__label">
-          {{ 'searchFieldsOverview.path' | translate }}
-
-          <svg
-            cdsIcon="information--filled"
-            size="16"
-            [vTooltip]="'searchFieldsOverviewTooltips.path' | translate"
-          ></svg>
-        </span>
+      <div class="valtimo-task-management-search-fields-modal__input">
+        <v-input-label
+          [title]="'searchFieldsOverview.path' | translate"
+          [tooltip]="'searchFieldsOverviewTooltips.path' | translate"
+        >
+        </v-input-label>
 
         <input cdsText type="text" formControlName="path" />
-      </cds-text-label>
+      </div>
 
-      <cds-dropdown formControlName="dataType" [label]="dataTypeLabel">
-        <cds-dropdown-list [items]="dataTypeItems$ | async"></cds-dropdown-list>
-      </cds-dropdown>
+      <div class="valtimo-task-management-search-fields-modal__input">
+        <v-input-label
+          [title]="'searchFieldsOverview.dataType' | translate"
+          [tooltip]="'searchFieldsOverviewTooltips.dataType' | translate"
+        >
+        </v-input-label>
+
+        <cds-dropdown formControlName="dataType">
+          <cds-dropdown-list [items]="dataTypeItems$ | async"></cds-dropdown-list>
+        </cds-dropdown>
+      </div>
 
       @if (dataTypeValue === TaskListSearchFieldDataType.TEXT) {
-        <cds-dropdown formControlName="matchType" [label]="matchTypeLabel">
-          <cds-dropdown-list [items]="matchTypeItems$ | async"></cds-dropdown-list>
-        </cds-dropdown>
+        <div class="valtimo-task-management-search-fields-modal__input">
+          <v-input-label
+            [title]="'searchFieldsOverview.matchType' | translate"
+            [tooltip]="'searchFieldsOverviewTooltips.matchType' | translate"
+          >
+          </v-input-label>
+
+          <cds-dropdown formControlName="matchType">
+            <cds-dropdown-list [items]="matchTypeItems$ | async"></cds-dropdown-list>
+          </cds-dropdown>
+        </div>
       }
 
-      <cds-dropdown formControlName="fieldType" [label]="fieldTypeLabel">
-        <cds-dropdown-list [items]="fieldTypeItems$ | async"></cds-dropdown-list>
-      </cds-dropdown>
+      <div class="valtimo-task-management-search-fields-modal__input">
+        <v-input-label
+          [title]="'searchFieldsOverview.fieldType' | translate"
+          [tooltip]="'searchFieldsOverviewTooltips.fieldType' | translate"
+        >
+        </v-input-label>
+
+        <cds-dropdown formControlName="fieldType">
+          <cds-dropdown-list [items]="fieldTypeItems$ | async"></cds-dropdown-list>
+        </cds-dropdown>
+      </div>
 
       @if (
         dataTypeValue === TaskListSearchFieldDataType.TEXT &&
         (fieldTypeValue === TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN ||
           fieldTypeValue === TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN)
       ) {
-        <cds-dropdown formControlName="dropdownDataProvider" [label]="dropdownDataProviderLabel">
-          <cds-dropdown-list [items]="dataProviderItems$ | async"></cds-dropdown-list>
-        </cds-dropdown>
+        <div class="valtimo-task-management-search-fields-modal__input">
+          <v-input-label
+            [title]="'searchFieldsOverview.dropdownDataProvider' | translate"
+            [tooltip]="'searchFieldsOverviewTooltips.dropdownDataProvider' | translate"
+          >
+          </v-input-label>
+
+          <cds-dropdown formControlName="dropdownDataProvider">
+            <cds-dropdown-list [items]="dataProviderItems$ | async"></cds-dropdown-list>
+          </cds-dropdown>
+        </div>
 
         @if (dropdownDataProviderValue === TaskListSearchDropdownDataProvider.DATABASE) {
           <div
             class="valtimo-task-management-search-fields-modal__list"
             formArrayName="dropdownValues"
           >
-            <cds-label class="valtimo-task-management-search-fields-modal__label">
-              {{ 'searchFieldsOverview.dropdownListValues' | translate }}
-
-              <svg
-                cdsIcon="information--filled"
-                size="16"
-                [vTooltip]="'searchFieldsOverviewTooltips.dropdownListValues' | translate"
-              ></svg>
-            </cds-label>
+            <v-input-label
+              [title]="'searchFieldsOverview.dropdownListValues' | translate"
+              [tooltip]="'searchFieldsOverviewTooltips.dropdownListValues' | translate"
+              [noMargin]="true"
+            >
+            </v-input-label>
 
             @for (dropdownValue of dropdownValuesArray?.controls; track $index) {
               <form
@@ -158,51 +175,3 @@
     </button>
   </cds-modal-footer>
 </cds-modal>
-
-<ng-template #dataTypeLabel>
-  <span class="valtimo-task-management-search-fields-modal__label">
-    {{ 'searchFieldsOverview.dataType' | translate }}
-
-    <svg
-      cdsIcon="information--filled"
-      size="16"
-      [vTooltip]="'searchFieldsOverviewTooltips.dataType' | translate"
-    ></svg>
-  </span>
-</ng-template>
-
-<ng-template #fieldTypeLabel>
-  <span class="valtimo-task-management-search-fields-modal__label">
-    {{ 'searchFieldsOverview.fieldType' | translate }}
-
-    <svg
-      cdsIcon="information--filled"
-      size="16"
-      [vTooltip]="'searchFieldsOverviewTooltips.fieldType' | translate"
-    ></svg>
-  </span>
-</ng-template>
-
-<ng-template #matchTypeLabel>
-  <span class="valtimo-task-management-search-fields-modal__label">
-    {{ 'searchFieldsOverview.matchType' | translate }}
-
-    <svg
-      cdsIcon="information--filled"
-      size="16"
-      [vTooltip]="'searchFieldsOverviewTooltips.matchType' | translate"
-    ></svg>
-  </span>
-</ng-template>
-
-<ng-template #dropdownDataProviderLabel>
-  <span class="valtimo-task-management-search-fields-modal__label">
-    {{ 'searchFieldsOverview.dropdownDataProvider' | translate }}
-
-    <svg
-      cdsIcon="information--filled"
-      size="16"
-      [vTooltip]="'searchFieldsOverviewTooltips.dropdownDataProvider' | translate"
-    ></svg>
-  </span>
-</ng-template>

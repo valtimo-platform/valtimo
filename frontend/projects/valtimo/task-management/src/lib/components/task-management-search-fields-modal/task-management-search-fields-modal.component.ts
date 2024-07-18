@@ -28,7 +28,7 @@ import {
   CARBON_CONSTANTS,
   CarbonListModule,
   ColumnConfig,
-  TooltipModule as VTooltipModule,
+  InputLabelModule,
   ViewType,
 } from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
@@ -56,6 +56,7 @@ import {
   filter,
   map,
   Observable,
+  startWith,
   switchMap,
 } from 'rxjs';
 
@@ -75,7 +76,7 @@ import {
     ReactiveFormsModule,
     IconModule,
     CarbonListModule,
-    VTooltipModule,
+    InputLabelModule,
   ],
 })
 export class TaskManagementSearchFieldsModalComponent {
@@ -86,7 +87,6 @@ export class TaskManagementSearchFieldsModalComponent {
   @Input() public set prefillData(value: TaskListSearchField | null) {
     this._prefillData = value;
     this.setPrefilledForm(value);
-    this.setPrefilledDropdowns(value);
   }
   public get prefillData(): TaskListSearchField | null {
     return this._prefillData;
@@ -106,6 +106,34 @@ export class TaskManagementSearchFieldsModalComponent {
     ),
     dropdownValues: this.fb.array<{key: string; value: string}>([], this.dropdownValuesValidator),
   });
+
+  public get dataType(): AbstractControl<ListItem | null> {
+    return this.form.get('dataType');
+  }
+  public get dataTypeValue$(): Observable<ListItem | null> {
+    return this.dataType.valueChanges.pipe(startWith(this.dataType.value));
+  }
+
+  public get matchType(): AbstractControl<ListItem | null> {
+    return this.form.get('matchType');
+  }
+  public get matchTypeValue$(): Observable<ListItem | null> {
+    return this.matchType.valueChanges.pipe(startWith(this.matchType.value));
+  }
+
+  public get fieldType(): AbstractControl<ListItem | null> {
+    return this.form.get('fieldType');
+  }
+  public get fieldTypeValue$(): Observable<ListItem | null> {
+    return this.fieldType.valueChanges.pipe(startWith(this.fieldType.value));
+  }
+
+  public get dropdownDataProvider(): AbstractControl<ListItem | null> {
+    return this.form.get('dropdownDataProvider');
+  }
+  public get dropdownDataProviderValue$(): Observable<ListItem | null> {
+    return this.dropdownDataProvider.valueChanges.pipe(startWith(this.dropdownDataProvider.value));
+  }
 
   public readonly TaskListSearchFieldDataType = TaskListSearchFieldDataType;
   public readonly TaskListSearchFieldFieldType = TaskListSearchFieldFieldType;
@@ -178,172 +206,118 @@ export class TaskManagementSearchFieldsModalComponent {
     )
   );
 
-  private readonly _prefilledDataTypeItemId$ = new BehaviorSubject<string | null>(null);
-  private readonly _dataTypeItems$: Observable<ListItem[]> = this.translateService
-    .stream('key')
-    .pipe(
-      map(() => [
+  public readonly dataTypeItems$: Observable<ListItem[]> = combineLatest([
+    this.dataTypeValue$,
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([dataTypeValue]) =>
+      [
         {
           content: this.translateService.instant('searchFields.text'),
           id: TaskListSearchFieldDataType.TEXT,
-          selected: false,
         },
         {
           content: this.translateService.instant('searchFields.boolean'),
           id: TaskListSearchFieldDataType.BOOLEAN,
-          selected: false,
         },
         {
           content: this.translateService.instant('searchFields.date'),
           id: TaskListSearchFieldDataType.DATE,
-          selected: false,
         },
         {
           content: this.translateService.instant('searchFields.datetime'),
           id: TaskListSearchFieldDataType.DATETIME,
-          selected: false,
         },
         {
           content: this.translateService.instant('searchFields.number'),
           id: TaskListSearchFieldDataType.NUMBER,
-          selected: false,
         },
         {
           content: this.translateService.instant('searchFields.time'),
           id: TaskListSearchFieldDataType.TIME,
-          selected: false,
         },
-      ])
-    );
-  public dataTypeItems$: Observable<ListItem[]> = combineLatest([
-    this._dataTypeItems$,
-    this._prefilledDataTypeItemId$,
-  ]).pipe(
-    filter(([dataTypeItems]) => !!dataTypeItems),
-    map(([dataTypeItems, itemId]) =>
-      !itemId
-        ? dataTypeItems
-        : dataTypeItems.map((typeItem: ListItem) =>
-            typeItem.id === itemId ? {...typeItem, selected: true} : typeItem
-          )
+      ].map(item => ({...item, selected: item.id === dataTypeValue?.id}))
     )
   );
 
-  private readonly _prefilledFieldTypeItemId$ = new BehaviorSubject<string | null>(null);
-  private readonly _fieldTypeItems$: Observable<ListItem[]> = combineLatest([
+  public readonly fieldTypeItems$: Observable<ListItem[]> = combineLatest([
     this._dataTypeValue$.pipe(distinctUntilChanged()),
+    this.fieldTypeValue$,
     this.translateService.stream('key'),
   ]).pipe(
-    map(([dataTypeValue]) => [
-      {
-        content: this.translateService.instant('searchFieldsOverview.textContains'),
-        id: TaskListSearchFieldFieldType.TEXT_CONTAINS,
-        selected: false,
-      },
-      {
-        content: this.translateService.instant('searchFieldsOverview.single'),
-        id: TaskListSearchFieldFieldType.SINGLE,
-        selected: false,
-      },
-      {
-        content: this.translateService.instant('searchFieldsOverview.range'),
-        id: TaskListSearchFieldFieldType.RANGE,
-        selected: false,
-      },
-      ...(dataTypeValue === TaskListSearchFieldDataType.TEXT
-        ? [
-            {
-              content: this.translateService.instant('searchFieldsOverview.single-select-dropdown'),
-              id: TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN,
-              selected: false,
-            },
-            {
-              content: this.translateService.instant('searchFieldsOverview.multi-select-dropdown'),
-              id: TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN,
-              selected: false,
-            },
-          ]
-        : []),
-    ])
-  );
-  public fieldTypeItems$: Observable<ListItem[]> = combineLatest([
-    this._fieldTypeItems$,
-    this._prefilledFieldTypeItemId$,
-  ]).pipe(
-    filter(([fieldTypeItems]) => !!fieldTypeItems),
-    map(([fieldTypeItems, itemId]) =>
-      !itemId
-        ? fieldTypeItems
-        : fieldTypeItems.map((typeItem: ListItem) =>
-            typeItem.id === itemId ? {...typeItem, selected: true} : typeItem
-          )
+    map(([dataTypeValue, fieldTypeValue]) =>
+      [
+        {
+          content: this.translateService.instant('searchFieldsOverview.textContains'),
+          id: TaskListSearchFieldFieldType.TEXT_CONTAINS,
+        },
+        {
+          content: this.translateService.instant('searchFieldsOverview.single'),
+          id: TaskListSearchFieldFieldType.SINGLE,
+        },
+        {
+          content: this.translateService.instant('searchFieldsOverview.range'),
+          id: TaskListSearchFieldFieldType.RANGE,
+        },
+        ...(dataTypeValue === TaskListSearchFieldDataType.TEXT
+          ? [
+              {
+                content: this.translateService.instant(
+                  'searchFieldsOverview.single-select-dropdown'
+                ),
+                id: TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN,
+              },
+              {
+                content: this.translateService.instant(
+                  'searchFieldsOverview.multi-select-dropdown'
+                ),
+                id: TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN,
+              },
+            ]
+          : []),
+      ].map(item => ({...item, selected: item.id === fieldTypeValue?.id}))
     )
   );
 
-  private readonly _prefilledDataProviderItemId$ = new BehaviorSubject<string | null>(null);
-  private readonly _dataProviderItems$: Observable<ListItem[]> = this.translateService
+  public readonly dataProviderItems$: Observable<ListItem[]> = this.translateService
     .stream('key')
     .pipe(
-      map(() => [
-        {
-          content: this.translateService.instant(
-            'searchFieldsOverview.dropdownDatabaseDataProvider'
-          ),
-          id: TaskListSearchDropdownDataProvider.DATABASE,
-          selected: false,
-        },
-        {
-          content: this.translateService.instant(
-            'searchFieldsOverview.dropdownJsonFileDataProvider'
-          ),
-          id: TaskListSearchDropdownDataProvider.JSON,
-          selected: false,
-        },
-      ])
+      switchMap(() => this.dropdownDataProviderValue$),
+      map(dataProviderValue =>
+        [
+          {
+            content: this.translateService.instant(
+              'searchFieldsOverview.dropdownDatabaseDataProvider'
+            ),
+            id: TaskListSearchDropdownDataProvider.DATABASE,
+          },
+          {
+            content: this.translateService.instant(
+              'searchFieldsOverview.dropdownJsonFileDataProvider'
+            ),
+            id: TaskListSearchDropdownDataProvider.JSON,
+          },
+        ].map(item => ({...item, selected: item.id === dataProviderValue?.id}))
+      )
     );
-  public dataProviderItems$: Observable<ListItem[]> = combineLatest([
-    this._dataProviderItems$,
-    this._prefilledDataProviderItemId$,
-  ]).pipe(
-    filter(([dataProviderItems]) => !!dataProviderItems),
-    map(([dataProviderItems, itemId]) =>
-      !itemId
-        ? dataProviderItems
-        : dataProviderItems.map((typeItem: ListItem) =>
-            typeItem.id === itemId ? {...typeItem, selected: true} : typeItem
-          )
-    )
-  );
 
-  private readonly _prefilledMatchTypeItemId$ = new BehaviorSubject<string | null>(null);
-  private readonly _matchTypeItems$: Observable<ListItem[]> = this.translateService
+  public readonly matchTypeItems$: Observable<ListItem[]> = this.translateService
     .stream('key')
     .pipe(
-      map(() => [
-        {
-          content: this.translateService.instant('searchFieldsOverview.like'),
-          id: TaskListSearchFieldMatchType.LIKE,
-          selected: false,
-        },
-        {
-          content: this.translateService.instant('searchFieldsOverview.exact'),
-          id: TaskListSearchFieldMatchType.EXACT,
-          selected: false,
-        },
-      ])
+      switchMap(() => this.matchTypeValue$),
+      map(matchTypeValue =>
+        [
+          {
+            content: this.translateService.instant('searchFieldsOverview.like'),
+            id: TaskListSearchFieldMatchType.LIKE,
+          },
+          {
+            content: this.translateService.instant('searchFieldsOverview.exact'),
+            id: TaskListSearchFieldMatchType.EXACT,
+          },
+        ].map(item => ({...item, selected: item.id === matchTypeValue?.id}))
+      )
     );
-  public matchTypeItems$: Observable<ListItem[]> = combineLatest([
-    this._prefilledMatchTypeItemId$,
-    this._matchTypeItems$,
-  ]).pipe(
-    map(([itemId, matchTypeItems]) =>
-      !itemId
-        ? matchTypeItems
-        : matchTypeItems.map((typeItem: ListItem) =>
-            typeItem.id === itemId ? {...typeItem, selected: true} : typeItem
-          )
-    )
-  );
 
   constructor(
     private readonly documentService: DocumentService,
@@ -402,57 +376,42 @@ export class TaskManagementSearchFieldsModalComponent {
   private setPrefilledForm(prefillData: TaskListSearchField | null): void {
     if (!prefillData) return;
 
-    this.form.patchValue(
-      {
-        ...prefillData,
-        dataType: !prefillData.dataType
-          ? null
-          : {
-              content: prefillData.dataType,
-              id: prefillData.dataType,
-              selected: true,
-            },
-        matchType: !prefillData.matchType
-          ? null
-          : {
-              content: prefillData.matchType,
-              id: prefillData.matchType,
-              selected: true,
-            },
-        fieldType: !prefillData.fieldType
-          ? null
-          : {
-              content: prefillData.fieldType,
-              id: prefillData.fieldType,
-              selected: true,
-            },
-        dropdownDataProvider: !prefillData.dropdownDataProvider
-          ? null
-          : {
-              content: prefillData.dropdownDataProvider,
-              id: prefillData.dropdownDataProvider,
-              selected: true,
-            },
-        dropdownValues: [],
-      },
-      {emitEvent: false}
-    );
+    this.form.patchValue({
+      ...prefillData,
+      dataType: !prefillData.dataType
+        ? null
+        : {
+            content: prefillData.dataType,
+            id: prefillData.dataType,
+            selected: true,
+          },
+      matchType: !prefillData.matchType
+        ? null
+        : {
+            content: prefillData.matchType,
+            id: prefillData.matchType,
+            selected: true,
+          },
+      fieldType: !prefillData.fieldType
+        ? null
+        : {
+            content: prefillData.fieldType,
+            id: prefillData.fieldType,
+            selected: true,
+          },
+      dropdownDataProvider: !prefillData.dropdownDataProvider
+        ? null
+        : {
+            content: prefillData.dropdownDataProvider,
+            id: prefillData.dropdownDataProvider,
+            selected: true,
+          },
+      dropdownValues: [],
+    });
+
     if (prefillData.dropdownDataProvider && prefillData.dropdownValues)
       this.setPrefilledDropdownValues(prefillData.dropdownValues);
     this.form.get('key')?.disable();
-  }
-
-  private setPrefilledDropdowns(prefillData: TaskListSearchField | null): void {
-    if (!prefillData) return;
-
-    if (!!prefillData.dataType) this._prefilledDataTypeItemId$.next(prefillData.dataType);
-
-    if (!!prefillData.fieldType) this._prefilledFieldTypeItemId$.next(prefillData.fieldType);
-
-    if (!!prefillData.matchType) this._prefilledMatchTypeItemId$.next(prefillData.matchType);
-
-    if (!!prefillData.dropdownDataProvider)
-      this._prefilledDataProviderItemId$.next(prefillData.dropdownDataProvider);
   }
 
   private setPrefilledDropdownValues(dropdownValue: TaskListSearchDropdownValue): void {
