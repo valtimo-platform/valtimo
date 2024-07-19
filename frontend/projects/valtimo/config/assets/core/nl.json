@@ -1473,7 +1473,7 @@
     "expiryPromptConfirm": "Sessie voortzetten"
   },
   "searchFields": {
-    "noneConfigured": "Er zijn geen zoekvelden geconfigureerd voor dit documenttype.",
+    "noneConfigured": "Er zijn geen zoekvelden geconfigureerd voor dit dossiertype.",
     "expandButtonText": "Zoekvelden tonen",
     "collapseButtonText": "Verbergen",
     "searchButtonText": "Zoeken",
