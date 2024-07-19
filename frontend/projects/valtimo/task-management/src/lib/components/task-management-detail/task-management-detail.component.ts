@@ -51,7 +51,7 @@ export class TaskManagementDetailComponent {
       map(params => params.name || ''),
       filter(docDefName => !!docDefName),
       switchMap(documentDefinitionName =>
-        this.documentService.getDocumentDefinition(documentDefinitionName)
+        this.documentService.getDocumentDefinitionForManagement(documentDefinitionName)
       ),
       tap(documentDefinition => {
         this.pageTitleService.setCustomPageTitle((documentDefinition as any)?.schema?.title || '-');
