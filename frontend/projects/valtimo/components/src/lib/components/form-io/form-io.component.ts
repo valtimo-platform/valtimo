@@ -72,6 +72,9 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   ) {}
 
   ngOnInit() {
+    Formio.setProjectUrl(location.origin);
+    Formio.authUrl = location.origin;
+
     const documentDefinitionName = this.route.snapshot.paramMap.get('documentDefinitionName');
     const documentId = this.route.snapshot.paramMap.get('documentId');
 
@@ -151,6 +154,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private setToken(token: string): void {
+    Formio.setUser(jwt_decode(token));
     Formio.setToken(token);
     localStorage.setItem('formioToken', token);
     this.setTimerForTokenRefresh(token);

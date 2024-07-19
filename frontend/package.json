@@ -101,6 +101,7 @@
     "libs:build:bootstrap": "ng build @valtimo/bootstrap",
     "libs:build:open-zaak": "ng build @valtimo/open-zaak",
     "libs:build:customer": "ng build @valtimo/customer",
+    "libs:build:copy-version": "npm run copy-frontend-version",
     "libs:test:user-interface": "ng test @valtimo/user-interface",
     "libs:test:config": "ng test @valtimo/config",
     "libs:test:view-configurator": "ng test @valtimo/view-configurator",
@@ -176,7 +177,8 @@
     "libs:lint:bootstrap": "ng lint @valtimo/bootstrap",
     "libs:lint:open-zaak": "ng lint @valtimo/open-zaak",
     "libs:lint:resource": "ng lint @valtimo/resource",
-    "libs:lint:customer": "ng lint @valtimo/customer"
+    "libs:lint:customer": "ng lint @valtimo/customer",
+    "copy-frontend-version": "node scripts/copy-frontend-version.js"
   },
   "private": true,
   "dependencies": {
