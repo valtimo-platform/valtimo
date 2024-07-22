@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of task
- */
+import {CarbonListNoResultsMessage} from '@valtimo/components';
 
-export * from './lib/models';
-export * from './lib/services/task.service';
-export * from './lib/task.module';
-export * from './lib/components/task-detail-modal/task-detail-modal.component';
-export * from './lib/components/task-list/task-list.component';
-export * from './lib/components/assign-user-to-task/assign-user-to-task.component';
-export * from './lib/task-permissions';
-export * from './lib/constants';
+const TASK_LIST_NO_SEARCH_RESULTS_MESSAGE: CarbonListNoResultsMessage = {
+  description: 'task-list.noSearchResultsDescription',
+  isSearchResult: true,
+  title: 'task-list.noSearchResultsTitle',
+};
+
+export {TASK_LIST_NO_SEARCH_RESULTS_MESSAGE};

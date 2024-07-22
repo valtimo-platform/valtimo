@@ -14,15 +14,4 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of task
- */
-
-export * from './lib/models';
-export * from './lib/services/task.service';
-export * from './lib/task.module';
-export * from './lib/components/task-detail-modal/task-detail-modal.component';
-export * from './lib/components/task-list/task-list.component';
-export * from './lib/components/assign-user-to-task/assign-user-to-task.component';
-export * from './lib/task-permissions';
-export * from './lib/constants';
+export * from './task-list.constants';

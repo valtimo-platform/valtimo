@@ -926,7 +926,9 @@
     "goToCase": "Go to case",
     "caseLocked": "You don't have access to this case",
     "rowLocked": "You don't have access to this task",
-    "allCases": "All cases"
+    "allCases": "All cases",
+    "noSearchResultsTitle": "No tasks found",
+    "noSearchResultsDescription": "There are no tasks that match your search criteria."
   },
   "Task": "Task",
   "Tasks": "Tasks",

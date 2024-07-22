@@ -925,7 +925,9 @@
     "goToCase": "Ga naar dossier",
     "caseLocked": "Je hebt geen toegang tot dit dossier",
     "rowLocked": "Je hebt geen toegang tot deze taak",
-    "allCases": "Alle dossiers"
+    "allCases": "Alle dossiers",
+    "noSearchResultsTitle": "Geen taken gevonden",
+    "noSearchResultsDescription": "Er zijn geen taken die aan je zoekcriteria voldoen."
   },
   "Task": "Taak",
   "Tasks": "Taken",
