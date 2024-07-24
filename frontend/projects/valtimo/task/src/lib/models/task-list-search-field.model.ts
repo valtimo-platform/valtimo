@@ -15,24 +15,24 @@
  */
 
 enum TaskListSearchFieldDataType {
-  TEXT = 'TEXT',
-  NUMBER = 'NUMBER',
-  DATE = 'DATE',
-  DATETIME = 'DATETIME',
-  TIME = 'TIME',
-  BOOLEAN = 'BOOLEAN',
+  TEXT = 'text',
+  NUMBER = 'number',
+  DATE = 'date',
+  DATETIME = 'datetime',
+  TIME = 'time',
+  BOOLEAN = 'boolean',
 }
 
 enum TaskListSearchFieldFieldType {
-  SINGLE = 'SINGLE',
-  RANGE = 'RANGE',
-  SINGLE_SELECT_DROPDOWN = 'SINGLE_SELECT_DROPDOWN',
-  MULTI_SELECT_DROPDOWN = 'MULTI_SELECT_DROPDOWN',
+  SINGLE = 'single',
+  RANGE = 'range',
+  SINGLE_SELECT_DROPDOWN = 'single_select_dropdown',
+  MULTI_SELECT_DROPDOWN = 'multi_select_dropdown',
 }
 
 enum TaskListSearchFieldMatchType {
-  LIKE = 'LIKE',
-  EXACT = 'EXACT',
+  LIKE = 'like',
+  EXACT = 'exact',
 }
 
 enum TaskListSearchDropdownDataProvider {

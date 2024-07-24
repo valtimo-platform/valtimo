@@ -27,7 +27,8 @@
     overrideSortState: overrideSortState$ | async,
     searchFields: searchFields$ | async,
     loadingSearchFields: loadingSearchFields$ | async,
-    caseDefinitionName: caseDefinitionName$ | async
+    caseDefinitionName: caseDefinitionName$ | async,
+    noResultsMessage: noResultsMessage$ | async
   } as obs"
   class="main-content"
 >
@@ -134,8 +135,8 @@
     </div>
 
     <valtimo-no-results
-      [description]="'task-list.' + obs.selectedTaskType + '.noResultsDescription' | translate"
-      [title]="'task-list.' + obs.selectedTaskType + '.noResultsTitle' | translate"
+      [description]="obs.noResultsMessage.description | translate"
+      [title]="obs.noResultsMessage.title | translate"
     >
     </valtimo-no-results>
   </valtimo-carbon-list>

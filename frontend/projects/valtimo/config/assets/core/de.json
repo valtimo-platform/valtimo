@@ -923,7 +923,9 @@
     "goToCase": "Gehen Sie zum Fall",
     "caseLocked": "Kein Zugriff zu dieser Fall!",
     "rowLocked": "Kein Zugriff zu dieser Aufgabe!",
-    "allCases": "Alle Fälle"
+    "allCases": "Alle Fälle",
+    "noSearchResultsTitle": "Keine Aufgaben gefunden",
+    "noSearchResultsDescription": "Es gibt keine Aufgaben, die Ihren Suchkriterien entsprechen."
   },
   "Task": "Aufgabe",
   "Tasks": "Aufgaben",

@@ -63,7 +63,8 @@ import {isEqual} from 'lodash';
 import {ListItem} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
 import {TaskListSortService} from '../../services/task-list-sort.service';
-import {PageTitleService} from '@valtimo/components';
+import {CarbonListNoResultsMessage, PageTitleService} from '@valtimo/components';
+import {TASK_LIST_NO_SEARCH_RESULTS_MESSAGE} from '../../constants';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -95,6 +96,24 @@ export class TaskListComponent implements OnInit, OnDestroy {
   public readonly ALL_CASES_ID = this.taskListService.ALL_CASES_ID;
 
   public readonly selectedTaskType$ = this.taskListService.selectedTaskType$;
+
+  private readonly _overrideNoResultsMessage$ =
+    new BehaviorSubject<CarbonListNoResultsMessage | null>(null);
+
+  public readonly noResultsMessage$: Observable<CarbonListNoResultsMessage> = combineLatest([
+    this.selectedTaskType$,
+    this._overrideNoResultsMessage$,
+  ]).pipe(
+    map(
+      ([selectedTaskType, overrideNoResultsMessage]) =>
+        overrideNoResultsMessage || {
+          title: 'task-list.' + selectedTaskType + '.noResultsDescription',
+          description: 'task-list.' + selectedTaskType + '.noResultsTitle',
+          isSearchResult: false,
+        }
+    )
+  );
+
   public readonly fields$ = this.taskListColumnService.fields$;
   public readonly loadingTasks$ = new BehaviorSubject<boolean>(true);
   public readonly visibleTabs$ = new BehaviorSubject<Array<TaskListTab> | null>(null);
@@ -182,6 +201,12 @@ export class TaskListComponent implements OnInit, OnDestroy {
       this.cachedTasks$.next(tasks);
       this.loadingTasks$.next(false);
       this.disableLoadingAnimation();
+
+      this.taskListSearchService.otherFilters$.pipe(take(1)).subscribe(otherFilters => {
+        this._overrideNoResultsMessage$.next(
+          otherFilters?.length > 0 ? TASK_LIST_NO_SEARCH_RESULTS_MESSAGE : null
+        );
+      });
     })
   );
 
