@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import {
   AbstractControl,
   FormArray,
   FormBuilder,
   ReactiveFormsModule,
+  ValidationErrors,
   Validators,
 } from '@angular/forms';
 import {InformationFilled16, TrashCan16} from '@carbon/icons';
@@ -58,7 +66,6 @@ import {
   Observable,
   startWith,
   switchMap,
-  tap,
 } from 'rxjs';
 
 @Component({
@@ -80,7 +87,7 @@ import {
     InputLabelModule,
   ],
 })
-export class TaskManagementSearchFieldsModalComponent {
+export class TaskManagementSearchFieldsModalComponent implements OnInit {
   @Input({required: true}) open: boolean;
   @Input({required: true}) documentDefinitionName: string;
 
@@ -126,30 +133,11 @@ export class TaskManagementSearchFieldsModalComponent {
     return this.dropdownDataProvider.valueChanges.pipe(startWith(this.dropdownDataProvider.value));
   }
 
-  public get dropdownValues(): AbstractControl<any | null> {
-    return this.form.get('dropdownValues');
-  }
-
   public get fieldType(): AbstractControl<ListItem | null> {
     return this.form.get('fieldType');
   }
   public get fieldTypeValue$(): Observable<ListItem | null> {
-    return this.fieldType.valueChanges.pipe(startWith(this.fieldType.value)).pipe(
-      tap(fieldTypeValue => {
-        const fieldType = fieldTypeValue?.id;
-
-        if (
-          fieldType === TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN ||
-          fieldType === TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN
-        ) {
-          this.dropdownDataProvider.setValidators(this.dropdownDataProviderValidator);
-          this.dropdownValues.setValidators(this.dropdownValuesValidator);
-        } else {
-          this.dropdownDataProvider.clearValidators();
-          this.dropdownValues.clearValidators();
-        }
-      })
-    );
+    return this.fieldType.valueChanges.pipe(startWith(this.fieldType.value));
   }
 
   public readonly TaskListSearchFieldDataType = TaskListSearchFieldDataType;
@@ -340,6 +328,11 @@ export class TaskManagementSearchFieldsModalComponent {
   ) {
     this.iconService.registerAll([TrashCan16, InformationFilled16]);
   }
+
+  public ngOnInit(): void {
+    this.form.setValidators([this.dropdownDataProviderValidator, this.dropdownValuesValidator]);
+  }
+
   public addDropdownValue(prefillValue?: {key: string; value: string}): void {
     if (!this.dropdownValuesArray) return;
 
@@ -448,19 +441,33 @@ export class TaskManagementSearchFieldsModalComponent {
     return null;
   }
 
-  private dropdownDataProviderValidator(control: AbstractControl): null | {[key: string]: string} {
-    const controlValue: string | undefined = control.value;
+  private dropdownDataProviderValidator(group: typeof this.form): ValidationErrors {
+    const controlValue: ListItem | undefined = group.get('dropdownDataProvider')?.value;
+    const fieldTypeControlValue: ListItem | null | undefined = group.get('fieldType')?.value;
 
-    if (!controlValue) return {error: 'Dropdown source provider is not specified'};
+    if (
+      [
+        TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN,
+        TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN,
+      ].includes(fieldTypeControlValue?.id) &&
+      !controlValue
+    )
+      return {error: 'Dropdown source provider is not specified'};
 
     return null;
   }
 
-  private dropdownValuesValidator(control: AbstractControl): null | {[key: string]: string} {
-    const controlValue: {key: string; value: string}[] | undefined = control.value;
-    const dropdownProviderValue = control.parent?.get('dropdownDataProvider')?.value?.id;
+  private dropdownValuesValidator(group: typeof this.form): ValidationErrors {
+    const controlValue: {key: string; value: string}[] | undefined =
+      group.get('dropdownValues')?.value;
+    const fieldTypeControlValue = group.get('fieldType')?.value?.id;
+    const dropdownProviderValue = group.get('dropdownDataProvider')?.value?.id;
 
     if (
+      [
+        TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN,
+        TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN,
+      ].includes(fieldTypeControlValue) &&
       (!controlValue || controlValue?.length === 0) &&
       dropdownProviderValue === TaskListSearchDropdownDataProvider.DATABASE
     )
