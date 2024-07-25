@@ -196,20 +196,13 @@ export class TaskManagementSearchFieldsComponent {
   public onDeleteFieldConfirm(item: TaskListSearchField | null): void {
     if (!item) return;
 
-    this.searchFieldsService
-      .deleteTaskListSearchField(item.key)
-      .pipe(
-        take(1),
-        switchMap(() =>
-          item.dropdownDataProvider
-            ? this.documentService.deleteDropdownData(
-                item.dropdownDataProvider,
-                item.ownerId,
-                item.key
-              )
-            : of()
-        )
-      )
+    combineLatest([
+      this.searchFieldsService.deleteTaskListSearchField(item.key),
+      item.dropdownDataProvider
+        ? this.documentService.deleteDropdownData(item.dropdownDataProvider, item.ownerId, item.key)
+        : of(null),
+    ])
+      .pipe(take(1))
       .subscribe(() => this._refresh$.next(null));
   }
 
