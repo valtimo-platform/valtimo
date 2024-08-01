@@ -16,9 +16,10 @@
 
 import {Inject, Injectable, OnDestroy} from '@angular/core';
 import {combineLatest, filter, map, Subject, Subscription} from 'rxjs';
-import {CurrentCarbonTheme, MonacoTheme, WindowWithMonaco} from '../../models';
+import {CurrentCarbonTheme, MonacoTheme} from '../../models';
 import {DOCUMENT} from '@angular/common';
 import {CdsThemeService} from '../../services';
+import {ValtimoWindow} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',
@@ -27,7 +28,7 @@ export class EditorService implements OnDestroy {
   public readonly loadingFinished$ = new Subject<null>();
 
   public readonly monacoEditor$ = this.loadingFinished$.pipe(
-    map(() => (this.document.defaultView as WindowWithMonaco)?.monaco?.editor),
+    map(() => (this.document.defaultView as ValtimoWindow)?.monaco?.editor),
     filter(editor => !!editor)
   );
 
@@ -53,7 +54,7 @@ export class EditorService implements OnDestroy {
   public load(): void {
     const baseUrl = './assets' + '/monaco-editor/min/vs';
 
-    if (typeof (window as WindowWithMonaco).monaco === 'object') {
+    if (typeof (window as ValtimoWindow).monaco === 'object') {
       this.finishLoading();
       return;
     }

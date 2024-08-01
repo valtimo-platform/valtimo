@@ -190,7 +190,12 @@
             [disabled]="modalObs.disableInput"
           ></v-tooltip-icon>
         </span>
-        <input cdsText formControlName="path" />
+
+        <valtimo-value-path-selector
+          formControlName="path"
+          [documentDefinitionName]="documentDefinitionName$ | async"
+          [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+        ></valtimo-value-path-selector>
       </cds-label>
     </div>
     <div class="cds--text-input__field-wrapper">

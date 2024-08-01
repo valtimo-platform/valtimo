@@ -141,18 +141,16 @@
         >
         </v-input>
 
-        <v-input
+        <valtimo-value-path-selector
           name="path"
-          [title]="'searchFieldsOverview.path' | translate"
-          [margin]="true"
+          [label]="'searchFieldsOverview.path' | translate"
+          [tooltip]="'searchFieldsOverviewTooltips.path' | translate"
+          [marginXl]="true"
+          [documentDefinitionName]="documentDefinitionName$ | async"
+          [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
           [defaultValue]="searchObs.searchField?.path"
           [disabled]="obs.disableInput"
-          [required]="true"
-          [fullWidth]="true"
-          [tooltip]="'searchFieldsOverviewTooltips.path' | translate"
-          [carbonTheme]="CARBON_THEME"
-        >
-        </v-input>
+        ></valtimo-value-path-selector>
 
         <v-select
           *ngIf="dataTypeItems$ | async as dataTypeItems"

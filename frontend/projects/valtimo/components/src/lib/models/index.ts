@@ -44,3 +44,4 @@ export * from './timeline.model';
 export * from './title.model';
 export * from './version.model';
 export * from './topbar.model';
+export * from './value-path-selector.model';

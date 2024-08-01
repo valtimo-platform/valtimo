@@ -33,6 +33,7 @@ import {
   registerFormioFileSelectorComponent,
   registerFormioIbanComponent,
   registerFormioUploadComponent,
+  registerFormioValueResolverSelectorComponent,
   UploaderModule,
   WidgetModule,
 } from '@valtimo/components';
@@ -287,5 +288,6 @@ export class AppModule {
     registerFormioFileSelectorComponent(injector);
     registerDocumentenApiFormioUploadComponent(injector);
     registerFormioIbanComponent(injector);
+    registerFormioValueResolverSelectorComponent(injector);
   }
 }

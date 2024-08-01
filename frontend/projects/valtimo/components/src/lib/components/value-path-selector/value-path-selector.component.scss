@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,16 +14,40 @@
  * limitations under the License.
  */
 
-export * from './modal.service';
-export * from './prompt.service';
-export * from './shell.service';
-export * from './stepper.service';
-export * from './user-interface.service';
-export * from './valtimo-modal.service';
-export * from './page-header.service';
-export * from './cds-theme.service';
-export * from './choice-field.service';
-export * from './page-subtitle.service';
-export * from './page-title.service';
-export * from './key-generator.service';
-export * from './value-path-selector.service';
+:host {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+::ng-deep .value-path-selector--margin-bottom {
+  margin-bottom: 16px;
+}
+
+::ng-deep .value-path-selector--margin-bottom-lg {
+  margin-bottom: 24px;
+}
+
+::ng-deep .value-path-selector--margin-bottom-xl {
+  margin-bottom: 34px;
+}
+
+.value-path-selector__form {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 16px;
+  justify-content: space-between;
+
+  ::ng-deep cds-dropdown {
+    width: 100%;
+  }
+
+  ::ng-deep .cds--toggle__label-text {
+    display: none;
+  }
+
+  ::ng-deep .cds--toggle__label {
+    display: flex;
+  }
+}

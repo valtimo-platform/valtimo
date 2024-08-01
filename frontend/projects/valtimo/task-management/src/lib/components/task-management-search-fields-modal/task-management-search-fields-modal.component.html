@@ -49,7 +49,11 @@
         >
         </v-input-label>
 
-        <input cdsText type="text" formControlName="path" />
+        <valtimo-value-path-selector
+          formControlName="path"
+          [documentDefinitionName]="documentDefinitionName$ | async"
+          [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+        ></valtimo-value-path-selector>
       </div>
 
       <div class="valtimo-task-management-search-fields-modal__input">

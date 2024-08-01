@@ -36,6 +36,7 @@ import {
   MultiInputValues,
   SelectItem,
   TableColumn,
+  ValuePathSelectorPrefix,
   ViewType,
 } from '@valtimo/components';
 import {
@@ -336,6 +337,8 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
 
   public readonly CARBON_THEME = 'white';
 
+  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
+
   constructor(
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
@@ -379,6 +382,14 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
       this.nextIfChanged(this.formData$, data);
       this.nextIfChanged(this.valid$, this.isValid(data));
     }, 0);
+  }
+
+  public pathValueChange(path: string): void {
+    this.formData$.pipe(take(1)).subscribe(currentData => {
+      const newData = {...currentData, path};
+      this.nextIfChanged(this.formData$, newData);
+      this.nextIfChanged(this.valid$, this.isValid(newData));
+    });
   }
 
   public dropdownDatalistChange(data: MultiInputOutput): void {

@@ -37,6 +37,7 @@ import {
   TooltipIconModule,
   ValtimoCdsModalDirectiveModule,
   ValtimoCdsOverflowButtonDirectiveModule,
+  ValuePathSelectorComponent,
   WidgetModule,
 } from '@valtimo/components';
 import {ConfigModule} from '@valtimo/config';
@@ -156,6 +157,7 @@ import {DossierManagementWidgetsEditorComponent} from './components/dossier-mana
     ToggleModule,
     TooltipModule,
     DossierManagementWidgetsEditorComponent,
+    ValuePathSelectorComponent,
   ],
   providers: [TabManagementService],
 })

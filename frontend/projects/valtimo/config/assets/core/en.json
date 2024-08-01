@@ -1193,10 +1193,12 @@
     "lastModified": "Last modified",
     "files": "Files",
     "firstName": "First name",
+    "lastName": "Last name",
     "assigneeFullName": "Assignee",
     "accepted": "Accepted",
     "title": "Title",
-    "readOnly": "Read-only"
+    "readOnly": "Read-only",
+    "height": "Amount"
   },
   "list": {
     "currentPage": "Page {{current}} of {{total}}",
@@ -1788,5 +1790,11 @@
     "columns": "Columns",
     "searchFields": "Search fields",
     "caseName": "Case name"
+  },
+  "valuePathSelector": {
+    "placeholder": "Select a path",
+    "dropdown": "Dropdown",
+    "manual": "Manual",
+    "selectDocDefPlaceholder": "Select a case"
   }
 }

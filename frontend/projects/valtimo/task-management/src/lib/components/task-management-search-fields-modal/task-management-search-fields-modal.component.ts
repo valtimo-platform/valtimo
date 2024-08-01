@@ -37,6 +37,8 @@ import {
   CarbonListModule,
   ColumnConfig,
   InputLabelModule,
+  ValuePathSelectorComponent,
+  ValuePathSelectorPrefix,
   ViewType,
 } from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
@@ -67,6 +69,7 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'valtimo-task-management-search-fields-modal',
@@ -85,6 +88,7 @@ import {
     IconModule,
     CarbonListModule,
     InputLabelModule,
+    ValuePathSelectorComponent,
   ],
 })
 export class TaskManagementSearchFieldsModalComponent implements OnInit {
@@ -320,11 +324,19 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
       )
     );
 
+  public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
+    map(params => params.name || ''),
+    filter(docDefName => !!docDefName)
+  );
+
+  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
+
   constructor(
     private readonly documentService: DocumentService,
     private readonly iconService: IconService,
     private readonly fb: FormBuilder,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly route: ActivatedRoute
   ) {
     this.iconService.registerAll([TrashCan16, InformationFilled16]);
   }

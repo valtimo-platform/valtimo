@@ -1785,5 +1785,11 @@
     "columns": "Säulen",
     "searchFields": "Suchfelder",
     "caseName": "Fallname"
+  },
+  "valuePathSelector": {
+    "placeholder": "Wählen Sie einen Pfad",
+    "dropdown": "Dropdown",
+    "manual": "Manuell",
+    "selectDocDefPlaceholder": "Wählen Sie einen Fall"
   }
 }

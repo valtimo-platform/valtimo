@@ -33,6 +33,7 @@ import {CarbonMultiInputComponent} from '../multi-input/carbon-multi-input.compo
 import {DatePickerComponent} from '../date-picker/date-picker.component';
 import {MultiInputFormComponent} from '../multi-input-form/multi-input-form.component';
 import {RadioComponent} from '../radio/radio.component';
+import {ValuePathSelectorComponent} from '../value-path-selector/value-path-selector.component';
 
 @Component({
   selector: 'v-form',
@@ -49,6 +50,8 @@ export class FormComponent implements AfterContentInit, OnDestroy {
   multiInputFormComponents!: QueryList<MultiInputFormComponent>;
   @ContentChildren(RadioComponent)
   radioComponents!: QueryList<RadioComponent>;
+  @ContentChildren(ValuePathSelectorComponent)
+  valuePathSelectorComponents!: QueryList<ValuePathSelectorComponent>;
 
   @Input() className = '';
 
@@ -79,6 +82,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
       ...this.datePickerComponents?.toArray(),
       ...this.multiInputFormComponents?.toArray(),
       ...this.radioComponents?.toArray(),
+      ...this.valuePathSelectorComponents?.toArray(),
     ];
 
     this.componentValuesSubscription = combineLatest(
@@ -89,6 +93,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
         const datePickerComponent = component as DatePickerComponent;
         const multiInputFormComponent = component as MultiInputFormComponent;
         const radioComponent = component as RadioComponent;
+        const valuePathSelectorComponent = component as ValuePathSelectorComponent;
 
         if (selectComponent?.selected$) {
           return selectComponent.selected$.asObservable();
@@ -100,8 +105,10 @@ export class FormComponent implements AfterContentInit, OnDestroy {
           return datePickerComponent.dateValue$;
         } else if (radioComponent?.radioValue$) {
           return radioComponent.radioValue$;
-        } else if (inputComponent.inputValue$) {
+        } else if (inputComponent?.inputValue$) {
           return inputComponent.inputValue$.asObservable();
+        } else if (valuePathSelectorComponent?._selectedPath$) {
+          return valuePathSelectorComponent._selectedPath$;
         }
 
         return of(null);
@@ -136,6 +143,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
       this.datePickerComponents.changes.pipe(startWith(null)),
       this.multiInputFormComponents.changes.pipe(startWith(null)),
       this.radioComponents.changes.pipe(startWith(null)),
+      this.valuePathSelectorComponents.changes.pipe(startWith(null)),
     ]).subscribe(() => {
       this.closeComponentValuesSubscription();
       this.openComponentValuesSubscription();

@@ -24,15 +24,9 @@ interface EditorModel {
 
 type MonacoEditor = typeof editor;
 
-interface WindowWithMonaco extends Window {
-  monaco?: {
-    editor?: MonacoEditor;
-  };
-}
-
 enum MonacoTheme {
   VS = 'vs',
   VSDARK = 'vs-dark',
 }
 
-export {EditorModel, WindowWithMonaco, MonacoEditor, MonacoTheme};
+export {EditorModel, MonacoEditor, MonacoTheme};

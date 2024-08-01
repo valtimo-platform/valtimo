@@ -1191,10 +1191,12 @@
     "lastModified": "Laatst gewijzigd op",
     "files": "Bestanden",
     "firstName": "Voornaam",
+    "lastName": "Achternaam",
     "assigneeFullName": "Behandelaar",
     "accepted": "Akkoord",
     "title": "Titel",
-    "readOnly": "Alleen-lezen"
+    "readOnly": "Alleen-lezen",
+    "height": "Hoeveelheid"
   },
   "list": {
     "currentPage": "Pagina {{current}} van {{total}}",
@@ -1789,5 +1791,11 @@
     "columns": "Kolommen",
     "searchFields": "Zoekvelden",
     "caseName": "Dossiernaam"
+  },
+  "valuePathSelector": {
+    "placeholder": "Kies een pad",
+    "dropdown": "Dropdown",
+    "manual": "Handmatig",
+    "selectDocDefPlaceholder": "Kies een dossier"
   }
 }

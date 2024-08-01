@@ -25,6 +25,7 @@ import {
   MoveRowDirection,
   MoveRowEvent,
   MultiInputValues,
+  ValuePathSelectorPrefix,
   ViewType,
 } from '@valtimo/components';
 import {ConfigService} from '@valtimo/config';
@@ -335,6 +336,8 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
   readonly deleteRowKey$ = new BehaviorSubject<string>('');
 
   readonly defaultEnumValues$ = new BehaviorSubject<MultiInputValues>(undefined);
+
+  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   constructor(
     private readonly documentService: DocumentService,
