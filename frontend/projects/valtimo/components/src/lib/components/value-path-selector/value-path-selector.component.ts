@@ -19,6 +19,7 @@ import {
   EventEmitter,
   forwardRef,
   HostBinding,
+  HostListener,
   Input,
   OnDestroy,
   OnInit,
@@ -86,7 +87,6 @@ import {distinctUntilChanged} from 'rxjs/operators';
       useExisting: forwardRef(() => ValuePathSelectorComponent),
     },
   ],
-  host: {'(blur)': 'onBlurEvent()'},
 })
 export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlValueAccessor {
   @HostBinding('class.value-path-selector--margin-bottom') private _showMargin: boolean = false;
@@ -94,6 +94,10 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     false;
   @HostBinding('class.value-path-selector--margin-bottom-xl') private _showMarginXl: boolean =
     false;
+  @HostListener('focusout')
+  public onBlur(): void {
+    this.onBlurEvent();
+  }
 
   public readonly formGroup = this.formBuilder.group({
     selectedPath: new FormControl(''),

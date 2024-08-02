@@ -71,12 +71,12 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
             ? this.httpClient
                 .post<
                   string[]
-                >(this.getApiUrl(`/v1/value-resolver/document-definition/${documentDefinitionName}/keys`), prefixesWithoutCache)
+                >(this.getApiUrl(`/management/v1/value-resolver/document-definition/${documentDefinitionName}/keys`), prefixesWithoutCache)
                 .pipe(catchError(() => of([])))
             : this.httpClient
                 .post<
                   string[]
-                >(this.getApiUrl(`/v1/value-resolver/document-definition/${documentDefinitionName}/version/${version}/keys`), prefixesWithoutCache)
+                >(this.getApiUrl(`/management/v1/value-resolver/document-definition/${documentDefinitionName}/version/${version}/keys`), prefixesWithoutCache)
                 .pipe(catchError(() => of([])));
 
         return combineLatest([
@@ -90,7 +90,6 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
           const prefixResults = combinedResults.filter(valuePath => valuePath.includes(prefix));
           this.cacheResult(prefix, documentDefinitionName, version, prefixResults);
         });
-        console.log(result, resultsFromCache);
       }),
       map(([result, resultsFromCache]) => [...result, ...resultsFromCache])
     );
