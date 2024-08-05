@@ -1688,7 +1688,11 @@
   },
   "viewTypeConverter": {
     "Yes": "Yes",
-    "No": "No"
+    "No": "No",
+    "errors": {
+      "boolean": "Value is not a valid boolean",
+      "number": "Value is not a valid number"
+    }
   },
   "processLinkConfiguration": {
     "configureStep": "Configure process step",

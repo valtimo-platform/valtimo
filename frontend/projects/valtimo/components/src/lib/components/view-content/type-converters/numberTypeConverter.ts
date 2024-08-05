@@ -19,12 +19,14 @@ import {TypeConverter} from './type-converters.model';
 import moment from 'moment';
 import localeNl from '@angular/common/locales/nl';
 import localeDe from '@angular/common/locales/nl';
+import {TranslateService} from '@ngx-translate/core';
 
 registerLocaleData(localeNl, 'nl');
 registerLocaleData(localeDe, 'de');
 
 export class NumberTypeConverter implements TypeConverter {
   private readonly _decimalPipe = inject(DecimalPipe);
+  private readonly _translateService = inject(TranslateService);
 
   public getTypeString(): string {
     return 'number';
@@ -35,12 +37,16 @@ export class NumberTypeConverter implements TypeConverter {
       return '-';
     }
 
-    return (
-      this._decimalPipe.transform(
-        value,
-        definition.digitsInfo,
-        moment.locale(localStorage.getItem('langKey') ?? 'nl')
-      ) ?? ''
-    );
+    try {
+      return (
+        this._decimalPipe.transform(
+          value,
+          definition.digitsInfo,
+          moment.locale(localStorage.getItem('langKey') ?? 'nl')
+        ) ?? ''
+      );
+    } catch {
+      return this._translateService.instant('viewTypeConverter.errors.number');
+    }
   }
 }

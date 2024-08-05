@@ -19,12 +19,14 @@ import {TypeConverter} from './type-converters.model';
 import moment from 'moment/moment';
 import localeNl from '@angular/common/locales/nl';
 import localeDe from '@angular/common/locales/nl';
+import {TranslateService} from '@ngx-translate/core';
 
 registerLocaleData(localeNl, 'nl');
 registerLocaleData(localeDe, 'de');
 
 export class PercentTypeConverter implements TypeConverter {
   private readonly _percentPipe = inject(PercentPipe);
+  private readonly _translateService = inject(TranslateService);
 
   public getTypeString(): string {
     return 'percent';
@@ -35,12 +37,16 @@ export class PercentTypeConverter implements TypeConverter {
       return '-';
     }
 
-    return (
-      this._percentPipe.transform(
-        !!definition?.digitsInfo ? value / 100 : value,
-        definition.digitsInfo,
-        moment.locale(localStorage.getItem('langKey'))
-      ) ?? ''
-    );
+    try {
+      return (
+        this._percentPipe.transform(
+          !!definition?.digitsInfo ? value / 100 : value,
+          definition.digitsInfo,
+          moment.locale(localStorage.getItem('langKey') ?? 'nl')
+        ) ?? ''
+      );
+    } catch {
+      return this._translateService.instant('viewTypeConverter.errors.number');
+    }
   }
 }

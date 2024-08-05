@@ -1683,7 +1683,11 @@
   },
   "viewTypeConverter": {
     "Yes": "Ja",
-    "No": "Nein"
+    "No": "Nein",
+    "errors": {
+      "boolean": "Der Wert ist kein gültiger boolescher Wert",
+      "number": "Der Wert ist keine gültige Zahl"
+    }
   },
   "processLinkConfiguration": {
     "configureStep": "Prozessschritt konfigurieren",

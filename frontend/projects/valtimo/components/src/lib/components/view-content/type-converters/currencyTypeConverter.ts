@@ -19,12 +19,14 @@ import moment from 'moment';
 import {CurrencyPipe, registerLocaleData} from '@angular/common';
 import localeNl from '@angular/common/locales/nl';
 import localeDe from '@angular/common/locales/nl';
+import {TranslateService} from '@ngx-translate/core';
 
 registerLocaleData(localeNl, 'nl');
 registerLocaleData(localeDe, 'de');
 
 export class CurrencyTypeConverter implements TypeConverter {
   private readonly _currencyPipe = inject(CurrencyPipe);
+  private readonly _translateService = inject(TranslateService);
 
   public getTypeString(): string {
     return 'currency';
@@ -35,14 +37,18 @@ export class CurrencyTypeConverter implements TypeConverter {
       return '-';
     }
 
-    return (
-      this._currencyPipe.transform(
-        value,
-        definition.currencyCode ?? 'EUR',
-        definition.display,
-        definition.digitsInfo,
-        moment.locale(localStorage.getItem('langKey'))
-      ) ?? ''
-    );
+    try {
+      return (
+        this._currencyPipe.transform(
+          value,
+          definition.currencyCode ?? 'EUR',
+          definition.display,
+          definition.digitsInfo,
+          moment.locale(localStorage.getItem('langKey') ?? 'nl')
+        ) ?? '-'
+      );
+    } catch {
+      return this._translateService.instant('viewTypeConverter.errors.number');
+    }
   }
 }

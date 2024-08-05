@@ -64,6 +64,9 @@ export class WidgetTableComponent {
         ...(!!column.displayProperties?.['currencyCode'] && {
           currencyCode: column.displayProperties['currencyCode'],
         }),
+        ...(!!column.displayProperties?.['values'] && {
+          values: column.displayProperties['values'],
+        }),
       }))
     );
     this.cdr.detectChanges();

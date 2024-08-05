@@ -20,7 +20,7 @@ import {TranslateService} from '@ngx-translate/core';
 
 @Injectable()
 export class BooleanTypeConverter implements TypeConverter {
-  constructor(private translateService: TranslateService) {}
+  constructor(private readonly translateService: TranslateService) {}
 
   public getTypeString(): string {
     return 'boolean';
@@ -37,6 +37,8 @@ export class BooleanTypeConverter implements TypeConverter {
         : enumeration[Object.keys(enumeration)[0]] || 'No';
     }
 
-    return this.translateService.instant(`viewTypeConverter.${value ? 'Yes' : 'No'}`);
+    return this.translateService.instant(
+      `viewTypeConverter.${typeof value === 'boolean' ? (value ? 'Yes' : 'No') : 'errors.boolean'}`
+    );
   }
 }

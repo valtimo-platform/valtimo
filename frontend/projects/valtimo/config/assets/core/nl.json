@@ -1689,7 +1689,11 @@
   },
   "viewTypeConverter": {
     "Yes": "Ja",
-    "No": "Nee"
+    "No": "Nee",
+    "errors": {
+      "boolean": "Waarde is geen geldige Booleaanse waarde",
+      "number": "Waarde is geen geldig getal"
+    }
   },
   "processLinkConfiguration": {
     "configureStep": "Processtap configureren",
