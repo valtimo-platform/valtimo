@@ -13,8 +13,5 @@
     "@ngx-translate/core": "^14.0.0",
     "@ngx-translate/http-loader": "7.0.0",
     "tslib": "^2.0.0"
-  },
-  "devDependencies": {
-    "karma-moment": "^0.1.0"
   }
 }

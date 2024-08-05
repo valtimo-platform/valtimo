@@ -14,8 +14,5 @@
     "@ngx-translate/http-loader": "7.0.0",
     "@ng-bootstrap/ng-bootstrap": "^11.0.0",
     "tslib": "^2.0.0"
-  },
-  "devDependencies": {
-    "karma-moment": "^0.1.0"
   }
 }

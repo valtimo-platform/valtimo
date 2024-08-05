@@ -22,8 +22,5 @@
     "ngx-spinner": "^13.1.1",
     "tslib": "^2.0.0",
     "ng-multiselect-dropdown": "^0.3.8"
-  },
-  "devDependencies": {
-    "karma-moment": "^0.1.0"
   }
 }
