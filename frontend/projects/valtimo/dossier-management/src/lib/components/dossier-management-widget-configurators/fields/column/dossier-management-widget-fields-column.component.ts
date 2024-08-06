@@ -18,12 +18,14 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  computed,
   EventEmitter,
   HostBinding,
   Input,
   OnDestroy,
   OnInit,
   Output,
+  Signal,
   TemplateRef,
   ViewEncapsulation,
 } from '@angular/core';
@@ -37,7 +39,7 @@ import {
 } from '@angular/forms';
 import {TrashCan16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
+import {CdsThemeService, CurrentCarbonTheme, InputLabelModule} from '@valtimo/components';
 import {
   CaseWidgetCurrencyDisplayType,
   CaseWidgetDateDisplayType,
@@ -45,6 +47,7 @@ import {
   CaseWidgetDisplayTypeKey,
   CaseWidgetEnumDisplayType,
   CaseWidgetNumberDisplayType,
+  CaseWidgetType,
   FieldsCaseWidgetValue,
 } from '@valtimo/dossier';
 import {
@@ -58,7 +61,7 @@ import {
   ListItem,
 } from 'carbon-components-angular';
 import {debounceTime, Observable, Subscription} from 'rxjs';
-import {WidgetFieldsService} from '../../../../services';
+import {WidgetFieldsService, WidgetWizardService} from '../../../../services';
 
 @Component({
   selector: 'valtimo-dossier-management-widget-fields-column',
@@ -76,6 +79,7 @@ import {WidgetFieldsService} from '../../../../services';
     ReactiveFormsModule,
     IconModule,
     AccordionModule,
+    InputLabelModule,
   ],
 })
 export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnDestroy {
@@ -106,6 +110,9 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
   }
 
   public readonly CaseWidgetDisplayTypeKey = CaseWidgetDisplayTypeKey;
+  public readonly widgetType: Signal<CaseWidgetType> = computed(
+    () => this.widgetWizardService.selectedWidget()?.type ?? CaseWidgetType.FIELDS
+  );
 
   public readonly inputTheme$: Observable<CurrentCarbonTheme> = this.cdsThemeService.currentTheme$;
 
@@ -117,7 +124,8 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
     private readonly fb: FormBuilder,
     private readonly iconService: IconService,
     private readonly translateService: TranslateService,
-    private readonly widgetFieldsService: WidgetFieldsService
+    private readonly widgetFieldsService: WidgetFieldsService,
+    private readonly widgetWizardService: WidgetWizardService
   ) {
     this.iconService.register(TrashCan16);
   }

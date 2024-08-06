@@ -20,7 +20,11 @@
   class="valtimo-dossier-management-widget-table__form"
 >
   <cds-text-label [attr.data-carbon-theme]="obs.theme">
-    {{ 'widgetTabManagement.content.widgetTitle' | translate }}
+    <v-input-label
+      [title]="'widgetTabManagement.content.widgetTitle' | translate"
+      [tooltip]="'widgetTabManagement.content.widgetTitleTooltip' | translate"
+    >
+    </v-input-label>
 
     <input
       formControlName="title"
@@ -31,7 +35,11 @@
   </cds-text-label>
 
   <cds-text-label [attr.data-carbon-theme]="obs.theme">
-    {{ 'widgetTabManagement.content.table.defaultPageSize' | translate }}
+    <v-input-label
+      [title]="'widgetTabManagement.content.table.defaultPageSize' | translate"
+      [tooltip]="'widgetTabManagement.content.table.defaultPageSizeTooltip' | translate"
+    >
+    </v-input-label>
 
     <input
       formControlName="defaultPageSize"
@@ -42,7 +50,11 @@
   </cds-text-label>
 
   <cds-text-label [attr.data-carbon-theme]="obs.theme">
-    {{ 'widgetTabManagement.content.table.collection' | translate }}
+    <v-input-label
+      [title]="'widgetTabManagement.content.table.collection' | translate"
+      [tooltip]="'widgetTabManagement.content.table.collectionTooltip' | translate"
+    >
+    </v-input-label>
 
     <input
       formControlName="collection"

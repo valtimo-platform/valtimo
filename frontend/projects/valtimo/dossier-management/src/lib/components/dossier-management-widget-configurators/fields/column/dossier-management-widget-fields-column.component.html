@@ -37,7 +37,13 @@
             "
           >
             <cds-text-label>
-              {{ 'widgetTabManagement.content.fields.title' | translate }}
+              <v-input-label
+                [title]="'widgetTabManagement.content.fields.title' | translate"
+                [tooltip]="
+                  'widgetTabManagement.content.' + widgetType() + '.titleTooltip' | translate
+                "
+              >
+              </v-input-label>
 
               <input
                 cdsText
@@ -49,7 +55,13 @@
             </cds-text-label>
 
             <cds-text-label>
-              {{ 'widgetTabManagement.content.fields.value' | translate }}
+              <v-input-label
+                [title]="'widgetTabManagement.content.fields.value' | translate"
+                [tooltip]="
+                  'widgetTabManagement.content.' + widgetType() + '.valueTooltip' | translate
+                "
+              >
+              </v-input-label>
 
               <input
                 cdsText
@@ -80,7 +92,11 @@
             @switch (formRow.get('type').value.id) {
               @case (CaseWidgetDisplayTypeKey.CURRENCY) {
                 <cds-text-label>
-                  {{ 'widgetTabManagement.content.fields.currencyCode' | translate }}
+                  <v-input-label
+                    [title]="'widgetTabManagement.content.fields.currencyCode' | translate"
+                    [tooltip]="'widgetTabManagement.content.fields.currencyCodeTooltip' | translate"
+                  >
+                  </v-input-label>
 
                   <input
                     cdsText
@@ -94,7 +110,11 @@
                 </cds-text-label>
 
                 <cds-text-label>
-                  {{ 'widgetTabManagement.content.fields.display' | translate }}
+                  <v-input-label
+                    [title]="'widgetTabManagement.content.fields.display' | translate"
+                    [tooltip]="'widgetTabManagement.content.fields.displayTooltip' | translate"
+                  >
+                  </v-input-label>
 
                   <input
                     cdsText
@@ -108,7 +128,14 @@
                 </cds-text-label>
 
                 <cds-text-label>
-                  {{ 'widgetTabManagement.content.fields.digitsInfo' | translate }}
+                  <v-input-label
+                    [title]="'widgetTabManagement.content.fields.digitsInfo' | translate"
+                    tooltip="{{
+                      'widgetTabManagement.content.fields.digitsInfoTooltip'
+                        | translate: {minFractionDigits: 2, maxFractionDigits: 2}
+                    }}"
+                  >
+                  </v-input-label>
 
                   <input
                     cdsText
@@ -123,7 +150,10 @@
               }
               @case (CaseWidgetDisplayTypeKey.DATE) {
                 <cds-text-label>
-                  {{ 'widgetTabManagement.content.fields.format' | translate }}
+                  <v-input-label
+                    [title]="'widgetTabManagement.content.fields.format' | translate"
+                    [tooltip]="'widgetTabManagement.content.fields.dateFormatTooltip' | translate"
+                  ></v-input-label>
 
                   <input
                     cdsText
@@ -138,7 +168,12 @@
               }
               @case (CaseWidgetDisplayTypeKey.DATE_TIME) {
                 <cds-text-label>
-                  {{ 'widgetTabManagement.content.fields.format' | translate }}
+                  <v-input-label
+                    [title]="'widgetTabManagement.content.fields.format' | translate"
+                    [tooltip]="
+                      'widgetTabManagement.content.fields.dateTimeFormatTooltip' | translate
+                    "
+                  ></v-input-label>
 
                   <input
                     cdsText
@@ -162,24 +197,36 @@
                       class="valtimo-dossier-management-widget-field-column__enum-form"
                     >
                       <cds-text-label>
-                        {{ 'widgetTabManagement.content.fields.key' | translate }}
+                        <v-input-label
+                          [title]="'widgetTabManagement.content.fields.enumValue' | translate"
+                          [tooltip]="
+                            'widgetTabManagement.content.fields.enumValueTooltip' | translate
+                          "
+                        ></v-input-label>
 
                         <input
                           [attr.data-carbon-theme]="inputTheme"
                           cdsText
-                          [placeholder]="'widgetTabManagement.content.fields.key' | translate"
+                          [placeholder]="'widgetTabManagement.content.fields.enumValue' | translate"
                           type="text"
                           formControlName="key"
                         />
                       </cds-text-label>
 
                       <cds-text-label>
-                        {{ 'widgetTabManagement.content.fields.value' | translate }}
+                        <v-input-label
+                          [title]="'widgetTabManagement.content.fields.enumDisplay' | translate"
+                          [tooltip]="
+                            'widgetTabManagement.content.fields.enumDisplayTooltip' | translate
+                          "
+                        ></v-input-label>
 
                         <input
                           cdsText
                           [attr.data-carbon-theme]="inputTheme"
-                          [placeholder]="'widgetTabManagement.content.fields.value' | translate"
+                          [placeholder]="
+                            'widgetTabManagement.content.fields.enumDisplay' | translate
+                          "
                           type="text"
                           formControlName="value"
                         />
@@ -210,7 +257,18 @@
               }
               @case (CaseWidgetDisplayTypeKey.NUMBER) {
                 <cds-text-label>
-                  {{ 'widgetTabManagement.content.fields.digitsInfo' | translate }}
+                  <v-input-label
+                    [title]="'widgetTabManagement.content.fields.digitsInfo' | translate"
+                    tooltip="{{
+                      'widgetTabManagement.content.fields.digitsInfoTooltip'
+                        | translate
+                          : {
+                              minFractionDigits: 0,
+                              maxFractionDigits: 3
+                            }
+                    }}"
+                  >
+                  </v-input-label>
 
                   <input
                     cdsText
@@ -223,7 +281,18 @@
               }
               @case (CaseWidgetDisplayTypeKey.PERCENT) {
                 <cds-text-label>
-                  {{ 'widgetTabManagement.content.fields.digitsInfo' | translate }}
+                  <v-input-label
+                    [title]="'widgetTabManagement.content.fields.digitsInfo' | translate"
+                    tooltip="{{
+                      'widgetTabManagement.content.fields.digitsInfoTooltip'
+                        | translate
+                          : {
+                              minFractionDigits: 0,
+                              maxFractionDigits: 0
+                            }
+                    }}"
+                  >
+                  </v-input-label>
 
                   <input
                     cdsText

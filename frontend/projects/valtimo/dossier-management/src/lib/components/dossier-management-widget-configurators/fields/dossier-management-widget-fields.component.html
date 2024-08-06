@@ -21,7 +21,11 @@
     [attr.data-carbon-theme]="theme$ | async"
     class="valtimo-dossier-management-widget-field__input"
   >
-    {{ 'widgetTabManagement.content.widgetTitle' | translate }}
+    <v-input-label
+      [title]="'widgetTabManagement.content.widgetTitle' | translate"
+      [tooltip]="'widgetTabManagement.content.widgetTitleTooltip' | translate"
+    >
+    </v-input-label>
 
     <input
       formControlName="widgetTitle"

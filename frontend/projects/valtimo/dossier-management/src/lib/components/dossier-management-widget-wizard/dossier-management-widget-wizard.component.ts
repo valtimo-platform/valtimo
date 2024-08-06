@@ -52,10 +52,15 @@ import {WIDGET_STEPS} from './steps';
 })
 export class DossierManagementWidgetWizardComponent {
   @Input() public open = false;
+  private _editMode: boolean;
   @Input() public set editMode(value: boolean) {
+    this._editMode = value;
     if (!value) return;
 
     this.currentStep.set(WidgetWizardStep.WIDTH);
+  }
+  public get editMode(): boolean {
+    return this._editMode;
   }
   @Output() public closeEvent = new EventEmitter<any>();
 

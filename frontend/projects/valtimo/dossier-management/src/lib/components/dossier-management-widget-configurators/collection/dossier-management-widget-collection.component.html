@@ -17,7 +17,11 @@
 <ng-container *ngIf="{theme: theme$ | async} as obs">
   <form [formGroup]="widgetForm" class="valtimo-dossier-management-widget-collection__form">
     <cds-text-label [attr.data-carbon-theme]="obs.theme">
-      {{ 'widgetTabManagement.content.widgetTitle' | translate }}
+      <v-input-label
+        [title]="'widgetTabManagement.content.widgetTitle' | translate"
+        [tooltip]="'widgetTabManagement.content.widgetTitleTooltip' | translate"
+      >
+      </v-input-label>
 
       <input
         formControlName="title"
@@ -28,7 +32,11 @@
     </cds-text-label>
 
     <cds-text-label [attr.data-carbon-theme]="obs.theme">
-      {{ 'widgetTabManagement.content.collection.defaultPageSize' | translate }}
+      <v-input-label
+        [title]="'widgetTabManagement.content.collection.defaultPageSize' | translate"
+        [tooltip]="'widgetTabManagement.content.collection.defaultPageSizeTooltip' | translate"
+      >
+      </v-input-label>
 
       <input
         formControlName="defaultPageSize"
@@ -41,7 +49,11 @@
     </cds-text-label>
 
     <cds-text-label [attr.data-carbon-theme]="obs.theme">
-      {{ 'widgetTabManagement.content.collection.collection' | translate }}
+      <v-input-label
+        [title]="'widgetTabManagement.content.collection.collection' | translate"
+        [tooltip]="'widgetTabManagement.content.collection.collectionTooltip' | translate"
+      >
+      </v-input-label>
 
       <input
         formControlName="collection"
@@ -59,7 +71,10 @@
   <form [formGroup]="cardForm" class="valtimo-dossier-management-widget-collection__card">
     <section class="valtimo-dossier-management-widget-collection__card-title">
       <cds-text-label>
-        {{ 'widgetTabManagement.content.fields.value' | translate }}
+        <v-input-label
+          [title]="'widgetTabManagement.content.fields.value' | translate"
+          [tooltip]="'widgetTabManagement.content.collection.valueTooltip' | translate"
+        ></v-input-label>
 
         <input
           cdsText
@@ -86,7 +101,11 @@
       @switch (cardForm.get('type').value.id) {
         @case (CaseWidgetDisplayTypeKey.CURRENCY) {
           <cds-text-label>
-            {{ 'widgetTabManagement.content.fields.currencyCode' | translate }}
+            <v-input-label
+              [title]="'widgetTabManagement.content.fields.currencyCode' | translate"
+              [tooltip]="'widgetTabManagement.content.fields.currencyCodeTooltip' | translate"
+            >
+            </v-input-label>
 
             <input
               cdsText
@@ -100,7 +119,11 @@
           </cds-text-label>
 
           <cds-text-label>
-            {{ 'widgetTabManagement.content.fields.display' | translate }}
+            <v-input-label
+              [title]="'widgetTabManagement.content.fields.display' | translate"
+              [tooltip]="'widgetTabManagement.content.fields.displayTooltip' | translate"
+            >
+            </v-input-label>
 
             <input
               cdsText
@@ -112,7 +135,14 @@
           </cds-text-label>
 
           <cds-text-label>
-            {{ 'widgetTabManagement.content.fields.digitsInfo' | translate }}
+            <v-input-label
+              [title]="'widgetTabManagement.content.fields.digitsInfo' | translate"
+              tooltip="{{
+                'widgetTabManagement.content.fields.digitsInfoTooltip'
+                  | translate: {minFractionDigits: 2, maxFractionDigits: 2}
+              }}"
+            >
+            </v-input-label>
 
             <input
               cdsText
@@ -125,7 +155,10 @@
         }
         @case (CaseWidgetDisplayTypeKey.DATE) {
           <cds-text-label>
-            {{ 'widgetTabManagement.content.fields.format' | translate }}
+            <v-input-label
+              [title]="'widgetTabManagement.content.fields.format' | translate"
+              [tooltip]="'widgetTabManagement.content.fields.dateFormatTooltip' | translate"
+            ></v-input-label>
 
             <input
               cdsText
@@ -138,7 +171,10 @@
         }
         @case (CaseWidgetDisplayTypeKey.DATE_TIME) {
           <cds-text-label>
-            {{ 'widgetTabManagement.content.fields.format' | translate }}
+            <v-input-label
+              [title]="'widgetTabManagement.content.fields.format' | translate"
+              [tooltip]="'widgetTabManagement.content.fields.dateTimeFormatTooltip' | translate"
+            ></v-input-label>
 
             <input
               cdsText
@@ -157,24 +193,32 @@
                 class="valtimo-dossier-management-widget-collection__enum-form"
               >
                 <cds-text-label>
-                  {{ 'widgetTabManagement.content.fields.key' | translate }}
+                  <v-input-label
+                    [title]="'widgetTabManagement.content.fields.enumValue' | translate"
+                    [tooltip]="'widgetTabManagement.content.fields.enumValueTooltip' | translate"
+                  >
+                  </v-input-label>
 
                   <input
                     [attr.data-carbon-theme]="obs.theme"
                     cdsText
-                    [placeholder]="'widgetTabManagement.content.fields.key' | translate"
+                    [placeholder]="'widgetTabManagement.content.enumValue' | translate"
                     type="text"
                     formControlName="key"
                   />
                 </cds-text-label>
 
                 <cds-text-label>
-                  {{ 'widgetTabManagement.content.fields.value' | translate }}
+                  <v-input-label
+                    [title]="'widgetTabManagement.content.fields.enumDisplay' | translate"
+                    [tooltip]="'widgetTabManagement.content.fields.enumDisplayTooltip' | translate"
+                  >
+                  </v-input-label>
 
                   <input
                     cdsText
                     [attr.data-carbon-theme]="obs.theme"
-                    [placeholder]="'widgetTabManagement.content.fields.value' | translate"
+                    [placeholder]="'widgetTabManagement.content.fields.enumDisplay' | translate"
                     type="text"
                     formControlName="value"
                   />
@@ -205,7 +249,18 @@
         }
         @case (CaseWidgetDisplayTypeKey.NUMBER) {
           <cds-text-label>
-            {{ 'widgetTabManagement.content.fields.digitsInfo' | translate }}
+            <v-input-label
+              [title]="'widgetTabManagement.content.fields.digitsInfo' | translate"
+              tooltip="{{
+                'widgetTabManagement.content.fields.digitsInfoTooltip'
+                  | translate
+                    : {
+                        minFractionDigits: 0,
+                        maxFractionDigits: 3
+                      }
+              }}"
+            >
+            </v-input-label>
 
             <input
               cdsText
@@ -218,7 +273,18 @@
         }
         @case (CaseWidgetDisplayTypeKey.PERCENT) {
           <cds-text-label>
-            {{ 'widgetTabManagement.content.fields.digitsInfo' | translate }}
+            <v-input-label
+              [title]="'widgetTabManagement.content.fields.digitsInfo' | translate"
+              tooltip="{{
+                'widgetTabManagement.content.fields.digitsInfoTooltip'
+                  | translate
+                    : {
+                        minFractionDigits: 0,
+                        maxFractionDigits: 0
+                      }
+              }}"
+            >
+            </v-input-label>
 
             <input
               cdsText

@@ -35,7 +35,12 @@ import {
   Validators,
 } from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
+import {
+  CARBON_THEME,
+  CdsThemeService,
+  CurrentCarbonTheme,
+  InputLabelModule,
+} from '@valtimo/components';
 import {
   CaseWidgetCurrencyDisplayType,
   CaseWidgetDateDisplayType,
@@ -75,6 +80,7 @@ import {DossierManagementWidgetFieldsColumnComponent} from '../fields/column/dos
     DropdownModule,
     ButtonModule,
     IconModule,
+    InputLabelModule,
   ],
 })
 export class DossierManagementWidgetCollectionComponent

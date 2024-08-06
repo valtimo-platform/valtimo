@@ -17,7 +17,6 @@
 <cds-modal
   *ngIf="{steps: steps$ | async} as obs"
   [open]="open"
-  [title]="'widgetTabManagement.wizard.title' | translate"
   showFooter="true"
   size="lg"
   valtimoCdsModal
@@ -25,7 +24,7 @@
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onClose()">
     <h3 cdsModalHeaderHeading>
-      {{ 'widgetTabManagement.wizard.title' | translate }}
+      {{ 'widgetTabManagement.wizard.' + (editMode ? 'edit' : 'create') | translate }}
     </h3>
   </cds-modal-header>
 
