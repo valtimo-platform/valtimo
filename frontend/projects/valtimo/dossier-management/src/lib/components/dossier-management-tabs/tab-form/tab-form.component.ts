@@ -86,6 +86,17 @@ export class TabFormComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
+  public isKeyError(): boolean {
+    return this.form.get('key')?.hasError('uniqueKey')
+      || this.form.get('key')?.hasError('pattern')
+  }
+
+  public getKeyErrorMessage(): string {
+    if (this.form.get('key')?.hasError('uniqueKey')) return 'dossierManagement.tabManagement.addModal.uniqueKeyError';
+    if (this.form.get('key')?.hasError('pattern')) return 'dossierManagement.tabManagement.addModal.invalidKeyError';
+    return '';
+  }
+
   public onSearch(): void {
     if (this._searchActive) {
       return;

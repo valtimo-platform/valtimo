@@ -560,6 +560,7 @@
         "tabNameLabel": "Tab name (Optional)",
         "title": "Neue Registerkarte hinzufügen {{documentDefinitionName}}",
         "uniqueKeyError": "Der Schlüssel für diese Spalte muss eindeutig sein.",
+        "invalidKeyError": "Der Schlüssel für diese Registerkarte darf nur Buchstaben, Zahlen und Bindestriche enthalten.",
         "widgetsComponent": "Widgets component",
         "visibleTitle": "Aufgabenliste auf Registerkarte sichtbar",
         "visible": "Sichtbar",
