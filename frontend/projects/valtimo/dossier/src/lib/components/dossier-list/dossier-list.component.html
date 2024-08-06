@@ -40,6 +40,7 @@
         <valtimo-dossier-list-actions
           [loading]="!obs.loaded"
           (formFlowComplete)="forceRefresh()"
+          (startButtonDisableEvent)="onStartButtonDisableEvent($event)"
         ></valtimo-dossier-list-actions>
         <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
 
@@ -190,7 +191,7 @@
   <button
     *ngIf="canCreateDocument$ | async"
     cdsButton="primary"
-    [disabled]="listActionsComponent?.disableStartDossierButton$ | async"
+    [disabled]="disableStartButton$ | async"
     (click)="startDossier()"
   >
     {{ 'Start Dossier' | translate }}

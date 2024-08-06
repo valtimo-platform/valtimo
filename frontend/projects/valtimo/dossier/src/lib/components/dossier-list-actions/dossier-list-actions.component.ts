@@ -32,6 +32,7 @@ export class DossierListActionsComponent implements OnInit {
   @Input() loading!: boolean;
 
   @Output() formFlowComplete = new EventEmitter();
+  @Output() public readonly startButtonDisableEvent = new EventEmitter<boolean>();
 
   public readonly associatedProcessDocumentDefinitions$: Observable<
     Array<ProcessDocumentDefinition>
@@ -46,13 +47,9 @@ export class DossierListActionsComponent implements OnInit {
     ),
     tap(processDocumentDefinitions => {
       this._cachedAssociatedProcessDocumentDefinitions = processDocumentDefinitions;
+      this.startButtonDisableEvent.emit(processDocumentDefinitions.length === 0 || this.loading);
     })
   );
-
-  public readonly disableStartDossierButton$: Observable<boolean> =
-    this.associatedProcessDocumentDefinitions$.pipe(
-      map(definitions => definitions.length === 0 || this.loading)
-    );
 
   private selectedProcessDocumentDefinition: ProcessDocumentDefinition | null = null;
 
