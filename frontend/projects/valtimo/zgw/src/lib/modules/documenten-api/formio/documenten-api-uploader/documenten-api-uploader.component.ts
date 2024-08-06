@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, Output, signal} from '@angular/core';
 import {
   FormioCustomComponent,
   FormIoDomService,
   FormIoStateService,
   ValtimoModalService,
 } from '@valtimo/components';
-import {BehaviorSubject, combineLatest, Observable, of, startWith, Subject, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, of, startWith, switchMap} from 'rxjs';
 import {
   DocumentenApiFileReference,
   DownloadService,
@@ -70,8 +70,7 @@ export class DocumentenApiUploaderComponent
   readonly uploading$ = new BehaviorSubject<boolean>(false);
   readonly fileToBeUploaded$ = new BehaviorSubject<File | null>(null);
   readonly modalDisabled$ = new BehaviorSubject<boolean>(false);
-  readonly showModal$ = new Subject<null>();
-  readonly hideModal$ = new Subject<null>();
+  readonly showModal = signal<boolean>(false);
   readonly uploadProcessLinked$: Observable<boolean | string> = combineLatest([
     this.route?.params || of(null),
     this.route?.firstChild?.params || of(null),
@@ -123,7 +122,7 @@ export class DocumentenApiUploaderComponent
 
   fileSelected(file: File): void {
     this.fileToBeUploaded$.next(file);
-    this.showModal$.next(null);
+    this.showModal.set(true);
   }
 
   deleteFile(id: string): void {
@@ -134,9 +133,13 @@ export class DocumentenApiUploaderComponent
     this.valueChange.emit(this._value);
   }
 
+  closeMetadataModal(): void {
+    this.showModal.set(false);
+  }
+
   metadataSet(metadata: DocumentenApiMetadata): void {
     this.uploading$.next(true);
-    this.hideModal$.next(null);
+    this.showModal.set(false);
     this.domService.toggleSubmitButton(true);
 
     this.fileToBeUploaded$

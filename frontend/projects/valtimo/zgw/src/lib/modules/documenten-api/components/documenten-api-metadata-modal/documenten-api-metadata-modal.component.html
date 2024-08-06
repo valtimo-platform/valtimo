@@ -14,10 +14,8 @@
   ~ limitations under the License.
   -->
 
-<cds-modal
-  #documentenApiMetadataModal
-  [open]="open"
-  [size]="modalSize"
+<v-modal
+  #metadataModal
   *ngIf="{
     file: file$ | async,
     disabled: disabled$ | async,
@@ -27,8 +25,9 @@
     tagItems: tagItems$ | async,
     userEmail: userEmail$ | async
   } as obs"
+  (closeEvent)="closeModal()"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+  <div role="header">
     @if (isEditMode) {
       <h3 cdsModalHeaderHeading>
         {{ 'document.editMetadata' | translate }}
@@ -38,11 +37,11 @@
         {{ 'document.fillInMetadata' | translate }}
       </h3>
     }
-  </cds-modal-header>
-  <section cdsModalContent class="cds--modal-content">
+  </div>
+  <div role="content">
     <ng-container *ngTemplateOutlet="metadataForm; context: {obs: obs}"></ng-container>
-  </section>
-  <cds-modal-footer>
+  </div>
+  <div role="footer" class="metadata-modal-footer">
     <button cdsButton="ghost" (click)="closeModal()" [disabled]="obs.disabled">
       {{ 'document.cancel' | translate }}
     </button>
@@ -54,8 +53,8 @@
     >
       {{ 'document.save' | translate }}
     </button>
-  </cds-modal-footer>
-</cds-modal>
+  </div>
+</v-modal>
 
 <ng-template #metadataForm let-obs="obs">
   <ng-container>
@@ -117,6 +116,7 @@
           <div class="documenten-metada-form-input">
             <cds-dropdown
               *ngIf="obs.languageItems"
+              [appendInline]="true"
               [placeholder]="'document.languagePlaceholder' | translate"
               [disabled]="obs.disabled || disableLanguage"
               id="language"
@@ -140,6 +140,7 @@
               [placeholder]="'document.confidentialityPlaceholder' | translate"
               [disabled]="obs.disabled || disableConfidentialityLevel"
               id="vertrouwelijkheidaanduiding"
+              [appendInline]="true"
               (selected)="confidentialityLevelSelected($event)"
             >
               <cds-dropdown-list [items]="confidentialityLevelItems$ | async"></cds-dropdown-list>
@@ -161,6 +162,7 @@
                 [placeholder]="'document.informatieobjecttypePlaceholder' | translate"
                 [disabled]="obs.disabled || disableDocumentType"
                 id="informatieobjecttype"
+                [appendInline]="true"
                 (selected)="informatieobjecttypeSelected($event)"
               >
                 <cds-dropdown-list [items]="obs.documentTypeItems || []"></cds-dropdown-list>
@@ -205,6 +207,7 @@
                 [type]="'multi'"
                 [placeholder]="'document.tagsPlaceholder' | translate"
                 [disabled]="obs.disabled || obs.tagItems.length === 0"
+                [appendInline]="true"
                 (selected)="tagsSelected($event)"
               >
                 >
@@ -289,6 +292,7 @@
               [placeholder]="'document.statusPlaceholder' | translate"
               [disabled]="obs.disabled || disableStatus"
               id="status"
+              [appendInline]="true"
               (selected)="statusSelected($event)"
             >
               <cds-dropdown-list [items]="obs.statusItems || []"></cds-dropdown-list>

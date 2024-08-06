@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 
 import {
   AdditionalDocumentDate,
@@ -56,6 +65,8 @@ import {
   ModalService,
   SelectModule,
   ValtimoModalService,
+  VModalComponent,
+  VModalModule,
 } from '@valtimo/components';
 
 import {
@@ -96,9 +107,12 @@ import {DocumentenApiTagService} from '../../services/documenten-api-tag.service
     TagModule,
     TooltipModule,
     TranslateModule,
+    VModalModule,
   ],
 })
 export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, OnDestroy {
+  @ViewChild('metadataModal') metadataModal: VModalComponent;
+
   @Input() disabled$!: Observable<boolean>;
   @Input() file$!: Observable<any>;
 
@@ -119,7 +133,13 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
   @Input() filename: string;
   @Input() isEditMode: boolean;
   @Input() language: string;
-  @Input() open = false;
+  @Input() set open(value: boolean) {
+    if (value) {
+      this.modalService.openModal(this.metadataModal);
+    } else {
+      this.modalService.closeModal();
+    }
+  }
   @Input() status: string;
   @Input() supportsTrefwoorden = false;
 
@@ -436,9 +456,11 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
   }
 
   public closeModal(): void {
-    this.additionalDocumentDate$.next('neither');
-    this.modalClose.emit();
-    this.clearForm();
+    this.modalService.closeModal(() => {
+      this.additionalDocumentDate$.next('neither');
+      this.modalClose.emit();
+      this.clearForm();
+    });
   }
 
   private clearForm(): void {
