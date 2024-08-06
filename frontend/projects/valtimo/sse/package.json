@@ -1,7 +1,7 @@
 {
   "name": "@valtimo/sse",
   "license": "EUPL-1.2",
-  "version": "12.1.0",
+  "version": "12.2.0",
   "peerDependencies": {
     "@angular/common": "^17.2.2",
     "@angular/core": "^17.2.2"
