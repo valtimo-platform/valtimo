@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {Component, ElementRef, OnInit, TemplateRef, ViewChild} from '@angular/core';
+import {Component, ElementRef, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Filter16, TagGroup16, Upload16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
@@ -31,7 +31,15 @@ import {ConfigService} from '@valtimo/config';
 import {DownloadService, UploadProviderService} from '@valtimo/resource';
 import {UserProviderService} from '@valtimo/security';
 import {ButtonModule, DialogModule, IconModule, IconService} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, Observable, of, ReplaySubject, Subject} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  Observable,
+  of,
+  ReplaySubject,
+  Subject,
+  Subscription,
+} from 'rxjs';
 import {catchError, filter, map, switchMap, take, tap} from 'rxjs/operators';
 import {
   COLUMN_VIEW_TYPES,
@@ -63,7 +71,7 @@ import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-mo
     ConfirmationModalModule,
   ],
 })
-export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
+export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput: ElementRef;
   @ViewChild('translationTemplate') translationTemplate: TemplateRef<any>;
 
@@ -228,6 +236,8 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
     })
   );
 
+  private readonly _subscriptions = new Subscription();
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
@@ -250,6 +260,10 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
     this.setUploadProcessLinked();
     this.isUserAdmin();
     this.iconService.registerAll([Filter16, TagGroup16, Upload16]);
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
   }
 
   public onDeleteActionClick(item: DocumentenApiRelatedFile): void {
@@ -288,14 +302,17 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
   }
 
   public isUserAdmin() {
-    this.userProviderService.getUserSubject().subscribe(
-      userIdentity => {
-        this.isAdmin = userIdentity.roles.includes('ROLE_ADMIN');
-      },
-      () => {
-        this.isAdmin = false;
-      }
-    );
+    this.userProviderService
+      .getUserSubject()
+      .pipe(take(1))
+      .subscribe(
+        userIdentity => {
+          this.isAdmin = userIdentity.roles.includes('ROLE_ADMIN');
+        },
+        () => {
+          this.isAdmin = false;
+        }
+      );
   }
 
   public metadataSet(metadata: DocumentenApiMetadata): void {
@@ -393,16 +410,18 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit {
   }
 
   private openQueryParamsSubscription(): void {
-    combineLatest([
-      this.documentDefinitionName$,
-      this.documentId$,
-      this.filter$,
-      this._sort$,
-    ]).subscribe(([definitionName, documentId, filter, sort]) => {
-      this.router.navigate([`/dossiers/${definitionName}/document/${documentId}/documents`], {
-        queryParams: {...filter, ...sort},
-      });
-    });
+    this._subscriptions.add(
+      combineLatest([
+        this.documentDefinitionName$,
+        this.documentId$,
+        this.filter$,
+        this._sort$,
+      ]).subscribe(([definitionName, documentId, filter, sort]) => {
+        this.router.navigate([`/dossiers/${definitionName}/document/${documentId}/documents`], {
+          queryParams: {...filter, ...sort},
+        });
+      })
+    );
   }
 
   private resetFileInput(): void {

@@ -100,14 +100,9 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
     this._route.params.pipe(take(1)).subscribe(params => {
       const currentUrl = this._router.url;
       const currentDocumentId = params?.documentId;
-      const queryParams = currentUrl.split('?')[1] || '';
       const urlBeforeDocumentId = currentUrl.split(currentDocumentId)[0];
 
-      this._router.navigateByUrl(
-        `${urlBeforeDocumentId}${currentDocumentId}/${nextTab.name}${
-          queryParams ? `?${queryParams}` : ''
-        }`
-      );
+      this._router.navigateByUrl(`${urlBeforeDocumentId}${currentDocumentId}/${nextTab.name}`);
     });
   }
 
