@@ -115,6 +115,7 @@ export class DossierManagementWidgetFieldsComponent
   public onAddColumnClick(): void {
     this.columns.update(value => [...value, null]);
     this.activeTab.set(this.columns().length - 1);
+    this.changeValidEvent.emit(false)
   }
 
   public onTabSelected(index: number): void {

@@ -132,7 +132,7 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
     this.formGroup.reset();
   }
 
-  public onAddFieldClick(): void {
+  public addField(): void {
     if (!this.formRows) return;
 
     this.formRows.push(
@@ -233,7 +233,10 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
   }
 
   private initForm(): void {
-    if (!this.columnData) return;
+    if (!this.columnData) {
+      this.addField();
+      return;
+    }
 
     const rowsControl = this.formGroup.get('rows') as FormArray;
     if (!rowsControl) return;

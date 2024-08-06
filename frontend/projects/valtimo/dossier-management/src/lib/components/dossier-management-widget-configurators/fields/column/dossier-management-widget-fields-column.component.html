@@ -22,7 +22,8 @@
     @for (formRow of formRows.controls; track $index) {
       <cds-accordion-item
         [title]="fieldTitle"
-        [context]="{index: $index, title: formRow.get('title')?.value}"
+        [context]="{count: $count, index: $index, title: formRow.get('title')?.value}"
+        [expanded]="$index === 0"
         class="valtimo-dossier-management-widget-field-column__item"
       >
         <form
@@ -240,22 +241,23 @@
     }
   </cds-accordion>
 
-  <button cdsButton="primary" size="sm" (click)="onAddFieldClick()">
+  <button cdsButton="primary" size="sm" (click)="addField()">
     {{ addTranslateKey | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
   </button>
 </form>
 
-<ng-template #fieldTitle let-index="index" let-title="title">
+<ng-template #fieldTitle let-count="count" let-index="index" let-title="title">
   <div class="valtimo-dossier-management-widget-field-column__title">
     {{ title || ('widgetTabManagement.content.fields.titlePlaceholder' | translate) }}
 
     <button
       cdsButton="danger"
+      [disabled]="count === 1"
       [iconOnly]="true"
-      class="valtimo-dossier-management-widget-field-column__delete-button"
       (click)="onDeleteRowClick($event, formRows, index)"
+      class="valtimo-dossier-management-widget-field-column__delete-button"
     >
       <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
     </button>
