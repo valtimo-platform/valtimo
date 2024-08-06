@@ -734,23 +734,13 @@
       }
     },
     "width": {
-      "description": "Wählen Sie die gewünschte Breite für das Widget aus. Beachten Sie, dass nicht mehr als 4 Inhaltsspalten nebeneinander liegen dürfen.",
-      "quarter": {
-        "title": "1/4",
-        "description": "Eine Spalte mit Inhalt"
-      },
-      "half": {
-        "title": "Half",
-        "description": "Zwei Inhaltsspalten"
-      },
-      "threeQuarters": {
-        "title": "3/4",
-        "description": "Drei Inhaltsspalten"
-      },
-      "fullWidth": {
-        "title": "Gesamtbreite",
-        "description": "Vier Inhaltsspalten"
-      }
+      "description": "Wählen Sie die gewünschte Breite für das Widget aus.",
+      "fullWidth": "Gesamtbreite",
+      "half": "Half",
+      "small": "Klein",
+      "medium": "Medium",
+      "large": "Groß",
+      "xtraLarge": "Xtra Groß"
     },
     "style": {
       "description": "Wählen Sie den gewünschten Stil für das Widget aus",

@@ -36,30 +36,28 @@
   </cds-text-label>
 </form>
 
-<ng-container>
-  <cds-tabs type="contained">
-    @for (column of columns(); track $index) {
-      <cds-tab
-        [active]="activeTab() === $index"
-        [heading]="columnHeading"
-        [context]="{index: $index, count: $count}"
-        (selected)="onTabSelected($index)"
-      >
-        <valtimo-dossier-management-widget-fields-column
-          *ngIf="activeTab() === $index"
-          [columnData]="selectedWidgetContent()?.[$index]"
-          (columnUpdateEvent)="onColumnUpdateEvent($event, $index)"
-        ></valtimo-dossier-management-widget-fields-column>
-      </cds-tab>
-    }
+<cds-tabs type="contained">
+  @for (column of columns(); track $index) {
     <cds-tab
-      *ngIf="columns().length < widgetWidth"
-      [heading]="addColumn"
-      [id]="'addColumn'"
-      class="valtimo-dossier-management-widget-field__add"
-    ></cds-tab>
-  </cds-tabs>
-</ng-container>
+      [active]="activeTab() === $index"
+      [heading]="columnHeading"
+      [context]="{index: $index, count: $count}"
+      (selected)="onTabSelected($index)"
+    >
+      <valtimo-dossier-management-widget-fields-column
+        *ngIf="activeTab() === $index"
+        [columnData]="selectedWidgetContent()?.[$index]"
+        (columnUpdateEvent)="onColumnUpdateEvent($event, $index)"
+      ></valtimo-dossier-management-widget-fields-column>
+    </cds-tab>
+  }
+  <cds-tab
+    *ngIf="columns().length < widgetWidth"
+    [heading]="addColumn"
+    [id]="'addColumn'"
+    class="valtimo-dossier-management-widget-field__add"
+  ></cds-tab>
+</cds-tabs>
 
 <ng-template #addColumn>
   <button

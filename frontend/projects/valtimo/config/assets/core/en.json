@@ -735,23 +735,13 @@
       }
     },
     "width": {
-      "description": "Select the desired width for the widget. Be aware that there can be no more than 4 columns of content next to each other.",
-      "quarter": {
-        "title": "1/4",
-        "description": "One column of content"
-      },
-      "half": {
-        "title": "Half",
-        "description": "Two columns of content"
-      },
-      "threeQuarters": {
-        "title": "3/4",
-        "description": "Three columns of content"
-      },
-      "fullWidth": {
-        "title": "Full-width",
-        "description": "Four columns of content"
-      }
+      "description": "Select the desired width for the widget.",
+      "fullWidth": "Full-width",
+      "half": "Half",
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large",
+      "xtraLarge": "Xtra large"
     },
     "style": {
       "description": "Select the desired style for the widget",

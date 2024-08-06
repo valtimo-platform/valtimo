@@ -135,12 +135,12 @@ export class DossierManagementWidgetCollectionComponent
 
   public WIDTH_ITEMS: ListItem[] = [
     {
-      content: this.translateService.instant('widgetTabManagement.width.fullWidth.title'),
+      content: this.translateService.instant('widgetTabManagement.width.fullWidth'),
       id: 'full',
       selected: true,
     },
     {
-      content: this.translateService.instant('widgetTabManagement.width.half.title'),
+      content: this.translateService.instant('widgetTabManagement.width.half'),
       id: 'half',
       selected: false,
     },

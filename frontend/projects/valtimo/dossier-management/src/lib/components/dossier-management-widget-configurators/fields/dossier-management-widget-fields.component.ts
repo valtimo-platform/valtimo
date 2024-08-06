@@ -15,6 +15,7 @@
  */
 import {CommonModule} from '@angular/common';
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -24,6 +25,7 @@ import {
   OnInit,
   Output,
   signal,
+  ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
@@ -35,7 +37,7 @@ import {
   InputLabelModule,
 } from '@valtimo/components';
 import {FieldsCaseWidgetValue, WidgetFieldsContent} from '@valtimo/dossier';
-import {ButtonModule, IconModule, InputModule, TabsModule} from 'carbon-components-angular';
+import {ButtonModule, IconModule, InputModule, Tab, TabsModule} from 'carbon-components-angular';
 import {debounceTime, map, Subscription} from 'rxjs';
 import {WidgetContentComponent} from '../../../models';
 import {WidgetWizardService} from '../../../services';
@@ -60,10 +62,11 @@ import {DossierManagementWidgetFieldsColumnComponent} from './column/dossier-man
   ],
 })
 export class DossierManagementWidgetFieldsComponent
-  implements WidgetContentComponent, OnDestroy, OnInit
+  implements WidgetContentComponent, OnDestroy, OnInit, AfterViewInit
 {
   @HostBinding('class') public readonly class = 'valtimo-dossier-management-widget-field';
   @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
+  @ViewChild(Tab) private readonly _tab: Tab;
 
   public form = this.fb.group({
     widgetTitle: this.fb.control(this.widgetWizardService.widgetTitle(), Validators.required),
@@ -111,6 +114,10 @@ export class DossierManagementWidgetFieldsComponent
     this.columns.set(Object.keys(widgetContent).map(() => null));
   }
 
+  public ngAfterViewInit(): void {
+    this._tab.tabIndex = -1;
+  }
+
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
     this.changeValidEvent.emit(false);
@@ -121,7 +128,7 @@ export class DossierManagementWidgetFieldsComponent
   public onAddColumnClick(): void {
     this.columns.update(value => [...value, null]);
     this.activeTab.set(this.columns().length - 1);
-    this.changeValidEvent.emit(false)
+    this.changeValidEvent.emit(false);
   }
 
   public onTabSelected(index: number): void {
