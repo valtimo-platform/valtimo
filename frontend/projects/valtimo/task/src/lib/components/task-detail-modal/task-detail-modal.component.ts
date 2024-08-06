@@ -19,7 +19,7 @@ import {
   ComponentRef,
   EventEmitter,
   Inject,
-  OnDestroy,
+  OnDestroy, OnInit,
   Optional,
   Output,
   ViewChild,
@@ -55,6 +55,9 @@ import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/conf
 import {TaskIntermediateSaveService} from '../../services/task-intermediate-save.service';
 import {IconService, Modal} from 'carbon-components-angular';
 import {RecentlyViewed16} from '@carbon/icons';
+import {PermissionService} from '@valtimo/access-control';
+import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../../task-permissions';
+import {NGXLogger} from 'ngx-logger';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -64,7 +67,7 @@ moment.locale(localStorage.getItem('langKey') || '');
   styleUrls: ['./task-detail-modal.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class TaskDetailModalComponent implements OnDestroy {
+export class TaskDetailModalComponent implements OnInit, OnDestroy {
   @ViewChild('form') form: FormioComponent;
   @ViewChild('formFlow') formFlow: FormFlowComponent;
   @ViewChild('taskDetailModal') modal: Modal;
@@ -101,11 +104,22 @@ export class TaskDetailModalComponent implements OnDestroy {
   public readonly processLinkIsFormFlow$ = this.taskProcessLinkType$.pipe(
     map(type => type === 'form-flow')
   );
+  public readonly canAssignUserToTask$ = new BehaviorSubject<boolean>(false)
 
   private readonly processLinkId$ = new BehaviorSubject<string>(undefined);
 
+  public readonly canAssign$: Observable<boolean> = this.task$.pipe(
+    switchMap(task =>
+      this.permissionService.requestPermission(CAN_ASSIGN_TASK_PERMISSION, {
+        resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+        identifier: task.id,
+      })
+    )
+  );
+
   private _fvmSubmissionSubscription: Subscription;
   private _submissionSubscription: Subscription;
+  private _canAssignUserTaskSubscription: Subscription;
 
   constructor(
     private readonly toastr: ToastrService,
@@ -120,7 +134,9 @@ export class TaskDetailModalComponent implements OnDestroy {
     @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel,
     private readonly taskIntermediateSaveService: TaskIntermediateSaveService,
     private readonly configService: ConfigService,
-    private readonly iconService: IconService
+    private readonly iconService: IconService,
+    private readonly permissionService: PermissionService,
+    private readonly logger: NGXLogger,
   ) {
     const options = new FormioOptionsImpl();
     options.disableAlerts = true;
@@ -129,11 +145,33 @@ export class TaskDetailModalComponent implements OnDestroy {
     this.intermediateSaveEnabled = this.configService.featureToggles.enableIntermediateSave;
 
     this.iconService.registerAll([RecentlyViewed16]);
+
+    this.canAssignUserToTask$.subscribe((canAssign) => {
+      this.logger.debug("Is user allowed to assign a user to Task", canAssign);
+    })
+  }
+
+  ngOnInit(): void {
+    this._canAssignUserTaskSubscription = this.task$.subscribe(task => {
+      if (task) {
+        this.logger.debug("Checking if user allowed to assign a user to Task with id:", task.id);
+        this.permissionService.requestPermission(CAN_ASSIGN_TASK_PERMISSION, {
+          resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+          identifier: task.id,
+        }).subscribe( (allowed: boolean) => {
+          this.canAssignUserToTask$.next(allowed)
+        })
+      } else {
+        this.logger.debug("Reset is user allowed to assign a user to Task as task is null");
+        this.canAssignUserToTask$.next(false)
+      }
+    });
   }
 
   public ngOnDestroy(): void {
     this._fvmSubmissionSubscription?.unsubscribe();
     this._submissionSubscription?.unsubscribe();
+    this._canAssignUserTaskSubscription?.unsubscribe();
   }
 
   public openTaskDetails(task: Task): void {
