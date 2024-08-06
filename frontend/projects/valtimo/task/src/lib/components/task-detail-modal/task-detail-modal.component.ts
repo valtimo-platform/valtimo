@@ -108,18 +108,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   private readonly processLinkId$ = new BehaviorSubject<string>(undefined);
 
-  public readonly canAssign$: Observable<boolean> = this.task$.pipe(
-    switchMap(task =>
-      this.permissionService.requestPermission(CAN_ASSIGN_TASK_PERMISSION, {
-        resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
-        identifier: task.id,
-      })
-    )
-  );
-
-  private _fvmSubmissionSubscription: Subscription;
-  private _submissionSubscription: Subscription;
-  private _canAssignUserTaskSubscription: Subscription;
+  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly toastr: ToastrService,
@@ -146,32 +135,34 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
     this.iconService.registerAll([RecentlyViewed16]);
 
-    this.canAssignUserToTask$.subscribe((canAssign) => {
-      this.logger.debug("Is user allowed to assign a user to Task", canAssign);
-    })
+    this._subscriptions.add(
+      this.canAssignUserToTask$.subscribe((canAssign) => {
+        this.logger.debug("Is user allowed to assign a user to Task", canAssign);
+      })
+    )
   }
 
-  ngOnInit(): void {
-    this._canAssignUserTaskSubscription = this.task$.subscribe(task => {
-      if (task) {
-        this.logger.debug("Checking if user allowed to assign a user to Task with id:", task.id);
-        this.permissionService.requestPermission(CAN_ASSIGN_TASK_PERMISSION, {
-          resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
-          identifier: task.id,
-        }).subscribe( (allowed: boolean) => {
-          this.canAssignUserToTask$.next(allowed)
-        })
-      } else {
-        this.logger.debug("Reset is user allowed to assign a user to Task as task is null");
-        this.canAssignUserToTask$.next(false)
-      }
-    });
+  public ngOnInit(): void {
+    this._subscriptions.add(
+      this.task$.subscribe(task => {
+        if (task) {
+          this.logger.debug("Checking if user allowed to assign a user to Task with id:", task.id);
+          this.permissionService.requestPermission(CAN_ASSIGN_TASK_PERMISSION, {
+            resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+            identifier: task.id,
+          }).subscribe( (allowed: boolean) => {
+            this.canAssignUserToTask$.next(allowed)
+          })
+        } else {
+          this.logger.debug("Reset is user allowed to assign a user to Task as task is null");
+          this.canAssignUserToTask$.next(false)
+        }
+      })
+    )
   }
 
   public ngOnDestroy(): void {
-    this._fvmSubmissionSubscription?.unsubscribe();
-    this._submissionSubscription?.unsubscribe();
-    this._canAssignUserTaskSubscription?.unsubscribe();
+    this._subscriptions.unsubscribe();
   }
 
   public openTaskDetails(task: Task): void {
@@ -320,20 +311,19 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     });
 
     if (this.intermediateSaveEnabled) {
-      this._fvmSubmissionSubscription = formViewModelComponent.instance.submission$.subscribe(
-        submission => {
-          this.submission$.next(submission);
-        }
-      );
-
-      this._submissionSubscription = this.submission$
-        .pipe(distinctUntilChanged())
-        .subscribe((submission?) => {
+      this._subscriptions.add(
+        formViewModelComponent.instance.submission$.subscribe(submission => {
+            this.submission$.next(submission);
+          }
+        )
+      )
+      this._subscriptions.add(
+        this.submission$.pipe(distinctUntilChanged()).subscribe((submission?) => {
           if (submission?.data && Object.keys(submission.data).length === 0) {
             formViewModelComponent.instance.submission = {data: {}};
           }
-        });
-
+        })
+      )
       this.getCurrentProgress(formViewModelComponent);
     }
   }
@@ -421,8 +411,7 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   protected closeModal(): void {
     this.modal.open = false;
-    this._fvmSubmissionSubscription?.unsubscribe();
-    this._submissionSubscription?.unsubscribe();
+    this._subscriptions.unsubscribe();
 
     if (this.formFlow) {
       this.formFlow.saveData();
