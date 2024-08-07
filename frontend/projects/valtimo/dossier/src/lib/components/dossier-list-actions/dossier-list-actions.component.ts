@@ -15,7 +15,7 @@
  */
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
-import {map, Observable, of, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, of, switchMap} from 'rxjs';
 import {DossierListService} from '../../services';
 import {DossierProcessStartModalComponent} from '../dossier-process-start-modal/dossier-process-start-modal.component';
 
@@ -29,7 +29,10 @@ declare const $;
 export class DossierListActionsComponent implements OnInit {
   @ViewChild('processStartModal') processStart: DossierProcessStartModalComponent;
 
-  @Input() loading!: boolean;
+  private readonly _loading$ = new BehaviorSubject<boolean>(true);
+  @Input() set loading(value: boolean) {
+    this._loading$.next(value);
+  }
 
   @Output() formFlowComplete = new EventEmitter();
   @Output() public readonly startButtonDisableEvent = new EventEmitter<boolean>();
@@ -38,16 +41,17 @@ export class DossierListActionsComponent implements OnInit {
     Array<ProcessDocumentDefinition>
   > = this.listService.documentDefinitionName$.pipe(
     switchMap(documentDefinitionName =>
-      documentDefinitionName
-        ? this.documentService.findProcessDocumentDefinitions(documentDefinitionName)
-        : of([])
+      combineLatest([
+        documentDefinitionName
+          ? this.documentService.findProcessDocumentDefinitions(documentDefinitionName)
+          : of([]),
+        this._loading$,
+      ])
     ),
-    map(processDocumentDefinitions =>
-      processDocumentDefinitions.filter(definition => definition.canInitializeDocument)
-    ),
-    tap(processDocumentDefinitions => {
+    map(([processDocumentDefinitions, loading]) => {
       this._cachedAssociatedProcessDocumentDefinitions = processDocumentDefinitions;
-      this.startButtonDisableEvent.emit(processDocumentDefinitions.length === 0 || this.loading);
+      this.startButtonDisableEvent.emit(processDocumentDefinitions.length === 0 || loading);
+      return processDocumentDefinitions.filter(definition => definition.canInitializeDocument);
     })
   );
 
