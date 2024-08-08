@@ -737,10 +737,22 @@
       "description": "Wählen Sie die gewünschte Breite für das Widget aus.",
       "fullWidth": "Gesamtbreite",
       "half": "Half",
-      "small": "Klein",
-      "medium": "Medium",
-      "large": "Groß",
-      "xtraLarge": "Xtra Groß"
+      "small": {
+        "title": "Klein",
+        "subtitle": "Enthält 1 Spalte mit Inhalt"
+      },
+      "medium": {
+        "title": "Medium",
+        "subtitle": "Enthält bis zu 2 Spalten mit Inhalt"
+      },
+      "large": {
+        "title": "Groß",
+        "subtitle": "Enthält bis zu 3 Spalten mit Inhalt"
+      },
+      "xtraLarge": {
+        "title": "Xtra Groß",
+        "subtitle": "Enthält bis zu 4 Spalten mit Inhalt"
+      }
     },
     "style": {
       "description": "Wählen Sie den gewünschten Stil für das Widget aus",

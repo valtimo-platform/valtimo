@@ -738,10 +738,22 @@
       "description": "Select the desired width for the widget.",
       "fullWidth": "Full-width",
       "half": "Half",
-      "small": "Small",
-      "medium": "Medium",
-      "large": "Large",
-      "xtraLarge": "Xtra large"
+      "small": {
+        "title": "Small",
+        "subtitle": "Contains 1 column of content"
+      },
+      "medium": {
+        "title": "Medium",
+        "subtitle": "Contains up to 2 columns of content"
+      },
+      "large": {
+        "title": "Large",
+        "subtitle": "Contains up to 3 columns of content"
+      },
+      "xtraLarge": {
+        "title": "Xtra large",
+        "subtitle": "Contains up to 4 columns of content"
+      }
     },
     "style": {
       "description": "Select the desired style for the widget",

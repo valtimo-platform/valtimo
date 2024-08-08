@@ -737,10 +737,22 @@
       "description": "Selecteer de gewenste breedte voor de widget.",
       "fullWidth": "Volle-breedte",
       "half": "Half",
-      "small": "Klein",
-      "medium": "Medium",
-      "large": "Groot",
-      "xtraLarge": "Xtra Groot"
+      "small": {
+        "title": "Klein",
+        "subtitle": "Bevat 1 kolom met inhoud"
+      },
+      "medium": {
+        "title": "Medium",
+        "subtitle": "Bevat maximaal 2 kolommen met inhoud"
+      },
+      "large": {
+        "title": "Groot",
+        "subtitle": "Bevat maximaal 3 kolommen met inhoud"
+      },
+      "xtraLarge": {
+        "title": "Xtra Groot",
+        "subtitle": "Bevat maximaal 4 kolommen met inhoud"
+      }
     },
     "style": {
       "description": "Selecteer de gewenste stijl voor de widget",

@@ -25,11 +25,13 @@
     [selected]="widgetWidth() === 1"
     [disabled]="fieldsColumnsLength() > 1"
   >
-    <h3>{{ 'widgetTabManagement.width.small' | translate }}</h3>
+    <h3>{{ 'widgetTabManagement.width.small.title' | translate }}</h3>
+
+    <span>{{ 'widgetTabManagement.width.small.subtitle' | translate }}</span>
 
     <img
       src="valtimo-layout/img/widget-management/width/quarter.svg"
-      [alt]="'widgetTabManagement.width.small' | translate"
+      [alt]="'widgetTabManagement.width.small.title' | translate"
     />
   </cds-selection-tile>
 
@@ -39,11 +41,13 @@
     [selected]="widgetWidth() === 2"
     [disabled]="fieldsColumnsLength() > 2"
   >
-    <h3>{{ 'widgetTabManagement.width.medium' | translate }}</h3>
+    <h3>{{ 'widgetTabManagement.width.medium.title' | translate }}</h3>
+
+    <span>{{ 'widgetTabManagement.width.medium.subtitle' | translate }}</span>
 
     <img
       src="valtimo-layout/img/widget-management/width/half.svg"
-      [alt]="'widgetTabManagement.width.medium' | translate"
+      [alt]="'widgetTabManagement.width.medium.title' | translate"
     />
   </cds-selection-tile>
 
@@ -53,11 +57,13 @@
     [selected]="widgetWidth() === 3"
     [disabled]="fieldsColumnsLength() > 3"
   >
-    <h3>{{ 'widgetTabManagement.width.large' | translate }}</h3>
+    <h3>{{ 'widgetTabManagement.width.large.title' | translate }}</h3>
+
+    <span>{{ 'widgetTabManagement.width.large.subtitle' | translate }}</span>
 
     <img
       src="valtimo-layout/img/widget-management/width/three-quarters.svg"
-      [alt]="'widgetTabManagement.width.large' | translate"
+      [alt]="'widgetTabManagement.width.large.title' | translate"
     />
   </cds-selection-tile>
 
@@ -66,11 +72,13 @@
     [value]="4"
     [selected]="widgetWidth() === 4"
   >
-    <h3>{{ 'widgetTabManagement.width.xtraLarge' | translate }}</h3>
+    <h3>{{ 'widgetTabManagement.width.xtraLarge.title' | translate }}</h3>
+
+    <span>{{ 'widgetTabManagement.width.xtraLarge.subtitle' | translate }}</span>
 
     <img
       src="valtimo-layout/img/widget-management/width/full-width.svg"
-      [alt]="'widgetTabManagement.width.xtraLarge' | translate"
+      [alt]="'widgetTabManagement.width.xtraLarge.title' | translate"
     />
   </cds-selection-tile>
 </cds-tile-group>

@@ -198,6 +198,7 @@
                     >
                       <cds-text-label>
                         <v-input-label
+                          *ngIf="$index === 0"
                           [title]="'widgetTabManagement.content.fields.enumValue' | translate"
                           [tooltip]="
                             'widgetTabManagement.content.fields.enumValueTooltip' | translate
@@ -215,6 +216,7 @@
 
                       <cds-text-label>
                         <v-input-label
+                          *ngIf="$index === 0"
                           [title]="'widgetTabManagement.content.fields.enumDisplay' | translate"
                           [tooltip]="
                             'widgetTabManagement.content.fields.enumDisplayTooltip' | translate
