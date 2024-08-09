@@ -15,7 +15,7 @@
     "moment": "2.30.1",
     "perfect-scrollbar": "1.5.5",
     "select2": "4.1.0-rc.0",
-    "tslib": "2.6.2",
+    "tslib": "2.6.3",
     "csp-header": "5.2.1",
     "lodash": "4.17.21"
   }

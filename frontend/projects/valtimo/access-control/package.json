@@ -7,6 +7,6 @@
   },
   "dependencies": {
     "jwt-decode": "4.0.0",
-    "tslib": "2.6.2"
+    "tslib": "2.6.3"
   }
 }

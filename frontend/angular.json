@@ -177,77 +177,6 @@
           "options": {
             "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "valtimo-angular-console:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "valtimo-angular-console:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "valtimo-angular-console:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "valtimo-angular-console:serve:production"
-            }
-          }
-        }
-      }
-    },
-    "valtimo-angular-console-e2e": {
-      "root": "e2e/",
-      "projectType": "application",
-      "prefix": "",
-      "architect": {
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "valtimo-angular-console-e2e:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "valtimo-angular-console-e2e:serve:production"
-            }
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "valtimo-angular-console-e2e:serve",
-            "configFile": "e2e//cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "valtimo-angular-console-e2e:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "e2e//cypress.config.js"
-          }
         }
       }
     },
@@ -284,39 +213,6 @@
               "projects/valtimo/layout/src/**/*.ts",
               "projects/valtimo/layout/src/**/*.html"
             ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/layout:serve",
-            "configFile": "projects/valtimo/layout/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/layout:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/layout/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/layout:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/layout:serve:production"
-            }
           }
         }
       }
@@ -355,39 +251,6 @@
               "projects/valtimo/components/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/components:serve",
-            "configFile": "projects/valtimo/components/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/components:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/components/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/components:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/components:serve:production"
-            }
-          }
         }
       }
     },
@@ -425,39 +288,6 @@
               "projects/valtimo/task/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/task:serve",
-            "configFile": "projects/valtimo/task/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/task:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/task/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/task:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/task:serve:production"
-            }
-          }
         }
       }
     },
@@ -494,39 +324,6 @@
               "projects/valtimo/task-management/src/**/*.ts",
               "projects/valtimo/task-management/src/**/*.html"
             ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/task-management:serve",
-            "configFile": "projects/valtimo/task-management/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/task-management:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/task-management/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/task-management:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/task-management:serve:production"
-            }
           }
         }
       }
@@ -645,39 +442,6 @@
               "projects/valtimo/security/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/security:serve",
-            "configFile": "projects/valtimo/security/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/security:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/security/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/security:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/security:serve:production"
-            }
-          }
         }
       }
     },
@@ -714,39 +478,6 @@
               "projects/valtimo/dossier/src/**/*.ts",
               "projects/valtimo/dossier/src/**/*.html"
             ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/dossier:serve",
-            "configFile": "projects/valtimo/dossier/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/dossier:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/dossier/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/dossier:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/dossier:serve:production"
-            }
           }
         }
       }
@@ -785,39 +516,6 @@
               "projects/valtimo/case-migration/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/case-migration:serve",
-            "configFile": "projects/valtimo/case-migration/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/case-migration:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/case-migration/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/case-migration:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/case-migration:serve:production"
-            }
-          }
         }
       }
     },
@@ -855,39 +553,6 @@
               "projects/valtimo/process/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/process:serve",
-            "configFile": "projects/valtimo/process/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/process:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/process/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/process:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/process:serve:production"
-            }
-          }
         }
       }
     },
@@ -924,39 +589,6 @@
               "projects/valtimo/dashboard/src/**/*.ts",
               "projects/valtimo/dashboard/src/**/*.html"
             ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/dashboard:serve",
-            "configFile": "projects/valtimo/dashboard/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/dashboard:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/dashboard/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/dashboard:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/dashboard:serve:production"
-            }
           }
         }
       }
@@ -1035,39 +667,6 @@
               "projects/valtimo/document/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/document:serve",
-            "configFile": "projects/valtimo/document/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/document:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/document/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/document:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/document:serve:production"
-            }
-          }
         }
       }
     },
@@ -1104,39 +703,6 @@
               "projects/valtimo/zgw/src/**/*.ts",
               "projects/valtimo/zgw/src/**/*.html"
             ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/zgw:serve",
-            "configFile": "projects/valtimo/zgw/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/zgw:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/zgw/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/zgw:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/zgw:serve:production"
-            }
           }
         }
       }
@@ -1175,39 +741,6 @@
               "projects/valtimo/account/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/account:serve",
-            "configFile": "projects/valtimo/account/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/account:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/account/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/account:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/account:serve:production"
-            }
-          }
         }
       }
     },
@@ -1244,39 +777,6 @@
               "projects/valtimo/choice-field/src/**/*.ts",
               "projects/valtimo/choice-field/src/**/*.html"
             ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/choice-field:serve",
-            "configFile": "projects/valtimo/choice-field/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/choice-field:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/choice-field/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/choice-field:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/choice-field:serve:production"
-            }
           }
         }
       }
@@ -1315,39 +815,6 @@
               "projects/valtimo/form/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/form:serve",
-            "configFile": "projects/valtimo/form/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/form:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/form/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/form:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/form:serve:production"
-            }
-          }
         }
       }
     },
@@ -1384,39 +851,6 @@
               "projects/valtimo/analyse/src/**/*.ts",
               "projects/valtimo/analyse/src/**/*.html"
             ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/analyse:serve",
-            "configFile": "projects/valtimo/analyse/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/analyse:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/analyse/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/analyse:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/analyse:serve:production"
-            }
           }
         }
       }
@@ -1455,39 +889,6 @@
               "projects/valtimo/swagger/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/swagger:serve",
-            "configFile": "projects/valtimo/swagger/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/swagger:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/swagger/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/swagger:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/swagger:serve:production"
-            }
-          }
         }
       }
     },
@@ -1524,39 +925,6 @@
               "projects/valtimo/connector-management/src/**/*.ts",
               "projects/valtimo/connector-management/src/**/*.html"
             ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/connector-management:serve",
-            "configFile": "projects/valtimo/connector-management/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/connector-management:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/connector-management/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/connector-management:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/connector-management:serve:production"
-            }
           }
         }
       }
@@ -1595,39 +963,6 @@
               "projects/valtimo/process-management/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/process-management:serve",
-            "configFile": "projects/valtimo/process-management/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/process-management:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/process-management/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/process-management:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/process-management:serve:production"
-            }
-          }
         }
       }
     },
@@ -1664,39 +999,6 @@
               "projects/valtimo/decision/src/**/*.ts",
               "projects/valtimo/decision/src/**/*.html"
             ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/decision:serve",
-            "configFile": "projects/valtimo/decision/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/decision:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/decision/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/decision:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/decision:serve:production"
-            }
           }
         }
       }
@@ -1735,39 +1037,6 @@
               "projects/valtimo/milestone/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/milestone:serve",
-            "configFile": "projects/valtimo/milestone/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/milestone:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/milestone/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/milestone:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/milestone:serve:production"
-            }
-          }
         }
       }
     },
@@ -1804,39 +1073,6 @@
               "projects/valtimo/form-management/src/**/*.ts",
               "projects/valtimo/form-management/src/**/*.html"
             ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/form-management:serve",
-            "configFile": "projects/valtimo/form-management/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/form-management:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/form-management/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/form-management:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/form-management:serve:production"
-            }
           }
         }
       }
@@ -1875,39 +1111,6 @@
               "projects/valtimo/form-view-model/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/form-view-model:serve",
-            "configFile": "projects/valtimo/form-view-model/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/form-view-model:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/form-view-model/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/form-view-model:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/form-view-model:serve:production"
-            }
-          }
         }
       }
     },
@@ -1944,39 +1147,6 @@
               "projects/valtimo/form-flow-management/src/**/*.ts",
               "projects/valtimo/form-flow-management/src/**/*.html"
             ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/form-flow-management:serve",
-            "configFile": "projects/valtimo/form-flow-management/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/form-flow-management:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/form-flow-management/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/form-flow-management:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/form-flow-management:serve:production"
-            }
           }
         }
       }
@@ -2015,39 +1185,6 @@
               "projects/valtimo/process-link/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/process-link:serve",
-            "configFile": "projects/valtimo/process-link/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/process-link:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/process-link/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/process-link:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/process-link:serve:production"
-            }
-          }
         }
       }
     },
@@ -2084,39 +1221,6 @@
               "projects/valtimo/migration/src/**/*.ts",
               "projects/valtimo/migration/src/**/*.html"
             ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/migration:serve",
-            "configFile": "projects/valtimo/migration/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/migration:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/migration/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/migration:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/migration:serve:production"
-            }
           }
         }
       }
@@ -2155,39 +1259,6 @@
               "projects/valtimo/dossier-management/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/dossier-management:serve",
-            "configFile": "projects/valtimo/dossier-management/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/dossier-management:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/dossier-management/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/dossier-management:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/dossier-management:serve:production"
-            }
-          }
         }
       }
     },
@@ -2224,39 +1295,6 @@
               "projects/valtimo/keycloak/src/**/*.ts",
               "projects/valtimo/keycloak/src/**/*.html"
             ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/keycloak:serve",
-            "configFile": "projects/valtimo/keycloak/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/keycloak:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/keycloak/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/keycloak:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/keycloak:serve:production"
-            }
           }
         }
       }
@@ -2295,39 +1333,6 @@
               "projects/valtimo/bootstrap/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/bootstrap:serve",
-            "configFile": "projects/valtimo/bootstrap/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/bootstrap:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/bootstrap/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/bootstrap:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/bootstrap:serve:production"
-            }
-          }
         }
       }
     },
@@ -2364,39 +1369,6 @@
               "projects/valtimo/config/src/**/*.ts",
               "projects/valtimo/config/src/**/*.html"
             ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/config:serve",
-            "configFile": "projects/valtimo/config/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/config:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/config/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/config:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/config:serve:production"
-            }
           }
         }
       }
@@ -2435,39 +1407,6 @@
               "projects/valtimo/resource/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/resource:serve",
-            "configFile": "projects/valtimo/resource/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/resource:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/resource/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/resource:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/resource:serve:production"
-            }
-          }
         }
       }
     },
@@ -2505,39 +1444,6 @@
               "projects/valtimo/plugin-management/src/**/*.html"
             ]
           }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/plugin-management:serve",
-            "configFile": "projects/valtimo/plugin-management/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/plugin-management:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/plugin-management/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/plugin-management:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/plugin-management:serve:production"
-            }
-          }
         }
       }
     },
@@ -2574,39 +1480,6 @@
               "projects/valtimo/plugin/src/**/*.ts",
               "projects/valtimo/plugin/src/**/*.html"
             ]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/plugin:serve",
-            "configFile": "projects/valtimo/plugin/cypress.config.js"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/plugin:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false,
-            "configFile": "projects/valtimo/plugin/cypress.config.js"
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "@valtimo/plugin:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "@valtimo/plugin:serve:production"
-            }
           }
         }
       }

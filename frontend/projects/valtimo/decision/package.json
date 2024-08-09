@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "dmn-js": "12.3.0",
-    "tslib": "2.6.2",
+    "tslib": "2.6.3",
     "@bpmn-io/dmn-migrate": "0.4.3"
   }
 }

@@ -14,7 +14,7 @@
     "d3-shape": "3.2.0",
     "@ngx-translate/core": "15.0.0",
     "@ngx-translate/http-loader": "8.0.0",
-    "tslib": "2.6.2",
+    "tslib": "2.6.3",
     "muuri": "0.9.5",
     "@carbon/charts-angular": "1.17.3",
     "@types/topojson": "3.2.6"

@@ -7,9 +7,9 @@
     "@angular/core": "^17.2.2"
   },
   "dependencies": {
-    "ngx-toastr": "18.0.0",
+    "ngx-toastr": "19.0.0",
     "moment": "2.30.1",
-    "tslib": "2.6.2",
+    "tslib": "2.6.3",
     "lodash": "4.17.21"
   }
 }

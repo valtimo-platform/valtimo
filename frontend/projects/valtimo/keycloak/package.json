@@ -9,7 +9,7 @@
   "dependencies": {
     "jwt-decode": "4.0.0",
     "keycloak-angular": "15.1.0",
-    "keycloak-js": "23.0.7",
-    "tslib": "2.6.2"
+    "keycloak-js": "25.0.2",
+    "tslib": "2.6.3"
   }
 }

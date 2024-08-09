@@ -8,12 +8,12 @@
   },
   "dependencies": {
     "ngx-csv": "0.3.2",
-    "ngx-toastr": "18.0.0",
+    "ngx-toastr": "19.0.0",
     "moment": "2.30.1",
     "@ngx-translate/core": "15.0.0",
     "@ngx-translate/http-loader": "8.0.0",
-    "tslib": "2.6.2",
-    "uuid": "9.0.1",
+    "tslib": "2.6.3",
+    "uuid": "10.0.0",
     "muuri": "0.9.5"
   }
 }
