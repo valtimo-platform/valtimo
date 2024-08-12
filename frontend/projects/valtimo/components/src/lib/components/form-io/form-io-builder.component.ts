@@ -16,11 +16,11 @@
 
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {Components} from 'formiojs';
-import {delay, distinctUntilChanged, map, tap} from 'rxjs/operators';
+import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {FormioOptions} from '@formio/angular/formio.common';
 import {FormIoStateService} from './services/form-io-state.service';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 import {
   addValueResolverSelectorToEditform,
   modiyEditFormApiKeyInput,
@@ -32,10 +32,17 @@ import {
   styleUrls: ['./form-io-builder.component.css'],
 })
 export class FormioBuilderComponent implements OnInit {
-  @Input() public form: any;
+  public readonly form$ = new BehaviorSubject<object | null>(null);
+
+  @Input() public set form(value: object) {
+    const currentFormValue = this.form$.getValue();
+    if (value && !currentFormValue) this.form$.next(value);
+  }
+
   // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() public change: EventEmitter<any> = new EventEmitter();
-  public triggerRebuild: EventEmitter<FormioOptions> = new EventEmitter();
+
+  public readonly triggerRebuild: EventEmitter<FormioOptions> = new EventEmitter();
 
   public readonly currentLanguage$ = this.translateService.stream('key').pipe(
     map(() => this.translateService.currentLang),
@@ -53,14 +60,14 @@ export class FormioBuilderComponent implements OnInit {
                 [language]: this.stateService.flattenTranslationsObject(formioTranslations),
               },
             }
-          : null;
+          : {};
 
-      this.triggerRebuild.emit(options);
       return options;
     }),
-    delay(1000),
     tap(options => this.triggerRebuild.emit(options))
   );
+
+  public readonly editFormModified$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private readonly translateService: TranslateService,
@@ -84,5 +91,7 @@ export class FormioBuilderComponent implements OnInit {
 
       return editForm;
     };
+
+    setTimeout(() => this.editFormModified$.next(true));
   };
 }

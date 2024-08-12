@@ -14,11 +14,10 @@
   ~ limitations under the License.
   -->
 
-<div>
+<div *ngIf="(editFormModified$ | async) && form$ | async as formDefinition">
   <form-builder
-    [form]="form"
+    [form]="formDefinition"
     [rebuild]="triggerRebuild"
-    [options]="formioOptions$ | async"
     (change)="onChange($event)"
   ></form-builder>
 </div>

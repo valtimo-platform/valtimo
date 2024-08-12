@@ -428,14 +428,14 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
       else this.additionalDocumentDate$.next('neither');
 
       this.documentenApiMetadataForm.patchValue({
-        bestandsnaam,
-        titel,
-        auteur,
-        beschrijving,
-        taal,
-        informatieobjecttype,
-        status,
-        vertrouwelijkheidaanduiding,
+        bestandsnaam: this.filename || bestandsnaam,
+        titel: this.documentTitle || titel,
+        auteur: this.author || auteur,
+        beschrijving: this.description || beschrijving,
+        taal: this.language || taal,
+        informatieobjecttype: this.documentType || informatieobjecttype,
+        status: this.status || status,
+        vertrouwelijkheidaanduiding: this.confidentialityLevel || vertrouwelijkheidaanduiding,
         creatiedatum,
         ontvangstdatum,
         verzenddatum,
@@ -473,8 +473,8 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
         .pipe(
           tap(([file, userEmail]) => {
             this.documentenApiMetadataForm.patchValue({
-              bestandsnaam: file?.name || file?.bestandsnaam,
-              auteur: userEmail,
+              bestandsnaam: this.filename || file?.name || file?.bestandsnaam,
+              auteur: this.author || userEmail,
             });
           })
         )
