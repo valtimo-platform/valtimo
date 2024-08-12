@@ -82,14 +82,16 @@
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button
-      class="valtimo-dossier-management-widget-wizard__back"
-      cdsButton="secondary"
-      [disabled]="backButtonDisabled()"
-      (click)="onBackButtonClick()"
-    >
-      {{ 'interface.back' | translate }}
-    </button>
+    @if (currentStep() !== WidgetWizardSteps.TYPE) {
+      <button
+        class="valtimo-dossier-management-widget-wizard__back"
+        cdsButton="secondary"
+        [disabled]="backButtonDisabled()"
+        (click)="onBackButtonClick()"
+      >
+        {{ 'interface.back' | translate }}
+      </button>
+    }
 
     <button
       class="valtimo-dossier-management-widget-wizard__next"

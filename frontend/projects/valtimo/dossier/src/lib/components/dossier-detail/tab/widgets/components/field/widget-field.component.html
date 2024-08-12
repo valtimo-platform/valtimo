@@ -44,7 +44,7 @@
         <div class="widget-field__column">
           @for (property of column; track property) {
             <cds-label>
-              {{ property?.title }}
+              <span [attr.title]="property?.title"> {{ property?.title }}</span>
 
               <input cdsText [value]="property?.value" [readonly]="true" />
             </cds-label>

@@ -22,6 +22,8 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    width: 100%;
+    overflow: hidden;
   }
 
   &__title {
@@ -36,6 +38,13 @@
     grid-gap: 24px;
     grid-template-columns: repeat(4, 1fr);
   }
+
+  .cds--label {
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .widget-field__render {
@@ -43,7 +52,8 @@
   &-two-columns,
   &-three-columns {
     display: grid;
-    grid-gap: 24px;
+    align-items: stretch;
+    gap: 24px;
   }
 
   &-vertically {

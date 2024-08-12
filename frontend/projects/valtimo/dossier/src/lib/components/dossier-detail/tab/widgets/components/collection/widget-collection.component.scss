@@ -17,6 +17,12 @@
 .valtimo-widget-collection {
   padding: 24px;
 
+  .cds--label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+  }
+
   &__title {
     color: var(--cds-text-primary);
     font-weight: 600;
@@ -33,6 +39,8 @@
   &__column {
     display: flex;
     flex-direction: column;
+    width: 100%;
+    overflow: hidden;
   }
 
   &__card {
@@ -82,8 +90,15 @@
   &-vertically,
   &-two-columns,
   &-three-columns {
-    display: grid;
     grid-gap: 16px;
+    align-items: stretch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+  }
+
+  &-vertically {
+    display: flex !important;
   }
 
   &-two-columns {

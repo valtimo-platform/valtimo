@@ -45,7 +45,7 @@
               'valtimo-widget-collection__half-width-input': field?.width === 'half'
             }"
           >
-            <cds-label>
+            <cds-label class="valtimo-widget-collection__label" [attr.title]="field?.title">
               {{ field?.title }}
 
               <input
