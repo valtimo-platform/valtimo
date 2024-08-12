@@ -74,6 +74,7 @@
   <cds-tabs *ngIf="visibleTabs" type="contained" class="valtimo-carbon-list__tabs">
     <cds-tab
       *ngFor="let tab of visibleTabs"
+      [attr.data-testid]="'task-list-tab-' + tab"
       [heading]="'task-list.' + tab + '.title' | translate"
       [active]="selectedTaskType === tab"
       (selected)="tabChange(tab)"
@@ -198,6 +199,7 @@
         loadingCaseListItems: loadingCaseListItems$ | async,
         caseListItems: caseListItems$ | async
       } as obs"
+      [attr.data-testid]="'task-list-case-dropdown'"
       [disabled]="obs.loadingCaseListItems || (obs.caseListItems || []).length === 1"
       [skeleton]="obs.loadingCaseListItems"
       (selected)="setCaseDefinition($event)"

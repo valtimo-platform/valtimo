@@ -43,6 +43,7 @@
   <button
     cdsButton="ghost"
     iconOnly="true"
+    data-testid="dossier-management-search-download"
     [disabled]="
       !obs.downloadUrl || !obs.downloadName || obs.searchFields?.length <= 0 || obs.disableInput
     "
@@ -54,6 +55,7 @@
 
   <button
     cdsButton="primary"
+    data-testid="dossier-management-search-add"
     [disabled]="loadingSearchFields || obs.disableInput"
     (click)="searchFieldClicked($event, true)"
   >
@@ -117,6 +119,7 @@
       >
         <v-input
           name="title"
+          dataTestId="dossier-management-search-title"
           [title]="'searchFieldsOverview.title' | translate"
           [margin]="true"
           [defaultValue]="searchObs.searchField?.title"
@@ -130,6 +133,7 @@
 
         <v-input
           name="key"
+          dataTestId="dossier-management-search-key"
           [title]="'searchFieldsOverview.key' | translate"
           [margin]="true"
           [defaultValue]="searchObs.searchField?.key"
@@ -167,6 +171,7 @@
           [widthInPx]="200"
           [tooltip]="'searchFieldsOverviewTooltips.dataType' | translate"
           [carbonTheme]="CARBON_THEME"
+          dataTestId="dossier-management-search-dataTypes"
         ></v-select>
 
         <v-select
@@ -184,6 +189,7 @@
           [widthInPx]="200"
           [tooltip]="'searchFieldsOverviewTooltips.matchType' | translate"
           [carbonTheme]="CARBON_THEME"
+          dataTestId="dossier-management-search-matchTypes"
         ></v-select>
 
         <v-select
@@ -201,6 +207,7 @@
           [widthInPx]="200"
           [tooltip]="'searchFieldsOverviewTooltips.fieldType' | translate"
           [carbonTheme]="CARBON_THEME"
+          dataTestId="dossier-management-search-fieldTypes"
         ></v-select>
 
         <v-select
@@ -221,6 +228,7 @@
           [widthInPx]="200"
           [tooltip]="'searchFieldsOverviewTooltips.dropdownDataProvider' | translate"
           [carbonTheme]="CARBON_THEME"
+          dataTestId="dossier-management-search-dropdownDataProvider"
         ></v-select>
 
         <valtimo-carbon-multi-input
@@ -264,11 +272,17 @@
 </ng-template>
 
 <ng-template #buttonsFooterModal let-obs="obs">
-  <button cdsButton="secondary" (click)="onModalClose()" [disabled]="obs.disableInput">
+  <button
+    data-testid="dossier-management-search-close"
+    cdsButton="secondary"
+    (click)="onModalClose()"
+    [disabled]="obs.disableInput"
+  >
     {{ 'interface.cancel' | translate }}
   </button>
 
   <button
+    data-testid="dossier-management-search-save"
     cdsButton="primary"
     [disabled]="obs.disableInput || !obs.valid"
     (click)="saveSearchField(obs.documentDefinitionName)"

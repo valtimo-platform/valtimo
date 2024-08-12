@@ -30,4 +30,5 @@ export class ParagraphComponent {
   @Input() margin = false;
   @Input() italic = false;
   @Input() loading = false;
+  @Input() dataTestId?: string;
 }

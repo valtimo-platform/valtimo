@@ -29,7 +29,12 @@
         >
         </v-input-label>
 
-        <input cdsText type="text" formControlName="title" />
+        <input
+          data-testid="task-management-search-title"
+          cdsText
+          type="text"
+          formControlName="title"
+        />
       </div>
 
       <div class="valtimo-task-management-search-fields-modal__input">
@@ -39,7 +44,7 @@
         >
         </v-input-label>
 
-        <input cdsText type="text" formControlName="key" />
+        <input data-testid="task-management-search-key" cdsText type="text" formControlName="key" />
       </div>
 
       <div class="valtimo-task-management-search-fields-modal__input">
@@ -63,7 +68,7 @@
         >
         </v-input-label>
 
-        <cds-dropdown formControlName="dataType">
+        <cds-dropdown data-testid="task-management-search-dataType" formControlName="dataType">
           <cds-dropdown-list [items]="dataTypeItems$ | async"></cds-dropdown-list>
         </cds-dropdown>
       </div>
@@ -76,7 +81,7 @@
           >
           </v-input-label>
 
-          <cds-dropdown formControlName="matchType">
+          <cds-dropdown data-testid="task-management-search-matchType" formControlName="matchType">
             <cds-dropdown-list [items]="matchTypeItems$ | async"></cds-dropdown-list>
           </cds-dropdown>
         </div>
@@ -89,7 +94,7 @@
         >
         </v-input-label>
 
-        <cds-dropdown formControlName="fieldType">
+        <cds-dropdown data-testid="task-management-search-fieldType" formControlName="fieldType">
           <cds-dropdown-list [items]="fieldTypeItems$ | async"></cds-dropdown-list>
         </cds-dropdown>
       </div>
@@ -106,7 +111,10 @@
           >
           </v-input-label>
 
-          <cds-dropdown formControlName="dropdownDataProvider">
+          <cds-dropdown
+            data-testid="task-management-search-dropdownDataProvider"
+            formControlName="dropdownDataProvider"
+          >
             <cds-dropdown-list [items]="dataProviderItems$ | async"></cds-dropdown-list>
           </cds-dropdown>
         </div>
@@ -131,17 +139,28 @@
                 <cds-text-label>
                   {{ 'interface.value' | translate }}
 
-                  <input cdsText type="text" formControlName="key" />
+                  <input
+                    data-testid="task-management-search-dropdownKey"
+                    cdsText
+                    type="text"
+                    formControlName="key"
+                  />
                 </cds-text-label>
 
                 <cds-text-label>
                   {{ 'interface.display' | translate }}
 
-                  <input cdsText type="text" formControlName="value" />
+                  <input
+                    data-testid="task-management-search-dropdownValue"
+                    cdsText
+                    type="text"
+                    formControlName="value"
+                  />
                 </cds-text-label>
 
                 <button
                   cdsButton="danger"
+                  data-testid="task-management-search-deleteEnum"
                   [disabled]="$count === 1"
                   [iconOnly]="true"
                   (click)="removeDropdownValue($index)"
@@ -151,7 +170,11 @@
               </form>
             }
 
-            <button cdsButton="primary" (click)="addDropdownValue()">
+            <button
+              data-testid="task-management-search-addDropdownValue"
+              cdsButton="primary"
+              (click)="addDropdownValue()"
+            >
               {{ 'interface.addRow' | translate }}
 
               <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
@@ -170,11 +193,16 @@
   </section>
 
   <cds-modal-footer>
-    <button cdsButton="ghost" (click)="onCancel()">
+    <button data-testid="task-management-search-cancel" cdsButton="ghost" (click)="onCancel()">
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="form.invalid" (click)="onSave()">
+    <button
+      data-testid="task-management-search-save"
+      cdsButton="primary"
+      [disabled]="form.invalid"
+      (click)="onSave()"
+    >
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

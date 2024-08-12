@@ -47,6 +47,7 @@
     }"
     [ngModel]="inputValue$ | async"
     cdsText
+    [attr.data-testid]="dataTestId"
     [disabled]="disabled"
     [maxLength]="maxLength"
     [min]="0"
@@ -69,6 +70,7 @@
       'v-input--small-margin': smallMargin
     }"
     cdsTextArea
+    [attr.data-testid]="dataTestId"
     [disabled]="disabled"
     [name]="name"
     [ngModel]="inputValue$ | async"
@@ -95,6 +97,7 @@
           'v-input--full-width': fullWidthClass
         }"
         cdsText
+        [attr.data-testid]="dataTestId"
         [disabled]="disabled"
         [maxLength]="maxLength"
         [min]="0"
@@ -127,6 +130,7 @@
       'v-input--hide-spinbox': hideNumberSpinBox
     }"
     cdsText
+    [attr.data-testid]="dataTestId"
     [disabled]="disabled"
     [maxLength]="maxLength"
     [min]="min"
@@ -150,6 +154,7 @@
     }"
     cdsText
     digitOnly
+    [attr.data-testid]="dataTestId"
     [disabled]="disabled"
     [maxLength]="maxLength"
     [min]="0"
@@ -166,6 +171,7 @@
 <ng-template #checkboxInput>
   <div *ngIf="isCheckbox" (click)="stopCheckboxEventPropagation($event)">
     <cds-checkbox
+      [attr.data-testid]="dataTestId"
       [disabled]="disabled"
       [name]="name"
       [ngModel]="inputValue$ | async"

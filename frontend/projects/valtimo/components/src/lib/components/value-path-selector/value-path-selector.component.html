@@ -35,6 +35,7 @@
         "
       >
         <cds-dropdown
+          data-testid="value-path-selector-documentDefinition"
           [appendInline]="appendInline"
           [disabled]="
             obs.disabled ||
@@ -49,6 +50,7 @@
       </ng-container>
 
       <cds-dropdown
+        data-testid="value-path-selector-valuePath"
         [appendInline]="appendInline"
         [disabled]="obs.disabled || obs.loadingValuePathItems || !obs.valuePathListItems"
         (selected)="onPathSelected($event)"
@@ -57,10 +59,16 @@
         <cds-dropdown-list [items]="obs.valuePathListItems || []"></cds-dropdown-list>
       </cds-dropdown>
     } @else {
-      <input cdsText type="text" formControlName="selectedPath" />
+      <input
+        data-testid="value-path-selector-input"
+        cdsText
+        type="text"
+        formControlName="selectedPath"
+      />
     }
 
     <cds-toggle
+      data-testid="value-path-selector-toggle"
       [disabled]="obs.disabled"
       [onText]="'valuePathSelector.dropdown' | translate"
       [offText]="'valuePathSelector.manual' | translate"

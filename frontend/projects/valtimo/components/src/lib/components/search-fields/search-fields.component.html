@@ -224,6 +224,7 @@
 >
   <v-input
     *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'single'"
+    [dataTestId]="'search-field-' + searchField.key"
     [name]="searchField.key"
     [title]="title"
     [fullWidth]="true"
@@ -249,6 +250,7 @@
 >
   <v-input
     *ngIf="searchField.dataType === 'number' && searchField.fieldType === 'single'"
+    [dataTestId]="'search-field-' + searchField.key"
     [name]="searchField.key"
     [title]="title"
     [fullWidth]="true"
@@ -310,6 +312,7 @@
     >
       <v-input
         name="start"
+        [dataTestId]="'search-field-' + searchField.key"
         [fullWidth]="true"
         [clear$]="clear$"
         (keyup.enter)="search()"
@@ -321,6 +324,7 @@
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-input
         name="end"
+        [dataTestId]="'search-field-' + searchField.key"
         [fullWidth]="true"
         [clear$]="clear$"
         (keyup.enter)="search()"
@@ -353,6 +357,7 @@
     >
       <v-input
         name="start"
+        [dataTestId]="'search-field-' + searchField.key"
         [fullWidth]="true"
         type="number"
         [hideNumberSpinBox]="true"
@@ -366,6 +371,7 @@
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-input
         name="end"
+        [dataTestId]="'search-field-' + searchField.key"
         [fullWidth]="true"
         type="number"
         [hideNumberSpinBox]="true"
@@ -611,6 +617,7 @@
       <button
         *ngIf="obs.expanded"
         cdsButton="tertiary"
+        data-testid="search-fields-clear-button"
         (click)="clear()"
         [disabled]="loading || noSearchFields || inputDisabled"
         type="button"
@@ -624,6 +631,7 @@
       <button
         *ngIf="obs.expanded"
         cdsButton="primary"
+        data-testid="search-fields-search-button"
         (click)="search()"
         [disabled]="
           loading || noSearchFields || (hasValidValues$ | async) === false || inputDisabled
@@ -641,7 +649,7 @@
 
 <ng-template #noSearchFieldsTemplate let-noSearchFields="noSearchFields">
   <div class="no-search-fields-message" *ngIf="noSearchFields">
-    <v-paragraph [fullWidth]="true" [center]="true">{{
+    <v-paragraph dataTestId="search-fields-no-fields" [fullWidth]="true" [center]="true">{{
       'searchFields.noneConfigured' | translate
     }}</v-paragraph>
   </div>

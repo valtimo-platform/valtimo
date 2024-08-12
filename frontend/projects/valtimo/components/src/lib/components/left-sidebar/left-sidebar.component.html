@@ -51,7 +51,10 @@
 
       <ng-container *ngTemplateOutlet="subMenuIcon; context: {menuItem: menuItem}"></ng-container>
 
-      <cds-sidenav-menu [title]="menuItem | menuItemTranslate | async">
+      <cds-sidenav-menu
+        [title]="menuItem | menuItemTranslate | async"
+        [attr.data-testid]="'sidenav-item-' + menuItem.title"
+      >
         <ng-container *ngFor="let childMenuItem of menuItem.children">
           <ng-container
             *ngIf="{
@@ -60,6 +63,7 @@
             } as vars"
           >
             <cds-sidenav-item
+              [attr.data-testid]="'sidenav-item-' + childMenuItem?.title"
               [ngClass]="{
                 'cds--side-nav__item--empty': !childMenuItem.link,
                 'menu-item--hidden': childMenuItem.includeFunction !== undefined,
@@ -105,6 +109,7 @@
   <ng-container *ngIf="{sequence: '' + menuItem.sequence} as vars"
     ><cds-sidenav-item
       *ngIf="!menuItem.children"
+      [attr.data-testid]="'sidenav-item-' + menuItem.title"
       [ngClass]="{
         'menu-item--hidden': menuItem.includeFunction !== undefined,
         'menu-item--visible':
