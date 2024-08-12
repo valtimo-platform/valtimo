@@ -46,6 +46,14 @@
     justify-content: space-between;
     align-items: center;
     gap: 8px;
+
+    .cds--tag {
+      white-space: pre;
+    }
+  }
+
+  &__title {
+    width: 100%;
   }
 
   &__title,
