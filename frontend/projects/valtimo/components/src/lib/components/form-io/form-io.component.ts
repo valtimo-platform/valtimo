@@ -31,6 +31,7 @@ import {UserProviderService} from '@valtimo/security';
 import {
   Formio,
   FormioComponent as FormIoSourceComponent,
+  FormioForm,
   FormioOptions,
   FormioRefreshValue,
   FormioSubmission,
@@ -38,13 +39,14 @@ import {
 import {jwtDecode} from 'jwt-decode';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription, timer} from 'rxjs';
-import {distinctUntilChanged, map, switchMap, take, tap} from 'rxjs/operators';
+import {distinctUntilChanged, filter, map, switchMap, take, tap} from 'rxjs/operators';
 import {FormIoStateService} from './services/form-io-state.service';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {FormIoLocalStorageService} from './services/form-io-local-storage.service';
 import {deepmerge} from 'deepmerge-ts';
 import {ConfigService, ValtimoConfig} from '@valtimo/config';
+import {isEqual} from 'lodash';
 
 @Component({
   selector: 'valtimo-form-io',
@@ -59,8 +61,8 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   @Input() set submission(submissionValue: FormioSubmission) {
     this.submission$.next(submissionValue);
   }
-  @Input() set form(formValue: object) {
-    this.form$.next(formValue);
+  @Input() set form(formValue: FormioForm) {
+    this._form$.next(formValue);
   }
   @Input() set readOnly(readOnlyValue: boolean) {
     this.readOnly$.next(readOnlyValue);
@@ -80,29 +82,37 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   public refreshForm = new EventEmitter<FormioRefreshValue>();
 
   public readonly submission$ = new BehaviorSubject<FormioSubmission>({});
-  public readonly form$ = new BehaviorSubject<object>(undefined);
+
+  private readonly _form$ = new BehaviorSubject<FormioForm>(undefined);
+  public readonly form$ = this._form$.pipe(
+    filter(form => !!form),
+    distinctUntilChanged((prev, curr) => isEqual(prev, curr))
+  );
+
   public readonly options$ = new BehaviorSubject<ValtimoFormioOptions>(undefined);
   public readonly readOnly$ = new BehaviorSubject<boolean>(false);
   public readonly errors$ = new BehaviorSubject<Array<string>>([]);
 
+  public readonly languageEventEmitter = new EventEmitter<string>();
+
   public readonly currentLanguage$ = this.translateService.stream('key').pipe(
     map(() => this.translateService.currentLang),
-    distinctUntilChanged()
+    distinctUntilChanged(),
+    tap(language => this.languageEventEmitter.emit(language))
   );
 
   private readonly _overrideOptions$ = new BehaviorSubject<FormioOptions>({});
 
   public readonly formioOptions$: Observable<ValtimoFormioOptions | FormioOptions> = combineLatest([
-    this.currentLanguage$,
     this.options$,
+    this.currentLanguage$,
     this._overrideOptions$,
   ]).pipe(
-    map(([language, options, overrideOptions]) => {
+    map(([options, language, overrideOptions]) => {
       const formioTranslations = this.translateService.instant('formioTranslations');
 
       const defaultOptions = {
         ...options,
-        language,
         ...(formioTranslations === 'object' && {
           i18n: {
             [language]: this.stateService.flattenTranslationsObject(formioTranslations),
@@ -112,6 +122,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
       return deepmerge(defaultOptions, overrideOptions);
     }),
+    distinctUntilChanged((prev, curr) => isEqual(prev, curr)),
     tap(options => this.logger.debug('Form.IO options used', options))
   );
 
@@ -119,6 +130,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   private _tokenRefreshTimerSubscription!: Subscription;
   private _formRefreshSubscription!: Subscription;
+
   private readonly _subscriptions = new Subscription();
   private readonly _tokenTimerSubscription = new Subscription();
 
