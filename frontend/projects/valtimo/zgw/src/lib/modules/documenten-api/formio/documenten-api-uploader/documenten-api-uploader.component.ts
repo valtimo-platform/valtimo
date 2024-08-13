@@ -27,10 +27,11 @@ import {
   DownloadService,
   UploadProviderService,
 } from '@valtimo/resource';
-import {DocumentenApiMetadata} from '../../models';
+import {DocumentenApiMetadata, SupportedDocumentenApiFeatures} from '../../models';
 import {filter, map, take, tap} from 'rxjs/operators';
 import {UserProviderService} from '@valtimo/security';
 import {ActivatedRoute} from '@angular/router';
+import {DocumentenApiVersionService} from '../../services';
 
 @Component({
   selector: 'valtimo-documenten-api-formio-uploader',
@@ -97,6 +98,18 @@ export class DocumentenApiUploaderComponent
     .getUserSubject()
     .pipe(map(userIdentity => userIdentity?.roles.includes('ROLE_ADMIN')));
 
+  private readonly _documentDefinitionName$ = this.route.params.pipe(
+    map(params => params?.documentDefinitionName),
+    filter(caseDefinitionName => !!caseDefinitionName)
+  );
+
+  public readonly supportedDocumentenApiFeatures$: Observable<SupportedDocumentenApiFeatures> =
+    this._documentDefinitionName$.pipe(
+      switchMap(caseDefinitionName =>
+        this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionName)
+      )
+    );
+
   constructor(
     private readonly uploadProviderService: UploadProviderService,
     private readonly stateService: FormIoStateService,
@@ -104,7 +117,8 @@ export class DocumentenApiUploaderComponent
     private readonly downloadService: DownloadService,
     private readonly modalService: ValtimoModalService,
     private readonly userProviderService: UserProviderService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly documentenApiVersionService: DocumentenApiVersionService
   ) {}
 
   _value: Array<DocumentenApiFileReference> = [];

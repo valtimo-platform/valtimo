@@ -119,17 +119,71 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
   @Input() author: string;
   @Input() confidentialityLevel: string;
   @Input() description: string;
-  @Input() disableAuthor: boolean;
-  @Input() disableConfidentialityLevel: boolean;
-  @Input() disableDescription: boolean;
-  @Input() disableDocumentTitle: boolean;
-  @Input() disableDocumentType: boolean;
-  @Input() disableFilename: boolean;
-  @Input() disableLanguage: boolean;
-  @Input() disableStatus: boolean;
+  @Input() set disableAuthor(value: boolean) {
+    if (value) {
+      this.auteur.disable();
+    } else {
+      this.auteur.enable();
+    }
+  }
+  @Input() set disableConfidentialityLevel(value: boolean) {
+    if (value) {
+      this.confidentialityLevelFormControl.disable();
+    } else {
+      this.confidentialityLevelFormControl.enable();
+    }
+  }
+  @Input() set disableDescription(value: boolean) {
+    if (value) {
+      this.beschrijving.disable();
+    } else {
+      this.beschrijving.enable();
+    }
+  }
+  @Input() set disableDocumentTitle(value: boolean) {
+    if (value) {
+      this.titel.disable();
+    } else {
+      this.titel.enable();
+    }
+  }
+  @Input() set disableDocumentType(value: boolean) {
+    if (value) {
+      this.informatieobjecttypeFormControl.disable();
+    } else {
+      this.informatieobjecttypeFormControl.enable();
+    }
+  }
+  @Input() set disableFilename(value: boolean) {
+    if (value) {
+      this.bestandsnaam.disable();
+    } else {
+      this.bestandsnaam.enable();
+    }
+  }
+  @Input() set disableLanguage(value: boolean) {
+    if (value) {
+      this.languageFormControl.disable();
+    } else {
+      this.languageFormControl.enable();
+    }
+  }
+  @Input() set disableStatus(value: boolean) {
+    if (value) {
+      this.statusFormControl.disable();
+    } else {
+      this.statusFormControl.enable();
+    }
+  }
+  @Input() set disableTrefwoorden(value: boolean) {
+    if (value) {
+      this.tagFormControl.disable();
+    } else {
+      this.tagFormControl.enable();
+    }
+  }
   @Input() documentTitle = '';
   @Input() documentType: string;
-  @Input() disableTrefwoorden: boolean;
   @Input() filename: string;
   @Input() isEditMode: boolean;
   @Input() language: string;
@@ -164,21 +218,62 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
   public get confidentialityLevelFormControl(): AbstractControl<string> {
     return this.documentenApiMetadataForm.get('vertrouwelijkheidaanduiding');
   }
+  public get confidentialityLevelDisabled$(): Observable<boolean> {
+    return this.confidentialityLevelFormControl.valueChanges.pipe(
+      startWith(null),
+      map(() => this.confidentialityLevelFormControl.disabled)
+    );
+  }
 
   public get informatieobjecttypeFormControl(): AbstractControl<string> {
     return this.documentenApiMetadataForm.get('informatieobjecttype');
+  }
+  public get informatieobjecttypeDisabled$(): Observable<boolean> {
+    return this.informatieobjecttypeFormControl.valueChanges.pipe(
+      startWith(null),
+      map(() => this.informatieobjecttypeFormControl.disabled)
+    );
   }
 
   public get languageFormControl(): AbstractControl<string> {
     return this.documentenApiMetadataForm.get('taal');
   }
 
+  public get languageDisabled$(): Observable<boolean> {
+    return this.languageFormControl.valueChanges.pipe(
+      startWith(null),
+      map(() => this.languageFormControl.disabled)
+    );
+  }
+
   public get statusFormControl(): AbstractControl<string> {
     return this.documentenApiMetadataForm.get('status');
+  }
+  public get statusDisabled$(): Observable<boolean> {
+    return this.statusFormControl.valueChanges.pipe(
+      startWith(null),
+      map(() => this.informatieobjecttypeFormControl.disabled)
+    );
   }
 
   public get tagFormControl(): AbstractControl<string[]> {
     return this.documentenApiMetadataForm.get('trefwoorden');
+  }
+
+  public get titel(): AbstractControl<string> {
+    return this.documentenApiMetadataForm.get('titel');
+  }
+
+  public get beschrijving(): AbstractControl<string> {
+    return this.documentenApiMetadataForm.get('beschrijving');
+  }
+
+  public get auteur(): AbstractControl<string> {
+    return this.documentenApiMetadataForm.get('auteur');
+  }
+
+  public get bestandsnaam(): AbstractControl<string> {
+    return this.documentenApiMetadataForm.get('bestandsnaam');
   }
 
   public readonly isDefinitiveStatus$ = new BehaviorSubject<boolean>(false);
@@ -504,6 +599,18 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
         }
       });
     }
+  }
+
+  public openDisabledSubscription(): void {
+    this._subscriptions.add(
+      this.disabled$?.subscribe(disabled => {
+        if (disabled) {
+          this.documentenApiMetadataForm.disable();
+        } else {
+          this.documentenApiMetadataForm.enable();
+        }
+      })
+    );
   }
 
   private setAdditionalDate(value: AdditionalDocumentDate): void {

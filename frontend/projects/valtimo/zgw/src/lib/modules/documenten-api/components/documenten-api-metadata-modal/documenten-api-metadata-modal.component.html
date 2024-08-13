@@ -23,7 +23,7 @@
     languageItems: languageItems$ | async,
     statusItems: statusItems$ | async,
     tagItems: tagItems$ | async,
-    userEmail: userEmail$ | async
+    userEmail: userEmail$ | async,
   } as obs"
   [maxWidthPx]="1280"
   (closeEvent)="closeModal()"
@@ -76,7 +76,6 @@
             </cds-tooltip>
             <input
               [value]="filename"
-              [disabled]="obs.disabled || disableFilename"
               [placeholder]="'document.filenamePlaceholder' | translate"
               [required]="true"
               cdsText
@@ -96,7 +95,6 @@
             </cds-tooltip>
             <input
               [value]="author"
-              [disabled]="obs.disabled || disableAuthor"
               [placeholder]="'document.authorPlaceholder' | translate"
               [required]="true"
               cdsText
@@ -117,9 +115,9 @@
           <div class="documenten-metada-form-input">
             <cds-dropdown
               *ngIf="obs.languageItems"
+              [disabled]="obs.disabled || (languageDisabled$ | async)"
               [appendInline]="true"
               [placeholder]="'document.languagePlaceholder' | translate"
-              [disabled]="obs.disabled || disableLanguage"
               id="language"
               (selected)="languageSelected($event)"
             >
@@ -139,9 +137,9 @@
           <div class="documenten-metada-form-input">
             <cds-dropdown
               [placeholder]="'document.confidentialityPlaceholder' | translate"
-              [disabled]="obs.disabled || disableConfidentialityLevel"
               id="vertrouwelijkheidaanduiding"
               [appendInline]="true"
+              [disabled]="obs.disabled || (confidentialityLevelDisabled$ | async)"
               (selected)="confidentialityLevelSelected($event)"
             >
               <cds-dropdown-list [items]="confidentialityLevelItems$ | async"></cds-dropdown-list>
@@ -161,7 +159,7 @@
             <div class="documenten-metada-form-input">
               <cds-dropdown
                 [placeholder]="'document.informatieobjecttypePlaceholder' | translate"
-                [disabled]="obs.disabled || disableDocumentType"
+                [disabled]="obs.disabled || (informatieobjecttypeDisabled$ | async)"
                 id="informatieobjecttype"
                 [appendInline]="true"
                 (selected)="informatieobjecttypeSelected($event)"
@@ -222,7 +220,6 @@
           <cds-text-label>
             {{ 'document.inputTitle' | translate }}
             <input
-              [disabled]="obs.disabled || disableDocumentTitle"
               [placeholder]="'document.inputTitlePlaceholder' | translate"
               [required]="true"
               cdsText
@@ -241,7 +238,6 @@
           <cds-textarea-label>
             {{ 'document.inputDescription' | translate }}
             <textarea
-              [disabled]="obs.disabled || disableDescription"
               [placeholder]="'document.inputDescriptionPlaceholder' | translate"
               [required]="true"
               [rows]="5"
@@ -269,7 +265,6 @@
             </cds-tooltip>
             <div class="documenten-metada-form-input">
               <cds-date-picker
-                [disabled]="obs.disabled"
                 [placeholder]="'DD-MM-YYYY'"
                 [dateFormat]="'d-m-Y'"
                 id="creatiedatum"
@@ -291,7 +286,7 @@
           <div class="documenten-metada-form-input">
             <cds-dropdown
               [placeholder]="'document.statusPlaceholder' | translate"
-              [disabled]="obs.disabled || disableStatus"
+              [disabled]="obs.disabled || (statusDisabled$ | async)"
               id="status"
               [appendInline]="true"
               (selected)="statusSelected($event)"
@@ -301,7 +296,6 @@
           </div>
           <cds-date-picker
             *ngIf="additionalDate === 'received'"
-            [disabled]="obs.disabled"
             [label]="'document.additionalDate' | translate"
             [placeholder]="'DD-MM-YYYY'"
             [dateFormat]="'d-m-Y'"
@@ -310,7 +304,6 @@
           ></cds-date-picker>
           <cds-date-picker
             *ngIf="additionalDate === 'sent'"
-            [disabled]="obs.disabled"
             [label]="'document.additionalDate' | translate"
             [placeholder]="'DD-MM-YYYY'"
             [dateFormat]="'d-m-Y'"

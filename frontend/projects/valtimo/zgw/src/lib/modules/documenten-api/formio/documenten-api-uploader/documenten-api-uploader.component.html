@@ -83,5 +83,6 @@
   [filename]="filename"
   [language]="language"
   [status]="status"
+  [supportsTrefwoorden]="(supportedDocumentenApiFeatures$ | async)?.supportsTrefwoorden"
   [open]="showModal()"
 ></valtimo-documenten-api-metadata-modal>
