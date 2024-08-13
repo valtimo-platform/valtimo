@@ -544,8 +544,14 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
     this.formatDate('verzenddatum');
     this.formatDate('ontvangstdatum');
 
-    if (this.documentenApiMetadataForm.valid)
-      this.metadata.emit(this.documentenApiMetadataForm.value);
+    const rawValue = this.documentenApiMetadataForm.getRawValue();
+    const mappedRawValue = Object.keys(rawValue).reduce(
+      (acc, currentKey) =>
+        rawValue[currentKey] !== undefined ? {...acc, [currentKey]: rawValue[currentKey]} : acc,
+      {}
+    ) as DocumentenApiMetadata;
+
+    if (this.documentenApiMetadataForm.valid) this.metadata.emit(mappedRawValue);
 
     this.closeModal();
   }
