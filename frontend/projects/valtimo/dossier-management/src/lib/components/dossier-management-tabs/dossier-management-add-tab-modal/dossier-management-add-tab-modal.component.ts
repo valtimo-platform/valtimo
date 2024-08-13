@@ -79,16 +79,12 @@ export class DossierManagementAddTabModalComponent {
         disabledTooltipTranslationKey:
           'dossierManagement.tabManagement.addModal.customComponentDisabled',
       },
-      ...(featureToggles?.enableCaseWidgets
-        ? [
-            {
-              icon: 'table--built',
-              title: 'dossierManagement.tabManagement.addModal.widgetsComponent',
-              type: ApiTabType.WIDGETS,
-              disabled: disabled.widgets,
-            },
-          ]
-        : []),
+      {
+        icon: 'table--built',
+        title: 'dossierManagement.tabManagement.addModal.widgetsComponent',
+        type: ApiTabType.WIDGETS,
+        disabled: disabled.widgets,
+      },
     ])
   );
 

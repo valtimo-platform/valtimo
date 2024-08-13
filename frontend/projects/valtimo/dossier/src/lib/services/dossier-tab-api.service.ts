@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
-import {Observable, switchMap} from 'rxjs';
+import {Observable} from 'rxjs';
 import {ApiTabItem} from '../models';
 
 @Injectable({
@@ -35,18 +35,6 @@ export class DossierTabApiService extends BaseApiService {
     documentDefinitionName: string,
     documentId: string
   ): Observable<Array<ApiTabItem>> {
-    return this.configService
-      .getFeatureToggleObservable('enableCaseWidgets')
-      .pipe(
-        switchMap(enableCaseWidgets =>
-          enableCaseWidgets
-            ? this.httpClient.get<Array<ApiTabItem>>(
-                this.getApiUrl(`v1/document/${documentId}/tab`)
-              )
-            : this.httpClient.get<Array<ApiTabItem>>(
-                this.getApiUrl(`v1/case-definition/${documentDefinitionName}/tab`)
-              )
-        )
-      );
+    return this.httpClient.get<Array<ApiTabItem>>(this.getApiUrl(`v1/document/${documentId}/tab`));
   }
 }

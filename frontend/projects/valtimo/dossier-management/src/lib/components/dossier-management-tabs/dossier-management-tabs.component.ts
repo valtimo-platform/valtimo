@@ -91,7 +91,6 @@ export class DossierManagementTabsComponent implements AfterViewInit {
   );
   public readonly tab$ = new BehaviorSubject<ApiTabItem | null>(null);
   public readonly dragAndDropDisabled = signal(false);
-  public readonly enableCaseWidgets = this.configService.getFeatureToggle('enableCaseWidgets');
 
   constructor(
     private readonly cd: ChangeDetectorRef,
@@ -129,15 +128,11 @@ export class DossierManagementTabsComponent implements AfterViewInit {
         key: '',
         label: 'dossierManagement.tabManagement.columns.content',
       },
-      ...(this.enableCaseWidgets
-        ? [
-            {
-              viewType: ViewType.BOOLEAN,
-              key: 'showTasks',
-              label: 'dossierManagement.tabManagement.columns.showTasks',
-            },
-          ]
-        : []),
+      {
+        viewType: ViewType.BOOLEAN,
+        key: 'showTasks',
+        label: 'dossierManagement.tabManagement.columns.showTasks',
+      },
     ]);
 
     this.cd.detectChanges();
@@ -207,8 +202,6 @@ export class DossierManagementTabsComponent implements AfterViewInit {
   }
 
   private addTab(tab: Partial<ApiTabItem>): void {
-    if (!this.enableCaseWidgets) delete tab.showTasks;
-
     this.tabManagementService.dispatchAction(this.tabManagementService.addTab(tab));
   }
 
@@ -217,8 +210,6 @@ export class DossierManagementTabsComponent implements AfterViewInit {
   }
 
   private editTab(tab: ApiTabItem): void {
-    if (!this.enableCaseWidgets) delete tab.showTasks;
-
     this.tabManagementService.dispatchAction(this.tabManagementService.editTab(tab, tab.key));
   }
 }

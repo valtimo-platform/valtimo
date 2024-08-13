@@ -254,7 +254,6 @@ export const environment: ValtimoConfig = {
     enableUserNameInTopBarToggle: true,
     enableTabManagement: true,
     enableObjectManagement: true,
-    enableCaseWidgets: false,
     enableFormViewModel: true,
     enableIntermediateSave: true,
   },

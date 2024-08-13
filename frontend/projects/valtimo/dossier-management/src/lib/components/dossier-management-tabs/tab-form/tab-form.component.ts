@@ -57,9 +57,6 @@ export class TabFormComponent implements OnInit, OnDestroy {
 
   public showTasks!: AbstractControl<boolean>;
 
-  public readonly enableCaseWidgets$ =
-    this.configService.getFeatureToggleObservable('enableCaseWidgets');
-
   private _searchActive: boolean;
 
   private _subscriptions = new Subscription();
