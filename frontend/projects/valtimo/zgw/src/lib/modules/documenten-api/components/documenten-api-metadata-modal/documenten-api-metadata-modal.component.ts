@@ -82,7 +82,6 @@ import {
   TagModule,
   TooltipModule,
 } from 'carbon-components-angular';
-import {DocumentenApiDocumentService} from '../../services';
 import {DocumentenApiTagService} from '../../services/documenten-api-tag.service';
 
 @Component({
@@ -187,13 +186,19 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
   @Input() filename: string;
   @Input() isEditMode: boolean;
   @Input() language: string;
+
+  public readonly open$ = new BehaviorSubject<boolean>(false);
+
   @Input() set open(value: boolean) {
+    this.open$.next(value);
+
     if (value) {
       this.modalService.openModal(this.metadataModal);
     } else {
       this.modalService.closeModal();
     }
   }
+
   @Input() status: string;
   @Input() supportsTrefwoorden = false;
 
@@ -435,14 +440,12 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
     map(userProfile => userProfile?.email || '')
   );
 
-  private readonly modalSize = 'lg';
   private _subscriptions = new Subscription();
   private _fileSubscription!: Subscription;
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly documentService: DocumentService,
-    private readonly documentenApiDocumentService: DocumentenApiDocumentService,
     private readonly documentenApiTagService: DocumentenApiTagService,
     private readonly fb: FormBuilder,
     private readonly keycloakService: KeycloakService,
@@ -453,6 +456,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
 
   public ngOnInit(): void {
     this.openFileSubscription();
+    this.openDisabledSubscription();
   }
 
   public ngOnChanges(): void {
@@ -583,7 +587,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
     );
   }
 
-  private formatDate(controlName: string) {
+  private formatDate(controlName: string): void {
     const control = this.documentenApiMetadataForm.controls[controlName];
     if (control.value) {
       const date = new Date(control.value);
