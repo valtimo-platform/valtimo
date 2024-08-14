@@ -102,7 +102,7 @@ export class TaskService extends BaseApiService {
   }
 
   public getTasks(): Observable<Task[]> {
-    return this.httpClient.get<Task[]>(this.getApiUrl('/v1/task?filter=all`'));
+    return this.httpClient.get<Task[]>(this.getApiUrl('/v1/task?filter=all'));
   }
 
   public getTask(id: string): Observable<any> {
