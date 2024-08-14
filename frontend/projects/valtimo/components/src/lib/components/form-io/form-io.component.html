@@ -22,7 +22,7 @@
     readOnly: readOnly$ | async,
     form: form$ | async,
     errors: errors$ | async,
-    tokenSetInLocalStorage: tokenSetInLocalStorage$ | async
+    tokenSetInLocalStorage: tokenSetInLocalStorage$ | async,
   } as obs"
 >
   <div *ngIf="obs.errors.length > 0" class="alert alert-danger pt-5 pb-5 mb-2">
@@ -32,17 +32,19 @@
       </li>
     </ol>
   </div>
+
   <formio
     *ngIf="obs.formioOptions && obs.form && obs.tokenSetInLocalStorage"
-    [submission]="obs.submission"
     [form]="obs.form"
-    [refresh]="refreshForm"
+    [language]="languageEventEmitter"
     [options]="obs.formioOptions"
     [readOnly]="obs.readOnly"
-    (submit)="onSubmit($event)"
-    (ready)="formReady($event)"
+    [refresh]="refreshForm"
+    [submission]="obs.submission"
     (change)="onChange($event)"
     (nextPage)="nextPage()"
     (prevPage)="prevPage()"
+    (ready)="formReady($event)"
+    (submit)="onSubmit($event)"
   ></formio>
 </div>

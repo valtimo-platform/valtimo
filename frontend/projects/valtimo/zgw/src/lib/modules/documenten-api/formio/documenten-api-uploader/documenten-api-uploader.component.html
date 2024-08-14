@@ -62,7 +62,9 @@
 </div>
 
 <valtimo-documenten-api-metadata-modal
+  class="documenten-api-uploader-metadata-modal"
   (metadata)="metadataSet($event)"
+  (modalClose)="closeMetadataModal()"
   [author]="author"
   [confidentialityLevel]="confidentialityLevel"
   [description]="description"
@@ -81,4 +83,6 @@
   [filename]="filename"
   [language]="language"
   [status]="status"
+  [supportsTrefwoorden]="(supportedDocumentenApiFeatures$ | async)?.supportsTrefwoorden"
+  [open]="showModal()"
 ></valtimo-documenten-api-metadata-modal>

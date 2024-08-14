@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import {Injectable, Renderer2, RendererFactory2, RendererStyleFlags2} from '@angular/core';
+import {Inject, Injectable, Renderer2, RendererFactory2, RendererStyleFlags2} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {map, take, tap} from 'rxjs/operators';
 import {VModalComponent} from '../components/v-modal/modal.component';
 import {ModalData} from '../models';
+import {DOCUMENT} from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
@@ -32,6 +33,8 @@ export class ModalService {
   private readonly _modalData$ = new BehaviorSubject<ModalData>({});
 
   private renderer!: Renderer2;
+
+  private _carbonModalElements: HTMLDivElement[] = [];
 
   get modalUuid$() {
     return this._modalUuid$.asObservable();
@@ -61,7 +64,10 @@ export class ModalService {
     return this._modalData$.asObservable();
   }
 
-  constructor(public rendererFactory2: RendererFactory2) {
+  constructor(
+    public rendererFactory2: RendererFactory2,
+    @Inject(DOCUMENT) private readonly document: Document
+  ) {
     this.renderer = rendererFactory2.createRenderer(null, null);
   }
 
@@ -80,6 +86,7 @@ export class ModalService {
   openModal(modalComponent?: VModalComponent, modalData?: ModalData): void {
     this._modalVisible$.next(true);
     this.disablePageScroll();
+    this.overrideCarbonModalStyles();
 
     if (modalComponent) {
       this._modalUuid$.pipe(take(1)).subscribe(currentModalUuid => {
@@ -99,6 +106,7 @@ export class ModalService {
     this.setDisappearingTimeout();
     this._modalVisible$.next(false);
     this.enablePageScroll();
+    this.removeOverrideCarbonModalStyles();
 
     if (callBackFunction) {
       setTimeout(() => {
@@ -151,6 +159,28 @@ export class ModalService {
       'hidden',
       RendererStyleFlags2.Important
     );
+  }
+
+  private overrideCarbonModalStyles(): void {
+    const carbonModalElements: HTMLDivElement[] = Array.from(
+      this.document.querySelectorAll('.cds--modal-container')
+    );
+    this._carbonModalElements = carbonModalElements || [];
+
+    this._carbonModalElements.forEach(carbonModalElement => {
+      this.renderer.setStyle(
+        carbonModalElement,
+        'transform',
+        'none',
+        RendererStyleFlags2.Important
+      );
+    });
+  }
+
+  private removeOverrideCarbonModalStyles(): void {
+    this._carbonModalElements.forEach(carbonModalElement => {
+      this.renderer.removeStyle(carbonModalElement, 'transform');
+    });
   }
 
   private enablePageScroll(): void {

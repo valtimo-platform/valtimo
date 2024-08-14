@@ -16,11 +16,12 @@
 
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {Components} from 'formiojs';
-import {delay, distinctUntilChanged, map, tap} from 'rxjs/operators';
+import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {FormioOptions} from '@formio/angular/formio.common';
 import {FormIoStateService} from './services/form-io-state.service';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {modiyEditFormApiKeyInput} from './form-io-builder.utils';
 
 @Component({
   selector: 'valtimo-form-io-builder',
@@ -28,17 +29,24 @@ import {Observable} from 'rxjs';
   styleUrls: ['./form-io-builder.component.css'],
 })
 export class FormioBuilderComponent implements OnInit {
-  @Input() form: any;
-  // eslint-disable-next-line @angular-eslint/no-output-native
-  @Output() change: EventEmitter<any> = new EventEmitter();
-  public triggerRebuild: EventEmitter<FormioOptions> = new EventEmitter();
+  public readonly form$ = new BehaviorSubject<object | null>(null);
 
-  readonly currentLanguage$ = this.translateService.stream('key').pipe(
+  @Input() public set form(value: object) {
+    const currentFormValue = this.form$.getValue();
+    if (value && !currentFormValue) this.form$.next(value);
+  }
+
+  // eslint-disable-next-line @angular-eslint/no-output-native
+  @Output() public change: EventEmitter<any> = new EventEmitter();
+
+  public readonly triggerRebuild: EventEmitter<FormioOptions> = new EventEmitter();
+
+  public readonly currentLanguage$ = this.translateService.stream('key').pipe(
     map(() => this.translateService.currentLang),
     distinctUntilChanged()
   );
 
-  readonly formioOptions$: Observable<FormioOptions> = this.currentLanguage$.pipe(
+  public readonly formioOptions$: Observable<FormioOptions> = this.currentLanguage$.pipe(
     map(language => {
       const formioTranslations = this.translateService.instant('formioTranslations');
       const options =
@@ -49,34 +57,37 @@ export class FormioBuilderComponent implements OnInit {
                 [language]: this.stateService.flattenTranslationsObject(formioTranslations),
               },
             }
-          : null;
+          : {};
 
-      this.triggerRebuild.emit(options);
       return options;
     }),
-    delay(1000),
     tap(options => this.triggerRebuild.emit(options))
   );
 
+  public readonly editFormModified$ = new BehaviorSubject<boolean>(false);
+
   constructor(
-    private translateService: TranslateService,
-    private stateService: FormIoStateService
+    private readonly translateService: TranslateService,
+    private readonly stateService: FormIoStateService
   ) {}
 
-  ngOnInit() {
+  public ngOnInit() {
+    this.modifyEditForm();
+  }
+
+  public onChange(event) {
+    this.change.emit(event);
+  }
+
+  private modifyEditForm = (): void => {
     const originalEditForm = Components.baseEditForm;
     Components.baseEditForm = function (...extend) {
       const editForm = originalEditForm(...extend);
-      const keyField = editForm.components
-        .find(element => element.key === 'tabs')
-        .components.find(element => element.key === 'api')
-        .components.find(element => element.key === 'key');
-      delete keyField.validate;
+      modiyEditFormApiKeyInput(editForm);
+
       return editForm;
     };
-  }
 
-  onChange(event) {
-    this.change.emit(event);
-  }
+    setTimeout(() => this.editFormModified$.next(true));
+  };
 }

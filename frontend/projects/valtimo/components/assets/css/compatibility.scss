@@ -458,7 +458,8 @@ valtimo-dossier-assign-user {
 }
 
 .v-modal {
-  max-height: 70% !important;
+  height: min-content !important;
+
   &-backdrop {
     justify-content: space-around !important;
   }
