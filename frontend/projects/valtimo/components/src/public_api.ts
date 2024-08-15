@@ -262,3 +262,6 @@ export * from './lib/components/value-path-selector/value-path-selector.componen
 // formio value resoler selector
 export * from './lib/components/form-io/formio-value-resolver-selector/formio-value-resolver-selector.formio';
 export * from './lib/components/form-io/formio-value-resolver-selector/formio-value-resolver-selector.component';
+// formio dummy
+export * from './lib/components/form-io/form-io-dummy/dummy.component';
+export * from './lib/components/form-io/form-io-dummy/dummy.formio';

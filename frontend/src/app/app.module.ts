@@ -27,6 +27,7 @@ import {SecurityModule} from '@valtimo/security';
 import {
   BpmnJsDiagramModule,
   CardModule,
+  enableCustomFormioComponents,
   FormIoModule,
   MenuModule,
   registerFormioCurrentUserComponent,
@@ -283,6 +284,7 @@ export function tabsFactory() {
 })
 export class AppModule {
   constructor(injector: Injector) {
+    enableCustomFormioComponents(injector);
     registerFormioCurrentUserComponent(injector);
     registerFormioUploadComponent(injector);
     registerFormioFileSelectorComponent(injector);
