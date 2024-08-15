@@ -33,6 +33,7 @@ import {ConfigService} from '@valtimo/config';
 import {FormIoIbanComponent} from './form-io-iban/iban.component';
 import {ReactiveFormsModule} from '@angular/forms';
 import {FormioValueResolverSelectorComponent} from './formio-value-resolver-selector/formio-value-resolver-selector.component';
+import {FormioDummyComponent} from './form-io-dummy/dummy.component';
 
 @NgModule({
   imports: [
@@ -53,6 +54,7 @@ import {FormioValueResolverSelectorComponent} from './formio-value-resolver-sele
     FormIoUploaderComponent,
     FormIoCurrentUserComponent,
     FormIoIbanComponent,
+    FormioDummyComponent,
   ],
   exports: [
     FormioComponent,
@@ -60,6 +62,7 @@ import {FormioValueResolverSelectorComponent} from './formio-value-resolver-sele
     FormIoUploaderComponent,
     FormIoCurrentUserComponent,
     FormIoIbanComponent,
+    FormioDummyComponent,
   ],
   providers: [
     FormIoDomService,
