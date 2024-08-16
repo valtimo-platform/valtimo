@@ -107,8 +107,8 @@ export class TaskListComponent implements OnInit, OnDestroy {
     map(
       ([selectedTaskType, overrideNoResultsMessage]) =>
         overrideNoResultsMessage || {
-          title: 'task-list.' + selectedTaskType + '.noResultsDescription',
-          description: 'task-list.' + selectedTaskType + '.noResultsTitle',
+          title: 'task-list.' + selectedTaskType + '.noResultsTitle',
+          description: 'task-list.' + selectedTaskType + '.noResultsDescription',
           isSearchResult: false,
         }
     )
