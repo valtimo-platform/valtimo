@@ -20,7 +20,7 @@
     appearing: appearing$ | async,
     disappearing: disappearing$ | async,
     showBackdrop: showBackdrop$ | async,
-    mouseInsideModal: mouseInsideModal$ | async
+    mouseInsideModal: mouseInsideModal$ | async,
   } as obs"
 >
   <div
@@ -31,9 +31,8 @@
       'v-modal-backdrop--hidden': !obs.visible,
       'v-modal-backdrop--appearing': obs.appearing,
       'v-modal-backdrop--disappearing': obs.disappearing,
-      'v-modal-backdrop--mouse-on-backdrop': !obs.mouseInsideModal
+      'v-modal-backdrop--mouse-on-backdrop': !obs.mouseInsideModal,
     }"
-    (click)="!obs.appearing && !obs.disappearing && !obs.mouseInsideModal && closeModal()"
   >
     <ng-container
       *ngTemplateOutlet="modal; context: {appearing: obs.appearing, disappearing: obs.disappearing}"
@@ -64,7 +63,9 @@
       <div class="v-modal__header-overflow-bg"></div>
     </div>
     <div class="v-modal__header-buttons">
-      <v-button mdiIcon="close" type="icon-danger" (click)="closeModal()"></v-button>
+      <cds-icon-button (click)="closeModal()" kind="ghost" size="sm">
+        <svg class="cds--btn__icon" cdsIcon="close" size="24"></svg>
+      </cds-icon-button>
     </div>
   </div>
 </ng-template>

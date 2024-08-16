@@ -46,6 +46,11 @@
   inline-size: 100%;
 }
 
+.metadata-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .metadata-modal-footer button {
   width: 100%;
 }

@@ -19,6 +19,8 @@ import {BehaviorSubject, Observable} from 'rxjs';
 import {delay} from 'rxjs/operators';
 import {v4 as uuidv4} from 'uuid';
 import {ModalService} from '../../services/modal.service';
+import {IconService} from 'carbon-components-angular';
+import {Close24} from '@carbon/icons';
 
 /**
  * @deprecated Migrate old design to Carbon
@@ -43,7 +45,12 @@ export class VModalComponent implements OnInit {
   readonly disappearing$ = this.modalService.disappearing$;
   readonly mouseInsideModal$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private readonly modalService: ModalService) {}
+  constructor(
+    private readonly modalService: ModalService,
+    private readonly iconService: IconService
+  ) {
+    this.iconService.register(Close24);
+  }
 
   ngOnInit(): void {
     this.setAppearingDelayInService();
