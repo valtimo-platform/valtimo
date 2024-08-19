@@ -51,9 +51,11 @@
           <div class="clearfix"></div>
         </div>
 
-        <div *ngIf="showTaskList$ | async" class="tab-content-container__task-list">
-          <valtimo-dossier-detail-task-list></valtimo-dossier-detail-task-list>
-        </div>
+        @if (showTaskList$ | async) {
+          <div class="tab-content-container__task-list">
+            <valtimo-dossier-detail-task-list></valtimo-dossier-detail-task-list>
+          </div>
+        }
       </div>
     </div>
 
@@ -78,7 +80,7 @@
         h2: item.textSize === 'lg',
         h3: item.textSize === 'md',
         h4: item.textSize === 'sm',
-        h5: item.textSize === 'xs'
+        h5: item.textSize === 'xs',
       }"
       class="mb-0 mt-0 align-self-end col-xl-{{ item.columnSize }} col-lg-{{
         item.columnSize * 2
@@ -152,7 +154,7 @@
         canClaim: canClaim$ | async,
         canHaveAssignee: canHaveAssignee$ | async,
         document: document$ | async,
-        caseStatus: caseStatus$ | async
+        caseStatus: caseStatus$ | async,
       } as obs"
     >
       <div
@@ -170,7 +172,7 @@
               context: {
                 canHaveAssignee: obs.canHaveAssignee,
                 document: obs.document,
-                canAssign: obs.canAssign
+                canAssign: obs.canAssign,
               }
             "
           ></ng-container>

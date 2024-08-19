@@ -83,6 +83,8 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
   public processDocumentDefinitions: ProcessDocumentDefinition[] = [];
   public tabLoader: TabLoaderImpl | null = null;
 
+  public readonly enableTaskPanel: boolean = this.configService.getFeatureToggle('enableTaskPanel');
+
   public readonly assigneeId$ = new BehaviorSubject<string>('');
 
   private readonly _caseStatusKey$ = new BehaviorSubject<string | null | 'NOT_AVAILABLE'>(null);
