@@ -42,7 +42,7 @@
 </div>
 
 <ng-template #taskTemplate let-task="task">
-  <cds-clickable-tile (click)="rowTaskClick(task)">
+  <cds-clickable-tile [href]="null" (click)="rowTaskClick(task)">
     <div class="task">
       <div class="task__header">
         <span class="task__title">{{ task.name }}</span>
