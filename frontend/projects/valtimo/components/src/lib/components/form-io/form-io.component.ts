@@ -73,6 +73,7 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   @Output() submit = new EventEmitter<any>();
   // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() change = new EventEmitter<any>();
+  @Output() event = new EventEmitter<any>();
 
   @HostListener('window:beforeunload', ['$event'])
   private handleBeforeUnload() {
@@ -188,6 +189,10 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
 
   public onChange(object: any): void {
     this.change.emit(object);
+  }
+
+  public onCustomEvent(event: any): void {
+    this.event.emit(event);
   }
 
   public nextPage(): void {

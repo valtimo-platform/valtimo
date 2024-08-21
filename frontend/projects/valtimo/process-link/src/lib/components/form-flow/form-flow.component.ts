@@ -86,13 +86,13 @@ export class FormFlowComponent implements OnInit {
           }
         );
     } else if (submission.data['back']) {
-      this.formFlowService.back(this.formFlowInstanceId, submission.data).subscribe(
-        (result: FormFlowInstance) => this.handleFormFlowStep(result),
-        errors => {
-          this.form?.showErrors(errors);
-          this.enable();
-        }
-      );
+      this.back(submission.data);
+    }
+  }
+
+  public onEvent(submission: any): void {
+    if (submission.data['back'] || submission.type == 'back') {
+      this.back(submission.data);
     }
   }
 
@@ -112,6 +112,16 @@ export class FormFlowComponent implements OnInit {
       .subscribe((result: FormFlowInstance) => {
         this.handleFormFlowStep(result);
       });
+  }
+
+  private back(submissionData: any): void {
+    this.formFlowService.back(this.formFlowInstanceId, submissionData).subscribe(
+      (result: FormFlowInstance) => this.handleFormFlowStep(result),
+      errors => {
+        this.form?.showErrors(errors);
+        this.enable();
+      }
+    );
   }
 
   private handleFormFlowStep(formFlowInstance: FormFlowInstance) {
