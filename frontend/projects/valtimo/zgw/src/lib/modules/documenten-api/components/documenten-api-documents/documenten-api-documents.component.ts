@@ -99,13 +99,14 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
       combineLatest([
         this.documentenApiColumnService.getConfiguredColumns(documentDefinitionName),
         this._supportedDocumentenApiFeatures$,
+        this._sort$,
       ])
     ),
-    map(([columns, supportedDocumentenApiFeatures]) => {
+    map(([columns, supportedDocumentenApiFeatures, sort]) => {
       const defaultSortColumn: ConfiguredColumn | undefined = columns.find(
         (column: ConfiguredColumn) => !!column.defaultSort
       );
-      if (!!defaultSortColumn && supportedDocumentenApiFeatures.supportsSortableColumns) {
+      if (!!defaultSortColumn && !sort && supportedDocumentenApiFeatures.supportsSortableColumns) {
         this._sort$.next({sort: `${defaultSortColumn.key},${defaultSortColumn.defaultSort}`});
       }
 
@@ -151,25 +152,6 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
   public readonly documentId$: Observable<string> = this.route.params.pipe(
     map(params => params?.documentId),
     filter(documentId => !!documentId)
-  );
-
-  public readonly initialSortState$: Observable<SortState | null> = this.route.queryParamMap.pipe(
-    map(params => params['params']),
-    map(params => {
-      if (!!params['sort']) {
-        const paramsSplit = params['sort'].split(',');
-        const state = {
-          name: paramsSplit[0],
-          direction: paramsSplit[1],
-        };
-
-        return {
-          isSorting: true,
-          state,
-        };
-      }
-      return null;
-    })
   );
 
   public isAdmin: boolean;
@@ -256,7 +238,6 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
 
   public ngOnInit(): void {
     this.setInitialFilterAndSort();
-    this.openQueryParamsSubscription();
     this.setUploadProcessLinked();
     this.isUserAdmin();
     this.iconService.registerAll([Filter16, TagGroup16, Upload16]);
@@ -456,6 +437,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
       .subscribe(({filter, sort}) => {
         this._sort$.next({sort});
         this.filter$.next(filter);
+        this.openQueryParamsSubscription();
       });
   }
 }
