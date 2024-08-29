@@ -297,6 +297,15 @@ export class DocumentService {
     );
   }
 
+  public findProcessDocumentDefinitionsByCanInitializeDocument(
+    documentDefinitionName: string,
+    canInitializeDocument: boolean
+  ): Observable<ProcessDocumentDefinition[]> {
+    return this.http.get<ProcessDocumentDefinition[]>(
+      `${this.valtimoEndpointUri}v1/process-document/definition/document/${documentDefinitionName}?canInitializeDocument=${canInitializeDocument}`
+    );
+  }
+
   public findProcessDocumentDefinitionsByVersion(
     documentDefinitionName: string,
     version: number
