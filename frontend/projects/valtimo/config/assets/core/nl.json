@@ -1747,25 +1747,6 @@
     "chooseProcessLinkType": "Kies soort koppeling",
     "empty": "........",
     "selectForm": "Selecteer je formulier",
-    "selectFormPlaceholder": "Selecteer een formulier",
-    "displayType": {
-      "label": "Selecteer het weergavetype van het formulier",
-      "placeholder": "Selecteer hoe het formulier moet worden weergegeven",
-      "options": {
-        "modal": "Modaal",
-        "panel": "Panel"
-      }
-    },
-    "formSize": {
-      "label": "Selecteer modale grootte",
-      "placeholder": "Selecteer een modale grootte",
-      "options": {
-        "extraSmall": "Extra klein",
-        "small": "Klein",
-        "medium": "Medium",
-        "large": "Groot"
-      }
-    },
     "selectFormFlow": "Selecteer je FormFlow",
     "choosePluginConfiguration": "Kies pluginconfiguratie",
     "choosePluginAction": "Kies je actie",

@@ -1746,25 +1746,6 @@
     "chooseProcessLinkType": "Choose link type",
     "empty": "........",
     "selectForm": "Select your form",
-    "selectFormPlaceholder": "Select a form",
-    "displayType": {
-      "label": "Select form display type",
-      "placeholder": "Select how to display the form",
-      "options": {
-        "modal": "Modal",
-        "panel": "Panel"
-      }
-    },
-    "formSize": {
-      "label": "Select modal size",
-      "placeholder": "Select a modal size",
-      "options": {
-        "extraSmall": "Extra small",
-        "small": "Small",
-        "medium": "Medium",
-        "large": "Large"
-      }
-    },
     "selectFormFlow": "Select your FormFlow",
     "choosePluginConfiguration": "Select plugin configuration",
     "choosePluginAction": "Choose your action",
