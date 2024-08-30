@@ -1,0 +1,24 @@
+<ng-container
+  *ngIf="{
+    formDisplayTypeListItems: formDisplayTypeListItems$ | async,
+    formSizeListItems: formSizeListItems$ | async,
+    formDisplayValue: formDisplayValue$ | async,
+  } as obs"
+>
+  <cds-combo-box
+    [placeholder]="'processLinkSteps.displayType.placeholder' | translate"
+    [label]="'processLinkSteps.displayType.label' | translate"
+    (selected)="selectFormDisplayType($event)"
+  >
+    <cds-dropdown-list [items]="obs.formDisplayTypeListItems || []"></cds-dropdown-list>
+  </cds-combo-box>
+  <br />
+
+  <cds-combo-box
+    [placeholder]="'processLinkSteps.formSize.placeholder' | translate"
+    [label]="'processLinkSteps.displayType.label' | translate"
+    (selected)="selectFormSize($event)"
+  >
+    <cds-dropdown-list [items]="obs.formSizeListItems || []"></cds-dropdown-list>
+  </cds-combo-box>
+</ng-container>

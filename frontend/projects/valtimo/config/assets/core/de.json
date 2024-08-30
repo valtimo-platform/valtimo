@@ -1741,6 +1741,25 @@
     "chooseProcessLinkType": "Linktyp wählen",
     "empty": "........",
     "selectForm": "Wählen Sie Ihr Formular",
+    "selectFormPlaceholder": "Wählen Sie ein Formular aus",
+    "displayType": {
+      "label": "Wählen Sie den Anzeigetyp des Formulars aus",
+      "placeholder": "Wählen Sie aus, wie das Formular angezeigt werden soll",
+      "options": {
+        "modal": "Modal",
+        "panel": "Panel"
+      }
+    },
+    "formSize": {
+      "label": "Wählen Sie die modale Größe aus",
+      "placeholder": "Wählen Sie eine modale Größe aus",
+      "options": {
+        "extraSmall": "Extra klein",
+        "small": "Klein",
+        "medium": "Mittel",
+        "large": "Groß"
+      }
+    },
     "selectFormFlow": "Wählen Sie Ihr FormFlow",
     "choosePluginConfiguration": "Plugin-Konfiguration wählen",
     "choosePluginAction": "Wählen Sie Ihre Aktion",

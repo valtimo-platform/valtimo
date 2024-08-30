@@ -63,16 +63,16 @@ export class SelectFormComponent implements OnInit, OnDestroy {
     private readonly buttonService: ProcessLinkButtonService
   ) {}
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openBackButtonSubscription();
     this.openSaveButtonSubscription();
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  selectFormDefinition(formDefinition: FormDefinitionListItem): void {
+  public selectFormDefinition(formDefinition: FormDefinitionListItem): void {
     if (typeof formDefinition === 'object' && formDefinition.id) {
       this._selectedFormDefinition = formDefinition;
       this.buttonService.enableSaveButton();
