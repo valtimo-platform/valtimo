@@ -70,6 +70,18 @@ interface FormDefinitionListItem extends ListItem {
   id: string;
 }
 
+interface FormFlowBreadcrumbs extends ListItem {
+  currentStepIndex: number;
+  breadcrumbs: Array<FormFlowBreadcrumb>;
+}
+
+interface FormFlowBreadcrumb extends ListItem {
+  title: string;
+  key: string;
+  stepInstanceId: string;
+  completed: boolean;
+}
+
 export {
   FormSubmissionResult,
   BpmnElement,
@@ -82,4 +94,6 @@ export {
   FormFlowCreateRequest,
   ModalParams,
   FormDefinitionListItem,
+  FormFlowBreadcrumbs,
+  FormFlowBreadcrumb,
 };

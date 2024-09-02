@@ -96,6 +96,7 @@ interface ValtimoConfigFeatureToggles {
   enableFormViewModel?: boolean;
   enableIntermediateSave?: boolean;
   enableTaskPanel?: boolean;
+  enableFormFlowBreadcrumbs?: boolean;
 }
 
 interface ValtimoConfig {
