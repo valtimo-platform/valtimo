@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Location} from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -24,8 +22,14 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import {ActivatedRoute, ParamMap, Params, Router} from '@angular/router';
+import {ChevronDown16} from '@carbon/icons';
 import {PermissionService} from '@valtimo/access-control';
-import {BreadcrumbService, PageHeaderService, PageTitleService} from '@valtimo/components';
+import {
+  BreadcrumbService,
+  PageHeaderService,
+  PageTitleService,
+  PendingChangesComponent,
+} from '@valtimo/components';
 import {ConfigService} from '@valtimo/config';
 import {
   CaseStatusService,
@@ -35,6 +39,9 @@ import {
   InternalCaseStatusUtils,
   ProcessDocumentDefinition,
 } from '@valtimo/document';
+import {ProcessInstanceTask} from '@valtimo/process';
+import {IntermediateSubmission} from '@valtimo/task';
+import {IconService} from 'carbon-components-angular';
 import {KeycloakService} from 'keycloak-angular';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
@@ -50,16 +57,14 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {DossierSupportingProcessStartModalComponent} from '../dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
-import {TabLoaderImpl} from '../../models';
+import {TabImpl, TabLoaderImpl} from '../../models';
 import {
   CAN_ASSIGN_CASE_PERMISSION,
   CAN_CLAIM_CASE_PERMISSION,
   DOSSIER_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
 import {DossierService, DossierTabService} from '../../services';
-import {IconService} from 'carbon-components-angular';
-import {ChevronDown16} from '@carbon/icons';
+import {DossierSupportingProcessStartModalComponent} from '../dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
 
 @Component({
   selector: 'valtimo-dossier-detail',
@@ -67,7 +72,10 @@ import {ChevronDown16} from '@carbon/icons';
   styleUrls: ['./dossier-detail.component.scss'],
   providers: [DossierTabService],
 })
-export class DossierDetailComponent implements AfterViewInit, OnDestroy {
+export class DossierDetailComponent
+  extends PendingChangesComponent
+  implements AfterViewInit, OnDestroy
+{
   @ViewChild('supportingProcessStartModal')
   supportingProcessStart: DossierSupportingProcessStartModalComponent;
 
@@ -84,6 +92,11 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
   public tabLoader: TabLoaderImpl | null = null;
 
   public readonly assigneeId$ = new BehaviorSubject<string>('');
+  public readonly currentIntermediateSave$ = new BehaviorSubject<IntermediateSubmission | null>(
+    null
+  );
+
+  public readonly taskToOpen$ = new BehaviorSubject<ProcessInstanceTask | null>(null);
 
   private readonly _caseStatusKey$ = new BehaviorSubject<string | null | 'NOT_AVAILABLE'>(null);
 
@@ -190,6 +203,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
 
   public readonly loadingTabs$ = new BehaviorSubject<boolean>(true);
   public readonly noTabsConfigured$ = new BehaviorSubject<boolean>(false);
+  public activeTab$: Observable<TabImpl>;
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
@@ -198,8 +212,13 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
 
   public readonly showTaskList$ = this.dossierTabService.showTaskList$;
 
+  public readonly activeTabName$ = new BehaviorSubject<string>('');
+
   private _snapshot: ParamMap;
   private _initialTabName: string;
+  private _activeChange = false;
+  private _pendingTab: TabImpl;
+  private _oldTabName: string;
 
   constructor(
     private readonly breadcrumbService: BreadcrumbService,
@@ -207,7 +226,6 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     private readonly configService: ConfigService,
     private readonly documentService: DocumentService,
     private readonly keyCloakService: KeycloakService,
-    private readonly location: Location,
     private readonly logger: NGXLogger,
     private readonly permissionService: PermissionService,
     private readonly route: ActivatedRoute,
@@ -219,6 +237,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
     private readonly iconService: IconService,
     private readonly pageHeaderService: PageHeaderService
   ) {
+    super();
     this._snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = this._snapshot.get('documentDefinitionName') || '';
     this.documentId = this._snapshot.get('documentId') || '';
@@ -300,6 +319,52 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
       });
   }
 
+  public onTaskClickEvent(task: ProcessInstanceTask): void {
+    this.taskToOpen$.next(task);
+  }
+
+  public onTaskDetailsClose(): void {
+    this.taskToOpen$.next(null);
+  }
+
+  public onActiveChangeEvent(event: boolean): void {
+    this._activeChange = event;
+  }
+
+  public onTabSelected(tab: TabImpl, activeTab: TabImpl): void {
+    if (!this.tabLoader) return;
+
+    this._oldTabName = activeTab.name;
+    this._pendingTab = tab;
+    this.activeTabName$.next(tab.name);
+    this.pendingChanges =
+      tab.contentKey === 'summary' ? false : !tab.showTasks && this._activeChange;
+
+    if (this.pendingChanges) {
+      this.tabLoader.replaceUrlState(tab);
+      return;
+    }
+
+    this.tabLoader.load(tab);
+  }
+
+  public onFormSubmitEvent(): void {
+    this.taskToOpen$.next(null);
+  }
+
+  protected onConfirmRedirect(): void {
+    if (!this.tabLoader || !this._pendingTab) return;
+    this._activeChange = false;
+    this.activeTabName$.next(this._pendingTab.name);
+    this.tabLoader.load(this._pendingTab);
+    this.taskToOpen$.next(null);
+  }
+
+  protected onCancelRedirect(): void {
+    if (!this.tabLoader) return;
+    this.activeTabName$.next(this._oldTabName);
+  }
+
   private initBreadcrumb(): void {
     this.documentService
       .getDocumentDefinition(this.documentDefinitionName)
@@ -323,6 +388,7 @@ export class DossierDetailComponent implements AfterViewInit, OnDestroy {
         this.tabLoader.initial(this._initialTabName);
         this.dossierTabService.setTabLoader(this.tabLoader);
         this.loadingTabs$.next(false);
+        this.activeTab$ = this.tabLoader.activeTab$;
       } else {
         this.noTabsConfigured$.next(true);
         this.loadingTabs$.next(false);

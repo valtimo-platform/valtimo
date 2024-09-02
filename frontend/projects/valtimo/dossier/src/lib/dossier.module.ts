@@ -97,6 +97,7 @@ import {TabTranslatePipeModule} from './pipes';
 import {DossierDetailTabNotFoundComponent} from './components/dossier-detail/tab/not-found/not-found.component';
 import {DossierDetailWidgetsComponent} from './components/dossier-detail/tab/widgets/widgets.component';
 import {DossierDetailTaskListComponent} from './components/dossier-detail-task-list/dossier-detail-task-list.component';
+import {DossierDetailsTaskDetailComponent} from './components/dossier-detail-task-detail/dossier-detail-task-detail.component';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -187,6 +188,7 @@ export type TabsFactory = () => Map<string, object>;
     ValtimoCdsOverflowButtonDirectiveModule,
     DossierDetailWidgetsComponent,
     DossierDetailTaskListComponent,
+    DossierDetailsTaskDetailComponent,
   ],
   exports: [DossierListComponent, DossierDetailComponent],
 })

@@ -13,32 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpHeaders, HttpParams, HttpResponse} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {
-  AssigneeRequest,
-  IntermediateSaveRequest,
-  IntermediateSubmission,
-  SpecifiedTask,
-  Task,
-  TaskListColumn,
-  TaskPageParams,
-  TaskProcessLinkResult,
-} from '../models';
-import {
-  BaseApiService,
-  ConfigService,
-  CustomTaskList,
-  NamedUser,
-  Page,
-  TaskListTab,
-} from '@valtimo/config';
+import {BaseApiService, ConfigService} from '@valtimo/config';
 import {InterceptorSkip} from '@valtimo/security';
+import {BehaviorSubject, Observable, filter} from 'rxjs';
+import {IntermediateSaveRequest, IntermediateSubmission} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class TaskIntermediateSaveService extends BaseApiService {
+  private readonly _submission$ = new BehaviorSubject<any>({});
+  private readonly _formIoFormData$ = new BehaviorSubject<any>({});
+
+  public get submission$(): Observable<any> {
+    return this._submission$.pipe(filter((value: any) => !!value));
+  }
+  public get formIoFormData$(): Observable<any> {
+    return this._formIoFormData$.pipe(filter((value: any) => !!value));
+  }
+
   constructor(
     protected readonly httpClient: HttpClient,
     protected readonly configService: ConfigService
@@ -76,5 +69,12 @@ export class TaskIntermediateSaveService extends BaseApiService {
         taskInstanceId,
       },
     });
+  }
+
+  public setSubmission(value: any): void {
+    this._submission$.next(value);
+  }
+  public setFormIoFormData(value: any): void {
+    this._formIoFormData$.next(value);
   }
 }

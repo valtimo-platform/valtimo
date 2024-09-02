@@ -114,3 +114,8 @@
   display: flex;
   gap: 24px;
 }
+
+.task-panel {
+  width: 412px;
+  transition: height 0.15s ease-in-out;
+}

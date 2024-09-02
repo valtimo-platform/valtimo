@@ -13,145 +13,52 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+
 <cds-modal #taskDetailModal id="taskDetailModal">
   <cds-modal-header (closeSelect)="closeModal()">
-    <div class="cds-modal-header">
-      <div class="title-container">
-        <p class="cds--modal-header__heading cds--type-beta">{{ (page$ | async)?.title }}</p>
-        <p class="cds--modal-header__label cds--type-delta">{{ (page$ | async)?.subtitle }}</p>
-        <p class="cds--modal-header__label cds--type-delta" *ngIf="currentIntermediateSave">
-          {{ 'formManagement.intermediateSave.lastSavedBy' | translate }}:
-          {{
-            currentIntermediateSave?.editedBy
-              ? currentIntermediateSave?.editedBy
-              : currentIntermediateSave.createdBy
-          }}
-          {{ 'formManagement.intermediateSave.on' | translate }}:
-          {{
-            currentIntermediateSave?.editedOn
-              ? currentIntermediateSave?.editedOn
-              : currentIntermediateSave.createdOn
-          }}
-        </p>
-        <ng-container *ngTemplateOutlet="assignUserToTask"></ng-container>
-      </div>
-      <div
-        *ngIf="intermediateSaveEnabled && (formFlowInstanceId$ | async) === undefined"
-        class="save-buttons-margin"
+    <div class="title-container">
+      <p class="cds--modal-header__heading cds--type-beta">{{ (page$ | async)?.title }}</p>
+
+      <p class="cds--modal-header__label cds--type-delta">{{ (page$ | async)?.subtitle }}</p>
+
+      <p
+        class="cds--modal-header__label cds--type-delta"
+        *ngIf="currentIntermediateSave$ | async as currentIntermediateSave"
       >
-        <cds-tooltip
-          [caret]="true"
-          enterDelayMs="0"
-          leaveDelayMs="0"
-          [description]="'formManagement.intermediateSave.save' | translate"
-        >
-          <button
-            cdsButton="ghost"
-            iconOnly="true"
-            cdsIcon="save"
-            (click)="saveCurrentProgress()"
-          ></button>
-        </cds-tooltip>
-        <cds-tooltip
-          [caret]="true"
-          enterDelayMs="0"
-          leaveDelayMs="0"
-          [description]="'formManagement.intermediateSave.clear' | translate"
-        >
-          <button
-            cdsButton="ghost"
-            iconOnly="true"
-            cdsIcon="recently-viewed"
-            [disabled]="!currentIntermediateSave"
-            (click)="showConfirmationModal$.next(true)"
-          ></button>
-        </cds-tooltip>
-      </div>
-    </div>
-  </cds-modal-header>
-  <div
-    body
-    class="cds--modal-content pb-1"
-    *ngIf="{
-      loading: loading$ | async,
-      page: page$ | async,
-      task: task$ | async,
-      taskId: taskInstanceId$ | async,
-      formDefinition: formDefinition$ | async,
-      formDefinitionId: formDefinitionId$ | async,
-      formName: formName$ | async,
-      formIoFormData: formIoFormData$ | async,
-      submission: submission$ | async,
-      processLinkIsForm: processLinkIsForm$ | async,
-      processLinkIsFormViewModel: processLinkIsFormViewModel$ | async,
-      formioOptions: formioOptions$ | async,
-      processLinkIsFormFlow: processLinkIsFormFlow$ | async,
-      formFlowInstanceId: formFlowInstanceId$ | async,
-      errorMessage: errorMessage$ | async
-    } as obs"
-  >
-    <div *ngIf="obs.formDefinition && obs.processLinkIsForm">
-      <valtimo-form-io
-        #form
-        [form]="obs.formDefinition"
-        [submission]="obs.submission"
-        (submit)="onSubmit($event)"
-        (change)="onChange($event)"
-        [options]="obs.formioOptions"
-      ></valtimo-form-io>
-    </div>
-    <div *ngIf="obs.processLinkIsFormFlow">
-      <valtimo-form-flow
-        #formFlow
-        [formIoFormData]="formIoFormData$"
-        [formFlowInstanceId]="obs.formFlowInstanceId"
-        (formFlowComplete)="completeTask()"
-      ></valtimo-form-flow>
-    </div>
-    <div *ngIf="obs.loading">
-      <div class="text-black mb-0 p-3 text-center">
-        {{ 'formManagement.loading' | translate }}
-      </div>
-    </div>
-    <div
-      *ngIf="
-        obs.loading === false && !obs.formDefinition && !obs.formFlowInstanceId && !obs.errorMessage
-      "
-    >
-      <div class="bg-warning text-black mb-0 p-3 text-center">
+        {{ 'formManagement.intermediateSave.lastSavedBy' | translate }}:
+
         {{
-          (isAdmin$ | async)
-            ? ('formManagement.noFormDefinitionFoundAdmin' | translate)
-            : ('formManagement.noFormDefinitionFoundUser' | translate)
+          currentIntermediateSave?.editedBy
+            ? currentIntermediateSave?.editedBy
+            : currentIntermediateSave.createdBy
         }}
-      </div>
+
+        {{ 'formManagement.intermediateSave.on' | translate }}:
+
+        {{
+          currentIntermediateSave?.editedOn
+            ? currentIntermediateSave?.editedOn
+            : currentIntermediateSave.createdOn
+        }}
+      </p>
+
+      <ng-container *ngTemplateOutlet="assignUserToTask"></ng-container>
     </div>
-    <div *ngIf="obs.errorMessage">
-      <div class="bg-danger text-black mb-0 p-3 text-center">
-        {{ obs.errorMessage }}
-      </div>
-    </div>
-  </div>
-  <div
-    footer
-    *ngIf="{
-      formDefinition: formDefinition$ | async,
-      formFlowInstanceId: formFlowInstanceId$ | async
-    } as obs"
-  >
-    <div class="mb-0 p-3 text-center" *ngIf="!obs.formDefinition && !obs.formFlowInstanceId">
-      <button
-        class="btn btn-secondary btn-space"
-        type="button"
-        (click)="gotoProcessLinkScreen()"
-        id="process-link-button"
-      >
-        {{ 'formManagement.gotoProcessLinksButton' | translate }}
-      </button>
-    </div>
-  </div>
-  <div body class="m-2">
-    <ng-template #formViewModelComponent></ng-template>
+
+    <valtimo-task-detail-intermediate-save
+      class="save-buttons-margin"
+      [task]="task$ | async"
+      (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
+      (showModalEvent)="onShowModalEvent()"
+    ></valtimo-task-detail-intermediate-save>
+  </cds-modal-header>
+
+  <div body class="cds--modal-content pb-1">
+    <valtimo-task-detail-content
+      [task]="task$ | async"
+      (formSubmit)="onFormSubmit()"
+      (closeModalEvent)="closeModal()"
+    ></valtimo-task-detail-content>
   </div>
 </cds-modal>
 
@@ -166,10 +73,12 @@
 ></valtimo-confirmation-modal>
 
 <ng-template #assignUserToTask>
-  <ng-container *ngIf="{
-    task: task$ | async,
-    canAssignUserToTask: canAssignUserToTask$ | async
-  } as obs">
+  <ng-container
+    *ngIf="{
+      task: task$ | async,
+      canAssignUserToTask: canAssignUserToTask$ | async,
+    } as obs"
+  >
     <valtimo-assign-user-to-task
       *ngIf="obs.task && obs.canAssignUserToTask && assignmentOfTaskChanged"
       [taskId]="obs.task.id"

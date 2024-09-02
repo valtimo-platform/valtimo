@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-#taskDetailModal {
-  .formio-component-submit {
-    text-align: right;
-  }
-}
+.valtimo-dossier-detail-task-detail {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--cds-layer);
+  padding: 8px 16px 16px 16px;
 
-cds-modal-header {
-  .cds--modal-header {
+  &__header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
   }
-}
 
-.save-buttons-margin {
-  margin-top: -15px;
+  &__title {
+    color: var(--cds-text-primary);
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 24px;
+  }
 }
