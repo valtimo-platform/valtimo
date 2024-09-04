@@ -17,7 +17,7 @@
 <ng-container
   *ngIf="{
     formDefinitions: formDefinitionListItems$ | async,
-    saving: saving$ | async
+    saving: saving$ | async,
   } as obs"
 >
   <p class="step-description">
@@ -33,5 +33,12 @@
       [label]="'processLinkSteps.selectForm' | translate"
       ><cds-dropdown-list></cds-dropdown-list
     ></cds-combo-box>
+    <br />
+
+    <valtimo-form-display-configuration
+      [selectedFormDefinition]="selectedFormDefinition"
+      (formDisplayValue)="selectedFormDisplayValue($event)"
+      (formSizeValue)="selectedFormSizeValue($event)"
+    ></valtimo-form-display-configuration>
   </div>
 </ng-container>
