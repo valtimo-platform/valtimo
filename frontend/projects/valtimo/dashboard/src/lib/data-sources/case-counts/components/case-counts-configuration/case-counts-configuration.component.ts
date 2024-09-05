@@ -223,7 +223,7 @@ export class CaseCountsConfigurationComponent
         this.configurationEvent.emit({
           valid: this.form.valid,
           data: {
-            ...formValue,
+            documentDefinition: formValue?.documentDefinition?.content,
             queryItems: this.multiInputValuesToQueryItems(formValue.queryItems),
           } as CaseCountsConfiguration,
         });
