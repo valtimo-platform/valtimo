@@ -217,15 +217,13 @@ export class DossierTabService implements OnDestroy {
           tab.showTasks
         );
       case ApiTabType.WIDGETS:
-        return (
-          new TabImpl(
-            tab.key,
-            index,
-            DossierDetailWidgetsComponent,
-            tab.contentKey,
-            tab.name,
-            tab.showTasks
-          )
+        return new TabImpl(
+          tab.key,
+          index,
+          DossierDetailWidgetsComponent,
+          tab.contentKey,
+          tab.name,
+          tab.showTasks
         );
       default:
         return null;

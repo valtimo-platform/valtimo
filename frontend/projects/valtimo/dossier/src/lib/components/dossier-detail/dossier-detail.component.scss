@@ -19,6 +19,7 @@
 }
 
 .tab-container {
+  height: min-content;
   min-height: 300px;
 
   &:has(> .tab--no-margin) {

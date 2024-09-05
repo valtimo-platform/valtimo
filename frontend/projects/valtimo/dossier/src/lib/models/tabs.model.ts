@@ -71,14 +71,14 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
       initialTab = this._tabs[0] || null;
     }
 
-    this.load(initialTab, true);
+    this.load(initialTab);
   }
 
-  public load(newTab: TabImpl, isInitial = false): void {
+  public load(newTab: TabImpl): void {
     if (newTab !== this._activeTab) {
       this._tabs.forEach(tab => tab.deactivate());
       this.replaceView(newTab);
-      if (!isInitial) this.replaceUrlState(newTab);
+      this.replaceUrlState(newTab);
       this.setActive(newTab);
     }
   }
