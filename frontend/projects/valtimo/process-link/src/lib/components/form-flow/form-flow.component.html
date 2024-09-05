@@ -14,8 +14,25 @@
   ~ limitations under the License.
   -->
 
-<div>
-  <div body *ngIf="formDefinition && (formFlowStepType$ | async) === 'form'">
+<div
+  *ngIf="{
+    breadcrumbs: breadcrumbs$ | async,
+    currentStepIndex: currentStepIndex$ | async,
+    enableFormFlowBreadcrumbs: enableFormFlowBreadcrumbs$ | async,
+  } as obs"
+>
+  <div *ngIf="formDefinition && (formFlowStepType$ | async) === 'form'">
+    <div *ngIf="obs.enableFormFlowBreadcrumbs" class="form-flow__progress-bar-indicator">
+      <cds-progress-indicator
+        [spacing]="'equal'"
+        [skeleton]="obs.breadcrumbs.length === 0"
+        [current]="obs.currentStepIndex"
+        [steps]="obs.breadcrumbs"
+        (stepSelected)="onStepSelected($event)"
+      >
+      </cds-progress-indicator>
+    </div>
+
     <valtimo-form-io
       #form
       [form]="formDefinition"
@@ -25,7 +42,7 @@
       [options]="formioOptions"
     ></valtimo-form-io>
   </div>
-  <div body *ngIf="(formFlowStepType$ | async) === 'custom-component'">
+  <div *ngIf="(formFlowStepType$ | async) === 'custom-component'">
     <valtimo-form-flow-configuration-container
       [componentId]="FormFlowCustomComponentId$ | async"
       [formFlowInstanceId]="formFlowInstanceId"

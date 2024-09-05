@@ -526,6 +526,9 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
       else if (ontvangstdatum) this.additionalDocumentDate$.next('received');
       else this.additionalDocumentDate$.next('neither');
 
+      const prefillStatus = this.status || status;
+      const validPrefillStatus = this.STATUSES.includes(prefillStatus) ? prefillStatus : '';
+
       this.documentenApiMetadataForm.patchValue({
         bestandsnaam: this.filename || bestandsnaam,
         titel: this.documentTitle || titel,
@@ -533,7 +536,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnChanges, O
         beschrijving: this.description || beschrijving,
         taal: this.language || taal,
         informatieobjecttype: this.documentType || informatieobjecttype,
-        status: this.status || status,
+        status: validPrefillStatus,
         vertrouwelijkheidaanduiding: this.confidentialityLevel || vertrouwelijkheidaanduiding,
         creatiedatum,
         ontvangstdatum,

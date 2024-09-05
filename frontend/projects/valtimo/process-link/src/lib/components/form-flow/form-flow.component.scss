@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-#taskDetailModal {
-  .formio-component-submit {
-    text-align: right;
-  }
-}
+.form-flow {
+  &__progress-bar-indicator {
+    height: 64px;
+    overflow-x: auto;
 
-cds-modal-header {
-  .cds--modal-header {
-    display: flex;
-    justify-content: space-between;
+    ::-webkit-scrollbar {
+      display: none; /* Hide scrollbar for Chrome, Safari and Opera */
+    }
+    -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
   }
-}
-
-.save-buttons-margin {
-  margin-top: -15px;
 }

@@ -1,0 +1,90 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    loading: loading$ | async,
+    page: page$ | async,
+    task: task$ | async,
+    taskId: taskInstanceId$ | async,
+    formDefinition: formDefinition$ | async,
+    formDefinitionId: formDefinitionId$ | async,
+    formName: formName$ | async,
+    formIoFormData: formIoFormData$ | async,
+    submission: submission$ | async,
+    processLinkIsForm: processLinkIsForm$ | async,
+    processLinkIsFormViewModel: processLinkIsFormViewModel$ | async,
+    formioOptions: formioOptions$ | async,
+    processLinkIsFormFlow: processLinkIsFormFlow$ | async,
+    formFlowInstanceId: formFlowInstanceId$ | async,
+    errorMessage: errorMessage$ | async,
+    canAssignUserToTask: canAssignUserToTask$ | async,
+  } as obs"
+>
+  <valtimo-form-io
+    #form
+    *ngIf="obs.formDefinition && obs.processLinkIsForm"
+    [form]="obs.formDefinition"
+    [submission]="obs.submission"
+    (submit)="onSubmit($event)"
+    (change)="onChange($event)"
+    [options]="obs.formioOptions"
+  ></valtimo-form-io>
+
+  <valtimo-form-flow
+    #formFlow
+    *ngIf="obs.processLinkIsFormFlow"
+    [formIoFormData]="formIoFormData$"
+    [formFlowInstanceId]="obs.formFlowInstanceId"
+    (formFlowComplete)="completeTask(obs.task)"
+  ></valtimo-form-flow>
+
+  <div *ngIf="obs.loading" class="text-black mb-0 p-3 text-center">
+    {{ 'formManagement.loading' | translate }}
+  </div>
+
+  <div
+    *ngIf="
+      obs.loading === false && !obs.formDefinition && !obs.formFlowInstanceId && !obs.errorMessage
+    "
+    class="bg-warning text-black mb-0 p-3 text-center"
+  >
+    {{
+      (isAdmin$ | async)
+        ? ('formManagement.noFormDefinitionFoundAdmin' | translate)
+        : ('formManagement.noFormDefinitionFoundUser' | translate)
+    }}
+  </div>
+
+  <div *ngIf="obs.errorMessage" class="bg-danger text-black mb-0 p-3 text-center">
+    {{ obs.errorMessage }}
+  </div>
+
+  <div class="m-2">
+    <ng-template #formViewModelComponent></ng-template>
+  </div>
+
+  <div *ngIf="!obs.formDefinition && !obs.formFlowInstanceId" class="mb-0 p-3 text-center">
+    <button
+      class="btn btn-secondary btn-space"
+      type="button"
+      (click)="gotoProcessLinkScreen()"
+      id="process-link-button"
+    >
+      {{ 'formManagement.gotoProcessLinksButton' | translate }}
+    </button>
+  </div>
+</ng-container>

@@ -31,6 +31,9 @@ import {take} from 'rxjs/operators';
   styleUrls: ['./select-form-flow.component.scss'],
 })
 export class SelectFormFlowComponent implements OnInit, OnDestroy {
+  public formDisplayValue: string = '';
+  public formSizeValue: string = '';
+  public selectedFormFlowDefinition!: FormDefinitionListItem;
   public readonly saving$ = this.stateService.saving$;
   private readonly formFlowDefinitions$ = this.formFlowService.getFormFlowDefinitions();
 
@@ -54,7 +57,6 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
       })
     );
 
-  private _selectedFormFlowDefinition!: FormDefinitionListItem;
   private _subscriptions = new Subscription();
 
   constructor(
@@ -67,20 +69,34 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.openBackButtonSubscription();
     this.openSaveButtonSubscription();
+    this._subscriptions.add(
+      this.stateService.selectedProcessLink$.subscribe(selectedProcessLink => {
+        if (selectedProcessLink) {
+          this.formDisplayValue = selectedProcessLink.formDisplayType;
+          this.formSizeValue = selectedProcessLink.formSize;
+        }
+      })
+    );
   }
 
   ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  selectFormFlowDefinition(formFlowDefinition: FormDefinitionListItem): void {
-    if (typeof formFlowDefinition === 'object' && formFlowDefinition.id) {
-      this._selectedFormFlowDefinition = formFlowDefinition;
-      this.buttonService.enableSaveButton();
-    } else {
-      this._selectedFormFlowDefinition = null;
-      this.buttonService.disableSaveButton();
-    }
+  public selectedFormDisplayValue(formDisplay: string): void {
+    this.formDisplayValue = formDisplay;
+  }
+
+  public selectedFormSizeValue(formSize: string): void {
+    this.formSizeValue = formSize;
+  }
+
+  public selectFormFlowDefinition(formFlowDefinition: FormDefinitionListItem): void {
+    this.selectedFormFlowDefinition = formFlowDefinition?.id ? formFlowDefinition : null;
+
+    this.selectedFormFlowDefinition && this.formDisplayValue && this.formSizeValue
+      ? this.buttonService.enableSaveButton()
+      : this.buttonService.disableSaveButton();
   }
 
   private openBackButtonSubscription(): void {
@@ -114,7 +130,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
     this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
       const updateProcessLinkRequest: FormFlowProcessLinkUpdateRequestDto = {
         id: selectedProcessLink.id,
-        formFlowDefinitionId: this._selectedFormFlowDefinition.id,
+        formFlowDefinitionId: this.selectedFormFlowDefinition.id,
       };
 
       this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
@@ -134,11 +150,13 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
         take(1),
         switchMap(([modalParams, processLinkTypeId]) =>
           this.processLinkService.saveProcessLink({
-            formFlowDefinitionId: this._selectedFormFlowDefinition.id,
+            formFlowDefinitionId: this.selectedFormFlowDefinition.id,
             activityType: modalParams.element.activityListenerType,
             processDefinitionId: modalParams.processDefinitionId,
             processLinkType: processLinkTypeId,
             activityId: modalParams.element.id,
+            formDisplayType: this.formDisplayValue,
+            formSize: this.formSizeValue,
           })
         )
       )

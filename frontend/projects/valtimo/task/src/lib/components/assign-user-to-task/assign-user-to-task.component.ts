@@ -23,15 +23,19 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import {DropdownItem} from '@valtimo/components';
+import {DropdownItem, SearchableDropdownSelectModule} from '@valtimo/components';
 import {BehaviorSubject, combineLatest, Subscription, take, tap} from 'rxjs';
 import {TaskService} from '../../services';
 import {NamedUser} from '@valtimo/config';
+import {CommonModule} from '@angular/common';
+import {TranslateModule} from '@ngx-translate/core';
 
 @Component({
   selector: 'valtimo-assign-user-to-task',
   templateUrl: './assign-user-to-task.component.html',
   styleUrls: ['./assign-user-to-task.component.scss'],
+  standalone: true,
+  imports: [CommonModule, TranslateModule, SearchableDropdownSelectModule],
 })
 export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   @Input() taskId: string;

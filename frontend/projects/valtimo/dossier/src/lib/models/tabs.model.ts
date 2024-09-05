@@ -96,7 +96,7 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
     this._activeComponent = this._viewContainerRef.createComponent(componentFactory);
   }
 
-  private replaceUrlState(nextTab: TabImpl): void {
+  public replaceUrlState(nextTab: TabImpl): void {
     this._route.params.pipe(take(1)).subscribe(params => {
       const currentUrl = this._router.url;
       const currentDocumentId = params?.documentId;

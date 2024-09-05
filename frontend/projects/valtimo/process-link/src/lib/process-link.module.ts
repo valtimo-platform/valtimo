@@ -59,6 +59,7 @@ import {SelectFormComponent} from './components/select-form';
 import {FormFlowComponent} from './components/form-flow/form-flow.component';
 import {SelectFormFlowComponent} from './components/select-form-flow';
 import {FormFlowConfigurationContainerComponent} from './components/form-flow-configuration-container';
+import {FormDisplayConfigurationComponent} from './components/form-display-configuration/form-display-configuration.component';
 
 @NgModule({
   declarations: [
@@ -73,6 +74,7 @@ import {FormFlowConfigurationContainerComponent} from './components/form-flow-co
     FormFlowComponent,
     SelectFormFlowComponent,
     FormFlowConfigurationContainerComponent,
+    FormDisplayConfigurationComponent,
   ],
   imports: [
     CommonModule,

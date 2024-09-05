@@ -22,6 +22,7 @@ import {DossierDetailComponent} from './components/dossier-detail/dossier-detail
 import {DossierUpdateComponent} from './components/dossier-update/dossier-update.component';
 import {ROLE_USER} from '@valtimo/config';
 import {DossierListComponent} from './components/dossier-list/dossier-list.component';
+import {pendingChangesGuard} from '@valtimo/components';
 
 const routes: Routes = [
   {
@@ -34,6 +35,7 @@ const routes: Routes = [
     path: 'dossiers/:documentDefinitionName/document/:documentId/:tab',
     component: DossierDetailComponent,
     canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Dossier details',
       parentPath: 'dossiers/:documentDefinitionName',
