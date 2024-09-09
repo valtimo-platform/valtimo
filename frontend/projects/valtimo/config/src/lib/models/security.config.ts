@@ -24,6 +24,7 @@ export interface UserIdentity {
   lastName: string;
   roles: Array<string>;
   username?: string;
+  id?: string;
 }
 
 export class ValtimoUserIdentity implements UserIdentity {
@@ -32,19 +33,22 @@ export class ValtimoUserIdentity implements UserIdentity {
   private readonly _lastName: string;
   private readonly _roles: string[];
   private readonly _username?: string;
+  private readonly _id?: string;
 
   constructor(
     email: string,
     firstName: string,
     lastName: string,
     roles: Array<string>,
-    username?: string
+    username?: string,
+    id?: string
   ) {
     this._email = email;
     this._firstName = firstName;
     this._lastName = lastName;
     this._roles = roles;
     this._username = username;
+    this._id = id;
   }
 
   get email(): string {
@@ -63,8 +67,12 @@ export class ValtimoUserIdentity implements UserIdentity {
     return this._roles;
   }
 
-  get username(): string {
+  get username(): string | undefined {
     return this._username;
+  }
+
+  get id(): string | undefined {
+    return this._id;
   }
 }
 

@@ -21,12 +21,21 @@
   display: flex;
   flex-direction: column;
 
-  &__title {
+  & > *:first-child {
+    margin-bottom: 16px;
+  }
+
+  &__title,
+  &__subtitle {
     font-size: 24px;
     font-style: normal;
     font-weight: 600;
     line-height: 24px;
     margin-bottom: 16px;
+  }
+
+  &__subtitle {
+    font-size: 18px;
   }
 
   &__tasks-container {

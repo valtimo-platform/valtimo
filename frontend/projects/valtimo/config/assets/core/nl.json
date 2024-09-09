@@ -263,9 +263,12 @@
   "summary": {
     "userTasksDoneState": "Alle taken zijn afgerond",
     "taskLocked": "Je hebt geen toegang tot deze taak",
-    "userTasks": "Taken",
+    "myTasks": "Taken",
+    "otherTasks": "Overige taken",
     "taskOpen": "Open",
-    "taskCreated": "Aangemaakt op"
+    "taskCreated": "Aangemaakt op",
+    "noResultsMyTasks": "Er zijn geen taken toegewezen aan deze gebruiker.",
+    "noResultsOtherTasks": "Er zijn geen taken toegewezen aan andere gebruikers."
   },
   "progress": {
     "noProcessDocumentInstances": "Er is nog geen proces gestart",

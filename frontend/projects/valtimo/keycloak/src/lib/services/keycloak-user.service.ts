@@ -80,7 +80,8 @@ export class KeycloakUserService implements UserService, OnDestroy {
         user.firstName,
         user.lastName,
         roles,
-        user.username
+        user.username,
+        user.id
       );
       this.logger.debug('KeycloakUserService: loaded user identity', valtimoUserIdentity);
       this.userIdentity.next(valtimoUserIdentity);

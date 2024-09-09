@@ -13,12 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component, EventEmitter, Output, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {Component, EventEmitter, Output, ViewChild} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateModule} from '@ngx-translate/core';
+import {PermissionService} from '@valtimo/access-control';
 import {CarbonListModule, WidgetModule} from '@valtimo/components';
+import {ConfigService, UserIdentity} from '@valtimo/config';
+import {DocumentService} from '@valtimo/document';
+import {ProcessInstanceTask, ProcessService} from '@valtimo/process';
+import {UserProviderService} from '@valtimo/security';
+import {
+  CAN_VIEW_TASK_PERMISSION,
+  Task,
+  TASK_DETAIL_PERMISSION_RESOURCE,
+  TaskDetailModalComponent,
+  TaskModule,
+} from '@valtimo/task';
+import {LayerModule, LoadingModule, TagModule, TilesModule} from 'carbon-components-angular';
+import moment from 'moment/moment';
 import {
   BehaviorSubject,
   combineLatest,
@@ -30,20 +44,6 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import {LayerModule, LoadingModule, TagModule, TilesModule} from 'carbon-components-angular';
-import {ProcessInstanceTask, ProcessService} from '@valtimo/process';
-import moment from 'moment/moment';
-import {
-  CAN_VIEW_TASK_PERMISSION,
-  Task,
-  TASK_DETAIL_PERMISSION_RESOURCE,
-  TaskDetailModalComponent,
-  TaskModule,
-} from '@valtimo/task';
-import {ActivatedRoute} from '@angular/router';
-import {DocumentService} from '@valtimo/document';
-import {PermissionService} from '@valtimo/access-control';
-import {ConfigService} from '@valtimo/config';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -80,7 +80,10 @@ export class DossierDetailTaskListComponent {
     filter(documentId => !!documentId)
   );
 
-  public readonly processInstanceTasks$: Observable<ProcessInstanceTask[]> = this._refresh$.pipe(
+  public readonly processInstanceTasks$: Observable<{
+    myTasks: ProcessInstanceTask[];
+    otherTasks: ProcessInstanceTask[];
+  }> = this._refresh$.pipe(
     switchMap(() => this._documentId$),
     switchMap(documentId =>
       this.documentService
@@ -114,6 +117,10 @@ export class DossierDetailTaskListComponent {
 
       return this.getSortedTasks(uniqueTasks);
     }),
+    switchMap((tasks: ProcessInstanceTask[]) =>
+      combineLatest([of(tasks), this.userProviderService.getUserSubject()])
+    ),
+    map(([tasks, userIdentity]) => this.sortTasksToUser(tasks, userIdentity)),
     tap(() => this.loadingTasks$.next(false))
   );
 
@@ -124,7 +131,8 @@ export class DossierDetailTaskListComponent {
     private readonly documentService: DocumentService,
     private readonly processService: ProcessService,
     private readonly route: ActivatedRoute,
-    private readonly permissionService: PermissionService
+    private readonly permissionService: PermissionService,
+    private readonly userProviderService: UserProviderService
   ) {
     this.taskPanelEnabled = !!this.configService.featureToggles?.enableTaskPanel;
   }
@@ -159,7 +167,7 @@ export class DossierDetailTaskListComponent {
         return [...acc, curr];
       }
       return acc;
-    }, []);
+    }, [] as ProcessInstanceTask[]);
   }
 
   private getSortedTasks(tasks: ProcessInstanceTask[]): ProcessInstanceTask[] {
@@ -185,5 +193,18 @@ export class DossierDetailTaskListComponent {
       // task with approximately the same age, are sorted by name
       return t1.name.localeCompare(t2.name);
     });
+  }
+
+  private sortTasksToUser(
+    tasks: ProcessInstanceTask[],
+    user: UserIdentity
+  ): {myTasks: ProcessInstanceTask[]; otherTasks: ProcessInstanceTask[]} {
+    return tasks.reduce(
+      (acc, curr) =>
+        curr.assignee === user.username || curr.assignee === user.id
+          ? {...acc, myTasks: [...acc.myTasks, curr]}
+          : {...acc, otherTasks: [...acc.otherTasks, curr]},
+      {myTasks: [] as ProcessInstanceTask[], otherTasks: [] as ProcessInstanceTask[]}
+    );
   }
 }

@@ -18,21 +18,35 @@
   class="task-list"
   *ngIf="{loadingTasks: loadingTasks$ | async, tasks: processInstanceTasks$ | async} as obs"
 >
-  <h2 class="task-list__title">{{ 'summary.userTasks' | translate }}</h2>
+  @if (obs.loadingTasks && !!obs.tasks) {
+    <ng-container *ngTemplateOutlet="loadingTasksTemplate"></ng-container>
+  } @else if (obs.tasks?.myTasks?.length === 0 && obs.tasks?.otherTasks?.length === 0) {
+    <ng-container *ngTemplateOutlet="noTasksTemplate"></ng-container>
+  } @else {
+    <div class="task-list__tasks-container" cdsLayer="1">
+      <h2 class="task-list__title">{{ 'summary.myTasks' | translate }}</h2>
 
-  <div
-    class="task-list__tasks-container"
-    cdsLayer="1"
-    *ngIf="!obs.loadingTasks && obs.tasks; else loadingTasksTemplate"
-  >
-    @if (obs.tasks.length === 0) {
-      <ng-container *ngTemplateOutlet="noTasksTemplate"></ng-container>
-    } @else {
-      @for (task of obs.tasks; track task.id) {
-        <ng-container *ngTemplateOutlet="taskTemplate; context: {task: task}"></ng-container>
+      @if (obs.tasks?.myTasks.length === 0) {
+        {{ 'summary.noResultsMyTasks' | translate }}
+      } @else {
+        @for (task of obs.tasks?.myTasks; track task.id) {
+          <ng-container *ngTemplateOutlet="taskTemplate; context: {task: task}"></ng-container>
+        }
       }
-    }
-  </div>
+    </div>
+
+    <div class="task-list__tasks-container" cdsLayer="1">
+      <h3 class="task-list__subtitle">{{ 'summary.otherTasks' | translate }}</h3>
+
+      @if (obs.tasks?.otherTasks.length === 0) {
+        {{ 'summary.noResultsOtherTasks' | translate }}
+      } @else {
+        @for (task of obs.tasks?.otherTasks; track task.id) {
+          <ng-container *ngTemplateOutlet="taskTemplate; context: {task: task}"></ng-container>
+        }
+      }
+    </div>
+  }
 
   <valtimo-task-detail-modal
     #taskDetail
