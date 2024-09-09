@@ -5,6 +5,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {ProcessLinkButtonService, ProcessLinkStateService} from '../../services';
 import {ListItem} from 'carbon-components-angular';
 import {map} from 'rxjs/operators';
+import {ConfigService} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-form-display-configuration',
@@ -20,6 +21,8 @@ export class FormDisplayConfigurationComponent implements OnDestroy {
   public readonly formSizeValue$ = new BehaviorSubject<FormSize | null>(null);
   public readonly disableFormSizeInput$ = new BehaviorSubject<boolean>(true);
   public readonly saving$ = this.stateService.saving$;
+  public readonly taskPanelEnabled$ = new BehaviorSubject<boolean>(false);
+  public readonly isUserTask$ = new BehaviorSubject<boolean>(false);
 
   private readonly _DISPLAY_TYPE_OPTIONS: FormDisplayType[] = ['modal', 'panel'];
   private readonly _FORM_SIZE_OPTIONS: FormSize[] = ['extraSmall', 'small', 'medium', 'large'];
@@ -53,15 +56,20 @@ export class FormDisplayConfigurationComponent implements OnDestroy {
 
   constructor(
     private readonly buttonService: ProcessLinkButtonService,
+    private readonly configService: ConfigService,
     private readonly stateService: ProcessLinkStateService,
     private readonly translateService: TranslateService
-  ) {}
+  ) {
+    this.taskPanelEnabled$.next(!!this.configService.featureToggles?.enableTaskPanel);
+  }
 
   public ngOnInit(): void {
     this._subscriptions.add(
       this.stateService.selectedProcessLink$.subscribe(selectedProcessLink => {
         if (selectedProcessLink) {
           if (selectedProcessLink.formDisplayType) this.disableFormSizeInput$.next(false);
+          if (selectedProcessLink.activityType.includes('bpmn:UserTask'))
+            this.isUserTask$.next(true);
           this.formDisplayValue$.next(selectedProcessLink.formDisplayType);
           this.formSizeValue$.next(selectedProcessLink.formSize);
         }
