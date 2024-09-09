@@ -32,4 +32,8 @@
     font-size: 16px;
     line-height: 24px;
   }
+
+  &__body {
+    overflow-y: auto;
+  }
 }

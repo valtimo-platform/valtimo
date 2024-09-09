@@ -142,6 +142,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+    this.taskIntermediateSaveService.setSubmission({data: {}});
   }
 
   public onSubmit(submission: FormioSubmission): void {

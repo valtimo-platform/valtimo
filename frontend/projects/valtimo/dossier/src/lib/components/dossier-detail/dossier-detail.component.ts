@@ -212,13 +212,21 @@ export class DossierDetailComponent
 
   public readonly showTaskList$ = this.dossierTabService.showTaskList$;
 
-  public readonly activeTabName$ = new BehaviorSubject<string>('');
+  private readonly _activeTabName$ = new BehaviorSubject<string | null>(null);
+  public get activeTabName$(): Observable<string | null> {
+    return combineLatest([this.route.paramMap, this._activeTabName$]).pipe(
+      map(([paramMap, activeTabName]) =>
+        !activeTabName ? (paramMap.get('tab') ?? null) : activeTabName
+      )
+    );
+  }
 
-  private _snapshot: ParamMap;
-  private _initialTabName: string;
   private _activeChange = false;
-  private _pendingTab: TabImpl;
+  private _initialTabName: string;
   private _oldTabName: string;
+  private _pendingTab: TabImpl;
+  private _snapshot: ParamMap;
+  private _tabsInit = false;
 
   constructor(
     private readonly breadcrumbService: BreadcrumbService,
@@ -334,9 +342,14 @@ export class DossierDetailComponent
   public onTabSelected(tab: TabImpl, activeTab: TabImpl): void {
     if (!this.tabLoader) return;
 
+    if (!this._tabsInit) {
+      this._tabsInit = true;
+      return;
+    }
+
     this._oldTabName = activeTab.name;
     this._pendingTab = tab;
-    this.activeTabName$.next(tab.name);
+    this._activeTabName$.next(tab.name);
     this.pendingChanges =
       tab.contentKey === 'summary' ? false : !tab.showTasks && this._activeChange;
 
@@ -345,6 +358,7 @@ export class DossierDetailComponent
       return;
     }
 
+    if (!tab.showTasks) this.taskToOpen$.next(null);
     this.tabLoader.load(tab);
   }
 
@@ -355,14 +369,14 @@ export class DossierDetailComponent
   protected onConfirmRedirect(): void {
     if (!this.tabLoader || !this._pendingTab) return;
     this._activeChange = false;
-    this.activeTabName$.next(this._pendingTab.name);
+    this._activeTabName$.next(this._pendingTab.name);
     this.tabLoader.load(this._pendingTab);
     this.taskToOpen$.next(null);
   }
 
   protected onCancelRedirect(): void {
     if (!this.tabLoader) return;
-    this.activeTabName$.next(this._oldTabName);
+    this._activeTabName$.next(this._oldTabName);
   }
 
   private initBreadcrumb(): void {
