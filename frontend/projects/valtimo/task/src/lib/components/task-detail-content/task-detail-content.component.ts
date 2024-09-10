@@ -259,6 +259,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
               this.setFormViewModelComponent();
               break;
           }
+
           this.loading$.next(false);
         }
       },

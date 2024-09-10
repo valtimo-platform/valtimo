@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-modal #taskDetailModal id="taskDetailModal">
+<cds-modal #taskDetailModal id="taskDetailModal" [size]="size$ | async">
   <cds-modal-header (closeSelect)="closeModal()">
     <div class="title-container">
       <p class="cds--modal-header__heading cds--type-beta">{{ (page$ | async)?.title }}</p>

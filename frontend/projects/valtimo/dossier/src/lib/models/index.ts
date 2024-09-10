@@ -23,3 +23,4 @@ export * from './dossier-parameters.model';
 export * from './search.model';
 export * from './tab-api.model';
 export * from './tabs.model';
+export * from './dossier-detail-layout.model';

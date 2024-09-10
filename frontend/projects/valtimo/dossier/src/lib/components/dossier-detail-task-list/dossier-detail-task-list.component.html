@@ -50,6 +50,7 @@
 
   <valtimo-task-detail-modal
     #taskDetail
+    [modalSize]="formSize$ | async"
     (formSubmit)="refresh()"
     (assignmentOfTaskChanged)="refresh()"
   ></valtimo-task-detail-modal>

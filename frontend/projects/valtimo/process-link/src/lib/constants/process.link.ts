@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-export * from './tab';
-export * from './case-tab-token';
-export * from './dossier-list.constants';
-export * from './case-status.constants';
-export * from './case-widget.constants';
-export * from './custom-case-widget-token';
-export * from './dossier-detail-layout.constants';
+import {FormSize} from '../models';
+import {CarbonModalSize} from '@valtimo/components';
+
+const formSizeToCarbonModalSizeMap: Record<FormSize, CarbonModalSize> = {
+  extraSmall: 'xs',
+  small: 'sm',
+  medium: 'md',
+  large: 'lg',
+};
+
+export {formSizeToCarbonModalSizeMap};

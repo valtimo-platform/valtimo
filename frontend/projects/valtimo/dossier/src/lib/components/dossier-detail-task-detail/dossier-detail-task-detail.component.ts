@@ -36,6 +36,7 @@ import {
 } from '@valtimo/task';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
 import {BehaviorSubject, switchMap} from 'rxjs';
+import {DossierDetailLayoutService} from '../../services';
 
 @Component({
   selector: 'valtimo-dossier-detail-task-detail',
@@ -87,7 +88,8 @@ export class DossierDetailsTaskDetailComponent {
   constructor(
     private readonly configService: ConfigService,
     private readonly permissionService: PermissionService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly dossierDetailLayoutService: DossierDetailLayoutService
   ) {
     this.enableIntermediateSave = !!this.configService.featureToggles?.enableIntermediateSave;
   }

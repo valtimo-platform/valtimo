@@ -13,26 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import {Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {Component, EventEmitter, Output, ViewChild} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateModule} from '@ngx-translate/core';
-import {PermissionService} from '@valtimo/access-control';
 import {CarbonListModule, WidgetModule} from '@valtimo/components';
-import {ConfigService, UserIdentity} from '@valtimo/config';
-import {DocumentService} from '@valtimo/document';
-import {ProcessInstanceTask, ProcessService} from '@valtimo/process';
-import {UserProviderService} from '@valtimo/security';
-import {
-  CAN_VIEW_TASK_PERMISSION,
-  Task,
-  TASK_DETAIL_PERMISSION_RESOURCE,
-  TaskDetailModalComponent,
-  TaskModule,
-} from '@valtimo/task';
-import {LayerModule, LoadingModule, TagModule, TilesModule} from 'carbon-components-angular';
-import moment from 'moment/moment';
 import {
   BehaviorSubject,
   combineLatest,
@@ -44,6 +30,22 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
+import {LayerModule, LoadingModule, TagModule, TilesModule} from 'carbon-components-angular';
+import {
+  CAN_VIEW_TASK_PERMISSION,
+  Task,
+  TASK_DETAIL_PERMISSION_RESOURCE,
+  TaskDetailModalComponent,
+  TaskModule,
+} from '@valtimo/task';
+import {ProcessInstanceTask, ProcessService} from '@valtimo/process';
+import {UserIdentity} from '@valtimo/config';
+import {DocumentService} from '@valtimo/document';
+import {ActivatedRoute} from '@angular/router';
+import {PermissionService} from '@valtimo/access-control';
+import {UserProviderService} from '@valtimo/security';
+import moment from 'moment';
+import {DossierDetailLayoutService} from '../../services';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -68,6 +70,10 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
 })
 export class DossierDetailTaskListComponent {
   @ViewChild('taskDetail') private readonly _taskDetailModal: TaskDetailModalComponent;
+
+  @Input() public set openInTaskModal(value: Task) {
+    if (value) this._taskDetailModal.openTaskDetails(value);
+  }
 
   @Output() public readonly taskClickEvent = new EventEmitter<ProcessInstanceTask>();
 
@@ -124,27 +130,21 @@ export class DossierDetailTaskListComponent {
     tap(() => this.loadingTasks$.next(false))
   );
 
-  private taskPanelEnabled = false;
+  public readonly formSize$ = this.dossierDetailLayoutService.formDisplaySize$;
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly documentService: DocumentService,
     private readonly processService: ProcessService,
     private readonly route: ActivatedRoute,
     private readonly permissionService: PermissionService,
-    private readonly userProviderService: UserProviderService
-  ) {
-    this.taskPanelEnabled = !!this.configService.featureToggles?.enableTaskPanel;
-  }
+    private readonly userProviderService: UserProviderService,
+    private readonly dossierDetailLayoutService: DossierDetailLayoutService
+  ) {}
 
   public rowTaskClick(task: ProcessInstanceTask): void {
     if (task.isLocked) return;
 
-    if (this.taskPanelEnabled) {
-      this.taskClickEvent.emit(task);
-      return;
-    }
-    this._taskDetailModal.openTaskDetails(task as unknown as Task);
+    this.taskClickEvent.emit(task);
   }
 
   public refresh(): void {

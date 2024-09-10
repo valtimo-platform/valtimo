@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {NgxLoggerLevel} from 'ngx-logger';
 import {
   DefinitionColumn,
   DossierListTab,
@@ -27,14 +26,15 @@ import {
   UploadProvider,
   ValtimoConfig,
 } from '@valtimo/config';
+import {NgxLoggerLevel} from 'ngx-logger';
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
+import {cspHeaderParamsDev} from './csp';
 import {
   DARK_MODE_LOGO_BASE_64,
   DARK_MODE_LOGO_BASE_64_PNG,
   LOGO_BASE_64,
   LOGO_BASE_64_PNG,
 } from './logo';
-import {cspHeaderParamsDev} from './csp';
 
 const defaultDefinitionColumns: Array<DefinitionColumn> = [
   {
@@ -256,7 +256,7 @@ export const environment: ValtimoConfig = {
     enableObjectManagement: true,
     enableFormViewModel: true,
     enableIntermediateSave: true,
-    enableTaskPanel: false,
+    enableTaskPanel: true,
     enableFormFlowBreadcrumbs: true,
   },
   customDossierHeader: {
