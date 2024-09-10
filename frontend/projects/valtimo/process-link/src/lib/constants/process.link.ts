@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-import {TypeConverter} from './type-converters.model';
+import {FormSize} from '../models';
+import {CarbonModalSize} from '@valtimo/components';
 
-export class StringReplaceUnderscoreTypeConverter implements TypeConverter {
-  public regExpStringRemoveUnderscore = /_/g;
+const formSizeToCarbonModalSizeMap: Record<FormSize, CarbonModalSize> = {
+  extraSmall: 'xs',
+  small: 'sm',
+  medium: 'md',
+  large: 'lg',
+};
 
-  public getTypeString(): string {
-    return 'stringReplaceUnderscore';
-  }
-
-  public convert(value: any): string {
-    return value.replace(this.regExpStringRemoveUnderscore, ' ');
-  }
-}
+export {formSizeToCarbonModalSizeMap};

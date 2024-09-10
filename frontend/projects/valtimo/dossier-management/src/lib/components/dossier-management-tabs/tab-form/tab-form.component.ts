@@ -84,13 +84,14 @@ export class TabFormComponent implements OnInit, OnDestroy {
   }
 
   public isKeyError(): boolean {
-    return this.form.get('key')?.hasError('uniqueKey')
-      || this.form.get('key')?.hasError('pattern')
+    return this.form.get('key')?.hasError('uniqueKey') || this.form.get('key')?.hasError('pattern');
   }
 
   public getKeyErrorMessage(): string {
-    if (this.form.get('key')?.hasError('uniqueKey')) return 'dossierManagement.tabManagement.addModal.uniqueKeyError';
-    if (this.form.get('key')?.hasError('pattern')) return 'dossierManagement.tabManagement.addModal.invalidKeyError';
+    if (this.form.get('key')?.hasError('uniqueKey'))
+      return 'dossierManagement.tabManagement.addModal.uniqueKeyError';
+    if (this.form.get('key')?.hasError('pattern'))
+      return 'dossierManagement.tabManagement.addModal.invalidKeyError';
     return '';
   }
 

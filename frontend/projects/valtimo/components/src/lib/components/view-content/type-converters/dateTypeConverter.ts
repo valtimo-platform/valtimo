@@ -22,9 +22,7 @@ export class DateTypeConverter implements TypeConverter {
   }
 
   public convert(value: any, definition: any): string {
-    if (!value) {
-      return '-';
-    }
+    if (!value) return '-';
 
     const dateValue = moment(value);
     return (dateValue.isValid() ? dateValue : moment(value, 'DD-MM-YYYY'))

@@ -20,7 +20,7 @@
     objectId: objectId$ | async,
     downloadUrl: downloadUrl$ | async,
     downloadName: downloadName$ | async,
-    loading: loading$ | async
+    loading: loading$ | async,
   } as obs"
 >
   <div class="container-fluid pr-0 pl-0">
@@ -72,7 +72,7 @@
     class="move-row-buttons"
     *ngIf="{
       disableInput: disableInput$ | async,
-      objectId: objectId$ | async
+      objectId: objectId$ | async,
     } as obs"
   >
     <i
@@ -89,7 +89,7 @@
       class="mdi mdi-arrow-down-bold btn btn-outline-secondary"
       (click)="moveRow(index, false, $event, obs.objectId)"
       [ngClass]="{
-        'disabled disabled-move-row-button': index === length - 1 || obs.disableInput
+        'disabled disabled-move-row-button': index === length - 1 || obs.disableInput,
       }"
     ></i>
   </div>
@@ -118,7 +118,7 @@
       validKey: validKey$ | async,
       disableDefaultSort: disableDefaultSort$ | async,
       showEnum: showEnum$ | async,
-      isYesNo: isYesNo$ | async
+      isYesNo: isYesNo$ | async,
     } as modalObs"
     [open]="modalObs.show"
   >
@@ -295,7 +295,7 @@
       [notificationObj]="{
         type: 'info',
         title: 'listColumn.noConfigWarningTitle' | translate,
-        showClose: false
+        showClose: false,
       }"
     >
     </cds-notification>

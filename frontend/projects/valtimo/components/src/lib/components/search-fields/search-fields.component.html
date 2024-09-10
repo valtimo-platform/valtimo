@@ -37,7 +37,7 @@
   <ng-container *ngIf="searchFields$ | async as searchFields">
     <ng-container
       *ngIf="{
-        noSearchFields: (!searchFields || searchFields.length === 0) && !externalSearchField
+        noSearchFields: (!searchFields || searchFields.length === 0) && !externalSearchField,
       } as vars"
     >
       <div
@@ -76,7 +76,7 @@
         searchField.title ||
         ('searchFields.' + searchField.key !== ('searchFields.' + searchField.key | translate)
           ? ('searchFields.' + searchField.key | translate)
-          : searchField.key)
+          : searchField.key),
     } as vars"
   >
     <ng-container
@@ -87,7 +87,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values
+          values: vars.values,
         }
       "
     ></ng-container>
@@ -99,7 +99,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values
+          values: vars.values,
         }
       "
     ></ng-container>
@@ -111,7 +111,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values
+          values: vars.values,
         }
       "
     ></ng-container>
@@ -123,7 +123,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values
+          values: vars.values,
         }
       "
     ></ng-container>
@@ -135,7 +135,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values
+          values: vars.values,
         }
       "
     ></ng-container>
@@ -147,7 +147,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values
+          values: vars.values,
         }
       "
     ></ng-container>
@@ -159,7 +159,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values
+          values: vars.values,
         }
       "
     ></ng-container>
@@ -171,7 +171,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values
+          values: vars.values,
         }
       "
     ></ng-container>
@@ -183,7 +183,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values
+          values: vars.values,
         }
       "
     ></ng-container>
@@ -195,7 +195,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values
+          values: vars.values,
         }
       "
     ></ng-container>
@@ -207,7 +207,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values
+          values: vars.values,
         }
       "
     ></ng-container>

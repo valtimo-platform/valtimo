@@ -19,7 +19,7 @@
     visible: visible$ | async,
     appearing: appearing$ | async,
     disappearing: disappearing$ | async,
-    showBackdrop: showBackdrop$ | async
+    showBackdrop: showBackdrop$ | async,
   } as obs"
 >
   <div
@@ -29,7 +29,7 @@
       'v-prompt-backdrop--backdrop': obs.showBackdrop,
       'v-prompt-backdrop--hidden': !obs.visible,
       'v-prompt-backdrop--appearing': obs.appearing,
-      'v-prompt-backdrop--disappearing': obs.disappearing
+      'v-prompt-backdrop--disappearing': obs.disappearing,
     }"
   >
     <ng-container

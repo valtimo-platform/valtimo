@@ -20,7 +20,7 @@
     objectId: objectId$ | async,
     downloadUrl: downloadUrl$ | async,
     downloadName: downloadName$ | async,
-    loading: loading$ | async
+    loading: loading$ | async,
   } as obs"
 >
   <div class="container-fluid pr-0 pl-0">
@@ -72,7 +72,7 @@
     class="move-row-buttons"
     *ngIf="{
       disableInput: disableInput$ | async,
-      objectId: objectId$ | async
+      objectId: objectId$ | async,
     } as obs"
   >
     <i
@@ -114,7 +114,7 @@
       show: showModal$ | async,
       valid: valid$ | async,
       disableInput: disableInput$ | async,
-      validKey: validKey$ | async
+      validKey: validKey$ | async,
     } as modalObs"
     [open]="modalObs.show"
   >
@@ -250,7 +250,7 @@
       [notificationObj]="{
         type: 'info',
         title: 'searchFieldsOverview.noSearchFieldsConfiguredWarningTitle' | translate,
-        showClose: false
+        showClose: false,
       }"
     >
     </cds-notification>

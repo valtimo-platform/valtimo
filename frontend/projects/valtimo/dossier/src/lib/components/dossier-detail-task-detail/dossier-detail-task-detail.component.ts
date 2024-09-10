@@ -36,6 +36,7 @@ import {
 } from '@valtimo/task';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
 import {BehaviorSubject, switchMap} from 'rxjs';
+import {DossierDetailLayoutService} from '../../services';
 
 @Component({
   selector: 'valtimo-dossier-detail-task-detail',
@@ -66,8 +67,6 @@ export class DossierDetailsTaskDetailComponent {
   @Output() public readonly closeEvent = new EventEmitter();
   @Output() public readonly assignmentOfTaskChanged = new EventEmitter();
   @Output() public readonly activeChange = new EventEmitter<boolean>();
-  @Output() public readonly intermediateSaveEvent =
-    new EventEmitter<IntermediateSubmission | null>();
   @Output() public readonly formSubmit = new EventEmitter();
 
   public readonly task$ = new BehaviorSubject<ProcessInstanceTask | null>(null);
@@ -89,7 +88,8 @@ export class DossierDetailsTaskDetailComponent {
   constructor(
     private readonly configService: ConfigService,
     private readonly permissionService: PermissionService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly dossierDetailLayoutService: DossierDetailLayoutService
   ) {
     this.enableIntermediateSave = !!this.configService.featureToggles?.enableIntermediateSave;
   }
@@ -101,6 +101,7 @@ export class DossierDetailsTaskDetailComponent {
 
   public onCurrentIntermediateSaveEvent(value: IntermediateSubmission | null): void {
     this.intermediateSaveValue$.next(value);
+    this.onActiveChangeEvent(false);
   }
 
   public onActiveChangeEvent(activeChange: boolean): void {

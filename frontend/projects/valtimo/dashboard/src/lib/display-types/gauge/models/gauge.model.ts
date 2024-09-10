@@ -26,4 +26,3 @@ interface GaugeDisplayTypeProperties {
 }
 
 export {GaugeData, GaugeDisplayTypeProperties};
-

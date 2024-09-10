@@ -20,3 +20,4 @@ export * from './dossier-list.constants';
 export * from './case-status.constants';
 export * from './case-widget.constants';
 export * from './custom-case-widget-token';
+export * from './dossier-detail-layout.constants';

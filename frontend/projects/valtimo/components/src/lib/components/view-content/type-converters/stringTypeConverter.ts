@@ -21,7 +21,7 @@ export class StringTypeConverter implements TypeConverter {
     return 'string';
   }
 
-  public convert(value: any, definition: any): string {
+  public convert(value: any): string {
     return value;
   }
 }

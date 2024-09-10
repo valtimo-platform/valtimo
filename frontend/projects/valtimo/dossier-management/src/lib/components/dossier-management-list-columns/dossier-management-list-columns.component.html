@@ -21,7 +21,7 @@
     hasEnvironmentConfig: hasEnvironmentConfig$ | async,
     downloadUrl: downloadUrl$ | async,
     downloadName: downloadName$ | async,
-    loadingCaseListColumns: loadingCaseListColumns$ | async
+    loadingCaseListColumns: loadingCaseListColumns$ | async,
   } as obs"
 >
   <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
@@ -99,7 +99,7 @@
         type: 'warning',
         title: 'listColumn.hasEnvConfigWarningTitle' | translate,
         message: 'listColumn.hasEnvConfigWarning' | translate,
-        showClose: false
+        showClose: false,
       }"
     >
     </cds-notification>
@@ -113,7 +113,7 @@
         type: 'info',
         title: 'listColumn.noConfigWarningTitle' | translate,
         message: 'listColumn.noConfigWarning' | translate,
-        showClose: false
+        showClose: false,
       }"
     >
     </cds-notification>
@@ -131,7 +131,7 @@
       validKey: validKey$ | async,
       disableDefaultSort: disableDefaultSort$ | async,
       showEnum: showEnum$ | async,
-      isYesNo: isYesNo$ | async
+      isYesNo: isYesNo$ | async,
     } as modalObs"
     [open]="modalObs.show"
   >

@@ -17,7 +17,7 @@
 <ng-container
   *ngIf="{
     widgetConfiguration: widgetConfiguration$ | async,
-    collectionWidgetCards: collectionWidgetCards$ | async
+    collectionWidgetCards: collectionWidgetCards$ | async,
   } as obs"
 >
   <span class="valtimo-widget-collection__title">{{ widgetTitle() }}</span>
@@ -28,7 +28,7 @@
       'valtimo-widget-collection__render-vertically': amountOfColumns() === 1,
       'valtimo-widget-collection__render-two-columns': amountOfColumns() === 2,
       'valtimo-widget-collection__render-three-columns': amountOfColumns() === 3,
-      'valtimo-widget-collection__container': amountOfColumns() === 4
+      'valtimo-widget-collection__container': amountOfColumns() === 4,
     }"
   >
     @for (card of obs?.collectionWidgetCards; track card.key) {
@@ -42,7 +42,7 @@
           <div
             [ngClass]="{
               'valtimo-widget-collection__full-width-input': field?.width === 'full',
-              'valtimo-widget-collection__half-width-input': field?.width === 'half'
+              'valtimo-widget-collection__half-width-input': field?.width === 'half',
             }"
           >
             <cds-label class="valtimo-widget-collection__label" [attr.title]="field?.title">

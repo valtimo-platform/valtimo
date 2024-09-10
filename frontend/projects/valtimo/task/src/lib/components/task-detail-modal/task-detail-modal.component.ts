@@ -13,7 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, EventEmitter, Output, ViewChild, ViewEncapsulation} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
@@ -24,6 +32,8 @@ import {BehaviorSubject, Subscription} from 'rxjs';
 import {IntermediateSubmission, Task} from '../../models';
 import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../../task-permissions';
 import {TaskDetailIntermediateSaveComponent} from '../task-detail-intermediate-save/task-detail-intermediate-save.component';
+import {FormSize, formSizeToCarbonModalSizeMap} from '@valtimo/process-link';
+import {CarbonModalSize} from '@valtimo/components';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -33,7 +43,7 @@ moment.locale(localStorage.getItem('langKey') || '');
   styleUrls: ['./task-detail-modal.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class TaskDetailModalComponent {
+export class TaskDetailModalComponent implements OnInit {
   @ViewChild('taskDetailModal') private readonly _modal: Modal;
   @ViewChild(TaskDetailIntermediateSaveComponent)
   private readonly _intermediateSaveComponent: TaskDetailIntermediateSaveComponent;
@@ -41,7 +51,10 @@ export class TaskDetailModalComponent {
   @Output() formSubmit = new EventEmitter();
   @Output() assignmentOfTaskChanged = new EventEmitter();
 
-  public intermediateSaveEnabled = false;
+  @Input() set modalSize(value: FormSize) {
+    if (value) this.size$.next(formSizeToCarbonModalSizeMap[value]);
+  }
+
   public currentIntermediateSave$ = new BehaviorSubject<IntermediateSubmission | null>(null);
 
   public readonly task$ = new BehaviorSubject<Task | null>(null);
@@ -49,6 +62,8 @@ export class TaskDetailModalComponent {
   public readonly page$ = new BehaviorSubject<any>(null);
   public readonly formIoFormData$ = new BehaviorSubject<any>(null);
   public readonly showConfirmationModal$ = new BehaviorSubject<boolean>(false);
+
+  public readonly size$ = new BehaviorSubject<CarbonModalSize>('md');
 
   public readonly canAssignUserToTask$ = new BehaviorSubject<boolean>(false);
 

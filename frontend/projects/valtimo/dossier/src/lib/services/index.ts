@@ -28,3 +28,4 @@ export * from './dossier-list-status.service';
 export * from './start-modal.service';
 export * from './dossier-widgets-api.service';
 export * from './dossier-widgets-layout.service';
+export * from './dossier-detail-layout.service';

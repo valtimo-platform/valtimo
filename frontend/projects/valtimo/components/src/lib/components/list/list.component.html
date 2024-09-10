@@ -71,7 +71,7 @@
               [ngClass]="{
                 sortable: field.sortable,
                 'is-being-sorted': field.key === sort.state.name && sort.isSorting,
-                ascending: sort.state.direction === 'ASC'
+                ascending: sort.state.direction === 'ASC',
               }"
             >
               {{ field.label }}
@@ -92,7 +92,7 @@
                 *ngIf="
                   listItemField.type === '' && {
                     valueTranslationKey: 'viewTypeConverter.' + listItemField.value,
-                    valueTranslation: 'viewTypeConverter.' + listItemField.value | translate
+                    valueTranslation: 'viewTypeConverter.' + listItemField.value | translate,
                   } as vars
                 "
               >
@@ -175,7 +175,7 @@
             | translate
               : {
                   number: (items | listFilter: searchModel).length,
-                  total: pagination.collectionSize
+                  total: pagination.collectionSize,
                 })
       }}
     </div>

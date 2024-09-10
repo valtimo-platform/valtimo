@@ -24,7 +24,7 @@
       pagination: pagination$ | async,
       loading: loading$ | async,
       disabled: disabled$ | async,
-      noConnectors: noObjectsApiConnectors$ | async
+      noConnectors: noObjectsApiConnectors$ | async,
     } as obs"
   >
     <div *ngIf="obs.loading === false; else loading" [ngClass]="{disabled: obs.disabled}">

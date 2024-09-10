@@ -23,7 +23,7 @@
 <ng-container
   *ngIf="{
     loading: loading$ | async,
-    zaakTypeLink: zaakTypeLink$ | async
+    zaakTypeLink: zaakTypeLink$ | async,
   } as obs"
 >
   <ng-container *ngIf="obs.loading === false; else loading">

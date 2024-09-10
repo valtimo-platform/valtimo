@@ -17,7 +17,7 @@
 <ng-container
   *ngIf="{
     disabled: disabled$ | async,
-    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
 >
   <ng-container>

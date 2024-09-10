@@ -20,7 +20,7 @@
     disabled: disabled$ | async,
     valid: valid$ | async,
     modalType: modalType$ | async,
-    prefillObject: prefillObject$ | async
+    prefillObject: prefillObject$ | async,
   } as obs"
 >
   <div role="header">
@@ -85,7 +85,7 @@
         *ngIf="{
           connectionInstances: configurationInstances$ | async,
           objectsApiConfigurations: objectsApiConfigurations$ | async,
-          objecttypesApiConfigurations: objecttypesApiConfigurations$ | async
+          objecttypesApiConfigurations: objecttypesApiConfigurations$ | async,
         } as objectObs"
       >
         <v-select

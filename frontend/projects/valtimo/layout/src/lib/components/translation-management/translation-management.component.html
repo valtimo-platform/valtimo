@@ -24,7 +24,7 @@
     showConfirmationModal: showConfirmationModal$,
     allChangedValuesValid: allChangedValuesValid$ | async,
     valuesChanged: valuesChanged$ | async,
-    compactMode: compactMode$ | async
+    compactMode: compactMode$ | async,
   } as obs"
 >
   <ng-container *ngIf="!obs.loading && obs.localizationTranslationValues; else loading">

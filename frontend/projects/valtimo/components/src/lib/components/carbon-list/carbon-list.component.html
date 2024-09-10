@@ -17,7 +17,7 @@
   *ngIf="{
     sort: sort$ | async,
     model: model$ | async,
-    viewInitialized: viewInitialized$ | async
+    viewInitialized: viewInitialized$ | async,
   } as obs"
   class="valtimo-carbon-list"
 >
@@ -52,7 +52,7 @@
     *ngIf="!!obs.sort"
     [ngClass]="{
       'valtimo-carbon-list__header--hidden': hideColumnHeader,
-      'valtimo-carbon-list--unclickable': !this.rowClicked.observed
+      'valtimo-carbon-list--unclickable': !this.rowClicked.observed,
     }"
     [enableSingleSelect]="enableSingleSelect"
     [model]="loading || !obs.viewInitialized ? skeletonModel : obs.model"

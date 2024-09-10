@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {TranslateModule} from '@ngx-translate/core';
@@ -31,8 +31,6 @@ import {
   tap,
 } from 'rxjs';
 import {LayerModule, LoadingModule, TagModule, TilesModule} from 'carbon-components-angular';
-import {ProcessInstanceTask, ProcessService} from '@valtimo/process';
-import moment from 'moment/moment';
 import {
   CAN_VIEW_TASK_PERMISSION,
   Task,
@@ -40,10 +38,14 @@ import {
   TaskDetailModalComponent,
   TaskModule,
 } from '@valtimo/task';
-import {ActivatedRoute} from '@angular/router';
+import {ProcessInstanceTask, ProcessService} from '@valtimo/process';
+import {UserIdentity} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
+import {ActivatedRoute} from '@angular/router';
 import {PermissionService} from '@valtimo/access-control';
-import {ConfigService} from '@valtimo/config';
+import {UserProviderService} from '@valtimo/security';
+import moment from 'moment';
+import {DossierDetailLayoutService} from '../../services';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -69,6 +71,10 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
 export class DossierDetailTaskListComponent {
   @ViewChild('taskDetail') private readonly _taskDetailModal: TaskDetailModalComponent;
 
+  @Input() public set openInTaskModal(value: Task) {
+    if (value) this._taskDetailModal.openTaskDetails(value);
+  }
+
   @Output() public readonly taskClickEvent = new EventEmitter<ProcessInstanceTask>();
 
   public readonly loadingTasks$ = new BehaviorSubject<boolean>(true);
@@ -80,7 +86,10 @@ export class DossierDetailTaskListComponent {
     filter(documentId => !!documentId)
   );
 
-  public readonly processInstanceTasks$: Observable<ProcessInstanceTask[]> = this._refresh$.pipe(
+  public readonly processInstanceTasks$: Observable<{
+    myTasks: ProcessInstanceTask[];
+    otherTasks: ProcessInstanceTask[];
+  }> = this._refresh$.pipe(
     switchMap(() => this._documentId$),
     switchMap(documentId =>
       this.documentService
@@ -114,29 +123,28 @@ export class DossierDetailTaskListComponent {
 
       return this.getSortedTasks(uniqueTasks);
     }),
+    switchMap((tasks: ProcessInstanceTask[]) =>
+      combineLatest([of(tasks), this.userProviderService.getUserSubject()])
+    ),
+    map(([tasks, userIdentity]) => this.sortTasksToUser(tasks, userIdentity)),
     tap(() => this.loadingTasks$.next(false))
   );
 
-  private taskPanelEnabled = false;
+  public readonly formSize$ = this.dossierDetailLayoutService.formDisplaySize$;
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly documentService: DocumentService,
     private readonly processService: ProcessService,
     private readonly route: ActivatedRoute,
-    private readonly permissionService: PermissionService
-  ) {
-    this.taskPanelEnabled = !!this.configService.featureToggles?.enableTaskPanel;
-  }
+    private readonly permissionService: PermissionService,
+    private readonly userProviderService: UserProviderService,
+    private readonly dossierDetailLayoutService: DossierDetailLayoutService
+  ) {}
 
   public rowTaskClick(task: ProcessInstanceTask): void {
     if (task.isLocked) return;
 
-    if (this.taskPanelEnabled) {
-      this.taskClickEvent.emit(task);
-      return;
-    }
-    this._taskDetailModal.openTaskDetails(task as unknown as Task);
+    this.taskClickEvent.emit(task);
   }
 
   public refresh(): void {
@@ -159,7 +167,7 @@ export class DossierDetailTaskListComponent {
         return [...acc, curr];
       }
       return acc;
-    }, []);
+    }, [] as ProcessInstanceTask[]);
   }
 
   private getSortedTasks(tasks: ProcessInstanceTask[]): ProcessInstanceTask[] {
@@ -185,5 +193,18 @@ export class DossierDetailTaskListComponent {
       // task with approximately the same age, are sorted by name
       return t1.name.localeCompare(t2.name);
     });
+  }
+
+  private sortTasksToUser(
+    tasks: ProcessInstanceTask[],
+    user: UserIdentity
+  ): {myTasks: ProcessInstanceTask[]; otherTasks: ProcessInstanceTask[]} {
+    return tasks.reduce(
+      (acc, curr) =>
+        curr.assignee === user.username || curr.assignee === user.id
+          ? {...acc, myTasks: [...acc.myTasks, curr]}
+          : {...acc, otherTasks: [...acc.otherTasks, curr]},
+      {myTasks: [] as ProcessInstanceTask[], otherTasks: [] as ProcessInstanceTask[]}
+    );
   }
 }

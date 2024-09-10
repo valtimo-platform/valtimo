@@ -27,7 +27,7 @@
     *ngIf="{
       disabled: disabled$ | async,
       assigneeFullName: assigneeFullName$ | async,
-      assigneeId: assigneeId$ | async
+      assigneeId: assigneeId$ | async,
     } as obs"
   >
     <ng-container *ngIf="!hasPermission && obs.assigneeFullName">

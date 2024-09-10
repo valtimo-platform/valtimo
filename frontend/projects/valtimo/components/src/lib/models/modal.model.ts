@@ -18,4 +18,6 @@ type ModalData = any;
 
 type ModalCloseEventType = 'close' | 'closeAndRefresh';
 
-export {ModalData, ModalCloseEventType};
+type CarbonModalSize = 'xs' | 'sm' | 'md' | 'lg';
+
+export {ModalData, ModalCloseEventType, CarbonModalSize};

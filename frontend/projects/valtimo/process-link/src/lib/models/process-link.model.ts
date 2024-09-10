@@ -107,6 +107,7 @@ interface FormProcessLinkUpdateRequestDto {
 }
 
 type FormDisplayType = 'modal' | 'panel';
+
 type FormSize = 'extraSmall' | 'small' | 'medium' | 'large';
 
 export {

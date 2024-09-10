@@ -34,7 +34,7 @@
     'v-button--icon': isIcon,
     'v-button--icon-small': isIconSmall,
     'v-button--icon-danger': isIconDanger,
-    'v-button--icon-grey': isIconGrey
+    'v-button--icon-grey': isIconGrey,
   }"
   [disabled]="disabled"
 >
@@ -57,7 +57,7 @@
         !disabled && isSuccess ? 'v-button__icon--success' : '',
         !disabled && isDanger ? 'v-button__icon--danger' : '',
         !disabled && mdiIcon ? 'v-button__icon mdi mdi-' + mdiIcon : '',
-        disabled ? 'mdi mdi-cancel v-button__icon--disabled' : ''
+        disabled ? 'mdi mdi-cancel v-button__icon--disabled' : '',
       ]"
     ></i>
   </span>

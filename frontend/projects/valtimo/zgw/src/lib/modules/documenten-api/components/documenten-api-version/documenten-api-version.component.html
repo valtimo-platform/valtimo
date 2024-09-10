@@ -22,7 +22,7 @@
 <ng-container
   *ngIf="{
     loading: loading$ | async,
-    documentenApiVersion: documentenApiVersion$ | async
+    documentenApiVersion: documentenApiVersion$ | async,
   } as obs"
 >
   <ng-container *ngIf="obs.loading === false; else loading">
@@ -50,7 +50,7 @@
         type: 'warning',
         title: 'openZaak.documentenApi.noVersionWarningTitle' | translate,
         message: 'openZaak.documentenApi.noVersionWarningMessage' | translate,
-        showClose: false
+        showClose: false,
       }"
     >
     </cds-notification>
@@ -65,7 +65,7 @@
         type: 'warning',
         title: 'openZaak.documentenApi.multipleVersionsWarningTitle' | translate,
         message: 'openZaak.documentenApi.multipleVersionsWarningMessage' | translate,
-        showClose: false
+        showClose: false,
       }"
     >
     </cds-notification>

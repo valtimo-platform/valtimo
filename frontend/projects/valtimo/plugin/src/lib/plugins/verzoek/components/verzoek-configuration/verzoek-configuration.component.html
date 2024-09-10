@@ -18,7 +18,7 @@
   (valueChange)="formValueChange($event)"
   *ngIf="{
     disabled: disabled$ | async,
-    prefill: mappedPrefill$ ? (mappedPrefill$ | async) : null
+    prefill: mappedPrefill$ ? (mappedPrefill$ | async) : null,
   } as obs"
 >
   <v-input
@@ -95,7 +95,7 @@
 >
   <ng-container
     *ngIf="{
-      disabled: disabled$ | async
+      disabled: disabled$ | async,
     } as obs"
   >
     <v-form (valueChange)="changeFunction($event, uuid); verzoekTypeFormChange($event, uuid)">

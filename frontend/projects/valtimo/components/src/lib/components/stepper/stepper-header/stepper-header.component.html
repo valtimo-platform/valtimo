@@ -20,14 +20,14 @@
     class="stepper-header__step"
     [ngClass]="{
       'stepper-header__step--active': step.stepIndex <= obs.currentStepIndex,
-      'stepper-header__step--last': step.isLast
+      'stepper-header__step--last': step.isLast,
     }"
   >
     <div
       class="stepper-header__step-progress-bar"
       [ngClass]="{
         'stepper-header__step-progress-bar--first': step.isFirst,
-        'stepper-header__step-progress-bar--last': step.isLast
+        'stepper-header__step-progress-bar--last': step.isLast,
       }"
     >
       <div
@@ -35,21 +35,21 @@
         [ngClass]="{
           'stepper-header__step-active-bar--visible': step.stepIndex <= obs.currentStepIndex,
           'stepper-header__step-active-bar--last-visible':
-            step.stepIndex === obs.currentStepIndex && !step.isLast
+            step.stepIndex === obs.currentStepIndex && !step.isLast,
         }"
       ></div>
     </div>
     <span
       class="stepper-header__step-number"
       [ngClass]="{
-        'stepper-header__step-number--active': step.stepIndex <= obs.currentStepIndex
+        'stepper-header__step-number--active': step.stepIndex <= obs.currentStepIndex,
       }"
       >{{ step.stepIndex + 1 }}</span
     >
     <span
       class="stepper-header__step-title"
       [ngClass]="{
-        'stepper-header__step-title--active': step.stepIndex <= obs.currentStepIndex
+        'stepper-header__step-title--active': step.stepIndex <= obs.currentStepIndex,
       }"
       >{{ step.titleTranslationKey | translate }}</span
     >

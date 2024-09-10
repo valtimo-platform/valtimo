@@ -18,7 +18,7 @@
     formDefinition: formDefinition$ | async,
     jsonFormDefinition: jsonFormDefinition$ | async,
     jsonOutput: jsonOutput$ | async,
-    compactMode: compactMode$ | async
+    compactMode: compactMode$ | async,
   } as obs"
 >
   @if (obs.formDefinition) {
@@ -89,8 +89,8 @@
               data: {
                 disabled: obs.formDefinition.readOnly,
                 formDefinition: obs.formDefinition,
-                model: obs.jsonFormDefinition
-              }
+                model: obs.jsonFormDefinition,
+              },
             }
           "
         ></ng-container>
@@ -110,7 +110,7 @@
           *ngTemplateOutlet="
             jsonEditor;
             context: {
-              data: {disabled: true, formDefinition: obs.formDefinition, model: obs.jsonOutput}
+              data: {disabled: true, formDefinition: obs.formDefinition, model: obs.jsonOutput},
             }
           "
         ></ng-container>

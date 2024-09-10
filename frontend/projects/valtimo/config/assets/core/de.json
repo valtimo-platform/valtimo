@@ -263,9 +263,12 @@
   "summary": {
     "userTasksDoneState": "Alle Aufgaben sind erledigt",
     "taskLocked": "Kein Zugriff zu dieser Aufgabe!",
-    "userTasks": "Aufgaben",
+    "mytasks": "Aufgaben",
+    "otherTasks": "Andere Aufgaben",
     "taskOpen": "Öffnen",
-    "taskCreated": "Erstellt"
+    "taskCreated": "Erstellt",
+    "noResultsMyTasks": "Diesem Benutzer sind keine Aufgaben zugewiesen.",
+    "noResultsOtherTasks": "Keine Aufgaben anderen Benutzern zugewiesen."
   },
   "progress": {
     "noProcessDocumentInstances": "Es wurde noch kein Prozess gestartet",

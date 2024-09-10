@@ -30,7 +30,7 @@ import {WidgetWizardService} from '../../../../services';
 export class WidgetWizardWidthStepComponent {
   public readonly fieldsColumnsLength: Signal<number> = computed(() =>
     this.widgetWizardService.selectedWidget()?.type === CaseWidgetType.FIELDS
-      ? this.widgetWizardService.widgetContent()?.['columns']?.length ?? 0
+      ? (this.widgetWizardService.widgetContent()?.['columns']?.length ?? 0)
       : 0
   );
   public readonly widgetWidth = this.widgetWizardService.widgetWidth;

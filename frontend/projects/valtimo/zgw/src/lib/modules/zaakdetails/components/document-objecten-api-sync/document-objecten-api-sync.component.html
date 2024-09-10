@@ -23,7 +23,7 @@
 <ng-container
   *ngIf="{
     loading: loading$ | async,
-    documentObjectenApiSync: documentObjectenApiSync$ | async
+    documentObjectenApiSync: documentObjectenApiSync$ | async,
   } as obs"
 >
   <ng-container *ngIf="obs.loading === false; else loading">

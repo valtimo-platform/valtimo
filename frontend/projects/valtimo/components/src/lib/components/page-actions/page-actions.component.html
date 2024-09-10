@@ -17,7 +17,7 @@
 <div
   class="page-actions-container"
   [ngClass]="{
-    '--compact': compactMode$ | async
+    '--compact': compactMode$ | async,
   }"
 >
   <ng-container #subtitleVcr></ng-container>
@@ -27,7 +27,7 @@
     [ngClass]="{
       'page-actions--visible': hasPageActions$ | async,
       'page-actions--full-width': (pageActionsFullWidth$ | async),
-      'page-actions--compact': (hasPageActions$ | async) && (compactMode$ | async)
+      'page-actions--compact': (hasPageActions$ | async) && (compactMode$ | async),
     }"
     class="page-actions"
   >

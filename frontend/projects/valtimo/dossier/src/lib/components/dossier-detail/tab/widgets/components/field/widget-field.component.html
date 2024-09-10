@@ -19,7 +19,7 @@
     widgetConfiguration: widgetConfiguration$ | async,
     widgetPropertyValue: widgetPropertyValue$ | async,
     widgetData: widgetData$ | async,
-    isEmptyWidgetData: isEmptyWidgetData$ | async
+    isEmptyWidgetData: isEmptyWidgetData$ | async,
   } as obs"
 >
   <h4 class="widget-field__title">{{ obs?.widgetConfiguration?.title }}</h4>
@@ -37,7 +37,7 @@
         'widget-field__render-vertically': renderVertically() === 1,
         'widget-field__render-two-columns': renderVertically() === 2,
         'widget-field__render-three-columns': renderVertically() === 3,
-        'widget-field__container': renderVertically() === 4
+        'widget-field__container': renderVertically() === 4,
       }"
     >
       @for (column of obs?.widgetPropertyValue; track column.key) {
