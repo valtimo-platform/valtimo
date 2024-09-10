@@ -34,6 +34,7 @@ import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../..
 import {TaskDetailIntermediateSaveComponent} from '../task-detail-intermediate-save/task-detail-intermediate-save.component';
 import {FormSize, formSizeToCarbonModalSizeMap} from '@valtimo/process-link';
 import {CarbonModalSize} from '@valtimo/components';
+import {TaskIntermediateSaveService} from '../../services';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -73,7 +74,8 @@ export class TaskDetailModalComponent implements OnInit {
     private readonly router: Router,
     private readonly translateService: TranslateService,
     private readonly permissionService: PermissionService,
-    private readonly logger: NGXLogger
+    private readonly logger: NGXLogger,
+    private readonly taskIntermediateSaveService: TaskIntermediateSaveService
   ) {}
 
   public ngOnInit(): void {
@@ -130,6 +132,7 @@ export class TaskDetailModalComponent implements OnInit {
 
   public closeModal(): void {
     this._modal.open = false;
+    this.taskIntermediateSaveService.setSubmission({data: {}});
   }
 
   private openModal(): void {
