@@ -18,7 +18,7 @@
   *ngIf="{
     closestSequence: closestSequence$ | async,
     overflowMenuSequence: overflowMenuSequence$ | async,
-    sideBarExpanded: sideBarExpanded$ | async
+    sideBarExpanded: sideBarExpanded$ | async,
   } as obs"
   [allowExpansion]="false"
   [expanded]="obs.sideBarExpanded"
@@ -31,7 +31,7 @@
           context: {
             menuItem: menuItem,
             closestSequence: obs.closestSequence,
-            overflowMenuSequence: obs.overflowMenuSequence
+            overflowMenuSequence: obs.overflowMenuSequence,
           }
         "
       ></ng-container>
@@ -44,7 +44,7 @@
           context: {
             closestSequence: obs.closestSequence,
             menuItem: menuItem,
-            overflowMenuSequence: obs.overflowMenuSequence
+            overflowMenuSequence: obs.overflowMenuSequence,
           }
         "
       ></ng-container>
@@ -59,7 +59,7 @@
           <ng-container
             *ngIf="{
               count: childMenuItem?.count$ && (childMenuItem?.count$ | async),
-              sequence: '' + menuItem.sequence + childMenuItem.sequence
+              sequence: '' + menuItem.sequence + childMenuItem.sequence,
             } as vars"
           >
             <cds-sidenav-item
@@ -69,7 +69,7 @@
                 'menu-item--hidden': childMenuItem.includeFunction !== undefined,
                 'menu-item--visible':
                   childMenuItem.includeFunction !== undefined &&
-                  (includeFunctionObservables[childMenuItem.title] | async)
+                  (includeFunctionObservables[childMenuItem.title] | async),
               }"
               [active]="vars.sequence === obs.closestSequence"
               [href]="vars?.count ? 'javascript:return false;' : 'javascript:void(0);'"
@@ -114,7 +114,7 @@
         'menu-item--hidden': menuItem.includeFunction !== undefined,
         'menu-item--visible':
           menuItem.includeFunction !== undefined &&
-          (includeFunctionObservables[menuItem.title] | async)
+          (includeFunctionObservables[menuItem.title] | async),
       }"
       [active]="vars.sequence === closestSequence"
       (click)="navigateToRoute(menuItem.link, $event)"

@@ -18,7 +18,7 @@
   class="full-height-tab-content"
   *ngIf="{
     processInstanceItems: processInstanceItems$ | async,
-    selectedProcessInstance: selectedProcessInstance$ | async
+    selectedProcessInstance: selectedProcessInstance$ | async,
   } as obs"
 >
   <span *ngIf="!obs.processInstanceItems.isLoading && !obs.processInstanceItems.value">{{

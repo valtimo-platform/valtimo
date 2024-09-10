@@ -22,7 +22,7 @@ import {ReactiveFormsModule} from '@angular/forms';
 import {WidgetTranslatePipeModule} from '../../pipes';
 import {CheckboxModule, InputModule} from 'carbon-components-angular';
 import {GaugeConfigurationComponent, GaugeDisplayComponent} from './components';
-import {ChartsModule} from '@carbon/charts-angular'
+import {ChartsModule} from '@carbon/charts-angular';
 
 @NgModule({
   declarations: [GaugeDisplayComponent, GaugeConfigurationComponent],

@@ -18,13 +18,13 @@
   *ngIf="{
     loadingWidgetConfiguration: loadingWidgetConfiguration$ | async,
     widgetConfiguration: widgetConfiguration$ | async,
-    loaded: loaded$ | async
+    loaded: loaded$ | async,
   } as obs"
 >
   <ng-container
     *ngIf="{
       noWidgetsConfigured:
-        obs.widgetConfiguration?.widgets && obs.widgetConfiguration.widgets.length === 0
+        obs.widgetConfiguration?.widgets && obs.widgetConfiguration.widgets.length === 0,
     } as vars"
   >
     @if (!obs.loaded && !vars.noWidgetsConfigured) {

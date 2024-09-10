@@ -27,7 +27,7 @@
     targetDocumentDefinitionVersionSelected: targetDocumentDefinitionVersionSelected$ | async,
     patchItems: patchItems$ | async,
     errors: errors$ | async,
-    showConfirmationModal: showConfirmationModal$
+    showConfirmationModal: showConfirmationModal$,
   } as obs"
 >
   <ng-container>
@@ -36,7 +36,7 @@
         [notificationObj]="{
           type: 'warning',
           title: 'caseMigration.warningBeta' | translate,
-          showClose: false
+          showClose: false,
         }"
       >
       </cds-notification>
@@ -148,7 +148,7 @@
           [notificationObj]="{
             type: 'error',
             title: error,
-            showClose: false
+            showClose: false,
           }"
         >
         </cds-notification>

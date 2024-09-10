@@ -15,7 +15,7 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
-import {BehaviorSubject, combineLatest, filter, Observable, Subscription,} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, Observable, Subscription} from 'rxjs';
 import {FormioForm} from '@formio/angular';
 import {
   FormioComponent,
@@ -29,7 +29,7 @@ import {FormFlowInstance, FormFlowStepType} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {Step} from 'carbon-components-angular';
 import {ConfigService} from '@valtimo/config';
-import {map} from "rxjs/operators";
+import {map} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-form-flow',
@@ -47,7 +47,9 @@ export class FormFlowComponent implements OnInit, OnDestroy {
   public readonly formFlowStepType$ = new BehaviorSubject<FormFlowStepType | null>(null);
   public readonly FormFlowCustomComponentId$ = new BehaviorSubject<string>('');
   public readonly currentStepIndex$ = new BehaviorSubject<number>(0);
-  public readonly enableFormFlowBreadcrumbs$ = this.configService.getFeatureToggleObservable('enableFormFlowBreadcrumbs');
+  public readonly enableFormFlowBreadcrumbs$ = this.configService.getFeatureToggleObservable(
+    'enableFormFlowBreadcrumbs'
+  );
 
   private readonly _subscriptions = new Subscription();
 
@@ -133,15 +135,13 @@ export class FormFlowComponent implements OnInit, OnDestroy {
         event.step.stepInstanceId,
         submissionData
       )
-      .subscribe(
-        {
-          next: (result: FormFlowInstance) => this.handleFormFlowStep(result),
-          error: errors => {
-            this.form?.showErrors(errors);
-            this.enable();
-          }
-        }
-      );
+      .subscribe({
+        next: (result: FormFlowInstance) => this.handleFormFlowStep(result),
+        error: errors => {
+          this.form?.showErrors(errors);
+          this.enable();
+        },
+      });
   }
 
   private getBreadcrumbs(): void {
@@ -150,27 +150,29 @@ export class FormFlowComponent implements OnInit, OnDestroy {
         this.enableFormFlowBreadcrumbs$,
         this.formFlowService.getBreadcrumbs(this.formFlowInstanceId),
         this.translateService.stream('key'),
-      ]).pipe(
-        filter(([enableFormFlowBreadcrumbs]) => enableFormFlowBreadcrumbs),
-        map(([_, breadcrumbs]) => breadcrumbs),
-      ).subscribe(breadcrumbs => {
-        this.currentStepIndex$.next(breadcrumbs.currentStepIndex);
-        this.breadcrumbs$.next(
-          breadcrumbs.breadcrumbs.map(breadcrumb => ({
-            label:
-              breadcrumb.title ??
-              this.translateService.instant(`formFlow.step.${breadcrumb.key}.title`) ??
-              breadcrumb.key,
-            disabled: breadcrumb.stepInstanceId === null,
-            complete: breadcrumb.completed,
-            stepInstanceId: breadcrumb.stepInstanceId,
-          }))
-        );
-        const classElement = document.getElementsByClassName('cds--progress-step--current');
-        if (classElement.length > 0) {
-          classElement[0].scrollIntoView({behavior: 'smooth', inline: 'center'});
-        }
-      })
+      ])
+        .pipe(
+          filter(([enableFormFlowBreadcrumbs]) => enableFormFlowBreadcrumbs),
+          map(([_, breadcrumbs]) => breadcrumbs)
+        )
+        .subscribe(breadcrumbs => {
+          this.currentStepIndex$.next(breadcrumbs.currentStepIndex);
+          this.breadcrumbs$.next(
+            breadcrumbs.breadcrumbs.map(breadcrumb => ({
+              label:
+                breadcrumb.title ??
+                this.translateService.instant(`formFlow.step.${breadcrumb.key}.title`) ??
+                breadcrumb.key,
+              disabled: breadcrumb.stepInstanceId === null,
+              complete: breadcrumb.completed,
+              stepInstanceId: breadcrumb.stepInstanceId,
+            }))
+          );
+          const classElement = document.getElementsByClassName('cds--progress-step--current');
+          if (classElement.length > 0) {
+            classElement[0].scrollIntoView({behavior: 'smooth', inline: 'center'});
+          }
+        })
     );
   }
 

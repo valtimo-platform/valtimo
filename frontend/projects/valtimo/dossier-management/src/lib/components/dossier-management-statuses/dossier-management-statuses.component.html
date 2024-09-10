@@ -17,7 +17,7 @@
 <valtimo-carbon-list
   *ngIf="{
     loading: loading$ | async,
-    documentStatuses: documentStatuses$ | async
+    documentStatuses: documentStatuses$ | async,
   } as obs"
   [items]="obs.documentStatuses"
   [fields]="fields$ | async"

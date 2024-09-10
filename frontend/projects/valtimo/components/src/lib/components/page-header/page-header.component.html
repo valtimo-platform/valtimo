@@ -21,7 +21,7 @@
     '--hidden': (showPageHeader$ | async) === false,
     '--compact': compactMode$ | async,
     '--no-content': (compactMode$ | async) && (pageActionsHasContent$ | async) === false,
-    '--no-margin': pageTitleHidden$ | async
+    '--no-margin': pageTitleHidden$ | async,
   }"
 >
   <ng-container #contentVcr></ng-container>

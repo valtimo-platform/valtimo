@@ -19,7 +19,7 @@
   [ngClass]="{
     'v-card--selectable': selectable,
     'v-card--selected': selected,
-    'v-card--full-height': fullHeight
+    'v-card--full-height': fullHeight,
   }"
   (click)="click()"
 >
@@ -46,7 +46,7 @@
         width: 'var(--v-card-title-loading-skeleton-width)',
         height: 'var(--v-card-title-line-height)',
         margin: '0',
-        'background-color': 'var(--v-card-loading-skeleton-bg-color)'
+        'background-color': 'var(--v-card-loading-skeleton-bg-color)',
       }"
     ></ngx-skeleton-loader>
   </h2>
@@ -67,7 +67,7 @@
         width: '100%',
         height: 'var(--v-card-description-line-height)',
         margin: '0',
-        'background-color': 'var(--v-card-loading-skeleton-bg-color)'
+        'background-color': 'var(--v-card-loading-skeleton-bg-color)',
       }"
     ></ngx-skeleton-loader>
   </p>

@@ -19,7 +19,7 @@
     inputModeIsDropdown: inputModeIsDropdown$ | async,
     valuePathListItems: valuePathListItems$ | async,
     loadingValuePathItems: loadingValuePathItems$ | async,
-    disabled: disabled$ | async
+    disabled: disabled$ | async,
   } as obs"
 >
   <v-input-label [required]="required" [title]="label" [tooltip]="tooltip"> </v-input-label>
@@ -30,7 +30,7 @@
         *ngIf="
           showDocumentDefinitionSelector && {
             loadingDocumentDefinitionItems: loadingDocumentDefinitionItems$ | async,
-            documentDefinitionListItems: documentDefinitionListItems$ | async
+            documentDefinitionListItems: documentDefinitionListItems$ | async,
           } as docObs
         "
       >

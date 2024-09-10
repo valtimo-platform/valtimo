@@ -23,7 +23,7 @@ export class StringReplaceUnderscoreTypeConverter implements TypeConverter {
     return 'stringReplaceUnderscore';
   }
 
-  public convert(value: any, definition: any): string {
+  public convert(value: any): string {
     return value.replace(this.regExpStringRemoveUnderscore, ' ');
   }
 }

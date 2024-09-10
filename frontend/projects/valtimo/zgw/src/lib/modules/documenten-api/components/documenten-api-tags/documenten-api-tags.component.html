@@ -23,7 +23,7 @@
     selectedRowKeys: selectedRowKeys$ | async,
     searchTerm: searchTerm$ | async,
     showDeleteModal: showDeleteModal$ | async,
-    tagToDelete: tagToDelete$ | async
+    tagToDelete: tagToDelete$ | async,
   } as obs"
 >
   <valtimo-carbon-list
@@ -90,7 +90,7 @@
     [outputOnConfirm]="{
       documentDefinitionName: obs.documentDefinitionName,
       tagIds: obs.selectedRowKeys,
-      itemsOnCurrentPage: obs.documentTags.length
+      itemsOnCurrentPage: obs.documentTags.length,
     }"
     (confirmEvent)="confirmDeleteMultipleTag($event)"
   ></valtimo-confirmation-modal>

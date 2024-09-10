@@ -16,7 +16,7 @@
 <ng-container
   *ngIf="{
     formioFormSummary: formioFormSummary$ | async,
-    disableInput: disableInput$ | async
+    disableInput: disableInput$ | async,
   } as obs"
 >
   <div class="container-fluid pr-0 pl-0">
@@ -64,7 +64,7 @@
       show: showModal$ | async,
       formValid: formValid$ | async,
       disableInput: disableInput$ | async,
-      formioFormEdit: formioFormEdit$ | async
+      formioFormEdit: formioFormEdit$ | async,
     } as modalObs"
     [open]="modalObs.show"
   >

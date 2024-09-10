@@ -21,7 +21,7 @@
     downloadName: downloadName$ | async,
     documentDefinitionName: documentDefinitionName$ | async,
     valid: valid$ | async,
-    disableInput: disableInput$ | async
+    disableInput: disableInput$ | async,
   } as obs"
 >
   <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
@@ -113,7 +113,7 @@
         (valueChange)="formValueChange($event)"
         *ngIf="
           (showFields$ | async) && {
-            searchField: selectedSearchField$ | async
+            searchField: selectedSearchField$ | async,
           } as searchObs
         "
       >

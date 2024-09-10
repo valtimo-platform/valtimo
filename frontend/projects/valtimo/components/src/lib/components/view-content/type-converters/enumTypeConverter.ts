@@ -22,6 +22,8 @@ export class EnumTypeConverter implements TypeConverter {
   }
 
   public convert(value: any, definition: any): string {
+    if (!value) return '-';
+
     return definition?.values?.[value] ?? value;
   }
 }

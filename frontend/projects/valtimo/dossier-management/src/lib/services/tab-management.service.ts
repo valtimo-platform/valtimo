@@ -17,7 +17,7 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
 import {ApiTabItem} from '@valtimo/dossier';
-import {BehaviorSubject, catchError, Observable, of, switchMap, take, tap,} from 'rxjs';
+import {BehaviorSubject, catchError, Observable, of, switchMap, take, tap} from 'rxjs';
 
 @Injectable()
 export class TabManagementService {

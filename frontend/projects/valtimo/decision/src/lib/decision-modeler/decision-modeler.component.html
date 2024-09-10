@@ -19,7 +19,7 @@
   class="mb-5"
   *ngIf="{
     decisionXml: decisionXml$ | async,
-    decisionTitle: decisionTitle$ | async
+    decisionTitle: decisionTitle$ | async,
   } as obs"
 >
   <div [ngClass]="{'container-fluid': !layoutService.isFullscreen}">
@@ -83,7 +83,7 @@
         (isCreating$ | async) === false && {
           versionSelectItems: decisionVersionSelectItems$ | async,
           defaultSelectionId: selectionId$ | async,
-          disabled: versionSelectionDisabled$ | async
+          disabled: versionSelectionDisabled$ | async,
         } as obs
       "
     >
@@ -108,7 +108,7 @@
       (click)="layoutService.toggleFullscreen()"
       [ngClass]="{
         'mdi-fullscreen': !layoutService.isFullscreen,
-        'mdi-fullscreen-exit': layoutService.isFullscreen
+        'mdi-fullscreen-exit': layoutService.isFullscreen,
       }"
       class="mdi"
     ></i>

@@ -21,10 +21,7 @@
     <input cdsText formControlName="name" [attr.modal-primary-focus]="true" />
   </cds-label>
 
-  <cds-label
-    [invalid]="!!isKeyError()"
-    [invalidText]="getKeyErrorMessage() | translate"
-  >
+  <cds-label [invalid]="!!isKeyError()" [invalidText]="getKeyErrorMessage() | translate">
     {{ 'dossierManagement.tabManagement.addModal.tabKeyLabel' | translate }}
 
     <input

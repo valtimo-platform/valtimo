@@ -33,9 +33,7 @@ export class PercentTypeConverter implements TypeConverter {
   }
 
   public convert(value: any, definition: any): string {
-    if (!value) {
-      return '-';
-    }
+    if (!value) return '-';
 
     try {
       return (

@@ -17,7 +17,7 @@
 <valtimo-modal
   *ngIf="{
     processDefinitionKey: processDefinitionKey$ | async,
-    processName: processName$ | async
+    processName: processName$ | async,
   } as vars"
   #supportingProcessStartModal
   elementId="supportingProcessStartModal"
@@ -48,7 +48,7 @@
   <ng-container
     *ngIf="{
       formDefinition: formDefinition$ | async,
-      formFlowInstanceId: formFlowInstanceId$ | async
+      formFlowInstanceId: formFlowInstanceId$ | async,
     } as obs"
   >
     <div body *ngIf="!obs.formDefinition && !obs.formFlowInstanceId">

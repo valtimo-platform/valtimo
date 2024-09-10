@@ -28,7 +28,7 @@
     searchFields: searchFields$ | async,
     loadingSearchFields: loadingSearchFields$ | async,
     caseDefinitionName: caseDefinitionName$ | async,
-    noResultsMessage: noResultsMessage$ | async
+    noResultsMessage: noResultsMessage$ | async,
   } as obs"
   class="main-content"
 >
@@ -38,7 +38,7 @@
         *ngTemplateOutlet="
           searchFields;
           context: {
-            obs: obs
+            obs: obs,
           }
         "
       ></ng-container>
@@ -48,7 +48,7 @@
       *ngTemplateOutlet="
         tasksList;
         context: {
-          obs: obs
+          obs: obs,
         }
       "
     ></ng-container>
@@ -57,7 +57,7 @@
       *ngTemplateOutlet="
         tasksListLoading;
         context: {
-          obs: obs
+          obs: obs,
         }
       "
     ></ng-container>
@@ -197,7 +197,7 @@
       class="case-definition-selection"
       *ngIf="{
         loadingCaseListItems: loadingCaseListItems$ | async,
-        caseListItems: caseListItems$ | async
+        caseListItems: caseListItems$ | async,
       } as obs"
       [attr.data-testid]="'task-list-case-dropdown'"
       [disabled]="obs.loadingCaseListItems || (obs.caseListItems || []).length === 1"

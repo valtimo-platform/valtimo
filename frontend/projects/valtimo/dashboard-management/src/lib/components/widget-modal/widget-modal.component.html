@@ -20,19 +20,19 @@
     isCreate: type === 'create',
     isDelete: type === 'delete',
     isEdit: type === 'edit',
-    open: open$ | async
+    open: open$ | async,
   } as vars"
 >
   <ng-container
     *ngIf="{
       create: vars.isCreate && ('dashboardManagement.widgets.add' | translate),
       delete: vars.isDelete && ('dashboardManagement.widgets.delete' | translate),
-      edit: vars.isEdit && ('dashboardManagement.widgets.edit' | translate)
+      edit: vars.isEdit && ('dashboardManagement.widgets.edit' | translate),
     } as titles"
   >
     <cds-modal
       *ngIf="{
-        title: titles.edit || titles.create || titles.delete
+        title: titles.edit || titles.create || titles.delete,
       } as translations"
       valtimoCdsModal
       [open]="vars.open"
@@ -78,7 +78,7 @@
         displayTypeDropdownDisabled: displayTypeDropdownDisabled$ | async,
         displayTypeItems: displayTypeItems$ | async,
         selectedDataSourceKey: selectedDataSourceKey$ | async,
-        selectedDisplayTypeKey: selectedDisplayTypeKey$ | async
+        selectedDisplayTypeKey: selectedDisplayTypeKey$ | async,
       } as obs
     "
     [formGroup]="form"
@@ -151,7 +151,7 @@
   <ng-container
     *ngIf="{
       dataSourceConfiguration: dataSourceConfiguration$ | async,
-      displayTypeConfiguration: displayTypeConfiguration$ | async
+      displayTypeConfiguration: displayTypeConfiguration$ | async,
     } as obs"
   >
     <button cdsButton="ghost" [disabled]="vars.disabled" (click)="closeModal()">

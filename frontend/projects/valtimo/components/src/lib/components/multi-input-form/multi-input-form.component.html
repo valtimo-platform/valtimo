@@ -29,7 +29,7 @@
         ? deleteRowTranslationKey
           ? (deleteRowTranslationKey | translate)
           : deleteRowText
-        : ('interface.deleteRow' | translate)
+        : ('interface.deleteRow' | translate),
   } as vars"
 >
   <v-input-label
@@ -57,7 +57,7 @@
               index: i,
               changeFunction: formValueChange,
               uuid: value.uuid,
-              prefill: defaultValues && defaultValues[i]
+              prefill: defaultValues && defaultValues[i],
             }
           "
         ></ng-container>

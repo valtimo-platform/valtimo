@@ -24,7 +24,7 @@
     loading: loading$ | async,
     caseDefinitionItems: caseDefinitionSelectItems$ | async,
     statusTypeItems: statusTypeSelectItems$ | async,
-    selectedCaseDefinitionId: selectedCaseDefinitionId$ | async
+    selectedCaseDefinitionId: selectedCaseDefinitionId$ | async,
   } as obs"
 >
   <ng-container *ngIf="obs.loading === false; else loading">

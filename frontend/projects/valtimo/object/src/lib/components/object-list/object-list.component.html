@@ -19,7 +19,7 @@
     pagination: pagination$ | async,
     disableInput: disableInput$ | async,
     fields: fields$ | async,
-    objectConfiguration: objectConfiguration$ | async
+    objectConfiguration: objectConfiguration$ | async,
   } as obs"
 >
   <div class="main-content pt-0">
@@ -88,7 +88,7 @@
       show: showModal$ | async,
       formValid: formValid$ | async,
       formDefinition: formDefinition$ | async,
-      disableInput: disableInput$ | async
+      disableInput: disableInput$ | async,
     } as modalObs"
     [open]="modalObs.show"
   >

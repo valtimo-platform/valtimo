@@ -50,7 +50,7 @@
     *ngIf="{
       errorMessage: errorMessage$ | async,
       externalError: externalError$ | async,
-      file: file$ | async
+      file: file$ | async,
     } as obs"
   >
     <ng-container *ngIf="obs.externalError || obs.errorMessage">

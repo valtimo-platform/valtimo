@@ -30,13 +30,12 @@
       <valtimo-task-management-columns> </valtimo-task-management-columns>
     </cds-tab>
 
-      <cds-tab
-        [active]="obs.activeTab === TAB_ENUM.SEARCH_FIELDS"
-        [heading]="'taskManagement.searchFields' | translate"
-        (selected)="setActiveTab(TAB_ENUM.SEARCH_FIELDS)"
-      >
-        <valtimo-task-management-search-fields> </valtimo-task-management-search-fields>
-      </cds-tab>
-    
+    <cds-tab
+      [active]="obs.activeTab === TAB_ENUM.SEARCH_FIELDS"
+      [heading]="'taskManagement.searchFields' | translate"
+      (selected)="setActiveTab(TAB_ENUM.SEARCH_FIELDS)"
+    >
+      <valtimo-task-management-search-fields> </valtimo-task-management-search-fields>
+    </cds-tab>
   </cds-tabs>
 </div>
