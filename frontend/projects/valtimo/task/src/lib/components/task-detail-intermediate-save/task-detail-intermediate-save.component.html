@@ -15,35 +15,24 @@
   -->
 
 @if (intermediateSaveEnabled && (formFlowInstanceId$ | async) === undefined) {
-  <cds-tooltip
-    [caret]="true"
-    enterDelayMs="0"
-    leaveDelayMs="0"
-    [description]="'formManagement.intermediateSave.save' | translate"
-  >
-    <button
-      cdsButton="ghost"
-      iconOnly="true"
-      cdsIcon="save"
-      (click)="saveCurrentProgress()"
-    ></button>
-  </cds-tooltip>
+  <button
+    cdsButton="ghost"
+    iconOnly="true"
+    cdsIcon="save"
+    [vTooltip]="'formManagement.intermediateSave.save' | translate"
+    (click)="saveCurrentProgress()"
+  ></button>
 
-  <cds-tooltip
-    [caret]="true"
-    enterDelayMs="0"
-    leaveDelayMs="0"
-    [description]="'formManagement.intermediateSave.clear' | translate"
-  >
-    <button
-      cdsButton="ghost"
-      iconOnly="true"
-      cdsIcon="recently-viewed"
-      [disabled]="!currentIntermediateSave"
-      (click)="revertSaveClick()"
-    ></button>
-  </cds-tooltip>
+  <button
+    cdsButton="ghost"
+    iconOnly="true"
+    cdsIcon="recently-viewed"
+    [disabled]="!currentIntermediateSave"
+    [vTooltip]="'formManagement.intermediateSave.clear' | translate"
+    (click)="revertSaveClick()"
+  ></button>
 }
+
 <valtimo-confirmation-modal
   [showModalSubject$]="showConfirmationModal$"
   (confirmEvent)="clearCurrentProgress()"

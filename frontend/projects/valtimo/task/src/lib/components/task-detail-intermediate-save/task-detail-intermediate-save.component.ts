@@ -24,15 +24,9 @@ import {
 } from '@angular/core';
 import {RecentlyViewed16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {ConfirmationModalModule} from '@valtimo/components';
+import {ConfirmationModalModule, TooltipModule} from '@valtimo/components';
 import {ConfigService} from '@valtimo/config';
-import {
-  ButtonModule,
-  IconModule,
-  IconService,
-  ModalModule,
-  TooltipModule,
-} from 'carbon-components-angular';
+import {ButtonModule, IconModule, IconService, ModalModule} from 'carbon-components-angular';
 import moment from 'moment';
 import {ToastrService} from 'ngx-toastr';
 import {BehaviorSubject, combineLatest, switchMap, take} from 'rxjs';
@@ -48,10 +42,10 @@ import {TaskIntermediateSaveService, TaskService} from '../../services';
     CommonModule,
     TranslateModule,
     ButtonModule,
-    TooltipModule,
     ConfirmationModalModule,
     IconModule,
     ModalModule,
+    TooltipModule,
   ],
 })
 export class TaskDetailIntermediateSaveComponent {

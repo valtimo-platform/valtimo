@@ -52,7 +52,7 @@ export class TooltipDirective implements OnInit {
 
   @HostListener('mouseenter')
   show() {
-    if (!this.tooltipDisabled) {
+    if (!this.tooltipDisabled && !this.overlayRef.hasAttached()) {
       const tooltipRef: ComponentRef<TooltipComponent> = this.overlayRef.attach(
         new ComponentPortal(TooltipComponent)
       );
@@ -60,8 +60,10 @@ export class TooltipDirective implements OnInit {
     }
   }
 
-  @HostListener('mouseout')
+  @HostListener('mouseleave')
   hide() {
-    this.overlayRef.detach();
+    if (this.overlayRef.hasAttached()) {
+      this.overlayRef.detach();
+    }
   }
 }
