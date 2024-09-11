@@ -18,7 +18,7 @@
   class="task-list"
   *ngIf="{loadingTasks: loadingTasks$ | async, tasks: processInstanceTasks$ | async} as obs"
 >
-  @if (obs.loadingTasks && !!obs.tasks) {
+  @if (obs.loadingTasks && !obs.tasks) {
     <ng-container *ngTemplateOutlet="loadingTasksTemplate"></ng-container>
   } @else if (obs.tasks?.myTasks?.length === 0 && obs.tasks?.otherTasks?.length === 0) {
     <ng-container *ngTemplateOutlet="noTasksTemplate"></ng-container>

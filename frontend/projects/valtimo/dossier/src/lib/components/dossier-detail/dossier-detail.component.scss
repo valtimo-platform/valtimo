@@ -121,10 +121,10 @@
   gap: 32px;
   overflow: auto;
   margin-bottom: 16px;
-  height: calc(100vh - 226px);
+  max-height: calc(100vh - 226px);
 
   &--compact {
-    height: calc(100vh - 184px);
+    max-height: calc(100vh - 184px);
   }
 }
 
