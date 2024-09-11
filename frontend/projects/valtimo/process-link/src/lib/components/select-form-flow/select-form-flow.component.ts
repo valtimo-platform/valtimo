@@ -15,7 +15,7 @@
  */
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {combineLatest, map, Observable, Subscription, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, tap} from 'rxjs';
 import {
   FormFlowService,
   ProcessLinkButtonService,
@@ -59,6 +59,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
     );
 
   private _subscriptions = new Subscription();
+  private isUserTask$ = new BehaviorSubject<boolean>(false);
   private readonly taskPanelToggle = this.configService.featureToggles?.enableTaskPanel;
 
   constructor(
@@ -73,11 +74,16 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
     this.openBackButtonSubscription();
     this.openSaveButtonSubscription();
     this._subscriptions.add(
-      this.stateService.selectedProcessLink$.subscribe(selectedProcessLink => {
+      combineLatest([
+        this.stateService.selectedProcessLink$,
+        this.stateService.modalParams$,
+      ]).subscribe(([selectedProcessLink, modalParams]) => {
         if (selectedProcessLink) {
           this.formDisplayValue = selectedProcessLink.formDisplayType;
           this.formSizeValue = selectedProcessLink.formSize;
         }
+
+        this.isUserTask$.next(modalParams?.element?.type === 'bpmn:UserTask');
       })
     );
   }
@@ -158,12 +164,14 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
             processDefinitionId: modalParams.processDefinitionId,
             processLinkType: processLinkTypeId,
             activityId: modalParams.element.id,
-            ...(this.taskPanelToggle && {
-              formDisplayType: this.formDisplayValue,
-            }),
-            ...(this.taskPanelToggle && {
-              formSize: this.formSizeValue,
-            }),
+            ...(this.taskPanelToggle &&
+              this.isUserTask$.getValue() && {
+                formDisplayType: this.formDisplayValue,
+              }),
+            ...(this.taskPanelToggle &&
+              this.isUserTask$.getValue() && {
+                formSize: this.formSizeValue,
+              }),
           })
         )
       )
