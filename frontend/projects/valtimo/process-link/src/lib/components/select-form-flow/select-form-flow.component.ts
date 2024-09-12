@@ -136,28 +136,39 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
   }
 
   private updateProcessLink(): void {
-    this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
-      const updateProcessLinkRequest: FormFlowProcessLinkUpdateRequestDto = {
-        id: selectedProcessLink.id,
-        formFlowDefinitionId: this.selectedFormFlowDefinition.id,
-      };
+    combineLatest(this.stateService.selectedProcessLink$, this.isUserTask$)
+      .pipe(take(1))
+      .subscribe(([selectedProcessLink, isUserTask]) => {
+        const updateProcessLinkRequest: FormFlowProcessLinkUpdateRequestDto = {
+          id: selectedProcessLink.id,
+          formFlowDefinitionId: this.selectedFormFlowDefinition.id,
+          ...(this.taskPanelToggle &&
+            isUserTask && {
+              formDisplayType: this.formDisplayValue,
+            }),
+          ...(this.taskPanelToggle && isUserTask && {formSize: this.formSizeValue}),
+        };
 
-      this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
-        () => {
-          this.stateService.closeModal();
-        },
-        () => {
-          this.stateService.stopSaving();
-        }
-      );
-    });
+        this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
+          () => {
+            this.stateService.closeModal();
+          },
+          () => {
+            this.stateService.stopSaving();
+          }
+        );
+      });
   }
 
   private saveNewProcessLink(): void {
-    combineLatest([this.stateService.modalParams$, this.stateService.selectedProcessLinkTypeId$])
+    combineLatest([
+      this.stateService.modalParams$,
+      this.stateService.selectedProcessLinkTypeId$,
+      this.isUserTask$,
+    ])
       .pipe(
         take(1),
-        switchMap(([modalParams, processLinkTypeId]) =>
+        switchMap(([modalParams, processLinkTypeId, isUserTask]) =>
           this.processLinkService.saveProcessLink({
             formFlowDefinitionId: this.selectedFormFlowDefinition.id,
             activityType: modalParams.element.activityListenerType,
@@ -165,13 +176,10 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
             processLinkType: processLinkTypeId,
             activityId: modalParams.element.id,
             ...(this.taskPanelToggle &&
-              this.isUserTask$.getValue() && {
+              isUserTask && {
                 formDisplayType: this.formDisplayValue,
               }),
-            ...(this.taskPanelToggle &&
-              this.isUserTask$.getValue() && {
-                formSize: this.formSizeValue,
-              }),
+            ...(this.taskPanelToggle && isUserTask && {formSize: this.formSizeValue}),
           })
         )
       )

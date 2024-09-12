@@ -136,19 +136,22 @@ export class SelectFormComponent implements OnInit, OnDestroy {
   }
 
   private updateProcessLink(): void {
-    combineLatest([this.stateService.selectedProcessLink$, this.stateService.viewModelEnabled$])
+    combineLatest([
+      this.stateService.selectedProcessLink$,
+      this.stateService.viewModelEnabled$,
+      this.isUserTask$,
+    ])
       .pipe(take(1))
-      .subscribe(([selectedProcessLink, viewModelEnabled]) => {
+      .subscribe(([selectedProcessLink, viewModelEnabled, isUserTask]) => {
         const updateProcessLinkRequest: FormProcessLinkUpdateRequestDto = {
           id: selectedProcessLink.id,
           formDefinitionId: this.selectedFormDefinition.id,
           viewModelEnabled,
           ...(this.taskPanelToggle &&
-            this.isUserTask$.getValue() && {
+            isUserTask && {
               formDisplayType: this.formDisplayValue,
             }),
-          ...(this.taskPanelToggle &&
-            this.isUserTask$.getValue() && {formSize: this.formSizeValue}),
+          ...(this.taskPanelToggle && isUserTask && {formSize: this.formSizeValue}),
         };
 
         this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
@@ -167,10 +170,11 @@ export class SelectFormComponent implements OnInit, OnDestroy {
       this.stateService.modalParams$,
       this.stateService.selectedProcessLinkTypeId$,
       this.stateService.viewModelEnabled$,
+      this.isUserTask$,
     ])
       .pipe(
         take(1),
-        switchMap(([modalParams, processLinkTypeId, viewModelEnabled]) =>
+        switchMap(([modalParams, processLinkTypeId, viewModelEnabled, isUserTask]) =>
           this.processLinkService.saveProcessLink({
             formDefinitionId: this.selectedFormDefinition.id,
             activityType: modalParams.element.activityListenerType,
@@ -179,11 +183,11 @@ export class SelectFormComponent implements OnInit, OnDestroy {
             activityId: modalParams.element.id,
             viewModelEnabled,
             ...(this.taskPanelToggle &&
-              this.isUserTask$.getValue() && {
+              isUserTask && {
                 formDisplayType: this.formDisplayValue,
               }),
             ...(this.taskPanelToggle &&
-              this.isUserTask$.getValue() && {
+              isUserTask && {
                 formSize: this.formSizeValue,
               }),
           })
