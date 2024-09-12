@@ -44,9 +44,14 @@ import {
 } from '@valtimo/components';
 import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
-import {FormFlowComponent, FormSubmissionResult, ProcessLinkService} from '@valtimo/process-link';
+import {FormViewModelModule} from '@valtimo/form-view-model';
+import {
+  FormFlowComponent,
+  FormSubmissionResult,
+  ProcessLinkModule,
+  ProcessLinkService,
+} from '@valtimo/process-link';
 import {IconService} from 'carbon-components-angular';
-import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
 import {ToastrService} from 'ngx-toastr';
 import {
@@ -67,7 +72,7 @@ import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../..
   templateUrl: './task-detail-content.component.html',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormIoModule, TranslateModule],
+  imports: [CommonModule, FormIoModule, TranslateModule, ProcessLinkModule, FormViewModelModule],
 })
 export class TaskDetailContentComponent implements OnInit, OnDestroy {
   @ViewChild('form') form: FormioComponent;
@@ -148,6 +153,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
   public onSubmit(submission: FormioSubmission): void {
     if (submission.data) {
       this.taskIntermediateSaveService.setFormIoFormData(submission.data);
+      this.formIoFormData$.next(submission.data);
     }
 
     combineLatest([this._processLinkId$, this._taskProcessLinkType$, this.task$])
@@ -189,6 +195,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
   public onChange(event: any): void {
     if (event.data) {
       this.taskIntermediateSaveService.setFormIoFormData(event.data);
+      this.formIoFormData$.next(event.data);
       this.activeChange.emit(true);
     }
   }
@@ -267,21 +274,6 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
         this.loading$.next(false);
       },
     });
-  }
-
-  private formatIntermediateSubmission(
-    intermediateSubmission: IntermediateSubmission
-  ): IntermediateSubmission {
-    intermediateSubmission.createdOn = moment(intermediateSubmission.createdOn).format(
-      'DD MMM YYYY HH:mm'
-    );
-    if (intermediateSubmission.editedOn) {
-      intermediateSubmission.editedOn = moment(new Date(intermediateSubmission.editedOn)).format(
-        'DD MMM YYYY HH:mm'
-      );
-    }
-
-    return intermediateSubmission;
   }
 
   private openPermissionSubscription(): void {

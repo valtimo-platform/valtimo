@@ -25,16 +25,16 @@ import {
 import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
+import {CarbonModalSize} from '@valtimo/components';
+import {FormSize, formSizeToCarbonModalSizeMap} from '@valtimo/process-link';
 import {Modal} from 'carbon-components-angular';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, Subscription} from 'rxjs';
 import {IntermediateSubmission, Task} from '../../models';
+import {TaskIntermediateSaveService} from '../../services';
 import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../../task-permissions';
 import {TaskDetailIntermediateSaveComponent} from '../task-detail-intermediate-save/task-detail-intermediate-save.component';
-import {FormSize, formSizeToCarbonModalSizeMap} from '@valtimo/process-link';
-import {CarbonModalSize} from '@valtimo/components';
-import {TaskIntermediateSaveService} from '../../services';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -61,7 +61,6 @@ export class TaskDetailModalComponent implements OnInit {
   public readonly task$ = new BehaviorSubject<Task | null>(null);
   public readonly submission$ = new BehaviorSubject<any>({});
   public readonly page$ = new BehaviorSubject<any>(null);
-  public readonly formIoFormData$ = new BehaviorSubject<any>(null);
   public readonly showConfirmationModal$ = new BehaviorSubject<boolean>(false);
 
   public readonly size$ = new BehaviorSubject<CarbonModalSize>('md');
