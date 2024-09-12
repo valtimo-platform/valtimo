@@ -136,6 +136,7 @@ export const environment: ValtimoConfig = {
           {link: ['/dashboard-management'], title: 'Dashboard', sequence: 11},
           {link: ['/access-control'], title: 'Access Control', sequence: 12},
           {link: ['/translation-management'], title: 'Translations', sequence: 13},
+          {link: ['/logging'], title: 'Logging', sequence: 13},
           {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 14},
           {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 15},
           {link: ['/process-migration'], title: 'Process migration', sequence: 16},

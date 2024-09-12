@@ -13,25 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {NgModule} from '@angular/core';
-import {Router, RouterModule, Routes, provideRouter, withNavigationErrorHandler} from '@angular/router';
-import {FormioComponent} from './form-io/form-io.component';
+import {RouterModule, Routes} from '@angular/router';
+import {ROLE_ADMIN} from '@valtimo/config';
 import {AuthGuardService} from '@valtimo/security';
-import {UploadShowcaseComponent} from './upload-showcase/upload-showcase.component';
+import {LoggingListComponent} from './lib/components/logging-list/logging-list.component';
 
 const routes: Routes = [
   {
-    path: 'form-io',
-    component: FormioComponent,
+    path: 'logging',
+    component: LoggingListComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Valtimo - Form.io V.3.27.1'},
-  },
-  {
-    path: 'upload-showcase',
-    component: UploadShowcaseComponent,
-    canActivate: [AuthGuardService],
-    data: {title: 'Upload - Showcase'},
+    data: {title: 'Logging', roles: [ROLE_ADMIN]},
   },
 ];
 
@@ -39,10 +32,4 @@ const routes: Routes = [
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule],
 })
-export class AppRoutingModule {
-  constructor(private router: Router) {
-    this.router.errorHandler = (error: any) => {
-      this.router.navigate(['']);
-    };
-  }
-}
+export class LoggingRoutingModule {}
