@@ -35,5 +35,10 @@
 
   &__body {
     overflow-y: auto;
+    max-height: calc(100vh - 320px);
+
+    &--compact {
+      max-height: calc(100vh - 280px);
+    }
   }
 }
