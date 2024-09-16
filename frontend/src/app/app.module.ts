@@ -134,6 +134,7 @@ import {
   registerDocumentenApiFormioUploadComponent,
   ZgwModule,
 } from '@valtimo/zgw';
+import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 
 export function tabsFactory() {
@@ -235,6 +236,7 @@ export function tabsFactory() {
     TaskManagementModule,
     ZgwModule,
     FormViewModelModule,
+    LoggingModule,
   ],
   providers: [
     FormioComponent,

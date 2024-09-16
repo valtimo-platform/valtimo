@@ -34,7 +34,10 @@
     </button>
   </section>
 
-  <section class="valtimo-dossier-detail-task-detail__body">
+  <section
+    class="valtimo-dossier-detail-task-detail__body"
+    [class.valtimo-dossier-detail-task-detail__body--compact]="compactMode$ | async"
+  >
     <div class="title-container">
       <p class="valtimo-dossier-detail-task-detail__title">{{ pageValue()?.title }}</p>
 

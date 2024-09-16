@@ -707,6 +707,43 @@
         }
       }
     },
+    "@valtimo/logging": {
+      "root": "projects/valtimo/logging",
+      "sourceRoot": "projects/valtimo/logging/src",
+      "projectType": "library",
+      "prefix": "valtimo",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/valtimo/logging/tsconfig.lib.json",
+            "project": "projects/valtimo/logging/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/logging/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.ts",
+            "tsConfig": "projects/valtimo/logging/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/logging/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/logging/src/**/*.ts",
+              "projects/valtimo/logging/src/**/*.html"
+            ]
+          }
+        }
+      }
+    },
     "@valtimo/account": {
       "root": "projects/valtimo/account",
       "sourceRoot": "projects/valtimo/account/src",

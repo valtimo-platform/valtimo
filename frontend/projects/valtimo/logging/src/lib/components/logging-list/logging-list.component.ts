@@ -1,5 +1,5 @@
-/*!
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+/*
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,31 +14,14 @@
  * limitations under the License.
  */
 
-.valtimo-dossier-detail-task-detail {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--cds-layer);
-  padding: 8px 16px 16px 16px;
+import {CommonModule} from '@angular/common';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {TranslateModule} from '@ngx-translate/core';
 
-  &__header {
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  &__title {
-    color: var(--cds-text-primary);
-    font-weight: 600;
-    font-size: 16px;
-    line-height: 24px;
-  }
-
-  &__body {
-    overflow-y: auto;
-    max-height: calc(100vh - 320px);
-
-    &--compact {
-      max-height: calc(100vh - 280px);
-    }
-  }
-}
+@Component({
+  templateUrl: './logging-list.component.html',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule, TranslateModule],
+})
+export class LoggingListComponent {}
