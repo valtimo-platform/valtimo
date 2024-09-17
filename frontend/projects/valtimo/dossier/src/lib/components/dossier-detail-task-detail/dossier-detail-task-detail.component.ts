@@ -19,6 +19,7 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnDestroy,
   Output,
   signal,
 } from '@angular/core';
@@ -54,7 +55,7 @@ import {BehaviorSubject, Observable, switchMap} from 'rxjs';
     AssignUserToTaskComponent,
   ],
 })
-export class DossierDetailsTaskDetailComponent {
+export class DossierDetailsTaskDetailComponent implements OnDestroy {
   @Input() public set task(value: ProcessInstanceTask | null) {
     if (!value) return;
 
@@ -93,6 +94,10 @@ export class DossierDetailsTaskDetailComponent {
     private readonly translateService: TranslateService
   ) {
     this.enableIntermediateSave = !!this.configService.featureToggles?.enableIntermediateSave;
+  }
+
+  public ngOnDestroy(): void {
+    this.closeEvent.emit();
   }
 
   public onClose(): void {
