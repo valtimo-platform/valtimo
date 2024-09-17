@@ -40,5 +40,12 @@
     &--compact {
       max-height: calc(100vh - 280px);
     }
+
+    .title-container {
+      position: sticky;
+      background-color: var(--cds-layer);
+      top: 0;
+      z-index: 1;
+    }
   }
 }
