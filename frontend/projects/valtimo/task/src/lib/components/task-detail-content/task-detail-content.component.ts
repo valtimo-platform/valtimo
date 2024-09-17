@@ -44,7 +44,6 @@ import {
 } from '@valtimo/components';
 import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
-import {FormViewModelModule} from '@valtimo/form-view-model';
 import {
   FormFlowComponent,
   FormSubmissionResult,
@@ -72,7 +71,7 @@ import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../..
   templateUrl: './task-detail-content.component.html',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormIoModule, TranslateModule, ProcessLinkModule, FormViewModelModule],
+  imports: [CommonModule, FormIoModule, TranslateModule, ProcessLinkModule],
 })
 export class TaskDetailContentComponent implements OnInit, OnDestroy {
   @ViewChild('form') form: FormioComponent;
