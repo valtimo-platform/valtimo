@@ -28,6 +28,7 @@ export class ProcessLinkStateService implements OnDestroy {
   private readonly _elementName$ = new BehaviorSubject<string>('');
   private readonly _selectedProcessLinkTypeId$ = new BehaviorSubject<string>('');
   private readonly _viewModelEnabled$ = new BehaviorSubject<boolean>(false);
+  private readonly _url$ = new BehaviorSubject<string>("");
   private readonly _saving$ = new BehaviorSubject<boolean>(false);
   private readonly _modalParams$ = new BehaviorSubject<ModalParams>(undefined);
   private readonly _selectedProcessLink$ = new BehaviorSubject<ProcessLink>(undefined);
@@ -125,6 +126,10 @@ export class ProcessLinkStateService implements OnDestroy {
     return this._viewModelEnabled$.asObservable();
   }
 
+  public get url$(): Observable<string> {
+    return this._url$.asObservable();
+  }
+
   clearSelectedProcessLinkType(): void {
     this._selectedProcessLinkTypeId$.next('');
   }
@@ -153,6 +158,7 @@ export class ProcessLinkStateService implements OnDestroy {
     this._selectedProcessLink$.next(processLink);
     this.pluginStateService.selectProcessLink(processLink);
     this.setViewModelEnabled(processLink.viewModelEnabled);
+    this._url$.next(processLink.url)
   }
 
   deselectProcessLink(): void {

@@ -48,7 +48,7 @@ import {
   FormFlowComponent,
   FormSubmissionResult,
   ProcessLinkModule,
-  ProcessLinkService,
+  ProcessLinkService, UrlResolverService,
 } from '@valtimo/process-link';
 import {IconService} from 'carbon-components-angular';
 import {NGXLogger} from 'ngx-logger';
@@ -130,7 +130,8 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
     private readonly taskService: TaskService,
     private readonly toastr: ToastrService,
     private readonly translateService: TranslateService,
-    @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel
+    @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel,
+    private readonly urlResolverService: UrlResolverService,
   ) {
     this.intermediateSaveEnabled = !!this.configService.featureToggles?.enableIntermediateSave;
 
@@ -263,6 +264,25 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
               this.formDefinition$.next(res.properties.formDefinition);
               this.formName$.next(res.properties.formName ?? '');
               this.setFormViewModelComponent();
+              break;
+            case 'url':
+              this._taskProcessLinkType$.next('url');
+              this._processLinkId$.next(res.processLinkId);
+              combineLatest([
+                this.processLinkService.getVariables(),
+                this.task$
+              ]).pipe(take(1))
+                .subscribe(([variables, task]) => {
+                  let url = this.urlResolverService.resolveUrlVariables(res.properties.url, variables.variables);
+                  window.open(url, '_blank').focus();
+                  this.processLinkService.submitURLProcessLink(
+                    res.processLinkId,
+                    task.businessKey,
+                    task.id
+                  ).subscribe(() => {
+                    this.completeTask(task);
+                  });
+                })
               break;
           }
 

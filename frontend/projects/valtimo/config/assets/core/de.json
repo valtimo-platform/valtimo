@@ -1738,7 +1738,8 @@
   "processLinkType": {
     "plugin": "Plugin",
     "form": "Formular",
-    "form-flow": "FormFlow"
+    "form-flow": "FormFlow",
+    "url": "URL"
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Linktyp wählen",
@@ -1766,13 +1767,15 @@
     "selectFormFlow": "Wählen Sie Ihr FormFlow",
     "choosePluginConfiguration": "Plugin-Konfiguration wählen",
     "choosePluginAction": "Wählen Sie Ihre Aktion",
-    "configurePluginAction": "Konfigurieren Sie Ihre Aktion"
+    "configurePluginAction": "Konfigurieren Sie Ihre Aktion",
+    "selectURL": "Konfigurieren Sie Ihre URL"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "Es sind keine Plugin-Konfigurationen verfügbar. Erstellen Sie eine Plugin-Konfiguration, um sie mit einem Prozessschritt verknüpfen zu können.",
     "form": "Es sind keine Formulare vorhanden. Erstellen Sie ein Formular, um es mit einem Prozessschritt verknüpfen zu können.",
     "form-flow": "Es sind keine FormFlows verfügbar. Erstellen Sie einen FormFlow, um ihn mit einem Prozessschritt verknüpfen zu können."
   },
+  "processLinkUrlInvalid": "Ungültige URL {{ URL }}",
   "accessControl": {
     "roles": {
       "title": "Alle Rollen",

@@ -1744,7 +1744,8 @@
   "processLinkType": {
     "plugin": "Plugin",
     "form": "Formulier",
-    "form-flow": "FormFlow"
+    "form-flow": "FormFlow",
+    "url": "URL"
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Kies soort koppeling",
@@ -1772,13 +1773,15 @@
     "selectFormFlow": "Selecteer je FormFlow",
     "choosePluginConfiguration": "Kies pluginconfiguratie",
     "choosePluginAction": "Kies je actie",
-    "configurePluginAction": "Configureer je actie"
+    "configurePluginAction": "Configureer je actie",
+    "selectURL": "Configureer je URL"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een pluginconfiguratie aan om deze te kunnen koppelen aan een processtap.",
     "form": "Er zijn geen formulieren beschikbaar. Maak een formulier aan om deze te kunnen koppelen aan een processtap.",
     "form-flow": "Er zijn geen FormFlows beschikbaar. Maak een FormFlow aan om deze te kunnen koppelen aan een processtap."
   },
+  "processLinkUrlInvalid": "Ongeldige URL {{ URL }}",
   "accessControl": {
     "roles": {
       "title": "Alle rollen",

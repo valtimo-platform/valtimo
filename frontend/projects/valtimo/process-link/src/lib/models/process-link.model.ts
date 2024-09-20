@@ -28,6 +28,7 @@ interface ProcessLink {
   formDefinitionId?: string;
   formFlowDefinitionId?: string;
   viewModelEnabled?: boolean;
+  url?: string;
   formDisplayType?: FormDisplayType;
   formSize?: FormSize;
 }
@@ -110,6 +111,18 @@ type FormDisplayType = 'modal' | 'panel';
 
 type FormSize = 'extraSmall' | 'small' | 'medium' | 'large';
 
+interface URLProcessLinkCreateDto {
+  url: string;
+  activityId: string;
+  activityType: string;
+  processLinkType: string;
+}
+
+interface URLProcessLinkUpdateRequestDto {
+  url: string;
+  id: string;
+}
+
 export {
   GetProcessLinkRequest,
   ProcessLink,
@@ -122,6 +135,8 @@ export {
   PluginProcessLinkCreateDto,
   FormFlowProcessLinkUpdateRequestDto,
   FormProcessLinkUpdateRequestDto,
+  URLProcessLinkCreateDto,
+  URLProcessLinkUpdateRequestDto,
   FormDisplayType,
   FormSize,
 };

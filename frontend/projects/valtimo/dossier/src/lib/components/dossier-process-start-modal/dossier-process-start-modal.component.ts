@@ -28,7 +28,7 @@ import {
 } from '@angular/core';
 import {PermissionService} from '@valtimo/access-control';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
-import {FormFlowService, FormSubmissionResult, ProcessLinkService} from '@valtimo/process-link';
+import {FormFlowService, FormSubmissionResult, ProcessLinkService, UrlResolverService} from '@valtimo/process-link';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ProcessService} from '@valtimo/process';
 import {
@@ -90,7 +90,8 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
     private listService: DossierListService,
     private startModalService: StartModalService,
     private configService: ConfigService,
-    @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel
+    @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel,
+    private urlResolverService: UrlResolverService,
   ) {
     this._useStartEventNameAsStartFormTitle =
       this.configService.config.featureToggles?.useStartEventNameAsStartFormTitle;
@@ -127,10 +128,12 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
               this.formDefinition = startProcessResult.properties.prefilledForm;
               this.processLinkId = startProcessResult.processLinkId;
               this.isFormViewModel = false;
+              this.modal.show();
               break;
             case 'form-flow':
               this.formFlowInstanceId = startProcessResult.properties.formFlowInstanceId;
               this.isFormViewModel = false;
+              this.modal.show();
               break;
             case 'form-view-model':
               this.formDefinition = startProcessResult.properties.formDefinition;
@@ -138,10 +141,25 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
               this.processLinkId = startProcessResult.processLinkId;
               this.isFormViewModel = true;
               this.setFormViewModelComponent();
+              this.modal.show();
+              break;
+            case 'url':
+              this.processLinkId = startProcessResult.processLinkId;
+              this.processLinkService.getVariables()
+                .pipe(take(1))
+                .subscribe(variables => {
+                let url = this.urlResolverService.resolveUrlVariables(startProcessResult.properties.url, variables.variables)
+                window.open(url, '_blank').focus();
+                this.processLinkService.submitURLProcessLink(
+                    this.processLinkId
+                ).subscribe(result => {
+                  this.submitCompleted(result);
+                });
+              })
+
               break;
           }
         }
-        this.modal.show();
       });
   }
 
