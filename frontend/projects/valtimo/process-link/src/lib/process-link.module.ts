@@ -18,7 +18,7 @@ import {NgModule} from '@angular/core';
 import {FormLinkProcessDiagramComponent} from './components/form-link-process-diagram/form-link-process-diagram.component';
 import {CommonModule} from '@angular/common';
 import {ProcessLinkRoutingModule} from './process-link-routing.module';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {
   ButtonModule,
   FormIoModule,
@@ -59,6 +59,9 @@ import {SelectFormComponent} from './components/select-form';
 import {FormFlowComponent} from './components/form-flow/form-flow.component';
 import {SelectFormFlowComponent} from './components/select-form-flow';
 import {FormFlowConfigurationContainerComponent} from './components/form-flow-configuration-container';
+import {SelectUrlComponent} from './components/select-url/select-url.component';
+import {UrlValidatorService} from './services/url-validator.service';
+import {UrlResolverService} from './services/url-resolver.service';
 import {FormDisplayConfigurationComponent} from './components/form-display-configuration/form-display-configuration.component';
 
 @NgModule({
@@ -74,12 +77,14 @@ import {FormDisplayConfigurationComponent} from './components/form-display-confi
     FormFlowComponent,
     SelectFormFlowComponent,
     FormFlowConfigurationContainerComponent,
+    SelectUrlComponent,
     FormDisplayConfigurationComponent,
   ],
   imports: [
     CommonModule,
     ProcessLinkRoutingModule,
     FormsModule,
+    ReactiveFormsModule,
     ModalModule,
     SearchableDropdownSelectModule,
     TranslateModule,
@@ -115,6 +120,11 @@ import {FormDisplayConfigurationComponent} from './components/form-display-confi
     PluginActionConfigurationComponent,
     ProcessLinkModalComponent,
     FormFlowComponent,
+    SelectUrlComponent,
   ],
+  providers: [
+    UrlValidatorService,
+    UrlResolverService
+  ]
 })
 export class ProcessLinkModule {}

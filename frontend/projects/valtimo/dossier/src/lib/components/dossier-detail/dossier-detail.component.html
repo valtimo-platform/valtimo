@@ -37,7 +37,6 @@
       #tabContentContainer
       class="tab-content-container"
       [ngClass]="{
-        'tab-content-container--compact': compactMode$ | async,
         'tab-content-container--dark': isDarkMode$ | async,
       }"
       *ngIf="{
@@ -58,7 +57,10 @@
           [minSize]="tabContentObs.dossierDetailLayout.leftPanelMinWidth"
           [maxSize]="tabContentObs.dossierDetailLayout.leftPanelMaxWidth"
         >
-          <div class="card-body bg-white p-5 position-relative tab-container">
+          <div
+            class="card-body bg-white p-5 position-relative tab-container"
+            [class.tab-container--compact]="compactMode$ | async"
+          >
             <div *ngIf="loadingTabs$ | async" class="loading-container">
               <cds-loading></cds-loading>
             </div>

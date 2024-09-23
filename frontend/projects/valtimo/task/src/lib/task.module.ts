@@ -51,6 +51,7 @@ import {TaskListComponent} from './components/task-list/task-list.component';
 import {TaskRoutingModule} from './task-routing.module';
 import {TaskDetailContentComponent} from './components/task-detail-content/task-detail-content.component';
 import {TaskDetailIntermediateSaveComponent} from './components/task-detail-intermediate-save/task-detail-intermediate-save.component';
+import {UrlResolverService} from '@valtimo/process-link'
 
 @NgModule({
   declarations: [TaskListComponent, TaskDetailModalComponent],
@@ -94,6 +95,6 @@ import {TaskDetailIntermediateSaveComponent} from './components/task-detail-inte
     TaskDetailContentComponent,
     TaskDetailIntermediateSaveComponent,
   ],
-  exports: [TaskListComponent, TaskDetailModalComponent],
+  exports: [TaskListComponent, TaskDetailModalComponent]
 })
 export class TaskModule {}

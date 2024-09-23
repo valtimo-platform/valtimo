@@ -202,6 +202,19 @@ export class ProcessLinkStepService {
       });
   }
 
+  public setURLSteps(): void {
+    this._steps$.next([
+      {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.url'},
+      {label: 'selectURL'},
+    ]);
+    this._currentStepIndex$.next(1);
+  }
+
+  public setSingleURLStep(): void {
+    this._steps$.next([{label: 'selectURL'}]);
+    this._currentStepIndex$.next(0);
+  }
+
   disableSteps(): void {
     this._disableSteps$.next(true);
   }
@@ -219,13 +232,12 @@ export class ProcessLinkStepService {
       case 'form':
         if (hasOneOption) {
           this.setSingleFormStep();
-          this.buttonService.hideSaveButton();
           this.buttonService.hideBackButton();
         } else {
           this.setFormSteps();
-          this.buttonService.showSaveButton();
           this.buttonService.showBackButton();
         }
+        this.buttonService.showSaveButton();
         break;
       case 'form-flow':
         if (hasOneOption) {
@@ -247,6 +259,17 @@ export class ProcessLinkStepService {
           this.setChoosePluginConfigurationSteps();
           this.buttonService.showBackButton();
           this.buttonService.showNextButton();
+        }
+        break;
+      case 'url':
+        if (hasOneOption) {
+          this.setSingleURLStep();
+          this.buttonService.hideBackButton();
+          this.buttonService.showSaveButton();
+        } else {
+          this.setURLSteps();
+          this.buttonService.showBackButton();
+          this.buttonService.showSaveButton();
         }
         break;
     }

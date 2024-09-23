@@ -26,6 +26,12 @@
 .tab-container {
   height: min-content;
   min-height: 300px;
+  overflow-y: auto;
+  max-height: calc(100vh - 248px);
+
+  &--compact {
+    max-height: calc(100vh - 208px);
+  }
 
   &:has(> .tab--no-margin) {
     padding: 0 !important;
@@ -121,11 +127,6 @@
   gap: 32px;
   overflow: auto;
   margin-bottom: 16px;
-  max-height: calc(100vh - 226px);
-
-  &--compact {
-    max-height: calc(100vh - 184px);
-  }
 }
 
 .task-panel {
