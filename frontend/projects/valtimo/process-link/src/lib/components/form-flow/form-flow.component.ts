@@ -41,6 +41,7 @@ export class FormFlowComponent implements OnInit, OnDestroy {
   @Input() formIoFormData: BehaviorSubject<any | null> = new BehaviorSubject<any>(null);
   @Input() formFlowInstanceId: string | null;
   @Output() formFlowComplete = new EventEmitter();
+  @Output() formFlowChange = new EventEmitter();
 
   public readonly breadcrumbs$ = new BehaviorSubject<Step[]>([]);
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
@@ -78,7 +79,10 @@ export class FormFlowComponent implements OnInit, OnDestroy {
   }
 
   public onChange(event: any): void {
-    if (event?.data) this.formIoFormData.next(event.data);
+    if (!event?.data) return;
+
+    this.formIoFormData.next(event.data);
+    this.formFlowChange.emit();
   }
 
   public onSubmit(submission: FormioSubmission): void {

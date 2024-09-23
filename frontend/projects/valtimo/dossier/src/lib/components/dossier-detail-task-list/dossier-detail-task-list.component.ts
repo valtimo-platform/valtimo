@@ -76,6 +76,7 @@ export class DossierDetailTaskListComponent {
   }
 
   @Output() public readonly taskClickEvent = new EventEmitter<ProcessInstanceTask>();
+  @Output() public readonly formSubmitEvent = new EventEmitter();
 
   public readonly loadingTasks$ = new BehaviorSubject<boolean>(true);
 
@@ -145,6 +146,11 @@ export class DossierDetailTaskListComponent {
     if (task.isLocked) return;
 
     this.taskClickEvent.emit(task);
+  }
+
+  public onFormSubmit(): void {
+    this.formSubmitEvent.emit();
+    this.refresh();
   }
 
   public refresh(): void {
