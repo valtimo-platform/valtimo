@@ -22,6 +22,7 @@
     relatedFiles: relatedFiles$ | async,
     fields: fields$ | async,
     supportedDocumentenApiFeatures: supportedDocumentenApiFeatures$ | async,
+    pagination: pagination$ | async,
   } as obs"
 >
   @if ((!obs.fieldsLoading && obs.fields.length) || obs.fieldsLoading) {
@@ -30,10 +31,13 @@
       [items]="obs.relatedFiles"
       [fields]="obs.fields"
       [loading]="obs.loading"
+      [pagination]="obs.pagination"
       (rowClicked)="onRowClick($event)"
       (sortChanged)="
         obs?.supportedDocumentenApiFeatures?.supportsSortableColumns && onSortChanged($event)
       "
+      (paginationClicked)="onPaginationClicked($event)"
+      (paginationSet)="onPaginationSet($event)"
       hideColumnHeader
     >
       <div carbonToolbarContent>
