@@ -81,7 +81,7 @@
       "OPEN": "Niet-toegewezen dossiers",
       "ALL": "Alle dossiers",
       "componentNotFound": "Tab-component niet gevonden",
-      "componentNotFoundMessage": "Er is geen component beschikbaar voor dit tabblad. Neem contact op met de systeemnbeheerder."
+      "componentNotFoundMessage": "Er is geen component beschikbaar voor dit tabblad. Neem contact op met de systeembeheerder."
     },
     "forms": {
       "globalSearchPlaceHolder": "Alles",

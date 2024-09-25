@@ -89,6 +89,7 @@
                 <valtimo-dossier-detail-task-list
                   [openInTaskModal]="openTaskInModal$ | async"
                   (taskClickEvent)="onTaskClickEvent($event)"
+                  (formSubmitEvent)="onFormSubmitEvent()"
                 ></valtimo-dossier-detail-task-list>
               }
 

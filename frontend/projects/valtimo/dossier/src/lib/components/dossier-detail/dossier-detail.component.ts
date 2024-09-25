@@ -412,6 +412,9 @@ export class DossierDetailComponent
 
   public onFormSubmitEvent(): void {
     this.dossierDetailLayoutService.setTaskOpenedInPanel(null);
+
+    if (!this.tabLoader) return;
+    this.tabLoader.refreshView();
   }
 
   protected onConfirmRedirect(): void {

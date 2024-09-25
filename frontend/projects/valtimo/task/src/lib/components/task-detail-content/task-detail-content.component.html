@@ -50,6 +50,7 @@
     [formIoFormData]="formIoFormData$"
     [formFlowInstanceId]="obs.formFlowInstanceId"
     (formFlowComplete)="completeTask(obs.task)"
+    (formFlowChange)="onFormFlowChangeEvent()"
   ></valtimo-form-flow>
 
   <div *ngIf="obs.loading" class="text-black mb-0 p-3 text-center">
