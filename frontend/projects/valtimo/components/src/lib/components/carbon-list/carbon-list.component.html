@@ -76,7 +76,7 @@
   </cds-table>
 
   <cds-pagination
-    *ngIf="paginationModel && items.length"
+    *ngIf="paginationModel && items?.length"
     [itemsPerPageOptions]="paginatorConfig.itemsPerPageOptions"
     [model]="paginationModel"
     [showPageInput]="paginatorConfig.showPageInput"

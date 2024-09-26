@@ -23,7 +23,9 @@ import {
   CarbonListModule,
   ColumnConfig,
   ConfirmationModalModule,
+  DEFAULT_PAGINATION,
   DocumentenApiMetadata,
+  Pagination,
   SortState,
   ViewType,
 } from '@valtimo/components';
@@ -122,7 +124,9 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
         sortable: column.sortable && supportedDocumentenApiFeatures.supportsSortableColumns,
       }));
     }),
-    tap(() => this.fieldsLoading$.next(false))
+    tap(() => {
+      this.fieldsLoading$.next(false);
+    })
   );
   public document: DocumentenApiRelatedFile;
   public actionItems: ActionItem[] = [
@@ -179,6 +183,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
   );
 
   public readonly filter$ = new ReplaySubject<DocumentenApiFilterModel | null>();
+  public readonly pagination$ = new BehaviorSubject<Pagination>(DEFAULT_PAGINATION);
   private readonly _refetch$ = new BehaviorSubject<null>(null);
   private readonly _sort$ = new ReplaySubject<{sort: string} | null>();
 
@@ -198,6 +203,10 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
       ])
     ),
     map(([relatedFiles]) => {
+      this.pagination$.next({
+        ...this.pagination$.getValue(),
+        collectionSize: relatedFiles.totalElements,
+      });
       const translatedFiles = relatedFiles?.content?.map(file => ({
         ...file,
         createdBy: file.createdBy || this.translateService.instant('list.automaticallyGenerated'),
@@ -237,7 +246,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
   }
 
   public ngOnInit(): void {
-    this.setInitialFilterAndSort();
+    this.setInitialParams();
     this.setUploadProcessLinked();
     this.isUserAdmin();
     this.iconService.registerAll([Filter16, TagGroup16, Upload16]);
@@ -316,6 +325,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
               .subscribe(() => {
                 this.refetchDocuments();
                 this.filter$.next(null);
+                this.pagination$.next(DEFAULT_PAGINATION);
                 this.uploading$.next(false);
                 this.fileToBeUploaded$.next(null);
               });
@@ -356,12 +366,23 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
     this.downloadDocument(event, false);
   }
 
+  public onPaginationClicked(page: number): void {
+    this.pagination$.next({...this.pagination$.getValue(), page});
+  }
+
+  public onPaginationSet(size: number): void {
+    const {collectionSize, page} = this.pagination$.getValue();
+    const resetPage: boolean = Math.ceil(+collectionSize / size) <= +page && +collectionSize > 0;
+    this.pagination$.next({...this.pagination$.getValue(), size, ...(resetPage && {page: 1})});
+  }
+
   public onUploadButtonClick(): void {
     this.fileInput.nativeElement.click();
   }
 
   public onFilterEvent(filter: DocumentenApiFilterModel | null): void {
     this.filter$.next(filter);
+    this.pagination$.next({...this.pagination$.getValue(), ...DEFAULT_PAGINATION});
   }
 
   public onSortChanged(sortState: SortState): void {
@@ -397,9 +418,11 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
         this.documentId$,
         this.filter$,
         this._sort$,
-      ]).subscribe(([definitionName, documentId, filter, sort]) => {
+        this.pagination$,
+      ]).subscribe(([definitionName, documentId, filter, sort, pagination]) => {
+        const {size, page} = pagination;
         this.router.navigate([`/dossiers/${definitionName}/document/${documentId}/documents`], {
-          queryParams: {...filter, ...sort},
+          queryParams: {...filter, ...sort, size, page: page - 1},
         });
       })
     );
@@ -425,18 +448,23 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
       });
   }
 
-  private setInitialFilterAndSort(): void {
+  private setInitialParams(): void {
     this.route.queryParamMap
       .pipe(
         take(1),
         map(queryParams => {
-          const {sort, ...filter} = queryParams['params'];
-          return {sort, filter};
+          const {sort, size, page, ...filter} = queryParams['params'];
+          return {sort, filter, size, page};
         })
       )
-      .subscribe(({filter, sort}) => {
+      .subscribe(({filter, sort, size, page}) => {
         this._sort$.next({sort});
         this.filter$.next(filter);
+        this.pagination$.next({
+          ...this.pagination$.getValue(),
+          size: +size,
+          page: +(page ?? 0) + 1,
+        });
         this.openQueryParamsSubscription();
       });
   }
