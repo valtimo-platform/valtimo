@@ -22,6 +22,7 @@ enum ViewType {
   BOOLEAN = 'boolean',
   CURRENCY = 'currency',
   DATE = 'date',
+  DATE_TIME = 'datetime',
   ENUM = 'enum',
   NUMBER = 'number',
   PERCENT = 'percent',
@@ -75,6 +76,7 @@ interface ColumnConfig extends ListField {
   format?: string;
   template?: TemplateRef<any>;
   templateData?: object;
+  tooltipCharLimit?: number;
 }
 
 enum MoveRowDirection {

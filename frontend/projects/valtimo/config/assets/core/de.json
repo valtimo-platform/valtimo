@@ -1843,5 +1843,13 @@
     "dropdown": "Dropdown",
     "manual": "Manuell",
     "selectDocDefPlaceholder": "Wählen Sie einen Fall"
+  },
+  "logging": {
+    "columns": {
+      "timestamp": "Zeitstempel",
+      "formattedMessage": "Formatierte Nachricht",
+      "level": "Protokollebene"
+    },
+    "detailsTitle": "Protokolldetails"
   }
 }

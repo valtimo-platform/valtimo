@@ -1848,5 +1848,13 @@
     "dropdown": "Dropdown",
     "manual": "Manual",
     "selectDocDefPlaceholder": "Select a case"
+  },
+  "logging": {
+    "columns": {
+      "timestamp": "Timestamp",
+      "formattedMessage": "Formatted message",
+      "level": "Log level"
+    },
+    "detailsTitle": "Log details"
   }
 }
