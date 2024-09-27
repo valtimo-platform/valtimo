@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+$tab-max-height: calc(100vh - 226px);
+$tab-max-height-compact: calc(100vh - 176px);
+
 .main-content {
   overflow: hidden;
   padding-bottom: 0;
@@ -27,10 +30,11 @@
   height: min-content;
   min-height: 300px;
   overflow-y: auto;
-  max-height: calc(100vh - 248px);
+  max-height: $tab-max-height;
+  overflow-x: hidden;
 
   &--compact {
-    max-height: calc(100vh - 208px);
+    max-height: $tab-max-height-compact;
   }
 
   &:has(> .tab--no-margin) {
@@ -43,6 +47,19 @@
 
   &:has(> .tab--no-background) {
     background: transparent !important;
+  }
+}
+
+.tab-content-container {
+  overflow: hidden;
+  display: flex;
+  gap: 32px;
+  overflow: auto;
+  margin-bottom: 16px;
+  max-height: $tab-max-height;
+
+  &--compact {
+    max-height: $tab-max-height-compact;
   }
 }
 
@@ -121,21 +138,16 @@
   }
 }
 
-.tab-content-container {
-  overflow: hidden;
-  display: flex;
-  gap: 32px;
-  overflow: auto;
-  margin-bottom: 16px;
-}
-
 .task-panel {
   width: 100%;
   transition: height 0.15s ease-in-out;
 }
 
-.container-fluid {
-  height: 100%;
+:host ::ng-deep .container-fluid {
+  height: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 ::ng-deep .tab-content-container {

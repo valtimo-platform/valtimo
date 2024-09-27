@@ -38,6 +38,7 @@
       class="tab-content-container"
       [ngClass]="{
         'tab-content-container--dark': isDarkMode$ | async,
+        'tab-content-container--compact': compactMode$ | async,
       }"
       *ngIf="{
         noTabsConfigured: noTabsConfigured$ | async,
