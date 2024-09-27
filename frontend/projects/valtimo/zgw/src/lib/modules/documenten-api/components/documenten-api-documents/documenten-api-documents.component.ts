@@ -24,6 +24,7 @@ import {
   ColumnConfig,
   ConfirmationModalModule,
   DEFAULT_PAGINATION,
+  DEFAULT_PAGINATOR_CONFIG,
   DocumentenApiMetadata,
   Pagination,
   SortState,
@@ -187,8 +188,13 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
   private readonly _refetch$ = new BehaviorSubject<null>(null);
   private readonly _sort$ = new ReplaySubject<{sort: string} | null>();
 
+  public readonly paginatorConfig = {
+    ...DEFAULT_PAGINATOR_CONFIG,
+    itemsPerPageOptions: [5, 10, 20, 50, 100],
+  };
+
   public get sortState$(): Observable<SortState | null> {
-    return this._sort$.pipe(map(sortValue => this.getSortStateFromSortString(sortValue.sort)));
+    return this._sort$.pipe(map(sortValue => this.getSortStateFromSortString(sortValue?.sort)));
   }
 
   public relatedFiles$: Observable<Array<DocumentenApiRelatedFile>> = combineLatest([
@@ -475,7 +481,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
 
   private getSortStateFromSortString(sortString?: string): SortState | null {
     const splitString = sortString && sortString.split(',');
-    if (splitString?.length > 1) {
+    if (splitString && splitString?.length > 1) {
       return {
         isSorting: true,
         state: {

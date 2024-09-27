@@ -34,6 +34,8 @@
       [initialSortState]="obs.sortState"
       [loading]="obs.loading"
       [pagination]="obs.pagination"
+      [paginatorConfig]="paginatorConfig"
+      paginationIdentifier="documentenApi"
       (rowClicked)="onRowClick($event)"
       (sortChanged)="
         obs?.supportedDocumentenApiFeatures?.supportsSortableColumns && onSortChanged($event)
