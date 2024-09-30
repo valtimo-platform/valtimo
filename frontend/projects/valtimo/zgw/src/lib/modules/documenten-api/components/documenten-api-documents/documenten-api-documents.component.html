@@ -23,6 +23,7 @@
     fields: fields$ | async,
     supportedDocumentenApiFeatures: supportedDocumentenApiFeatures$ | async,
     pagination: pagination$ | async,
+    sortState: sortState$ | async,
   } as obs"
 >
   @if ((!obs.fieldsLoading && obs.fields.length) || obs.fieldsLoading) {
@@ -30,8 +31,11 @@
       [actionItems]="actionItems"
       [items]="obs.relatedFiles"
       [fields]="obs.fields"
+      [initialSortState]="obs.sortState"
       [loading]="obs.loading"
       [pagination]="obs.pagination"
+      [paginatorConfig]="paginatorConfig"
+      paginationIdentifier="documentenApi"
       (rowClicked)="onRowClick($event)"
       (sortChanged)="
         obs?.supportedDocumentenApiFeatures?.supportsSortableColumns && onSortChanged($event)

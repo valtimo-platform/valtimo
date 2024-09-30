@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,14 +14,4 @@
  * limitations under the License.
  */
 
-.selected-text {
-  margin: 0;
-}
-
-.clear-icon {
-  font-size: 16px;
-}
-
-.close {
-  display: flex;
-}
+export * from './logging.model';

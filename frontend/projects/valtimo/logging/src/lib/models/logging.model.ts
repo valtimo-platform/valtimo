@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,14 +14,29 @@
  * limitations under the License.
  */
 
-.selected-text {
-  margin: 0;
+interface LoggingEvent {
+  timestamp: string;
+  formattedMessage: string;
+  level: string;
+  properties: Array<LoggingEventProperty>;
+  stacktrace: string;
 }
 
-.clear-icon {
-  font-size: 16px;
+interface LoggingEventProperty {
+  key: string;
+  value: string;
 }
 
-.close {
-  display: flex;
+interface LoggingEventSearchRequest {
+  afterTimestamp?: string;
+  beforeTimestamp?: string;
+  level?: string;
+  likeFormattedMessage?: string;
+  properties?: Array<LoggingEventProperty>;
+  size?: number;
+  page?: number;
 }
+
+const LOG_TOOLTIP_LIMIT = 128;
+
+export {LoggingEvent, LoggingEventProperty, LoggingEventSearchRequest, LOG_TOOLTIP_LIMIT};

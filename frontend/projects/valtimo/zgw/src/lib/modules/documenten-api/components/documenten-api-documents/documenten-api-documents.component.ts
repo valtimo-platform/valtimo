@@ -24,12 +24,13 @@ import {
   ColumnConfig,
   ConfirmationModalModule,
   DEFAULT_PAGINATION,
+  DEFAULT_PAGINATOR_CONFIG,
   DocumentenApiMetadata,
   Pagination,
   SortState,
   ViewType,
 } from '@valtimo/components';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService, Direction} from '@valtimo/config';
 import {DownloadService, UploadProviderService} from '@valtimo/resource';
 import {UserProviderService} from '@valtimo/security';
 import {ButtonModule, DialogModule, IconModule, IconService} from 'carbon-components-angular';
@@ -186,6 +187,15 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
   public readonly pagination$ = new BehaviorSubject<Pagination>(DEFAULT_PAGINATION);
   private readonly _refetch$ = new BehaviorSubject<null>(null);
   private readonly _sort$ = new ReplaySubject<{sort: string} | null>();
+
+  public readonly paginatorConfig = {
+    ...DEFAULT_PAGINATOR_CONFIG,
+    itemsPerPageOptions: [5, 10, 20, 50, 100],
+  };
+
+  public get sortState$(): Observable<SortState | null> {
+    return this._sort$.pipe(map(sortValue => this.getSortStateFromSortString(sortValue?.sort)));
+  }
 
   public relatedFiles$: Observable<Array<DocumentenApiRelatedFile>> = combineLatest([
     this.documentId$,
@@ -467,5 +477,20 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
         });
         this.openQueryParamsSubscription();
       });
+  }
+
+  private getSortStateFromSortString(sortString?: string): SortState | null {
+    const splitString = sortString && sortString.split(',');
+    if (splitString && splitString?.length > 1) {
+      return {
+        isSorting: true,
+        state: {
+          name: splitString[0],
+          direction: splitString[1] as Direction,
+        },
+      };
+    }
+
+    return null;
   }
 }

@@ -1849,5 +1849,13 @@
     "dropdown": "Dropdown",
     "manual": "Handmatig",
     "selectDocDefPlaceholder": "Kies een dossier"
+  },
+  "logging": {
+    "columns": {
+      "timestamp": "Tijdstempel",
+      "formattedMessage": "Opgemaakt bericht",
+      "level": "Logniveau"
+    },
+    "detailsTitle": "Loggegevens"
   }
 }

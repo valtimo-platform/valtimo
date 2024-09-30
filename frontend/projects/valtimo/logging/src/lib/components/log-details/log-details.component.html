@@ -14,19 +14,12 @@
   ~ limitations under the License.
   -->
 
-<valtimo-carbon-list
-  [hideToolbar]="true"
-  [items]="logItems$ | async"
-  [fields]="FIELDS"
-  [loading]="loading$ | async"
-  [pagination]="pagination$ | async"
-  paginationIdentifier="logging"
-  (paginationClicked)="onPaginationClicked($event)"
-  (paginationSet)="onPaginationSet($event)"
-  (rowClicked)="onRowClickedEvent($event)"
-></valtimo-carbon-list>
+<cds-modal [open]="logEventModel !== null" size="lg">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()">
+    {{ 'logging.detailsTitle' | translate }}
+  </cds-modal-header>
 
-<valtimo-log-details
-  [logEvent]="selectedLogEvent$ | async"
-  (closeModalEvent)="onCloseModalEvent()"
-></valtimo-log-details>
+  <section cdsModalContent>
+    <valtimo-editor [disabled]="true" [model]="logEventModel"></valtimo-editor>
+  </section>
+</cds-modal>

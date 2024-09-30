@@ -22,7 +22,6 @@ import {
   Inject,
   OnDestroy,
   Renderer2,
-  RendererStyleFlags2,
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
@@ -531,15 +530,10 @@ export class DossierDetailComponent
   }
 
   private setDocumentStyle(): void {
-    this.renderer.setStyle(
-      this.htmlDocument.getElementsByTagName('html')[0],
-      'overflow',
-      'hidden',
-      RendererStyleFlags2.Important
-    );
+    this.renderer.addClass(this.htmlDocument.getElementsByTagName('html')[0], 'html--fixed');
   }
 
   private removeDocumentStyle(): void {
-    this.renderer.removeStyle(this.htmlDocument.getElementsByTagName('html')[0], 'overflow');
+    this.renderer.removeClass(this.htmlDocument.getElementsByTagName('html')[0], 'html--fixed');
   }
 }

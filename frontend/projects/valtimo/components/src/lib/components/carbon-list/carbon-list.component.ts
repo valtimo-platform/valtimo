@@ -125,6 +125,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @Input() paginatorConfig: CarbonPaginatorConfig = DEFAULT_PAGINATOR_CONFIG;
   private _pagination: Pagination;
+  private _isPaginationInit = false;
   @Input() public set pagination(value: Partial<Pagination> | false) {
     if (!value) {
       return;
@@ -136,6 +137,11 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this._pagination = {...this._pagination, ...value};
     this.buildPaginationModel();
+
+    if (this._isPaginationInit || !value.size) return;
+
+    this.setPaginationSize(value.size.toString());
+    this._isPaginationInit = true;
   }
   public get pagination(): Pagination {
     return this._pagination;
@@ -450,9 +456,13 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
               return this.resolveTagObject(item.tags);
             }
             default:
+              const resolvedObject: string = this.resolveObject(field, item);
               return new TableItem({
-                title: this.resolveObject(field, item) ?? '-',
-                data: this.resolveObject(field, item) ?? '-',
+                title: resolvedObject ?? '-',
+                data:
+                  (field.tooltipCharLimit
+                    ? this.transformContentEllipsis(resolvedObject, field.tooltipCharLimit)
+                    : resolvedObject) ?? '-',
                 template: this.defaultTemplate,
                 item,
               });
@@ -691,7 +701,9 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
       });
 
     const tags = itemTags.map((tag: CarbonTag, index: number) =>
-      index === 0 ? {...tag, ellipsisContent: this.transformTagEllipsis(tag.content)} : tag
+      index === 0
+        ? {...tag, ellipsisContent: this.transformContentEllipsis(tag.content, TAG_ELLIPSIS_LIMIT)}
+        : tag
     );
 
     return new TableItem({
@@ -700,10 +712,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private transformTagEllipsis(tagContent: string): string {
-    return (
-      tagContent.substring(0, TAG_ELLIPSIS_LIMIT - 1) +
-      (tagContent.length > TAG_ELLIPSIS_LIMIT ? '...' : '')
-    );
+  private transformContentEllipsis(content: string, limit: number): string {
+    return content.substring(0, limit - 1) + (content.length > limit ? '...' : '');
   }
 }
