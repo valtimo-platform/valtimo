@@ -256,7 +256,9 @@ export class FormManagementEditComponent
       language: 'json',
     });
 
-    this.reloading$.next(false);
+    setTimeout(() => {
+      this.reloading$.next(false);
+    }, 100);
   }
 
   protected onConfirmRedirect(): void {
