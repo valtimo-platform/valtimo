@@ -120,7 +120,8 @@ export class LoggingListComponent implements OnInit, OnDestroy {
     this.pagination$.next({...this.pagination$.getValue(), size, ...(resetPage && {page: 1})});
   }
 
-  public onRowClickedEvent(logEvent: LoggingEvent): void {
+  public onRowClickedEvent(rowClickEvent: LoggingEvent & {ctrlClick: boolean}): void {
+    const {ctrlClick: _, ...logEvent} = rowClickEvent;
     this.selectedLogEvent$.next(logEvent);
   }
 
