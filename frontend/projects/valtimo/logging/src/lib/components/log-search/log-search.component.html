@@ -1,0 +1,112 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<form
+  *ngIf="theme$ | async as theme"
+  class="valtimo-log-search"
+  [formGroup]="formGroup"
+  (click)="$event.stopImmediatePropagation()"
+>
+  <section class="valtimo-log-search__fields">
+    <cds-text-label>
+      {{ 'logging.columns.formattedMessage' | translate }}
+
+      <input
+        cdsText
+        [attr.data-carbon-theme]="theme"
+        formControlName="likeFormattedMessage"
+        [placeholder]="'logging.columns.formattedMessage' | translate"
+      />
+    </cds-text-label>
+
+    <cds-dropdown
+      formControlName="level"
+      [attr.data-carbon-theme]="theme"
+      [appendInline]="true"
+      [label]="'logging.columns.level' | translate"
+      [placeholder]="'logging.columns.level' | translate"
+    >
+      <cds-dropdown-list [items]="logLevelItems"></cds-dropdown-list>
+    </cds-dropdown>
+
+    <div class="valtimo-log-search__timestamp">
+      <cds-date-picker
+        #afterTimestamp
+        [attr.data-carbon-theme]="theme"
+        [label]="'logging.search.afterTimestamp' | translate"
+        placeholder="DD-MM-YYYY"
+        [dateFormat]="'d-m-Y'"
+        (valueChange)="onDateSelected('afterTimestamp', $event)"
+      ></cds-date-picker>
+
+      <cds-date-picker
+        #beforeTimestamp
+        [attr.data-carbon-theme]="theme"
+        [label]="'logging.search.beforeTimestamp' | translate"
+        placeholder="DD-MM-YYYY"
+        [dateFormat]="'d-m-Y'"
+        (valueChange)="onDateSelected('beforeTimestamp', $event)"
+      ></cds-date-picker>
+    </div>
+  </section>
+
+  <section formArrayName="properties" class="valtimo-log-search__properties">
+    <span class="valtimo-log-search__label"> {{ 'logging.search.properties' | translate }} </span>
+
+    @for (propertyGroup of propertiesArray.controls; track $index) {
+      <form [formGroup]="propertyGroup" class="valtimo-log-search__property">
+        <cds-text-label>
+          <input
+            cdsText
+            [attr.data-carbon-theme]="theme"
+            formControlName="key"
+            [placeholder]="'interface.key' | translate"
+          />
+        </cds-text-label>
+
+        <cds-text-label>
+          <input
+            cdsText
+            [attr.data-carbon-theme]="theme"
+            formControlName="value"
+            [placeholder]="'interface.value' | translate"
+          />
+        </cds-text-label>
+
+        <button
+          cdsButton="danger--ghost"
+          [disabled]="$count === 1"
+          iconOnly="true"
+          type="button"
+          (click)="removePropertySearchField($index)"
+        >
+          <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+        </button>
+      </form>
+    }
+
+    <button cdsButton="primary" size="sm" type="button" (click)="addPropertySearchField()">
+      {{ 'logging.search.addProperty' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+    </button>
+  </section>
+
+  <button cdsButton="tertiary" type="button" (click)="onClearFilter()">
+    {{ 'interface.clear' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+  </button>
+</form>

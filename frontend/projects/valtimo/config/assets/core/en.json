@@ -1855,6 +1855,16 @@
       "formattedMessage": "Formatted message",
       "level": "Log level"
     },
+    "search": {
+      "addProperty": "Add property",
+      "afterTimestamp": "From date",
+      "beforeTimestamp": "To date",
+      "properties": "Properties"
+    },
+    "noResults": {
+      "description": "No logs match your search criteria",
+      "title": "There are no logs"
+    },
     "detailsTitle": "Log details"
   }
 }

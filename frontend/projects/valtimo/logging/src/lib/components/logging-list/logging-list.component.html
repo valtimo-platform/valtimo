@@ -15,7 +15,6 @@
   -->
 
 <valtimo-carbon-list
-  [hideToolbar]="true"
   [items]="logItems$ | async"
   [fields]="FIELDS"
   [loading]="loading$ | async"
@@ -24,9 +23,43 @@
   (paginationClicked)="onPaginationClicked($event)"
   (paginationSet)="onPaginationSet($event)"
   (rowClicked)="onRowClickedEvent($event)"
-></valtimo-carbon-list>
+>
+  <valtimo-no-results
+    [action]="clearSearchButton"
+    [description]="'logging.noResults.description' | translate"
+    [title]="'logging.noResults.title' | translate"
+  ></valtimo-no-results>
+
+  <button
+    carbonToolbarContent
+    [cdsOverflowMenu]="logSearch"
+    [customPane]="true"
+    [iconOnly]="true"
+    [flip]="true"
+    [offset]="{x: 0, y: 47}"
+    cdsButton="ghost"
+    placement="bottom"
+  >
+    <svg class="cds--btn__icon" cdsIcon="filter" size="16"></svg>
+  </button>
+</valtimo-carbon-list>
 
 <valtimo-log-details
   [logEvent]="selectedLogEvent$ | async"
   (closeModalEvent)="onCloseModalEvent()"
 ></valtimo-log-details>
+
+<ng-template #logSearch>
+  <valtimo-log-search
+    [initSearchRequest]="initSearchRequest$ | async"
+    (searchSubmitEvent)="onSearchSubmitEvent($event)"
+  ></valtimo-log-search>
+</ng-template>
+
+<ng-template #clearSearchButton>
+  <button cdsButton="primary" (click)="onClearFilter()">
+    {{ 'interface.clear' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+  </button>
+</ng-template>

@@ -1850,6 +1850,16 @@
       "formattedMessage": "Formatierte Nachricht",
       "level": "Protokollebene"
     },
+    "search": {
+      "addProperty": "Eigenschaft hinzufügen",
+      "afterTimestamp": "Datum von",
+      "beforeTimestamp": "Datum bis",
+      "properties": "Eigenschaften"
+    },
+    "noResults": {
+      "description": "Keine Protokolle entsprechen Ihren Suchkriterien",
+      "title": "Es gibt keine Protokolle"
+    },
     "detailsTitle": "Protokolldetails"
   }
 }
