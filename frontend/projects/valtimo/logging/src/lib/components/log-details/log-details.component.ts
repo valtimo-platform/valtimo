@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
+import {EditorModel, EditorModule} from '@valtimo/components';
 import {ModalModule} from 'carbon-components-angular';
 import {LoggingEvent} from '../../models';
-import {EditorModel, EditorModule} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-log-details',

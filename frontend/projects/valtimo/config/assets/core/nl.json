@@ -1856,6 +1856,16 @@
       "formattedMessage": "Opgemaakt bericht",
       "level": "Logniveau"
     },
+    "search": {
+      "addProperty": "Eigenschap toevoegen",
+      "afterTimestamp": "Van datum",
+      "beforeTimestamp": "Tot datum",
+      "properties": "Eigenschappen"
+    },
+    "noResults": {
+      "description": "Er zijn geen logregels die overeenkomen met je zoekcriteria",
+      "title": "Er zijn geen logboeken"
+    },
     "detailsTitle": "Loggegevens"
   }
 }

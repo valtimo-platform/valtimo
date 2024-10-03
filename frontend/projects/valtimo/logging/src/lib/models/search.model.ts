@@ -13,44 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {ListItem} from 'carbon-components-angular';
+import {LoggingEventProperty} from './logging.model';
 
-interface LoggingEvent {
-  timestamp: string;
-  formattedMessage: string;
-  level: string;
-  properties: Array<LoggingEventProperty>;
-  stacktrace: string;
-}
-
-interface LoggingEventProperty {
-  key: string;
-  value: string;
-}
-
-interface LoggingEventSearchRequest {
-  afterTimestamp?: string;
-  beforeTimestamp?: string;
-  level?: string;
+interface LoggingEventSearchFormValue {
   likeFormattedMessage?: string;
+  level?: ListItem;
+  beforeTimestamp?: string;
+  afterTimestamp?: string;
   properties?: Array<LoggingEventProperty>;
-  size?: number;
-  page?: number;
 }
 
-enum LogLevel {
-  DEBUG = 'DEBUG',
-  ERROR = 'ERROR',
-  INFO = 'INFO',
-  TRACE = 'TRACE',
-  WARN = 'WARN',
+interface LoggingEventQueryParams {
+  likeFormattedMessage?: string;
+  level?: string;
+  beforeTimestamp?: string;
+  afterTimestamp?: string;
+  properties?: string;
 }
-
-const LOG_ELLIPSIS_LIMIT = 128;
-
-export {
-  LOG_ELLIPSIS_LIMIT,
-  LoggingEvent,
-  LoggingEventProperty,
-  LoggingEventSearchRequest,
-  LogLevel,
-};
+export {LoggingEventSearchFormValue, LoggingEventQueryParams};

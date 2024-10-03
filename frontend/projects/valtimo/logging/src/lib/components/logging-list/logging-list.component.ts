@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
+import {Filter16, TrashCan16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   CarbonListItem,
@@ -28,6 +28,13 @@ import {
 } from '@valtimo/components';
 import {Page} from '@valtimo/config';
 import {
+  ButtonModule,
+  DialogModule,
+  DropdownModule,
+  IconModule,
+  IconService,
+} from 'carbon-components-angular';
+import {
   BehaviorSubject,
   combineLatest,
   map,
@@ -37,22 +44,47 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {LOG_TOOLTIP_LIMIT, LoggingEvent} from '../../models';
+import {
+  LOG_ELLIPSIS_LIMIT,
+  LoggingEvent,
+  LoggingEventProperty,
+  LoggingEventQueryParams,
+  LoggingEventSearchRequest,
+} from '../../models';
 import {LoggingApiService} from '../../services';
 import {LogDetailsComponent} from '../log-details/log-details.component';
+import {LogSearchComponent} from '../log-search/log-search.component';
 
 @Component({
   templateUrl: './logging-list.component.html',
+  styleUrl: './logging-list.component.scss',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule, CarbonListModule, LogDetailsComponent],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    ButtonModule,
+    CarbonListModule,
+    DialogModule,
+    DropdownModule,
+    IconModule,
+    LogDetailsComponent,
+    LogSearchComponent,
+  ],
   providers: [LoggingApiService],
 })
 export class LoggingListComponent implements OnInit, OnDestroy {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly logItems$: Observable<CarbonListItem> = this.activatedRoute.queryParamMap.pipe(
     tap(() => this.loading$.next(true)),
-    switchMap(queryParams => this.loggingApiService.getTechnicalLogs(queryParams['params'])),
+    switchMap(queryParams =>
+      this.loggingApiService.getTechnicalLogs({
+        ...queryParams['params'],
+        ...(!!queryParams['params']?.properties && {
+          properties: this.base64ToObject(queryParams['params'].properties),
+        }),
+      })
+    ),
     map((loggingPage: Page<LoggingEvent>) => {
       this.pagination$.next({
         ...this.pagination$.getValue(),
@@ -61,12 +93,13 @@ export class LoggingListComponent implements OnInit, OnDestroy {
 
       return loggingPage.content;
     }),
-
     tap(() => {
       this.loading$.next(false);
     })
   );
 
+  public readonly initSearchRequest$ = new BehaviorSubject<LoggingEventSearchRequest | null>(null);
+  public readonly searchRequest$ = new BehaviorSubject<LoggingEventSearchRequest>({});
   public readonly pagination$ = new BehaviorSubject<Pagination>(DEFAULT_PAGINATION);
   public readonly selectedLogEvent$ = new BehaviorSubject<LoggingEvent | null>(null);
 
@@ -85,7 +118,7 @@ export class LoggingListComponent implements OnInit, OnDestroy {
       key: 'formattedMessage',
       label: 'logging.columns.formattedMessage',
       viewType: ViewType.TEXT,
-      tooltipCharLimit: LOG_TOOLTIP_LIMIT,
+      tooltipCharLimit: LOG_ELLIPSIS_LIMIT,
     },
   ];
 
@@ -93,9 +126,12 @@ export class LoggingListComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
+    private readonly iconService: IconService,
     private readonly loggingApiService: LoggingApiService,
     private readonly router: Router
-  ) {}
+  ) {
+    this.iconService.registerAll([Filter16, TrashCan16]);
+  }
 
   public ngOnInit(): void {
     this.setInitialParams();
@@ -125,32 +161,81 @@ export class LoggingListComponent implements OnInit, OnDestroy {
     this.selectedLogEvent$.next(logEvent);
   }
 
+  public onSearchSubmitEvent(searchRequest: LoggingEventSearchRequest): void {
+    this.searchRequest$.next(searchRequest);
+  }
+
+  public onClearFilter(): void {
+    this.onSearchSubmitEvent({});
+    this.initSearchRequest$.next({});
+  }
+
+  private base64ToObject(base64string: string): object {
+    return JSON.parse(atob(base64string));
+  }
+
+  private objectToBase64(jsObject: object): string {
+    return btoa(JSON.stringify(jsObject));
+  }
+
+  private openQueryParamsSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([this.pagination$, this.searchRequest$]).subscribe(
+        ([pagination, searchRequest]) => {
+          const {size, page} = pagination;
+
+          this.router.navigate(['/logging'], {
+            queryParams: {
+              size,
+              page: page - 1,
+              ...{
+                ...searchRequest,
+                ...(!!searchRequest.properties?.length && {
+                  properties: this.objectToBase64(searchRequest.properties),
+                }),
+              },
+            },
+          });
+        }
+      )
+    );
+  }
+
+  private mapQueryParamsToSearchRequest(
+    queryParams: LoggingEventQueryParams
+  ): LoggingEventSearchRequest {
+    return {
+      ...(!!queryParams.likeFormattedMessage && {
+        likeFormattedMessage: queryParams.likeFormattedMessage,
+      }),
+      ...(!!queryParams.level && {level: queryParams.level}),
+      ...(!!queryParams.afterTimestamp && {afterTimestamp: queryParams.afterTimestamp}),
+      ...(!!queryParams.beforeTimestamp && {beforeTimestamp: queryParams.beforeTimestamp}),
+      ...(!!queryParams.properties && {
+        properties: this.base64ToObject(queryParams.properties) as Array<LoggingEventProperty>,
+      }),
+    };
+  }
+
   private setInitialParams(): void {
     this.activatedRoute.queryParamMap
       .pipe(
         take(1),
         map(queryParams => {
-          const {size, page} = queryParams['params'];
-          return {size, page};
+          const {size, page, ...searchRequest} = queryParams['params'];
+          return {size, page, searchRequest};
         })
       )
-      .subscribe(({size, page}) => {
+      .subscribe(({size, page, searchRequest}) => {
+        this.initSearchRequest$.next(this.mapQueryParamsToSearchRequest(searchRequest));
+        this.searchRequest$.next(this.mapQueryParamsToSearchRequest(searchRequest));
         this.pagination$.next({
           ...this.pagination$.getValue(),
           size: +size,
           page: +(page ?? 0) + 1,
         });
+
         this.openQueryParamsSubscription();
       });
-  }
-
-  private openQueryParamsSubscription(): void {
-    this._subscriptions.add(
-      //combineLatest for later filtering
-      combineLatest([this.pagination$]).subscribe(([pagination]) => {
-        const {size, page} = pagination;
-        this.router.navigate(['/logging'], {queryParams: {size, page: page - 1}});
-      })
-    );
   }
 }

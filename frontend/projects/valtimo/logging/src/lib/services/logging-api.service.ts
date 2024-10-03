@@ -41,7 +41,7 @@ export class LoggingApiService extends BaseApiService {
 
     return this.httpClient.post<Page<LoggingEvent>>(
       this.getApiUrl('management/v1/logging'),
-      {searchBody},
+      searchBody,
       {
         params,
       }
