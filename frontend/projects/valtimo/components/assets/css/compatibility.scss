@@ -731,3 +731,13 @@ valtimo-analyse-process-diagram {
     background-color: var(--cds-field) !important;
   }
 }
+
+/* Below overrides fix position of overlay elements like select boxes inside cds modals */
+
+.cds--modal-container {
+  transform: none !important;
+}
+
+.cds--modal-header {
+  position: relative !important;
+}
