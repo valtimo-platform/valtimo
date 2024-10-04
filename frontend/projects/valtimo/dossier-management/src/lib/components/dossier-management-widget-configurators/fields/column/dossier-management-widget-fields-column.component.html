@@ -90,6 +90,25 @@
 
           <div class="valtimo-dossier-management-widget-field-column__options">
             @switch (formRow.get('type').value.id) {
+              @case (CaseWidgetDisplayTypeKey.CODE_LIST) {
+                <cds-text-label>
+                  <v-input-label
+                          [title]="'widgetTabManagement.content.fields.codeListProvider' | translate"
+                          [tooltip]="'widgetTabManagement.content.fields.codeListProviderTooltip' | translate"
+                  >
+                  </v-input-label>
+
+                  <input
+                          cdsText
+                          [attr.data-carbon-theme]="inputTheme"
+                          [placeholder]="
+                      'widgetTabManagement.content.fields.codeListProviderPlaceholder' | translate
+                    "
+                          type="text"
+                          formControlName="providerName"
+                  />
+                </cds-text-label>
+              }
               @case (CaseWidgetDisplayTypeKey.CURRENCY) {
                 <cds-text-label>
                   <v-input-label

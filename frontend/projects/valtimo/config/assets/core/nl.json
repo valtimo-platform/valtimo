@@ -777,6 +777,9 @@
       "fields": {
         "add": "Veld toevoegen",
         "addEnum": "Enum-waarde toevoegen",
+        "codeListProvider": "Codelijst provider",
+        "codeListProviderPlaceholder": "",
+        "codeListProviderTooltip": "Geef een provider op zoals gedefineerd in de backend",
         "currencyCode": "Valutacode (optioneel)",
         "currencyCodePlaceholder": "Valutacode",
         "currencyCodeTooltip": "De valutacode zoals 'EUR', 'USD' etc. De standaardwaarde is 'EUR'",
@@ -806,6 +809,7 @@
       "displayType": {
         "text": "Tekst",
         "boolean": "Ja/Nee",
+        "codeList": "Codelijst",
         "currency": "Valuta",
         "date": "Datum",
         "datetime": "Datum en tijd",

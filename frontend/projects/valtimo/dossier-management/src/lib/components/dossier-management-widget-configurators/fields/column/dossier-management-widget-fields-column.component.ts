@@ -41,6 +41,7 @@ import {TrashCan16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CdsThemeService, CurrentCarbonTheme, InputLabelModule} from '@valtimo/components';
 import {
+  CaseWidgetCodeListDisplayType,
   CaseWidgetCurrencyDisplayType,
   CaseWidgetDateDisplayType,
   CaseWidgetDateTimeDisplayType,
@@ -61,7 +62,7 @@ import {
   ListItem,
 } from 'carbon-components-angular';
 import {debounceTime, Observable, Subscription} from 'rxjs';
-import {WidgetFieldsService, WidgetWizardService} from '../../../../services';
+import {WidgetFieldsService, WidgetTabManagementService, WidgetWizardService} from '../../../../services';
 
 @Component({
   selector: 'valtimo-dossier-management-widget-fields-column',
@@ -125,7 +126,8 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
     private readonly iconService: IconService,
     private readonly translateService: TranslateService,
     private readonly widgetFieldsService: WidgetFieldsService,
-    private readonly widgetWizardService: WidgetWizardService
+    private readonly widgetWizardService: WidgetWizardService,
+    private readonly widgetTabManagementService: WidgetTabManagementService,
   ) {
     this.iconService.register(TrashCan16);
   }
@@ -237,6 +239,11 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
           )
         ),
       }),
+      ...(row.displayProperties?.type === CaseWidgetDisplayTypeKey.CODE_LIST && {
+        providerName: this.fb.control<string>(
+          (row.displayProperties as CaseWidgetCodeListDisplayType).providerName ?? ''
+        ),
+      }),
     });
   }
 
@@ -272,6 +279,7 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
                 ...(!!row?.display && {display: row.display}),
                 ...(!!row?.digitsInfo && {digitsInfo: row.digitsInfo}),
                 ...(!!row?.format && {format: row.format}),
+                ...(!!row?.providerName && {providerName: row.providerName}),
                 ...(!!row?.values && {
                   values: row.values?.reduce((acc, curr) => ({...acc, [curr.key]: curr.value}), {}),
                 }),

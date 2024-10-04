@@ -1,6 +1,7 @@
 enum CaseWidgetDisplayTypeKey {
   TEXT = 'text',
   BOOLEAN = 'boolean',
+  CODE_LIST = 'codeList',
   CURRENCY = 'currency',
   DATE = 'date',
   DATE_TIME = 'datetime',
@@ -11,6 +12,11 @@ enum CaseWidgetDisplayTypeKey {
 
 interface CaseWidgetBooleanDisplayType {
   type: CaseWidgetDisplayTypeKey.BOOLEAN;
+}
+
+interface CaseWidgetCodeListDisplayType {
+  type: CaseWidgetDisplayTypeKey.CODE_LIST;
+  providerName: string;
 }
 
 interface CaseWidgetCurrencyDisplayType {
@@ -49,6 +55,7 @@ interface CaseWidgetPercentDisplayType {
 
 type CaseWidgetDisplayType =
   | CaseWidgetBooleanDisplayType
+  | CaseWidgetCodeListDisplayType
   | CaseWidgetCurrencyDisplayType
   | CaseWidgetDateDisplayType
   | CaseWidgetDateTimeDisplayType
@@ -60,6 +67,7 @@ export {
   CaseWidgetDisplayTypeKey,
   CaseWidgetDisplayType,
   CaseWidgetBooleanDisplayType,
+  CaseWidgetCodeListDisplayType,
   CaseWidgetCurrencyDisplayType,
   CaseWidgetDateDisplayType,
   CaseWidgetDateTimeDisplayType,

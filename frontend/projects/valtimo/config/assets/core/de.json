@@ -777,6 +777,9 @@
       "fields": {
         "add": "Feld hinzufügen",
         "addEnum": "Enum-Wert hinzufügen",
+        "codeListProvider": "Codelist provider",
+        "codeListProviderPlaceholder": "",
+        "codeListProviderTooltip": "",
         "currencyCode": "Währungscode (Optional)",
         "currencyPlaceholder": "Währungscode",
         "currencyCodeTooltip": "Der Währungscode wie „EUR“, „USD“ usw. Der Standardwert ist „EUR“.",
@@ -806,6 +809,7 @@
       "displayType": {
         "text": "Text",
         "boolean": "Ja/Nein",
+        "codeList": "Codeliste",
         "currency": "Währung",
         "date": "Datum",
         "datetime": "Datum und zeit",

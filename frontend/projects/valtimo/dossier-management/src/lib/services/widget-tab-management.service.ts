@@ -47,4 +47,12 @@ export class WidgetTabManagementService {
       tab
     );
   }
+
+  public getCodeListProviders(
+  ): Observable<Array<String>> {
+    return this.http.get<Array<String>>(
+      `${this.valtimoEndpointUri}management/v1/codelist-providers`
+    );
+  }
+
 }

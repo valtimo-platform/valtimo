@@ -778,6 +778,9 @@
       "fields": {
         "add": "Add field",
         "addEnum": "Add enum value",
+        "codeListProvider": "Codelist provider",
+        "codeListProviderPlaceholder": "",
+        "codeListProviderTooltip": "Configure a provider as is made available via the backend",
         "currencyCode": "Currency code (optional)",
         "currencyCodePlaceholder": "Currency code",
         "currencyCodeTooltip": "The currency code such as 'EUR', 'USD' etc. The default value is 'EUR'",
@@ -807,6 +810,7 @@
       "displayType": {
         "text": "Text",
         "boolean": "Yes/No",
+        "codeList": "Codelist",
         "currency": "Currency",
         "date": "Date",
         "datetime": "Date and time",

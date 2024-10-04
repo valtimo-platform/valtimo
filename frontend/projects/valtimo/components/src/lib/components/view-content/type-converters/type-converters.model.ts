@@ -25,6 +25,7 @@ import {PercentTypeConverter} from './percentTypeConverter';
 import {RelatedFilesTypeConverter} from './relatedFilesTypeConverter';
 import {StringReplaceUnderscoreTypeConverter} from './stringReplaceUnderscoreTypeConverter';
 import {StringTypeConverter} from './stringTypeConverter';
+import {CodeListTypeConverter} from './codeListTypeConverter';
 
 export const TYPE_CONVERTER_TOKEN = new InjectionToken<TypeConverter[]>('Type Converter');
 
@@ -77,6 +78,11 @@ export const TYPE_PROVIDERS = [
   {
     provide: TYPE_CONVERTER_TOKEN,
     useClass: CurrencyTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: CodeListTypeConverter,
     multi: true,
   },
 ];

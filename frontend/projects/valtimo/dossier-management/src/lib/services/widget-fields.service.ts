@@ -8,6 +8,7 @@ import {ListItem} from 'carbon-components-angular';
   providedIn: 'root',
 })
 export class WidgetFieldsService {
+
   public readonly displayTypeItems: ListItem[] = [
     {
       content: this.translateService.instant(
@@ -24,6 +25,12 @@ export class WidgetFieldsService {
       selected: false,
     },
     {
+      content: this.translateService.instant(
+        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.CODE_LIST}`
+      ),
+      id: CaseWidgetDisplayTypeKey.CODE_LIST,
+      selected: false,
+    },    {
       content: this.translateService.instant(
         `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.CURRENCY}`
       ),
@@ -98,6 +105,9 @@ export class WidgetFieldsService {
       case CaseWidgetDisplayTypeKey.BOOLEAN:
         break;
       case CaseWidgetDisplayTypeKey.TEXT:
+        break;
+      case CaseWidgetDisplayTypeKey.CODE_LIST:
+        formGroup.addControl('providerName', this.fb.control('', Validators.required));
         break;
       case CaseWidgetDisplayTypeKey.CURRENCY:
         formGroup.addControl('currencyCode', this.fb.control(''));
