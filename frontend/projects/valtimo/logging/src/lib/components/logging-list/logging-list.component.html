@@ -45,6 +45,7 @@
 </valtimo-carbon-list>
 
 <valtimo-log-details
+  [open]="logDetailsOpen$ | async"
   [logEvent]="selectedLogEvent$ | async"
   (closeModalEvent)="onCloseModalEvent()"
 ></valtimo-log-details>

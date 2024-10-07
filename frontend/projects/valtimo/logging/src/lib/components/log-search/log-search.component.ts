@@ -40,7 +40,7 @@ import {
   ListItem,
 } from 'carbon-components-angular';
 import flatpickr from 'flatpickr';
-import {debounceTime, map, Observable, Subscription} from 'rxjs';
+import {debounceTime, interval, map, Observable, Subscription} from 'rxjs';
 import {
   LoggingEventProperty,
   LoggingEventSearchFormValue,
@@ -99,19 +99,19 @@ export class LogSearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public logLevelItems: Partial<ListItem>[] = [
     {
-      content: LogLevel.DEBUG,
+      content: LogLevel.ERROR,
     },
     {
-      content: LogLevel.ERROR,
+      content: LogLevel.WARN,
     },
     {
       content: LogLevel.INFO,
     },
     {
-      content: LogLevel.TRACE,
+      content: LogLevel.DEBUG,
     },
     {
-      content: LogLevel.WARN,
+      content: LogLevel.TRACE,
     },
   ];
 

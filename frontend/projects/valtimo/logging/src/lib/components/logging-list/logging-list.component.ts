@@ -19,6 +19,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Filter16, TrashCan16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
 import {
+  CARBON_CONSTANTS,
   CarbonListItem,
   CarbonListModule,
   ColumnConfig,
@@ -101,6 +102,7 @@ export class LoggingListComponent implements OnInit, OnDestroy {
   public readonly initSearchRequest$ = new BehaviorSubject<LoggingEventSearchRequest | null>(null);
   public readonly searchRequest$ = new BehaviorSubject<LoggingEventSearchRequest>({});
   public readonly pagination$ = new BehaviorSubject<Pagination>(DEFAULT_PAGINATION);
+  public readonly logDetailsOpen$ = new BehaviorSubject<boolean>(false);
   public readonly selectedLogEvent$ = new BehaviorSubject<LoggingEvent | null>(null);
 
   public readonly FIELDS: ColumnConfig[] = [
@@ -142,7 +144,11 @@ export class LoggingListComponent implements OnInit, OnDestroy {
   }
 
   public onCloseModalEvent(): void {
-    this.selectedLogEvent$.next(null);
+    this.logDetailsOpen$.next(false);
+
+    setTimeout(() => {
+      this.selectedLogEvent$.next(null);
+    }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
   public onPaginationClicked(page: number): void {
@@ -158,6 +164,7 @@ export class LoggingListComponent implements OnInit, OnDestroy {
 
   public onRowClickedEvent(rowClickEvent: LoggingEvent & {ctrlClick: boolean}): void {
     const {ctrlClick: _, ...logEvent} = rowClickEvent;
+    this.logDetailsOpen$.next(true);
     this.selectedLogEvent$.next(logEvent);
   }
 
