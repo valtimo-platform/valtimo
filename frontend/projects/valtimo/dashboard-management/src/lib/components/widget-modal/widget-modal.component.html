@@ -144,6 +144,22 @@
       [prefillConfiguration]="displayTypePrefillConfig$ | async"
       (configurationEvent)="displayTypeConfiguration($event)"
     ></valtimo-widget-configuration-container>
+
+    <div class="form__element">
+      <cds-label
+              [helperText]="'dashboardManagement.widgets.form.urlHelperText' | translate"
+              [invalidText]="'dashboardManagement.widgets.form.urlHelperText' | translate"
+              [invalid]="url.dirty && url.invalid"
+      >
+        {{ 'dashboardManagement.widgets.form.url' | translate }}
+
+        <input
+                cdsText
+                formControlName="url"
+                [invalid]="url.dirty && url.invalid"
+        />
+      </cds-label>
+    </div>
   </form>
 </ng-template>
 

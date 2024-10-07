@@ -382,7 +382,9 @@
         "dashboardDescriptionHelperText": "*Description is only visible in the dashboard configuration page",
         "roles": "Set visibility",
         "displayType": "Display type",
-        "displayTypeHelperText": "Select the way the data of your widget should be displayed"
+        "displayTypeHelperText": "Select the way the data of your widget should be displayed",
+        "url": "URL path",
+        "urlHelperText": "The path to navigate to when clicking on the widget"
       },
       "noResults": {
         "description": "Click <strong>Add new widget</strong> to start designing your dashboard. <br/> Drag your widgets to the desired position.",

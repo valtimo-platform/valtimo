@@ -381,7 +381,9 @@
         "dashboardDescriptionHelperText": "*Beschreibung ist nur auf der Dashboard-Konfigurationsseite sichtbar",
         "roles": "Sichtweite",
         "displayType": "Anzeigetyp",
-        "displayTypeHelperText": "Wählen Sie aus, wie die Daten Ihres Widgets angezeigt werden sollen"
+        "displayTypeHelperText": "Wählen Sie aus, wie die Daten Ihres Widgets angezeigt werden sollen",
+        "url": "URL-Pfad",
+        "urlHelperText": "Der Pfad, zu dem navigiert werden soll, wenn auf das Widget geklickt wird"
       },
       "noResults": {
         "description": "Klicken Sie auf <strong>Neues Widget hinzufügen</strong>, um mit der Gestaltung Ihres Dashboards zu beginnen. <br/> Ziehen Sie Ihre Widgets an die gewünschte Position.",

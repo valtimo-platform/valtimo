@@ -33,6 +33,7 @@ import {WidgetService} from '../../services';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
 import {WIDGET_1X_HEIGHT} from '../../constants';
 import Muuri from 'muuri';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'valtimo-widget-dashboard-content',
@@ -89,7 +90,8 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
   constructor(
     private readonly layoutService: WidgetLayoutService,
     private readonly widgetService: WidgetService,
-    private readonly renderer: Renderer2
+    private readonly renderer: Renderer2,
+    private readonly router: Router
   ) {}
 
   public ngAfterViewInit(): void {
@@ -104,6 +106,13 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
   public ngOnDestroy(): void {
     this._observer?.disconnect();
     this._subscriptions?.unsubscribe();
+  }
+
+  public navigateToRoute(widgetConfiguration: DashboardWidgetConfiguration, event: MouseEvent): void {
+    if (widgetConfiguration.url) {
+      event.preventDefault();
+      this.router.navigateByUrl(widgetConfiguration.url)
+    }
   }
 
   private setWidgetConfigurations(dashboard: Dashboard): void {

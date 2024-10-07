@@ -21,4 +21,5 @@ export interface DashboardItem {
   roles?: Array<string>;
   createdBy?: string;
   createdOn?: string;
+  url?: string;
 }
