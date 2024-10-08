@@ -150,6 +150,8 @@
       "noFiles": "No files found for this case."
     },
     "startSubProcess": "Start",
+    "noLinkedProcessNotification": "There is no start form linked",
+    "configure": "Configure",
     "claimAssigneeCase": "Claim",
     "deleteConfirmation": {
       "title": "Delete file",
