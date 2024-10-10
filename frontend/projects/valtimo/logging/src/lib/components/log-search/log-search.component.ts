@@ -69,13 +69,7 @@ export class LogSearchComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('afterTimestamp') private readonly _afterTimestampDatePicker: DatePicker;
   @ViewChild('beforeTimestamp') private readonly _beforeTimestampDatePicker: DatePicker;
 
-  @Input() public set initSearchRequest(value: LoggingEventSearchRequest) {
-    const mappedFormValue: LoggingEventSearchFormValue = this.mapSearchRequestToFormValue(value);
-    this.initLogItems(mappedFormValue);
-    this.initPropertiesForm(mappedFormValue);
-
-    this.formGroup.patchValue(mappedFormValue, {emitEvent: false});
-  }
+  @Input() public initSearchRequest: LoggingEventSearchRequest;
   @Output() public readonly searchSubmitEvent = new EventEmitter<LoggingEventSearchRequest>();
 
   public readonly theme$: Observable<CARBON_THEME> = this.cdsThemeService.currentTheme$.pipe(
@@ -130,6 +124,8 @@ export class LogSearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public ngOnInit(): void {
+    this.setInitialForm();
+
     this._subscriptions.add(
       this.formGroup.valueChanges.pipe(debounceTime(500)).subscribe(() => {
         this.searchSubmitEvent.emit(this.mapFormValueToLogSearch());
@@ -232,5 +228,15 @@ export class LogSearchComponent implements OnInit, AfterViewInit, OnDestroy {
       ...(searchRequest.beforeTimestamp && {beforeTimestamp: searchRequest.beforeTimestamp}),
       ...(searchRequest.properties && {properties: searchRequest.properties}),
     };
+  }
+
+  private setInitialForm(): void {
+    const mappedFormValue: LoggingEventSearchFormValue = this.mapSearchRequestToFormValue(
+      this.initSearchRequest
+    );
+    this.initLogItems(mappedFormValue);
+    this.initPropertiesForm(mappedFormValue);
+
+    this.formGroup.patchValue(mappedFormValue, {emitEvent: false});
   }
 }

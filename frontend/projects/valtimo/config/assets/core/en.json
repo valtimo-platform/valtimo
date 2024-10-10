@@ -1854,7 +1854,7 @@
   "logging": {
     "columns": {
       "timestamp": "Timestamp",
-      "formattedMessage": "Formatted message",
+      "formattedMessage": "Message",
       "level": "Log level"
     },
     "search": {

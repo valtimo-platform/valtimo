@@ -1848,8 +1848,8 @@
   },
   "logging": {
     "columns": {
-      "timestamp": "Zeitstempel",
-      "formattedMessage": "Formatierte Nachricht",
+      "timestamp": "Zeit",
+      "formattedMessage": "Nachricht",
       "level": "Protokollebene"
     },
     "search": {

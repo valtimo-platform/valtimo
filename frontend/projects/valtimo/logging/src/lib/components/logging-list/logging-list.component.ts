@@ -40,6 +40,7 @@ import {
   combineLatest,
   map,
   Observable,
+  startWith,
   Subscription,
   switchMap,
   take,
@@ -47,6 +48,7 @@ import {
 } from 'rxjs';
 import {
   LOG_ELLIPSIS_LIMIT,
+  LOG_LEVEL_TAG,
   LoggingEvent,
   LoggingEventProperty,
   LoggingEventQueryParams,
@@ -92,14 +94,22 @@ export class LoggingListComponent implements OnInit, OnDestroy {
         collectionSize: loggingPage.totalElements,
       });
 
-      return loggingPage.content;
+      return loggingPage.content.map((logEvent: LoggingEvent) => ({
+        ...logEvent,
+        tags: [
+          {
+            content: logEvent.level,
+            type: LOG_LEVEL_TAG[logEvent.level],
+          },
+        ],
+      }));
     }),
+    startWith([]),
     tap(() => {
       this.loading$.next(false);
     })
   );
 
-  public readonly initSearchRequest$ = new BehaviorSubject<LoggingEventSearchRequest | null>(null);
   public readonly searchRequest$ = new BehaviorSubject<LoggingEventSearchRequest>({});
   public readonly pagination$ = new BehaviorSubject<Pagination>(DEFAULT_PAGINATION);
   public readonly logDetailsOpen$ = new BehaviorSubject<boolean>(false);
@@ -114,7 +124,7 @@ export class LoggingListComponent implements OnInit, OnDestroy {
     {
       key: 'level',
       label: 'logging.columns.level',
-      viewType: ViewType.TEXT,
+      viewType: ViewType.TAGS,
     },
     {
       key: 'formattedMessage',
@@ -151,8 +161,14 @@ export class LoggingListComponent implements OnInit, OnDestroy {
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
-  public onPaginationClicked(page: number): void {
-    this.pagination$.next({...this.pagination$.getValue(), page});
+  public onPaginationClicked(page: number, logItems: CarbonListItem[]): void {
+    const activePagination: Pagination = this.pagination$.getValue();
+    const searchRequest: LoggingEventSearchRequest = this.searchRequest$.getValue();
+
+    if (!searchRequest.beforeTimestamp && activePagination.page === 1)
+      this.searchRequest$.next({...searchRequest, beforeTimestamp: logItems[0].timestamp});
+
+    this.pagination$.next({...activePagination, page});
   }
 
   public onPaginationSet(size: number): void {
@@ -174,7 +190,6 @@ export class LoggingListComponent implements OnInit, OnDestroy {
 
   public onClearFilter(): void {
     this.onSearchSubmitEvent({});
-    this.initSearchRequest$.next({});
   }
 
   private base64ToObject(base64string: string): object {
@@ -234,7 +249,6 @@ export class LoggingListComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe(({size, page, searchRequest}) => {
-        this.initSearchRequest$.next(this.mapQueryParamsToSearchRequest(searchRequest));
         this.searchRequest$.next(this.mapQueryParamsToSearchRequest(searchRequest));
         this.pagination$.next({
           ...this.pagination$.getValue(),

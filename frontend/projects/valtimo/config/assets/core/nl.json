@@ -1854,8 +1854,8 @@
   },
   "logging": {
     "columns": {
-      "timestamp": "Tijdstempel",
-      "formattedMessage": "Opgemaakt bericht",
+      "timestamp": "Tijd",
+      "formattedMessage": "Bericht",
       "level": "Logniveau"
     },
     "search": {

@@ -15,12 +15,13 @@
   -->
 
 <valtimo-carbon-list
-  [items]="logItems$ | async"
+  *ngIf="logItems$ | async as logItems"
+  [items]="logItems"
   [fields]="FIELDS"
   [loading]="loading$ | async"
   [pagination]="pagination$ | async"
   paginationIdentifier="logging"
-  (paginationClicked)="onPaginationClicked($event)"
+  (paginationClicked)="onPaginationClicked($event, logItems)"
   (paginationSet)="onPaginationSet($event)"
   (rowClicked)="onRowClickedEvent($event)"
 >
@@ -52,7 +53,7 @@
 
 <ng-template #logSearch>
   <valtimo-log-search
-    [initSearchRequest]="initSearchRequest$ | async"
+    [initSearchRequest]="searchRequest$ | async"
     (searchSubmitEvent)="onSearchSubmitEvent($event)"
   ></valtimo-log-search>
 </ng-template>
