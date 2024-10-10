@@ -150,7 +150,8 @@
       "noFiles": "No files found for this case."
     },
     "startSubProcess": "Start",
-    "noLinkedProcessNotification": "There is no start form linked",
+    "noLinkedStartProcessNotification": "There is no start form linked",
+    "noLinkedProcessNotification": "There is no form linked",
     "configure": "Configure",
     "claimAssigneeCase": "Claim",
     "deleteConfirmation": {

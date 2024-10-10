@@ -77,15 +77,4 @@
   <div class="m-2">
     <ng-template #formViewModelComponent></ng-template>
   </div>
-
-  <div *ngIf="!obs.formDefinition && !obs.formFlowInstanceId" class="mb-0 p-3 text-center">
-    <button
-      class="btn btn-secondary btn-space"
-      type="button"
-      (click)="gotoProcessLinkScreen()"
-      id="process-link-button"
-    >
-      {{ 'formManagement.gotoProcessLinksButton' | translate }}
-    </button>
-  </div>
 </ng-container>

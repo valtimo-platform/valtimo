@@ -150,7 +150,8 @@
       "noFiles": "Geen bestanden gevonden voor deze zaak."
     },
     "startSubProcess": "Start",
-    "noLinkedProcessNotification": "Er is geen startformulier gekoppeld",
+    "noLinkedStartProcessNotification": "Er is geen startformulier gekoppeld",
+    "noLinkedProcessNotification": "Er is geen formulier gekoppeld",
     "configure": "Configureer",
     "claimAssigneeCase": "Claimen",
     "deleteConfirmation": {
