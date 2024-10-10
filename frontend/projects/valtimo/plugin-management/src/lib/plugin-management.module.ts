@@ -28,18 +28,19 @@ import {PluginEditModalComponent} from './components/plugin-edit-modal/plugin-ed
 import {PluginEditComponent} from './components/plugin-edit/plugin-edit.component';
 import {
   ButtonModule,
-  VCardModule,
-  VModalModule,
+  CarbonListModule,
   PageModule,
   ParagraphModule,
   StepperModule,
   TableModule,
   TitleModule,
-  CarbonListModule,
+  ValtimoCdsModalDirectiveModule,
+  VCardModule,
+  VModalModule,
 } from '@valtimo/components';
 import {
-  IconModule,
   ButtonModule as CarbonButtonModule,
+  IconModule,
   ModalModule as CarbonModalModule,
 } from 'carbon-components-angular';
 
@@ -71,6 +72,7 @@ import {
     CarbonListModule,
     CarbonModalModule,
     IconModule,
+    ValtimoCdsModalDirectiveModule,
   ],
   exports: [
     PluginManagementComponent,

@@ -24,9 +24,8 @@ import {
   ModalModule,
 } from 'carbon-components-angular';
 import {
-  CarbonMultiInputModule,
-  ValtimoCdsModalDirectiveModule,
   ButtonModule,
+  CarbonMultiInputModule,
   FormModule,
   InputLabelModule,
   InputModule,
@@ -35,6 +34,8 @@ import {
   RadioModule,
   SelectModule,
   TooltipIconModule,
+  ValtimoCdsModalDirectiveModule,
+  VModalModule,
 } from '@valtimo/components';
 
 @NgModule({
@@ -56,6 +57,7 @@ import {
     CarbonMultiInputModule,
     CarbonButtonModule,
     ValtimoCdsModalDirectiveModule,
+    VModalModule,
   ],
   exports: [VerzoekConfigurationComponent],
 })

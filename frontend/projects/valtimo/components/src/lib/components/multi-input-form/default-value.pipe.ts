@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-.label-with-tooltip {
-  display: flex;
-  align-items: center;
-}
+import {Pipe, PipeTransform} from '@angular/core';
+import {MultiInputFormsValues, MultiInputFormValue} from '../../models';
+import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 
-.select-label {
-  padding-bottom: 0.5rem;
-  width: 250px;
-}
-
-.hidden-input {
-  display: none;
-}
-
-.cds--text-input__field-wrapper {
-  flex-direction: column;
+@Pipe({
+  name: 'defaultValue',
+  standalone: true,
+})
+export class DefaultValuePipe implements PipeTransform {
+  public transform(
+    values: Observable<MultiInputFormsValues>,
+    uuid: string
+  ): Observable<MultiInputFormValue | {}> {
+    return values.pipe(
+      map(valuesArray => valuesArray.find(value => value.uuid === uuid)?.value || {})
+    );
+  }
 }
