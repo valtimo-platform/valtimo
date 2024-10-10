@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component, EventEmitter, Output, ViewChild, ViewEncapsulation} from '@angular/core';
+import {Component, EventEmitter, Input, Output, ViewChild, ViewEncapsulation} from '@angular/core';
+import {Router} from '@angular/router';
 import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
 import {
   FormioComponent,
@@ -23,13 +23,11 @@ import {
   ModalComponent,
   ValtimoFormioOptions,
 } from '@valtimo/components';
-import {Router} from '@angular/router';
-import {ProcessService} from '@valtimo/process';
 import {ProcessDocumentDefinition} from '@valtimo/document';
+import {ProcessService} from '@valtimo/process';
 import {FormSubmissionResult, ProcessLinkService} from '@valtimo/process-link';
-import {BehaviorSubject, combineLatest, Observable, switchMap} from 'rxjs';
-import {map, take} from 'rxjs/operators';
-import {UserProviderService} from '@valtimo/security';
+import {BehaviorSubject, combineLatest, switchMap} from 'rxjs';
+import {take} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-dossier-supporting-process-start-modal',
@@ -41,6 +39,7 @@ export class DossierSupportingProcessStartModalComponent {
   @ViewChild('form', {static: false}) form: FormioComponent;
   @ViewChild('supportingProcessStartModal', {static: false}) modal: ModalComponent;
 
+  @Input() isAdmin: boolean;
   @Output() formSubmit = new EventEmitter();
 
   public readonly processDefinitionKey$ = new BehaviorSubject<string>('');
@@ -55,15 +54,10 @@ export class DossierSupportingProcessStartModalComponent {
   public readonly formFlowInstanceId$ = new BehaviorSubject<string>(undefined);
   public readonly documentId$ = new BehaviorSubject<string>(undefined);
 
-  public readonly isAdmin$: Observable<boolean> = this.userProviderService
-    .getUserSubject()
-    .pipe(map(userIdentity => userIdentity?.roles?.includes('ROLE_ADMIN')));
-
   constructor(
     private readonly router: Router,
     private readonly processService: ProcessService,
-    private readonly processLinkService: ProcessLinkService,
-    private readonly userProviderService: UserProviderService
+    private readonly processLinkService: ProcessLinkService
   ) {}
 
   private loadProcessLink(): void {

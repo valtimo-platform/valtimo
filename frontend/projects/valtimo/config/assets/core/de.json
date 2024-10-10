@@ -150,7 +150,8 @@
       "noFiles": "Für diesen Fall wurden keine Dateien gefunden."
     },
     "startSubProcess": "Starten",
-    "noLinkedProcessNotification": "Es ist kein Startformular verknüpft",
+    "noLinkedStartProcessNotification": "Es ist kein Startformular verknüpft",
+    "noLinkedProcessNotification": "Es ist kein formular verknüpft",
     "configure": "Konfigurieren",
     "claimAssigneeCase": "Anmaßen",
     "deleteConfirmation": {
