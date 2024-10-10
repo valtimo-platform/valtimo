@@ -281,6 +281,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         this.listService.forceRefresh$,
         this._hasEnvColumnConfig$,
         this._hasApiColumnConfig$,
+        this.statusService.caseStatuses$,
       ]).pipe(debounceTime(50))
     ),
     distinctUntilChanged(
@@ -326,6 +327,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         _,
         hasEnvColumnConfig,
         hasApiColumnConfig,
+        allStatuses,
       ]) => {
         const obsEnv: Observable<boolean> = of(hasEnvColumnConfig);
         const obsApi: Observable<boolean> = of(hasApiColumnConfig);
@@ -353,7 +355,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
             hasEnvColumnConfig: obsEnv,
             hasApiColumnConfig: obsApi,
             isSearchResult: of(true),
-            selectedStatuses: of(selectedStatuses),
+            allStatuses: of(allStatuses),
           });
         }
 
@@ -377,7 +379,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
           hasEnvColumnConfig: obsEnv,
           hasApiColumnConfig: obsApi,
           isSearchResult: of(false),
-          selectedStatuses: of(selectedStatuses),
+          allStatuses: of(allStatuses),
         });
       }
     ),
@@ -413,6 +415,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         hasApiColumnConfig: boolean;
         isSearchResult: boolean;
         selectedStatuses: InternalCaseStatus[];
+        allStatuses: InternalCaseStatus[];
       }) => {
         this.paginationService.setCollectionSize(res.documents);
         this.paginationService.checkPage(res.documents);
@@ -424,7 +427,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
             res.hasEnvColumnConfig,
             res.hasApiColumnConfig
           ),
-          statuses: res.selectedStatuses,
+          statuses: res.allStatuses,
         };
       }
     ),
