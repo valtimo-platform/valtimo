@@ -16,10 +16,7 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {
-  FunctionConfigurationComponent,
-  FunctionConfigurationData,
-  PluginConfigurationComponent,
-  PluginConfigurationData,
+  FunctionConfigurationComponent
 } from '../../../../models';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} from 'rxjs';
 import {StoreTempDocumentConfig, DocumentLanguage, DocumentStatus} from '../../models';
@@ -30,7 +27,6 @@ import {ConfidentialityLevel} from '../../../documenten-api/models';
 @Component({
   selector: 'valtimo-store-temp-document-configuration',
   templateUrl: './store-temp-document-configuration.component.html',
-  styleUrls: ['./store-temp-document-configuration.component.scss'],
 })
 export class StoreTempDocumentConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
