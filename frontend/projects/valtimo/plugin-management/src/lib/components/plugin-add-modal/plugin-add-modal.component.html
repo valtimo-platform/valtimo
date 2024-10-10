@@ -20,7 +20,7 @@
   [disabled]="inputDisabled$ | async"
   [returnToFirstStepSubject$]="returnToFirstStepSubject$"
 >
-  <cds-modal #pluginAddModal [open]="open">
+  <cds-modal valtimoCdsModal #pluginAddModal [open]="open">
     <cds-modal-header [showCloseButton]="true" (closeSelect)="hide()">
       <v-stepper-header></v-stepper-header>
     </cds-modal-header>
