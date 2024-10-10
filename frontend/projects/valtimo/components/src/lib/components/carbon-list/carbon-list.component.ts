@@ -125,6 +125,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @Input() paginatorConfig: CarbonPaginatorConfig = DEFAULT_PAGINATOR_CONFIG;
   private _pagination: Pagination;
+  private _isPaginationInit = false;
   @Input() public set pagination(value: Partial<Pagination> | false) {
     if (!value) {
       return;
@@ -136,6 +137,11 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this._pagination = {...this._pagination, ...value};
     this.buildPaginationModel();
+
+    if (this._isPaginationInit || !value.size) return;
+
+    this.setPaginationSize(value.size.toString());
+    this._isPaginationInit = true;
   }
   public get pagination(): Pagination {
     return this._pagination;
