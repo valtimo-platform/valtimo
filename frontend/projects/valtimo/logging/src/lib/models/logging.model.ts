@@ -45,10 +45,19 @@ enum LogLevel {
   WARN = 'WARN',
 }
 
+const LOG_LEVEL_TAG = {
+  [LogLevel.DEBUG]: 'teal',
+  [LogLevel.ERROR]: 'red',
+  [LogLevel.INFO]: 'blue',
+  [LogLevel.TRACE]: 'grey',
+  [LogLevel.WARN]: 'purple',
+};
+
 const LOG_ELLIPSIS_LIMIT = 128;
 
 export {
   LOG_ELLIPSIS_LIMIT,
+  LOG_LEVEL_TAG,
   LoggingEvent,
   LoggingEventProperty,
   LoggingEventSearchRequest,

@@ -1,0 +1,7 @@
+.valtimo-log-details__content {
+  padding: 32px;
+
+  ::ng-deep .ngx-json-viewer {
+    overflow: auto !important;
+  }
+}

@@ -14,12 +14,12 @@
   ~ limitations under the License.
   -->
 
-<cds-modal [open]="logEventModel !== null" size="lg">
+<cds-modal [open]="open" size="lg">
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()">
     {{ 'logging.detailsTitle' | translate }}
   </cds-modal-header>
 
-  <section cdsModalContent>
-    <valtimo-editor [disabled]="true" [model]="logEventModel"></valtimo-editor>
+  <section cdsModalContent class="valtimo-log-details__content">
+    <ngx-json-viewer *ngIf="logEvent" [json]="logEvent"></ngx-json-viewer>
   </section>
 </cds-modal>

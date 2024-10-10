@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {Router} from '@angular/router';
+import {TranslateService} from '@ngx-translate/core';
+import {CARBON_CONSTANTS} from '@valtimo/components';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
+import {NotificationService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, of, switchMap} from 'rxjs';
 import {DossierListService} from '../../services';
 import {DossierProcessStartModalComponent} from '../dossier-process-start-modal/dossier-process-start-modal.component';
@@ -25,6 +29,7 @@ declare const $;
   selector: 'valtimo-dossier-list-actions',
   templateUrl: './dossier-list-actions.component.html',
   styleUrls: ['./dossier-list-actions.component.scss'],
+  providers: [NotificationService],
 })
 export class DossierListActionsComponent implements OnInit {
   @ViewChild('processStartModal') processStart: DossierProcessStartModalComponent;
@@ -34,7 +39,7 @@ export class DossierListActionsComponent implements OnInit {
     this._loading$.next(value);
   }
 
-  @Output() formFlowComplete = new EventEmitter();
+  @Output() public readonly formFlowComplete = new EventEmitter();
   @Output() public readonly startButtonDisableEvent = new EventEmitter<boolean>();
 
   public readonly associatedProcessDocumentDefinitions$: Observable<
@@ -59,14 +64,15 @@ export class DossierListActionsComponent implements OnInit {
   );
 
   private selectedProcessDocumentDefinition: ProcessDocumentDefinition | null = null;
-
   private modalListenerAdded = false;
-
   private _cachedAssociatedProcessDocumentDefinitions: Array<ProcessDocumentDefinition> = [];
 
   constructor(
     private readonly documentService: DocumentService,
-    private readonly listService: DossierListService
+    private readonly listService: DossierListService,
+    private readonly notificationService: NotificationService,
+    private readonly router: Router,
+    private readonly translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {
@@ -96,6 +102,27 @@ export class DossierListActionsComponent implements OnInit {
 
   public onFormFlowComplete(): void {
     this.formFlowComplete.emit(null);
+  }
+
+  public onNoProcessLinked(): void {
+    this.notificationService.ngOnDestroy();
+
+    this.notificationService.showActionable({
+      type: 'warning',
+      lowContrast: true,
+      title: this.translateService.instant('dossier.noLinkedProcessNotification'),
+      actions: [
+        {
+          text: this.translateService.instant('dossier.configure'),
+          click: () => this.onConfigureClick(),
+        },
+      ],
+      duration: CARBON_CONSTANTS.notificationDuration,
+    });
+  }
+
+  private onConfigureClick(): void {
+    this.router.navigate(['/process-links']);
   }
 
   private showStartProcessModal(): void {

@@ -150,6 +150,8 @@
       "noFiles": "No files found for this case."
     },
     "startSubProcess": "Start",
+    "noLinkedProcessNotification": "There is no start form linked",
+    "configure": "Configure",
     "claimAssigneeCase": "Claim",
     "deleteConfirmation": {
       "title": "Delete file",
@@ -263,12 +265,13 @@
   "summary": {
     "userTasksDoneState": "All tasks have been completed",
     "taskLocked": "You don't have access to this task",
-    "myTasks": "Tasks",
+    "tasks": "Tasks",
+    "myTasks": "My tasks",
     "otherTasks": "Other tasks",
     "taskOpen": "Open",
     "taskCreated": "Created",
-    "noResultsMyTasks": "No tasks assigned to this user.",
-    "noResultsOtherTasks": "No tasks assigned to other users."
+    "noResultsMyTasks": "No tasks available for to this user.",
+    "noResultsOtherTasks": "No tasks available to other users."
   },
   "progress": {
     "noProcessDocumentInstances": "There is no process started yet",
@@ -1852,7 +1855,7 @@
   "logging": {
     "columns": {
       "timestamp": "Timestamp",
-      "formattedMessage": "Formatted message",
+      "formattedMessage": "Message",
       "level": "Log level"
     },
     "search": {

@@ -19,6 +19,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Filter16, TrashCan16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
 import {
+  CARBON_CONSTANTS,
   CarbonListItem,
   CarbonListModule,
   ColumnConfig,
@@ -39,6 +40,7 @@ import {
   combineLatest,
   map,
   Observable,
+  startWith,
   Subscription,
   switchMap,
   take,
@@ -46,6 +48,7 @@ import {
 } from 'rxjs';
 import {
   LOG_ELLIPSIS_LIMIT,
+  LOG_LEVEL_TAG,
   LoggingEvent,
   LoggingEventProperty,
   LoggingEventQueryParams,
@@ -91,16 +94,25 @@ export class LoggingListComponent implements OnInit, OnDestroy {
         collectionSize: loggingPage.totalElements,
       });
 
-      return loggingPage.content;
+      return loggingPage.content.map((logEvent: LoggingEvent) => ({
+        ...logEvent,
+        tags: [
+          {
+            content: logEvent.level,
+            type: LOG_LEVEL_TAG[logEvent.level],
+          },
+        ],
+      }));
     }),
+    startWith([]),
     tap(() => {
       this.loading$.next(false);
     })
   );
 
-  public readonly initSearchRequest$ = new BehaviorSubject<LoggingEventSearchRequest | null>(null);
   public readonly searchRequest$ = new BehaviorSubject<LoggingEventSearchRequest>({});
   public readonly pagination$ = new BehaviorSubject<Pagination>(DEFAULT_PAGINATION);
+  public readonly logDetailsOpen$ = new BehaviorSubject<boolean>(false);
   public readonly selectedLogEvent$ = new BehaviorSubject<LoggingEvent | null>(null);
 
   public readonly FIELDS: ColumnConfig[] = [
@@ -112,7 +124,7 @@ export class LoggingListComponent implements OnInit, OnDestroy {
     {
       key: 'level',
       label: 'logging.columns.level',
-      viewType: ViewType.TEXT,
+      viewType: ViewType.TAGS,
     },
     {
       key: 'formattedMessage',
@@ -142,11 +154,21 @@ export class LoggingListComponent implements OnInit, OnDestroy {
   }
 
   public onCloseModalEvent(): void {
-    this.selectedLogEvent$.next(null);
+    this.logDetailsOpen$.next(false);
+
+    setTimeout(() => {
+      this.selectedLogEvent$.next(null);
+    }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
-  public onPaginationClicked(page: number): void {
-    this.pagination$.next({...this.pagination$.getValue(), page});
+  public onPaginationClicked(page: number, logItems: CarbonListItem[]): void {
+    const activePagination: Pagination = this.pagination$.getValue();
+    const searchRequest: LoggingEventSearchRequest = this.searchRequest$.getValue();
+
+    if (!searchRequest.beforeTimestamp && activePagination.page === 1)
+      this.searchRequest$.next({...searchRequest, beforeTimestamp: logItems[0].timestamp});
+
+    this.pagination$.next({...activePagination, page});
   }
 
   public onPaginationSet(size: number): void {
@@ -158,6 +180,7 @@ export class LoggingListComponent implements OnInit, OnDestroy {
 
   public onRowClickedEvent(rowClickEvent: LoggingEvent & {ctrlClick: boolean}): void {
     const {ctrlClick: _, ...logEvent} = rowClickEvent;
+    this.logDetailsOpen$.next(true);
     this.selectedLogEvent$.next(logEvent);
   }
 
@@ -167,7 +190,6 @@ export class LoggingListComponent implements OnInit, OnDestroy {
 
   public onClearFilter(): void {
     this.onSearchSubmitEvent({});
-    this.initSearchRequest$.next({});
   }
 
   private base64ToObject(base64string: string): object {
@@ -227,7 +249,6 @@ export class LoggingListComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe(({size, page, searchRequest}) => {
-        this.initSearchRequest$.next(this.mapQueryParamsToSearchRequest(searchRequest));
         this.searchRequest$.next(this.mapQueryParamsToSearchRequest(searchRequest));
         this.pagination$.next({
           ...this.pagination$.getValue(),

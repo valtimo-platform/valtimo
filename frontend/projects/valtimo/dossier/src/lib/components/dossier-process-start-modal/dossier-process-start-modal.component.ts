@@ -28,7 +28,12 @@ import {
 } from '@angular/core';
 import {PermissionService} from '@valtimo/access-control';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
-import {FormFlowService, FormSubmissionResult, ProcessLinkService, UrlResolverService} from '@valtimo/process-link';
+import {
+  FormFlowService,
+  FormSubmissionResult,
+  ProcessLinkService,
+  UrlResolverService,
+} from '@valtimo/process-link';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ProcessService} from '@valtimo/process';
 import {
@@ -75,6 +80,7 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
   @ViewChild('formViewModelComponent', {static: true, read: ViewContainerRef})
   public formViewModelDynamicContainer: ViewContainerRef;
   @Output() formFlowComplete = new EventEmitter();
+  @Output() noProcessLinked = new EventEmitter();
 
   private _subscriptions = new Subscription();
 
@@ -91,7 +97,7 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
     private startModalService: StartModalService,
     private configService: ConfigService,
     @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel,
-    private urlResolverService: UrlResolverService,
+    private urlResolverService: UrlResolverService
   ) {
     this._useStartEventNameAsStartFormTitle =
       this.configService.config.featureToggles?.useStartEventNameAsStartFormTitle;
@@ -145,20 +151,26 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
               break;
             case 'url':
               this.processLinkId = startProcessResult.processLinkId;
-              this.processLinkService.getVariables()
+              this.processLinkService
+                .getVariables()
                 .pipe(take(1))
                 .subscribe(variables => {
-                let url = this.urlResolverService.resolveUrlVariables(startProcessResult.properties.url, variables.variables)
-                window.open(url, '_blank').focus();
-                this.processLinkService.submitURLProcessLink(
-                    this.processLinkId
-                ).subscribe(result => {
-                  this.submitCompleted(result);
+                  let url = this.urlResolverService.resolveUrlVariables(
+                    startProcessResult.properties.url,
+                    variables.variables
+                  );
+                  window.open(url, '_blank').focus();
+                  this.processLinkService
+                    .submitURLProcessLink(this.processLinkId)
+                    .subscribe(result => {
+                      this.submitCompleted(result);
+                    });
                 });
-              })
 
               break;
           }
+        } else {
+          this.noProcessLinked.emit();
         }
       });
   }

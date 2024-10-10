@@ -150,6 +150,8 @@
       "noFiles": "Geen bestanden gevonden voor deze zaak."
     },
     "startSubProcess": "Start",
+    "noLinkedProcessNotification": "Er is geen startformulier gekoppeld",
+    "configure": "Configureer",
     "claimAssigneeCase": "Claimen",
     "deleteConfirmation": {
       "title": "Bestand verwijderen",
@@ -263,12 +265,13 @@
   "summary": {
     "userTasksDoneState": "Alle taken zijn afgerond",
     "taskLocked": "Je hebt geen toegang tot deze taak",
-    "myTasks": "Taken",
+    "tasks": "Taken",
+    "myTasks": "Mijn taken",
     "otherTasks": "Overige taken",
     "taskOpen": "Open",
     "taskCreated": "Aangemaakt op",
-    "noResultsMyTasks": "Er zijn geen taken toegewezen aan deze gebruiker.",
-    "noResultsOtherTasks": "Er zijn geen taken toegewezen aan andere gebruikers."
+    "noResultsMyTasks": "Er zijn geen taken beschikbaar voor deze gebruiker.",
+    "noResultsOtherTasks": "Er zijn geen taken beschikbaar voor andere gebruikers."
   },
   "progress": {
     "noProcessDocumentInstances": "Er is nog geen proces gestart",
@@ -1852,8 +1855,8 @@
   },
   "logging": {
     "columns": {
-      "timestamp": "Tijdstempel",
-      "formattedMessage": "Opgemaakt bericht",
+      "timestamp": "Tijd",
+      "formattedMessage": "Bericht",
       "level": "Logniveau"
     },
     "search": {
