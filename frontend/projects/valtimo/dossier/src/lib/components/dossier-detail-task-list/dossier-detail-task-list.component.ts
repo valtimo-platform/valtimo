@@ -124,10 +124,7 @@ export class DossierDetailTaskListComponent {
 
       return this.getSortedTasks(uniqueTasks);
     }),
-    switchMap((tasks: ProcessInstanceTask[]) =>
-      combineLatest([of(tasks), this.userProviderService.getUserSubject()])
-    ),
-    map(([tasks, userIdentity]) => this.sortTasksToUser(tasks, userIdentity)),
+    map(tasks => this.sortTasksOnPermission(tasks)),
     tap(() => this.loadingTasks$.next(false))
   );
 
@@ -201,13 +198,13 @@ export class DossierDetailTaskListComponent {
     });
   }
 
-  private sortTasksToUser(
-    tasks: ProcessInstanceTask[],
-    user: UserIdentity
-  ): {myTasks: ProcessInstanceTask[]; otherTasks: ProcessInstanceTask[]} {
+  private sortTasksOnPermission(tasks: ProcessInstanceTask[]): {
+    myTasks: ProcessInstanceTask[];
+    otherTasks: ProcessInstanceTask[];
+  } {
     return tasks.reduce(
       (acc, curr) =>
-        curr.assignee === user.username || curr.assignee === user.id
+        !curr.isLocked
           ? {...acc, myTasks: [...acc.myTasks, curr]}
           : {...acc, otherTasks: [...acc.otherTasks, curr]},
       {myTasks: [] as ProcessInstanceTask[], otherTasks: [] as ProcessInstanceTask[]}

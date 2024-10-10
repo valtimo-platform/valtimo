@@ -20,22 +20,18 @@
   padding: 24px;
   display: flex;
   flex-direction: column;
+  gap: 16px;
 
-  & > *:first-child {
-    margin-bottom: 16px;
-  }
-
-  &__title,
-  &__subtitle {
+  &__title {
     font-size: 24px;
-    font-style: normal;
-    font-weight: 600;
     line-height: 24px;
-    margin-bottom: 16px;
+    font-weight: 600;
   }
 
   &__subtitle {
-    font-size: 18px;
+    font-size: 16px;
+    line-height: 16px;
+    font-weight: 600;
   }
 
   &__tasks-container {

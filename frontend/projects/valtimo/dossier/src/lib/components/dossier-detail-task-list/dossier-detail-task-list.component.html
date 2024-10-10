@@ -23,8 +23,10 @@
   } @else if (obs.tasks?.myTasks?.length === 0 && obs.tasks?.otherTasks?.length === 0) {
     <ng-container *ngTemplateOutlet="noTasksTemplate"></ng-container>
   } @else {
+    <h2 class="task-list__title">{{ 'summary.tasks' | translate }}</h2>
+
     <div class="task-list__tasks-container" cdsLayer="1">
-      <h2 class="task-list__title">{{ 'summary.myTasks' | translate }}</h2>
+      <h3 class="task-list__subtitle">{{ 'summary.myTasks' | translate }}</h3>
 
       @if (obs.tasks?.myTasks.length === 0) {
         {{ 'summary.noResultsMyTasks' | translate }}
@@ -62,8 +64,8 @@
       <div class="task__header">
         <span class="task__title">{{ task.name }}</span>
 
-        <cds-tag class="cds-tag--no-margin" [type]="task.locked ? 'cool-gray' : 'green'">
-          @if (!task.locked) {
+        <cds-tag class="cds-tag--no-margin" [type]="task.isLocked ? 'cool-gray' : 'green'">
+          @if (!task.isLocked) {
             {{ 'summary.taskOpen' | translate }}
           } @else {
             <i class="icon mdi mdi-lock"></i>

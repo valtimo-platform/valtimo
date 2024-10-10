@@ -265,12 +265,13 @@
   "summary": {
     "userTasksDoneState": "Alle taken zijn afgerond",
     "taskLocked": "Je hebt geen toegang tot deze taak",
-    "myTasks": "Taken",
+    "tasks": "Taken",
+    "myTasks": "Mijn taken",
     "otherTasks": "Overige taken",
     "taskOpen": "Open",
     "taskCreated": "Aangemaakt op",
-    "noResultsMyTasks": "Er zijn geen taken toegewezen aan deze gebruiker.",
-    "noResultsOtherTasks": "Er zijn geen taken toegewezen aan andere gebruikers."
+    "noResultsMyTasks": "Er zijn geen taken beschikbaar voor deze gebruiker.",
+    "noResultsOtherTasks": "Er zijn geen taken beschikbaar voor andere gebruikers."
   },
   "progress": {
     "noProcessDocumentInstances": "Er is nog geen proces gestart",
