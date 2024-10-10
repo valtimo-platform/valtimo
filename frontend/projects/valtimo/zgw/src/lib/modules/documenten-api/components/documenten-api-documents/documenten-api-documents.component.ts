@@ -187,6 +187,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
   public readonly pagination$ = new BehaviorSubject<Pagination>(DEFAULT_PAGINATION);
   private readonly _refetch$ = new BehaviorSubject<null>(null);
   private readonly _sort$ = new ReplaySubject<{sort: string} | null>();
+  private readonly valtimoEndpointUri!: string;
 
   public readonly paginatorConfig = {
     ...DEFAULT_PAGINATOR_CONFIG,
@@ -253,6 +254,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
     private readonly documentenApiVersionService: DocumentenApiVersionService
   ) {
     this.iconService.register(Filter16);
+    this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
   public ngOnInit(): void {
@@ -415,7 +417,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
 
   private downloadDocument(relatedFile: DocumentenApiRelatedFile, forceDownload: boolean): void {
     this.downloadService.downloadFile(
-      `/api/v1/documenten-api/${relatedFile.pluginConfigurationId}/files/${relatedFile.fileId}/download`,
+      `${this.valtimoEndpointUri}/api/v1/documenten-api/${relatedFile.pluginConfigurationId}/files/${relatedFile.fileId}/download`,
       relatedFile.bestandsnaam ?? '',
       forceDownload
     );
