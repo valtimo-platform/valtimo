@@ -22,7 +22,6 @@ import {DownloadDocumentConfig} from '../../models';
 @Component({
   selector: 'valtimo-download-document-configuration',
   templateUrl: './download-document-configuration.component.html',
-  styleUrls: ['./download-document-configuration.component.scss'],
 })
 export class DownloadDocumentConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy

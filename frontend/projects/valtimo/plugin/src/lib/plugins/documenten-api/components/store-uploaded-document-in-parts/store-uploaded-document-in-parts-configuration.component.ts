@@ -19,10 +19,10 @@ import {FunctionConfigurationComponent} from '../../../../models';
 import {Observable, Subscription} from 'rxjs';
 
 @Component({
-  selector: 'valtimo-store-uploaded-document-configuration',
-  templateUrl: './store-uploaded-document-configuration.component.html',
+  selector: 'valtimo-store-uploaded-document-in-parts-configuration',
+  templateUrl: './store-uploaded-document-in-parts-configuration.component.html',
 })
-export class StoreUploadedDocumentConfigurationComponent
+export class StoreUploadedDocumentInPartsConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
   @Input() save$: Observable<void>;
@@ -34,12 +34,12 @@ export class StoreUploadedDocumentConfigurationComponent
 
   private saveSubscription!: Subscription;
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openSaveSubscription();
     this.emitValid();
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this.saveSubscription?.unsubscribe();
   }
 
@@ -48,7 +48,7 @@ export class StoreUploadedDocumentConfigurationComponent
   }
 
   private openSaveSubscription(): void {
-    this.saveSubscription = this.save$?.subscribe(save => {
+    this.saveSubscription = this.save$?.subscribe(() => {
       this.configuration.emit({});
     });
   }

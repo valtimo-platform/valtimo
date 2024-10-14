@@ -22,12 +22,14 @@ import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/c
 import {StoreTempDocumentConfigurationComponent} from './components/store-temp-document/store-temp-document-configuration.component';
 import {StoreUploadedDocumentConfigurationComponent} from './components/store-uploaded-document/store-uploaded-document-configuration.component';
 import {DownloadDocumentConfigurationComponent} from './components/download-document/download-document-configuration.component';
+import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
 
 @NgModule({
   declarations: [
     DocumentenApiConfigurationComponent,
     StoreTempDocumentConfigurationComponent,
     StoreUploadedDocumentConfigurationComponent,
+    StoreUploadedDocumentInPartsConfigurationComponent,
     DownloadDocumentConfigurationComponent,
   ],
   imports: [
@@ -42,6 +44,7 @@ import {DownloadDocumentConfigurationComponent} from './components/download-docu
     DocumentenApiConfigurationComponent,
     StoreTempDocumentConfigurationComponent,
     StoreUploadedDocumentConfigurationComponent,
+    StoreUploadedDocumentInPartsConfigurationComponent,
     DownloadDocumentConfigurationComponent,
   ],
 })
