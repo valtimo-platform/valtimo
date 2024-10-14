@@ -34,6 +34,7 @@ import {WidgetDashboardComponent} from './components/widget-dashboard/widget-das
 import {DATA_SOURCE_TOKEN, DISPLAY_TYPE_TOKEN} from './constants';
 import {DashboardRoutingModule} from './dashboard-routing.module';
 import {WidgetTranslatePipeModule} from './pipes';
+import {DisplayWidgetTypesModule} from './display-types/display-widget-types.module';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(httpClient: HttpClient) {
@@ -63,6 +64,7 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     WidgetTranslatePipeModule,
     LoadingModule,
     CarbonListModule,
+    DisplayWidgetTypesModule,
   ],
   exports: [DashboardComponent, WidgetDashboardComponent],
   providers: [

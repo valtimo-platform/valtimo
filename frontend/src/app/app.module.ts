@@ -54,14 +54,10 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {CustomFormExampleComponent} from './custom-form-example/custom-form-example.component';
 import {StartProcessCustomFormComponent} from './start-process-custom-form/start-process-custom-form.component';
 import {
-  BigNumberModule,
   CaseCountDataSourceModule,
   CaseCountsDataSourceModule,
   CaseGroupByDataSourceModule,
   DashboardModule,
-  DonutModule,
-  GaugeModule,
-  MeterModule,
 } from '@valtimo/dashboard';
 import {DashboardManagementModule} from '@valtimo/dashboard-management';
 import {DocumentModule} from '@valtimo/document';
@@ -222,10 +218,6 @@ export function tabsFactory() {
     }),
     ObjectModule,
     ObjectManagementModule,
-    BigNumberModule,
-    DonutModule,
-    GaugeModule,
-    MeterModule,
     CaseCountDataSourceModule,
     CaseCountsDataSourceModule,
     CaseGroupByDataSourceModule,
