@@ -175,10 +175,9 @@ export class DossierManagementDetailContainerComponent
           injectedTab => injectedTab.translationKey === currentTab
         );
 
+        this._contentContainer.clear();
         if (findInjectedTab && this._contentContainer) {
           this._contentContainer.createComponent(findInjectedTab.component);
-        } else {
-          this._contentContainer.clear();
         }
       })
     );
