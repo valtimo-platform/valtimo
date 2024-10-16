@@ -378,13 +378,13 @@ export class DossierDetailComponent
       .pipe(catchError(() => this.isAdmin$))
       .subscribe((result: TaskProcessLinkResult | boolean) => {
         if (isBoolean(result)) {
-          this.handleNoTaskProcessLink(result);
+          this.handleNoTaskProcessLink(result as boolean);
           return;
         }
 
         const displayType =
-          result.properties.formDisplayType || DOSSIER_DETAIL_DEFAULT_DISPLAY_TYPE;
-        const size = result.properties.formSize || DOSSIER_DETAIL_DEFAULT_DISPLAY_SIZE;
+          (result as TaskProcessLinkResult).properties.formDisplayType || DOSSIER_DETAIL_DEFAULT_DISPLAY_TYPE;
+        const size = (result as TaskProcessLinkResult).properties.formSize || DOSSIER_DETAIL_DEFAULT_DISPLAY_SIZE;
 
         this.dossierDetailLayoutService.setFormDisplaySize(size);
         this.dossierDetailLayoutService.setFormDisplayType(displayType);
