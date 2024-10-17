@@ -15,19 +15,21 @@
   -->
 
 <valtimo-carbon-list
-  *ngIf="logItems$ | async as logItems"
-  [items]="logItems"
+  *ngIf="{logItems: logItems$ | async, isSearchActive: isSearchActive$ | async} as obs"
+  [items]="obs.logItems"
   [fields]="FIELDS"
   [loading]="loading$ | async"
   [pagination]="pagination$ | async"
   paginationIdentifier="logging"
-  (paginationClicked)="onPaginationClicked($event, logItems)"
+  (paginationClicked)="onPaginationClicked($event, obs.logItems)"
   (paginationSet)="onPaginationSet($event)"
   (rowClicked)="onRowClickedEvent($event)"
 >
   <valtimo-no-results
-    [action]="clearSearchButton"
-    [description]="'logging.noResults.description' | translate"
+    [action]="obs.isSearchActive ? clearSearchButton : null"
+    [description]="
+      'logging.noResults.' + (obs.isSearchActive ? 'searchDescription' : 'description') | translate
+    "
     [title]="'logging.noResults.title' | translate"
   ></valtimo-no-results>
 

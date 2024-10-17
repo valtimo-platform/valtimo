@@ -42,6 +42,7 @@
       [actions]="actions"
       [items]="timelineItems"
     ></valtimo-timeline>
+    
     <valtimo-no-results
       *ngIf="timelineItems.length === 0"
       [description]="'dossier.notes.noResults.description' | translate"

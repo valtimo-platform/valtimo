@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-.timeline-activity {
-  font-size: 100%;
-}
+.timeline {
+  &-activity {
+    font-size: 100%;
+  }
 
-.timeline-summary p {
-  font-size: 0.8rem;
+  &-summary p {
+    font-size: 0.8rem;
+    white-space: pre-line;
+  }
 }
 
 .actions-dropdown {

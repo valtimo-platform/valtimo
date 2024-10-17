@@ -95,7 +95,6 @@ interface ValtimoConfigFeatureToggles {
   enableUserNameInTopBarToggle?: boolean;
   enableFormViewModel?: boolean;
   enableIntermediateSave?: boolean;
-  enableTaskPanel?: boolean;
   enableFormFlowBreadcrumbs?: boolean;
 }
 

@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormService} from '@valtimo/form';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, tap} from 'rxjs';
+import {take} from 'rxjs/operators';
+
+import {FormDefinitionListItem, FormProcessLinkUpdateRequestDto} from '../../models';
 import {
   ProcessLinkButtonService,
   ProcessLinkService,
   ProcessLinkStateService,
 } from '../../services';
-import {FormDefinitionListItem, FormProcessLinkUpdateRequestDto} from '../../models';
-import {take} from 'rxjs/operators';
-import {ConfigService} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-select-form',
@@ -60,10 +59,8 @@ export class SelectFormComponent implements OnInit, OnDestroy {
 
   private _subscriptions = new Subscription();
   private isUserTask$ = new BehaviorSubject<boolean>(false);
-  private readonly taskPanelToggle = this.configService.featureToggles?.enableTaskPanel;
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly formService: FormService,
     private readonly stateService: ProcessLinkStateService,
     private readonly processLinkService: ProcessLinkService,
@@ -147,11 +144,10 @@ export class SelectFormComponent implements OnInit, OnDestroy {
           id: selectedProcessLink.id,
           formDefinitionId: this.selectedFormDefinition.id,
           viewModelEnabled,
-          ...(this.taskPanelToggle &&
-            isUserTask && {
-              formDisplayType: this.formDisplayValue,
-            }),
-          ...(this.taskPanelToggle && isUserTask && {formSize: this.formSizeValue}),
+          ...(isUserTask && {
+            formDisplayType: this.formDisplayValue,
+          }),
+          ...(isUserTask && {formSize: this.formSizeValue}),
         };
 
         this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
@@ -182,14 +178,12 @@ export class SelectFormComponent implements OnInit, OnDestroy {
             processLinkType: processLinkTypeId,
             activityId: modalParams.element.id,
             viewModelEnabled,
-            ...(this.taskPanelToggle &&
-              isUserTask && {
-                formDisplayType: this.formDisplayValue,
-              }),
-            ...(this.taskPanelToggle &&
-              isUserTask && {
-                formSize: this.formSizeValue,
-              }),
+            ...(isUserTask && {
+              formDisplayType: this.formDisplayValue,
+            }),
+            ...(isUserTask && {
+              formSize: this.formSizeValue,
+            }),
           })
         )
       )

@@ -19,7 +19,7 @@ import {TimelineItem} from '../../models';
 @Component({
   selector: 'valtimo-timeline',
   templateUrl: './timeline.component.html',
-  styleUrls: ['./timeline.component.css'],
+  styleUrls: ['./timeline.component.scss'],
 })
 export class TimelineComponent {
   @Input() items: Array<TimelineItem>;
