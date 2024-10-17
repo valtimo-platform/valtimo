@@ -22,17 +22,13 @@
   max-width: 100%;
 }
 
+::ng-deep .cds--label {
+  width: 100%;
+}
+
 .label-with-tooltip {
   display: flex;
   align-items: center;
-}
-
-.cds--text-input__field-wrapper:not(:last-child) {
-  margin-bottom: 1rem;
-}
-
-.no-margin {
-  margin-bottom: 0 !important;
 }
 
 .display-type-dropdown {
@@ -40,6 +36,9 @@
 }
 
 .list-column-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   margin-bottom: 3rem;
 }
 

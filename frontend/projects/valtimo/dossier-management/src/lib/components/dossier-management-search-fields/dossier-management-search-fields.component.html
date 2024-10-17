@@ -98,6 +98,7 @@
     "
     [open]="modalShowing$ | async"
     [showFooter]="true"
+    size="sm"
   >
     <cds-modal-header [showCloseButton]="true" (closeSelect)="onModalClose()">
       <h3 cdsModalHeaderHeading>
@@ -125,7 +126,6 @@
           [defaultValue]="searchObs.searchField?.title"
           [disabled]="obs.disableInput"
           [required]="false"
-          [fullWidth]="true"
           [tooltip]="'searchFieldsOverviewTooltips.title' | translate"
           [carbonTheme]="CARBON_THEME"
         >
@@ -139,7 +139,6 @@
           [defaultValue]="searchObs.searchField?.key"
           [disabled]="obs.disableInput || !searchFieldActionTypeIsAdd"
           [required]="true"
-          [widthPx]="200"
           [tooltip]="'searchFieldsOverviewTooltips.key' | translate"
           [carbonTheme]="CARBON_THEME"
         >
@@ -168,7 +167,6 @@
           [required]="true"
           name="dataType"
           [defaultSelectionId]="searchObs.searchField?.dataType"
-          [widthInPx]="200"
           [tooltip]="'searchFieldsOverviewTooltips.dataType' | translate"
           [carbonTheme]="CARBON_THEME"
           dataTestId="dossier-management-search-dataTypes"
@@ -186,7 +184,6 @@
           [required]="true"
           name="matchType"
           [defaultSelectionId]="searchObs.searchField?.matchType"
-          [widthInPx]="200"
           [tooltip]="'searchFieldsOverviewTooltips.matchType' | translate"
           [carbonTheme]="CARBON_THEME"
           dataTestId="dossier-management-search-matchTypes"
@@ -204,7 +201,6 @@
           [required]="true"
           name="fieldType"
           [defaultSelectionId]="searchObs.searchField?.fieldType"
-          [widthInPx]="200"
           [tooltip]="'searchFieldsOverviewTooltips.fieldType' | translate"
           [carbonTheme]="CARBON_THEME"
           dataTestId="dossier-management-search-fieldTypes"
@@ -225,7 +221,6 @@
           [required]="false"
           name="dropdownDataProvider"
           [defaultSelectionId]="searchObs.searchField?.dropdownDataProvider"
-          [widthInPx]="200"
           [tooltip]="'searchFieldsOverviewTooltips.dropdownDataProvider' | translate"
           [carbonTheme]="CARBON_THEME"
           dataTestId="dossier-management-search-dropdownDataProvider"
