@@ -14,7 +14,11 @@
   ~ limitations under the License.
   -->
 
-<div *ngIf="(editFormModified$ | async) && form$ | async as formDefinition">
+<div
+  class="formio-carbon"
+  cdsLayer="1"
+  *ngIf="(editFormModified$ | async) && form$ | async as formDefinition"
+>
   <form-builder
     [form]="formDefinition"
     [rebuild]="triggerRebuild"
