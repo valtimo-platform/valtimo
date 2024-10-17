@@ -1867,7 +1867,8 @@
       "properties": "Eigenschappen"
     },
     "noResults": {
-      "description": "Er zijn geen logregels die overeenkomen met je zoekcriteria",
+      "description": "Er zijn nog geen lijnen geregistreerd",
+      "searchDescription": "Er zijn geen logregels die overeenkomen met je zoekcriteria",
       "title": "Er zijn geen logboeken"
     },
     "detailsTitle": "Loggegevens"

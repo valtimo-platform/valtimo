@@ -1861,7 +1861,8 @@
       "properties": "Eigenschaften"
     },
     "noResults": {
-      "description": "Keine Protokolle entsprechen Ihren Suchkriterien",
+      "description": "Es wurden noch keine Zeilen protokolliert",
+      "searchDescription": "Keine Protokolle entsprechen Ihren Suchkriterien",
       "title": "Es gibt keine Protokolle"
     },
     "detailsTitle": "Protokolldetails"

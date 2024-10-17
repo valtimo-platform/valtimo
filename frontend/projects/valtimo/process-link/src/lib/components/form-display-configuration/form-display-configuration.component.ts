@@ -21,7 +21,6 @@ export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
   public readonly formSizeValue$ = new BehaviorSubject<FormSize | null>(null);
   public readonly disableFormSizeInput$ = new BehaviorSubject<boolean>(true);
   public readonly saving$ = this.stateService.saving$;
-  public readonly taskPanelEnabled$ = new BehaviorSubject<boolean>(false);
   public readonly isUserTask$ = new BehaviorSubject<boolean>(false);
 
   private readonly _DISPLAY_TYPE_OPTIONS: FormDisplayType[] = ['modal', 'panel'];
@@ -60,7 +59,6 @@ export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
     private readonly stateService: ProcessLinkStateService,
     private readonly translateService: TranslateService
   ) {
-    this.taskPanelEnabled$.next(!!this.configService.featureToggles?.enableTaskPanel);
   }
 
   public ngOnInit(): void {
@@ -75,8 +73,8 @@ export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
           if (selectedProcessLink.formDisplayType) this.disableFormSizeInput$.next(false);
           if (selectedProcessLink.activityType.includes('bpmn:UserTask'))
             this.isUserTask$.next(true);
-          this.formDisplayValue$.next(selectedProcessLink.formDisplayType);
-          this.formSizeValue$.next(selectedProcessLink.formSize);
+          this.formDisplayValue$.next(selectedProcessLink.formDisplayType ?? null);
+          this.formSizeValue$.next(selectedProcessLink.formSize ?? null);
         }
       })
     );

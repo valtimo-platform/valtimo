@@ -134,6 +134,7 @@
       isYesNo: isYesNo$ | async,
     } as modalObs"
     [open]="modalObs.show"
+    size="sm"
   >
     <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
       <h3 cdsModalHeaderHeading>
@@ -153,133 +154,130 @@
 
 <ng-template #modalContent let-modalObs="modalObs">
   <form [formGroup]="formGroup" class="list-column-form">
-    <div class="cds--text-input__field-wrapper">
-      <cds-label [disabled]="modalObs.disableInput">
-        <span class="label-with-tooltip">
-          {{ 'listColumn.titleTitle' | translate }}
-          <v-tooltip-icon
-            [tooltip]="'listColumn.titleTooltip' | translate"
-            [disabled]="modalObs.disableInput"
-          ></v-tooltip-icon>
-        </span>
-        <input cdsText formControlName="title" />
-      </cds-label>
-    </div>
-    <div class="cds--text-input__field-wrapper">
-      <cds-label
-        [disabled]="modalObs.disableInput || modalObs.type === 'edit'"
-        [invalid]="modalObs.validKey === false"
-        [invalidText]="'listColumn.uniqueKeyWarning' | translate"
-      >
-        <span class="label-with-tooltip">
-          {{ 'listColumn.key' | translate }}
-          <v-tooltip-icon
-            [tooltip]="'listColumn.keyTooltip' | translate"
-            [disabled]="modalObs.disableInput"
-          ></v-tooltip-icon>
-        </span>
-        <input cdsText formControlName="key" [invalid]="modalObs.validKey === false" />
-      </cds-label>
-    </div>
-    <div class="cds--text-input__field-wrapper">
-      <cds-label [disabled]="modalObs.disableInput">
-        <span class="label-with-tooltip">
-          {{ 'listColumn.path' | translate }}
-          <v-tooltip-icon
-            [tooltip]="'listColumn.pathTooltip' | translate"
-            [disabled]="modalObs.disableInput"
-          ></v-tooltip-icon>
-        </span>
+    <cds-label [disabled]="modalObs.disableInput">
+      <span class="label-with-tooltip">
+        {{ 'listColumn.titleTitle' | translate }}
 
-        <valtimo-value-path-selector
-          formControlName="path"
-          [documentDefinitionName]="documentDefinitionName$ | async"
-          [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
-        ></valtimo-value-path-selector>
-      </cds-label>
-    </div>
-    <div class="cds--text-input__field-wrapper">
-      <cds-label [disabled]="modalObs.disableInput">
-        <span class="label-with-tooltip select-label">
-          {{ 'listColumn.displayType' | translate }}
-          <v-tooltip-icon
-            [tooltip]="'listColumn.displayTypeTooltip' | translate"
-            [disabled]="modalObs.disableInput"
-          ></v-tooltip-icon>
-        </span>
-        <cds-dropdown formControlName="displayType" [disabled]="modalObs.disableInput">
-          <cds-dropdown-list [items]="viewTypeItems$ | async"></cds-dropdown-list>
-        </cds-dropdown>
-      </cds-label>
-    </div>
-    <div class="cds--text-input__field-wrapper" *ngIf="showDateFormat$ | async">
-      <cds-label [disabled]="modalObs.disableInput">
-        <span class="label-with-tooltip">
-          {{ 'listColumn.dateFormat' | translate }}
-          <v-tooltip-icon
-            [tooltip]="'listColumn.dateFormatTooltip' | translate"
-            [disabled]="modalObs.disableInput"
-          ></v-tooltip-icon>
-        </span>
-        <input cdsText formControlName="dateFormat" />
-      </cds-label>
-    </div>
-    <div
-      class="cds--text-input__field-wrapper"
-      *ngIf="modalObs.showEnum || modalObs.isYesNo"
-      [ngClass]="{'no-margin': modalObs.isYesNo}"
+        <v-tooltip-icon
+          [tooltip]="'listColumn.titleTooltip' | translate"
+          [disabled]="modalObs.disableInput"
+        ></v-tooltip-icon>
+      </span>
+
+      <input cdsText formControlName="title" />
+    </cds-label>
+
+    <cds-label
+      [disabled]="modalObs.disableInput || modalObs.type === 'edit'"
+      [invalid]="modalObs.validKey === false"
+      [invalidText]="'listColumn.uniqueKeyWarning' | translate"
     >
-      <cds-label [disabled]="modalObs.disableInput">
-        <span class="label-with-tooltip select-label">
-          {{
+      <span class="label-with-tooltip">
+        {{ 'listColumn.key' | translate }}
+
+        <v-tooltip-icon
+          [tooltip]="'listColumn.keyTooltip' | translate"
+          [disabled]="modalObs.disableInput"
+        ></v-tooltip-icon>
+      </span>
+
+      <input cdsText formControlName="key" [invalid]="modalObs.validKey === false" />
+    </cds-label>
+
+    <cds-label [disabled]="modalObs.disableInput">
+      <span class="label-with-tooltip">
+        {{ 'listColumn.path' | translate }}
+
+        <v-tooltip-icon
+          [tooltip]="'listColumn.pathTooltip' | translate"
+          [disabled]="modalObs.disableInput"
+        ></v-tooltip-icon>
+      </span>
+
+      <valtimo-value-path-selector
+        formControlName="path"
+        [documentDefinitionName]="documentDefinitionName$ | async"
+        [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+      ></valtimo-value-path-selector>
+    </cds-label>
+
+    <cds-label [disabled]="modalObs.disableInput">
+      <span class="label-with-tooltip select-label">
+        {{ 'listColumn.displayType' | translate }}
+        <v-tooltip-icon
+          [tooltip]="'listColumn.displayTypeTooltip' | translate"
+          [disabled]="modalObs.disableInput"
+        ></v-tooltip-icon>
+      </span>
+
+      <cds-dropdown formControlName="displayType" [disabled]="modalObs.disableInput">
+        <cds-dropdown-list [items]="viewTypeItems$ | async"></cds-dropdown-list>
+      </cds-dropdown>
+    </cds-label>
+
+    <cds-label *ngIf="showDateFormat$ | async" [disabled]="modalObs.disableInput">
+      <span class="label-with-tooltip">
+        {{ 'listColumn.dateFormat' | translate }}
+
+        <v-tooltip-icon
+          [tooltip]="'listColumn.dateFormatTooltip' | translate"
+          [disabled]="modalObs.disableInput"
+        ></v-tooltip-icon>
+      </span>
+
+      <input cdsText formControlName="dateFormat" />
+    </cds-label>
+
+    <cds-label *ngIf="modalObs.showEnum || modalObs.isYesNo" [disabled]="modalObs.disableInput">
+      <span class="label-with-tooltip select-label">
+        {{
+          modalObs.isYesNo
+            ? ('listColumn.enumTitleOptional' | translate)
+            : ('listColumn.enumTitle' | translate)
+        }}
+
+        <v-tooltip-icon
+          [tooltip]="
             modalObs.isYesNo
-              ? ('listColumn.enumTitleOptional' | translate)
-              : ('listColumn.enumTitle' | translate)
-          }}
-          <v-tooltip-icon
-            [tooltip]="
-              modalObs.isYesNo
-                ? ('listColumn.enumTooltipOptional' | translate)
-                : ('listColumn.enumTooltip' | translate)
-            "
-            [disabled]="modalObs.disableInput"
-          ></v-tooltip-icon>
-        </span>
-        <valtimo-carbon-multi-input
-          *ngIf="(showModal$ | async) || (modalShowing$ | async)"
-          type="keyValue"
-          (valueChange)="enumValueChange($event)"
-          [defaultValues]="defaultEnumValues$ | async"
-          [hideAddButton]="modalObs.isYesNo"
-          [hideDeleteButton]="modalObs.isYesNo"
-          [maxRows]="modalObs.isYesNo ? 1 : null"
-          [keyColumnTitle]="modalObs.isYesNo && ('viewTypeConverter.Yes' | translate)"
-          [valueColumnTitle]="modalObs.isYesNo && ('viewTypeConverter.No' | translate)"
-        ></valtimo-carbon-multi-input>
-      </cds-label>
-    </div>
-    <div class="cds--text-input__field-wrapper">
-      <cds-checkbox formControlName="sortable"
-        >{{ 'listColumn.sortable' | translate }}
-      </cds-checkbox>
-    </div>
-    <div class="cds--text-input__field-wrapper">
-      <cds-label [disabled]="modalObs.disableInput || modalObs.disableDefaultSort">
-        <span class="label-with-tooltip select-label">
-          {{ 'listColumn.defaultSortTitle' | translate }}
-          <v-tooltip-icon
-            [tooltip]="'listColumn.defaultSortTooltip' | translate"
-            [disabled]="modalObs.disableInput"
-          ></v-tooltip-icon>
-        </span>
-        <cds-dropdown
-          formControlName="defaultSort"
-          [disabled]="modalObs.disableInput || modalObs.disableDefaultSort"
-        >
-          <cds-dropdown-list [items]="sortItems$ | async"></cds-dropdown-list>
-        </cds-dropdown>
-      </cds-label>
-    </div>
+              ? ('listColumn.enumTooltipOptional' | translate)
+              : ('listColumn.enumTooltip' | translate)
+          "
+          [disabled]="modalObs.disableInput"
+        ></v-tooltip-icon>
+      </span>
+
+      <valtimo-carbon-multi-input
+        *ngIf="(showModal$ | async) || (modalShowing$ | async)"
+        type="keyValue"
+        (valueChange)="enumValueChange($event)"
+        [defaultValues]="defaultEnumValues$ | async"
+        [hideAddButton]="modalObs.isYesNo"
+        [hideDeleteButton]="modalObs.isYesNo"
+        [maxRows]="modalObs.isYesNo ? 1 : null"
+        [keyColumnTitle]="modalObs.isYesNo && ('viewTypeConverter.Yes' | translate)"
+        [valueColumnTitle]="modalObs.isYesNo && ('viewTypeConverter.No' | translate)"
+      ></valtimo-carbon-multi-input>
+    </cds-label>
+
+    <cds-checkbox formControlName="sortable">{{ 'listColumn.sortable' | translate }} </cds-checkbox>
+
+    <cds-label [disabled]="modalObs.disableInput || modalObs.disableDefaultSort">
+      <span class="label-with-tooltip select-label">
+        {{ 'listColumn.defaultSortTitle' | translate }}
+
+        <v-tooltip-icon
+          [tooltip]="'listColumn.defaultSortTooltip' | translate"
+          [disabled]="modalObs.disableInput"
+        ></v-tooltip-icon>
+      </span>
+
+      <cds-dropdown
+        formControlName="defaultSort"
+        [disabled]="modalObs.disableInput || modalObs.disableDefaultSort"
+      >
+        <cds-dropdown-list [items]="sortItems$ | async"></cds-dropdown-list>
+      </cds-dropdown>
+    </cds-label>
   </form>
 </ng-template>
 
@@ -294,6 +292,7 @@
       >
         {{ 'listColumn.close' | translate }}
       </button>
+
       <button
         cdsButton="primary"
         [attr.modal-primary-focus]="true"

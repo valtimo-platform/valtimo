@@ -188,6 +188,8 @@ export class FormManagementEditComponent
   }
 
   public onOutputChange(event: {data: object | undefined}): void {
+    this.reloading$.next(false);
+
     if (!event.data) {
       return;
     } else if (JSON.stringify(event.data) === this._activeOuput) {
@@ -255,10 +257,6 @@ export class FormManagementEditComponent
       value: JSON.stringify(newDefinition),
       language: 'json',
     });
-
-    setTimeout(() => {
-      this.reloading$.next(false);
-    }, 100);
   }
 
   protected onConfirmRedirect(): void {

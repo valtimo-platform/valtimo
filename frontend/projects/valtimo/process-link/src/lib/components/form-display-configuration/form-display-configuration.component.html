@@ -5,11 +5,10 @@
     formSizeListItems: formSizeListItems$ | async,
     disableFormSizeInput: disableFormSizeInput$ | async,
     isUserTask: isUserTask$ | async,
-    taskPanelEnabled: taskPanelEnabled$ | async,
     saving: saving$ | async,
   } as obs"
 >
-  @if (obs.taskPanelEnabled && obs.isUserTask) {
+  @if (obs.isUserTask) {
     <cds-combo-box
       [placeholder]="'processLinkSteps.displayType.placeholder' | translate"
       [label]="'processLinkSteps.displayType.label' | translate"
