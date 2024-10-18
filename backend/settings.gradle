@@ -32,6 +32,7 @@ include(
     "document-generation:smartdocuments",
     "exact-plugin",
     "exporter",
+    "extension",
     "form",
     "form-flow",
     "form-view-model",
