@@ -1862,8 +1862,8 @@
     },
     "search": {
       "addProperty": "Eigenschap toevoegen",
-      "afterTimestamp": "Van datum",
-      "beforeTimestamp": "Tot datum",
+      "afterTimestamp": "Van tijd",
+      "beforeTimestamp": "Tot tijd",
       "properties": "Eigenschappen"
     },
     "noResults": {

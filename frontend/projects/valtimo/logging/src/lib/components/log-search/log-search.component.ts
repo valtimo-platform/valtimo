@@ -25,7 +25,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {FormArray, FormBuilder, ReactiveFormsModule} from '@angular/forms';
+import {FormArray, FormBuilder, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TrashCan16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
@@ -38,9 +38,10 @@ import {
   IconService,
   InputModule,
   ListItem,
+  TimePickerModule,
 } from 'carbon-components-angular';
 import flatpickr from 'flatpickr';
-import {debounceTime, interval, map, Observable, Subscription} from 'rxjs';
+import {debounceTime, map, Observable, Subscription} from 'rxjs';
 import {
   LoggingEventProperty,
   LoggingEventSearchFormValue,
@@ -62,7 +63,9 @@ import {
     IconModule,
     InputModule,
     ReactiveFormsModule,
+    FormsModule,
     DatePickerModule,
+    TimePickerModule,
   ],
 })
 export class LogSearchComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -82,7 +85,9 @@ export class LogSearchComponent implements OnInit, AfterViewInit, OnDestroy {
     likeFormattedMessage: this.fb.control<string>(''),
     level: this.fb.control<ListItem>({content: '', selected: false}),
     beforeTimestamp: this.fb.control<string>(''),
+    beforeTime: this.fb.control<string>(''),
     afterTimestamp: this.fb.control<string>(''),
+    afterTime: this.fb.control<string>(''),
     properties: this.fb.array([
       this.fb.group({
         key: this.fb.control<string>(''),
@@ -194,6 +199,28 @@ export class LogSearchComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  private initTimeForm(formValue: LoggingEventSearchFormValue): void {
+    const {beforeTimestamp, afterTimestamp} = formValue;
+
+    if (!!beforeTimestamp) {
+      const {hours, minutes} = this.convertTimestampToTimeString(beforeTimestamp);
+      this.formGroup.patchValue({beforeTime: `${hours}:${minutes}`}, {emitEvent: false});
+    }
+
+    if (!!afterTimestamp) {
+      const {hours, minutes} = this.convertTimestampToTimeString(afterTimestamp);
+      this.formGroup.patchValue({afterTime: `${hours}:${minutes}`}, {emitEvent: false});
+    }
+  }
+
+  private convertTimestampToTimeString(timestamp: string): {hours: string; minutes: string} {
+    const date = new Date(timestamp);
+    return {
+      hours: `0${date.getHours()}`.slice(-2),
+      minutes: `0${date.getMinutes()}`.slice(-2),
+    };
+  }
+
   private mapFormValueToLogSearch(): LoggingEventSearchRequest {
     const formValue = this.formGroup.getRawValue();
     const properties = formValue.properties.filter(
@@ -205,8 +232,12 @@ export class LogSearchComponent implements OnInit, AfterViewInit, OnDestroy {
         likeFormattedMessage: formValue.likeFormattedMessage,
       }),
       ...(!!formValue.level?.content && {level: formValue.level.content}),
-      ...(!!formValue.afterTimestamp && {afterTimestamp: formValue.afterTimestamp}),
-      ...(!!formValue.beforeTimestamp && {beforeTimestamp: formValue.beforeTimestamp}),
+      ...(!!formValue.afterTimestamp && {
+        afterTimestamp: this.mapTimeStamps(formValue.afterTimestamp, formValue.afterTime),
+      }),
+      ...(!!formValue.beforeTimestamp && {
+        beforeTimestamp: this.mapTimeStamps(formValue.beforeTimestamp, formValue.beforeTime),
+      }),
       ...(!!properties.length && {properties}),
     };
   }
@@ -230,12 +261,23 @@ export class LogSearchComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
+  private mapTimeStamps(date: string, time: string | null): string {
+    if (!time) return date;
+
+    const timeValue: string[] = time.split(':');
+    const dateObject = new Date(date);
+    dateObject.setHours(+timeValue[0], +timeValue[1]);
+
+    return flatpickr.formatDate(dateObject, 'Z');
+  }
+
   private setInitialForm(): void {
     const mappedFormValue: LoggingEventSearchFormValue = this.mapSearchRequestToFormValue(
       this.initSearchRequest
     );
     this.initLogItems(mappedFormValue);
     this.initPropertiesForm(mappedFormValue);
+    this.initTimeForm(mappedFormValue);
 
     this.formGroup.patchValue(mappedFormValue, {emitEvent: false});
   }

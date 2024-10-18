@@ -21,21 +21,41 @@
 
   &,
   &__property,
-  &__timestamp {
+  &__timestamp,
+  &__datetime {
     display: flex;
     gap: 16px;
   }
 
+  &__message {
+    grid-area: message;
+  }
+
+  &__level {
+    grid-area: level;
+  }
+
   &__fields {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-areas:
+      'message timestamp'
+      'level timestamp';
+  }
+
+  &__timestamp {
+    grid-area: timestamp;
+    flex-direction: column;
+  }
+
+  &__datetime {
+    align-items: flex-end;
   }
 
   &__properties {
     display: flex;
     flex-direction: column;
-    max-width: 50%;
 
     & > *:not(:last-child):not(.valtimo-log-search__label) {
       margin-bottom: 16px;

@@ -1861,8 +1861,8 @@
     },
     "search": {
       "addProperty": "Add property",
-      "afterTimestamp": "From date",
-      "beforeTimestamp": "To date",
+      "afterTimestamp": "From timestamp",
+      "beforeTimestamp": "To timestamp",
       "properties": "Properties"
     },
     "noResults": {

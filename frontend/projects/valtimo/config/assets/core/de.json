@@ -1856,8 +1856,8 @@
     },
     "search": {
       "addProperty": "Eigenschaft hinzufügen",
-      "afterTimestamp": "Datum von",
-      "beforeTimestamp": "Datum bis",
+      "afterTimestamp": "Zeit von",
+      "beforeTimestamp": "Zeit bis",
       "properties": "Eigenschaften"
     },
     "noResults": {
