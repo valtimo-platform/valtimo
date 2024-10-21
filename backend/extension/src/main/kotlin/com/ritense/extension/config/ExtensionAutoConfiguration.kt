@@ -17,46 +17,60 @@
 package com.ritense.extension.config
 
 import com.ritense.extension.ExtensionManager
-import com.ritense.extension.model.ExtensionRegistrationListener
 import com.ritense.extension.security.ExtensionSecurityConfigurer
 import com.ritense.extension.web.rest.ExtensionResource
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
+import com.ritense.valtimo.contract.extension.ExtensionRegistrationListener
+import org.pf4j.update.UpdateManager
 import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
-import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
+import org.springframework.core.env.Environment
 import org.springframework.core.io.support.ResourcePatternResolver
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories
-import javax.sql.DataSource
 import kotlin.io.path.Path
 
-@EnableJpaRepositories(basePackages = ["com.ritense.extension.repository"])
-@EntityScan("com.ritense.extension.domain")
 @AutoConfiguration
 class ExtensionAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ExtensionManager::class)
-    fun extensionManager(
-        resourcePatternResolver: ResourcePatternResolver,
+    fun valtimoExtensionManager(
+        resourceResolver: ResourcePatternResolver,
+        environment: Environment,
         extensionRegistrationListeners: List<ExtensionRegistrationListener>
     ): ExtensionManager {
-        return ExtensionManager(
-            Path(resourcePatternResolver.getResource("classpath:/config").file.toPath().toString(), "extensions"),
-            extensionRegistrationListeners,
-        )
+        val valtimoExtensionPaths = if (environment.matchesProfiles("dev")) {
+            listOf(Path(resourceResolver.getResource("classpath:/config").file.toPath().toString(), "extensions"))
+        } else {
+            listOf(Path("extensions"))
+        }
+        return ExtensionManager(valtimoExtensionPaths, extensionRegistrationListeners)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(UpdateManager::class)
+    fun valtimoExtensionUpdateManager(
+        resourceResolver: ResourcePatternResolver,
+        environment: Environment,
+        valtimoExtensionManager: ExtensionManager
+    ): UpdateManager {
+        val valtimoExtensionPath = if (environment.matchesProfiles("dev")) {
+            Path(resourceResolver.getResource("classpath:/config").file.toPath().toString(), "extensions/repositories.json")
+        } else {
+            Path("extensions/repositories.json")
+        }
+        return UpdateManager(valtimoExtensionManager, valtimoExtensionPath)
     }
 
     @Bean
     @ConditionalOnMissingBean(ExtensionResource::class)
     fun extensionResource(
-        extensionManager: ExtensionManager
+        valtimoExtensionManager: ExtensionManager,
+        valtimoExtensionUpdateManager: UpdateManager,
     ): ExtensionResource {
         return ExtensionResource(
-            extensionManager
+            valtimoExtensionManager,
+            valtimoExtensionUpdateManager
         )
     }
 
@@ -65,12 +79,5 @@ class ExtensionAutoConfiguration {
     @ConditionalOnMissingBean(ExtensionSecurityConfigurer::class)
     fun extensionSecurityConfigurer(): ExtensionSecurityConfigurer {
         return ExtensionSecurityConfigurer()
-    }
-
-    @ConditionalOnClass(DataSource::class)
-    @Order(HIGHEST_PRECEDENCE + 32)
-    @Bean
-    fun extensionLiquibaseChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/extension-master.xml")
     }
 }

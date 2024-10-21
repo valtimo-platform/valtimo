@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.ritense.extension.model
+package com.ritense.valtimo.contract.extension
 
 interface ExtensionRegistrationListener {
-    fun extensionRegistered(extensionClass: Class<*>, bean: Any?)
+    fun extensionRegistered(bean: Any)
+    fun extensionUnregistered(bean: Any)
 }

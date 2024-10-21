@@ -18,12 +18,12 @@ package com.ritense.extension.web.rest
 
 import com.ritense.extension.ExtensionManager
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import org.pf4j.update.UpdateManager
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import java.nio.file.Files
@@ -33,6 +33,7 @@ import java.nio.file.Files
 @RequestMapping(value = ["/api"])
 class ExtensionResource(
     private val extensionManager: ExtensionManager,
+    private val updateManager: UpdateManager,
 ) {
 
     @PostMapping("/v1/extension/install", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])

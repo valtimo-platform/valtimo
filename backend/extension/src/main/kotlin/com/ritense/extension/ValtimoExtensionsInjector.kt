@@ -29,11 +29,15 @@ class ValtimoExtensionsInjector(
 
         val bean = beanFactory.getBean(extensionClass)
         extensionManager.extensionRegistrationListeners.forEach { listener ->
-            listener.extensionRegistered(extensionClass, bean)
+            listener.extensionRegistered(bean)
         }
     }
 
     fun unregisterExtension(extensionClassName: String) {
+        val bean = beanFactory.getBean(extensionClassName)
         beanFactory.destroySingleton(extensionClassName)
+        extensionManager.extensionRegistrationListeners.forEach { listener ->
+            listener.extensionUnregistered(bean)
+        }
     }
 }

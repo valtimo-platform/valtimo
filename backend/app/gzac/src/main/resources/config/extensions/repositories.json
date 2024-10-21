@@ -1,0 +1,10 @@
+[
+    {
+        "id": "weather-plugin",
+        "url": "https://raw.githubusercontent.com/valtimo-platform/weather-extension/refs/heads/master/"
+    },
+    {
+        "id": "publish-local-mac",
+        "url": "file:/Users/klaasschuijtemaker/.valtimo_extensions/"
+    }
+]

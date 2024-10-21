@@ -16,8 +16,8 @@
 
 package com.ritense.extension
 
-import com.ritense.extension.model.ExtensionRegistrationListener
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.extension.ExtensionRegistrationListener
 import jakarta.annotation.PostConstruct
 import org.pf4j.PluginState.STARTED
 import org.pf4j.PluginState.STOPPED
@@ -33,7 +33,7 @@ import java.nio.file.Path
 @SkipComponentScan
 @Transactional
 class ExtensionManager(
-    pluginsRoots: Path,
+    pluginsRoots: List<Path>,
     val extensionRegistrationListeners: List<ExtensionRegistrationListener>,
 ) : SpringPluginManager(pluginsRoots), PluginStateListener {
 
@@ -59,6 +59,8 @@ class ExtensionManager(
             else -> {}
         }
     }
+
+    override fun createPluginFactory() = ExtensionFactory()
 
     private fun newExtensionInjector() = ValtimoExtensionsInjector(this, getBeanFactory())
 
