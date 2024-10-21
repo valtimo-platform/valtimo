@@ -25,8 +25,8 @@ export class DateTimeTypeConverter implements TypeConverter {
     if (!value) return '-';
 
     const dateValue = moment(value);
-    return (dateValue.isValid() ? dateValue : moment(value, 'DD-MM-YYYY, hh:mm:ss'))
+    return (dateValue.isValid() ? dateValue : moment(value, 'DD-MM-YYYY, HH:mm:ss'))
       .locale(localStorage.getItem('langKey') ?? 'nl')
-      .format(definition?.format || 'DD-MM-YYYY, hh:mm:ss');
+      .format(definition?.format || 'DD-MM-YYYY, HH:mm:ss');
   }
 }
