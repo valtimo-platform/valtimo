@@ -1,11 +1,11 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
-import {FormDefinitionListItem, FormDisplayType, FormSize} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
-import {ProcessLinkButtonService, ProcessLinkStateService} from '../../services';
-import {ListItem} from 'carbon-components-angular';
-import {map} from 'rxjs/operators';
 import {ConfigService} from '@valtimo/config';
+import {ListItem} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
+import {map} from 'rxjs/operators';
+import {FormDefinitionListItem, FormDisplayType, FormSize} from '../../models';
+import {ProcessLinkButtonService, ProcessLinkStateService} from '../../services';
 
 @Component({
   selector: 'valtimo-form-display-configuration',
@@ -21,6 +21,7 @@ export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
   public readonly formSizeValue$ = new BehaviorSubject<FormSize | null>(null);
   public readonly disableFormSizeInput$ = new BehaviorSubject<boolean>(true);
   public readonly saving$ = this.stateService.saving$;
+  public readonly taskPanelEnabled$ = new BehaviorSubject<boolean>(false);
   public readonly isUserTask$ = new BehaviorSubject<boolean>(false);
 
   private readonly _DISPLAY_TYPE_OPTIONS: FormDisplayType[] = ['modal', 'panel'];
@@ -59,6 +60,7 @@ export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
     private readonly stateService: ProcessLinkStateService,
     private readonly translateService: TranslateService
   ) {
+    this.taskPanelEnabled$.next(!!this.configService.featureToggles?.enableTaskPanel);
   }
 
   public ngOnInit(): void {

@@ -27,6 +27,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute, ParamMap, Params, Router} from '@angular/router';
 import {ChevronDown16} from '@carbon/icons';
+import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {
   BreadcrumbService,
@@ -47,9 +48,11 @@ import {
   ProcessDocumentDefinition,
 } from '@valtimo/document';
 import {ProcessInstanceTask} from '@valtimo/process';
+import {UserProviderService} from '@valtimo/security';
 import {IntermediateSubmission, Task, TaskProcessLinkResult, TaskService} from '@valtimo/task';
 import {IconService, NotificationService} from 'carbon-components-angular';
 import {KeycloakService} from 'keycloak-angular';
+import {isBoolean} from 'lodash';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
 import {
@@ -79,9 +82,6 @@ import {
 } from '../../permissions';
 import {DossierDetailLayoutService, DossierService, DossierTabService} from '../../services';
 import {DossierSupportingProcessStartModalComponent} from '../dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
-import {UserProviderService} from '@valtimo/security';
-import {isBoolean} from 'lodash';
-import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   selector: 'valtimo-dossier-detail',
@@ -122,6 +122,7 @@ export class DossierDetailComponent
   public readonly taskOpenedInPanel$ = this.dossierDetailLayoutService.taskOpenedInPanel$;
 
   private readonly _caseStatusKey$ = new BehaviorSubject<string | null | 'NOT_AVAILABLE'>(null);
+  private readonly _taskPanelToggle = this.configService.featureToggles?.enableTaskPanel;
 
   public readonly caseStatusKey$: Observable<string | 'NOT_AVAILABLE'> = this._caseStatusKey$.pipe(
     filter(key => !!key)
@@ -383,13 +384,16 @@ export class DossierDetailComponent
         }
 
         const displayType =
-          (result as TaskProcessLinkResult).properties.formDisplayType || DOSSIER_DETAIL_DEFAULT_DISPLAY_TYPE;
-        const size = (result as TaskProcessLinkResult).properties.formSize || DOSSIER_DETAIL_DEFAULT_DISPLAY_SIZE;
+          (result as TaskProcessLinkResult).properties.formDisplayType ||
+          DOSSIER_DETAIL_DEFAULT_DISPLAY_TYPE;
+        const size =
+          (result as TaskProcessLinkResult).properties.formSize ||
+          DOSSIER_DETAIL_DEFAULT_DISPLAY_SIZE;
 
         this.dossierDetailLayoutService.setFormDisplaySize(size);
         this.dossierDetailLayoutService.setFormDisplayType(displayType);
 
-        if (displayType === 'panel') {
+        if (displayType === 'panel' && !!this._taskPanelToggle) {
           this.dossierDetailLayoutService.setTaskOpenedInPanel(task as any as ProcessInstanceTask);
         } else {
           this.openTaskInModal$.next({...task});

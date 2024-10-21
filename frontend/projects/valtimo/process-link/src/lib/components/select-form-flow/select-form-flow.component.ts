@@ -23,6 +23,7 @@ import {
   ProcessLinkService,
   ProcessLinkStateService,
 } from '../../services';
+import {ConfigService} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-select-form-flow',
@@ -35,6 +36,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
   public selectedFormFlowDefinition!: FormDefinitionListItem;
   public readonly saving$ = this.stateService.saving$;
   private readonly formFlowDefinitions$ = this.formFlowService.getFormFlowDefinitions();
+  private readonly _taskPanelToggle = this.configService.featureToggles?.enableTaskPanel;
 
   public readonly formFlowDefinitionListItems$: Observable<Array<FormDefinitionListItem>> =
     combineLatest([this.stateService.selectedProcessLink$, this.formFlowDefinitions$]).pipe(
@@ -60,6 +62,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
   private isUserTask$ = new BehaviorSubject<boolean>(false);
 
   constructor(
+    private readonly configService: ConfigService,
     private readonly formFlowService: FormFlowService,
     private readonly stateService: ProcessLinkStateService,
     private readonly processLinkService: ProcessLinkService,
@@ -138,10 +141,11 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
         const updateProcessLinkRequest: FormFlowProcessLinkUpdateRequestDto = {
           id: selectedProcessLink.id,
           formFlowDefinitionId: this.selectedFormFlowDefinition.id,
-          ...(isUserTask && {
-            formDisplayType: this.formDisplayValue,
-          }),
-          ...(isUserTask && {formSize: this.formSizeValue}),
+          ...(this._taskPanelToggle &&
+            isUserTask && {
+              formDisplayType: this.formDisplayValue,
+            }),
+          ...(this._taskPanelToggle && isUserTask && {formSize: this.formSizeValue}),
         };
 
         this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
