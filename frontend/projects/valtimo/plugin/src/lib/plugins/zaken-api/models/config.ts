@@ -60,6 +60,9 @@ interface CreateZaakConfig {
   manualZaakTypeUrl: boolean;
   zaaktypeUrl: string;
   inputTypeZaakTypeToggle?: InputOption;
+  description?: string;
+  plannedEndDate?: string;
+  finalDeliveryDate?: string;
 }
 
 interface SetZaakopschortingConfig {
