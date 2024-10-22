@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
+import {ConfigService} from '@valtimo/config';
 import {FormService} from '@valtimo/form';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, tap} from 'rxjs';
 import {take} from 'rxjs/operators';
-
 import {FormDefinitionListItem, FormProcessLinkUpdateRequestDto} from '../../models';
 import {
   ProcessLinkButtonService,
@@ -59,8 +59,10 @@ export class SelectFormComponent implements OnInit, OnDestroy {
 
   private _subscriptions = new Subscription();
   private isUserTask$ = new BehaviorSubject<boolean>(false);
+  private readonly _taskPanelToggle = this.configService.featureToggles?.enableTaskPanel;
 
   constructor(
+    private readonly configService: ConfigService,
     private readonly formService: FormService,
     private readonly stateService: ProcessLinkStateService,
     private readonly processLinkService: ProcessLinkService,
@@ -144,10 +146,11 @@ export class SelectFormComponent implements OnInit, OnDestroy {
           id: selectedProcessLink.id,
           formDefinitionId: this.selectedFormDefinition.id,
           viewModelEnabled,
-          ...(isUserTask && {
-            formDisplayType: this.formDisplayValue,
-          }),
-          ...(isUserTask && {formSize: this.formSizeValue}),
+          ...(this._taskPanelToggle &&
+            isUserTask && {
+              formDisplayType: this.formDisplayValue,
+            }),
+          ...(this._taskPanelToggle && isUserTask && {formSize: this.formSizeValue}),
         };
 
         this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
