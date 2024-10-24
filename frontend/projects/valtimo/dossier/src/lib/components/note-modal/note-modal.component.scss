@@ -25,3 +25,7 @@
 .add-note-title {
   justify-content: center;
 }
+
+::ng-deep .notes-input textarea {
+  padding: 8px;
+}
