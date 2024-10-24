@@ -137,7 +137,7 @@ export class TaskDetailIntermediateSaveComponent {
       .clearIntermediateSubmission(this.taskValue()?.id ?? '')
       .pipe(take(1))
       .subscribe(() => {
-        this.taskIntermediateSaveService.setSubmission({data: {}});
+        this.taskIntermediateSaveService.setSubmission({});
         this.currentIntermediateSave = null;
         this.currentIntermediateSaveEvent.emit(this.currentIntermediateSave);
       });
