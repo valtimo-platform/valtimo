@@ -417,7 +417,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
 
   private downloadDocument(relatedFile: DocumentenApiRelatedFile, forceDownload: boolean): void {
     this.downloadService.downloadFile(
-      `${this.valtimoEndpointUri}/api/v1/documenten-api/${relatedFile.pluginConfigurationId}/files/${relatedFile.fileId}/download`,
+      `${this.valtimoEndpointUri}v1/documenten-api/${relatedFile.pluginConfigurationId}/files/${relatedFile.fileId}/download`,
       relatedFile.bestandsnaam ?? '',
       forceDownload
     );
