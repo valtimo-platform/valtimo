@@ -131,7 +131,7 @@ export class TaskDetailModalComponent implements OnInit {
 
   public closeModal(): void {
     this._modal.open = false;
-    this.taskIntermediateSaveService.setSubmission({data: {}});
+    this.taskIntermediateSaveService.setSubmission({});
   }
 
   private openModal(): void {
