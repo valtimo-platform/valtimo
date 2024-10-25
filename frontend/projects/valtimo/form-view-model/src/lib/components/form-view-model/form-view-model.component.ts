@@ -15,28 +15,8 @@
  */
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import moment from 'moment';
-import {
-  BehaviorSubject,
-  catchError,
-  combineLatest,
-  debounceTime,
-  EMPTY,
-  filter,
-  Observable,
-  of,
-  pairwise,
-  Subject,
-  switchMap,
-  take,
-  tap,
-} from 'rxjs';
-import {
-  FormioComponent,
-  FormioModule,
-  FormioOptions,
-  FormioSubmission,
-  FormioSubmissionCallback,
-} from '@formio/angular';
+import {BehaviorSubject, catchError, combineLatest, debounceTime, EMPTY, Observable, of, Subject, switchMap, take, tap,} from 'rxjs';
+import {FormioComponent, FormioModule, FormioOptions, FormioSubmission, FormioSubmissionCallback,} from '@formio/angular';
 import {FormioRefreshValue} from '@formio/angular/formio.common';
 import {ViewModelService} from '../../services';
 import {distinctUntilChanged, map} from 'rxjs/operators';
@@ -113,6 +93,7 @@ export class FormViewModelComponent implements OnInit {
   public readonly readOnly$ = new BehaviorSubject<boolean>(false);
   public readonly tokenSetInLocalStorage$ = new BehaviorSubject<boolean>(false);
   public readonly change$ = new BehaviorSubject<any>(null);
+  public readonly blur$ = new BehaviorSubject<FocusEvent>(null);
   public readonly errors$ = new BehaviorSubject<Array<string>>([]);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly isStartForm$ = new BehaviorSubject<boolean>(false);
@@ -243,13 +224,14 @@ export class FormViewModelComponent implements OnInit {
     this.formSubmit.next(submission);
   }
 
+  public onBlur(blurEvent: FocusEvent): void {
+    this.blur$.next(blurEvent);
+    this.handleChanges();
+  }
+
   public onChange(object: any): void {
     if (object.data) {
       this.change$.next(object);
-    }
-
-    if (object.changed) {
-      this.handleChanges();
     }
   }
 
@@ -356,23 +338,12 @@ export class FormViewModelComponent implements OnInit {
   }
 
   private handleChanges(): void {
-    this.change$
-      .pipe(
-        pairwise(),
-        debounceTime(500),
-        filter(
-          ([prevChange, currentChange]) =>
-            prevChange?.changed?.value !== undefined &&
-            currentChange?.changed?.value !== undefined &&
-            prevChange.changed.value !== currentChange.changed.value
-        )
-      )
-      .subscribe(() => {
-        if (this.isStartForm$.value) {
-          this.updateViewModelForStartForm();
-        } else {
-          this.updateViewModel();
-        }
-      });
+    this.blur$.pipe(debounceTime(500)).subscribe(() => {
+      if (this.isStartForm$.value) {
+        this.updateViewModelForStartForm();
+      } else {
+        this.updateViewModel();
+      }
+    });
   }
 }
