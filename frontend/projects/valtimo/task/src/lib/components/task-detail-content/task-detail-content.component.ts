@@ -148,7 +148,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
-    this.taskIntermediateSaveService.setSubmission({data: {}});
+    this.taskIntermediateSaveService.setSubmission({});
   }
 
   public onSubmit(submission: FormioSubmission): void {
@@ -288,7 +288,6 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
         }
       },
       error: _ => {
-        console.log({_});
         this.loading$.next(false);
       },
     });
