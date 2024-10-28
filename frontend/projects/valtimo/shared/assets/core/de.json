@@ -260,6 +260,13 @@
     "noResultsOtherTasks": "Keine Aufgaben für andere Benutzer verfügbar.",
     "taskIsAssigned": "Aufgabe ist zugewiesen"
   },
+  "extensionManagement": {
+    "noResults": "No extensions available",
+    "installedVersion": "Installed version",
+    "install": "Install",
+    "update": "Update",
+    "uninstall": "Uninstall"
+  },
   "progress": {
     "noProcessDocumentInstances": "Es wurde noch kein Prozess gestartet",
     "process": "Prozess",

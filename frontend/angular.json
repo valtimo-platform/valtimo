@@ -1021,6 +1021,43 @@
         }
       }
     },
+    "@valtimo/extension-management": {
+      "projectType": "library",
+      "root": "projects/valtimo/extension-management",
+      "sourceRoot": "projects/valtimo/extension-management/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/valtimo/extension-management/tsconfig.lib.json",
+            "project": "projects/valtimo/extension-management/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/extension-management/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.ts",
+            "tsConfig": "projects/valtimo/extension-management/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/extension-management/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/extension-management/src/**/*.ts",
+              "projects/valtimo/extension-management/src/**/*.html"
+            ]
+          }
+        }
+      }
+    },
     "@valtimo/milestone": {
       "projectType": "library",
       "root": "projects/valtimo/milestone",

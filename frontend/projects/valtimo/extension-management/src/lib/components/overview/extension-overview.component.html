@@ -1,0 +1,79 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="extension-list"
+  *ngIf="{extensions: extensions$ | async} as obs"
+>
+  @if (!obs.extensions) {
+    <ng-container *ngTemplateOutlet="loadingExtensionsTemplate"></ng-container>
+  } @else if (obs.extensions?.length === 0) {
+    <ng-container *ngTemplateOutlet="noExtensionsTemplate"></ng-container>
+  } @else {
+    <div class="extension-list__extensions-container" cdsLayer="1">
+      @for (extension of obs.extensions; track extension.id) {
+        <ng-container *ngTemplateOutlet="extensionTemplate; context: {extension: extension}"></ng-container>
+      }
+    </div>
+  }
+</div>
+
+<ng-template #extensionTemplate let-extension="extension">
+  <cds-tile>
+    <div class="extension">
+      <div class="extension__header">
+        <span class="extension__title">{{ extension.name }}</span>
+      </div>
+      <div class="extension__description">
+        {{ extension.description }}
+      </div>
+      @if (extension.isInstalled) {
+        <span class="extension__version">
+          {{ 'extensionManagement.installedVersion' | translate }} <i>{{ extension.installedVersion }}</i>
+        </span>
+      }
+      <div class="extension__footer">
+        @if (extension.isInstalled) {
+          <button cdsButton="danger" (click)="onClickUninstall(extension)">
+            {{ 'extensionManagement.uninstall' | translate }}
+          </button>
+          <button cdsButton="primary" [disabled]="!extension.hasUpdate" (click)="onClickUpdate(extension)">
+            {{ 'extensionManagement.update' | translate }}
+          </button>
+        } @else {
+          <button cdsButton="primary" (click)="onClickInstall(extension)">
+            {{ 'extensionManagement.install' | translate }}
+          </button>
+        }
+      </div>
+    </div>
+  </cds-tile>
+</ng-template>
+
+<ng-template #noExtensionsTemplate>
+  <valtimo-no-results
+    [alwaysRenderVertically]="true"
+    illustration="valtimo-layout/img/emptystate-success.svg"
+    [description]="'extensionManagement.noResults' | translate"
+    [smallPadding]="true"
+  ></valtimo-no-results>
+</ng-template>
+
+<ng-template #loadingExtensionsTemplate>
+  <div class="loading-container">
+    <cds-loading size="sm"></cds-loading>
+  </div>
+</ng-template>
