@@ -27,24 +27,26 @@
   [ngClass]="{'--compact': obs.compactMode}"
 >
   <div class="dossier-metadata">
-    <ng-container *ngTemplateOutlet="versionSelection; context: {obs: obs}"></ng-container>
+    <ng-container *ngTemplateOutlet="selectedVersion; context: {obs: obs}"></ng-container>
 
     <ng-container *ngTemplateOutlet="readOnly; context: {obs: obs}"></ng-container>
   </div>
 
+  <ng-container *ngTemplateOutlet="versions"></ng-container>
+
   <ng-container *ngTemplateOutlet="exportMenu; context: {obs: obs}"></ng-container>
 </div>
 
-<ng-template #versionSelection let-obs="obs">
-  <cds-dropdown
-    class="version-selection"
-    [disabled]="obs.loadingVersion || (obs.versionListItems.length || []) === 1"
-    [skeleton]="obs.loadingVersion"
-    (selected)="setVersion($event)"
-    [size]="obs.compactMode ? 'sm' : 'md'"
-  >
-    <cds-dropdown-list [items]="obs.versionListItems || []"></cds-dropdown-list>
-  </cds-dropdown>
+<ng-template #selectedVersion let-obs="obs">
+  <cds-tag type="red"> Active Version </cds-tag>
+</ng-template>
+
+<ng-template #versions let-obs="obs">
+  <button cdsButton="secondary" (click)="onVersionsClick($event)">
+    Versions
+
+    <svg class="cds--btn__icon" cdsIcon="version" size="16"></svg>
+  </button>
 </ng-template>
 
 <ng-template #exportMenu let-obs="obs">

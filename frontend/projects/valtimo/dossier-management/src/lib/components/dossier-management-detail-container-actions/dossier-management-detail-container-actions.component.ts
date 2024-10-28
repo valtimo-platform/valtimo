@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {DOCUMENT} from '@angular/common';
+import {HttpResponse} from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -24,16 +25,15 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
-import {ListItem, Notification, NotificationService} from 'carbon-components-angular';
-import {DossierDetailService, DossierExportService} from '../../services';
+import {Version16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {DOCUMENT} from '@angular/common';
-import {HttpResponse} from '@angular/common/http';
-import {DocumentService} from '@valtimo/document';
-import {take} from 'rxjs/operators';
-import {DossierManagementRemoveModalComponent} from '../dossier-management-remove-modal/dossier-management-remove-modal.component';
 import {PageHeaderService} from '@valtimo/components';
+import {DocumentService} from '@valtimo/document';
+import {IconService, ListItem, Notification, NotificationService} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
+import {take} from 'rxjs/operators';
+import {DossierDetailService, DossierExportService} from '../../services';
+import {DossierManagementRemoveModalComponent} from '../dossier-management-remove-modal/dossier-management-remove-modal.component';
 
 @Component({
   selector: 'valtimo-dossier-management-detail-container-actions',
@@ -104,8 +104,11 @@ export class DossierManagementDetailContainerActionsComponent {
     private readonly translateService: TranslateService,
     private readonly documentService: DocumentService,
     private readonly dossierDetailService: DossierDetailService,
-    private readonly pageHeaderService: PageHeaderService
-  ) {}
+    private readonly pageHeaderService: PageHeaderService,
+    private readonly iconService: IconService
+  ) {
+    this.iconService.registerAll([Version16]);
+  }
 
   public export(): void {
     this.closeCurrentNotification();
@@ -163,6 +166,10 @@ export class DossierManagementDetailContainerActionsComponent {
     this.selectedDocumentDefinition$.pipe(take(1)).subscribe(definition => {
       this._dossierRemoveModal.openModal(definition);
     });
+  }
+
+  public onVersionsClick(): void {
+    console.log('versions');
   }
 
   private startExporting(): void {
