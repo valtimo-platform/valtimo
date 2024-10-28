@@ -27,7 +27,7 @@ import {
 } from '@angular/core';
 import {RuleDraft16, Save16, Version16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {PageHeaderService} from '@valtimo/components';
+import {CARBON_CONSTANTS, PageHeaderService} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {IconService, ListItem, Notification, NotificationService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
@@ -193,10 +193,26 @@ export class DossierManagementDetailContainerActionsComponent {
     this.draftModalOpen$.next(true);
   }
 
+  public onSaveDraftClick(version: DocumentDefinitionVersion): void {
+    this.dossierVersionApiService.saveDraft(version);
+    this._currentNotification = this.notificationService.showNotification({
+      type: 'success',
+      title: 'Draft',
+      message: 'Version was saved successfully',
+      duration: CARBON_CONSTANTS.notificationDuration,
+    });
+  }
+
   public onDraftModalClose(version: DocumentDefinitionVersion | null): void {
     this.draftModalOpen$.next(false);
     if (!version) return;
 
+    this._currentNotification = this.notificationService.showNotification({
+      type: 'success',
+      title: 'Draft',
+      message: 'Version was saved successfully',
+      duration: CARBON_CONSTANTS.notificationDuration,
+    });
     this.activeVersion$.next(version);
   }
 
@@ -207,6 +223,12 @@ export class DossierManagementDetailContainerActionsComponent {
   public onConfirmFinalizeEvent(version: DocumentDefinitionVersion): void {
     this.dossierVersionApiService.finalizeVersion(version);
     this.activeVersion$.next({...this.activeVersion$.getValue(), type: 'final'});
+    this._currentNotification = this.notificationService.showNotification({
+      type: 'success',
+      title: 'Final',
+      message: 'Draft has been finalized successfully',
+      duration: CARBON_CONSTANTS.notificationDuration,
+    });
   }
 
   private startExporting(): void {

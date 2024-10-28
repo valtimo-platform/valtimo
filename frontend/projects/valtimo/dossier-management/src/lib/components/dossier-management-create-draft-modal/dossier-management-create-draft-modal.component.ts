@@ -53,7 +53,7 @@ export class DossierManagementCreateDraftModalComponent {
         message,
         versionNumber,
       };
-      this.dossierVersionApiService.saveDraft(version);
+      this.dossierVersionApiService.createDraft(version);
 
       this.closeModal(version);
     });

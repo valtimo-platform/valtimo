@@ -29,7 +29,17 @@ export class DossierVersionApiService {
     );
   }
 
-  public saveDraft(version: DocumentDefinitionVersion): void {
+  public createDraft(version: DocumentDefinitionVersion): void {
     this._draftVersions$.next([...this._draftVersions$.getValue(), version]);
+  }
+
+  public saveDraft(version: DocumentDefinitionVersion): void {
+    this._draftVersions$.next(
+      this._draftVersions$
+        .getValue()
+        .map((draftVersion: DocumentDefinitionVersion) =>
+          draftVersion.id === version.id ? version : draftVersion
+        )
+    );
   }
 }

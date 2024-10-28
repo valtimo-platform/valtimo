@@ -68,9 +68,9 @@
       <button
         cdsButton="secondary"
         [size]="(compactMode$ | async) ? 'sm' : 'md'"
-        (click)="onFinalizeDraftClick()"
+        (click)="onSaveDraftClick(obs.activeVersion)"
       >
-        Finalize draft
+        Save draft
 
         <svg class="cds--btn__icon" cdsIcon="save" size="16"></svg>
       </button>
@@ -95,6 +95,14 @@
     >
       <cds-overflow-menu-option [id]="'versions'" (selected)="onVersionsClick()">
         Versions
+      </cds-overflow-menu-option>
+
+      <cds-overflow-menu-option
+        *ngIf="obs.activeVersion.type === 'draft'"
+        [id]="'finalizeDraft'"
+        (selected)="onFinalizeDraftClick()"
+      >
+        Finalize draft
       </cds-overflow-menu-option>
 
       <cds-overflow-menu-option
