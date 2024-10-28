@@ -39,7 +39,7 @@ dependencies {
     jar {
         enabled = true
         manifest {
-            attributes("Implementation-Title": "Ritense exporter module")
+            attributes("Implementation-Title": "Ritense extension module")
             attributes("Implementation-Version": projectVersion)
         }
     }

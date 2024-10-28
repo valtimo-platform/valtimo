@@ -14,21 +14,12 @@
  * limitations under the License.
  */
 
-package com.ritense.extension
+package com.ritense.extension.web.rest
 
-import org.springframework.stereotype.Component
-
-@Component
-class TestExtension : Extension<TestExtensionRequest> {
-
-    override fun supports(): Class<TestExtensionRequest> =
-        TestExtensionRequest::class.java
-
-    override fun extension(request: TestExtensionRequest) = ExtensionResult(
-        ExtensionFile(
-            "${request.value}.txt",
-            request.value.toByteArray()
-        ),
-        setOf(TestNestedExtensionRequest())
-    )
-}
+data class Extension(
+    val id: String,
+    val name: String?,
+    val description: String?,
+    val installedVersion: String?,
+    val availableVersions: List<String>,
+)

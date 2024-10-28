@@ -16,28 +16,71 @@
 
 package com.ritense.extension
 
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.extension.ExtensionRegistrationListener
+import jakarta.annotation.PostConstruct
+import org.pf4j.PluginState.STARTED
+import org.pf4j.PluginState.STOPPED
+import org.pf4j.PluginStateEvent
+import org.pf4j.PluginStateListener
 import org.pf4j.spring.ExtensionsInjector
 import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory
+import org.springframework.stereotype.Component
 
+@SkipComponentScan
+@Component
 class ValtimoExtensionsInjector(
     private val extensionManager: ExtensionManager,
-    beanFactory: AbstractAutowireCapableBeanFactory
-) : ExtensionsInjector(extensionManager, beanFactory) {
+    private val extensionRegistrationListeners: List<ExtensionRegistrationListener>,
+) : PluginStateListener, ExtensionsInjector(
+    extensionManager,
+    extensionManager.applicationContext.autowireCapableBeanFactory as AbstractAutowireCapableBeanFactory
+) {
 
-    public override fun registerExtension(extensionClass: Class<*>) {
-        super.registerExtension(extensionClass)
+    @PostConstruct
+    fun init() {
+        injectExtensions()
+        extensionManager.addPluginStateListener(this)
+    }
 
-        val bean = beanFactory.getBean(extensionClass)
-        extensionManager.extensionRegistrationListeners.forEach { listener ->
-            listener.extensionRegistered(bean)
+    override fun pluginStateChanged(event: PluginStateEvent) {
+        when (event.pluginState) {
+            STARTED -> extensionManager.getExtensionClassNames(event.plugin.pluginId).forEach { extensionClassName ->
+                registerExtension(event.plugin.pluginClassLoader.loadClass(extensionClassName))
+            }
+
+            STOPPED -> extensionManager.getExtensionClassNames(event.plugin.pluginId).forEach { extensionClassName ->
+                unregisterExtension(event.plugin.pluginClassLoader.loadClass(extensionClassName))
+            }
+
+            else -> {}
         }
     }
 
-    fun unregisterExtension(extensionClassName: String) {
-        val bean = beanFactory.getBean(extensionClassName)
-        beanFactory.destroySingleton(extensionClassName)
-        extensionManager.extensionRegistrationListeners.forEach { listener ->
-            listener.extensionUnregistered(bean)
+    public override fun registerExtension(extensionClass: Class<*>) {
+        try {
+            extensionRegistrationListeners.forEach { listener ->
+                listener.extensionRegistered(extensionClass)
+            }
+        } catch (e: Exception) {
+            try {
+                unregisterExtension(extensionClass)
+            } catch (_: Exception) {
+                // ignored
+            }
+            throw RuntimeException("Failed to register extension $extensionClass", e)
         }
+    }
+
+    fun unregisterExtension(extensionClass: Class<*>) {
+        val exceptions = mutableListOf<Exception>()
+        extensionRegistrationListeners.forEach { listener ->
+            try {
+                listener.extensionUnregistered(extensionClass)
+            } catch (e: Exception) {
+                exceptions.add(RuntimeException("Failed to unregister extension $extensionClass", e))
+            }
+        }
+        exceptions.forEach { e -> throw e}
     }
 }

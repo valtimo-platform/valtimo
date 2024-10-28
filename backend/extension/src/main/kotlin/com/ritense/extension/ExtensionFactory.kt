@@ -26,7 +26,7 @@ class ExtensionFactory : PluginFactory {
 
     override fun create(extensionWrapper: PluginWrapper): Plugin {
         val extensionClassName = extensionWrapper.descriptor.pluginClass
-        logger.debug("Create instance for extension '{}'", extensionClassName)
+        logger.debug { "Create instance for extension '$extensionClassName'" }
 
         val extensionClass = extensionWrapper.pluginClassLoader.loadClass(extensionClassName)
 
@@ -43,7 +43,7 @@ class ExtensionFactory : PluginFactory {
             val constructor = extensionClass.getConstructor(PluginWrapper::class.java)
             return constructor.newInstance(extensionWrapper) as Plugin
         } catch (e: NoSuchMethodException) {
-            throw IllegalStateException("Extension is missing constructor '$extensionClass(wrapper: PluginWrapper)'")
+            throw IllegalStateException("Extension is missing constructor '$extensionClass(PluginWrapper wrapper)'")
         }
     }
 

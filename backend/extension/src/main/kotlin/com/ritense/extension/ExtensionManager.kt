@@ -17,52 +17,64 @@
 package com.ritense.extension
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.extension.ExtensionRegistrationListener
 import jakarta.annotation.PostConstruct
-import org.pf4j.PluginState.STARTED
-import org.pf4j.PluginState.STOPPED
-import org.pf4j.PluginStateEvent
 import org.pf4j.PluginStateListener
+import org.pf4j.PluginWrapper
 import org.pf4j.spring.SpringPluginManager
-import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory
+import org.springframework.core.io.support.ResourcePatternResolver
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import java.nio.file.Files
 import java.nio.file.Path
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
+import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.outputStream
 
 @Component
 @SkipComponentScan
 @Transactional
 class ExtensionManager(
     pluginsRoots: List<Path>,
-    val extensionRegistrationListeners: List<ExtensionRegistrationListener>,
-) : SpringPluginManager(pluginsRoots), PluginStateListener {
+    private val resourceResolver: ResourcePatternResolver,
+) : SpringPluginManager(pluginsRoots) {
+
+    init {
+        systemVersion = javaClass.getPackage().implementationVersion ?: "0.0.0"
+    }
 
     @PostConstruct
     override fun init() {
         loadPlugins()
         startPlugins()
-
-        newExtensionInjector().injectExtensions()
-        addPluginStateListener(this)
     }
 
-    override fun pluginStateChanged(event: PluginStateEvent) {
-        when (event.pluginState) {
-            STARTED -> getExtensionClassNames(event.plugin.pluginId).forEach { extensionClassName ->
-                newExtensionInjector().registerExtension(event.plugin.pluginClassLoader.loadClass(extensionClassName))
+    fun getExtensionsFrontendZip(extensions: List<PluginWrapper>): Path {
+        val extensionsFrontendZip = Files.createTempFile("frontend", ".zip")
+        ZipOutputStream(extensionsFrontendZip.outputStream()).use { zipOut ->
+            extensions.forEach { extension ->
+                val frontendFolder = extension.pluginClassLoader.getResource("frontend")
+                if (frontendFolder != null) {
+                    resourceResolver.getResources("${frontendFolder.toURI()}/**")
+                        .filter { it.isReadable }
+                        .forEach { resource ->
+                            zipOut.putNextEntry(
+                                ZipEntry(
+                                    Path(
+                                        "/frontend",
+                                        extension.pluginId,
+                                        resource.url.path.substringAfter("!/frontend/")
+                                    ).absolutePathString()
+                                )
+                            )
+                            zipOut.write(resource.inputStream.readAllBytes())
+                        }
+                }
             }
-
-            STOPPED -> getExtensionClassNames(event.plugin.pluginId).forEach { extensionClassName ->
-                newExtensionInjector().unregisterExtension(extensionClassName)
-            }
-
-            else -> {}
         }
+        return extensionsFrontendZip
     }
 
     override fun createPluginFactory() = ExtensionFactory()
-
-    private fun newExtensionInjector() = ValtimoExtensionsInjector(this, getBeanFactory())
-
-    private fun getBeanFactory() = applicationContext.autowireCapableBeanFactory as AbstractAutowireCapableBeanFactory
 }

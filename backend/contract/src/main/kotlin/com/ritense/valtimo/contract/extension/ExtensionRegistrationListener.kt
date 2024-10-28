@@ -17,6 +17,6 @@
 package com.ritense.valtimo.contract.extension
 
 interface ExtensionRegistrationListener {
-    fun extensionRegistered(bean: Any)
-    fun extensionUnregistered(bean: Any)
+    fun extensionRegistered(extensionClass: Class<*>)
+    fun extensionUnregistered(extensionClass: Class<*>)
 }
