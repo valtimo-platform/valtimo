@@ -8,6 +8,11 @@ import {DRAFT_VERSIONS} from '../mocks/document-definition-draft-versions.mock';
   providedIn: 'root',
 })
 export class DossierVersionApiService {
+  private readonly _activeVersion$ = new BehaviorSubject<DocumentDefinitionVersion>(
+    FINAL_VERSIONS[0]
+  );
+  public readonly activeVersion$ = this._activeVersion$.pipe(filter(version => !!version));
+
   private readonly _draftVersions$ = new BehaviorSubject<DocumentDefinitionVersion[]>(
     DRAFT_VERSIONS
   );
@@ -41,5 +46,9 @@ export class DossierVersionApiService {
           draftVersion.id === version.id ? version : draftVersion
         )
     );
+  }
+
+  public setActiveVersion(version: DocumentDefinitionVersion): void {
+    this._activeVersion$.next(version);
   }
 }

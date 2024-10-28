@@ -76,9 +76,7 @@ export class DossierManagementDetailContainerActionsComponent {
   );
   public readonly draftModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly versionModalOpen$ = new BehaviorSubject<boolean>(false);
-  public readonly activeVersion$ = new BehaviorSubject<DocumentDefinitionVersion>(
-    FINAL_VERSIONS[0]
-  );
+  public readonly activeVersion$ = this.dossierVersionApiService.activeVersion$;
   public readonly showFinalizeConfirmation$ = new BehaviorSubject<boolean>(false);
 
   public readonly versionListItems$: Observable<Array<ListItem>> = combineLatest([
@@ -186,7 +184,7 @@ export class DossierManagementDetailContainerActionsComponent {
 
     if (!version) return;
 
-    this.activeVersion$.next(version);
+    this.dossierVersionApiService.setActiveVersion(version);
   }
 
   public onCreateDraftClick(): void {
@@ -213,7 +211,7 @@ export class DossierManagementDetailContainerActionsComponent {
       message: 'Version was saved successfully',
       duration: CARBON_CONSTANTS.notificationDuration,
     });
-    this.activeVersion$.next(version);
+    this.dossierVersionApiService.setActiveVersion(version);
   }
 
   public onFinalizeDraftClick(): void {
@@ -222,7 +220,7 @@ export class DossierManagementDetailContainerActionsComponent {
 
   public onConfirmFinalizeEvent(version: DocumentDefinitionVersion): void {
     this.dossierVersionApiService.finalizeVersion(version);
-    this.activeVersion$.next({...this.activeVersion$.getValue(), type: 'final'});
+    this.dossierVersionApiService.setActiveVersion({...version, type: 'final'});
     this._currentNotification = this.notificationService.showNotification({
       type: 'success',
       title: 'Final',

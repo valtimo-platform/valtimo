@@ -31,7 +31,8 @@ import {
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {map, switchMap, take, tap} from 'rxjs/operators';
-import {DossierDetailService} from '../../services';
+import {DossierDetailService, DossierVersionApiService} from '../../services';
+import {DocumentDefinitionVersion} from '../../models';
 
 @Component({
   selector: 'valtimo-dossier-management-document-definition',
@@ -80,11 +81,15 @@ export class DossierManagementDocumentDefinitionComponent {
   );
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
+  public readonly editDisabled$ = this.dossierVersionApiService.activeVersion$.pipe(
+    map((version: DocumentDefinitionVersion) => version.type === 'final')
+  );
 
   private _changesToSave: any;
   private _initialId: string;
 
   constructor(
+    private readonly dossierVersionApiService: DossierVersionApiService,
     private readonly documentService: DocumentService,
     private readonly dossierDetailService: DossierDetailService,
     private readonly iconService: IconService,
