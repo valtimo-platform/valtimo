@@ -16,9 +16,10 @@
 
 export * from './dossier-detail.service';
 export * from './dossier-export.service';
+export * from './dossier-versions-api.service';
 export * from './tab-management.service';
 export * from './tab.service';
+export * from './widget-fields.service';
 export * from './widget-json-editor.service';
 export * from './widget-tab-management.service';
 export * from './widget-wizard.service';
-export * from './widget-fields.service';

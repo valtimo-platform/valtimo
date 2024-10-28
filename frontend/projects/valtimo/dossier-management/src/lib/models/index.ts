@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export * from './document-definition-version.model';
 export * from './list-column.model';
 export * from './status.model';
 export * from './tab.enum';

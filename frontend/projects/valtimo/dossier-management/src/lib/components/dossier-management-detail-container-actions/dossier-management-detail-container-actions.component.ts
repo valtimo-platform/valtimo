@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {DOCUMENT} from '@angular/common';
+import {HttpResponse} from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -24,16 +25,17 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
-import {ListItem, Notification, NotificationService} from 'carbon-components-angular';
-import {DossierDetailService, DossierExportService} from '../../services';
+import {RuleDraft16, Save16, Version16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {DOCUMENT} from '@angular/common';
-import {HttpResponse} from '@angular/common/http';
-import {DocumentService} from '@valtimo/document';
-import {take} from 'rxjs/operators';
-import {DossierManagementRemoveModalComponent} from '../dossier-management-remove-modal/dossier-management-remove-modal.component';
 import {PageHeaderService} from '@valtimo/components';
+import {DocumentService} from '@valtimo/document';
+import {IconService, ListItem, Notification, NotificationService} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
+import {take} from 'rxjs/operators';
+import {FINAL_VERSIONS} from '../../mocks';
+import {DocumentDefinitionVersion} from '../../models';
+import {DossierDetailService, DossierExportService, DossierVersionApiService} from '../../services';
+import {DossierManagementRemoveModalComponent} from '../dossier-management-remove-modal/dossier-management-remove-modal.component';
 
 @Component({
   selector: 'valtimo-dossier-management-detail-container-actions',
@@ -72,6 +74,12 @@ export class DossierManagementDetailContainerActionsComponent {
       this.loadingVersion$.next(false);
     })
   );
+  public readonly draftModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly versionModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly activeVersion$ = new BehaviorSubject<DocumentDefinitionVersion>(
+    FINAL_VERSIONS[0]
+  );
+  public readonly showFinalizeConfirmation$ = new BehaviorSubject<boolean>(false);
 
   public readonly versionListItems$: Observable<Array<ListItem>> = combineLatest([
     this._documentDefinitionVersions$,
@@ -104,8 +112,12 @@ export class DossierManagementDetailContainerActionsComponent {
     private readonly translateService: TranslateService,
     private readonly documentService: DocumentService,
     private readonly dossierDetailService: DossierDetailService,
-    private readonly pageHeaderService: PageHeaderService
-  ) {}
+    private readonly pageHeaderService: PageHeaderService,
+    private readonly iconService: IconService,
+    private readonly dossierVersionApiService: DossierVersionApiService
+  ) {
+    this.iconService.registerAll([RuleDraft16, Save16, Version16]);
+  }
 
   public export(): void {
     this.closeCurrentNotification();
@@ -163,6 +175,38 @@ export class DossierManagementDetailContainerActionsComponent {
     this.selectedDocumentDefinition$.pipe(take(1)).subscribe(definition => {
       this._dossierRemoveModal.openModal(definition);
     });
+  }
+
+  public onVersionsClick(): void {
+    this.versionModalOpen$.next(true);
+  }
+
+  public onVersionModalClose(version: DocumentDefinitionVersion | null): void {
+    this.versionModalOpen$.next(false);
+
+    if (!version) return;
+
+    this.activeVersion$.next(version);
+  }
+
+  public onCreateDraftClick(): void {
+    this.draftModalOpen$.next(true);
+  }
+
+  public onDraftModalClose(version: DocumentDefinitionVersion | null): void {
+    this.draftModalOpen$.next(false);
+    if (!version) return;
+
+    this.activeVersion$.next(version);
+  }
+
+  public onFinalizeDraftClick(): void {
+    this.showFinalizeConfirmation$.next(true);
+  }
+
+  public onConfirmFinalizeEvent(version: DocumentDefinitionVersion): void {
+    this.dossierVersionApiService.finalizeVersion(version);
+    this.activeVersion$.next({...this.activeVersion$.getValue(), type: 'final'});
   }
 
   private startExporting(): void {

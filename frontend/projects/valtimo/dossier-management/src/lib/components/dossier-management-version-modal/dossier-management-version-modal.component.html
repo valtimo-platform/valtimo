@@ -1,0 +1,33 @@
+<cds-modal
+  *ngIf="activeType$ | async as activeType"
+  [open]="open"
+  valtimoCdsModal
+  class="valtimo-dossier-management-version-modal"
+>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onModalClose()">
+    <h3 cdsModalHeaderHeading>Versions</h3>
+  </cds-modal-header>
+
+  <section cdsModalContent>
+    <cds-tabs type="contained">
+      <cds-tab
+        [active]="activeType === 'final'"
+        heading="Final"
+        (selected)="onTabSelected('final')"
+      ></cds-tab>
+
+      <cds-tab
+        [active]="activeType === 'draft'"
+        heading="Draft"
+        (selected)="onTabSelected('draft')"
+      ></cds-tab>
+    </cds-tabs>
+
+    <valtimo-carbon-list
+      hideToolbar="true"
+      [items]="versionListItems$ | async"
+      [fields]="VERSION_FIELDS"
+      (rowClicked)="onModalClose($event)"
+    ></valtimo-carbon-list>
+  </section>
+</cds-modal>

@@ -17,6 +17,7 @@
 <div
   class="dossier-actions"
   *ngIf="{
+    activeVersion: activeVersion$ | async,
     exporting: exporting$ | async,
     loadingVersion: loadingVersion$ | async,
     versionListItems: versionListItems$ | async,
@@ -29,14 +30,14 @@
   <div class="dossier-metadata">
     <ng-container *ngTemplateOutlet="versionSelection; context: {obs: obs}"></ng-container>
 
-    <ng-container *ngTemplateOutlet="readOnly; context: {obs: obs}"></ng-container>
+    <!-- <ng-container *ngTemplateOutlet="readOnly; context: {obs: obs}"></ng-container> -->
   </div>
 
   <ng-container *ngTemplateOutlet="exportMenu; context: {obs: obs}"></ng-container>
 </div>
 
 <ng-template #versionSelection let-obs="obs">
-  <cds-dropdown
+  <!-- <cds-dropdown
     class="version-selection"
     [disabled]="obs.loadingVersion || (obs.versionListItems.length || []) === 1"
     [skeleton]="obs.loadingVersion"
@@ -44,34 +45,75 @@
     [size]="obs.compactMode ? 'sm' : 'md'"
   >
     <cds-dropdown-list [items]="obs.versionListItems || []"></cds-dropdown-list>
-  </cds-dropdown>
+  </cds-dropdown> -->
+
+  <cds-tag *ngIf="obs.activeVersion" [type]="obs.activeVersion.type === 'final' ? 'green' : 'red'">
+    {{ (obs.activeVersion.type | uppercase) + ': ' + obs.activeVersion.versionNumber }}
+  </cds-tag>
 </ng-template>
 
 <ng-template #exportMenu let-obs="obs">
-  <cds-overflow-menu
-    valtimoCdsOverflowButton
-    [width]="250"
-    [customTrigger]="customTrigger"
-    [offset]="{y: 48, x: 37}"
-    class="overflow-button"
-  >
-    <cds-overflow-menu-option
-      [id]="'exportDocumentDefinition'"
-      [disabled]="obs.exporting || obs.loadingVersion"
-      (selected)="export()"
-      >{{
-        'dossierManagement.export' | translate: {value: documentDefinitionTitle}
-      }}</cds-overflow-menu-option
-    >
+  <section class="document-definition-actions">
+    @if (obs.activeVersion.type === 'final') {
+      <button
+        cdsButton="secondary"
+        [size]="(compactMode$ | async) ? 'sm' : 'md'"
+        (click)="onCreateDraftClick()"
+      >
+        Create draft
 
-    <cds-overflow-menu-option
-      *ngIf="obs.selectedDocumentDefinition && !obs.selectedDocumentDefinition.readOnly"
-      [id]="'removeDocumentDefinition'"
-      [disabled]="obs.exporting || obs.loadingVersion"
-      (selected)="openDossierRemoveModal()"
-      >{{ 'Remove document definition' | translate }}</cds-overflow-menu-option
+        <svg class="cds--btn__icon" cdsIcon="rule--draft" size="16"></svg>
+      </button>
+    } @else {
+      <button
+        cdsButton="secondary"
+        [size]="(compactMode$ | async) ? 'sm' : 'md'"
+        (click)="onFinalizeDraftClick()"
+      >
+        Finalize draft
+
+        <svg class="cds--btn__icon" cdsIcon="save" size="16"></svg>
+      </button>
+    }
+
+    <!-- <button
+      cdsButton="secondary"
+      [size]="obs.compactMode ? 'sm' : 'md'"
+      (click)="onVersionsClick()"
     >
-  </cds-overflow-menu>
+      Versions
+
+      <svg class="cds--btn__icon" cdsIcon="version" size="16"></svg>
+    </button> -->
+
+    <cds-overflow-menu
+      valtimoCdsOverflowButton
+      [width]="250"
+      [customTrigger]="customTrigger"
+      [offset]="{y: 48, x: 37}"
+      class="overflow-button"
+    >
+      <cds-overflow-menu-option [id]="'versions'" (selected)="onVersionsClick()">
+        Versions
+      </cds-overflow-menu-option>
+
+      <cds-overflow-menu-option
+        [id]="'exportDocumentDefinition'"
+        [disabled]="obs.exporting || obs.loadingVersion"
+        (selected)="export()"
+      >
+        {{ 'dossierManagement.export' | translate: {value: documentDefinitionTitle} }}
+      </cds-overflow-menu-option>
+
+      <cds-overflow-menu-option
+        *ngIf="obs.selectedDocumentDefinition && !obs.selectedDocumentDefinition.readOnly"
+        [id]="'removeDocumentDefinition'"
+        [disabled]="obs.exporting || obs.loadingVersion"
+        (selected)="openDossierRemoveModal()"
+        >{{ 'Remove document definition' | translate }}</cds-overflow-menu-option
+      >
+    </cds-overflow-menu>
+  </section>
 </ng-template>
 
 <ng-template #customTrigger>
@@ -101,3 +143,23 @@
 <valtimo-dossier-management-remove-modal
   #dossierRemoveModal
 ></valtimo-dossier-management-remove-modal>
+
+<valtimo-dossier-management-version-modal
+  [open]="versionModalOpen$ | async"
+  (modalClose)="onVersionModalClose($event)"
+></valtimo-dossier-management-version-modal>
+
+<valtimo-dossier-management-create-draft-modal
+  [open]="draftModalOpen$ | async"
+  (modalClose)="onDraftModalClose($event)"
+></valtimo-dossier-management-create-draft-modal>
+
+<valtimo-confirmation-modal
+  *ngIf="activeVersion$ | async as activeVersion"
+  title="Finalize draft version"
+  [content]="'Are you sure you want to finalize version: ' + activeVersion.versionNumber"
+  confirmButtonText="Finalize"
+  cancelButtonText="Cancel"
+  [showModalSubject$]="showFinalizeConfirmation$"
+  (confirmEvent)="onConfirmFinalizeEvent(activeVersion)"
+></valtimo-confirmation-modal>

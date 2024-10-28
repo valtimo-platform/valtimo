@@ -41,8 +41,9 @@
   gap: 16px;
 }
 
-.dossier-metadata {
+.dossier-metadata,
+.document-definition-actions {
   display: flex;
-  gap: 24px;
+  gap: 16px;
   align-items: flex-end;
 }

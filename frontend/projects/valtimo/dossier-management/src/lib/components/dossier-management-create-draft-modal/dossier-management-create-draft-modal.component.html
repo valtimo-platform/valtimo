@@ -1,0 +1,31 @@
+<cds-modal [open]="open" valtimoCdsModal showFooter="true">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    <h3 cdsModalHeaderHeading>Create draft version</h3>
+  </cds-modal-header>
+
+  <form
+    cdsModalContent
+    [formGroup]="formGroup"
+    class="valtimo-dossier-management-create-draft-modal__content"
+  >
+    <cds-text-label>
+      Version number:
+
+      <input cdsText formControlName="versionNumber" placeholder="x.x.x" />
+    </cds-text-label>
+
+    <cds-text-label>
+      Message:
+
+      <input cdsText formControlName="message" placeholder="Description of change" />
+    </cds-text-label>
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="closeModal()">Cancel</button>
+
+    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onCreateDraftClick()">
+      Save draft
+    </button>
+  </cds-modal-footer>
+</cds-modal>
