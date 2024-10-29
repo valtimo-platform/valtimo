@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.camunda.domain
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -48,6 +49,7 @@ class CamundaIdentityLink(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "TASK_ID_", insertable = false, updatable = false)
+    @JsonIgnore
     val task: CamundaTask?,
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -267,9 +267,9 @@ public class CamundaTaskService {
     public void complete(String taskId) {
         final CamundaTask task = runWithoutAuthorization(() -> findTaskById(taskId));
         requirePermission(task, COMPLETE);
-        taskService.complete(taskId);
         Hibernate.initialize(task.getVariableInstances());
         Hibernate.initialize(task.getIdentityLinks());
+        taskService.complete(taskId);
         outboxService.send(() -> new TaskCompleted(taskId, objectMapper.valueToTree(task)));
     }
 
