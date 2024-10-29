@@ -22,6 +22,7 @@ import {InputModule} from '../input/input.module';
 import {ButtonModule} from '../button/button.module';
 import {TranslateModule} from '@ngx-translate/core';
 import {ParagraphModule} from '../paragraph/paragraph.module';
+import {DefaultValuePipe} from './default-value.pipe';
 
 @NgModule({
   declarations: [MultiInputFormComponent],
@@ -32,6 +33,7 @@ import {ParagraphModule} from '../paragraph/paragraph.module';
     ButtonModule,
     TranslateModule,
     ParagraphModule,
+    DefaultValuePipe,
   ],
   exports: [MultiInputFormComponent],
 })

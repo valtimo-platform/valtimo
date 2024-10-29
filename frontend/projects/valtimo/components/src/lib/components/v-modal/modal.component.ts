@@ -22,9 +22,6 @@ import {ModalService} from '../../services/modal.service';
 import {IconService} from 'carbon-components-angular';
 import {Close24} from '@carbon/icons';
 
-/**
- * @deprecated Migrate old design to Carbon
- */
 @Component({
   selector: 'v-modal',
   templateUrl: './modal.component.html',
@@ -34,6 +31,7 @@ export class VModalComponent implements OnInit {
   @Input() appearingDelayMs = 140;
   @Input() maxWidthPx!: number;
   @Input() hideFooter = false;
+  @Input() parentId: string;
 
   @Output() closeEvent: EventEmitter<any> = new EventEmitter();
 

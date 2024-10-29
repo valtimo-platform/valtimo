@@ -20,7 +20,7 @@
   (click)="$event.stopImmediatePropagation()"
 >
   <section class="valtimo-log-search__fields">
-    <cds-text-label>
+    <cds-text-label class="valtimo-log-search__message">
       {{ 'logging.columns.formattedMessage' | translate }}
 
       <input
@@ -32,6 +32,7 @@
     </cds-text-label>
 
     <cds-dropdown
+      class="valtimo-log-search__level"
       formControlName="level"
       [attr.data-carbon-theme]="theme"
       [appendInline]="true"
@@ -42,23 +43,33 @@
     </cds-dropdown>
 
     <div class="valtimo-log-search__timestamp">
-      <cds-date-picker
-        #afterTimestamp
-        [attr.data-carbon-theme]="theme"
-        [label]="'logging.search.afterTimestamp' | translate"
-        placeholder="DD-MM-YYYY"
-        [dateFormat]="'d-m-Y'"
-        (valueChange)="onDateSelected('afterTimestamp', $event)"
-      ></cds-date-picker>
+      <div class="valtimo-log-search__datetime">
+        <cds-date-picker
+          #afterTimestamp
+          [attr.data-carbon-theme]="theme"
+          [label]="'logging.search.afterTimestamp' | translate"
+          placeholder="DD-MM-YYYY"
+          [dateFormat]="'d-m-Y'"
+          (valueChange)="onDateSelected('afterTimestamp', $event)"
+        ></cds-date-picker>
 
-      <cds-date-picker
-        #beforeTimestamp
-        [attr.data-carbon-theme]="theme"
-        [label]="'logging.search.beforeTimestamp' | translate"
-        placeholder="DD-MM-YYYY"
-        [dateFormat]="'d-m-Y'"
-        (valueChange)="onDateSelected('beforeTimestamp', $event)"
-      ></cds-date-picker>
+        <cds-timepicker [attr.data-carbon-theme]="theme" formControlName="afterTime">
+        </cds-timepicker>
+      </div>
+
+      <div class="valtimo-log-search__datetime">
+        <cds-date-picker
+          #beforeTimestamp
+          [attr.data-carbon-theme]="theme"
+          [label]="'logging.search.beforeTimestamp' | translate"
+          placeholder="DD-MM-YYYY"
+          [dateFormat]="'d-m-Y'"
+          (valueChange)="onDateSelected('beforeTimestamp', $event)"
+        ></cds-date-picker>
+
+        <cds-timepicker [attr.data-carbon-theme]="theme" formControlName="beforeTime">
+        </cds-timepicker>
+      </div>
     </div>
   </section>
 

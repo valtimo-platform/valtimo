@@ -83,6 +83,76 @@
           [tooltip]="'zaakTypeSelectTooltip' | pluginTranslate: obs.pluginId | async"
         ></v-select>
       </ng-container>
+
+      @for (property of propertyList; track property) {
+        @if (property === 'description') {
+          <div class="property-input">
+            <v-input
+                    name="description"
+                    [title]="'beschrijving' | pluginTranslate: obs.pluginId | async"
+                    [margin]="true"
+                    [defaultValue]="obs.prefill?.description"
+                    [required]="true"
+                    (valueChange)="onPropertyChanged('description', $event)"
+            />
+
+            <button
+                    class="btn btn-space delete-button"
+                    (click)="removeCaseProperty('description')"
+            >
+              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+            </button>
+          </div>
+        } @else if (property === 'plannedEndDate') {
+          <div class="property-input">
+            <v-input
+                    name="plannedEndDate"
+                    [title]="'plannedEndDate' | pluginTranslate: obs.pluginId | async"
+                    [margin]="true"
+                    [defaultValue]="obs.prefill?.plannedEndDate"
+                    [required]="true"
+                    [tooltip]="'dateformatTooltip' | pluginTranslate: obs.pluginId | async"
+                    (valueChange)="onPropertyChanged('plannedEndDate', $event)"
+            ></v-input>
+
+            <button
+                    class="btn btn-space delete-button"
+                    (click)="removeCaseProperty('plannedEndDate')"
+            >
+              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+            </button>
+          </div>
+        } @else if (property === 'finalDeliveryDate') {
+          <div class="property-input">
+            <v-input
+                    name="finalDeliveryDate"
+                    [title]="'finalDeliveryDate' | pluginTranslate: obs.pluginId | async"
+                    [margin]="true"
+                    [defaultValue]="obs.prefill?.finalDeliveryDate"
+                    [required]="true"
+                    [tooltip]="'dateformatTooltip' | pluginTranslate: obs.pluginId | async"
+                    (valueChange)="onPropertyChanged('finalDeliveryDate', $event)"
+            ></v-input>
+
+            <button
+                    class="btn btn-space delete-button"
+                    (click)="removeCaseProperty('finalDeliveryDate')"
+            >
+              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+            </button>
+          </div>
+        }
+      }
+
+      <button
+              cdsButton="primary" [size]="'md'"
+              [cdsOverflowMenu]="addCasePropertyList"
+              [customPane]="true"
+              placement="bottom"
+      >
+        {{ 'addZaakProperty' | pluginTranslate: obs.pluginId | async }}
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+      </button>
     </v-form>
   </ng-container>
 </ng-container>
@@ -91,4 +161,22 @@
   <div class="loading-container">
     <cds-loading></cds-loading>
   </div>
+</ng-template>
+
+<ng-template #addCasePropertyList>
+  <cds-overflow-menu-option
+          (click)="addCaseProperty('description')"
+          *ngIf="!hasPropertyBeenAdded('description')">
+    {{ 'beschrijving' | pluginTranslate: (pluginId$ | async) | async }}
+  </cds-overflow-menu-option>
+  <cds-overflow-menu-option
+          (click)="addCaseProperty('plannedEndDate')"
+          *ngIf="!hasPropertyBeenAdded('plannedEndDate')">
+    {{ 'plannedEndDate' | pluginTranslate: (pluginId$ | async) | async }}
+  </cds-overflow-menu-option>
+  <cds-overflow-menu-option
+          (click)="addCaseProperty('finalDeliveryDate')"
+          *ngIf="!hasPropertyBeenAdded('finalDeliveryDate')">
+    {{ 'finalDeliveryDate' | pluginTranslate: (pluginId$ | async) | async }}
+  </cds-overflow-menu-option>
 </ng-template>

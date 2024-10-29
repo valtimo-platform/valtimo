@@ -16,6 +16,7 @@
 
 <cds-modal
   #pluginEditModal
+  valtimoCdsModal
   [open]="open"
   (close)="hide()"
   *ngIf="{selectedConfiguration: selectedPluginConfiguration$ | async} as obs"

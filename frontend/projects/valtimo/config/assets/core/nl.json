@@ -150,6 +150,9 @@
       "noFiles": "Geen bestanden gevonden voor deze zaak."
     },
     "startSubProcess": "Start",
+    "noLinkedStartProcessNotification": "Er is geen startformulier gekoppeld",
+    "noLinkedProcessNotification": "Er is geen formulier gekoppeld",
+    "configure": "Configureer",
     "claimAssigneeCase": "Claimen",
     "deleteConfirmation": {
       "title": "Bestand verwijderen",
@@ -263,12 +266,13 @@
   "summary": {
     "userTasksDoneState": "Alle taken zijn afgerond",
     "taskLocked": "Je hebt geen toegang tot deze taak",
-    "myTasks": "Taken",
+    "tasks": "Taken",
+    "myTasks": "Mijn taken",
     "otherTasks": "Overige taken",
     "taskOpen": "Open",
     "taskCreated": "Aangemaakt op",
-    "noResultsMyTasks": "Er zijn geen taken toegewezen aan deze gebruiker.",
-    "noResultsOtherTasks": "Er zijn geen taken toegewezen aan andere gebruikers."
+    "noResultsMyTasks": "Er zijn geen taken beschikbaar voor deze gebruiker.",
+    "noResultsOtherTasks": "Er zijn geen taken beschikbaar voor andere gebruikers."
   },
   "progress": {
     "noProcessDocumentInstances": "Er is nog geen proces gestart",
@@ -1854,18 +1858,19 @@
   },
   "logging": {
     "columns": {
-      "timestamp": "Tijdstempel",
-      "formattedMessage": "Opgemaakt bericht",
+      "timestamp": "Tijd",
+      "formattedMessage": "Bericht",
       "level": "Logniveau"
     },
     "search": {
       "addProperty": "Eigenschap toevoegen",
-      "afterTimestamp": "Van datum",
-      "beforeTimestamp": "Tot datum",
+      "afterTimestamp": "Van tijd",
+      "beforeTimestamp": "Tot tijd",
       "properties": "Eigenschappen"
     },
     "noResults": {
-      "description": "Er zijn geen logregels die overeenkomen met je zoekcriteria",
+      "description": "Er zijn nog geen lijnen geregistreerd",
+      "searchDescription": "Er zijn geen logregels die overeenkomen met je zoekcriteria",
       "title": "Er zijn geen logboeken"
     },
     "detailsTitle": "Loggegevens"

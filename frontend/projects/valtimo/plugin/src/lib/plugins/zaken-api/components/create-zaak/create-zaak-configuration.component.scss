@@ -22,3 +22,28 @@
   width: 100%;
   align-items: center;
 }
+
+::ng-deep .cds--overflow-menu-options {
+  z-index: 10000 !important;
+  width: 230px;
+}
+
+.property-input {
+  display: flex;
+
+  v-input,
+  cds-date-picker-input {
+    flex-grow: 1;
+  }
+
+  button {
+    height: 46px;
+    width: 46px;
+    margin: 16px;
+  }
+}
+
+
+.delete-button:hover {
+  background-color: #e12717;
+}

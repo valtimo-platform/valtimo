@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {NgModule} from '@angular/core';
-import {Router, RouterModule, Routes, provideRouter, withNavigationErrorHandler} from '@angular/router';
-import {FormioComponent} from './form-io/form-io.component';
+import {Router, RouterModule, Routes} from '@angular/router';
 import {AuthGuardService} from '@valtimo/security';
+import {FormioComponent} from './form-io/form-io.component';
 import {UploadShowcaseComponent} from './upload-showcase/upload-showcase.component';
 
 const routes: Routes = [

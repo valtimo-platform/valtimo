@@ -213,7 +213,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
       combineLatest([of(options), this._selectedPath$, this.inputModeIsDropdown$])
     ),
     tap(([options, selectedPath, inputModeIsDropdown]) => {
-      if (!options.includes(selectedPath) && selectedPath !== '' && inputModeIsDropdown)
+      if (!options.includes(selectedPath) && !!selectedPath && inputModeIsDropdown)
         this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
     }),
     map(([options, selectedPath]) =>

@@ -15,18 +15,21 @@
   -->
 
 <valtimo-carbon-list
-  [items]="logItems$ | async"
+  *ngIf="{logItems: logItems$ | async, isSearchActive: isSearchActive$ | async} as obs"
+  [items]="obs.logItems"
   [fields]="FIELDS"
   [loading]="loading$ | async"
   [pagination]="pagination$ | async"
   paginationIdentifier="logging"
-  (paginationClicked)="onPaginationClicked($event)"
+  (paginationClicked)="onPaginationClicked($event, obs.logItems)"
   (paginationSet)="onPaginationSet($event)"
   (rowClicked)="onRowClickedEvent($event)"
 >
   <valtimo-no-results
-    [action]="clearSearchButton"
-    [description]="'logging.noResults.description' | translate"
+    [action]="obs.isSearchActive ? clearSearchButton : null"
+    [description]="
+      'logging.noResults.' + (obs.isSearchActive ? 'searchDescription' : 'description') | translate
+    "
     [title]="'logging.noResults.title' | translate"
   ></valtimo-no-results>
 
@@ -45,13 +48,14 @@
 </valtimo-carbon-list>
 
 <valtimo-log-details
+  [open]="logDetailsOpen$ | async"
   [logEvent]="selectedLogEvent$ | async"
   (closeModalEvent)="onCloseModalEvent()"
 ></valtimo-log-details>
 
 <ng-template #logSearch>
   <valtimo-log-search
-    [initSearchRequest]="initSearchRequest$ | async"
+    [initSearchRequest]="searchRequest$ | async"
     (searchSubmitEvent)="onSearchSubmitEvent($event)"
   ></valtimo-log-search>
 </ng-template>

@@ -34,12 +34,13 @@ import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuu
 import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
-import {LoadingModule, ToggleModule} from 'carbon-components-angular';
+import {ButtonModule, DatePickerInputModule, DialogModule, IconModule, LoadingModule, ToggleModule} from 'carbon-components-angular';
 import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
 import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
 import {CreateZaakeigenschapComponent} from './components/create-zaakeigenschap/create-zaakeigenschap.component';
 import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/update-zaakeigenschap.component';
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
+import {TranslateModule} from '@ngx-translate/core';
 
 @NgModule({
   declarations: [
@@ -69,6 +70,11 @@ import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/
     InputLabelModule,
     RadioModule,
     LoadingModule,
+    ButtonModule,
+    DialogModule,
+    IconModule,
+    TranslateModule,
+    DatePickerInputModule,
   ],
   exports: [
     ZakenApiConfigurationComponent,

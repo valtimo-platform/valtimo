@@ -16,35 +16,23 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {EditorModel, EditorModule} from '@valtimo/components';
 import {ModalModule} from 'carbon-components-angular';
+import {NgxJsonViewerModule} from 'ngx-json-viewer';
 import {LoggingEvent} from '../../models';
 
 @Component({
   selector: 'valtimo-log-details',
   templateUrl: './log-details.component.html',
+  styleUrl: './log-details.component.scss',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ModalModule, EditorModule],
+  imports: [CommonModule, TranslateModule, ModalModule, NgxJsonViewerModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LogDetailsComponent {
-  private _logEventModel: EditorModel | null = null;
-  @Input() public set logEvent(value: LoggingEvent | null) {
-    if (!value) {
-      this._logEventModel = null;
-      return;
-    }
+  @Input() public open = false;
+  @Input() public logEvent: LoggingEvent | null;
 
-    this._logEventModel = {
-      value: JSON.stringify(value),
-      language: 'json',
-    };
-  }
-  public get logEventModel(): EditorModel | null {
-    return this._logEventModel;
-  }
-
-  @Output() closeModalEvent = new EventEmitter();
+  @Output() public readonly closeModalEvent = new EventEmitter();
 
   public onCloseSelect(): void {
     this.closeModalEvent.emit();

@@ -111,6 +111,7 @@
   </div>
 
   <valtimo-dossier-supporting-process-start-modal
+    [isAdmin]="isAdmin$ | async"
     (formSubmit)="tabLoader.refreshView()"
     #supportingProcessStartModal
   ></valtimo-dossier-supporting-process-start-modal>

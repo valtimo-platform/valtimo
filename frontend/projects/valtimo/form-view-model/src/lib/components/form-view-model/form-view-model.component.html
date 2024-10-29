@@ -26,18 +26,20 @@
     errors: errors$ | async,
   } as obs"
 >
-  <div *ngIf="obs.loading" class="loading-icon">
-    <i class="fa fa-spinner fa-spin"></i>
+  <div *ngIf="obs.loading" class="overlay">
+    <div class="spinner">
+      <i class="fa fa-spinner fa-spin"></i>
+    </div>
   </div>
+
   <div *ngIf="obs.errors.length > 0" class="alert alert-danger pt-5 pb-5 mb-2">
     <ol>
-      @for (error of obs.errors; track error) {
-        <li class="pl-2">
-          {{ error }}
-        </li>
-      }
+      <li *ngFor="let error of obs.errors" class="pl-2">
+        {{ error }}
+      </li>
     </ol>
   </div>
+
   <formio
     #formio
     [submission]="obs.submission"
@@ -47,5 +49,6 @@
     [options]="obs.formioOptions"
     (submit)="onSubmit($event)"
     (change)="onChange($event)"
+    (focusout)="onBlur($event)"
   ></formio>
 </div>

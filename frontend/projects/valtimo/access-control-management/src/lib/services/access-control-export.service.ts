@@ -55,7 +55,7 @@ export class AccessControlExportService {
     element.setAttribute('href', 'data:text/json;charset=UTF-8,' + encodeURIComponent(sJson));
     element.setAttribute(
       'download',
-      `${type === 'separate' ? roleKey : 'combined'}.permissions.json`
+      `${type === 'separate' ? roleKey : 'combined'}.permission.json`
     );
     element.style.display = 'none';
     document.body.appendChild(element);

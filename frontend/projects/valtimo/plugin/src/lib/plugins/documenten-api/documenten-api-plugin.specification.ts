@@ -20,6 +20,7 @@ import {DOCUMENTEN_API_PLUGIN_LOGO_BASE64} from './assets';
 import {DocumentenApiConfigurationComponent} from './components/documenten-api-configuration/documenten-api-configuration.component';
 import {StoreUploadedDocumentConfigurationComponent} from './components/store-uploaded-document/store-uploaded-document-configuration.component';
 import {DownloadDocumentConfigurationComponent} from './components/download-document/download-document-configuration.component';
+import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
 
 const documentenApiPluginSpecification: PluginSpecification = {
   pluginId: 'documentenapi',
@@ -28,6 +29,7 @@ const documentenApiPluginSpecification: PluginSpecification = {
   functionConfigurationComponents: {
     'store-temp-document': StoreTempDocumentConfigurationComponent,
     'store-uploaded-document': StoreUploadedDocumentConfigurationComponent,
+    'store-uploaded-document-in-parts': StoreUploadedDocumentInPartsConfigurationComponent,
     'download-document': DownloadDocumentConfigurationComponent,
   },
   pluginTranslations: {
@@ -36,9 +38,12 @@ const documentenApiPluginSpecification: PluginSpecification = {
       description: 'API voor opslag en ontsluiting van documenten en daarbij behorende metadata.',
       'store-temp-document': 'Document opslaan',
       'store-uploaded-document': 'Geupload document opslaan',
+      'store-uploaded-document-in-parts': 'Geupload document opslaan in bestandsdelen',
       'download-document': 'Download document',
       storeUploadedDocumentMessage:
         'Het opslaan van een geupload document heeft geen configuratie nodig.',
+      storeUploadedDocumentInPartsMessage:
+        'Het opslaan van een geupload document in bestandsdelen heeft geen configuratie nodig',
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
         'Hier kunt je een eigen naam verzinnen. Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
@@ -97,9 +102,12 @@ const documentenApiPluginSpecification: PluginSpecification = {
       description: 'API for storing and accessing documents and associated metadata.',
       'store-temp-document': 'Save document',
       'store-uploaded-document': 'Save uploaded document',
+      'store-uploaded-document-in-parts': 'Save uploaded document in parts',
       'download-document': 'Download document',
       storeUploadedDocumentMessage:
         'Saving an uploaded document does not require any configuration.',
+      storeUploadedDocumentInPartsMessage:
+        'Saving an uploaded document in parts does not require any configuration.',
       configurationTitle: 'Configuration name',
       configurationTitleTooltip:
         'Here you can enter a name for the plugin. This name will be used to recognize the plugin throughout the rest of the application',
@@ -158,9 +166,12 @@ const documentenApiPluginSpecification: PluginSpecification = {
       description: 'API zum Speichern und Zugreifen auf Dokumente und zugehörige Metadaten.',
       'store-temp-document': 'Dokument speichern',
       'store-uploaded-document': 'Hochgeladenes Dokument speichern',
+      'store-uploaded-document-in-parts': 'Hochgeladenes Dokument in Teilen speichern',
       'download-document': 'Dokument herunterladen',
       storeUploadedDocumentMessage:
         'Das Speichern eines hochgeladenen Dokuments erfordert keine Konfiguration.',
+      storeUploadedDocumentInPartsMessage:
+        'Das Speichern eines hochgeladenen Dokuments in Teilen erfordert keine Konfiguration.',
       configurationTitle: 'Konfigurationsname',
       configurationTitleTooltip:
         'Hier können Sie einen Namen für das Plugin eingeben. Dieser Name wird verwendet, um das Plugin im Rest der Anwendung zu erkennen',

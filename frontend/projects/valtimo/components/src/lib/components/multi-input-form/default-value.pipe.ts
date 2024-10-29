@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-.timeline-activity {
-  font-size: 100%;
-}
+import {Pipe, PipeTransform} from '@angular/core';
+import {MultiInputFormsValues, MultiInputFormValue} from '../../models';
+import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 
-.timeline-summary p {
-  font-size: 0.8rem;
-}
-
-.actions-dropdown {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  cursor: pointer;
+@Pipe({
+  name: 'defaultValue',
+  standalone: true,
+})
+export class DefaultValuePipe implements PipeTransform {
+  public transform(
+    values: Observable<MultiInputFormsValues>,
+    uuid: string
+  ): Observable<MultiInputFormValue | {}> {
+    return values.pipe(
+      map(valuesArray => valuesArray.find(value => value.uuid === uuid)?.value || {})
+    );
+  }
 }

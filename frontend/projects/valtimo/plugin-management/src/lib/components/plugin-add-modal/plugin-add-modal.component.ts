@@ -46,10 +46,6 @@ export class PluginAddModalComponent {
     this.stateService.save();
   }
 
-  delete(): void {
-    this.stateService.delete();
-  }
-
   hide(): void {
     this.closeModal.emit();
     this.returnToFirstStep();

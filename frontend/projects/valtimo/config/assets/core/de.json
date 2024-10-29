@@ -150,6 +150,9 @@
       "noFiles": "Für diesen Fall wurden keine Dateien gefunden."
     },
     "startSubProcess": "Starten",
+    "noLinkedStartProcessNotification": "Es ist kein Startformular verknüpft",
+    "noLinkedProcessNotification": "Es ist kein formular verknüpft",
+    "configure": "Konfigurieren",
     "claimAssigneeCase": "Anmaßen",
     "deleteConfirmation": {
       "title": "Datei löschen",
@@ -263,12 +266,13 @@
   "summary": {
     "userTasksDoneState": "Alle Aufgaben sind erledigt",
     "taskLocked": "Kein Zugriff zu dieser Aufgabe!",
-    "mytasks": "Aufgaben",
+    "tasks": "Aufgaben",
+    "myTasks": "Meine Aufgaben",
     "otherTasks": "Andere Aufgaben",
     "taskOpen": "Öffnen",
     "taskCreated": "Erstellt",
-    "noResultsMyTasks": "Diesem Benutzer sind keine Aufgaben zugewiesen.",
-    "noResultsOtherTasks": "Keine Aufgaben anderen Benutzern zugewiesen."
+    "noResultsMyTasks": "Für diesen Benutzer sind keine Aufgaben verfügbar.",
+    "noResultsOtherTasks": "Keine Aufgaben für andere Benutzer verfügbar."
   },
   "progress": {
     "noProcessDocumentInstances": "Es wurde noch kein Prozess gestartet",
@@ -1848,18 +1852,19 @@
   },
   "logging": {
     "columns": {
-      "timestamp": "Zeitstempel",
-      "formattedMessage": "Formatierte Nachricht",
+      "timestamp": "Zeit",
+      "formattedMessage": "Nachricht",
       "level": "Protokollebene"
     },
     "search": {
       "addProperty": "Eigenschaft hinzufügen",
-      "afterTimestamp": "Datum von",
-      "beforeTimestamp": "Datum bis",
+      "afterTimestamp": "Zeit von",
+      "beforeTimestamp": "Zeit bis",
       "properties": "Eigenschaften"
     },
     "noResults": {
-      "description": "Keine Protokolle entsprechen Ihren Suchkriterien",
+      "description": "Es wurden noch keine Zeilen protokolliert",
+      "searchDescription": "Keine Protokolle entsprechen Ihren Suchkriterien",
       "title": "Es gibt keine Protokolle"
     },
     "detailsTitle": "Protokolldetails"

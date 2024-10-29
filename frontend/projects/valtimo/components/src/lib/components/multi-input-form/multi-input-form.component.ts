@@ -18,6 +18,7 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
@@ -33,7 +34,7 @@ import {v4 as uuidv4} from 'uuid';
   templateUrl: './multi-input-form.component.html',
   styleUrls: ['./multi-input-form.component.scss'],
 })
-export class MultiInputFormComponent implements OnInit, OnDestroy {
+export class MultiInputFormComponent implements OnInit, OnChanges, OnDestroy {
   @Input() name = '';
   @Input() title = '';
   @Input() titleTranslationKey = '';
@@ -64,10 +65,21 @@ export class MultiInputFormComponent implements OnInit, OnDestroy {
     map(values => !!(this.maxRows === null || values.length < this.maxRows))
   );
 
+  public initialDefaultValues$ = new BehaviorSubject<MultiInputFormsValues>([]);
+
   private valuesSubscription!: Subscription;
 
   ngOnInit(): void {
-    this.values$.next(this.getInitialRows());
+    const initialValues = this.getInitialRows();
+    this.initialDefaultValues$.next(initialValues);
+    this.values$.next(initialValues);
+    this.openValuesSubscription();
+  }
+
+  ngOnChanges(): void {
+    const initialValues = this.getInitialRows();
+    this.initialDefaultValues$.next(initialValues);
+    this.values$.next(initialValues);
     this.openValuesSubscription();
   }
 
@@ -182,6 +194,7 @@ export class MultiInputFormComponent implements OnInit, OnDestroy {
   }
 
   private openValuesSubscription(): void {
+    this.valuesSubscription?.unsubscribe();
     this.valuesSubscription = this.values$.subscribe(values => {
       this.valueChange.emit(values);
     });

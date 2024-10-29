@@ -51,6 +51,7 @@ export class PluginEditModalComponent {
   }
 
   delete(): void {
+    this.stateService.delete();
     this.stateService.disableInput();
 
     this.stateService.selectedPluginConfiguration$

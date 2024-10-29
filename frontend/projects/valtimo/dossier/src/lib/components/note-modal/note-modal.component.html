@@ -68,6 +68,7 @@
   <ng-container *ngIf="showForm$ | async">
     <v-form (valueChange)="formValueChange($event)">
       <v-input
+        class="notes-input"
         type="textarea"
         [margin]="true"
         [required]="true"

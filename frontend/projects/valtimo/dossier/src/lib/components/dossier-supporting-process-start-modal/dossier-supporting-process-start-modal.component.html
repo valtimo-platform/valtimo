@@ -54,7 +54,7 @@
     <div body *ngIf="!obs.formDefinition && !obs.formFlowInstanceId">
       <div class="bg-warning text-black mb-0 p-3 text-center">
         {{
-          (isAdmin$ | async)
+          isAdmin
             ? ('formManagement.noFormDefinitionFoundAdmin' | translate)
             : ('formManagement.noFormDefinitionFoundUser' | translate)
         }}
