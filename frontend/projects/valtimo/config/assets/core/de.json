@@ -1709,6 +1709,9 @@
     "Previous": "Vorherige",
     "formioIbanComponent": {
       "errorMessage": "Kein gültiges IBAN. Bitte geben Sie eine gültige IBAN ein."
+    },
+    "formioCurrencyComponent": {
+      "errorMessage": "Keine gültige Dezimalzahl. Bitte geben Sie eine gültige Dezimalzahl ein."
     }
   },
   "viewTypeConverter": {

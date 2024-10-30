@@ -1,0 +1,17 @@
+<div class="currencyForm-container" [formGroup]="currencyForm">
+  <div class="input-group">
+    <input id="currency" formControlName="currency" class="form-control" placeholder="0.00" />
+    <div
+      class="formio-errors invalid-feedback"
+      *ngIf="
+        currencyForm.controls.currency.invalid &&
+        (currencyForm.controls.currency.touched || !currencyForm.controls.currency.pristine) &&
+        currencyForm.controls?.currency?.errors
+      "
+    >
+      <div class="form-text error">
+        {{ 'formioTranslations.formioCurrencyComponent.errorMessage' | translate }}
+      </div>
+    </div>
+  </div>
+</div>

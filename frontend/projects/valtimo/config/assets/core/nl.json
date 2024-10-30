@@ -1715,6 +1715,9 @@
     "Previous": "Vorige",
     "formioIbanComponent": {
       "errorMessage": "Geen geldige IBAN. Voer een geldige IBAN in."
+    },
+    "formioCurrencyComponent": {
+      "errorMessage": "Geen geldig decimaal getal. Voer een geldig decimaal getal in."
     }
   },
   "viewTypeConverter": {

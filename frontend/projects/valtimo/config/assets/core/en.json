@@ -1714,6 +1714,9 @@
     "Previous": "Previous",
     "formioIbanComponent": {
       "errorMessage": "Not a valid IBAN. Please enter a valid IBAN."
+    },
+    "formioCurrencyComponent": {
+      "errorMessage": "Not a valid decimal number. Please enter a valid decimal number."
     }
   },
   "viewTypeConverter": {

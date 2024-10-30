@@ -36,6 +36,7 @@ import {FormioValueResolverSelectorComponent} from './formio-value-resolver-sele
 import {FormioDummyComponent} from './form-io-dummy/dummy.component';
 import {Templates} from 'formiojs';
 import {LayerModule} from 'carbon-components-angular';
+import {FormIoCurrencyComponent} from './form-io-currency/currency.component';
 
 @NgModule({
   imports: [
@@ -57,6 +58,7 @@ import {LayerModule} from 'carbon-components-angular';
     FormIoUploaderComponent,
     FormIoCurrentUserComponent,
     FormIoIbanComponent,
+    FormIoCurrencyComponent,
     FormioDummyComponent,
   ],
   exports: [
@@ -65,6 +67,7 @@ import {LayerModule} from 'carbon-components-angular';
     FormIoUploaderComponent,
     FormIoCurrentUserComponent,
     FormIoIbanComponent,
+    FormIoCurrencyComponent,
     FormioDummyComponent,
   ],
   providers: [
