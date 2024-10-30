@@ -48,8 +48,9 @@ class ChangelogDeployer(
     fun deploy(changesetDeployer: ChangesetDeployer, filename: String, resourceContent: String) {
         try {
             changesetDeployer.getChangelogDetails(filename, resourceContent).forEach { changesetDetails ->
-                val md5sum = changelogService.computeMd5sum(changesetDetails.valueToChecksum)
-                if (changelogService.isNewValidChangeset(changesetDetails.changesetId, md5sum)) {
+                val md5sum = changelogService.computeMd5sum(resourceContent)
+                val legacyCheckSum = changelogService.computeMd5sum(changesetDetails.valueToChecksum)
+                if (changelogService.isNewValidChangeset(changesetDetails.changesetId, md5sum, legacyCheckSum)) {
                     changesetDetails.deploy()
                     changelogService.saveChangeset(changesetDetails.changesetId, changesetDetails.key, filename, md5sum)
                 }

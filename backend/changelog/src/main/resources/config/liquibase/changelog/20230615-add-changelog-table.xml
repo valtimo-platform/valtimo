@@ -60,4 +60,12 @@
             uniqueColumns="md5sum"/>
     </changeSet>
 
+    <changeSet author="Ritense" id="4">
+        <addColumn tableName="valtimo_changelog">
+            <column name="checksum_type" type="VARCHAR(50)" defaultValue="LEGACY">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

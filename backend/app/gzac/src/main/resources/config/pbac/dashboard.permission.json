@@ -1,5 +1,5 @@
 {
-    "changesetId": "dashboard-v1",
+    "changesetId": "dashboard-v2",
     "permissions": [
         {
             "resourceType": "com.ritense.dashboard.domain.Dashboard",
@@ -11,6 +11,32 @@
                     "field": "key",
                     "operator": "==",
                     "value": "my_admin_dashboard"
+                }
+            ]
+        },
+        {
+            "resourceType": "com.ritense.dashboard.domain.Dashboard",
+            "action": "view",
+            "roleKey": "ROLE_USER",
+            "conditions": [
+                {
+                    "type": "field",
+                    "field": "key",
+                    "operator": "==",
+                    "value": "user-dashboard"
+                }
+            ]
+        },
+        {
+            "resourceType": "com.ritense.dashboard.domain.Dashboard",
+            "action": "view_list",
+            "roleKey": "ROLE_USER",
+            "conditions": [
+                {
+                    "type": "field",
+                    "field": "key",
+                    "operator": "==",
+                    "value": "user-dashboard"
                 }
             ]
         }

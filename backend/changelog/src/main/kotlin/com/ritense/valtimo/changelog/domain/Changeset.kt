@@ -19,6 +19,8 @@ package com.ritense.valtimo.changelog.domain
 import java.time.Instant
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 
@@ -42,6 +44,10 @@ data class Changeset(
     @Column(name = "order_executed", nullable = false, updatable = false, unique = true)
     val orderExecuted: Int,
 
-    @Column(name = "md5sum", nullable = false, updatable = false, unique = true)
+    @Column(name = "md5sum", nullable = false, updatable = true, unique = true)
     val md5sum: String,
+
+    @Column(name = "checksum_type", nullable = false, updatable = true, unique = false)
+    @Enumerated(EnumType.STRING)
+    val checksumType: ChangesetCheckSumType,
 )
