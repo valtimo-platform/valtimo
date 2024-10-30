@@ -27,6 +27,7 @@ interface DashboardWidgetConfiguration {
   displayType: string;
   dataSourceProperties: object;
   displayTypeProperties: object;
+  url: string;
 }
 
 export {Dashboard, DashboardWidgetConfiguration};

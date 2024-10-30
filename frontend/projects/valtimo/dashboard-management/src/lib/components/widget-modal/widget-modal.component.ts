@@ -65,6 +65,7 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
   @Input() public set editWidgetConfiguration(configuration: DashboardWidgetConfiguration) {
     if (configuration) {
       this.title.setValue(configuration.title);
+      this.url.setValue(configuration.url);
       this.dataSourceSelected({item: {key: configuration.dataSourceKey}} as any);
       this.displayTypeSelected({item: {key: configuration.displayType}} as any);
       this.dataSourcePrefillConfig$.next(configuration.dataSourceProperties);
@@ -80,6 +81,7 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
     title: this.fb.control('', [Validators.required]),
     dataSource: this.fb.control(null, [Validators.required]),
     displayType: this.fb.control(null, [Validators.required]),
+    url: this.fb.control(''),
   });
 
   public readonly open$ = new BehaviorSubject<boolean>(false);
@@ -175,9 +177,11 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
   public get dataSource() {
     return this.form.get('dataSource');
   }
-
   public get displayType() {
     return this.form.get('displayType');
+  }
+  public get url() {
+    return this.form.get('url');
   }
 
   constructor(
@@ -232,6 +236,7 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
             dataSourceKey: selectedDataSourceKey,
             dataSourceProperties: {...dataSourceConfiguration.data},
             displayTypeProperties: {...displayTypeConfiguration.data},
+            url: this.url.value,
           })
         ),
         switchMap(widgetUpdateObject =>
