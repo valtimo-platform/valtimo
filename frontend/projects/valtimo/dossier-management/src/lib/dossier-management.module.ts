@@ -59,6 +59,7 @@ import {
   TagModule,
   ToggleModule,
   TooltipModule,
+  InlineLoadingModule,
 } from 'carbon-components-angular';
 
 import {DossierManagementAssigneeComponent} from './components/dossier-management-assignee/dossier-management-assignee.component';
@@ -161,7 +162,8 @@ import { DossierManagementCreateDraftModalComponent } from './components/dossier
     DossierManagementWidgetsEditorComponent,
     ValuePathSelectorComponent,
     DossierManagementVersionModalComponent,
-    DossierManagementCreateDraftModalComponent
+    DossierManagementCreateDraftModalComponent,
+    InlineLoadingModule
   ],
   providers: [TabManagementService],
 })

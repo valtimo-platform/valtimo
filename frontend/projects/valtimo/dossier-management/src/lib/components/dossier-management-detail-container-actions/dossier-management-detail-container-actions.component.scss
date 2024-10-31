@@ -45,5 +45,20 @@
 .document-definition-actions {
   display: flex;
   gap: 16px;
-  align-items: flex-end;
+}
+
+.dossier-metadata {
+  ::ng-deep.cds--tag {
+    width: 100%;
+    white-space: nowrap;
+    gap: 8px;
+  }
+
+  ::ng-deep.cds--inline-loading {
+    white-space: nowrap;
+  }
+}
+
+.version-tag {
+  cursor: pointer;
 }

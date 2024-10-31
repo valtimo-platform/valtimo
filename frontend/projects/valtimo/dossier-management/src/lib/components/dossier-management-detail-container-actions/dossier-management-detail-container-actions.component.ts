@@ -25,11 +25,17 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import {RuleDraft16, Save16, Version16} from '@carbon/icons';
+import {RuleDraft16, Save16, Version16, Information16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS, PageHeaderService} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
-import {IconService, ListItem, Notification, NotificationService} from 'carbon-components-angular';
+import {
+  IconService,
+  InlineLoadingState,
+  ListItem,
+  Notification,
+  NotificationService,
+} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {FINAL_VERSIONS} from '../../mocks';
@@ -78,6 +84,10 @@ export class DossierManagementDetailContainerActionsComponent {
   public readonly versionModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly activeVersion$ = this.dossierVersionApiService.activeVersion$;
   public readonly showFinalizeConfirmation$ = new BehaviorSubject<boolean>(false);
+  public readonly inlineLoadingState$: Observable<InlineLoadingState> =
+    this.dossierVersionApiService.loading$.pipe(
+      map((loading: boolean) => (loading ? InlineLoadingState.Active : InlineLoadingState.Finished))
+    );
 
   public readonly versionListItems$: Observable<Array<ListItem>> = combineLatest([
     this._documentDefinitionVersions$,
@@ -114,7 +124,7 @@ export class DossierManagementDetailContainerActionsComponent {
     private readonly iconService: IconService,
     private readonly dossierVersionApiService: DossierVersionApiService
   ) {
-    this.iconService.registerAll([RuleDraft16, Save16, Version16]);
+    this.iconService.registerAll([RuleDraft16, Save16, Version16, Information16]);
   }
 
   public export(): void {
@@ -189,16 +199,6 @@ export class DossierManagementDetailContainerActionsComponent {
 
   public onCreateDraftClick(): void {
     this.draftModalOpen$.next(true);
-  }
-
-  public onSaveDraftClick(version: DocumentDefinitionVersion): void {
-    this.dossierVersionApiService.saveDraft(version);
-    this._currentNotification = this.notificationService.showNotification({
-      type: 'success',
-      title: 'Draft',
-      message: 'Version was saved successfully',
-      duration: CARBON_CONSTANTS.notificationDuration,
-    });
   }
 
   public onDraftModalClose(version: DocumentDefinitionVersion | null): void {

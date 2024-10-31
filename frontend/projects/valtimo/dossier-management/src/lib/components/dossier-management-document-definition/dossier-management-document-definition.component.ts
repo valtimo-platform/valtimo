@@ -139,6 +139,7 @@ export class DossierManagementDocumentDefinitionComponent {
   }
 
   public saveDefinition(): void {
+    this.dossierVersionApiService.loading$.next(true);
     this.showSaveConfirmation$.next(false);
     this.editActive$.next(false);
     const newDocumentDefinition = new DocumentDefinitionCreateRequest(
@@ -153,6 +154,7 @@ export class DossierManagementDocumentDefinitionComponent {
           this.dossierDetailService.setSelectedDocumentDefinitionName(this.documentDefinitionName);
           this.confirmRedirect.emit();
           this._pendingChanges$.next(false);
+          this.dossierVersionApiService.loading$.next(false);
         },
         error: () => {
           this.cancelRedirect.emit();

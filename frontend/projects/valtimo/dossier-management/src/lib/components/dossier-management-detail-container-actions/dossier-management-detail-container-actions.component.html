@@ -24,32 +24,37 @@
     selectedDocumentDefinition: selectedDocumentDefinition$ | async,
     selectedDocumentDefinitionIsReadOnly: selectedDocumentDefinitionIsReadOnly$ | async,
     compactMode: compactMode$ | async,
+    inlineLoadingState: inlineLoadingState$ | async,
   } as obs"
   [ngClass]="{'--compact': obs.compactMode}"
 >
   <div class="dossier-metadata">
-    <ng-container *ngTemplateOutlet="versionSelection; context: {obs: obs}"></ng-container>
-
-    <!-- <ng-container *ngTemplateOutlet="readOnly; context: {obs: obs}"></ng-container> -->
+    <ng-container *ngTemplateOutlet="versionDisplay; context: {obs: obs}"></ng-container>
   </div>
 
   <ng-container *ngTemplateOutlet="exportMenu; context: {obs: obs}"></ng-container>
 </div>
 
-<ng-template #versionSelection let-obs="obs">
-  <!-- <cds-dropdown
-    class="version-selection"
-    [disabled]="obs.loadingVersion || (obs.versionListItems.length || []) === 1"
-    [skeleton]="obs.loadingVersion"
-    (selected)="setVersion($event)"
-    [size]="obs.compactMode ? 'sm' : 'md'"
-  >
-    <cds-dropdown-list [items]="obs.versionListItems || []"></cds-dropdown-list>
-  </cds-dropdown> -->
+<ng-template #versionDisplay let-obs="obs">
+  <cds-tooltip description="Click here to see all available versions">
+    <cds-tag
+      *ngIf="obs.activeVersion"
+      class="version-tag"
+      [type]="obs.activeVersion.type === 'final' ? 'green' : 'red'"
+      (click)="onVersionsClick()"
+    >
+      {{ (obs.activeVersion.type | uppercase) + ': ' + obs.activeVersion.versionNumber }}
 
-  <cds-tag *ngIf="obs.activeVersion" [type]="obs.activeVersion.type === 'final' ? 'green' : 'red'">
-    {{ (obs.activeVersion.type | uppercase) + ': ' + obs.activeVersion.versionNumber }}
-  </cds-tag>
+      <svg cdsIcon="information" size="16"></svg>
+    </cds-tag>
+  </cds-tooltip>
+
+  <cds-inline-loading
+    [state]="obs.inlineLoadingState"
+    loadingText="Saving changes"
+    successText="Up to date"
+    errorText="Changes failed to save"
+  ></cds-inline-loading>
 </ng-template>
 
 <ng-template #exportMenu let-obs="obs">
@@ -68,23 +73,13 @@
       <button
         cdsButton="secondary"
         [size]="(compactMode$ | async) ? 'sm' : 'md'"
-        (click)="onSaveDraftClick(obs.activeVersion)"
+        (click)="onFinalizeDraftClick()"
       >
-        Save draft
+        Finalize draft
 
         <svg class="cds--btn__icon" cdsIcon="save" size="16"></svg>
       </button>
     }
-
-    <!-- <button
-      cdsButton="secondary"
-      [size]="obs.compactMode ? 'sm' : 'md'"
-      (click)="onVersionsClick()"
-    >
-      Versions
-
-      <svg class="cds--btn__icon" cdsIcon="version" size="16"></svg>
-    </button> -->
 
     <cds-overflow-menu
       valtimoCdsOverflowButton
@@ -93,18 +88,6 @@
       [offset]="{y: 48, x: 37}"
       class="overflow-button"
     >
-      <cds-overflow-menu-option [id]="'versions'" (selected)="onVersionsClick()">
-        Versions
-      </cds-overflow-menu-option>
-
-      <cds-overflow-menu-option
-        *ngIf="obs.activeVersion.type === 'draft'"
-        [id]="'finalizeDraft'"
-        (selected)="onFinalizeDraftClick()"
-      >
-        Finalize draft
-      </cds-overflow-menu-option>
-
       <cds-overflow-menu-option
         [id]="'exportDocumentDefinition'"
         [disabled]="obs.exporting || obs.loadingVersion"

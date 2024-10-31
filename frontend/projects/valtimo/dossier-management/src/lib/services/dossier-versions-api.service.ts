@@ -25,6 +25,8 @@ export class DossierVersionApiService {
   public readonly finalVersions$: Observable<DocumentDefinitionVersion[]> =
     this._finalVersions$.pipe(filter(versions => !!versions));
 
+  public readonly loading$ = new BehaviorSubject<boolean>(false);
+
   public finalizeVersion(version: DocumentDefinitionVersion): void {
     this._finalVersions$.next([...this._finalVersions$.getValue(), {...version, type: 'final'}]);
     this._draftVersions$.next(
@@ -36,16 +38,6 @@ export class DossierVersionApiService {
 
   public createDraft(version: DocumentDefinitionVersion): void {
     this._draftVersions$.next([...this._draftVersions$.getValue(), version]);
-  }
-
-  public saveDraft(version: DocumentDefinitionVersion): void {
-    this._draftVersions$.next(
-      this._draftVersions$
-        .getValue()
-        .map((draftVersion: DocumentDefinitionVersion) =>
-          draftVersion.id === version.id ? version : draftVersion
-        )
-    );
   }
 
   public setActiveVersion(version: DocumentDefinitionVersion): void {
