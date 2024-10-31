@@ -19,10 +19,10 @@ package com.ritense.resource.listener;
 import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.document.event.DocumentRelatedFileSubmittedEvent;
 import com.ritense.valtimo.contract.listener.DocumentRelatedFileEventListener;
-import lombok.RequiredArgsConstructor;
-
-@RequiredArgsConstructor
 public class DocumentRelatedFileSubmittedEventListenerImpl implements DocumentRelatedFileEventListener {
+    public DocumentRelatedFileSubmittedEventListenerImpl(ResourceService resourceService) {
+        this.resourceService = resourceService;
+    }
 
     private final ResourceService resourceService;
 
