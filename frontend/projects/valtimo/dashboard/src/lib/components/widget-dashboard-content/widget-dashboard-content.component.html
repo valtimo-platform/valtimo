@@ -28,7 +28,11 @@
   <ng-container *ngIf="widgetConfigurations$ | async as widgetConfigurations">
     <ng-container *ngFor="let config of widgetConfigurations">
       <div #widgetConfiguration [id]="config.key" class="widget-configuration">
-        <div class="widget-configuration-content">
+        <div (click)="navigateToRoute(config, $event)"
+             [ngClass]="{
+               'widget-configuration-content-clickable': (config.url),
+             }"
+             class="widget-configuration-content">
           <ng-container #widgetConfigurationContent></ng-container>
         </div>
       </div>
