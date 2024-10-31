@@ -18,6 +18,7 @@ rootProject.name = projectName
 include(
     "app",
     "app:gzac",
+    "aws",
     //"app:valtimo-core",
     "audit",
     //"besluit",
@@ -66,6 +67,7 @@ include(
     "process-link",
     "resource",
     "resource:local-resource",
+    "resource:s3-resource",
     //"resource:openzaak-resource",
     "resource:temporary-resource-storage",
     "search",

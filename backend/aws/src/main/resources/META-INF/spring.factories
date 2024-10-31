@@ -1,0 +1,5 @@
+org.springframework.context.ApplicationListener=com.ritense.aws.parameterstore.AwsSsmPropertiesListener
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.ritense.aws.autoconfigure.AwsAutoConfiguration,\
+  com.ritense.aws.autoconfigure.SnsAutoConfiguration,\
+  com.ritense.aws.autoconfigure.SqsAutoConfiguration

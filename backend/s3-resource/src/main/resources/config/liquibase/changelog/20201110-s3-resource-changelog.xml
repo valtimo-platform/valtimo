@@ -1,0 +1,139 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2020 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet author="Tom Bokma" id="1">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+            <tableExists tableName="s3_resource"/>
+        </preConditions>
+        <renameTable oldTableName="s3_resource" newTableName="s3_resource_archived" />
+    </changeSet>
+
+    <changeSet author="Tom Bokma" id="2">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <createTable tableName="s3_resource">
+            <column name="id" type="BINARY(16)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="s3_resourcePK"/>
+            </column>
+            <column name="bucket" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="s3_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="extension" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="size_in_bytes" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_on" type="DATETIME(6)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Tom Bokma" id="3">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <createIndex indexName="s3_key_index" tableName="s3_resource">
+            <column name="s3_key"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Tom Bokma" id="4">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+            <tableExists tableName="s3_resource_archived"/>
+        </preConditions>
+        <sql>
+            INSERT INTO s3_resource (
+                    id
+            ,       bucket
+            ,       s3_key
+            ,       name
+            ,       extension
+            ,       size_in_bytes
+            ,       created_on)
+            SELECT  id
+            ,       bucket
+            ,       resource_key
+            ,       name
+            ,       extension
+            ,       size_in_bytes
+            ,       date_created
+            FROM    s3_resource_archived
+        </sql>
+    </changeSet>
+
+    <changeSet author="Ritense" id="5">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <tableExists tableName="s3_resource"/>
+        </preConditions>
+        <dropTable tableName="s3_resource"/>
+    </changeSet>
+
+    <changeSet author="Ritense" id="6">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <createTable tableName="s3_resource">
+            <column name="id" type="${uuidType}">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="s3_resourcePK"/>
+            </column>
+            <column name="bucket" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="s3_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="extension" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="size_in_bytes" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_on" type="DATETIME(6)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Ritense" id="7">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <createIndex indexName="s3_key_index" tableName="s3_resource">
+            <column name="s3_key"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
