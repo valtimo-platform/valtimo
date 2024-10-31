@@ -1,0 +1,4 @@
+aws:
+    s3:
+        bucketName: bucketName
+        bucketRegion: US-EAST
