@@ -16,11 +16,10 @@
 
 package com.ritense.aws.parameterstore;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertySource;
-
-import javax.validation.constraints.NotNull;
 
 public class ParameterStoreConfiguration {
     private final ConfigurableEnvironment environment;

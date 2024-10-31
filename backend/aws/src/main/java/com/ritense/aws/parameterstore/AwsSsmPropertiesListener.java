@@ -16,19 +16,19 @@
 
 package com.ritense.aws.parameterstore;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
 import org.springframework.context.ApplicationListener;
 
-import javax.validation.constraints.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
-@RequiredArgsConstructor
 public class AwsSsmPropertiesListener implements ApplicationListener<ApplicationEnvironmentPreparedEvent> {
+    private static final Logger logger = LoggerFactory.getLogger(AwsSsmPropertiesListener.class);
+    public AwsSsmPropertiesListener() {
+    }
 
     @Override
-    public void onApplicationEvent(@NotNull ApplicationEnvironmentPreparedEvent event) {
+    public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
         logger.trace("Started AwsSsmPropertiesListener");
         final AwsSsmPropertiesExtractor awsSsmPropertiesExtractor = new AwsSsmPropertiesExtractor(
             new ParameterStoreConfiguration(event)

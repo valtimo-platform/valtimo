@@ -16,18 +16,19 @@
 
 package com.ritense.aws.parameterstore;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.EnumerablePropertySource;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathResponse;
 import software.amazon.awssdk.services.ssm.model.Parameter;
 
-import javax.validation.constraints.NotNull;
 import java.util.Properties;
 
-@Slf4j
 public class ParameterStorePropertySource extends EnumerablePropertySource<SsmClient> {
+
+    private static final Logger logger = LoggerFactory.getLogger(ParameterStorePropertySource.class);
 
     private final String path;
     private String[] propertyNames;
@@ -63,14 +64,13 @@ public class ParameterStorePropertySource extends EnumerablePropertySource<SsmCl
         propertyNames = properties.keySet().stream().map(Object::toString).toArray(String[]::new);
     }
 
-    @NotNull
     @Override
     public String[] getPropertyNames() {
         return propertyNames;
     }
 
     @Override
-    public Object getProperty(@NotNull String name) {
+    public Object getProperty(String name) {
         return properties.get(name);
     }
 

@@ -16,7 +16,7 @@
 
 package com.ritense.aws.config;
 
-import io.micrometer.core.lang.Nullable;
+import org.springframework.lang.Nullable;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProviderChain;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.profiles.ProfileFile;

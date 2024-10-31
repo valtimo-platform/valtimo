@@ -21,13 +21,20 @@ dockerCompose {
 }
 
 dependencies {
-    api "com.ritense.valtimo:resource:$project.version"
+    api project(":contract")
+    api project(":resource")
     implementation project(":aws")
     implementation 'software.amazon.awssdk:s3'
 
     implementation "org.hibernate:hibernate-core"
     implementation "org.springframework.boot:spring-boot-autoconfigure"
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
+
+    implementation 'io.github.microutils:kotlin-logging:2.0.4'
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 

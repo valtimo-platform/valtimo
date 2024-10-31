@@ -17,12 +17,13 @@
 package com.ritense.aws.parameterstore;
 
 import com.ritense.aws.config.ValtimoCredentialsProviderChain;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ssm.SsmClient;
 
-@Slf4j
 public class AwsSsmPropertiesExtractor {
+    private static final Logger logger = LoggerFactory.getLogger(AwsSsmPropertiesExtractor.class);
 
     private final ParameterStoreConfiguration parameterStoreConfiguration;
     private final SsmClient ssmClient;
