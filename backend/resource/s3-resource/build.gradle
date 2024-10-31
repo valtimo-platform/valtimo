@@ -17,7 +17,6 @@
 dockerCompose {
     projectName = "s3-resource"
     isRequiredBy(test)
-    isRequiredBy(checkExtended)
     useComposeFiles.addAll("../../docker-resources/docker-compose-base-test.yml", "docker-compose-override.yml")
 }
 
