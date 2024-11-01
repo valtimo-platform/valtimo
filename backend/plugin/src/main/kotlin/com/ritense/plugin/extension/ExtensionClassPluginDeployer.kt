@@ -19,16 +19,16 @@ package com.ritense.plugin.extension
 import com.ritense.plugin.PluginDeploymentListener
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.extension.ExtensionRegistrationListener
+import com.ritense.valtimo.contract.extension.ExtensionClassRegistrationListener
 import org.springframework.stereotype.Component
 
 @SkipComponentScan
 @Component
-class ExtensionPluginDeployer(
+class ExtensionClassPluginDeployer(
     private val pluginDeploymentListener: PluginDeploymentListener
-) : ExtensionRegistrationListener {
+) : ExtensionClassRegistrationListener {
 
-    override fun extensionRegistered(extensionClass: Class<*>) {
+    override fun classRegistered(extensionClass: Class<*>) {
         if (extensionClass.isAnnotationPresent(Plugin::class.java)) {
             pluginDeploymentListener.deployPluginDefinition(
                 extensionClass,
@@ -37,7 +37,7 @@ class ExtensionPluginDeployer(
         }
     }
 
-    override fun extensionUnregistered(extensionClass: Class<*>) {
+    override fun classUnregistered(extensionClass: Class<*>) {
         if (extensionClass.isAnnotationPresent(Plugin::class.java)) {
             pluginDeploymentListener.undeployPluginDefinition(
                 extensionClass,

@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.ritense.extension
+package com.ritense.extension.listener
 
+import com.ritense.extension.ExtensionManager
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.extension.ExtensionRegistrationListener
+import com.ritense.valtimo.contract.extension.ExtensionClassRegistrationListener
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition
 import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
@@ -33,18 +34,18 @@ import org.springframework.web.bind.annotation.RestController
 
 @SkipComponentScan
 @Component
-class SpringBeanExtensionRegistrationListener(
+class BeanExtensionClassRegistrationListener(
     private val extensionManager: ExtensionManager,
     private val beanFactory: AbstractAutowireCapableBeanFactory
-) : ExtensionRegistrationListener {
+) : ExtensionClassRegistrationListener {
 
-    override fun extensionRegistered(extensionClass: Class<*>) {
+    override fun classRegistered(extensionClass: Class<*>) {
         if (isBean(extensionClass)) {
             registerSpringBean(extensionClass)
         }
     }
 
-    override fun extensionUnregistered(extensionClass: Class<*>) {
+    override fun classUnregistered(extensionClass: Class<*>) {
         if (isBean(extensionClass)) {
             unregisterSpringBean(extensionClass)
         }
@@ -61,11 +62,15 @@ class SpringBeanExtensionRegistrationListener(
 
     private fun unregisterSpringBean(extensionClass: Class<*>) {
         val exceptions = mutableListOf<Exception>()
-        extensionManager.applicationContext.getBeansOfType(extensionClass).keys.forEach { beanName ->
+        val beanNames = extensionManager.applicationContext.getBeansOfType(extensionClass).keys.toMutableSet()
+        beanNames.add(getBeanName(extensionClass))
+        beanNames.forEach { beanName ->
             try {
                 beanFactory.destroySingleton(beanName)
             } catch (e: Exception) {
-                exceptions.add(RuntimeException("Failed to destroy Spring bean '$beanName' for $extensionClass", e))
+                exceptions.add(
+                    RuntimeException("Failed to destroy Spring bean '$beanName' for $extensionClass", e)
+                )
             }
         }
         exceptions.forEach { throw it }

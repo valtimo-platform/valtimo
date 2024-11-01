@@ -17,12 +17,16 @@
 package com.ritense.extension
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.extension.ExtensionRegistrationListener
+import com.ritense.valtimo.contract.extension.ExtensionClassRegistrationListener
+import com.ritense.valtimo.contract.extension.ExtensionResourcesRegistrationListener
 import jakarta.annotation.PostConstruct
+import mu.KotlinLogging
+import org.pf4j.PluginState.FAILED
 import org.pf4j.PluginState.STARTED
 import org.pf4j.PluginState.STOPPED
 import org.pf4j.PluginStateEvent
 import org.pf4j.PluginStateListener
+import org.pf4j.PluginWrapper
 import org.pf4j.spring.ExtensionsInjector
 import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory
 import org.springframework.stereotype.Component
@@ -31,7 +35,8 @@ import org.springframework.stereotype.Component
 @Component
 class ValtimoExtensionsInjector(
     private val extensionManager: ExtensionManager,
-    private val extensionRegistrationListeners: List<ExtensionRegistrationListener>,
+    private val extensionClassRegistrationListeners: List<ExtensionClassRegistrationListener>,
+    private val extensionResourcesRegistrationListeners: List<ExtensionResourcesRegistrationListener>,
 ) : PluginStateListener, ExtensionsInjector(
     extensionManager,
     extensionManager.applicationContext.autowireCapableBeanFactory as AbstractAutowireCapableBeanFactory
@@ -39,48 +44,85 @@ class ValtimoExtensionsInjector(
 
     @PostConstruct
     fun init() {
-        injectExtensions()
         extensionManager.addPluginStateListener(this)
+        injectExtensions()
+    }
+
+    override fun injectExtensions() {
+        super.injectExtensions()
+        springPluginManager.startedPlugins.forEach { extension -> registerResources(extension.pluginId) }
     }
 
     override fun pluginStateChanged(event: PluginStateEvent) {
-        when (event.pluginState) {
-            STARTED -> extensionManager.getExtensionClassNames(event.plugin.pluginId).forEach { extensionClassName ->
-                registerExtension(event.plugin.pluginClassLoader.loadClass(extensionClassName))
+        try {
+            when (event.pluginState) {
+                STARTED -> registerExtension(event.plugin)
+                STOPPED -> unregisterExtension(event.plugin)
+                FAILED -> try {
+                    unregisterExtension(event.plugin)
+                } catch (t: Throwable) {
+                    logger.debug(t) { "Error while unregistering extension ${event.plugin.pluginId}" }
+                }
+                else -> {}
             }
-
-            STOPPED -> extensionManager.getExtensionClassNames(event.plugin.pluginId).forEach { extensionClassName ->
-                unregisterExtension(event.plugin.pluginClassLoader.loadClass(extensionClassName))
-            }
-
-            else -> {}
+        } catch (e: Exception) {
+            extensionManager.fail(event.plugin, e)
         }
+    }
+
+    fun registerExtension(extension: PluginWrapper) {
+        extensionManager.getExtensionClassNames(extension.pluginId).forEach { extensionClassName ->
+            registerExtension(extension.pluginClassLoader.loadClass(extensionClassName))
+        }
+        registerResources(extension.pluginId)
     }
 
     public override fun registerExtension(extensionClass: Class<*>) {
-        try {
-            extensionRegistrationListeners.forEach { listener ->
-                listener.extensionRegistered(extensionClass)
-            }
-        } catch (e: Exception) {
-            try {
-                unregisterExtension(extensionClass)
-            } catch (_: Exception) {
-                // ignored
-            }
-            throw RuntimeException("Failed to register extension $extensionClass", e)
+        extensionClassRegistrationListeners.forEach { listener ->
+            listener.classRegistered(extensionClass)
         }
     }
 
-    fun unregisterExtension(extensionClass: Class<*>) {
+    fun registerResources(extensionId: String) {
+        val resources = extensionManager.getAllResources(extensionId)
+        extensionResourcesRegistrationListeners.forEach { listener -> listener.registerResources(resources) }
+    }
+
+    fun unregisterExtension(extension: PluginWrapper) {
+        unregisterResources(extension.pluginId)
+            .firstOrNull()?.let { throw it }
+        extensionManager.getExtensionClassNames(extension.pluginId).forEach { extensionClassName ->
+            unregisterExtension(extension.pluginClassLoader.loadClass(extensionClassName))
+                .firstOrNull()?.let { throw it }
+        }
+    }
+
+    fun unregisterResources(extensionId: String): List<Exception> {
         val exceptions = mutableListOf<Exception>()
-        extensionRegistrationListeners.forEach { listener ->
+        val resources = extensionManager.getAllResources(extensionId)
+        extensionResourcesRegistrationListeners.forEach { listener ->
             try {
-                listener.extensionUnregistered(extensionClass)
+                listener.unregisterResources(resources)
+            } catch (e: Exception) {
+                exceptions.add(RuntimeException("Failed to unregister extension resources", e))
+            }
+        }
+        return exceptions
+    }
+
+    fun unregisterExtension(extensionClass: Class<*>): List<Exception> {
+        val exceptions = mutableListOf<Exception>()
+        extensionClassRegistrationListeners.forEach { listener ->
+            try {
+                listener.classUnregistered(extensionClass)
             } catch (e: Exception) {
                 exceptions.add(RuntimeException("Failed to unregister extension $extensionClass", e))
             }
         }
-        exceptions.forEach { e -> throw e}
+        return exceptions
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }

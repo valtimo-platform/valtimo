@@ -41,25 +41,34 @@ class ExtensionUpdateManager(
 
     fun getExtensions(): List<Extension> {
         refresh()
-        val versionManager = extensionManager.versionManager
         return plugins.map { extension ->
             Extension(
                 id = extension.id,
                 name = extension.name,
                 description = extension.description,
                 installedVersion = extensionManager.getPlugin(extension.id)?.descriptor?.version,
-                availableVersions = extension.releases
-                    .map { it.version }
-                    .sortedWith { a, b -> versionManager.compareVersions(b, a) },
+                nextVersion = getNextVersion(extension.id),
             )
         }
     }
 
-    fun installExtension(id: String, version: String): Path {
+    fun getNextVersion(extensionId: String): String? {
+        val latestVersion = getLastPluginRelease(extensionId)?.version ?: return null
+        val installedVersion = extensionManager.getPlugin(extensionId)?.descriptor?.version
+        val versionManager = extensionManager.versionManager
+        return if (installedVersion == null || versionManager.compareVersions(latestVersion, installedVersion) > 0) {
+            latestVersion
+        } else {
+            null
+        }
+    }
+
+    fun installExtension(id: String, version: String) {
+        require(extensionManager.getPlugin(id) == null) {
+            "Extension with id '$id' is already installed"
+        }
         try {
             check(installPlugin(id, version)) { "Unable to install" }
-            val extension = extensionManager.getPlugin(id)
-            return extensionManager.getExtensionsFrontendZip(listOf(extension))
         } catch (e: Exception) {
             try {
                 uninstallExtension(id)
@@ -70,11 +79,9 @@ class ExtensionUpdateManager(
         }
     }
 
-    fun updateExtension(id: String, version: String): Path {
+    fun updateExtension(id: String, version: String) {
         try {
             check(updatePlugin(id, version)) { "Unable to update" }
-            val extension = extensionManager.getPlugin(id)
-            return extensionManager.getExtensionsFrontendZip(listOf(extension))
         } catch (e: Exception) {
             throw RuntimeException("Failed to update extension with id=$id and version=$version")
         }

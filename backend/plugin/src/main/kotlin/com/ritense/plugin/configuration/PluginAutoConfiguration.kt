@@ -22,7 +22,7 @@ import com.ritense.plugin.PluginDefinitionResolver
 import com.ritense.plugin.PluginDeploymentListener
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.autodeployment.PluginAutoDeploymentEventListener
-import com.ritense.plugin.extension.ExtensionPluginDeployer
+import com.ritense.plugin.extension.ExtensionClassPluginDeployer
 import com.ritense.plugin.repository.PluginActionDefinitionRepository
 import com.ritense.plugin.repository.PluginActionPropertyDefinitionRepository
 import com.ritense.plugin.repository.PluginCategoryRepository
@@ -214,10 +214,10 @@ class PluginAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(ExtensionPluginDeployer::class)
+    @ConditionalOnMissingBean(ExtensionClassPluginDeployer::class)
     fun extensionPluginDeployer(
         pluginDeploymentListener: PluginDeploymentListener
-    ): ExtensionPluginDeployer {
-        return ExtensionPluginDeployer(pluginDeploymentListener)
+    ): ExtensionClassPluginDeployer {
+        return ExtensionClassPluginDeployer(pluginDeploymentListener)
     }
 }

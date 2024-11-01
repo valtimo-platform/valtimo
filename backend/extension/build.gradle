@@ -15,7 +15,9 @@
  */
 
 dependencies {
+    implementation project(":authorization")
     implementation project(":contract")
+    implementation project(":importer")
 
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"

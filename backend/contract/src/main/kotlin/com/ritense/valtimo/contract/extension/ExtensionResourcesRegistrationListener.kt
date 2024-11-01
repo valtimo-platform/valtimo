@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package com.ritense.extension.web.rest
+package com.ritense.valtimo.contract.extension
 
-data class Extension(
-    val id: String,
-    val name: String?,
-    val description: String?,
-    val installedVersion: String?,
-    val nextVersion: String?,
-)
+import org.springframework.core.io.Resource
+
+interface ExtensionResourcesRegistrationListener {
+    fun registerResources(resources: List<Resource>)
+    fun unregisterResources(resources: List<Resource>)
+}

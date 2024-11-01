@@ -18,19 +18,17 @@ package com.ritense.extension
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import jakarta.annotation.PostConstruct
-import org.pf4j.PluginStateListener
+import mu.KotlinLogging
+import org.pf4j.PluginState
+import org.pf4j.PluginStateEvent
 import org.pf4j.PluginWrapper
 import org.pf4j.spring.SpringPluginManager
+import org.springframework.core.io.Resource
 import org.springframework.core.io.support.ResourcePatternResolver
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
-import java.nio.file.Files
 import java.nio.file.Path
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 import kotlin.io.path.Path
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.outputStream
 
 @Component
 @SkipComponentScan
@@ -50,31 +48,40 @@ class ExtensionManager(
         startPlugins()
     }
 
-    fun getExtensionsFrontendZip(extensions: List<PluginWrapper>): Path {
-        val extensionsFrontendZip = Files.createTempFile("frontend", ".zip")
-        ZipOutputStream(extensionsFrontendZip.outputStream()).use { zipOut ->
-            extensions.forEach { extension ->
-                val frontendFolder = extension.pluginClassLoader.getResource("frontend")
-                if (frontendFolder != null) {
-                    resourceResolver.getResources("${frontendFolder.toURI()}/**")
-                        .filter { it.isReadable }
-                        .forEach { resource ->
-                            zipOut.putNextEntry(
-                                ZipEntry(
-                                    Path(
-                                        "/frontend",
-                                        extension.pluginId,
-                                        resource.url.path.substringAfter("!/frontend/")
-                                    ).absolutePathString()
-                                )
-                            )
-                            zipOut.write(resource.inputStream.readAllBytes())
-                        }
-                }
-            }
+    fun fail(extension: PluginWrapper, exception: Exception?) {
+        logger.error(exception) { "Error in extension ${extension.pluginId}" }
+        val oldState = extension.pluginState
+        extension.pluginState = PluginState.FAILED
+        extension.failedException = exception
+        if (oldState == PluginState.STARTED) {
+            extension.plugin.stop()
         }
-        return extensionsFrontendZip
+        startedPlugins.remove(extension)
+        firePluginStateEvent(PluginStateEvent(this, extension, oldState))
+    }
+
+    fun getPublicResource(extensionId: String, publicFile: String): Resource? {
+        val extension = getPlugin(extensionId) ?: return null
+        val publicFolder = extension.pluginClassLoader.getResource("public") ?: return null
+        val filePath = Path(publicFolder.toURI().toString(), publicFile).toString()
+        val fileResource = resourceResolver.getResource(filePath)
+        return if (fileResource.isReadable) {
+            fileResource
+        } else {
+            null
+        }
+    }
+
+    fun getAllResources(extensionId: String): List<Resource> {
+        val extension = getPlugin(extensionId)
+        val metaInfPath = extension.pluginClassLoader.getResource("META-INF")!!.toURI().toString()
+        return resourceResolver.getResources(metaInfPath.replace("/META-INF", "/**"))
+            .filter { it.isReadable }
     }
 
     override fun createPluginFactory() = ExtensionFactory()
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
+    }
 }

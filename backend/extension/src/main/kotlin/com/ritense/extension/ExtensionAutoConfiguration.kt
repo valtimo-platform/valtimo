@@ -16,10 +16,14 @@
 
 package com.ritense.extension
 
+import com.ritense.extension.listener.BeanExtensionClassRegistrationListener
+import com.ritense.extension.listener.ValtimoConfigImportExtensionResourcesListener
 import com.ritense.extension.web.rest.ExtensionManagementResource
+import com.ritense.extension.web.rest.ExtensionPublicResource
 import com.ritense.extension.web.rest.ExtensionSecurityConfigurer
-import com.ritense.valtimo.contract.extension.ExtensionRegistrationListener
-import org.pf4j.PluginStateListener
+import com.ritense.importer.ImportService
+import com.ritense.valtimo.contract.extension.ExtensionClassRegistrationListener
+import com.ritense.valtimo.contract.extension.ExtensionResourcesRegistrationListener
 import org.pf4j.update.UpdateManager
 import org.pf4j.update.UpdateRepository
 import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory
@@ -77,11 +81,25 @@ class ExtensionAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ExtensionManagementResource::class)
-    fun extensionResource(
+    fun extensionManagementResource(
+        valtimoExtensionManager: ExtensionManager,
         valtimoExtensionUpdateManager: ExtensionUpdateManager,
     ): ExtensionManagementResource {
         return ExtensionManagementResource(
-            valtimoExtensionUpdateManager
+            valtimoExtensionManager,
+            valtimoExtensionUpdateManager,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ExtensionPublicResource::class)
+    fun extensionPublicResource(
+        valtimoExtensionManager: ExtensionManager,
+        valtimoExtensionUpdateManager: ExtensionUpdateManager,
+    ): ExtensionPublicResource {
+        return ExtensionPublicResource(
+            valtimoExtensionManager,
+            valtimoExtensionUpdateManager,
         )
     }
 
@@ -89,23 +107,35 @@ class ExtensionAutoConfiguration {
     @ConditionalOnMissingBean(ValtimoExtensionsInjector::class)
     fun valtimoExtensionsInjector(
         extensionManager: ExtensionManager,
-        @Lazy extensionRegistrationListeners: List<ExtensionRegistrationListener>,
+        @Lazy extensionClassRegistrationListeners: List<ExtensionClassRegistrationListener>,
+        @Lazy extensionResourcesRegistrationListeners: List<ExtensionResourcesRegistrationListener>,
     ): ValtimoExtensionsInjector {
         return ValtimoExtensionsInjector(
             extensionManager,
-            extensionRegistrationListeners,
+            extensionClassRegistrationListeners,
+            extensionResourcesRegistrationListeners,
         )
     }
 
     @Bean
-    @ConditionalOnMissingBean(SpringBeanExtensionRegistrationListener::class)
-    fun springBeanExtensionRegistrationListener(
+    @ConditionalOnMissingBean(BeanExtensionClassRegistrationListener::class)
+    fun beanExtensionClassRegistrationListener(
         extensionManager: ExtensionManager,
         beanFactory: AbstractAutowireCapableBeanFactory,
-    ): SpringBeanExtensionRegistrationListener {
-        return SpringBeanExtensionRegistrationListener(
+    ): BeanExtensionClassRegistrationListener {
+        return BeanExtensionClassRegistrationListener(
             extensionManager,
             beanFactory,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ValtimoConfigImportExtensionResourcesListener::class)
+    fun valtimoConfigImportExtensionResourcesListener(
+        importService: ImportService,
+    ): ValtimoConfigImportExtensionResourcesListener {
+        return ValtimoConfigImportExtensionResourcesListener(
+            importService,
         )
     }
 

@@ -33,6 +33,8 @@ import org.apache.commons.lang3.StringUtils
 import org.springframework.core.env.Environment
 import org.springframework.core.io.Resource
 import org.springframework.transaction.annotation.Transactional
+import java.io.InputStream
+import java.util.zip.ZipInputStream
 
 @AllOpen
 class ValtimoImportService(
@@ -317,7 +319,7 @@ class ValtimoImportService(
      * When no files are provided, an empty list value is mapped.
      * @param entries
      */
-    private fun getEntriesByImporter(entries: List<ZipFileEntry>): LinkedHashMap<Importer, List<ZipFileEntry>> {
+    private fun getEntriesByImporter(entries: List<ImportRequest>): Map<Importer, List<ImportRequest>> {
         val entryPairs = entries.mapNotNull { entry ->
             orderedImporters.filter { importer ->
                 importer.supports(entry.fileName)

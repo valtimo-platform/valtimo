@@ -16,10 +16,9 @@
 
 package com.ritense.extension.web.rest
 
+import com.ritense.extension.ExtensionManager
 import com.ritense.extension.ExtensionUpdateManager
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import org.springframework.core.io.InputStreamResource
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -27,12 +26,12 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import kotlin.io.path.inputStream
 
 @RestController
 @SkipComponentScan
 @RequestMapping(value = ["/api/management"])
 class ExtensionManagementResource(
+    private val extensionManager: ExtensionManager,
     private val updateManager: ExtensionUpdateManager,
 ) {
 
@@ -45,14 +44,9 @@ class ExtensionManagementResource(
     fun installExtension(
         @PathVariable id: String,
         @PathVariable version: String,
-    ): ResponseEntity<InputStreamResource> {
-        val frontendZip = updateManager.installExtension(id, version)
-        val zipName = "$id-$version.zip"
-        return ResponseEntity
-            .ok()
-            .header("Content-Disposition", "attachment; filename=\"$zipName\"")
-            .contentType(MediaType.APPLICATION_OCTET_STREAM)
-            .body(InputStreamResource(frontendZip.inputStream()))
+    ): ResponseEntity<Unit> {
+        updateManager.installExtension(id, version)
+        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/v1/extension/{id}/update/{version}")

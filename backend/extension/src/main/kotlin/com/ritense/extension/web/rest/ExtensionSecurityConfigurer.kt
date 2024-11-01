@@ -31,10 +31,15 @@ class ExtensionSecurityConfigurer : HttpSecurityConfigurer {
         try {
             http.authorizeHttpRequests { requests ->
                 requests
+                    // management
                     .requestMatchers(antMatcher(GET, "/api/management/v1/extension")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/extension/{id}/install/{version}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/extension/{id}/update/{version}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, "/api/management/v1/extension/{id}")).hasAuthority(ADMIN)
+
+                    // public
+                    .requestMatchers(antMatcher(GET, "/api/v1/public/extension/id")).permitAll()
+                    .requestMatchers(antMatcher(GET, "/api/v1/public/extension/{extensionId}/file/**")).permitAll()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
