@@ -58,6 +58,17 @@
 .formio-carbon,
 .formio-dialog,
 .builder-component {
+  /* resets of compatibility.scss */
+  input.form-control {
+    border: unset !important;
+    background-color: unset !important;
+  }
+
+  .formio-component-textField,
+  .form-control {
+    color: unset !important;
+  }
+
   /* manual overrides */
   .form-check {
     padding-left: 0;
@@ -2754,7 +2765,8 @@
     line-height: 1.42857143;
     color: #555555;
   }
-  .form-control {
+  .form-control,
+  input.form-control {
     --cds-layout-size-height-local: clamp(
       max(var(--cds-layout-size-height-min), var(--cds-layout-size-height-sm)),
       var(--cds-layout-size-height, var(--cds-layout-size-height-md)),
@@ -2770,9 +2782,9 @@
     line-height: var(--cds-body-compact-01-line-height, 1.28572);
     letter-spacing: var(--cds-body-compact-01-letter-spacing, 0.16px);
     color: var(--cds-text-primary, #161616);
-    background-color: var(--cds-field);
+    background-color: var(--cds-field) !important;
     border: none;
-    border-block-end: 1px solid var(--cds-border-strong);
+    border-block-end: 1px solid var(--cds-border-strong) !important;
     block-size: var(--cds-layout-size-height-local);
     inline-size: 100%;
     outline: 2px solid transparent;
@@ -2994,9 +3006,6 @@
   }
   .has-feedback {
     position: relative;
-  }
-  .has-feedback .form-control {
-    padding-right: 42.5px;
   }
   .form-control-feedback {
     position: absolute;
@@ -4021,8 +4030,11 @@
   }
   .input-group {
     position: relative;
-    display: table;
-    border-collapse: separate;
+    flex-wrap: nowrap;
+  }
+  .input-group-text {
+    background: transparent;
+    border: transparent;
   }
   .input-group[class*='col-'] {
     float: none;
