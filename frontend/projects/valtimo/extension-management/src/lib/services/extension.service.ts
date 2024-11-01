@@ -34,6 +34,7 @@ export class ExtensionService {
     const initFileJs = 'frontend/esm2022/frontend.mjs'
     //const initFileJs = 'frontend/fesm2022/frontend.mjs'
     //const initFileJs = 'frontend-bundle.js'
+    //const initFileJs = 'init.js'
 
     this.getExtensionIds('STARTED', initFileJs).subscribe(extensionIds =>
       extensionIds.forEach(extensionId => {
