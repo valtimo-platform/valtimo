@@ -52,7 +52,7 @@ class ExtensionPublicResource(
                 .map { it.pluginId })
         }
         if (file != null) {
-            extensionIds.filter { extensionManager.getPublicResource(it, file) != null }
+            extensionIds.removeIf { extensionManager.getPublicResource(it, file) == null }
         }
         return ResponseEntity.ok(extensionIds)
     }
@@ -68,7 +68,7 @@ class ExtensionPublicResource(
             ?: return ResponseEntity.notFound().build()
         return ResponseEntity
             .ok()
-            .header("Content-Type", getContentTypeByFileName(publicResource.filename!!))
+            .header("Content-Type", getContentTypeByFileName(publicResource.filename ?: file))
             .body(publicResource)
     }
 

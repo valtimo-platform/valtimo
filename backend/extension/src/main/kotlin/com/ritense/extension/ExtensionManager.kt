@@ -27,6 +27,7 @@ import org.springframework.core.io.Resource
 import org.springframework.core.io.support.ResourcePatternResolver
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import java.io.FileNotFoundException
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -60,23 +61,42 @@ class ExtensionManager(
         firePluginStateEvent(PluginStateEvent(this, extension, oldState))
     }
 
-    fun getPublicResource(extensionId: String, publicFile: String): Resource? {
+    fun getPublicResource(extensionId: String, file: String): Resource? {
         val extension = getPlugin(extensionId) ?: return null
-        val publicFolder = extension.pluginClassLoader.getResource("public") ?: return null
-        val filePath = Path(publicFolder.toURI().toString(), publicFile).toString()
-        val fileResource = resourceResolver.getResource(filePath)
-        return if (fileResource.isReadable) {
-            fileResource
-        } else {
-            null
+        val jarPath = getJarPath(extension)
+        val fileCandidate1 = Path(jarPath, "public", file)
+        val fileCandidate2 = Path(fileCandidate1.parent.toString(), "*", fileCandidate1.fileName.toString())
+        listOf(
+            fileCandidate1.toString(),
+            "$fileCandidate1.*",
+            Path(fileCandidate1.toString(), "index.*").toString(),
+            fileCandidate2.toString(),
+            "$fileCandidate2.*",
+            Path(fileCandidate2.toString(), "index.*").toString(),
+        ).forEach { filePathCandidate ->
+            try {
+                val resource = resourceResolver.getResources(filePathCandidate)
+                    .filter { it.isReadable }
+                    .minByOrNull { it.filename?.length ?: Int.MAX_VALUE }
+                if (resource != null) {
+                    return resource
+                }
+            } catch (e: FileNotFoundException) {
+                // Ignore
+            }
         }
+        return null
     }
 
     fun getAllResources(extensionId: String): List<Resource> {
         val extension = getPlugin(extensionId)
-        val metaInfPath = extension.pluginClassLoader.getResource("META-INF")!!.toURI().toString()
-        return resourceResolver.getResources(metaInfPath.replace("/META-INF", "/**"))
+        val jarPath = getJarPath(extension)
+        return resourceResolver.getResources(Path(jarPath, "**").toString())
             .filter { it.isReadable }
+    }
+
+    fun getJarPath(extension: PluginWrapper): String {
+        return Path(extension.pluginClassLoader.getResource("META-INF")!!.toURI().toString()).parent.toString()
     }
 
     override fun createPluginFactory() = ExtensionFactory()
