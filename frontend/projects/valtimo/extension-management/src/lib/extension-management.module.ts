@@ -15,7 +15,7 @@
  */
 
 import {NgModule} from '@angular/core';
-import {ExtensionOverviewComponent} from './components/overview/extension-overview.component';
+import {ExtensionOverviewComponent} from './components/extension-overview/extension-overview.component';
 import {AsyncPipe, NgIf, NgTemplateOutlet} from "@angular/common";
 import {ButtonModule, LayerModule, LoadingModule, ModalModule, TagModule, TilesModule} from "carbon-components-angular";
 import {TranslateModule} from "@ngx-translate/core";

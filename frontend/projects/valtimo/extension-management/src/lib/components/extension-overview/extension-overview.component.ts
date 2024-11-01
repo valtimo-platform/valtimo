@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
-import {BehaviorSubject, map} from 'rxjs';
+import {BehaviorSubject} from 'rxjs';
 import {ExtensionListItem} from '../../models';
 import {ExtensionService} from '../../services';
-import {loadAsync} from 'jszip';
+import {PluginService} from "@valtimo/plugin";
 
 @Component({
   templateUrl: './extension-overview.component.html',
@@ -30,32 +30,19 @@ export class ExtensionOverviewComponent implements OnInit {
 
   constructor(
     private readonly extensionService: ExtensionService,
+    private readonly pluginService: PluginService,
   ) {
   }
-
   public ngOnInit(): void {
     this.updateList();
   }
 
   public onClickInstall(extension): void {
-    this.extensionService.installExtension(extension.id, extension.toVersion).subscribe(response => {
-      loadAsync(response).then((zip) => {
-        Object.keys(zip.files).forEach((filename) => {
-          zip.files[filename].async('string').then((fileData) => {
-            if (filename.match(/init\.((js)|(ts))/g)) {
-
-            }
-            console.log('Filename: ' + filename)
-            console.log('FileContent: ' + fileData)
-          });
-        });
-      });
-      this.updateList();
-    });
+    this.extensionService.installExtension(extension.id, extension.nextVersion).subscribe(_ => this.updateList());
   }
 
   public onClickUpdate(extension): void {
-    this.extensionService.updateExtension(extension.id, extension.toVersion).subscribe(_ => this.updateList());
+    this.extensionService.updateExtension(extension.id, extension.nextVersion).subscribe(_ => this.updateList());
   }
 
   public onClickUninstall(extension: ExtensionListItem): void {
@@ -63,13 +50,7 @@ export class ExtensionOverviewComponent implements OnInit {
   }
 
   private updateList(): void {
-    this.extensionService.getExtensions().pipe(
-      map(extensions => extensions.map(extension => ({
-        ...extension,
-        isInstalled: extension.installedVersion != null,
-        toVersion: extension.availableVersions[0],
-        hasUpdate: extension.installedVersion != null && extension.installedVersion < extension.availableVersions[0],
-      })))
-    ).subscribe(extensions => this.extensions$.next(extensions));
+    this.extensionService.getExtensions()
+      .subscribe(extensions => this.extensions$.next(extensions));
   }
 }

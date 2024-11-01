@@ -41,6 +41,10 @@ export class PluginService {
     return this._pluginSpecifications$.getValue();
   }
 
+  addPluginSpecification(pluginSpecification: PluginSpecification) {
+    this._pluginSpecifications$.next([...this.pluginSpecifications, pluginSpecification]);
+  }
+
   get availablePluginIds$(): Observable<Array<string>> {
     return this._availablePluginIds$;
   }

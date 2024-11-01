@@ -19,7 +19,7 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {ROLE_ADMIN} from '@valtimo/config';
 import {AuthGuardService} from '@valtimo/security';
-import {ExtensionOverviewComponent} from './components/overview/extension-overview.component';
+import {ExtensionOverviewComponent} from './components/extension-overview/extension-overview.component';
 
 const routes: Routes = [
   {

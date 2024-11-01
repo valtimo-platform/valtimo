@@ -19,14 +19,9 @@ interface ExtensionListItem {
   name?: number;
   description?: boolean;
   installedVersion?: string;
-  availableVersions: Array<string>;
-}
-
-interface SuccessResponse {
-  success: boolean;
+  nextVersion?: string;
 }
 
 export {
   ExtensionListItem,
-  SuccessResponse,
 };

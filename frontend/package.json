@@ -251,7 +251,6 @@
     "heatmap.js-fixed": "2.0.2",
     "intl": "1.2.5",
     "jquery": "3.7.1",
-    "jszip": "^3.10.1",
     "jwt-decode": "4.0.0",
     "keycloak-angular": "19.0.2",
     "keycloak-js": "26.1.5",

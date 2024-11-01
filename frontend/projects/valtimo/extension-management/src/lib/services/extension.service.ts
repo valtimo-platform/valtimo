@@ -29,34 +29,44 @@ export class ExtensionService {
     private readonly configService: ConfigService,
     private readonly http: HttpClient
   ) {
-    this.valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}management/`;
+    this.valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}`;
+
+    const initFileJs = 'frontend/esm2022/frontend.mjs'
+    //const initFileJs = 'frontend/fesm2022/frontend.mjs'
+    //const initFileJs = 'frontend-bundle.js'
+
+    this.getExtensionIds('STARTED', initFileJs).subscribe(extensionIds =>
+      extensionIds.forEach(extensionId => {
+        import(/* webpackIgnore: true */this.getFileUrl(extensionId, initFileJs)).then(result => {
+          console.log(result);
+        });
+      })
+    );
   }
 
   public getExtensions(): Observable<Array<ExtensionListItem>> {
     return this.http.get<Array<ExtensionListItem>>(
-      `${this.valtimoEndpointUri}v1/extension`
+      `${this.valtimoEndpointUri}management/v1/extension`
     );
   }
 
   public installExtension(
     extensionId: string,
     version: string
-  ): Observable<Blob> {
-    return this.http.post<Blob>(
-      `${this.valtimoEndpointUri}v1/extension/${extensionId}/install/${version}`,
+  ): Observable<void> {
+    return this.http.post<void>(
+      `${this.valtimoEndpointUri}management/v1/extension/${extensionId}/install/${version}`,
       null,
-      {responseType: 'blob' as 'json'}
     );
   }
 
   public updateExtension(
     extensionId: string,
     toVersion: string
-  ): Observable<Blob> {
-    return this.http.post<Blob>(
-      `${this.valtimoEndpointUri}v1/extension/${extensionId}/update/${toVersion}`,
+  ): Observable<void> {
+    return this.http.post<void>(
+      `${this.valtimoEndpointUri}management/v1/extension/${extensionId}/update/${toVersion}`,
       null,
-      {responseType: 'blob' as 'json'}
     );
   }
 
@@ -64,7 +74,23 @@ export class ExtensionService {
     extensionId: string
   ): Observable<void> {
     return this.http.delete<void>(
-      `${this.valtimoEndpointUri}v1/extension/${extensionId}`
+      `${this.valtimoEndpointUri}management/v1/extension/${extensionId}`
+    );
+  }
+
+  public getExtensionIds(state: string, file: string): Observable<Array<string>> {
+    return this.http.get<Array<string>>(
+      `.${this.valtimoEndpointUri}v1/public/extension/id?state=${state}&file=${file}`
+    );
+  }
+
+  public getFileUrl(extensionId: string, file: string): string {
+    return `${location.origin}${this.valtimoEndpointUri}v1/public/extension/${extensionId}/file/${file}`
+  }
+
+  public getFile(file: string, extensionId: string): Observable<string> {
+    return this.http.get<string>(
+      `${this.valtimoEndpointUri}v1/public/extension/${extensionId}/file/${file}`
     );
   }
 }

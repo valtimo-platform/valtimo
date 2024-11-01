@@ -40,17 +40,17 @@
       <div class="extension__description">
         {{ extension.description }}
       </div>
-      @if (extension.isInstalled) {
+      @if (extension.installedVersion) {
         <span class="extension__version">
           {{ 'extensionManagement.installedVersion' | translate }} <i>{{ extension.installedVersion }}</i>
         </span>
       }
       <div class="extension__footer">
-        @if (extension.isInstalled) {
+        @if (extension.installedVersion) {
           <button cdsButton="danger" (click)="onClickUninstall(extension)">
             {{ 'extensionManagement.uninstall' | translate }}
           </button>
-          <button cdsButton="primary" [disabled]="!extension.hasUpdate" (click)="onClickUpdate(extension)">
+          <button cdsButton="primary" [disabled]="!extension.nextVersion" (click)="onClickUpdate(extension)">
             {{ 'extensionManagement.update' | translate }}
           </button>
         } @else {
