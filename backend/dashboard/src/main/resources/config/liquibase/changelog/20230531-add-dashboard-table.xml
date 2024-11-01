@@ -107,6 +107,7 @@
     <changeSet id="8" author="Ritense">
         <addColumn tableName="dashboard_widget_configuration">
             <column name="url" type="text">
+                <constraints nullable="true"/>
             </column>
         </addColumn>
     </changeSet>

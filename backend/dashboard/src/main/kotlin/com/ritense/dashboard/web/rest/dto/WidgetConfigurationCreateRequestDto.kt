@@ -25,5 +25,5 @@ data class WidgetConfigurationCreateRequestDto(
     val displayType: String,
     val dataSourceProperties: ObjectNode,
     val displayTypeProperties: ObjectNode,
-    val url: URI?
+    val url: URI? = null
 )

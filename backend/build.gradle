@@ -17,6 +17,7 @@
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 
 plugins {
     id "idea"
@@ -166,6 +167,10 @@ subprojects { subproject ->
 
         dockerCompose {
             useDockerComposeV2 = true
+            if (DefaultNativePlatform.currentOperatingSystem.macOsX) {
+                executable = "/usr/local/bin/docker-compose"
+                dockerExecutable = "/usr/local/bin/docker"
+            }
         }
 
         tasks.withType(KotlinCompile).configureEach {

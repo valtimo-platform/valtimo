@@ -16,17 +16,33 @@
 
 package com.ritense.valtimo.changelog.service
 
+import com.fasterxml.jackson.databind.MapperFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.valtimo.changelog.domain.ChangesetDeployer
 import mu.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.transaction.annotation.Transactional
+import java.util.TreeMap
+
 
 @Transactional
 class ChangelogDeployer(
     private val changelogService: ChangelogService,
     private val changesetDeployers: List<ChangesetDeployer>,
 ) {
+    // Create new objectmapper only used for md5 checksum sanitization to prevent config changes from impacting checksum
+    private val objectMapper: ObjectMapper = JsonMapper
+        .builder()
+        .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
+        .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
+        .nodeFactory(SortingNodeFactory())
+        .configure(SerializationFeature.INDENT_OUTPUT, false)
+        .build()
 
     @EventListener(ApplicationReadyEvent::class)
     fun deployAll() {
@@ -48,7 +64,9 @@ class ChangelogDeployer(
     fun deploy(changesetDeployer: ChangesetDeployer, filename: String, resourceContent: String) {
         try {
             changesetDeployer.getChangelogDetails(filename, resourceContent).forEach { changesetDetails ->
-                val md5sum = changelogService.computeMd5sum(resourceContent)
+                // Parse as json to prevent whitespace changes from being detected as changes
+                val reformattedContent = objectMapper.writeValueAsString(objectMapper.readTree(resourceContent))
+                val md5sum = changelogService.computeMd5sum(reformattedContent)
                 val legacyCheckSum = changelogService.computeMd5sum(changesetDetails.valueToChecksum)
                 if (changelogService.isNewValidChangeset(changesetDetails.changesetId, md5sum, legacyCheckSum)) {
                     changesetDetails.deploy()
@@ -57,6 +75,13 @@ class ChangelogDeployer(
             }
         } catch (e: Exception) {
             throw IllegalStateException("Failed to execute changelog: $filename", e)
+        }
+    }
+
+    // Uses TreeMap when parsing to ObjectNode. Will sort keys alphabetically when serialized
+    private class SortingNodeFactory : JsonNodeFactory() {
+        override fun objectNode(): ObjectNode {
+            return ObjectNode(this, TreeMap())
         }
     }
 
