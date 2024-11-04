@@ -20,8 +20,8 @@ import com.ritense.extension.ExtensionManager
 import com.ritense.extension.ExtensionUpdateManager
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import jakarta.servlet.http.HttpServletRequest
+import org.apache.tika.Tika
 import org.pf4j.PluginState
-import org.springframework.core.io.Resource
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -61,24 +61,25 @@ class ExtensionPublicResource(
     fun getPublicExtensionFile(
         request: HttpServletRequest,
         @PathVariable extensionId: String,
-    ): ResponseEntity<Resource> {
+    ): ResponseEntity<ByteArray> {
         val requestURL = request.requestURL.toString()
         val file = requestURL.split("/file/")[1]
         val publicResource = extensionManager.getPublicResource(extensionId, file)
             ?: return ResponseEntity.notFound().build()
+        val contentType = getContentTypeByFileName(publicResource.filename ?: file)
+            ?: Tika().detect(publicResource.inputStream)
         return ResponseEntity
             .ok()
-            .header("Content-Type", getContentTypeByFileName(publicResource.filename ?: file))
-            .body(publicResource)
+            .header("Content-Type", contentType)
+            .body(publicResource.contentAsByteArray)
     }
 
-    private fun getContentTypeByFileName(fileName: String): String {
+    private fun getContentTypeByFileName(fileName: String): String? {
         return when (fileName.substringAfterLast('.')) {
             "js", "mjs" -> "text/javascript"
-            "ts", "tsx" -> "application/x-typescript"
+            "ts", "tsx" -> "text/javascript"
             "map" -> "application/json"
             else -> URLConnection.guessContentTypeFromName(fileName)
-                ?: "application/octet-stream"
         }
     }
 

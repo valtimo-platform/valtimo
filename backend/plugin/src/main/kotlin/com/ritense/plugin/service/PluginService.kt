@@ -642,7 +642,11 @@ class PluginService(
 
     private fun validateProperties(properties: ObjectNode, pluginDefinition: PluginDefinition) {
         val errors = mutableListOf<Throwable>()
-        val pluginClass = Class.forName(pluginDefinition.fullyQualifiedClassName)
+        val pluginClass = try {
+            Class.forName(pluginDefinition.fullyQualifiedClassName)
+        } catch (e: ClassNotFoundException) {
+            null // Classes in an extension can't be loaded like this
+        }
         pluginDefinition.properties.forEach { pluginProperty ->
             val propertyNode = properties[pluginProperty.fieldName]
 
@@ -673,8 +677,12 @@ class PluginService(
     }
 
     @Throws(ConstraintViolationException::class)
-    private fun validateProperty(pluginProperty: PluginProperty, propertyNode: JsonNode?, pluginClass: Class<*>) {
-        val propertyClass = Class.forName(pluginProperty.fieldType)
+    private fun validateProperty(pluginProperty: PluginProperty, propertyNode: JsonNode?, pluginClass: Class<*>?) {
+        val propertyClass = try {
+            Class.forName(pluginProperty.fieldType)
+        } catch (e: ClassNotFoundException) {
+            return // Classes in an extension can't be loaded like this
+        }
         val propertyClassIsPlugin = propertyClass.isAnnotationPresent(Plugin::class.java)
         val propertyClassIsPluginCategory = propertyClass.isAnnotationPresent(PluginCategory::class.java)
         if (propertyClassIsPlugin || propertyClassIsPluginCategory) {
@@ -682,7 +690,7 @@ class PluginService(
                 PluginConfigurationId.existingId(UUID.fromString(propertyNode?.textValue()))
             val propertyConfiguration = pluginConfigurationRepository.findById(propertyConfigurationId)
             require(propertyConfiguration.isPresent) { "Plugin configuration with id ${propertyConfigurationId.id} does not exist!" }
-        } else {
+        } else if (pluginClass != null) {
             val propertyValue = objectMapper.treeToValue(propertyNode, propertyClass)
             val validationErrors =
                 validator.validateValue(pluginClass, pluginProperty.fieldName, propertyValue)

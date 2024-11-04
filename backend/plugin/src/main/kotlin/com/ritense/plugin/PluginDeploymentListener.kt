@@ -29,6 +29,7 @@ import com.ritense.plugin.exception.PluginDefinitionNotDeployedException
 import com.ritense.plugin.repository.PluginActionDefinitionRepository
 import com.ritense.plugin.repository.PluginActionPropertyDefinitionRepository
 import com.ritense.plugin.repository.PluginCategoryRepository
+import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.repository.PluginDefinitionRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -49,7 +50,8 @@ class PluginDeploymentListener(
     private val pluginDefinitionRepository: PluginDefinitionRepository,
     private val pluginCategoryRepository: PluginCategoryRepository,
     private val pluginActionDefinitionRepository: PluginActionDefinitionRepository,
-    private val pluginActionPropertyDefinitionRepository: PluginActionPropertyDefinitionRepository
+    private val pluginActionPropertyDefinitionRepository: PluginActionPropertyDefinitionRepository,
+    private val pluginConfigurationRepository: PluginConfigurationRepository,
 ) {
 
     @Transactional
@@ -73,11 +75,13 @@ class PluginDeploymentListener(
 
     fun undeployPluginDefinition(clazz: Class<*>, pluginAnnotation: Plugin) {
         logger.info { "Undeploy plugin definition '${pluginAnnotation.key}'" }
-        pluginDefinitionRepository.deleteById(pluginAnnotation.key)
-
+        pluginConfigurationRepository.deleteAll(
+            pluginConfigurationRepository.findByPluginDefinitionKey(pluginAnnotation.key)
+        )
         pluginActionDefinitionRepository.deleteAll(
             pluginActionDefinitionRepository.findByIdPluginDefinitionKey(pluginAnnotation.key)
         )
+        pluginDefinitionRepository.deleteById(pluginAnnotation.key)
     }
 
     private fun deployPluginCategories() {
