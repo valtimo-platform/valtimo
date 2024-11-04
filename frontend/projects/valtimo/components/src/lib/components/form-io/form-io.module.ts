@@ -34,7 +34,6 @@ import {FormIoIbanComponent} from './form-io-iban/iban.component';
 import {ReactiveFormsModule} from '@angular/forms';
 import {FormioValueResolverSelectorComponent} from './formio-value-resolver-selector/formio-value-resolver-selector.component';
 import {FormioDummyComponent} from './form-io-dummy/dummy.component';
-import {Templates} from 'formiojs';
 import {LayerModule} from 'carbon-components-angular';
 import {FormIoCurrencyComponent} from './form-io-currency/currency.component';
 
@@ -79,8 +78,4 @@ import {FormIoCurrencyComponent} from './form-io-currency/currency.component';
     },
   ],
 })
-export class FormIoModule {
-  constructor() {
-    Templates.framework = 'bootstrap3';
-  }
-}
+export class FormIoModule {}

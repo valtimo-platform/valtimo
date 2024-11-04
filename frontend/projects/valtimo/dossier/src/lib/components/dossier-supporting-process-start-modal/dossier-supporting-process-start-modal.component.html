@@ -15,19 +15,15 @@
   -->
 
 <valtimo-modal
-  *ngIf="{
-    processDefinitionKey: processDefinitionKey$ | async,
-    processName: processName$ | async,
-  } as vars"
   #supportingProcessStartModal
   elementId="supportingProcessStartModal"
   [title]="
-    (vars.processDefinitionKey | translate) !== vars.processDefinitionKey
-      ? (vars.processDefinitionKey | translate)
-      : vars.processName
+    (processDefinitionKey$ | async | translate) !== (processDefinitionKey$ | async)
+      ? (processDefinitionKey$ | async | translate)
+      : processName$ | async
   "
 >
-  <div body *ngIf="formDefinition$ | async as formDefinition">
+  <div body *ngIf="!isFormViewModel && formDefinition$ | async as formDefinition">
     <valtimo-form-io
       #form
       [submission]="submission$ | async"
@@ -43,6 +39,9 @@
       [formFlowInstanceId]="formFlowInstanceId"
       (formFlowComplete)="formSubmitted()"
     ></valtimo-form-flow>
+  </div>
+  <div body>
+    <ng-template #formViewModelComponent></ng-template>
   </div>
 
   <ng-container
