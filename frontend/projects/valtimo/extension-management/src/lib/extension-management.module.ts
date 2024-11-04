@@ -16,17 +16,21 @@
 
 import {NgModule} from '@angular/core';
 import {ExtensionOverviewComponent} from './components/extension-overview/extension-overview.component';
-import {AsyncPipe, NgIf, NgTemplateOutlet} from "@angular/common";
-import {ButtonModule, LayerModule, LoadingModule, ModalModule, TagModule, TilesModule} from "carbon-components-angular";
-import {TranslateModule} from "@ngx-translate/core";
-import {CarbonListModule} from "@valtimo/components";
-import {ExtensionManagementRoutingModule} from "./extension-management-routing.module";
-
+import {AsyncPipe, NgIf, NgTemplateOutlet} from '@angular/common';
+import {
+  ButtonModule,
+  LayerModule,
+  LoadingModule,
+  ModalModule,
+  TagModule,
+  TilesModule,
+} from 'carbon-components-angular';
+import {TranslateModule} from '@ngx-translate/core';
+import {CarbonListModule} from '@valtimo/components';
+import {ExtensionManagementRoutingModule} from './extension-management-routing.module';
 
 @NgModule({
-  declarations: [
-    ExtensionOverviewComponent,
-  ],
+  declarations: [ExtensionOverviewComponent],
   imports: [
     ExtensionManagementRoutingModule,
     AsyncPipe,
@@ -39,7 +43,7 @@ import {ExtensionManagementRoutingModule} from "./extension-management-routing.m
     TilesModule,
     LoadingModule,
     ButtonModule,
-    ModalModule
+    ModalModule,
   ],
 })
 export class ExtensionManagementModule {}

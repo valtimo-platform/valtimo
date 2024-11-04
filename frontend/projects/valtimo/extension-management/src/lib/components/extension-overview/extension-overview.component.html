@@ -14,10 +14,7 @@
   ~ limitations under the License.
   -->
 
-<div
-  class="extension-list"
-  *ngIf="{extensions: extensions$ | async} as obs"
->
+<div class="extension-list" *ngIf="{extensions: extensions$ | async} as obs">
   @if (!obs.extensions) {
     <ng-container *ngTemplateOutlet="loadingExtensionsTemplate"></ng-container>
   } @else if (obs.extensions?.length === 0) {
@@ -25,7 +22,9 @@
   } @else {
     <div class="extension-list__extensions-container" cdsLayer="1">
       @for (extension of obs.extensions; track extension.id) {
-        <ng-container *ngTemplateOutlet="extensionTemplate; context: {extension: extension}"></ng-container>
+        <ng-container
+          *ngTemplateOutlet="extensionTemplate; context: {extension: extension}"
+        ></ng-container>
       }
     </div>
   }
@@ -42,15 +41,20 @@
       </div>
       @if (extension.installedVersion) {
         <span class="extension__version">
-          {{ 'extensionManagement.installedVersion' | translate }} <i>{{ extension.installedVersion }}</i>
+          {{ 'extensionManagement.installedVersion' | translate }}
+          <i>{{ extension.installedVersion }}</i>
         </span>
       }
       <div class="extension__footer">
         @if (extension.installedVersion) {
-          <button cdsButton="danger" (click)="onClickUninstall(extension)">
+          <button cdsButton="danger" (click)="uninstall(extension.id)">
             {{ 'extensionManagement.uninstall' | translate }}
           </button>
-          <button cdsButton="primary" [disabled]="!extension.nextVersion" (click)="onClickUpdate(extension)">
+          <button
+            cdsButton="primary"
+            [disabled]="!extension.nextVersion"
+            (click)="onClickUpdate(extension)"
+          >
             {{ 'extensionManagement.update' | translate }}
           </button>
         } @else {

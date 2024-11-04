@@ -17,7 +17,7 @@ import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
 import {ExtensionListItem} from '../../models';
 import {ExtensionService} from '../../services';
-import {PluginService} from "@valtimo/plugin";
+import {ToastrService} from 'ngx-toastr';
 
 @Component({
   templateUrl: './extension-overview.component.html',
@@ -25,32 +25,64 @@ import {PluginService} from "@valtimo/plugin";
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExtensionOverviewComponent implements OnInit {
-
   public readonly extensions$: BehaviorSubject<Array<ExtensionListItem>> = new BehaviorSubject([]);
 
   constructor(
     private readonly extensionService: ExtensionService,
-    private readonly pluginService: PluginService,
-  ) {
-  }
+    private readonly toastrService: ToastrService
+  ) {}
+
   public ngOnInit(): void {
     this.updateList();
   }
 
   public onClickInstall(extension): void {
-    this.extensionService.installExtension(extension.id, extension.nextVersion).subscribe(_ => this.updateList());
+    this.extensionService.installExtension(extension.id, extension.nextVersion).subscribe(
+      _ => {
+        this.extensionService.load(extension.id).subscribe(
+          _ => {
+            this.toastrService.success(`Successfully installed extension '${extension.id}'`);
+          },
+          err => {
+            this.toastrService.error(err, `Failed to install extension '${extension.id}'`);
+            this.uninstall(extension.id);
+          }
+        );
+        this.updateList();
+      },
+      err => {
+        this.toastrService.error(err, `Failed to install extension '${extension.id}'`);
+      }
+    );
   }
 
   public onClickUpdate(extension): void {
-    this.extensionService.updateExtension(extension.id, extension.nextVersion).subscribe(_ => this.updateList());
+    this.extensionService.updateExtension(extension.id, extension.nextVersion).subscribe(
+      _ => {
+        this.extensionService.load(extension.id).subscribe(
+          _ => {
+            this.toastrService.success(`Successfully updated extension '${extension.id}'`);
+          },
+          err => {
+            this.toastrService.error(err, `Failed to update extension '${extension.id}'`);
+            this.uninstall(extension.id);
+          }
+        );
+        this.updateList();
+      },
+      err => {
+        this.toastrService.error(err, `Failed to update extension '${extension.id}'`);
+      }
+    );
   }
 
-  public onClickUninstall(extension: ExtensionListItem): void {
-    this.extensionService.uninstallExtension(extension.id).subscribe(_ => this.updateList());
+  public uninstall(extensionId: string): void {
+    this.extensionService.uninstallExtension(extensionId).subscribe(_ => this.updateList());
   }
 
   private updateList(): void {
-    this.extensionService.getExtensions()
+    this.extensionService
+      .getExtensions()
       .subscribe(extensions => this.extensions$.next(extensions));
   }
 }

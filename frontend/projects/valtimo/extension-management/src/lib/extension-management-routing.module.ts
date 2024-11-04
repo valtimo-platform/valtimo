@@ -27,7 +27,7 @@ const routes: Routes = [
     component: ExtensionOverviewComponent,
     canActivate: [AuthGuardService],
     data: {title: 'Extension', extensions: [ROLE_ADMIN]},
-  }
+  },
 ];
 
 @NgModule({

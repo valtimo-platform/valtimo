@@ -22,6 +22,4 @@ interface ExtensionListItem {
   nextVersion?: string;
 }
 
-export {
-  ExtensionListItem,
-};
+export {ExtensionListItem};
