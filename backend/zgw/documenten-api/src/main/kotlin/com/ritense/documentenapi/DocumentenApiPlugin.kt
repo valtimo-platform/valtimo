@@ -416,7 +416,7 @@ class DocumentenApiPlugin(
         const val DOCUMENT_ID_PROCESS_VAR = "documentId"
         const val DOWNLOAD_URL_PROCESS_VAR = "downloadUrl"
 
-        val BESTANDSNAAM_FIELD = listOf("filename", "bestandsnaam", MetadataType.FILE_NAME.key)
+        val BESTANDSNAAM_FIELD = listOf("bestandsnaam", "filename", MetadataType.FILE_NAME.key)
         val TITEL_FIELD = listOf("title", "titel") + BESTANDSNAAM_FIELD
         val AUTEUR_FIELD = listOf("author", "auteur", MetadataType.USER.key)
         val BESCHRIJVING_FIELD = listOf("description", "beschrijving")

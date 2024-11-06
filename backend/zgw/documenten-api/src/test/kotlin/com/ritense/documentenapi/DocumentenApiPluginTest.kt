@@ -47,7 +47,7 @@ import java.io.ByteArrayInputStream
 import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -201,7 +201,8 @@ internal class DocumentenApiPluginTest {
                     "status" to "in_bewerking",
                     "author" to "author",
                     "language" to "taal",
-                    "filename" to "test.ext",
+                    "filename" to "wrong.ext", //This key is automatically added by the tempresource, and should be ignored when bestandsnaam is set
+                    "bestandsnaam" to "test.ext",
                     "description" to "description",
                     "receiptDate" to "2022-09-15",
                     "sendDate" to "2022-09-16",
