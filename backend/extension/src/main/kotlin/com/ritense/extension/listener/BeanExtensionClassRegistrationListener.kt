@@ -53,11 +53,16 @@ class BeanExtensionClassRegistrationListener(
 
     private fun registerSpringBean(extensionClass: Class<*>) {
         val beanName = getBeanName(extensionClass)
-        require(!beanFactory.containsSingleton(beanName)) {
-            "Spring bean already exists: '$beanName' for '$extensionClass'"
-        }
+        var beanNameCandidate = beanName
         val extension = extensionManager.extensionFactory.create(extensionClass)
-        beanFactory.registerSingleton(beanName, extension)
+        if (beanFactory.containsSingleton(beanName)) {
+            var i = 2
+            while (beanFactory.containsSingleton(beanName + i)) {
+                i++
+            }
+            beanNameCandidate = beanName + i
+        }
+        beanFactory.registerSingleton(beanNameCandidate, extension)
     }
 
     private fun unregisterSpringBean(extensionClass: Class<*>) {
@@ -66,7 +71,9 @@ class BeanExtensionClassRegistrationListener(
         beanNames.add(getBeanName(extensionClass))
         beanNames.forEach { beanName ->
             try {
-                beanFactory.destroySingleton(beanName)
+                if (beanFactory.getSingleton(beanName).javaClass.name == extensionClass.name) {
+                    beanFactory.destroySingleton(beanName)
+                }
             } catch (e: Exception) {
                 exceptions.add(
                     RuntimeException("Failed to destroy Spring bean '$beanName' for $extensionClass", e)

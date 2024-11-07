@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-package com.ritense.temporaryresource.repository
+package com.ritense.extension
 
-import com.ritense.temporaryresource.domain.ResourceStorageMetadata
-import com.ritense.temporaryresource.domain.ResourceStorageMetadataId
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.stereotype.Repository
+import org.springframework.scheduling.annotation.Scheduled
 
-@Repository
-interface ResourceStorageMetadataRepository: JpaRepository<ResourceStorageMetadata, ResourceStorageMetadataId> {
-    fun getResourceStorageMetadataByIdFileId(fileId: String) : List<ResourceStorageMetadata>
+class MultiInstanceExtensionInstaller(
+    private val extensionManager: ExtensionManager,
+) {
+
+    @Scheduled(cron = "\${valtimo.extension.multiinstancecron:0 0 * * * ?}")
+    fun loadAndInstallExtensionsFromDisk() {
+        extensionManager.loadPlugins()
+        extensionManager.startPlugins()
+    }
 }

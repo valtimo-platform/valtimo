@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.ritense.extension
 
-package com.ritense.temporaryresource.repository
+import org.springframework.boot.context.properties.ConfigurationProperties
+import java.net.URL
 
-import com.ritense.temporaryresource.domain.ResourceStorageMetadata
-import com.ritense.temporaryresource.domain.ResourceStorageMetadataId
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.stereotype.Repository
+@ConfigurationProperties(prefix = "valtimo.extension")
+data class ExtensionProperties(
+    val repositories: Map<String, URL> = emptyMap()
+) {
 
-@Repository
-interface ResourceStorageMetadataRepository: JpaRepository<ResourceStorageMetadata, ResourceStorageMetadataId> {
-    fun getResourceStorageMetadataByIdFileId(fileId: String) : List<ResourceStorageMetadata>
+    fun getExtensionRepositories() = repositories.map { ExtensionUpdateRepository(it.key, it.value) }
 }

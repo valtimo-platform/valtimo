@@ -68,6 +68,7 @@ class ExtensionManager(
         val fileCandidate2 = Path(fileCandidate1.parent.toString(), "*", fileCandidate1.fileName.toString())
         listOf(
             fileCandidate1.toString(),
+            // frontend dynamic import(..) logic:
             "$fileCandidate1.*",
             Path(fileCandidate1.toString(), "index.*").toString(),
             fileCandidate2.toString(),

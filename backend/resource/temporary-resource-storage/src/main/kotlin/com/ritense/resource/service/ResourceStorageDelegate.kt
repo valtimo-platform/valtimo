@@ -16,12 +16,26 @@
 
 package com.ritense.resource.service
 
+import java.io.InputStream
+
 class ResourceStorageDelegate(
     private val service: TemporaryResourceStorageService
 ) {
 
-    fun getMetadata(resourceStorageFileId: String, metadataKey: String): String {
-        return service.getMetadataValue(resourceStorageFileId, metadataKey)
+    fun store(inputStream: InputStream): String {
+        return service.store(inputStream, emptyMap())
+    }
+
+    fun store(inputStream: InputStream, metadata: Map<String, Any?>): String {
+        return service.store(inputStream, metadata)
+    }
+
+    fun getMetadata(id: String, key: String): Any? {
+        return service.getMetadataValue(id, key)
+    }
+
+    fun getResourceContentAsInputStream(id: String): InputStream {
+        return service.getResourceContentAsInputStream(id)
     }
 
     fun deleteResource(resourceStorageFileId: String): Boolean {

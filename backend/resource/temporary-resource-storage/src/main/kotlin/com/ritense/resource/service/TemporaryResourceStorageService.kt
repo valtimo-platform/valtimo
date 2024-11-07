@@ -48,6 +48,9 @@ import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.notExists
 import kotlin.io.path.pathString
 import kotlin.io.path.readText
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.ritense.temporaryresource.domain.ResourceStorageMetadataId
+import com.ritense.temporaryresource.domain.StorageMetadataKeys
 
 @Service
 @SkipComponentScan
@@ -70,7 +73,7 @@ class TemporaryResourceStorageService(
         logger.info { "Using the following path for temporary file resources: '$tempDir'" }
     }
 
-    fun store(inputStream: InputStream, metadata: Map<String, Any> = emptyMap()): String {
+    fun store(inputStream: InputStream, metadata: Map<String, Any?> = emptyMap()): String {
 
         val (inputStream, virusScanResult) = virusScanService.takeIf { virusScanEnabledForTemporaryStorage }?.let { svc ->
             val bytes: ByteArray = inputStream.readBytes()

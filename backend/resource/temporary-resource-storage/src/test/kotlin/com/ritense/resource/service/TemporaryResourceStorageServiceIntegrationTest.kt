@@ -24,12 +24,15 @@ import com.ritense.valtimo.contract.upload.ValtimoUploadProperties
 import org.apache.tika.Tika
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.any
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ClassPathResource
 import java.io.ByteArrayInputStream
@@ -51,6 +54,11 @@ class TemporaryResourceStorageServiceIntegrationTest : BaseIntegrationTest() {
 
     @Mock
     lateinit var uploadProperties: ValtimoUploadProperties
+
+    @BeforeEach
+    fun beforeEach() {
+        whenever(resourceStorageMetadataRepository.getResourceStorageMetadataByIdFileId(any())).thenReturn(emptyList())
+    }
 
     @Test
     fun `should store and get resource as inputStream`() {

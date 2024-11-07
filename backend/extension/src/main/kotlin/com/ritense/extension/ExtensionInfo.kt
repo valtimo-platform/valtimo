@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package com.ritense.temporaryresource.repository
+package com.ritense.extension
 
-import com.ritense.temporaryresource.domain.ResourceStorageMetadata
-import com.ritense.temporaryresource.domain.ResourceStorageMetadataId
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.stereotype.Repository
+import org.pf4j.update.PluginInfo
 
-@Repository
-interface ResourceStorageMetadataRepository: JpaRepository<ResourceStorageMetadata, ResourceStorageMetadataId> {
-    fun getResourceStorageMetadataByIdFileId(fileId: String) : List<ResourceStorageMetadata>
+class ExtensionInfo: PluginInfo() {
+
+    var logo: String? = null
+
 }

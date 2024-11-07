@@ -25,17 +25,19 @@ import com.ritense.importer.ImportService
 import com.ritense.valtimo.contract.extension.ExtensionClassRegistrationListener
 import com.ritense.valtimo.contract.extension.ExtensionResourcesRegistrationListener
 import org.pf4j.update.UpdateManager
-import org.pf4j.update.UpdateRepository
 import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Lazy
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
 import org.springframework.core.io.support.ResourcePatternResolver
 import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
 
+@EnableConfigurationProperties(ExtensionProperties::class)
 @AutoConfiguration
 class ExtensionAutoConfiguration {
 
@@ -50,6 +52,7 @@ class ExtensionAutoConfiguration {
         } else {
             listOf(Path("extensions"))
         }
+        valtimoExtensionPaths.forEach { it.createDirectories() }
         return ExtensionManager(
             valtimoExtensionPaths,
             resourceResolver,
@@ -60,22 +63,13 @@ class ExtensionAutoConfiguration {
     @ConditionalOnMissingBean(UpdateManager::class)
     fun valtimoExtensionUpdateManager(
         resourceResolver: ResourcePatternResolver,
-        environment: Environment,
         valtimoExtensionManager: ExtensionManager,
-        @Lazy repositories: List<UpdateRepository>
+        extensionProperties: ExtensionProperties,
+        @Lazy repositories: List<ExtensionUpdateRepository>,
     ): ExtensionUpdateManager {
-        val valtimoExtensionPath = if (environment.matchesProfiles("dev")) {
-            Path(
-                resourceResolver.getResource("classpath:/config").file.toPath().toString(),
-                "extensions/repositories.json"
-            )
-        } else {
-            Path("extensions/repositories.json")
-        }
         return ExtensionUpdateManager(
             valtimoExtensionManager,
-            valtimoExtensionPath,
-            repositories,
+            repositories + extensionProperties.getExtensionRepositories(),
         )
     }
 
@@ -140,6 +134,14 @@ class ExtensionAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(MultiInstanceExtensionInstaller::class)
+    fun multiInstanceExtensionInstaller(
+        extensionManager: ExtensionManager
+    ): MultiInstanceExtensionInstaller {
+        return MultiInstanceExtensionInstaller(extensionManager)
+    }
+
+    @Bean
     @Order(270)
     @ConditionalOnMissingBean(ExtensionSecurityConfigurer::class)
     fun extensionSecurityConfigurer(): ExtensionSecurityConfigurer {
@@ -148,8 +150,8 @@ class ExtensionAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = ["locallyPublishedExtensionsRepository"])
-    fun locallyPublishedExtensionsRepository(): ExtensionRepository {
-        return ExtensionRepository(
+    fun locallyPublishedExtensionsRepository(): ExtensionUpdateRepository {
+        return ExtensionUpdateRepository(
             "locally-published-extensions-repository",
             Path(System.getProperty("user.home"), ".valtimo_extensions").toUri().toURL()
         )

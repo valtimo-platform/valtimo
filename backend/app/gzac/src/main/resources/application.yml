@@ -232,6 +232,9 @@ valtimo:
 
     logging:
         retentionInMinutes: 1440
+    extension:
+      repositories:
+        valtimo-extension-store: https://raw.githubusercontent.com/valtimo-platform/extension-store/refs/heads/main/
     docker:
         filter:
             enabled: true

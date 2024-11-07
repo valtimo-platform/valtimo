@@ -16,6 +16,7 @@
 
 package com.ritense.resource
 
+import com.ritense.temporaryresource.repository.ResourceStorageMetadataRepository
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import org.junit.jupiter.api.Tag
 import org.mockito.Answers
@@ -27,4 +28,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 abstract class BaseIntegrationTest {
     @MockitoBean(answers = Answers.RETURNS_DEEP_STUBS)
     var userManagementService: UserManagementService? = null
+
+    @MockitoBean
+    lateinit var resourceStorageMetadataRepository: ResourceStorageMetadataRepository
 }

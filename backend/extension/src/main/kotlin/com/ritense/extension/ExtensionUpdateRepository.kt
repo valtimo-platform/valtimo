@@ -24,12 +24,12 @@ import org.pf4j.update.PluginInfo
 import java.net.MalformedURLException
 import java.net.URL
 
-class ExtensionRepository(
+class ExtensionUpdateRepository(
     private val id: String,
     private val url: URL
 ) : DefaultUpdateRepository(id, url, "extensions.json") {
 
-    private val extensions: MutableMap<String, PluginInfo> = mutableMapOf()
+    private val extensions: MutableMap<String, ExtensionInfo> = mutableMapOf()
     private var refresh: Boolean = true
 
     override fun getPlugins(): Map<String, PluginInfo> {
@@ -40,11 +40,11 @@ class ExtensionRepository(
         return extensions
     }
 
-    fun getRepositories(): List<ExtensionRepository> {
+    fun getRepositories(): List<ExtensionUpdateRepository> {
         return try {
             val repositoriesUrl = URL(url, "repositories.json")
             logger.debug { "Read repositories of '$id' repository from '$repositoriesUrl'" }
-            jacksonObjectMapper().readValue<List<ExtensionRepository>>(repositoriesUrl)
+            jacksonObjectMapper().readValue<List<ExtensionUpdateRepository>>(repositoriesUrl)
         } catch (e: Exception) {
             emptyList()
         }
@@ -54,7 +54,7 @@ class ExtensionRepository(
         val items = try {
             val extensionsUrl = URL(url, pluginsJsonFileName)
             logger.debug { "Read extensions of '$id' repository from '$extensionsUrl'" }
-            jacksonObjectMapper().readValue<List<PluginInfo>>(extensionsUrl)
+            jacksonObjectMapper().readValue<List<ExtensionInfo>>(extensionsUrl)
         } catch (e: Exception) {
             extensions.clear()
             return

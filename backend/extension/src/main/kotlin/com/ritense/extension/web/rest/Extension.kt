@@ -19,6 +19,7 @@ package com.ritense.extension.web.rest
 data class Extension(
     val id: String,
     val name: String?,
+    val logo: String?,
     val description: String?,
     val installedVersion: String?,
     val nextVersion: String?,

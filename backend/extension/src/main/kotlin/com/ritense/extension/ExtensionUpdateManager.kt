@@ -16,8 +16,6 @@
 
 package com.ritense.extension
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.extension.web.rest.Extension
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import mu.KotlinLogging
@@ -26,24 +24,26 @@ import org.pf4j.update.UpdateManager
 import org.pf4j.update.UpdateRepository
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
-import java.io.IOException
-import java.nio.file.Path
-import kotlin.io.path.inputStream
 
 @Component
 @SkipComponentScan
 @Transactional
 class ExtensionUpdateManager(
     private val extensionManager: ExtensionManager,
-    private val repositoriesJson: Path,
-    private val defaultRepositories: List<UpdateRepository>,
-) : UpdateManager(extensionManager, repositoriesJson) {
+    defaultRepositories: List<UpdateRepository>,
+) : UpdateManager(extensionManager) {
+
+    init {
+        defaultRepositories.forEach { addRepository(it) }
+    }
 
     fun getExtensions(): List<Extension> {
         refresh()
         return plugins.map { extension ->
+            extension as ExtensionInfo
             Extension(
                 id = extension.id,
+                logo = extension.logo,
                 name = extension.name,
                 description = extension.description,
                 installedVersion = extensionManager.getPlugin(extension.id)?.descriptor?.version,
@@ -111,14 +111,16 @@ class ExtensionUpdateManager(
         return extensionsMap
     }
 
-    override fun initRepositoriesFromJson() {
-        try {
-            val repos = jacksonObjectMapper().readValue<List<ExtensionRepository>>(repositoriesJson.inputStream())
-            repositories = defaultRepositories.toMutableList()
-            repositories.addAll(repos)
-            repos.iterator().forEach { repository -> repositories.addAll(repository.getRepositories()) }
-        } catch (e: IOException) {
-            logger.warn(e) { "Failed to retrieve extension repositories" }
+    override fun addRepository(repository: UpdateRepository) {
+        if (repositories == null) {
+            repositories = mutableListOf()
+        }
+        if (repositories.none { it.id == repository.id }) {
+            repository.refresh()
+            repositories.add(repository)
+            if (repository is ExtensionUpdateRepository) {
+                repository.getRepositories().forEach { addRepository(it) }
+            }
         }
     }
 
