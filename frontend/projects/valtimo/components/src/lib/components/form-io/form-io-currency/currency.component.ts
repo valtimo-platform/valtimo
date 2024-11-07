@@ -1,8 +1,20 @@
-import {AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output} from '@angular/core';
-import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {Subscription} from 'rxjs';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
+import {FormControl, FormGroup} from '@angular/forms';
 import {FormioCustomComponent} from '../../../modules';
-import {currencyValidator} from './currency.validators';
+import Currency from '@tadashi/currency';
+import {Subscription} from 'rxjs';
 
 /**
  * Custom formio component for currency number.
@@ -12,33 +24,57 @@ import {currencyValidator} from './currency.validators';
   templateUrl: './currency.component.html',
 })
 export class FormIoCurrencyComponent
-  implements FormioCustomComponent<any>, AfterViewInit, OnDestroy
+  implements FormioCustomComponent<number>, OnInit, AfterViewInit, OnChanges, OnDestroy
 {
-  @Input() public value: string;
-  @Input() public disabled = false;
-  @Input() public required = false;
-  @Output() public valueChange = new EventEmitter<any>();
-  public currencyForm = new FormGroup({
-    currency: new FormControl(''),
+  @ViewChild('currencyElement') currencyElement!: ElementRef<HTMLInputElement>;
+
+  public readonly currencyForm = new FormGroup({
+    currencyValue: new FormControl<string>(''),
   });
+
+  private _value: number | null = null;
+
+  public get value(): number | null {
+    return this._value;
+  }
+
+  @Input() public set value(value: number) {
+    this._value = value;
+    this.currencyForm.setValue({
+      currencyValue: Currency.masking(value, this._currencyInstance.opts.maskOpts),
+    });
+  }
+
+  @Output() public readonly valueChange = new EventEmitter<number>();
+
+  @Input() public set disabled(value: boolean) {
+    if (value) {
+      this.currencyForm.disable();
+    } else {
+      this.currencyForm.enable();
+    }
+  }
+
+  @Input() public readonly currencyLocale: string;
+  @Input() public readonly currencyCurrency: string;
+  @Input() public readonly allowEmptyValue: boolean;
+
+  private _currencyInstance!: Currency;
+
   private readonly _subscriptions = new Subscription();
 
-  public ngAfterViewInit(): void {
-    this.currencyForm.controls.currency.setValue(this.value);
-    this.currencyForm.controls.currency.setValidators(
-      this.required ? [Validators.required, currencyValidator()] : [currencyValidator()]
-    );
-    this.currencyForm.controls.currency.updateValueAndValidity();
-
-    if (this.disabled) {
-      Object.keys(this.currencyForm.controls).forEach(key => {
-        this.currencyForm?.get(key)?.disable();
-      });
-    }
-
+  public ngOnInit(): void {
     this._subscriptions.add(
       this.currencyForm.valueChanges.subscribe(() => {
-        this.onValueChange();
+        const unmasked = this._currencyInstance.getUnmasked(this.currencyForm.value.currencyValue);
+
+        if (unmasked === 0 && this.allowEmptyValue) {
+          this._value = null;
+          this.valueChange.emit(null);
+        } else {
+          this._value = unmasked;
+          this.valueChange.emit(unmasked);
+        }
       })
     );
   }
@@ -47,10 +83,40 @@ export class FormIoCurrencyComponent
     this._subscriptions.unsubscribe();
   }
 
-  private onValueChange(): void {
-    (this.value as any) = this.currencyForm.valid
-      ? this.currencyForm.controls.currency.value
-      : this.currencyForm.value;
-    this.valueChange.emit(this.value);
+  public ngAfterViewInit(): void {
+    this._currencyInstance = new Currency(this.currencyElement.nativeElement, {
+      maskOpts: {
+        empty: this.allowEmptyValue || false,
+        locales: this.currencyLocale || 'nl-NL',
+        digits: 2,
+        options: {
+          style: 'currency',
+          currency: this.currencyCurrency || 'EUR',
+        },
+      },
+    });
+  }
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes.currencyLocale || changes.currencyCurrency || changes.allowEmptyValue) {
+      if (typeof this.currencyLocale === 'string') {
+        this._currencyInstance.opts.maskOpts.locales = this.currencyLocale;
+      }
+
+      if (typeof this.currencyCurrency === 'string') {
+        this._currencyInstance.opts.maskOpts.options.currency = this.currencyCurrency;
+      }
+
+      if (typeof this.allowEmptyValue === 'boolean') {
+        this._currencyInstance.opts.maskOpts.empty = this.allowEmptyValue;
+      }
+
+      this.currencyForm.setValue({
+        currencyValue:
+          typeof this._value === 'number'
+            ? Currency.masking(this._value, this._currencyInstance.opts.maskOpts)
+            : '',
+      });
+    }
   }
 }
