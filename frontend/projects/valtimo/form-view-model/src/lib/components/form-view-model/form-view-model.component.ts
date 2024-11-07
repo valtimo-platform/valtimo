@@ -15,9 +15,8 @@
  */
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import moment from 'moment';
-import {BehaviorSubject, catchError, combineLatest, debounceTime, EMPTY, Observable, of, Subject, switchMap, take, tap,} from 'rxjs';
+import {BehaviorSubject, catchError, combineLatest, debounceTime, EMPTY, Observable, of, switchMap, take, tap,} from 'rxjs';
 import {FormioComponent, FormioModule, FormioOptions, FormioSubmission, FormioSubmissionCallback,} from '@formio/angular';
-import {FormioRefreshValue} from '@formio/angular/formio.common';
 import {ViewModelService} from '../../services';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 import {deepmerge} from 'deepmerge-ts';
@@ -64,10 +63,6 @@ export class FormViewModelComponent implements OnInit {
     this.taskInstanceId$.next(taskInstanceId);
   }
 
-  @Input() set readOnly(readOnlyValue: boolean) {
-    this.readOnly$.next(readOnlyValue);
-  }
-
   @Input() set isStartForm(isStartFormValue: boolean) {
     this.isStartForm$.next(isStartFormValue);
   }
@@ -80,21 +75,18 @@ export class FormViewModelComponent implements OnInit {
     this.documentDefinitionName$.next(documentDefinitionNameValue);
   }
 
-  @Input() formRefresh$!: Subject<FormioRefreshValue>;
   @Output() formSubmit = new EventEmitter<any>();
 
-  public refreshForm = new EventEmitter<FormioRefreshValue>();
+  public errors: string[] = [];
 
   public readonly submission$ = new BehaviorSubject<any>({});
   public readonly form$ = new BehaviorSubject<object>(undefined);
   public readonly formName$ = new BehaviorSubject<string>(undefined);
   public readonly options$ = new BehaviorSubject<ValtimoFormioOptions>(undefined);
   public readonly taskInstanceId$ = new BehaviorSubject<string>(undefined);
-  public readonly readOnly$ = new BehaviorSubject<boolean>(false);
   public readonly tokenSetInLocalStorage$ = new BehaviorSubject<boolean>(false);
   public readonly change$ = new BehaviorSubject<any>(null);
   public readonly blur$ = new BehaviorSubject<FocusEvent>(null);
-  public readonly errors$ = new BehaviorSubject<Array<string>>([]);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly isStartForm$ = new BehaviorSubject<boolean>(false);
   public readonly processDefinitionKey$ = new BehaviorSubject<string>(undefined);
@@ -185,7 +177,7 @@ export class FormViewModelComponent implements OnInit {
                     }),
                     catchError(error => {
                       this.handleFormError(error);
-                      callback({message: error.error.error, component: null}, null);
+                      callback({message: " ", component: null}, null);
                       return EMPTY; // return an empty observable to complete the stream
                     })
                   )
@@ -199,7 +191,7 @@ export class FormViewModelComponent implements OnInit {
                     }),
                     catchError(error => {
                       this.handleFormError(error);
-                      callback({message: error.error.error, component: null}, null);
+                      callback({message: " ", component: null}, null);
                       return EMPTY; // return an empty observable to complete the stream
                     })
                   )
@@ -210,13 +202,23 @@ export class FormViewModelComponent implements OnInit {
 
   private handleFormError(error: HttpErrorResponse): void {
     const formInstance = this.formio.formio;
-    const component = formInstance.getComponent(error.error?.component);
-    const submitComponent = formInstance.getComponent('submit');
-    if (component == null) {
-      this.errors$.next([error.error.error]);
+    this.errors = [];
+    if (error.error.componentErrors) {
+      error.error.componentErrors.forEach(componentError => {
+        const component = formInstance.getComponent(componentError.component);
+        if (component == null) {
+          this.errors.push(componentError.message);
+        } else {
+          component?.setCustomValidity(componentError.message);
+        }
+      });
     } else {
-      component?.setCustomValidity(error.error.error);
-      submitComponent.disabled = true;
+      const component = formInstance.getComponent(error.error?.component);
+      if (component == null) {
+        this.errors.push(error.error.error);
+      } else {
+        component?.setCustomValidity(error.error.error);
+      }
     }
   }
 
@@ -266,9 +268,11 @@ export class FormViewModelComponent implements OnInit {
                 this.viewModelService.updateViewModel(formName, taskInstanceId, change.data).pipe(
                   tap({
                     next: viewModel => {
-                      this.submission$.next({data: viewModel});
+                      const submission = this.submission$.value;
+                      submission.data = viewModel;
+                      this.submission$.next(submission);
                       this.loading$.next(false);
-                      this.errors$.next([]);
+                      this.errors = [];
                     },
                     error: error => {
                       this.loading$.next(false);
@@ -320,7 +324,7 @@ export class FormViewModelComponent implements OnInit {
                       next: viewModel => {
                         this.submission$.next({data: viewModel});
                         this.loading$.next(false);
-                        this.errors$.next([]);
+                        this.errors = [];
                       },
                       error: error => {
                         this.loading$.next(false);

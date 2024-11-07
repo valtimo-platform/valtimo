@@ -34,6 +34,7 @@
     "formiojs",
     "deepmerge-ts",
     "@carbon/charts-angular",
-    "@types/topojson"
+    "@types/topojson",
+    "@tadashi/currency"
   ]
 }
