@@ -16,8 +16,7 @@
 
 package com.valtimo.keycloak.liquibase.changelog
 
-import java.sql.PreparedStatement
-import java.sql.ResultSet
+import com.ritense.valtimo.contract.config.ValtimoProperties
 import liquibase.database.Database
 import liquibase.database.jvm.JdbcConnection
 import okhttp3.mockwebserver.Dispatcher
@@ -30,14 +29,19 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.RETURNS_DEEP_STUBS
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
-import org.springframework.core.env.ConfigurableEnvironment
+import org.springframework.mock.env.MockEnvironment
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 
 internal class ChangeLog20240116MigrateTaskAssigneeEmailToUserIdTest {
 
     lateinit var server: MockWebServer
 
     lateinit var changeLog: ChangeLog20240116MigrateTaskAssigneeEmailToUserId
+    lateinit var environment: MockEnvironment
+
 
     @BeforeEach
     internal fun setUp() {
@@ -45,13 +49,14 @@ internal class ChangeLog20240116MigrateTaskAssigneeEmailToUserIdTest {
         setupMockKeycloakApiServer()
         server.start()
 
-        val configurableEnvironment: ConfigurableEnvironment = mock()
+        environment = MockEnvironment().apply {
+            this.setProperty("keycloak.auth-server-url", server.url("/").toString())
+            this.setProperty("keycloak.realm", "example-realm")
+            this.setProperty("keycloak.resource", "example-resource")
+            this.setProperty("keycloak.credentials.secret", "example-secret")
+        }
 
-        ChangeLog20240116MigrateTaskAssigneeEmailToUserId().postProcessEnvironment(configurableEnvironment, mock())
-        whenever(configurableEnvironment.getProperty("keycloak.auth-server-url")).thenReturn(server.url("/").toString())
-        whenever(configurableEnvironment.getProperty("keycloak.realm")).thenReturn("example-realm")
-        whenever(configurableEnvironment.getProperty("keycloak.resource")).thenReturn("example-resource")
-        whenever(configurableEnvironment.getProperty("keycloak.credentials.secret")).thenReturn("example-secret")
+        ChangeLog20240116MigrateTaskAssigneeEmailToUserId().postProcessEnvironment(environment, mock())
 
         changeLog = ChangeLog20240116MigrateTaskAssigneeEmailToUserId()
     }
@@ -80,6 +85,18 @@ internal class ChangeLog20240116MigrateTaskAssigneeEmailToUserIdTest {
 
         verify(updateTaskTable).setString(1, "user-id-1")
         verify(updateTaskTable).setString(2, "my-task-id-1")
+    }
+
+    @Test
+    fun `should skip execute changelog`() {
+
+        environment.setProperty("valtimo.oauth.identifier-field", ValtimoProperties.IdentifierField.USERNAME.toString())
+
+        val database = mock<Database>()
+
+        changeLog.execute(database)
+
+        verifyNoInteractions(database)
     }
 
 
