@@ -16,14 +16,8 @@
 
 package com.ritense.formviewmodel.web.rest.dto
 
-class BusinessRuleError (
-    error: String?
-) {
+import com.ritense.formviewmodel.error.FormErrorsException
 
-    var error: String = error ?: UNKNOWN_BUSINESS_RULE_ERROR
-
-    companion object {
-        const val UNKNOWN_BUSINESS_RULE_ERROR = "Unknown Business Rule Error"
-    }
-
-}
+class MultipleFormErrors (
+    val componentErrors: List<FormErrorsException.ComponentError> = emptyList(),
+)

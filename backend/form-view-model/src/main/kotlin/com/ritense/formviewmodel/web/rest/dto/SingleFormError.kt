@@ -16,15 +16,7 @@
 
 package com.ritense.formviewmodel.web.rest.dto
 
-class FormError (
-    error: String?,
-    val component: String? = null
-) {
-
-    val error: String = error ?: UNKNOWN_FORM_ERROR
-
-    companion object {
-        const val UNKNOWN_FORM_ERROR = "Unknown Form Error"
-    }
-
-}
+class SingleFormError (
+    val error: String,
+    val component: String? = null,
+)
