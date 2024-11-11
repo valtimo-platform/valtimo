@@ -15,13 +15,13 @@
   -->
 
 <div
-  class="form-container"
+  class="form-container formio-carbon"
   *ngIf="{
     submission: submission$ | async,
     form: form$ | async,
     tokenSetInLocalStorage: tokenSetInLocalStorage$ | async,
     formioOptions: formioOptions$ | async,
-    loading: loading$ | async
+    loading: loading$ | async,
   } as obs"
 >
   <div *ngIf="obs.loading" class="overlay">
