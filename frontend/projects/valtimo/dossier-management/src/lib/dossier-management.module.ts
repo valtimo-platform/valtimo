@@ -31,7 +31,6 @@ import {
   MultiselectDropdownModule,
   ParagraphModule,
   RenderInPageHeaderDirectiveModule,
-  SelectModule,
   SpinnerModule,
   TableModule,
   TooltipIconModule,
@@ -55,6 +54,7 @@ import {
   ModalModule as CarbonModalModule,
   NotificationModule,
   ProgressBarModule,
+  SelectModule,
   TabsModule,
   TagModule,
   ToggleModule,
@@ -84,6 +84,7 @@ import {DossierManagementStatusesComponent} from './components/dossier-managemen
 import {DossierManagementStatusModalComponent} from './components/dossier-management-statuses/dossier-management-status-modal/dossier-management-status-modal.component';
 import {DossierManagementCreateComponent} from './components/dossier-management-create/dossier-management-create.component';
 import {DossierManagementWidgetsEditorComponent} from './components/dossier-management-widget-tab/editor/dossier-management-widgets-editor.component';
+import {DossierManagementDeployComponent} from './components/dossier-management-deploy/dossier-management-deploy/dossier-management-deploy.component';
 
 @NgModule({
   declarations: [
@@ -107,6 +108,7 @@ import {DossierManagementWidgetsEditorComponent} from './components/dossier-mana
     DossierManagementStatusesComponent,
     DossierManagementStatusModalComponent,
     DossierManagementCreateComponent,
+    DossierManagementDeployComponent,
   ],
   imports: [
     CommonModule,
@@ -158,6 +160,7 @@ import {DossierManagementWidgetsEditorComponent} from './components/dossier-mana
     TooltipModule,
     DossierManagementWidgetsEditorComponent,
     ValuePathSelectorComponent,
+    SelectModule,
   ],
   providers: [TabManagementService],
 })

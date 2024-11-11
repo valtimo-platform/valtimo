@@ -1,0 +1,47 @@
+<cds-modal
+  [open]="open"
+  showFooter="true"
+  valtimoCdsModal
+  class="valtimo-definition-deploy"
+  (close)="onCloseModal()"
+>
+  <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'dossierManagement.deployDefinition.modalTitle' | translate }}
+    </h3>
+  </cds-modal-header>
+
+  <form [formGroup]="formGroup" cdsModalContent class="valtimo-definition-deploy__content">
+    <cds-select
+      [label]="'Case definition name'"
+      (change)="setCaseDefinitionName($event.target.value)"
+      formControlName="name"
+    >
+      <option value="" disabled>
+        {{ 'dossierManagement.deployDefinition.namePlaceholder' | translate }}
+      </option>
+      <option *ngFor="let caseDefinition of caseDefinitions" [value]="caseDefinition">
+        {{ caseDefinition }}
+      </option>
+    </cds-select>
+
+    <cds-select [label]="'Version'" formControlName="version">
+      <option value="" disabled>
+        {{ 'dossierManagement.deployDefinition.versionPlaceholder' | translate }}
+      </option>
+      <option *ngFor="let version of versions" [value]="version">
+        {{ version }}
+      </option>
+    </cds-select>
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="onCloseModal()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="deployCaseDefinition()">
+      {{ 'interface.deploy' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

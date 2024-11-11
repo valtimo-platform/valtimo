@@ -18,11 +18,11 @@ import {Router} from '@angular/router';
 import {Search20, TrashCan20, Upload16} from '@carbon/icons';
 import {ColumnConfig, MenuService, Pagination, ViewType} from '@valtimo/components';
 import {
+  CreateDocumentDefinitionResponse,
   DocumentDefinition,
   DocumentService,
   Page,
   TemplatePayload,
-  CreateDocumentDefinitionResponse,
 } from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import moment from 'moment';
@@ -59,18 +59,21 @@ export class DossierManagementListComponent {
       return documentDefinitionPage.content.map((documentDefinition: DocumentDefinition) => ({
         ...documentDefinition,
         createdOn: moment(documentDefinition.createdOn).format('DD MMM YYYY HH:mm'),
+        version: '1.0.0',
       }));
     })
   );
 
   public dossierFields: ColumnConfig[] = [
     {key: 'schema.title', label: 'fieldLabels.title', viewType: ViewType.TEXT},
+    {key: 'version', label: 'fieldLabels.version', viewType: ViewType.TEXT},
     {key: 'createdOn', label: 'fieldLabels.createdOn', viewType: ViewType.TEXT},
     {key: 'readOnly', label: 'fieldLabels.readOnly', viewType: ViewType.BOOLEAN},
   ];
 
   public readonly showCreateModal$ = new BehaviorSubject<boolean>(false);
   public readonly showUploadModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showDeployModal$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private readonly documentService: DocumentService,
@@ -105,6 +108,20 @@ export class DossierManagementListComponent {
       });
   }
 
+  public onCloseDeployModal(templatePayload: TemplatePayload | null): void {
+    this.showDeployModal$.next(false);
+    this.documentService
+      .createDocumentDefinitionTemplate(templatePayload)
+      .pipe(take(1))
+      .subscribe((response: CreateDocumentDefinitionResponse) => {
+        this.redirectToDetails(response.documentDefinition);
+      });
+  }
+
+  public onSelectVersion(version: string): void {
+    console.log('version selected: ', version);
+  }
+
   public paginationClicked(page: number): void {
     this.pagination = {...this.pagination, page};
     this._refreshData$.next(null);
@@ -125,5 +142,9 @@ export class DossierManagementListComponent {
 
   public showCreateModal(): void {
     this.showCreateModal$.next(true);
+  }
+
+  public showDeployModal(): void {
+    this.showDeployModal$.next(true);
   }
 }

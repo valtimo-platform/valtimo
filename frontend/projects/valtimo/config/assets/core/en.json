@@ -653,6 +653,13 @@
       "titlePlaceholder": "Enter title here",
       "titleTooltip": "The title is used for the visible name of the case definition in the UI"
     },
+    "deployDefinition": {
+      "modalTitle": "Deploy case definition",
+      "name": "Case definition name",
+      "namePlaceholder": "Select case definition name",
+      "version": "Case definition version",
+      "versionPlaceholder": "Select a version"
+    },
     "documentDefinition": {
       "cancelModal": {
         "title": "Leaving the editor",
@@ -935,7 +942,8 @@
       "valtimoAssignee.fullName": "Assignee",
       "due": "Due date",
       "context": "Context",
-      "case": "Case"
+      "case": "Case",
+      "version": "Version"
     },
     "mine": {
       "title": "My tasks",
@@ -1094,6 +1102,7 @@
     "clear": "Clear",
     "show": "Show",
     "display": "Display",
+    "deploy": "Deploy",
     "items": "items",
     "of": "of",
     "visible": "visible",
@@ -1230,7 +1239,8 @@
     "accepted": "Accepted",
     "title": "Title",
     "readOnly": "Read-only",
-    "height": "Amount"
+    "height": "Amount",
+    "version": "Version"
   },
   "list": {
     "currentPage": "Page {{current}} of {{total}}",
