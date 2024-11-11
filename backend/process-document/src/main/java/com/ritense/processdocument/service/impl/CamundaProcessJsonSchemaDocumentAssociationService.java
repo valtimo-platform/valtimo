@@ -23,6 +23,7 @@ import static com.ritense.valtimo.contract.utils.AssertionConcern.assertStateTru
 import com.ritense.authorization.Action;
 import com.ritense.authorization.AuthorizationContext;
 import com.ritense.authorization.AuthorizationService;
+import com.ritense.authorization.request.AuthorizationResourceContext;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.authorization.request.RelatedEntityAuthorizationRequest;
 import com.ritense.document.domain.Document;
@@ -30,6 +31,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
 import com.ritense.document.domain.impl.JsonSchemaDocumentId;
+import com.ritense.document.exception.DocumentNotFoundException;
 import com.ritense.document.exception.UnknownDocumentDefinitionException;
 import com.ritense.document.repository.DocumentDefinitionRepository;
 import com.ritense.document.service.DocumentDefinitionService;
@@ -195,6 +197,41 @@ public class CamundaProcessJsonSchemaDocumentAssociationService implements Proce
                     CamundaExecutionActionProvider.CREATE,
                     CamundaProcessDefinition.class,
                     processDefinition.getId()
+                )
+            );
+        }).toList();
+    }
+
+    @Override
+    public List<CamundaProcessJsonSchemaDocumentDefinition> findProcessDocumentDefinitions(
+        UUID documentId,
+        @Nullable Boolean startableByUser,
+        @Nullable Boolean canInitializeDocument
+    ) {
+        Document document = documentService.findBy(JsonSchemaDocumentId.existingId(documentId)).
+            orElseThrow(() -> new DocumentNotFoundException("Document not found with id " + documentId));
+
+        List<CamundaProcessJsonSchemaDocumentDefinition> results = processDocumentDefinitionRepository
+            .findAll(document.definitionId().name(), startableByUser, canInitializeDocument);
+
+        return results.stream().filter(result -> {
+            CamundaProcessDefinition processDefinition = AuthorizationContext.runWithoutAuthorization(() ->
+                repositoryService.findLatestProcessDefinition(
+                    result.processDocumentDefinitionId().processDefinitionKey().toString()
+                )
+            );
+
+            return authorizationService.hasPermission(
+                new RelatedEntityAuthorizationRequest<>(
+                    CamundaExecution.class,
+                    CamundaExecutionActionProvider.CREATE,
+                    CamundaProcessDefinition.class,
+                    processDefinition.getId()
+                ).withContext(
+                    new AuthorizationResourceContext(
+                        JsonSchemaDocument.class,
+                        document
+                    )
                 )
             );
         }).toList();

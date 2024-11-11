@@ -17,6 +17,7 @@
 package com.ritense.processlink.service
 
 import com.ritense.authorization.AuthorizationService
+import com.ritense.document.service.DocumentService
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.web.rest.dto.ProcessLinkActivityResult
 import com.ritense.valtimo.camunda.domain.CamundaTask
@@ -52,6 +53,9 @@ class ProcessLinkActivityServiceTest {
     @Mock
     lateinit var camundaRepositoryService: CamundaRepositoryService
 
+    @Mock
+    lateinit var documentService: DocumentService
+
     @BeforeEach
     fun init() {
         MockitoAnnotations.openMocks(this)
@@ -60,7 +64,8 @@ class ProcessLinkActivityServiceTest {
             taskService,
             listOf(processLinkActivityHandler),
             authorizationService,
-            camundaRepositoryService
+            camundaRepositoryService,
+            documentService
         )
     }
 

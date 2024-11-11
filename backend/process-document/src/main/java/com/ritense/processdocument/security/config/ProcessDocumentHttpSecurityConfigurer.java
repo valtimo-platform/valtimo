@@ -46,6 +46,9 @@ public class ProcessDocumentHttpSecurityConfigurer implements HttpSecurityConfig
                     GET, DEFINITION_URL + "/document/{document-definition-name}"))
                 .authenticated()
                 .requestMatchers(antMatcher(
+                    GET, "/api/v2/process-document/definition/document/{document-definition-name}"))
+                .authenticated()
+                .requestMatchers(antMatcher(
                     GET, "/api/management/v1/process-document/definition/document/{document-definition-name}"))
                 .hasAuthority(ADMIN)
                 .requestMatchers(antMatcher(

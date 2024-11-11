@@ -110,6 +110,19 @@ public class ProcessDocumentResource {
         ));
     }
 
+    @GetMapping("/v2/process-document/definition/document/{document-id}")
+    public ResponseEntity<List<? extends ProcessDocumentDefinition>> findProcessDocumentDefinitions(
+        @PathVariable(name = "document-id") UUID documentId,
+        @RequestParam(value = "startableByUser", required = false) @Nullable Boolean startableByUser,
+        @RequestParam(value = "canInitializeDocument", required = false) @Nullable Boolean canInitializeDocument
+    ) {
+        return ResponseEntity.ok(processDocumentAssociationService.findProcessDocumentDefinitions(
+            documentId,
+            startableByUser,
+            canInitializeDocument
+        ));
+    }
+
     @GetMapping("/v1/process-document/definition/document/{document-definition-name}/version/{document-definition-version}")
     public ResponseEntity<List<? extends ProcessDocumentDefinition>> findProcessDocumentDefinitions(
         @PathVariable(name = "document-definition-name") String documentDefinitionName,

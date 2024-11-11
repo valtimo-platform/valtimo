@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.AuthorizationSupportedHelper
+import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
 import com.ritense.document.domain.impl.JsonDocumentContent
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocument
@@ -46,6 +48,7 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ActivityTypeWithEventName.START_EVENT_START
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.valtimo.camunda.domain.CamundaExecution
 import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
 import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 import com.ritense.valtimo.contract.event.ExternalDataSubmittedEvent
@@ -53,6 +56,8 @@ import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
 import com.ritense.valtimo.service.CamundaTaskService
 import com.ritense.valueresolver.ValueResolverService
+import io.mockk.every
+import io.mockk.mockkObject
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -85,7 +90,6 @@ class DefaultFormSubmissionServiceTest {
     lateinit var authorizationService: AuthorizationService
     lateinit var valueResolverService: ValueResolverService
 
-
     lateinit var formProcessLink: FormProcessLink
     lateinit var processDefinition: CamundaProcessDefinition
     lateinit var formDefinition: FormIoFormDefinition
@@ -103,6 +107,7 @@ class DefaultFormSubmissionServiceTest {
         prefillFormService = mock()
         authorizationService = mock()
         valueResolverService = mock()
+        mockkObject(AuthorizationSupportedHelper)
         defaultFormSubmissionService = DefaultFormSubmissionService(
             processLinkService,
             formDefinitionService,
@@ -134,6 +139,10 @@ class DefaultFormSubmissionServiceTest {
 
         whenever(prefillFormService.preSubmissionTransform(any(),any(),any(),any()))
             .thenReturn(JsonPatchBuilder().build())
+
+        every {
+            AuthorizationSupportedHelper.checkSupported(any())
+        } returns Unit
     }
 
     @Test

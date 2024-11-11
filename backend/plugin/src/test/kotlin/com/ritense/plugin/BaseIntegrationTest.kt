@@ -16,12 +16,17 @@
 
 package com.ritense.plugin
 
+import com.ritense.valtimo.contract.authentication.UserManagementService
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @SpringBootTest
 @ExtendWith(SpringExtension::class)
 @Tag("integration")
-class BaseIntegrationTest
+class BaseIntegrationTest {
+    @MockBean
+    lateinit var userManagementService: UserManagementService
+}

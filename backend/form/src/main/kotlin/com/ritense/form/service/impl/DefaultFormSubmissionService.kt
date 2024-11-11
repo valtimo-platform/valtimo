@@ -23,7 +23,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.AuthorizationResourceContext
 import com.ritense.authorization.request.EntityAuthorizationRequest
+import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
 import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.request.ModifyDocumentRequest
@@ -53,7 +55,9 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName.START_EVENT_STAR
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.valtimo.camunda.authorization.CamundaExecutionActionProvider
 import com.ritense.valtimo.camunda.authorization.CamundaTaskActionProvider.Companion.COMPLETE
+import com.ritense.valtimo.camunda.domain.CamundaExecution
 import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
 import com.ritense.valtimo.camunda.domain.CamundaTask
 import com.ritense.valtimo.camunda.service.CamundaRepositoryService
@@ -102,11 +106,11 @@ class DefaultFormSubmissionService(
     ): FormSubmissionResult {
         return try {
             // TODO: Implement else, done by verifying what the processLink contains
-            requireCompleteTaskPermission(taskInstanceId)
-
-            val processLink = processLinkService.getProcessLink(processLinkId, FormProcessLink::class.java)
             val document = documentId
                 ?.let { runWithoutAuthorization { documentService.get(documentId) } }
+            val processLink = processLinkService.getProcessLink(processLinkId, FormProcessLink::class.java)
+            requirePermission(taskInstanceId, document, processLink.processDefinitionId)
+
             val processDefinition = getProcessDefinition(processLink)
             val documentDefinitionNameToUse = document?.definitionId()?.name()
                 ?: documentDefinitionName
@@ -162,7 +166,7 @@ class DefaultFormSubmissionService(
         }
     }
 
-    private fun requireCompleteTaskPermission(taskInstanceId: String?) {
+    private fun requirePermission(taskInstanceId: String?, document: JsonSchemaDocument?, processDefinitionId: String) {
         if (taskInstanceId != null) {
             val task = camundaTaskService.findTaskById(taskInstanceId)
             authorizationService.requirePermission(
@@ -170,6 +174,20 @@ class DefaultFormSubmissionService(
                     CamundaTask::class.java,
                     COMPLETE,
                     task
+                )
+            )
+        } else if (document != null) {
+            authorizationService.hasPermission<CamundaExecution>(
+                RelatedEntityAuthorizationRequest<CamundaExecution>(
+                    CamundaExecution::class.java,
+                    CamundaExecutionActionProvider.CREATE,
+                    CamundaProcessDefinition::class.java,
+                    processDefinitionId
+                ).withContext(
+                    AuthorizationResourceContext(
+                        JsonSchemaDocument::class.java,
+                        document
+                    )
                 )
             )
         }

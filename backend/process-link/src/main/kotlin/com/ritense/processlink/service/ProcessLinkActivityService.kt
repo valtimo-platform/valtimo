@@ -18,7 +18,11 @@ package com.ritense.processlink.service
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.AuthorizationResourceContext
 import com.ritense.authorization.request.EntityAuthorizationRequest
+import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.document.service.DocumentService
 import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
 import com.ritense.processlink.domain.ActivityTypeWithEventName
@@ -47,7 +51,8 @@ class ProcessLinkActivityService(
     private val taskService: CamundaTaskService,
     private val processLinkActivityHandlers: List<ProcessLinkActivityHandler<*>>,
     private val authorizationService: AuthorizationService,
-    private val camundaRepositoryService: CamundaRepositoryService
+    private val camundaRepositoryService: CamundaRepositoryService,
+    private val documentService: DocumentService
 ) {
     fun openTask(
         @LoggableResource(resourceType = CamundaTask::class) taskId: UUID
@@ -82,15 +87,25 @@ class ProcessLinkActivityService(
                     "For process definition with id ${processLink.processDefinitionId}"
                 )
         }
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                CamundaExecution::class.java,
-                CamundaExecutionActionProvider.CREATE,
-                createDummyCamundaExecution(
-                    processDefinition
-                )
+
+        var entityAuthorizationRequest = EntityAuthorizationRequest(
+            CamundaExecution::class.java,
+            CamundaExecutionActionProvider.CREATE,
+            createDummyCamundaExecution(
+                processDefinition
             )
         )
+
+        documentId?.let {
+            entityAuthorizationRequest = entityAuthorizationRequest.withContext(
+                AuthorizationResourceContext(
+                    JsonSchemaDocument::class.java,
+                    documentService.findBy(JsonSchemaDocumentId.existingId(documentId)).get() as JsonSchemaDocument
+                )
+            )
+        }
+
+        authorizationService.requirePermission(entityAuthorizationRequest)
         return withLoggingContext(ProcessLink::class, processLink.id) {
             processLinkActivityHandlers
                 .find { it.supports(processLink) }

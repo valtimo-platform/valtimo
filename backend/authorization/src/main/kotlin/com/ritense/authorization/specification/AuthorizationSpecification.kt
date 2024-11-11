@@ -76,7 +76,9 @@ abstract class AuthorizationSpecification<T : Any>(
                     relatedEntityAuthorizationRequest.resourceType,
                     relatedEntityAuthorizationRequest.action,
                     identifierToEntity(relatedEntityAuthorizationRequest.relatedResourceId)
-                )
+                ).apply {
+                    relatedEntityAuthorizationRequest.context?.let { context -> this.withContext(context) }
+                }
             )
         }
 
@@ -86,12 +88,15 @@ abstract class AuthorizationSpecification<T : Any>(
                     && relatedEntityAuthorizationRequest.action == permission.action
             }
             .firstOrNull { permission ->
-                permission.conditionContainer.conditions.all { permissionCondition ->
-                    isAuthorizedForRelatedEntityRecursive(
-                        relatedEntityAuthorizationRequest,
-                        permissionCondition
-                    )
-                }
+                permission.appliesInContext(
+                    relatedEntityAuthorizationRequest.context?.resourceType,
+                    relatedEntityAuthorizationRequest.context?.entity
+                ) && permission.conditionContainer.conditions.all { permissionCondition ->
+                        isAuthorizedForRelatedEntityRecursive(
+                            relatedEntityAuthorizationRequest,
+                            permissionCondition
+                        )
+                    }
             } != null
     }
 
