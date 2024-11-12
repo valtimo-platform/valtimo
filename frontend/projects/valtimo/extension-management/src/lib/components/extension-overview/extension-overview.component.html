@@ -34,6 +34,9 @@
   <cds-tile>
     <div class="extension">
       <div class="extension__header">
+        @if (extension.logo) {
+          <img class="extension-logo" [src]="extension.logo"/>
+        }
         <span class="extension__title">{{ extension.name }}</span>
       </div>
       <div class="extension__description">

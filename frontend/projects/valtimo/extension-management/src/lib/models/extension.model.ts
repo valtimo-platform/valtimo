@@ -16,8 +16,9 @@
 
 interface ExtensionListItem {
   id: string;
-  name?: number;
-  description?: boolean;
+  name?: string;
+  logo?: string;
+  description?: string;
   installedVersion?: string;
   nextVersion?: string;
 }

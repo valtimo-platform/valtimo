@@ -16,10 +16,10 @@
 
 import {HttpClient} from '@angular/common/http';
 import * as angularcore from '@angular/core';
-import {Injectable, Injector, createNgModule, NgModule} from '@angular/core';
+import {createNgModule, Injectable, Injector, NgModule} from '@angular/core';
 import {CASE_MANAGEMENT_TAB_TOKEN, ConfigService} from '@valtimo/config';
 import * as rxjs from 'rxjs';
-import {Observable, Subject} from 'rxjs';
+import {combineLatest, Observable, Subject, switchMap} from 'rxjs';
 import {ExtensionListItem} from '../models';
 import * as valtimoplugin from '@valtimo/plugin';
 import {PLUGINS_TOKEN, PluginService} from '@valtimo/plugin';
@@ -41,6 +41,7 @@ export class ExtensionService {
     tslib: tslib,
   };
   private readonly extensionFrontendInitJs = 'frontend-bundle.js';
+  private readonly extensionFrontendCss = 'styles.css';
 
   constructor(
     private readonly configService: ConfigService,
@@ -56,19 +57,63 @@ export class ExtensionService {
   public loadAll() {
     this.getExtensionIds('STARTED', this.extensionFrontendInitJs).subscribe(extensionIds =>
       extensionIds.forEach(extensionId =>
-        this.load(extensionId).subscribe(null, err => {
+        this.loadJs(extensionId).subscribe(null, err => {
           throw new Error(err);
         })
+      )
+    );
+    this.getExtensionIds('STARTED', this.extensionFrontendCss).subscribe(extensionIds =>
+      extensionIds.forEach(extensionId =>
+        this.loadStyle(extensionId)
       )
     );
   }
 
   public load(extensionId: string): Observable<any> {
+    return combineLatest([
+      this.getExtensionIds('STARTED', this.extensionFrontendInitJs).pipe(
+        switchMap(extensionIds => combineLatest(extensionIds.map(id => {
+            if (id == extensionId) {
+              this.loadJs(id);
+            }
+          }
+        ).filter(o => o)))
+      ),
+      this.getExtensionIds('STARTED', this.extensionFrontendCss).pipe(
+        switchMap(extensionIds => combineLatest(extensionIds.map(id => {
+            if (id == extensionId) {
+              this.loadStyle(id);
+            }
+          }
+        ).filter(o => o)))
+      )
+    ]);
+  }
+
+  private loadStyle(extensionId: string) {
+    const head = document.getElementsByTagName('head')[0];
+    const href = this.getFileUrl(extensionId, this.extensionFrontendCss);
+    let themeLink = document.getElementById(
+      `${extensionId}-theme`
+    ) as HTMLLinkElement;
+    if (themeLink) {
+      themeLink.href = href;
+    } else {
+      const style = document.createElement('link');
+      style.id = `${extensionId}-theme`;
+      style.rel = 'stylesheet';
+      style.type = 'text/css';
+      style.href = href;
+      head.appendChild(style);
+    }
+  }
+
+  private loadJs(extensionId: string): Observable<any> {
     const subject = new Subject<any>();
     Object.keys(this.extensionImports).forEach(key => (window[key] = this.extensionImports[key]));
     import(
       /* webpackIgnore: true */ this.getFileUrl(extensionId, this.extensionFrontendInitJs)
-    ).then(
+      ).then(
       importedFile => {
         try {
           Object.keys(importedFile).forEach(name => {
@@ -136,12 +181,12 @@ export class ExtensionService {
 
   public getExtensionIds(state: string, file: string): Observable<Array<string>> {
     return this.http.get<Array<string>>(
-      `.${this.valtimoEndpointUri}v1/public/extension/id?state=${state}&file=${file}`
+      `${this.valtimoEndpointUri}v1/public/extension/id?state=${state}&file=${file}`
     );
   }
 
   public getFileUrl(extensionId: string, file: string): string {
-    return `${location.origin}${this.valtimoEndpointUri}v1/public/extension/${extensionId}/file/${file}`;
+    return `${this.valtimoEndpointUri}v1/public/extension/${extensionId}/file/${file}`;
   }
 
   public getFile(file: string, extensionId: string): Observable<string> {

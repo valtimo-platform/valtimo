@@ -120,7 +120,7 @@ export const environment: ValtimoConfig = {
         children: [
           {title: 'Configuration', textClass: 'text-dark font-weight-bold c-default', sequence: 1},
           {link: ['/case-management'], title: 'Cases', sequence: 2},
-          {link: ['/extension-management'], title: 'Extensions', sequence: 3},
+          {link: ['/extension-management'], title: 'Store', sequence: 3},
           {link: ['/plugins'], title: 'Plugins', sequence: 3},
           {link: ['/dashboard-management'], title: 'Dashboard', sequence: 4},
           {link: ['/access-control'], title: 'Access Control', sequence: 5},

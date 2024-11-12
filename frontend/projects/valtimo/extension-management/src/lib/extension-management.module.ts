@@ -28,6 +28,7 @@ import {
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
 import {ExtensionManagementRoutingModule} from './extension-management-routing.module';
+import {PluginTranslatePipeModule} from "@valtimo/plugin";
 
 @NgModule({
   declarations: [ExtensionOverviewComponent],
@@ -44,6 +45,7 @@ import {ExtensionManagementRoutingModule} from './extension-management-routing.m
     LoadingModule,
     ButtonModule,
     ModalModule,
+    PluginTranslatePipeModule,
   ],
 })
 export class ExtensionManagementModule {}

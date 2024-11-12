@@ -41,6 +41,12 @@
   }
 }
 
+.extension-logo {
+  object-fit: contain;
+  height: 60px;
+  width: 100%;
+}
+
 .extension {
   display: flex;
   flex-direction: column;
