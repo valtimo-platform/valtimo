@@ -71,17 +71,18 @@ export class DossierManagementDeployComponent implements OnInit {
       return;
     }
 
-    console.log('version value: ', version.value);
+    let nameResult = `${name.value}-${version.value}`;
+    let titleResult = `${title.value} - ${version.value}`;
 
     this.documentService
-      .getDocumentDefinition(name.value, true)
+      .getDocumentDefinition(nameResult, true)
       .pipe(take(1))
       .subscribe({
         next: () => {},
         error: () => {
           this.closeModal.emit({
-            documentDefinitionId: name.value,
-            documentDefinitionTitle: title.value,
+            documentDefinitionId: nameResult,
+            documentDefinitionTitle: titleResult,
           });
 
           if (version.value) {
@@ -99,7 +100,8 @@ export class DossierManagementDeployComponent implements OnInit {
   }
 
   private resetForm(): void {
-    this.formGroup.reset();
+    this.formGroup.get('name')?.setValue('');
+    this.formGroup.get('version')?.setValue('');
   }
 
   private formatTitle(name: string): string {

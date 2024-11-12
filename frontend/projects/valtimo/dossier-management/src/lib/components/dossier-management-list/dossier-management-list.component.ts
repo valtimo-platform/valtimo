@@ -36,6 +36,8 @@ moment.locale(localStorage.getItem('langKey') || '');
   styleUrls: ['./dossier-management-list.component.scss'],
 })
 export class DossierManagementListComponent {
+  public versionSelected: string = '';
+
   public pagination: Pagination = {
     collectionSize: 0,
     page: 1,
@@ -123,7 +125,7 @@ export class DossierManagementListComponent {
   }
 
   public onSelectVersion(version: string): void {
-    console.log('version selected: ', version);
+    this.versionSelected = version;
   }
 
   public paginationClicked(page: number): void {

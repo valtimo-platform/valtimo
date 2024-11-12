@@ -45,7 +45,6 @@
 <valtimo-dossier-management-create
   [open]="showCreateModal$ | async"
   (closeModal)="onCloseCreateModal($event)"
-  (versionSelected)="onSelectVersion($event)"
 >
   ></valtimo-dossier-management-create
 >
@@ -53,6 +52,7 @@
 <valtimo-dossier-management-deploy
   [open]="showDeployModal$ | async"
   (closeModal)="onCloseDeployModal($event)"
+  (versionSelected)="onSelectVersion($event)"
 ></valtimo-dossier-management-deploy>
 
 <ng-template #importCaseDefinitionButton>

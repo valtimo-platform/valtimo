@@ -20,6 +20,7 @@
       <option value="" disabled>
         {{ 'dossierManagement.deployDefinition.namePlaceholder' | translate }}
       </option>
+
       <option *ngFor="let caseDefinition of caseDefinitions" [value]="caseDefinition">
         {{ caseDefinition }}
       </option>
