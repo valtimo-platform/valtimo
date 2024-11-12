@@ -24,6 +24,7 @@ import com.ritense.extension.web.rest.ExtensionSecurityConfigurer
 import com.ritense.importer.ImportService
 import com.ritense.valtimo.contract.extension.ExtensionClassRegistrationListener
 import com.ritense.valtimo.contract.extension.ExtensionResourcesRegistrationListener
+import jakarta.servlet.ServletContext
 import org.pf4j.update.UpdateManager
 import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -46,6 +47,7 @@ class ExtensionAutoConfiguration {
     fun valtimoExtensionManager(
         resourceResolver: ResourcePatternResolver,
         environment: Environment,
+        extensionProperties: ExtensionProperties,
     ): ExtensionManager {
         val valtimoExtensionPaths = if (environment.matchesProfiles("dev")) {
             listOf(Path(resourceResolver.getResource("classpath:/config").file.toPath().toString(), "extensions"))
@@ -56,6 +58,7 @@ class ExtensionAutoConfiguration {
         return ExtensionManager(
             valtimoExtensionPaths,
             resourceResolver,
+            extensionProperties,
         )
     }
 
@@ -116,10 +119,12 @@ class ExtensionAutoConfiguration {
     fun beanExtensionClassRegistrationListener(
         extensionManager: ExtensionManager,
         beanFactory: AbstractAutowireCapableBeanFactory,
+        extensionProperties: ExtensionProperties,
     ): BeanExtensionClassRegistrationListener {
         return BeanExtensionClassRegistrationListener(
             extensionManager,
             beanFactory,
+            extensionProperties,
         )
     }
 

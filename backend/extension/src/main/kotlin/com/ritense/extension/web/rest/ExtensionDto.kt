@@ -16,7 +16,7 @@
 
 package com.ritense.extension.web.rest
 
-data class Extension(
+data class ExtensionDto(
     val id: String,
     val name: String?,
     val logo: String?,

@@ -16,7 +16,7 @@
 
 package com.ritense.extension
 
-import com.ritense.extension.web.rest.Extension
+import com.ritense.extension.web.rest.ExtensionDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import mu.KotlinLogging
 import org.pf4j.update.PluginInfo
@@ -37,11 +37,11 @@ class ExtensionUpdateManager(
         defaultRepositories.forEach { addRepository(it) }
     }
 
-    fun getExtensions(): List<Extension> {
+    fun getExtensions(): List<ExtensionDto> {
         refresh()
         return plugins.map { extension ->
             extension as ExtensionInfo
-            Extension(
+            ExtensionDto(
                 id = extension.id,
                 logo = extension.logo,
                 name = extension.name,

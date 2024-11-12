@@ -36,7 +36,7 @@ class ExtensionManagementResource(
 ) {
 
     @GetMapping("/v1/extension")
-    fun getExtensions(): ResponseEntity<List<Extension>> {
+    fun getExtensions(): ResponseEntity<List<ExtensionDto>> {
         return ResponseEntity.ok(updateManager.getExtensions())
     }
 

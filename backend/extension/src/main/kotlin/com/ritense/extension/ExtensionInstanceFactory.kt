@@ -22,7 +22,7 @@ import org.pf4j.PluginFactory
 import org.pf4j.PluginWrapper
 import java.lang.reflect.Modifier
 
-class ExtensionFactory : PluginFactory {
+class ExtensionInstanceFactory : PluginFactory {
 
     override fun create(extensionWrapper: PluginWrapper): Plugin {
         val extensionClassName = extensionWrapper.descriptor.pluginClass

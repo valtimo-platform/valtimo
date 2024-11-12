@@ -22,7 +22,7 @@ class MultiInstanceExtensionInstaller(
     private val extensionManager: ExtensionManager,
 ) {
 
-    @Scheduled(cron = "\${valtimo.extension.multiinstancecron:0 0 * * * ?}")
+    @Scheduled(cron = "\${valtimo.extension.multiInstanceCron:0 0 * * * ?}")
     fun loadAndInstallExtensionsFromDisk() {
         extensionManager.loadPlugins()
         extensionManager.startPlugins()

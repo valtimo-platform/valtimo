@@ -17,6 +17,7 @@
 package com.ritense.extension.listener
 
 import com.ritense.extension.ExtensionManager
+import com.ritense.extension.ExtensionProperties
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.extension.ExtensionClassRegistrationListener
 import org.springframework.beans.factory.annotation.AnnotatedGenericBeanDefinition
@@ -36,17 +37,19 @@ import org.springframework.web.bind.annotation.RestController
 @Component
 class BeanExtensionClassRegistrationListener(
     private val extensionManager: ExtensionManager,
-    private val beanFactory: AbstractAutowireCapableBeanFactory
+    private val beanFactory: AbstractAutowireCapableBeanFactory,
+    private val extensionProperties: ExtensionProperties,
 ) : ExtensionClassRegistrationListener {
 
     override fun classRegistered(extensionClass: Class<*>) {
-        if (isBean(extensionClass)) {
+        if (isSpringBean(extensionClass)) {
+            checkAllowed(extensionClass)
             registerSpringBean(extensionClass)
         }
     }
 
     override fun classUnregistered(extensionClass: Class<*>) {
-        if (isBean(extensionClass)) {
+        if (isSpringBean(extensionClass)) {
             unregisterSpringBean(extensionClass)
         }
     }
@@ -83,8 +86,41 @@ class BeanExtensionClassRegistrationListener(
         exceptions.forEach { throw it }
     }
 
-    private fun isBean(clazz: Class<*>): Boolean {
-        return clazz.annotations.any { SPRING_ANNOTATION_CLASSES.contains(it.annotationClass) }
+    private fun isSpringBean(clazz: Class<*>): Boolean {
+        return (getAllInterfaces(clazz) + clazz)
+            .flatMap { it.annotations.toList() }
+            .map { it.annotationClass }
+            .any { SPRING_ANNOTATION_CLASSES.contains(it) }
+    }
+
+    private fun checkAllowed(clazz: Class<*>) {
+        val interfaces = getAllInterfaces(clazz)
+        val illegalInterfaces = interfaces
+            .filter { !extensionProperties.interfaceWhitelist.contains(it.name) }
+        require(illegalInterfaces.isEmpty()) {
+            "Failed to created Spring Bean of ${clazz.name}. Class uses illegal interface: ${illegalInterfaces.joinToString()}"
+        }
+
+        val illegalAnnotations = (interfaces + clazz)
+            .flatMap { it.annotations.toList() }
+            .map { it.annotationClass.qualifiedName }
+            .filter { !extensionProperties.annotationWhitelist.contains(it) }
+        require(illegalAnnotations.isEmpty()) {
+            "Failed to created Spring Bean of ${clazz.name}. Class uses illegal annotation: ${illegalAnnotations.joinToString()}"
+        }
+    }
+
+    private fun getAllInterfaces(clazz: Class<*>): List<Class<*>> {
+        val interfaces = (clazz.interfaces + clazz.superclass).filterNotNull().toMutableList()
+        val iterator = interfaces.listIterator()
+        while (iterator.hasNext()) {
+            val i = iterator.next()
+            (i.interfaces + i.superclass)
+                .filterNotNull()
+                .filter { !interfaces.contains(it) }
+                .forEach { iterator.add(it) }
+        }
+        return interfaces
     }
 
     private fun getBeanName(extensionClass: Class<*>): String {
@@ -104,7 +140,7 @@ class BeanExtensionClassRegistrationListener(
     }
 
     companion object {
-        val SPRING_ANNOTATION_CLASSES = listOf(
+        private val SPRING_ANNOTATION_CLASSES = listOf(
             Component::class,
             Configuration::class,
             Controller::class,

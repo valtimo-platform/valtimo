@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.net.URLConnection
 
 @RestController
 @SkipComponentScan
@@ -66,21 +65,11 @@ class ExtensionPublicResource(
         val file = requestURL.split("/file/")[1]
         val publicResource = extensionManager.getPublicResource(extensionId, file)
             ?: return ResponseEntity.notFound().build()
-        val contentType = getContentTypeByFileName(publicResource.filename ?: file)
-            ?: Tika().detect(publicResource.inputStream)
+        val contentType = Tika().detect(publicResource.inputStream, file)
         return ResponseEntity
             .ok()
             .header("Content-Type", contentType)
             .body(publicResource.contentAsByteArray)
-    }
-
-    private fun getContentTypeByFileName(fileName: String): String? {
-        return when (fileName.substringAfterLast('.')) {
-            "js", "mjs" -> "text/javascript"
-            "ts", "tsx" -> "text/javascript"
-            "map" -> "application/json"
-            else -> URLConnection.guessContentTypeFromName(fileName)
-        }
     }
 
 }

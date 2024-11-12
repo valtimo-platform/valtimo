@@ -19,6 +19,8 @@ package com.ritense.extension
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import jakarta.annotation.PostConstruct
 import mu.KotlinLogging
+import org.pf4j.AbstractPluginManager
+import org.pf4j.ExtensionFactory
 import org.pf4j.PluginState
 import org.pf4j.PluginStateEvent
 import org.pf4j.PluginWrapper
@@ -37,6 +39,7 @@ import kotlin.io.path.Path
 class ExtensionManager(
     pluginsRoots: List<Path>,
     private val resourceResolver: ResourcePatternResolver,
+    private val extensionProperties: ExtensionProperties,
 ) : SpringPluginManager(pluginsRoots) {
 
     init {
@@ -47,6 +50,37 @@ class ExtensionManager(
     override fun init() {
         loadPlugins()
         startPlugins()
+    }
+
+    override fun deletePlugin(pluginId: String?): Boolean {
+        checkPluginId(pluginId)
+
+        val pluginWrapper = getPlugin(pluginId)
+
+        val pluginState = stopPlugin(pluginId)
+        if (pluginState.isStarted) {
+            logger.error("Failed to stop plugin '{}' on delete", pluginId)
+            return false
+        }
+
+        val plugin = try {
+            pluginWrapper.plugin
+        } catch (e: ClassNotFoundException) {
+            null
+        }
+
+        if (!unloadPlugin(pluginId)) {
+            logger.error("Failed to unload plugin '{}' on delete", pluginId)
+            return false
+        }
+
+        plugin?.delete()
+
+        return pluginRepository.deletePluginPath(pluginWrapper.pluginPath)    }
+
+    override fun getExtensionFactory(): ExtensionFactory {
+        extensionFactory = WhitelistSpringExtensionFactory(this, extensionProperties)
+        return extensionFactory
     }
 
     fun fail(extension: PluginWrapper, exception: Exception?) {
@@ -100,7 +134,7 @@ class ExtensionManager(
         return Path(extension.pluginClassLoader.getResource("META-INF")!!.toURI().toString()).parent.toString()
     }
 
-    override fun createPluginFactory() = ExtensionFactory()
+    override fun createPluginFactory() = ExtensionInstanceFactory()
 
     companion object {
         private val logger = KotlinLogging.logger {}
