@@ -655,7 +655,7 @@
     },
     "deployDefinition": {
       "modalTitle": "Deploy case definition",
-      "modalSubtitle": "Use this modal to pull case definitions directly from the Test Environment. It is possible to deploy case definitions with the same name but different versions. Select the case you would like to pull, review version details, and deploy the desired versions.",
+      "modalSubtitle": "Use this modal to pull case definitions directly from the Test Environment. It is possible to deploy case definitions with the same name but different versions. Select the case you would like to pull, review version details, and deploy the desired version.",
       "name": "Case definition name",
       "namePlaceholder": "Select case definition name",
       "version": "Case definition version",

@@ -645,7 +645,7 @@
     "createDefinition": {
       "idError": "Deze definitienaam is al in gebruik. Wijzig dit naar een unieke naam",
       "modalTitle": "Dossierdefinitie maken",
-      "modalSubtitle": "Gebruik deze modal om casedefinities rechtstreeks uit de testomgeving te halen. Het is mogelijk om casedefinities met dezelfde naam maar verschillende versies te implementeren. Selecteer de case die u wilt ophalen, bekijk versiedetails en implementeer de gewenste versies.",
+      "modalSubtitle": "Gebruik deze modal om casedefinities rechtstreeks uit de testomgeving te halen. Het is mogelijk om casedefinities met dezelfde naam maar verschillende versies te implementeren. Selecteer de case die u wilt ophalen, bekijk versiedetails en implementeer de gewenste versie.",
       "name": "Dossierdefinitienaam",
       "namePlaceholder": "De naam van de dossierdefinitie wordt hier automatisch gegenereerd",
       "nameTooltip": "De naam wordt gebruikt voor de systeemnamen, $id etc. Er zijn geen spaties of speciale tekens toegestaan behalve “-”.",
