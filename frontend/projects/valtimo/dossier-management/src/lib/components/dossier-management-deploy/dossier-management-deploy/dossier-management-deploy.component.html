@@ -12,6 +12,10 @@
   </cds-modal-header>
 
   <form [formGroup]="formGroup" cdsModalContent class="valtimo-definition-deploy__content">
+    <p>
+      {{ 'dossierManagement.deployDefinition.modalSubtitle' | translate }}
+    </p>
+
     <cds-select
       [label]="'Case definition name'"
       (change)="setCaseDefinitionName($event.target.value)"

@@ -645,12 +645,20 @@
     "createDefinition": {
       "idError": "Dieser Definitionsname wird bereits verwendet. Bitte ändern Sie ihn in einen eindeutigen Namen",
       "modalTitle": "Casedefinition erstellen",
+      "modalSubtitle": "Verwenden Sie dieses Modal, um Falldefinitionen direkt aus der Testumgebung abzurufen. Es ist möglich, Falldefinitionen mit demselben Namen, aber unterschiedlichen Versionen bereitzustellen. Wählen Sie die Fälle aus, die Sie abrufen möchten, überprüfen Sie die Versionsdetails und stellen Sie die gewünschten Versionen bereit.",
       "name": "Name der Casedefinition",
       "namePlaceholder": "Der Name der Casedefinition wird hier automatisch generiert",
       "nameTooltip": "Der Name wird für den Systemnamen, $id usw. verwendet. Außer „-“ sind keine Leerzeichen oder Sonderzeichen erlaubt.",
       "title": "Titel der Casedefinition",
       "titlePlaceholder": "Geben Sie hier den Titel ein",
       "titleTooltip": "Der Titel wird als sichtbarer Name der Casedefinition in der Benutzeroberfläche verwendet"
+    },
+    "deployDefinition": {
+      "modalTitle": "Falldefinition bereitstellen",
+      "name": "Name der Falldefinition",
+      "namePlaceholder": "Name der Falldefinition auswählen",
+      "version": "Version der Falldefinition",
+      "versionPlaceholder": "Version auswählen"
     },
     "documentDefinition": {
       "cancelModal": {
