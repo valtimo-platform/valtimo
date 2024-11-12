@@ -110,6 +110,10 @@ export class DossierManagementListComponent {
 
   public onCloseDeployModal(templatePayload: TemplatePayload | null): void {
     this.showDeployModal$.next(false);
+    if (!templatePayload) {
+      return;
+    }
+
     this.documentService
       .createDocumentDefinitionTemplate(templatePayload)
       .pipe(take(1))
