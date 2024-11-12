@@ -125,7 +125,6 @@ export class DossierManagementListComponent {
   }
 
   public onSelectVersion(version: string): void {
-    console.log('version selected: ', version);
     this.versionSelected = version;
   }
 
