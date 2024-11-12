@@ -15,7 +15,7 @@
  */
 import {Component} from '@angular/core';
 import {Router} from '@angular/router';
-import {Search20, TrashCan20, Upload16} from '@carbon/icons';
+import {Deploy16, Search20, TrashCan20, Upload16} from '@carbon/icons';
 import {ColumnConfig, MenuService, Pagination, ViewType} from '@valtimo/components';
 import {
   CreateDocumentDefinitionResponse,
@@ -83,7 +83,7 @@ export class DossierManagementListComponent {
     private readonly menuService: MenuService,
     private readonly router: Router
   ) {
-    this.iconService.registerAll([Search20, TrashCan20, Upload16]);
+    this.iconService.registerAll([Search20, TrashCan20, Upload16, Deploy16]);
   }
 
   public onCloseUploadModal(definitionUploaded: boolean): void {
@@ -125,6 +125,7 @@ export class DossierManagementListComponent {
   }
 
   public onSelectVersion(version: string): void {
+    console.log('version selected: ', version);
     this.versionSelected = version;
   }
 
