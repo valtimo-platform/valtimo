@@ -1026,7 +1026,7 @@
   "processManagement": {
     "download": "Herunterladen",
     "clear": "Löschen",
-    "deploy": "Deploy",
+    "deploy": "Bereitstellungsfall",
     "readOnly": "Schreibgeschützt",
     "systemProcess": "Systemprozess",
     "systemProcessWarningMessage": "Dies ist ein Systemprozess. Achten Sie genau darauf, wenn Sie Anpassungen an diesem Prozess vornehmen",

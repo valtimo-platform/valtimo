@@ -1028,7 +1028,7 @@
   "processManagement": {
     "download": "Downloaden",
     "clear": "Wissen",
-    "deploy": "Deploy",
+    "deploy": "Implementatiegeval",
     "readOnly": "Alleen-lezen",
     "systemProcess": "Systeemproces",
     "systemProcessWarningMessage": "Dit is een systeemproces. Let goed op bij het maken van aanpassingen aan dit proces",
