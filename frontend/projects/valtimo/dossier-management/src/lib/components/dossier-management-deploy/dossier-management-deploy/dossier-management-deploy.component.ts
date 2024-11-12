@@ -6,9 +6,9 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
+import {IconService} from 'carbon-components-angular';
 import {DocumentService, TemplatePayload} from '@valtimo/document';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {IconService} from 'carbon-components-angular';
 import {Edit16, Information16} from '@carbon/icons';
 import {take} from 'rxjs';
 

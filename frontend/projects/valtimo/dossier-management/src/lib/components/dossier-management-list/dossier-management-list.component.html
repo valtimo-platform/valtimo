@@ -14,6 +14,14 @@
   ~ limitations under the License.
   -->
 
+<div class="deploy-button-container">
+  <button cdsButton="tertiary" class="deploy-button" (click)="showDeployModal()">
+    {{ 'interface.deploy' | translate }}
+
+    <svg cdsIcon="" size="16" class="cds--btn__icon"></svg>
+  </button>
+</div>
+
 <valtimo-carbon-list
   *ngIf="dossiers$ | async as dossiers; else loading"
   [items]="dossiers"
@@ -60,12 +68,6 @@
     {{ 'Upload' | translate }}
 
     <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
-  </button>
-
-  <button cdsButton="secondary" (click)="showDeployModal()">
-    {{ 'interface.deploy' | translate }}
-
-    <svg cdsIcon="" size="16" class="cds--btn__icon"></svg>
   </button>
 
   <button cdsButton="primary" (click)="showCreateModal()">
