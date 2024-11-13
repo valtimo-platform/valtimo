@@ -94,17 +94,19 @@ class BeanExtensionClassRegistrationListener(
     }
 
     private fun checkAllowed(clazz: Class<*>) {
+        val classLoader = extensionManager.whichPlugin(clazz).pluginClassLoader
         val interfaces = getAllInterfaces(clazz)
         val illegalInterfaces = interfaces
-            .filter { !extensionProperties.interfaceWhitelist.contains(it.name) }
+            .map { it.name }
+            .filter { !extensionProperties.interfaceWhitelist.contains(it) && !classLoader.containsClass(it) }
         require(illegalInterfaces.isEmpty()) {
             "Failed to created Spring Bean of ${clazz.name}. Class uses illegal interface: ${illegalInterfaces.joinToString()}"
         }
 
         val illegalAnnotations = (interfaces + clazz)
             .flatMap { it.annotations.toList() }
-            .map { it.annotationClass.qualifiedName }
-            .filter { !extensionProperties.annotationWhitelist.contains(it) }
+            .mapNotNull { it.annotationClass.qualifiedName }
+            .filter { !extensionProperties.annotationWhitelist.contains(it) && !classLoader.containsClass(it) }
         require(illegalAnnotations.isEmpty()) {
             "Failed to created Spring Bean of ${clazz.name}. Class uses illegal annotation: ${illegalAnnotations.joinToString()}"
         }
@@ -137,6 +139,15 @@ class BeanExtensionClassRegistrationListener(
             return applicationContext.beanFactory as BeanDefinitionRegistry
         }
         throw IllegalStateException("Could not locate BeanDefinitionRegistry")
+    }
+
+    private fun ClassLoader.containsClass(name: String): Boolean {
+        return try {
+            loadClass(name)
+            true
+        } catch (e: ClassNotFoundException) {
+            false
+        }
     }
 
     companion object {

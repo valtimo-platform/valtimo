@@ -16,10 +16,10 @@
 
 package com.ritense.extension
 
+import com.fasterxml.jackson.databind.annotation.NoClass
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import jakarta.annotation.PostConstruct
 import mu.KotlinLogging
-import org.pf4j.AbstractPluginManager
 import org.pf4j.ExtensionFactory
 import org.pf4j.PluginState
 import org.pf4j.PluginStateEvent
@@ -55,7 +55,11 @@ class ExtensionManager(
     override fun deletePlugin(pluginId: String?): Boolean {
         checkPluginId(pluginId)
 
-        val pluginWrapper = getPlugin(pluginId)
+        val pluginWrapper = try {
+            getPlugin(pluginId)
+        } catch (e: NoClassDefFoundError) {
+            null
+        }
 
         val pluginState = stopPlugin(pluginId)
         if (pluginState.isStarted) {
@@ -64,7 +68,7 @@ class ExtensionManager(
         }
 
         val plugin = try {
-            pluginWrapper.plugin
+            pluginWrapper?.plugin
         } catch (e: ClassNotFoundException) {
             null
         }
@@ -76,7 +80,12 @@ class ExtensionManager(
 
         plugin?.delete()
 
-        return pluginRepository.deletePluginPath(pluginWrapper.pluginPath)    }
+        return if (pluginWrapper == null) {
+            false
+        } else {
+            pluginRepository.deletePluginPath(pluginWrapper.pluginPath)
+        }
+    }
 
     override fun getExtensionFactory(): ExtensionFactory {
         extensionFactory = WhitelistSpringExtensionFactory(this, extensionProperties)

@@ -46,14 +46,9 @@ class ExtensionAutoConfiguration {
     @ConditionalOnMissingBean(ExtensionManager::class)
     fun valtimoExtensionManager(
         resourceResolver: ResourcePatternResolver,
-        environment: Environment,
         extensionProperties: ExtensionProperties,
     ): ExtensionManager {
-        val valtimoExtensionPaths = if (environment.matchesProfiles("dev")) {
-            listOf(Path(resourceResolver.getResource("classpath:/config").file.toPath().toString(), "extensions"))
-        } else {
-            listOf(Path("extensions"))
-        }
+        val valtimoExtensionPaths = listOf(Path("src/main/resources/config/extensions"))
         valtimoExtensionPaths.forEach { it.createDirectories() }
         return ExtensionManager(
             valtimoExtensionPaths,

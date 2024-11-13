@@ -71,8 +71,8 @@ class ValtimoExtensionsInjector(
     }
 
     fun registerExtension(extension: PluginWrapper) {
-        extensionManager.getExtensionClassNames(extension.pluginId).forEach { extensionClassName ->
-            registerExtension(extension.pluginClassLoader.loadClass(extensionClassName))
+        extensionManager.getExtensionClasses(extension.pluginId).forEach { extensionClass ->
+            registerExtension(extensionClass)
         }
         registerResources(extension.pluginId)
     }

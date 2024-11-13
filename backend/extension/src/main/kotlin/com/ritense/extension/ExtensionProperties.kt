@@ -16,6 +16,7 @@
 package com.ritense.extension
 
 import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.web.client.RestTemplate
 import java.net.URL
 
 @ConfigurationProperties(prefix = "valtimo.extension")
@@ -38,6 +39,7 @@ data class ExtensionProperties(
             "com.ritense.catalogiapi.service.ZaaktypeUrlProvider",
             "com.ritense.plugin.service.PluginService",
             "com.ritense.zakenapi.ZaakUrlProvider",
+            "com.ritense.resource.service.TemporaryResourceStorageService", // temporary
 
             // @ProcessBeans:
             "com.ritense.documentgeneration.service.LocalCamundaProcessDocumentGenerator",
@@ -52,8 +54,11 @@ data class ExtensionProperties(
             "com.ritense.zakenapi.service.UploadProcessDelegate",
 
             // Other
+            "org.springframework.web.client.RestClient.RestTemplate",
             "org.springframework.web.client.RestClient.Builder",
+            "org.springframework.web.client.RestTemplate",
             "org.springframework.context.ApplicationEventPublisher",
+            "org.springframework.core.io.support.ResourcePatternResolver",
         )
 
         val DEFAULT_BEAN_ANNOTATION_WHITELIST = listOf(
@@ -61,11 +66,12 @@ data class ExtensionProperties(
             "com.ritense.valtimo.contract.annotation.ProcessBean",
 
             // Spring
-            "org.springframework.web.bind.annotation.RestController",
-            "org.springframework.web.bind.annotation.RequestMapping",
+            "org.springframework.transaction.annotation.Transactional",
             "org.springframework.stereotype.Component",
             "org.springframework.stereotype.Controller",
             "org.springframework.stereotype.Service",
+            "org.springframework.web.bind.annotation.RestController",
+            "org.springframework.web.bind.annotation.RequestMapping",
 
             // Other
             "kotlin.Metadata",
@@ -79,6 +85,7 @@ data class ExtensionProperties(
             "com.ritense.plugin.PluginFactory",
             "com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation",
             "com.ritense.valueresolver.ValueResolverFactory",
+            "com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer",
 
             // Other
             "java.lang.Object",
