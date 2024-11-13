@@ -86,6 +86,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -100,6 +101,8 @@ import org.camunda.bpm.engine.form.TaskFormData;
 import org.camunda.bpm.engine.impl.form.validator.FormFieldValidationException;
 import org.camunda.bpm.engine.task.Comment;
 import org.hibernate.Hibernate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -110,6 +113,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 
 public class CamundaTaskService {
+
+    private static final Logger logger = LoggerFactory.getLogger(CamundaTaskService.class);
 
     private static final String CONTEXT = "context";
 
@@ -192,7 +197,12 @@ public class CamundaTaskService {
             } else {
                 requirePermission(task, ASSIGN);
                 authorizationService.requirePermission(
-                    new DelegateUserEntityAuthorizationRequest<>(CamundaTask.class, ASSIGNABLE, assigneeIdentifier, task)
+                    new DelegateUserEntityAuthorizationRequest<>(
+                        CamundaTask.class,
+                        ASSIGNABLE,
+                        assigneeIdentifier,
+                        task
+                    )
                 );
             }
             final String currentAssignee = task.getAssignee();
@@ -351,7 +361,13 @@ public class CamundaTaskService {
         var processDefinitionIdPath = taskRoot.get(PROCESS_DEFINITION).get(ID);
         var processDefinitionKeyPath = taskRoot.get(PROCESS_DEFINITION).get(KEY);
 
-        query.multiselect(taskRoot, executionIdPath, businessKeyPath, processDefinitionIdPath, processDefinitionKeyPath);
+        query.multiselect(
+            taskRoot,
+            executionIdPath,
+            businessKeyPath,
+            processDefinitionIdPath,
+            processDefinitionKeyPath
+        );
         query.where(specification.toPredicate(taskRoot, query, cb));
         query.groupBy(taskRoot, executionIdPath, businessKeyPath, processDefinitionIdPath, processDefinitionKeyPath);
         query.orderBy(getOrderBy(cb, taskRoot, pageable.getSort()));
@@ -372,14 +388,18 @@ public class CamundaTaskService {
                 var processDefinitionId = tuple.get(3, String.class);
                 var processDefinitionKey = tuple.get(4, String.class);
 
-                ValtimoUser valtimoUser;
-                if (task.getAssignee() == null) {
-                    valtimoUser = null;
-                } else if (assigneeMap.containsKey(task.getAssignee())) {
-                    valtimoUser = assigneeMap.get(task.getAssignee());
-                } else {
-                    valtimoUser = getValtimoUser(task.getAssignee());
-                    assigneeMap.put(task.getAssignee(), valtimoUser);
+                ValtimoUser valtimoUser = null;
+                if (task.getAssignee() != null) {
+                    try {
+                        if (assigneeMap.containsKey(task.getAssignee())) {
+                            valtimoUser = assigneeMap.get(task.getAssignee());
+                        } else {
+                            valtimoUser = getValtimoUser(task.getAssignee());
+                            assigneeMap.put(task.getAssignee(), valtimoUser);
+                        }
+                    } catch (Exception e) {
+                        logger.error("Failed to retrieve assignee " + task.getAssignee() + " for task " + task.getId(), e);
+                    }
                 }
 
                 var context = task.getVariable(CONTEXT);
