@@ -343,7 +343,7 @@ class PermissionResourceIT: BaseIntegrationTest() {
     }
 
     @Test
-    fun `requesting permission for not existing resource returns 403 forbidden`() {
+    fun `requesting permission for not existing resource returns available false`() {
 
         val permissionRequests = listOf(
             PermissionAvailableRequest(
@@ -363,11 +363,14 @@ class PermissionResourceIT: BaseIntegrationTest() {
                 .content(objectMapper.writeValueAsString(permissionRequests))
         )
             .andDo(MockMvcResultHandlers.print())
-            .andExpect(MockMvcResultMatchers.status().isForbidden)
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect { jsonPath("$[0].resource").value("test") }
+            .andExpect { jsonPath("$[0].action").value("update") }
+            .andExpect { jsonPath("$[0].available").value(false) }
     }
 
     @Test
-    fun `requesting permission for resource with no specification returns 403 forbidden`() {
+    fun `requesting permission for resource with no specification returns available false`() {
 
         val permissionRequests = listOf(
             PermissionAvailableRequest(
@@ -387,11 +390,14 @@ class PermissionResourceIT: BaseIntegrationTest() {
                 .content(objectMapper.writeValueAsString(permissionRequests))
         )
             .andDo(MockMvcResultHandlers.print())
-            .andExpect(MockMvcResultMatchers.status().isForbidden)
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect { jsonPath("$[0].resource").value("java.lang.String") }
+            .andExpect { jsonPath("$[0].action").value("view") }
+            .andExpect { jsonPath("$[0].available").value(false) }
     }
 
     @Test
-    fun `requesting permission for resource with context with no specification returns 403 forbidden`() {
+    fun `requesting permission for resource with context with no specification returns available false`() {
 
         val permissionRequests = listOf(
             PermissionAvailableRequest(
@@ -411,6 +417,9 @@ class PermissionResourceIT: BaseIntegrationTest() {
                 .content(objectMapper.writeValueAsString(permissionRequests))
         )
             .andDo(MockMvcResultHandlers.print())
-            .andExpect(MockMvcResultMatchers.status().isForbidden)
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect { jsonPath("$[0].resource").value("java.lang.String") }
+            .andExpect { jsonPath("$[0].action").value("view") }
+            .andExpect { jsonPath("$[0].available").value(false) }
     }
 }

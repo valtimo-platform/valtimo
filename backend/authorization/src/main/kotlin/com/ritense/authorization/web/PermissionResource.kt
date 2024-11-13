@@ -18,14 +18,14 @@ package com.ritense.authorization.web
 
 import com.ritense.authorization.Action
 import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.ResourceNotSupportedException
 import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
 import com.ritense.authorization.web.request.PermissionAvailableRequest
 import com.ritense.authorization.web.result.PermissionAvailableResult
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
-import org.springframework.security.access.AccessDeniedException
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -39,19 +39,17 @@ class PermissionResource(
     private var authorizationService: AuthorizationService
 ) {
 
+    private val logger: Logger = LoggerFactory.getLogger(PermissionResource::class.java)
+
+
     @Transactional
     @PostMapping("/v1/permissions")
     fun userHasPermission(@RequestBody permissionsPresentRequest: List<PermissionAvailableRequest>)
         : ResponseEntity<List<PermissionAvailableResult>> {
 
-        val permissionResponse: List<PermissionAvailableResult>
-
-        try {
-            permissionResponse = permissionsPresentRequest.map {
-                PermissionAvailableResult(
-                    it.resource,
-                    it.action,
-                    it.context,
+        val permissionResponse: List<PermissionAvailableResult> = permissionsPresentRequest.map {
+            val hasPermission =
+                try {
                     authorizationService.hasPermission(
                         RelatedEntityAuthorizationRequest(
                             it.getResourceAsClass(),
@@ -60,12 +58,17 @@ class PermissionResource(
                             it.context.identifier
                         )
                     )
-                )
-            }
-        } catch (ex: ClassNotFoundException) {
-            throw AccessDeniedException("Unauthorized", ex)
-        } catch (ex: ResourceNotSupportedException) {
-            throw AccessDeniedException("Unauthorized", ex)
+                } catch (ex: Exception) {
+                    logger.error("Failed to determine permissions for $it", ex)
+                    false
+                }
+
+            PermissionAvailableResult(
+                it.resource,
+                it.action,
+                it.context,
+                hasPermission
+            )
         }
 
         return ResponseEntity.ok(permissionResponse)
