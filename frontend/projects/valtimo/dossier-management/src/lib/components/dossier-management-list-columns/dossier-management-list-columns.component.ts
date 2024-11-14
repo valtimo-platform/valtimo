@@ -50,7 +50,8 @@ import {
   tap,
 } from 'rxjs';
 import {take} from 'rxjs/operators';
-import {ListColumnModal} from '../../models';
+import {DocumentDefinitionVersion, ListColumnModal} from '../../models';
+import {DossierVersionApiService} from '../../services';
 
 @Component({
   selector: 'valtimo-dossier-management-list-columns',
@@ -331,6 +332,11 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
     startWith(false)
   );
 
+  public readonly isFinalVersion$: Observable<boolean> =
+    this.dossierVersionApiService.activeVersion$.pipe(
+      map((version: DocumentDefinitionVersion) => version.type === 'final')
+    );
+
   readonly showDeleteModal$ = new Subject<boolean>();
 
   readonly deleteRowKey$ = new BehaviorSubject<string>('');
@@ -341,6 +347,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
 
   constructor(
     private readonly documentService: DocumentService,
+    private readonly dossierVersionApiService: DossierVersionApiService,
     private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService,
     private readonly configService: ConfigService,

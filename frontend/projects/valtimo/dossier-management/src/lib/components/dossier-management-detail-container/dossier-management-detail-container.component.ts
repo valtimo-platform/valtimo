@@ -26,6 +26,7 @@ import {ActivatedRoute} from '@angular/router';
 import {PageTitleService, PendingChangesComponent} from '@valtimo/components';
 import {CaseManagementTabConfig, ConfigService} from '@valtimo/config';
 import {
+  BehaviorSubject,
   combineLatest,
   distinctUntilChanged,
   filter,
@@ -35,7 +36,7 @@ import {
   tap,
 } from 'rxjs';
 import {TabEnum} from '../../models';
-import {DossierDetailService, TabService} from '../../services';
+import {CaseMenuService, DossierDetailService, TabService} from '../../services';
 import {DossierManagementDocumentDefinitionComponent} from '../dossier-management-document-definition/dossier-management-document-definition.component';
 
 @Component({
@@ -76,11 +77,13 @@ export class DossierManagementDetailContainerComponent
   public readonly DossierManagementTabs = Object.values(TabEnum);
 
   public readonly TabEnum = TabEnum;
+  public readonly menuItemIsSelected$ = this.caseMenuService.isItemSelected$;
 
   private _activeVersion: number | null;
   private _pendingVersion: number | null;
   private _subscriptions = new Subscription();
   constructor(
+    private readonly caseMenuService: CaseMenuService,
     private readonly dossierDetailService: DossierDetailService,
     private readonly route: ActivatedRoute,
     private readonly configService: ConfigService,
@@ -106,6 +109,13 @@ export class DossierManagementDetailContainerComponent
     this.tabService.currentTab = TabEnum.DOCUMENT;
     this._subscriptions.unsubscribe();
     this.pageTitleService.enableReset();
+  }
+
+  public onMenuItemSelected(tab: TabEnum | string | null, fromMenu = false): void {
+    if (!fromMenu) this.caseMenuService.selectMenuItem(tab);
+    if (!tab) return;
+
+    this.displayBodyComponent(tab);
   }
 
   public displayBodyComponent(tab: TabEnum | string, isInjectedTab = false): void {
@@ -170,13 +180,15 @@ export class DossierManagementDetailContainerComponent
       combineLatest([
         this.currentTab$.pipe(distinctUntilChanged()),
         this.injectedCaseManagementTabs$,
-      ]).subscribe(([currentTab, injectedCaseManagementTabs]) => {
+        this.menuItemIsSelected$,
+      ]).subscribe(([currentTab, injectedCaseManagementTabs, menuItemIsSelected]) => {
         const findInjectedTab = injectedCaseManagementTabs.find(
           injectedTab => injectedTab.translationKey === currentTab
         );
 
         this._contentContainer.clear();
-        if (findInjectedTab && this._contentContainer) {
+
+        if (findInjectedTab && this._contentContainer && menuItemIsSelected) {
           this._contentContainer.createComponent(findInjectedTab.component);
         }
       })

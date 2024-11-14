@@ -40,7 +40,7 @@ import {FieldsCaseWidgetValue, WidgetFieldsContent} from '@valtimo/dossier';
 import {ButtonModule, IconModule, InputModule, Tab, TabsModule} from 'carbon-components-angular';
 import {debounceTime, map, Subscription} from 'rxjs';
 import {WidgetContentComponent} from '../../../models';
-import {WidgetWizardService} from '../../../services';
+import {DossierVersionApiService, WidgetWizardService} from '../../../services';
 import {DossierManagementWidgetFieldsColumnComponent} from './column/dossier-management-widget-fields-column.component';
 
 @Component({
@@ -60,6 +60,7 @@ import {DossierManagementWidgetFieldsColumnComponent} from './column/dossier-man
     DossierManagementWidgetFieldsColumnComponent,
     InputLabelModule,
   ],
+  providers: [DossierVersionApiService],
 })
 export class DossierManagementWidgetFieldsComponent
   implements WidgetContentComponent, OnDestroy, OnInit, AfterViewInit

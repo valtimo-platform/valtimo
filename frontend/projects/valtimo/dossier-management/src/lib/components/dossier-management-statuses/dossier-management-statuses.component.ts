@@ -40,7 +40,8 @@ import {
   MoveRowEvent,
   ViewType,
 } from '@valtimo/components';
-import {StatusModalCloseEvent, StatusModalType} from '../../models';
+import {DocumentDefinitionVersion, StatusModalCloseEvent, StatusModalType} from '../../models';
+import { DossierVersionApiService } from '../../services';
 
 @Component({
   selector: 'valtimo-dossier-management-statuses',
@@ -114,7 +115,13 @@ export class DossierManagementStatusesComponent implements AfterViewInit {
   public readonly statusToDelete$ = new BehaviorSubject<InternalCaseStatus>(undefined);
   public readonly showDeleteModal$ = new Subject<boolean>();
 
+  public readonly isFinalVersion$: Observable<boolean> =
+    this.dossierVersionApiService.activeVersion$.pipe(
+      map((version: DocumentDefinitionVersion) => version.type === 'final')
+    );
+
   constructor(
+    private readonly dossierVersionApiService: DossierVersionApiService,
     private readonly caseStatusService: CaseStatusService,
     private readonly route: ActivatedRoute
   ) {}

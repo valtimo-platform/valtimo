@@ -22,7 +22,10 @@
   class="dossier-management-detail-container"
 >
   <valtimo-documenten-api></valtimo-documenten-api>
-  <cds-tabs class="dossier-management-tabs" type="contained">
+  <valtimo-dossier-management-details-menu
+    (menuItemSelected)="onMenuItemSelected($event, true)"
+  ></valtimo-dossier-management-details-menu>
+  <!-- <cds-tabs class="dossier-management-tabs" type="contained">
     <cds-tab
       class="no-padding-left-right no-padding-top-bottom"
       [active]="obs.currentTab === TabEnum.DOCUMENT"
@@ -94,46 +97,70 @@
       >
       </cds-tab>
     }
-  </cds-tabs>
+  </cds-tabs> -->
 
   <div class="dossier-management-detail-container__content">
     <ng-template #contentContainer></ng-template>
 
-    <valtimo-dossier-management-document-definition
-      *ngIf="
-        (obs.currentTab === TabEnum.DOCUMENT && !pendingChanges) || pendingTab === TabEnum.DOCUMENT
-      "
-      [documentDefinitionName]="documentDefinitionName$ | async"
-      (pendingChangesUpdate)="onPendingChangesUpdate($event)"
-      (cancelRedirect)="onCancelRedirectEvent()"
-      (confirmRedirect)="onConfirmRedirectEvent()"
-    ></valtimo-dossier-management-document-definition>
+    @if (menuItemIsSelected$ | async) {
+      <valtimo-dossier-management-document-definition
+        *ngIf="
+          (obs.currentTab === TabEnum.DOCUMENT && !pendingChanges) ||
+          pendingTab === TabEnum.DOCUMENT
+        "
+        [documentDefinitionName]="documentDefinitionName$ | async"
+        (pendingChangesUpdate)="onPendingChangesUpdate($event)"
+        (cancelRedirect)="onCancelRedirectEvent()"
+        (confirmRedirect)="onConfirmRedirectEvent()"
+      ></valtimo-dossier-management-document-definition>
 
-    <valtimo-dossier-management-detail
-      *ngIf="(obs.currentTab === TabEnum.CASE && !pendingChanges) || pendingTab === TabEnum.CASE"
-    ></valtimo-dossier-management-detail>
+      <valtimo-dossier-management-detail
+        *ngIf="(obs.currentTab === TabEnum.CASE && !pendingChanges) || pendingTab === TabEnum.CASE"
+      ></valtimo-dossier-management-detail>
 
-    <valtimo-dossier-management-processes
-      *ngIf="
-        (obs.currentTab === TabEnum.PROCESSES && !pendingChanges) ||
-        pendingTab === TabEnum.PROCESSES
-      "
-    ></valtimo-dossier-management-processes>
+      <valtimo-dossier-management-processes
+        *ngIf="
+          (obs.currentTab === TabEnum.PROCESSES && !pendingChanges) ||
+          pendingTab === TabEnum.PROCESSES
+        "
+      ></valtimo-dossier-management-processes>
 
-    <valtimo-dossier-management-search-fields
-      *ngIf="
-        (obs.currentTab === TabEnum.SEARCH && !pendingChanges) || pendingTab === TabEnum.SEARCH
-      "
-    ></valtimo-dossier-management-search-fields>
+      <valtimo-dossier-management-search-fields
+        *ngIf="
+          (obs.currentTab === TabEnum.SEARCH && !pendingChanges) || pendingTab === TabEnum.SEARCH
+        "
+      ></valtimo-dossier-management-search-fields>
 
-    <valtimo-dossier-management-list-columns
-      *ngIf="(obs.currentTab === TabEnum.LIST && !pendingChanges) || pendingTab === TabEnum.LIST"
-    ></valtimo-dossier-management-list-columns>
+      <valtimo-dossier-management-list-columns
+        *ngIf="(obs.currentTab === TabEnum.LIST && !pendingChanges) || pendingTab === TabEnum.LIST"
+      ></valtimo-dossier-management-list-columns>
 
-    <valtimo-dossier-management-tabs
-      *ngIf="(obs.currentTab === TabEnum.TABS && !pendingChanges) || pendingTab === TabEnum.TABS"
-      [documentDefinitionName]="documentDefinitionName$ | async"
-    ></valtimo-dossier-management-tabs>
+      <valtimo-dossier-management-tabs
+        *ngIf="(obs.currentTab === TabEnum.TABS && !pendingChanges) || pendingTab === TabEnum.TABS"
+        [documentDefinitionName]="documentDefinitionName$ | async"
+      ></valtimo-dossier-management-tabs>
+
+      <valtimo-dossier-management-statuses
+        *ngIf="
+          (obs.currentTab === TabEnum.STATUSES && !pendingChanges) ||
+          pendingTab === TabEnum.STATUSES
+        "
+      ></valtimo-dossier-management-statuses>
+
+      <valtimo-dossier-management-collaborators-list
+        *ngIf="
+          (obs.currentTab === TabEnum.COLLABORATORS && !pendingChanges) ||
+          pendingTab === TabEnum.COLLABORATORS
+        "
+      ></valtimo-dossier-management-collaborators-list>
+
+      <valtimo-dossier-management-change-logs
+        *ngIf="
+          (obs.currentTab === TabEnum.CASE_CHANGE_LOGS && !pendingChanges) ||
+          pendingTab === TabEnum.CASE_CHANGE_LOGS
+        "
+      ></valtimo-dossier-management-change-logs>
+    }
   </div>
 </div>
 
@@ -143,6 +170,7 @@
       [documentDefinitionTitle]="documentDefinitionTitle$ | async"
       [documentDefinitionName]="documentDefinitionName$ | async"
       (versionSet)="onVersionSet($event)"
+      (collaboratorSelected)="onMenuItemSelected(TabEnum.COLLABORATORS)"
     ></valtimo-dossier-management-detail-container-actions>
   </ng-template>
 </ng-container>

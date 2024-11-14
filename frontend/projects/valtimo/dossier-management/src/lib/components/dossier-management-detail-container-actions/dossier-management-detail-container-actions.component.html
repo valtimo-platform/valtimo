@@ -49,6 +49,10 @@
     </cds-tag>
   </cds-tooltip>
 
+  <valtimo-dossier-management-collaborators-icons
+    (collaboratorSelected)="onCollaboratorSelected()"
+  ></valtimo-dossier-management-collaborators-icons>
+
   <cds-inline-loading
     [state]="obs.inlineLoadingState"
     loadingText="Saving changes"
@@ -61,7 +65,7 @@
   <section class="document-definition-actions">
     @if (obs.activeVersion.type === 'final') {
       <button
-        cdsButton="secondary"
+        cdsButton="primary"
         [size]="(compactMode$ | async) ? 'sm' : 'md'"
         (click)="onCreateDraftClick()"
       >
@@ -71,7 +75,7 @@
       </button>
     } @else {
       <button
-        cdsButton="secondary"
+        cdsButton="primary"
         [size]="(compactMode$ | async) ? 'sm' : 'md'"
         (click)="onFinalizeDraftClick()"
       >
@@ -81,7 +85,7 @@
       </button>
     }
 
-    <cds-overflow-menu
+    <!-- <cds-overflow-menu
       valtimoCdsOverflowButton
       [width]="250"
       [customTrigger]="customTrigger"
@@ -103,7 +107,7 @@
         (selected)="openDossierRemoveModal()"
         >{{ 'Remove document definition' | translate }}</cds-overflow-menu-option
       >
-    </cds-overflow-menu>
+    </cds-overflow-menu> -->
   </section>
 </ng-template>
 

@@ -1,0 +1,9 @@
+<valtimo-carbon-list
+  [items]="caseChangeLogs$ | async"
+  [fields]="CASE_CHANGE_LOGS_FIELDS"
+  [loading]="(caseChangeLogs$ | async) === null"
+>
+  <button carbonToolbarContent cdsButton="ghost" (click)="onClearFilterClick()">
+    Clear filter
+  </button>
+</valtimo-carbon-list>

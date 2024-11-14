@@ -66,7 +66,12 @@
 </ng-container>
 
 <ng-template #addButton>
-  <button cdsButton="primary" [disabled]="loading$ | async" (click)="openAddModal()">
+  <button
+    *ngIf="{loading: loading$ | async, isFinalVersion: isFinalVersion$ | async} as vars"
+    cdsButton="primary"
+    [disabled]="vars.loading || vars.isFinalVersion"
+    (click)="openAddModal()"
+  >
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
 
     {{ 'zgw.columns.add' | translate }}

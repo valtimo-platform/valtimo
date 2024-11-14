@@ -60,7 +60,8 @@ export class DossierManagementDetailContainerActionsComponent {
   @Input() public set documentDefinitionName(value: string) {
     this.dossierDetailService.setSelectedDocumentDefinitionName(value);
   }
-  @Output() public versionSet = new EventEmitter<number>();
+  @Output() public readonly versionSet = new EventEmitter<number>();
+  @Output() public readonly collaboratorSelected = new EventEmitter();
 
   public readonly CARBON_THEME = 'g10';
 
@@ -227,6 +228,10 @@ export class DossierManagementDetailContainerActionsComponent {
       message: 'Draft has been finalized successfully',
       duration: CARBON_CONSTANTS.notificationDuration,
     });
+  }
+
+  public onCollaboratorSelected(): void {
+    this.collaboratorSelected.emit();
   }
 
   private startExporting(): void {

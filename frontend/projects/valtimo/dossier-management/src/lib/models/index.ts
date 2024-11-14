@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
+export * from './case-collaborators.model';
 export * from './document-definition-version.model';
+export * from './dossier-management-menu.model';
 export * from './list-column.model';
 export * from './status.model';
 export * from './tab.enum';
 export * from './widget-content.model';
 export * from './widget-editor.model';
 export * from './widget-wizard.model';
+export * from './change-log.model';

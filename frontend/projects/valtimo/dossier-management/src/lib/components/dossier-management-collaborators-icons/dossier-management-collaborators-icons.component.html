@@ -1,0 +1,19 @@
+@for (collaborator of collaborators$ | async; track collaborator.id) {
+  <cds-tooltip *ngIf="$index < 2" [description]="collaborator.fullName" (click)="onIconClick()">
+    <div [attr.icon-content]="collaborator.firstName[0] + collaborator.lastName[0]"></div>
+  </cds-tooltip>
+
+  <cds-tooltip
+    *ngIf="$count > 2 && $last"
+    [description]="allOtherCollaborators"
+    (click)="onIconClick()"
+  >
+    <div [attr.icon-content]="$count - 2 + '+'"></div>
+  </cds-tooltip>
+}
+
+<ng-template #allOtherCollaborators>
+  @for (collaborator of collaborators$ | async; track collaborator.id) {
+    <p *ngIf="$index > 1">{{ collaborator.fullName }}</p>
+  }
+</ng-template>

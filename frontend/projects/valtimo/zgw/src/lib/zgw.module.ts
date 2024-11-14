@@ -39,6 +39,7 @@ import {
   DocumentObjectenApiSyncComponent,
   ZakenApiZaaktypeLinkComponent,
 } from './modules';
+import {DossierVersionApiService} from '@valtimo/dossier-management';
 
 @NgModule({
   imports: [
@@ -56,6 +57,7 @@ import {
   declarations: [DocumentenApiUploaderComponent],
   exports: [DocumentenApiUploaderComponent],
   providers: [
+    DossierVersionApiService,
     {
       provide: CASE_MANAGEMENT_TAB_TOKEN,
       useValue: {

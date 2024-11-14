@@ -49,6 +49,7 @@ import {
   DropdownModule,
   FileUploaderModule,
   IconModule,
+  InlineLoadingModule,
   InputModule as CarbonInputModule,
   LinkModule,
   LoadingModule,
@@ -59,34 +60,36 @@ import {
   TagModule,
   ToggleModule,
   TooltipModule,
-  InlineLoadingModule,
 } from 'carbon-components-angular';
-
 import {DossierManagementAssigneeComponent} from './components/dossier-management-assignee/dossier-management-assignee.component';
+import {DossierManagementCollaboratorsListComponent} from './components/dossier-management-collaborators-list/dossier-management-collaborators-list.component';
 import {DossierManagementConnectModalComponent} from './components/dossier-management-connect-modal/dossier-management-connect-modal.component';
+import {DossierManagementCreateDraftModalComponent} from './components/dossier-management-create-draft-modal/dossier-management-create-draft-modal.component';
+import {DossierManagementCreateComponent} from './components/dossier-management-create/dossier-management-create.component';
 import {DossierManagementDetailContainerActionsComponent} from './components/dossier-management-detail-container-actions/dossier-management-detail-container-actions.component';
 import {DossierManagementDetailContainerComponent} from './components/dossier-management-detail-container/dossier-management-detail-container.component';
 import {DossierManagementDetailComponent} from './components/dossier-management-detail/dossier-management-detail.component';
+import {DossierManagementDetailsMenuComponent} from './components/dossier-management-details-menu/dossier-management-details-menu.component';
 import {DossierManagementDocumentDefinitionComponent} from './components/dossier-management-document-definition/dossier-management-document-definition.component';
 import {DossierManagementListColumnsComponent} from './components/dossier-management-list-columns/dossier-management-list-columns.component';
 import {DossierManagementListComponent} from './components/dossier-management-list/dossier-management-list.component';
 import {DossierManagementProcessesComponent} from './components/dossier-management-processes/dossier-management-processes.component';
 import {DossierManagementRemoveModalComponent} from './components/dossier-management-remove-modal/dossier-management-remove-modal.component';
 import {DossierManagementSearchFieldsComponent} from './components/dossier-management-search-fields/dossier-management-search-fields.component';
+import {DossierManagementStatusModalComponent} from './components/dossier-management-statuses/dossier-management-status-modal/dossier-management-status-modal.component';
+import {DossierManagementStatusesComponent} from './components/dossier-management-statuses/dossier-management-statuses.component';
 import {DossierManagementAddTabModalComponent} from './components/dossier-management-tabs/dossier-management-add-tab-modal/dossier-management-add-tab-modal.component';
 import {DossierManagementEditTabModalComponent} from './components/dossier-management-tabs/dossier-management-edit-tab-modal/dossier-management-edit-tab-modal.component';
 import {DossierManagementTabsComponent} from './components/dossier-management-tabs/dossier-management-tabs.component';
 import {TabFormComponent} from './components/dossier-management-tabs/tab-form/tab-form.component';
 import {DossierManagementUploadComponent} from './components/dossier-management-upload/dossier-management-upload.component';
 import {DossierManagementUploadStepComponent} from './components/dossier-management-upload/step/dossier-management-upload-step.component';
+import {DossierManagementVersionModalComponent} from './components/dossier-management-version-modal/dossier-management-version-modal.component';
+import {DossierManagementWidgetsEditorComponent} from './components/dossier-management-widget-tab/editor/dossier-management-widgets-editor.component';
 import {DossierManagementRoutingModule} from './dossier-management-routing.module';
 import {TabManagementService} from './services';
-import {DossierManagementStatusesComponent} from './components/dossier-management-statuses/dossier-management-statuses.component';
-import {DossierManagementStatusModalComponent} from './components/dossier-management-statuses/dossier-management-status-modal/dossier-management-status-modal.component';
-import {DossierManagementCreateComponent} from './components/dossier-management-create/dossier-management-create.component';
-import {DossierManagementWidgetsEditorComponent} from './components/dossier-management-widget-tab/editor/dossier-management-widgets-editor.component';
-import { DossierManagementVersionModalComponent } from './components/dossier-management-version-modal/dossier-management-version-modal.component';
-import { DossierManagementCreateDraftModalComponent } from './components/dossier-management-create-draft-modal/dossier-management-create-draft-modal.component';
+import {DossierManagementCollaboratorsIconsComponent} from './components/dossier-management-collaborators-icons/dossier-management-collaborators-icons.component';
+import {DossierManagementChangeLogsComponent} from './components/dossier-management-change-logs/dossier-management-change-logs.component';
 
 @NgModule({
   declarations: [
@@ -163,7 +166,11 @@ import { DossierManagementCreateDraftModalComponent } from './components/dossier
     ValuePathSelectorComponent,
     DossierManagementVersionModalComponent,
     DossierManagementCreateDraftModalComponent,
-    InlineLoadingModule
+    InlineLoadingModule,
+    DossierManagementDetailsMenuComponent,
+    DossierManagementCollaboratorsListComponent,
+    DossierManagementCollaboratorsIconsComponent,
+    DossierManagementChangeLogsComponent,
   ],
   providers: [TabManagementService],
 })

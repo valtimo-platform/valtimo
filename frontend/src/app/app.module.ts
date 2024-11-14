@@ -30,6 +30,7 @@ import {
   enableCustomFormioComponents,
   FormIoModule,
   MenuModule,
+  registerFormioCurrencyComponent,
   registerFormioCurrentUserComponent,
   registerFormioFileSelectorComponent,
   registerFormioIbanComponent,
@@ -53,12 +54,7 @@ import {ProcessModule} from '@valtimo/process';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {CustomFormExampleComponent} from './custom-form-example/custom-form-example.component';
 import {StartProcessCustomFormComponent} from './start-process-custom-form/start-process-custom-form.component';
-import {
-  CaseCountDataSourceModule,
-  CaseCountsDataSourceModule,
-  CaseGroupByDataSourceModule,
-  DashboardModule,
-} from '@valtimo/dashboard';
+import {DashboardModule} from '@valtimo/dashboard';
 import {DashboardManagementModule} from '@valtimo/dashboard-management';
 import {DocumentModule} from '@valtimo/document';
 import {AccountModule} from '@valtimo/account';
@@ -218,9 +214,6 @@ export function tabsFactory() {
     }),
     ObjectModule,
     ObjectManagementModule,
-    CaseCountDataSourceModule,
-    CaseCountsDataSourceModule,
-    CaseGroupByDataSourceModule,
     AccessControlManagementModule,
     FormFlowManagementModule,
     TranslationManagementModule,
@@ -284,6 +277,7 @@ export class AppModule {
     registerFormioFileSelectorComponent(injector);
     registerDocumentenApiFormioUploadComponent(injector);
     registerFormioIbanComponent(injector);
+    registerFormioCurrencyComponent(injector);
     registerFormioValueResolverSelectorComponent(injector);
   }
 }

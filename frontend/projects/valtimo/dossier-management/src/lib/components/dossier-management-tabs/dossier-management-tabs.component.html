@@ -15,7 +15,11 @@
   -->
 
 <valtimo-carbon-list
-  *ngIf="{fields: fields$ | async, loading: loading$ | async, tabs: tabs$ | async} as obs"
+  *ngIf="{
+    fields: fields$ | async,
+    loading: loading$ | async,
+    tabs: tabs$ | async,
+  } as obs"
   [actionItems]="actionItems"
   [items]="obs.tabs"
   [fields]="obs.fields"
@@ -54,7 +58,7 @@
 </ng-template>
 
 <ng-template #addTabButton>
-  <button cdsButton="primary" (click)="openAddTabModal()">
+  <button cdsButton="primary" [disabled]="isFinalVersion$ | async" (click)="openAddTabModal()">
     {{ 'dossierManagement.tabManagement.addModal.addTab' | translate }}
 
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

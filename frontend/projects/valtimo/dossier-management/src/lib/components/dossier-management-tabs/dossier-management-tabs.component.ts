@@ -30,9 +30,10 @@ import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
 import {ApiTabItem, ApiTabType} from '@valtimo/dossier';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, map, Observable, tap} from 'rxjs';
-import {TabManagementService, TabService} from '../../services';
+import {DossierVersionApiService, TabManagementService, TabService} from '../../services';
 import {Router} from '@angular/router';
 import {ConfigService} from '@valtimo/config';
+import {DocumentDefinitionVersion} from '../../models';
 
 @Component({
   selector: 'valtimo-dossier-management-tabs',
@@ -91,9 +92,14 @@ export class DossierManagementTabsComponent implements AfterViewInit {
   );
   public readonly tab$ = new BehaviorSubject<ApiTabItem | null>(null);
   public readonly dragAndDropDisabled = signal(false);
+  public readonly isFinalVersion$: Observable<boolean> =
+    this.dossierVersionApiService.activeVersion$.pipe(
+      map((version: DocumentDefinitionVersion) => version.type === 'final')
+    );
 
   constructor(
     private readonly cd: ChangeDetectorRef,
+    private readonly dossierVersionApiService: DossierVersionApiService,
     private readonly iconService: IconService,
     private readonly tabManagementService: TabManagementService,
     private readonly tabService: TabService,

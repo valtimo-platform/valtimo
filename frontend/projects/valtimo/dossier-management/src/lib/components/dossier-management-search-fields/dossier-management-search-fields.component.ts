@@ -60,6 +60,8 @@ import {
   take,
   tap,
 } from 'rxjs';
+import {DossierVersionApiService} from '../../services';
+import {DocumentDefinitionVersion} from '../../models';
 
 @Component({
   selector: 'valtimo-dossier-management-search-fields',
@@ -272,6 +274,11 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
 
   private readonly modifiedDropdownValues$ = new BehaviorSubject<MultiInputValues>([]);
 
+  public readonly isFinalVersion$: Observable<boolean> =
+    this.dossierVersionApiService.activeVersion$.pipe(
+      map((version: DocumentDefinitionVersion) => version.type === 'final')
+    );
+
   public readonly initialDropdownValues$: Observable<MultiInputValues> = combineLatest([
     this.documentDefinitionName$,
     this.formData$,
@@ -341,6 +348,7 @@ export class DossierManagementSearchFieldsComponent implements OnInit, OnDestroy
 
   constructor(
     private readonly documentService: DocumentService,
+    private readonly dossierVersionApiService: DossierVersionApiService,
     private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService,
     private readonly sanitizer: DomSanitizer,

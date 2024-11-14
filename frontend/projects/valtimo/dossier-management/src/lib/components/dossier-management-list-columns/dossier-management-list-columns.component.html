@@ -18,9 +18,10 @@
   *ngIf="{
     caseListColumn: translatedCaseListColumns$ | async,
     documentDefinitionName: documentDefinitionName$ | async,
-    hasEnvironmentConfig: hasEnvironmentConfig$ | async,
-    downloadUrl: downloadUrl$ | async,
     downloadName: downloadName$ | async,
+    downloadUrl: downloadUrl$ | async,
+    hasEnvironmentConfig: hasEnvironmentConfig$ | async,
+    isFinalVersion: isFinalVersion$ | async,
     loadingCaseListColumns: loadingCaseListColumns$ | async,
   } as obs"
 >
@@ -85,7 +86,7 @@
   <button
     (click)="openModal('create')"
     cdsButton="primary"
-    [disabled]="obs.hasEnvironmentConfig || loadingCaseListColumns"
+    [disabled]="obs.hasEnvironmentConfig || loadingCaseListColumns || obs.isFinalVersion"
   >
     {{ 'listColumn.addButtonText' | translate }}
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

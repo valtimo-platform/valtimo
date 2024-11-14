@@ -20,17 +20,9 @@ import {DossierVersionApiService} from '../../services';
   styleUrl: './dossier-management-version-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [
-    CommonModule,
-    CarbonListModule,
-    TabsModule,
-    ModalModule,
-  ],
+  imports: [CommonModule, CarbonListModule, TabsModule, ModalModule],
 })
 export class DossierManagementVersionModalComponent {
-  @Input() public set documentDefinitionVersions(value: DocumentDefinitionVersionsResult[]) {
-    console.log({value});
-  }
   @Input() open = false;
 
   @Output() modalClose = new EventEmitter<null | DocumentDefinitionVersion>();

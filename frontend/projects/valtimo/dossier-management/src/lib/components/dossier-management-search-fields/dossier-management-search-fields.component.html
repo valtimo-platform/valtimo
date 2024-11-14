@@ -16,6 +16,7 @@
 
 <ng-container
   *ngIf="{
+    isFinalVersion: isFinalVersion$ | async,
     searchFields: translatedSearchFields$ | async,
     downloadUrl: downloadUrl$ | async,
     downloadName: downloadName$ | async,
@@ -56,7 +57,7 @@
   <button
     cdsButton="primary"
     data-testid="dossier-management-search-add"
-    [disabled]="loadingSearchFields || obs.disableInput"
+    [disabled]="loadingSearchFields || obs.disableInput || obs.isFinalVersion"
     (click)="searchFieldClicked($event, true)"
   >
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

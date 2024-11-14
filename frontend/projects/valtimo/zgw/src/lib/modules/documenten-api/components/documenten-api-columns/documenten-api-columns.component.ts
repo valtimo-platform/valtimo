@@ -39,6 +39,7 @@ import {
 } from '../../models';
 import {DocumentenApiColumnService} from '../../services';
 import {DocumentenApiColumnModalComponent} from '../documenten-api-column-modal/documenten-api-column-modal.component';
+import {DocumentDefinitionVersion, DossierVersionApiService} from '@valtimo/dossier-management';
 
 @Component({
   selector: 'valtimo-documenten-api-columns',
@@ -73,6 +74,10 @@ export class DocumentenApiColumnsComponent implements AfterViewInit {
   }
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly isFinalVersion$: Observable<boolean> =
+    this.dossierVersionApiService.activeVersion$.pipe(
+      map((version: DocumentDefinitionVersion) => version.type === 'final')
+    );
 
   public readonly configuredColumns$: Observable<ConfiguredColumn[]> = combineLatest([
     this._documentDefinitionName$,
@@ -132,6 +137,7 @@ export class DocumentenApiColumnsComponent implements AfterViewInit {
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
 
   constructor(
+    private readonly dossierVersionApiService: DossierVersionApiService,
     private readonly route: ActivatedRoute,
     private readonly zgwDocumentColumnService: DocumentenApiColumnService
   ) {}

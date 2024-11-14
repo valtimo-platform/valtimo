@@ -46,6 +46,7 @@ import {DocumentenApiTagService} from '../../services/documenten-api-tag.service
 import {DocumentenApiTag} from '../../models/documenten-api-tag.model';
 import {DocumentenApiTagModalComponent} from '../documenten-api-tag-modal/documenten-api-tag-modal.component';
 import {Page} from '@valtimo/document';
+import { DocumentDefinitionVersion, DossierVersionApiService } from '@valtimo/dossier-management';
 
 @Component({
   selector: 'valtimo-documenten-api-tags',
@@ -82,6 +83,11 @@ export class DocumentenApiTagsComponent {
   public readonly selectedRowKeys$ = new BehaviorSubject<Array<string>>([]);
   public readonly searchTerm$ = new BehaviorSubject<string>('');
   public readonly tagToDelete$ = new BehaviorSubject<DocumentenApiTag | null>(null);
+  public readonly isFinalVersion$: Observable<boolean> =
+    this.dossierVersionApiService.activeVersion$.pipe(
+      map((version: DocumentDefinitionVersion) => version.type === 'final')
+    );
+
 
   public get documentDefinitionName$(): Observable<string> {
     return this._documentDefinitionName$;
@@ -141,6 +147,7 @@ export class DocumentenApiTagsComponent {
   };
 
   constructor(
+    private readonly dossierVersionApiService: DossierVersionApiService,
     private readonly route: ActivatedRoute,
     private readonly documentenApiTagService: DocumentenApiTagService
   ) {}

@@ -36,6 +36,7 @@
     "jwt-decode": "4.0.0",
     "deepmerge-ts": "7.1.0",
     "@carbon/charts-angular": "1.17.3",
-    "@types/topojson": "3.2.6"
+    "@types/topojson": "3.2.6",
+    "@tadashi/currency": "3.4.0"
   }
 }

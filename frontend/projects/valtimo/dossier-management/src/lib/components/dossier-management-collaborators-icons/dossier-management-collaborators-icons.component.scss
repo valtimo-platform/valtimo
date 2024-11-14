@@ -1,0 +1,26 @@
+:host {
+  display: flex;
+  gap: 4px;
+}
+
+[icon-content] {
+  &:before {
+    background: var(--cds-layer-accent);
+    opacity: 1;
+    content: attr(icon-content);
+    display: inline-block;
+    font-weight: bold;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: px;
+    height: 32px;
+    width: 32px;
+    line-height: 32px;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  &:hover {
+    cursor: pointer;
+  }
+}

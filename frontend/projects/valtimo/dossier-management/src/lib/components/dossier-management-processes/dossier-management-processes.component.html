@@ -17,6 +17,7 @@
 <ng-container
   *ngIf="{
     documentDefinition: documentDefinition$ | async,
+    isFinalVersion: isFinalVersion$ | async,
     processDocumentDefinitions: processDocumentDefinitions$ | async,
   } as obs"
 >
@@ -39,7 +40,7 @@
   <ng-template #connectProcessButton>
     <button
       cdsButton="primary"
-      [disabled]="!obs.processDocumentDefinitions"
+      [disabled]="!obs.processDocumentDefinitions || obs.isFinalVersion"
       (click)="openDossierConnectModal(obs.documentDefinition)"
     >
       {{ 'dossierManagement.processLink' | translate }}

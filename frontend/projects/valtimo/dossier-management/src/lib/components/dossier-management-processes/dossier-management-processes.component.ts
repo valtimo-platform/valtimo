@@ -20,9 +20,10 @@ import {TranslateService} from '@ngx-translate/core';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
 import {DocumentDefinition, DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
 import {IconService, NotificationService} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, Observable, switchMap} from 'rxjs';
-import {DossierDetailService} from '../../services';
+import {BehaviorSubject, combineLatest, map, Observable, switchMap} from 'rxjs';
+import {DossierDetailService, DossierVersionApiService} from '../../services';
 import {DossierManagementConnectModalComponent} from '../dossier-management-connect-modal/dossier-management-connect-modal.component';
+import {DocumentDefinitionVersion} from '../../models';
 
 @Component({
   selector: 'valtimo-dossier-management-processes',
@@ -53,6 +54,10 @@ export class DossierManagementProcessesComponent {
       this.documentService.getDocumentDefinitionForManagement(params.get('name') ?? '')
     )
   );
+  public readonly isFinalVersion$: Observable<boolean> =
+    this.dossierVersionApiService.activeVersion$.pipe(
+      map((version: DocumentDefinitionVersion) => version.type === 'final')
+    );
 
   public readonly actionItems: ActionItem[] = [
     {
@@ -80,6 +85,7 @@ export class DossierManagementProcessesComponent {
   ];
 
   constructor(
+    private readonly dossierVersionApiService: DossierVersionApiService,
     private readonly documentService: DocumentService,
     private readonly iconService: IconService,
     private readonly dossierDetailService: DossierDetailService,
