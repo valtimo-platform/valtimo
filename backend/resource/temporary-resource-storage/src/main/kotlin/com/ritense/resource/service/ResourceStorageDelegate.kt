@@ -23,4 +23,8 @@ class ResourceStorageDelegate(
     fun getMetadata(resourceStorageFileId: String, metadataKey: String): String {
         return service.getMetadataValue(resourceStorageFileId, metadataKey)
     }
+
+    fun deleteResource(resourceStorageFileId: String): Boolean {
+        return service.deleteResource(resourceStorageFileId)
+    }
 }

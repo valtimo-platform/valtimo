@@ -58,6 +58,10 @@ class TemporaryResourceStorageService(
         TEMP_DIR
     }
 
+    init {
+        logger.info { "Using the following path for temporary file resources: '$tempDir'" }
+    }
+
     fun store(inputStream: InputStream, metadata: Map<String, Any> = emptyMap()): String {
         val dataFile = BufferedInputStream(inputStream).use { bis ->
             if (uploadProperties.acceptedMimeTypes.isNotEmpty()) {

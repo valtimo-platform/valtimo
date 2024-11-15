@@ -20,13 +20,14 @@ import com.ritense.temporaryresource.domain.getEnumFromKey
 import com.ritense.temporaryresource.repository.ResourceStorageMetadataRepository
 import jakarta.persistence.EntityNotFoundException
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.whenever
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
@@ -50,7 +51,7 @@ class ResourceStorageDelegateTest {
         val expectedMetadataValue = "https://example.com/download"
 
         // Mocking getEnumFromKey to return a valid enum for the test case
-        `when`(service.getMetadataValue(fileId, metadataKey)).thenReturn(expectedMetadataValue)
+        whenever(service.getMetadataValue(fileId, metadataKey)).thenReturn(expectedMetadataValue)
 
         // Calling the method under test
         val actualMetadataValue = delegate.getMetadata(fileId, metadataKey)
@@ -80,7 +81,7 @@ class ResourceStorageDelegateTest {
         val expectedException = EntityNotFoundException("Entity not found")
 
         // Mocking service to throw EntityNotFoundException when getMetadataValue is called
-        `when`(service.getMetadataValue(fileId, metadataKey)).thenAnswer {
+        whenever(service.getMetadataValue(fileId, metadataKey)).thenAnswer {
             throw expectedException
         }
 
@@ -91,6 +92,28 @@ class ResourceStorageDelegateTest {
 
         // This asserts that the exception message is as expected
         assertEquals(expectedException.message, exception.message)
+    }
+
+    @Test
+    fun `should delete resource file`() {
+        val fileId = "123456789-123456789"
+
+        whenever(service.deleteResource(fileId)).thenReturn(true)
+
+        val deleted = delegate.deleteResource(fileId)
+
+        assertTrue(deleted)
+    }
+
+    @Test
+    fun `should not throw an exception when file is not deleted`() {
+        val fileId = "does-not-exist"
+
+        whenever(service.deleteResource(fileId)).thenReturn(false)
+
+        val deleted = delegate.deleteResource(fileId)
+
+        assertFalse(deleted)
     }
 
 }
