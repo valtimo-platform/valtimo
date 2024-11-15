@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.RETURNS_DEEP_STUBS
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.mock.env.MockEnvironment
 import java.sql.PreparedStatement
@@ -67,7 +66,7 @@ internal class ChangeLog20240116MigrateTaskAssigneeEmailToUserIdTest {
     }
 
     @Test
-    fun `should execute changelog`() {
+    fun `should execute changelog for USERID`() {
         val database = mock<Database>()
         val connection = mock<JdbcConnection>(defaultAnswer = RETURNS_DEEP_STUBS)
         val resultSet = mock<ResultSet>()
@@ -88,15 +87,25 @@ internal class ChangeLog20240116MigrateTaskAssigneeEmailToUserIdTest {
     }
 
     @Test
-    fun `should skip execute changelog`() {
-
+    fun `should execute changelog for USERNAME`() {
         environment.setProperty("valtimo.oauth.identifier-field", ValtimoProperties.IdentifierField.USERNAME.toString())
-
         val database = mock<Database>()
+        val connection = mock<JdbcConnection>(defaultAnswer = RETURNS_DEEP_STUBS)
+        val resultSet = mock<ResultSet>()
+        val updateTaskTable = mock<PreparedStatement>()
+        whenever(database.connection).thenReturn(connection)
+        whenever(connection.prepareStatement("SELECT id_,assignee_ FROM act_ru_task").executeQuery())
+            .thenReturn(resultSet)
+        whenever(resultSet.next()).thenReturn(true).thenReturn(false)
+        whenever(resultSet.getString("id_")).thenReturn("my-task-id-1")
+        whenever(resultSet.getString("assignee_")).thenReturn("user@ritense.com")
+        whenever(connection.prepareStatement("UPDATE act_ru_task SET assignee_ = ? WHERE id_ = ?"))
+            .thenReturn(updateTaskTable)
 
         changeLog.execute(database)
 
-        verifyNoInteractions(database)
+        verify(updateTaskTable).setString(1, "user-name-1")
+        verify(updateTaskTable).setString(2, "my-task-id-1")
     }
 
 
@@ -119,6 +128,7 @@ internal class ChangeLog20240116MigrateTaskAssigneeEmailToUserIdTest {
             [
                 {
                     "id": "user-id-1",
+                    "username": "user-name-1",
                     "email": "user@ritense.com"
                 }
             ]
