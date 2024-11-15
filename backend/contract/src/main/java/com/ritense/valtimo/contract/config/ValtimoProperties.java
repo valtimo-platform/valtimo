@@ -18,6 +18,7 @@ package com.ritense.valtimo.contract.config;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.ritense.valtimo.contract.OauthConfigHolder;
+import javax.annotation.Nonnull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
@@ -221,6 +222,7 @@ public class ValtimoProperties {
             this.fieldName = fieldName;
         }
 
+        @Nonnull
         @JsonCreator
         public static IdentifierField fromString(String text) {
             for (IdentifierField identifierField : IdentifierField.values()) {
