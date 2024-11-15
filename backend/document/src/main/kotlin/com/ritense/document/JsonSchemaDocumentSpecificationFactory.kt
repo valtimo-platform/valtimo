@@ -21,12 +21,12 @@ import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.specification.AuthorizationSpecification
 import com.ritense.authorization.specification.AuthorizationSpecificationFactory
 import com.ritense.document.domain.impl.JsonSchemaDocument
+import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.service.JsonSchemaDocumentSpecification
-import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 
 class JsonSchemaDocumentSpecificationFactory(
-    private val documentService: JsonSchemaDocumentService,
+    private val documentRepository: JsonSchemaDocumentRepository,
     private var queryDialectHelper: QueryDialectHelper
 ) : AuthorizationSpecificationFactory<JsonSchemaDocument> {
 
@@ -37,7 +37,7 @@ class JsonSchemaDocumentSpecificationFactory(
         return JsonSchemaDocumentSpecification(
             request,
             permissions,
-            documentService,
+            documentRepository,
             queryDialectHelper
         )
     }
