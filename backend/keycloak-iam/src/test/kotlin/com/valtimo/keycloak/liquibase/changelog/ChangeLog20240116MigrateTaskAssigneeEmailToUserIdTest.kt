@@ -28,6 +28,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.RETURNS_DEEP_STUBS
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.mock.env.MockEnvironment
@@ -108,6 +109,44 @@ internal class ChangeLog20240116MigrateTaskAssigneeEmailToUserIdTest {
         verify(updateTaskTable).setString(2, "my-task-id-1")
     }
 
+    @Test
+    fun `should set assignee to null when user cannot be found by email`() {
+        val database = mock<Database>()
+        val connection = mock<JdbcConnection>(defaultAnswer = RETURNS_DEEP_STUBS)
+        val resultSet = mock<ResultSet>()
+        val updateTaskTable = mock<PreparedStatement>()
+        whenever(database.connection).thenReturn(connection)
+        whenever(connection.prepareStatement("SELECT id_,assignee_ FROM act_ru_task").executeQuery())
+            .thenReturn(resultSet)
+        whenever(resultSet.next()).thenReturn(true).thenReturn(false)
+        whenever(resultSet.getString("id_")).thenReturn("my-task-id-1")
+        whenever(resultSet.getString("assignee_")).thenReturn("notfound@ritense.com")
+        whenever(connection.prepareStatement("UPDATE act_ru_task SET assignee_ = ? WHERE id_ = ?"))
+            .thenReturn(updateTaskTable)
+
+        changeLog.execute(database)
+
+        verify(updateTaskTable).setString(1, null)
+        verify(updateTaskTable).setString(2, "my-task-id-1")
+    }
+
+    @Test
+    fun `should not update task on a keycloak error`() {
+        val database = mock<Database>()
+        val connection = mock<JdbcConnection>(defaultAnswer = RETURNS_DEEP_STUBS)
+        val resultSet = mock<ResultSet>()
+        whenever(database.connection).thenReturn(connection)
+        whenever(connection.prepareStatement("SELECT id_,assignee_ FROM act_ru_task").executeQuery())
+            .thenReturn(resultSet)
+        whenever(resultSet.next()).thenReturn(true).thenReturn(false)
+        whenever(resultSet.getString("id_")).thenReturn("my-task-id-1")
+        whenever(resultSet.getString("assignee_")).thenReturn("error@ritense.com")
+
+        changeLog.execute(database)
+
+        verify(connection, never()).prepareStatement("UPDATE act_ru_task SET assignee_ = ? WHERE id_ = ?")
+    }
+
 
     private fun setupMockKeycloakApiServer() {
         val dispatcher = object : Dispatcher() {
@@ -115,6 +154,7 @@ internal class ChangeLog20240116MigrateTaskAssigneeEmailToUserIdTest {
                 val response = when (request.requestLine) {
                     "POST /realms/example-realm/protocol/openid-connect/token HTTP/1.1" -> handleTokenRequest()
                     "GET /admin/realms/example-realm/users?email=user%40ritense.com&first=0&max=1&enabled=true&briefRepresentation=true HTTP/1.1" -> handleUserSearchRequest()
+                    "GET /admin/realms/example-realm/users?email=notfound%40ritense.com&first=0&max=1&enabled=true&briefRepresentation=true HTTP/1.1" -> handleUserSearchRequestEmpty()
                     else -> MockResponse().setResponseCode(404)
                 }
                 return response
@@ -134,6 +174,10 @@ internal class ChangeLog20240116MigrateTaskAssigneeEmailToUserIdTest {
             ]
         """.trimIndent()
         return mockResponse(body)
+    }
+
+    private fun handleUserSearchRequestEmpty(): MockResponse {
+        return mockResponse("""[]""".trimIndent())
     }
 
     private fun handleTokenRequest(): MockResponse {
