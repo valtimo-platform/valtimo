@@ -33,22 +33,24 @@
 <ng-template #extensionTemplate let-extension="extension">
   <cds-tile>
     <div class="extension">
-      <div class="extension__header">
+      <div class="extension-header">
         @if (extension.logo) {
           <img class="extension-logo" [src]="extension.logo"/>
         }
-        <span class="extension__title">{{ extension.name }}</span>
+        <div class="extension-content">
+          <span class="extension__title">{{ extension.name }}</span>
+          <div class="extension__description">
+            {{ extension.description }}
+          </div>
+          @if (extension.installedVersion) {
+            <span class="extension__version">
+              {{ 'extensionManagement.installedVersion' | translate }}
+              <i>{{ extension.installedVersion }}</i>
+            </span>
+          }
+        </div>
       </div>
-      <div class="extension__description">
-        {{ extension.description }}
-      </div>
-      @if (extension.installedVersion) {
-        <span class="extension__version">
-          {{ 'extensionManagement.installedVersion' | translate }}
-          <i>{{ extension.installedVersion }}</i>
-        </span>
-      }
-      <div class="extension__footer">
+      <div class="extension-footer">
         @if (extension.installedVersion) {
           <button cdsButton="danger" (click)="uninstall(extension.id)">
             {{ 'extensionManagement.uninstall' | translate }}

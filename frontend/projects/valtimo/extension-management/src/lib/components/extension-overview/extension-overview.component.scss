@@ -36,7 +36,8 @@
 
   &__extensions-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 8px;
   }
 }
@@ -44,42 +45,51 @@
 .extension-logo {
   object-fit: contain;
   height: 60px;
-  width: 100%;
+}
+
+.extension-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 32px;
+}
+
+.extension-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.extension-footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
 }
 
 .extension {
+  width: 600px;
+  height: 160px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 16px;
 
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-
-    .cds--tag {
-      white-space: pre;
-    }
+  &__title,
+  &__description,
+  &__version {
+    font-size: 14px;
+    font-style: normal;
+    line-height: 20px;
+    letter-spacing: 0.16px;
   }
 
   &__title {
-    width: 100%;
-  }
-
-  &__title,
-  &__description {
-    font-size: 14px;
-    font-style: normal;
     font-weight: 600;
-    line-height: 20px;
-    letter-spacing: 0.16px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
-  &__description {
+  &__description,
+  &__version {
     font-weight: 400;
   }
 }

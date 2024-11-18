@@ -26,7 +26,7 @@ const routes: Routes = [
     path: 'extension-management',
     component: ExtensionOverviewComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Store', extensions: [ROLE_ADMIN]},
+    data: {title: 'Exchange', extensions: [ROLE_ADMIN]},
   },
 ];
 
