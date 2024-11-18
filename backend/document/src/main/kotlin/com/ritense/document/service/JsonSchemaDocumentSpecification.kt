@@ -23,10 +23,12 @@ import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.valtimo.contract.database.QueryDialectHelper
+import jakarta.persistence.EntityNotFoundException
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
+import org.springframework.data.repository.findByIdOrNull
 import java.util.UUID
 
 class JsonSchemaDocumentSpecification(
@@ -64,7 +66,7 @@ class JsonSchemaDocumentSpecification(
         return combinePredicates(criteriaBuilder, predicates)
     }
 
-    override fun identifierToEntity(identifier: String) = documentRepository.getReferenceById(
+    override fun identifierToEntity(identifier: String) = documentRepository.findByIdOrNull(
         JsonSchemaDocumentId.existingId(UUID.fromString(identifier))
-    )
+    ) ?: throw EntityNotFoundException("Document with id $identifier not found!")
 }
