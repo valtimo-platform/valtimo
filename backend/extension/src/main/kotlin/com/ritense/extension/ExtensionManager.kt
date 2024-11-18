@@ -18,12 +18,8 @@ package com.ritense.extension
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import jakarta.annotation.PostConstruct
-import jakarta.persistence.EntityManager
 import mu.KotlinLogging
-import org.pf4j.AbstractPluginManager
 import org.pf4j.ExtensionFactory
-import org.pf4j.PluginRepository
-import org.pf4j.PluginRuntimeException
 import org.pf4j.PluginState
 import org.pf4j.PluginStateEvent
 import org.pf4j.PluginWrapper
@@ -42,13 +38,11 @@ import kotlin.io.path.Path
 class ExtensionManager(
     pluginsRoots: List<Path>,
     private val resourceResolver: ResourcePatternResolver,
-    private val entityManager: EntityManager,
-    private val extensionRepository: PluginRepository,
+    private val extensionProperties: ExtensionProperties,
 ) : SpringPluginManager(pluginsRoots) {
 
     init {
         systemVersion = javaClass.getPackage().implementationVersion ?: "0.0.0"
-        pluginRepository = extensionRepository
     }
 
     @PostConstruct
@@ -56,8 +50,6 @@ class ExtensionManager(
         loadPlugins()
         startPlugins()
     }
-
-    override fun createPluginRepository() = extensionRepository
 
     override fun deletePlugin(pluginId: String?): Boolean {
         checkPluginId(pluginId)
@@ -95,7 +87,7 @@ class ExtensionManager(
     }
 
     override fun getExtensionFactory(): ExtensionFactory {
-        extensionFactory = CustomSpringExtensionFactory(this, entityManager)
+        extensionFactory = WhitelistSpringExtensionFactory(this, extensionProperties)
         return extensionFactory
     }
 
