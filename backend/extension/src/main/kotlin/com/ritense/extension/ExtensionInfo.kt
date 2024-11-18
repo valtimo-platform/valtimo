@@ -18,7 +18,7 @@ package com.ritense.extension
 
 import org.pf4j.update.PluginInfo
 
-class ExtensionInfo: PluginInfo() {
+class ExtensionInfo : PluginInfo() {
 
     var logo: String? = null
 

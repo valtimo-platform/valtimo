@@ -33,8 +33,10 @@ class ExtensionSecurityConfigurer : HttpSecurityConfigurer {
                 requests
                     // management
                     .requestMatchers(antMatcher(GET, "/api/management/v1/extension")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "/api/management/v1/extension/{id}/install/{version}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "/api/management/v1/extension/{id}/update/{version}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/extension/{id}/install/{version}"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/extension/{id}/update/{version}"))
+                    .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, "/api/management/v1/extension/{id}")).hasAuthority(ADMIN)
 
                     // public

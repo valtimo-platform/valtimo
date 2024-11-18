@@ -18,6 +18,7 @@ package com.ritense.extension
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.extension.ExtensionClassRegistrationListener
+import com.ritense.valtimo.contract.extension.ExtensionNeedsRestartCheck
 import com.ritense.valtimo.contract.extension.ExtensionResourcesRegistrationListener
 import jakarta.annotation.PostConstruct
 import mu.KotlinLogging
@@ -35,6 +36,7 @@ import org.springframework.stereotype.Component
 @Component
 class ValtimoExtensionsInjector(
     private val extensionManager: ExtensionManager,
+    private val extensionNeedsRestartChecks: List<ExtensionNeedsRestartCheck>,
     private val extensionClassRegistrationListeners: List<ExtensionClassRegistrationListener>,
     private val extensionResourcesRegistrationListeners: List<ExtensionResourcesRegistrationListener>,
 ) : PluginStateListener, ExtensionsInjector(
@@ -42,15 +44,17 @@ class ValtimoExtensionsInjector(
     extensionManager.applicationContext.autowireCapableBeanFactory as AbstractAutowireCapableBeanFactory
 ) {
 
+    private var applicationStarted: Boolean = false
+
     @PostConstruct
     fun init() {
         extensionManager.addPluginStateListener(this)
         injectExtensions()
+        applicationStarted = true
     }
 
     override fun injectExtensions() {
-        super.injectExtensions()
-        springPluginManager.startedPlugins.forEach { extension -> registerResources(extension.pluginId) }
+        springPluginManager.startedPlugins.toList().forEach { extension -> registerExtension(extension) }
     }
 
     override fun pluginStateChanged(event: PluginStateEvent) {
@@ -63,6 +67,7 @@ class ValtimoExtensionsInjector(
                 } catch (t: Throwable) {
                     logger.debug(t) { "Error while unregistering extension ${event.plugin.pluginId}" }
                 }
+
                 else -> {}
             }
         } catch (e: Exception) {
@@ -71,10 +76,14 @@ class ValtimoExtensionsInjector(
     }
 
     fun registerExtension(extension: PluginWrapper) {
-        extensionManager.getExtensionClasses(extension.pluginId).forEach { extensionClass ->
-            registerExtension(extensionClass)
+        val extensionClasses = extensionManager.getExtensionClasses(extension.pluginId)
+        val needsRestart = extensionNeedsRestartChecks.any { it.needsRestart(extensionClasses) }
+        if (needsRestart && applicationStarted) {
+            extensionManager.stopPlugin(extension.pluginId)
+        } else {
+            extensionClasses.forEach { registerExtension(it) }
+            registerResources(extension.pluginId)
         }
-        registerResources(extension.pluginId)
     }
 
     public override fun registerExtension(extensionClass: Class<*>) {
