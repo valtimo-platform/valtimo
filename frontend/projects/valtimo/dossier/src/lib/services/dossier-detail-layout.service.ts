@@ -1,6 +1,5 @@
 import {Injectable} from '@angular/core';
-import {ProcessInstanceTask} from '@valtimo/process';
-import {FormDisplayType, FormSize} from '@valtimo/process-link';
+import {FormDisplayType, FormSize, TaskWithProcessLink} from '@valtimo/process-link';
 import {BehaviorSubject, combineLatest, filter, map, Observable, startWith} from 'rxjs';
 import {
   DOSSIER_DETAIL_DEFAULT_DISPLAY_SIZE,
@@ -17,7 +16,8 @@ import {DossierTabService} from './dossier-tab.service';
 export class DossierDetailLayoutService {
   private readonly _tabContentContainerWidth$ = new BehaviorSubject<number | null>(null);
   private readonly _showTaskList$ = this.dossierTabService.showTaskList$;
-  private readonly _taskOpenedInPanel$ = new BehaviorSubject<ProcessInstanceTask | null>(null);
+  private readonly _taskAndProcessLinkOpenedInPanel$ =
+    new BehaviorSubject<TaskWithProcessLink | null>(null);
   private readonly _formDisplayType$ = new BehaviorSubject<FormDisplayType>(
     DOSSIER_DETAIL_DEFAULT_DISPLAY_TYPE
   );
@@ -29,8 +29,8 @@ export class DossierDetailLayoutService {
     return this._tabContentContainerWidth$.pipe(filter(width => typeof width === 'number'));
   }
 
-  public get taskOpenedInPanel$(): Observable<ProcessInstanceTask | null> {
-    return this._taskOpenedInPanel$.asObservable();
+  public get taskAndProcessLinkOpenedInPanel$(): Observable<TaskWithProcessLink | null> {
+    return this._taskAndProcessLinkOpenedInPanel$.asObservable();
   }
 
   public get formDisplaySize$(): Observable<FormSize> {
@@ -42,7 +42,7 @@ export class DossierDetailLayoutService {
   public readonly dossierDetailLayout$: Observable<DossierDetailLayout | any> = combineLatest([
     this.tabContentContainerWidth$,
     this._showTaskList$,
-    this._taskOpenedInPanel$,
+    this._taskAndProcessLinkOpenedInPanel$,
     this._formDisplayType$,
     this._formDisplaySize$,
   ]).pipe(
@@ -50,7 +50,7 @@ export class DossierDetailLayoutService {
       ([
         tabContentContainerWidth,
         showTaskList,
-        taskOpenedInPanel,
+        taskAndProcessLinkOpenedInPanel,
         formDisplayType,
         formDisplaySize,
       ]) => {
@@ -58,11 +58,11 @@ export class DossierDetailLayoutService {
           return this.getInitialLayout();
         }
 
-        if (!taskOpenedInPanel) {
+        if (!taskAndProcessLinkOpenedInPanel) {
           return this.getTaskListLayout();
         }
 
-        if (taskOpenedInPanel && formDisplayType === 'panel') {
+        if (taskAndProcessLinkOpenedInPanel && formDisplayType === 'panel') {
           return this.getPanelLayout(tabContentContainerWidth, formDisplaySize);
         }
 
@@ -76,8 +76,8 @@ export class DossierDetailLayoutService {
     this._tabContentContainerWidth$.next(width);
   }
 
-  public setTaskOpenedInPanel(value: ProcessInstanceTask | null): void {
-    this._taskOpenedInPanel$.next(value);
+  public setTaskAndProcessLinkOpenedInPanel(value: TaskWithProcessLink | null): void {
+    this._taskAndProcessLinkOpenedInPanel$.next(value);
   }
 
   public setFormDisplayType(type: FormDisplayType): void {

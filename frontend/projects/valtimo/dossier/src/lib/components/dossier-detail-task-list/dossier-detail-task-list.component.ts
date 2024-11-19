@@ -33,19 +33,18 @@ import {
 import {LayerModule, LoadingModule, TagModule, TilesModule} from 'carbon-components-angular';
 import {
   CAN_VIEW_TASK_PERMISSION,
-  Task,
   TASK_DETAIL_PERMISSION_RESOURCE,
   TaskDetailModalComponent,
   TaskModule,
 } from '@valtimo/task';
-import {ProcessInstanceTask, ProcessService} from '@valtimo/process';
-import {UserIdentity} from '@valtimo/config';
+import {ProcessService} from '@valtimo/process';
 import {DocumentService} from '@valtimo/document';
 import {ActivatedRoute} from '@angular/router';
 import {PermissionService} from '@valtimo/access-control';
 import {UserProviderService} from '@valtimo/security';
 import moment from 'moment';
 import {DossierDetailLayoutService} from '../../services';
+import {ProcessLinkService, TaskWithProcessLink} from '@valtimo/process-link';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -71,11 +70,11 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
 export class DossierDetailTaskListComponent {
   @ViewChild('taskDetail') private readonly _taskDetailModal: TaskDetailModalComponent;
 
-  @Input() public set openInTaskModal(value: Task) {
-    if (value) this._taskDetailModal.openTaskDetails(value);
+  @Input() public set openTaskAndProcessLinkInModal(value: TaskWithProcessLink) {
+    if (value) this._taskDetailModal.openTaskAndProcessLinkDetails(value);
   }
 
-  @Output() public readonly taskClickEvent = new EventEmitter<ProcessInstanceTask>();
+  @Output() public readonly taskClickEvent = new EventEmitter<TaskWithProcessLink>();
   @Output() public readonly formSubmitEvent = new EventEmitter();
 
   public readonly loadingTasks$ = new BehaviorSubject<boolean>(true);
@@ -88,8 +87,8 @@ export class DossierDetailTaskListComponent {
   );
 
   public readonly processInstanceTasks$: Observable<{
-    myTasks: ProcessInstanceTask[];
-    otherTasks: ProcessInstanceTask[];
+    myTasks: TaskWithProcessLink[];
+    otherTasks: TaskWithProcessLink[];
   }> = this._refresh$.pipe(
     switchMap(() => this._documentId$),
     switchMap(documentId =>
@@ -100,31 +99,38 @@ export class DossierDetailTaskListComponent {
     switchMap(processDocumentInstances =>
       combineLatest([
         ...processDocumentInstances.map(processDocumentInstance =>
-          this.processService.getProcessInstanceTasks(processDocumentInstance.id.processInstanceId)
+          this.processLinkService.getTasksWithProcessLinks(
+            processDocumentInstance.id.processInstanceId
+          )
         ),
       ])
     ),
     map(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
-    switchMap(tasks =>
+    switchMap(tasksWithProcessLinks =>
       combineLatest([
-        of(tasks),
-        ...(tasks || []).map(task =>
+        of(tasksWithProcessLinks),
+        ...(tasksWithProcessLinks || []).map(taskWithProcessLink =>
           this.permissionService.requestPermission(CAN_VIEW_TASK_PERMISSION, {
             resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
-            identifier: task.id,
+            identifier: taskWithProcessLink.task.id,
           })
         ),
       ])
     ),
     map(res => {
-      const tasks = res[0] || [];
+      const tasksWithProcessLinks = res[0] || [];
       const permissions = res?.filter((_, index) => index !== 0) as boolean[];
-      const mappedTasks = this.mapTasks(tasks, permissions);
-      const uniqueTasks = this.getUniqueTasks(mappedTasks);
+      const mappedTasksWithProcessLinks = this.mapTasksWithProcessLinks(
+        tasksWithProcessLinks,
+        permissions
+      );
+      const uniqueTasksWithProcessLinks = this.getUniqueTasksWithProcessLinks(
+        mappedTasksWithProcessLinks
+      );
 
-      return this.getSortedTasks(uniqueTasks);
+      return this.getSortedTasksWithProcessLinks(uniqueTasksWithProcessLinks);
     }),
-    map(tasks => this.sortTasksOnPermission(tasks)),
+    map(tasksWithProcessLinks => this.sortTasksWithProcessLinksOnPermission(tasksWithProcessLinks)),
     tap(() => this.loadingTasks$.next(false))
   );
 
@@ -136,13 +142,14 @@ export class DossierDetailTaskListComponent {
     private readonly route: ActivatedRoute,
     private readonly permissionService: PermissionService,
     private readonly userProviderService: UserProviderService,
-    private readonly dossierDetailLayoutService: DossierDetailLayoutService
+    private readonly dossierDetailLayoutService: DossierDetailLayoutService,
+    private readonly processLinkService: ProcessLinkService
   ) {}
 
-  public rowTaskClick(task: ProcessInstanceTask): void {
-    if (task.isLocked) return;
+  public rowTaskClick(tasWithProcessLinkk: TaskWithProcessLink): void {
+    if (tasWithProcessLinkk.task.isLocked) return;
 
-    this.taskClickEvent.emit(task);
+    this.taskClickEvent.emit(tasWithProcessLinkk);
   }
 
   public onFormSubmit(): void {
@@ -154,60 +161,70 @@ export class DossierDetailTaskListComponent {
     this._refresh$.next(null);
   }
 
-  private mapTasks(tasks: ProcessInstanceTask[], permissions: boolean[]): ProcessInstanceTask[] {
-    return tasks.map((task, index) => ({
-      ...task,
-      createdUnix: moment(task.created).unix(),
-      created: moment(task.created).format('DD MMM YYYY HH:mm'),
-      ...(task.due && {dueUnix: moment(task.due).unix()}),
-      isLocked: !permissions[index],
+  private mapTasksWithProcessLinks(
+    tasksWithProcessLinks: TaskWithProcessLink[],
+    permissions: boolean[]
+  ): TaskWithProcessLink[] {
+    return tasksWithProcessLinks.map((taskWithProcessLink, index) => ({
+      ...taskWithProcessLink,
+      task: {
+        ...taskWithProcessLink.task,
+        createdUnix: moment(taskWithProcessLink.task.created).unix(),
+        created: moment(taskWithProcessLink.task.created).format('DD MMM YYYY HH:mm'),
+        ...(taskWithProcessLink.task.due && {dueUnix: moment(taskWithProcessLink.task.due).unix()}),
+        isLocked: !permissions[index],
+      },
     }));
   }
 
-  private getUniqueTasks(tasks: ProcessInstanceTask[]): ProcessInstanceTask[] {
-    return tasks.reduce((acc, curr) => {
-      if (!acc.find(task => task.id === curr.id)) {
+  private getUniqueTasksWithProcessLinks(
+    tasksWithProcessLinks: TaskWithProcessLink[]
+  ): TaskWithProcessLink[] {
+    return tasksWithProcessLinks.reduce((acc, curr) => {
+      if (!acc.find(taskWithProcessLink => taskWithProcessLink.task.id === curr.task.id)) {
         return [...acc, curr];
       }
       return acc;
-    }, [] as ProcessInstanceTask[]);
+    }, [] as TaskWithProcessLink[]);
   }
 
-  private getSortedTasks(tasks: ProcessInstanceTask[]): ProcessInstanceTask[] {
-    return tasks.sort((t1, t2) => {
+  private getSortedTasksWithProcessLinks(
+    tasksWithProcessLinks: TaskWithProcessLink[]
+  ): TaskWithProcessLink[] {
+    return tasksWithProcessLinks.sort((t1, t2) => {
       // high priority tasks on top
-      if (t2.priority !== t1.priority) {
-        return t2.priority - t1.priority;
+      if (t2.task.priority !== t1.task.priority) {
+        return t2.task.priority - t1.task.priority;
       }
 
       // task with approaching due date on top
-      const due1 = t1?.dueUnix || Number.MAX_VALUE;
-      const due2 = t2?.dueUnix || Number.MAX_VALUE;
+      const due1 = t1?.task.dueUnix || Number.MAX_VALUE;
+      const due2 = t2?.task.dueUnix || Number.MAX_VALUE;
       if (due1 !== due2) {
         return due1 - due2;
       }
 
       // new task on top
-      const createdCompare = t2.createdUnix / 5000 - t1.createdUnix / 5000;
+      const createdCompare = t2.task.createdUnix / 5000 - t1.task.createdUnix / 5000;
       if (createdCompare !== 0) {
         return createdCompare;
       }
 
       // task with approximately the same age, are sorted by name
-      return t1.name.localeCompare(t2.name);
+      return t1.task.name.localeCompare(t2.task.name);
     });
   }
 
-  private sortTasksOnPermission(tasks: ProcessInstanceTask[]): {
-    myTasks: ProcessInstanceTask[];
-    otherTasks: ProcessInstanceTask[];
+  private sortTasksWithProcessLinksOnPermission(tasksWithProcessLinks: TaskWithProcessLink[]): {
+    myTasks: TaskWithProcessLink[];
+    otherTasks: TaskWithProcessLink[];
   } {
-    return tasks.reduce(
+    return tasksWithProcessLinks.reduce(
       (acc, curr) =>
-        !curr.isLocked
+        !curr.task.isLocked
           ? {...acc, myTasks: [...acc.myTasks, curr]}
           : {...acc, otherTasks: [...acc.otherTasks, curr]},
-      {myTasks: [] as ProcessInstanceTask[], otherTasks: [] as ProcessInstanceTask[]}
+      {myTasks: [] as TaskWithProcessLink[], otherTasks: [] as TaskWithProcessLink[]}
     );
   }
 }

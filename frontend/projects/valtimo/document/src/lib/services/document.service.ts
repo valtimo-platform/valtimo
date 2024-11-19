@@ -314,7 +314,6 @@ export class DocumentService {
     const params = new HttpParams({
       fromObject: searchRequest as any,
     });
-    console.log({params});
     return this.http.get<ProcessDocumentDefinition[]>(
       `${this.valtimoEndpointUri}v2/process-document/definition/document/${documentId}`,
       {params}

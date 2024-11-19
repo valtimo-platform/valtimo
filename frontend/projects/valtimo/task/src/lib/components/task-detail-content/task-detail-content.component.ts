@@ -49,6 +49,9 @@ import {
   FormSubmissionResult,
   ProcessLinkModule,
   ProcessLinkService,
+  TaskProcessLinkResult,
+  TaskProcessLinkType,
+  TaskWithProcessLink,
   UrlResolverService,
 } from '@valtimo/process-link';
 import {IconService} from 'carbon-components-angular';
@@ -58,12 +61,13 @@ import {
   BehaviorSubject,
   combineLatest,
   distinctUntilChanged,
+  filter,
   map,
   Subscription,
   switchMap,
   take,
 } from 'rxjs';
-import {IntermediateSubmission, Task, TaskProcessLinkType} from '../../models';
+import {IntermediateSubmission, Task} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
 import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../../task-permissions';
 
@@ -83,6 +87,11 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
     if (!value) return;
 
     this.loadTaskDetails(value);
+  }
+  @Input() public set taskAndProcessLink(value: TaskWithProcessLink | null) {
+    if (!value) return;
+
+    this.loadTaskDetails(value.task as any, value.processLinkActivityResult);
   }
   @Output() public readonly closeModalEvent = new EventEmitter();
   @Output() public readonly formSubmit = new EventEmitter();
@@ -205,10 +214,16 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
     this.activeChange.emit(true);
   }
 
-  private loadTaskDetails(task: Task): void {
+  private loadTaskDetails(task: Task, processLink?: TaskProcessLinkResult): void {
     this.resetTaskProcessLinkType();
     this.resetFormDefinition();
-    this.getTaskProcessLink(task.id);
+
+    if (!processLink) {
+      this.getTaskProcessLink(task.id);
+    } else {
+      this.setTaskProcessLink(processLink);
+    }
+
     this.setDocumentDefinitionNameInService(task);
     const documentId = task.businessKey;
     this.stateService.setDocumentId(documentId);
@@ -224,6 +239,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
   private getCurrentProgress(formViewModelComponentRef?: ComponentRef<any>): void {
     this.taskInstanceId$
       .pipe(
+        filter(value => !!value),
         take(1),
         switchMap((taskInstanceId: string | null) =>
           this.taskIntermediateSaveService.getIntermediateSubmission(taskInstanceId ?? '')
@@ -245,52 +261,56 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
   private getTaskProcessLink(taskId: string): void {
     this.taskService.getTaskProcessLink(taskId).subscribe({
       next: res => {
-        if (res !== null) {
-          switch (res?.type) {
-            case 'form':
-              this._taskProcessLinkType$.next('form');
-              this._processLinkId$.next(res.processLinkId);
-              if (this.intermediateSaveEnabled) this.getCurrentProgress();
-              this.setFormDefinition(res.properties.prefilledForm);
-              break;
-            case 'form-flow':
-              this._taskProcessLinkType$.next('form-flow');
-              this.formFlowInstanceId$.next(res.properties.formFlowInstanceId ?? '');
-              break;
-            case 'form-view-model':
-              this._taskProcessLinkType$.next('form-view-model');
-              this._processLinkId$.next(res.processLinkId);
-              this.formDefinition$.next(res.properties.formDefinition);
-              this.formName$.next(res.properties.formName ?? '');
-              this.setFormViewModelComponent();
-              break;
-            case 'url':
-              this._taskProcessLinkType$.next('url');
-              this._processLinkId$.next(res.processLinkId);
-              combineLatest([this.processLinkService.getVariables(), this.task$])
-                .pipe(take(1))
-                .subscribe(([variables, task]) => {
-                  let url = this.urlResolverService.resolveUrlVariables(
-                    res.properties.url,
-                    variables.variables
-                  );
-                  window.open(url, '_blank').focus();
-                  this.processLinkService
-                    .submitURLProcessLink(res.processLinkId, task.businessKey, task.id)
-                    .subscribe(() => {
-                      this.completeTask(task);
-                    });
-                });
-              break;
-          }
-
-          this.loading$.next(false);
-        }
+        this.setTaskProcessLink(res);
       },
       error: _ => {
         this.loading$.next(false);
       },
     });
+  }
+
+  private setTaskProcessLink(processLinkResult: TaskProcessLinkResult | null): void {
+    if (processLinkResult !== null) {
+      switch (processLinkResult?.type) {
+        case 'form':
+          this._taskProcessLinkType$.next('form');
+          this._processLinkId$.next(processLinkResult.processLinkId);
+          if (this.intermediateSaveEnabled) this.getCurrentProgress();
+          this.setFormDefinition(processLinkResult.properties.prefilledForm);
+          break;
+        case 'form-flow':
+          this._taskProcessLinkType$.next('form-flow');
+          this.formFlowInstanceId$.next(processLinkResult.properties.formFlowInstanceId ?? '');
+          break;
+        case 'form-view-model':
+          this._taskProcessLinkType$.next('form-view-model');
+          this._processLinkId$.next(processLinkResult.processLinkId);
+          this.formDefinition$.next(processLinkResult.properties.formDefinition);
+          this.formName$.next(processLinkResult.properties.formName ?? '');
+          this.setFormViewModelComponent();
+          break;
+        case 'url':
+          this._taskProcessLinkType$.next('url');
+          this._processLinkId$.next(processLinkResult.processLinkId);
+          combineLatest([this.processLinkService.getVariables(), this.task$])
+            .pipe(take(1))
+            .subscribe(([variables, task]) => {
+              let url = this.urlResolverService.resolveUrlVariables(
+                processLinkResult.properties.url,
+                variables.variables
+              );
+              window.open(url, '_blank').focus();
+              this.processLinkService
+                .submitURLProcessLink(processLinkResult.processLinkId, task.businessKey, task.id)
+                .subscribe(() => {
+                  this.completeTask(task);
+                });
+            });
+          break;
+      }
+
+      this.loading$.next(false);
+    }
   }
 
   private openPermissionSubscription(): void {

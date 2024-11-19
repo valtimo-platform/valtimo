@@ -1783,7 +1783,9 @@
     "choosePluginConfiguration": "Kies pluginconfiguratie",
     "choosePluginAction": "Kies je actie",
     "configurePluginAction": "Configureer je actie",
-    "selectURL": "Configureer je URL"
+    "selectURL": "Configureer je URL",
+    "subtitles": "Ondertitels",
+    "addSubtitle": "Ondertitel toevoegen"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een pluginconfiguratie aan om deze te kunnen koppelen aan een processtap.",

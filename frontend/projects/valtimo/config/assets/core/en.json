@@ -1782,7 +1782,9 @@
     "choosePluginConfiguration": "Select plugin configuration",
     "choosePluginAction": "Choose your action",
     "configurePluginAction": "Configure your action",
-    "selectURL": "Configure your URL"
+    "selectURL": "Configure your URL",
+    "subtitles": "Subtitles",
+    "addSubtitle": "Add subtitle"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "No plugin configurations are available. Create a plugin configuration to be able to link it to a process step.",

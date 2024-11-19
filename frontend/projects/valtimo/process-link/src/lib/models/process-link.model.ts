@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {ProcessInstanceTask} from '@valtimo/process';
+
 interface ProcessLink {
   id: string;
   processDefinitionId: string;
@@ -31,6 +33,7 @@ interface ProcessLink {
   url?: string;
   formDisplayType?: FormDisplayType;
   formSize?: FormSize;
+  subtitles?: string[];
 }
 
 type GetProcessLinkResponse = Array<ProcessLink>;
@@ -63,6 +66,7 @@ interface FormProcessLinkCreateRequestDto {
   viewModelEnabled: boolean;
   formDisplayType?: string;
   formSize?: string;
+  subtitles?: string[];
 }
 
 interface FormFlowProcessLinkCreateRequestDto {
@@ -71,6 +75,7 @@ interface FormFlowProcessLinkCreateRequestDto {
   activityType: string;
   processLinkType: string;
   formFlowDefinitionId: string;
+  subtitles: string[];
 }
 
 interface PluginProcessLinkCreateDto {
@@ -105,6 +110,7 @@ interface FormProcessLinkUpdateRequestDto {
   viewModelEnabled: boolean;
   formDisplayType?: string;
   formSize?: string;
+  subtitles?: string[];
 }
 
 type FormDisplayType = 'modal' | 'panel';
@@ -123,6 +129,28 @@ interface URLProcessLinkUpdateRequestDto {
   id: string;
 }
 
+type TaskProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url';
+
+interface TaskProcessLinkResult {
+  processLinkId: string;
+  type: TaskProcessLinkType;
+  properties: {
+    formFlowInstanceId?: string;
+    formDefinitionId?: string;
+    prefilledForm?: any;
+    formDefinition?: any;
+    formName?: string;
+    url?: string;
+    formDisplayType?: FormDisplayType;
+    formSize?: FormSize;
+  };
+}
+
+interface TaskWithProcessLink {
+  task: ProcessInstanceTask;
+  processLinkActivityResult: TaskProcessLinkResult;
+}
+
 export {
   GetProcessLinkRequest,
   ProcessLink,
@@ -139,4 +167,7 @@ export {
   URLProcessLinkUpdateRequestDto,
   FormDisplayType,
   FormSize,
+  TaskProcessLinkType,
+  TaskProcessLinkResult,
+  TaskWithProcessLink,
 };

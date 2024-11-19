@@ -104,7 +104,7 @@
       cdsText
       [defaultValue]="value.value"
       [disabled]="disabled"
-      (change)="onValueChange(value, $event, 'value')"
+      (change)="onValueChange(value, $event.target.value, 'value')"
     />
   </div>
 </ng-template>

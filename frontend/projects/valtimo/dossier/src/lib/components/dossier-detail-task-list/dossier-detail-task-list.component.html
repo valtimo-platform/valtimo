@@ -31,8 +31,10 @@
       @if (obs.tasks?.myTasks.length === 0) {
         {{ 'summary.noResultsMyTasks' | translate }}
       } @else {
-        @for (task of obs.tasks?.myTasks; track task.id) {
-          <ng-container *ngTemplateOutlet="taskTemplate; context: {task: task}"></ng-container>
+        @for (taskWithProcessLink of obs.tasks?.myTasks; track taskWithProcessLink.task.id) {
+          <ng-container
+            *ngTemplateOutlet="taskTemplate; context: {taskWithProcessLink: taskWithProcessLink}"
+          ></ng-container>
         }
       }
     </div>
@@ -43,8 +45,10 @@
       @if (obs.tasks?.otherTasks.length === 0) {
         {{ 'summary.noResultsOtherTasks' | translate }}
       } @else {
-        @for (task of obs.tasks?.otherTasks; track task.id) {
-          <ng-container *ngTemplateOutlet="taskTemplate; context: {task: task}"></ng-container>
+        @for (taskWithProcessLink of obs.tasks?.otherTasks; track taskWithProcessLink.task.id) {
+          <ng-container
+            *ngTemplateOutlet="taskTemplate; context: {taskWithProcessLink: taskWithProcessLink}"
+          ></ng-container>
         }
       }
     </div>
@@ -58,14 +62,17 @@
   ></valtimo-task-detail-modal>
 </div>
 
-<ng-template #taskTemplate let-task="task">
-  <cds-clickable-tile [href]="null" (click)="rowTaskClick(task)">
+<ng-template #taskTemplate let-taskWithProcessLink="taskWithProcessLink">
+  <cds-clickable-tile [href]="null" (click)="rowTaskClick(taskWithProcessLink)">
     <div class="task">
       <div class="task__header">
-        <span class="task__title">{{ task.name }}</span>
+        <span class="task__title">{{ taskWithProcessLink.task.name }}</span>
 
-        <cds-tag class="cds-tag--no-margin" [type]="task.isLocked ? 'cool-gray' : 'green'">
-          @if (!task.isLocked) {
+        <cds-tag
+          class="cds-tag--no-margin"
+          [type]="taskWithProcessLink.task.isLocked ? 'cool-gray' : 'green'"
+        >
+          @if (!taskWithProcessLink.task.isLocked) {
             {{ 'summary.taskOpen' | translate }}
           } @else {
             <i class="icon mdi mdi-lock"></i>
@@ -74,7 +81,16 @@
       </div>
 
       <div class="task__description">
-        {{ 'summary.taskCreated' | translate }} {{ task.created }}
+        {{ 'summary.taskCreated' | translate }} {{ taskWithProcessLink.task.created }}
+      </div>
+
+      <div class="task__subtitles">
+        @for (
+          subtitle of taskWithProcessLink?.processLinkActivityResult?.properties?.subtitles || [];
+          track subtitle
+        ) {
+          <p class="task__subtitle">{{ subtitle }}</p>
+        }
       </div>
     </div>
   </cds-clickable-tile>

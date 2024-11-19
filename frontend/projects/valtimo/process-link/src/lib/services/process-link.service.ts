@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
-import {Observable} from 'rxjs';
+import {map, Observable} from 'rxjs';
 import {
   FormFlowProcessLinkCreateRequestDto,
   FormFlowProcessLinkUpdateRequestDto,
@@ -27,11 +27,13 @@ import {
   GetProcessLinkResponse,
   PluginProcessLinkCreateDto,
   PluginProcessLinkUpdateDto,
+  ProcessLinkType,
+  TaskWithProcessLink,
   URLProcessLinkCreateDto,
-  ProcessLinkType, URLProcessLinkUpdateRequestDto,
+  URLProcessLinkUpdateRequestDto,
 } from '../models';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {URLVariables} from "../models/process-link-url.model";
+import {URLVariables} from '../models/process-link-url.model';
 
 @Injectable({
   providedIn: 'root',
@@ -44,6 +46,14 @@ export class ProcessLinkService {
     private readonly http: HttpClient
   ) {
     this.VALTIMO_ENDPOINT_URI = configService.config.valtimoApi.endpointUri;
+  }
+
+  public getTasksWithProcessLinks(processInstanceId: string): Observable<TaskWithProcessLink[]> {
+    return this.http
+      .get<
+        TaskWithProcessLink[]
+      >(`${this.VALTIMO_ENDPOINT_URI}v1/process/${processInstanceId}/tasks/process-link`, {})
+      .pipe(map(res => res || []));
   }
 
   getProcessLink(getProcessLinkRequest: GetProcessLinkRequest): Observable<GetProcessLinkResponse> {
@@ -170,8 +180,6 @@ export class ProcessLinkService {
   }
 
   public getVariables(): Observable<URLVariables> {
-    return this.http.get<URLVariables>(
-      `${this.VALTIMO_ENDPOINT_URI}v1/process-link/url/variables`
-    );
+    return this.http.get<URLVariables>(`${this.VALTIMO_ENDPOINT_URI}v1/process-link/url/variables`);
   }
 }

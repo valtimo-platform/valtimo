@@ -53,28 +53,49 @@
     gap: 8px;
 
     .cds--tag {
+      margin: 0;
       white-space: pre;
     }
   }
 
   &__title {
     width: 100%;
-  }
-
-  &__title,
-  &__description {
     font-size: 14px;
-    font-style: normal;
     font-weight: 600;
     line-height: 20px;
     letter-spacing: 0.16px;
+    text-align: left;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+  }
+
+  &__subtitle {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    letter-spacing: 0.32px;
+    text-align: left;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
+  &__subtitles {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
   &__description {
+    font-size: 12px;
     font-weight: 400;
+    line-height: 16px;
+    letter-spacing: 0.32px;
+    text-align: left;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
   }
 }
 

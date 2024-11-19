@@ -43,8 +43,9 @@
       *ngIf="{
         noTabsConfigured: noTabsConfigured$ | async,
         showTaskList: showTaskList$ | async,
-        taskOpenedInPanel: taskOpenedInPanel$ | async,
         dossierDetailLayout: dossierDetailLayout$ | async,
+        openTaskAndProcessLinkInModal: openTaskAndProcessLinkInModal$ | async,
+        taskAndProcessLinkOpenedInPanel: taskAndProcessLinkOpenedInPanel$ | async,
       } as tabContentObs"
     >
       <as-split
@@ -86,17 +87,17 @@
         >
           @if (tabContentObs.showTaskList) {
             <div class="task-panel">
-              @if (!tabContentObs.taskOpenedInPanel) {
+              @if (!tabContentObs.taskAndProcessLinkOpenedInPanel) {
                 <valtimo-dossier-detail-task-list
-                  [openInTaskModal]="openTaskInModal$ | async"
+                  [openTaskAndProcessLinkInModal]="tabContentObs.openTaskAndProcessLinkInModal"
                   (taskClickEvent)="onTaskClickEvent($event)"
                   (formSubmitEvent)="onFormSubmitEvent()"
                 ></valtimo-dossier-detail-task-list>
               }
 
-              @if (tabContentObs.taskOpenedInPanel) {
+              @if (tabContentObs.taskAndProcessLinkOpenedInPanel) {
                 <valtimo-dossier-detail-task-detail
-                  [task]="tabContentObs.taskOpenedInPanel"
+                  [taskAndProcessLink]="tabContentObs.taskAndProcessLinkOpenedInPanel"
                   (activeChange)="onActiveChangeEvent($event)"
                   (closeEvent)="onTaskDetailsClose()"
                   (formSubmit)="onFormSubmitEvent()"

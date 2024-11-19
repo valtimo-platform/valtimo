@@ -47,17 +47,14 @@ import {
   InternalCaseStatusUtils,
   ProcessDocumentDefinition,
 } from '@valtimo/document';
-import {ProcessInstanceTask} from '@valtimo/process';
 import {UserProviderService} from '@valtimo/security';
-import {IntermediateSubmission, Task, TaskProcessLinkResult, TaskService} from '@valtimo/task';
+import {IntermediateSubmission, TaskService} from '@valtimo/task';
 import {IconService, NotificationService} from 'carbon-components-angular';
 import {KeycloakService} from 'keycloak-angular';
-import {isBoolean} from 'lodash';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
-  catchError,
   combineLatest,
   filter,
   map,
@@ -82,6 +79,7 @@ import {
 } from '../../permissions';
 import {DossierDetailLayoutService, DossierService, DossierTabService} from '../../services';
 import {DossierSupportingProcessStartModalComponent} from '../dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
+import {TaskWithProcessLink} from '@valtimo/process-link';
 
 @Component({
   selector: 'valtimo-dossier-detail',
@@ -119,7 +117,8 @@ export class DossierDetailComponent
     .getUserSubject()
     .pipe(map(userIdentity => userIdentity?.roles?.includes('ROLE_ADMIN')));
 
-  public readonly taskOpenedInPanel$ = this.dossierDetailLayoutService.taskOpenedInPanel$;
+  public readonly taskAndProcessLinkOpenedInPanel$ =
+    this.dossierDetailLayoutService.taskAndProcessLinkOpenedInPanel$;
 
   private readonly _caseStatusKey$ = new BehaviorSubject<string | null | 'NOT_AVAILABLE'>(null);
   private readonly _taskPanelToggle = this.configService.featureToggles?.enableTaskPanel;
@@ -249,7 +248,7 @@ export class DossierDetailComponent
 
   public readonly dossierDetailLayout$ = this.dossierDetailLayoutService.dossierDetailLayout$;
 
-  public readonly openTaskInModal$ = new Subject<Task>();
+  public readonly openTaskAndProcessLinkInModal$ = new Subject<TaskWithProcessLink>();
 
   public readonly isDarkMode$ = this.cdsThemeService.currentTheme$.pipe(
     map(currentTheme => currentTheme === CurrentCarbonTheme.G90)
@@ -373,36 +372,33 @@ export class DossierDetailComponent
       });
   }
 
-  public onTaskClickEvent(task: Task): void {
-    this.taskService
-      .getTaskProcessLink(task.id)
-      .pipe(catchError(() => this.isAdmin$))
-      .subscribe((result: TaskProcessLinkResult | boolean) => {
-        if (isBoolean(result)) {
-          this.handleNoTaskProcessLink(result as boolean);
-          return;
-        }
-
-        const displayType =
-          (result as TaskProcessLinkResult).properties.formDisplayType ||
-          DOSSIER_DETAIL_DEFAULT_DISPLAY_TYPE;
-        const size =
-          (result as TaskProcessLinkResult).properties.formSize ||
-          DOSSIER_DETAIL_DEFAULT_DISPLAY_SIZE;
-
-        this.dossierDetailLayoutService.setFormDisplaySize(size);
-        this.dossierDetailLayoutService.setFormDisplayType(displayType);
-
-        if (displayType === 'panel' && !!this._taskPanelToggle) {
-          this.dossierDetailLayoutService.setTaskOpenedInPanel(task as any as ProcessInstanceTask);
-        } else {
-          this.openTaskInModal$.next({...task});
-        }
+  public onTaskClickEvent(taskProcessLinkResult: TaskWithProcessLink): void {
+    if (!taskProcessLinkResult.processLinkActivityResult) {
+      this.isAdmin$.pipe(take(1)).subscribe(isAdmin => {
+        this.handleNoTaskProcessLink(isAdmin);
       });
+      return;
+    }
+
+    const displayType =
+      taskProcessLinkResult.processLinkActivityResult.properties.formDisplayType ||
+      DOSSIER_DETAIL_DEFAULT_DISPLAY_TYPE;
+    const size =
+      taskProcessLinkResult.processLinkActivityResult.properties.formSize ||
+      DOSSIER_DETAIL_DEFAULT_DISPLAY_SIZE;
+
+    this.dossierDetailLayoutService.setFormDisplaySize(size);
+    this.dossierDetailLayoutService.setFormDisplayType(displayType);
+
+    if (displayType === 'panel' && !!this._taskPanelToggle) {
+      this.dossierDetailLayoutService.setTaskAndProcessLinkOpenedInPanel(taskProcessLinkResult);
+    } else {
+      this.openTaskAndProcessLinkInModal$.next({...taskProcessLinkResult});
+    }
   }
 
   public onTaskDetailsClose(): void {
-    this.dossierDetailLayoutService.setTaskOpenedInPanel(null);
+    this.dossierDetailLayoutService.setTaskAndProcessLinkOpenedInPanel(null);
   }
 
   public onActiveChangeEvent(event: boolean): void {
@@ -428,13 +424,13 @@ export class DossierDetailComponent
       return;
     }
 
-    if (!tab.showTasks) this.openTaskInModal$.next(null);
+    if (!tab.showTasks) this.openTaskAndProcessLinkInModal$.next(null);
     this.tabLoader.load(tab);
     this.setDocumentStyle();
   }
 
   public onFormSubmitEvent(): void {
-    this.dossierDetailLayoutService.setTaskOpenedInPanel(null);
+    this.dossierDetailLayoutService.setTaskAndProcessLinkOpenedInPanel(null);
 
     if (!this.tabLoader) return;
     this.tabLoader.refreshView();
@@ -445,7 +441,7 @@ export class DossierDetailComponent
     this._activeChange = false;
     this._activeTabName$.next(this._pendingTab.name);
     this.tabLoader.load(this._pendingTab);
-    this.dossierDetailLayoutService.setTaskOpenedInPanel(null);
+    this.dossierDetailLayoutService.setTaskAndProcessLinkOpenedInPanel(null);
   }
 
   protected onCancelRedirect(): void {

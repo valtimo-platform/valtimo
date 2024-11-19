@@ -4,6 +4,7 @@
     formDisplayTypeListItems: formDisplayTypeListItems$ | async,
     formSizeListItems: formSizeListItems$ | async,
     disableFormSizeInput: disableFormSizeInput$ | async,
+    subtitles: subtitles$ | async,
     isUserTask: isUserTask$ | async,
     taskPanelEnabled: taskPanelEnabled$ | async,
     saving: saving$ | async,
@@ -18,6 +19,7 @@
     >
       <cds-dropdown-list [items]="obs.formDisplayTypeListItems || []"></cds-dropdown-list>
     </cds-combo-box>
+
     <br />
 
     <cds-combo-box
@@ -28,5 +30,19 @@
     >
       <cds-dropdown-list [items]="obs.formSizeListItems || []"></cds-dropdown-list>
     </cds-combo-box>
+
+    <br />
+
+    <valtimo-carbon-multi-input
+      type="value"
+      titleTranslationKey="processLinkSteps.subtitles"
+      addRowTranslationKey="processLinkSteps.addSubtitle"
+      [disabled]="obs.saving"
+      [fullWidth]="true"
+      [minimumAmountOfRows]="0"
+      [initialAmountOfRows]="0"
+      [defaultValues]="obs.subtitles"
+      (valueChange)="onSubtitlesChange($event)"
+    ></valtimo-carbon-multi-input>
   }
 </ng-container>

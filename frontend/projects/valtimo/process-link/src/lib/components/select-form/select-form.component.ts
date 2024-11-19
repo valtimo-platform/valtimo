@@ -33,6 +33,7 @@ import {
 export class SelectFormComponent implements OnInit, OnDestroy {
   public formDisplayValue: string = '';
   public formSizeValue: string = '';
+  public subtitlesValue: string[] = [];
   public selectedFormDefinition!: FormDefinitionListItem;
 
   public readonly saving$ = this.stateService.saving$;
@@ -107,6 +108,10 @@ export class SelectFormComponent implements OnInit, OnDestroy {
     this.formSizeValue = formSize;
   }
 
+  public selectedSubtitlesValue(subtitles: string[]): void {
+    this.subtitlesValue = subtitles;
+  }
+
   private openBackButtonSubscription(): void {
     this._subscriptions.add(
       this.buttonService.backButtonClick$.subscribe(() => {
@@ -151,6 +156,7 @@ export class SelectFormComponent implements OnInit, OnDestroy {
               formDisplayType: this.formDisplayValue,
             }),
           ...(this._taskPanelToggle && isUserTask && {formSize: this.formSizeValue}),
+          ...(isUserTask && {subtitles: this.subtitlesValue}),
         };
 
         this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
@@ -186,6 +192,9 @@ export class SelectFormComponent implements OnInit, OnDestroy {
             }),
             ...(isUserTask && {
               formSize: this.formSizeValue,
+            }),
+            ...(isUserTask && {
+              subtitles: this.subtitlesValue,
             }),
           })
         )

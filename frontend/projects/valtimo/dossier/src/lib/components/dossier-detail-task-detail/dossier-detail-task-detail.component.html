@@ -19,13 +19,14 @@
     canAssignUserToTask: canAssignUserToTask$ | async,
     intermediateSaveValue: intermediateSaveValue$ | async,
     task: task$ | async,
+    taskAndProcessLink: taskAndProcessLink$ | async,
   } as obs"
   class="valtimo-dossier-detail-task-detail"
 >
   <section class="valtimo-dossier-detail-task-detail__header">
     <valtimo-task-detail-intermediate-save
       *ngIf="enableIntermediateSave"
-      [task]="obs.task"
+      [taskAndProcessLink]="obs.taskAndProcessLink"
       (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
     ></valtimo-task-detail-intermediate-save>
 
@@ -69,7 +70,7 @@
     </div>
 
     <valtimo-task-detail-content
-      [task]="task$ | async"
+      [taskAndProcessLink]="obs.taskAndProcessLink"
       (activeChange)="onActiveChangeEvent($event)"
       (formSubmit)="onFormSubmitEvent()"
     ></valtimo-task-detail-content>

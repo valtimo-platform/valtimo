@@ -45,20 +45,37 @@
       <ng-container *ngTemplateOutlet="assignUserToTask"></ng-container>
     </div>
 
-    <valtimo-task-detail-intermediate-save
-      class="save-buttons-margin"
-      [task]="task$ | async"
-      (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
-      (showModalEvent)="onShowModalEvent()"
-    ></valtimo-task-detail-intermediate-save>
+    @if (processLinkPreloaded$ | async) {
+      <valtimo-task-detail-intermediate-save
+        class="save-buttons-margin"
+        [taskAndProcessLink]="taskAndProcessLink$ | async"
+        (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
+        (showModalEvent)="onShowModalEvent()"
+      ></valtimo-task-detail-intermediate-save>
+    } @else {
+      <valtimo-task-detail-intermediate-save
+        class="save-buttons-margin"
+        [task]="task$ | async"
+        (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
+        (showModalEvent)="onShowModalEvent()"
+      ></valtimo-task-detail-intermediate-save>
+    }
   </cds-modal-header>
 
   <div body class="cds--modal-content pb-1">
-    <valtimo-task-detail-content
-      [task]="task$ | async"
-      (formSubmit)="onFormSubmit()"
-      (closeModalEvent)="closeModal()"
-    ></valtimo-task-detail-content>
+    @if (processLinkPreloaded$ | async) {
+      <valtimo-task-detail-content
+        [taskAndProcessLink]="taskAndProcessLink$ | async"
+        (formSubmit)="onFormSubmit()"
+        (closeModalEvent)="closeModal()"
+      ></valtimo-task-detail-content>
+    } @else {
+      <valtimo-task-detail-content
+        [task]="task$ | async"
+        (formSubmit)="onFormSubmit()"
+        (closeModalEvent)="closeModal()"
+      ></valtimo-task-detail-content>
+    }
   </div>
 </cds-modal>
 

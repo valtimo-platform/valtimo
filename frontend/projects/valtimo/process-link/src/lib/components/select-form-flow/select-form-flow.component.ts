@@ -34,6 +34,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
   public formDisplayValue: string = '';
   public formSizeValue: string = '';
   public selectedFormFlowDefinition!: FormDefinitionListItem;
+  public subtitlesValue: string[] = [];
   public readonly saving$ = this.stateService.saving$;
   private readonly formFlowDefinitions$ = this.formFlowService.getFormFlowDefinitions();
   private readonly _taskPanelToggle = this.configService.featureToggles?.enableTaskPanel;
@@ -107,6 +108,10 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
       : this.buttonService.disableSaveButton();
   }
 
+  public selectedSubtitlesValue(subtitles: string[]): void {
+    this.subtitlesValue = subtitles;
+  }
+
   private openBackButtonSubscription(): void {
     this._subscriptions.add(
       this.buttonService.backButtonClick$.subscribe(() => {
@@ -146,6 +151,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
               formDisplayType: this.formDisplayValue,
             }),
           ...(this._taskPanelToggle && isUserTask && {formSize: this.formSizeValue}),
+          ...(isUserTask && {subtitles: this.subtitlesValue}),
         };
 
         this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
@@ -178,6 +184,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
               formDisplayType: this.formDisplayValue,
             }),
             ...(isUserTask && {formSize: this.formSizeValue}),
+            ...(isUserTask && {subtitles: this.subtitlesValue}),
           })
         )
       )

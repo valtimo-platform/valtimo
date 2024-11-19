@@ -37,7 +37,8 @@ import {
   TaskDetailIntermediateSaveComponent,
 } from '@valtimo/task';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
-import {BehaviorSubject, Observable, switchMap} from 'rxjs';
+import {BehaviorSubject, map, Observable, switchMap} from 'rxjs';
+import {TaskWithProcessLink} from '@valtimo/process-link';
 
 @Component({
   selector: 'valtimo-dossier-detail-task-detail',
@@ -56,13 +57,13 @@ import {BehaviorSubject, Observable, switchMap} from 'rxjs';
   ],
 })
 export class DossierDetailsTaskDetailComponent implements OnDestroy {
-  @Input() public set task(value: ProcessInstanceTask | null) {
+  @Input() public set taskAndProcessLink(value: TaskWithProcessLink | null) {
     if (!value) return;
 
-    this.task$.next(value);
+    this.taskAndProcessLink$.next(value);
     this.pageValue.set({
-      title: value?.name,
-      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${value?.created}`,
+      title: value?.task.name,
+      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${value?.task?.created}`,
     });
   }
   @Output() public readonly closeEvent = new EventEmitter();
@@ -71,7 +72,10 @@ export class DossierDetailsTaskDetailComponent implements OnDestroy {
   @Output() public readonly formSubmit = new EventEmitter();
 
   public readonly compactMode$: Observable<boolean> = this.pageHeaderService.compactMode$;
-  public readonly task$ = new BehaviorSubject<ProcessInstanceTask | null>(null);
+  public readonly taskAndProcessLink$ = new BehaviorSubject<TaskWithProcessLink | null>(null);
+  public readonly task$ = this.taskAndProcessLink$.pipe(
+    map(taskAndProcessLink => taskAndProcessLink.task)
+  );
   public readonly canAssignUserToTask$: Observable<boolean> = this.task$.pipe(
     switchMap((task: ProcessInstanceTask | null) =>
       this.permissionService.requestPermission(CAN_ASSIGN_TASK_PERMISSION, {

@@ -25,7 +25,6 @@ import {
   TaskListOtherFilters,
   TaskListSearchField,
   TaskPageParams,
-  TaskProcessLinkResult,
 } from '../models';
 import {
   BaseApiService,
@@ -36,6 +35,7 @@ import {
   TaskListTab,
 } from '@valtimo/config';
 import {InterceptorSkip} from '@valtimo/security';
+import {TaskProcessLinkResult} from '@valtimo/process-link';
 
 @Injectable({providedIn: 'root'})
 export class TaskService extends BaseApiService {

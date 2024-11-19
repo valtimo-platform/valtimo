@@ -26,7 +26,7 @@ import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {CarbonModalSize} from '@valtimo/components';
-import {FormSize, formSizeToCarbonModalSizeMap} from '@valtimo/process-link';
+import {FormSize, formSizeToCarbonModalSizeMap, TaskWithProcessLink} from '@valtimo/process-link';
 import {Modal} from 'carbon-components-angular';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
@@ -58,7 +58,10 @@ export class TaskDetailModalComponent implements OnInit {
 
   public currentIntermediateSave$ = new BehaviorSubject<IntermediateSubmission | null>(null);
 
+  public readonly processLinkPreloaded$ = new BehaviorSubject<boolean>(false);
   public readonly task$ = new BehaviorSubject<Task | null>(null);
+  public readonly taskAndProcessLink$ = new BehaviorSubject<TaskWithProcessLink | null>(null);
+  public readonly task = new BehaviorSubject<Task | null>(null);
   public readonly submission$ = new BehaviorSubject<any>({});
   public readonly page$ = new BehaviorSubject<any>(null);
   public readonly showConfirmationModal$ = new BehaviorSubject<boolean>(false);
@@ -107,6 +110,18 @@ export class TaskDetailModalComponent implements OnInit {
     this.page$.next({
       title: task?.name,
       subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task?.created}`,
+    });
+
+    this.openModal();
+  }
+
+  public openTaskAndProcessLinkDetails(taskWithProcessLink: TaskWithProcessLink | null): void {
+    this.processLinkPreloaded$.next(true);
+    this.taskAndProcessLink$.next(taskWithProcessLink);
+    this.task$.next(taskWithProcessLink.task as any);
+    this.page$.next({
+      title: taskWithProcessLink.task?.name,
+      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${taskWithProcessLink.task?.created}`,
     });
 
     this.openModal();

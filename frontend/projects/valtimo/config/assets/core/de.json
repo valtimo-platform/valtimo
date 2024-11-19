@@ -1777,7 +1777,9 @@
     "choosePluginConfiguration": "Plugin-Konfiguration wählen",
     "choosePluginAction": "Wählen Sie Ihre Aktion",
     "configurePluginAction": "Konfigurieren Sie Ihre Aktion",
-    "selectURL": "Konfigurieren Sie Ihre URL"
+    "selectURL": "Konfigurieren Sie Ihre URL",
+    "subtitles": "Untertitels",
+    "addSubtitle": "Untertitel hinzufügen"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "Es sind keine Plugin-Konfigurationen verfügbar. Erstellen Sie eine Plugin-Konfiguration, um sie mit einem Prozessschritt verknüpfen zu können.",
