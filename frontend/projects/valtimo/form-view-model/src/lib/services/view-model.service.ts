@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpHeaders, HttpParams, HttpResponse} from '@angular/common/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {BaseApiService, ConfigService} from '@valtimo/config';
 import {InterceptorSkip} from '@valtimo/security';
@@ -42,13 +42,18 @@ export class ViewModelService extends BaseApiService {
   public updateViewModel(
     formName: string,
     taskInstanceId: string,
-    viewModel: object
+    viewModel: object,
+    page: number,
+    isWizard: boolean
   ): Observable<object> {
-    return this.httpClient.post(this.getApiUrl(`/v1/form/view-model/user-task`), viewModel, {
-      params: {
+    const params = {
         formName,
         taskInstanceId,
-      },
+        isWizard,
+      ...(!isNaN(page) && {page})
+    }
+    return this.httpClient.post(this.getApiUrl(`/v1/form/view-model/user-task`), viewModel, {
+      params,
       headers: new HttpHeaders().set(InterceptorSkip, '400'),
     });
   }
@@ -83,13 +88,18 @@ export class ViewModelService extends BaseApiService {
   public updateViewModelForStartForm(
     formName: string,
     processDefinitionKey: string,
-    viewModel: object
+    viewModel: object,
+    page: number,
+    isWizard: boolean
   ): Observable<object> {
+    const params = {
+      formName,
+      processDefinitionKey,
+      isWizard,
+      ...(!isNaN(page) && {page})
+    }
     return this.httpClient.post(this.getApiUrl(`/v1/form/view-model/start-form`), viewModel, {
-      params: {
-        formName,
-        processDefinitionKey,
-      },
+      params,
       headers: new HttpHeaders().set(InterceptorSkip, '400'),
     });
   }
