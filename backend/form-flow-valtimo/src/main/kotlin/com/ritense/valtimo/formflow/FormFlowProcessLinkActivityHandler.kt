@@ -76,6 +76,7 @@ class FormFlowProcessLinkActivityHandler(
                     instance.id.id,
                     processLink.formDisplayType,
                     processLink.formSize,
+                    processLink.subtitles
                 )
             )
         }

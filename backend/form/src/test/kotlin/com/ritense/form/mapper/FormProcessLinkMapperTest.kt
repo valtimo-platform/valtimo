@@ -66,6 +66,7 @@ internal class FormProcessLinkMapperTest {
             viewModelEnabled = false,
             formDisplayType = FormDisplayType.panel,
             formSize = FormSizes.small,
+            subtitles = SUBTITLES,
         )
 
         val formProcessLinkResponseDto = formProcessLinkMapper.toProcessLinkResponseDto(formProcessLink)
@@ -79,6 +80,7 @@ internal class FormProcessLinkMapperTest {
         assertEquals(formProcessLink.viewModelEnabled, formProcessLinkResponseDto.viewModelEnabled)
         assertEquals(formProcessLink.formDisplayType, formProcessLinkResponseDto.formDisplayType)
         assertEquals(formProcessLink.formSize, formProcessLinkResponseDto.formSize)
+        assertEquals(formProcessLink.subtitles, formProcessLinkResponseDto.subtitles)
     }
 
     @Test
@@ -91,6 +93,7 @@ internal class FormProcessLinkMapperTest {
             viewModelEnabled = false,
             formDisplayType = FormDisplayType.panel,
             formSize = FormSizes.small,
+            subtitles = SUBTITLES,
         )
         whenever(formDefinitionService.formDefinitionExistsById(createRequestDto.formDefinitionId)).thenReturn(true)
 
@@ -104,6 +107,7 @@ internal class FormProcessLinkMapperTest {
         assertEquals(createRequestDto.viewModelEnabled, formProcessLink.viewModelEnabled)
         assertEquals(createRequestDto.formDisplayType, formProcessLink.formDisplayType)
         assertEquals(createRequestDto.formSize, formProcessLink.formSize)
+        assertEquals(createRequestDto.subtitles, formProcessLink.subtitles)
     }
 
     @Test
@@ -122,6 +126,7 @@ internal class FormProcessLinkMapperTest {
             viewModelEnabled = false,
             formDisplayType = FormDisplayType.panel,
             formSize = FormSizes.small,
+            subtitles = SUBTITLES
         )
         whenever(formDefinitionService.formDefinitionExistsById(updateRequestDto.formDefinitionId)).thenReturn(true)
 
@@ -135,6 +140,7 @@ internal class FormProcessLinkMapperTest {
         assertEquals(updateRequestDto.viewModelEnabled, formProcessLink.viewModelEnabled)
         assertEquals(updateRequestDto.formDisplayType, formProcessLink.formDisplayType)
         assertEquals(updateRequestDto.formSize, formProcessLink.formSize)
+        assertEquals(updateRequestDto.subtitles, formProcessLink.subtitles)
     }
 
     @Test
@@ -201,5 +207,9 @@ internal class FormProcessLinkMapperTest {
         assertThat(relatedExportRequests).contains(
             FormDefinitionExportRequest("testing")
         )
+    }
+
+    companion object {
+        val SUBTITLES = listOf("test", "test2")
     }
 }

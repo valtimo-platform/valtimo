@@ -17,8 +17,8 @@
 package com.ritense.form.web.rest.dto
 
 import com.fasterxml.jackson.annotation.JsonTypeName
-import com.ritense.form.domain.FormSizes
 import com.ritense.form.domain.FormDisplayType
+import com.ritense.form.domain.FormSizes
 import com.ritense.form.mapper.FormProcessLinkMapper.Companion.PROCESS_LINK_TYPE_FORM
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import java.util.UUID
@@ -30,6 +30,7 @@ data class FormProcessLinkUpdateRequestDto(
     val viewModelEnabled: Boolean = false,
     val formDisplayType: FormDisplayType = FormDisplayType.modal,
     val formSize: FormSizes = FormSizes.medium,
+    val subtitles: List<String> = emptyList(),
 ) : ProcessLinkUpdateRequestDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE_FORM

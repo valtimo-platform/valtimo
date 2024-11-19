@@ -58,6 +58,7 @@ class FormProcessLinkActivityHandler(
                 formDefinition.asJson(),
                 processLink.formDisplayType,
                 processLink.formSize,
+                processLink.subtitles
             )
         )
     }

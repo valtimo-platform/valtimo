@@ -72,6 +72,7 @@ class FormFlowProcessLinkMapper(
                 formFlowDefinitionId = processLink.formFlowDefinitionId,
                 formDisplayType = processLink.formDisplayType,
                 formSize = processLink.formSize,
+                subtitles = processLink.subtitles,
             )
         }
     }
@@ -87,6 +88,7 @@ class FormFlowProcessLinkMapper(
                 formFlowDefinitionId = deployDto.formFlowDefinitionId,
                 formDisplayType = deployDto.formDisplayType,
                 formSize = deployDto.formSize,
+                subtitles = deployDto.subtitles,
             )
         }
     }
@@ -100,7 +102,8 @@ class FormFlowProcessLinkMapper(
 
             FormFlowProcessLinkUpdateRequestDto(
                 id = existingProcessLinkId,
-                formFlowDefinitionId = deployDto.formFlowDefinitionId
+                formFlowDefinitionId = deployDto.formFlowDefinitionId,
+                subtitles = deployDto.subtitles,
             )
         }
     }
@@ -116,6 +119,7 @@ class FormFlowProcessLinkMapper(
                 formFlowDefinitionId = "${processLink.formFlowDefinitionId.substringBeforeLast(":")}:latest",
                 formDisplayType = processLink.formDisplayType,
                 formSize = processLink.formSize,
+                subtitles = processLink.subtitles,
             )
         }
     }
@@ -134,6 +138,7 @@ class FormFlowProcessLinkMapper(
                 formFlowDefinitionId = createRequestDto.formFlowDefinitionId,
                 formDisplayType = createRequestDto.formDisplayType,
                 formSize = createRequestDto.formSize,
+                subtitles = createRequestDto.subtitles,
             )
         }
     }
@@ -155,6 +160,7 @@ class FormFlowProcessLinkMapper(
                 formFlowDefinitionId = updateRequestDto.formFlowDefinitionId,
                 formDisplayType = updateRequestDto.formDisplayType,
                 formSize = updateRequestDto.formSize,
+                subtitles = updateRequestDto.subtitles,
             )
         }
     }

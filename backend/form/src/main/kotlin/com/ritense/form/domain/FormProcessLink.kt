@@ -19,11 +19,13 @@ package com.ritense.form.domain
 import com.ritense.form.mapper.FormProcessLinkMapper.Companion.PROCESS_LINK_TYPE_FORM
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
+import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import org.hibernate.annotations.Type
 import java.util.UUID
 
 @Entity
@@ -33,6 +35,10 @@ class FormProcessLink(
     processDefinitionId: String,
     activityId: String,
     activityType: ActivityTypeWithEventName,
+
+    @Type(value = JsonType::class)
+    @Column(name = "subtitles", columnDefinition = "JSON")
+    val subtitles: List<String> = listOf(),
 
     @Column(name = "form_definition_id")
     val formDefinitionId: UUID,
@@ -47,6 +53,7 @@ class FormProcessLink(
     @Column(name = "form_size")
     @Enumerated(EnumType.STRING)
     val formSize: FormSizes = FormSizes.medium
+
 
 ) : ProcessLink(
     id,
@@ -74,6 +81,7 @@ class FormProcessLink(
         viewModelEnabled: Boolean = this.viewModelEnabled,
         formDisplayType: FormDisplayType = this.formDisplayType,
         formSize: FormSizes = this.formSize,
+        subtitles: List<String> = this.subtitles,
     ) = FormProcessLink(
         id = id,
         processDefinitionId = processDefinitionId,
@@ -83,6 +91,7 @@ class FormProcessLink(
         viewModelEnabled = viewModelEnabled,
         formDisplayType = formDisplayType,
         formSize = formSize,
+        subtitles = subtitles,
     )
 
     override fun equals(other: Any?): Boolean {
@@ -96,6 +105,7 @@ class FormProcessLink(
         if (viewModelEnabled != other.viewModelEnabled) return false
         if (formDisplayType != other.formDisplayType) return false
         if (formSize != other.formSize) return false
+        if (subtitles != other.subtitles) return false
 
         return true
     }
@@ -106,6 +116,7 @@ class FormProcessLink(
         result = 31 * result + viewModelEnabled.hashCode()
         result = 31 * result + formDisplayType.hashCode()
         result = 31 * result + formSize.hashCode()
+        result = 31 * result + subtitles.hashCode()
         return result
     }
 }

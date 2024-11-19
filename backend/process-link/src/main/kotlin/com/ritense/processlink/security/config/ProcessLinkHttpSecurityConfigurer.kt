@@ -40,6 +40,8 @@ class ProcessLinkHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "/api/v2/process-link/task/{taskId}")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v1/process-definition/{processDefinitionId}/start-form"))
                     .authenticated()
+                    .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/tasks/process-link"))
+                    .authenticated()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

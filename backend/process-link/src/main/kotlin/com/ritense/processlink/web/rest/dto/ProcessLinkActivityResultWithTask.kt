@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-package com.ritense.form.domain
+package com.ritense.processlink.web.rest.dto
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.databind.JsonNode
-import java.util.UUID
+import com.ritense.valtimo.repository.camunda.dto.TaskInstanceWithIdentityLink
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class FormTaskOpenResultProperties(
-    val formDefinitionId: UUID,
-    val prefilledForm: JsonNode,
-    val formDisplayType: FormDisplayType? = null,
-    val formSize: FormSizes? = null,
-    val subtitles: List<String> = emptyList(),
+data class ProcessLinkActivityResultWithTask(
+    val task: TaskInstanceWithIdentityLink,
+    val processLinkActivityResult: ProcessLinkActivityResult<*>?
 )

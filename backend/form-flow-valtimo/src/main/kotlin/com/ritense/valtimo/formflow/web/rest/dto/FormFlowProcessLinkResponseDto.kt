@@ -16,8 +16,8 @@
 
 package com.ritense.valtimo.formflow.web.rest.dto
 
-import com.ritense.form.domain.FormSizes
 import com.ritense.form.domain.FormDisplayType
+import com.ritense.form.domain.FormSizes
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.valtimo.formflow.mapper.FormFlowProcessLinkMapper.Companion.PROCESS_LINK_TYPE_FORM_FLOW
@@ -32,4 +32,5 @@ data class FormFlowProcessLinkResponseDto(
     val formFlowDefinitionId: String,
     val formDisplayType: FormDisplayType,
     val formSize: FormSizes,
+    val subtitles: List<String> = emptyList(),
 ) : ProcessLinkResponseDto

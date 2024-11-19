@@ -11,7 +11,11 @@
         "formDefinitionName": "user-task-validate-request",
         "processLinkType": "form",
         "formDisplayType": "panel",
-        "formSize": "medium"
+        "formSize": "medium",
+        "subtitles": [
+            "Subtitle test 1",
+            "Subtitle test 2"
+        ]
     },
     {
         "activityId": "in-behandeling",

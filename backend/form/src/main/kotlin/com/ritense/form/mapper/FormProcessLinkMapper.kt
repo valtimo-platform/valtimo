@@ -63,6 +63,7 @@ class FormProcessLinkMapper(
             viewModelEnabled = processLink.viewModelEnabled,
             formDisplayType = processLink.formDisplayType,
             formSize = processLink.formSize,
+            subtitles = processLink.subtitles,
         )
     }
 
@@ -79,6 +80,7 @@ class FormProcessLinkMapper(
             viewModelEnabled = deployDto.viewModelEnabled,
             formDisplayType = deployDto.formDisplayType,
             formSize = deployDto.formSize,
+            subtitles = deployDto.subtitles,
         )
     }
 
@@ -93,7 +95,8 @@ class FormProcessLinkMapper(
         return FormProcessLinkUpdateRequestDto(
             id = existingProcessLinkId,
             formDefinitionId = formDefinition.id,
-            viewModelEnabled = deployDto.viewModelEnabled
+            viewModelEnabled = deployDto.viewModelEnabled,
+            subtitles = deployDto.subtitles,
         )
     }
 
@@ -107,6 +110,7 @@ class FormProcessLinkMapper(
             viewModelEnabled = processLink.viewModelEnabled,
             formDisplayType = processLink.formDisplayType,
             formSize = processLink.formSize,
+            subtitles = processLink.subtitles,
         )
     }
 
@@ -124,6 +128,7 @@ class FormProcessLinkMapper(
             viewModelEnabled = createRequestDto.viewModelEnabled,
             formDisplayType = createRequestDto.formDisplayType,
             formSize = createRequestDto.formSize,
+            subtitles = createRequestDto.subtitles,
         )
     }
 
@@ -145,6 +150,7 @@ class FormProcessLinkMapper(
             viewModelEnabled = updateRequestDto.viewModelEnabled,
             formDisplayType = updateRequestDto.formDisplayType,
             formSize = updateRequestDto.formSize,
+            subtitles = updateRequestDto.subtitles,
         )
     }
 
