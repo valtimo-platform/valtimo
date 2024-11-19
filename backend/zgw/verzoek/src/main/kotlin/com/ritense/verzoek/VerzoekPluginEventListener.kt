@@ -77,6 +77,7 @@ open class VerzoekPluginEventListener(
         }?.run {
             val verzoekObjectData = getVerzoekObjectData(objectManagement, event)
             val verzoekTypeProperties = getVerzoekTypeProperties(verzoekObjectData, event) ?: return
+            logger.info { "Received verzoek notification. Verzoek objectUrl: ${event.resourceUrl}" }
             val document = createDocument(verzoekTypeProperties, verzoekObjectData)
             val zaakTypeUrl = zaaktypeUrlProvider.getZaaktypeUrl(document.definitionId().name())
             val initiatorType = if (verzoekObjectData.has("kvk")) {
