@@ -28,6 +28,33 @@ class NotificatiesApiClient(
     private val restClientBuilder: RestClient.Builder
 ) {
 
+    fun getAbonnement(
+        authentication: NotificatiesApiAuthentication,
+        baseUrl: URI,
+        abonnementId: String,
+    ): Abonnement {
+        return buildNotificatiesRestClient(authentication, baseUrl)
+            .get()
+            .uri("abonnement/$abonnementId")
+            .retrieve()
+            .body<Abonnement>()!!
+    }
+
+    fun updateAbonnement(
+        authentication: NotificatiesApiAuthentication,
+        baseUrl: URI,
+        abonnementId: String,
+        abonnement: Abonnement
+    ): Abonnement {
+        return buildNotificatiesRestClient(authentication, baseUrl)
+            .put()
+            .uri("abonnement/$abonnementId")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(abonnement)
+            .retrieve()
+            .body<Abonnement>()!!
+    }
+
     fun createAbonnement(
         authentication: NotificatiesApiAuthentication,
         baseUrl: URI,

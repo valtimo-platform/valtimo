@@ -107,7 +107,7 @@ class NotificatiesApiPlugin(
                         client.deleteAbonnement(
                             authenticationPluginConfiguration,
                             url,
-                            it.url.substringAfterLast("/")
+                            it.getAbonnementId()
                         )
                     }
                     logger.info { "Abonnement with url '${it.url}' successfully deleted for Notificaties API configuration with id '${notificatiesApiConfigurationId.id}'" }
@@ -129,8 +129,31 @@ class NotificatiesApiPlugin(
     )
     {
         logger.debug { "Updating abonnement for Notificaties API configuration with id '${notificatiesApiConfigurationId.id}'" }
-        deleteAbonnement()
-        createAbonnement()
+        val dbAbonnement = notificatiesApiAbonnementLinkRepository.findByIdOrNull(notificatiesApiConfigurationId)
+        if (dbAbonnement == null) {
+            createAbonnement()
+        } else {
+            val abonnement = client.getAbonnement(
+                authenticationPluginConfiguration,
+                url,
+                dbAbonnement.getAbonnementId(),
+            )
+            if (abonnement.equals(dbAbonnement.url, callbackUrl.toASCIIString(), DEFAULT_KANALEN_NAMES)) {
+                logger.debug { "Skipping abonnement update. No change to abonnement detected for Notificaties API configuration with id '${notificatiesApiConfigurationId.id}'" }
+            } else {
+                client.updateAbonnement(
+                    authenticationPluginConfiguration,
+                    url,
+                    dbAbonnement.getAbonnementId(),
+                    Abonnement(
+                        callbackUrl = callbackUrl.toASCIIString(),
+                        auth = dbAbonnement.auth,
+                        kanalen = DEFAULT_KANALEN_NAMES.map { Abonnement.Kanaal(naam = it) }
+                    )
+                )
+                logger.info { "Abonnement with url '${dbAbonnement.url}' successfully updated for Notificaties API configuration with id '${notificatiesApiConfigurationId.id}'" }
+            }
+        }
     }
 
 
