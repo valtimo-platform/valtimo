@@ -12,6 +12,7 @@ import com.ritense.valtimo.contract.json.MapperSingleton
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -90,9 +91,11 @@ class FormViewModelResourceTest : BaseTest() {
     fun `should update user task view model`() {
         whenever(
             formViewModelService.updateUserTaskFormViewModel(
-                formName = eq("test"),
-                taskInstanceId = eq("taskInstanceId"),
-                submission = any()
+                formName = anyOrNull(),
+                taskInstanceId = anyOrNull(),
+                submission = anyOrNull(),
+                page = anyOrNull(),
+                isWizard = anyOrNull()
             )
         ).thenReturn(TestViewModel())
 
@@ -191,9 +194,11 @@ class FormViewModelResourceTest : BaseTest() {
     fun `should update start form view model`() {
         whenever(
             formViewModelService.updateStartFormViewModel(
-                formName = eq("test"),
-                submission = any(),
-                processDefinitionKey = eq("processDefinitionKey")
+                formName = anyOrNull(),
+                submission = anyOrNull(),
+                processDefinitionKey = anyOrNull(),
+                page = anyOrNull(),
+                isWizard = anyOrNull()
             )
         ).thenReturn(TestViewModel())
         mockMvc.perform(

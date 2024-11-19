@@ -58,10 +58,11 @@ class FormViewModelService(
         return viewModelLoaderFactory.getViewModelLoader(formName)?.load(task)
     }
 
+    @Deprecated("Use method with page support instead")
     fun updateStartFormViewModel(
         formName: String,
-        submission: ObjectNode,
-        processDefinitionKey: String
+        processDefinitionKey: String,
+        submission: ObjectNode
     ): ViewModel? {
         processAuthorizationService.checkAuthorization(processDefinitionKey)
         val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(formName) ?: return null
@@ -69,6 +70,23 @@ class FormViewModelService(
         return parseViewModel(submission, viewModelType).update()
     }
 
+    fun updateStartFormViewModel(
+        formName: String,
+        processDefinitionKey: String,
+        submission: ObjectNode,
+        page: Int?,
+        isWizard: Boolean?
+    ): ViewModel? {
+        processAuthorizationService.checkAuthorization(processDefinitionKey)
+        val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(formName) ?: return null
+        val viewModelType = viewModelLoader.getViewModelType()
+        if (isWizard == true) {
+            return parseViewModel(submission, viewModelType).update(page = page)
+        }
+        return parseViewModel(submission, viewModelType).update()
+    }
+
+    @Deprecated("Use method with page support instead")
     fun updateUserTaskFormViewModel(
         formName: String,
         taskInstanceId: String,
@@ -80,6 +98,25 @@ class FormViewModelService(
         )
         val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(formName) ?: return null
         val viewModelType = viewModelLoader.getViewModelType()
+        return parseViewModel(submission, viewModelType).update(task)
+    }
+
+    fun updateUserTaskFormViewModel(
+        formName: String,
+        taskInstanceId: String,
+        submission: ObjectNode,
+        page: Int?,
+        isWizard: Boolean?
+    ): ViewModel? {
+        val task = camundaTaskService.findTaskById(taskInstanceId)
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(CamundaTask::class.java, VIEW, task)
+        )
+        val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(formName) ?: return null
+        val viewModelType = viewModelLoader.getViewModelType()
+        if (isWizard == true) {
+            return parseViewModel(submission, viewModelType).update(task = task, page = page)
+        }
         return parseViewModel(submission, viewModelType).update(task)
     }
 
