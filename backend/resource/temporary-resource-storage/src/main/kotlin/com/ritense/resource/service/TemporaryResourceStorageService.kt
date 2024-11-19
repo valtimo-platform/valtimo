@@ -66,7 +66,8 @@ class TemporaryResourceStorageService(
         val dataFile = BufferedInputStream(inputStream).use { bis ->
             if (uploadProperties.acceptedMimeTypes.isNotEmpty()) {
                 //Tika marks the stream, reads the first few bytes and resets it when done.
-                val mediaType = Tika().detect(bis)
+                // The mediatype will only contain the mimetype, any extra parameters are stripped off
+                val mediaType = Tika().detect(bis).split(";")[0].trim()
                 if (!uploadProperties.acceptedMimeTypes.contains(mediaType)) {
                     throw MimeTypeDeniedException("$mediaType is not whitelisted for uploads.")
                 }
@@ -98,7 +99,7 @@ class TemporaryResourceStorageService(
         val originalMetaData = getMetadataFromFile(metaDataFile, false)
         // Since the metadata does not allow null values, this code removes the key when the value is null
         val newMetaData = (originalMetaData + metaData)
-            .mapNotNull { (key, value) -> if(value != null) Pair(key, value) else null }
+            .mapNotNull { (key, value) -> if (value != null) Pair(key, value) else null }
             .toMap()
 
         writeMetaDataFile(metaDataFile, newMetaData)
