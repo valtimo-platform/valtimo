@@ -29,4 +29,10 @@ data class Abonnement(
         val filters: Map<String, String> = mapOf(),
         val naam: String
     )
+
+    fun equals(url: String, callbackUrl: String, kanalen: Set<String>): Boolean {
+        return this.url == url
+            && this.callbackUrl == callbackUrl
+            && this.kanalen == kanalen.map { Kanaal(naam = it) }
+    }
 }

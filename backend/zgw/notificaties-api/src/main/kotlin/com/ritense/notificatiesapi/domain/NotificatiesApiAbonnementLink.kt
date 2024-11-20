@@ -32,4 +32,6 @@ class NotificatiesApiAbonnementLink(
 
     @Column(name = "abonnement_auth_key")
     val auth: String
-)
+) {
+    fun getAbonnementId() = url.substringAfterLast("/")
+}
