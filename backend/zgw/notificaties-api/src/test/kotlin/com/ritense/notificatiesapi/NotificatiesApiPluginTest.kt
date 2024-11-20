@@ -27,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
@@ -126,6 +127,60 @@ internal class NotificatiesApiPluginTest {
         verify(abonnementLinkRepository, times(1)).save(linkCaptor.capture())
         assertContains(linkCaptor.value.url, abonnementId.toString())
         assertEquals("some-key", linkCaptor.value.auth)
+    }
+
+    @Test
+    fun `updateAbonnement should update abonnement when abonnement changed`() {
+
+        val abonnementId = UUID.randomUUID()
+        val abonnement = Abonnement(
+            url = "http://example.com/abonnement/$abonnementId",
+            callbackUrl = "http://example.com/changed-callback-url",
+            auth = "some-key",
+            kanalen = listOf(Abonnement.Kanaal(naam = "objecten"))
+        )
+        val abonnementLink = NotificatiesApiAbonnementLink(
+            notificatiesApiConfigurationId = notificatiesApiConfigurationId,
+            url = "http://example.com/abonnement/$abonnementId",
+            auth = "some-key"
+        )
+        whenever(abonnementLinkRepository.findById(any()))
+            .thenReturn(Optional.of(abonnementLink))
+        whenever(notificatiesApiClient.getAbonnement(any(), any(), any()))
+            .thenReturn(abonnement)
+        whenever(notificatiesApiClient.updateAbonnement(any(), any(), any(), eq(abonnement)))
+            .thenReturn(abonnement)
+
+        plugin.updateAbonnement()
+
+        verify(notificatiesApiClient, times(1)).updateAbonnement(any(), any(), any(), any())
+    }
+
+    @Test
+    fun `updateAbonnement should not update abonnement when abonnement didnt change`() {
+
+        val abonnementId = UUID.randomUUID()
+        val abonnement = Abonnement(
+            url = "http://example.com/abonnement/$abonnementId",
+            callbackUrl = "http://example.com/callback",
+            auth = "some-key",
+            kanalen = listOf(Abonnement.Kanaal(naam = "objecten"))
+        )
+        val abonnementLink = NotificatiesApiAbonnementLink(
+            notificatiesApiConfigurationId = notificatiesApiConfigurationId,
+            url = "http://example.com/abonnement/$abonnementId",
+            auth = "some-key"
+        )
+        whenever(abonnementLinkRepository.findById(any()))
+            .thenReturn(Optional.of(abonnementLink))
+        whenever(notificatiesApiClient.getAbonnement(any(), any(), any()))
+            .thenReturn(abonnement)
+        whenever(notificatiesApiClient.updateAbonnement(any(), any(), any(), eq(abonnement)))
+            .thenReturn(abonnement)
+
+        plugin.updateAbonnement()
+
+        verify(notificatiesApiClient, times(0)).updateAbonnement(any(), any(), any(), any())
     }
 
     @Test
