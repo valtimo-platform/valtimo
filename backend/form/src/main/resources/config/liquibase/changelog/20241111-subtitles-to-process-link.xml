@@ -24,7 +24,7 @@
             <tableExists tableName="process_link"/>
         </preConditions>
         <addColumn tableName="process_link">
-            <column name="subtitles" type="JSON" defaultValue="[]"/>
+            <column name="subtitles" type="JSON"/>
         </addColumn>
     </changeSet>
 
