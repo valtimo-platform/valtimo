@@ -41,6 +41,7 @@ export class ExtensionService {
     tslib: tslib,
   };
   private readonly extensionFrontendInitJs = 'frontend-bundle.js';
+  //private readonly extensionFrontendInitJs = 'frontend/fesm2022/frontend.mjs';
   private readonly extensionFrontendCss = 'styles.css';
 
   constructor(
@@ -136,11 +137,9 @@ export class ExtensionService {
     return subject;
   }
 
-  private loadModule(module: NgModule) {
+  private loadModule(module: any) {
     createNgModule<NgModule>(module as any, this._injector);
-    const providers = Reflect.getOwnPropertyDescriptor(module, '__annotations__').value.flatMap(
-      annotation => (annotation.providers ? annotation.providers : [])
-    );
+    const providers = module.ɵinj.providers
     providers
       .filter(provider => provider.provide == PLUGINS_TOKEN)
       .flatMap(provider => provider.useValue)
