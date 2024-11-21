@@ -22,6 +22,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.tika.Tika
 import org.pf4j.PluginState
+import org.springframework.core.io.Resource
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -65,11 +66,20 @@ class ExtensionPublicResource(
         val file = requestURL.split("/file/")[1]
         val publicResource = extensionManager.getPublicResource(extensionId, file)
             ?: return ResponseEntity.notFound().build()
-        val contentType = Tika().detect(publicResource.inputStream, file)
         return ResponseEntity
             .ok()
-            .header("Content-Type", contentType)
+            .header("Content-Type", getContentType(publicResource))
             .body(publicResource.contentAsByteArray)
+    }
+
+    private fun getContentType(publicResource: Resource): String? {
+        return when (publicResource.filename?.substringAfterLast('.', "")) {
+            "js", "mjs" -> "text/javascript"
+            "ts", "tsx" -> "text/javascript"
+            "map" -> "application/json"
+            "", null -> Tika().detect(publicResource.inputStream)
+            else -> Tika().detect(publicResource.inputStream, publicResource.filename)
+        }
     }
 
 }

@@ -16,14 +16,20 @@
 
 package com.ritense.extension
 
+import jakarta.persistence.EntityManager
 import org.pf4j.spring.SpringExtensionFactory
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR
 import org.springframework.context.ApplicationContext
+import org.springframework.data.jpa.repository.support.JpaRepositoryFactory
+import org.springframework.stereotype.Repository
 
 class WhitelistSpringExtensionFactory(
     private val extensionManager: ExtensionManager,
     private val extensionProperties: ExtensionProperties,
+    entityManager: EntityManager,
 ) : SpringExtensionFactory(extensionManager, true) {
+
+    private var factory = JpaRepositoryFactory(entityManager)
 
     override fun <T : Any?> createWithSpring(extensionClass: Class<T>, applicationContext: ApplicationContext): T {
         val extension = extensionManager.whichPlugin(extensionClass)
@@ -36,10 +42,13 @@ class WhitelistSpringExtensionFactory(
             "$extensionClass uses illegal constructor parameters: $illegalConstructorParameters"
         }
 
-        return applicationContext.autowireCapableBeanFactory.autowire(
-            extensionClass,
-            AUTOWIRE_CONSTRUCTOR,
-            false
-        ) as T
+        return if (extensionClass.annotations.any { it.annotationClass == Repository::class }) {
+            factory.getRepository(extensionClass)
+        } else
+            applicationContext.autowireCapableBeanFactory.autowire(
+                extensionClass,
+                AUTOWIRE_CONSTRUCTOR,
+                false
+            ) as T
     }
 }

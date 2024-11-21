@@ -39,9 +39,8 @@ data class ExtensionProperties(
             "com.ritense.catalogiapi.service.ZaaktypeUrlProvider",
             "com.ritense.plugin.service.PluginService",
             "com.ritense.zakenapi.ZaakUrlProvider",
-            "com.ritense.resource.service.TemporaryResourceStorageService", // temporary
 
-            // @ProcessBeans:
+            // All @ProcessBeans:
             "com.ritense.documentgeneration.service.LocalCamundaProcessDocumentGenerator",
             "com.ritense.mail.service.MailService",
             "com.ritense.processdocument.service.CorrelationService",
@@ -63,6 +62,7 @@ data class ExtensionProperties(
         val DEFAULT_BEAN_ANNOTATION_WHITELIST = listOf(
             // Valtimo
             "com.ritense.valtimo.contract.annotation.ProcessBean",
+            "com.ritense.formflow.expression.FormFlowBean",
 
             // Spring
             "org.springframework.transaction.annotation.Transactional",
@@ -83,6 +83,7 @@ data class ExtensionProperties(
             "com.ritense.importer.Importer",
             "com.ritense.plugin.PluginFactory",
             "com.ritense.valueresolver.ValueResolverFactory",
+            "com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation",
             "com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer",
 
             // Other

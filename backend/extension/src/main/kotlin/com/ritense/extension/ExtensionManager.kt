@@ -18,6 +18,7 @@ package com.ritense.extension
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import jakarta.annotation.PostConstruct
+import jakarta.persistence.EntityManager
 import mu.KotlinLogging
 import org.pf4j.ExtensionFactory
 import org.pf4j.PluginState
@@ -39,6 +40,7 @@ class ExtensionManager(
     pluginsRoots: List<Path>,
     private val resourceResolver: ResourcePatternResolver,
     private val extensionProperties: ExtensionProperties,
+    private val entityManager: EntityManager,
 ) : SpringPluginManager(pluginsRoots) {
 
     init {
@@ -87,7 +89,7 @@ class ExtensionManager(
     }
 
     override fun getExtensionFactory(): ExtensionFactory {
-        extensionFactory = WhitelistSpringExtensionFactory(this, extensionProperties)
+        extensionFactory = WhitelistSpringExtensionFactory(this, extensionProperties, entityManager)
         return extensionFactory
     }
 
@@ -105,18 +107,25 @@ class ExtensionManager(
 
     fun getPublicResource(extensionId: String, file: String): Resource? {
         val extension = getPlugin(extensionId) ?: return null
-        val jarPath = getJarPath(extension)
-        val fileCandidate1 = Path(jarPath, "public", file)
-        val fileCandidate2 = Path(fileCandidate1.parent.toString(), "*", fileCandidate1.fileName.toString())
-        listOf(
-            fileCandidate1.toString(),
-            // frontend dynamic import(..) logic:
-            "$fileCandidate1.*",
-            Path(fileCandidate1.toString(), "index.*").toString(),
-            fileCandidate2.toString(),
-            "$fileCandidate2.*",
-            Path(fileCandidate2.toString(), "index.*").toString(),
-        ).forEach { filePathCandidate ->
+        val filePath = Path(file)
+        val publicPath = Path(getJarPath(extension), "public").toString()
+        val fileCandidates = mutableListOf<String>()
+        fileCandidates += Path(publicPath, file).toString()
+
+        // frontend dynamic import(..) logic:
+        fileCandidates += Path(publicPath, "*", file).toString()
+        if (filePath.parent != null) {
+            val parent = filePath.parent.toString()
+            fileCandidates += Path(publicPath, parent, "*", filePath.fileName.toString()).toString()
+            fileCandidates += Path(publicPath, "*", parent, "*", filePath.fileName.toString()).toString()
+        }
+        fileCandidates.toList().forEach {
+            fileCandidates += "$it.*"
+            fileCandidates += Path(it, "index.*").toString()
+        }
+        //
+
+        fileCandidates.forEach { filePathCandidate ->
             try {
                 val resource = resourceResolver.getResources(filePathCandidate)
                     .filter { it.isReadable }

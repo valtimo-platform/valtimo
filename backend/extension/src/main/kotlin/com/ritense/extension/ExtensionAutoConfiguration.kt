@@ -24,6 +24,7 @@ import com.ritense.extension.web.rest.ExtensionSecurityConfigurer
 import com.ritense.importer.ImportService
 import com.ritense.valtimo.contract.extension.ExtensionClassRegistrationListener
 import com.ritense.valtimo.contract.extension.ExtensionResourcesRegistrationListener
+import jakarta.persistence.EntityManager
 import org.pf4j.update.UpdateManager
 import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -45,8 +46,9 @@ class ExtensionAutoConfiguration {
     @ConditionalOnMissingBean(ExtensionManager::class)
     fun valtimoExtensionManager(
         resourceResolver: ResourcePatternResolver,
-        environment: Environment,
         extensionProperties: ExtensionProperties,
+        entityManager: EntityManager,
+        environment: Environment,
         ): ExtensionManager {
         val valtimoExtensionPath = if (environment.matchesProfiles("dev")) {
             Path("src/main/resources/config/extensions")
@@ -58,6 +60,7 @@ class ExtensionAutoConfiguration {
             listOf(valtimoExtensionPath),
             resourceResolver,
             extensionProperties,
+            entityManager,
         )
     }
 
@@ -157,7 +160,7 @@ class ExtensionAutoConfiguration {
     fun locallyPublishedExtensionsRepository(): ExtensionUpdateRepository {
         return ExtensionUpdateRepository(
             "locally-published-extensions-repository",
-            Path(System.getProperty("user.home"), ".valtimo_extensions").toUri().toURL()
+            Path(System.getProperty("user.home"), ".valtimo_extensions/").toUri().toURL()
         )
     }
 }
