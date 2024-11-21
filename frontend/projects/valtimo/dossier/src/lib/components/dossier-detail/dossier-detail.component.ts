@@ -25,7 +25,7 @@ import {
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
-import {ActivatedRoute, ParamMap, Params, Router} from '@angular/router';
+import {ActivatedRoute, NavigationStart, ParamMap, Params, Router} from '@angular/router';
 import {ChevronDown16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
@@ -47,8 +47,9 @@ import {
   InternalCaseStatusUtils,
   ProcessDocumentDefinition,
 } from '@valtimo/document';
+import {TaskWithProcessLink} from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
-import {IntermediateSubmission, TaskService} from '@valtimo/task';
+import {IntermediateSubmission} from '@valtimo/task';
 import {IconService, NotificationService} from 'carbon-components-angular';
 import {KeycloakService} from 'keycloak-angular';
 import moment from 'moment';
@@ -79,7 +80,6 @@ import {
 } from '../../permissions';
 import {DossierDetailLayoutService, DossierService, DossierTabService} from '../../services';
 import {DossierSupportingProcessStartModalComponent} from '../dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
-import {TaskWithProcessLink} from '@valtimo/process-link';
 
 @Component({
   selector: 'valtimo-dossier-detail',
@@ -261,6 +261,7 @@ export class DossierDetailComponent
   private _pendingTab: TabImpl;
   private _observer!: ResizeObserver;
   private _tabsInit = false;
+  private _prevQueryParams: Params | undefined | null;
 
   constructor(
     private readonly breadcrumbService: BreadcrumbService,
@@ -283,7 +284,6 @@ export class DossierDetailComponent
     private readonly renderer: Renderer2,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly taskService: TaskService,
     private readonly userProviderService: UserProviderService,
     @Inject(DOCUMENT) private readonly htmlDocument: Document
   ) {
@@ -301,6 +301,7 @@ export class DossierDetailComponent
     this.pageTitleService.disableReset();
     this.iconService.registerAll([ChevronDown16]);
     this.setDocumentStyle();
+    this.handleBackNavigation();
   }
 
   public ngOnDestroy(): void {
@@ -555,6 +556,26 @@ export class DossierDetailComponent
 
   private removeDocumentStyle(): void {
     this.renderer.removeClass(this.htmlDocument.getElementsByTagName('html')[0], 'html--fixed');
+  }
+
+  private handleBackNavigation(): void {
+    this._prevQueryParams =
+      this.router.lastSuccessfulNavigation?.previousNavigation?.extras.queryParams;
+
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationStart && event.navigationTrigger === 'popstate'),
+        take(1)
+      )
+      .subscribe(() => {
+        this.pageTitleService.enableReset();
+
+        if (!this._prevQueryParams) return;
+
+        this.router.navigate([`dossiers/${this.documentDefinitionName}`], {
+          queryParams: this._prevQueryParams,
+        });
+      });
   }
 
   private handleNoTaskProcessLink(isAdmin: boolean): void {
