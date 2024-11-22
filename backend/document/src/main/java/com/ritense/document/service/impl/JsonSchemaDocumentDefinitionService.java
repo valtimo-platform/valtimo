@@ -519,31 +519,33 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
         String parent
     ) {
         List<String> propertyNames = new ArrayList<>();
-        node.fields().forEachRemaining((jsonNode -> {
-            if (jsonNode.getValue().has("type")) {
-                String propertyType = jsonNode.getValue().get("type").asText();
-                if (isSimpleObject(propertyType)) {
-                    propertyNames.add(parent + jsonNode.getKey());
-                } else if (propertyType.equals("object")) {
-                    ObjectNode objectNode = (ObjectNode) jsonNode.getValue();
-                    propertyNames.addAll(getPropertyNamesFromObjectNode(
-                        definition,
-                        (ObjectNode) objectNode.get("properties"),
-                        parent.concat(jsonNode.getKey() + "/")
-                    ));
+        if (node != null) {
+            node.fields().forEachRemaining((jsonNode -> {
+                if (jsonNode.getValue().has("type")) {
+                    String propertyType = jsonNode.getValue().get("type").asText();
+                    if (isSimpleObject(propertyType)) {
+                        propertyNames.add(parent + jsonNode.getKey());
+                    } else if (propertyType.equals("object")) {
+                        ObjectNode objectNode = (ObjectNode) jsonNode.getValue();
+                        propertyNames.addAll(getPropertyNamesFromObjectNode(
+                            definition,
+                            (ObjectNode) objectNode.get("properties"),
+                            parent.concat(jsonNode.getKey() + "/")
+                        ));
+                    }
+                } else if (jsonNode.getValue().has("$ref")) {
+                    String internalDefinition = jsonNode.getValue().get("$ref").asText().substring(1);
+                    if (internalDefinition.startsWith("/")) {
+                        ObjectNode jsonNode1 = (ObjectNode) definition.schema().at(internalDefinition).get("properties");
+                        propertyNames.addAll(getPropertyNamesFromObjectNode(
+                            definition,
+                            jsonNode1,
+                            parent.concat(jsonNode.getKey() + "/")
+                        ));
+                    }
                 }
-            } else if (jsonNode.getValue().has("$ref")) {
-                String internalDefinition = jsonNode.getValue().get("$ref").asText().substring(1);
-                if (internalDefinition.startsWith("/")) {
-                    ObjectNode jsonNode1 = (ObjectNode) definition.schema().at(internalDefinition).get("properties");
-                    propertyNames.addAll(getPropertyNamesFromObjectNode(
-                        definition,
-                        jsonNode1,
-                        parent.concat(jsonNode.getKey() + "/")
-                    ));
-                }
-            }
-        }));
+            }));
+        }
 
         return propertyNames;
     }
