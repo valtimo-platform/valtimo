@@ -15,18 +15,18 @@
   -->
 
 <div [formGroup]="urlForm">
-  <cds-label [invalidText]="
-          'processLinkUrlInvalid' | translate : { URL: (url.errors?.invalidUrl ?? '') }
-        "
-             [invalid]="url.invalid && url.touched"
-             [helperText]="url.invalid ? '' : resolveUrlVariables(url.value)">Url
+  <cds-label
+    [invalidText]="'processLinkUrlInvalid' | translate: {URL: url.errors?.invalidUrl ?? ''}"
+    [invalid]="url.invalid && url.touched"
+    [helperText]="url.invalid ? '' : resolveUrlVariables(url.value)"
+    >Url
     <input
-            cdsText
-            type="text"
-            required
-            class="form-control"
-            formControlName="url"
-            [invalid]="url.invalid"
-    >
+      cdsText
+      type="text"
+      required
+      class="form-control"
+      formControlName="url"
+      [invalid]="url.invalid"
+    />
   </cds-label>
 </div>

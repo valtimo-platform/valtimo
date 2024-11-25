@@ -16,6 +16,7 @@
 
 import {Component} from '@angular/core';
 import {
+  PluginStateService,
   ProcessLinkButtonService,
   ProcessLinkService,
   ProcessLinkStateService,
@@ -44,6 +45,8 @@ export class ProcessLinkModalComponent {
   public readonly saving$ = this.stateService.saving$;
   public readonly typeOfSelectedProcessLink$ = this.stateService.typeOfSelectedProcessLink$;
   public readonly viewModelEnabled$ = this.stateService.viewModelEnabled$;
+  public readonly selectedPluginConfiguration$ =
+    this.pluginStateService.selectedPluginConfiguration$;
 
   public readonly showViewModelToggle =
     this.configService.config.featureToggles.enableFormViewModel;
@@ -52,6 +55,7 @@ export class ProcessLinkModalComponent {
     private readonly stateService: ProcessLinkStateService,
     private readonly stepService: ProcessLinkStepService,
     private readonly buttonService: ProcessLinkButtonService,
+    private readonly pluginStateService: PluginStateService,
     private readonly processLinkService: ProcessLinkService,
     private readonly processLinkStateService: ProcessLinkStateService,
     private readonly configService: ConfigService

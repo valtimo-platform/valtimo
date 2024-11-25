@@ -147,17 +147,13 @@
 
     <div class="form__element">
       <cds-label
-              [helperText]="'dashboardManagement.widgets.form.urlHelperText' | translate"
-              [invalidText]="'dashboardManagement.widgets.form.urlHelperText' | translate"
-              [invalid]="url.dirty && url.invalid"
+        [helperText]="'dashboardManagement.widgets.form.urlHelperText' | translate"
+        [invalidText]="'dashboardManagement.widgets.form.urlHelperText' | translate"
+        [invalid]="url.dirty && url.invalid"
       >
         {{ 'dashboardManagement.widgets.form.url' | translate }}
 
-        <input
-                cdsText
-                formControlName="url"
-                [invalid]="url.dirty && url.invalid"
-        />
+        <input cdsText formControlName="url" [invalid]="url.dirty && url.invalid" />
       </cds-label>
     </div>
   </form>

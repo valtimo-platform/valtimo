@@ -33,6 +33,7 @@ import {
   ConfigurationComponentType,
   DefaultPluginConfigurationData,
   FunctionConfigurationComponent,
+  PluginConfiguration,
   PluginConfigurationComponent,
   PluginConfigurationData,
 } from '../../models';
@@ -60,6 +61,7 @@ export class PluginConfigurationContainerComponent
   }
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
+  @Input() selectedPluginConfiguration$: Observable<PluginConfiguration>;
   @Input() prefillConfiguration$: Observable<any>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<PluginConfigurationData> =
@@ -149,8 +151,9 @@ export class PluginConfigurationContainerComponent
   private openComponentInstanceSubscription(): void {
     this.componentRefSubscription = combineLatest([
       this.componentRef$,
+      this._componentType,
       this._pluginDefinitionKey,
-    ]).subscribe(([ref, pluginDefinitionKey]) => {
+    ]).subscribe(([ref, type, pluginDefinitionKey]) => {
       const instance = ref?.instance;
 
       this.configurationSubscription?.unsubscribe();
@@ -163,6 +166,21 @@ export class PluginConfigurationContainerComponent
 
         if (this.prefillConfiguration$) {
           instance.prefillConfiguration$ = this.prefillConfiguration$;
+        }
+
+        if (this.selectedPluginConfiguration$ && type === 'function') {
+          (instance as FunctionConfigurationComponent).selectedPluginConfigurationData$ =
+            this.selectedPluginConfiguration$.pipe(
+              map(configuration =>
+                configuration
+                  ? ({
+                      configurationId: configuration.id,
+                      configurationTitle: configuration.title,
+                      ...configuration.properties,
+                    } as PluginConfigurationData)
+                  : undefined
+              )
+            );
         }
 
         this.validSubscription = combineLatest([

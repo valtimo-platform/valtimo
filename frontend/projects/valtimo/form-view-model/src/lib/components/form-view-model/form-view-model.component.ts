@@ -15,8 +15,25 @@
  */
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import moment from 'moment';
-import {BehaviorSubject, catchError, combineLatest, debounceTime, EMPTY, Observable, of, switchMap, take, tap,} from 'rxjs';
-import {FormioComponent, FormioModule, FormioOptions, FormioSubmission, FormioSubmissionCallback,} from '@formio/angular';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  debounceTime,
+  EMPTY,
+  Observable,
+  of,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
+import {
+  FormioComponent,
+  FormioModule,
+  FormioOptions,
+  FormioSubmission,
+  FormioSubmissionCallback,
+} from '@formio/angular';
 import {ViewModelService} from '../../services';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 import {deepmerge} from 'deepmerge-ts';
@@ -181,7 +198,7 @@ export class FormViewModelComponent implements OnInit {
                     }),
                     catchError(error => {
                       this.handleFormError(error);
-                      callback({message: " ", component: null}, null);
+                      callback({message: ' ', component: null}, null);
                       return EMPTY; // return an empty observable to complete the stream
                     })
                   )
@@ -195,7 +212,7 @@ export class FormViewModelComponent implements OnInit {
                     }),
                     catchError(error => {
                       this.handleFormError(error);
-                      callback({message: " ", component: null}, null);
+                      callback({message: ' ', component: null}, null);
                       return EMPTY; // return an empty observable to complete the stream
                     })
                   )
@@ -258,8 +275,8 @@ export class FormViewModelComponent implements OnInit {
       this._preventNextPage = false;
       this.formio.formio.setPage(this.formio.formio.page + 1);
     } else if (this._preventPreviousPage) {
-        this._preventPreviousPage = false;
-        this.formio.formio.setPage(this.formio.formio.page - 1);
+      this._preventPreviousPage = false;
+      this.formio.formio.setPage(this.formio.formio.page - 1);
     }
   }
 
@@ -292,22 +309,30 @@ export class FormViewModelComponent implements OnInit {
             return combineLatest([this.formName$, this.taskInstanceId$, this.change$]).pipe(
               take(1),
               switchMap(([formName, taskInstanceId, change]) =>
-                this.viewModelService.updateViewModel(formName, taskInstanceId, change.data, this.formio.formio.page, this._isWizard).pipe(
-                  tap({
-                    next: viewModel => {
-                      const submission = this.submission$.value;
-                      submission.data = viewModel;
-                      this.submission$.next(submission);
-                      this.handlePageChange();
-                      this.loading$.next(false);
-                      this.errors = [];
-                    },
-                    error: error => {
-                      this.loading$.next(false);
-                      this.handleFormError(error);
-                    },
-                  })
-                )
+                this.viewModelService
+                  .updateViewModel(
+                    formName,
+                    taskInstanceId,
+                    change.data,
+                    this.formio.formio.page,
+                    this._isWizard
+                  )
+                  .pipe(
+                    tap({
+                      next: viewModel => {
+                        const submission = this.submission$.value;
+                        submission.data = viewModel;
+                        this.submission$.next(submission);
+                        this.handlePageChange();
+                        this.loading$.next(false);
+                        this.errors = [];
+                      },
+                      error: error => {
+                        this.loading$.next(false);
+                        this.handleFormError(error);
+                      },
+                    })
+                  )
               )
             );
           }
@@ -347,7 +372,13 @@ export class FormViewModelComponent implements OnInit {
               take(1),
               switchMap(([formName, processDefinitionKey, change]) =>
                 this.viewModelService
-                  .updateViewModelForStartForm(formName, processDefinitionKey, change.data, this.formio.formio.page, this._isWizard)
+                  .updateViewModelForStartForm(
+                    formName,
+                    processDefinitionKey,
+                    change.data,
+                    this.formio.formio.page,
+                    this._isWizard
+                  )
                   .pipe(
                     tap({
                       next: viewModel => {

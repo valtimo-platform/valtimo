@@ -18,8 +18,7 @@ import {PluginDefinition, PluginFunction, PluginManagementService} from '@valtim
 import {Observable, of, Subscription} from 'rxjs';
 import {switchMap, take} from 'rxjs/operators';
 
-import {ProcessLinkButtonService, ProcessLinkStepService} from '../../services';
-import {PluginStateService} from '../../services/plugin-state.service';
+import {ProcessLinkButtonService, ProcessLinkStepService, PluginStateService} from '../../services';
 
 @Component({
   selector: 'valtimo-select-plugin-action',

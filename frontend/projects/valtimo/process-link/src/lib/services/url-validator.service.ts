@@ -4,10 +4,7 @@ import {UrlResolverService} from './url-resolver.service';
 
 @Injectable()
 export class UrlValidatorService {
-
-  constructor(
-    private readonly urlResolverService: UrlResolverService) {
-  }
+  constructor(private readonly urlResolverService: UrlResolverService) {}
 
   public urlValidator(variables: Map<string, string>): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
@@ -20,5 +17,4 @@ export class UrlValidatorService {
       }
     };
   }
-
 }

@@ -47,11 +47,11 @@ export class ViewModelService extends BaseApiService {
     isWizard: boolean
   ): Observable<object> {
     const params = {
-        formName,
-        taskInstanceId,
-        isWizard,
-      ...(!isNaN(page) && {page})
-    }
+      formName,
+      taskInstanceId,
+      isWizard,
+      ...(!isNaN(page) && {page}),
+    };
     return this.httpClient.post(this.getApiUrl(`/v1/form/view-model/user-task`), viewModel, {
       params,
       headers: new HttpHeaders().set(InterceptorSkip, '400'),
@@ -96,8 +96,8 @@ export class ViewModelService extends BaseApiService {
       formName,
       processDefinitionKey,
       isWizard,
-      ...(!isNaN(page) && {page})
-    }
+      ...(!isNaN(page) && {page}),
+    };
     return this.httpClient.post(this.getApiUrl(`/v1/form/view-model/start-form`), viewModel, {
       params,
       headers: new HttpHeaders().set(InterceptorSkip, '400'),

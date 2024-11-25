@@ -15,9 +15,7 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {
-  FunctionConfigurationComponent
-} from '../../../../models';
+import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} from 'rxjs';
 import {StoreTempDocumentConfig, DocumentLanguage, DocumentStatus} from '../../models';
 import {TranslateService} from '@ngx-translate/core';

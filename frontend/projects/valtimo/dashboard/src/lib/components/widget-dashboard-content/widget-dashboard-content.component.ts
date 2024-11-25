@@ -108,10 +108,13 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
     this._subscriptions?.unsubscribe();
   }
 
-  public navigateToRoute(widgetConfiguration: DashboardWidgetConfiguration, event: MouseEvent): void {
+  public navigateToRoute(
+    widgetConfiguration: DashboardWidgetConfiguration,
+    event: MouseEvent
+  ): void {
     if (widgetConfiguration.url) {
       event.preventDefault();
-      this.router.navigateByUrl(widgetConfiguration.url)
+      this.router.navigateByUrl(widgetConfiguration.url);
     }
   }
 

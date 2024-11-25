@@ -13,10 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, EventEmitter, Inject, Input, Optional, Output, ViewChild, ViewContainerRef, ViewEncapsulation} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Inject,
+  Input,
+  Optional,
+  Output,
+  ViewChild,
+  ViewContainerRef,
+  ViewEncapsulation,
+} from '@angular/core';
 import {Router} from '@angular/router';
 import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
-import {FormioComponent, FormioOptionsImpl, FormioSubmission, ModalComponent, ValtimoFormioOptions,} from '@valtimo/components';
+import {
+  FormioComponent,
+  FormioOptionsImpl,
+  FormioSubmission,
+  ModalComponent,
+  ValtimoFormioOptions,
+} from '@valtimo/components';
 import {ProcessDocumentDefinition} from '@valtimo/document';
 import {ProcessService} from '@valtimo/process';
 import {FormSubmissionResult, ProcessLinkService} from '@valtimo/process-link';
@@ -33,7 +49,8 @@ import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
 export class DossierSupportingProcessStartModalComponent {
   @ViewChild('form', {static: false}) form: FormioComponent;
   @ViewChild('supportingProcessStartModal', {static: false}) modal: ModalComponent;
-  @ViewChild('formViewModelComponent', {static: true, read: ViewContainerRef}) public formViewModelDynamicContainer: ViewContainerRef;
+  @ViewChild('formViewModelComponent', {static: true, read: ViewContainerRef})
+  public formViewModelDynamicContainer: ViewContainerRef;
 
   @Input() isAdmin: boolean;
   @Output() formSubmit = new EventEmitter();
@@ -157,15 +174,17 @@ export class DossierSupportingProcessStartModalComponent {
       this.formDefinition$,
       this.processDefinitionKey$,
       this.documentDefinitionName$,
-      this.options$
-    ]).pipe(take(1)).subscribe(([form, processDefinitionKey, documentDefinitionName, options]) => {
-      formViewModelComponent.instance.formName = formName;
-      formViewModelComponent.instance.form = form;
-      formViewModelComponent.instance.processDefinitionKey = processDefinitionKey;
-      formViewModelComponent.instance.documentDefinitionName = documentDefinitionName;
-      formViewModelComponent.instance.options = options;
-      formViewModelComponent.instance.isStartForm = true;
-    });
+      this.options$,
+    ])
+      .pipe(take(1))
+      .subscribe(([form, processDefinitionKey, documentDefinitionName, options]) => {
+        formViewModelComponent.instance.formName = formName;
+        formViewModelComponent.instance.form = form;
+        formViewModelComponent.instance.processDefinitionKey = processDefinitionKey;
+        formViewModelComponent.instance.documentDefinitionName = documentDefinitionName;
+        formViewModelComponent.instance.options = options;
+        formViewModelComponent.instance.isStartForm = true;
+      });
 
     formViewModelComponent.instance.formSubmit.pipe(take(1)).subscribe(() => {
       this.formSubmitted();

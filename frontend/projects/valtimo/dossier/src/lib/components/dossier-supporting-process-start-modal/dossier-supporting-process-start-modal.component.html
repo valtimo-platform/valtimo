@@ -20,7 +20,7 @@
   [title]="
     (processDefinitionKey$ | async | translate) !== (processDefinitionKey$ | async)
       ? (processDefinitionKey$ | async | translate)
-      : processName$ | async
+      : (processName$ | async)
   "
 >
   <div body *ngIf="!isFormViewModel && formDefinition$ | async as formDefinition">
