@@ -112,6 +112,8 @@ export class ExtensionService {
   private loadJs(extensionId: string): Observable<any> {
     const subject = new Subject<any>();
     Object.keys(this.extensionImports).forEach(key => (window[key] = this.extensionImports[key]));
+
+    // TODO: Use this: https://stackoverflow.com/questions/75445012/how-do-you-load-precompiled-angular-libraries-as-dynamic-modules/75527315#75527315
     import(
       /* webpackIgnore: true */ this.getFileUrl(extensionId, this.extensionFrontendInitJs)
       ).then(
