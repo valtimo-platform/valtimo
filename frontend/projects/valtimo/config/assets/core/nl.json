@@ -51,6 +51,10 @@
         "title": "Geen dossiers gevonden"
       }
     },
+    "noAccess": {
+      "description": "Je hebt geen toegang tot dit dossier",
+      "title": "Geen toegang"
+    },
     "pagination": {
       "itemsPerPage": "Dossiers per pagina",
       "totalItem": "{{start}}-{{end}} van {{total}} dossier",

@@ -51,6 +51,10 @@
         "title": "No cases found"
       }
     },
+    "noAccess": {
+      "description": "You do not have access to this case",
+      "title": "Access denied"
+    },
     "pagination": {
       "itemsPerPage": "Cases per page",
       "totalItem": "{{start}}-{{end}} of {{total}} case",

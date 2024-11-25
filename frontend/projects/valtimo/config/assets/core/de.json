@@ -51,6 +51,10 @@
         "title": "Keine Cases gefunden"
       }
     },
+    "noAccess": {
+      "description": "Sie haben keinen Zugriff auf diesen Fall",
+      "title": "Zugriff verweigert"
+    },
     "pagination": {
       "itemsPerPage": "Cases pro Seite",
       "totalItem": "{{start}}-{{end}} von {{total}} Case",

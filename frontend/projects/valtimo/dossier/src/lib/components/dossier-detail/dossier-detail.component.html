@@ -43,6 +43,8 @@
       *ngIf="{
         noTabsConfigured: noTabsConfigured$ | async,
         showTaskList: showTaskList$ | async,
+        showNoAccess: showNoAccess$ | async,
+        taskOpenedInPanel: taskOpenedInPanel$ | async,
         dossierDetailLayout: dossierDetailLayout$ | async,
         openTaskAndProcessLinkInModal: openTaskAndProcessLinkInModal$ | async,
         taskAndProcessLinkOpenedInPanel: taskAndProcessLinkOpenedInPanel$ | async,
@@ -66,6 +68,14 @@
             <div *ngIf="loadingTabs$ | async" class="loading-container">
               <cds-loading></cds-loading>
             </div>
+
+            <valtimo-no-results
+              *ngIf="tabContentObs.showNoAccess"
+              description="{{ 'dossier.noAccess.description' | translate }}"
+              title="{{ 'dossier.noAccess.title' | translate }}"
+              illustration="valtimo-layout/img/emptystate-not-authorised.svg"
+            >
+            </valtimo-no-results>
 
             <valtimo-no-results
               *ngIf="tabContentObs.noTabsConfigured"
