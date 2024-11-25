@@ -106,7 +106,7 @@ export class TaskDetailModalComponent implements OnInit {
   }
 
   public openTaskDetails(task: Task | null): void {
-    this.task$.next(task);
+    this.task$.next({...task});
     this.page$.next({
       title: task?.name,
       subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task?.created}`,
