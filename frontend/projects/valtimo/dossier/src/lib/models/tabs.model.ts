@@ -106,6 +106,7 @@ export class TabLoaderImpl implements TabLoader<TabImpl> {
         this._router.navigate([`${urlBeforeDocumentId}${currentDocumentId}/${nextTab.name}`], {
           ...(nextTab.name === 'documents' && {
             queryParams,
+            replaceUrl: true,
           }),
         });
       });

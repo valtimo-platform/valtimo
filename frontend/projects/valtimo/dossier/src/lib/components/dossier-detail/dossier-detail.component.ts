@@ -596,6 +596,7 @@ export class DossierDetailComponent
 
         this.router.navigate([`dossiers/${this.documentDefinitionName}`], {
           queryParams: this._prevQueryParams,
+          replaceUrl: true,
         });
       });
   }
