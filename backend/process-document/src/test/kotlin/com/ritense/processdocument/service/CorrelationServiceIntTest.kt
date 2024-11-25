@@ -24,6 +24,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.BaseIntegrationTest
+import com.ritense.processdocument.domain.ProcessDocumentInstance
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.valtimo.camunda.repository.CamundaTaskSpecificationHelper.Companion.all
 import com.ritense.valtimo.camunda.repository.CamundaTaskSpecificationHelper.Companion.byName
@@ -122,6 +123,11 @@ class CorrelationServiceIntTest: BaseIntegrationTest() {
             it.processName().equals("message-start-event-name")
         }.id!!.documentId()
         )
+        val newProcess = associatedProcessDocuments.first { it.processName().equals("message-start-event-name")}
+        assertEquals(
+            mapOf("varName1" to "varValue1", "varName2" to "varValue2"),
+            getVariables(newProcess, listOf("varName1", "varName2"))
+        )
     }
 
     @Test
@@ -206,6 +212,11 @@ class CorrelationServiceIntTest: BaseIntegrationTest() {
             it.processName().equals("intermediate-catch-event-sample-one")
         }.id!!.documentId()
         )
+        val catchProcess = associatedProcessDocumentsForDocumentOne.first { it.processName().equals("intermediate-catch-event-sample-one")}
+        assertEquals(
+            mapOf("varName1" to "varValue1", "varName2" to "varValue2"),
+            getVariables(catchProcess, listOf("varName1", "varName2"))
+        )
     }
 
     @Test
@@ -251,6 +262,11 @@ class CorrelationServiceIntTest: BaseIntegrationTest() {
         assertEquals(document.id(), associatedProcessDocuments.first {
             it.processName().equals("targetProcessDefinitionName")
         }.id!!.documentId()
+        )
+        val newProcess = associatedProcessDocuments.first { it.processName().equals("targetProcessDefinitionName")}
+        assertEquals(
+            mapOf("varName1" to "varValue1", "varName2" to "varValue2"),
+            getVariables(newProcess, listOf("varName1", "varName2"))
         )
     }
 
@@ -308,6 +324,11 @@ class CorrelationServiceIntTest: BaseIntegrationTest() {
             it.processName().equals("intermediate-catch-event-sample-one")
         }.id!!.documentId()
         )
+        val catchProcess = associatedProcessDocumentsForDocumentOne.first { it.processName().equals("intermediate-catch-event-sample-one")}
+        assertEquals(
+            mapOf("varName1" to "varValue1", "varName2" to "varValue2"),
+            getVariables(catchProcess, listOf("varName1", "varName2"))
+        )
     }
 
     @AfterEach
@@ -318,5 +339,14 @@ class CorrelationServiceIntTest: BaseIntegrationTest() {
                 task.id
             )
         })
+    }
+
+    private fun getVariables(processDocumentInstance: ProcessDocumentInstance, variableNames: List<String>): Map<String, Any> {
+        return runWithoutAuthorization {
+            camundaProcessService.getProcessInstanceVariables(
+                processDocumentInstance.processDocumentInstanceId().processInstanceId().toString(),
+                variableNames
+            )
+        }
     }
 }
