@@ -39,7 +39,7 @@ data class FormFlowDefinitionDto(
                 key = formFlowDefinition.id.key,
                 version = formFlowDefinition.id.version,
                 startStep = formFlowDefinition.startStep,
-                steps = formFlowDefinition.steps.map { FormFlowStep.fromEntity(it) },
+                steps = formFlowDefinition.getOrderedSteps().map { FormFlowStep.fromEntity(it) },
                 readOnly = readOnly
             )
     }
