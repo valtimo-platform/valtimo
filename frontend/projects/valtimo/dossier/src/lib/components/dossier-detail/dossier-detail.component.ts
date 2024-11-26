@@ -26,7 +26,7 @@ import {
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
-import {ActivatedRoute, ParamMap, Params, Router} from '@angular/router';
+import {ActivatedRoute, NavigationStart, ParamMap, Params, Router} from '@angular/router';
 import {ChevronDown16} from '@carbon/icons';
 import {PermissionService} from '@valtimo/access-control';
 import {
@@ -254,6 +254,7 @@ export class DossierDetailComponent
   private _pendingTab: TabImpl;
   private _observer!: ResizeObserver;
   private _tabsInit = false;
+  private _prevQueryParams: Params | undefined | null;
 
   constructor(
     private readonly breadcrumbService: BreadcrumbService,
@@ -291,6 +292,7 @@ export class DossierDetailComponent
     this.pageTitleService.disableReset();
     this.iconService.registerAll([ChevronDown16]);
     this.setDocumentStyle();
+    this.handleBackNavigation();
   }
 
   public ngOnDestroy(): void {
@@ -500,6 +502,24 @@ export class DossierDetailComponent
     return (
       path.split('.').reduce((currentObject, key) => currentObject?.[key], obj) || defaultValue
     );
+  }
+
+  private handleBackNavigation(): void {
+    this._prevQueryParams =
+      this.router.lastSuccessfulNavigation?.previousNavigation?.extras.queryParams;
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationStart && event.navigationTrigger === 'popstate'),
+        take(1)
+      )
+      .subscribe(() => {
+        this.pageTitleService.enableReset();
+        if (!this._prevQueryParams) return;
+        this.router.navigate([`dossiers/${this.documentDefinitionName}`], {
+          queryParams: this._prevQueryParams,
+          replaceUrl: true
+        });
+      });
   }
 
   private setBreadcrumb(): void {
