@@ -192,12 +192,15 @@ export class DossierParameterService implements OnDestroy {
 
   public clearParameters(): void {
     this._dossierParameters$.next(undefined);
-    this.router.navigate([this.getUrlWithoutParams()]);
+    this.router.navigate([this.getUrlWithoutParams()], {replaceUrl: true});
   }
 
   private openDossierParametersSubscription(): void {
     this._dossierParametersSubscription = this.dossierParameters$.subscribe(dossierParams => {
-      this.router.navigate([this.getUrlWithoutParams()], {queryParams: dossierParams});
+      this.router.navigate([this.getUrlWithoutParams()], {
+        queryParams: dossierParams,
+        replaceUrl: true,
+      });
     });
   }
 

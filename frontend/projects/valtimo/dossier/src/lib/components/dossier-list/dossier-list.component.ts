@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -504,7 +504,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         `/dossiers/${documentDefinitionName}`,
         this.route.snapshot.queryParams
       );
-      this.router.navigate([`/dossiers/${documentDefinitionName}/document/${item.id}`]);
+      this.router.navigate([`/dossiers/${documentDefinitionName}/document/${item.id}`], {replaceUrl: true});
     });
   }
 
