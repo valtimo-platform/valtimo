@@ -83,7 +83,11 @@ class FormFlowInstance(
 
             formFlowStepInstance.complete(submissionData.toString())
 
-            navigateToNextStep()
+            val nextStep = navigateToNextStep()
+            check(nextStep != null || formFlowStepInstance.definition.onComplete.isNotEmpty()) {
+                "Form flow end reached but no action was taken because the 'onComplete' is empty. For form flow step: '${formFlowStepInstance.definition.id}'"
+            }
+            nextStep
         }
     }
 
