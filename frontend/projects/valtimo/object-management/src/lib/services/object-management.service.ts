@@ -101,7 +101,7 @@ export class ObjectManagementService {
 
   getSearchField(ownerId: string): Observable<Array<SearchField>> {
     return this.http.get<Array<SearchField>>(
-      `${this.valtimoEndpointUri}v1/search/field/${ownerId}`
+      `${this.valtimoEndpointUri}v1/search/field/Legacy/${ownerId}`
     );
   }
 
@@ -132,7 +132,7 @@ export class ObjectManagementService {
 
   deleteSearchField(ownerId: string, key: string): Observable<SearchField> {
     return this.http.delete<SearchField>(
-      `${this.valtimoEndpointUri}v1/search/field/${ownerId}/${key}`
+      `${this.valtimoEndpointUri}v1/search/field/Legacy/${ownerId}/${key}`
     );
   }
 }
