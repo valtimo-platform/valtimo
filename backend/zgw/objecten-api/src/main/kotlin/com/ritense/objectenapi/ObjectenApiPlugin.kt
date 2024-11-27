@@ -32,7 +32,9 @@ import mu.KLogger
 import mu.KotlinLogging
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
+import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
+import java.util.UUID
 
 @Plugin(
     key = "objectenapi",
@@ -124,6 +126,15 @@ class ObjectenApiPlugin(
     fun createObject(objectRequest: ObjectRequest): ObjectWrapper {
         logger.info { "Creating Objecten API object of type '${objectRequest.type}'" }
         return objectenApiClient.createObject(authenticationPluginConfiguration, url, objectRequest)
+    }
+
+    fun getObjectUrl(objectId: UUID): URI {
+        return UriComponentsBuilder
+            .fromUri(url)
+            .pathSegment("objects")
+            .pathSegment(objectId.toString())
+            .build()
+            .toUri()
     }
 
     companion object {
