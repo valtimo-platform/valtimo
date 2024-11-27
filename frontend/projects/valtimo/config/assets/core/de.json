@@ -164,6 +164,11 @@
       "cancel": "Absagen",
       "delete": "Löschen"
     },
+    "delete": {
+      "delete": "Case löschen",
+      "description": "Möchten Sie diesen Case und alle zugehörigen Informationen wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "confirm": "Löschen"
+    },
     "formio": {
       "noFormSpecified": "Für diese Registerkarte wurde keine Formulardefinition angegeben.",
       "formNotFound": "Die Formulardefinition '{{formDefinitionName}}' konnte nicht gefunden werden."

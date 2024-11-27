@@ -164,6 +164,11 @@
       "cancel": "Annuleren",
       "delete": "Verwijderen"
     },
+    "delete": {
+      "delete": "Dossier verwijderen",
+      "description": "Weet u zeker dat u dit dossier en alle gerelateerde informatie wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "confirm": "Verwijderen"
+    },
     "formio": {
       "noFormSpecified": "Voor dit tabblad is geen formulierdefinitie opgegeven.",
       "formNotFound": "De formulierdefinitie '{{formDefinitionName}}' kan niet worden gevonden."

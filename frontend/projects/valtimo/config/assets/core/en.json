@@ -164,6 +164,11 @@
       "cancel": "Cancel",
       "delete": "Delete"
     },
+    "delete": {
+      "delete": "Delete case",
+      "description": "Are you sure you want to delete this case and all related information? This action cannot be undone.",
+      "confirm": "Delete"
+    },
     "formio": {
       "noFormSpecified": "No form definition has been specified for this tab.",
       "formNotFound": "The form definition '{{formDefinitionName}}' could not be found."

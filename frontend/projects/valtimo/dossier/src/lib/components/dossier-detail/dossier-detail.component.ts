@@ -78,6 +78,7 @@ import {
   CAN_ASSIGN_CASE_PERMISSION,
   CAN_CLAIM_CASE_PERMISSION,
   CAN_VIEW_CASE_PERMISSION,
+  CAN_DELETE_CASE_PERMISSION,
   DOSSIER_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
 import {DossierDetailLayoutService, DossierService, DossierTabService} from '../../services';
@@ -128,6 +129,8 @@ export class DossierDetailComponent
   public readonly caseStatusKey$: Observable<string | 'NOT_AVAILABLE'> = this._caseStatusKey$.pipe(
     filter(key => !!key)
   );
+
+  public readonly showDeleteModal$: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
   public readonly canView$: Observable<boolean> = this.route.paramMap.pipe(
     switchMap((params: ParamMap) =>
@@ -232,6 +235,16 @@ export class DossierDetailComponent
   public readonly canClaim$: Observable<boolean> = this.route.paramMap.pipe(
     switchMap((params: ParamMap) =>
       this.permissionService.requestPermission(CAN_CLAIM_CASE_PERMISSION, {
+        resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+        identifier: params.get('documentId') ?? '',
+      })
+    )
+  );
+
+  public readonly isDeleting$ = new BehaviorSubject<boolean>(false);
+  public readonly canDelete$: Observable<boolean> = this.route.paramMap.pipe(
+    switchMap((params: ParamMap) =>
+      this.permissionService.requestPermission(CAN_DELETE_CASE_PERMISSION, {
         resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
         identifier: params.get('documentId') ?? '',
       })
@@ -386,6 +399,25 @@ export class DossierDetailComponent
           this.logger.debug('Something went wrong while unassigning user from case');
         },
       });
+  }
+
+  public deleteDocument(): void {
+    this.showDeleteModal$.next(true);
+  }
+
+  public onConfirmDelete(): void {
+    this.isDeleting$.next(true);
+    this.documentService.deleteDocument(this.documentId).subscribe({
+      next: (): void => {
+        this.isDeleting$.next(false);
+        this.showDeleteModal$.next(false);
+        this.router.navigate([`/dossiers/${this.documentDefinitionName}`]);
+      },
+      error: (): void => {
+        this.isDeleting$.next(false);
+        this.logger.debug('Something went wrong while deleting the case');
+      },
+    });
   }
 
   public onTaskClickEvent(taskProcessLinkResult: TaskWithProcessLink): void {
