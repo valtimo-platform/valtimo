@@ -66,6 +66,7 @@ import {
   switchMap,
   take,
   tap,
+  Subscription,
 } from 'rxjs';
 import {
   DOSSIER_DETAIL_DEFAULT_DISPLAY_SIZE,
@@ -275,7 +276,7 @@ export class DossierDetailComponent
   private _pendingTab: TabImpl;
   private _observer!: ResizeObserver;
   private _tabsInit = false;
-  private _prevQueryParams: Params | undefined | null;
+  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly breadcrumbService: BreadcrumbService,
@@ -314,13 +315,14 @@ export class DossierDetailComponent
     this.pageTitleService.disableReset();
     this.iconService.registerAll([ChevronDown16]);
     this.setDocumentStyle();
-    this.handleBackNavigation();
+    this.enableResetOnBackNavigation();
   }
 
   public ngOnDestroy(): void {
     this.breadcrumbService.clearSecondBreadcrumb();
     this.pageTitleService.enableReset();
     this.removeDocumentStyle();
+    this._subscriptions.unsubscribe();
   }
 
   public getAllAssociatedProcessDefinitions(): void {
@@ -580,25 +582,18 @@ export class DossierDetailComponent
     this.renderer.removeClass(this.htmlDocument.getElementsByTagName('html')[0], 'html--fixed');
   }
 
-  private handleBackNavigation(): void {
-    this._prevQueryParams =
-      this.router.lastSuccessfulNavigation?.previousNavigation?.extras.queryParams;
-
-    this.router.events
-      .pipe(
-        filter(event => event instanceof NavigationStart && event.navigationTrigger === 'popstate'),
-        take(1)
-      )
-      .subscribe(() => {
-        this.pageTitleService.enableReset();
-
-        if (!this._prevQueryParams) return;
-
-        this.router.navigate([`dossiers/${this.documentDefinitionName}`], {
-          queryParams: this._prevQueryParams,
-          replaceUrl: true,
-        });
-      });
+  private enableResetOnBackNavigation(): void {
+    this._subscriptions.add(
+      this.router.events
+        .pipe(
+          filter(
+            event => event instanceof NavigationStart && event.navigationTrigger === 'popstate'
+          )
+        )
+        .subscribe(() => {
+          this.pageTitleService.enableReset();
+        })
+    );
   }
 
   private handleNoTaskProcessLink(isAdmin: boolean): void {
