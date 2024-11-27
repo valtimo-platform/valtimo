@@ -10,7 +10,7 @@
     <bpmn:intermediateThrowEvent id="Event_1pza1q9">
       <bpmn:incoming>Flow_0tdgxe1</bpmn:incoming>
       <bpmn:outgoing>Flow_06sure7</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_1uvq18j" camunda:expression="${correlationService.sendStartMessage(&#34;message-start-event&#34;,execution.businessKey)}" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1uvq18j" camunda:expression="${correlationService.sendStartMessage(&#34;message-start-event&#34;,execution.businessKey,'varName1','varValue1','varName2','varValue2')}" />
     </bpmn:intermediateThrowEvent>
     <bpmn:exclusiveGateway id="Gateway_1xw5kxz">
       <bpmn:incoming>Flow_0v7tm6z</bpmn:incoming>
@@ -29,7 +29,7 @@
     <bpmn:intermediateThrowEvent id="Event_14n21hy">
       <bpmn:incoming>Flow_04q08ak</bpmn:incoming>
       <bpmn:outgoing>Flow_1120gfp</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_1y8e1h7" camunda:expression="${correlationService.sendStartMessageWithProcessDefinitionKey(&#34;target-process-definition-message&#34;,&#34;targetProcessDefinitionId&#34;,execution.businessKey,null)}" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1y8e1h7" camunda:expression="${correlationService.sendStartMessageWithProcessDefinitionKey(&#34;target-process-definition-message&#34;,&#34;targetProcessDefinitionId&#34;,execution.businessKey,'varName1','varValue1','varName2','varValue2')}" />
     </bpmn:intermediateThrowEvent>
     <bpmn:exclusiveGateway id="Gateway_0l777sa">
       <bpmn:incoming>Flow_06sure7</bpmn:incoming>
@@ -47,7 +47,7 @@
     <bpmn:intermediateThrowEvent id="Event_18mjng7">
       <bpmn:incoming>Flow_0zsmg0l</bpmn:incoming>
       <bpmn:outgoing>Flow_1tso983</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_1tib12v" camunda:expression="${correlationService.sendCatchEventMessageToAll(&#34;intermediate-catch-event-ref&#34;,businessKey)}" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1tib12v" camunda:expression="${correlationService.sendCatchEventMessageToAll(&#34;intermediate-catch-event-ref&#34;,businessKey,'varName1','varValue1','varName2','varValue2')}" />
     </bpmn:intermediateThrowEvent>
     <bpmn:sequenceFlow id="Flow_1tso983" sourceRef="Event_18mjng7" targetRef="Gateway_0l777sa" />
     <bpmn:sequenceFlow id="Flow_0wa3ax5" sourceRef="Gateway_1xw5kxz" targetRef="Event_0ct1jdv">
@@ -56,7 +56,7 @@
     <bpmn:intermediateThrowEvent id="Event_0ct1jdv">
       <bpmn:incoming>Flow_0wa3ax5</bpmn:incoming>
       <bpmn:outgoing>Flow_1u8tbs1</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_06ipxtb" camunda:expression="${correlationService.sendCatchEventMessage(&#34;intermediate-catch-event-ref&#34;,businessKey)}" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_06ipxtb" camunda:expression="${correlationService.sendCatchEventMessage(&#34;intermediate-catch-event-ref&#34;,businessKey,'varName1','varValue1','varName2','varValue2')}" />
     </bpmn:intermediateThrowEvent>
     <bpmn:sequenceFlow id="Flow_1u8tbs1" sourceRef="Event_0ct1jdv" targetRef="Gateway_0l777sa" />
   </bpmn:process>

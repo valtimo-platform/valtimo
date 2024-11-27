@@ -546,6 +546,10 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
             List<String> values = new ArrayList<>();
             node.forEach(childNode -> values.add(childNode.textValue()));
             return values;
+        } else if (nodeType == JsonNodeType.OBJECT) {
+            Map<String, Object> values = new HashMap<>();
+            node.fields().forEachRemaining(entry -> values.put(entry.getKey(), extractNodeValue(entry.getValue())));
+            return values;
         } else {
             logger.warn("Submitted form field value to be stored in process variables is of an unsupported type");
             return null;
