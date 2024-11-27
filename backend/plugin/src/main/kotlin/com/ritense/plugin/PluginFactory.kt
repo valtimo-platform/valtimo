@@ -18,13 +18,13 @@ package com.ritense.plugin
 
 import com.fasterxml.jackson.databind.JavaType
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginCategory
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginProperty
-import com.ritense.plugin.service.PluginService
+import com.ritense.plugin.service.PluginInstanceCreator
+import com.ritense.valtimo.contract.json.MapperSingleton
 import org.apache.commons.lang3.reflect.FieldUtils
 import java.util.UUID
 import kotlin.reflect.KClass
@@ -36,7 +36,7 @@ import kotlin.reflect.jvm.javaType
  *  configuration. The class extending this factory has to be registered as a bean of type PluginFactory<T>.
  */
 abstract class PluginFactory<T : Any>(
-    protected var pluginService: PluginService,
+    protected var pluginInstanceCreator: PluginInstanceCreator,
 ) {
     private var fullyQualifiedClassName: String = ""
     lateinit var pluginConfigurationId: PluginConfigurationId
@@ -79,7 +79,6 @@ abstract class PluginFactory<T : Any>(
         }
 
         val pluginDefinition = configuration.pluginDefinition
-        val mapper = pluginService.getObjectMapper()
         val propertyIterator = configuration.properties!!.fields()
 
         while (propertyIterator.hasNext()) {
@@ -92,7 +91,7 @@ abstract class PluginFactory<T : Any>(
             val propertyDefinition = pluginDefinition.findPluginProperty(configuredPropertyEntry.key)
                 ?: throw IllegalStateException("Error while creating plugin '${configuration.title}'. Unknown property '${configuredPropertyEntry.key}'.")
 
-            setProperty(instance, propertyDefinition, configuredPropertyEntry.value, mapper)
+            setProperty(instance, propertyDefinition, configuredPropertyEntry.value)
         }
     }
 
@@ -100,7 +99,6 @@ abstract class PluginFactory<T : Any>(
         instance: T,
         propertyDefinition: PluginProperty,
         configuredProperty: JsonNode,
-        mapper: ObjectMapper
     ) {
         val propertyType = Class.forName(propertyDefinition.fieldType)
 
@@ -110,17 +108,17 @@ abstract class PluginFactory<T : Any>(
             val pluginConfigurationId =
                 PluginConfigurationId.existingId(UUID.fromString(configuredProperty.textValue()))
 
-            pluginService.createInstance(pluginConfigurationId)
+            pluginInstanceCreator.createInstance(pluginConfigurationId)
         } else if (propertyType.typeParameters.isNotEmpty()) {
             val propertyTypeWithGeneric =
-                getPropertyTypeWithGeneric(instance::class, propertyDefinition.fieldName, mapper)
+                getPropertyTypeWithGeneric(instance::class, propertyDefinition.fieldName)
             require(propertyType == propertyTypeWithGeneric.rawClass)
-            mapper.treeToValue(
+            MapperSingleton.get().treeToValue(
                 configuredProperty,
                 propertyTypeWithGeneric
             )
         } else {
-            mapper.treeToValue(
+            MapperSingleton.get().treeToValue(
                 configuredProperty,
                 propertyType
             )
@@ -135,10 +133,9 @@ abstract class PluginFactory<T : Any>(
 
     private fun getPropertyTypeWithGeneric(
         pluginClass: KClass<out T>,
-        fieldName: String,
-        mapper: ObjectMapper
+        fieldName: String
     ): JavaType {
         val field = pluginClass.memberProperties.single { field -> field.name == fieldName }
-        return mapper.constructType(field.returnType.javaType)
+        return MapperSingleton.get().constructType(field.returnType.javaType)
     }
 }

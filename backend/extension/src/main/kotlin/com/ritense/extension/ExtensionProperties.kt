@@ -32,12 +32,11 @@ data class ExtensionProperties(
 
     companion object {
 
-        // These whitelists are meant to prevent breaking changes.
-
+        // An extension can autowire only these Spring Beans:
         val DEFAULT_AUTOWIRE_WHITELIST = listOf(
             // Valtimo
             "com.ritense.catalogiapi.service.ZaaktypeUrlProvider",
-            "com.ritense.plugin.service.PluginService",
+            "com.ritense.plugin.service.PluginInstanceCreator",
             "com.ritense.zakenapi.ZaakUrlProvider",
 
             // All @ProcessBeans:
@@ -59,6 +58,7 @@ data class ExtensionProperties(
             "org.springframework.core.io.support.ResourcePatternResolver",
         )
 
+        // An extension is allowed to use these annotations:
         val DEFAULT_BEAN_ANNOTATION_WHITELIST = listOf(
             // Valtimo
             "com.ritense.valtimo.contract.annotation.ProcessBean",
@@ -77,6 +77,7 @@ data class ExtensionProperties(
             "org.pf4j.Extension",
         )
 
+        // An extension is to use these interfaces:
         val DEFAULT_BEAN_INTERFACE_WHITELIST = listOf(
             // Valtimo
             "com.ritense.exporter.Exporter",

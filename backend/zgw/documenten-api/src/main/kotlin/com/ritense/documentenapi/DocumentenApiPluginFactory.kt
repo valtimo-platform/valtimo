@@ -28,7 +28,7 @@ import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import org.springframework.context.ApplicationEventPublisher
 
 class DocumentenApiPluginFactory(
-    pluginService: PluginService,
+    private val pluginService: PluginService,
     private val client: DocumentenApiClient,
     private val storageService: TemporaryResourceStorageService,
     private val applicationEventPublisher: ApplicationEventPublisher,

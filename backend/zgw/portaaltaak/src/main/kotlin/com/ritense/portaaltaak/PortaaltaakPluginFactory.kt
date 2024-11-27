@@ -26,7 +26,7 @@ import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 
 class PortaaltaakPluginFactory(
-    pluginService: PluginService,
+    private val pluginService: PluginService,
     private val objectManagementService: ObjectManagementService,
     private val valueResolverService: ValueResolverService,
     private val processDocumentService: ProcessDocumentService,
