@@ -473,8 +473,9 @@ export class DossierDetailComponent
   }
 
   private initTabLoader(): void {
-    combineLatest([this.dossierTabService.tabs$.pipe(take(1)), this.canView$]).subscribe(
-      ([tabs, canView]) => {
+    combineLatest([this.dossierTabService.tabs$, this.canView$])
+      .pipe(take(1))
+      .subscribe(([tabs, canView]) => {
         if (canView) {
           if (tabs?.length > 0) {
             this._initialTabName = this._snapshot.get('tab') ?? '';
@@ -499,8 +500,7 @@ export class DossierDetailComponent
           this.showNoAccess$.next(true);
           this.loadingTabs$.next(false);
         }
-      }
-    );
+      });
   }
 
   public assignmentOfDocumentChanged(): void {
