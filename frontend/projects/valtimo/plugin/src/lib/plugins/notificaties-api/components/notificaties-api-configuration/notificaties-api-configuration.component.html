@@ -28,6 +28,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
+    [trim]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     placeholder="Notificaties API Plugin"
   >
@@ -39,6 +40,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.url"
     [required]="true"
+    [trim]="true"
     [tooltip]="'urlTooltip' | pluginTranslate: pluginId | async"
     placeholder="https://opennotificaties.example.com/api/v1/"
   >
@@ -50,6 +52,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.callbackUrl"
     [required]="true"
+    [trim]="true"
     [tooltip]="'callbackUrlTooltip' | pluginTranslate: pluginId | async"
     placeholder="https://{gzac-front-end-url}/api/v1/notificatiesapi/callback"
   >

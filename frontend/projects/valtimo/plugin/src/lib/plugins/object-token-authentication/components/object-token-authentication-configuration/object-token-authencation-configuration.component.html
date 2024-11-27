@@ -28,6 +28,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
+    [trim]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     placeholder="Object Token Authenticatie Plugin"
   >

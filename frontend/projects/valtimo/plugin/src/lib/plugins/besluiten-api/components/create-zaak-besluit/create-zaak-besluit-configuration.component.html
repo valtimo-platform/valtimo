@@ -50,6 +50,7 @@
         [defaultValue]="obs.prefill?.besluittypeUrl"
         [disabled]="obs.disabled"
         [required]="true"
+        [trim]="true"
         [tooltip]="'besluittypeUrlTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
       >
@@ -110,6 +111,7 @@
         [defaultValue]="obs.prefill?.bestuursorgaan"
         [disabled]="obs.disabled"
         [required]="false"
+        [trim]="true"
         [tooltip]="'bestuursorgaanTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
       >
@@ -130,6 +132,7 @@
         [defaultValue]="obs.prefill?.ingangsdatum"
         [disabled]="obs.disabled"
         [required]="true"
+        [trim]="true"
         [tooltip]="'ingangsdatumTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
         [margin]="true"
@@ -162,6 +165,7 @@
         [defaultValue]="obs.prefill?.vervaldatum"
         [disabled]="obs.disabled"
         [required]="false"
+        [trim]="true"
         [tooltip]="'vervaldatumTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
         [margin]="true"

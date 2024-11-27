@@ -28,6 +28,7 @@
     [defaultValue]="obs.prefill?.fileName"
     [disabled]="obs.disabled"
     [tooltip]="'fileNameTooltip' | pluginTranslate: pluginId | async"
+    [trim]="true"
   ></v-input>
   <v-select
     [items]="confidentialityLevelItems$ | async"
@@ -46,6 +47,7 @@
     [defaultValue]="obs.prefill?.title"
     [disabled]="obs.disabled"
     [tooltip]="'inputTitleTooltip' | pluginTranslate: pluginId | async"
+    [trim]="true"
   ></v-input>
   <v-input
     name="description"
@@ -62,6 +64,7 @@
     [defaultValue]="obs.prefill?.localDocumentLocation"
     [disabled]="obs.disabled"
     [required]="true"
+    [trim]="true"
     [tooltip]="'localDocumentLocationTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
@@ -71,6 +74,7 @@
     [margin]="true"
     [defaultValue]="obs.prefill?.storedDocumentUrl"
     [disabled]="obs.disabled"
+    [trim]="true"
     [tooltip]="'storeDocumentUrlTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
@@ -101,6 +105,7 @@
     [defaultValue]="obs.prefill?.informatieobjecttype"
     [disabled]="obs.disabled"
     [required]="true"
+    [trim]="true"
     [tooltip]="'informatieobjecttypeTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >

@@ -28,6 +28,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
+    [trim]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     placeholder="Besluiten API Plugin"
   >
@@ -39,6 +40,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.rsin"
     [required]="true"
+    [trim]="true"
     [tooltip]="'rsinTooltip' | pluginTranslate: pluginId | async"
     placeholder="123456789"
   >
@@ -50,6 +52,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.url"
     [required]="true"
+    [trim]="true"
     [tooltip]="'urlTooltip' | pluginTranslate: pluginId | async"
     placeholder="https://openzaak.example.com/besluiten/api/v1/ "
   >

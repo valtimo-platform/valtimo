@@ -56,6 +56,7 @@
       [defaultValue]="obs.prefill?.resultaattypeUrl"
       [disabled]="obs.disabled"
       [required]="true"
+      [trim]="true"
       [tooltip]="'resultaattypeUrlTooltip' | pluginTranslate: obs.pluginId | async"
       [fullWidth]="true"
     >

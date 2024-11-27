@@ -29,6 +29,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.properties?.uri"
     [required]="false"
+    [trim]="true"
     [widthPx]="350"
   ></v-input>
 
@@ -40,6 +41,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.properties?.bean"
     [required]="false"
+    [trim]="true"
     [widthPx]="350"
   ></v-input>
 </v-form>

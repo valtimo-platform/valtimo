@@ -28,6 +28,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
+    [trim]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     placeholder="OpenZaak Plugin"
   >
@@ -39,6 +40,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.clientId"
     [required]="true"
+    [trim]="true"
     [tooltip]="'clientIdTooltip' | pluginTranslate: pluginId | async"
     placeholder="client-id"
   >

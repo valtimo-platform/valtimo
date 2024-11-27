@@ -28,6 +28,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
+    [trim]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     placeholder="Verzoek Plugin"
   >
@@ -67,6 +68,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.rsin"
     [required]="true"
+    [trim]="true"
     [tooltip]="'rsinTooltip' | pluginTranslate: pluginId | async"
     placeholder=""
   >
@@ -106,6 +108,7 @@
         [disabled]="obs.disabled"
         [defaultValue]="prefill?.type"
         [required]="true"
+        [trim]="true"
         [tooltip]="'typeTooltip' | pluginTranslate: pluginId | async"
         [smallMargin]="true"
         placeholder=""

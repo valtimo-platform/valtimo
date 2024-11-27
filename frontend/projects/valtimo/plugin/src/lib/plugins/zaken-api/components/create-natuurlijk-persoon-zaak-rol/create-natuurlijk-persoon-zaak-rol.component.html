@@ -28,6 +28,7 @@
     [defaultValue]="obs.prefill?.roltypeUrl"
     [disabled]="obs.disabled"
     [required]="true"
+    [trim]="true"
     [tooltip]="'roltypeUrlTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
@@ -50,6 +51,7 @@
     [defaultValue]="obs.prefill?.inpBsn"
     [disabled]="obs.disabled"
     [required]="false"
+    [trim]="true"
     [tooltip]="'inpBsnTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
@@ -61,6 +63,7 @@
     [defaultValue]="obs.prefill?.anpIdentificatie"
     [disabled]="obs.disabled"
     [required]="false"
+    [trim]="true"
     [tooltip]="'anpIdentificatieTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
@@ -72,6 +75,7 @@
     [defaultValue]="obs.prefill?.inpA_nummer"
     [disabled]="obs.disabled"
     [required]="false"
+    [trim]="true"
     [tooltip]="'inpA_nummerTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >

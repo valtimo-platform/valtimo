@@ -42,6 +42,7 @@
     [margin]="true"
     [defaultValue]="obs.prefill?.formTypeId"
     [disabled]="obs.disabled"
+    [trim]="true"
     [tooltip]="'formTypeIdTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
   ></v-input>
@@ -54,6 +55,7 @@
     [disabled]="obs.disabled"
     [tooltip]="'formTypeUrlTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
+    [trim]="true"
   ></v-input>
   <valtimo-carbon-multi-input
     name="sendData"
@@ -100,6 +102,7 @@
     [disabled]="obs.disabled"
     [tooltip]="'identificationKeyTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
+    [trim]="true"
   ></v-input>
   <v-input
     *ngIf="obs.receiverIsOther"
@@ -110,6 +113,7 @@
     [disabled]="obs.disabled"
     [tooltip]="'identificationValueTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
+    [trim]="true"
   ></v-input>
   <v-input
     name="verloopDurationInDays"

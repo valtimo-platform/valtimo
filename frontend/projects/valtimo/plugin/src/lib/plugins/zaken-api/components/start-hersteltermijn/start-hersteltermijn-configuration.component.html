@@ -33,6 +33,7 @@
         [defaultValue]="obs.prefill?.maxDurationInDays"
         [disabled]="obs.disabled"
         [required]="true"
+        [trim]="true"
         [tooltip]="'maxDurationInDaysTooltip' | pluginTranslate: pluginId | async"
         [widthPx]="350"
       >

@@ -28,6 +28,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
+    [trim]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     placeholder="Smart Documents Plugin"
   >
@@ -39,6 +40,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.url"
     [required]="true"
+    [trim]="true"
     placeholder=""
   >
   </v-input>
@@ -49,6 +51,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.username"
     [required]="true"
+    [trim]="true"
     placeholder=""
   >
   </v-input>

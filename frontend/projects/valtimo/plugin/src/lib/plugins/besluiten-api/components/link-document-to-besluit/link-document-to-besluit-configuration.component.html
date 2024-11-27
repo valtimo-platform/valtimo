@@ -31,6 +31,7 @@
     [defaultValue]="obs.prefill?.besluitUrl"
     [disabled]="obs.disabled"
     [required]="true"
+    [trim]="true"
     [tooltip]="'besluitUrlTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
   >
@@ -42,6 +43,7 @@
     [defaultValue]="obs.prefill?.documentUrl"
     [disabled]="obs.disabled"
     [required]="true"
+    [trim]="true"
     [tooltip]="'documentUrlTooltip' | pluginTranslate: pluginId | async"
     [widthPx]="350"
   >

@@ -28,6 +28,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
+    [trim]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
@@ -38,6 +39,7 @@
     [defaultValue]="obs.prefill?.clientId"
     [disabled]="obs.disabled"
     [required]="true"
+    [trim]="true"
   ></v-input>
   <v-input
     name="clientSecret"

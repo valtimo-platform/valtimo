@@ -28,6 +28,7 @@
     [defaultValue]="obs.prefill?.processVariableName"
     [disabled]="obs.disabled"
     [required]="false"
+    [trim]="true"
     [tooltip]="'processVariableTooltip' | pluginTranslate: pluginId | async"
   ></v-input>
 </v-form>

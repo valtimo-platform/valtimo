@@ -36,6 +36,7 @@
         [defaultValue]="obs.prefill?.rsin"
         [disabled]="obs.disabled"
         [required]="true"
+        [trim]="true"
         [tooltip]="'rsinTooltip' | pluginTranslate: obs.pluginId | async"
         [widthPx]="350"
       >
@@ -57,6 +58,7 @@
         [defaultValue]="obs.prefill?.zaaktypeUrl"
         [disabled]="obs.disabled || obs.selectedInputOption === 'selection'"
         [required]="true"
+        [trim]="true"
         [tooltip]="'zaakTypeTooltip' | pluginTranslate: obs.pluginId | async"
         [fullWidth]="true"
       >
@@ -108,6 +110,7 @@
               [margin]="true"
               [defaultValue]="obs.prefill?.plannedEndDate"
               [required]="true"
+              [trim]="true"
               [tooltip]="'dateformatTooltip' | pluginTranslate: obs.pluginId | async"
               (valueChange)="onPropertyChanged('plannedEndDate', $event)"
             ></v-input>
@@ -127,6 +130,7 @@
               [margin]="true"
               [defaultValue]="obs.prefill?.finalDeliveryDate"
               [required]="true"
+              [trim]="true"
               [tooltip]="'dateformatTooltip' | pluginTranslate: obs.pluginId | async"
               (valueChange)="onPropertyChanged('finalDeliveryDate', $event)"
             ></v-input>

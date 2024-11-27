@@ -31,6 +31,7 @@
     [defaultValue]="obs.prefill?.templateGroup"
     [disabled]="obs.disabled"
     [required]="true"
+    [trim]="true"
     placeholder=""
   >
   </v-input>
@@ -41,6 +42,7 @@
     [defaultValue]="obs.prefill?.templateName"
     [disabled]="obs.disabled"
     [required]="true"
+    [trim]="true"
     placeholder=""
   >
   </v-input>
@@ -52,6 +54,7 @@
     [disabled]="obs.disabled"
     [tooltip]="'resultingDocumentProcessVariableNameTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
+    [trim]="true"
     placeholder=""
   >
   </v-input>

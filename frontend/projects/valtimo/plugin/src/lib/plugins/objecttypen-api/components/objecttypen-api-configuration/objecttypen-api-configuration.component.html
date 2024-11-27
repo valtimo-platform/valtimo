@@ -28,6 +28,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
+    [trim]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     placeholder="Objecttypen API Plugin"
   >
@@ -39,6 +40,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.url"
     [required]="true"
+    [trim]="true"
     [tooltip]="'urlTooltip' | pluginTranslate: pluginId | async"
     placeholder="https://objecttypen.example.com/api/v2/"
   >

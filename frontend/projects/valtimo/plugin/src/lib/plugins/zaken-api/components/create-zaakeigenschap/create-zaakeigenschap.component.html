@@ -45,6 +45,7 @@
       [defaultValue]="obs.prefill?.eigenschapUrl"
       [disabled]="obs.disabled"
       [required]="true"
+      [trim]="true"
       [tooltip]="'eigenschapUrlTooltip' | pluginTranslate: obs.pluginId | async"
       [fullWidth]="true"
     >

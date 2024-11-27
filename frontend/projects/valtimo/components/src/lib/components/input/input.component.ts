@@ -60,6 +60,7 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public carbonTheme = 'g10';
   @Input() public placeholder = '';
   @Input() public dataTestId?: string;
+  @Input() public trim: boolean = false;
 
   @Output() public valueChange: EventEmitter<any> = new EventEmitter();
 
@@ -85,6 +86,9 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public onValueChange(value: any): void {
+    if (this.trim) {
+      value = value?.trim();
+    }
     this.inputValue$.next(value);
   }
 

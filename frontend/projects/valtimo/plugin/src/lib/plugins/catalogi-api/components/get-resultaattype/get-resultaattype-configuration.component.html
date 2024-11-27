@@ -31,6 +31,7 @@
     [defaultValue]="obs.prefill?.resultaattype"
     [disabled]="obs.disabled"
     [required]="true"
+    [trim]="true"
     [tooltip]="'resultaattypeTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
@@ -42,6 +43,7 @@
     [defaultValue]="obs.prefill?.processVariable"
     [disabled]="obs.disabled"
     [required]="true"
+    [trim]="true"
     [tooltip]="'reslutaatProcessVariableTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
