@@ -247,7 +247,9 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (intermediateSubmission: IntermediateSubmission) => {
-          this.taskIntermediateSaveService.setSubmission({data: intermediateSubmission.submission});
+          this.taskIntermediateSaveService.setSubmission({
+            data: intermediateSubmission?.submission || {},
+          });
 
           if (formViewModelComponentRef) {
             formViewModelComponentRef.instance.submission = {

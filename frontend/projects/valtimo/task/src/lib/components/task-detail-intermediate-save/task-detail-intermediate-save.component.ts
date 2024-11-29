@@ -180,7 +180,14 @@ export class TaskDetailIntermediateSaveComponent {
       .getIntermediateSubmission(task.id ?? '')
       .pipe(take(1))
       .subscribe(intermediateSave => {
-        this.currentIntermediateSave = this.formatIntermediateSubmission(intermediateSave);
+        if (intermediateSave !== null) {
+          this.currentIntermediateSave = this.formatIntermediateSubmission(intermediateSave);
+        } else {
+          this.currentIntermediateSave = null;
+          this.taskIntermediateSaveService.setSubmission({});
+        }
+
+        this.currentIntermediateSaveEvent.emit(this.currentIntermediateSave);
       });
   }
 }

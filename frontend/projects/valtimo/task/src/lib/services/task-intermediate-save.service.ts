@@ -17,7 +17,7 @@ import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService} from '@valtimo/config';
 import {InterceptorSkip} from '@valtimo/security';
-import {BehaviorSubject, Observable, filter} from 'rxjs';
+import {BehaviorSubject, catchError, filter, Observable, of} from 'rxjs';
 import {IntermediateSaveRequest, IntermediateSubmission} from '../models';
 
 @Injectable({providedIn: 'root'})
@@ -39,16 +39,17 @@ export class TaskIntermediateSaveService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public getIntermediateSubmission(taskInstanceId: string): Observable<IntermediateSubmission> {
-    return this.httpClient.get<IntermediateSubmission>(
-      this.getApiUrl('/v1/form/intermediate/submission'),
-      {
+  public getIntermediateSubmission(
+    taskInstanceId: string
+  ): Observable<IntermediateSubmission | null> {
+    return this.httpClient
+      .get<IntermediateSubmission>(this.getApiUrl('/v1/form/intermediate/submission'), {
         params: {
           taskInstanceId,
         },
         headers: new HttpHeaders().set(InterceptorSkip, '404'),
-      }
-    );
+      })
+      .pipe(catchError(() => of(null)));
   }
 
   public storeIntermediateSubmission(
