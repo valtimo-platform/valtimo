@@ -93,6 +93,10 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
 
     this.loadTaskDetails(value.task as any, value.processLinkActivityResult);
   }
+  @Input() public set modalClosed(_: boolean) {
+    // save form flow data on modal closed
+    if (this.formFlow) this.formFlow.saveData();
+  }
   @Output() public readonly closeModalEvent = new EventEmitter();
   @Output() public readonly formSubmit = new EventEmitter();
   @Output() public readonly activeChange = new EventEmitter<boolean>();

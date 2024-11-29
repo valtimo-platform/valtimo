@@ -70,6 +70,8 @@ export class TaskDetailModalComponent implements OnInit {
 
   public readonly canAssignUserToTask$ = new BehaviorSubject<boolean>(false);
 
+  public readonly modalCloseEvent$ = new BehaviorSubject<boolean>(false);
+
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -118,7 +120,7 @@ export class TaskDetailModalComponent implements OnInit {
   public openTaskAndProcessLinkDetails(taskWithProcessLink: TaskWithProcessLink | null): void {
     this.processLinkPreloaded$.next(true);
     this.taskAndProcessLink$.next(taskWithProcessLink);
-    this.task$.next(taskWithProcessLink.task as any);
+    this.task$.next({...(taskWithProcessLink.task as any)});
     this.page$.next({
       title: taskWithProcessLink.task?.name,
       subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${taskWithProcessLink.task?.created}`,
@@ -147,6 +149,7 @@ export class TaskDetailModalComponent implements OnInit {
   public closeModal(): void {
     this._modal.open = false;
     this.taskIntermediateSaveService.setSubmission({});
+    this.modalCloseEvent$.next(!this.modalCloseEvent$.getValue());
   }
 
   private openModal(): void {

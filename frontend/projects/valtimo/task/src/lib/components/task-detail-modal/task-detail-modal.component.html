@@ -66,12 +66,14 @@
     @if (processLinkPreloaded$ | async) {
       <valtimo-task-detail-content
         [taskAndProcessLink]="taskAndProcessLink$ | async"
+        [modalClosed]="modalCloseEvent$ | async"
         (formSubmit)="onFormSubmit()"
         (closeModalEvent)="closeModal()"
       ></valtimo-task-detail-content>
     } @else {
       <valtimo-task-detail-content
         [task]="task$ | async"
+        [modalClosed]="modalCloseEvent$ | async"
         (formSubmit)="onFormSubmit()"
         (closeModalEvent)="closeModal()"
       ></valtimo-task-detail-content>
