@@ -19,6 +19,8 @@ package com.ritense.verzoek
 import com.fasterxml.jackson.core.JsonPointer
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
@@ -71,35 +73,45 @@ open class VerzoekPluginEventListener(
             return
         }
 
-        val objectManagement = objectManagementService.findByObjectTypeId(objectType.substringAfterLast("/")) ?: return
+        val objectManagement = objectManagementService.findByObjectTypeId(objectType.substringAfterLast("/"))
+            ?: return
 
-        pluginService.createInstance(VerzoekPlugin::class.java) { properties: JsonNode ->
-            properties.get("verzoekProperties")
-                .any { it.get("objectManagementId").textValue().equals(objectManagement.id.toString()) }
-        }?.run {
+        val verzoekPlugin = pluginService.createInstance(VerzoekPlugin::class.java) { properties ->
+            properties["verzoekProperties"]
+                .any { it["objectManagementId"].textValue() == objectManagement.id.toString() }
+        }
+            ?: return
+
+        verzoekPlugin.run {
             val verzoekObjectData = getVerzoekObjectData(objectManagement, event)
-            val verzoekTypeProperties = getVerzoekTypeProperties(verzoekObjectData, event) ?: return
+            val verzoekTypeProperties = getVerzoekTypeProperties(verzoekObjectData, event)
+                ?: return
+
             logger.info { "Received verzoek notification. Verzoek objectUrl: ${event.resourceUrl}" }
             val document = createDocument(verzoekTypeProperties, verzoekObjectData)
             withLoggingContext(JsonSchemaDocument::class, document.id()) {
                 val zaakTypeUrl = zaaktypeUrlProvider.getZaaktypeUrl(document.definitionId().name())
                 val initiatorType = if (verzoekObjectData.has("kvk")) {
                     "kvk"
-                } else {
+                } else if (verzoekObjectData.has("bsn")) {
                     "bsn"
+                } else {
+                    null
                 }
 
-                val verzoekVariables = mutableMapOf(
-                    "RSIN" to this.rsin.toString(),
+                val verzoekVariables = objectMapper.treeToValue<MutableMap<String, Any?>>(verzoekObjectData)
+                verzoekVariables.remove("data")
+                verzoekVariables += mutableMapOf(
+                    "RSIN" to rsin.toString(),
                     "zaakTypeUrl" to zaakTypeUrl.toString(),
                     "rolTypeUrl" to verzoekTypeProperties.initiatorRoltypeUrl.toString(),
                     "rolDescription" to verzoekTypeProperties.initiatorRolDescription,
                     "verzoekObjectUrl" to event.resourceUrl,
                     "initiatorType" to initiatorType,
-                    "initiatorValue" to verzoekObjectData.get(initiatorType).textValue(),
                     "processDefinitionKey" to verzoekTypeProperties.processDefinitionKey,
                     "documentUrls" to getDocumentUrls(verzoekObjectData)
                 )
+                initiatorType?.let { verzoekVariables["initiatorValue"] = verzoekObjectData[it].textValue() }
 
                 addVerzoekVariablesToProcessVariable(verzoekTypeProperties, verzoekObjectData, verzoekVariables)
 
@@ -115,10 +127,10 @@ open class VerzoekPluginEventListener(
     private fun getDocumentUrls(verzoekObjectData: JsonNode): List<String> {
         val documentList = arrayListOf<String>()
 
-        verzoekObjectData.get("pdf_url")?.let {
+        verzoekObjectData["pdf_url"]?.let {
             documentList.add(it.textValue())
         }
-        verzoekObjectData.get("attachments")?.let {
+        verzoekObjectData["attachments"]?.let {
             if (it.isArray) {
                 it.toList().forEach { child ->
                     documentList.add(child.textValue())
@@ -131,14 +143,13 @@ open class VerzoekPluginEventListener(
     private fun getVerzoekObjectData(
         objectManagement: ObjectManagement,
         event: NotificatiesApiNotificationReceivedEvent
-    ): JsonNode {
+    ): ObjectNode {
         logger.debug { "Fetching verzoek object data from URL '${event.resourceUrl}'" }
         val objectenApiPlugin =
             pluginService.createInstance(PluginConfigurationId(objectManagement.objectenApiPluginConfigurationId)) as ObjectenApiPlugin
-        val verzoekObjectData = objectenApiPlugin.getObject(URI(event.resourceUrl)).record.data
-            ?: throw NotificatiesNotificationEventException(
-                "Verzoek meta data was empty!"
-            )
+        val verzoekObjectData = objectenApiPlugin.getObject(URI(event.resourceUrl)).record.data as ObjectNode?
+            ?: throw NotificatiesNotificationEventException("Verzoek meta data was empty!")
+
         logger.debug { "Fetched verzoek object data from URL '${event.resourceUrl}' successfully" }
         return verzoekObjectData
     }

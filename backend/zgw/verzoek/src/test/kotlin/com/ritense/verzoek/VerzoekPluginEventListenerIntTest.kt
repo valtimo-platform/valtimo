@@ -323,10 +323,13 @@ internal class VerzoekPluginEventListenerIntTest : BaseIntegrationTest() {
         val processVariableMap =
             processService.createVariableInstanceQuery()
                 .processInstanceIdIn(processList[0].id).list().associate { it.name to it.value }
-        assertThat(processVariableMap).hasSize(10)
+        assertThat(processVariableMap).hasSize(13)
         assertThat(processVariableMap).containsKey("fullname")
         assertThat(processVariableMap).doesNotContainKey("email")
         assertEquals("John Doe", processVariableMap["fullname"])
+        assertEquals("objection", processVariableMap["type"])
+        assertEquals("999999999", processVariableMap["bsn"])
+        assertEquals("[https://example-document-url.com/]", processVariableMap["attachments"].toString())
     }
 
     @Test
@@ -454,6 +457,7 @@ internal class VerzoekPluginEventListenerIntTest : BaseIntegrationTest() {
                 {
                     "type": "$withType",
                     ${createObjectData(withObjectData)}
+                    "attachments": ["https://example-document-url.com/"],
                     "bsn": "$bsn"
                 }
             """.trimIndent()
