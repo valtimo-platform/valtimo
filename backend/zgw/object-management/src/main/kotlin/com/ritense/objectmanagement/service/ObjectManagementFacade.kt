@@ -31,7 +31,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClientResponseException
-import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
@@ -181,9 +180,7 @@ class ObjectManagementFacade(
         try {
             return accessObject.objectenApiPlugin
                 .objectUpdate(
-                    URI(
-                        accessObject.objectenApiPlugin.url.toString() + "objects/" + objectId
-                    ),
+                    accessObject.objectenApiPlugin.getObjectUrl(objectId),
                     objectRequest
                 )
         } catch (ex: RestClientResponseException) {
@@ -200,7 +197,7 @@ class ObjectManagementFacade(
         try {
             logger.trace { "Deleting object '$objectId' of type '${accessObject.objectManagement.objecttypeId}' from Objecten API using plugin ${accessObject.objectManagement.objectenApiPluginConfigurationId}" }
             return accessObject.objectenApiPlugin.deleteObject(
-                URI("${accessObject.objectenApiPlugin.url}objects/$objectId")
+                accessObject.objectenApiPlugin.getObjectUrl(objectId)
             )
         } catch (ex: HttpClientErrorException) {
             throw IllegalStateException("Error while deleting object $objectId. Response from Objects API: ${ex.responseBodyAsString}", ex)
@@ -225,12 +222,7 @@ class ObjectManagementFacade(
 
     private fun findObjectByUuid(accessObject: ObjectManagementAccessObject, uuid: UUID): ObjectWrapper {
         logger.debug { "Find object by uuid accessObject=$accessObject uuid=$uuid" }
-        val objectUrl = UriComponentsBuilder
-            .fromUri(accessObject.objectenApiPlugin.url)
-            .pathSegment("objects")
-            .pathSegment(uuid.toString())
-            .build()
-            .toUri()
+        val objectUrl = accessObject.objectenApiPlugin.getObjectUrl(uuid)
 
         logger.trace { "Getting object $objectUrl" }
         return accessObject.objectenApiPlugin.getObject(objectUrl)

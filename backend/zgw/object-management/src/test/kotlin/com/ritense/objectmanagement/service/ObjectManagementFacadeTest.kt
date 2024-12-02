@@ -76,6 +76,7 @@ internal class ObjectManagementFacadeTest {
         val expectedUrl = URI.create("www.ritense.com/objects/$objectUuid")
         val expectedResult = createObjectWrapper(url = expectedUrl, uuid = objectUuid)
         whenever(objectenApiPlugin.getObject(expectedUrl)).thenReturn(expectedResult)
+        whenever(objectenApiPlugin.getObjectUrl(any())).thenCallRealMethod()
 
         val result = objectManagementFacade.getObjectByUuid(objectName, objectUuid)
 
@@ -105,6 +106,7 @@ internal class ObjectManagementFacadeTest {
         val expectedResult2 = createObjectWrapper(url = expectedUrl2, uuid = objectUuid2)
         whenever(objectenApiPlugin.getObject(expectedUrl1)).thenReturn(expectedResult1)
         whenever(objectenApiPlugin.getObject(expectedUrl2)).thenReturn(expectedResult2)
+        whenever(objectenApiPlugin.getObjectUrl(any())).thenCallRealMethod()
 
         val result = objectManagementFacade.getObjectsByUuids(objectName, listOf(objectUuid1, objectUuid2))
 
@@ -395,6 +397,7 @@ internal class ObjectManagementFacadeTest {
         val expectedUrl = URI.create("www.ritense.com")
         whenever(objecttypenApiPlugin.getObjectTypeUrlById(objectTypeId)).thenReturn(expectedUrl)
         whenever(objectenApiPlugin.url).thenReturn(expectedUrl)
+        whenever(objectenApiPlugin.getObjectUrl(any())).thenCallRealMethod()
 
         val objectRecord = ObjectRecord(
             typeVersion = objectTypeVersion,
@@ -441,6 +444,7 @@ internal class ObjectManagementFacadeTest {
         val expectedUrl = URI.create("www.ritense.com")
         whenever(objecttypenApiPlugin.getObjectTypeUrlById(objectTypeId)).thenReturn(expectedUrl)
         whenever(objectenApiPlugin.url).thenReturn(expectedUrl)
+        whenever(objectenApiPlugin.getObjectUrl(any())).thenCallRealMethod()
 
         objectManagementFacade.createObject(objectName, data)
 
