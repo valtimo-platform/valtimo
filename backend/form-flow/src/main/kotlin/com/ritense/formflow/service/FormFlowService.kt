@@ -139,8 +139,10 @@ class FormFlowService(
     private fun getFutureSteps(step: FormFlowStep, result: MutableList<FormFlowStep> = mutableListOf()): List<FormFlowStep> {
         return withLoggingContext(FormFlowStep::class.java.canonicalName to step.id.toString()) {
             step.nextSteps.forEach { nextStep ->
-                val futureStep = step.id.formFlowDefinition!!.steps.first { it.id.key == nextStep.step }
-                if (!result.contains(futureStep)) {
+                val futureStep = step.id.formFlowDefinition?.steps?.firstOrNull { it.id.key == nextStep.step }
+                if (futureStep == null) {
+                    return result
+                } else if (!result.contains(futureStep)) {
                     result.add(futureStep)
                     return getFutureSteps(futureStep, result)
                 }
