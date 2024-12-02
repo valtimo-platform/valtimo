@@ -115,6 +115,9 @@
         },
         {
             "key": "end",
+            "onComplete": [
+                "${null}"
+            ],
             "type": {
                 "name": "form",
                 "properties": {

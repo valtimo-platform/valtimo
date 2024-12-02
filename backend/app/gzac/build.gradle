@@ -41,4 +41,23 @@ bootRun {
     }
 }
 
+tasks.register("bootRunWithDocker", tasks.named("bootRun").get().class) {
+    group = "application"
+    description = "Starts docker containers and then runs this project as a Spring Boot application"
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = "com.ritense.gzac.GzacApplication"
+
+    dependsOn("composeUpGzac")
+    doFirst {
+        File f = file(".env.properties")
+        if (f.isFile()) {
+            def props = new Properties()
+            f.withInputStream { props.load(it) }
+            props.each { key, value ->
+                environment key.toString(), value.toString()
+            }
+        }
+    }
+}
+
 apply from: "$rootProject.projectDir/gradle/dockerComposeGzac.gradle"
