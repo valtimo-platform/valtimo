@@ -18,8 +18,10 @@ package com.ritense.document;
 
 import static org.mockito.Mockito.mock;
 
+import com.ritense.case_.TestResolverFactory;
 import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.mail.MailSender;
+import com.ritense.valueresolver.ValueResolverFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -40,6 +42,11 @@ public class DocumentTestConfiguration {
     @Bean
     public MailSender mailSender() {
         return mock(MailSender.class);
+    }
+
+    @Bean
+    public ValueResolverFactory testResolverFactory() {
+        return new TestResolverFactory();
     }
 
     @TestConfiguration

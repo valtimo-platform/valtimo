@@ -24,7 +24,6 @@ dependencies {
     api(project(":core"))
     api(project(":dashboard"))
     api(project(":data-provider"))
-    api(project(":document"))
     api(project(":exporter"))
     api(project(":form"))
     api(project(":form-flow"))

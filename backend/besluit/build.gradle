@@ -34,11 +34,11 @@ dockerCompose {
 }
 
 dependencies {
+    implementation project(':case')
     implementation project(':core')
     implementation project(':contract')
     implementation project(':connector')
     implementation project(':openzaak')
-    implementation project(':document')
     implementation project(':process-document')
     implementation project(':resource:openzaak-resource')
 
@@ -76,7 +76,7 @@ dependencies {
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
-    testImplementation project(':document')
+    testImplementation project(':case')
     testImplementation project(':process-document')
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"

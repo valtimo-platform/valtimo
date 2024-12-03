@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ritense.case
+package com.ritense.case_
 
 import com.ritense.valueresolver.ValueResolverFactory
 import org.camunda.bpm.engine.delegate.VariableScope

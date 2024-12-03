@@ -33,7 +33,6 @@ dependencies {
     implementation project(":case")
     implementation project(":contract")
     implementation project(':core')
-    implementation project(":document")
     implementation project(':plugin')
     implementation project(":plugin-valtimo")
     implementation project(":process-document")
@@ -53,7 +52,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
-    testImplementation project(':document')
+    testImplementation project(':case')
     testImplementation project(':resource')
     testImplementation project(':test-utils-common')
 

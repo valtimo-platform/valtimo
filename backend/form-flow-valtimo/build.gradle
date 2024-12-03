@@ -73,10 +73,10 @@ dependencies {
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
     testImplementation "org.camunda.community.mockito:camunda-platform-7-mockito:${camundaMockitoVersion}"
 
+    implementation project(':case')
     implementation project(':contract')
     implementation project(':core')
     implementation project(':form')
-    implementation project(':document')
     implementation project(':value-resolver')
 
     testImplementation project(':resource')

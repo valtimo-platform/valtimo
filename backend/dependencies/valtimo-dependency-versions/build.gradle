@@ -33,7 +33,6 @@ dependencies {
         api(project(":core"))
         api(project(":dashboard"))
         api(project(":data-provider"))
-        api(project(":document"))
         api(project(":document-generation"))
         api(project(":external-event"))
         api(project(":exporter"))
