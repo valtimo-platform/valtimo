@@ -367,8 +367,9 @@ class CatalogiApiPlugin(
         withLoggingContext(CATALOGI_API.ZAAKTYPE to zaakTypeUrl.toString()) {
             logger.debug { "Getting Besluittype by omschrijving: $omschrijving for zaaktype $zaakTypeUrl" }
             return getBesluittypen(zaakTypeUrl)
+                .filter { it.eindeGeldigheid == null || it.eindeGeldigheid.isAfter(LocalDate.now()) }
                 .singleOrNull { it.omschrijving.equals(omschrijving, ignoreCase = true) }
-                ?: throw StatustypeNotFoundException("With 'omschrijving': '$omschrijving'")
+                ?: throw IllegalStateException("Besluittype with 'omschrijving': '$omschrijving' is not found")
         }
     }
 
