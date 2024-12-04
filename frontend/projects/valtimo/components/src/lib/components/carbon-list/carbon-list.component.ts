@@ -72,6 +72,7 @@ import {
   TAG_ELLIPSIS_LIMIT,
   ViewType,
 } from '../../models';
+import {EllipsisPipe} from '../../pipes';
 import {KeyStateService} from '../../services/key-state.service';
 import {ViewContentService} from '../view-content/view-content.service';
 import {CarbonListFilterPipe} from './CarbonListFilterPipe.directive';
@@ -256,6 +257,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   constructor(
+    private readonly ellipsisPipe: EllipsisPipe,
     private readonly filterPipe: CarbonListFilterPipe,
     private readonly iconService: IconService,
     private readonly logger: NGXLogger,
@@ -461,7 +463,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
                 title: resolvedObject ?? '-',
                 data:
                   (field.tooltipCharLimit
-                    ? this.transformContentEllipsis(resolvedObject, field.tooltipCharLimit)
+                    ? this.ellipsisPipe.transform(resolvedObject, field.tooltipCharLimit)
                     : resolvedObject) ?? '-',
                 template: this.defaultTemplate,
                 item,
@@ -702,7 +704,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const tags = itemTags.map((tag: CarbonTag, index: number) =>
       index === 0
-        ? {...tag, ellipsisContent: this.transformContentEllipsis(tag.content, TAG_ELLIPSIS_LIMIT)}
+        ? {...tag, ellipsisContent: this.ellipsisPipe.transform(tag.content, TAG_ELLIPSIS_LIMIT)}
         : tag
     );
 
@@ -710,9 +712,5 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
       data: {tags},
       template: this.tagTemplate,
     });
-  }
-
-  private transformContentEllipsis(content: string, limit: number): string {
-    return content.substring(0, limit - 1) + (content.length > limit ? '...' : '');
   }
 }

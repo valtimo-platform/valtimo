@@ -306,6 +306,30 @@
                 </cds-text-label>
               }
             }
+
+            <cds-text-label
+              *ngIf="
+                formRow.get('type').value.id === CaseWidgetDisplayTypeKey.TEXT && isFieldWidget
+              "
+            >
+              <v-input-label
+                [title]="'widgetTabManagement.content.fields.ellipsisCharacterLimit' | translate"
+                tooltip="{{
+                  'widgetTabManagement.content.fields.ellipsisCharacterLimitTooltip' | translate
+                }}"
+              >
+              </v-input-label>
+
+              <input
+                cdsText
+                [attr.data-carbon-theme]="inputTheme"
+                [placeholder]="
+                  'widgetTabManagement.content.fields.ellipsisCharacterLimitPlaceholder' | translate
+                "
+                type="text"
+                formControlName="ellipsisCharacterLimit"
+              />
+            </cds-text-label>
           </div>
         </form>
       </cds-accordion-item>

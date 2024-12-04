@@ -47,6 +47,7 @@ import {
   CaseWidgetDisplayTypeKey,
   CaseWidgetEnumDisplayType,
   CaseWidgetNumberDisplayType,
+  CaseWidgetTextDisplayType,
   CaseWidgetType,
   FieldsCaseWidgetValue,
 } from '@valtimo/dossier';
@@ -86,6 +87,7 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
   @HostBinding('class') public readonly class = 'valtimo-dossier-management-widget-field-column';
   @Input({required: true}) public columnData: FieldsCaseWidgetValue[];
   @Input() public addTranslateKey = 'widgetTabManagement.content.fields.add';
+  @Input() public isFieldWidget = false;
   @Input() public fieldWidthDropdown?: TemplateRef<Dropdown>;
 
   @Output() public columnUpdateEvent = new EventEmitter<{
@@ -151,6 +153,10 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
         ]),
         title: this.fb.control<string>('', Validators.required),
         content: this.fb.control<string>('', Validators.required),
+        ellipsisCharacterLimit: this.fb.control<number | null>(
+          null,
+          Validators.pattern('[1-9][0-9]*')
+        ),
       })
     );
   }
@@ -198,6 +204,13 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
       ),
       title: this.fb.control<string>(row.title, Validators.required),
       content: this.fb.control<string>(row.value, Validators.required),
+      ...((!row.displayProperties ||
+        row.displayProperties?.type === CaseWidgetDisplayTypeKey.TEXT) && {
+        ellipsisCharacterLimit: this.fb.control<number | null>(
+          (row.displayProperties as CaseWidgetTextDisplayType)?.ellipsisCharacterLimit ?? null,
+          Validators.pattern('[1-9][0-9]*')
+        ),
+      }),
       ...([CaseWidgetDisplayTypeKey.NUMBER, CaseWidgetDisplayTypeKey.PERCENT].includes(
         row.displayProperties?.type as CaseWidgetDisplayTypeKey
       ) && {
@@ -264,19 +277,21 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
           key: row.title.replace(/\W+/g, '-').replace(/\-$/, '').toLowerCase(),
           title: row.title,
           value: row.content,
-          ...(!!row?.type.id &&
-            row?.type.id !== CaseWidgetDisplayTypeKey.TEXT && {
-              displayProperties: {
-                type: row.type.id,
-                ...(!!row?.currencyCode && {currencyCode: row.currencyCode}),
-                ...(!!row?.display && {display: row.display}),
-                ...(!!row?.digitsInfo && {digitsInfo: row.digitsInfo}),
-                ...(!!row?.format && {format: row.format}),
-                ...(!!row?.values && {
-                  values: row.values?.reduce((acc, curr) => ({...acc, [curr.key]: curr.value}), {}),
-                }),
-              },
-            }),
+          ...(!!row?.type.id && {
+            displayProperties: {
+              type: row.type.id,
+              ...(!!row?.ellipsisCharacterLimit && {
+                ellipsisCharacterLimit: row.ellipsisCharacterLimit,
+              }),
+              ...(!!row?.currencyCode && {currencyCode: row.currencyCode}),
+              ...(!!row?.display && {display: row.display}),
+              ...(!!row?.digitsInfo && {digitsInfo: row.digitsInfo}),
+              ...(!!row?.format && {format: row.format}),
+              ...(!!row?.values && {
+                values: row.values?.reduce((acc, curr) => ({...acc, [curr.key]: curr.value}), {}),
+              }),
+            },
+          }),
         }));
         this.columnUpdateEvent.emit({data: mappedRows, valid: this.formGroup.valid});
       })

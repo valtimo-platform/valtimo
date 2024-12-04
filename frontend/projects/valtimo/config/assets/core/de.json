@@ -816,7 +816,10 @@
         "type": "Anzeigetyp",
         "typePlaceholder": "Wählen Sie Typ",
         "value": "Wert",
-        "valuePlaceholder": "Weg zum Wert"
+        "valuePlaceholder": "Weg zum Wert",
+        "ellipsisCharacterLimit": "Zeichenbeschränkung für Auslassungszeichen",
+        "ellipsisCharacterLimitTooltip": "Geben Sie die Anzahl der Zeichen ein, die angezeigt werden sollen, bevor Auslassungspunkte angezeigt werden",
+        "ellipsisCharacterLimitPlaceholder": "Wählen Sie eine Anzahl von Zeichen (optional)"
       },
       "displayType": {
         "text": "Text",

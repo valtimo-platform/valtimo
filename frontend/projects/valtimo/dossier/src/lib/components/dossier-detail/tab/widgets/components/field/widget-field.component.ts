@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {CommonModule} from '@angular/common';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -26,12 +26,11 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import {CarbonListModule, ViewContentService} from '@valtimo/components';
-import {CommonModule} from '@angular/common';
-import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
-import {FieldsCaseWidget} from '../../../../../../models';
-import {InputModule} from 'carbon-components-angular';
 import {TranslateModule} from '@ngx-translate/core';
+import {CarbonListModule, EllipsisPipe, ViewContentService} from '@valtimo/components';
+import {InputModule} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
+import {CaseWidgetTextDisplayType, FieldsCaseWidget} from '../../../../../../models';
 
 @Component({
   selector: 'valtimo-widget-field',
@@ -40,7 +39,7 @@ import {TranslateModule} from '@ngx-translate/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [CommonModule, WidgetFieldComponent, InputModule, TranslateModule, CarbonListModule],
+  imports: [CommonModule, InputModule, TranslateModule, CarbonListModule, EllipsisPipe],
 })
 export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
   @HostBinding('class') public readonly class = 'widget-field';
@@ -64,33 +63,37 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
   public readonly widgetConfiguration$ = new BehaviorSubject<FieldsCaseWidget | null>(null);
   public readonly widgetData$ = new BehaviorSubject<object | null>(null);
 
-  public readonly widgetPropertyValue$: Observable<{title: string; value: string}[][]> =
-    combineLatest([this.widgetConfiguration$, this.widgetData$]).pipe(
-      map(([widget, widgetData]) =>
-        widget?.properties.columns.map(column =>
-          column.reduce(
-            (columnFields, property) => [
-              ...columnFields,
-              ...(widgetData?.hasOwnProperty(property.key)
-                ? [
-                    {
-                      title: property.title,
-                      value:
-                        widgetData[property.key] !== null && widgetData[property.key] !== undefined
-                          ? this.viewContentService.get(widgetData[property.key], {
-                              ...property.displayProperties,
-                              viewType: property.displayProperties?.type ?? 'text',
-                            })
-                          : '-',
-                    },
-                  ]
-                : []),
-            ],
-            []
-          )
+  public readonly widgetPropertyValue$: Observable<
+    {title: string; value: string; ellipsisCharacterLimit: number | null}[][]
+  > = combineLatest([this.widgetConfiguration$, this.widgetData$]).pipe(
+    map(([widget, widgetData]) =>
+      widget?.properties.columns.map(column =>
+        column.reduce(
+          (columnFields, property) => [
+            ...columnFields,
+            ...(widgetData?.hasOwnProperty(property.key)
+              ? [
+                  {
+                    title: property.title,
+                    ellipsisCharacterLimit:
+                      (property.displayProperties as CaseWidgetTextDisplayType)
+                        ?.ellipsisCharacterLimit ?? null,
+                    value:
+                      widgetData[property.key] !== null && widgetData[property.key] !== undefined
+                        ? this.viewContentService.get(widgetData[property.key], {
+                            ...property.displayProperties,
+                            viewType: property.displayProperties?.type ?? 'text',
+                          })
+                        : '-',
+                  },
+                ]
+              : []),
+          ],
+          []
         )
       )
-    );
+    )
+  );
 
   private _observer!: ResizeObserver;
 

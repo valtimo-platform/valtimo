@@ -816,7 +816,10 @@
         "type": "Weergavetype",
         "typePlaceholder": "Kies type",
         "value": "Waarde",
-        "valuePlaceholder": "Pad naar waarde"
+        "valuePlaceholder": "Pad naar waarde",
+        "ellipsisCharacterLimit": "Tekenlimiet met beletseltekens",
+        "ellipsisCharacterLimitTooltip": "Voer het aantal tekens in dat wordt weergegeven voordat er een weglatingsteken wordt weergegeven",
+        "ellipsisCharacterLimitPlaceholder": "Kies een aantal karakters (optioneel)"
       },
       "displayType": {
         "text": "Tekst",

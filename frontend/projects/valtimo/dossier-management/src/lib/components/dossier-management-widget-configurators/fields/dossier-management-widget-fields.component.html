@@ -46,6 +46,7 @@
     >
       <valtimo-dossier-management-widget-fields-column
         *ngIf="activeTab() === $index"
+        [isFieldWidget]="true"
         [columnData]="selectedWidgetContent()?.[$index]"
         (columnUpdateEvent)="onColumnUpdateEvent($event, $index)"
       ></valtimo-dossier-management-widget-fields-column>

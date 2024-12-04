@@ -817,7 +817,10 @@
         "type": "Display type",
         "typePlaceholder": "Choose type",
         "value": "Value",
-        "valuePlaceholder": "Path to value"
+        "valuePlaceholder": "Path to value",
+        "ellipsisCharacterLimit": "Ellipsis character limit",
+        "ellipsisCharacterLimitTooltip": "Enter the number of characters that will display before an ellipsis is shown",
+        "ellipsisCharacterLimitPlaceholder": "Choose a number of characters (optional)"
       },
       "displayType": {
         "text": "Text",
