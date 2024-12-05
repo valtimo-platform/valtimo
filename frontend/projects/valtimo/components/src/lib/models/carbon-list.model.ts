@@ -67,7 +67,7 @@ interface ActionItem {
 }
 
 interface ColumnConfig extends ListField {
-  viewType: string | ViewType;
+  viewType?: string | ViewType;
   className?: string;
   currencyCode?: string;
   digitsInfo?: string;

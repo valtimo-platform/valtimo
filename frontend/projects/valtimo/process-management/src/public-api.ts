@@ -19,4 +19,4 @@
  */
 
 export * from './lib/process-management.module';
-export * from './lib/process-management.component';
+export * from './lib/components/process-management/process-management.component';

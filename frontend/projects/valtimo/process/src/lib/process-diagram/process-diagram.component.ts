@@ -28,7 +28,7 @@ import {
 } from '@angular/core';
 import {ProcessService} from '../process.service';
 
-import BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
+import BpmnViewer from 'bpmn-js';
 import heatmap from 'heatmap.js-fixed/build/heatmap.js';
 
 @Component({
@@ -38,7 +38,7 @@ import heatmap from 'heatmap.js-fixed/build/heatmap.js';
   encapsulation: ViewEncapsulation.None,
 })
 export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
-  private bpmnJS: BpmnJS;
+  private bpmnViewer: BpmnViewer;
   private heatMapInstance: any;
 
   @ViewChild('ref', {static: true}) public el: ElementRef;
@@ -71,11 +71,11 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
     if (this.processInstanceId) {
       this.loadProcessInstanceXml(this.processInstanceId);
     }
-    this.bpmnJS = new BpmnJS();
-    this.bpmnJS.on('import.done', ({error}) => {
-      if (!error) {
-        const canvas = this.bpmnJS.get('canvas');
-        const eventBus = this.bpmnJS.get('eventBus');
+    this.bpmnViewer = new BpmnViewer();
+    this.bpmnViewer.on('import.done', (event: any) => {
+      if (!event?.error) {
+        const canvas = this.bpmnViewer.get('canvas') as any;
+        const eventBus = this.bpmnViewer.get('eventBus') as any;
         if (this.processDiagram.historicActivityInstances) {
           this.processDiagram.historicActivityInstances.forEach(instance => {
             // exclude multiInstanceBody
@@ -118,8 +118,8 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnDestroy() {
-    if (this.bpmnJS) {
-      this.bpmnJS.destroy();
+    if (this.bpmnViewer) {
+      this.bpmnViewer.destroy();
     }
   }
 
@@ -145,16 +145,16 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
   public loadProcessDefinitionXml(processDefinitionId) {
     this.processService.getProcessDefinitionXml(processDefinitionId).subscribe(response => {
       this.processDiagram = response;
-      this.bpmnJS.importXML(this.processDiagram.bpmn20Xml);
-      this.bpmnJS.attachTo(this.el.nativeElement);
+      this.bpmnViewer.importXML(this.processDiagram.bpmn20Xml);
+      this.bpmnViewer.attachTo(this.el.nativeElement);
     });
   }
 
   private loadProcessInstanceXml(processInstanceId) {
     this.processService.getProcessXml(processInstanceId).subscribe(response => {
       this.processDiagram = response;
-      this.bpmnJS.importXML(this.processDiagram.bpmn20Xml);
-      this.bpmnJS.attachTo(this.el.nativeElement);
+      this.bpmnViewer.importXML(this.processDiagram.bpmn20Xml);
+      this.bpmnViewer.attachTo(this.el.nativeElement);
     });
   }
 
@@ -295,7 +295,7 @@ export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   public addCounterActiveOverlays(key: any, inputData: any) {
-    const overlays = this.bpmnJS.get('overlays');
+    const overlays = this.bpmnViewer.get('overlays') as any;
     overlays.add(key, {
       position: {
         bottom: 13,

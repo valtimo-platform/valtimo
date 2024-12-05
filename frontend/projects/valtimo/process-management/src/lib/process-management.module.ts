@@ -15,20 +15,32 @@
  */
 
 import {NgModule} from '@angular/core';
-import {ProcessManagementComponent} from './process-management.component';
 import {ProcessManagementRoutingModule} from './process-management-routing';
 import {CommonModule} from '@angular/common';
-import {ProcessManagementBuilderComponent} from './process-management-builder/process-management-builder.component';
-import {ProcessManagementListComponent} from './process-management-list/process-management-list.component';
-import {ListModule, WidgetModule} from '@valtimo/components';
-import {FormsModule} from '@angular/forms';
-import {ProcessManagementUploadComponent} from './process-management-upload/process-management-upload.component';
+import {CarbonListModule, ListModule, WidgetModule} from '@valtimo/components';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
+import {ProcessLinkModule} from '@valtimo/process-link';
+import {
+  ProcessManagementBuilderComponent,
+  ProcessManagementComponent,
+  ProcessManagementListComponent,
+  ProcessManagementUploadComponent,
+} from './components';
+import {
+  ButtonModule,
+  DropdownModule,
+  FileUploaderModule,
+  IconModule,
+  LayerModule,
+  ModalModule,
+  NotificationModule,
+  RadioModule,
+} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [
     ProcessManagementComponent,
-    ProcessManagementBuilderComponent,
     ProcessManagementListComponent,
     ProcessManagementUploadComponent,
   ],
@@ -39,6 +51,19 @@ import {TranslateModule} from '@ngx-translate/core';
     ListModule,
     FormsModule,
     TranslateModule,
+    ProcessLinkModule,
+    ProcessManagementBuilderComponent,
+    CarbonListModule,
+    ButtonModule,
+    IconModule,
+    DropdownModule,
+    ModalModule,
+    NotificationModule,
+    RadioModule,
+    ReactiveFormsModule,
+    ModalModule,
+    FileUploaderModule,
+    LayerModule,
   ],
   exports: [ProcessManagementComponent],
 })

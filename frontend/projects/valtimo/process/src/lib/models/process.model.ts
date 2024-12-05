@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-export interface ProcessStart {
+interface ProcessStart {
   key: string;
   businessKey: string;
   variables: Array<any>;
 }
 
-export interface Process {
+interface Process {
   id: string;
   businessKey: string;
   startTime: string;
@@ -36,7 +36,7 @@ export interface Process {
   variables: ProcessInstanceVariable[];
 }
 
-export interface ProcessDefinition {
+interface ProcessDefinition {
   visibleInMenu: any;
   category: string;
   deploymentId: string;
@@ -54,15 +54,15 @@ export interface ProcessDefinition {
   versionTag: string;
 }
 
-export interface ProcessDefinitionStartForm {
+interface ProcessDefinitionStartForm {
   formFields: Array<any>;
   formLocation: string;
   genericForm: boolean;
 }
 
-export type StartProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url';
+type StartProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url';
 
-export interface ProcessDefinitionStartProcessLink {
+interface ProcessDefinitionStartProcessLink {
   processLinkId: string;
   type: StartProcessLinkType;
   properties: {
@@ -75,7 +75,7 @@ export interface ProcessDefinitionStartProcessLink {
   };
 }
 
-export interface ProcessInstance {
+interface ProcessInstance {
   id: string;
   businessKey: string;
   startTime: string;
@@ -87,7 +87,7 @@ export interface ProcessInstance {
   variables: ProcessInstanceVariable[];
 }
 
-export interface ProcessInstanceVariable {
+interface ProcessInstanceVariable {
   id: string;
   type: string;
   name: string;
@@ -96,7 +96,7 @@ export interface ProcessInstanceVariable {
   local: boolean;
 }
 
-export interface ProcessInstanceTask {
+interface ProcessInstanceTask {
   id: string;
   name: string;
   assignee: string;
@@ -124,8 +124,29 @@ export interface ProcessInstanceTask {
   isLocked: boolean;
 }
 
-export interface IdentityLink {
+interface IdentityLink {
   userId: string;
   groupId: string;
   type: string;
 }
+
+interface ProcessDefinitionXml {
+  bpmn20Xml: string;
+  id: string;
+  readOnly: boolean;
+  systemProcess: boolean;
+}
+
+export {
+  ProcessStart,
+  Process,
+  ProcessDefinition,
+  ProcessDefinitionStartForm,
+  StartProcessLinkType,
+  ProcessDefinitionStartProcessLink,
+  ProcessInstance,
+  ProcessInstanceVariable,
+  ProcessInstanceTask,
+  IdentityLink,
+  ProcessDefinitionXml,
+};

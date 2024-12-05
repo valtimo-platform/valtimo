@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 
-import BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
+import BpmnViewer from 'bpmn-js';
 import {ActivatedRoute} from '@angular/router';
 import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -37,7 +37,7 @@ import {PageTitleService} from '@valtimo/components';
   styleUrls: ['./form-link-process-diagram.component.scss'],
 })
 export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
-  private bpmnJS: BpmnJS;
+  private bpmnViewer: BpmnViewer;
 
   @ViewChild('ref') public el: ElementRef;
   @Output() public bpmnElementModalOpen: EventEmitter<any> = new EventEmitter();
@@ -81,11 +81,11 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
           this.loadProcessDefinitionFromKey(this.processDefinitionKey);
         }
       });
-    this.bpmnJS = new BpmnJS();
-    this.bpmnJS.on('import.done', ({error}: any) => {
+    this.bpmnViewer = new BpmnViewer({});
+    this.bpmnViewer.on('import.done', ({error}: any) => {
       if (!error) {
-        const canvas = this.bpmnJS.get('canvas');
-        const eventBus = this.bpmnJS.get('eventBus');
+        const canvas = this.bpmnViewer.get('canvas') as any;
+        const eventBus = this.bpmnViewer.get('eventBus') as any;
         canvas.zoom('fit-viewport', 'auto');
 
         if (this.processDefinitionVersions && !this.callbacksAdded) {
@@ -116,8 +116,8 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.bpmnElementModalClose.emit();
-    if (this.bpmnJS) {
-      this.bpmnJS.destroy();
+    if (this.bpmnViewer) {
+      this.bpmnViewer.destroy();
     }
     this.pageTitleService.enableReset();
   }
@@ -148,8 +148,8 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
   public loadProcessDefinitionXml(processDefinitionId: string): void {
     this.processService.getProcessDefinitionXml(processDefinitionId).subscribe(response => {
       this.processDiagram = response;
-      this.bpmnJS.importXML(this.processDiagram.bpmn20Xml);
-      this.bpmnJS.attachTo(this.el.nativeElement);
+      this.bpmnViewer.importXML(this.processDiagram.bpmn20Xml);
+      this.bpmnViewer.attachTo(this.el.nativeElement);
     });
   }
 

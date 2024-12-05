@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subscription, tap} from 'rxjs';
 import {take} from 'rxjs/operators';
-import {FormDefinitionListItem, FormFlowProcessLinkUpdateRequestDto} from '../../models';
+import {
+  FormDefinitionListItem,
+  FormFlowProcessLinkUpdateRequestDto,
+  ProcessLinkEditMode,
+} from '../../models';
 import {
   FormFlowService,
   ProcessLinkButtonService,
@@ -154,6 +158,11 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
           ...(isUserTask && {subtitles: this.subtitlesValue}),
         };
 
+        if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
+          this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
+          return;
+        }
+
         this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
           () => {
             this.stateService.closeModal();
@@ -171,30 +180,34 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
       this.stateService.selectedProcessLinkTypeId$,
       this.isUserTask$,
     ])
-      .pipe(
-        take(1),
-        switchMap(([modalParams, processLinkTypeId, isUserTask]) =>
-          this.processLinkService.saveProcessLink({
-            formFlowDefinitionId: this.selectedFormFlowDefinition.id,
-            activityType: modalParams.element.activityListenerType,
-            processDefinitionId: modalParams.processDefinitionId,
-            processLinkType: processLinkTypeId,
-            activityId: modalParams.element.id,
-            ...(isUserTask && {
-              formDisplayType: this.formDisplayValue,
-            }),
-            ...(isUserTask && {formSize: this.formSizeValue}),
-            ...(isUserTask && {subtitles: this.subtitlesValue}),
-          })
-        )
-      )
-      .subscribe(
-        () => {
-          this.stateService.closeModal();
-        },
-        () => {
-          this.stateService.stopSaving();
+      .pipe(take(1))
+      .subscribe(([modalParams, processLinkTypeId, isUserTask]) => {
+        const createRequest = {
+          formFlowDefinitionId: this.selectedFormFlowDefinition.id,
+          activityType: modalParams.element.activityListenerType,
+          processDefinitionId: modalParams.processDefinitionId,
+          processLinkType: processLinkTypeId,
+          activityId: modalParams.element.id,
+          ...(isUserTask && {
+            formDisplayType: this.formDisplayValue,
+          }),
+          ...(isUserTask && {formSize: this.formSizeValue}),
+          ...(isUserTask && {subtitles: this.subtitlesValue}),
+        };
+
+        if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
+          this.stateService.sendProcessLinkCreateEvent(createRequest);
+          return;
         }
-      );
+
+        this.processLinkService.saveProcessLink(createRequest).subscribe({
+          next: () => {
+            this.stateService.closeModal();
+          },
+          error: () => {
+            this.stateService.stopSaving();
+          },
+        });
+      });
   }
 }

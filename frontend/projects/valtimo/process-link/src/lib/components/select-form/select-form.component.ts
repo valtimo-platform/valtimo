@@ -16,9 +16,13 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
 import {FormService} from '@valtimo/form';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subscription, tap} from 'rxjs';
 import {take} from 'rxjs/operators';
-import {FormDefinitionListItem, FormProcessLinkUpdateRequestDto} from '../../models';
+import {
+  FormDefinitionListItem,
+  FormProcessLinkUpdateRequestDto,
+  ProcessLinkEditMode,
+} from '../../models';
 import {
   ProcessLinkButtonService,
   ProcessLinkService,
@@ -159,6 +163,11 @@ export class SelectFormComponent implements OnInit, OnDestroy {
           ...(isUserTask && {subtitles: this.subtitlesValue}),
         };
 
+        if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
+          this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
+          return;
+        }
+
         this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
           () => {
             this.stateService.closeModal();
@@ -177,35 +186,39 @@ export class SelectFormComponent implements OnInit, OnDestroy {
       this.stateService.viewModelEnabled$,
       this.isUserTask$,
     ])
-      .pipe(
-        take(1),
-        switchMap(([modalParams, processLinkTypeId, viewModelEnabled, isUserTask]) =>
-          this.processLinkService.saveProcessLink({
-            formDefinitionId: this.selectedFormDefinition.id,
-            activityType: modalParams.element.activityListenerType,
-            processDefinitionId: modalParams.processDefinitionId,
-            processLinkType: processLinkTypeId,
-            activityId: modalParams.element.id,
-            viewModelEnabled,
-            ...(isUserTask && {
-              formDisplayType: this.formDisplayValue,
-            }),
-            ...(isUserTask && {
-              formSize: this.formSizeValue,
-            }),
-            ...(isUserTask && {
-              subtitles: this.subtitlesValue,
-            }),
-          })
-        )
-      )
-      .subscribe(
-        () => {
-          this.stateService.closeModal();
-        },
-        () => {
-          this.stateService.stopSaving();
+      .pipe(take(1))
+      .subscribe(([modalParams, processLinkTypeId, viewModelEnabled, isUserTask]) => {
+        const createRequest = {
+          formDefinitionId: this.selectedFormDefinition.id,
+          activityType: modalParams.element.activityListenerType,
+          processDefinitionId: modalParams.processDefinitionId,
+          processLinkType: processLinkTypeId,
+          activityId: modalParams.element.id,
+          viewModelEnabled,
+          ...(isUserTask && {
+            formDisplayType: this.formDisplayValue,
+          }),
+          ...(isUserTask && {
+            formSize: this.formSizeValue,
+          }),
+          ...(isUserTask && {
+            subtitles: this.subtitlesValue,
+          }),
+        };
+
+        if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
+          this.stateService.sendProcessLinkCreateEvent(createRequest);
+          return;
         }
-      );
+
+        this.processLinkService.saveProcessLink(createRequest).subscribe({
+          next: () => {
+            this.stateService.closeModal();
+          },
+          error: () => {
+            this.stateService.stopSaving();
+          },
+        });
+      });
   }
 }

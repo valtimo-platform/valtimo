@@ -21,6 +21,7 @@ import {
   ProcessDefinition,
   ProcessDefinitionStartForm,
   ProcessDefinitionStartProcessLink,
+  ProcessDefinitionXml,
   ProcessInstance,
   ProcessInstanceTask,
   ProcessStart,
@@ -96,8 +97,8 @@ export class ProcessService {
     );
   }
 
-  getProcessDefinitionXml(processDefinitionId: string): Observable<any> {
-    return this.http.get(
+  getProcessDefinitionXml(processDefinitionId: string): Observable<ProcessDefinitionXml> {
+    return this.http.get<ProcessDefinitionXml>(
       `${this.valtimoEndpointUri}v1/process/definition/${processDefinitionId}/xml`
     );
   }

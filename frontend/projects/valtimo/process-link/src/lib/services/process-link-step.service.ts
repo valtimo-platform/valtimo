@@ -24,7 +24,9 @@ import {take} from 'rxjs/operators';
 import {PluginStateService} from './plugin-state.service';
 import {PluginTranslationService} from '@valtimo/plugin';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class ProcessLinkStepService {
   private readonly _steps$ = new BehaviorSubject<Array<Step>>(undefined);
   private readonly _currentStepIndex$ = new BehaviorSubject<number>(0);

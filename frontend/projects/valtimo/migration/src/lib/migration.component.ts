@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
-import {ProcessService, ProcessDefinition} from '@valtimo/process';
+import {AfterViewInit, Component, ViewChild} from '@angular/core';
+import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {MigrationProcessDiagramComponent} from './migration-process-diagram/migration-process-diagram.component';
 import {NGXLogger} from 'ngx-logger';
 import {AlertService} from '@valtimo/components';
@@ -25,7 +25,7 @@ import {AlertService} from '@valtimo/components';
   templateUrl: './migration.component.html',
   styleUrls: ['./migration.component.scss'],
 })
-export class MigrationComponent implements OnInit, AfterViewInit {
+export class MigrationComponent implements AfterViewInit, AfterViewInit {
   public processDefinitions: ProcessDefinition[] = [];
   public selectedVersions = {
     source: [],
@@ -65,15 +65,12 @@ export class MigrationComponent implements OnInit, AfterViewInit {
     private alertService: AlertService
   ) {}
 
-  ngOnInit() {
-    this.loadProcessDefinitions();
-  }
-
   ngAfterViewInit() {
     this.diagram = {
       source: this.sourceDiagram,
       target: this.targetDiagram,
     };
+    this.loadProcessDefinitions();
   }
 
   public get taskMappingLength() {
@@ -123,6 +120,7 @@ export class MigrationComponent implements OnInit, AfterViewInit {
 
   loadProcessDefinitionXML(id: string, type: string) {
     this.processService.getProcessDefinitionXml(id).subscribe(xml => {
+      if (!xml.bpmn20Xml) return;
       this.diagram[type].loadXml(xml['bpmn20Xml']);
       this.selectedId[type] = id;
     });

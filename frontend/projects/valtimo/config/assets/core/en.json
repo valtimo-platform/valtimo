@@ -1034,7 +1034,16 @@
     "readOnly": "Read-only",
     "systemProcess": "System process",
     "systemProcessWarningMessage": "This is a system process. Pay close attention when making adjustments to this process",
-    "readOnlySystemProcessWarningMessage": "This is a system process, so it is marked as read-only. This process can be used but not modified."
+    "readOnlySystemProcessWarningMessage": "This is a system process, so it is marked as read-only. This process can be used but not modified.",
+    "version": "Version: ",
+    "upload": {
+      "modalTitle": "Upload process definition",
+      "title": "Upload file",
+      "description": "Only BPMN files are supported.",
+      "buttonText": "Select file",
+      "success": "Deployment successful",
+      "failure": "Deployment failed"
+    }
   },
   "processCaseConnection": {
     "noProcessesTitle": "No processes",
@@ -1190,7 +1199,8 @@
     "value": "Value",
     "title": "Title",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "upload": "Upload"
   },
   "taskDetail": {
     "taskCreated": "Created",
@@ -1509,6 +1519,7 @@
     }
   },
   "processLink": {
+    "create": "Create process link",
     "edit": "Edit process link",
     "saveChanges": "Save changes",
     "unlink": "Unlink",

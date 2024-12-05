@@ -14,14 +14,6 @@
  * limitations under the License.
  */
 
-import {Component, ViewChild} from '@angular/core';
-import {ProcessManagementListComponent} from './process-management-list/process-management-list.component';
-
-@Component({
-  selector: 'valtimo-process-management',
-  templateUrl: './process-management.component.html',
-  styleUrls: ['./process-management.component.scss'],
-})
-export class ProcessManagementComponent {
-  @ViewChild('processManagementList') processManagementList: ProcessManagementListComponent;
-}
+export * from './window.model';
+export * from './bpmn.model';
+export * from './process-management-editor.model';

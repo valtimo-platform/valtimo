@@ -18,9 +18,8 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
-import {ProcessManagementComponent} from './process-management.component';
-import {ProcessManagementBuilderComponent} from './process-management-builder/process-management-builder.component';
 import {ROLE_ADMIN} from '@valtimo/config';
+import {ProcessManagementBuilderComponent, ProcessManagementComponent} from './components';
 
 const routes: Routes = [
   {

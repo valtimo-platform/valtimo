@@ -15,36 +15,17 @@
  */
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {
-  BehaviorSubject,
-  combineLatest,
-  filter,
-  map,
-  Observable,
-  of,
-  Subscription,
-  switchMap,
-  tap,
-} from 'rxjs';
+import {combineLatest, Subscription} from 'rxjs';
 import {
   ProcessLinkButtonService,
-  ProcessLinkStateService,
   ProcessLinkService,
+  ProcessLinkStateService,
 } from '../../services';
 import {distinctUntilChanged, take} from 'rxjs/operators';
-import {
-  AbstractControl,
-  AsyncValidatorFn,
-  FormControl,
-  FormGroup,
-  ValidationErrors,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
-import {URLProcessLinkUpdateRequestDto} from '../../models';
+import {AbstractControl, FormControl, FormGroup, Validators} from '@angular/forms';
+import {ProcessLinkEditMode, URLProcessLinkUpdateRequestDto} from '../../models';
 import {UrlValidatorService} from '../../services/url-validator.service';
 import {UrlResolverService} from '../../services/url-resolver.service';
-import {URLVariables} from '../../models/process-link-url.model';
 import {AlertService} from '@valtimo/components';
 
 @Component({
@@ -132,6 +113,11 @@ export class SelectUrlComponent implements OnInit, OnDestroy {
         url: this.url.value,
       };
 
+      if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
+        this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
+        return;
+      }
+
       this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
         () => {
           this.stateService.closeModal();
@@ -145,24 +131,29 @@ export class SelectUrlComponent implements OnInit, OnDestroy {
 
   private saveNewProcessLink(): void {
     combineLatest([this.stateService.modalParams$, this.stateService.selectedProcessLinkTypeId$])
-      .pipe(
-        take(1),
-        switchMap(([modalParams, processLinkTypeId]) =>
-          this.processLinkService.saveProcessLink({
-            url: this.url.value,
-            activityType: modalParams.element.activityListenerType,
-            processDefinitionId: modalParams.processDefinitionId,
-            processLinkType: processLinkTypeId,
-            activityId: modalParams.element.id,
-          })
-        )
-      )
-      .subscribe({
-        complete: () => this.stateService.closeModal(),
-        error: () => {
-          this.alertService.error('Failed to save process link');
-          this.stateService.stopSaving();
-        },
+      .pipe(take(1))
+      .subscribe(([modalParams, processLinkTypeId]) => {
+        const processLinkRequest = {
+          url: this.url.value,
+          activityType: modalParams.element.activityListenerType,
+          processDefinitionId: modalParams.processDefinitionId,
+          processLinkType: processLinkTypeId,
+          activityId: modalParams.element.id,
+        };
+
+        if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
+          this.stateService.sendProcessLinkCreateEvent(processLinkRequest);
+          return;
+        }
+
+        this.processLinkService.saveProcessLink(processLinkRequest).subscribe({
+          next: () => {
+            this.stateService.closeModal();
+          },
+          error: () => {
+            this.stateService.stopSaving();
+          },
+        });
       });
   }
 

@@ -1031,7 +1031,16 @@
     "readOnly": "Schreibgeschützt",
     "systemProcess": "Systemprozess",
     "systemProcessWarningMessage": "Dies ist ein Systemprozess. Achten Sie genau darauf, wenn Sie Anpassungen an diesem Prozess vornehmen",
-    "readOnlySystemProcessWarningMessage": "Dies ist ein Systemprozess, daher ist er als schreibgeschützt gekennzeichnet. Dieser Prozess kann verwendet, aber nicht geändert werden."
+    "readOnlySystemProcessWarningMessage": "Dies ist ein Systemprozess, daher ist er als schreibgeschützt gekennzeichnet. Dieser Prozess kann verwendet, aber nicht geändert werden.",
+    "version": "Version: ",
+    "upload": {
+      "modalTitle": "Prozessdefinition hochladen",
+      "title": "Datei hochladen",
+      "description": "Nur BPMN-Dateien werden unterstützt.",
+      "buttonText": "Datei auswählen",
+      "success": "Deployment erfolgreich",
+      "failure": "Deployment fehlgeschlagen"
+    }
   },
   "processCaseConnection": {
     "noProcessesTitle": "Keine Prozesse",
@@ -1185,7 +1194,8 @@
     "value": "Wert",
     "title": "Titel",
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "upload": "Hochladen"
   },
   "taskDetail": {
     "taskCreated": "Erstellt",
@@ -1502,6 +1512,7 @@
     }
   },
   "processLink": {
+    "create": "Prozesslink erstellen",
     "edit": "Prozesslink bearbeiten",
     "saveChanges": "Änderungen speichern",
     "unlink": "Verknüpfung aufheben",

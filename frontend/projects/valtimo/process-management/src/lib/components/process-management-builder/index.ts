@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,41 +14,4 @@
  * limitations under the License.
  */
 
-$border: 1px solid #dee2e6;
-
-.versions {
-  border: $border;
-}
-
-.diagram {
-  border: $border;
-}
-
-.process-title {
-  color: #6b6b6b;
-  font-size: 1.5rem;
-}
-
-.fullscreen-toggle {
-  font-size: 2rem;
-  > i {
-    cursor: pointer;
-  }
-}
-
-.modeler {
-  height: 90vh;
-}
-
-.select-version-control {
-  width: 90px;
-}
-
-#properties {
-  border-left: $border;
-  padding-left: 0;
-}
-
-#readOnlyCanvas {
-  height: 90vh;
-}
+export * from './process-management-builder.component';

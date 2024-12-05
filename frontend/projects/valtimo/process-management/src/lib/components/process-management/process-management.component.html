@@ -14,18 +14,6 @@
   ~ limitations under the License.
   -->
 
-<valtimo-widget>
-  <valtimo-list
-    [items]="processDefinitions"
-    [fields]="fields"
-    (rowClicked)="editProcessDefinition($event)"
-    [header]="true"
-    [viewMode]="true"
-    [isSearchable]="true"
-  >
-    <div header>
-      <h3 class="list-header-title">{{ 'Processes' | translate }}</h3>
-      <h5 class="list-header-description">{{ 'Overview of all Processes' | translate }}</h5>
-    </div>
-  </valtimo-list>
-</valtimo-widget>
+<valtimo-process-management-list #processManagementList></valtimo-process-management-list>
+
+<valtimo-process-management-upload></valtimo-process-management-upload>

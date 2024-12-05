@@ -1,0 +1,116 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  fitPage
+  [disableOverflow]="true"
+  *ngIf="{
+    processDefinitionVersions: processDefinitionVersions$ | async,
+    selectedProcessDefinitionXml: selectedProcessDefinitionXml$ | async,
+    loading: loading$ | async,
+    isReadOnlyProcess: isReadOnlyProcess$ | async,
+  } as obs"
+  data-carbon-theme="g10"
+  class="bpmn__container"
+>
+  <div *ngIf="obs.loading" class="bpmn__loading">
+    <cds-loading></cds-loading>
+  </div>
+
+  <div class="bpmn__modeler" [style.display]="obs.isReadOnlyProcess ? 'none' : 'flex'">
+    <div class="bpmn__modeler-canvas" #modeler></div>
+
+    <div class="bpmn__modeler-panel" #modelerPanel></div>
+  </div>
+
+  <div class="bpmn__modeler" [style.display]="obs.isReadOnlyProcess ? 'flex' : 'none'">
+    <div class="bpmn__modeler-canvas" #viewer></div>
+
+    <div class="bpmn__modeler-panel" #viewerPanel></div>
+  </div>
+</div>
+
+<valtimo-process-link-modal></valtimo-process-link-modal>
+
+<ng-container renderInPageHeader [fullWidth]="true">
+  <ng-template>
+    <div
+      class="page-header-actions"
+      *ngIf="{
+        processDefinitionVersionsListItems: processDefinitionVersionsListItems$ | async,
+        loading: loading$ | async,
+        changesPending: changesPending$ | async,
+        isReadOnlyProcess: isReadOnlyProcess$ | async,
+        isSystemProcess: isSystemProcess$ | async,
+        compactMode: compactMode$ | async,
+        creatingNewProcess: creatingNewProcess$ | async,
+      } as actionsObs"
+    >
+      <div class="page-header-actions__left-container">
+        <cds-dropdown
+          *ngIf="!actionsObs.creatingNewProcess"
+          class="page-header-actions__version-dropdown"
+          (selected)="selectedVersionChange($event)"
+          [disabled]="
+            actionsObs.loading ||
+            (actionsObs.processDefinitionVersionsListItems || []).length === 0 ||
+            (actionsObs.processDefinitionVersionsListItems || []).length === 1
+          "
+          [size]="actionsObs.compactMode ? 'sm' : 'md'"
+        >
+          <cds-dropdown-list
+            [items]="actionsObs.processDefinitionVersionsListItems || []"
+          ></cds-dropdown-list>
+        </cds-dropdown>
+
+        <div class="page-header-actions__tags">
+          <cds-tag *ngIf="actionsObs.isReadOnlyProcess" type="blue">{{
+            'processManagement.readOnly' | translate
+          }}</cds-tag>
+
+          <cds-tag *ngIf="actionsObs.isSystemProcess" type="red">{{
+            'processManagement.systemProcess' | translate
+          }}</cds-tag>
+        </div>
+      </div>
+
+      <div class="page-header-actions__buttons">
+        <cds-overflow-menu class="overflow-button">
+          <cds-overflow-menu-option
+            [disabled]="actionsObs.loading"
+            (selected)="export(actionsObs.isReadOnlyProcess)"
+            >{{ 'interface.export' | translate }}
+          </cds-overflow-menu-option>
+        </cds-overflow-menu>
+
+        <button
+          [disabled]="!actionsObs.changesPending"
+          cdsButton="primary"
+          (click)="
+            !actionsObs.creatingNewProcess
+              ? deployChanges(actionsObs.isReadOnlyProcess)
+              : deployNewProcessDefinition()
+          "
+          [size]="actionsObs.compactMode ? 'sm' : 'md'"
+        >
+          {{ 'processManagement.deploy' | translate }}
+
+          <svg class="cds--btn__icon" cdsIcon="deploy" size="16"></svg>
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</ng-container>

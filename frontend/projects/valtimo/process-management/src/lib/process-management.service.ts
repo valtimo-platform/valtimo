@@ -23,22 +23,22 @@ import {ConfigService} from '@valtimo/config';
   providedIn: 'root',
 })
 export class ProcessManagementService {
-  private valtimoApiConfig: any;
+  private readonly valtimoApiConfigEndpointUri: string;
 
   constructor(
-    private configService: ConfigService,
-    private http: HttpClient
+    private readonly configService: ConfigService,
+    private readonly http: HttpClient
   ) {
-    this.valtimoApiConfig = configService.config.valtimoApi;
+    this.valtimoApiConfigEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
-  deployBpmn(bpmn: File): Observable<any> {
+  public deployBpmn(bpmn: File): Observable<any> {
     const formData: FormData = new FormData();
     formData.append('file', bpmn);
     formData.append('deployment-name', 'valtimoConsoleApp');
     formData.append('deployment-source', 'process application');
     return this.http.post<any>(
-      `${this.valtimoApiConfig.endpointUri}v1/process/definition/deployment`,
+      `${this.valtimoApiConfigEndpointUri}v1/process/definition/deployment`,
       formData
     );
   }

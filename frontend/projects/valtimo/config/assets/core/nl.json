@@ -1033,7 +1033,16 @@
     "readOnly": "Alleen-lezen",
     "systemProcess": "Systeemproces",
     "systemProcessWarningMessage": "Dit is een systeemproces. Let goed op bij het maken van aanpassingen aan dit proces",
-    "readOnlySystemProcessWarningMessage": "Dit is een systeemproces, daarmee is het gemarkeerd als alleen-lezen. Dit proces is wel te gebruiken maar niet aan te passen."
+    "readOnlySystemProcessWarningMessage": "Dit is een systeemproces, daarmee is het gemarkeerd als alleen-lezen. Dit proces is wel te gebruiken maar niet aan te passen.",
+    "version": "Versie: ",
+    "upload": {
+      "modalTitle": "Upload procesdefinitie",
+      "title": "Upload bestand",
+      "description": "Alleen BPMN-bestanden worden ondersteund.",
+      "buttonText": "Selecteer bestand",
+      "success": "Deployment succesvol",
+      "failure": "Deployment mislukt"
+    }
   },
   "processCaseConnection": {
     "noProcessesTitle": "Geen processen",
@@ -1188,7 +1197,8 @@
     "value": "Waarde",
     "title": "Titel",
     "yes": "Ja",
-    "no": "Nee"
+    "no": "Nee",
+    "upload": "Uploaden"
   },
   "taskDetail": {
     "taskCreated": "Aangemaakt op",
@@ -1507,6 +1517,7 @@
     }
   },
   "processLink": {
+    "create": "Proceskoppeling aanmaken",
     "edit": "Proceskoppeling wijzigen",
     "saveChanges": "Wijzigingen opslaan",
     "unlink": "Ontkoppelen",

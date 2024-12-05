@@ -15,13 +15,23 @@
  */
 
 import {Injectable, OnDestroy} from '@angular/core';
-import {BehaviorSubject, map, Observable, Subscription} from 'rxjs';
-import {ModalParams, ProcessLink, ProcessLinkType} from '../models';
+import {BehaviorSubject, map, Observable, Subject, Subscription} from 'rxjs';
+import {
+  ModalParams,
+  ProcessLink,
+  ProcessLinkCreateEvent,
+  ProcessLinkDeleteEvent,
+  ProcessLinkEditMode,
+  ProcessLinkType,
+  ProcessLinkUpdateEvent,
+} from '../models';
 import {ProcessLinkStepService} from './process-link-step.service';
 import {ProcessLinkButtonService} from './process-link-button.service';
 import {PluginStateService} from './plugin-state.service';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class ProcessLinkStateService implements OnDestroy {
   private readonly _showModal$ = new BehaviorSubject<boolean>(false);
   private readonly _availableProcessLinkTypes$ = new BehaviorSubject<Array<ProcessLinkType>>([]);
@@ -32,19 +42,32 @@ export class ProcessLinkStateService implements OnDestroy {
   private readonly _saving$ = new BehaviorSubject<boolean>(false);
   private readonly _modalParams$ = new BehaviorSubject<ModalParams>(undefined);
   private readonly _selectedProcessLink$ = new BehaviorSubject<ProcessLink>(undefined);
+  private readonly _processLinkEditMode$ = new BehaviorSubject<ProcessLinkEditMode>(
+    ProcessLinkEditMode.SAVE_TO_BACKEND
+  );
+  private readonly _processLinkUpdateEvents$ = new Subject<ProcessLinkUpdateEvent>();
+  private readonly _processLinkCreateEvents$ = new Subject<ProcessLinkCreateEvent>();
+  private readonly _processLinkDeleteEvents$ = new Subject<ProcessLinkDeleteEvent>();
 
-  private _availableProcessLinkTypesSubscription!: Subscription;
-
-  get showModal$(): Observable<boolean> {
+  public get processLinkUpdateEvents$(): Observable<ProcessLinkUpdateEvent> {
+    return this._processLinkUpdateEvents$.asObservable();
+  }
+  public get processLinkCreateEvents$(): Observable<ProcessLinkCreateEvent> {
+    return this._processLinkCreateEvents$.asObservable();
+  }
+  public get processLinkDeleteEvents$(): Observable<ProcessLinkDeleteEvent> {
+    return this._processLinkDeleteEvents$.asObservable();
+  }
+  public get showModal$(): Observable<boolean> {
     return this._showModal$.asObservable();
   }
-  get elementName$(): Observable<string> {
+  public get elementName$(): Observable<string> {
     return this._elementName$.asObservable();
   }
-  get availableProcessLinkTypes$(): Observable<Array<ProcessLinkType>> {
+  public get availableProcessLinkTypes$(): Observable<Array<ProcessLinkType>> {
     return this._availableProcessLinkTypes$.asObservable();
   }
-  get hideProgressIndicator$(): Observable<boolean> {
+  public get hideProgressIndicator$(): Observable<boolean> {
     return this._availableProcessLinkTypes$
       .asObservable()
       .pipe(
@@ -57,23 +80,32 @@ export class ProcessLinkStateService implements OnDestroy {
         )
       );
   }
-  get selectedProcessLinkTypeId$(): Observable<string> {
+  public get selectedProcessLinkTypeId$(): Observable<string> {
     return this._selectedProcessLinkTypeId$.asObservable();
   }
-  get saving$(): Observable<boolean> {
+  public get saving$(): Observable<boolean> {
     return this._saving$.asObservable();
   }
-  get modalParams$(): Observable<ModalParams> {
+  public get modalParams$(): Observable<ModalParams> {
     return this._modalParams$.asObservable();
   }
-
-  get selectedProcessLink$(): Observable<ProcessLink> {
+  public get selectedProcessLink$(): Observable<ProcessLink> {
     return this._selectedProcessLink$.asObservable();
   }
-
-  get typeOfSelectedProcessLink$(): Observable<string> {
+  public get typeOfSelectedProcessLink$(): Observable<string> {
     return this.selectedProcessLink$.pipe(map(processLink => processLink?.processLinkType || ''));
   }
+  public get processLinkEditMode(): ProcessLinkEditMode {
+    return this._processLinkEditMode$.getValue();
+  }
+  public get viewModelEnabled$(): Observable<boolean> {
+    return this._viewModelEnabled$.asObservable();
+  }
+  public get url$(): Observable<string> {
+    return this._url$.asObservable();
+  }
+
+  private _availableProcessLinkTypesSubscription!: Subscription;
 
   constructor(
     private readonly processLinkStepService: ProcessLinkStepService,
@@ -83,11 +115,11 @@ export class ProcessLinkStateService implements OnDestroy {
     this.openAvailableProcessLinkTypesSubscription();
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this._availableProcessLinkTypesSubscription?.unsubscribe();
   }
 
-  setAvailableProcessLinkTypes(processLinkTypes: Array<ProcessLinkType>): void {
+  public setAvailableProcessLinkTypes(processLinkTypes: Array<ProcessLinkType>): void {
     const hasOneOption = processLinkTypes.length === 1;
     this._availableProcessLinkTypes$.next(processLinkTypes);
     this.processLinkStepService.setHasOneProcessLinkType(hasOneOption);
@@ -97,15 +129,15 @@ export class ProcessLinkStateService implements OnDestroy {
     }
   }
 
-  setElementName(name: string): void {
+  public setElementName(name: string): void {
     this._elementName$.next(name);
   }
 
-  showModal(): void {
+  public showModal(): void {
     this._showModal$.next(true);
   }
 
-  closeModal(): void {
+  public closeModal(): void {
     this._showModal$.next(false);
 
     setTimeout(() => {
@@ -113,7 +145,7 @@ export class ProcessLinkStateService implements OnDestroy {
     }, 240);
   }
 
-  selectProcessLinkType(processLinkTypeId: string, hasOneOption?: boolean): void {
+  public selectProcessLinkType(processLinkTypeId: string, hasOneOption?: boolean): void {
     this._selectedProcessLinkTypeId$.next(processLinkTypeId);
     this.processLinkStepService.setProcessLinkTypeSteps(processLinkTypeId, hasOneOption);
   }
@@ -122,48 +154,56 @@ export class ProcessLinkStateService implements OnDestroy {
     this._viewModelEnabled$.next(viewModelEnabled);
   }
 
-  public get viewModelEnabled$(): Observable<boolean> {
-    return this._viewModelEnabled$.asObservable();
-  }
-
-  public get url$(): Observable<string> {
-    return this._url$.asObservable();
-  }
-
-  clearSelectedProcessLinkType(): void {
+  public clearSelectedProcessLinkType(): void {
     this._selectedProcessLinkTypeId$.next('');
   }
 
-  startSaving(): void {
+  public startSaving(): void {
     this._saving$.next(true);
     this.processLinkStepService.disableSteps();
   }
 
-  stopSaving(): void {
+  public stopSaving(): void {
     this._saving$.next(false);
     this.processLinkStepService.enableSteps();
   }
 
-  setInitial(): void {
+  public setInitial(): void {
     const availableTypes = this._availableProcessLinkTypes$.getValue();
     this.buttonService.resetButtons();
     this.processLinkStepService.setInitialSteps(availableTypes);
   }
 
-  setModalParams(params: ModalParams): void {
+  public setModalParams(params: ModalParams): void {
     this._modalParams$.next(params);
   }
 
-  selectProcessLink(processLink: ProcessLink): void {
+  public selectProcessLink(processLink: ProcessLink): void {
     this._selectedProcessLink$.next(processLink);
     this.pluginStateService.selectProcessLink(processLink);
     this.setViewModelEnabled(processLink.viewModelEnabled);
     this._url$.next(processLink.url);
   }
 
-  deselectProcessLink(): void {
+  public deselectProcessLink(): void {
     this._selectedProcessLink$.next(undefined);
     this.pluginStateService.deselectProcessLink();
+  }
+
+  public setEditMode(editMode: ProcessLinkEditMode): void {
+    this._processLinkEditMode$.next(editMode);
+  }
+
+  public sendProcessLinkUpdateEvent(event: ProcessLinkUpdateEvent): void {
+    this._processLinkUpdateEvents$.next(event);
+  }
+
+  public sendProcessLinkCreateEvent(event: ProcessLinkCreateEvent): void {
+    this._processLinkCreateEvents$.next(event);
+  }
+
+  public sendProcessLinkDeleteEvent(event: ProcessLinkDeleteEvent): void {
+    this._processLinkDeleteEvents$.next(event);
   }
 
   private openAvailableProcessLinkTypesSubscription(): void {
