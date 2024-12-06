@@ -19,7 +19,7 @@ This repository contains:
 - The `app:gzac` module, containing a Spring Boot application, used for library development.
 
 ### Starting the Valtimo platform
-Starting up the Valtimo platform required three steps:
+Starting up the Valtimo platform requires two steps:
 1. Starting the Valtimo backend. Instructions can be found [here](#starting-the-valtimo-backend-libraries-from-source).
 2. Starting the Valtimo frontend. Instructions can be found [here](https://github.com/valtimo-platform/valtimo-frontend-libraries/#starting-the-valtimo-frontend-libraries-from-source)
 
