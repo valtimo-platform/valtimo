@@ -42,6 +42,8 @@ import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
@@ -184,6 +186,30 @@ class ZaakDocumentServiceTest {
         }
 
         assertEquals("Unsupported filter 'titel' on Documenten API with version 1.0.0", exception.message)
+    }
+
+    @Test
+    fun `should delete all informatie objecten for zaak`() {
+        val documentUrl = URI("http://localhost/zaak/1")
+        val zaakApiPlugin = mock<ZakenApiPlugin>()
+
+        whenever(pluginService.createInstance(eq(ZakenApiPlugin::class.java), any()))
+            .thenReturn(zaakApiPlugin)
+        val doc1 = mock<ZaakInformatieObject>()
+        val doc2 = mock<ZaakInformatieObject>()
+
+        whenever(zaakApiPlugin.getZaakInformatieObjecten(documentUrl)).thenReturn(listOf(doc1, doc2))
+
+        whenever(doc1.informatieobject).thenReturn(URI("http://localhost/doc/1"))
+        whenever(doc2.informatieobject).thenReturn(URI("http://localhost/doc/2"))
+
+        service.deleteRelatedInformatieObjecten(documentUrl)
+
+        val zaakDocumentCaptor = argumentCaptor<URI>()
+        verify(documentenApiService, times(2)).deleteInformatieObject(zaakDocumentCaptor.capture())
+
+        assertEquals(URI("http://localhost/doc/1"), zaakDocumentCaptor.firstValue)
+        assertEquals(URI("http://localhost/doc/2"), zaakDocumentCaptor.secondValue)
     }
 
     private fun createZaakInformatieObjecten(zaakUrl: URI, count: Int = 5): List<ZaakInformatieObject> {

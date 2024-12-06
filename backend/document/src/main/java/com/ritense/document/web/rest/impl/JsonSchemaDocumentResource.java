@@ -96,6 +96,15 @@ public class JsonSchemaDocumentResource implements DocumentResource {
     }
 
     @Override
+    @DeleteMapping(value = "/v1/document/{id}")
+    public ResponseEntity<Void> deleteDocument(
+        @LoggableResource(resourceType = JsonSchemaDocument.class) @PathVariable(name = "id") UUID id
+    ) {
+        documentService.deleteDocument(JsonSchemaDocumentId.existingId(id));
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
     @PostMapping(value = "/v1/document/{document-id}/resource/{resource-id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> assignResource(
         @LoggableResource(resourceType = JsonSchemaDocument.class) @PathVariable(name = "document-id") UUID documentId,

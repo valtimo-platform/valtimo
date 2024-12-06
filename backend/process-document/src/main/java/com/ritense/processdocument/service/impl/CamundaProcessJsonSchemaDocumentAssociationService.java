@@ -350,6 +350,15 @@ public class CamundaProcessJsonSchemaDocumentAssociationService implements Proce
 
     @Override
     @Transactional
+    public void deleteProcessDocumentInstance(ProcessDocumentInstanceId processDocumentInstanceId) {
+        denyAuthorization(CamundaProcessJsonSchemaDocumentInstance.class);
+
+        logger.debug("Deleting process document instance: {}", processDocumentInstanceId);
+        processDocumentInstanceRepository.deleteById(processDocumentInstanceId);
+    }
+
+    @Override
+    @Transactional
     public Optional<CamundaProcessJsonSchemaDocumentDefinition> createProcessDocumentDefinition(
         ProcessDocumentDefinitionRequest request
     ) {
