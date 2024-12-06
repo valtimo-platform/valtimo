@@ -35,6 +35,7 @@ import com.ritense.processdocument.service.CorrelationService
 import com.ritense.processdocument.service.CorrelationServiceImpl
 import com.ritense.processdocument.service.DocumentDelegateService
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
+import com.ritense.processdocument.service.ProcessDocumentDeletedEventListener
 import com.ritense.processdocument.service.ProcessDocumentDeploymentService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processdocument.service.ProcessDocumentsService
@@ -64,6 +65,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
+import org.springframework.core.annotation.Order
 
 @AutoConfiguration
 class ProcessDocumentsAutoConfiguration {
@@ -289,6 +291,19 @@ class ProcessDocumentsAutoConfiguration {
         return TaskSearchFieldImporter(
             taskSearchFieldDeployer,
             changelogDeployer,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessDocumentDeletedEventListener::class)
+    @Order(100)
+    fun processDocumentDeletedEventListener(
+        runtimeService: RuntimeService,
+        processDocumentAssociationService: ProcessDocumentAssociationService
+    ): ProcessDocumentDeletedEventListener {
+        return ProcessDocumentDeletedEventListener(
+            runtimeService,
+            processDocumentAssociationService
         )
     }
 }

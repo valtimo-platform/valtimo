@@ -128,6 +128,16 @@ class DocumentenApiService(
     }
 
     fun deleteInformatieObject(
+        @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentUrl: URI
+    ) {
+        val documentApiPlugin: DocumentenApiPlugin = pluginService.createInstance(
+            DocumentenApiPlugin::class.java,
+            DocumentenApiPlugin.findConfigurationByUrl(documentUrl)
+        ) ?: throw IllegalArgumentException("Trying to delete informatie object by url, but could not find ${DocumentenApiPlugin::class.simpleName} instance for informatieobjectUrl $documentUrl")
+        documentApiPlugin.deleteInformatieObject(documentUrl)
+    }
+
+    fun deleteInformatieObject(
         @LoggableResource(resourceType = PluginConfigurationId::class) pluginConfigurationId: String,
         @LoggableResource(resourceTypeName = DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT) documentId: String
     ) {

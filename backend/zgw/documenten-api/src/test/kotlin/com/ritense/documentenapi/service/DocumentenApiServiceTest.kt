@@ -36,7 +36,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -112,6 +115,29 @@ class DocumentenApiServiceTest {
         assertEquals(1, firstResult.versie)
         assertEquals("http://localhost/informatieobjecttype", firstResult.informatieobjecttype)
         assertEquals("y", firstResult.auteur)
+    }
+
+    @Test
+    fun `should call plugin to delete informatie object`() {
+        val documentUrl = URI("http://some.url")
+        val pluginInstance = mock<DocumentenApiPlugin>()
+        whenever(pluginService.createInstance<DocumentenApiPlugin>(any(), any())).thenReturn(pluginInstance)
+
+        service.deleteInformatieObject(documentUrl)
+
+        verify(pluginInstance).deleteInformatieObject(documentUrl)
+    }
+
+    @Test
+    fun `should throw exception when trying to delete informatie object but plugin does not exist`() {
+        val documentUrl = URI("http://some.url")
+        whenever(pluginService.createInstance<DocumentenApiPlugin>(any(), any())).thenReturn(null)
+
+        val ex = assertThrows<IllegalArgumentException> {
+            service.deleteInformatieObject(documentUrl)
+        }
+
+        assertEquals("Trying to delete informatie object by url, but could not find DocumentenApiPlugin instance for informatieobjectUrl http://some.url", ex.message)
     }
 
     private fun createDocumentInformatieObject() = DocumentInformatieObject(

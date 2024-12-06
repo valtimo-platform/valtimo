@@ -111,6 +111,20 @@ class ZaakDocumentService(
         }
     }
 
+    fun deleteRelatedInformatieObjecten(
+        @LoggableResource(resourceType = JsonSchemaDocument::class) zaakInstanceUrl: URI
+    ) {
+        val zakenApiPlugin = checkNotNull(
+            pluginService.createInstance(
+                ZakenApiPlugin::class.java,
+                ZakenApiPlugin.findConfigurationByUrl(zaakInstanceUrl)
+            )
+        ) { "Could not find ${ZakenApiPlugin::class.simpleName} configuration for zaak with url: $zaakInstanceUrl" }
+
+        zakenApiPlugin.getZaakInformatieObjecten(zaakInstanceUrl)
+            .map { documentenApiService.deleteInformatieObject(it.informatieobject) }
+    }
+
     private fun check(shouldCheck: Boolean, columnKey: DocumentenApiColumnKey, version: DocumentenApiVersion) {
         if (shouldCheck) {
             val fieldName = columnKey.property
