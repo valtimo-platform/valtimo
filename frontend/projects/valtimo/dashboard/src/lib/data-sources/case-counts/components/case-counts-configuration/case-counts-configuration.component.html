@@ -46,8 +46,8 @@
   </p>
 
   @for (_ of queryItemsList$ | async; track $index; let i = $index) {
-    <cds-tile class="count-tile" cdsLayer="1">
-      <div class="count-tile__input">
+    <cds-tile class="count-tile" [cdsLayer]="1">
+      <div class="count-tile__input" [cdsLayer]="0">
         <v-input
           [title]="'countTitle' | widgetTranslate: dataSourceKey | async"
           [margin]="true"

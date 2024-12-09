@@ -47,7 +47,7 @@
         </h3>
       </cds-modal-header>
 
-      <section cdsModalContent>
+      <section cdsModalContent [cdsLayer]="1">
         <ng-container *ngIf="vars.isDelete">
           {{ 'dashboardManagement.widgets.deleteDescription' | translate }}</ng-container
         >

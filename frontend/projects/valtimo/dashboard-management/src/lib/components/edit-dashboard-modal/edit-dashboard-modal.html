@@ -36,7 +36,12 @@
 </cds-modal>
 
 <ng-template #editDashboardFormTemplate let-obs="obs">
-  <form *ngIf="editDashboardForm" [formGroup]="editDashboardForm" class="dashboard-modal__form">
+  <form
+    *ngIf="editDashboardForm"
+    [formGroup]="editDashboardForm"
+    class="dashboard-modal__form"
+    [cdsLayer]="1"
+  >
     <div class="form__element">
       <cds-label
         [disabled]="obs.disabled"

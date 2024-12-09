@@ -29,6 +29,7 @@ import {
   DropdownModule,
   IconModule,
   InputModule,
+  LayerModule,
   ModalModule,
   NotificationModule,
 } from 'carbon-components-angular';
@@ -65,6 +66,7 @@ import {WidgetConfigurationContainerComponent} from './components/widget-configu
     IconModule,
     WidgetTranslatePipeModule,
     CarbonListModule,
+    LayerModule,
   ],
   exports: [],
 })
