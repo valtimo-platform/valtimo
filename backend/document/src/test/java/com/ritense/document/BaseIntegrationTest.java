@@ -63,6 +63,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -105,7 +106,7 @@ public abstract class BaseIntegrationTest extends BaseTest {
     @MockBean
     public ResourceService resourceService;
 
-    @MockBean
+    @MockBean(answer = Answers.RETURNS_DEEP_STUBS)
     protected UserManagementService userManagementService;
 
     @MockBean

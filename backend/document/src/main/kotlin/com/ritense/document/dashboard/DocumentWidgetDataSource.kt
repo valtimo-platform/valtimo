@@ -16,7 +16,9 @@
 
 package com.ritense.document.dashboard
 
+import PermissionConditionKey
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.permission.condition.PermissionConditionValueResolver
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.Companion.byDocumentDefinitionIdName
@@ -83,15 +85,28 @@ class DocumentWidgetDataSource(
         val criteriaBuilder: CriteriaBuilder = entityManager.criteriaBuilder
         val query = criteriaBuilder.createQuery(DocumentGroupByItem::class.java)
         val root: Root<JsonSchemaDocument> = query.from(JsonSchemaDocument::class.java)
-        val docPredicate = criteriaBuilder.equal(root.get<Any>("documentDefinitionId").get<String>("name"), caseGroupByDataSourceProperties.documentDefinition)
-        val pathIsNotNullPredicate = createConditionPredicate(root, QueryCondition(caseGroupByDataSourceProperties.path, ExpressionOperator.NOT_EQUAL_TO, "\${null}"), criteriaBuilder)
+        val docPredicate = criteriaBuilder.equal(
+            root.get<Any>("documentDefinitionId").get<String>("name"),
+            caseGroupByDataSourceProperties.documentDefinition
+        )
+        val pathIsNotNullPredicate = createConditionPredicate(
+            root,
+            QueryCondition(caseGroupByDataSourceProperties.path, ExpressionOperator.NOT_EQUAL_TO, "\${null}"),
+            criteriaBuilder
+        )
         // todo: fix null values through getJsonValueExpression
-        val pathIsNotNullStringPredicate = createConditionPredicate(root, QueryCondition(caseGroupByDataSourceProperties.path, ExpressionOperator.NOT_EQUAL_TO, "null"), criteriaBuilder)
+        val pathIsNotNullStringPredicate = createConditionPredicate(
+            root,
+            QueryCondition(caseGroupByDataSourceProperties.path, ExpressionOperator.NOT_EQUAL_TO, "null"),
+            criteriaBuilder
+        )
         val conditionPredicates = caseGroupByDataSourceProperties.queryConditions?.map {
             createConditionPredicate(root, it, criteriaBuilder)
         }?.toTypedArray() ?: arrayOf()
-        val combinedPredicates = arrayOf(docPredicate, pathIsNotNullPredicate, pathIsNotNullStringPredicate, *conditionPredicates)
-        val groupByExpression = getPathExpression(String::class.java, caseGroupByDataSourceProperties.path, root, criteriaBuilder)
+        val combinedPredicates =
+            arrayOf(docPredicate, pathIsNotNullPredicate, pathIsNotNullStringPredicate, *conditionPredicates)
+        val groupByExpression =
+            getPathExpression(String::class.java, caseGroupByDataSourceProperties.path, root, criteriaBuilder)
 
         query
             .where(*combinedPredicates)
@@ -121,7 +136,12 @@ class DocumentWidgetDataSource(
         return DocumentGroupByDataResult(values = result)
     }
 
-    private fun <T> getPathExpression(valueClass: Class<T>, path: String, root: Root<JsonSchemaDocument>, criteriaBuilder: CriteriaBuilder): Expression<T> {
+    private fun <T> getPathExpression(
+        valueClass: Class<T>,
+        path: String,
+        root: Root<JsonSchemaDocument>,
+        criteriaBuilder: CriteriaBuilder
+    ): Expression<T> {
         // Prefix defaults to doc: when no prefix is given
         val pathPrefix = "${path.substringBefore(":", "doc")}:"
         val expression = when (pathPrefix) {
@@ -159,7 +179,6 @@ class DocumentWidgetDataSource(
             stringTarget.contains("localDateTimeNow")
     }
 
-
     private fun getPredicateFromDateTimeSpelExpression(
         root: Root<JsonSchemaDocument>,
         it: QueryCondition<String>,
@@ -187,6 +206,36 @@ class DocumentWidgetDataSource(
         )
     }
 
+    private fun <T> queryValueIsPermissionConditionValueExpression(target: T): Boolean {
+        if (target !is String) {
+            return false
+        }
+
+        val stringTarget = target as String
+
+        return stringTarget.isNotEmpty() &&
+            PermissionConditionKey.isValidKey(stringTarget) &&
+            // roles is a list and is currently not supported
+            PermissionConditionKey.fromKey(stringTarget) != PermissionConditionKey.CURRENT_USER_ROLES
+    }
+
+    private fun getPredicateFromPermissionConditionExpression(
+        root: Root<JsonSchemaDocument>,
+        it: QueryCondition<String>,
+        criteriaBuilder: CriteriaBuilder
+    ): Predicate {
+        val valueClass = String::class.java
+        val expression = getPathExpression(valueClass, it.queryPath, root, criteriaBuilder)
+        val permissionConditionKey = PermissionConditionKey.fromKey(it.queryValue)?.key
+        val resolvedValue = PermissionConditionValueResolver.resolveValue(permissionConditionKey) as? String ?: ""
+
+        return it.queryOperator.toPredicate(
+            criteriaBuilder,
+            expression,
+            resolvedValue
+        )
+    }
+
     private fun <T : Comparable<T>> createConditionPredicate(
         root: Root<JsonSchemaDocument>,
         it: QueryCondition<T>,
@@ -196,6 +245,9 @@ class DocumentWidgetDataSource(
             return getPredicateFromDateTimeSpelExpression(root, it as QueryCondition<String>, criteriaBuilder)
         }
 
+        if (queryValueIsPermissionConditionValueExpression(it.queryValue)) {
+            return getPredicateFromPermissionConditionExpression(root, it as QueryCondition<String>, criteriaBuilder)
+        }
 
         val queryValue = if (it.queryValue == "\${null}") {
             null

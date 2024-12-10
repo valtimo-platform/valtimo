@@ -18,6 +18,11 @@
             "type": "string",
             "description": "The house's build date.",
             "maxLength": 100
+        },
+        "userInfo": {
+            "type": "string",
+            "description": "Additional information on the user",
+            "maxLength": 100
         }
     },
     "additionalProperties": false
