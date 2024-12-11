@@ -51,12 +51,22 @@ class TestDocumentValueResolver(
         throw NotImplementedError("Unable to handle value: {${firstValue.key} to ${firstValue.value}}")
     }
 
+    @Deprecated("Deprecated since 12.6.0, Use getResolvableKeyOptions(documentDefinitionName: String, version: Long) instead")
     override fun getResolvableKeys(documentDefinitionName: String, version: Long): List<String> {
         return COLUMN_LIST
     }
 
+    @Deprecated("Deprecated since 12.6.0, Use getResolvableKeyOptions(documentDefinitionName: String) instead")
     override fun getResolvableKeys(documentDefinitionName: String): List<String> {
         return COLUMN_LIST
+    }
+
+    override fun getResolvableKeyOptions(documentDefinitionName: String, version: Long): List<ValueResolverOption> {
+        return createFieldList(COLUMN_LIST)
+    }
+
+    override fun getResolvableKeyOptions(documentDefinitionName: String): List<ValueResolverOption> {
+        return createFieldList(COLUMN_LIST)
     }
 
     companion object {

@@ -48,6 +48,7 @@ class ValueResolverServiceImpl(
         return resolverFactoryMap.keys.filter { prefix -> prefix != "" }.toList()
     }
 
+    @Deprecated("Use getResolvableKeys with ValueResolverOptionRequest object instead")
     override fun getResolvableKeys(
         prefixes: List<String>,
         @LoggableResource("documentDefinitionName") documentDefinitionName: String
@@ -57,6 +58,7 @@ class ValueResolverServiceImpl(
         }
     }
 
+    @Deprecated("Use getResolvableKeys with ValueResolverOptionRequest object instead")
     override fun getResolvableKeys(
         prefixes: List<String>,
         @LoggableResource("documentDefinitionName") documentDefinitionName: String,
@@ -64,6 +66,28 @@ class ValueResolverServiceImpl(
     ): List<String> {
         return prefixes.fold(emptyList()) { acc, prefix ->
             (acc + (addPrefixToResolvableKeys(prefix, resolverFactoryMap[prefix]?.getResolvableKeys(documentDefinitionName, version))))
+        }
+    }
+
+
+    override fun getResolvableKeys(
+        request: ValueResolverOptionRequest,
+        @LoggableResource("documentDefinitionName") documentDefinitionName: String
+    ): List<ValueResolverOption> {
+        return request.prefixes.fold(emptyList()) { list, prefix ->
+            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(documentDefinitionName) ?: emptyList()
+            list + newOptions.filter { option -> request.type.equals(option.type) }
+        }
+    }
+
+    override fun getResolvableKeys(
+        request: ValueResolverOptionRequest,
+        @LoggableResource("documentDefinitionName") documentDefinitionName: String,
+        version: Long
+    ): List<ValueResolverOption> {
+        return request.prefixes.fold(emptyList()) { list, prefix ->
+            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(documentDefinitionName, version) ?: emptyList()
+            list + newOptions.filter { option -> request.type.equals(option.type) }
         }
     }
 

@@ -51,12 +51,31 @@ class TestCaseValueResolver(
         throw NotImplementedError("Unable to handle value: {${firstValue.key} to ${firstValue.value}}")
     }
 
+    @Deprecated("Use getResolvableKeyOptions(documentDefinitionName: String, version: Long) instead")
     override fun getResolvableKeys(documentDefinitionName: String, version: Long): List<String> {
         return COLUMN_LIST
     }
 
+    @Deprecated("Use getResolvableKeyOptions(documentDefinitionName: String) instead")
     override fun getResolvableKeys(documentDefinitionName: String): List<String> {
         return COLUMN_LIST
+    }
+
+    override fun getResolvableKeyOptions(documentDefinitionName: String, version: Long): List<ValueResolverOption> {
+        return createFieldList(COLUMN_LIST)
+    }
+
+    override fun getResolvableKeyOptions(documentDefinitionName: String): List<ValueResolverOption> {
+        return createFieldList(COLUMN_LIST) +
+            ValueResolverOption(
+                "test",
+                ValueResolverOptionType.COLLECTION,
+                listOf(
+                    ValueResolverOption("1", ValueResolverOptionType.FIELD),
+                    ValueResolverOption("2", ValueResolverOptionType.FIELD),
+                    ValueResolverOption("3", ValueResolverOptionType.FIELD),
+                )
+            )
     }
 
     companion object {
