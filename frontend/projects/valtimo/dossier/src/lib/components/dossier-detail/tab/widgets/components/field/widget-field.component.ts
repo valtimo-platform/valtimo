@@ -27,7 +27,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule, EllipsisPipe, ViewContentService} from '@valtimo/components';
+import {CarbonListModule, EllipsisPipe, ViewContentService, ViewType} from '@valtimo/components';
 import {InputModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
 import {CaseWidgetTextDisplayType, FieldsCaseWidget} from '../../../../../../models';
@@ -78,13 +78,10 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
                     ellipsisCharacterLimit:
                       (property.displayProperties as CaseWidgetTextDisplayType)
                         ?.ellipsisCharacterLimit ?? null,
-                    value:
-                      widgetData[property.key] !== null && widgetData[property.key] !== undefined
-                        ? this.viewContentService.get(widgetData[property.key], {
-                            ...property.displayProperties,
-                            viewType: property.displayProperties?.type ?? 'text',
-                          })
-                        : '-',
+                    value: this.viewContentService.get(widgetData[property.key], {
+                      ...property.displayProperties,
+                      viewType: property.displayProperties?.type ?? ViewType.TEXT,
+                    }),
                   },
                 ]
               : []),

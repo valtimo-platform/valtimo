@@ -27,7 +27,7 @@ export class BooleanTypeConverter implements TypeConverter {
   }
 
   public convert(value: any, definition: any): string {
-    if (!value) return '-';
+    if (value === null || value === undefined) return '-';
     const enumeration = definition?.enum;
 
     if (enumeration && Array.isArray(enumeration) && enumeration.length > 1) {
