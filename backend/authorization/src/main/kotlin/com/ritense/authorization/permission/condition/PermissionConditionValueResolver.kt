@@ -16,6 +16,7 @@
 
 package com.ritense.authorization.permission.condition
 
+import PermissionConditionKey
 import com.ritense.authorization.UserManagementServiceHolder
 
 object PermissionConditionValueResolver {
@@ -23,10 +24,10 @@ object PermissionConditionValueResolver {
     fun <V> resolveValue(value: V?): Any? {
         if (value is String) {
             return when (value) {
-                "\${currentUserId}" -> UserManagementServiceHolder.currentInstance.currentUser.id
-                "\${currentUserEmail}" -> UserManagementServiceHolder.currentInstance.currentUser.email
-                "\${currentUserRoles}" -> UserManagementServiceHolder.currentInstance.currentUser.roles
-                "\${currentUserIdentifier}" -> UserManagementServiceHolder.currentInstance.currentUser.userIdentifier
+                PermissionConditionKey.CURRENT_USER_ID.key -> UserManagementServiceHolder.currentInstance.currentUser.id
+                PermissionConditionKey.CURRENT_USER_EMAIL.key -> UserManagementServiceHolder.currentInstance.currentUser.email
+                PermissionConditionKey.CURRENT_USER_ROLES.key -> UserManagementServiceHolder.currentInstance.currentUser.roles
+                PermissionConditionKey.CURRENT_USER_IDENTIFIER.key -> UserManagementServiceHolder.currentInstance.currentUser.userIdentifier
                 else -> value
             }
         }
