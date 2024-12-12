@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-package com.ritense.case.repository
+package com.ritense.case_.repository
 
-import com.ritense.case.domain.CaseDefinitionSettings
+import com.ritense.case_.domain.definition.CaseDefinition
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 
-interface CaseDefinitionSettingsRepository: JpaRepository<CaseDefinitionSettings, String>
+interface CaseDefinitionRepository
+    : JpaRepository<CaseDefinition, CaseDefinitionId>, JpaSpecificationExecutor<CaseDefinition> {
+    fun findFirstByIdKeyOrderByIdVersionTagDesc(key: String): CaseDefinition?
+}

@@ -25,16 +25,15 @@ import com.ritense.case.domain.BooleanDisplayTypeParameter
 import com.ritense.case.domain.DateFormatDisplayTypeParameter
 import com.ritense.case.domain.EnumDisplayTypeParameter
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
-import com.ritense.case.repository.CaseDefinitionSettingsRepository
 import com.ritense.case.repository.CaseTabDocumentDefinitionMapper
 import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case.repository.CaseTabSpecificationFactory
 import com.ritense.case.repository.TaskListColumnRepository
 import com.ritense.case.security.config.CaseHttpSecurityConfigurer
 import com.ritense.case.service.CaseDefinitionDeploymentService
+import com.ritense.case.service.CaseDefinitionExporter
+import com.ritense.case.service.CaseDefinitionImporter
 import com.ritense.case.service.CaseDefinitionService
-import com.ritense.case.service.CaseDefinitionSettingsExporter
-import com.ritense.case.service.CaseDefinitionSettingsImporter
 import com.ritense.case.service.CaseInstanceService
 import com.ritense.case.service.CaseListDeploymentService
 import com.ritense.case.service.CaseListExporter
@@ -51,6 +50,7 @@ import com.ritense.case.web.rest.CaseInstanceResource
 import com.ritense.case.web.rest.CaseTabManagementResource
 import com.ritense.case.web.rest.CaseTabResource
 import com.ritense.case.web.rest.TaskListResource
+import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.DocumentService
@@ -79,7 +79,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @AutoConfiguration
 @EnableJpaRepositories(
     basePackageClasses = [
-        CaseDefinitionSettingsRepository::class
+        CaseTabRepository::class,
     ]
 )
 @EntityScan(basePackages = ["com.ritense.case.domain"])
@@ -133,16 +133,16 @@ class CaseAutoConfiguration {
 
     @Bean
     fun caseDefinitionService(
-        repository: CaseDefinitionSettingsRepository,
         caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository,
         documentDefinitionService: DocumentDefinitionService,
+        caseDefinitionRepository: CaseDefinitionRepository,
         valueResolverService: ValueResolverService,
-        authorizationService: AuthorizationService,
+        authorizationService: AuthorizationService
     ): CaseDefinitionService {
         return CaseDefinitionService(
-            repository,
             caseDefinitionListColumnRepository,
             documentDefinitionService,
+            caseDefinitionRepository,
             valueResolverService,
             authorizationService
         )
@@ -202,12 +202,12 @@ class CaseAutoConfiguration {
     fun caseDefinitionDeploymentService(
         resourceLoader: ResourceLoader,
         objectMapper: ObjectMapper,
-        caseDefinitionSettingsRepository: CaseDefinitionSettingsRepository
+        caseDefinitionRepository: CaseDefinitionRepository
     ): CaseDefinitionDeploymentService {
         return CaseDefinitionDeploymentService(
             resourceLoader,
             objectMapper,
-            caseDefinitionSettingsRepository
+            caseDefinitionRepository
         )
     }
 
@@ -365,20 +365,20 @@ class CaseAutoConfiguration {
     ) = CaseTaskListImporter(caseTaskListDeploymentService, changelogDeployer)
 
     @Bean
-    @ConditionalOnMissingBean(CaseDefinitionSettingsExporter::class)
+    @ConditionalOnMissingBean(CaseDefinitionExporter::class)
     fun caseDefinitionSettingsExporter(
         objectMapper: ObjectMapper,
         caseDefinitionService: CaseDefinitionService,
-    ) = CaseDefinitionSettingsExporter(
+    ) = CaseDefinitionExporter(
         objectMapper,
         caseDefinitionService
     )
 
     @Bean
-    @ConditionalOnMissingBean(CaseDefinitionSettingsImporter::class)
+    @ConditionalOnMissingBean(CaseDefinitionImporter::class)
     fun caseDefinitionSettingsImporter(
         deploymentService: CaseDefinitionDeploymentService
-    ) = CaseDefinitionSettingsImporter(
+    ) = CaseDefinitionImporter(
         deploymentService
     )
 

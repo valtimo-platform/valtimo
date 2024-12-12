@@ -1,128 +1,96 @@
 package com.ritense.case.service
 
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case.BaseIntegrationTest
-import com.ritense.case.repository.CaseDefinitionSettingsRepository
-import com.ritense.document.service.DocumentDefinitionService
+import com.ritense.case_.repository.CaseDefinitionRepository
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.transaction.annotation.Transactional
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.assertNotNull
 
 @Transactional
 class CaseDefinitionDeploymentServiceIntTest @Autowired constructor(
-    private val documentDefinitionService: DocumentDefinitionService,
-    private val caseDefinitionSettingsRepository: CaseDefinitionSettingsRepository,
-    private val caseDefinitionDeploymentService: CaseDefinitionDeploymentService
+    private val caseDefinitionDeploymentService: CaseDefinitionDeploymentService,
+    private val caseDefinitionRepository: CaseDefinitionRepository
 ) : BaseIntegrationTest() {
 
     @Test
-    fun `should create settings when settings are defined`() {
-        runWithoutAuthorization {
-            documentDefinitionService.deploy(
-                "" +
-                    "{\n" +
-                    "    \"\$id\": \"all-properties-present.schema\",\n" +
-                    "    \"\$schema\": \"http://json-schema.org/draft-07/schema#\"\n" +
-                    "}\n"
-            )
-        }
+    fun `should have deployed on startup`() {
+        val deployedCaseDefinition1 = caseDefinitionRepository.findByIdOrNull(CaseDefinitionId.of("some-case-type", "1.2.3"))
+        val deployedCaseDefinition2 = caseDefinitionRepository.findByIdOrNull(CaseDefinitionId.of("some-other-case-type", "1.1.1"))
 
-        val settings = caseDefinitionSettingsRepository.getReferenceById("all-properties-present")
-
-        assertEquals("all-properties-present", settings.name)
-        assertTrue(settings.canHaveAssignee)
-        assertTrue(settings.autoAssignTasks)
+        assertNotNull(deployedCaseDefinition1)
+        assertEquals(deployedCaseDefinition1.name, "Some case type")
+        assertEquals(deployedCaseDefinition1.canHaveAssignee, true)
+        assertEquals(deployedCaseDefinition1.autoAssignTasks, true)
+        assertNotNull(deployedCaseDefinition2)
+        assertEquals(deployedCaseDefinition2.name, "Some other case type")
+        assertEquals(deployedCaseDefinition2.canHaveAssignee, true)
+        assertEquals(deployedCaseDefinition2.autoAssignTasks, true)
     }
 
     @Test
-    fun `should deploy settings caseDefinitionName and json content`() {
-        val caseDefinitionName = "by-case-definition-name-and-json"
+    fun `should deploy case definition`() {
+        val key = "test"
+        val version = "1.0.0"
 
-        caseDefinitionDeploymentService.deploy(caseDefinitionName, """
+        caseDefinitionDeploymentService.deploy(
+            """
             {
+                "key": "$key",
+                "versionTag": "$version",
+                "name": "Test",
                 "canHaveAssignee": true,
                 "autoAssignTasks": false
             }
-        """.trimIndent())
+        """.trimIndent()
+        )
 
-        val settings = caseDefinitionSettingsRepository.getReferenceById(caseDefinitionName)
+        val deployedCaseDefinition = caseDefinitionRepository.findByIdOrNull(CaseDefinitionId.of(key, version))
 
-        assertEquals(caseDefinitionName, settings.name)
-        assertTrue(settings.canHaveAssignee)
-        assertFalse(settings.autoAssignTasks)
+        assertEquals(deployedCaseDefinition?.id?.key, key)
+        assertEquals(deployedCaseDefinition?.canHaveAssignee, true)
+        assertEquals(deployedCaseDefinition?.autoAssignTasks, false)
     }
 
     @Test
-    fun `should deploy settings when settings are defined`() {
-        runWithoutAuthorization {
-            documentDefinitionService.deploy(
-                "" +
-                    "{\n" +
-                    "    \"\$id\": \"all-properties-present.schema\",\n" +
-                    "    \"\$schema\": \"http://json-schema.org/draft-07/schema#\"\n" +
-                    "}\n"
-            )
+    fun `should throw exception when case definition is invalid`() {
+        val invalidCaseDefinition = """
+        {
+            "key": "key",
+            "versionTag": "1.0.0",
+            "canHaveAssignee": true,
+            "autoAssignTasks": false
         }
+    """.trimIndent()
 
-        val settings = caseDefinitionSettingsRepository.getReferenceById("all-properties-present")
-
-        assertEquals("all-properties-present", settings.name)
-        assertTrue(settings.canHaveAssignee)
-        assertTrue(settings.autoAssignTasks)
+        assertThrows<IllegalArgumentException> {
+            caseDefinitionDeploymentService.deploy(invalidCaseDefinition)
+        }
     }
 
     @Test
-    fun `should throw exception when settings are invalid`() {
-        val result = runWithoutAuthorization {
-            documentDefinitionService.deploy(
-                "" +
-                    "{\n" +
-                    "    \"\$id\": \"invalid-properties.schema\",\n" +
-                    "    \"\$schema\": \"http://json-schema.org/draft-07/schema#\"\n" +
-                    "}\n"
-            )
-        }
+    fun `should create case settings with default values when settings are not defined`() {
+        val key = "test"
+        val version = "1.0.0"
 
-        assertEquals(1, result.errors().size)
-    }
+        caseDefinitionDeploymentService.deploy(
+            """
+            {
+                "key": "$key",
+                "versionTag": "$version",
+                "name": "Test"
+            }
+        """.trimIndent()
+        )
 
-    @Test
-    fun `should create settings with default values when settings are not defined`() {
-        runWithoutAuthorization {
-            documentDefinitionService.deploy(
-                "" +
-                    "{\n" +
-                    "    \"\$id\": \"empty-properties.schema\",\n" +
-                    "    \"\$schema\": \"http://json-schema.org/draft-07/schema#\"\n" +
-                    "}\n"
-            )
-        }
+        val deployedCaseDefinition = caseDefinitionRepository.findByIdOrNull(CaseDefinitionId.of(key, version))
 
-        val settings = caseDefinitionSettingsRepository.getReferenceById("empty-properties")
-
-        assertEquals("empty-properties", settings.name)
-        assertFalse(settings.canHaveAssignee)
-    }
-
-    @Test
-    fun `should create settings with default values when settings file is not present`() {
-        runWithoutAuthorization {
-            documentDefinitionService.deploy(
-                "" +
-                    "{\n" +
-                    "    \"\$id\": \"no-settings-present.schema\",\n" +
-                    "    \"\$schema\": \"http://json-schema.org/draft-07/schema#\"\n" +
-                    "}\n"
-            )
-        }
-
-        val settings = caseDefinitionSettingsRepository.getReferenceById("no-settings-present")
-
-        assertEquals("no-settings-present", settings.name)
-        assertFalse(settings.canHaveAssignee)
-
+        assertEquals(deployedCaseDefinition?.id?.key, key)
+        assertEquals(deployedCaseDefinition?.canHaveAssignee, false)
+        assertEquals(deployedCaseDefinition?.autoAssignTasks, false)
     }
 }

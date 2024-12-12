@@ -16,17 +16,14 @@
 
 package com.ritense.case.service
 
+import CaseDefinitionDto
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.module.kotlin.convertValue
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.ritense.case.domain.CaseDefinitionSettings
-import com.ritense.case.repository.CaseDefinitionSettingsRepository
-import com.ritense.document.domain.event.DocumentDefinitionDeployedEvent
-import com.ritense.logging.withLoggingContext
+import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import mu.KotlinLogging
+import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
+import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.ResourcePatternUtils
 import org.springframework.data.repository.findByIdOrNull
@@ -35,53 +32,57 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.StreamUtils
 import java.nio.charset.StandardCharsets
 
+
 @Transactional
 @Service
 @SkipComponentScan
 class CaseDefinitionDeploymentService(
     private val resourceLoader: ResourceLoader,
     private val objectMapper: ObjectMapper,
-    private val caseDefinitionSettingsRepository: CaseDefinitionSettingsRepository
+    private val caseDefinitionRepository: CaseDefinitionRepository
 ) {
 
-    @EventListener(DocumentDefinitionDeployedEvent::class)
-    fun conditionalCreateCase(event: DocumentDefinitionDeployedEvent) {
-        val documentDefinitionName = event.documentDefinition().id().name()
-        withLoggingContext("jsonSchemaDocumentName" to documentDefinitionName) {
-            val caseDefinitionSettings = caseDefinitionSettingsRepository.findByIdOrNull(documentDefinitionName)
-            if (caseDefinitionSettings == null) {
-                val resource = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
-                    .getResource("classpath:config/case/definition/$documentDefinitionName.json")
-
-                if (resource.exists()) {
-                    deploy(
-                        resource.filename!!.substringBeforeLast("."),
-                        StreamUtils.copyToString(resource.inputStream, StandardCharsets.UTF_8)
-                    )
-                } else {
-                    caseDefinitionSettingsRepository.save(CaseDefinitionSettings(documentDefinitionName))
+    @EventListener(ApplicationReadyEvent::class)
+    fun deployOnStartup() {
+        try {
+            loadResources().forEach { resource ->
+                if (resource.filename != null) {
+                    val fileContent = StreamUtils.copyToString(resource.inputStream, StandardCharsets.UTF_8)
+                    deploy(fileContent)
                 }
             }
+        } catch (e: Exception) {
+            throw RuntimeException("Error deploying Case Definitions", e)
         }
     }
 
-    fun deploy(caseDefinitionName: String, settingsJson: String, forceDeploy: Boolean = false) {
-        logger.debug { "Deploying case definition $caseDefinitionName" }
-        val caseDefinitionSettings = caseDefinitionSettingsRepository.findByIdOrNull(caseDefinitionName)
-
-        if (caseDefinitionSettings == null || forceDeploy) {
-            val settingsToDeploy = objectMapper.readValue<ObjectNode>(settingsJson)
-                .put("name", caseDefinitionName)
-            val createdCaseDefinitionSettings: CaseDefinitionSettings = objectMapper.convertValue(settingsToDeploy)
-
-            caseDefinitionSettingsRepository.save(createdCaseDefinitionSettings)
-            logger.debug { "Case definition $caseDefinitionName was created" }
-        } else {
-            logger.debug { "Attempted to update settings for case that already exist $caseDefinitionName" }
+    fun deploy(fileContent: String, forceDeploy: Boolean = false) {
+        val caseDefinitionDto = try {
+            objectMapper.readValue(fileContent, CaseDefinitionDto::class.java)
+        } catch (e: Exception) {
+            throw IllegalArgumentException("Failed to parse file content as a valid case definition: ${e.message}", e)
         }
+
+        val caseDefinition = caseDefinitionDto.toEntity()
+
+        logger.debug { "Deploying case definition with id '${caseDefinition.id}'" }
+
+        val existingCaseDefinition = caseDefinitionRepository.findByIdOrNull(caseDefinition.id)
+
+        if (existingCaseDefinition == null || forceDeploy) {
+            caseDefinitionRepository.save(caseDefinition)
+            logger.debug { "Case definition with id '${caseDefinition.id}' was saved" }
+        } else {
+            logger.debug { "Not deploying case definition with '${caseDefinition.id}', it already exists" }
+        }
+    }
+
+    private fun loadResources(): Array<Resource> {
+        return ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(CASE_DEFINITION_PATH)
     }
 
     companion object {
         val logger = KotlinLogging.logger {}
+        const val CASE_DEFINITION_PATH = "classpath:config/*/*/case/definition/*.json"
     }
 }

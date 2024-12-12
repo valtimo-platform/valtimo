@@ -17,6 +17,7 @@
 package com.ritense.case.service
 
 import com.ritense.importer.ImportRequest
+import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.DOCUMENT_DEFINITION
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -28,24 +29,24 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 
 @ExtendWith(MockitoExtension::class)
-class CaseDefinitionSettingsImporterTest(
+class CaseDefinitionImporterTest(
     @Mock private val deploymentService: CaseDefinitionDeploymentService
 ) {
-    private lateinit var importer: CaseDefinitionSettingsImporter
+    private lateinit var importer: CaseDefinitionImporter
 
     @BeforeEach
     fun before() {
-        importer = CaseDefinitionSettingsImporter(deploymentService)
+        importer = CaseDefinitionImporter(deploymentService)
     }
 
     @Test
     fun `should be of type 'casesettings'`() {
-        assertThat(importer.type()).isEqualTo("casesettings")
+        assertThat(importer.type()).isEqualTo("casedefinition")
     }
 
     @Test
-    fun `should depend on 'documentdefinition' type`() {
-        assertThat(importer.dependsOn()).isEqualTo(setOf(DOCUMENT_DEFINITION))
+    fun `should not depend on any type`() {
+        assertThat(importer.dependsOn()).isEqualTo(emptySet<String>())
     }
 
     @Test
@@ -64,18 +65,16 @@ class CaseDefinitionSettingsImporterTest(
         val jsonContent = "{}"
         importer.import(ImportRequest(FILENAME, jsonContent.toByteArray()))
 
-        val nameCaptor = argumentCaptor<String>()
         val jsonCaptor = argumentCaptor<String>()
         val booleanCaptor = argumentCaptor<Boolean>()
 
-        verify(deploymentService).deploy(nameCaptor.capture(), jsonCaptor.capture(), booleanCaptor.capture())
+        verify(deploymentService).deploy(jsonCaptor.capture(), booleanCaptor.capture())
 
-        assertThat(nameCaptor.firstValue).isEqualTo("my-case-list")
         assertThat(jsonCaptor.firstValue).isEqualTo(jsonContent)
         assertThat(booleanCaptor.firstValue).isEqualTo(true)
     }
 
     private companion object {
-        const val FILENAME = "config/case/definition/my-case-list.json"
+        const val FILENAME = "config/my-case-list/1-2-3/case/definition/my-case-list.json"
     }
 }

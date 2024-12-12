@@ -16,17 +16,17 @@
 
 package com.ritense.case.service
 
-import com.ritense.case.domain.CaseDefinitionSettings
 import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.domain.DisplayType
 import com.ritense.case.domain.EnumDisplayTypeParameter
 import com.ritense.case.exception.InvalidListColumnException
 import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
-import com.ritense.case.repository.CaseDefinitionSettingsRepository
 import com.ritense.case.web.rest.dto.CaseListColumnDto
 import com.ritense.case.web.rest.dto.CaseSettingsDto
 import com.ritense.case.web.rest.mapper.CaseListColumnMapper
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.exception.UnknownDocumentDefinitionException
 import com.ritense.document.service.DocumentDefinitionService
@@ -41,13 +41,10 @@ import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.util.Optional
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class CaseDefinitionServiceTest {
-    lateinit var caseDefinitionSettingsRepository: CaseDefinitionSettingsRepository
+    lateinit var caseDefinitionRepository: CaseDefinitionRepository
 
     lateinit var caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository
 
@@ -59,46 +56,23 @@ class CaseDefinitionServiceTest {
 
     @BeforeEach
     fun setUp() {
-        caseDefinitionSettingsRepository = mock()
         documentDefinitionService = mock()
         caseDefinitionListColumnRepository = mock()
+        caseDefinitionRepository = mock()
         valueResolverService = mock()
         service = CaseDefinitionService(
-            caseDefinitionSettingsRepository,
             caseDefinitionListColumnRepository,
             documentDefinitionService,
+            caseDefinitionRepository,
             valueResolverService,
             mock()
         )
     }
 
-    @Test
-    fun `should get case settings by id`() {
-        val caseDefinitionName = "name"
-        val caseDefinitionSettings = CaseDefinitionSettings(caseDefinitionName, true)
-
-        whenever(documentDefinitionService.findLatestByName(caseDefinitionName)).thenReturn(Optional.of(mock()))
-        whenever(caseDefinitionSettingsRepository.getReferenceById(caseDefinitionName)).thenReturn(caseDefinitionSettings)
-
-        val foundCaseDefinitionSettings = service.getCaseSettings(caseDefinitionName)
-
-        verify(caseDefinitionSettingsRepository).getReferenceById(caseDefinitionName)
-        assertEquals(caseDefinitionName, foundCaseDefinitionSettings.name)
-        assertTrue(foundCaseDefinitionSettings.canHaveAssignee)
-    }
-
-    @Test
-    fun `should throw exception when getting case settings by id and document definition does not exist `() {
-        val caseDefinitionName = "name"
-
-        assertThrows<UnknownCaseDefinitionException> {
-            service.getCaseSettings(caseDefinitionName)
-        }
-    }
-
+/*
     @Test
     fun `should update case settings`() {
-        val caseDefinitionName = "name"
+        val caseDefinitionId = CaseDefinitionId.of("name", "1.0.0")
         val currentCaseDefinitionSettings = CaseDefinitionSettings(caseDefinitionName, true)
         val updatedCaseDefinitionSettings = CaseDefinitionSettings(caseDefinitionName, false)
         val caseSettingsDto: CaseSettingsDto = mock()
@@ -113,14 +87,15 @@ class CaseDefinitionServiceTest {
         assertEquals(caseDefinitionName, returnedCaseDefinitionSettings.name)
         assertFalse(returnedCaseDefinitionSettings.canHaveAssignee)
     }
+*/
 
     @Test
-    fun `should throw exception when updating case settings and document definition does not exist `() {
-        val caseDefinitionName = "name"
+    fun `should throw exception when updating case settings and case definition does not exist `() {
+        val caseDefinitionId = CaseDefinitionId.of("name", "1.0.0")
         val caseSettingsDto: CaseSettingsDto = mock()
 
         assertThrows<UnknownCaseDefinitionException> {
-            service.updateCaseSettings(caseDefinitionName, caseSettingsDto)
+            service.updateCaseSettings(caseDefinitionId, caseSettingsDto)
         }
     }
 

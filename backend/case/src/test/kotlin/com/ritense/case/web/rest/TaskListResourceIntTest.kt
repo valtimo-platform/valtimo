@@ -18,34 +18,24 @@ package com.ritense.case.web.rest
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case.BaseIntegrationTest
-import com.ritense.case.domain.CaseDefinitionSettings
 import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
-import com.ritense.case.repository.CaseDefinitionSettingsRepository
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.mock.web.MockMultipartFile
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultMatcher
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.util.zip.ZipEntry
-import java.util.zip.ZipInputStream
-import java.util.zip.ZipOutputStream
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
@@ -58,9 +48,6 @@ class TaskListResourceIntTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var webApplicationContext: WebApplicationContext
-
-    @Autowired
-    lateinit var caseDefinitionSettingsRepository: CaseDefinitionSettingsRepository
 
     @Autowired
     lateinit var caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository
@@ -131,7 +118,9 @@ class TaskListResourceIntTest : BaseIntegrationTest() {
         }
         mockMvc.perform(
             MockMvcRequestBuilders.put(
-                "/api/management/v1/case/{caseDefinitionName}/task-list-column/{columnKey}", caseDefinitionName, "first-name"
+                "/api/management/v1/case/{caseDefinitionName}/task-list-column/{columnKey}",
+                caseDefinitionName,
+                "first-name"
             ).contentType(MediaType.APPLICATION_JSON_VALUE).content(
                 "{\n" + "  \"title\": \"First name\",\n" + "  \"key\": \"first-name\",\n" + "  \"path\": \"test:firstName\" ,\n" + "  \"displayType\": {\n" + "    \"type\": \"enum\",\n" + "    \"displayTypeParameters\": {\n" + "        \"enum\": {\"key1\":\"Value 1\"},\n" + "        \"date-format\": \"\"\n" + "        }\n" + "    },\n" + "    \"sortable\": true ,\n" + "    \"defaultSort\": \"ASC\"\n" + "}"
             )
@@ -405,7 +394,11 @@ class TaskListResourceIntTest : BaseIntegrationTest() {
                 """.trimIndent(), status().isOk
         )
         mockMvc.perform(
-            MockMvcRequestBuilders.delete("/api/management/v1/case/{caseDefinitionName}/list-column/{columnKey}", caseDefinitionName, columnKey)
+            MockMvcRequestBuilders.delete(
+                "/api/management/v1/case/{caseDefinitionName}/list-column/{columnKey}",
+                caseDefinitionName,
+                columnKey
+            )
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
         ).andExpect(status().isNoContent)
     }
@@ -436,7 +429,11 @@ class TaskListResourceIntTest : BaseIntegrationTest() {
         }
         val columnKey = "first-name"
         mockMvc.perform(
-            MockMvcRequestBuilders.delete("/api/management/v1/case/{caseDefinitionName}/list-column/{columnKey}", caseDefinitionName, columnKey)
+            MockMvcRequestBuilders.delete(
+                "/api/management/v1/case/{caseDefinitionName}/list-column/{columnKey}",
+                caseDefinitionName,
+                columnKey
+            )
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
         ).andExpect(status().isNoContent)
     }
@@ -447,7 +444,11 @@ class TaskListResourceIntTest : BaseIntegrationTest() {
         val caseDefinitionName = "listColumnDocumentDefinition"
         val columnKey = "first-name"
         mockMvc.perform(
-            MockMvcRequestBuilders.delete("/api/management/v1/case/{caseDefinitionName}/list-column/{columnKey}", caseDefinitionName, columnKey)
+            MockMvcRequestBuilders.delete(
+                "/api/management/v1/case/{caseDefinitionName}/list-column/{columnKey}",
+                caseDefinitionName,
+                columnKey
+            )
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
         ).andExpect(status().isBadRequest)
     }
@@ -566,7 +567,11 @@ class TaskListResourceIntTest : BaseIntegrationTest() {
 
     private fun createListColumn(caseDefinitionName: String, json: String, expectedStatus: ResultMatcher) {
         mockMvc.perform(
-            MockMvcRequestBuilders.put("/api/management/v1/case/{caseDefinitionName}/task-list-column/{columnKey}", caseDefinitionName, "test")
+            MockMvcRequestBuilders.put(
+                "/api/management/v1/case/{caseDefinitionName}/task-list-column/{columnKey}",
+                caseDefinitionName,
+                "test"
+            )
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(json)
         ).andDo { result -> print(result.response.contentAsString) }.andExpect(expectedStatus)

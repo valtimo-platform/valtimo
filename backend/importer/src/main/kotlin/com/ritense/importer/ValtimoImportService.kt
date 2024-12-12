@@ -16,10 +16,14 @@
 
 package com.ritense.importer
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
 import com.ritense.importer.exception.CyclicImporterDependencyException
 import com.ritense.importer.exception.DuplicateImporterTypeException
 import com.ritense.importer.exception.InvalidImportZipException
 import com.ritense.importer.exception.TooManyImportCandidatesException
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import java.io.InputStream
 import java.util.zip.ZipInputStream
 import mu.KLogger
@@ -107,24 +111,45 @@ open class ValtimoImportService(
     @Transactional
     override fun import(inputStream: InputStream) {
         val entries = readZipEntries(inputStream)
-        val importerEntriesMap = getEntriesByImporter(entries)
+        val importerEntriesMapGroupedByCaseDefinition = entries.map {
+            it.key to getEntriesByImporter(it.value)
+        }.toMap()
 
-        importerEntriesMap.forEach { (importer, entries) ->
-            entries.forEach { entry ->
-                logger.debug { "Importing ${entry.fileName} with importer ${importer.type()}" }
-                importer.import(ImportRequest(entry.fileName, entry.content))
+        importerEntriesMapGroupedByCaseDefinition.forEach { (basePath, importerEntriesMap) ->
+            var caseDefinitionId: CaseDefinitionId? = null
+            if (basePath?.isNotEmpty() == true) {
+                val caseDefinitionEntries = importerEntriesMap
+                    .filter { it.key.type() == CASE_DEFINITION }
+                    .let {
+                        it[it.keys.first()]
+                    }
+
+                val caseDefinitionMap: Map<String, Any> = jacksonObjectMapper()
+                    .readValue(caseDefinitionEntries?.first()?.content!!)
+                caseDefinitionId = CaseDefinitionId(
+                    caseDefinitionMap["key"] as String,
+                    caseDefinitionMap["versionTag"] as String
+                )
+            }
+
+            importerEntriesMap.forEach { (importer, entries) ->
+                entries.forEach { entry ->
+                    logger.debug { "Importing ${entry.fileName} with importer ${importer.type()}" }
+                    importer.import(ImportRequest(entry.fileName, entry.content, caseDefinitionId))
+                }
             }
         }
     }
 
-    private fun readZipEntries(inputStream: InputStream): List<ZipFileEntry> {
-        // Read all entries with data from the stream
+    private fun readZipEntries(inputStream: InputStream): Map<String?, List<ZipFileEntry>> {
+        // Read all entries with data from the stream and group them by base path, e.g. "config/loan/1-2-1/"
         return try {
             ZipInputStream(inputStream).use { stream ->
                 generateSequence { stream.nextEntry }
                     .filter { !it.isDirectory }
                     .map { ZipFileEntry(it.name, stream.readBytes()) }
-                    .toMutableList()
+                    .groupBy { it.basePath }
+                    .toMutableMap()
             }
         } catch (ex: Exception) {
             throw InvalidImportZipException(ex.message)
@@ -135,6 +160,7 @@ open class ValtimoImportService(
         }
     }
 
+    // change entries to be nested
     /**
      * Maps all entries by a supporting importer.
      * When no files are provided, an empty list value is mapped.
@@ -194,6 +220,9 @@ open class ValtimoImportService(
             val fileName: String,
             val content: ByteArray
         ) {
+            // TODO: Do we want to validate whether this basepath matches the case definition file?
+            val basePath: String? = Regex("config(/[^/]+){2}/").find(fileName)?.groups?.first()?.value
+
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
                 if (javaClass != other?.javaClass) return false

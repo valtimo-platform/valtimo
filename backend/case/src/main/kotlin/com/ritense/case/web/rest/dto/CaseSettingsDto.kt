@@ -16,24 +16,20 @@
 
 package com.ritense.case.web.rest.dto
 
-import com.ritense.case.domain.CaseDefinitionSettings
+import com.ritense.case_.domain.definition.CaseDefinition
 
 data class CaseSettingsDto(
     val canHaveAssignee: Boolean? = null,
     val autoAssignTasks: Boolean? = null
 ) {
-    fun update(currentSettings: CaseDefinitionSettings): CaseDefinitionSettings {
-        return CaseDefinitionSettings(
-            currentSettings.name,
-            getSettingForUpdate(currentSettings.canHaveAssignee, this.canHaveAssignee) ?: false,
-            when (this.canHaveAssignee) {
-                false -> false
-                else -> getSettingForUpdate(currentSettings.autoAssignTasks, this.autoAssignTasks) ?: false
-            }
+    fun update(currentCaseDefinition: CaseDefinition): CaseDefinition {
+        return currentCaseDefinition.copy(
+            canHaveAssignee = getSettingForUpdate(currentCaseDefinition.canHaveAssignee, canHaveAssignee),
+            autoAssignTasks = getSettingForUpdate(currentCaseDefinition.autoAssignTasks, autoAssignTasks)
         )
     }
 
-    private fun <T> getSettingForUpdate(currentValue: T?, newValue: T?): T? {
+    private fun <T> getSettingForUpdate(currentValue: T, newValue: T?): T {
         return newValue ?: currentValue
     }
 }

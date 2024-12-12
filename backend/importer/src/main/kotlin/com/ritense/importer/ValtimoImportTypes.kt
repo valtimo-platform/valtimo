@@ -19,7 +19,7 @@ package com.ritense.importer
 class ValtimoImportTypes {
     companion object {
         // CORE
-        const val CASE_DEFINITION_SETTINGS = "casesettings"
+        const val CASE_DEFINITION = "casedefinition"
         const val CASE_LIST = "caselist"
         const val CASE_TAB = "casetab"
         const val CASE_WIDGET_TAB = "casewidgettab"

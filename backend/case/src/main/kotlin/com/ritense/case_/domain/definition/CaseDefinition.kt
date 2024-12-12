@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package com.ritense.case.domain
+package com.ritense.case_.domain.definition
 
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.persistence.Column
+import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
-import jakarta.persistence.Id
 import jakarta.persistence.Table
 
 @Entity
 @Table(name = "case_definition")
-class CaseDefinitionSettings(
-    @Id
+data class CaseDefinition(
+    @EmbeddedId
+    val id: CaseDefinitionId,
     @Column(name = "case_definition_name")
     val name: String,
     @Column(name = "can_have_assignee")

@@ -14,25 +14,23 @@
  * limitations under the License.
  */
 
-package com.ritense.importer
+package com.ritense.case.web.rest.dto
 
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.case_.domain.definition.CaseDefinition
 
-data class ImportRequest(
-    val fileName: String,
-    val content: ByteArray,
-    val caseDefinitionId: CaseDefinitionId? = null
+data class CaseDefinitionSettingsResponseDto(
+    val caseDefinitionKey: String,
+    val caseDefinitionVersionTag: String,
+    val canHaveAssignee: Boolean,
+    val autoAssignTasks: Boolean,
 ) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as ImportRequest
-
-        return fileName == other.fileName
-    }
-
-    override fun hashCode(): Int {
-        return fileName.hashCode()
+    companion object {
+        fun of(caseDefinition: CaseDefinition) =
+            CaseDefinitionSettingsResponseDto(
+                caseDefinition.id.key,
+                caseDefinition.id.versionTag.version,
+                caseDefinition.canHaveAssignee,
+                caseDefinition.autoAssignTasks
+            )
     }
 }

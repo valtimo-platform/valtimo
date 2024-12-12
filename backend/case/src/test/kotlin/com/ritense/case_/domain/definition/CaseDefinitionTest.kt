@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package com.ritense.importer
+package com.ritense.case_.domain.definition
 
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+import kotlin.test.assertFailsWith
 
-data class ImportRequest(
-    val fileName: String,
-    val content: ByteArray,
-    val caseDefinitionId: CaseDefinitionId? = null
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
 
-        other as ImportRequest
+class CaseDefinitionTest {
+    @Test
+    fun `should set autoAssignTasks to false when canHaveAssignee is set to false`() {
+        val exception = assertFailsWith<IllegalArgumentException> {
+            CaseDefinition(
+                CaseDefinitionId("key", "1.0.0"),
+                "name",
+                canHaveAssignee = false,
+                autoAssignTasks = true
+            )
+        }
 
-        return fileName == other.fileName
-    }
-
-    override fun hashCode(): Int {
-        return fileName.hashCode()
+        assertEquals(IllegalArgumentException::class.java, exception::class.java)
     }
 }
