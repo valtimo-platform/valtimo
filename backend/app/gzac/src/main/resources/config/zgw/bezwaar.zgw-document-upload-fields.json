@@ -1,0 +1,49 @@
+{
+    "changesetId": "v7",
+    "case-definitions": [
+        {
+            "key": "bezwaar",
+            "fields": [
+                {
+                    "key": "taal",
+                    "defaultValue": "eng",
+                    "visible": true,
+                    "readonly": false
+                }
+            ]
+        },
+        {
+            "key": "bezwaar",
+            "fields": [
+                {
+                    "key": "vertrouwelijkheidaanduiding",
+                    "defaultValue": "zaakvertrouwelijk",
+                    "visible": true,
+                    "readonly": false
+                }
+            ]
+        },
+        {
+            "key": "bezwaar",
+            "fields": [
+                {
+                    "key": "informatieobjecttype",
+                    "defaultValue": "${CATALOGI_API_URL}informatieobjecttypen/${INFORMATIEOBJECTTYPE}",
+                    "visible": true,
+                    "readonly": false
+                }
+            ]
+        },
+        {
+            "key": "bezwaar",
+            "fields": [
+                {
+                    "key": "status",
+                    "defaultValue": "in_bewerking",
+                    "visible": true,
+                    "readonly": false
+                }
+            ]
+        }
+    ]
+}

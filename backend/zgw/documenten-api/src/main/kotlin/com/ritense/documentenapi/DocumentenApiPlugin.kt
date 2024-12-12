@@ -274,29 +274,31 @@ class DocumentenApiPlugin(
         storedDocumentKey: String,
     ): CreateDocumentResult {
         val vertrouwelijkheidaanduidingEnum = Vertrouwelijkheid.fromKey(
-            vertrouwelijkheidaanduiding ?: getMetadataField(
+            vertrouwelijkheidaanduiding ?: getUploadField(
                 metadata,
                 VERTROUWELIJKHEIDAANDUIDING_FIELD
             )
         )
-        val trefwoorden = (getMetadataField(metadata, TREFWOORDEN_FIELD) as String?)?.split(',')
+        val trefwoorden = (getUploadField(metadata, TREFWOORDEN_FIELD) as String?)
+            ?.split(',')
+            ?.filter { it.isNotBlank() }
 
         val request = CreateDocumentRequest(
             bronorganisatie = bronorganisatie,
             creatiedatum = getLocalDateFromMetaData(metadata, CREATIEDATUM_FIELD) ?: LocalDate.now(),
-            titel = titel ?: getMetadataField(metadata, TITEL_FIELD)!!,
+            titel = titel ?: getUploadField(metadata, TITEL_FIELD)!!,
             vertrouwelijkheidaanduiding = vertrouwelijkheidaanduidingEnum,
-            auteur = getMetadataField(metadata, AUTEUR_FIELD) ?: DEFAULT_AUTHOR,
+            auteur = getUploadField(metadata, AUTEUR_FIELD) ?: DEFAULT_AUTHOR,
             status = status ?: getStatusFromMetaData(metadata),
-            taal = taal ?: getMetadataField(metadata, TAAL_FIELD) ?: DEFAULT_LANGUAGE,
-            bestandsnaam = bestandsnaam ?: getMetadataField(metadata, BESTANDSNAAM_FIELD),
+            taal = taal ?: getUploadField(metadata, TAAL_FIELD) ?: DEFAULT_LANGUAGE,
+            bestandsnaam = bestandsnaam ?: getUploadField(metadata, BESTANDSNAAM_FIELD),
             bestandsomvang = (metadata[MetadataType.FILE_SIZE.key] as String?)?.toLong(),
             inhoud = inhoudAsInputStream,
-            beschrijving = beschrijving ?: getMetadataField(metadata, BESCHRIJVING_FIELD),
+            beschrijving = beschrijving ?: getUploadField(metadata, BESCHRIJVING_FIELD),
             ontvangstdatum = getLocalDateFromMetaData(metadata, ONTVANGSTDATUM_FIELD),
             verzenddatum = getLocalDateFromMetaData(metadata, VERZENDDATUM_FIELD),
-            informatieobjecttype = informatieobjecttype ?: getMetadataField(metadata, INFORMATIEOBJECTTYPE_FIELD),
-            formaat = getMetadataField(metadata, FORMAAT_FIELD),
+            informatieobjecttype = informatieobjecttype ?: getUploadField(metadata, INFORMATIEOBJECTTYPE_FIELD),
+            formaat = getUploadField(metadata, FORMAAT_FIELD),
             trefwoorden = trefwoorden,
         )
         logger.info { "Store document $request" }
@@ -390,20 +392,20 @@ class DocumentenApiPlugin(
         return "/api/v1/documenten-api/${pluginId}/files/${documentId}/download"
     }
 
-    private fun <T> getMetadataField(metadata: Map<String, Any?>, field: List<String>): T? =
+    private fun <T> getUploadField(metadata: Map<String, Any?>, field: List<String>): T? =
         field.firstNotNullOfOrNull { metadata[it] as T? }
 
     private fun getLocalDateFromMetaData(metadata: Map<String, Any?>, field: List<String>): LocalDate? {
-        return getMetadataField<String?>(metadata, field)?.let { LocalDate.parse(it) }
+        return getUploadField<String?>(metadata, field)?.let { LocalDate.parse(it) }
     }
 
-    private fun getStatusFromMetaData(metadata: Map<String, Any?>): DocumentStatusType {
-        val status: String? = getMetadataField(metadata, STATUS_FIELD)
+    private fun getStatusFromMetaData(metadata: Map<String, Any?>): DocumentStatusType? {
+        val status: String? = getUploadField(metadata, STATUS_FIELD)
         return if (status != null) {
             DocumentStatusType.fromKey(status)
                 ?: throw IllegalStateException("Failed to store document. Invalid status '$status' found in metadata.")
         } else {
-            DocumentStatusType.DEFINITIEF
+            null
         }
     }
 

@@ -17,6 +17,7 @@
 package com.ritense.documentenapi.service
 
 import com.ritense.authorization.Action
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.catalogiapi.service.CatalogiService
@@ -31,8 +32,13 @@ import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.documentenapi.client.PatchDocumentRequest
 import com.ritense.documentenapi.domain.DocumentenApiColumn
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey
+import com.ritense.documentenapi.domain.DocumentenApiUploadField
+import com.ritense.documentenapi.domain.DocumentenApiUploadFieldId
+import com.ritense.documentenapi.domain.DocumentenApiUploadFieldKey
 import com.ritense.documentenapi.repository.DocumentenApiColumnRepository
+import com.ritense.documentenapi.repository.DocumentenApiUploadFieldRepository
 import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
+import com.ritense.documentenapi.web.rest.dto.DocumentenApiUploadFieldDto
 import com.ritense.documentenapi.web.rest.dto.ModifyDocumentRequest
 import com.ritense.documentenapi.web.rest.dto.RelatedFileDto
 import com.ritense.logging.LoggableResource
@@ -50,6 +56,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.io.InputStream
 import java.net.URI
 import java.util.UUID
+import com.ritense.valueresolver.ValueResolverService
 
 @Transactional
 @Service
@@ -58,10 +65,12 @@ class DocumentenApiService(
     private val pluginService: PluginService,
     private val catalogiService: CatalogiService,
     private val documentenApiColumnRepository: DocumentenApiColumnRepository,
+    private val documentenApiUploadFieldRepository: DocumentenApiUploadFieldRepository,
     private val authorizationService: AuthorizationService,
     private val valtimoDocumentService: DocumentService,
     private val documentDefinitionService: JsonSchemaDocumentDefinitionService,
     private val documentenApiVersionService: DocumentenApiVersionService,
+    private val valueResolverService: ValueResolverService
 ) {
 
     fun downloadInformatieObject(
@@ -220,6 +229,34 @@ class DocumentenApiService(
         val documentenApiColumnKey = DocumentenApiColumnKey.fromProperty(columnKey)
             ?: throw IllegalStateException("Unknown column '$columnKey'")
         documentenApiColumnRepository.deleteByIdCaseDefinitionNameAndIdKey(caseDefinitionName, documentenApiColumnKey)
+    }
+
+    fun updateUploadField(uploadField: DocumentenApiUploadField): DocumentenApiUploadField {
+        logger.info { "Create or update Documenten API UploadField $uploadField" }
+        denyAuthorization()
+        documentDefinitionService.findLatestByName(uploadField.id.caseDefinitionName)
+            .orElseThrow { IllegalArgumentException("Unknown case-definition '${uploadField.id.caseDefinitionName}'") }
+        return documentenApiUploadFieldRepository.save(uploadField)
+    }
+
+    fun getUploadFields(caseDefinitionName: String): List<DocumentenApiUploadField> {
+        logger.debug { "Get Documenten API UploadFields" }
+        denyAuthorization()
+        val fields = documentenApiUploadFieldRepository.findAllByIdCaseDefinitionName(caseDefinitionName)
+        val missingFields = DocumentenApiUploadFieldKey.entries
+            .filter { key -> fields.none { it.id.key == key } }
+            .map { DocumentenApiUploadField(id = DocumentenApiUploadFieldId(caseDefinitionName, it)) }
+        return fields + missingFields
+    }
+
+    fun getResolvedUploadFields(valtimoDocumentId: String): List<DocumentenApiUploadFieldDto> {
+        logger.debug { "Get Resolved Documenten API UploadFields" }
+        val valtimoDocument = valtimoDocumentService[valtimoDocumentId]
+        val uploadFields = runWithoutAuthorization { getUploadFields(valtimoDocument.definitionId().name()) }
+        val defaultValues = uploadFields.map { it.defaultValue }
+        val resolvedDefaultValues = valueResolverService.resolveValues(valtimoDocumentId, defaultValues)
+        return uploadFields
+            .map { DocumentenApiUploadFieldDto.of(it, resolvedDefaultValues[it.defaultValue] as String?) }
     }
 
     private fun getRelatedFiles(
