@@ -14,37 +14,27 @@
  * limitations under the License.
  */
 
-package com.ritense.documentenapi.client
+package com.ritense.documentenapi.domain
 
 import com.fasterxml.jackson.annotation.JsonCreator
-import com.fasterxml.jackson.annotation.JsonProperty
 
-enum class DocumentStatusType {
-    @JsonProperty("in_bewerking")
-    IN_BEWERKING,
-
-    @JsonProperty("ter_vaststelling")
-    TER_VASTSTELLING,
-
-    @JsonProperty("definitief")
-    DEFINITIEF,
-
-    @JsonProperty("gearchiveerd")
-    GEARCHIVEERD;
-
-    val key: String
-        get() = this.name.lowercase()
+enum class DocumentenApiUploadFieldKey(val property: String) {
+    BESTANDSNAAM("bestandsnaam"),
+    TITEL("titel"),
+    AUTEUR("auteur"),
+    BESCHRIJVING("beschrijving"),
+    TAAL("taal"),
+    VERTROUWELIJKHEIDAANDUIDING("vertrouwelijkheidaanduiding"),
+    CREATIEDATUM("creatiedatum"),
+    INFORMATIEOBJECTTYPE("informatieobjecttype"),
+    STATUS("status"),
+    AANVULLENDE_DATUM("aanvullendeDatum"),
+    TREFWOORDEN("trefwoorden");
 
     companion object {
-
         @JvmStatic
         @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
-        fun fromKey(key: String?): DocumentStatusType? {
-            return key?.let {
-                entries.firstOrNull {
-                    it.key == key.lowercase()
-                }
-            }
-        }
+        fun fromProperty(property: String) = entries.firstOrNull { it.property.equals(property, ignoreCase = true) }
     }
 }
+

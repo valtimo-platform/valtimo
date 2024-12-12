@@ -26,11 +26,13 @@ import com.ritense.documentenapi.DocumentenApiPlugin
 import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.documentenapi.domain.DocumentenApiVersion
 import com.ritense.documentenapi.repository.DocumentenApiColumnRepository
+import com.ritense.documentenapi.repository.DocumentenApiUploadFieldRepository
 import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.service.PluginService
+import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zgw.Rsin
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
@@ -54,29 +56,35 @@ class DocumentenApiServiceTest {
     private lateinit var pluginService: PluginService
     private lateinit var catalogiService: CatalogiService
     private lateinit var documentenApiColumnRepository: DocumentenApiColumnRepository
+    private lateinit var documentenApiUploadFieldRepository: DocumentenApiUploadFieldRepository
     private lateinit var authorizationService: AuthorizationService
     private lateinit var valtimoDocumentService: DocumentService
     private lateinit var documentDefinitionService: JsonSchemaDocumentDefinitionService
     private lateinit var documentenApiVersionService: DocumentenApiVersionService
+    private lateinit var valueResolverService: ValueResolverService
 
     @BeforeEach
     fun before() {
         pluginService = mock<PluginService>()
         catalogiService = mock<CatalogiService>()
         documentenApiColumnRepository = mock<DocumentenApiColumnRepository>()
+        documentenApiUploadFieldRepository = mock<DocumentenApiUploadFieldRepository>()
         authorizationService = mock<AuthorizationService>()
         valtimoDocumentService = mock<DocumentService>()
         documentDefinitionService = mock<JsonSchemaDocumentDefinitionService>()
         documentenApiVersionService = mock<DocumentenApiVersionService>()
+        valueResolverService = mock<ValueResolverService>()
 
         service = DocumentenApiService(
             pluginService,
             catalogiService,
             documentenApiColumnRepository,
+            documentenApiUploadFieldRepository,
             authorizationService,
             valtimoDocumentService,
             documentDefinitionService,
             documentenApiVersionService,
+            valueResolverService,
         )
     }
 
