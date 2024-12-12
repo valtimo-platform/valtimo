@@ -17,6 +17,7 @@
 package com.ritense.zakenapi.resolver
 
 import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.zakenapi.service.ZaakDocumentService
 import org.camunda.bpm.engine.delegate.VariableScope
 import java.util.UUID
@@ -45,12 +46,22 @@ class ZaakValueResolverFactory(
         TODO()
     }
 
+    @Deprecated("Deprecated since 12.6.0, Use getResolvableKeyOptions(documentDefinitionName: String, version: Long) instead")
     override fun getResolvableKeys(documentDefinitionName: String, version: Long): List<String> {
         return ZAAK_FIELD_LIST
     }
 
+    @Deprecated("Deprecated since 12.6.0, Use getResolvableKeyOptions(documentDefinitionName: String) instead")
     override fun getResolvableKeys(documentDefinitionName: String): List<String> {
         return ZAAK_FIELD_LIST
+    }
+
+    override fun getResolvableKeyOptions(documentDefinitionName: String, version: Long): List<ValueResolverOption> {
+        return createFieldList(ZAAK_FIELD_LIST)
+    }
+
+    override fun getResolvableKeyOptions(documentDefinitionName: String): List<ValueResolverOption> {
+        return createFieldList(ZAAK_FIELD_LIST)
     }
 
     companion object {
