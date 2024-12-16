@@ -52,7 +52,7 @@ export class OpenZaakUploadService implements UploadService {
     metadata: {[key: string]: any}
   ): Observable<void> {
     return this.openZaakService.uploadWithMetadata(
-      new File([file], file.name, {type: file.type}),
+      new File([file], metadata?.bestandsnaam || file.name, {type: file.type}),
       documentId,
       metadata
     );
@@ -63,7 +63,7 @@ export class OpenZaakUploadService implements UploadService {
     metadata: {[key: string]: any}
   ): Observable<DocumentenApiFileReference> {
     return this.openZaakService.uploadTempFileWithMetadata(
-      new File([file], file.name, {type: file.type}),
+      new File([file], metadata?.bestandsnaam || file.name, {type: file.type}),
       metadata
     );
   }

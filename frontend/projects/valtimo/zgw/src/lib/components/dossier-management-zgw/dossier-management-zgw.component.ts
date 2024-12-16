@@ -31,6 +31,7 @@ import {CommonModule} from '@angular/common';
 import {
   DocumentenApiColumnsComponent,
   DocumentenApiTagsComponent,
+  DocumentenApiUploadFieldsComponent,
   DocumentenApiVersionService,
   SupportedDocumentenApiFeatures,
 } from '../../modules';
@@ -42,13 +43,7 @@ import {ActivatedRoute} from '@angular/router';
   styleUrls: ['./dossier-management-zgw.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [
-    CommonModule,
-    TabsModule,
-    TranslateModule,
-    DocumentenApiTagsComponent,
-    DocumentenApiColumnsComponent,
-  ],
+  imports: [CommonModule, TabsModule, TranslateModule],
 })
 export class DossierManagementZgwComponent implements AfterViewInit, OnDestroy {
   @ViewChild('zgwTabContent', {read: ViewContainerRef})
@@ -78,6 +73,12 @@ export class DossierManagementZgwComponent implements AfterViewInit, OnDestroy {
           headingTranslationKey: 'zgw.tabs.documentColumns',
           tab: ZgwTabEnum.DOCUMENTEN_API_COLUMNS,
           component: DocumentenApiColumnsComponent,
+        },
+        {
+          class: 'no-padding-left-right no-padding-top-bottom',
+          headingTranslationKey: 'zgw.tabs.documentUploadFields',
+          tab: ZgwTabEnum.DOCUMENTEN_API_UPLOAD_FIELDS,
+          component: DocumentenApiUploadFieldsComponent,
         },
         ...(supportedDocumentenApiFeatures.supportsTrefwoorden
           ? [

@@ -202,16 +202,16 @@
     "tagsPlaceholder": "Wählen Sie Tags aus",
     "format": "Datei Format",
     "trefwoorden": "Schlüsselwörter",
-    "filename": "Dateiname",
+    "filename": "Dateiname (optional)",
     "filenameTooltip": "Der Name der physischen Datei, in der der Inhalt des Dokuments erfasst wird, einschließlich Erweiterung",
     "filenamePlaceholder": "Dateinamen hinzufügen",
-    "confidentialityLevel": "Vertraulichkeitshinweis",
+    "confidentialityLevel": "Vertraulichkeitshinweis (optional)",
     "confidentialityLevelTooltip": "Angabe, inwieweit das Dokument für die Öffentlichkeit bestimmt ist",
     "confidentialityPlaceholder": "Wählen Sie Vertraulichkeit",
     "inputTitle": "Titel",
     "inputTitleTooltip": "Der Name, unter dem das Dokument offiziell bekannt ist",
     "inputTitlePlaceholder": "Titel hinzufügen",
-    "inputDescription": "Beschreibung",
+    "inputDescription": "Beschreibung (optional)",
     "inputDescriptionTooltip": "Eine allgemeine Beschreibung des Inhalts des Dokuments",
     "inputDescriptionPlaceholder": "Beschreibung hinzufügen",
     "openbaar": "Öffentlichkeit",
@@ -225,7 +225,7 @@
     "author": "Autor",
     "authorTooltip": "Der ursprüngliche Autor des Dokuments",
     "authorPlaceholder": "Autor hinzufügen",
-    "status": "Status",
+    "status": "Status (optional)",
     "statusTooltip": "Der aktuelle Status des Dokuments. 'In Bearbeitung': Das Dokument wird noch bearbeitet; 'Zu bestimmen': Das Dokument ist fertig, muss aber noch festgelegt werden; 'Final': Das Dokument wurde von einer autorisierten Person erstellt oder erhalten; 'Archiviert': Das Dokument wurde dauerhaft gespeichert.",
     "statusPlaceholder": "Wählen Sie den Status",
     "in_bewerking": "In Bearbeitung",
@@ -932,9 +932,51 @@
         "valueMaxLength": "Das Schlüsselwort ist zu lang. Die maximale Länge beträgt {{ maxlength }} Zeichen."
       }
     },
+    "uploadFields": {
+      "uploadField": "Upload-Feld",
+      "add": "Upload-Feld hinzufügen",
+      "deleteText": "Sind Sie sicher, dass Sie dieses Upload-Feld löschen möchten?",
+      "deleteMultipleText": "Sind Sie sicher, dass Sie diese Upload-Felder löschen möchten?",
+      "addModal": {
+        "header": "Upload-Feld hinzufügen"
+      },
+      "editModal": {
+        "header": "Upload-Feld bearbeiten"
+      },
+      "list": {
+        "noResultsTitle": "Keine Upload-Felder",
+        "noResultsDescription": "Fügen Sie ein Upload-Feld hinzu, um zu beginnen"
+      },
+      "search": {
+        "noResultsTitle": "Keine Ergebnisse",
+        "noResultsDescription": "Versuchen Sie, Ihre Suche oder Filteroptionen anzupassen, um das Gewünschte zu finden."
+      },
+      "fields": {
+        "field": "Schlüssel",
+        "defaultValue": "Standardwert",
+        "visible": "Sichtbar",
+        "readonly": "Schreibgeschützt"
+      },
+      "keys": {
+        "bestandsnaam": "Dateiname",
+        "titel": "Titel",
+        "auteur": "Autor",
+        "beschrijving": "Beschreibung",
+        "taal": "Sprache",
+        "vertrouwelijkheidaanduiding": "Vertraulichkeitskennzeichnung",
+        "creatiedatum": "Erstellungsdatum",
+        "informatieobjecttype": "Informationsobjekttyp",
+        "status": "Status",
+        "verzenddatum": "Versanddatum",
+        "ontvangstdatum": "Empfangsdatum",
+        "aanvullendeDatum": "Zusätzliches Datum",
+        "trefwoorden": "Schlüsselwörter"
+      }
+    },
     "tabs": {
       "documentColumns": "Dokumentspalten",
-      "documentTags": "Dokumentschlüsselwörter"
+      "documentTags": "Dokumentschlüsselwörter",
+      "documentUploadField": "Dokumentschlüsselwörter"
     }
   },
   "task-list": {
