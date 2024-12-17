@@ -29,6 +29,7 @@ import com.ritense.zakenapi.domain.PatchZaakRequest
 import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakObject
+import com.ritense.zakenapi.domain.ZaakObjectRequest
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakResultaat
 import com.ritense.zakenapi.domain.ZaakStatus
@@ -40,6 +41,8 @@ import com.ritense.zakenapi.domain.rol.RolType
 import com.ritense.zakenapi.event.DocumentLinkedToZaak
 import com.ritense.zakenapi.event.ZaakCreated
 import com.ritense.zakenapi.event.ZaakInformatieObjectenListed
+import com.ritense.zakenapi.event.ZaakObjectCreated
+import com.ritense.zakenapi.event.ZaakObjectViewed
 import com.ritense.zakenapi.event.ZaakObjectenListed
 import com.ritense.zakenapi.event.ZaakOpschortingUpdated
 import com.ritense.zakenapi.event.ZaakPatched
@@ -108,6 +111,30 @@ class ZakenApiClient(
 
         outboxService.send { ZaakObjectenListed(objectMapper.valueToTree(result.results)) }
         return result
+    }
+
+    fun getZaakObject(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        zaakUrl: URI,
+        objectUrl: URI
+    ): ZaakObject? {
+        val result = buildRestClient(authentication)
+            .get()
+            .uri {
+                ClientTools.baseUrlToBuilder(it, baseUrl)
+                    .path("zaakobjecten")
+                    .queryParam("zaak", zaakUrl)
+                    .queryParam("object", objectUrl)
+                    .build()
+            }
+            .retrieve()
+            .body<Page<ZaakObject>>()!!
+
+        if(result.results.isNotEmpty()) {
+            outboxService.send { ZaakObjectViewed(objectMapper.valueToTree(result.results.first())) }
+        }
+        return result.results.firstOrNull()
     }
 
     fun getZaakInformatieObjecten(
@@ -430,19 +457,6 @@ class ZakenApiClient(
         return result
     }
 
-    private fun validateUrlHost(baseUrl: URI, url: URI?) {
-        if (url != null && baseUrl.host != url.host) {
-            throw IllegalArgumentException(
-                "Requested url '$url' is not valid for baseUrl '$baseUrl'"
-            )
-        }
-    }
-
-    private fun defaultHeaders(headers: HttpHeaders) {
-        headers.set("Accept-Crs", "EPSG:4326")
-        headers.set("Content-Crs", "EPSG:4326")
-    }
-
     fun deleteZaakInformatieObject(authentication: ZakenApiAuthentication, baseUrl: URI, zaakInformatieobjectUrl: URI) {
         require(zaakInformatieobjectUrl.toString().startsWith(baseUrl.toString())) {
             "zaakInformatieobjectUrl '$zaakInformatieobjectUrl' does not start with baseUrl '$baseUrl'"
@@ -476,6 +490,60 @@ class ZakenApiClient(
             .toBodilessEntity()
     }
 
+    fun createZaakObject(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        request: ZaakObjectRequest
+    ): ZaakObject {
+        validateUrlHost(baseUrl, request.zaakUrl)
+        request.objectUrl = sanitizeUriHost(request.objectUrl)
+
+        var result = buildRestClient(authentication)
+            .post()
+            .uri {
+                ClientTools.baseUrlToBuilder(it, baseUrl)
+                    .pathSegment("zaakobjecten")
+                    .build()
+            }
+            .headers(this::defaultHeaders)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(request)
+            .retrieve()
+            .body<ZaakObject>()!!
+
+        result = result.copy(objectUrl = sanitizeUriHost(result.objectUrl))
+
+        outboxService.send {
+            ZaakObjectCreated(result.url.toString(), objectMapper.valueToTree(result))
+        }
+        return result
+    }
+
+    private fun validateUrlHost(baseUrl: URI, url: URI?) {
+        if (url != null && baseUrl.host != url.host) {
+            throw IllegalArgumentException(
+                "Requested url '$url' is not valid for baseUrl '$baseUrl'"
+            )
+        }
+    }
+
+    private fun sanitizeUriHost(objectUrl: URI): URI {
+        val url =
+        if (objectUrl.host == LOCALHOST) {
+            URI.create(objectUrl.toString().replace(LOCALHOST, HOST_DOCKER_INTERNAL))
+        } else if (objectUrl.host == HOST_DOCKER_INTERNAL) {
+            URI.create(objectUrl.toString().replace(HOST_DOCKER_INTERNAL, LOCALHOST))
+        } else {
+            objectUrl
+        }
+        return url
+    }
+
+    private fun defaultHeaders(headers: HttpHeaders) {
+        headers.set("Accept-Crs", "EPSG:4326")
+        headers.set("Content-Crs", "EPSG:4326")
+    }
+
     private fun buildRestClient(authentication: ZakenApiAuthentication): RestClient {
         return restClientBuilder
             .clone()
@@ -483,5 +551,10 @@ class ZakenApiClient(
                 authentication.applyAuth(it)
             }
             .build()
+    }
+
+    companion object {
+        private const val HOST_DOCKER_INTERNAL = "host.docker.internal"
+        private const val LOCALHOST = "localhost"
     }
 }

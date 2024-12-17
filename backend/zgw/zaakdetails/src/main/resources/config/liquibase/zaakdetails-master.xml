@@ -25,5 +25,7 @@
 
     <include file="changelog/20240328-add-objecten-api-document-sync-table-changelog.xml"
              relativeToChangelogFile="true"/>
+    <include file="changelog/20241106-add-zaakdetails-object-table.xml"
+             relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
