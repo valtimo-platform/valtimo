@@ -203,10 +203,10 @@
 
 <ng-template #deleteButton let-canDelete="canDelete">
   <cds-overflow-menu-option
-          *ngIf="canDelete"
-          [disabled]="(isDeleting$ | async)"
-          (click)="deleteDocument()"
-          type="danger"
+    *ngIf="canDelete"
+    [disabled]="isDeleting$ | async"
+    (click)="deleteDocument()"
+    type="danger"
   >
     {{ 'dossier.delete.delete' | translate }}
   </cds-overflow-menu-option>
@@ -226,12 +226,12 @@
 </ng-template>
 
 <valtimo-confirmation-modal
-        confirmButtonTextTranslationKey="dossier.delete.confirm"
-        confirmButtonType="danger"
-        contentTranslationKey="dossier.delete.description"
-        [showModalSubject$]="showDeleteModal$"
-        titleTranslationKey="dossier.delete.delete"
-        (confirmEvent)="onConfirmDelete()"
+  confirmButtonTextTranslationKey="dossier.delete.confirm"
+  confirmButtonType="danger"
+  contentTranslationKey="dossier.delete.description"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="dossier.delete.delete"
+  (confirmEvent)="onConfirmDelete()"
 ></valtimo-confirmation-modal>
 
 <ng-container renderInPageHeader [fullWidth]="true">
@@ -295,12 +295,7 @@
             "
           >
           </ng-container>
-          <ng-container
-            *ngTemplateOutlet="
-              deleteButton;
-              context: {canDelete: obs.canDelete}
-            "
-          >
+          <ng-container *ngTemplateOutlet="deleteButton; context: {canDelete: obs.canDelete}">
           </ng-container>
         </cds-overflow-menu>
 

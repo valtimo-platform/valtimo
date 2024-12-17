@@ -73,18 +73,9 @@ export class ProcessLinkService {
       | FormProcessLinkUpdateRequestDto
       | URLProcessLinkUpdateRequestDto
   ): Observable<null> {
-    const pluginUpdateRequest = updateProcessLinkRequest as PluginProcessLinkUpdateDto;
-    if (pluginUpdateRequest.actionProperties) {
-      Object.keys(pluginUpdateRequest.actionProperties).forEach(key => {
-        if (pluginUpdateRequest.actionProperties[key] === '') {
-          pluginUpdateRequest.actionProperties[key] = null;
-        }
-      });
-    }
-
     return this.http.put<null>(
       `${this.VALTIMO_ENDPOINT_URI}v1/process-link`,
-      updateProcessLinkRequest
+      this.emptyStringToNull(updateProcessLinkRequest)
     );
   }
 
@@ -95,19 +86,21 @@ export class ProcessLinkService {
       | PluginProcessLinkCreateDto
       | URLProcessLinkCreateDto
   ): Observable<null> {
-    const pluginProcessLinkCreateRequest = saveProcessLinkRequest as PluginProcessLinkCreateDto;
-    if (pluginProcessLinkCreateRequest.actionProperties) {
-      Object.keys(pluginProcessLinkCreateRequest.actionProperties).forEach(key => {
-        if (pluginProcessLinkCreateRequest.actionProperties[key] === '') {
-          pluginProcessLinkCreateRequest.actionProperties[key] = null;
-        }
-      });
-    }
-
     return this.http.post<null>(
       `${this.VALTIMO_ENDPOINT_URI}v1/process-link`,
-      saveProcessLinkRequest
+      this.emptyStringToNull(saveProcessLinkRequest)
     );
+  }
+
+  private emptyStringToNull(object: any) {
+    Object.keys(object).forEach(key => {
+      if (typeof object[key] === 'object') {
+        this.emptyStringToNull(object[key]);
+      } else if (object[key] === '') {
+        object[key] = null;
+      }
+    });
+    return object;
   }
 
   deleteProcessLink(id: string): Observable<null> {

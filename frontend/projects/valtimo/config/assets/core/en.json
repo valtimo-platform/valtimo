@@ -202,16 +202,16 @@
     "tagsPlaceholder": "Choose tags",
     "format": "File format",
     "trefwoorden": "Keywords",
-    "filename": "Filename",
+    "filename": "Filename (optional)",
     "filenameTooltip": "The name of the physical file in which the content of the document is captured, including extension",
     "filenamePlaceholder": "Add filename",
-    "confidentialityLevel": "Confidentiality level",
+    "confidentialityLevel": "Confidentiality level (optional)",
     "confidentialityLevelTooltip": "Indication of the extent to which the document is intended for public access",
     "confidentialityPlaceholder": "Choose confidentiality",
     "inputTitle": "Title",
     "inputTitleTooltip": "The name by which the document is formally known",
     "inputTitlePlaceholder": "Add title",
-    "inputDescription": "Description",
+    "inputDescription": "Description (optional)",
     "inputDescriptionTooltip": "A generic description of the content of the document",
     "inputDescriptionPlaceholder": "Add description",
     "openbaar": "Public",
@@ -225,7 +225,7 @@
     "author": "Author",
     "authorTooltip": "The original author of the document",
     "authorPlaceholder": "Add author",
-    "status": "Status",
+    "status": "Status (optional)",
     "statusTooltip": "The current status of the document. 'In editing': the document is being worked on; 'To be confirmed': the document is finished but has yet to be confirmed; 'Definitive': the document has been received or confirmed by an authorized person; 'Archived': the document has been stored lastingly.",
     "statusPlaceholder": "Choose status",
     "in_bewerking": "In editing",
@@ -935,9 +935,51 @@
         "valueMaxLength": "Tag is too long. Maximum length is {{ maxlength }} characters."
       }
     },
+    "uploadFields": {
+      "uploadField": "Upload field",
+      "add": "Add upload field",
+      "deleteText": "Are you sure you want to delete this upload field?",
+      "deleteMultipleText": "Are you sure you want to delete these upload fields?",
+      "addModal": {
+        "header": "Add upload field"
+      },
+      "editModal": {
+        "header": "Edit upload field"
+      },
+      "list": {
+        "noResultsTitle": "No upload fields",
+        "noResultsDescription": "Add a upload field to start"
+      },
+      "search": {
+        "noResultsTitle": "No results",
+        "noResultsDescription": "Try adjusting your search or filter options to find what you're looking for."
+      },
+      "fields": {
+        "field": "Field",
+        "defaultValue": "Default value",
+        "visible": "Visible",
+        "readonly": "Readonly"
+      },
+      "keys": {
+        "bestandsnaam": "File Name",
+        "titel": "Title",
+        "auteur": "Author",
+        "beschrijving": "Description",
+        "taal": "Language",
+        "vertrouwelijkheidaanduiding": "Confidentiality Indication",
+        "creatiedatum": "Creation Date",
+        "informatieobjecttype": "Information Object Type",
+        "status": "Status",
+        "verzenddatum": "Send Date",
+        "ontvangstdatum": "Receive Date",
+        "aanvullendeDatum": "Additional Date",
+        "trefwoorden": "Tags"
+      }
+    },
     "tabs": {
       "documentColumns": "Document columns",
-      "documentTags": "Document tags"
+      "documentTags": "Document tags",
+      "documentUploadFields": "Document upload fields"
     }
   },
   "task-list": {
