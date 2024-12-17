@@ -27,9 +27,9 @@ import java.util.UUID
 data class FormFlowProcessLinkUpdateRequestDto(
     override val id: UUID,
     val formFlowDefinitionId: String,
-    val formDisplayType: FormDisplayType = FormDisplayType.modal,
-    val formSize: FormSizes = FormSizes.medium,
-    val subtitles: List<String> = emptyList(),
+    val formDisplayType: FormDisplayType? = FormDisplayType.modal,
+    val formSize: FormSizes? = FormSizes.medium,
+    val subtitles: List<String>? = emptyList(),
 ) : ProcessLinkUpdateRequestDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE_FORM_FLOW
