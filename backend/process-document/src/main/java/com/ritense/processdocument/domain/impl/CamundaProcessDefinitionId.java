@@ -26,23 +26,24 @@ import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
-public class CamundaProcessDefinitionKey implements ProcessDefinitionKey, Serializable {
+public class CamundaProcessDefinitionId implements ProcessDefinitionKey, Serializable {
 
-    @Column(name = "camunda_process_definition_key", columnDefinition = "VARCHAR(255)")
-    private String key;
+    // TODO: Migrate existing IDs to use the ID instead of the key
+    @Column(name = "camunda_process_definition_id", columnDefinition = "VARCHAR(255)")
+    private String id;
 
-    public CamundaProcessDefinitionKey(final String key) {
-        assertArgumentNotNull(key, "key is required");
-        assertArgumentLength(key, 255, "key max length is 255");
-        this.key = key;
+    public CamundaProcessDefinitionId(final String id) {
+        assertArgumentNotNull(id, "id is required");
+        assertArgumentLength(id, 255, "id max length is 255");
+        this.id = id;
     }
 
-    CamundaProcessDefinitionKey() {
+    CamundaProcessDefinitionId() {
     }
 
     @Override
     public String toString() {
-        return key;
+        return id;
     }
 
     @Override
@@ -50,15 +51,15 @@ public class CamundaProcessDefinitionKey implements ProcessDefinitionKey, Serial
         if (this == o) {
             return true;
         }
-        if (!(o instanceof CamundaProcessDefinitionKey that)) {
+        if (!(o instanceof CamundaProcessDefinitionId that)) {
             return false;
         }
-        return key.equals(that.key);
+        return id.equals(that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(key);
+        return Objects.hash(id);
     }
 
 }

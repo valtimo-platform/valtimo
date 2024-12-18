@@ -27,7 +27,7 @@ import com.ritense.document.domain.DocumentDefinition;
 import com.ritense.document.domain.event.DocumentDefinitionDeployedEvent;
 import com.ritense.document.service.DocumentDefinitionService;
 import com.ritense.processdocument.domain.config.ProcessDocumentLinkConfigItem;
-import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionKey;
+import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionId;
 import com.ritense.processdocument.domain.impl.request.ProcessDocumentDefinitionRequest;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
 import com.ritense.processdocument.service.ProcessDocumentDeploymentService;
@@ -138,7 +138,7 @@ public class CamundaProcessJsonSchemaDocumentDeploymentService implements Proces
 
         AuthorizationContext.runWithoutAuthorization(() -> {
             final var existingAssociationOpt = processDocumentAssociationService.findProcessDocumentDefinition(
-                new CamundaProcessDefinitionKey(item.getProcessDefinitionKey())
+                new CamundaProcessDefinitionId(item.getProcessDefinitionKey())
             );
 
             if (existingAssociationOpt.isPresent()) {

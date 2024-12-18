@@ -19,6 +19,7 @@ package com.ritense.processdocument.domain.impl.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ritense.processdocument.domain.request.Request;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import jakarta.validation.constraints.NotNull;
 import java.util.Optional;
 
@@ -31,7 +32,7 @@ public class ProcessDocumentDefinitionRequest implements Request {
     private String documentDefinitionName;
 
     @JsonProperty
-    private Optional<Long> documentDefinitionVersion;
+    private CaseDefinitionId caseDefinitionId;
 
     @JsonProperty("canInitializeDocument")
     private boolean canInitializeDocument;
@@ -42,25 +43,27 @@ public class ProcessDocumentDefinitionRequest implements Request {
     public ProcessDocumentDefinitionRequest(
         @JsonProperty(value = "processDefinitionKey", required = true) @NotNull String processDefinitionKey,
         @JsonProperty(value = "documentDefinitionName", required = true) @NotNull String documentDefinitionName,
+        @JsonProperty(value = "caseDefinitionId", required = true) @NotNull CaseDefinitionId caseDefinitionId,
         @JsonProperty(value = "canInitializeDocument", required = true) boolean canInitializeDocument
     ) {
         this.processDefinitionKey = processDefinitionKey;
         this.documentDefinitionName = documentDefinitionName;
         this.canInitializeDocument = canInitializeDocument;
         this.startableByUser = true;
-        this.documentDefinitionVersion = Optional.empty();
+        this.caseDefinitionId = caseDefinitionId;
     }
 
     public ProcessDocumentDefinitionRequest(
         @JsonProperty(value = "processDefinitionKey", required = true) @NotNull String processDefinitionKey,
         @JsonProperty(value = "documentDefinitionName", required = true) @NotNull String documentDefinitionName,
+        @JsonProperty(value = "caseDefinitionId", required = true) @NotNull CaseDefinitionId caseDefinitionId,
         @JsonProperty(value = "canInitializeDocument", required = true) boolean canInitializeDocument,
         @JsonProperty("startableByUser") Boolean startableByUser
     ) {
         this.processDefinitionKey = processDefinitionKey;
         this.documentDefinitionName = documentDefinitionName;
         this.canInitializeDocument = canInitializeDocument;
-        this.documentDefinitionVersion = Optional.empty();
+        this.caseDefinitionId = caseDefinitionId;
         if (startableByUser == null) {
             this.startableByUser = true;
         } else {
@@ -74,12 +77,12 @@ public class ProcessDocumentDefinitionRequest implements Request {
         @JsonProperty(value = "documentDefinitionName", required = true) @NotNull String documentDefinitionName,
         @JsonProperty(value = "canInitializeDocument", required = true) boolean canInitializeDocument,
         @JsonProperty("startableByUser") Boolean startableByUser,
-        @JsonProperty("documentDefinitionVersion") Optional<Long> documentDefinitionVersion
+        @JsonProperty(value = "caseDefinitionId", required = true) @NotNull CaseDefinitionId caseDefinitionId
     ) {
         this.processDefinitionKey = processDefinitionKey;
         this.documentDefinitionName = documentDefinitionName;
         this.canInitializeDocument = canInitializeDocument;
-        this.documentDefinitionVersion = documentDefinitionVersion;
+        this.caseDefinitionId = caseDefinitionId;
         if (startableByUser == null) {
             this.startableByUser = true;
         } else {
@@ -103,7 +106,7 @@ public class ProcessDocumentDefinitionRequest implements Request {
         return startableByUser;
     }
 
-    public Optional<Long> getDocumentDefinitionVersion() {
-        return documentDefinitionVersion;
+    public CaseDefinitionId getCaseDefinitionId() {
+        return caseDefinitionId;
     }
 }

@@ -20,7 +20,7 @@ import com.ritense.authorization.AuthorizationContext
 import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
 import com.ritense.plugin.domain.PluginConfiguration
-import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionKey
+import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionId
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.zakenapi.domain.ZaakTypeLink
@@ -57,7 +57,9 @@ class DefaultZaakTypeLinkService(
     ): List<ZaakTypeLink> {
         val processDocumentDefinitions = AuthorizationContext.runWithoutAuthorization {
             processDocumentAssociationService.findAllProcessDocumentDefinitions(
-                CamundaProcessDefinitionKey(processDefinitionKey)
+                CamundaProcessDefinitionId(
+                    processDefinitionKey
+                )
             )
         }
         if (processDocumentDefinitions.isNotEmpty()) {

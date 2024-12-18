@@ -32,7 +32,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentId;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
 import com.ritense.processdocument.domain.ProcessDocumentDefinition;
 import com.ritense.processdocument.domain.ProcessInstanceId;
-import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionKey;
+import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionId;
 import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId;
 import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentDefinition;
 import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentInstanceId;
@@ -120,7 +120,7 @@ public class CamundaProcessJsonSchemaDocumentService implements ProcessDocumentS
         final NewDocumentAndStartProcessRequest request
     ) {
         try {
-            final var processDefinitionKey = new CamundaProcessDefinitionKey(request.processDefinitionKey());
+            final var processDefinitionKey = new CamundaProcessDefinitionId(request.processDefinitionKey());
             final var newDocumentRequest = request.newDocumentRequest();
 
             final var newDocumentResult = runWithoutAuthorization(
@@ -288,7 +288,7 @@ public class CamundaProcessJsonSchemaDocumentService implements ProcessDocumentS
             );
 
             //Part 2 process start
-            final var processDefinitionKey = new CamundaProcessDefinitionKey(request.processDefinitionKey());
+            final var processDefinitionKey = new CamundaProcessDefinitionId(request.processDefinitionKey());
             final var processInstanceWithDefinition = startProcess(
                 document, processDefinitionKey.toString(), request.getProcessVars());
             final var camundaProcessInstanceId = new CamundaProcessInstanceId(
@@ -327,7 +327,7 @@ public class CamundaProcessJsonSchemaDocumentService implements ProcessDocumentS
             );
 
             //Part 2 process start
-            final var processDefinitionKey = new CamundaProcessDefinitionKey(request.getProcessDefinitionKey());
+            final var processDefinitionKey = new CamundaProcessDefinitionId(request.getProcessDefinitionKey());
             final var processInstanceWithDefinition = startProcess(
                 document, processDefinitionKey.toString(), request.getProcessVars());
             final var camundaProcessInstanceId = new CamundaProcessInstanceId(
@@ -384,7 +384,7 @@ public class CamundaProcessJsonSchemaDocumentService implements ProcessDocumentS
             .runWithoutAuthorization(
                 () -> camundaProcessService.findProcessInstanceById(processInstanceId.toString())
                     .map(instance -> camundaProcessService.findProcessDefinitionById(instance.getProcessDefinitionId()))
-                    .map(definition -> new CamundaProcessDefinitionKey(definition.getKey()))
+                    .map(definition -> new CamundaProcessDefinitionId(definition.getKey()))
                     .map(definitionKey -> AuthorizationContext.runWithoutAuthorization(() ->
                         processDocumentAssociationService.findProcessDocumentDefinition(definitionKey))
                     ).map(optional -> (CamundaProcessJsonSchemaDocumentDefinition) optional.orElse(null))

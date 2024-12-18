@@ -43,7 +43,7 @@ import com.ritense.form.web.rest.dto.FormSubmissionResultSucceeded
 import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
 import com.ritense.processdocument.domain.ProcessDocumentDefinition
-import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionKey
+import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionId
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndCompleteTaskRequest
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndStartProcessRequest
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
@@ -272,7 +272,8 @@ class DefaultFormSubmissionService(
         processDefinition: CamundaProcessDefinition,
         document: Document?
     ): ProcessDocumentDefinition {
-        val processDefinitionKey = CamundaProcessDefinitionKey(processDefinition.key)
+        val processDefinitionKey =
+            CamundaProcessDefinitionId(processDefinition.key)
         return runWithoutAuthorization {
             if (document == null) {
                 processDocumentAssociationService.getProcessDocumentDefinition(processDefinitionKey)

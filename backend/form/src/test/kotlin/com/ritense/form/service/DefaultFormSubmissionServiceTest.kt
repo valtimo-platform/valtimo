@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.AuthorizationSupportedHelper
-import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
 import com.ritense.document.domain.impl.JsonDocumentContent
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocument
@@ -35,7 +34,7 @@ import com.ritense.form.service.impl.DefaultFormSubmissionService
 import com.ritense.form.service.impl.FormIoFormDefinitionService
 import com.ritense.form.web.rest.dto.FormSubmissionResultFailed
 import com.ritense.form.web.rest.dto.FormSubmissionResultSucceeded
-import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionKey
+import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionId
 import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentDefinition
 import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentDefinitionId
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndCompleteTaskRequest
@@ -48,7 +47,6 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ActivityTypeWithEventName.START_EVENT_START
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.camunda.domain.CamundaExecution
 import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
 import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 import com.ritense.valtimo.contract.event.ExternalDataSubmittedEvent
@@ -363,7 +361,9 @@ class DefaultFormSubmissionServiceTest {
     private fun processDocumentDefinition(documentDefinitionName: String, canInitializeDocument: Boolean = false): CamundaProcessJsonSchemaDocumentDefinition {
         return CamundaProcessJsonSchemaDocumentDefinition(
             CamundaProcessJsonSchemaDocumentDefinitionId.newId(
-                CamundaProcessDefinitionKey(PROCESS_DEFINITION_KEY),
+                CamundaProcessDefinitionId(
+                    PROCESS_DEFINITION_KEY
+                ),
                 JsonSchemaDocumentDefinitionId.existingId(documentDefinitionName, 1)
             ),
             canInitializeDocument,

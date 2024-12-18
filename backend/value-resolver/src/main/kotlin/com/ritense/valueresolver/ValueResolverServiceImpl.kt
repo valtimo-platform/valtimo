@@ -18,6 +18,7 @@ package com.ritense.valueresolver
 
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.camunda.bpm.engine.delegate.VariableScope
 import org.springframework.stereotype.Service
 import java.util.UUID
@@ -59,11 +60,11 @@ class ValueResolverServiceImpl(
 
     override fun getResolvableKeys(
         prefixes: List<String>,
-        @LoggableResource("documentDefinitionName") documentDefinitionName: String,
-        version: Long
+        documentDefinitionName: String,
+        caseDefinitionId: CaseDefinitionId
     ): List<String> {
         return prefixes.fold(emptyList()) { acc, prefix ->
-            (acc + (addPrefixToResolvableKeys(prefix, resolverFactoryMap[prefix]?.getResolvableKeys(documentDefinitionName, version))))
+            (acc + (addPrefixToResolvableKeys(prefix, resolverFactoryMap[prefix]?.getResolvableKeys(documentDefinitionName, caseDefinitionId))))
         }
     }
 

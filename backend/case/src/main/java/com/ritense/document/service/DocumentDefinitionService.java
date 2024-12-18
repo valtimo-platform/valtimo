@@ -21,6 +21,7 @@ import com.ritense.document.domain.DocumentDefinition;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
 import com.ritense.document.service.result.DeployDocumentDefinitionResult;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import jakarta.validation.ValidationException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,7 +44,13 @@ public interface DocumentDefinitionService {
 
     void requirePermission(String documentDefinitionName, Action action);
 
+    // TODO: Remove
     Optional<? extends DocumentDefinition> findByNameAndVersion(String documentDefinitionName, long version);
+
+    Optional<? extends DocumentDefinition> findByNameAndCaseDefinitionId(
+        String documentDefinitionName,
+        CaseDefinitionId caseDefinitionId
+    );
 
     List<String> getPropertyNames(DocumentDefinition definition);
 

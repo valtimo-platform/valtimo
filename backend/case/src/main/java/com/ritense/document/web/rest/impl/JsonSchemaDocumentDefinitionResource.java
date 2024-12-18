@@ -23,6 +23,7 @@ import static org.springframework.http.ResponseEntity.ok;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ritense.document.domain.DocumentDefinition;
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
 import com.ritense.document.domain.impl.assignee.UnassignedDocumentCountDto;
 import com.ritense.document.domain.impl.template.DocumentDefinitionTemplateRequestDto;
 import com.ritense.document.service.DocumentDefinitionService;
@@ -33,6 +34,7 @@ import com.ritense.document.service.result.DeployDocumentDefinitionResult;
 import com.ritense.document.service.result.DocumentVersionsResult;
 import com.ritense.document.service.result.UndeployDocumentDefinitionResult;
 import com.ritense.document.web.rest.DocumentDefinitionResource;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.json.MapperSingleton;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -130,8 +132,21 @@ public class JsonSchemaDocumentDefinitionResource implements DocumentDefinitionR
     }
 
     @Override
-    public ResponseEntity<? extends DocumentDefinition> getDocumentDefinitionVersion(String name, long version) {
-        return of(runWithoutAuthorization(() -> documentDefinitionService.findByNameAndVersion(name, version)));
+    public ResponseEntity<? extends DocumentDefinition> getDocumentDefinitionVersion(
+        String name,
+        String caseDefinitionKey,
+        String caseDefinitionVersionTag
+    ) {
+        return of(
+            runWithoutAuthorization(
+                () -> documentDefinitionService.findBy(
+                    JsonSchemaDocumentDefinitionId.existingId(
+                        name,
+                        CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag)
+                    )
+                )
+            )
+        );
     }
 
     @Override

@@ -28,7 +28,7 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest;
 import com.ritense.document.domain.relation.DocumentRelationType;
 import com.ritense.processdocument.domain.ProcessDefinitionKey;
 import com.ritense.processdocument.domain.ProcessInstanceId;
-import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionKey;
+import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionId;
 import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId;
 import com.ritense.processdocument.domain.impl.event.NextJsonSchemaDocumentRelationAvailableEvent;
 import com.ritense.processdocument.domain.impl.request.NewDocumentForRunningProcessRequest;
@@ -74,7 +74,7 @@ public class StartEventListenerImpl extends ReactorExecutionListener implements 
             logger.info("Start event listener with source relation");
             final var sourceProcessInstanceId = new CamundaProcessInstanceId(getStringValue(execution, SOURCE_PROCESS_INSTANCE_ID));
             final var documentRelationType = (DocumentRelationType) execution.getVariable(RELATION_TYPE);
-            final var processDefinitionKey = ProcessDefinitionKey.fromExecution(execution, CamundaProcessDefinitionKey.class);
+            final var processDefinitionKey = ProcessDefinitionKey.fromExecution(execution, CamundaProcessDefinitionId.class);
             final var processInstanceId = ProcessInstanceId.fromExecution(execution, CamundaProcessInstanceId.class);
 
             AuthorizationContext.runWithoutAuthorization(() -> {

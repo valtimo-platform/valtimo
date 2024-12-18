@@ -27,7 +27,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
 import com.ritense.document.domain.impl.JsonSchemaDocumentId;
 import com.ritense.document.service.DocumentSequenceGeneratorService;
-import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionKey;
+import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionId;
 import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId;
 import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentDefinitionId;
 import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentInstanceId;
@@ -61,8 +61,8 @@ public abstract class BaseTest {
         return JsonSchemaDocumentDefinitionId.newId(DOCUMENT_DEFINITION_NAME);
     }
 
-    protected CamundaProcessDefinitionKey processDefinitionKey() {
-        return new CamundaProcessDefinitionKey(PROCESS_DEFINITION_KEY);
+    protected CamundaProcessDefinitionId processDefinitionKey() {
+        return new CamundaProcessDefinitionId(PROCESS_DEFINITION_KEY);
     }
 
     protected CamundaProcessJsonSchemaDocumentDefinitionId processDocumentDefinitionId() {

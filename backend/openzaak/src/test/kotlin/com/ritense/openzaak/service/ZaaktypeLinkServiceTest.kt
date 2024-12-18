@@ -23,7 +23,7 @@ import com.ritense.openzaak.domain.mapping.impl.ZaakTypeLinkId
 import com.ritense.openzaak.domain.request.CreateZaakTypeLinkRequest
 import com.ritense.openzaak.repository.ZaakTypeLinkRepository
 import com.ritense.openzaak.service.impl.ZaakTypeLinkService
-import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionKey
+import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionId
 import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentDefinition
 import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentDefinitionId
 import com.ritense.processdocument.service.impl.CamundaProcessJsonSchemaDocumentAssociationService
@@ -121,11 +121,15 @@ class ZaaktypeLinkServiceTest {
     @Test
     fun `should get zaakTypeLinks`() {
 
-        whenever(processDocumentAssociationService.findAllProcessDocumentDefinitions(CamundaProcessDefinitionKey("processDefinitionKey")))
+        whenever(processDocumentAssociationService.findAllProcessDocumentDefinitions(
+            CamundaProcessDefinitionId(
+                "processDefinitionKey"
+            )
+        ))
             .thenReturn(listOf(
                 CamundaProcessJsonSchemaDocumentDefinition(
                     CamundaProcessJsonSchemaDocumentDefinitionId.newId(
-                        CamundaProcessDefinitionKey("processDefinitionKey"),
+                        CamundaProcessDefinitionId("processDefinitionKey"),
                         JsonSchemaDocumentDefinitionId.newId("documentDefinitionId")
                     ),
                     true,
@@ -133,7 +137,7 @@ class ZaaktypeLinkServiceTest {
                 ),
                 CamundaProcessJsonSchemaDocumentDefinition(
                     CamundaProcessJsonSchemaDocumentDefinitionId.newId(
-                        CamundaProcessDefinitionKey("processDefinitionKey"),
+                        CamundaProcessDefinitionId("processDefinitionKey"),
                         JsonSchemaDocumentDefinitionId.newId("documentDefinitionId2")
                     ),
                     true,

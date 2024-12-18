@@ -16,6 +16,8 @@
 
 package com.ritense.exporter.request
 
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+
 abstract class ExportRequest(
     open val required: Boolean = true
 ) {

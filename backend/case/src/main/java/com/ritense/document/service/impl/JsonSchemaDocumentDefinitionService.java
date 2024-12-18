@@ -54,6 +54,7 @@ import com.ritense.document.service.result.DeployDocumentDefinitionResultFailed;
 import com.ritense.document.service.result.DeployDocumentDefinitionResultSucceeded;
 import com.ritense.document.service.result.error.DocumentDefinitionError;
 import com.ritense.logging.LoggableResource;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import jakarta.validation.ValidationException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -184,12 +185,22 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
         );
     }
 
+    // TODO: Remove
     @Override
     public Optional<JsonSchemaDocumentDefinition> findByNameAndVersion(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
         long version
     ) {
-        final var documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId(documentDefinitionName, version);
+        return null;
+    }
+
+    @Override
+    public Optional<JsonSchemaDocumentDefinition> findByNameAndCaseDefinitionId(
+        @LoggableResource("documentDefinitionName") String documentDefinitionName,
+        CaseDefinitionId caseDefinitionId
+    ) {
+        final var documentDefinitionId = JsonSchemaDocumentDefinitionId
+            .existingId(documentDefinitionName, caseDefinitionId);
         final var optionalDefinition = documentDefinitionRepository.findById(documentDefinitionId);
 
         optionalDefinition.ifPresent(definition -> authorizationService.requirePermission(
@@ -289,22 +300,13 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
         }
     }
 
-    private DeployDocumentDefinitionResult deploy(JsonSchema jsonSchema, boolean readOnly, boolean force) {
+    private DeployDocumentDefinitionResult deploy(JsonSchema jsonSchema, CaseDefinitionId caseDefinitionId, boolean readOnly, boolean force) {
         //Authorization check is delegated to the store() method
         try {
             final var documentDefinitionName = jsonSchema.getSchema().getId().replace(".schema", "");
             return withLoggingContext("documentDefinitionName", documentDefinitionName, () -> {
-                final var existingDefinition = findLatestByName(documentDefinitionName);
 
                 final JsonSchemaDocumentDefinitionId documentDefinitionId;
-                if (existingDefinition.isPresent()) {
-                    var existingDocumentDefinition = existingDefinition.get();
-
-                    // Check read-only of previous definition
-                    if (existingDocumentDefinition.isReadOnly() && !force) {
-                        DocumentDefinitionError error = () -> "This schema cannot be updated, because its readonly in previous versions";
-                        return new DeployDocumentDefinitionResultFailed(List.of(error));
-                    }
 
                     if (existingDocumentDefinition.getSchema().asJson().equals(jsonSchema.asJson())) {
                         logger.info(
@@ -313,7 +315,8 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
                         );
                         DocumentDefinitionError error = () -> "This exact schema is already deployed";
                         return new DeployDocumentDefinitionResultFailed(List.of(error));
-                    } else {
+                    }
+                    else {
                         // Definition changed increase version
                         documentDefinitionId = JsonSchemaDocumentDefinitionId.nextVersion(existingDocumentDefinition.id());
                         logger.info(
@@ -321,15 +324,8 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
                             jsonSchema.getSchema().getId()
                         );
                     }
-                } else {
-                    documentDefinitionId = JsonSchemaDocumentDefinitionId.newId(documentDefinitionName);
-                }
 
                 var documentDefinition = new JsonSchemaDocumentDefinition(documentDefinitionId, jsonSchema);
-
-                if (readOnly) {
-                    documentDefinition.markReadOnly();
-                }
 
                 store(documentDefinition);
                 logger.info("Deployed schema - {} - {} ", documentDefinitionId, jsonSchema.getSchema().getId());

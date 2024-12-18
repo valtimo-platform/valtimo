@@ -30,13 +30,13 @@ public class CamundaProcessJsonSchemaDocumentDefinitionId extends AbstractId<Cam
     implements ProcessDocumentDefinitionId {
 
     @Embedded
-    private CamundaProcessDefinitionKey processDefinitionKey;
+    private CamundaProcessDefinitionId processDefinitionKey;
 
     @Embedded
     private JsonSchemaDocumentDefinitionId documentDefinitionId;
 
     private CamundaProcessJsonSchemaDocumentDefinitionId(
-        final CamundaProcessDefinitionKey processDefinitionKey,
+        final CamundaProcessDefinitionId processDefinitionKey,
         final JsonSchemaDocumentDefinitionId documentDefinitionId
     ) {
         assertArgumentNotNull(processDefinitionKey, "processDefinitionKey is required");
@@ -49,21 +49,21 @@ public class CamundaProcessJsonSchemaDocumentDefinitionId extends AbstractId<Cam
     }
 
     public static CamundaProcessJsonSchemaDocumentDefinitionId existingId(
-        CamundaProcessDefinitionKey processDefinitionKey,
+        CamundaProcessDefinitionId processDefinitionKey,
         JsonSchemaDocumentDefinitionId documentDefinitionId
     ) {
         return new CamundaProcessJsonSchemaDocumentDefinitionId(processDefinitionKey, documentDefinitionId);
     }
 
     public static CamundaProcessJsonSchemaDocumentDefinitionId newId(
-        CamundaProcessDefinitionKey processDefinitionKey,
+        CamundaProcessDefinitionId processDefinitionKey,
         JsonSchemaDocumentDefinitionId documentDefinitionId
     ) {
         return new CamundaProcessJsonSchemaDocumentDefinitionId(processDefinitionKey, documentDefinitionId).newIdentity();
     }
 
     @Override
-    public CamundaProcessDefinitionKey processDefinitionKey() {
+    public CamundaProcessDefinitionId processDefinitionKey() {
         return processDefinitionKey;
     }
 

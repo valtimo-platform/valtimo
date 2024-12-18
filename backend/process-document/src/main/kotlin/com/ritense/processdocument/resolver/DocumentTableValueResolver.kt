@@ -82,7 +82,8 @@ class DocumentTableValueResolver(
                 "createdOn" -> document.createdOn()
                 "definitionId" -> document.definitionId()
                 "definitionId.name" -> document.definitionId().name()
-                "definitionId.version" -> document.definitionId().version()
+                // TODO: change definitionId.caseDefinitionId
+                "definitionId.version" -> document.definitionId().caseDefinitionId()
                 "id" -> document.id().id
                 "internalStatus" -> document.internalStatus()
                 "modifiedOn" -> document.modifiedOn().orElse(null)

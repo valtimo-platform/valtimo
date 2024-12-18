@@ -42,7 +42,7 @@ import com.ritense.document.domain.impl.request.ModifyDocumentRequest;
 import com.ritense.document.domain.impl.request.NewDocumentRequest;
 import com.ritense.document.service.result.CreateDocumentResult;
 import com.ritense.processdocument.BaseTest;
-import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionKey;
+import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionId;
 import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId;
 import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentDefinition;
 import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentDefinitionId;
@@ -102,7 +102,7 @@ class ProcessDocumentResourceTest extends BaseTest {
     private Page<CamundaProcessJsonSchemaDocumentDefinition> processDocumentInstancesPage;
     private ObjectMapper objectMapper;
     private JsonSchemaDocumentDefinitionId documentDefinitionId;
-    private CamundaProcessDefinitionKey processDefinitionKey;
+    private CamundaProcessDefinitionId processDefinitionKey;
 
     @BeforeEach
     void setUp() {
@@ -122,7 +122,7 @@ class ProcessDocumentResourceTest extends BaseTest {
             .build();
 
         documentDefinitionId = JsonSchemaDocumentDefinitionId.newId(DOCUMENT_DEFINITION_NAME);
-        processDefinitionKey = new CamundaProcessDefinitionKey(PROCESS_DEFINITION_KEY);
+        processDefinitionKey = new CamundaProcessDefinitionId(PROCESS_DEFINITION_KEY);
 
         processDocumentDefinition = new CamundaProcessJsonSchemaDocumentDefinition(
             CamundaProcessJsonSchemaDocumentDefinitionId.newId(
@@ -288,7 +288,7 @@ class ProcessDocumentResourceTest extends BaseTest {
 
     @Test
     void shouldReturnOkWhenCreatingProcessDocumentDefinition() throws Exception {
-        final var processDefinitionKey = new CamundaProcessDefinitionKey("some-key");
+        final var processDefinitionKey = new CamundaProcessDefinitionId("some-key");
         final var documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId("house", 1);
         final var request = new ProcessDocumentDefinitionRequest(
             processDefinitionKey.toString(),

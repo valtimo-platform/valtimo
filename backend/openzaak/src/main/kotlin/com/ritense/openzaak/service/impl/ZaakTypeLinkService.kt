@@ -33,7 +33,7 @@ import com.ritense.openzaak.service.result.CreateZaakTypeLinkResult
 import com.ritense.openzaak.service.result.ModifyServiceTaskHandlerResult
 import com.ritense.openzaak.service.result.RemoveServiceTaskHandlerResult
 import com.ritense.openzaak.web.rest.request.ServiceTaskHandlerRequest
-import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionKey
+import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionId
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.valtimo.contract.result.OperationError
 import jakarta.validation.ConstraintViolationException
@@ -54,7 +54,9 @@ class ZaakTypeLinkService(
     override fun getByProcess(processDefinitionKey: String): List<ZaakTypeLink?> {
         val processDocumentDefinitions = AuthorizationContext.runWithoutAuthorization {
             processDocumentAssociationService.findAllProcessDocumentDefinitions(
-                CamundaProcessDefinitionKey(processDefinitionKey)
+                CamundaProcessDefinitionId(
+                    processDefinitionKey
+                )
             )
         }
         if (processDocumentDefinitions.isNotEmpty()) {

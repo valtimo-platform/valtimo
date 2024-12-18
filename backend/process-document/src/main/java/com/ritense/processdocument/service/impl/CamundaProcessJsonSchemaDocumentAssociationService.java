@@ -41,7 +41,7 @@ import com.ritense.processdocument.domain.ProcessDefinitionKey;
 import com.ritense.processdocument.domain.ProcessDocumentDefinition;
 import com.ritense.processdocument.domain.ProcessDocumentInstanceId;
 import com.ritense.processdocument.domain.ProcessInstanceId;
-import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionKey;
+import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionId;
 import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId;
 import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentDefinition;
 import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentDefinitionId;
@@ -366,7 +366,7 @@ public class CamundaProcessJsonSchemaDocumentAssociationService implements Proce
         }
 
         return createProcessDocumentDefinition(
-            new CamundaProcessDefinitionKey(request.processDefinitionKey()),
+            new CamundaProcessDefinitionId(request.processDefinitionKey()),
             documentDefinitionId,
             request.canInitializeDocument(),
             request.startableByUser()
@@ -374,7 +374,7 @@ public class CamundaProcessJsonSchemaDocumentAssociationService implements Proce
     }
 
     private Optional<CamundaProcessJsonSchemaDocumentDefinition> createProcessDocumentDefinition(
-        CamundaProcessDefinitionKey processDefinitionKey,
+        CamundaProcessDefinitionId processDefinitionKey,
         JsonSchemaDocumentDefinitionId documentDefinitionId,
         boolean canInitializeDocument,
         boolean startableByUser
@@ -441,7 +441,7 @@ public class CamundaProcessJsonSchemaDocumentAssociationService implements Proce
         }
 
         final var id = CamundaProcessJsonSchemaDocumentDefinitionId.existingId(
-            new CamundaProcessDefinitionKey(request.processDefinitionKey()),
+            new CamundaProcessDefinitionId(request.processDefinitionKey()),
             documentDefinitionId
         );
         processDocumentDefinitionRepository.deleteById(id);
