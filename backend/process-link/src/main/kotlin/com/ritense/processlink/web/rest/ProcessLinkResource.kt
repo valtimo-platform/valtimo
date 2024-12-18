@@ -99,6 +99,7 @@ class ProcessLinkResource(
     }
 
 
+    @Deprecated("Since 12.7.0")
     @GetMapping("/v1/process-link/export")
     fun exportProcessLinks(
         @LoggableResource("processDefinitionKey") @RequestParam("processDefinitionKey") processDefinitionKey: String
