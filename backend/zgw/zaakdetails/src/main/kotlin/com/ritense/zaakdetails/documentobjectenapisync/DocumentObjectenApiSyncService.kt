@@ -104,7 +104,7 @@ class DocumentObjectenApiSyncService(
     }
 
     private fun sync(document: Document) {
-        val syncConfiguration = getSyncConfiguration(document.definitionId().name(), document.definitionId().version())
+        val syncConfiguration = getSyncConfiguration(document.definitionId().name(), 1L) // TODO: replace 1L with caseDefinitionId
         if (syncConfiguration?.enabled == true) {
             val objectManagementConfiguration =
                 objectObjectManagementInfoProvider.getObjectManagementInfo(syncConfiguration.objectManagementConfigurationId)

@@ -63,13 +63,14 @@ class CaseTabDeploymentService(
         )
     }
 
-    @Transactional
-    @EventListener(DocumentDefinitionDeployedEvent::class)
-    fun createCaseTabs(event: DocumentDefinitionDeployedEvent) {
-        if (event.documentDefinition().id().version() == 1L) {
-            deploy(listOf(CaseDefinitionsTabCollection(event.documentDefinition().id().name(), STANDARD_CASE_TABS)))
-        }
-    }
+    //TODO: Re enable deploying default case tabs
+//    @Transactional
+//    @EventListener(DocumentDefinitionDeployedEvent::class)
+//    fun createCaseTabs(event: DocumentDefinitionDeployedEvent) {
+//        if (event.documentDefinition().id().version() == 1L) {
+//            deploy(listOf(CaseDefinitionsTabCollection(event.documentDefinition().id().name(), STANDARD_CASE_TABS)))
+//        }
+//    }
 
     private fun deploy(caseDefinitions: List<CaseDefinitionsTabCollection>) {
         runWithoutAuthorization {

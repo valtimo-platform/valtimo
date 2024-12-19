@@ -106,7 +106,7 @@ class CaseDefinitionServiceTest {
             DisplayType("enum", EnumDisplayTypeParameter(mapOf(Pair("Key1", "Value1"))))
         )
         whenever(documentDefinitionService.findIdByName(caseDefinitionName))
-            .thenReturn(JsonSchemaDocumentDefinitionId.newId("aName"))
+            .thenReturn(JsonSchemaDocumentDefinitionId.existingId("aName", CaseDefinitionId.of("bName", "1.0.2")))
         whenever(
             caseDefinitionListColumnRepository
                 .existsByIdCaseDefinitionNameAndIdKey(
@@ -147,7 +147,7 @@ class CaseDefinitionServiceTest {
             DisplayType("enum", EnumDisplayTypeParameter(mapOf(Pair("Key1", "Value1"))))
         )
         whenever(documentDefinitionService.findIdByName(caseDefinitionName))
-            .thenReturn(JsonSchemaDocumentDefinitionId.newId("aName"))
+            .thenReturn(JsonSchemaDocumentDefinitionId.existingId("aName", CaseDefinitionId.of("bName", "1.0.2")))
         whenever(
             caseDefinitionListColumnRepository.findByIdCaseDefinitionNameOrderByOrderAsc(
                 caseDefinitionName
@@ -176,7 +176,7 @@ class CaseDefinitionServiceTest {
             DisplayType("enum", EnumDisplayTypeParameter(mapOf(Pair("Key1", "Value1"))))
         )
         whenever(documentDefinitionService.findIdByName(caseDefinitionName))
-            .thenReturn(JsonSchemaDocumentDefinitionId.newId("aName"))
+            .thenReturn(JsonSchemaDocumentDefinitionId.existingId("aName", CaseDefinitionId.of("bName", "1.0.2")))
         whenever(
             caseDefinitionListColumnRepository.findByIdCaseDefinitionNameOrderByOrderAsc(
                 caseDefinitionName
@@ -217,7 +217,7 @@ class CaseDefinitionServiceTest {
             DisplayType("enum", EnumDisplayTypeParameter(emptyMap()))
         )
         whenever(documentDefinitionService.findIdByName(caseDefinitionName))
-            .thenReturn(JsonSchemaDocumentDefinitionId.newId("aName"))
+            .thenReturn(JsonSchemaDocumentDefinitionId.existingId("aName", CaseDefinitionId.of("bName", "1.0.2")))
         whenever(
             caseDefinitionListColumnRepository.findByIdCaseDefinitionNameOrderByOrderAsc(
                 caseDefinitionName
@@ -264,7 +264,7 @@ class CaseDefinitionServiceTest {
         )
         listColumnDtoLastName.defaultSort = ColumnDefaultSort.ASC
         whenever(documentDefinitionService.findIdByName(caseDefinitionName))
-            .thenReturn(JsonSchemaDocumentDefinitionId.newId("aName"))
+            .thenReturn(JsonSchemaDocumentDefinitionId.existingId("aName", CaseDefinitionId.of("bName", "1.0.2")))
         whenever(
             caseDefinitionListColumnRepository.findByIdCaseDefinitionNameOrderByOrderAsc(
                 caseDefinitionName
@@ -299,7 +299,7 @@ class CaseDefinitionServiceTest {
             DisplayType("enum", EnumDisplayTypeParameter(mapOf(Pair("Key1", "Value1"))))
         )
         whenever(documentDefinitionService.findIdByName(caseDefinitionName))
-            .thenReturn(JsonSchemaDocumentDefinitionId.newId("aName"))
+            .thenReturn(JsonSchemaDocumentDefinitionId.existingId("aName", CaseDefinitionId.of("bName", "1.0.2")))
         whenever(
             caseDefinitionListColumnRepository.findByIdCaseDefinitionNameOrderByOrderAsc(
                 caseDefinitionName

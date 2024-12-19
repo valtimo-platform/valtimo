@@ -283,21 +283,22 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     public void deploy(InputStream inputStream, boolean readOnly, boolean force) throws IOException {
         //Authorization check is delegated to the store() method
         var jsonSchema = JsonSchema.fromString(StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8));
-        deploy(jsonSchema, readOnly, force);
+//        deploy(jsonSchema, readOnly, force);
     }
 
     @Override
     public DeployDocumentDefinitionResult deploy(String schema, boolean readOnly, boolean force) {
         //Authorization check is delegated to the store() method
-        try {
-            var jsonSchema = JsonSchema.fromString(schema);
-            return deploy(jsonSchema, readOnly, force);
-        } catch (AccessDeniedException accessDeniedException) {
-            throw accessDeniedException;
-        } catch (Exception ex) {
-            DocumentDefinitionError error = ex::getMessage;
-            return new DeployDocumentDefinitionResultFailed(List.of(error));
-        }
+        return null;
+//        try {
+//            var jsonSchema = JsonSchema.fromString(schema);
+//            return deploy(jsonSchema, readOnly, force);
+//        } catch (AccessDeniedException accessDeniedException) {
+//            throw accessDeniedException;
+//        } catch (Exception ex) {
+//            DocumentDefinitionError error = ex::getMessage;
+//            return new DeployDocumentDefinitionResultFailed(List.of(error));
+//        }
     }
 
     private DeployDocumentDefinitionResult deploy(JsonSchema jsonSchema, CaseDefinitionId caseDefinitionId, boolean readOnly, boolean force) {
@@ -306,29 +307,16 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
             final var documentDefinitionName = jsonSchema.getSchema().getId().replace(".schema", "");
             return withLoggingContext("documentDefinitionName", documentDefinitionName, () -> {
 
-                final JsonSchemaDocumentDefinitionId documentDefinitionId;
+                final JsonSchemaDocumentDefinitionId documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId(
+                    jsonSchema.getSchema().getId(),
+                    caseDefinitionId
+                );
 
-                    if (existingDocumentDefinition.getSchema().asJson().equals(jsonSchema.asJson())) {
-                        logger.info(
-                            "Schema already deployed - {} - {} ", existingDocumentDefinition.getId(),
-                            jsonSchema.getSchema().getId()
-                        );
-                        DocumentDefinitionError error = () -> "This exact schema is already deployed";
-                        return new DeployDocumentDefinitionResultFailed(List.of(error));
-                    }
-                    else {
-                        // Definition changed increase version
-                        documentDefinitionId = JsonSchemaDocumentDefinitionId.nextVersion(existingDocumentDefinition.id());
-                        logger.info(
-                            "Schema changed. Deploying next version - {} - {} ", documentDefinitionId,
-                            jsonSchema.getSchema().getId()
-                        );
-                    }
+                logger.info("Deploying schema {} for case definition {}", jsonSchema.getSchema().getId(), caseDefinitionId);
 
                 var documentDefinition = new JsonSchemaDocumentDefinition(documentDefinitionId, jsonSchema);
 
                 store(documentDefinition);
-                logger.info("Deployed schema - {} - {} ", documentDefinitionId, jsonSchema.getSchema().getId());
                 return new DeployDocumentDefinitionResultSucceeded(documentDefinition);
             });
         } catch (AccessDeniedException accessDeniedException) {
@@ -345,26 +333,18 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
         withLoggingContext(JsonSchemaDocumentDefinition.class, documentDefinition.id().toString(), () -> {
             assertArgumentNotNull(documentDefinition, "documentDefinition is required");
 
-            final var existingDocumentDefinition = documentDefinitionRepository.findById(documentDefinition.id()).orElse(
-                    null);
-            if (existingDocumentDefinition != null) {
-                if (!existingDocumentDefinition.equals(documentDefinition)) {
-                    throw new UnsupportedOperationException("Schema already deployed, will cannot redeploy");
-                }
-            } else {
-                JsonSchemaDocumentDefinitionId latestDefinitionId = documentDefinitionRepository.findFirstByIdNameOrderByIdVersionDesc(
-                    documentDefinition.id().name()).map(JsonSchemaDocumentDefinition::getId).orElse(null);
+            JsonSchemaDocumentDefinitionId latestDefinitionId = documentDefinitionRepository.findFirstByIdNameOrderByIdVersionDesc(
+                documentDefinition.id().name()).map(JsonSchemaDocumentDefinition::getId).orElse(null);
 
-                authorizationService.requirePermission(
-                    new EntityAuthorizationRequest<>(
-                        JsonSchemaDocumentDefinition.class,
-                        latestDefinitionId == null ? CREATE : MODIFY,
-                        documentDefinition
-                    )
-                );
+            authorizationService.requirePermission(
+                new EntityAuthorizationRequest<>(
+                    JsonSchemaDocumentDefinition.class,
+                    latestDefinitionId == null ? CREATE : MODIFY,
+                    documentDefinition
+                )
+            );
 
-                documentDefinitionRepository.saveAndFlush(documentDefinition);
-            }
+            documentDefinitionRepository.saveAndFlush(documentDefinition);
         });
     }
 

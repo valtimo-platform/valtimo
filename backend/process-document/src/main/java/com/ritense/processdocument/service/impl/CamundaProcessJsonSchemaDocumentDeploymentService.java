@@ -73,8 +73,8 @@ public class CamundaProcessJsonSchemaDocumentDeploymentService implements Proces
                 final var processDocumentLinkConfigItems = getJson(IOUtils.toString(resource.getInputStream(), UTF_8));
 
                 processDocumentLinkConfigItems.forEach(item -> createProcessDocumentLink(documentDefinitionName, item));
-            } else {
-                copyProcessDocumentLinksToLatestVersion(documentDefinitionDeployedEvent.documentDefinition().id());
+//            } else {
+//                copyProcessDocumentLinksToLatestVersion(documentDefinitionDeployedEvent.documentDefinition().id());
             }
         } catch (IOException e) {
             logger.error("Error while deploying process-document-links", e);
@@ -107,31 +107,32 @@ public class CamundaProcessJsonSchemaDocumentDeploymentService implements Proces
         }
     }
 
-    private void copyProcessDocumentLinksToLatestVersion(DocumentDefinition.Id documentDefinitionId) {
-        AuthorizationContext.runWithoutAuthorization(() -> {
-            var name = documentDefinitionId.name();
-            var latestVersion = documentDefinitionId.version();
-            if (latestVersion > 1) {
-                processDocumentAssociationService.findProcessDocumentDefinitions(name, latestVersion - 1)
-                    .forEach(item -> {
-                        var request = new ProcessDocumentDefinitionRequest(
-                            item.processDocumentDefinitionId().processDefinitionKey().toString(),
-                            name,
-                            item.canInitializeDocument(),
-                            item.startableByUser(),
-                            Optional.of(latestVersion)
-                        );
-                        processDocumentAssociationService.createProcessDocumentDefinition(request);
-                    });
-            }
-            return null;
-        });
-    }
+//    private void copyProcessDocumentLinksToLatestVersion(DocumentDefinition.Id documentDefinitionId) {
+//        AuthorizationContext.runWithoutAuthorization(() -> {
+//            var name = documentDefinitionId.name();
+//            var latestVersion = documentDefinitionId.version();
+//            if (latestVersion > 1) {
+//                processDocumentAssociationService.findProcessDocumentDefinitions(name, latestVersion - 1)
+//                    .forEach(item -> {
+//                        var request = new ProcessDocumentDefinitionRequest(
+//                            item.processDocumentDefinitionId().processDefinitionKey().toString(),
+//                            name,
+//                            item.canInitializeDocument(),
+//                            item.startableByUser(),
+//                            Optional.of(latestVersion)
+//                        );
+//                        processDocumentAssociationService.createProcessDocumentDefinition(request);
+//                    });
+//            }
+//            return null;
+//        });
+//    }
 
     private void createProcessDocumentLink(String documentDefinitionName, ProcessDocumentLinkConfigItem item) {
         final var request = new ProcessDocumentDefinitionRequest(
                 item.getProcessDefinitionKey(),
                 documentDefinitionName,
+                null, // TODO: Add case definition Id (and cascade this upwards)
                 item.getCanInitializeDocument(),
                 item.getStartableByUser()
         );

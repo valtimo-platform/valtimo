@@ -21,6 +21,7 @@ import com.ritense.document.BaseIntegrationTest
 import com.ritense.document.domain.DocumentMigrationPatch
 import com.ritense.document.domain.DocumentMigrationRequest
 import com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.Companion.byDocumentDefinitionIdName
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
@@ -42,9 +43,9 @@ class DocumentMigrationServiceIntTest @Autowired constructor(
             documentMigrationService.migrateDocuments(
                 DocumentMigrationRequest(
                     documentDefinitionNameSource = "referenced",
-                    documentDefinitionVersionSource = 1,
+                    caseDefinitionIdSource = CaseDefinitionId.of("referenced", "1.0.0"),
                     documentDefinitionNameTarget = "allows-all",
-                    documentDefinitionVersionTarget = 1,
+                    caseDefinitionIdTarget = CaseDefinitionId.of("allows-all", "1.0.0"),
                     patches = listOf(
                         DocumentMigrationPatch(source = "/address/streetName", target = "/address"),
                     )

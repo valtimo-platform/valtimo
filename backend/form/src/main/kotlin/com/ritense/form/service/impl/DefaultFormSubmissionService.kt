@@ -280,7 +280,7 @@ class DefaultFormSubmissionService(
             } else {
                 processDocumentAssociationService.getProcessDocumentDefinition(
                     processDefinitionKey,
-                    document.definitionId().version()
+                    document.definitionId().caseDefinitionId()
                 )
             }
         }

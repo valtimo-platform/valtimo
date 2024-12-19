@@ -61,6 +61,7 @@ import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition;
 import com.ritense.valtimo.camunda.service.CamundaRepositoryService;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.result.FunctionResult;
 import com.ritense.valtimo.contract.result.OperationError;
 import java.time.LocalDateTime;
@@ -149,17 +150,11 @@ public class CamundaProcessJsonSchemaDocumentAssociationService implements Proce
     }
 
     @Override
-    public CamundaProcessJsonSchemaDocumentDefinition getProcessDocumentDefinition(
+    public ProcessDocumentDefinition getProcessDocumentDefinition(
         ProcessDefinitionKey processDefinitionKey,
-        long documentDefinitionVersion
+        CaseDefinitionId caseDefinitionId
     ) {
-        denyAuthorization(CamundaProcessJsonSchemaDocumentDefinition.class);
-
-        return findProcessDocumentDefinition(processDefinitionKey, documentDefinitionVersion)
-            .orElseThrow(() -> new ProcessDocumentDefinitionNotFoundException(
-                    "for processDefinitionKey '" + processDefinitionKey + "' and version '" + documentDefinitionVersion + "'"
-                )
-            );
+        return null; // TODO: Implement this
     }
 
     @Override
@@ -355,15 +350,10 @@ public class CamundaProcessJsonSchemaDocumentAssociationService implements Proce
     ) {
         denyAuthorization(CamundaProcessJsonSchemaDocumentDefinition.class);
 
-        JsonSchemaDocumentDefinitionId documentDefinitionId;
-        if (request.getDocumentDefinitionVersion().isPresent()) {
-            documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId(
-                request.documentDefinitionName(),
-                request.getDocumentDefinitionVersion().orElseThrow()
-            );
-        } else {
-            documentDefinitionId = documentDefinitionService.findIdByName(request.documentDefinitionName());
-        }
+        JsonSchemaDocumentDefinitionId documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId(
+            request.documentDefinitionName(),
+            request.getCaseDefinitionId()
+        );
 
         return createProcessDocumentDefinition(
             new CamundaProcessDefinitionId(request.processDefinitionKey()),
@@ -430,15 +420,10 @@ public class CamundaProcessJsonSchemaDocumentAssociationService implements Proce
             );
         }
 
-        JsonSchemaDocumentDefinitionId documentDefinitionId;
-        if (request.getDocumentDefinitionVersion().isPresent()) {
-            documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId(
-                request.documentDefinitionName(),
-                request.getDocumentDefinitionVersion().orElseThrow()
-            );
-        } else {
-            documentDefinitionId = documentDefinitionService.findIdByName(request.documentDefinitionName());
-        }
+        JsonSchemaDocumentDefinitionId documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId(
+            request.documentDefinitionName(),
+            request.getCaseDefinitionId()
+        );
 
         final var id = CamundaProcessJsonSchemaDocumentDefinitionId.existingId(
             new CamundaProcessDefinitionId(request.processDefinitionKey()),

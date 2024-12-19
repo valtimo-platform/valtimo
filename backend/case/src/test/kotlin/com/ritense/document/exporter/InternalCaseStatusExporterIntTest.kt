@@ -23,6 +23,7 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.document.BaseIntegrationTest
 import com.ritense.exporter.request.DocumentDefinitionExportRequest
 import com.ritense.exporter.request.FormDefinitionExportRequest
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
@@ -44,7 +45,7 @@ class InternalCaseStatusExporterIntTest @Autowired constructor(
     fun `should export tabs for case definition`(): Unit = runWithoutAuthorization {
         val caseDefinitionName = "person"
 
-        val request = DocumentDefinitionExportRequest(caseDefinitionName, 1)
+        val request = DocumentDefinitionExportRequest(caseDefinitionName, CaseDefinitionId("house", "1.0.0"))
         val exportResult = exporter.export(request)
 
         val path = PATH.format(caseDefinitionName)

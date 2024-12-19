@@ -83,4 +83,41 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="8" author="Ritense">
+        <dropPrimaryKey tableName="json_schema_document_definition"/>
+        <dropPrimaryKey tableName="json_schema_document_definition_sequence_record"/>
+    </changeSet>
+
+    <changeSet id="9" author="Ritense">
+        <dropColumn tableName="json_schema_document_definition" columnName="document_definition_version"/>
+        <dropColumn tableName="json_schema_document_definition_sequence_record" columnName="document_definition_version"/>
+        <dropColumn tableName="json_schema_document_definition_sequence_record" columnName="sequence_version"/>
+    </changeSet>
+
+    <changeSet id="10" author="Ritense">
+        <addColumn tableName="json_schema_document_definition">
+            <column name="case_definition_key" type="VARCHAR(256)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="case_definition">
+            <column name="case_definition_version_tag" type="VARCHAR(256)" defaultValue="1.0.0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="11" author="Ritense">
+        <addPrimaryKey tableName="json_schema_document_definition"
+                       columnNames="document_definition_key, case_definition_key, case_definition_version_tag"
+        />
+        <addPrimaryKey tableName="json_schema_document_definition_sequence_record"
+                       columnNames="document_definition_name"/>
+        <addForeignKeyConstraint baseTableName="json_schema_document_definition"
+                                 baseColumnNames="case_definition_key, case_definition_version_tag"
+                                 constraintName="fk_json_schema_document_definition_case_definition"
+                                 referencedTableName="case_definition"
+                                 referencedColumnNames="case_definition_key, case_definition_version_tag"/>
+    </changeSet>
+
 </databaseChangeLog>

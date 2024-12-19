@@ -71,7 +71,7 @@ class CaseInstanceServiceTest {
             .thenReturn(listOf(FIRST_NAME_CASE_LIST_COLUMN))
         whenever(valueResolverService.resolveValues(DOCUMENT.id().id.toString(), listOf("doc:firstName")))
             .thenReturn(mapOf("doc:firstName" to "John"))
-        whenever(DOCUMENT.definitionId()).thenReturn(JsonSchemaDocumentDefinitionId.newId(CASE_DEFINITION_NAME))
+        whenever(DOCUMENT.definitionId()).thenReturn(JsonSchemaDocumentDefinitionId.existingId(CASE_DEFINITION_NAME, CaseDefinitionId.of("bName", "1.0.2")))
     }
 
     @Test

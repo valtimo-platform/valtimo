@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.case.BaseIntegrationTest
 import com.ritense.exporter.request.DocumentDefinitionExportRequest
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
@@ -40,7 +41,7 @@ class CaseListExporterIntTest @Autowired constructor(
     fun `should export list columns for case definition`(): Unit = AuthorizationContext.runWithoutAuthorization {
         val caseDefinitionName = "house"
 
-        val request = DocumentDefinitionExportRequest(caseDefinitionName, 1)
+        val request = DocumentDefinitionExportRequest(caseDefinitionName, CaseDefinitionId("house", "1.0.0"))
         val exportFiles = caseListExporter.export(request).exportFiles
 
         val path = PATH.format(caseDefinitionName)

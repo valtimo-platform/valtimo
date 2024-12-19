@@ -120,7 +120,7 @@ class URLProcessLinkService(
             } else {
                 processDocumentAssociationService.getProcessDocumentDefinition(
                     processDefinitionKey,
-                    document.definitionId().version()
+                    null // TODO: Fix this
                 )
             }
         }
