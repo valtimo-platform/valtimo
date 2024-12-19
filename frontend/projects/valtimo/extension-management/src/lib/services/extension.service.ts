@@ -28,6 +28,7 @@ import * as valtimocomponents from '@valtimo/components';
 import * as tslib from 'tslib';
 import {NGXLogger} from 'ngx-logger';
 import {TabService} from '@valtimo/dossier-management';
+import {loadRemoteModule} from '@softarc/native-federation';
 
 @Injectable({providedIn: 'root'})
 export class ExtensionService {
@@ -40,8 +41,9 @@ export class ExtensionService {
     rxjs: rxjs,
     tslib: tslib,
   };
-  private readonly extensionFrontendInitJs = 'frontend-bundle.js';
+  //private readonly extensionFrontendInitJs = 'frontend-bundle.js';
   //private readonly extensionFrontendInitJs = 'frontend/fesm2022/frontend.mjs';
+  private readonly extensionFrontendInitJs = 'pluginEntry.js';
   private readonly extensionFrontendCss = 'styles.css';
 
   constructor(
@@ -49,7 +51,7 @@ export class ExtensionService {
     private readonly http: HttpClient,
     private readonly pluginService: PluginService,
     private readonly tabService: TabService,
-    private readonly _injector: Injector,
+    private readonly injector: Injector,
     private readonly logger: NGXLogger
   ) {
     this.valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}`;
@@ -114,8 +116,21 @@ export class ExtensionService {
     Object.keys(this.extensionImports).forEach(key => (window[key] = this.extensionImports[key]));
 
     // TODO: Use this: https://stackoverflow.com/questions/75445012/how-do-you-load-precompiled-angular-libraries-as-dynamic-modules/75527315#75527315
-    import(
-      /* webpackIgnore: true */ this.getFileUrl(extensionId, this.extensionFrontendInitJs)
+    loadRemoteModule({
+      remoteEntry: this.getFileUrl(extensionId, this.extensionFrontendInitJs),
+      exposedModule: './WeatherPluginModule',
+    }).then(m => {
+        createNgModule(m.WeatherPluginModule, this.injector);
+        subject.next(true);
+      },
+      err => {
+        this.logger.error(`Failed to load extension '${extensionId}'.`, err);
+        subject.error(err);
+      }
+    )
+
+/*    import(
+      /!* webpackIgnore: true *!/ this.getFileUrl(extensionId, this.extensionFrontendInitJs)
       ).then(
       importedFile => {
         try {
@@ -135,12 +150,12 @@ export class ExtensionService {
         this.logger.error(`Failed to load extension '${extensionId}'.`, err);
         subject.error(err);
       }
-    );
+    );*/
     return subject;
   }
 
   private loadModule(module: any) {
-    createNgModule<NgModule>(module as any, this._injector);
+    createNgModule<NgModule>(module as any, this.injector);
     const providers = module.ɵinj.providers
     providers
       .filter(provider => provider.provide == PLUGINS_TOKEN)
