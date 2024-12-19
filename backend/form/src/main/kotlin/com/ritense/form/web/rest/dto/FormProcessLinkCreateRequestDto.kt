@@ -33,7 +33,7 @@ data class FormProcessLinkCreateRequestDto(
     val viewModelEnabled: Boolean? = false,
     val formDisplayType: FormDisplayType? = FormDisplayType.modal,
     val formSize: FormSizes? = FormSizes.medium,
-    val subtitles: List<String>? = emptyList(),
+    val subtitles: List<String>? = null
 ) : ProcessLinkCreateRequestDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE_FORM

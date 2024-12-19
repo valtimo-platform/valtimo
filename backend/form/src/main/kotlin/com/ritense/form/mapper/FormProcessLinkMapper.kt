@@ -132,7 +132,7 @@ class FormProcessLinkMapper(
             viewModelEnabled = createRequestDto.viewModelEnabled ?: false,
             formDisplayType = createRequestDto.formDisplayType ?: FormDisplayType.modal,
             formSize = createRequestDto.formSize ?: FormSizes.medium,
-            subtitles = createRequestDto.subtitles ?: emptyList(),
+            subtitles = createRequestDto.subtitles,
         )
     }
 
