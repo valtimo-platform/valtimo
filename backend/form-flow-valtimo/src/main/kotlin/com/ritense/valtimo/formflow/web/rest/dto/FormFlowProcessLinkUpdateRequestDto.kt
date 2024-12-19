@@ -29,7 +29,7 @@ data class FormFlowProcessLinkUpdateRequestDto(
     val formFlowDefinitionId: String,
     val formDisplayType: FormDisplayType? = FormDisplayType.modal,
     val formSize: FormSizes? = FormSizes.medium,
-    val subtitles: List<String>? = emptyList(),
+    val subtitles: List<String>? = null
 ) : ProcessLinkUpdateRequestDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE_FORM_FLOW
