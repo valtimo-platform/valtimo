@@ -16,7 +16,9 @@
 
 package com.ritense.zaakdetails.domain
 
+import com.ritense.valtimo.contract.repository.UriAttributeConverter
 import jakarta.persistence.Column
+import jakarta.persistence.Convert
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
@@ -30,6 +32,7 @@ data class ZaakdetailsObject(
     @Column(name = "document_id")
     val documentId: UUID,
 
+    @Convert(converter = UriAttributeConverter::class)
     @Column(name = "object_url")
     val objectURI: URI,
 
