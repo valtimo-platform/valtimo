@@ -39,7 +39,14 @@ import {
 } from '@angular/forms';
 import {TrashCan16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {CdsThemeService, CurrentCarbonTheme, InputLabelModule} from '@valtimo/components';
+import {
+  CdsThemeService,
+  CurrentCarbonTheme,
+  InputLabelModule,
+  ValueCollectionPath,
+  ValuePathSelectorComponent,
+  ValuePathSelectorPrefix,
+} from '@valtimo/components';
 import {
   CaseWidgetCurrencyDisplayType,
   CaseWidgetDateDisplayType,
@@ -81,14 +88,16 @@ import {WidgetFieldsService, WidgetWizardService} from '../../../../services';
     IconModule,
     AccordionModule,
     InputLabelModule,
+    ValuePathSelectorComponent,
   ],
 })
 export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnDestroy {
   @HostBinding('class') public readonly class = 'valtimo-dossier-management-widget-field-column';
   @Input({required: true}) public columnData: FieldsCaseWidgetValue[];
   @Input() public addTranslateKey = 'widgetTabManagement.content.fields.add';
-  @Input() public isFieldWidget = false;
+  @Input() public documentDefinitionName?: string | null = null;
   @Input() public fieldWidthDropdown?: TemplateRef<Dropdown>;
+  @Input() public selectedCollectionPath?: ValueCollectionPath | null;
 
   @Output() public columnUpdateEvent = new EventEmitter<{
     data: FieldsCaseWidgetValue[];
@@ -106,6 +115,7 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
   }
 
   public displayTypeItems: ListItem[] = this.widgetFieldsService.displayTypeItems;
+  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   public getDisplayItemsSelected(row: AbstractControl): ListItem[] {
     return this.widgetFieldsService.getDisplayItemsSelected(row);
@@ -114,6 +124,9 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
   public readonly CaseWidgetDisplayTypeKey = CaseWidgetDisplayTypeKey;
   public readonly widgetType: Signal<CaseWidgetType> = computed(
     () => this.widgetWizardService.selectedWidget()?.type ?? CaseWidgetType.FIELDS
+  );
+  public readonly isFieldWidget: Signal<boolean> = computed(
+    () => this.widgetType() === CaseWidgetType.FIELDS
   );
 
   public readonly inputTheme$: Observable<CurrentCarbonTheme> = this.cdsThemeService.currentTheme$;

@@ -38,10 +38,11 @@ import {
 } from '@valtimo/components';
 import {FieldsCaseWidgetValue, WidgetFieldsContent} from '@valtimo/dossier';
 import {ButtonModule, IconModule, InputModule, Tab, TabsModule} from 'carbon-components-angular';
-import {debounceTime, map, Subscription} from 'rxjs';
+import {debounceTime, map, Observable, Subscription, tap} from 'rxjs';
 import {WidgetContentComponent} from '../../../models';
 import {WidgetWizardService} from '../../../services';
 import {DossierManagementWidgetFieldsColumnComponent} from './column/dossier-management-widget-fields-column.component';
+import {ActivatedRoute, ParamMap} from '@angular/router';
 
 @Component({
   templateUrl: './dossier-management-widget-fields.component.html',
@@ -90,6 +91,9 @@ export class DossierManagementWidgetFieldsComponent
     )
   );
   public readonly activeTab = signal<number>(0);
+  public readonly documentDefinitionName$: Observable<string> = this.route.paramMap.pipe(
+    map((paramMap: ParamMap) => paramMap.get('name') ?? '')
+  );
 
   private readonly _subscriptions = new Subscription();
   private readonly _contentValid = signal<boolean>(false);
@@ -97,6 +101,7 @@ export class DossierManagementWidgetFieldsComponent
   constructor(
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
+    private readonly route: ActivatedRoute,
     private readonly widgetWizardService: WidgetWizardService
   ) {}
 
