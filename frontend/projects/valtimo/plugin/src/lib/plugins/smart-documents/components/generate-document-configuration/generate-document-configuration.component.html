@@ -68,14 +68,23 @@
     [defaultSelectionId]="obs.prefill?.format"
     [required]="true"
   ></v-select>
+
   <valtimo-carbon-multi-input
     name="templateData"
     [title]="'templateData' | pluginTranslate: pluginId | async"
-    type="keyValue"
+    type="keyValuePathSelector"
     [disabled]="obs.disabled"
     [defaultValues]="obs.prefill?.templateData"
     [margin]="true"
     [required]="true"
     [tooltip]="'templateDataTooltip' | pluginTranslate: pluginId | async"
+    valuePathSelectorNotation="slashes"
+    [fullWidth]="true"
+    [valuePathSelectorPrefixes]="[
+      ValuePathSelectorPrefix.DOC,
+      ValuePathSelectorPrefix.CASE,
+      ValuePathSelectorPrefix.ZAAK,
+    ]"
+    [valuePathSelectorShowDocumentDefinitionSelector]="true"
   ></valtimo-carbon-multi-input>
 </v-form>

@@ -47,6 +47,7 @@ import {
   ComboBoxModule,
   IconModule,
   InputModule,
+  LayerModule,
   LoadingModule,
   ModalModule as CarbonModalModule,
   ProgressIndicatorModule,
@@ -114,6 +115,7 @@ import {FormDisplayConfigurationComponent} from './components/form-display-confi
     SelectModule,
     ToggleModule,
     CarbonMultiInputModule,
+    LayerModule,
   ],
   exports: [
     ProcessLinkComponent,

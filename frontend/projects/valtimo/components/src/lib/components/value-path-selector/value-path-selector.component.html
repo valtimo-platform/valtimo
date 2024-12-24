@@ -25,6 +25,16 @@
   <v-input-label [required]="required" [title]="label" [tooltip]="tooltip"> </v-input-label>
 
   <form [formGroup]="formGroup" class="value-path-selector__form">
+    <cds-toggle
+      data-testid="value-path-selector-toggle"
+      size="sm"
+      [disabled]="obs.disabled"
+      [onText]="'valuePathSelector.dropdown' | translate"
+      [offText]="'valuePathSelector.manual' | translate"
+      [checked]="obs.inputModeIsDropdown"
+      (checkedChange)="onInputModeChange($event)"
+    ></cds-toggle>
+
     @if (obs.inputModeIsDropdown) {
       <ng-container
         *ngIf="
@@ -40,7 +50,8 @@
           [disabled]="
             obs.disabled ||
             docObs.loadingDocumentDefinitionItems ||
-            !docObs.documentDefinitionListItems
+            !docObs.documentDefinitionListItems ||
+            (docObs.documentDefinitionListItems || []).length === 0
           "
           (selected)="onDocumentDefinitionSelected($event)"
           [placeholder]="'valuePathSelector.selectDocDefPlaceholder' | translate"
@@ -52,7 +63,12 @@
       <cds-dropdown
         data-testid="value-path-selector-valuePath"
         [appendInline]="appendInline"
-        [disabled]="obs.disabled || obs.loadingValuePathItems || !obs.valuePathListItems"
+        [disabled]="
+          obs.disabled ||
+          obs.loadingValuePathItems ||
+          !obs.valuePathListItems ||
+          (obs.valuePathListItems || []).length === 0
+        "
         (selected)="onPathSelected($event)"
         [placeholder]="'valuePathSelector.placeholder' | translate"
       >
@@ -66,14 +82,5 @@
         formControlName="selectedPath"
       />
     }
-
-    <cds-toggle
-      data-testid="value-path-selector-toggle"
-      [disabled]="obs.disabled"
-      [onText]="'valuePathSelector.dropdown' | translate"
-      [offText]="'valuePathSelector.manual' | translate"
-      [checked]="obs.inputModeIsDropdown"
-      (checkedChange)="onInputModeChange($event)"
-    ></cds-toggle>
   </form>
 </ng-container>

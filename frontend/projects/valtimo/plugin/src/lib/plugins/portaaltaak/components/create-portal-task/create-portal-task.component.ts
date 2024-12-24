@@ -20,7 +20,7 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {TranslateService} from '@ngx-translate/core';
 import {PluginTranslationService} from '../../../../services';
 import {CreatePortalTaskConfig, FormType, OtherReceiver, Receiver} from '../../models';
-import {SelectItem} from '@valtimo/components';
+import {SelectItem, ValuePathSelectorPrefix} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-create-portal-task',
@@ -55,6 +55,8 @@ export class CreatePortalTaskComponent
     map(value => !!(value?.receiver === 'other'))
   );
   private readonly valid$ = new BehaviorSubject<boolean>(false);
+
+  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   constructor(
     private readonly translateService: TranslateService,

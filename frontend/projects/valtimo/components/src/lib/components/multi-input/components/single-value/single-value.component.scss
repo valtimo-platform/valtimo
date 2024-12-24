@@ -14,26 +14,12 @@
  * limitations under the License.
  */
 
-.label-with-tooltip {
+:host {
   display: flex;
-  align-items: center;
-}
+  flex-direction: row;
+  align-items: flex-end;
 
-.select-label {
-  padding-bottom: 0.5rem;
-  width: 250px;
-}
-
-.hidden-input {
-  display: none;
-}
-
-.cds--text-input__field-wrapper {
-  flex-direction: column;
-}
-
-.modal-buttons-container {
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
+  &.--full-width {
+    width: 100%;
+  }
 }

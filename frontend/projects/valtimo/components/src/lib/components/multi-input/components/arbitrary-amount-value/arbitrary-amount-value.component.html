@@ -14,14 +14,17 @@
   ~ limitations under the License.
   -->
 
-<valtimo-plugin-configuration-container
-  *ngIf="pluginDefinitionKey$ | async as pluginDefinitionKey"
-  [cdsLayer]="1"
-  [pluginDefinitionKey]="pluginDefinitionKey"
-  [prefillConfiguration$]="prefillConfiguration$"
-  [save$]="save$"
-  [disabled$]="disabled$"
-  (valid)="onValid($event)"
-  (configuration)="onFunctionConfiguration($event)"
-  type="configuration"
-></valtimo-plugin-configuration-container>
+@for (_ of amountOfArbitraryValuesArray$ | async; let i = $index; track i) {
+  <div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
+    <cds-label *ngIf="index === 0">{{
+      arbitraryAmountTitles ? arbitraryAmountTitles[i] : ''
+    }}</cds-label>
+
+    <input
+      cdsText
+      [defaultValue]="value ? value['' + i] : ''"
+      [disabled]="disabled"
+      (input)="onInputChange(i, $event.target.value)"
+    />
+  </div>
+}

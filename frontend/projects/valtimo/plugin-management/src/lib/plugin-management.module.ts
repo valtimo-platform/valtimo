@@ -41,6 +41,7 @@ import {
 import {
   ButtonModule as CarbonButtonModule,
   IconModule,
+  LayerModule,
   ModalModule as CarbonModalModule,
 } from 'carbon-components-angular';
 
@@ -73,6 +74,7 @@ import {
     CarbonModalModule,
     IconModule,
     ValtimoCdsModalDirectiveModule,
+    LayerModule,
   ],
   exports: [
     PluginManagementComponent,

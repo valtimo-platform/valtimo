@@ -35,6 +35,7 @@
     [required]="true"
     [clearable]="false"
   ></v-select>
+
   <v-input
     *ngIf="obs.formTypeIsUrl === false"
     name="formTypeId"
@@ -46,6 +47,7 @@
     [tooltip]="'formTypeIdTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
   ></v-input>
+
   <v-input
     *ngIf="obs.formTypeIsUrl"
     name="formTypeUrl"
@@ -57,10 +59,11 @@
     [required]="true"
     [trim]="true"
   ></v-input>
+
   <valtimo-carbon-multi-input
     name="sendData"
     [title]="'sendData' | pluginTranslate: pluginId | async"
-    type="keyValue"
+    type="keyValuePathSelector"
     [disabled]="obs.disabled"
     [defaultValues]="obs.prefill?.sendData"
     [margin]="true"
@@ -68,11 +71,16 @@
     [tooltip]="'sendDataTooltip' | pluginTranslate: pluginId | async"
     [minimumAmountOfRows]="0"
     [initialAmountOfRows]="0"
+    [fullWidth]="true"
+    valuePathSelectorNotation="slashes"
+    [valuePathSelectorPrefixes]="[ValuePathSelectorPrefix.DOC]"
+    [valuePathSelectorShowDocumentDefinitionSelector]="true"
   ></valtimo-carbon-multi-input>
+
   <valtimo-carbon-multi-input
     name="receiveData"
     [title]="'receiveData' | pluginTranslate: pluginId | async"
-    type="keyValue"
+    type="valuePathSelectorValue"
     [disabled]="obs.disabled"
     [defaultValues]="obs.prefill?.receiveData"
     [margin]="true"
@@ -80,7 +88,12 @@
     [tooltip]="'receiveDataTooltip' | pluginTranslate: pluginId | async"
     [minimumAmountOfRows]="0"
     [initialAmountOfRows]="0"
+    [fullWidth]="true"
+    valuePathSelectorNotation="slashes"
+    [valuePathSelectorPrefixes]="[ValuePathSelectorPrefix.DOC]"
+    [valuePathSelectorShowDocumentDefinitionSelector]="true"
   ></valtimo-carbon-multi-input>
+
   <v-select
     [items]="receiverSelectItems$ | async"
     [margin]="true"
@@ -93,6 +106,7 @@
     [required]="true"
     [clearable]="false"
   ></v-select>
+
   <v-input
     *ngIf="obs.receiverIsOther"
     name="identificationKey"
@@ -104,6 +118,7 @@
     [required]="true"
     [trim]="true"
   ></v-input>
+
   <v-input
     *ngIf="obs.receiverIsOther"
     name="identificationValue"
@@ -115,6 +130,7 @@
     [required]="true"
     [trim]="true"
   ></v-input>
+
   <v-input
     name="verloopDurationInDays"
     [title]="'verloopDurationInDays' | pluginTranslate: pluginId | async"

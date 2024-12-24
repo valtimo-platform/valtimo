@@ -92,14 +92,18 @@ export class ProcessLinkService {
     );
   }
 
-  private emptyStringToNull(object: any) {
-    Object.keys(object).forEach(key => {
-      if (typeof object[key] === 'object') {
-        this.emptyStringToNull(object[key]);
-      } else if (object[key] === '') {
-        object[key] = null;
-      }
-    });
+  private emptyStringToNull<T extends Record<string, any>>(object: T): T {
+    if (object && typeof object === 'object') {
+      Object.keys(object).forEach(key => {
+        const typedKey = key as keyof T;
+        const value = object[typedKey];
+        if (typeof value === 'object' && value !== null) {
+          this.emptyStringToNull(value);
+        } else if (value === '') {
+          object[typedKey] = null as any;
+        }
+      });
+    }
     return object;
   }
 

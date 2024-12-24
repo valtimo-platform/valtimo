@@ -14,14 +14,24 @@
   ~ limitations under the License.
   -->
 
-<valtimo-plugin-configuration-container
-  *ngIf="pluginDefinitionKey$ | async as pluginDefinitionKey"
-  [cdsLayer]="1"
-  [pluginDefinitionKey]="pluginDefinitionKey"
-  [prefillConfiguration$]="prefillConfiguration$"
-  [save$]="save$"
-  [disabled$]="disabled$"
-  (valid)="onValid($event)"
-  (configuration)="onFunctionConfiguration($event)"
-  type="configuration"
-></valtimo-plugin-configuration-container>
+<div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
+  <cds-label *ngIf="index === 0 && keyColumnTitle">{{ keyColumnTitle }}</cds-label>
+
+  <input
+    cdsText
+    [defaultValue]="value.key"
+    [disabled]="disabled"
+    (input)="onInputChange('key', $event.target.value)"
+  />
+</div>
+
+<div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
+  <cds-label *ngIf="index === 0 && valueColumnTitle">{{ valueColumnTitle }}</cds-label>
+
+  <input
+    cdsText
+    [defaultValue]="value.value"
+    [disabled]="disabled"
+    (input)="onInputChange('value', $event.target.value)"
+  />
+</div>
