@@ -136,11 +136,14 @@ export class FormViewModelComponent implements OnInit {
       const defaultOptions = {
         ...options,
         language,
-        ...(formioTranslations === 'object' && {
-          i18n: {
-            [language]: this.stateService.flattenTranslationsObject(formioTranslations),
-          },
-        }),
+        ...(typeof formioTranslations === 'object'
+          ? {
+            language,
+            i18n: {
+              [language]: this.stateService.flattenTranslationsObject(formioTranslations),
+            },
+          }
+          : {}),
       };
 
       return deepmerge(defaultOptions, overrideOptions);
