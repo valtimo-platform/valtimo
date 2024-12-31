@@ -27,4 +27,8 @@
       (input)="onInputChange(i, $event.target.value)"
     />
   </div>
+
+  @if (((amountOfArbitraryValuesArray$ | async) || []).length - 1 !== i) {
+    <div class="v-multi-input__separator"></div>
+  }
 }

@@ -29,7 +29,12 @@ import {FormBuilder, Validators} from '@angular/forms';
 import {CaseCountConfiguration} from '../../models';
 import {DocumentService} from '@valtimo/document';
 import {ListItem} from 'carbon-components-angular';
-import {ListItemWithId, MultiInputKeyValue, MultiInputValues} from '@valtimo/components';
+import {
+  ListItemWithId,
+  MultiInputKeyValue,
+  MultiInputValues,
+  ValuePathSelectorPrefix,
+} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 import {WidgetTranslationService} from '../../../../services';
 
@@ -56,11 +61,11 @@ export class CaseCountConfigurationComponent
     }
   }
 
-  private readonly _selectedDocumentDefinition$ = new BehaviorSubject<string>('');
+  public readonly selectedDocumentDefinition$ = new BehaviorSubject<string>('');
 
   public readonly documentItems$: Observable<Array<ListItem>> = combineLatest([
     this.documentService.getAllDefinitions(),
-    this._selectedDocumentDefinition$,
+    this.selectedDocumentDefinition$,
   ]).pipe(
     map(([documentDefinitions, selectedDocumentDefintion]) =>
       documentDefinitions.content.map(definition => ({
@@ -123,6 +128,8 @@ export class CaseCountConfigurationComponent
     ConfigurationOutput<CaseCountConfiguration>
   >();
 
+  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
+
   private _subscriptions = new Subscription();
 
   constructor(
@@ -145,7 +152,7 @@ export class CaseCountConfigurationComponent
       return;
     }
 
-    this._selectedDocumentDefinition$.next(documentDefinitionItem?.item?.content);
+    this.selectedDocumentDefinition$.next(documentDefinitionItem?.item?.content);
     this.documentDefinition.setValue(documentDefinitionItem?.item?.content);
   }
 

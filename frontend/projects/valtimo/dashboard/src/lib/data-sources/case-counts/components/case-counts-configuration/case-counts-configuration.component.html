@@ -20,6 +20,7 @@
     documentItems: documentItems$ | async,
     operatorItems: operatorItems$,
     queryItemsValue: queryItemsValue$ | async,
+    selectedDocumentDefinition: selectedDocumentDefinition$ | async,
   } as obs"
   [formGroup]="form"
 >
@@ -60,6 +61,7 @@
         </v-input>
 
         <valtimo-carbon-multi-input
+          type="valuePathSelectorDropdownValue"
           [disabled]="formDisabled"
           [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
           [defaultValues]="obs.queryItemsValue[i]?.queryConditions"
@@ -70,7 +72,10 @@
           [keyColumnTitle]="'path' | widgetTranslate: dataSourceKey | async"
           [minimumAmountOfRows]="1"
           [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
-          type="keyDropdownValue"
+          valuePathSelectorNotation="dots"
+          [valuePathSelectorPrefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+          [valuePathSelectorShowDocumentDefinitionSelector]="false"
+          [valuePathSelectorDocumentDefinitionName]="obs.selectedDocumentDefinition"
           (valueChange)="conditionsValueChange(i, $event)"
         ></valtimo-carbon-multi-input>
       </div>

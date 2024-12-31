@@ -124,6 +124,24 @@
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
           ></valtimo-value-path-selector-value>
         }
+        @case ('valuePathSelectorDropdownValue') {
+          <valtimo-value-path-selector-dropdown-value
+            [keyColumnTitle]="keyColumnTitle"
+            [dropdownColumnTitle]="dropdownColumnTitle"
+            [valueColumnTitle]="valueColumnTitle"
+            [index]="i"
+            [value]="value"
+            [fullWidth]="fullWidth"
+            [disabled]="disabled"
+            [documentDefinitionName]="valuePathSelectorDocumentDefinitionName"
+            [prefixes]="valuePathSelectorPrefixes"
+            [dropdownItems$]="getDropdownItemsForRow(i)"
+            [dropdownWidth]="dropdownWidth"
+            [showDocumentDefinitionSelector]="valuePathSelectorShowDocumentDefinitionSelector"
+            [notation]="valuePathSelectorNotation"
+            (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+          ></valtimo-value-path-selector-dropdown-value>
+        }
       }
 
       <button

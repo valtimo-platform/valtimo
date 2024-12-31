@@ -44,7 +44,7 @@ import {
 } from '../../models';
 import {DocumentService} from '@valtimo/document';
 import {ListItem} from 'carbon-components-angular';
-import {ListItemWithId, MultiInputValues} from '@valtimo/components';
+import {ListItemWithId, MultiInputValues, ValuePathSelectorPrefix} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 import {WidgetTranslationService} from '../../../../services';
 import {isEqual} from 'lodash';
@@ -98,11 +98,11 @@ export class CaseGroupByConfigurationComponent
     }
   }
 
-  private readonly _selectedDocumentDefinition$ = new BehaviorSubject<string>('');
+  public readonly selectedDocumentDefinition$ = new BehaviorSubject<string>('');
 
   public readonly documentItems$: Observable<Array<ListItem>> = combineLatest([
     this.documentService.getAllDefinitions(),
-    this._selectedDocumentDefinition$,
+    this.selectedDocumentDefinition$,
   ]).pipe(
     map(([documentDefinitions, selectedDocumentDefintion]) =>
       documentDefinitions.content.map(definition => ({
@@ -153,6 +153,8 @@ export class CaseGroupByConfigurationComponent
     ConfigurationOutput<CaseGroupByConfiguration>
   >();
 
+  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
+
   private _subscriptions = new Subscription();
 
   constructor(
@@ -171,12 +173,14 @@ export class CaseGroupByConfigurationComponent
   }
 
   public documentDefinitionSelected(documentDefinitionItem: ListItem): void {
-    if (!documentDefinitionItem) {
+    const documentDefinitionName = documentDefinitionItem?.item?.content;
+
+    if (!documentDefinitionName) {
       return;
     }
 
-    this._selectedDocumentDefinition$.next(documentDefinitionItem?.item?.content);
-    this.documentDefinition.setValue(documentDefinitionItem?.item?.content);
+    this.selectedDocumentDefinition$.next(documentDefinitionName);
+    this.documentDefinition.setValue(documentDefinitionName);
   }
 
   public conditionsValueChange(values: MultiInputValues): void {

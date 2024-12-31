@@ -14,15 +14,18 @@
   ~ limitations under the License.
   -->
 
-<div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
+<div class="v-multi-input__input path-selector" [ngClass]="{'--full-width': fullWidth}">
   <cds-label *ngIf="index === 0 && keyColumnTitle">{{ keyColumnTitle }}</cds-label>
 
-  <input
-    cdsText
-    [defaultValue]="value.key"
+  <valtimo-value-path-selector
+    [documentDefinitionName]="documentDefinitionName"
+    [prefixes]="prefixes"
+    [showDocumentDefinitionSelector]="showDocumentDefinitionSelector"
     [disabled]="disabled"
-    (input)="onInputChange('key', $event.target.value)"
-  />
+    [defaultValue]="value?.key"
+    [notation]="notation"
+    (valueChangeEvent)="onInputChange('key', $event)"
+  ></valtimo-value-path-selector>
 </div>
 
 <div class="v-multi-input__separator"></div>

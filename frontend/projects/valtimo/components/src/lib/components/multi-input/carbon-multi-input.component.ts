@@ -206,7 +206,7 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   private getMappedValue(valueToMap: MultiInputKeyValue): MultiInputKeyValue | string {
     if (this.type === 'keyValue' || this.type === 'keyValuePathSelector') {
       return {key: valueToMap.key, value: valueToMap.value};
-    } else if (this.type === 'keyDropdownValue') {
+    } else if (this.type === 'keyDropdownValue' || this.type === 'valuePathSelectorDropdownValue') {
       return {key: valueToMap.key, value: valueToMap.value, dropdown: valueToMap.dropdown};
     } else if (this.type === 'arbitraryAmount') {
       const objCopy = {...valueToMap};
@@ -244,6 +244,7 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
       case 'keyValuePathSelector':
         return !!((value as MultiInputKeyValue).value || (value as MultiInputKeyValue).key);
       case 'keyDropdownValue':
+      case 'valuePathSelectorDropdownValue':
         return !!(
           (value as MultiInputKeyValue).value &&
           (value as MultiInputKeyValue).key &&
