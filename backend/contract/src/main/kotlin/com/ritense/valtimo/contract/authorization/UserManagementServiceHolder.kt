@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
-package com.ritense.document.dashboard
+package com.ritense.valtimo.contract.authorization
 
-import com.ritense.valtimo.contract.dashboard.QueryCondition
+import com.ritense.valtimo.contract.authentication.UserManagementService
 
-data class DocumentCountsQueryItem(
-    val label: String,
-    val queryConditions: List<QueryCondition<*>>
-)
+class UserManagementServiceHolder(userManagementService: UserManagementService) {
 
-data class DocumentCountsDataSourceProperties(
-    val documentDefinition: String,
-    val queryItems: List<DocumentCountsQueryItem>
-)
+    init {
+        Companion.userManagementService = userManagementService
+    }
+
+    companion object {
+        private var userManagementService: UserManagementService? = null
+
+        @JvmStatic
+        val currentInstance: UserManagementService
+            get() = userManagementService!!
+    }
+}

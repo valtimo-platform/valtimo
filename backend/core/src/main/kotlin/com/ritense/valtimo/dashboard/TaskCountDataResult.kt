@@ -14,21 +14,12 @@
  * limitations under the License.
  */
 
-package com.ritense.authorization
+package com.ritense.valtimo.dashboard
 
-import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.dashboard.feature.HasNumberValue
+import com.ritense.valtimo.contract.dashboard.feature.HasTotal
 
-class UserManagementServiceHolder(userManagementService: UserManagementService) {
-
-    init {
-        Companion.userManagementService = userManagementService
-    }
-
-    companion object {
-        private var userManagementService: UserManagementService? = null
-
-        @JvmStatic
-        val currentInstance: UserManagementService
-            get() = userManagementService!!
-    }
-}
+class TaskCountDataResult(
+    override val value: Long,
+    override val total: Long,
+) : HasNumberValue, HasTotal

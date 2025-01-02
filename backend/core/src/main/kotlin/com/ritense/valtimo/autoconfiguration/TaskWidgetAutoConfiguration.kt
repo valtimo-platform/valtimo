@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
-package com.ritense.document.autoconfiguration
+package com.ritense.valtimo.autoconfiguration
 
-import com.ritense.document.dashboard.DocumentWidgetDataSource
-import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
-import com.ritense.valtimo.contract.database.QueryDialectHelper
-import jakarta.persistence.EntityManager
+import com.ritense.valtimo.camunda.repository.CamundaTaskRepository
+import com.ritense.valtimo.dashboard.TaskWidgetDataSource
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 
 @AutoConfiguration
-class DocumentWidgetAutoConfiguration {
-
+class TaskWidgetAutoConfiguration {
     @Bean
-    @ConditionalOnMissingBean(DocumentWidgetDataSource::class)
-    fun documentWidgetDataSource(
-        documentRepository: JsonSchemaDocumentRepository,
-        queryDialectHelper: QueryDialectHelper,
-        entityManager: EntityManager
-    ) = DocumentWidgetDataSource(documentRepository, queryDialectHelper, entityManager)
+    @ConditionalOnMissingBean(TaskWidgetDataSource::class)
+    fun taskWidgetDataSource(
+        taskRepository: CamundaTaskRepository
+    ) = TaskWidgetDataSource(taskRepository)
 }

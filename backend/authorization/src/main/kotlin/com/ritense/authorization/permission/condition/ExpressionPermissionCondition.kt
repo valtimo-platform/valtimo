@@ -22,6 +22,7 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
 import com.ritense.authorization.permission.PermissionView
 import com.ritense.authorization.permission.condition.ExpressionPermissionCondition.Companion.EXPRESSION
+import com.ritense.valtimo.contract.authorization.CurrentUserExpressionHandler
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valtimo.contract.json.MapperSingleton
 import jakarta.persistence.criteria.AbstractQuery
@@ -75,7 +76,7 @@ data class ExpressionPermissionCondition<V>(
         queryDialectHelper: QueryDialectHelper
     ): Predicate {
         val path: Path<Any>? = createDatabaseObjectPath(field, root)
-        val resolvedValue = PermissionConditionValueResolver.resolveValue(value)
+        val resolvedValue = CurrentUserExpressionHandler.resolveValue(value)
 
         // we need an exception for json contains
         if (operator == PermissionConditionOperator.LIST_CONTAINS) {
@@ -118,10 +119,10 @@ data class ExpressionPermissionCondition<V>(
     private fun resolveValue(): Any? {
         return if (this.value is List<*>) {
             this.value.map {
-                PermissionConditionValueResolver.resolveValue(it)
+                CurrentUserExpressionHandler.resolveValue(it)
             }
         } else {
-            PermissionConditionValueResolver.resolveValue(this.value)
+            CurrentUserExpressionHandler.resolveValue(this.value)
         }
     }
 

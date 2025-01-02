@@ -14,16 +14,10 @@
  * limitations under the License.
  */
 
-package com.ritense.document.dashboard
+package com.ritense.valtimo.contract.dashboard
 
-import com.ritense.valtimo.contract.dashboard.QueryCondition
+import java.time.LocalDateTime
 
-data class DocumentCountsQueryItem(
-    val label: String,
-    val queryConditions: List<QueryCondition<*>>
-)
-
-data class DocumentCountsDataSourceProperties(
-    val documentDefinition: String,
-    val queryItems: List<DocumentCountsQueryItem>
-)
+class WidgetDataSourceSpelEvaluationContext {
+    public val localDateTimeNow = LocalDateTime.now()
+}

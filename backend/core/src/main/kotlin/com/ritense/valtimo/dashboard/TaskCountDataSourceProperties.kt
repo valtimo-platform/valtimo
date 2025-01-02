@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-package com.ritense.document.dashboard
+package com.ritense.valtimo.dashboard
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.ritense.valtimo.contract.repository.ExpressionOperator
+import com.ritense.valtimo.contract.dashboard.QueryCondition
 
-data class QueryCondition<T : Comparable<T>>(
-    val queryPath: String,
-    val queryOperator: ExpressionOperator,
-    @JsonDeserialize(using = ComparableDeserializer::class)
-    val queryValue: T
+data class TaskCountDataSourceProperties(
+    val queryConditions: List<QueryCondition<*>>? = listOf()
 )

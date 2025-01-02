@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-package com.ritense.authorization.permission.condition
+package com.ritense.valtimo.contract.authorization
 
-import PermissionConditionKey
-import com.ritense.authorization.UserManagementServiceHolder
-
-object PermissionConditionValueResolver {
+object CurrentUserExpressionHandler {
 
     fun <V> resolveValue(value: V?): Any? {
         if (value is String) {
