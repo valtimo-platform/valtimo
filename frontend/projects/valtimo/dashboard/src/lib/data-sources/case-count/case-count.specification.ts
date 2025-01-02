@@ -36,7 +36,7 @@ export const caseCountDataSourceSpecification: DataSourceSpecification = {
       operator: 'Operator',
       value: 'Wert',
       conditions: 'Bedingungen',
-      conditionsHelperText: `Geben Sie optionale Bedingungen zum Abrufen der Anzahl der Fälle für den ausgewählten Falltyp an. ${CONDITIONS_HELPER_TEXTS.DE}`,
+      conditionsHelperText: `Geben Sie optionale Bedingungen zum Abrufen der Anzahl der Fälle für den ausgewählten Falltyp an. ${CONDITIONS_HELPER_TEXTS.DE()}`,
       addCondition: 'Bedingung hinzufügen',
     },
     en: {
@@ -53,7 +53,7 @@ export const caseCountDataSourceSpecification: DataSourceSpecification = {
       operator: 'Operator',
       value: 'Value',
       conditions: 'Conditions',
-      conditionsHelperText: `Specify optional conditions for retrieving the number of cases for the selected case type. ${CONDITIONS_HELPER_TEXTS.EN}`,
+      conditionsHelperText: `Specify optional conditions for retrieving the number of cases for the selected case type. ${CONDITIONS_HELPER_TEXTS.EN()}`,
       addCondition: 'Add condition',
     },
     nl: {
@@ -70,7 +70,7 @@ export const caseCountDataSourceSpecification: DataSourceSpecification = {
       operator: 'Operator',
       value: 'Waarde',
       conditions: 'Condities',
-      conditionsHelperText: `Geef optionele condities op voor het ophalen van het aantal zaken voor het geselecteerde dossiertype. ${CONDITIONS_HELPER_TEXTS.NL}}`,
+      conditionsHelperText: `Geef optionele condities op voor het ophalen van het aantal zaken voor het geselecteerde dossiertype. ${CONDITIONS_HELPER_TEXTS.NL()}}`,
       addCondition: 'Conditie toevoegen',
     },
   },

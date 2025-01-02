@@ -37,7 +37,7 @@ export const caseGroupByDataSourceSpecification: DataSourceSpecification = {
       operator: 'Operator',
       value: 'Wert',
       conditions: 'Bedingungen',
-      conditionsHelperText: `Geben Sie optionale Bedingungen an, um die Gruppierung für den ausgewählten Falltyp abzurufen. ${CONDITIONS_HELPER_TEXTS.DE}`,
+      conditionsHelperText: `Geben Sie optionale Bedingungen an, um die Gruppierung für den ausgewählten Falltyp abzurufen. ${CONDITIONS_HELPER_TEXTS.DE()}`,
       addCondition: 'Bedingung hinzufügen',
       enum: 'Anzeige der Werte',
       enumHelperText:
@@ -60,7 +60,7 @@ export const caseGroupByDataSourceSpecification: DataSourceSpecification = {
       operator: 'Operator',
       value: 'Value',
       conditions: 'Conditions',
-      conditionsHelperText: `Specify optional conditions for retrieving the grouping for the selected case type. ${CONDITIONS_HELPER_TEXTS.EN}`,
+      conditionsHelperText: `Specify optional conditions for retrieving the grouping for the selected case type. ${CONDITIONS_HELPER_TEXTS.EN()}`,
       addCondition: 'Add condition',
       enum: 'Display of values',
       enumHelperText:
@@ -83,7 +83,7 @@ export const caseGroupByDataSourceSpecification: DataSourceSpecification = {
       operator: 'Operator',
       value: 'Waarde',
       conditions: 'Condities',
-      conditionsHelperText: `Geef optionele condities op voor het ophalen van de groepering voor het geselecteerde dossiertype. ${CONDITIONS_HELPER_TEXTS.NL}`,
+      conditionsHelperText: `Geef optionele condities op voor het ophalen van de groepering voor het geselecteerde dossiertype. ${CONDITIONS_HELPER_TEXTS.NL()}`,
       addCondition: 'Conditie toevoegen',
       enum: 'Weergave van waardes',
       enumHelperText:

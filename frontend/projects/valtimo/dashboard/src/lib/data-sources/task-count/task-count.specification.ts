@@ -15,17 +15,15 @@
  */
 
 import {DataSourceSpecification} from '../../models';
-import {CaseCountsConfigurationComponent} from './components';
 import {CONDITIONS_HELPER_TEXTS} from '../shared';
+import {TaskCountConfigurationComponent} from './components';
 
-export const caseCountsDataSourceSpecification: DataSourceSpecification = {
-  dataSourceKey: 'case-counts',
-  configurationComponent: CaseCountsConfigurationComponent,
+export const taskCountSpecification: DataSourceSpecification = {
+  dataSourceKey: 'task-count',
+  configurationComponent: TaskCountConfigurationComponent,
   translations: {
     de: {
-      title: 'Mehrere Fallanzahllen',
-      documentDefinition: 'Falltyp (erforderlich)',
-      documentDefinitionHelperText: 'Der Falltyp, für den die Anzahllen abgeruft wirden',
+      title: 'Aufgabenanzahl',
       '!=': 'Nicht gleichzusetzen mit',
       '==': 'Gleich',
       '>': 'Größer als',
@@ -35,15 +33,12 @@ export const caseCountsDataSourceSpecification: DataSourceSpecification = {
       path: 'Pfad',
       operator: 'Operator',
       value: 'Wert',
-      counts: 'Anzahllen',
-      countsHelperText: `Geben Sie eine oder mehrere Bedingungen für jede anzuzeigende Zählung an. Konfigurieren Sie mindestens zwei Zählungen und mindestens eine Bedingung pro Zählung. ${CONDITIONS_HELPER_TEXTS.DE()}`,
+      conditions: 'Bedingungen',
+      conditionsHelperText: `Geben Sie optionale Bedingungen zum Abrufen der Anzahl der Aufgaben. ${CONDITIONS_HELPER_TEXTS.DE('task:assignee')}`,
       addCondition: 'Bedingung hinzufügen',
-      countTitle: 'Anzahltitel',
     },
     en: {
-      title: 'Multiple case counts',
-      documentDefinition: 'Case type (required)',
-      documentDefinitionHelperText: 'The case type for which the counts are retrieved',
+      title: 'Task count',
       '!=': 'Not equal to',
       '==': 'Equal to',
       '>': 'Greater than',
@@ -53,15 +48,12 @@ export const caseCountsDataSourceSpecification: DataSourceSpecification = {
       path: 'Path (required)',
       operator: 'Operator',
       value: 'Value',
-      counts: 'Counts',
-      countsHelperText: `Specify one or more conditions for each count that should be displayed. Configure at least two counts and at least one condition per count. ${CONDITIONS_HELPER_TEXTS.EN()}`,
+      conditions: 'Conditions',
+      conditionsHelperText: `Specify optional conditions for retrieving the number of tasks. ${CONDITIONS_HELPER_TEXTS.EN('task:assignee')}`,
       addCondition: 'Add condition',
-      countTitle: 'Count title',
     },
     nl: {
-      title: 'Meerdere dossieraantallen',
-      documentDefinition: 'Dossiertype (vereist)',
-      documentDefinitionHelperText: 'Het dossiertype waarvoor de aantallen worden opgehaald',
+      title: 'Aantal taken',
       '!=': 'Niet gelijk aan',
       '==': 'Gelijk aan',
       '>': 'Groter dan',
@@ -71,10 +63,9 @@ export const caseCountsDataSourceSpecification: DataSourceSpecification = {
       path: 'Pad',
       operator: 'Operator',
       value: 'Waarde',
-      counts: 'Aantallen',
-      countsHelperText: `Geef een of meer condities op voor elk aantal dat moet worden weergegeven. Configureer minimaal twee aantallen en minimaal één conditie per aantal. ${CONDITIONS_HELPER_TEXTS.NL()}`,
+      conditions: 'Condities',
+      conditionsHelperText: `Geef optionele condities op voor het ophalen van het aantal taken. ${CONDITIONS_HELPER_TEXTS.NL('task:assignee')}}`,
       addCondition: 'Conditie toevoegen',
-      countTitle: 'Aantaltitel',
     },
   },
 };

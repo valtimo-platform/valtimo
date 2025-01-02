@@ -23,6 +23,7 @@ import {
   ListModule,
   RenderInPageHeaderDirectiveModule,
   SpinnerModule,
+  ValtimoCdsModalDirectiveModule,
 } from '@valtimo/components';
 import {
   ButtonModule,
@@ -67,6 +68,7 @@ import {WidgetConfigurationContainerComponent} from './components/widget-configu
     WidgetTranslatePipeModule,
     CarbonListModule,
     LayerModule,
+    ValtimoCdsModalDirectiveModule,
   ],
   exports: [],
 })

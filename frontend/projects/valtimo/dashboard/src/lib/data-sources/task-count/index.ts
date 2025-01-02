@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export * from './case-count';
-export * from './case-counts';
-export * from './case-group-by';
-export * from './task-count';
+export * from './components';
+export * from './models';
+export * from './task-count.module';
+export * from './task-count.specification';

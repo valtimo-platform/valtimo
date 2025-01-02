@@ -15,9 +15,12 @@
  */
 
 const CONDITIONS_HELPER_TEXTS = {
-  EN: "For example: 'case:createdBy', 'Not equal to', 'test@test.com'. To compare against empty values, you can use '${null}' as a value. To compare with the current date, use '${localDateTimeNow}' as a value. Additionally, logic such as '${localDateTimeNow.minusWeeks(2)}' is supported. The placeholders '${currentUserId}', '${currentUserEmail}', and '${currentUserIdentifier}' enable the display of personalized information for the current dashboard user.",
-  NL: 'Bijvoorbeeld: ‘case:createdBy’, ‘Not equal to’, ‘test@test.com’. Om te vergelijken met lege waarden, kun je ‘${null}’ gebruiken als waarde. Om te vergelijken met de huidige datum, gebruik je ‘${localDateTimeNow}’ als waarde. Hier wordt logica zoals ‘${localDateTimeNow.minusWeeks(2)}’ ondersteund. De placeholders ‘${currentUserId}’, ‘${currentUserEmail}’ en ‘${currentUserIdentifier}’ maken het mogelijk om gepersonaliseerde informatie weer te geven voor de huidige dashboardgebruiker.',
-  DE: 'Zum Beispiel: ‘case:createdBy’, ‘Not equal to’, ‘test@test.com’. Um mit leeren Werten zu vergleichen, kann ‘${null}’ als Wert verwendet werden. Um mit dem aktuellen Datum zu vergleichen, kann ‘${localDateTimeNow}’ als Wert verwendet werden. Zusätzlich wird Logik wie ‘${localDateTimeNow.minusWeeks(2)}’ unterstützt. Die Platzhalter ‘${currentUserId}’, ‘${currentUserEmail}’ und ‘${currentUserIdentifier}’ ermöglichen die Anzeige personalisierter Informationen für den aktuellen Dashboard-Benutzer.',
+  DE: (example = 'case:createdBy') =>
+    `Zum Beispiel: ‘${example}’, ‘Not equal to’, ‘test@test.com’. Um mit leeren Werten zu vergleichen, kann ‘\${null}’ als Wert verwendet werden. Um mit dem aktuellen Datum zu vergleichen, kann ‘\${localDateTimeNow}’ als Wert verwendet werden. Zusätzlich wird Logik wie ‘\${localDateTimeNow.minusWeeks(2)}’ unterstützt. Die Platzhalter ‘\${currentUserId}’, ‘\${currentUserEmail}’ und ‘\${currentUserIdentifier}’ ermöglichen die Anzeige personalisierter Informationen für den aktuellen Dashboard-Benutzer.`,
+  NL: (example = 'case:createdBy') =>
+    `Bijvoorbeeld: ‘${example}’, ‘Not equal to’, ‘test@test.com’. Om te vergelijken met lege waarden, kun je ‘\${null}’ gebruiken als waarde. Om te vergelijken met de huidige datum, gebruik je ‘\${localDateTimeNow}’ als waarde. Hier wordt logica zoals ‘\${localDateTimeNow.minusWeeks(2)}’ ondersteund. De placeholders ‘\${currentUserId}’, ‘\${currentUserEmail}’ en ‘\${currentUserIdentifier}’ maken het mogelijk om gepersonaliseerde informatie weer te geven voor de huidige dashboardgebruiker.`,
+  EN: (example = 'case:createdBy') =>
+    `For example: '${example}', 'Not equal to', 'test@test.com'. To compare against empty values, you can use '\${null}' as a value. To compare with the current date, use '\${localDateTimeNow}' as a value. Additionally, logic such as '\${localDateTimeNow.minusWeeks(2)}' is supported. The placeholders '\${currentUserId}', '\${currentUserEmail}', and '\${currentUserIdentifier}' enable the display of personalized information for the current dashboard user.`,
 };
 
 export {CONDITIONS_HELPER_TEXTS};

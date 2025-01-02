@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-export * from './case-count';
-export * from './case-counts';
-export * from './case-group-by';
-export * from './task-count';
+::ng-deep .task-count-configuration-form {
+  .conditions-label {
+    margin-bottom: 16px;
+  }
+
+  .conditions-multi-input .cds--form__helper-text {
+    font-style: italic;
+  }
+}
