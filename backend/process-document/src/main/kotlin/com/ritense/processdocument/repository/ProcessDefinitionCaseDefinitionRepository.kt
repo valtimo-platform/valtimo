@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.ritense.document.domain.sequence;
+package com.ritense.processdocument.repository
 
-import com.ritense.document.domain.DocumentDefinition;
+import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
+import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinitionId
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import org.springframework.data.jpa.repository.JpaRepository
 
-public interface DocumentDefinitionSequenceRecord {
-
-    long sequence();
-
-    void increment();
-
+interface ProcessDefinitionCaseDefinitionRepository:
+    JpaRepository<ProcessDefinitionCaseDefinition, ProcessDefinitionCaseDefinitionId> {
+    fun findByCaseDefinitionId(caseDefinitionId: CaseDefinitionId): List<ProcessDefinitionCaseDefinition>
 }

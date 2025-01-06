@@ -27,6 +27,7 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
 import com.ritense.document.domain.impl.JsonSchemaRelatedFile;
 import com.ritense.document.service.DocumentSequenceGeneratorService;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -42,19 +43,23 @@ public abstract class BaseTest {
     }
 
     protected JsonSchemaDocumentDefinition definition() {
-        final var jsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.newId("house");
+        final var jsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.of("house", caseDefinitionId());
         final var schema = JsonSchema.fromResourceUri(path(jsonSchemaDocumentDefinitionId.name()));
         return new JsonSchemaDocumentDefinition(jsonSchemaDocumentDefinitionId, schema);
     }
 
     protected JsonSchemaDocumentDefinition definitionOf(String name) {
-        final var documentDefinitionName = JsonSchemaDocumentDefinitionId.newId(name);
+        final var documentDefinitionName = JsonSchemaDocumentDefinitionId.of(name, caseDefinitionId());
         final var schema = JsonSchema.fromResourceUri(path(documentDefinitionName.name()));
         return new JsonSchemaDocumentDefinition(documentDefinitionName, schema);
     }
 
+    protected CaseDefinitionId caseDefinitionId() {
+        return mock(CaseDefinitionId.class);
+    }
+
     protected JsonSchemaDocumentDefinition definitionOf(String name, long version, String schemaPath) {
-        final var documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId(name, version);
+        final var documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId(name, caseDefinitionId());
         final var schema = JsonSchema.fromResourceUri(URI.create("config/document/definition/" + schemaPath));
         return new JsonSchemaDocumentDefinition(documentDefinitionId, schema);
     }

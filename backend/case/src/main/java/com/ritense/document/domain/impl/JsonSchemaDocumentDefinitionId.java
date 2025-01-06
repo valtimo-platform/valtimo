@@ -56,7 +56,15 @@ public class JsonSchemaDocumentDefinitionId extends AbstractId<JsonSchemaDocumen
         assertArgumentNotNull(caseDefinitionId, "CaseDefinitionId is required");
     }
 
+    /*
+     * @Deprecated This method is deprecated and should not be used. Use `of(String, CaseDefinitionId)` instead.
+     */
+    @Deprecated()
     public static JsonSchemaDocumentDefinitionId existingId(String name, CaseDefinitionId caseDefinitionId) {
+        return new JsonSchemaDocumentDefinitionId(name, caseDefinitionId);
+    }
+
+    public static JsonSchemaDocumentDefinitionId of(String name, CaseDefinitionId caseDefinitionId) {
         return new JsonSchemaDocumentDefinitionId(name, caseDefinitionId);
     }
 

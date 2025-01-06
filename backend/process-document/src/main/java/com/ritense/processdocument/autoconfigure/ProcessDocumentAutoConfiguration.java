@@ -18,7 +18,6 @@ package com.ritense.processdocument.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.authorization.AuthorizationService;
-import com.ritense.document.repository.DocumentDefinitionRepository;
 import com.ritense.document.service.DocumentDefinitionService;
 import com.ritense.document.service.DocumentService;
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService;
@@ -31,7 +30,6 @@ import com.ritense.processdocument.domain.impl.listener.UndeployDocumentDefiniti
 import com.ritense.processdocument.domain.listener.StartEventFromCallActivityListener;
 import com.ritense.processdocument.domain.listener.StartEventListener;
 import com.ritense.processdocument.repository.DocumentDefinitionProcessLinkRepository;
-import com.ritense.processdocument.repository.ProcessDocumentDefinitionRepository;
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository;
 import com.ritense.processdocument.resolver.DocumentJsonValueResolverFactory;
 import com.ritense.processdocument.resolver.DocumentTableValueResolver;
@@ -87,10 +85,7 @@ public class ProcessDocumentAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ProcessDocumentAssociationService.class)
     public CamundaProcessJsonSchemaDocumentAssociationService processDocumentAssociationService(
-        ProcessDocumentDefinitionRepository processDocumentDefinitionRepository,
         ProcessDocumentInstanceRepository processDocumentInstanceRepository,
-        DocumentDefinitionRepository documentDefinitionRepository,
-        DocumentDefinitionService documentDefinitionService,
         CamundaRepositoryService repositoryService,
         RuntimeService runtimeService,
         HistoryService historyService,
@@ -99,10 +94,7 @@ public class ProcessDocumentAutoConfiguration {
         UserManagementService userManagementService
     ) {
         return new CamundaProcessJsonSchemaDocumentAssociationService(
-            processDocumentDefinitionRepository,
             processDocumentInstanceRepository,
-            documentDefinitionRepository,
-            documentDefinitionService,
             repositoryService,
             runtimeService,
             historyService,

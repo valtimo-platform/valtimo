@@ -234,9 +234,8 @@ class JsonSchemaDocumentDefinitionResourceTest extends BaseTest {
     @Test
     void shouldReturnSingleDefinitionRecordByNameAndVersion() throws Exception {
         String definitionName = definition.getId().name();
-        long definitionVersion = definition.id().version();
-        when(documentDefinitionService.findByNameAndVersion(definitionName, definitionVersion)).thenReturn(Optional.of(definition));
-        mockMvc.perform(get("/api/management/v1/document-definition/{name}/version/{version}", definitionName, definitionVersion))
+        when(documentDefinitionService.findByNameAndVersion(definitionName, 1)).thenReturn(Optional.of(definition));
+        mockMvc.perform(get("/api/management/v1/document-definition/{name}/version/{version}", definitionName, 1))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().contentType(APPLICATION_JSON_UTF8_VALUE))
@@ -246,9 +245,8 @@ class JsonSchemaDocumentDefinitionResourceTest extends BaseTest {
     @Test
     void shouldReturnNoDefinitionRecordByNameAndVersion() throws Exception {
         String definitionName = definition.getId().name();
-        long definitionVersion = 5;
-        when(documentDefinitionService.findByNameAndVersion(definitionName, definition.getId().version())).thenReturn(Optional.of(definition));
-        mockMvc.perform(get("/api/management/v1/document-definition/{name}/version/{version}", definitionName, definitionVersion))
+        when(documentDefinitionService.findByNameAndVersion(definitionName, 1)).thenReturn(Optional.empty());
+        mockMvc.perform(get("/api/management/v1/document-definition/{name}/version/{version}", definitionName, 1))
             .andDo(print())
             .andExpect(status().isNotFound());
     }

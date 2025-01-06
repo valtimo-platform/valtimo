@@ -13,15 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.ritense.processdocument.domain
 
-package com.ritense.document.domain.sequence;
+import jakarta.persistence.Column
+import jakarta.persistence.EmbeddedId
+import jakarta.persistence.Entity
+import jakarta.persistence.Table
 
-import com.ritense.document.domain.DocumentDefinition;
+@Entity
+@Table(name = "process_definition_case_definition")
+class ProcessDefinitionCaseDefinition(
+    @EmbeddedId
+    val id: ProcessDefinitionCaseDefinitionId,
 
-public interface DocumentDefinitionSequenceRecord {
+    @Column(name = "can_initialize_document", columnDefinition = "BOOLEAN")
+    val canInitializeDocument: Boolean = false,
 
-    long sequence();
-
-    void increment();
-
-}
+    @Column(name = "startableByUser", columnDefinition = "BOOLEAN")
+    val startableByUser: Boolean = false
+)

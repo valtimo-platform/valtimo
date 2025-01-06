@@ -58,7 +58,7 @@ public abstract class BaseTest {
     }
 
     protected JsonSchemaDocumentDefinitionId definitionId() {
-        return JsonSchemaDocumentDefinitionId.newId(DOCUMENT_DEFINITION_NAME);
+        return JsonSchemaDocumentDefinitionId.of(DOCUMENT_DEFINITION_NAME);
     }
 
     protected CamundaProcessDefinitionId processDefinitionKey() {
@@ -78,13 +78,13 @@ public abstract class BaseTest {
     }
 
     protected JsonSchemaDocumentDefinition definition() {
-        final JsonSchemaDocumentDefinitionId jsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.newId("house");
+        final JsonSchemaDocumentDefinitionId jsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.of("house");
         final JsonSchema jsonSchema = JsonSchema.fromResourceUri(path(jsonSchemaDocumentDefinitionId.name()));
         return new JsonSchemaDocumentDefinition(jsonSchemaDocumentDefinitionId, jsonSchema);
     }
 
     protected JsonSchemaDocumentDefinition definition(String name) {
-        final JsonSchemaDocumentDefinitionId jsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.newId(name);
+        final JsonSchemaDocumentDefinitionId jsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.of(name);
         final JsonSchema jsonSchema = JsonSchema.fromResourceUri(path(jsonSchemaDocumentDefinitionId.name()));
         return new JsonSchemaDocumentDefinition(jsonSchemaDocumentDefinitionId, jsonSchema);
     }

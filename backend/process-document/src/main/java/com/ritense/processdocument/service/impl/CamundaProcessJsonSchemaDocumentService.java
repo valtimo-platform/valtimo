@@ -30,11 +30,10 @@ import com.ritense.document.domain.Document;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.JsonSchemaDocumentId;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
-import com.ritense.processdocument.domain.ProcessDocumentDefinition;
+import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition;
 import com.ritense.processdocument.domain.ProcessInstanceId;
 import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionId;
 import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId;
-import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentDefinition;
 import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentInstanceId;
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndCompleteTaskRequest;
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndStartProcessRequest;
@@ -42,6 +41,7 @@ import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProces
 import com.ritense.processdocument.domain.impl.request.NewDocumentForRunningProcessRequest;
 import com.ritense.processdocument.domain.impl.request.StartProcessForDocumentRequest;
 import com.ritense.processdocument.domain.request.Request;
+import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
 import com.ritense.processdocument.service.ProcessDocumentService;
 import com.ritense.processdocument.service.impl.result.ModifyDocumentAndCompleteTaskResultFailed;
@@ -84,18 +84,21 @@ public class CamundaProcessJsonSchemaDocumentService implements ProcessDocumentS
     private final CamundaTaskService camundaTaskService;
     private final CamundaProcessService camundaProcessService;
     private final ProcessDocumentAssociationService processDocumentAssociationService;
+    private final ProcessDefinitionCaseDefinitionService processDefinitionCaseDefinitionService;
     private final AuthorizationService authorizationService;
 
     public CamundaProcessJsonSchemaDocumentService(
         JsonSchemaDocumentService documentService, CamundaTaskService camundaTaskService,
         CamundaProcessService camundaProcessService,
         ProcessDocumentAssociationService processDocumentAssociationService,
+        ProcessDefinitionCaseDefinitionService processDefinitionCaseDefinitionService,
         AuthorizationService authorizationService
     ) {
         this.documentService = documentService;
         this.camundaTaskService = camundaTaskService;
         this.camundaProcessService = camundaProcessService;
         this.processDocumentAssociationService = processDocumentAssociationService;
+        this.processDefinitionCaseDefinitionService = processDefinitionCaseDefinitionService;
         this.authorizationService = authorizationService;
     }
 
@@ -375,20 +378,6 @@ public class CamundaProcessJsonSchemaDocumentService implements ProcessDocumentS
         );
 
         return document;
-    }
-
-    @Override
-    public Optional<ProcessDocumentDefinition> findProcessDocumentDefinition(ProcessInstanceId processInstanceId) {
-        denyAuthorization();
-        return AuthorizationContext
-            .runWithoutAuthorization(
-                () -> camundaProcessService.findProcessInstanceById(processInstanceId.toString())
-                    .map(instance -> camundaProcessService.findProcessDefinitionById(instance.getProcessDefinitionId()))
-                    .map(definition -> new CamundaProcessDefinitionId(definition.getKey()))
-                    .map(definitionKey -> AuthorizationContext.runWithoutAuthorization(() ->
-                        processDocumentAssociationService.findProcessDocumentDefinition(definitionKey))
-                    ).map(optional -> (CamundaProcessJsonSchemaDocumentDefinition) optional.orElse(null))
-            );
     }
 
     private String getBusinessKey(ProcessInstanceId processInstanceId, VariableScope variableScope) {

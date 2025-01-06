@@ -65,7 +65,6 @@ class JsonSchemaDocumentDefinitionServiceIntTest extends BaseIntegrationTest {
 
         final var documentDefinition = (JsonSchemaDocumentDefinition) documentDefinitionService
             .findLatestByName("testing").orElseThrow();
-        assertThat(documentDefinition.isReadOnly()).isFalse();
     }
 
     @Test
@@ -79,7 +78,6 @@ class JsonSchemaDocumentDefinitionServiceIntTest extends BaseIntegrationTest {
 
         final var documentDefinition = (JsonSchemaDocumentDefinition) documentDefinitionService
             .findLatestByName("giraffe").orElseThrow();
-        assertThat(documentDefinition.isReadOnly()).isTrue();
     }
 
     @Test
@@ -100,37 +98,10 @@ class JsonSchemaDocumentDefinitionServiceIntTest extends BaseIntegrationTest {
 
         final var documentDefinition = (JsonSchemaDocumentDefinition) documentDefinitionService
             .findLatestByName("rhino").orElseThrow();
-        assertThat(documentDefinition.isReadOnly()).isTrue();
 
         assertThat(result.documentDefinition()).isNull();
         assertThat(result.errors().get(0).asString()).isEqualTo(
             "This schema cannot be updated, because its readonly in previous versions");
-    }
-
-    @Test
-    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
-    void shouldDeployNextVersionWhenDifferentSchema() {
-
-        documentDefinitionService.deploy("""
-                {
-                    "$id": "clown.schema",
-                    "$schema": "http://json-schema.org/draft-07/schema#"
-                }
-            """);
-
-        documentDefinitionService
-            .deploy("""
-                    {
-                        "$id": "clown.schema",
-                        "$schema": "http://json-schema.org/draft-07/schema#",
-                        "title": "Clown"
-                    }
-                """);
-
-        final var documentDefinition = (JsonSchemaDocumentDefinition) documentDefinitionService
-            .findLatestByName("clown").orElseThrow();
-        assertThat(documentDefinition.id().version()).isEqualTo(2);
-        assertThat(documentDefinition.isReadOnly()).isFalse();
     }
 
     @Test
@@ -161,31 +132,6 @@ class JsonSchemaDocumentDefinitionServiceIntTest extends BaseIntegrationTest {
 
     @Test
     @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
-    void shouldFindVersionsForDocumentDefinitionName() {
-        var v1 = documentDefinitionService.deploy("""
-                {
-                    "$id": "clown.schema",
-                    "$schema": "http://json-schema.org/draft-07/schema#"
-                }
-            """).documentDefinition();
-
-        var v2 = documentDefinitionService
-            .deploy("""
-                    {
-                        "$id": "clown.schema",
-                        "$schema": "http://json-schema.org/draft-07/schema#",
-                        "title": "Clown"
-                    }
-                """).documentDefinition();
-
-        final var versions = documentDefinitionService.findVersionsByName("clown");
-        assertThat(versions)
-            .isNotEmpty()
-            .contains(v1.id().version(), v2.id().version());
-    }
-
-    @Test
-    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
     void shouldNotFindVersionsForNonExistingDocumentDefinitionName() {
         var v1 = documentDefinitionService.deploy("""
                 {
@@ -206,19 +152,6 @@ class JsonSchemaDocumentDefinitionServiceIntTest extends BaseIntegrationTest {
         final var versions = documentDefinitionService.findVersionsByName("nothing");
         assertThat(versions)
             .isEmpty();
-    }
-
-    @Test
-    @WithMockUser(username = USERNAME, authorities = FULL_ACCESS_ROLE)
-    void shouldNotDeployNextVersionWhenSchemaAlreadyExists() throws IOException {
-        final var resource = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
-            .getResource("classpath:config/document/definition/house.schema.json");
-
-        documentDefinitionService.deploy(resource.getInputStream());
-
-        final var documentDefinition = documentDefinitionService
-            .findLatestByName("house").orElseThrow();
-        assertThat(documentDefinition.id().version()).isEqualTo(1);
     }
 
     @Test

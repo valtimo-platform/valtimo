@@ -125,8 +125,8 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
         when(jsonSchemaDocumentDefinitionRepository.findById(any(JsonSchemaDocumentDefinitionId.class))).thenReturn(
             Optional.of(definition));
 
-        final var jsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.newId("person");
-        final var otherJsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.newId("person2");
+        final var jsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.of("person", mock());
+        final var otherJsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.of("person2", mock());
         final var jsonSchema = JsonSchema.fromResourceUri(path(jsonSchemaDocumentDefinitionId.name()));
         assertThrows(
             DocumentDefinitionNameMismatchException.class,

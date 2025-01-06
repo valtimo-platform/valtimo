@@ -372,7 +372,7 @@ class DefaultFormSubmissionServiceTest {
     }
 
     private fun definition(): JsonSchemaDocumentDefinition {
-        val jsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.newId("person")
+        val jsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.of("person")
         val jsonSchema = JsonSchema.fromResourceUri(path(jsonSchemaDocumentDefinitionId.name()))
         return JsonSchemaDocumentDefinition(jsonSchemaDocumentDefinitionId, jsonSchema)
     }

@@ -34,6 +34,7 @@ import com.ritense.processdocument.service.CaseTaskListSearchService
 import com.ritense.processdocument.service.CorrelationService
 import com.ritense.processdocument.service.CorrelationServiceImpl
 import com.ritense.processdocument.service.DocumentDelegateService
+import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.ProcessDocumentDeploymentService
 import com.ritense.processdocument.service.ProcessDocumentService
@@ -189,12 +190,12 @@ class ProcessDocumentsAutoConfiguration {
     fun processDocumentLinkExporter(
         objectMapper: ObjectMapper,
         camundaRepositoryService: CamundaRepositoryService,
-        processDocumentAssociationService: ProcessDocumentAssociationService
+        processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService
     ): ProcessDocumentLinkExporter {
         return ProcessDocumentLinkExporter(
             objectMapper,
             camundaRepositoryService,
-            processDocumentAssociationService
+            processDefinitionCaseDefinitionService
         )
     }
 

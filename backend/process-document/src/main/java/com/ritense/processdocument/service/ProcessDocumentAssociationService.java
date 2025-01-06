@@ -35,41 +35,6 @@ import java.util.UUID;
 
 public interface ProcessDocumentAssociationService {
 
-    Optional<? extends ProcessDocumentDefinition> findProcessDocumentDefinition(ProcessDefinitionKey processDefinitionKey);
-
-    ProcessDocumentDefinition getProcessDocumentDefinition(ProcessDefinitionKey processDefinitionKey);
-
-    List<? extends ProcessDocumentDefinition> findAllProcessDocumentDefinitions(ProcessDefinitionKey processDefinitionKey);
-
-    Optional<? extends ProcessDocumentDefinition> findProcessDocumentDefinition(ProcessDefinitionKey processDefinitionKey, long documentDefinitionVersion);
-
-    ProcessDocumentDefinition getProcessDocumentDefinition(ProcessDefinitionKey processDefinitionKey, CaseDefinitionId caseDefinitionId);
-
-    List<? extends ProcessDocumentDefinition> findProcessDocumentDefinitions(String documentDefinitionName);
-
-    List<? extends ProcessDocumentDefinition> findProcessDocumentDefinitions(
-        String documentDefinitionName,
-        @Nullable Boolean startableByUser
-    );
-
-    List<? extends ProcessDocumentDefinition> findProcessDocumentDefinitions(
-        String documentDefinitionName,
-        @Nullable Boolean startableByUser,
-        @Nullable Boolean canInitializeDocument
-    );
-
-    List<? extends ProcessDocumentDefinition> findProcessDocumentDefinitions(
-        UUID documentId,
-        @Nullable Boolean startableByUser,
-        @Nullable Boolean canInitializeDocument
-    );
-
-    List<? extends ProcessDocumentDefinition> findProcessDocumentDefinitions(String documentDefinitionName, Long documentDefinitionVersion);
-
-    List<? extends ProcessDocumentDefinition> findProcessDocumentDefinitionsByProcessDefinitionKey(String processDefinitionKey);
-
-    Optional<? extends ProcessDocumentDefinition> findByDocumentDefinitionName(String documentDefinitionName);
-
     Optional<? extends ProcessDocumentInstance> findProcessDocumentInstance(ProcessInstanceId processInstanceId);
 
     List<? extends ProcessDocumentInstance> findProcessDocumentInstances(Document.Id documentId);
@@ -81,14 +46,6 @@ public interface ProcessDocumentAssociationService {
     FunctionResult<? extends ProcessDocumentInstance, OperationError> getProcessDocumentInstanceResult(
         ProcessDocumentInstanceId processDocumentInstanceId
     );
-
-    Optional<? extends ProcessDocumentDefinition> createProcessDocumentDefinition(
-        ProcessDocumentDefinitionRequest request
-    );
-
-    void deleteProcessDocumentDefinition(ProcessDocumentDefinitionRequest processDocumentDefinitionRequest);
-
-    void deleteProcessDocumentDefinition(String documentDefititionName);
 
     Optional<? extends ProcessDocumentInstance> createProcessDocumentInstance(
         String processInstanceId,

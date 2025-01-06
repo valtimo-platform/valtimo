@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package com.ritense.document.domain.sequence;
+package com.ritense.processdocument.domain
 
-import com.ritense.document.domain.DocumentDefinition;
+import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionId
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.domain.AbstractId
+import jakarta.persistence.Embeddable
+import jakarta.persistence.Embedded
 
-public interface DocumentDefinitionSequenceRecord {
-
-    long sequence();
-
-    void increment();
-
-}
+@Embeddable
+class ProcessDefinitionCaseDefinitionId(
+    @Embedded
+    val processDefinitionId: CamundaProcessDefinitionId,
+    @Embedded
+    val caseDefinitionId: CaseDefinitionId
+): AbstractId<ProcessDefinitionCaseDefinitionId>()

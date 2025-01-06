@@ -110,8 +110,8 @@ open class ValtimoImportService(
     }
 
     @Transactional
-    fun importResources(inputStream: Array<Resource>) {
-        val entries = readZipEntries(inputStream)
+    open fun importResources(resources: Array<Resource>) {
+        val entries = getEntriesFromResources(resources)
         val importerEntriesMapGroupedByCaseDefinition = entries.map {
             it.key to getEntriesByImporter(it.value)
         }.toMap()
