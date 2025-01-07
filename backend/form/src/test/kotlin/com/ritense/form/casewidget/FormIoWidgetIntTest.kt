@@ -107,7 +107,7 @@ class FormIoWidgetIntTest @Autowired constructor(
                 key = tabKey,
                 widgets = listOf(
                     FormIoCaseWidgetDto(
-                        widgetKey, "My widget", 1, true, FormIoWidgetProperties(
+                        widgetKey, "My widget", 1, true, null, FormIoWidgetProperties(
                             "form-example"
                         )
                     )

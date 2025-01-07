@@ -18,6 +18,7 @@ package com.ritense.case_.widget.table
 
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
+import com.ritense.case_.rest.dto.CaseWidgetAction
 import com.ritense.valtimo.contract.annotation.AllOpen
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
@@ -29,11 +30,16 @@ import org.hibernate.annotations.Type
 @Entity
 @DiscriminatorValue("table")
 class TableCaseWidget(
-    id: CaseWidgetTabWidgetId, title: String, order: Int, width: Int, highContrast: Boolean,
+    id: CaseWidgetTabWidgetId,
+    title: String,
+    order: Int,
+    width: Int,
+    highContrast: Boolean,
+    actions: List<CaseWidgetAction>,
 
     @Type(value = JsonType::class)
     @Column(name = "properties", nullable = false)
     val properties: TableWidgetProperties
 ) : CaseWidgetTabWidget(
-    id, title, order, width, highContrast
+    id, title, order, width, highContrast, actions
 )

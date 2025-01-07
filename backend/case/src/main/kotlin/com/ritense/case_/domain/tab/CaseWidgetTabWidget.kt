@@ -17,7 +17,10 @@
 package com.ritense.case_.domain.tab
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.common.base.Objects
+import com.ritense.case_.rest.dto.CaseWidgetAction
 import com.ritense.valtimo.contract.annotation.AllOpen
+import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorColumn
 import jakarta.persistence.DiscriminatorType
@@ -26,6 +29,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Inheritance
 import jakarta.persistence.InheritanceType
 import jakarta.persistence.Table
+import org.hibernate.annotations.Type
 
 @AllOpen
 @Entity
@@ -52,6 +56,10 @@ abstract class CaseWidgetTabWidget(
 
     @Column(name = "high_contrast", nullable = false)
     val highContrast: Boolean,
+
+    @Type(value = JsonType::class)
+    @Column(name = "actions", nullable = false)
+    val actions: List<CaseWidgetAction> = emptyList(),
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -62,17 +70,19 @@ abstract class CaseWidgetTabWidget(
         if (order != other.order) return false
         if (width != other.width) return false
         if (highContrast != other.highContrast) return false
+        if (actions != other.actions) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + title.hashCode()
-        result = 31 * result + order
-        result = 31 * result + width
-        result = 31 * result + highContrast.hashCode()
-        return result
+        return Objects.hashCode(
+            title,
+            order,
+            width,
+            highContrast,
+            actions,
+        )
     }
 
     override fun toString(): String {
