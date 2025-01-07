@@ -81,7 +81,6 @@ import {WIDGET_HEIGHT_1X} from '../../../../../../constants';
 })
 export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
   @ViewChild('widgetBlockContent') private _widgetBlockContentRef: ElementRef<HTMLDivElement>;
-  @ViewChild('widgetBlock') private _widgetBlockRef: ElementRef<HTMLDivElement>;
 
   @Input() public set widget(value: CaseWidgetWithUuid) {
     this._widgetUuid = value.uuid;

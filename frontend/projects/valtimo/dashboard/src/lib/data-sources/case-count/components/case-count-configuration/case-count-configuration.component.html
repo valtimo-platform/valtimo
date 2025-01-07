@@ -40,6 +40,7 @@
       >{{ 'conditions' | widgetTranslate: dataSourceKey | async }}</cds-label
     >
     <valtimo-carbon-multi-input
+      type="valuePathSelectorDropdownValue"
       [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
       [defaultValues]="defaultConditionValues$ | async"
       [dropdownColumnTitle]="'operator' | widgetTranslate: dataSourceKey | async"
@@ -49,9 +50,12 @@
       [keyColumnTitle]="'path' | widgetTranslate: dataSourceKey | async"
       [minimumAmountOfRows]="0"
       [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
-      type="keyDropdownValue"
       (allValuesValidEvent)="onAllConditionsValid($event)"
       (valueChange)="conditionsValueChange($event)"
+      valuePathSelectorNotation="dots"
+      [valuePathSelectorPrefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+      [valuePathSelectorShowDocumentDefinitionSelector]="false"
+      [valuePathSelectorDocumentDefinitionName]="selectedDocumentDefinition$ | async"
     ></valtimo-carbon-multi-input>
   </div>
 </form>

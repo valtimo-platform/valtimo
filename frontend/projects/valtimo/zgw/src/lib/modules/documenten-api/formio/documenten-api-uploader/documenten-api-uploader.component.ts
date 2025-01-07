@@ -49,22 +49,110 @@ export class DocumentenApiUploaderComponent
   @Input() hideMaxFileSize: boolean;
   @Input() camera: boolean;
 
-  @Input() documentTitle: string;
+  @Input() set documentTitle(defaultValue: string) {
+    this.defaultValues['titel'] = defaultValue;
+  }
+
+  @Input() set hideDocumentTitle(hide: boolean) {
+    this.hideField(hide, 'titel');
+  }
+
   @Input() disableDocumentTitle: boolean;
-  @Input() filename: string;
+
+  @Input() set filename(defaultValue: string) {
+    this.defaultValues['bestandsnaam'] = defaultValue;
+  }
+
+  @Input() set hideFilename(hide: boolean) {
+    this.hideField(hide, 'bestandsnaam');
+  }
+
   @Input() disableFilename: boolean;
-  @Input() author: string;
+
+  @Input() set author(defaultValue: string) {
+    this.defaultValues['auteur'] = defaultValue;
+  }
+
+  @Input() set hideAuthor(hide: boolean) {
+    this.hideField(hide, 'auteur');
+  }
+
   @Input() disableAuthor: boolean;
-  @Input() status: string;
+
+  @Input() set status(defaultValue: string) {
+    this.defaultValues['status'] = defaultValue;
+  }
+
+  @Input() set hideStatus(hide: boolean) {
+    this.hideField(hide, 'status');
+  }
+
   @Input() disableStatus: boolean;
-  @Input() language: string;
+
+  @Input() set language(defaultValue: string) {
+    this.defaultValues['taal'] = defaultValue;
+  }
+
+  @Input() set hideLanguage(hide: boolean) {
+    this.hideField(hide, 'taal');
+  }
+
   @Input() disableLanguage: boolean;
-  @Input() documentType: string;
+
+  @Input() set documentType(defaultValue: string) {
+    this.defaultValues['informatieobjecttype'] = defaultValue;
+  }
+
+  @Input() set hideDocumentType(hide: boolean) {
+    this.hideField(hide, 'informatieobjecttype');
+  }
+
   @Input() disableDocumentType: boolean;
-  @Input() description: string;
+
+  @Input() set description(defaultValue: string) {
+    this.defaultValues['beschrijving'] = defaultValue;
+  }
+
+  @Input() set hideDescription(hide: boolean) {
+    this.hideField(hide, 'beschrijving');
+  }
+
   @Input() disableDescription: boolean;
-  @Input() confidentialityLevel: string;
+
+  @Input() set confidentialityLevel(defaultValue: string) {
+    this.defaultValues['vertrouwelijkheidaanduiding'] = defaultValue;
+  }
+
+  @Input() set hideConfidentialityLevel(hide: boolean) {
+    this.hideField(hide, 'vertrouwelijkheidaanduiding');
+  }
+
   @Input() disableConfidentialityLevel: boolean;
+
+  @Input() set hideCreationDate(hide: boolean) {
+    this.hideField(hide, 'creatiedatum');
+  }
+
+  @Input() disableCreationDate: boolean;
+
+  @Input() set hideAdditionalDate(hide: boolean) {
+    this.hideField(hide, 'aanvullendeDatum');
+  }
+
+  @Input() set tags(tags: string) {
+    let _tags = tags
+      ?.split(',')
+      ?.map(tag => tag.trim())
+      ?.filter(tag => !!tag);
+    if (_tags?.length === 0) {
+      _tags = null;
+    }
+    this.defaultValues['trefwoorden'] = tags;
+  }
+
+  @Input() set hideTags(hide: boolean) {
+    this.hideField(hide, 'trefwoorden');
+  }
 
   @Output() valueChange = new EventEmitter<Array<DocumentenApiFileReference>>();
 
@@ -98,17 +186,15 @@ export class DocumentenApiUploaderComponent
     .getUserSubject()
     .pipe(map(userIdentity => userIdentity?.roles.includes('ROLE_ADMIN')));
 
-  private readonly _documentDefinitionName$ = this.route.params.pipe(
-    map(params => params?.documentDefinitionName),
-    filter(caseDefinitionName => !!caseDefinitionName)
-  );
-
   public readonly supportedDocumentenApiFeatures$: Observable<SupportedDocumentenApiFeatures> =
-    this._documentDefinitionName$.pipe(
+    this.modalService.documentDefinitionName$.pipe(
       switchMap(caseDefinitionName =>
         this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionName)
       )
     );
+
+  public defaultValues: {} = {};
+  public hideFields: Array<string> = [];
 
   constructor(
     private readonly uploadProviderService: UploadProviderService,
@@ -168,5 +254,14 @@ export class DocumentenApiUploaderComponent
         })
       )
       .subscribe();
+  }
+
+  private hideField(hide: boolean, field: string) {
+    const exists = this.hideFields.includes(field);
+    if (!exists && hide) {
+      this.hideFields.push(field);
+    } else if (exists && !hide) {
+      delete this.hideFields[field];
+    }
   }
 }

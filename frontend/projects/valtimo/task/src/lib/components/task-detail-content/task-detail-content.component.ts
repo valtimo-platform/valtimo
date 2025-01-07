@@ -222,6 +222,8 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
     this.resetTaskProcessLinkType();
     this.resetFormDefinition();
 
+    this.taskInstanceId$.next(task.id);
+
     if (!processLink) {
       this.getTaskProcessLink(task.id);
     } else {
@@ -233,7 +235,6 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy {
     this.stateService.setDocumentId(documentId);
 
     this.task$.next(task);
-    this.taskInstanceId$.next(task.id);
     this.page$.next({
       title: task.name,
       subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task.created}`,

@@ -24,23 +24,43 @@ type ConfidentialityLevel =
   | 'geheim'
   | 'zeer_geheim';
 
+const CONFIDENTIALITY_LEVELS: Array<ConfidentialityLevel> = [
+  'openbaar',
+  'beperkt_openbaar',
+  'intern',
+  'zaakvertrouwelijk',
+  'vertrouwelijk',
+  'confidentieel',
+  'geheim',
+  'zeer_geheim',
+];
+
 type DocumentStatus = 'in_bewerking' | 'ter_vaststelling' | 'definitief' | 'gearchiveerd';
+
+const STATUS_ITEMS: Array<DocumentStatus> = [
+  'in_bewerking',
+  'ter_vaststelling',
+  'definitief',
+  'gearchiveerd',
+];
 
 type DocumentLanguage = 'nld' | 'eng' | 'deu';
 
+const LANGUAGE_ITEMS: Array<DocumentLanguage> = ['nld', 'eng', 'deu'];
+
 interface DocumentenApiMetadata {
   titel: string;
-  bescvhrijving: string;
-  bestandsnaam: string;
-  vertrouwelijkheidaanduiding: ConfidentialityLevel;
+  beschrijving?: string;
+  bestandsnaam?: string;
+  vertrouwelijkheidaanduiding?: ConfidentialityLevel;
   auteur: string;
-  status: DocumentStatus;
+  status?: DocumentStatus;
   creatiedatum: string;
-  ontvangstdatum: string;
-  verzenddatum: string;
+  ontvangstdatum?: string;
+  verzenddatum?: string;
   taal: DocumentLanguage;
   informatieobjecttype: string;
-  trefwoorden: string[];
+  trefwoorden?: string[];
 }
 
 type AdditionalDocumentDate = 'sent' | 'received' | 'neither';
@@ -48,7 +68,10 @@ type AdditionalDocumentDate = 'sent' | 'received' | 'neither';
 export {
   DocumentenApiMetadata,
   ConfidentialityLevel,
+  CONFIDENTIALITY_LEVELS,
   DocumentStatus,
+  STATUS_ITEMS,
   DocumentLanguage,
+  LANGUAGE_ITEMS,
   AdditionalDocumentDate,
 };

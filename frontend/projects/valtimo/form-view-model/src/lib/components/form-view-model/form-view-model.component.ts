@@ -95,6 +95,7 @@ export class FormViewModelComponent implements OnInit {
   @Output() formSubmit = new EventEmitter<any>();
 
   public errors: string[] = [];
+  public refreshForm = new EventEmitter();
 
   private _preventNextPage = false;
   private _preventPreviousPage = false;
@@ -135,11 +136,14 @@ export class FormViewModelComponent implements OnInit {
       const defaultOptions = {
         ...options,
         language,
-        ...(formioTranslations === 'object' && {
-          i18n: {
-            [language]: this.stateService.flattenTranslationsObject(formioTranslations),
-          },
-        }),
+        ...(typeof formioTranslations === 'object'
+          ? {
+            language,
+            i18n: {
+              [language]: this.stateService.flattenTranslationsObject(formioTranslations),
+            },
+          }
+          : {}),
       };
 
       return deepmerge(defaultOptions, overrideOptions);
@@ -324,6 +328,7 @@ export class FormViewModelComponent implements OnInit {
                         submission.data = viewModel;
                         this.submission$.next(submission);
                         this.handlePageChange();
+                        this.refreshForm.emit({submission: submission});
                         this.loading$.next(false);
                         this.errors = [];
                       },
@@ -386,6 +391,7 @@ export class FormViewModelComponent implements OnInit {
                         submission.data = viewModel;
                         this.submission$.next(submission);
                         this.handlePageChange();
+                        this.refreshForm.emit({submission: submission});
                         this.loading$.next(false);
                         this.errors = [];
                       },

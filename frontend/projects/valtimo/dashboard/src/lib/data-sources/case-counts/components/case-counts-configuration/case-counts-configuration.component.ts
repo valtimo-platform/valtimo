@@ -43,7 +43,7 @@ import {
 import {CaseCountsConfiguration, CaseCountsQueryItem, CaseCountsQueryItemForm} from '../../models';
 import {DocumentService} from '@valtimo/document';
 import {IconService, ListItem} from 'carbon-components-angular';
-import {ListItemWithId, MultiInputValues} from '@valtimo/components';
+import {ListItemWithId, MultiInputValues, ValuePathSelectorPrefix} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 import {WidgetTranslationService} from '../../../../services';
 import {isEqual} from 'lodash';
@@ -120,11 +120,11 @@ export class CaseCountsConfigurationComponent
     ConfigurationOutput<CaseCountsConfiguration>
   >();
 
-  private readonly _selectedDocumentDefinition$ = new BehaviorSubject<string>('');
+  public readonly selectedDocumentDefinition$ = new BehaviorSubject<string>('');
 
   public readonly documentItems$: Observable<Array<ListItem>> = combineLatest([
     this.documentService.getAllDefinitions(),
-    this._selectedDocumentDefinition$,
+    this.selectedDocumentDefinition$,
   ]).pipe(
     map(([documentDefinitions, selectedDocumentDefintion]) =>
       documentDefinitions.content.map(definition => ({
@@ -155,6 +155,8 @@ export class CaseCountsConfigurationComponent
       )
     );
 
+  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
+
   private _subscriptions = new Subscription();
 
   constructor(
@@ -176,11 +178,14 @@ export class CaseCountsConfigurationComponent
   }
 
   public documentDefinitionSelected(documentDefinitionItem: ListItem): void {
-    if (!documentDefinitionItem) {
+    const documentDefinitionName = documentDefinitionItem?.item?.content;
+
+    if (!documentDefinitionName) {
       return;
     }
 
-    this._selectedDocumentDefinition$.next(documentDefinitionItem?.item?.content);
+    this.selectedDocumentDefinition$.next(documentDefinitionName);
+    this.documentDefinition.setValue(documentDefinitionName);
   }
 
   public conditionsValueChange(index: number, values: MultiInputValues): void {
@@ -223,7 +228,7 @@ export class CaseCountsConfigurationComponent
         this.configurationEvent.emit({
           valid: this.form.valid,
           data: {
-            documentDefinition: formValue?.documentDefinition?.content,
+            documentDefinition: formValue?.documentDefinition,
             queryItems: this.multiInputValuesToQueryItems(formValue.queryItems),
           } as CaseCountsConfiguration,
         });

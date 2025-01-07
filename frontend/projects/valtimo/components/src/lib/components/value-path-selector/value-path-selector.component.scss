@@ -41,6 +41,7 @@
 
   ::ng-deep cds-dropdown {
     width: 100%;
+    min-width: 0;
   }
 
   ::ng-deep .cds--toggle__label-text {

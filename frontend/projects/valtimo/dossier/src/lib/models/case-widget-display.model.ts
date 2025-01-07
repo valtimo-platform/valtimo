@@ -9,6 +9,11 @@ enum CaseWidgetDisplayTypeKey {
   PERCENT = 'percent',
 }
 
+interface CaseWidgetTextDisplayType {
+  type: CaseWidgetDisplayTypeKey.TEXT;
+  ellipsisCharacterLimit: number;
+}
+
 interface CaseWidgetBooleanDisplayType {
   type: CaseWidgetDisplayTypeKey.BOOLEAN;
 }
@@ -48,6 +53,7 @@ interface CaseWidgetPercentDisplayType {
 }
 
 type CaseWidgetDisplayType =
+  | CaseWidgetTextDisplayType
   | CaseWidgetBooleanDisplayType
   | CaseWidgetCurrencyDisplayType
   | CaseWidgetDateDisplayType
@@ -57,13 +63,14 @@ type CaseWidgetDisplayType =
   | CaseWidgetPercentDisplayType;
 
 export {
-  CaseWidgetDisplayTypeKey,
-  CaseWidgetDisplayType,
   CaseWidgetBooleanDisplayType,
   CaseWidgetCurrencyDisplayType,
   CaseWidgetDateDisplayType,
   CaseWidgetDateTimeDisplayType,
+  CaseWidgetDisplayType,
+  CaseWidgetDisplayTypeKey,
   CaseWidgetEnumDisplayType,
   CaseWidgetNumberDisplayType,
   CaseWidgetPercentDisplayType,
+  CaseWidgetTextDisplayType,
 };

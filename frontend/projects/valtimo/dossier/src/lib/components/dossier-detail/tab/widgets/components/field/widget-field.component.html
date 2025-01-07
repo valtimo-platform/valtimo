@@ -43,11 +43,15 @@
       @for (column of obs?.widgetPropertyValue; track column.key) {
         <div class="widget-field__column">
           @for (property of column; track property) {
-            <cds-label>
-              <span [attr.title]="property?.title"> {{ property?.title }}</span>
+            <div class="widget-field__field">
+              <label class="widget-field__field-label" [attr.title]="property?.title">
+                {{ property?.title }}</label
+              >
 
-              <input cdsText [value]="property?.value" [readonly]="true" />
-            </cds-label>
+              <div [attr.title]="property?.value" class="widget-field__field-value">
+                {{ property?.value | valtimoEllipsis: property?.ellipsisCharacterLimit }}
+              </div>
+            </div>
           }
         </div>
       }

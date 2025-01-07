@@ -23,12 +23,14 @@ import {
   ListModule,
   RenderInPageHeaderDirectiveModule,
   SpinnerModule,
+  ValtimoCdsModalDirectiveModule,
 } from '@valtimo/components';
 import {
   ButtonModule,
   DropdownModule,
   IconModule,
   InputModule,
+  LayerModule,
   ModalModule,
   NotificationModule,
 } from 'carbon-components-angular';
@@ -65,6 +67,8 @@ import {WidgetConfigurationContainerComponent} from './components/widget-configu
     IconModule,
     WidgetTranslatePipeModule,
     CarbonListModule,
+    LayerModule,
+    ValtimoCdsModalDirectiveModule,
   ],
   exports: [],
 })

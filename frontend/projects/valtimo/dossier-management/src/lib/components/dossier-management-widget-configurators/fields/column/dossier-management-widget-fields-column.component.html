@@ -54,24 +54,6 @@
               />
             </cds-text-label>
 
-            <cds-text-label>
-              <v-input-label
-                [title]="'widgetTabManagement.content.fields.value' | translate"
-                [tooltip]="
-                  'widgetTabManagement.content.' + widgetType() + '.valueTooltip' | translate
-                "
-              >
-              </v-input-label>
-
-              <input
-                cdsText
-                [attr.data-carbon-theme]="inputTheme"
-                [placeholder]="'widgetTabManagement.content.fields.valuePlaceholder' | translate"
-                type="text"
-                formControlName="content"
-              />
-            </cds-text-label>
-
             <cds-dropdown
               [attr.data-carbon-theme]="inputTheme"
               [label]="'widgetTabManagement.content.fields.type' | translate"
@@ -86,6 +68,43 @@
             <ng-container
               *ngTemplateOutlet="fieldWidthDropdown; context: {index: $index}"
             ></ng-container>
+
+            @if (!documentDefinitionName) {
+              <cds-text-label>
+                <v-input-label
+                  [title]="'widgetTabManagement.content.fields.value' | translate"
+                  [tooltip]="
+                    'widgetTabManagement.content.' + widgetType() + '.valueTooltip' | translate
+                  "
+                >
+                </v-input-label>
+
+                <input
+                  cdsText
+                  [attr.data-carbon-theme]="inputTheme"
+                  [placeholder]="'widgetTabManagement.content.fields.valuePlaceholder' | translate"
+                  type="text"
+                  formControlName="content"
+                />
+              </cds-text-label>
+            } @else {
+              <div class="valtimo-dossier-management-widget-field-column__path-selector">
+                <v-input-label
+                  [title]="'widgetTabManagement.content.fields.value' | translate"
+                  [tooltip]="
+                    'widgetTabManagement.content.' + widgetType() + '.valueTooltip' | translate
+                  "
+                >
+                </v-input-label>
+
+                <valtimo-value-path-selector
+                  formControlName="content"
+                  [documentDefinitionName]="documentDefinitionName"
+                  [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+                  [selectedCollectionPath]="selectedCollectionPath"
+                ></valtimo-value-path-selector>
+              </div>
+            }
           </div>
 
           <div class="valtimo-dossier-management-widget-field-column__options">
@@ -306,6 +325,30 @@
                 </cds-text-label>
               }
             }
+
+            <cds-text-label
+              *ngIf="
+                formRow.get('type').value.id === CaseWidgetDisplayTypeKey.TEXT && isFieldWidget()
+              "
+            >
+              <v-input-label
+                [title]="'widgetTabManagement.content.fields.ellipsisCharacterLimit' | translate"
+                tooltip="{{
+                  'widgetTabManagement.content.fields.ellipsisCharacterLimitTooltip' | translate
+                }}"
+              >
+              </v-input-label>
+
+              <input
+                cdsText
+                [attr.data-carbon-theme]="inputTheme"
+                [placeholder]="
+                  'widgetTabManagement.content.fields.ellipsisCharacterLimitPlaceholder' | translate
+                "
+                type="text"
+                formControlName="ellipsisCharacterLimit"
+              />
+            </cds-text-label>
           </div>
         </form>
       </cds-accordion-item>

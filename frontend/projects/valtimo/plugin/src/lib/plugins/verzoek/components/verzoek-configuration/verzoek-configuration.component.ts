@@ -44,6 +44,7 @@ import {
   MultiInputValues,
   RadioValue,
   SelectItem,
+  ValuePathSelectorPrefix,
   VModalComponent,
 } from '@valtimo/components';
 import {VerzoekPluginService} from '../../services';
@@ -143,6 +144,18 @@ export class VerzoekConfigurationComponent
 
   private readonly formValue$ = new BehaviorSubject<VerzoekConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
+
+  public getSelectedCaseDefinitionNameForIndex(index: number): Observable<string> {
+    return this.formValue$.pipe(
+      map(
+        formValue =>
+          Array.isArray(formValue.verzoekProperties) &&
+          formValue.verzoekProperties[index]?.caseDefinitionName
+      )
+    );
+  }
+
+  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   constructor(
     private readonly pluginManagementService: PluginManagementService,

@@ -56,6 +56,10 @@ import {DocumentenApiColumnService, DocumentenApiVersionService} from '../../ser
 import {DocumentenApiDocumentService} from '../../services/documenten-api-document.service';
 import {DocumentenApiFilterComponent} from '../documenten-api-filter/documenten-api-filter.component';
 import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.component';
+import {
+  DocumentenApiUploadFieldDefaultValues,
+  DocumentenApiUploadFields
+} from '../../models/documenten-api-upload-field.model';
 
 @Component({
   selector: 'valtimo-dossier-detail-tab-documenten-api-documents',
@@ -197,6 +201,50 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
   public get sortState$(): Observable<SortState | null> {
     return this._sort$.pipe(map(sortValue => this.getSortStateFromSortString(sortValue?.sort)));
   }
+
+  public uploadFields$: Observable<DocumentenApiUploadFields> = this.documentId$.pipe(
+    switchMap(documentId => this.documentenApiDocumentService.getPrefilledUploadFields(documentId)),
+    map(uploadFields =>
+      uploadFields.reduce(
+        (acc, curr) => ({
+          ...acc,
+          [curr.key]: {
+            key: curr.key,
+            defaultValue: curr.defaultValue,
+            visible: curr.visible,
+            readonly: curr.readonly,
+          },
+        }),
+        {}
+      )
+    )
+  );
+
+  public defaultValues$: Observable<DocumentenApiUploadFieldDefaultValues> = this.uploadFields$.pipe(
+    map(formFields => ({
+      auteur: formFields?.auteur?.defaultValue,
+      vertrouwelijkheidaanduiding: formFields?.vertrouwelijkheidaanduiding?.defaultValue,
+      beschrijving: formFields?.beschrijving?.defaultValue,
+      titel: formFields?.titel?.defaultValue,
+      informatieobjecttype: formFields?.informatieobjecttype?.defaultValue,
+      bestandsnaam: formFields?.bestandsnaam?.defaultValue,
+      taal: formFields?.taal?.defaultValue,
+      status: formFields?.status?.defaultValue,
+      trefwoorden: formFields?.trefwoorden?.defaultValue
+        ?.split(',')
+        ?.map(tag => tag.trim())
+        ?.filter(tag => !!tag),
+    }))
+  );
+
+  public hideFields$: Observable<Array<string>> = this.uploadFields$.pipe(
+    map(formFields => {
+      if (formFields) {
+        return Object.keys(formFields).filter(field => !formFields[field]?.visible);
+      }
+      return [];
+    })
+  );
 
   public relatedFiles$: Observable<Array<DocumentenApiRelatedFile>> = combineLatest([
     this.documentId$,

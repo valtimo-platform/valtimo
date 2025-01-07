@@ -45,7 +45,7 @@
         <ng-container *ngTemplateOutlet="progressIndicator; context: {obs: obs}"></ng-container>
       </div>
     </cds-modal-header>
-    <section cdsModalContent>
+    <section cdsModalContent [cdsLayer]="1">
       <ng-container *ngTemplateOutlet="stepContent; context: {obs: obs}"></ng-container>
     </section>
     <ng-template *ngTemplateOutlet="footer; context: {obs: obs}"></ng-template>

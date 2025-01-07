@@ -49,20 +49,22 @@
     />
   </cds-text-label>
 
-  <cds-text-label [attr.data-carbon-theme]="obs.theme">
+  <div class="valtimo-dossier-management-widget-table__path-selector">
     <v-input-label
       [title]="'widgetTabManagement.content.table.collection' | translate"
       [tooltip]="'widgetTabManagement.content.table.collectionTooltip' | translate"
     >
     </v-input-label>
 
-    <input
+    <valtimo-value-path-selector
       formControlName="collection"
-      cdsText
-      [placeholder]="'widgetTabManagement.content.table.collectionPlaceholder' | translate"
-      type="text"
-    />
-  </cds-text-label>
+      [attr.data-carbon-theme]="obs.theme"
+      [documentDefinitionName]="documentDefinitionName$ | async"
+      [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+      [valueType]="ValueResolverOptionType.COLLECTION"
+      (collectionPathSelected)="onCollectionPathSelected($event)"
+    ></valtimo-value-path-selector>
+  </div>
 </form>
 
 <span class="valtimo-dossier-management-widget-table__subtitle">
@@ -72,6 +74,8 @@
 <valtimo-dossier-management-widget-fields-column
   [addTranslateKey]="'widgetTabManagement.content.table.addColumn'"
   [columnData]="content()?.columns"
+  [documentDefinitionName]="documentDefinitionName$ | async"
+  [selectedCollectionPath]="selectedCollectionPath$ | async"
   (columnUpdateEvent)="onColumnUpdateEvent($event)"
 ></valtimo-dossier-management-widget-fields-column>
 

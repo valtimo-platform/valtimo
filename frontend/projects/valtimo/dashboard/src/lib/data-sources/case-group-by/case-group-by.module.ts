@@ -22,7 +22,7 @@ import {CaseGroupByConfigurationComponent} from './components';
 import {ReactiveFormsModule} from '@angular/forms';
 import {WidgetTranslatePipeModule} from '../../pipes';
 import {DropdownModule, InputModule} from 'carbon-components-angular';
-import {CarbonMultiInputModule} from '@valtimo/components';
+import {CarbonMultiInputModule, ValuePathSelectorComponent} from '@valtimo/components';
 
 @NgModule({
   declarations: [CaseGroupByConfigurationComponent],
@@ -33,6 +33,7 @@ import {CarbonMultiInputModule} from '@valtimo/components';
     InputModule,
     DropdownModule,
     CarbonMultiInputModule,
+    ValuePathSelectorComponent,
   ],
   exports: [CaseGroupByConfigurationComponent],
   providers: [

@@ -48,6 +48,7 @@ interface FieldsCaseWidgetValue {
   key: string;
   title: string;
   value: string;
+  ellipsisCharacterLimit?: number;
   displayProperties?: CaseWidgetDisplayType;
 }
 

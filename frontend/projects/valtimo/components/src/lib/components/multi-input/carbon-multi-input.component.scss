@@ -14,25 +14,41 @@
  * limitations under the License.
  */
 
-.v-multi-input--margin {
-  margin-block-end: var(--v-input-margin);
-}
-
-.v-multi-input__row {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  margin-block-end: var(--v-multi-input-row-spacing-block);
-}
-
-.v-multi-input__input {
-  margin-inline-end: var(--v-multi-input-input-spacing-inline);
-
-  &.--full-width {
-    width: 100%;
+.v-multi-input {
+  &--margin {
+    margin-block-end: var(--v-input-margin);
   }
-}
 
-.v-multi-input--no-delete-button .v-multi-input__input:last-child {
-  margin-inline-end: 0;
+  &__row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    margin-block-end: var(--v-multi-input-row-spacing-block);
+  }
+
+  &__input {
+    margin-inline-end: var(--v-multi-input-input-spacing-inline);
+
+    &.--full-width {
+      flex: 1;
+    }
+  }
+
+  &__separator {
+    height: 40px;
+    width: 12px;
+    display: flex;
+    justify-content: flex-start;
+
+    &::before {
+      content: '';
+      height: 100%;
+      width: 1px;
+      background-color: var(--cds-border-subtle-selected);
+    }
+  }
+
+  &--no-delete-button &__input:last-child {
+    margin-inline-end: 0;
+  }
 }

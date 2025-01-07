@@ -38,7 +38,6 @@ import {
   Pagination,
   ViewType,
 } from '@valtimo/components';
-import {DocumentenApiColumnModalComponent} from '../documenten-api-column-modal/documenten-api-column-modal.component';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {ButtonModule, IconModule, TagModule} from 'carbon-components-angular';
@@ -55,7 +54,6 @@ import {Page} from '@valtimo/document';
   standalone: true,
   imports: [
     CommonModule,
-    DocumentenApiColumnModalComponent,
     CarbonListModule,
     TranslateModule,
     ConfirmationModalModule,

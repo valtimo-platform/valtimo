@@ -154,6 +154,7 @@ export class DossierSupportingProcessStartModalComponent {
   public formSubmitted(): void {
     this.modal.hide();
     this.formSubmit.emit();
+    this.formDefinition$.next(null);
   }
 
   public gotoFormLinkScreen(): void {

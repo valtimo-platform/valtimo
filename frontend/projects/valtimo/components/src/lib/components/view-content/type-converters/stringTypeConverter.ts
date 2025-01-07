@@ -22,6 +22,14 @@ export class StringTypeConverter implements TypeConverter {
   }
 
   public convert(value: any): string {
+    if (!value) return '-';
+
+    if (Array.isArray(value) && typeof value[0] === 'string')
+      return value.reduce(
+        (acc, curr, index) => `${acc}${index < value.length && index > 0 ? ', ' : ''}${curr}`,
+        ''
+      );
+
     return value;
   }
 }

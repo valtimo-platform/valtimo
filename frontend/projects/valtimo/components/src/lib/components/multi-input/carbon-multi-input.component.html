@@ -47,27 +47,102 @@
       *ngFor="let value of values$ | async as values; trackBy: trackByFn; index as i"
       class="v-multi-input__row"
     >
-      <ng-container *ngIf="type === 'value'">
-        <ng-container *ngTemplateOutlet="singleValue; context: {value: value}"></ng-container>
-      </ng-container>
-
-      <ng-container *ngIf="type === 'keyValue'">
-        <ng-container
-          *ngTemplateOutlet="keyValue; context: {value: value, index: i}"
-        ></ng-container>
-      </ng-container>
-
-      <ng-container *ngIf="type === 'keyDropdownValue'">
-        <ng-container
-          *ngTemplateOutlet="keyDropdownValue; context: {value: value, index: i}"
-        ></ng-container>
-      </ng-container>
-
-      <ng-container *ngIf="type === 'arbitraryAmount'">
-        <ng-container
-          *ngTemplateOutlet="arbitraryAmountValue; context: {value: value, index: i}"
-        ></ng-container>
-      </ng-container>
+      @switch (type) {
+        @case ('value') {
+          <valtimo-single-value
+            [value]="value"
+            [fullWidth]="fullWidth"
+            [disabled]="disabled"
+            (valueChange)="onValueChange($event.value, $event.inputValue, 'value')"
+          ></valtimo-single-value>
+        }
+        @case ('keyValue') {
+          <valtimo-key-value
+            [keyColumnTitle]="keyColumnTitle"
+            [valueColumnTitle]="valueColumnTitle"
+            [index]="i"
+            [value]="value"
+            [fullWidth]="fullWidth"
+            [disabled]="disabled"
+            (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+          ></valtimo-key-value>
+        }
+        @case ('keyDropdownValue') {
+          <valtimo-key-dropdown-value
+            [keyColumnTitle]="keyColumnTitle"
+            [valueColumnTitle]="valueColumnTitle"
+            [dropdownColumnTitle]="dropdownColumnTitle"
+            [index]="i"
+            [value]="value"
+            [dropdownItems$]="getDropdownItemsForRow(i)"
+            [dropdownWidth]="dropdownWidth"
+            [fullWidth]="fullWidth"
+            [disabled]="disabled"
+            (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+          ></valtimo-key-dropdown-value>
+        }
+        @case ('arbitraryAmount') {
+          <valtimo-arbitrary-amount-value
+            [index]="i"
+            [value]="value"
+            [fullWidth]="fullWidth"
+            [disabled]="disabled"
+            [arbitraryAmountTitles]="arbitraryAmountTitles"
+            [amountOfArbitraryValuesArray$]="amountOfArbitraryValuesArray$"
+            (valueChange)="
+              onValueChange($event.value, $event.inputValue, $event.type, $event.arbitraryIndex)
+            "
+          ></valtimo-arbitrary-amount-value>
+        }
+        @case ('keyValuePathSelector') {
+          <valtimo-key-value-path-selector
+            [keyColumnTitle]="keyColumnTitle"
+            [valueColumnTitle]="valueColumnTitle"
+            [index]="i"
+            [value]="value"
+            [fullWidth]="fullWidth"
+            [disabled]="disabled"
+            [documentDefinitionName]="valuePathSelectorDocumentDefinitionName"
+            [prefixes]="valuePathSelectorPrefixes"
+            [showDocumentDefinitionSelector]="valuePathSelectorShowDocumentDefinitionSelector"
+            [notation]="valuePathSelectorNotation"
+            (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+          ></valtimo-key-value-path-selector>
+        }
+        @case ('valuePathSelectorValue') {
+          <valtimo-value-path-selector-value
+            [keyColumnTitle]="keyColumnTitle"
+            [valueColumnTitle]="valueColumnTitle"
+            [index]="i"
+            [value]="value"
+            [fullWidth]="fullWidth"
+            [disabled]="disabled"
+            [documentDefinitionName]="valuePathSelectorDocumentDefinitionName"
+            [prefixes]="valuePathSelectorPrefixes"
+            [showDocumentDefinitionSelector]="valuePathSelectorShowDocumentDefinitionSelector"
+            [notation]="valuePathSelectorNotation"
+            (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+          ></valtimo-value-path-selector-value>
+        }
+        @case ('valuePathSelectorDropdownValue') {
+          <valtimo-value-path-selector-dropdown-value
+            [keyColumnTitle]="keyColumnTitle"
+            [dropdownColumnTitle]="dropdownColumnTitle"
+            [valueColumnTitle]="valueColumnTitle"
+            [index]="i"
+            [value]="value"
+            [fullWidth]="fullWidth"
+            [disabled]="disabled"
+            [documentDefinitionName]="valuePathSelectorDocumentDefinitionName"
+            [prefixes]="valuePathSelectorPrefixes"
+            [dropdownItems$]="getDropdownItemsForRow(i)"
+            [dropdownWidth]="dropdownWidth"
+            [showDocumentDefinitionSelector]="valuePathSelectorShowDocumentDefinitionSelector"
+            [notation]="valuePathSelectorNotation"
+            (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+          ></valtimo-value-path-selector-dropdown-value>
+        }
+      }
 
       <button
         *ngIf="!hideDeleteButton"
@@ -97,97 +172,3 @@
     </div>
   </div>
 </div>
-
-<ng-template #singleValue let-value="value">
-  <div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
-    <input
-      cdsText
-      [defaultValue]="value.value"
-      [disabled]="disabled"
-      (change)="onValueChange(value, $event.target.value, 'value')"
-    />
-  </div>
-</ng-template>
-
-<ng-template #keyValue let-value="value" let-index="index">
-  <div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
-    <cds-label *ngIf="index === 0 && keyColumnTitle && valueColumnTitle">{{
-      keyColumnTitle
-    }}</cds-label>
-
-    <input
-      cdsText
-      [defaultValue]="value.key"
-      [disabled]="disabled"
-      (input)="onValueChange(value, $event.target.value, 'key')"
-    />
-  </div>
-  <div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
-    <cds-label *ngIf="index === 0 && keyColumnTitle && valueColumnTitle">{{
-      valueColumnTitle
-    }}</cds-label>
-    <input
-      cdsText
-      [defaultValue]="value.value"
-      [disabled]="disabled"
-      (input)="onValueChange(value, $event.target.value, 'value')"
-    />
-  </div>
-</ng-template>
-
-<ng-template #arbitraryAmountValue let-value="value" let-index="index">
-  <div
-    class="v-multi-input__input"
-    [ngClass]="{'--full-width': fullWidth}"
-    *ngFor="let _ of amountOfArbitraryValuesArray$ | async; index as i"
-  >
-    <cds-label *ngIf="index === 0">{{
-      arbitraryAmountTitles ? arbitraryAmountTitles[i] : ''
-    }}</cds-label>
-
-    <input
-      cdsText
-      [defaultValue]="value ? value['' + i] : ''"
-      [disabled]="disabled"
-      (input)="onValueChange(value, $event.target.value, 'arbitrary', i)"
-    />
-  </div>
-</ng-template>
-
-<ng-template #keyDropdownValue let-value="value" let-index="index">
-  <div [ngClass]="{'--full-width': fullWidth}" class="v-multi-input__input">
-    <cds-label *ngIf="index === 0 && keyColumnTitle">{{ keyColumnTitle }}</cds-label>
-
-    <input
-      cdsText
-      [defaultValue]="value.key"
-      [disabled]="disabled"
-      (input)="onValueChange(value, $event.target.value, 'key')"
-    />
-  </div>
-
-  <div [style.minWidth.px]="dropdownWidth" class="v-multi-input__input">
-    <cds-label *ngIf="index === 0 && dropdownColumnTitle">{{ dropdownColumnTitle }}</cds-label>
-
-    <cds-dropdown
-      (selected)="onValueChange(value, $event.item.id, 'dropdown')"
-      [appendInline]="true"
-    >
-      <cds-dropdown-list
-        [items]="getDropdownItemsForRow(index) | async"
-        type="multi"
-      ></cds-dropdown-list>
-    </cds-dropdown>
-  </div>
-
-  <div [ngClass]="{'--full-width': fullWidth}" class="v-multi-input__input">
-    <cds-label *ngIf="index === 0 && valueColumnTitle">{{ valueColumnTitle }}</cds-label>
-
-    <input
-      cdsText
-      [defaultValue]="value.value"
-      [disabled]="disabled"
-      (input)="onValueChange(value, $event.target.value, 'value')"
-    />
-  </div>
-</ng-template>

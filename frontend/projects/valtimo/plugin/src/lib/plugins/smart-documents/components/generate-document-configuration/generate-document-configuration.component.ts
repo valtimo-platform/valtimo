@@ -15,14 +15,10 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {
-  FunctionConfigurationComponent,
-  FunctionConfigurationData,
-  PluginConfigurationComponent,
-  PluginConfigurationData,
-} from '../../../../models';
+import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
-import {DocumentFormat, GenerateDocumentConfig, SmartDocumentsConfig} from '../../models';
+import {DocumentFormat, GenerateDocumentConfig} from '../../models';
+import {ValuePathSelectorPrefix} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-generate-document-configuration',
@@ -45,6 +41,8 @@ export class GenerateDocumentConfigurationComponent
     id: format,
     text: format,
   }));
+
+  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   private saveSubscription!: Subscription;
   private readonly formValue$ = new BehaviorSubject<GenerateDocumentConfig | null>(null);

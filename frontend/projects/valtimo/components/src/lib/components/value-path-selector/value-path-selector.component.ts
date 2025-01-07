@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {CommonModule} from '@angular/common';
 import {
   Component,
   EventEmitter,
@@ -25,8 +25,23 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {ValuePathSelectorService} from '../../services';
+import {
+  AbstractControl,
+  ControlValueAccessor,
+  FormBuilder,
+  FormControl,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import {TranslateModule} from '@ngx-translate/core';
+import {DocumentService} from '@valtimo/document';
+import {
+  DropdownModule,
+  InputModule,
+  ListItem,
+  LoadingModule,
+  ToggleModule,
+} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -39,30 +54,16 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
+import {distinctUntilChanged} from 'rxjs/operators';
 import {
+  ValueCollectionPath,
   ValuePathSelectorInputMode,
   ValuePathSelectorNotation,
   ValuePathSelectorPrefix,
-} from '../../models/value-path-selector.model';
-import {
-  DropdownModule,
-  InputModule,
-  ListItem,
-  LoadingModule,
-  ToggleModule,
-} from 'carbon-components-angular';
-import {
-  AbstractControl,
-  ControlValueAccessor,
-  FormBuilder,
-  FormControl,
-  NG_VALUE_ACCESSOR,
-  ReactiveFormsModule,
-} from '@angular/forms';
+  ValueResolverOptionType,
+} from '../../models';
+import {ValuePathSelectorService} from '../../services';
 import {InputLabelModule} from '../input-label/input-label.module';
-import {TranslateModule} from '@ngx-translate/core';
-import {DocumentService} from '@valtimo/document';
-import {distinctUntilChanged} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-value-path-selector',
@@ -154,11 +155,25 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     if (!value) return;
     this._prefixesSubject$.next(value);
   }
+  private readonly _valueType$ = new BehaviorSubject<ValueResolverOptionType>(
+    ValueResolverOptionType.FIELD
+  );
+  @Input() public set valueType(value: ValueResolverOptionType) {
+    this._valueType$.next(value);
+  }
   @Input() public label = '';
   @Input() public tooltip = '';
   @Input() public required = false;
   @Input() public showDocumentDefinitionSelector = false;
   @Input() public notation: ValuePathSelectorNotation = 'dots';
+
+  private readonly _selectedCollectionPath$ = new BehaviorSubject<ValueCollectionPath | null>(null);
+  @Input() public set selectedCollectionPath(value: ValueCollectionPath | null) {
+    this._selectedCollectionPath$.next(value);
+
+    if (!value) return;
+    this._inputMode$.next(ValuePathSelectorInputMode.DROPDOWN);
+  }
 
   @Input() public set defaultValue(value: string) {
     if (!value) return;
@@ -167,6 +182,8 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
       this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
   }
   @Output() valueChangeEvent: EventEmitter<string> = new EventEmitter();
+  @Output() collectionPathSelected: EventEmitter<ValueCollectionPath | {content: string} | null> =
+    new EventEmitter();
 
   private readonly _documentDefinitionNameSubject$ = new BehaviorSubject<string>('');
   private get _documentDefinitionName$(): Observable<string> {
@@ -194,32 +211,63 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     this._documentDefinitionName$,
     this._prefixes$,
     this._version$,
+    this._valueType$,
+    this._selectedCollectionPath$,
   ]).pipe(
     tap(() => this.loadingValuePathItems$.next(true)),
-    switchMap(([documentDefinitionName, prefixes, version]) =>
-      typeof version === 'number'
-        ? this.valuePathSelectorService.getResolvableKeysPerPrefix(
-            prefixes,
-            documentDefinitionName,
-            version
+    switchMap(([documentDefinitionName, prefixes, version, valueType, selectedCollection]) =>
+      !selectedCollection
+        ? typeof version === 'number'
+          ? this.valuePathSelectorService.getResolvableKeysPerPrefix(
+              prefixes,
+              documentDefinitionName,
+              valueType,
+              version
+            )
+          : this.valuePathSelectorService.getResolvableKeysPerPrefix(
+              prefixes,
+              documentDefinitionName,
+              valueType
+            )
+        : of(
+            this.valuePathSelectorService.getCollectionPathCacheResult(
+              selectedCollection.prefix,
+              documentDefinitionName,
+              version ?? 'latest',
+              selectedCollection.unformattedPath
+            )
           )
-        : this.valuePathSelectorService.getResolvableKeysPerPrefix(prefixes, documentDefinitionName)
     ),
-    map(result =>
-      result.map(path => this.getFormattedPath(path)).sort((a, b) => a.localeCompare(b))
+    map((results: string[]) =>
+      results
+        .map(result => this.getFormattedPath(result))
+        .sort((a, b) => a.content.localeCompare(b.content))
     ),
-    tap(options => (this._cachedOptions = options)),
+    tap(options => (this._cachedOptions = options.map(option => option.content))),
     switchMap(options =>
       combineLatest([of(options), this._selectedPath$, this.inputModeIsDropdown$])
     ),
     tap(([options, selectedPath, inputModeIsDropdown]) => {
-      if (!options.includes(selectedPath) && !!selectedPath && inputModeIsDropdown)
+      if (
+        !options.map(option => option.content).includes(selectedPath) &&
+        !!selectedPath &&
+        inputModeIsDropdown
+      )
         this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
     }),
     map(([options, selectedPath]) =>
-      options.map(option => ({content: option, selected: option === selectedPath}))
+      options.map(option => ({
+        content: option.content,
+        selected: option.content === selectedPath,
+        prefix: option.prefix,
+        unformattedPath: option.unformattedPath,
+      }))
     ),
-    tap(() => this.loadingValuePathItems$.next(false))
+    tap((options: ListItem[]) => {
+      const option = options.find((option: ListItem) => option.selected);
+      if (!!option) this.onPathSelected({item: option});
+      this.loadingValuePathItems$.next(false);
+    })
   );
 
   public readonly loadingDocumentDefinitionItems$ = new BehaviorSubject<boolean>(true);
@@ -290,9 +338,14 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     }
   }
 
-  public onPathSelected(event: {item: {content: string}}): void {
+  public onPathSelected(event: {item: ValueCollectionPath | {content: string}}): void {
     const selectedPath = event?.item?.content;
+
+    if (this.collectionPathSelected.observed)
+      this.collectionPathSelected.emit(!!selectedPath ? event.item : null);
+
     if (!selectedPath) return;
+
     this.selectedPath.setValue(selectedPath);
   }
 
@@ -315,10 +368,18 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     );
   }
 
-  private getFormattedPath(unformattedPath: string): string {
+  private getFormattedPath(unformattedPath: string): ValueCollectionPath {
     const splitPathPrefix = unformattedPath.split(':');
     const prefix = splitPathPrefix[0];
     const remainingPath = splitPathPrefix[1];
+
+    if (!remainingPath)
+      return {
+        prefix,
+        unformattedPath,
+        content: unformattedPath,
+      };
+
     const requiredNotation = this.notation;
     const pathNotation: ValuePathSelectorNotation = remainingPath.includes('/')
       ? 'slashes'
@@ -333,6 +394,10 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
       ''
     );
 
-    return `${prefix}:${requiredNotation === 'dots' ? formattedPath.substring(1) : formattedPath}`;
+    return {
+      prefix,
+      unformattedPath,
+      content: `${prefix}:${requiredNotation === 'dots' ? formattedPath.substring(1) : formattedPath}`,
+    };
   }
 }

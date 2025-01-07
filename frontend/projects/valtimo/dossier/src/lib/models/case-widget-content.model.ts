@@ -15,7 +15,7 @@
  */
 
 import {CaseWidgetDisplayType} from './case-widget-display.model';
-import {CollectionFieldWidth, FieldsCaseWidgetValue} from './case-widget.model';
+import {FieldsCaseWidgetValue} from './case-widget.model';
 
 interface WidgetFieldsContent {
   columns: FieldsCaseWidgetValue[][];

@@ -98,6 +98,7 @@ export class WidgetFieldsService {
       case CaseWidgetDisplayTypeKey.BOOLEAN:
         break;
       case CaseWidgetDisplayTypeKey.TEXT:
+        formGroup.addControl('ellipsisCharacterLimit', this.fb.control(''));
         break;
       case CaseWidgetDisplayTypeKey.CURRENCY:
         formGroup.addControl('currencyCode', this.fb.control(''));

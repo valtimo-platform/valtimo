@@ -24,6 +24,9 @@
     supportedDocumentenApiFeatures: supportedDocumentenApiFeatures$ | async,
     pagination: pagination$ | async,
     sortState: sortState$ | async,
+    uploadFields: uploadFields$ | async,
+    defaultValues: defaultValues$ | async,
+    hideFields: hideFields$ | async,
   } as obs"
 >
   @if ((!obs.fieldsLoading && obs.fields.length) || obs.fieldsLoading) {
@@ -80,6 +83,17 @@
   }
 
   <valtimo-documenten-api-metadata-modal
+    [defaultValues]="obs.defaultValues"
+    [disableAuthor]="obs.uploadFields?.auteur?.readonly"
+    [disableConfidentialityLevel]="obs.uploadFields?.vertrouwelijkheidaanduiding?.readonly"
+    [disableCreationDate]="obs.uploadFields?.creatiedatum?.readonly"
+    [disableDescription]="obs.uploadFields?.beschrijving?.readonly"
+    [disableDocumentTitle]="obs.uploadFields?.titel?.readonly"
+    [disableDocumentType]="obs.uploadFields?.informatieobjecttype?.readonly"
+    [disableFilename]="obs.uploadFields?.bestandsnaam?.readonly"
+    [disableLanguage]="obs.uploadFields?.taal?.readonly"
+    [disableStatus]="obs.uploadFields?.status?.readonly"
+    [hideFields]="obs.hideFields"
     [open]="showUploadModal$ | async"
     [disabled$]="modalDisabled$"
     [file$]="fileToBeUploaded$"
@@ -170,7 +184,11 @@
 </ng-template>
 
 <ng-template #translationTemplate let-data="data">
-  {{ 'document.' + data.item[data.key] | translate }}
+  @if (data.item[data.key]) {
+    {{ 'document.' + data.item[data.key] | translate }}
+  } @else {
+    -
+  }
 </ng-template>
 
 <ng-template #navigateToCaseAdminButton>

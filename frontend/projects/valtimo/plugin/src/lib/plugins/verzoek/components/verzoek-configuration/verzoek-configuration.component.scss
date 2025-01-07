@@ -31,3 +31,9 @@
 .cds--text-input__field-wrapper {
   flex-direction: column;
 }
+
+.modal-buttons-container {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
