@@ -56,6 +56,9 @@ export class ValuePathSelectorDropdownValueComponent {
   @Input() public readonly dropdownWidth = 250;
   @Input() @HostBinding('class.--full-width') public readonly fullWidth = false;
   @Input() public readonly disabled = false;
+  @Input() public readonly keyColumnFlex = 1;
+  @Input() public readonly dropdownColumnFlex = 1;
+  @Input() public readonly valueColumnFlex = 1;
 
   @Output() public readonly valueChange: EventEmitter<{
     value: MultiInputKeyValue;

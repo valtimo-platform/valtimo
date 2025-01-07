@@ -75,6 +75,10 @@
     valuePathSelectorNotation="slashes"
     [valuePathSelectorPrefixes]="[ValuePathSelectorPrefix.DOC]"
     [valuePathSelectorShowDocumentDefinitionSelector]="true"
+    [keyColumnFlex]="1"
+    [valueColumnFlex]="2"
+    [keyColumnTitle]="'destinationInObject' | pluginTranslate: pluginId | async"
+    [valueColumnTitle]="'value' | pluginTranslate: pluginId | async"
   ></valtimo-carbon-multi-input>
 
   <valtimo-carbon-multi-input
@@ -92,6 +96,10 @@
     valuePathSelectorNotation="slashes"
     [valuePathSelectorPrefixes]="[ValuePathSelectorPrefix.DOC]"
     [valuePathSelectorShowDocumentDefinitionSelector]="true"
+    [keyColumnFlex]="2"
+    [valueColumnFlex]="1"
+    [keyColumnTitle]="'destination' | pluginTranslate: pluginId | async"
+    [valueColumnTitle]="'source' | pluginTranslate: pluginId | async"
   ></valtimo-carbon-multi-input>
 
   <v-select

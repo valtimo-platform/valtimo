@@ -64,6 +64,8 @@
             [value]="value"
             [fullWidth]="fullWidth"
             [disabled]="disabled"
+            [keyColumnFlex]="keyColumnFlex"
+            [valueColumnFlex]="valueColumnFlex"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
           ></valtimo-key-value>
         }
@@ -78,6 +80,9 @@
             [dropdownWidth]="dropdownWidth"
             [fullWidth]="fullWidth"
             [disabled]="disabled"
+            [keyColumnFlex]="keyColumnFlex"
+            [dropdownColumnFlex]="dropdownColumnFlex"
+            [valueColumnFlex]="valueColumnFlex"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
           ></valtimo-key-dropdown-value>
         }
@@ -106,6 +111,8 @@
             [prefixes]="valuePathSelectorPrefixes"
             [showDocumentDefinitionSelector]="valuePathSelectorShowDocumentDefinitionSelector"
             [notation]="valuePathSelectorNotation"
+            [keyColumnFlex]="keyColumnFlex"
+            [valueColumnFlex]="valueColumnFlex"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
           ></valtimo-key-value-path-selector>
         }
@@ -121,6 +128,8 @@
             [prefixes]="valuePathSelectorPrefixes"
             [showDocumentDefinitionSelector]="valuePathSelectorShowDocumentDefinitionSelector"
             [notation]="valuePathSelectorNotation"
+            [keyColumnFlex]="keyColumnFlex"
+            [valueColumnFlex]="valueColumnFlex"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
           ></valtimo-value-path-selector-value>
         }
@@ -139,6 +148,9 @@
             [dropdownWidth]="dropdownWidth"
             [showDocumentDefinitionSelector]="valuePathSelectorShowDocumentDefinitionSelector"
             [notation]="valuePathSelectorNotation"
+            [keyColumnFlex]="keyColumnFlex"
+            [dropdownColumnFlex]="dropdownColumnFlex"
+            [valueColumnFlex]="valueColumnFlex"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
           ></valtimo-value-path-selector-dropdown-value>
         }

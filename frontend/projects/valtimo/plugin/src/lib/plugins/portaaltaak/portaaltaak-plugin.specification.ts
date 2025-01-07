@@ -37,7 +37,7 @@ const portaaltaakPluginSpecification: PluginSpecification = {
         'De naam van de huidige plugin-configuratie. Onder deze naam kan de configuratie in de rest van de applicatie teruggevonden worden.',
       notificatiesApiPluginConfiguration: 'Notificaties API plugin',
       notificatiesApiPluginConfigurationTooltip:
-        'Selecteer de Notificaties API plugin. Wanneer de selectiebox leeg us, zal de notificatie API plugin eerst aangemaakt moeten worden.',
+        'Selecteer de Notificaties API plugin. Wanneer de selectiebox leeg is, zal de notificatie API plugin eerst aangemaakt moeten worden.',
       objectManagementConfiguration: 'Object management configuratie',
       objectManagementConfigurationTooltip:
         'Selecteer de gewenste object management configuratie. Wanneer de selectiebox leeg is, zal de object management configuratie eerst aangemaakt moeten worden.',
@@ -45,7 +45,7 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       'complete-portaaltaak': 'Portaaltaak afronden',
       formType: 'Formuliertype',
       formTypeTooltip:
-        'Kies hier of het te tonen formulier afomstig moet zijn van een ingestelde definitie, of van een externe URL.',
+        'Kies hier of het te tonen formulier afkomstig moet zijn van een ingestelde definitie, of van een externe URL.',
       id: 'Formulierdefinitie',
       url: 'URL',
       formTypeId: 'Formulier ID',
@@ -54,10 +54,10 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       formTypeUrlTooltip: 'Een URL die wijst naar het formulier dat getoond moet worden',
       sendData: 'Taakgegevens voor de ontvanger',
       sendDataTooltip:
-        "Voor hier sleutels en waarden in voor data die verstuurd moet worden naar de Objecten API. De sleutel is hier de sleutel van het Form.IO-veld dat gevuld moet worden (bijvoorbeeld 'firstName'). De waarde wijst naar de data waarmee dit veld gevuld moet worden (bijvoorbeeld 'doc:/customer/firstName').",
+        "Vul hier sleutels en waarden in voor data die verstuurd moet worden naar de Objecten API. De sleutel is hier het pad in het object dat gevuld moet worden (bijvoorbeeld 'firstName'). De waarde wijst naar de data waarmee dit veld gevuld moet worden (bijvoorbeeld 'doc:/customer/firstName').",
       receiveData: 'Ingevulde gegevens door de ontvanger',
       receiveDataTooltip:
-        "Voor hier sleutels en waarden in voor data die ontvangen moet worden van de Objecten API. De sleutel is hier de locatie waar de data opgeslagen moet worden (bijvoorbeeld 'doc:/customer/signedAgreement'). De waarde wijst naar de sleutel van het Form.IO-veld waar de data vandaan moet komen (bijvoorbeeld '/signedAgreement').",
+        "Vul hier sleutels en waarden in voor data die ontvangen moet worden van de Objecten API. De sleutel is hier de locatie waar de data opgeslagen moet worden (bijvoorbeeld 'doc:/customer/signedAgreement'). De waarde wijst naar het pad in het object waar de data vandaan moet komen (bijvoorbeeld '/signedAgreement').",
       receiver: 'Ontvanger',
       receiverTooltip: 'Bepaal hier bij wie de data van de afgeronde taak terecht moet komen.',
       zaakInitiator: 'Zaak-initiator',
@@ -81,6 +81,10 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       verloopDurationInDays: 'Verlooptijd taak in dagen',
       verloopDurationInDaysTooltip:
         'Het aantal dagen na aanmaken van een taak dat deze verloopt. Deze wordt alleen ingesteld voor de portaal taak, niet in het BPMN proces.',
+      destinationInObject: 'Pad in het object',
+      value: 'Waarde',
+      destination: 'Bestemming',
+      source: 'Bron',
     },
     en: {
       title: 'Portal task',
@@ -101,16 +105,16 @@ const portaaltaakPluginSpecification: PluginSpecification = {
         'Choose here whether the form to be displayed should come from a set definition or from an external URL.',
       id: 'Form definition',
       url: 'URL',
-      formTypeId: 'Formulier ID',
-      formTypeIdTooltip: 'Het ID van het formulier dat getoond moet worden',
-      formTypeUrl: 'Formulier URL',
-      formTypeUrlTooltip: 'Een URL die wijst naar het formulier dat getoond moet worden',
+      formTypeId: 'Form ID',
+      formTypeIdTooltip: 'The ID of the form to be displayed',
+      formTypeUrl: 'Form URL',
+      formTypeUrlTooltip: 'A URL pointing to the form to be displayed',
       sendData: 'Task data for the recipient',
       sendDataTooltip:
-        "Enter keys and values here for data to be sent to the Objecten API. The key here is the key of the Form.IO field to be populated (e.g. 'firstName'). The value points to the data with which this field must be filled (e.g. 'doc:/customer/firstName').",
+        "Enter keys and values here for data to be sent to the Objecten API. The key here is the path in the object to be populated (e.g. 'firstName'). The value points to the data with which this field must be filled (e.g. 'doc:/customer/firstName').",
       receiveData: 'Information entered by the recipient',
       receiveDataTooltip:
-        "Enter keys and values here for data to be received from the Objecten API. The key here is the location where the data should be stored (e.g. 'doc:/customer/signedAgreement'). The value points to the key of the Form.IO field where the data should come from (e.g. '/signedAgreement').",
+        "Enter keys and values here for data to be received from the Objecten API. The key here is the location where the data should be stored (e.g. 'doc:/customer/signedAgreement'). The value points to the path in the object where the data should come from (e.g. '/signedAgreement').",
       receiver: 'Receiver',
       receiverTooltip: 'Determine here who should receive the data of the completed task.',
       zaakInitiator: 'Case initiator',
@@ -134,6 +138,10 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       verloopDurationInDays: 'Number of days for the task to expire',
       verloopDurationInDaysTooltip:
         'The number of days from the creation time until the task expires. This will only be used in the portal task. The BPMN due date needs to be configured separately.',
+      destinationInObject: 'Path in the object',
+      value: 'Value',
+      destination: 'Destination',
+      source: 'Source',
     },
     de: {
       title: 'Portalaufgabe',
@@ -144,12 +152,12 @@ const portaaltaakPluginSpecification: PluginSpecification = {
         'Der Name der aktuellen Plugin-Konfiguration. Unter diesem Namen ist die Konfiguration im Rest der Anwendung zu finden.',
       notificatiesApiPluginConfiguration: 'Benachrichtigungs-API plugin',
       notificatiesApiPluginConfigurationTooltip:
-        'Wählen Sie das Benachrichtigungs-API-Plugin aus. Bleibt das Auswahlfeld leer, muss das Benachrichtigungs-API-Plugin erst erstellt werden',
+        'Wählen Sie das Benachrichtigungs-API-Plugin aus. Bleibt das Auswahlfeld leer, muss das Benachrichtigungs-API-Plugin erst erstellt werden.',
       objectManagementConfiguration: 'Objektverwaltungskonfiguration',
       objectManagementConfigurationTooltip:
         'Wählen Sie die Objektverwaltungskonfiguration aus. Bleibt das Auswahlfeld leer, muss zunächst die Objektverwaltungskonfiguration erstellt werden.',
       'create-portaaltaak': 'Portalaufgabe erstellen',
-      'complete-portaaltaak': 'Portaaltaak komplett',
+      'complete-portaaltaak': 'Portalaufgabe abschließen',
       formType: 'Formulartyp',
       formTypeTooltip:
         'Wählen Sie hier aus, ob das anzuzeigende Formular aus einer Set-Definition oder von einer externen URL stammen soll.',
@@ -157,10 +165,10 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       url: 'URL',
       sendData: 'Auftragsdaten für den Empfänger',
       sendDataTooltip:
-        "Geben Sie hier Schlüssel und Werte für Daten ein, die an die Objecten API gesendet werden sollen. Der Schlüssel hier ist der Schlüssel des Form.IO-Felds, das gefüllt werden soll (z. B. 'firstName‘). Der Wert zeigt auf die Daten, mit denen dieses Feld gefüllt wird muss ausgefüllt werden (z.B. 'doc:/customer/firstName').",
+        "Geben Sie hier Schlüssel und Werte für Daten ein, die an die Objecten API gesendet werden sollen. Der Schlüssel ist hier der Pfad im Objekt, das gefüllt werden soll (z. B. 'firstName'). Der Wert zeigt auf die Daten, mit denen dieses Feld gefüllt werden muss (z. B. 'doc:/customer/firstName').",
       receiveData: 'Vom Empfänger eingegebene Informationen',
       receiveDataTooltip:
-        "Geben Sie hier Schlüssel und Werte für Daten ein, die von der Objecten API empfangen werden sollen. Der Schlüssel hier ist der Ort, an dem die Daten gespeichert werden sollen (z. B. 'doc:/customer/signedAgreement'). Der Wert zeigt auf den Schlüssel des Form.IO-Feld, aus dem die Daten stammen sollen (z. B. '/signedAgreement').",
+        "Geben Sie hier Schlüssel und Werte für Daten ein, die von der Objecten API empfangen werden sollen. Der Schlüssel ist hier der Ort, an dem die Daten gespeichert werden sollen (z. B. 'doc:/customer/signedAgreement'). Der Wert zeigt auf den Pfad im Objekt, aus dem die Daten stammen sollen (z. B. '/signedAgreement').",
       receiver: 'Empfänger',
       receiverTooltip:
         'Bestimmen Sie hier, wer die Daten der abgeschlossenen Aufgabe erhalten soll.',
@@ -185,6 +193,10 @@ const portaaltaakPluginSpecification: PluginSpecification = {
       verloopDurationInDays: 'Ablaufzeit der Aufgabe in Tagen',
       verloopDurationInDaysTooltip:
         'Die Anzahl der Tage vom Erstellungszeitpunkt bis zum Ablauf der Aufgabe. Dies wird nur in der Portalaufgabe verwendet. Das BPMN-Fälligkeitsdatum muss separat konfiguriert werden.',
+      destinationInObject: 'Pfad im Objekt',
+      value: 'Wert',
+      destination: 'Ziel',
+      source: 'Quelle',
     },
   },
 };
