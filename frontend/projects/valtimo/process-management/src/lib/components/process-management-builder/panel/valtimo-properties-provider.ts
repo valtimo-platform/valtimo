@@ -116,7 +116,7 @@ const CustomRootElement = (props: {
   };
 
   const handleUnlinkClick = (): void => {
-    processManagementEditorService.deleteProcessLink({processLinkId: processLink.id}, () => {
+    processManagementEditorService.deleteProcessLink({activityId: processLink.activityId}, () => {
       modeling.updateProperties(element, {});
     });
   };

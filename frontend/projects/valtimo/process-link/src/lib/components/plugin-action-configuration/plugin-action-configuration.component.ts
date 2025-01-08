@@ -25,7 +25,11 @@ import {
 import {combineLatest, Observable, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {PluginConfiguration, PluginConfigurationData} from '@valtimo/plugin';
-import {PluginProcessLinkCreateDto, PluginProcessLinkUpdateDto, ProcessLinkEditMode} from '../../models';
+import {
+  PluginProcessLinkCreateDto,
+  PluginProcessLinkUpdateDto,
+  ProcessLinkEditMode,
+} from '../../models';
 
 @Component({
   selector: 'valtimo-plugin-action-configuration',
@@ -92,6 +96,7 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
         pluginConfigurationId: selectedProcessLink.pluginConfigurationId,
         pluginActionDefinitionKey: selectedProcessLink.pluginActionDefinitionKey,
         actionProperties: configuration,
+        activityId: selectedProcessLink.activityId,
       };
 
       if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {

@@ -1,6 +1,5 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
-import {ConfigService} from '@valtimo/config';
 import {ListItem} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -27,7 +26,6 @@ export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
   );
   public readonly disableFormSizeInput$ = new BehaviorSubject<boolean>(true);
   public readonly saving$ = this.stateService.saving$;
-  public readonly taskPanelEnabled$ = new BehaviorSubject<boolean>(false);
   public readonly isUserTask$ = new BehaviorSubject<boolean>(false);
 
   private readonly _DISPLAY_TYPE_OPTIONS: FormDisplayType[] = ['modal', 'panel'];
@@ -62,12 +60,9 @@ export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly buttonService: ProcessLinkButtonService,
-    private readonly configService: ConfigService,
     private readonly stateService: ProcessLinkStateService,
     private readonly translateService: TranslateService
-  ) {
-    this.taskPanelEnabled$.next(!!this.configService.featureToggles?.enableTaskPanel);
-  }
+  ) {}
 
   public ngOnInit(): void {
     this._subscriptions.add(

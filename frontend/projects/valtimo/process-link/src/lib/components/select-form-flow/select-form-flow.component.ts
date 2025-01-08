@@ -18,7 +18,9 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, tap} from
 import {take} from 'rxjs/operators';
 import {
   FormDefinitionListItem,
+  FormDisplayType,
   FormFlowProcessLinkUpdateRequestDto,
+  FormSize,
   ProcessLinkEditMode,
 } from '../../models';
 import {
@@ -27,7 +29,6 @@ import {
   ProcessLinkService,
   ProcessLinkStateService,
 } from '../../services';
-import {ConfigService} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-select-form-flow',
@@ -35,13 +36,12 @@ import {ConfigService} from '@valtimo/config';
   styleUrls: ['./select-form-flow.component.scss'],
 })
 export class SelectFormFlowComponent implements OnInit, OnDestroy {
-  public formDisplayValue: string = '';
-  public formSizeValue: string = '';
+  public formDisplayValue!: FormDisplayType;
+  public formSizeValue!: FormSize;
   public selectedFormFlowDefinition!: FormDefinitionListItem;
   public subtitlesValue: string[] = [];
   public readonly saving$ = this.stateService.saving$;
   private readonly formFlowDefinitions$ = this.formFlowService.getFormFlowDefinitions();
-  private readonly _taskPanelToggle = this.configService.featureToggles?.enableTaskPanel;
 
   public readonly formFlowDefinitionListItems$: Observable<Array<FormDefinitionListItem>> =
     combineLatest([this.stateService.selectedProcessLink$, this.formFlowDefinitions$]).pipe(
@@ -66,8 +66,10 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
   private _subscriptions = new Subscription();
   private isUserTask$ = new BehaviorSubject<boolean>(false);
 
+  private readonly _DEFAULT_FORM_DISPLAY_TYPE: FormDisplayType = 'panel';
+  private readonly _DEFAULT_FORM_DISPLAY_SIZE: FormSize = 'medium';
+
   constructor(
-    private readonly configService: ConfigService,
     private readonly formFlowService: FormFlowService,
     private readonly stateService: ProcessLinkStateService,
     private readonly processLinkService: ProcessLinkService,
@@ -96,11 +98,11 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  public selectedFormDisplayValue(formDisplay: string): void {
+  public selectedFormDisplayValue(formDisplay: FormDisplayType): void {
     this.formDisplayValue = formDisplay;
   }
 
-  public selectedFormSizeValue(formSize: string): void {
+  public selectedFormSizeValue(formSize: FormSize): void {
     this.formSizeValue = formSize;
   }
 
@@ -150,11 +152,11 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
         const updateProcessLinkRequest: FormFlowProcessLinkUpdateRequestDto = {
           id: selectedProcessLink.id,
           formFlowDefinitionId: this.selectedFormFlowDefinition.id,
-          ...(this._taskPanelToggle &&
-            isUserTask && {
-              formDisplayType: this.formDisplayValue,
-            }),
-          ...(this._taskPanelToggle && isUserTask && {formSize: this.formSizeValue}),
+          activityId: selectedProcessLink.activityId,
+          ...(isUserTask && {
+            formDisplayType: this.formDisplayValue || this._DEFAULT_FORM_DISPLAY_TYPE,
+          }),
+          ...(isUserTask && {formSize: this.formSizeValue || this._DEFAULT_FORM_DISPLAY_SIZE}),
           ...(isUserTask && {subtitles: this.subtitlesValue}),
         };
 
@@ -189,9 +191,9 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
           processLinkType: processLinkTypeId,
           activityId: modalParams.element.id,
           ...(isUserTask && {
-            formDisplayType: this.formDisplayValue,
+            formDisplayType: this.formDisplayValue || this._DEFAULT_FORM_DISPLAY_TYPE,
           }),
-          ...(isUserTask && {formSize: this.formSizeValue}),
+          ...(isUserTask && {formSize: this.formSizeValue || this._DEFAULT_FORM_DISPLAY_SIZE}),
           ...(isUserTask && {subtitles: this.subtitlesValue}),
         };
 

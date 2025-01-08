@@ -83,7 +83,7 @@ export class ProcessLinkModalComponent {
 
     this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
       if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-        this.stateService.sendProcessLinkDeleteEvent({processLinkId: selectedProcessLink.id});
+        this.stateService.sendProcessLinkDeleteEvent({activityId: selectedProcessLink.activityId});
         return;
       }
 

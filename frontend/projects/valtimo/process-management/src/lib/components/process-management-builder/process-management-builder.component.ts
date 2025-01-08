@@ -80,6 +80,7 @@ import {
   ProcessLinkStepService,
 } from '@valtimo/process-link';
 import {EMPTY_BPMN} from '../../constants';
+import {NGXLogger} from 'ngx-logger';
 
 @Component({
   selector: 'valtimo-process-management-builder',
@@ -137,6 +138,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         this.processService.getProcessDefinitionXml(selectedProcessDefinition.id)
       ),
       tap(result => {
+        this.cleanUpListenersOnModeler();
         this._bpmnModeler?.importXML(result.bpmn20Xml);
         this._bpmnViewer?.importXML(result.bpmn20Xml);
         this.isReadOnlyProcess$.next(result.readOnly);
@@ -202,7 +204,8 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     private readonly processLinkService: ProcessLinkService,
     private readonly processLinkStateService: ProcessLinkStateService,
     private readonly router: Router,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly logger: NGXLogger
   ) {
     this.iconService.registerAll([Deploy16, Download16]);
     (window as any as ProcessManagementWindow).processManagementEditorService =
@@ -333,6 +336,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this._bpmnModeler.on('commandStack.changed', () => {
       this.changesPending$.next(true);
     });
+
+    this._bpmnModeler.on('import.done', () => {
+      this.listenToActivityChangesOnModeler();
+    });
   }
 
   private initViewer(): void {
@@ -393,12 +400,12 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
 
     this._bpmnViewer?.attachTo(this.viewerElementRef.nativeElement);
 
-    this._bpmnViewer.on('import.done', () => {
-      disableCommands();
-    });
-
     this._bpmnViewer.on('commandStack.changed', () => {
       this.changesPending$.next(true);
+    });
+
+    this._bpmnViewer.on('import.done', () => {
+      disableCommands();
     });
   }
 
@@ -478,5 +485,43 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.isReadOnlyProcess$.next(false);
     this.isSystemProcess$.next(false);
     this.loading$.next(false);
+  }
+
+  private shapeAddedHandler = (event: any): void => {
+    this.logger.debug('Shape added:', event);
+  };
+
+  private shapeRemovedHandler = (event: any): void => {
+    this.logger.debug('Shape removed:', event);
+
+    const activityId = event?.element?.id;
+
+    if (!activityId) return;
+
+    this.processManagementEditorService.deleteProcessLink({activityId});
+  };
+
+  private elementChangedHandler = (event: any): void => {
+    this.logger.debug('Element changed:', event);
+  };
+
+  private listenToActivityChangesOnModeler(): void {
+    const eventBus = this._bpmnModeler.get('eventBus') as any;
+
+    if (!eventBus) return;
+
+    eventBus.on('shape.added', this.shapeAddedHandler);
+    eventBus.on('shape.removed', this.shapeRemovedHandler);
+    eventBus.on('element.changed', this.elementChangedHandler);
+  }
+
+  private cleanUpListenersOnModeler(): void {
+    const eventBus = this._bpmnModeler.get('eventBus') as any;
+
+    if (!eventBus) return;
+
+    eventBus.off('shape.added', this.shapeAddedHandler);
+    eventBus.off('shape.removed', this.shapeRemovedHandler);
+    eventBus.off('element.changed', this.elementChangedHandler);
   }
 }

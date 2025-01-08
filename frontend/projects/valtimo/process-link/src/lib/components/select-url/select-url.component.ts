@@ -111,6 +111,7 @@ export class SelectUrlComponent implements OnInit, OnDestroy {
       const updateProcessLinkRequest: URLProcessLinkUpdateRequestDto = {
         id: selectedProcessLink.id,
         url: this.url.value,
+        activityId: selectedProcessLink.activityId,
       };
 
       if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {

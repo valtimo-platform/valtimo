@@ -90,6 +90,7 @@ interface PluginProcessLinkCreateDto {
 
 interface PluginProcessLinkUpdateDto {
   id: string;
+  activityId: string;
   pluginConfigurationId: string;
   pluginActionDefinitionKey: string;
   actionProperties: {
@@ -99,6 +100,7 @@ interface PluginProcessLinkUpdateDto {
 
 interface FormFlowProcessLinkUpdateRequestDto {
   id: string;
+  activityId: string;
   formFlowDefinitionId: string;
   formDisplayType?: string;
   formSize?: string;
@@ -106,6 +108,7 @@ interface FormFlowProcessLinkUpdateRequestDto {
 
 interface FormProcessLinkUpdateRequestDto {
   id: string;
+  activityId: string;
   formDefinitionId: string;
   viewModelEnabled: boolean;
   formDisplayType?: string;
@@ -127,6 +130,7 @@ interface URLProcessLinkCreateDto {
 interface URLProcessLinkUpdateRequestDto {
   url: string;
   id: string;
+  activityId: string;
 }
 
 type TaskProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url';
@@ -164,7 +168,7 @@ type ProcessLinkCreateEvent =
   | URLProcessLinkCreateDto;
 
 interface ProcessLinkDeleteEvent {
-  processLinkId: string;
+  activityId: string;
 }
 
 enum ProcessLinkEditMode {

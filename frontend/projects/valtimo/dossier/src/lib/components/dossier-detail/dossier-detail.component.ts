@@ -63,10 +63,10 @@ import {
   of,
   startWith,
   Subject,
+  Subscription,
   switchMap,
   take,
   tap,
-  Subscription,
 } from 'rxjs';
 import {
   DOSSIER_DETAIL_DEFAULT_DISPLAY_SIZE,
@@ -77,8 +77,8 @@ import {TabImpl, TabLoaderImpl} from '../../models';
 import {
   CAN_ASSIGN_CASE_PERMISSION,
   CAN_CLAIM_CASE_PERMISSION,
-  CAN_VIEW_CASE_PERMISSION,
   CAN_DELETE_CASE_PERMISSION,
+  CAN_VIEW_CASE_PERMISSION,
   DOSSIER_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
 import {DossierDetailLayoutService, DossierService, DossierTabService} from '../../services';
@@ -124,7 +124,6 @@ export class DossierDetailComponent
     this.dossierDetailLayoutService.taskAndProcessLinkOpenedInPanel$;
 
   private readonly _caseStatusKey$ = new BehaviorSubject<string | null | 'NOT_AVAILABLE'>(null);
-  private readonly _taskPanelToggle = this.configService.featureToggles?.enableTaskPanel;
 
   public readonly caseStatusKey$: Observable<string | 'NOT_AVAILABLE'> = this._caseStatusKey$.pipe(
     filter(key => !!key)
@@ -438,7 +437,7 @@ export class DossierDetailComponent
     this.dossierDetailLayoutService.setFormDisplaySize(size);
     this.dossierDetailLayoutService.setFormDisplayType(displayType);
 
-    if (displayType === 'panel' && !!this._taskPanelToggle) {
+    if (displayType === 'panel') {
       this.dossierDetailLayoutService.setTaskAndProcessLinkOpenedInPanel(taskProcessLinkResult);
     } else {
       this.openTaskAndProcessLinkInModal$.next({...taskProcessLinkResult});
