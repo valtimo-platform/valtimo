@@ -151,7 +151,9 @@ public class JsonSchemaDocumentDefinitionResource implements DocumentDefinitionR
 
     @Override
     public ResponseEntity<DocumentVersionsResult> getDocumentDefinitionVersions(String name) {
-        List<Long> versions = runWithoutAuthorization(() -> documentDefinitionService.findVersionsByName(name));
+        List<CaseDefinitionId> versions = runWithoutAuthorization(
+            () -> documentDefinitionService.findVersionsByName(name)
+        );
 
         if (versions.isEmpty()) {
             return notFound().build();

@@ -54,7 +54,7 @@ public interface DocumentDefinitionService {
 
     List<String> getPropertyNames(DocumentDefinition definition);
 
-    List<Long> findVersionsByName(String documentDefinitionName);
+    List<CaseDefinitionId> findVersionsByName(String documentDefinitionName);
 
     void deployAll();
 

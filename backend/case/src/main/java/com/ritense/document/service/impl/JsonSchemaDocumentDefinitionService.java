@@ -153,7 +153,7 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     public Optional<JsonSchemaDocumentDefinition> findLatestByName(
         @LoggableResource("documentDefinitionName") String documentDefinitionName
     ) {
-        final var definition = documentDefinitionRepository.findFirstByIdNameOrderByIdVersionDesc(
+        final var definition = documentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(
             documentDefinitionName
         ).orElse(null);
 
@@ -226,10 +226,10 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     }
 
     @Override
-    public List<Long> findVersionsByName(
+    public List<CaseDefinitionId> findVersionsByName(
         @LoggableResource("documentDefinitionName") String documentDefinitionName
     ) {
-        final var optionalDefinition = documentDefinitionRepository.findFirstByIdNameOrderByIdVersionDesc(
+        final var optionalDefinition = documentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(
             documentDefinitionName
         );
 
@@ -333,7 +333,7 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
         withLoggingContext(JsonSchemaDocumentDefinition.class, documentDefinition.id().toString(), () -> {
             assertArgumentNotNull(documentDefinition, "documentDefinition is required");
 
-            JsonSchemaDocumentDefinitionId latestDefinitionId = documentDefinitionRepository.findFirstByIdNameOrderByIdVersionDesc(
+            JsonSchemaDocumentDefinitionId latestDefinitionId = documentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(
                 documentDefinition.id().name()).map(JsonSchemaDocumentDefinition::getId).orElse(null);
 
             authorizationService.requirePermission(

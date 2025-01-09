@@ -71,7 +71,7 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
         //TODO try to mock resource loading or refactor
     void shouldDeployAll() {
         when(jsonSchemaDocumentDefinitionRepository.findAllByIdName(anyString())).thenReturn(Collections.emptyList());
-        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdVersionDesc(anyString())).thenReturn(
+        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(anyString())).thenReturn(
             Optional.empty());
         AuthorizationContext.runWithoutAuthorization(() -> {
             documentDefinitionService.deployAll();
@@ -82,7 +82,7 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
 
     @Test
     void shouldStore() {
-        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdVersionDesc(anyString())).thenReturn(
+        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(anyString())).thenReturn(
             Optional.empty());
         when(jsonSchemaDocumentDefinitionRepository.findById(any(JsonSchemaDocumentDefinitionId.class))).thenReturn(
             Optional.empty());
@@ -94,7 +94,7 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
 
     @Test
     void shouldReturnSaveOnceWhenDeployingUnchangedSchema() {
-        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdVersionDesc(anyString()))
+        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(anyString()))
             .thenReturn(Optional.empty());
         when(jsonSchemaDocumentDefinitionRepository.findById(any(JsonSchemaDocumentDefinitionId.class)))
             .thenReturn(Optional.empty())
@@ -108,7 +108,7 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
 
     @Test
     void shouldThrowExceptionWhenDeployingChangedSchema() {
-        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdVersionDesc(anyString())).thenReturn(
+        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(anyString())).thenReturn(
             Optional.empty());
         when(jsonSchemaDocumentDefinitionRepository.findById(any(JsonSchemaDocumentDefinitionId.class))).thenReturn(
             Optional.of(definition));
@@ -120,7 +120,7 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
 
     @Test
     void shouldThrowExceptionWhenDeployingNameMismatchedSchema() {
-        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdVersionDesc(anyString())).thenReturn(
+        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(anyString())).thenReturn(
             Optional.empty());
         when(jsonSchemaDocumentDefinitionRepository.findById(any(JsonSchemaDocumentDefinitionId.class))).thenReturn(
             Optional.of(definition));
@@ -229,7 +229,7 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
 
     public JsonSchemaDocumentDefinition mockDefinition(String definitionName) {
         var definition = definitionOf(definitionName);
-        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdVersionDesc(definitionName))
+        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(definitionName))
             .thenReturn(Optional.of(definition));
         return definition;
     }
