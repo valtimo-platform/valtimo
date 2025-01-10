@@ -17,7 +17,7 @@
 package com.ritense.processlink.domain
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.ritense.processlink.domain.CustomProcessLink.Companion.PROCESS_LINK_TYPE_TEST
+import com.ritense.processlink.domain.TestProcessLink.Companion.PROCESS_LINK_TYPE_TEST
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.hamcrest.MatcherAssert.assertThat
@@ -27,10 +27,10 @@ import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
 
-class CustomProcessLinkCreateRequestDtoTest {
+class TestProcessLinkCreateRequestDtoTest {
 
     private val mapper = MapperSingleton.get().copy().apply {
-        this.registerSubtypes(CustomProcessLinkCreateRequestDto::class.java, CustomProcessLinkUpdateRequestDto::class.java)
+        this.registerSubtypes(TestProcessLinkCreateRequestDto::class.java, TestProcessLinkUpdateRequestDto::class.java)
     }
 
     @Test
@@ -45,8 +45,8 @@ class CustomProcessLinkCreateRequestDtoTest {
             }
         """.trimIndent())
 
-        assertThat(value, instanceOf(CustomProcessLinkCreateRequestDto::class.java))
-        value as CustomProcessLinkCreateRequestDto
+        assertThat(value, instanceOf(TestProcessLinkCreateRequestDto::class.java))
+        value as TestProcessLinkCreateRequestDto
         assertThat(value.processLinkType, equalTo(PROCESS_LINK_TYPE_TEST))
         assertThat(value.someValue, equalTo("test"))
     }
@@ -62,15 +62,15 @@ class CustomProcessLinkCreateRequestDtoTest {
             }
         """.trimIndent())
 
-        assertThat(value, instanceOf(CustomProcessLinkCreateRequestDto::class.java))
-        value as CustomProcessLinkCreateRequestDto
+        assertThat(value, instanceOf(TestProcessLinkCreateRequestDto::class.java))
+        value as TestProcessLinkCreateRequestDto
         assertThat(value.processLinkType, equalTo(PROCESS_LINK_TYPE_TEST))
         assertThat(value.someValue, equalTo("test"))
     }
 
     @Test
     fun `should serialize correctly`() {
-        val value = CustomProcessLinkCreateRequestDto("process-definition:1","serviceTask1", ActivityTypeWithEventName.SERVICE_TASK_START, "test")
+        val value = TestProcessLinkCreateRequestDto("process-definition:1","serviceTask1", ActivityTypeWithEventName.SERVICE_TASK_START, "test")
 
         val json = mapper.writeValueAsString(value)
 

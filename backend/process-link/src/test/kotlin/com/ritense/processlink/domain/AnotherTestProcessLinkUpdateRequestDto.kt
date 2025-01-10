@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,15 @@
 package com.ritense.processlink.domain
 
 import com.fasterxml.jackson.annotation.JsonTypeName
-import com.ritense.processlink.domain.CustomProcessLink.Companion.PROCESS_LINK_TYPE_TEST
+import com.ritense.processlink.domain.AnotherTestProcessLink.Companion.PROCESS_LINK_TYPE
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import java.util.UUID
 
-@JsonTypeName(PROCESS_LINK_TYPE_TEST)
-data class CustomProcessLinkUpdateRequestDto(
+@JsonTypeName(PROCESS_LINK_TYPE)
+data class AnotherTestProcessLinkUpdateRequestDto(
     override val id: UUID,
-    val someValue: String = "test"
+    val anotherValue: String = "another-test"
 ) : ProcessLinkUpdateRequestDto {
     override val processLinkType: String
-        get() = PROCESS_LINK_TYPE_TEST
+        get() = PROCESS_LINK_TYPE
 }

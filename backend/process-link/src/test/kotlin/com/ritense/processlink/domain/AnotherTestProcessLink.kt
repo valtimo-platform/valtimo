@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,29 @@
 
 package com.ritense.processlink.domain
 
-import com.ritense.processlink.domain.CustomProcessLink.Companion.PROCESS_LINK_TYPE_TEST
+import com.ritense.processlink.domain.AnotherTestProcessLink.Companion.PROCESS_LINK_TYPE
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import java.util.UUID
 
 @Entity
-@DiscriminatorValue(PROCESS_LINK_TYPE_TEST)
-class CustomProcessLink(
+@DiscriminatorValue(PROCESS_LINK_TYPE)
+class AnotherTestProcessLink(
     id: UUID,
     processDefinitionId: String,
     activityId: String,
     activityType: ActivityTypeWithEventName,
 
-    @Column(name = "some_value")
-    val someValue: String = "test"
+    @Column(name = "another_value")
+    val anotherValue: String = "another-test"
 
 ) : ProcessLink(
     id,
     processDefinitionId,
     activityId,
     activityType,
-    PROCESS_LINK_TYPE_TEST,
+    PROCESS_LINK_TYPE,
 ) {
 
     override fun copy(
@@ -55,13 +55,13 @@ class CustomProcessLink(
         processDefinitionId: String = this.processDefinitionId,
         activityId: String = this.activityId,
         activityType: ActivityTypeWithEventName = this.activityType,
-        someValue: String = this.someValue
-    ) = CustomProcessLink(
+        anotherValue: String = this.anotherValue
+    ) = AnotherTestProcessLink(
         id = id,
         processDefinitionId = processDefinitionId,
         activityId = activityId,
         activityType = activityType,
-        someValue = someValue
+        anotherValue = anotherValue
     )
 
     override fun equals(other: Any?): Boolean {
@@ -69,18 +69,18 @@ class CustomProcessLink(
         if (javaClass != other?.javaClass) return false
         if (!super.equals(other)) return false
 
-        other as CustomProcessLink
+        other as AnotherTestProcessLink
 
-        return someValue == other.someValue
+        return anotherValue == other.anotherValue
     }
 
     override fun hashCode(): Int {
         var result = super.hashCode()
-        result = 31 * result + someValue.hashCode()
+        result = 31 * result + anotherValue.hashCode()
         return result
     }
 
     companion object {
-        const val PROCESS_LINK_TYPE_TEST = "test"
+        const val PROCESS_LINK_TYPE = "another-test"
     }
 }

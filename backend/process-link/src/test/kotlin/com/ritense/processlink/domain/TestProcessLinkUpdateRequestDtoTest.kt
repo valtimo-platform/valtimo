@@ -17,21 +17,21 @@
 package com.ritense.processlink.domain
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.ritense.processlink.domain.CustomProcessLink.Companion.PROCESS_LINK_TYPE_TEST
+import com.ritense.processlink.domain.TestProcessLink.Companion.PROCESS_LINK_TYPE_TEST
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import com.ritense.valtimo.contract.json.MapperSingleton
-import java.util.UUID
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.instanceOf
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
+import java.util.UUID
 
-class CustomProcessLinkUpdateRequestDtoTest {
+class TestProcessLinkUpdateRequestDtoTest {
 
     private val mapper = MapperSingleton.get().copy().apply {
-        this.registerSubtypes(CustomProcessLinkCreateRequestDto::class.java, CustomProcessLinkUpdateRequestDto::class.java)
+        this.registerSubtypes(TestProcessLinkCreateRequestDto::class.java, TestProcessLinkUpdateRequestDto::class.java)
     }
 
     @Test
@@ -44,8 +44,8 @@ class CustomProcessLinkUpdateRequestDtoTest {
             }
         """.trimIndent())
 
-        assertThat(value, instanceOf(CustomProcessLinkUpdateRequestDto::class.java))
-        value as CustomProcessLinkUpdateRequestDto
+        assertThat(value, instanceOf(TestProcessLinkUpdateRequestDto::class.java))
+        value as TestProcessLinkUpdateRequestDto
         assertThat(value.processLinkType, equalTo(PROCESS_LINK_TYPE_TEST))
         assertThat(value.someValue, equalTo("test"))
     }
@@ -59,15 +59,15 @@ class CustomProcessLinkUpdateRequestDtoTest {
             }
         """.trimIndent())
 
-        assertThat(value, instanceOf(CustomProcessLinkUpdateRequestDto::class.java))
-        value as CustomProcessLinkUpdateRequestDto
+        assertThat(value, instanceOf(TestProcessLinkUpdateRequestDto::class.java))
+        value as TestProcessLinkUpdateRequestDto
         assertThat(value.processLinkType, equalTo(PROCESS_LINK_TYPE_TEST))
         assertThat(value.someValue, equalTo("test"))
     }
 
     @Test
     fun `should serialize correctly`() {
-        val value = CustomProcessLinkUpdateRequestDto(UUID.randomUUID(), "test")
+        val value = TestProcessLinkUpdateRequestDto(UUID.randomUUID(), "test")
 
         val json = mapper.writeValueAsString(value)
 

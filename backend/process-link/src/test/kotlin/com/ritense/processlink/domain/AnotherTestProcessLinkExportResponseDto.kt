@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,15 @@
 package com.ritense.processlink.domain
 
 import com.fasterxml.jackson.annotation.JsonTypeName
-import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
-import com.ritense.processlink.domain.CustomProcessLink.Companion.PROCESS_LINK_TYPE_TEST
+import com.ritense.processlink.domain.AnotherTestProcessLink.Companion.PROCESS_LINK_TYPE
+import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 
-@JsonTypeName(PROCESS_LINK_TYPE_TEST)
-data class CustomProcessLinkDeployDto(
-    override val processDefinitionId: String,
+@JsonTypeName(PROCESS_LINK_TYPE)
+data class AnotherTestProcessLinkExportResponseDto(
     override val activityId: String,
     override val activityType: ActivityTypeWithEventName,
-    val someValue: String = "test"
-) : ProcessLinkDeployDto {
+    val anotherValue: String = "another-test"
+) : ProcessLinkExportResponseDto {
     override val processLinkType: String
-        get() = PROCESS_LINK_TYPE_TEST
+        get() = PROCESS_LINK_TYPE
 }

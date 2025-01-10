@@ -19,7 +19,7 @@ package com.ritense.processlink.domain
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.exporter.request.ExportRequest
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
-import com.ritense.processlink.domain.CustomProcessLink.Companion.PROCESS_LINK_TYPE_TEST
+import com.ritense.processlink.domain.TestProcessLink.Companion.PROCESS_LINK_TYPE_TEST
 import com.ritense.processlink.exporter.CustomProcessLinkNestedExportRequest
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
@@ -28,25 +28,25 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import java.util.UUID
 
-class CustomProcessLinkMapper(
+class TestProcessLinkMapper(
     objectMapper: ObjectMapper
 ) : ProcessLinkMapper {
 
     init {
         objectMapper.registerSubtypes(
-            CustomProcessLinkCreateRequestDto::class.java,
-            CustomProcessLinkDeployDto::class.java,
-            CustomProcessLinkExportResponseDto::class.java,
-            CustomProcessLinkResponseDto::class.java,
-            CustomProcessLinkUpdateRequestDto::class.java
+            TestProcessLinkCreateRequestDto::class.java,
+            TestProcessLinkDeployDto::class.java,
+            TestProcessLinkExportResponseDto::class.java,
+            TestProcessLinkResponseDto::class.java,
+            TestProcessLinkUpdateRequestDto::class.java
         )
     }
 
     override fun supportsProcessLinkType(processLinkType: String) = processLinkType == PROCESS_LINK_TYPE_TEST
 
     override fun toProcessLinkResponseDto(processLink: ProcessLink): ProcessLinkResponseDto {
-        processLink as CustomProcessLink
-        return CustomProcessLinkResponseDto(
+        processLink as TestProcessLink
+        return TestProcessLinkResponseDto(
             id = processLink.id,
             processDefinitionId = processLink.processDefinitionId,
             activityId = processLink.activityId,
@@ -59,16 +59,16 @@ class CustomProcessLinkMapper(
         deployDto: ProcessLinkDeployDto,
         existingProcessLinkId: UUID
     ): ProcessLinkUpdateRequestDto {
-        deployDto as CustomProcessLinkDeployDto
-        return CustomProcessLinkUpdateRequestDto(
+        deployDto as TestProcessLinkDeployDto
+        return TestProcessLinkUpdateRequestDto(
             id = existingProcessLinkId,
             someValue = deployDto.someValue
         )
     }
 
     override fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto): ProcessLinkCreateRequestDto {
-        deployDto as CustomProcessLinkDeployDto
-        return CustomProcessLinkCreateRequestDto(
+        deployDto as TestProcessLinkDeployDto
+        return TestProcessLinkCreateRequestDto(
             processDefinitionId = deployDto.processDefinitionId,
             activityId = deployDto.activityId,
             activityType = deployDto.activityType,
@@ -77,8 +77,8 @@ class CustomProcessLinkMapper(
     }
 
     override fun toProcessLinkExportResponseDto(processLink: ProcessLink): ProcessLinkExportResponseDto {
-        processLink as CustomProcessLink
-        return CustomProcessLinkExportResponseDto(
+        processLink as TestProcessLink
+        return TestProcessLinkExportResponseDto(
             activityId = processLink.activityId,
             activityType = processLink.activityType,
             someValue = processLink.someValue
@@ -86,8 +86,8 @@ class CustomProcessLinkMapper(
     }
 
     override fun toNewProcessLink(createRequestDto: ProcessLinkCreateRequestDto): ProcessLink {
-        createRequestDto as CustomProcessLinkCreateRequestDto
-        return CustomProcessLink(
+        createRequestDto as TestProcessLinkCreateRequestDto
+        return TestProcessLink(
             id = UUID.randomUUID(),
             processDefinitionId = createRequestDto.processDefinitionId,
             activityId = createRequestDto.activityId,
@@ -100,9 +100,9 @@ class CustomProcessLinkMapper(
         processLinkToUpdate: ProcessLink,
         updateRequestDto: ProcessLinkUpdateRequestDto
     ): ProcessLink {
-        updateRequestDto as CustomProcessLinkUpdateRequestDto
+        updateRequestDto as TestProcessLinkUpdateRequestDto
 
-        return CustomProcessLink(
+        return TestProcessLink(
             id = updateRequestDto.id,
             processDefinitionId = processLinkToUpdate.processDefinitionId,
             activityId = processLinkToUpdate.activityId,
@@ -115,5 +115,5 @@ class CustomProcessLinkMapper(
         return setOf(CustomProcessLinkNestedExportRequest())
     }
 
-    override fun getImporterType() = "test"
+    override fun getImporterType() = PROCESS_LINK_TYPE_TEST
 }
