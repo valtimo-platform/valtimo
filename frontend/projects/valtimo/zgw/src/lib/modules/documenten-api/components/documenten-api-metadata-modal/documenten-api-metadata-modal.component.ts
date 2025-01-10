@@ -75,7 +75,7 @@ import {
 } from 'carbon-components-angular';
 import {DocumentenApiTagService} from '../../services/documenten-api-tag.service';
 import moment from 'moment';
-import {DocumentenApiUploadFieldDefaultValues} from "../../models/documenten-api-upload-field.model";
+import {DocumentenApiUploadFieldDefaultValues} from '../../models/documenten-api-upload-field.model';
 
 @Component({
   selector: 'valtimo-documenten-api-metadata-modal',
@@ -390,28 +390,14 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   );
 
   public readonly documentTypeItems$: Observable<Array<ListItem>> = combineLatest([
-    this.route?.params || of(null),
-    this.route?.firstChild?.params || of(null),
     this.valtimoModalService.documentDefinitionName$,
     this.informatieobjecttypeFormControl.valueChanges.pipe(
       startWith(this.informatieobjecttypeFormControl.value)
     ),
   ]).pipe(
-    filter(
-      ([params, firstChildParams, documentDefinitionName]) =>
-        !!(
-          params?.documentDefinitionName ||
-          firstChildParams?.documentDefinitionName ||
-          documentDefinitionName
-        )
-    ),
-    switchMap(([params, firstChildParams, documentDefinitionName, informatieobjecttypeValue]) =>
+    switchMap(([documentDefinitionName, informatieobjecttypeValue]) =>
       combineLatest([
-        this.documentService.getDocumentTypes(
-          params?.documentDefinitionName ||
-            firstChildParams?.documentDefinitionName ||
-            documentDefinitionName
-        ),
+        this.documentService.getDocumentTypes(documentDefinitionName),
         of(informatieobjecttypeValue),
       ])
     ),
@@ -648,14 +634,17 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
 
   private openDocumentDefinitionSubscription() {
     this._subscriptions.add(
-      this.route?.params
+      combineLatest([this.route?.params || of(null), this.route?.firstChild?.params || of(null)])
         .pipe(
-          map(params => params?.documentDefinitionName),
-          filter(documentDefinitionName => documentDefinitionName)
+          map(
+            ([params, firstChildParams]) =>
+              (params?.documentDefinitionName || firstChildParams?.documentDefinitionName) as string
+          ),
+          filter(documentDefinitionName => !!documentDefinitionName)
         )
-        .subscribe(documentDefinitionName => {
-          this.valtimoModalService.setDocumentDefinitionName(documentDefinitionName);
-        })
+        .subscribe(documentDefinitionName =>
+          this.valtimoModalService.setDocumentDefinitionName(documentDefinitionName)
+        )
     );
   }
 
