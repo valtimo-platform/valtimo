@@ -39,6 +39,7 @@ import {BehaviorSubject, combineLatest, map, Observable, Subject, take} from 'rx
 import {AVAILABLE_WIDGETS, WidgetStyle, WidgetTypeTags} from '../../../models';
 import {WidgetTabManagementService, WidgetWizardService} from '../../../services';
 import {DossierManagementWidgetWizardComponent} from '../../dossier-management-widget-wizard/dossier-management-widget-wizard.component';
+import {cloneDeep} from 'lodash';
 
 @Component({
   selector: 'valtimo-dossier-management-widgets-editor',
@@ -108,6 +109,10 @@ export class DossierManagementWidgetsEditorComponent {
       callback: this.editWidget.bind(this),
     },
     {
+      label: 'interface.duplicate',
+      callback: this.duplicateWidget.bind(this),
+    },
+    {
       label: 'interface.delete',
       callback: this.deleteWidget.bind(this),
       type: 'danger',
@@ -162,6 +167,12 @@ export class DossierManagementWidgetsEditorComponent {
     this.widgetWizardService.editMode.set(true);
     this.widgetWizardService.widgetKey.set(tabWidget.key);
     this.isWizardOpen$.next(true);
+  }
+
+  public duplicateWidget(tabWidget: CaseWidget): void {
+    const tabWidgetClone = cloneDeep(tabWidget);
+    tabWidgetClone.key = null;
+    this.editWidget(tabWidgetClone);
   }
 
   public openAddModal(): void {

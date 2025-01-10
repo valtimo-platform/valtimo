@@ -57,7 +57,7 @@ export class DossierManagementWidgetWizardComponent {
     this._editMode = value;
     if (!value) return;
 
-    this.currentStep.set(WidgetWizardStep.WIDTH);
+    this.currentStep.set(WidgetWizardStep.CONTENT);
   }
   public get editMode(): boolean {
     return this._editMode;
