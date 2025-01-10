@@ -14,14 +14,22 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, Output, signal} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, signal} from '@angular/core';
 import {
   FormioCustomComponent,
   FormIoDomService,
   FormIoStateService,
   ValtimoModalService,
 } from '@valtimo/components';
-import {BehaviorSubject, combineLatest, Observable, of, startWith, switchMap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  Observable,
+  of,
+  startWith,
+  Subscription,
+  switchMap,
+} from 'rxjs';
 import {
   DocumentenApiFileReference,
   DownloadService,
@@ -39,7 +47,7 @@ import {DocumentenApiVersionService} from '../../services';
   styleUrls: ['./documenten-api-uploader.component.scss'],
 })
 export class DocumentenApiUploaderComponent
-  implements FormioCustomComponent<Array<DocumentenApiFileReference>>
+  implements FormioCustomComponent<Array<DocumentenApiFileReference>>, OnInit, OnDestroy
 {
   @Input() disabled: boolean;
   @Input() title: string;
@@ -160,28 +168,13 @@ export class DocumentenApiUploaderComponent
   readonly fileToBeUploaded$ = new BehaviorSubject<File | null>(null);
   readonly modalDisabled$ = new BehaviorSubject<boolean>(false);
   readonly showModal = signal<boolean>(false);
-  readonly uploadProcessLinked$: Observable<boolean | string> = combineLatest([
-    this.route?.params || of(null),
-    this.route?.firstChild?.params || of(null),
-    this.modalService.documentDefinitionName$,
-  ]).pipe(
-    filter(
-      ([params, firstChildParams, documentDefinitionName]) =>
-        !!(
-          params?.documentDefinitionName ||
-          firstChildParams?.documentDefinitionName ||
-          documentDefinitionName
-        )
-    ),
-    switchMap(([params, firstChildParams, documentDefinitionName]) =>
-      this.uploadProviderService.checkUploadProcessLink(
-        params?.documentDefinitionName ||
-          firstChildParams?.documentDefinitionName ||
-          documentDefinitionName
-      )
-    ),
-    startWith('loading')
-  );
+  readonly uploadProcessLinked$: Observable<boolean | string> =
+    this.modalService.documentDefinitionName$.pipe(
+      switchMap(documentDefinitionName =>
+        this.uploadProviderService.checkUploadProcessLink(documentDefinitionName)
+      ),
+      startWith('loading')
+    );
   readonly isAdmin$: Observable<boolean> = this.userProviderService
     .getUserSubject()
     .pipe(map(userIdentity => userIdentity?.roles.includes('ROLE_ADMIN')));
@@ -196,6 +189,8 @@ export class DocumentenApiUploaderComponent
   public defaultValues: {} = {};
   public hideFields: Array<string> = [];
 
+  private _subscriptions = new Subscription();
+
   constructor(
     private readonly uploadProviderService: UploadProviderService,
     private readonly stateService: FormIoStateService,
@@ -206,6 +201,14 @@ export class DocumentenApiUploaderComponent
     private readonly route: ActivatedRoute,
     private readonly documentenApiVersionService: DocumentenApiVersionService
   ) {}
+
+  public ngOnInit(): void {
+    this.openDocumentDefinitionSubscription();
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
 
   _value: Array<DocumentenApiFileReference> = [];
 
@@ -254,6 +257,22 @@ export class DocumentenApiUploaderComponent
         })
       )
       .subscribe();
+  }
+
+  private openDocumentDefinitionSubscription() {
+    this._subscriptions.add(
+      combineLatest([this.route?.params || of(null), this.route?.firstChild?.params || of(null)])
+        .pipe(
+          map(
+            ([params, firstChildParams]) =>
+              (params?.documentDefinitionName || firstChildParams?.documentDefinitionName) as string
+          ),
+          filter(documentDefinitionName => !!documentDefinitionName)
+        )
+        .subscribe(documentDefinitionName =>
+          this.modalService.setDocumentDefinitionName(documentDefinitionName)
+        )
+    );
   }
 
   private hideField(hide: boolean, field: string) {

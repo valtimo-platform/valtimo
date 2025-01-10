@@ -58,7 +58,7 @@ import {DocumentenApiFilterComponent} from '../documenten-api-filter/documenten-
 import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.component';
 import {
   DocumentenApiUploadFieldDefaultValues,
-  DocumentenApiUploadFields
+  DocumentenApiUploadFields,
 } from '../../models/documenten-api-upload-field.model';
 
 @Component({
@@ -220,22 +220,23 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
     )
   );
 
-  public defaultValues$: Observable<DocumentenApiUploadFieldDefaultValues> = this.uploadFields$.pipe(
-    map(formFields => ({
-      auteur: formFields?.auteur?.defaultValue,
-      vertrouwelijkheidaanduiding: formFields?.vertrouwelijkheidaanduiding?.defaultValue,
-      beschrijving: formFields?.beschrijving?.defaultValue,
-      titel: formFields?.titel?.defaultValue,
-      informatieobjecttype: formFields?.informatieobjecttype?.defaultValue,
-      bestandsnaam: formFields?.bestandsnaam?.defaultValue,
-      taal: formFields?.taal?.defaultValue,
-      status: formFields?.status?.defaultValue,
-      trefwoorden: formFields?.trefwoorden?.defaultValue
-        ?.split(',')
-        ?.map(tag => tag.trim())
-        ?.filter(tag => !!tag),
-    }))
-  );
+  public defaultValues$: Observable<DocumentenApiUploadFieldDefaultValues> =
+    this.uploadFields$.pipe(
+      map(formFields => ({
+        auteur: formFields?.auteur?.defaultValue,
+        vertrouwelijkheidaanduiding: formFields?.vertrouwelijkheidaanduiding?.defaultValue,
+        beschrijving: formFields?.beschrijving?.defaultValue,
+        titel: formFields?.titel?.defaultValue,
+        informatieobjecttype: formFields?.informatieobjecttype?.defaultValue,
+        bestandsnaam: formFields?.bestandsnaam?.defaultValue,
+        taal: formFields?.taal?.defaultValue,
+        status: formFields?.status?.defaultValue,
+        trefwoorden: formFields?.trefwoorden?.defaultValue
+          ?.split(',')
+          ?.map(tag => tag.trim())
+          ?.filter(tag => !!tag),
+      }))
+    );
 
   public hideFields$: Observable<Array<string>> = this.uploadFields$.pipe(
     map(formFields => {
