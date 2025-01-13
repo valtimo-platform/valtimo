@@ -19,6 +19,7 @@ package com.ritense.valueresolver.web.rest
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8
 import com.ritense.valueresolver.BaseIntegrationTest
 import org.assertj.core.api.Assertions
+import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -63,6 +64,27 @@ class ValueResolverResourceIT @Autowired constructor(
     }
 
     @Test
+    fun `should get list of possible value resolvers for a single prefix v2`() {
+
+        val prefixes = """{"prefixes":["testDoc"],"type":"FIELD"}"""
+
+        mockMvc.perform(
+            MockMvcRequestBuilders
+                .post("/api/management/v2/value-resolver/document-definition/{documentDefinitionName}/keys", "x")
+                .contentType(APPLICATION_JSON_UTF8)
+                .content(prefixes)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$[0].path").value("testDoc:1"))
+            .andExpect(jsonPath("$[0].type").value("FIELD"))
+            .andExpect(jsonPath("$[1].path").value("testDoc:2"))
+            .andExpect(jsonPath("$[1].type").value("FIELD"))
+            .andExpect(jsonPath("$[2].path").value("testDoc:3"))
+            .andExpect(jsonPath("$[2].type").value("FIELD"))
+    }
+
+    @Test
     fun `should get list of possible value resolvers for multiple prefixes`() {
 
         val prefixes = """["testDoc", "testCase"]"""
@@ -84,6 +106,33 @@ class ValueResolverResourceIT @Autowired constructor(
     }
 
     @Test
+    fun `should get list of possible value resolvers for multiple prefixes v2`() {
+
+        val prefixes = """{"prefixes":["testDoc", "testCase"],"type":"FIELD"}"""
+
+        mockMvc.perform(
+            MockMvcRequestBuilders
+                .post("/api/management/v2/value-resolver/document-definition/{documentDefinitionName}/keys", "x")
+                .contentType(APPLICATION_JSON_UTF8)
+                .content(prefixes)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$[0].path").value("testDoc:1"))
+            .andExpect(jsonPath("$[0].type").value("FIELD"))
+            .andExpect(jsonPath("$[1].path").value("testDoc:2"))
+            .andExpect(jsonPath("$[1].type").value("FIELD"))
+            .andExpect(jsonPath("$[2].path").value("testDoc:3"))
+            .andExpect(jsonPath("$[2].type").value("FIELD"))
+            .andExpect(jsonPath("$[3].path").value("testCase:4"))
+            .andExpect(jsonPath("$[3].type").value("FIELD"))
+            .andExpect(jsonPath("$[4].path").value("testCase:5"))
+            .andExpect(jsonPath("$[4].type").value("FIELD"))
+            .andExpect(jsonPath("$[5].path").value("testCase:6"))
+            .andExpect(jsonPath("$[5].type").value("FIELD"))
+    }
+
+    @Test
     fun `should return empty list when requesting non-existent value resolver prefixes`() {
 
         val prefixes = """["nonExistent"]"""
@@ -98,5 +147,46 @@ class ValueResolverResourceIT @Autowired constructor(
             .andExpect(status().isOk)
 
         Assertions.assertThat(result.andReturn().response.contentAsString).isEqualTo("[]")
+    }
+
+    @Test
+    fun `should return empty list when requesting non-existent value resolver prefixes v2`() {
+
+        val prefixes = """["nonExistent"]"""
+
+        val result = mockMvc.perform(
+            MockMvcRequestBuilders
+                .post("/api/management/v1/value-resolver/document-definition/{documentDefinitionName}/keys", "x")
+                .contentType(APPLICATION_JSON_UTF8)
+                .content(prefixes)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+
+        Assertions.assertThat(result.andReturn().response.contentAsString).isEqualTo("[]")
+    }
+
+    @Test
+    fun `should get list of collection value resolvers for multiple prefixes v2`() {
+
+        val prefixes = """{"prefixes":["testCase"],"type":"COLLECTION"}"""
+
+        mockMvc.perform(
+            MockMvcRequestBuilders
+                .post("/api/management/v2/value-resolver/document-definition/{documentDefinitionName}/keys", "x")
+                .contentType(APPLICATION_JSON_UTF8)
+                .content(prefixes)
+        )
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$[0].path").value("test"))
+            .andExpect(jsonPath("$[0].type").value("COLLECTION"))
+            .andExpect(jsonPath("$[0].children.*", hasSize<Int>(3)))
+            .andExpect(jsonPath("$[0].children[0].path").value("1"))
+            .andExpect(jsonPath("$[0].children[0].type").value("FIELD"))
+            .andExpect(jsonPath("$[0].children[1].path").value("2"))
+            .andExpect(jsonPath("$[0].children[1].type").value("FIELD"))
+            .andExpect(jsonPath("$[0].children[2].path").value("3"))
+            .andExpect(jsonPath("$[0].children[2].type").value("FIELD"))
     }
 }

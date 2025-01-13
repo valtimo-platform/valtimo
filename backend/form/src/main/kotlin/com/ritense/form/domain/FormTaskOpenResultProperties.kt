@@ -26,5 +26,5 @@ data class FormTaskOpenResultProperties(
     val prefilledForm: JsonNode,
     val formDisplayType: FormDisplayType? = null,
     val formSize: FormSizes? = null,
-    val subtitles: List<String> = emptyList(),
+    val subtitles: List<String>? = null
 )

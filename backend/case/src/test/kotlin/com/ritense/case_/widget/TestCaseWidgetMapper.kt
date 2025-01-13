@@ -29,6 +29,7 @@ class TestCaseWidgetMapper : CaseWidgetMapper<TestCaseWidgetTabWidget, TestCaseW
             index,
             dto.width,
             dto.highContrast,
+            dto.actions ?: emptyList(),
             dto.properties
         )
     }
@@ -39,7 +40,8 @@ class TestCaseWidgetMapper : CaseWidgetMapper<TestCaseWidgetTabWidget, TestCaseW
             entity.title,
             entity.width,
             entity.highContrast,
-            entity.properties
+            entity.properties,
+            entity.actions,
         )
     }
 }

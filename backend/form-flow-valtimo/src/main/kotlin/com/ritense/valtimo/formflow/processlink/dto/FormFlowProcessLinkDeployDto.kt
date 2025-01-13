@@ -31,7 +31,7 @@ data class FormFlowProcessLinkDeployDto(
     val formFlowDefinitionId: String,
     val formDisplayType: FormDisplayType = FormDisplayType.modal,
     val formSize: FormSizes = FormSizes.medium,
-    val subtitles: List<String> = emptyList(),
+    val subtitles: List<String>?
 ) : ProcessLinkDeployDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE_FORM_FLOW

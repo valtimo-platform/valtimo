@@ -16,6 +16,8 @@
 
 package com.ritense.document.dashboard
 
+import com.ritense.valtimo.contract.dashboard.QueryCondition
+
 data class DocumentCountsQueryItem(
     val label: String,
     val queryConditions: List<QueryCondition<*>>

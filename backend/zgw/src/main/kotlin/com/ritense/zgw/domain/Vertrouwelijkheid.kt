@@ -16,6 +16,7 @@
 
 package com.ritense.zgw.domain
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 
 enum class Vertrouwelijkheid {
@@ -40,9 +41,12 @@ enum class Vertrouwelijkheid {
         get() = this.name.lowercase()
 
     companion object {
+
+        @JvmStatic
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
         fun fromKey(key: String?): Vertrouwelijkheid? {
             return key?.let {
-                Vertrouwelijkheid.values().firstOrNull {
+                entries.firstOrNull {
                     it.key == key.lowercase()
                 }
             }

@@ -61,6 +61,8 @@ public interface DocumentService {
 
     void removeDocuments(String documentDefinitionName);
 
+    void deleteDocument(Document.Id documentId);
+
     void claim(UUID documentId);
 
     void assignUserToDocument(UUID documentId, String assigneeId);

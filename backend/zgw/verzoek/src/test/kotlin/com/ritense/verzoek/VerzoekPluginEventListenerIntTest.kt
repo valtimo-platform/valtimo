@@ -300,6 +300,10 @@ internal class VerzoekPluginEventListenerIntTest : BaseIntegrationTest() {
                 {
                     "target": "pv:/fullname",
                     "source": "/name"
+                },
+                {
+                    "target": "pv:informatieobjecttype",
+                    "source": "object:/type"
                 }]
               }]
             }
@@ -323,12 +327,13 @@ internal class VerzoekPluginEventListenerIntTest : BaseIntegrationTest() {
         val processVariableMap =
             processService.createVariableInstanceQuery()
                 .processInstanceIdIn(processList[0].id).list().associate { it.name to it.value }
-        assertThat(processVariableMap).hasSize(13)
+        assertThat(processVariableMap).hasSize(14)
         assertThat(processVariableMap).containsKey("fullname")
         assertThat(processVariableMap).doesNotContainKey("email")
         assertEquals("John Doe", processVariableMap["fullname"])
         assertEquals("objection", processVariableMap["type"])
         assertEquals("999999999", processVariableMap["bsn"])
+        assertEquals("http://localhost:8011/api/v1/objecttypes/107f0b7d-c6f7-4269-85e1-62003310230b", processVariableMap["informatieobjecttype"])
         assertEquals("[https://example-document-url.com/]", processVariableMap["attachments"].toString())
     }
 
@@ -365,7 +370,7 @@ internal class VerzoekPluginEventListenerIntTest : BaseIntegrationTest() {
             verzoekPluginEventListener.createZaakFromNotificatie(createEvent())
         }
         //assertions
-        assertEquals("Verzoek meta data was empty!", exception.message)
+        assertEquals("VerzoekObject /record/data cannot be found!", exception.message)
     }
 
     @Test
@@ -437,14 +442,14 @@ internal class VerzoekPluginEventListenerIntTest : BaseIntegrationTest() {
             verzoekPluginEventListener.createZaakFromNotificatie(createEvent())
         }
         //assertions
-        assertEquals("Verzoek Object data was empty, for verzoek with type 'objection'", exception.message)
+        assertEquals("VerzoekObject /record/data/data cannot be found! For verzoek with type 'objection'", exception.message)
     }
 
     private fun createObjectWrapper(withMetaData: Boolean, withType: String, withObjectData: Boolean): ObjectWrapper {
         return ObjectWrapper(
             url = URI.create(""),
             uuid = UUID.randomUUID(),
-            type = URI.create(""),
+            type = URI.create("http://localhost:8011/api/v1/objecttypes/107f0b7d-c6f7-4269-85e1-62003310230b"),
             record = createRecord(withMetaData, withType, withObjectData)
         )
     }

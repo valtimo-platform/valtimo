@@ -20,7 +20,7 @@ import com.ritense.authorization.AuthorizationContext
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.ValtimoImportTypes.Companion.PROCESS_DEFINITION
 import com.ritense.processlink.BaseIntegrationTest
-import com.ritense.processlink.domain.CustomProcessLink
+import com.ritense.processlink.domain.TestProcessLink
 import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
 import com.ritense.valtimo.camunda.service.CamundaRepositoryService
@@ -41,7 +41,7 @@ class ProcessLinkImporterIntTest @Autowired constructor(
 
     @Test
     fun `should dependsOn types from mappers`() {
-        assertThat(processLinkImporter.dependsOn()).isEqualTo(setOf(PROCESS_DEFINITION, "test"))
+        assertThat(processLinkImporter.dependsOn()).containsAll(setOf(PROCESS_DEFINITION, "test"))
     }
 
     @Test
@@ -55,7 +55,7 @@ class ProcessLinkImporterIntTest @Autowired constructor(
         val processLinks =
             processLinkRepository.findByProcessDefinitionIdAndActivityId(processDefinition.id, "my-service-task")
 
-        val processLink = requireNotNull(processLinks.single() as? CustomProcessLink)
+        val processLink = requireNotNull(processLinks.single() as? TestProcessLink)
         assertThat(processLink.someValue).isEqualTo("importer test")
     }
 

@@ -21,6 +21,7 @@ import com.ritense.documentenapi.service.DocumentenApiService
 import com.ritense.documentenapi.service.DocumentenApiVersionService
 import com.ritense.documentenapi.web.rest.dto.ColumnKeyResponse
 import com.ritense.documentenapi.web.rest.dto.ColumnResponse
+import com.ritense.documentenapi.web.rest.dto.DocumentenApiUploadFieldDto
 import com.ritense.documentenapi.web.rest.dto.DocumentenApiVersionManagementDto
 import com.ritense.documentenapi.web.rest.dto.DocumentenApiVersionsManagementDto
 import com.ritense.documentenapi.web.rest.dto.ReorderColumnRequest
@@ -28,10 +29,13 @@ import com.ritense.documentenapi.web.rest.dto.UpdateColumnRequest
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -116,5 +120,24 @@ class DocumentenApiManagementResource(
     fun getAllApiVersion(): ResponseEntity<DocumentenApiVersionsManagementDto> {
         val versions = documentenApiVersionService.getAllVersions().map { it.version }
         return ResponseEntity.ok(DocumentenApiVersionsManagementDto(versions))
+    }
+
+    @RunWithoutAuthorization
+    @GetMapping("/v1/case-definition/{caseDefinitionName}/zgw-document/upload-field")
+    fun getUploadFields(
+        @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
+    ): ResponseEntity<List<DocumentenApiUploadFieldDto>> {
+        val list = documentenApiService.getUploadFields(caseDefinitionName)
+        return ResponseEntity.ok(list.map { DocumentenApiUploadFieldDto.of(it) })
+    }
+
+    @RunWithoutAuthorization
+    @PutMapping("/v1/case-definition/{caseDefinitionName}/zgw-document/upload-field")
+    fun updateUploadField(
+        @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String,
+        @RequestBody uploadField: DocumentenApiUploadFieldDto,
+    ): ResponseEntity<Unit> {
+        documentenApiService.updateUploadField(DocumentenApiUploadFieldDto.toEntity(caseDefinitionName, uploadField))
+        return ResponseEntity.noContent().build()
     }
 }

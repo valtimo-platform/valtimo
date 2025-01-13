@@ -27,6 +27,8 @@ import com.valtimo.keycloak.security.jwt.authentication.KeycloakTokenAuthenticat
 import com.valtimo.keycloak.security.jwt.provider.KeycloakSecretKeyProvider;
 import com.valtimo.keycloak.service.KeycloakService;
 import com.valtimo.keycloak.service.KeycloakUserManagementService;
+import com.valtimo.keycloak.service.RequestScopeUserCache;
+import com.valtimo.keycloak.service.UserCache;
 import javax.sql.DataSource;
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +44,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.annotation.Order;
+import org.springframework.web.context.annotation.RequestScope;
 
 @AutoConfiguration
 @EnableConfigurationProperties(KeycloakSpringBootProperties.class)
@@ -77,9 +80,10 @@ public class KeycloakAutoConfiguration {
     @ConditionalOnWebApplication
     public KeycloakUserManagementService keycloakUserManagementService(
         final KeycloakService keycloakService,
-        @Value("#{'${spring.security.oauth2.client.registration.keycloakjwt.client-id:${valtimo.keycloak.client:}}'}") final String keycloakClientName
+        @Value("#{'${spring.security.oauth2.client.registration.keycloakjwt.client-id:${valtimo.keycloak.client:}}'}") final String keycloakClientName,
+        final UserCache userCache
     ) {
-        return new KeycloakUserManagementService(keycloakService, keycloakClientName);
+        return new KeycloakUserManagementService(keycloakService, keycloakClientName, userCache);
     }
 
     @Bean
@@ -120,6 +124,13 @@ public class KeycloakAutoConfiguration {
         final ApplicationContext applicationContext
     ) {
         return new ValtimoKeycloakPropertyResolver(properties, applicationContext);
+    }
+
+    @Bean
+    @RequestScope
+    @ConditionalOnMissingBean(UserCache.class)
+    public UserCache requestScopeUserCache() {
+        return new RequestScopeUserCache();
     }
 
 }

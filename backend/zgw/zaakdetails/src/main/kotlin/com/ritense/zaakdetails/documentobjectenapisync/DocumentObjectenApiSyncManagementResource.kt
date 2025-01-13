@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController
 @SkipComponentScan
 @RequestMapping("/api/management", produces = [APPLICATION_JSON_UTF8_VALUE])
 class DocumentObjectenApiSyncManagementResource(
-    private val documentObjectenApiSyncService: DocumentObjectenApiSyncService,
+    private val documentObjectenApiSyncManagementService: DocumentObjectenApiSyncManagementService,
     private val objectManagementInfoProvider: ObjectManagementInfoProvider,
 ) {
     @GetMapping("/v1/document-definition/{name}/version/{version}/objecten-api-sync")
@@ -42,7 +42,7 @@ class DocumentObjectenApiSyncManagementResource(
         @PathVariable(name = "version") documentDefinitionVersion: Long,
     ): ResponseEntity<DocumentObjectenApiSyncResponse?> {
         val syncConfiguration =
-            documentObjectenApiSyncService.getSyncConfiguration(documentDefinitionName, documentDefinitionVersion)
+            documentObjectenApiSyncManagementService.getSyncConfiguration(documentDefinitionName, documentDefinitionVersion)
                 ?: return ResponseEntity.ok(null)
         val objectManagementConfiguration =
             objectManagementInfoProvider.getObjectManagementInfo(syncConfiguration.objectManagementConfigurationId)
@@ -58,7 +58,7 @@ class DocumentObjectenApiSyncManagementResource(
         @RequestBody syncRequest: DocumentObjectenApiSyncRequest
     ): ResponseEntity<Unit> {
         val syncConfiguration = syncRequest.toEntity(documentDefinitionName, documentDefinitionVersion)
-        documentObjectenApiSyncService.saveSyncConfiguration(syncConfiguration)
+        documentObjectenApiSyncManagementService.saveSyncConfiguration(syncConfiguration)
         return ResponseEntity.ok().build()
     }
 
@@ -67,7 +67,7 @@ class DocumentObjectenApiSyncManagementResource(
         @LoggableResource("documentDefinitionName") @PathVariable(name = "name") documentDefinitionName: String,
         @PathVariable(name = "version") documentDefinitionVersion: Long,
     ): ResponseEntity<Unit> {
-        documentObjectenApiSyncService.deleteSyncConfigurationByDocumentDefinition(
+        documentObjectenApiSyncManagementService.deleteSyncConfigurationByDocumentDefinition(
             documentDefinitionName,
             documentDefinitionVersion
         )

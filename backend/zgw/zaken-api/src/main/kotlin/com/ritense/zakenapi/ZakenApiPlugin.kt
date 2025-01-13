@@ -45,6 +45,7 @@ import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakInstanceLinkId
 import com.ritense.zakenapi.domain.ZaakObject
+import com.ritense.zakenapi.domain.ZaakObjectRequest
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakResultaat
 import com.ritense.zakenapi.domain.ZaakStatus
@@ -56,6 +57,7 @@ import com.ritense.zakenapi.domain.rol.RolNietNatuurlijkPersoon
 import com.ritense.zakenapi.domain.rol.RolType
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
+import com.ritense.zgw.LoggingConstants
 import com.ritense.zgw.LoggingConstants.CATALOGI_API
 import com.ritense.zgw.LoggingConstants.DOCUMENTEN_API
 import com.ritense.zgw.Page
@@ -581,6 +583,30 @@ class ZakenApiPlugin(
         }
     }
 
+    fun createZaakObject(
+        zaakUrl: URI,
+        objectUrl: URI,
+        objectTypeOverige: String,
+        documentId: UUID
+        ) {
+        withLoggingContext(
+            LoggingConstants.ZAKEN_API.ZAAK to zaakUrl.toString(),
+            LoggingConstants.ZAKEN_API.OBJECT to objectUrl.toString()
+        ) {
+            logger.debug { "Creating zaakobject with Zaak '$zaakUrl' and Object '$objectUrl' for document with id '${documentId}'" }
+            val request = ZaakObjectRequest(
+                zaakUrl = zaakUrl,
+                objectUrl = objectUrl,
+                objectType = "overige",
+                objectTypeOverige = objectTypeOverige
+            )
+
+            client.createZaakObject(authenticationPluginConfiguration, url, request)
+
+            logger.info { "Zaakobject with Zaak '$zaakUrl' and Object '$objectUrl' created for zaak with URL '$zaakUrl' and document with id '${documentId}'" }
+        }
+    }
+
     fun getZaakInformatieObjecten(zaakUrl: URI): List<ZaakInformatieObject> {
         logger.debug { "Fetching zaak informatie objecten for zaak with URL '$zaakUrl'" }
         return client.getZaakInformatieObjecten(
@@ -601,11 +627,12 @@ class ZakenApiPlugin(
 
     fun deleteZaakInformatieobject(zaakInformatieobjectUrl: URI) {
         logger.debug { "Deleting zaak informatie object for URL '$zaakInformatieobjectUrl'" }
-        return client.deleteZaakInformatieObject(
+        client.deleteZaakInformatieObject(
             authentication = authenticationPluginConfiguration,
             baseUrl = url,
             zaakInformatieobjectUrl = zaakInformatieobjectUrl
         )
+        logger.info { "Deleted zaak informatie object with URL '$zaakInformatieobjectUrl'" }
     }
 
     fun getZaakObjecten(zaakUrl: URI): List<ZaakObject> {
@@ -626,6 +653,29 @@ class ZakenApiPlugin(
 
         logger.debug { "Fetched ${results.size} zaak objecten for zaak with URL '$zaakUrl'" }
         return results
+    }
+
+    fun deleteZaakObject(zaakObjectUrl: URI) {
+        logger.debug { "Deleting zaak object for URL '$zaakObjectUrl'" }
+        client.deleteZaakObject(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            zaakObjectUrl = zaakObjectUrl
+        )
+        logger.info { "Deleting zaak object with URL '$zaakObjectUrl'" }
+    }
+
+    fun getZaakObject(zaakUrl: URI, objectUrl: URI): ZaakObject? {
+        logger.debug { "Fetching zaak object for zaak with URL '$zaakUrl' and object URL '$objectUrl'" }
+        val result = client.getZaakObject(
+            authenticationPluginConfiguration,
+            url,
+            zaakUrl,
+            objectUrl
+        )
+
+        logger.debug { "Fetched zaak object for zaak with URL '$zaakUrl' and object URL '$objectUrl'" }
+        return result
     }
 
     fun getZaakRollen(zaakUrl: URI, roleType: RolType? = null): List<Rol> {
@@ -661,6 +711,11 @@ class ZakenApiPlugin(
     fun getZaak(zaakUrl: URI): ZaakResponse {
         logger.debug { "Fetching zaak for zaak URL '$zaakUrl'" }
         return client.getZaak(authenticationPluginConfiguration, zaakUrl)
+    }
+
+    fun deleteZaak(zaakUrl: URI) {
+        logger.info { "Deleting zaak for zaak URL '$zaakUrl'" }
+        client.deleteZaak(authenticationPluginConfiguration, url, zaakUrl)
     }
 
     private fun calculateUiterlijkeEinddatumAfdoening(zaaktypeUrl: URI, startdatum: LocalDate): LocalDate? {

@@ -19,6 +19,9 @@ package com.ritense.documentenapi.web.rest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.document.domain.impl.JsonDocumentContent
+import com.ritense.document.domain.impl.request.NewDocumentRequest
+import com.ritense.document.service.DocumentService
 import com.ritense.documentenapi.BaseIntegrationTest
 import com.ritense.documentenapi.DocumentenApiAuthentication
 import com.ritense.documentenapi.domain.DocumentenApiColumn
@@ -35,6 +38,7 @@ import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
+import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -80,6 +84,9 @@ internal class DocumentenApiResourceIT : BaseIntegrationTest() {
 
     @Autowired
     lateinit var documentDefinitionProcessLinkService: DocumentDefinitionProcessLinkService
+
+    @Autowired
+    lateinit var documentService: DocumentService
 
     lateinit var mockMvc: MockMvc
 
@@ -177,6 +184,40 @@ internal class DocumentenApiResourceIT : BaseIntegrationTest() {
             .andExpect(jsonPath("$.supportsFilterableColumns").value(true))
             .andExpect(jsonPath("$.supportsSortableColumns").value(true))
             .andExpect(jsonPath("$.supportsTrefwoorden").value(true))
+    }
+
+    @Test
+    @WithMockUser(USER_EMAIL)
+    fun `should upload fields`() {
+        val documentId = runWithoutAuthorization {
+            val content = """{"description":"Test description"}"""
+            documentService.createDocument(
+                NewDocumentRequest("profile", JsonDocumentContent(content).asJson())
+            ).resultingDocument().get().id().id
+        }
+
+        mockMvc.perform(get("/api/v1/document/{documentId}/zgw-document/upload-field", documentId))
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$").isNotEmpty)
+            .andExpect(jsonPath("$").isArray)
+            .andExpect(jsonPath("$.*", hasSize<Int>(11)))
+            .andExpect(jsonPath("$[0].key").value("beschrijving"))
+            .andExpect(jsonPath("$[0].defaultValue").value("Test description"))
+            .andExpect(jsonPath("$[1].key").value("informatieobjecttype"))
+            .andExpect(jsonPath("$[1].defaultValue").value("http://localhost:8001/catalogi/api/v1/informatieobjecttypen/efc332f2-be3b-4bad-9e3c-49a6219c92ad"))
+            .andExpect(jsonPath("$[2].key").value("status"))
+            .andExpect(jsonPath("$[2].defaultValue").value("in_bewerking"))
+            .andExpect(jsonPath("$[3].key").value("taal"))
+            .andExpect(jsonPath("$[3].defaultValue").value("eng"))
+            .andExpect(jsonPath("$[4].key").value("vertrouwelijkheidaanduiding"))
+            .andExpect(jsonPath("$[4].defaultValue").value("zaakvertrouwelijk"))
+            .andExpect(jsonPath("$[5].key").value("bestandsnaam"))
+            .andExpect(jsonPath("$[6].key").value("titel"))
+            .andExpect(jsonPath("$[7].key").value("auteur"))
+            .andExpect(jsonPath("$[8].key").value("creatiedatum"))
+            .andExpect(jsonPath("$[9].key").value("aanvullendeDatum"))
+            .andExpect(jsonPath("$[10].key").value("trefwoorden"))
     }
 
     private fun setupMockDocumentenApiServer() {

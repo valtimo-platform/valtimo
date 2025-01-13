@@ -23,13 +23,20 @@ import com.fasterxml.jackson.databind.node.MissingNode
 import com.fasterxml.jackson.databind.node.TextNode
 import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonDocumentContent
+import com.ritense.document.domain.impl.JsonSchema
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valueresolver.ValueResolverOptionType
 import org.assertj.core.api.Assertions.assertThat
 import org.camunda.community.mockito.delegate.DelegateTaskFake
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.argumentCaptor
@@ -37,6 +44,9 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.net.URI
+import java.util.Collections
+import java.util.Optional
 import java.util.UUID
 
 internal class DocumentJsonValueResolverTest {
@@ -464,5 +474,73 @@ internal class DocumentJsonValueResolverTest {
         verify(documentService).modifyDocument(eq(document), captor.capture())
         val objectNode = MapperSingleton.get().readTree("{\"field\":\"My field\",\"list\":[\"My item 1\",\"My item 2\"]}")
         assertThat(captor.firstValue.at("/myList/0")).isEqualTo(objectNode)
+    }
+
+    @Test
+    fun `should get property names from referenced nested object`() {
+        val definitionName = "combined-schema-additional-property-example"
+        mockDefinition(definitionName)
+
+        val paths = documentValueResolver.getResolvableKeyOptions(definitionName)
+            .map { it.path }
+
+        Collections.sort(paths)
+        Assertions.assertArrayEquals(
+            paths.toTypedArray(), arrayOf(
+                "doc:/address/city",
+                "doc:/address/country",
+                "doc:/address/number",
+                "doc:/address/province",
+                "doc:/address/streetName"
+            )
+        )
+    }
+
+    @Test
+    fun `should get array property with nested properties`() {
+        val definitionName = "nested-array-example"
+        mockDefinition(definitionName)
+
+        val options = documentValueResolver.getResolvableKeyOptions(definitionName)
+
+        assertEquals(1, options.size)
+        assertEquals(ValueResolverOptionType.COLLECTION, options[0].type)
+        assertEquals("doc:/object1/object2/array1", options[0].path)
+        assertNotNull(options[0].children)
+        assertEquals(1, options[0].children?.size)
+        assertEquals(ValueResolverOptionType.FIELD, options[0].children?.get(0)?.type)
+        assertEquals("/object3/object4/text1", options[0].children?.get(0)?.path)
+    }
+
+    @Test
+    fun `should get array property with nested properties when using reference`() {
+        val definitionName = "nested-array-reference-example"
+        mockDefinition(definitionName)
+
+        val options = documentValueResolver.getResolvableKeyOptions(definitionName)
+
+        assertEquals(1, options.size)
+        assertEquals(ValueResolverOptionType.COLLECTION, options[0].type)
+        assertEquals("doc:/object1/object2/array1", options[0].path)
+        assertNotNull(options[0].children)
+        assertEquals(1, options[0].children?.size)
+        assertEquals(ValueResolverOptionType.FIELD, options[0].children?.get(0)?.type)
+        assertEquals("/object3/object4/text1", options[0].children?.get(0)?.path)
+    }
+
+    private fun mockDefinition(definitionName: String?): JsonSchemaDocumentDefinition {
+        val definition: JsonSchemaDocumentDefinition = definitionOf(definitionName)
+        whenever(documentDefinitionService.findLatestByName(definitionName)).thenReturn(Optional.of(definition))
+        return definition
+    }
+
+    private fun definitionOf(name: String?): JsonSchemaDocumentDefinition {
+        val documentDefinitionName = JsonSchemaDocumentDefinitionId.newId(name)
+        val schema = JsonSchema.fromResourceUri(path(documentDefinitionName.name()))
+        return JsonSchemaDocumentDefinition(documentDefinitionName, schema)
+    }
+
+    private fun path(name: String): URI {
+        return URI.create(String.format("config/document/definition/%s.json", "$name.schema"))
     }
 }

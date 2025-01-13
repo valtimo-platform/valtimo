@@ -21,6 +21,7 @@ import com.ritense.valtimo.contract.audit.AuditMetaData;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
+import org.apache.ibatis.jdbc.Null;
 
 public abstract class ProcessInstanceEvent extends AuditMetaData implements AuditEvent {
 
@@ -59,7 +60,7 @@ public abstract class ProcessInstanceEvent extends AuditMetaData implements Audi
     public UUID getDocumentId() {
         try {
             return UUID.fromString(businessKey);
-        } catch (IllegalArgumentException iae) {
+        } catch (NullPointerException | IllegalArgumentException ex) {
             return null;
         }
     }

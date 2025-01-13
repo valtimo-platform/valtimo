@@ -21,9 +21,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.processlink.BaseIntegrationTest
 import com.ritense.processlink.autodeployment.ProcessLinkDeploymentApplicationReadyEventListener
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
-import com.ritense.processlink.domain.CustomProcessLink
-import com.ritense.processlink.domain.CustomProcessLinkCreateRequestDto
-import com.ritense.processlink.domain.CustomProcessLinkUpdateRequestDto
+import com.ritense.processlink.domain.TestProcessLink
+import com.ritense.processlink.domain.TestProcessLinkCreateRequestDto
+import com.ritense.processlink.domain.TestProcessLinkUpdateRequestDto
 import com.ritense.processlink.repository.ProcessLinkRepository
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
@@ -64,7 +64,7 @@ internal class ProcessLinkResourceIT @Autowired constructor(
 
     @Test
     fun `should create a process-link`() {
-        val createDto = CustomProcessLinkCreateRequestDto(
+        val createDto = TestProcessLinkCreateRequestDto(
             processDefinitionId = PROCESS_DEF_ID,
             activityId = ACTIVITY_ID,
             activityType = SERVICE_TASK_START
@@ -83,7 +83,7 @@ internal class ProcessLinkResourceIT @Autowired constructor(
 
     @Test
     fun `should create a process-link without processLinkType`() {
-        val createDto = CustomProcessLinkCreateRequestDto(
+        val createDto = TestProcessLinkCreateRequestDto(
             processDefinitionId = PROCESS_DEF_ID,
             activityId = ACTIVITY_ID,
             activityType = SERVICE_TASK_START
@@ -127,7 +127,7 @@ internal class ProcessLinkResourceIT @Autowired constructor(
     fun `should update a process-link`() {
         val processLinkId = createProcessLink()
 
-        val updateDto = CustomProcessLinkUpdateRequestDto(
+        val updateDto = TestProcessLinkUpdateRequestDto(
             id = processLinkId
         )
 
@@ -212,7 +212,7 @@ internal class ProcessLinkResourceIT @Autowired constructor(
 
     private fun createProcessLink(): UUID {
         return processLinkRepository.save(
-            CustomProcessLink(
+            TestProcessLink(
                 UUID.randomUUID(),
                 processDefinitionId = PROCESS_DEF_ID,
                 activityId = ACTIVITY_ID,
