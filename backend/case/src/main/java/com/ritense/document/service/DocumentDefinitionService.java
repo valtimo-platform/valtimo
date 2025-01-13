@@ -47,6 +47,10 @@ public interface DocumentDefinitionService {
     // TODO: Remove
     Optional<? extends DocumentDefinition> findByNameAndVersion(String documentDefinitionName, long version);
 
+    Optional<? extends DocumentDefinition> findByCaseDefinitionId(
+        CaseDefinitionId caseDefinitionId
+    );
+
     Optional<? extends DocumentDefinition> findByNameAndCaseDefinitionId(
         String documentDefinitionName,
         CaseDefinitionId caseDefinitionId

@@ -19,20 +19,18 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
 
-    <changeSet author="Ritense" id="1">
-        <createTable tableName="process_definition_case_definition">
-            <column name="process_definition_id" type="VARCHAR(64)">
-                <constraints primaryKey="true" primaryKeyName="process_definition_case_definitionPK"/>
-            </column>
-            <column name="case_definition_key" type="VARCHAR(256)">
-                <constraints primaryKey="true" primaryKeyName="process_definition_case_definitionPK"/>
-            </column>
-            <column name="case_definition_version_tag" type="VARCHAR(256)">
-                <constraints primaryKey="true" primaryKeyName="process_definition_case_definitionPK"/>
-            </column>
-            <column name="can_initialize_document" type="BOOLEAN" defaultValue="0"/>
-            <column name="startable_by_user" type="BOOLEAN" defaultValue="1"/>
-        </createTable>
+    <changeSet id="1" author="Ritense">
+        <preConditions>
+            <foreignKeyConstraintExists foreignKeyName="zgw_document_trefwoord_case_definition_name_fk"/>
+        </preConditions>
+        <dropForeignKeyConstraint baseTableName="zgw_document_trefwoord" constraintName="zgw_document_trefwoord_case_definition_name_fk"/>
     </changeSet>
+<!--
+    <changeSet id="2" author="Ritense">
+        <preConditions>
+            <foreignKeyConstraintExists foreignKeyName="zgw_document_upload_field_case_definition_name_fk"/>
+        </preConditions>
+        <dropForeignKeyConstraint baseTableName="zgw_document_trefwoord" constraintName="zgw_document_upload_field_case_definition_name_fk"/>
+    </changeSet>-->
 
 </databaseChangeLog>

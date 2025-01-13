@@ -84,21 +84,18 @@ public class CamundaProcessJsonSchemaDocumentService implements ProcessDocumentS
     private final CamundaTaskService camundaTaskService;
     private final CamundaProcessService camundaProcessService;
     private final ProcessDocumentAssociationService processDocumentAssociationService;
-    private final ProcessDefinitionCaseDefinitionService processDefinitionCaseDefinitionService;
     private final AuthorizationService authorizationService;
 
     public CamundaProcessJsonSchemaDocumentService(
         JsonSchemaDocumentService documentService, CamundaTaskService camundaTaskService,
         CamundaProcessService camundaProcessService,
         ProcessDocumentAssociationService processDocumentAssociationService,
-        ProcessDefinitionCaseDefinitionService processDefinitionCaseDefinitionService,
         AuthorizationService authorizationService
     ) {
         this.documentService = documentService;
         this.camundaTaskService = camundaTaskService;
         this.camundaProcessService = camundaProcessService;
         this.processDocumentAssociationService = processDocumentAssociationService;
-        this.processDefinitionCaseDefinitionService = processDefinitionCaseDefinitionService;
         this.authorizationService = authorizationService;
     }
 

@@ -18,10 +18,12 @@ package com.ritense.processdocument.repository
 
 import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
 import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinitionId
+import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface ProcessDefinitionCaseDefinitionRepository:
     JpaRepository<ProcessDefinitionCaseDefinition, ProcessDefinitionCaseDefinitionId> {
-    fun findByCaseDefinitionId(caseDefinitionId: CaseDefinitionId): List<ProcessDefinitionCaseDefinition>
+    fun findByIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId): List<ProcessDefinitionCaseDefinition>
+    fun findByIdProcessDefinitionId(processDefinitionId: ProcessDefinitionId): ProcessDefinitionCaseDefinition
 }

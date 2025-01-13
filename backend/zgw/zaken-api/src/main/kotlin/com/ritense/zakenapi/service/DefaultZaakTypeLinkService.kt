@@ -17,11 +17,12 @@
 package com.ritense.zakenapi.service
 
 import com.ritense.authorization.AuthorizationContext
+import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
 import com.ritense.plugin.domain.PluginConfiguration
-import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionId
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
+import com.ritense.processdocument.domain.ProcessDefinitionId
+import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.zakenapi.domain.ZaakTypeLink
 import com.ritense.zakenapi.domain.ZaakTypeLinkId
@@ -37,7 +38,8 @@ import java.util.UUID
 @SkipComponentScan
 class DefaultZaakTypeLinkService(
     private val zaakTypeLinkRepository: ZaakTypeLinkRepository,
-    private val processDocumentAssociationService: ProcessDocumentAssociationService
+    private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
+    private val documentDefinitionService: JsonSchemaDocumentDefinitionService
 ) : ZaakTypeLinkService {
 
     override fun get(
@@ -53,21 +55,18 @@ class DefaultZaakTypeLinkService(
     }
 
     override fun getByProcess(
-        @LoggableResource("processDefinitionKey") processDefinitionKey: String
-    ): List<ZaakTypeLink> {
+        @LoggableResource("processDefinitionId") processDefinitionId: String
+    ): ZaakTypeLink? {
         val processDocumentDefinitions = AuthorizationContext.runWithoutAuthorization {
-            processDocumentAssociationService.findAllProcessDocumentDefinitions(
-                CamundaProcessDefinitionId(
-                    processDefinitionKey
-                )
-            )
+            processDefinitionCaseDefinitionService.findByProcessDefinitionId(ProcessDefinitionId(processDefinitionId))
         }
-        if (processDocumentDefinitions.isNotEmpty()) {
-            val documentDefinitionsNames = processDocumentDefinitions
-                .map { it.processDocumentDefinitionId().documentDefinitionId().name() }.toList()
-            return zaakTypeLinkRepository.findByDocumentDefinitionNameIn(documentDefinitionsNames)
+        if (processDocumentDefinitions != null) {
+            val documentDefinitionOptional = documentDefinitionService.findByCaseDefinitionId(processDocumentDefinitions.id.caseDefinitionId)
+            return documentDefinitionOptional.map {
+                it.id?.let { id -> zaakTypeLinkRepository.findByDocumentDefinitionName(id.name()) }
+            }.orElse(null)
         }
-        return emptyList()
+        return null
     }
 
     override fun createZaakTypeLink(request: CreateZaakTypeLinkRequest): ZaakTypeLink {

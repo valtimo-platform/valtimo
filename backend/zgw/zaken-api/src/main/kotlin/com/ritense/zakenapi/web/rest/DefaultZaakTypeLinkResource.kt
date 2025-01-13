@@ -40,7 +40,7 @@ class DefaultZaakTypeLinkResource(
 
     override fun getByProcess(
         @LoggableResource("processDefinitionKey") processDefinitionKey: String
-    ): ResponseEntity<List<ZaakTypeLink>> {
+    ): ResponseEntity<ZaakTypeLink?> {
         return ok(zaakTypeLinkService.getByProcess(processDefinitionKey))
     }
 

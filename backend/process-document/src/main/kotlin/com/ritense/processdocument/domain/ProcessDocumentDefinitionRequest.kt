@@ -13,22 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.ritense.processdocument.domain
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.domain.AbstractId
-import jakarta.persistence.Embeddable
-import jakarta.persistence.Embedded
 
-@Embeddable
-class ProcessDefinitionCaseDefinitionId(
-    @Embedded
-    val processDefinitionId: ProcessDefinitionId,
-    @Embedded
-    val caseDefinitionId: CaseDefinitionId
-): AbstractId<ProcessDefinitionCaseDefinitionId>() {
-    override fun toString(): String {
-        return "ProcessDefinitionCaseDefinitionId(processDefinitionId=$processDefinitionId, caseDefinitionId=$caseDefinitionId)"
-    }
-}
+class ProcessDocumentDefinitionRequest(
+    @JsonProperty
+    val processDefinitionId: String,
+    @JsonProperty
+    val caseDefinitionId: CaseDefinitionId,
+    @JsonProperty("canInitializeDocument")
+    val canInitializeDocument: Boolean,
+    @JsonProperty("startableByUser")
+    var startableByUser: Boolean = false,
+)

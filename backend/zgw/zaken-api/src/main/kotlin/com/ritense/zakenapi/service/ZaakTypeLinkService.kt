@@ -26,7 +26,7 @@ interface ZaakTypeLinkService {
 
     fun getByPluginConfigurationId(id: UUID): List<ZaakTypeLink>
 
-    fun getByProcess(processDefinitionKey: String): List<ZaakTypeLink>
+    fun getByProcess(processDefinitionId: String): ZaakTypeLink?
 
     fun createZaakTypeLink(request: CreateZaakTypeLinkRequest): ZaakTypeLink
 

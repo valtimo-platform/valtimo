@@ -19,6 +19,7 @@ package com.ritense.openzaak.autoconfigure
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.connector.repository.ConnectorTypeInstanceRepository
 import com.ritense.connector.repository.ConnectorTypeRepository
+import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.openzaak.domain.connector.OpenZaakConnector
 import com.ritense.openzaak.domain.connector.OpenZaakProperties
@@ -41,6 +42,7 @@ import com.ritense.openzaak.service.impl.ZaakProcessService
 import com.ritense.openzaak.service.impl.ZaakResultaatService
 import com.ritense.openzaak.service.impl.ZaakService
 import com.ritense.openzaak.service.impl.ZaakStatusService
+import com.ritense.openzaak.service.impl.ZaakTypeLinkService as ZaakTypeLinkServiceImpl
 import com.ritense.openzaak.service.impl.ZaakTypeService
 import com.ritense.openzaak.web.rest.ZaakInstanceLinkResource
 import com.ritense.openzaak.web.rest.impl.InformatieObjectTypeLinkResource
@@ -50,7 +52,7 @@ import com.ritense.openzaak.web.rest.impl.ResultaatResource
 import com.ritense.openzaak.web.rest.impl.StatusResource
 import com.ritense.openzaak.web.rest.impl.ZaakTypeLinkResource
 import com.ritense.openzaak.web.rest.impl.ZaakTypeResource
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
+import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import org.camunda.bpm.engine.RepositoryService
 import org.springframework.beans.factory.config.BeanDefinition
@@ -62,7 +64,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Scope
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.web.client.RestTemplate
-import com.ritense.openzaak.service.impl.ZaakTypeLinkService as ZaakTypeLinkServiceImpl
 
 @AutoConfiguration
 @EnableJpaRepositories(basePackages = ["com.ritense.openzaak.repository"])
@@ -159,9 +160,14 @@ class OpenZaakAutoConfiguration {
     @ConditionalOnMissingBean(ZaakTypeLinkService::class)
     fun zaakTypeLinkService(
         zaakTypeLinkRepository: ZaakTypeLinkRepository,
-        processDocumentAssociationService: ProcessDocumentAssociationService
+        processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
+        documentDefinitionService: DocumentDefinitionService
     ): ZaakTypeLinkService {
-        return ZaakTypeLinkServiceImpl(zaakTypeLinkRepository, processDocumentAssociationService)
+        return ZaakTypeLinkServiceImpl(
+            zaakTypeLinkRepository,
+            processDefinitionCaseDefinitionService,
+            documentDefinitionService
+        )
     }
 
     @Bean

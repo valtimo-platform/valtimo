@@ -195,6 +195,23 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     }
 
     @Override
+    public Optional<JsonSchemaDocumentDefinition> findByCaseDefinitionId(
+        CaseDefinitionId caseDefinitionId
+    ) {
+        final var optionalDefinition = documentDefinitionRepository.findByIdCaseDefinitionId(caseDefinitionId);
+
+        optionalDefinition.ifPresent(definition -> authorizationService.requirePermission(
+            new EntityAuthorizationRequest<>(
+                JsonSchemaDocumentDefinition.class,
+                VIEW,
+                definition
+            )
+        ));
+
+        return optionalDefinition;
+    }
+
+    @Override
     public Optional<JsonSchemaDocumentDefinition> findByNameAndCaseDefinitionId(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
         CaseDefinitionId caseDefinitionId

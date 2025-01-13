@@ -17,6 +17,7 @@
 package com.ritense.openzaak.service.impl
 
 import com.ritense.authorization.AuthorizationContext
+import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.openzaak.domain.mapping.impl.ServiceTaskHandlers
 import com.ritense.openzaak.domain.mapping.impl.ZaakTypeLink
 import com.ritense.openzaak.domain.mapping.impl.ZaakTypeLinkId
@@ -33,8 +34,8 @@ import com.ritense.openzaak.service.result.CreateZaakTypeLinkResult
 import com.ritense.openzaak.service.result.ModifyServiceTaskHandlerResult
 import com.ritense.openzaak.service.result.RemoveServiceTaskHandlerResult
 import com.ritense.openzaak.web.rest.request.ServiceTaskHandlerRequest
-import com.ritense.processdocument.domain.impl.CamundaProcessDefinitionId
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
+import com.ritense.processdocument.domain.ProcessDefinitionId
+import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.valtimo.contract.result.OperationError
 import jakarta.validation.ConstraintViolationException
 import org.springframework.transaction.annotation.Transactional
@@ -44,27 +45,25 @@ import java.util.UUID
 @Deprecated("Since 12.0.0. Use DefaultZaakTypeLinkService in zaken-api module instead")
 class ZaakTypeLinkService(
     private val zaakTypeLinkRepository: ZaakTypeLinkRepository,
-    private val processDocumentAssociationService: ProcessDocumentAssociationService
+    private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
+    private val documentDefinitionService: DocumentDefinitionService
 ) : ZaakTypeLinkService {
 
     override fun get(documentDefinitionName: String): ZaakTypeLink? {
         return zaakTypeLinkRepository.findByDocumentDefinitionName(documentDefinitionName)
     }
 
-    override fun getByProcess(processDefinitionKey: String): List<ZaakTypeLink?> {
+    override fun getByProcess(processDefinitionId: String): ZaakTypeLink? {
         val processDocumentDefinitions = AuthorizationContext.runWithoutAuthorization {
-            processDocumentAssociationService.findAllProcessDocumentDefinitions(
-                CamundaProcessDefinitionId(
-                    processDefinitionKey
-                )
-            )
+            processDefinitionCaseDefinitionService.findByProcessDefinitionId(ProcessDefinitionId(processDefinitionId))
         }
-        if (processDocumentDefinitions.isNotEmpty()) {
-            val documentDefinitionsNames = processDocumentDefinitions
-                .map { it.processDocumentDefinitionId().documentDefinitionId().name() }.toList()
-            return zaakTypeLinkRepository.findByDocumentDefinitionNameIn(documentDefinitionsNames)
+        if (processDocumentDefinitions != null) {
+            val documentDefinitionOptional = documentDefinitionService.findByCaseDefinitionId(processDocumentDefinitions.id.caseDefinitionId)
+            return documentDefinitionOptional.map {
+                it.id()?.let { id -> zaakTypeLinkRepository.findByDocumentDefinitionName(id.name()) }
+            }.orElse(null)
         }
-        return emptyList()
+        return null
     }
 
     override fun findBy(documentDefinitionName: String): ZaakTypeLink {

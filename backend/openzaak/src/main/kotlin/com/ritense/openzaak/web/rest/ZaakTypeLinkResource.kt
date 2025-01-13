@@ -46,8 +46,8 @@ interface ZaakTypeLinkResource {
     @GetMapping("/v1/openzaak/link/{documentDefinitionName}")
     fun get(@PathVariable(name = "documentDefinitionName") documentDefinitionName: String): ResponseEntity<ZaakTypeLink?>
 
-    @GetMapping("/v1/openzaak/link/process/{processDefinitionKey}")
-    fun getByProcess(@PathVariable(name = "processDefinitionKey") processDefinitionKey: String): ResponseEntity<List<ZaakTypeLink?>>
+    @GetMapping("/v1/openzaak/link/process/{processDefinitionId}")
+    fun getByProcess(@PathVariable(name = "processDefinitionId") processDefinitionId: String): ResponseEntity<ZaakTypeLink?>
 
     @PostMapping("/v1/openzaak/link")
     fun create(@Valid @RequestBody request: CreateZaakTypeLinkRequest): ResponseEntity<CreateZaakTypeLinkResult>

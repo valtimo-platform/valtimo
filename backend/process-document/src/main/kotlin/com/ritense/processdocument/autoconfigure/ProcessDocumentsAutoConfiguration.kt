@@ -21,6 +21,7 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.case.repository.TaskListColumnRepository
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
+import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.processdocument.camunda.authorization.CamundaTaskDocumentMapper
@@ -29,6 +30,7 @@ import com.ritense.processdocument.exporter.ProcessDocumentLinkExporter
 import com.ritense.processdocument.importer.ProcessDocumentLinkImporter
 import com.ritense.processdocument.listener.CaseAssigneeListener
 import com.ritense.processdocument.listener.CaseAssigneeTaskCreatedListener
+import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
 import com.ritense.processdocument.service.CaseTaskListSearchService
 import com.ritense.processdocument.service.CorrelationService
@@ -36,7 +38,6 @@ import com.ritense.processdocument.service.CorrelationServiceImpl
 import com.ritense.processdocument.service.DocumentDelegateService
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
-import com.ritense.processdocument.service.ProcessDocumentDeploymentService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processdocument.service.ProcessDocumentsService
 import com.ritense.processdocument.service.ValueResolverDelegateService
@@ -202,10 +203,14 @@ class ProcessDocumentsAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ProcessDocumentLinkImporter::class)
     fun processDocumentLinkImporter(
-        processDocumentDeploymentService: ProcessDocumentDeploymentService
+        processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
+        documentDefinitionService: DocumentDefinitionService,
+        objectMapper: ObjectMapper
     ): ProcessDocumentLinkImporter {
         return ProcessDocumentLinkImporter(
-            processDocumentDeploymentService,
+            processDefinitionCaseDefinitionService,
+            documentDefinitionService,
+            objectMapper
         )
     }
 
@@ -290,6 +295,18 @@ class ProcessDocumentsAutoConfiguration {
         return TaskSearchFieldImporter(
             taskSearchFieldDeployer,
             changelogDeployer,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessDefinitionCaseDefinitionService::class)
+    fun processDefinitionCaseDefinitionService(
+        authorizationService: AuthorizationService,
+        processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository
+    ): ProcessDefinitionCaseDefinitionService {
+        return ProcessDefinitionCaseDefinitionService(
+            authorizationService,
+            processDefinitionCaseDefinitionRepository
         )
     }
 }

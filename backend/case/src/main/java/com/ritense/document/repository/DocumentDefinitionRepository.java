@@ -18,6 +18,7 @@ package com.ritense.document.repository;
 
 import com.ritense.document.domain.DocumentDefinition;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import java.util.List;
 import java.util.Optional;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
@@ -33,6 +34,8 @@ public interface DocumentDefinitionRepository<T extends DocumentDefinition> exte
     JpaSpecificationExecutor<T> {
 
     Optional<T> findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(String documentDefinitionName);
+
+    Optional<T> findByIdCaseDefinitionId(CaseDefinitionId caseDefinitionId);
 
     List<T> findAllByIdName(String documentDefinitionName);
 

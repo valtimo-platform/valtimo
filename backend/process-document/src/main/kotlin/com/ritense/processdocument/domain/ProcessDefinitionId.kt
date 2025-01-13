@@ -13,22 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.ritense.processdocument.domain
 
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.domain.AbstractId
+import com.ritense.valtimo.contract.utils.AssertionConcern
+import jakarta.persistence.Column
 import jakarta.persistence.Embeddable
-import jakarta.persistence.Embedded
 
 @Embeddable
-class ProcessDefinitionCaseDefinitionId(
-    @Embedded
-    val processDefinitionId: ProcessDefinitionId,
-    @Embedded
-    val caseDefinitionId: CaseDefinitionId
-): AbstractId<ProcessDefinitionCaseDefinitionId>() {
-    override fun toString(): String {
-        return "ProcessDefinitionCaseDefinitionId(processDefinitionId=$processDefinitionId, caseDefinitionId=$caseDefinitionId)"
+data class ProcessDefinitionId(
+    @Column(name = "process_definition_id", columnDefinition = "VARCHAR(255)")
+    val id: String
+) {
+    init {
+        AssertionConcern.assertArgumentLength(id, 255, "id max length is 255")
     }
 }

@@ -43,8 +43,8 @@ class ZaakTypeLinkResource(
         }
     }
 
-    override fun getByProcess(processDefinitionKey: String): ResponseEntity<List<ZaakTypeLink?>> {
-        return ok(zaakTypeLinkService.getByProcess(processDefinitionKey))
+    override fun getByProcess(processDefinitionId: String): ResponseEntity<ZaakTypeLink?> {
+        return ok(zaakTypeLinkService.getByProcess(processDefinitionId))
     }
 
     override fun create(request: CreateZaakTypeLinkRequest): ResponseEntity<CreateZaakTypeLinkResult> {
