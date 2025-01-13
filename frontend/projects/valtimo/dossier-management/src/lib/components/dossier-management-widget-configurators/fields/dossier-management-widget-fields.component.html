@@ -36,6 +36,10 @@
   </cds-text-label>
 </form>
 
+<valtimo-dossier-management-widget-process-selector
+  [documentDefinitionName]="documentDefinitionName$ | async"
+></valtimo-dossier-management-widget-process-selector>
+
 <cds-tabs type="contained">
   @for (column of columns(); track $index) {
     <cds-tab

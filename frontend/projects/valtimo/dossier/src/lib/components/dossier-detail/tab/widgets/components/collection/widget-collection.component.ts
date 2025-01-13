@@ -29,12 +29,14 @@ import {
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {
+  ButtonModule,
   InputModule,
   PaginationModel,
   PaginationModule,
   TilesModule,
 } from 'carbon-components-angular';
 import {
+  CaseWidgetAction,
   CaseWidgetDisplayTypeKey,
   CollectionCaseWidget,
   CollectionCaseWidgetCardData,
@@ -47,6 +49,10 @@ import {CarbonListModule, ViewContentService} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {Page} from '@valtimo/config';
 import {DossierWidgetsApiService} from '../../../../../../services';
+import {WidgetProcess} from '../widget-process/widget-process';
+import {DocumentService} from '@valtimo/document';
+import {PermissionService} from '@valtimo/access-control';
+import {WidgetsService} from '../../widgets.service';
 
 @Component({
   selector: 'valtimo-widget-collection',
@@ -62,9 +68,10 @@ import {DossierWidgetsApiService} from '../../../../../../services';
     TilesModule,
     CarbonListModule,
     TranslateModule,
+    ButtonModule,
   ],
 })
-export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
+export class WidgetCollectionComponent extends WidgetProcess implements AfterViewInit, OnDestroy {
   @HostBinding('class') public readonly class = 'valtimo-widget-collection';
   @ViewChild('widgetCollection') private _widgetCollectionRef: ElementRef<HTMLDivElement>;
 
@@ -72,6 +79,7 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
   @Input({required: true}) public tabKey: string;
   @Input() public set widgetConfiguration(value: CollectionCaseWidget) {
     if (!value) return;
+    this.baseWidgetConfiguration = value;
     this.widgetConfiguration$.next(value);
   }
   public readonly showPagination$ = new BehaviorSubject<boolean>(false);
@@ -168,10 +176,15 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
   private _observer!: ResizeObserver;
 
   constructor(
+    protected readonly documentService: DocumentService,
+    protected readonly permissionService: PermissionService,
     private readonly viewContentService: ViewContentService,
     private readonly cdr: ChangeDetectorRef,
-    private readonly widgetApiService: DossierWidgetsApiService
-  ) {}
+    private readonly widgetApiService: DossierWidgetsApiService,
+    private readonly widgetsService: WidgetsService
+  ) {
+    super(documentService, permissionService);
+  }
 
   public ngAfterViewInit(): void {
     this.openWidthObserver();
@@ -187,6 +200,10 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
       ...model,
       currentPage: page,
     }));
+  }
+
+  public onProcessStartClick(process: CaseWidgetAction): void {
+    this.widgetsService.startProcess(process.processDefinitionKey);
   }
 
   private getCardField(

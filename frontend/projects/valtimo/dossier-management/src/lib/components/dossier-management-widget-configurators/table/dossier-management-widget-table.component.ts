@@ -46,6 +46,7 @@ import {WidgetContentComponent} from '../../../models';
 import {WidgetWizardService} from '../../../services';
 import {DossierManagementWidgetFieldsColumnComponent} from '../fields/column/dossier-management-widget-fields-column.component';
 import {ActivatedRoute, ParamMap} from '@angular/router';
+import {DossierManagementWidgetProcessSelectorComponent} from '../process-selector/dossier-management-widget-process-selector.component';
 
 @Component({
   templateUrl: './dossier-management-widget-table.component.html',
@@ -63,6 +64,7 @@ import {ActivatedRoute, ParamMap} from '@angular/router';
     ButtonModule,
     InputLabelModule,
     ValuePathSelectorComponent,
+    DossierManagementWidgetProcessSelectorComponent,
   ],
 })
 export class DossierManagementWidgetTableComponent

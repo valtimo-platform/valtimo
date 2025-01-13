@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-.valtimo-dossier-management-widget-custom {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+import {PermissionRequest} from '@valtimo/access-control';
 
-  ::ng-deep.dropdown-label {
-    label {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-    }
-
-    cds-dropdown {
-      margin-top: 8px;
-    }
-  }
+enum PERMISSION_ACTION {
+  create = 'create',
 }
+
+enum WIDGET_PERMISSION_RESOURCE {
+  camundaExecution = 'com.ritense.valtimo.camunda.domain.CamundaExecution',
+  camundaProcessDefinition = 'com.ritense.valtimo.camunda.domain.CamundaProcessDefinition',
+}
+
+const CAN_CREATE_CAMUNDA_EXECUTION_PERMISSION: PermissionRequest = {
+  action: PERMISSION_ACTION.create,
+  resource: WIDGET_PERMISSION_RESOURCE.camundaExecution,
+};
+
+export {CAN_CREATE_CAMUNDA_EXECUTION_PERMISSION, WIDGET_PERMISSION_RESOURCE};

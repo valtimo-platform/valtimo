@@ -166,6 +166,7 @@ export class DossierManagementWidgetsEditorComponent {
     this.widgetWizardService.widgetContent.set(tabWidget.properties);
     this.widgetWizardService.editMode.set(true);
     this.widgetWizardService.widgetKey.set(tabWidget.key);
+    this.widgetWizardService.widgetActions.set(tabWidget.actions);
     this.isWizardOpen$.next(true);
   }
 

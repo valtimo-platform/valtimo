@@ -17,28 +17,34 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {FormioCaseWidgetWidgetWithUuid} from '../../../../../../models';
+import {CaseWidgetAction, FormioCaseWidgetWidgetWithUuid} from '../../../../../../models';
 import {BehaviorSubject, combineLatest, filter, map, Observable, of, switchMap, tap} from 'rxjs';
 import {FormService} from '@valtimo/form';
 import {DossierWidgetsLayoutService} from '../../../../../../services';
 import {FormioForm} from '@formio/angular';
 import {FormIoModule} from '@valtimo/components';
+import {WidgetProcess} from '../widget-process/widget-process';
+import {PermissionService} from '@valtimo/access-control';
+import {DocumentService} from '@valtimo/document';
+import {ButtonModule} from 'carbon-components-angular';
+import {WidgetsService} from '../../widgets.service';
 
 @Component({
   selector: 'valtimo-widget-formio',
   templateUrl: './widget-formio.component.html',
   styleUrls: ['./widget-formio.component.scss'],
   standalone: true,
-  imports: [CommonModule, TranslateModule, FormIoModule],
+  imports: [CommonModule, TranslateModule, FormIoModule, ButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WidgetFormioComponent {
+export class WidgetFormioComponent extends WidgetProcess {
   @Input() public set documentId(value: string) {
     if (value) this._documentIdSubject$.next(value);
   }
   @Input() public set widgetConfiguration(value: FormioCaseWidgetWidgetWithUuid) {
     if (!value) return;
     this.layoutService.setWidgetWithExternalData(value.uuid);
+    this.baseWidgetConfiguration = value;
     this._widgetConfigurationSubject$.next(value);
   }
 
@@ -71,7 +77,16 @@ export class WidgetFormioComponent {
   );
 
   constructor(
+    protected readonly documentService: DocumentService,
+    protected readonly permissionService: PermissionService,
     private readonly formService: FormService,
-    private readonly layoutService: DossierWidgetsLayoutService
-  ) {}
+    private readonly layoutService: DossierWidgetsLayoutService,
+    private readonly widgetsService: WidgetsService,
+  ) {
+    super(documentService, permissionService);
+  }
+
+  public onProcessStartClick(process: CaseWidgetAction): void {
+    this.widgetsService.startProcess(process.processDefinitionKey);
+  }
 }

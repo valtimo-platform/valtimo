@@ -14,8 +14,20 @@
   ~ limitations under the License.
   -->
 
-<div class="custom-widget">
-  <h4 class="custom-widget__title">{{ (widgetConfig$ | async)?.title || '-' }}</h4>
+<div *ngIf="{widgetConfig: widgetConfig$ | async} as obs" class="custom-widget">
+  <section class="custom-widget__header">
+    <h4 class="custom-widget__title">{{ obs.widgetConfig$?.title || '-' }}</h4>
+
+    @if (obs.widgetConfig?.actions?.length === 1) {
+      <button
+        *ngIf="canCreateCamundaExecution$ | async"
+        cdsButton="ghost"
+        (click)="onProcessStartClick(obs.widgetConfig?.actions[0])"
+      >
+        {{ obs.widgetConfig?.actions[0].name }}
+      </button>
+    }
+  </section>
 
   <div class="custom-widget__content">
     <ng-template #customWidgetContainer></ng-template>

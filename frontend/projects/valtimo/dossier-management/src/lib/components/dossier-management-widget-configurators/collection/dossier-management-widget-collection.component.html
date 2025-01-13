@@ -67,6 +67,10 @@
     </div>
   </form>
 
+  <valtimo-dossier-management-widget-process-selector
+    [documentDefinitionName]="documentDefinitionName$ | async"
+  ></valtimo-dossier-management-widget-process-selector>
+
   <span class="valtimo-dossier-management-widget-collection__subtitle">
     {{ 'widgetTabManagement.content.collection.cardTitle' | translate }}
   </span>

@@ -28,26 +28,33 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {CustomCaseWidget, CustomCaseWidgetConfig} from '../../../../../../models';
+import {CaseWidgetAction, CustomCaseWidget, CustomCaseWidgetConfig} from '../../../../../../models';
 import {CUSTOM_CASE_WIDGET_TOKEN} from '../../../../../../constants';
 import {BehaviorSubject, combineLatest, filter, Observable, Subscription} from 'rxjs';
 import {CarbonListModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
+import {WidgetProcess} from '../widget-process/widget-process';
+import {DocumentService} from '@valtimo/document';
+import {PermissionService} from '@valtimo/access-control';
+import {WidgetsService} from '../../widgets.service';
+import {ButtonModule} from 'carbon-components-angular';
 
 @Component({
   selector: 'valtimo-widget-custom',
   templateUrl: './widget-custom.component.html',
   styleUrls: ['./widget-custom.component.scss'],
   standalone: true,
-  imports: [CommonModule, CarbonListModule, TranslateModule],
+  imports: [CommonModule, CarbonListModule, TranslateModule, ButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WidgetCustomComponent implements AfterViewInit, OnDestroy {
+export class WidgetCustomComponent extends WidgetProcess implements AfterViewInit, OnDestroy {
   @ViewChild('customWidgetContainer', {read: ViewContainerRef})
   private readonly _customWidgetContainerRef: ViewContainerRef;
 
   @Input() public set widgetConfig(value: CustomCaseWidget) {
-    if (value) this._widgetConfigSubject$.next(value);
+    if (!value) return;
+    this.baseWidgetConfiguration = value;
+    this._widgetConfigSubject$.next(value);
   }
 
   private readonly _customCaseWidgetConfig$ = new BehaviorSubject<CustomCaseWidgetConfig | {}>({});
@@ -66,8 +73,12 @@ export class WidgetCustomComponent implements AfterViewInit, OnDestroy {
     @Optional()
     @Inject(CUSTOM_CASE_WIDGET_TOKEN)
     private readonly customCaseWidgetConfig: CustomCaseWidgetConfig,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly widgetsService: WidgetsService,
+    protected readonly documentService: DocumentService,
+    protected readonly permissionService: PermissionService
   ) {
+    super(documentService, permissionService);
     if (customCaseWidgetConfig) this._customCaseWidgetConfig$.next(customCaseWidgetConfig);
   }
 
@@ -77,6 +88,10 @@ export class WidgetCustomComponent implements AfterViewInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+  }
+
+  public onProcessStartClick(process: CaseWidgetAction): void {
+    this.widgetsService.startProcess(process.processDefinitionKey);
   }
 
   private openCustomWidgetSubscription(): void {

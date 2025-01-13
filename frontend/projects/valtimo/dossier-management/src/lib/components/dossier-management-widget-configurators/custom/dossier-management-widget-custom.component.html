@@ -30,6 +30,10 @@
     />
   </cds-text-label>
 
+  <valtimo-dossier-management-widget-process-selector
+    [documentDefinitionName]="documentDefinitionName$ | async"
+  ></valtimo-dossier-management-widget-process-selector>
+
   <cds-label class="dropdown-label">
     {{ 'widgetTabManagement.content.custom.selectComponent' | translate }}
 

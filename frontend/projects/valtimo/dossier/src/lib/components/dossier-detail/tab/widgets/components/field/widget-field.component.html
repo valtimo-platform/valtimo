@@ -22,7 +22,19 @@
     isEmptyWidgetData: isEmptyWidgetData$ | async,
   } as obs"
 >
-  <h4 class="widget-field__title">{{ obs?.widgetConfiguration?.title }}</h4>
+  <section class="widget-field__header">
+    <h4 class="widget-field__title">{{ obs?.widgetConfiguration?.title }}</h4>
+
+    @if (obs.widgetConfiguration.actions?.length === 1) {
+      <button
+        *ngIf="canCreateCamundaExecution$ | async"
+        cdsButton="ghost"
+        (click)="onProcessStartClick(obs.widgetConfiguration.actions[0])"
+      >
+        {{ obs.widgetConfiguration.actions[0].name }}
+      </button>
+    }
+  </section>
 
   @if (obs?.isEmptyWidgetData) {
     <valtimo-no-results

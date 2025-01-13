@@ -21,7 +21,19 @@
   } as obs"
   class="valtimo-widget-table"
 >
-  <span class="widget-title">{{ widgetConfiguration?.title }}</span>
+  <section class="valtimo-widget-table__header">
+    <span class="widget-title">{{ widgetConfiguration?.title }}</span>
+
+    @if (widgetConfiguration?.actions?.length === 1) {
+      <button
+        *ngIf="canCreateCamundaExecution$ | async"
+        cdsButton="ghost"
+        (click)="onProcessStartClick(widgetConfiguration?.actions[0])"
+      >
+        {{ widgetConfiguration?.actions[0].name }}
+      </button>
+    }
+  </section>
 
   @if (obs.widgetData && obs.fields && obs.widgetData.length) {
     <section class="valtimo-widget-table__content">

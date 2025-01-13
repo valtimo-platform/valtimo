@@ -20,7 +20,19 @@
     collectionWidgetCards: collectionWidgetCards$ | async,
   } as obs"
 >
-  <span class="valtimo-widget-collection__title">{{ widgetTitle() }}</span>
+  <section class="valtimo-widget-collection__header">
+    <span class="valtimo-widget-collection__title">{{ widgetTitle() }}</span>
+
+    @if (obs.widgetConfiguration?.actions?.length === 1) {
+      <button
+        *ngIf="canCreateCamundaExecution$ | async"
+        cdsButton="ghost"
+        (click)="onProcessStartClick(obs.widgetConfiguration?.actions[0])"
+      >
+        {{ obs.widgetConfiguration?.actions[0].name }}
+      </button>
+    }
+  </section>
 
   <div
     #widgetCollection
