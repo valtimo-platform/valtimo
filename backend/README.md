@@ -51,7 +51,7 @@ Keycloak comes preconfigured with the following users.
 - Run the following command to run the security tests: `./gradlew securityTesting`.
 
 ### Contributing
-Contributions are welcome! To get you in the right direction, please consult the [Valtimo documentation]([https://docs.valtimo.nl/readme/contributing](https://docs.valtimo.nl/contributing-to-valtimo/contributing-to-valtimo)) for guidelines on how to contribute.
+Contributions are welcome! To get you in the right direction, please consult the [Valtimo documentation](https://docs.valtimo.nl/contributing-to-valtimo/contributing-to-valtimo) for guidelines on how to contribute.
 
 #### Code guidelines
 <!--- TODO: write the coding guidelines--->
