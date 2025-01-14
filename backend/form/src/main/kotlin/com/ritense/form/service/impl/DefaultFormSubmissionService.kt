@@ -225,7 +225,7 @@ class DefaultFormSubmissionService(
 
         // After pre-processing process-variables we have a key-value map where the prefix is stripped from the keys.
         val processVariables = categorizedMap[PV_PREFIX]
-            ?.let { valueResolverService.preProcessValuesForNewCase(it)[PV_PREFIX] as? Map<String, Any>}
+            ?.let { valueResolverService.preProcessValuesForNewCase(it)[PV_PREFIX] as? Map<String, Any> }
             ?: mapOf()
 
         // Do not process/handle other values yet.
@@ -449,15 +449,20 @@ class DefaultFormSubmissionService(
         remainingValueResolverValues: Map<String, Any>,
     ): FormSubmissionResult {
         return try {
-            val result = processDocumentService.dispatch(request)
+            val result = processDocumentService.dispatch(
+                request.withAdditionalModifications { document: JsonSchemaDocument ->
+                    withLoggingContext(JsonSchemaDocument::class, document.id()) {
+                        formFields.forEach { it.postProcess(document) }
+                        publishExternalDataSubmittedEvent(externalFormData, documentDefinitionName, document)
+                        valueResolverService.handleValues(document.id.id, remainingValueResolverValues)
+                    }
+                }
+            )
             return if (result.errors().isNotEmpty()) {
                 FormSubmissionResultFailed(result.errors())
             } else {
                 val submittedDocument = result.resultingDocument().orElseThrow()
                 withLoggingContext(JsonSchemaDocument::class, submittedDocument.id()) {
-                    formFields.forEach { it.postProcess(submittedDocument) }
-                    publishExternalDataSubmittedEvent(externalFormData, documentDefinitionName, submittedDocument)
-                    valueResolverService.handleValues(submittedDocument.id.id, remainingValueResolverValues)
                     FormSubmissionResultSucceeded(submittedDocument.id().toString())
                 }
             }
