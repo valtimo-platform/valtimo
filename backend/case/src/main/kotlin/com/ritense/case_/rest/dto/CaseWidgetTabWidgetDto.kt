@@ -29,4 +29,5 @@ interface CaseWidgetTabWidgetDto {
     @get:Max(4)
     val width: Int
     val highContrast: Boolean
+    val actions: List<CaseWidgetAction>?
 }

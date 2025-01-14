@@ -35,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ritense.document.BaseTest;
 import com.ritense.document.domain.impl.JsonDocumentContent;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
+import com.ritense.document.domain.impl.JsonSchemaDocumentId;
 import com.ritense.document.domain.impl.request.ModifyDocumentRequest;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentResource;
@@ -133,6 +134,21 @@ class JsonSchemaDocumentResourceTest extends BaseTest {
             .andDo(print())
             .andExpect(status().isOk())
             .andReturn();
+    }
+
+    @Test
+    void shouldDeleteDocument() throws Exception {
+        UUID documentId = UUID.randomUUID();
+
+        mockMvc.perform(
+                delete("/api/v1/document/{id}", documentId)
+                    .contentType(APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andReturn();
+
+        verify(documentService).deleteDocument(JsonSchemaDocumentId.existingId(documentId));
     }
 
     @Test

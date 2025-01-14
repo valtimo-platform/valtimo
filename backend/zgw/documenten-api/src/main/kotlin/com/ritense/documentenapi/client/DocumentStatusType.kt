@@ -16,6 +16,7 @@
 
 package com.ritense.documentenapi.client
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 
 enum class DocumentStatusType {
@@ -35,9 +36,12 @@ enum class DocumentStatusType {
         get() = this.name.lowercase()
 
     companion object {
+
+        @JvmStatic
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
         fun fromKey(key: String?): DocumentStatusType? {
             return key?.let {
-                DocumentStatusType.values().firstOrNull {
+                entries.firstOrNull {
                     it.key == key.lowercase()
                 }
             }

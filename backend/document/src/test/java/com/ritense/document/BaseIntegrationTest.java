@@ -20,6 +20,7 @@ import static com.ritense.document.service.JsonSchemaDocumentActionProvider.ASSI
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.ASSIGNABLE;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.CLAIM;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.CREATE;
+import static com.ritense.document.service.JsonSchemaDocumentActionProvider.DELETE;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.MODIFY;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.VIEW;
 import static com.ritense.document.service.JsonSchemaDocumentActionProvider.VIEW_LIST;
@@ -38,13 +39,11 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.domain.impl.request.NewDocumentRequest;
 import com.ritense.document.domain.impl.searchfield.SearchField;
 import com.ritense.document.domain.impl.snapshot.JsonSchemaDocumentSnapshot;
-import com.ritense.document.repository.DocumentSnapshotRepository;
 import com.ritense.document.repository.SearchFieldRepository;
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository;
 import com.ritense.document.service.DocumentDefinitionService;
 import com.ritense.document.service.DocumentSearchService;
 import com.ritense.document.service.DocumentService;
-import com.ritense.document.service.DocumentSnapshotService;
 import com.ritense.document.service.JsonSchemaDocumentDefinitionActionProvider;
 import com.ritense.document.service.JsonSchemaDocumentSnapshotActionProvider;
 import com.ritense.document.service.SearchFieldActionProvider;
@@ -64,15 +63,20 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.event.SimpleApplicationEventMulticaster;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @SpringBootTest
 @Tag("integration")
 @ExtendWith({SpringExtension.class, LiquibaseRunnerExtension.class})
+@RecordApplicationEvents
 public abstract class BaseIntegrationTest extends BaseTest {
 
     @Inject
@@ -81,7 +85,7 @@ public abstract class BaseIntegrationTest extends BaseTest {
     @Inject
     protected DocumentService documentService;
 
-    @Inject
+    @SpyBean
     protected JsonSchemaDocumentRepository documentRepository;
 
     @Inject
@@ -102,7 +106,7 @@ public abstract class BaseIntegrationTest extends BaseTest {
     @MockBean
     public ResourceService resourceService;
 
-    @MockBean
+    @MockBean(answer = Answers.RETURNS_DEEP_STUBS)
     protected UserManagementService userManagementService;
 
     @MockBean
@@ -110,6 +114,9 @@ public abstract class BaseIntegrationTest extends BaseTest {
 
     @SpyBean
     protected OutboxService outboxService;
+
+    @Autowired
+    protected ApplicationEvents events;
 
     protected static final String FULL_ACCESS_ROLE = "full access role";
 
@@ -203,6 +210,13 @@ public abstract class BaseIntegrationTest extends BaseTest {
                 UUID.randomUUID(),
                 JsonSchemaDocument.class,
                 ASSIGNABLE,
+                new ConditionContainer(Collections.emptyList()),
+                role
+            ),
+            new Permission(
+                UUID.randomUUID(),
+                JsonSchemaDocument.class,
+                DELETE,
                 new ConditionContainer(Collections.emptyList()),
                 role
             ),

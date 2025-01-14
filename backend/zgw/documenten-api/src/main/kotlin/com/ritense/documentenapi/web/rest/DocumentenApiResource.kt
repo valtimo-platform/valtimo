@@ -20,6 +20,7 @@ import com.ritense.document.domain.RelatedFile
 import com.ritense.documentenapi.service.DocumentenApiService
 import com.ritense.documentenapi.service.DocumentenApiVersionService
 import com.ritense.documentenapi.web.rest.dto.ColumnResponse
+import com.ritense.documentenapi.web.rest.dto.DocumentenApiUploadFieldDto
 import com.ritense.documentenapi.web.rest.dto.DocumentenApiVersionDto
 import com.ritense.documentenapi.web.rest.dto.ModifyDocumentRequest
 import com.ritense.logging.LoggableResource
@@ -108,5 +109,13 @@ class DocumentenApiResource(
     ): ResponseEntity<DocumentenApiVersionDto> {
         val version = documentenApiVersionService.getVersion(caseDefinitionName)
         return ResponseEntity.ok(DocumentenApiVersionDto.of(version))
+    }
+
+    @GetMapping("/v1/document/{documentId}/zgw-document/upload-field")
+    fun getResolvedUploadFields(
+        @LoggableResource("documentId") @PathVariable(name = "documentId") documentId: String
+    ): ResponseEntity<List<DocumentenApiUploadFieldDto>> {
+        val uploadFields = documentenApiService.getResolvedUploadFields(documentId)
+        return ResponseEntity.ok(uploadFields)
     }
 }

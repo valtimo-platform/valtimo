@@ -30,6 +30,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
 import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
+import org.springframework.core.env.Environment
 import org.springframework.core.io.ResourceLoader
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import javax.sql.DataSource
@@ -58,10 +59,12 @@ class ChangelogAutoConfiguration {
     fun changelogDeployer(
        changelogService: ChangelogService,
        changesetDeployers: List<ChangesetDeployer>,
+       environment: Environment,
     ): ChangelogDeployer {
         return ChangelogDeployer(
             changelogService,
-            changesetDeployers
+            changesetDeployers,
+            environment,
         )
     }
 

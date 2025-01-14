@@ -38,6 +38,8 @@ public interface DocumentResource {
 
     ResponseEntity<ModifyDocumentResult> modifyDocumentContent(@Valid ModifyDocumentRequest request);
 
+    ResponseEntity<Void> deleteDocument(UUID id);
+
     ResponseEntity<Void> assignResource(UUID documentId, UUID resourceId);
 
     ResponseEntity<Void> removeRelatedFile(UUID documentId, UUID resourceId);

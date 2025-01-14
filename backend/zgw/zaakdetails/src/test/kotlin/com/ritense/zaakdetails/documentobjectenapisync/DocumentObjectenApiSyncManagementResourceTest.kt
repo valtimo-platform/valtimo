@@ -46,7 +46,7 @@ internal class DocumentObjectenApiSyncManagementResourceTest {
 
     lateinit var mockMvc: MockMvc
     lateinit var resource: DocumentObjectenApiSyncManagementResource
-    lateinit var service: DocumentObjectenApiSyncService
+    lateinit var service: DocumentObjectenApiSyncManagementService
     lateinit var objectManagementInfoProvider: ObjectManagementInfoProvider
 
     @BeforeEach

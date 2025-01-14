@@ -23,7 +23,6 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.AuthorizationServiceHolder
 import com.ritense.authorization.AuthorizationSupportedHelper
 import com.ritense.authorization.ResourceActionProvider
-import com.ritense.authorization.UserManagementServiceHolder
 import com.ritense.authorization.ValtimoAuthorizationService
 import com.ritense.authorization.annotation.RunWithoutAuthorizationAspect
 import com.ritense.authorization.deployment.PermissionDeployer
@@ -39,8 +38,8 @@ import com.ritense.authorization.web.RoleManagementResource
 import com.ritense.authorization.web.security.ValtimoAuthorizationHttpSecurityConfigurer
 import com.ritense.valtimo.changelog.service.ChangelogService
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
-import javax.sql.DataSource
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
@@ -50,6 +49,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import javax.sql.DataSource
 
 @AutoConfiguration
 @EnableJpaRepositories(basePackages = ["com.ritense.authorization"])

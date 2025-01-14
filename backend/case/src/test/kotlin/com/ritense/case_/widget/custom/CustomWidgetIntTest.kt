@@ -89,7 +89,11 @@ class CustomWidgetIntTest @Autowired constructor(
                 caseDefinitionName = caseDefinitionName,
                 key = tabKey,
                 widgets = listOf(
-                    CustomCaseWidgetDto(widgetKey, "Custom test", 2, false, CustomWidgetProperties("test-component-key"))
+                    CustomCaseWidgetDto(
+                        widgetKey, "Custom test", 2, false, null, CustomWidgetProperties(
+                            "test-component-key"
+                        )
+                    )
                 )
             )
         )

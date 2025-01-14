@@ -17,7 +17,8 @@
 package com.ritense.processlink
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.processlink.domain.CustomProcessLinkMapper
+import com.ritense.processlink.domain.AnotherTestProcessLinkMapper
+import com.ritense.processlink.domain.TestProcessLinkMapper
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.boot.test.context.TestConfiguration
@@ -34,9 +35,10 @@ class TestApplication {
     class TestConfig {
 
         @Bean
-        fun customProcessLinkMapper(objectMapper: ObjectMapper) : CustomProcessLinkMapper {
-            return CustomProcessLinkMapper(objectMapper)
-        }
+        fun testProcessLinkMapper(objectMapper: ObjectMapper) = TestProcessLinkMapper(objectMapper)
+
+        @Bean
+        fun anotherTestProcessLinkMapper(objectMapper: ObjectMapper) = AnotherTestProcessLinkMapper(objectMapper)
 
     }
 }

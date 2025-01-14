@@ -39,8 +39,8 @@ class FormFlowProcessLink(
     activityType: ActivityTypeWithEventName,
 
     @Type(value = JsonType::class)
-    @Column(name = "subtitles", columnDefinition = "JSON")
-    val subtitles: List<String> = listOf(),
+    @Column(name = "subtitles", columnDefinition = "JSON", nullable = true)
+    val subtitles: List<String>? = null,
 
     @Column(name = "form_flow_definition_id", nullable = false)
     val formFlowDefinitionId: String,
@@ -78,7 +78,7 @@ class FormFlowProcessLink(
         formFlowDefinitionId: String = this.formFlowDefinitionId,
         formDisplayType: FormDisplayType = this.formDisplayType,
         formSize: FormSizes = this.formSize,
-        subtitles: List<String> = this.subtitles,
+        subtitles: List<String>? = this.subtitles,
     ) = FormFlowProcessLink(
         id = id,
         processDefinitionId = processDefinitionId,

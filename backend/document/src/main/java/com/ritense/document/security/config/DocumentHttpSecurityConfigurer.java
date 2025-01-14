@@ -33,6 +33,7 @@ public class DocumentHttpSecurityConfigurer implements HttpSecurityConfigurer {
         try {
             http.authorizeHttpRequests(requests ->
                 requests.requestMatchers(antMatcher(GET, "/api/v1/document/{id}")).authenticated()
+                .requestMatchers(antMatcher(DELETE, "/api/v1/document/{id}")).authenticated()
                 .requestMatchers(antMatcher(POST, "/api/v1/document")).authenticated()
                 .requestMatchers(antMatcher(PUT, "/api/v1/document")).authenticated()
                 .requestMatchers(antMatcher(POST, "/api/v1/document/{document-id}/resource/{resource-id}")).authenticated()

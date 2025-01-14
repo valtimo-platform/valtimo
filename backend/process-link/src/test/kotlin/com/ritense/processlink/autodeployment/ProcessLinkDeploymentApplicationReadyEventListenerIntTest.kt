@@ -18,7 +18,7 @@ package com.ritense.processlink.autodeployment
 
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.processlink.BaseIntegrationTest
-import com.ritense.processlink.domain.CustomProcessLink
+import com.ritense.processlink.domain.TestProcessLink
 import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
 import com.ritense.valtimo.camunda.service.CamundaRepositoryService
@@ -47,8 +47,8 @@ class ProcessLinkDeploymentApplicationReadyEventListenerIntTest @Autowired const
 
         assertThat(processLinks, hasSize(1))
         val processLink = processLinks.first()
-        assertThat(processLink, Matchers.isA(CustomProcessLink::class.java))
-        processLink as CustomProcessLink
+        assertThat(processLink, Matchers.isA(TestProcessLink::class.java))
+        processLink as TestProcessLink
         assertThat(processLink.someValue, Matchers.equalTo("changed"))
     }
 

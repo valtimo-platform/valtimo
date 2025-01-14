@@ -17,6 +17,7 @@
 package com.ritense.case_.widget.collection
 
 import com.fasterxml.jackson.annotation.JsonTypeName
+import com.ritense.case_.rest.dto.CaseWidgetAction
 import com.ritense.case_.rest.dto.CaseWidgetTabWidgetDto
 import jakarta.validation.Valid
 
@@ -26,5 +27,6 @@ data class CollectionCaseWidgetDto(
     override val title: String,
     override val width: Int,
     override val highContrast: Boolean,
+    override val actions: List<CaseWidgetAction>? = emptyList(),
     @field:Valid val properties: CollectionWidgetProperties
 ) : CaseWidgetTabWidgetDto

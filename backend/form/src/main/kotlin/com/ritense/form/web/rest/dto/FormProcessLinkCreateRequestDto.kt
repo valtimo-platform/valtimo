@@ -30,10 +30,10 @@ data class FormProcessLinkCreateRequestDto(
     override val activityId: String,
     override val activityType: ActivityTypeWithEventName,
     val formDefinitionId: UUID,
-    val viewModelEnabled: Boolean = false,
-    val formDisplayType: FormDisplayType = FormDisplayType.modal,
-    val formSize: FormSizes = FormSizes.medium,
-    val subtitles: List<String> = emptyList(),
+    val viewModelEnabled: Boolean? = false,
+    val formDisplayType: FormDisplayType? = FormDisplayType.modal,
+    val formSize: FormSizes? = FormSizes.medium,
+    val subtitles: List<String>? = null
 ) : ProcessLinkCreateRequestDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE_FORM
