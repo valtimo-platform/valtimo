@@ -42,11 +42,9 @@ class FormViewModelResource(
 
     @GetMapping("/start-form")
     fun getStartFormViewModel(
-        @RequestParam formName: String,
         @RequestParam processDefinitionKey: String
     ): ResponseEntity<ViewModel?> {
         val viewModel = formViewModelService.getStartFormViewModel(
-            formName = formName,
             processDefinitionKey = processDefinitionKey
         )
         return if (viewModel != null) {
@@ -58,12 +56,10 @@ class FormViewModelResource(
 
     @GetMapping("/user-task")
     fun getUserTaskFormViewModel(
-        @RequestParam formName: String,
         @RequestParam taskInstanceId: String
     ): ResponseEntity<ViewModel?> {
         return formViewModelService.getUserTaskFormViewModel(
-            formName = formName,
-            taskInstanceId = taskInstanceId
+            taskInstanceId = taskInstanceId,
         )?.let {
             ResponseEntity.ok(it)
         } ?: ResponseEntity.notFound().build()
@@ -71,18 +67,14 @@ class FormViewModelResource(
 
     @PostMapping("/start-form")
     fun updateStartFormViewModel(
-        @RequestParam formName: String,
         @RequestParam processDefinitionKey: String,
-        @RequestParam page: Int? = null,
-        @RequestParam isWizard: Boolean? = null,
+        @RequestParam(required = false) page: Int? = null,
         @RequestBody submission: ObjectNode
     ): ResponseEntity<ViewModel> {
         return formViewModelService.updateStartFormViewModel(
-            formName = formName,
             processDefinitionKey = processDefinitionKey,
+            submission = submission,
             page = page,
-            isWizard = isWizard,
-            submission = submission
         )?.let {
             ResponseEntity.ok(it)
         } ?: ResponseEntity.notFound().build()
@@ -90,17 +82,13 @@ class FormViewModelResource(
 
     @PostMapping("/user-task")
     fun updateUserTaskFormViewModel(
-        @RequestParam formName: String,
         @RequestParam taskInstanceId: String,
-        @RequestParam page: Int? = null,
-        @RequestParam isWizard: Boolean? = null,
-        @RequestBody submission: ObjectNode
+        @RequestParam(required = false) page: Int? = null,
+        @RequestBody submission: ObjectNode,
     ): ResponseEntity<ViewModel> {
         return formViewModelService.updateUserTaskFormViewModel(
-            formName = formName,
             taskInstanceId = taskInstanceId,
             page = page,
-            isWizard = isWizard,
             submission = submission
         )?.let {
             ResponseEntity.ok(it)
@@ -109,12 +97,10 @@ class FormViewModelResource(
 
     @PostMapping("/submit/user-task")
     fun submitTask(
-        @RequestParam formName: String,
         @RequestParam taskInstanceId: String,
         @RequestBody submission: ObjectNode
     ): ResponseEntity<Void> {
         formViewModelSubmissionService.handleUserTaskSubmission(
-            formName = formName,
             taskInstanceId = taskInstanceId,
             submission = submission
         )
@@ -123,13 +109,11 @@ class FormViewModelResource(
 
     @PostMapping("/submit/start-form")
     fun submitStartForm(
-        @RequestParam formName: String,
         @RequestParam processDefinitionKey: String,
         @RequestParam documentDefinitionName: String,
         @RequestBody submission: ObjectNode
     ): ResponseEntity<Void> {
         formViewModelSubmissionService.handleStartFormSubmission(
-            formName = formName,
             processDefinitionKey = processDefinitionKey,
             documentDefinitionName = documentDefinitionName,
             submission = submission,
