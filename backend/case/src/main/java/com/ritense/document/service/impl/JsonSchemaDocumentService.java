@@ -54,6 +54,7 @@ import com.ritense.document.event.DocumentAssigned;
 import com.ritense.document.event.DocumentAssigneeChangedEvent;
 import com.ritense.document.event.DocumentCreated;
 import com.ritense.document.event.DocumentDeleted;
+import com.ritense.valtimo.contract.event.DocumentDeletedEvent;
 import com.ritense.document.event.DocumentStatusChanged;
 import com.ritense.document.event.DocumentUnassigned;
 import com.ritense.document.event.DocumentUnassignedEvent;
@@ -510,6 +511,34 @@ public class JsonSchemaDocumentService implements DocumentService {
             ));
             documentSequenceGeneratorService.deleteSequenceRecordBy(documentDefinitionName);
         }
+    }
+
+    @Override
+    public void deleteDocument(
+        Document.Id documentId
+    ) {
+        JsonSchemaDocument document = getDocumentBy(documentId);
+        authorizationService.requirePermission(
+            new EntityAuthorizationRequest<>(
+                JsonSchemaDocument.class,
+                DELETE,
+                document
+            )
+        );
+
+        documentRepository.delete(document);
+
+        applicationEventPublisher.publishEvent(
+            new DocumentDeletedEvent(
+                documentId.getId()
+            )
+        );
+
+        outboxService.send(() ->
+            new DocumentDeleted(
+                document.id().toString()
+            )
+        );
     }
 
     @Override

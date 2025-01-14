@@ -28,6 +28,7 @@ import com.ritense.processlink.url.web.rest.dto.URLProcessLinkUpdateRequestDto
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 import org.hamcrest.Matchers.hasSize
+import org.hamcrest.Matchers.`in` as inMatcher
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -155,12 +156,12 @@ internal class URLProcessLinkResourceIntegrationTest @Autowired constructor(
             .andExpect(status().isOk)
             .andExpect(jsonPath("$").isNotEmpty)
             .andExpect(jsonPath("$").isArray)
-            .andExpect(jsonPath("$[0].activityId").value( "start-event"))
-            .andExpect(jsonPath("$[0].activityType").value( "bpmn:StartEvent:start"))
+            .andExpect(jsonPath("$[0].activityId", inMatcher(listOf("start-event", "do-something"))))
+            .andExpect(jsonPath("$[0].activityType", inMatcher(listOf("bpmn:StartEvent:start", "bpmn:UserTask:start"))))
             .andExpect(jsonPath("$[0].processLinkType").value( "url"))
             .andExpect(jsonPath("$[0].url").value( "https://www.ritense.nl"))
-            .andExpect(jsonPath("$[1].activityId").value( "do-something"))
-            .andExpect(jsonPath("$[1].activityType").value( "bpmn:UserTask:start"))
+            .andExpect(jsonPath("$[1].activityId", inMatcher(listOf("start-event", "do-something"))))
+            .andExpect(jsonPath("$[1].activityType", inMatcher(listOf("bpmn:StartEvent:start", "bpmn:UserTask:start"))))
             .andExpect(jsonPath("$[1].processLinkType").value( "url"))
             .andExpect(jsonPath("$[1].url").value( "https://www.ritense.nl"))
     }

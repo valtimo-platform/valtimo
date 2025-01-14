@@ -17,7 +17,7 @@
 package com.ritense.processlink.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.processlink.domain.CustomProcessLinkMapper
+import com.ritense.processlink.domain.TestProcessLinkMapper
 import com.ritense.processlink.exception.ProcessLinkNotFoundException
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.service.ProcessLinkActivityService
@@ -51,7 +51,7 @@ internal class ProcessLinkTaskResourceTest {
     fun init() {
         objectMapper = MapperSingleton.get()
         processLinkActivityService = mock()
-        processLinkMappers = listOf(CustomProcessLinkMapper(objectMapper))
+        processLinkMappers = listOf(TestProcessLinkMapper(objectMapper))
         processLinkTaskResource = ProcessLinkTaskResource(processLinkActivityService)
 
         val mappingJackson2HttpMessageConverter = MappingJackson2HttpMessageConverter()

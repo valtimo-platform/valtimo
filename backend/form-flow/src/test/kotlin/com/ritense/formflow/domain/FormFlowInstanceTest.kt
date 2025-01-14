@@ -88,7 +88,8 @@ internal class FormFlowInstanceTest : BaseTest() {
                 steps = mutableSetOf(
                     FormFlowStep(
                         id = FormFlowStepId.create("test"),
-                        type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
+                        type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition")),
+                        onComplete = listOf("\${null}")
                     )
                 )
             )
@@ -99,6 +100,31 @@ internal class FormFlowInstanceTest : BaseTest() {
 
         assertThat(instance.getHistory()[0].submissionData, equalTo("{\"data\":\"data\"}"))
         assertNull(result)
+    }
+
+    @Test
+    fun `complete should throw error when no action exist on last step`() {
+        val instance = FormFlowInstance(
+            formFlowDefinition = FormFlowDefinition(
+                id = FormFlowDefinitionId("test", 1L),
+                startStep = "lastStep",
+                steps = mutableSetOf(
+                    FormFlowStep(
+                        id = FormFlowStepId.create("lastStep"),
+                        type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
+                    )
+                )
+            )
+        )
+
+        val error = assertThrows<IllegalStateException> {
+            instance.complete(instance.currentFormFlowStepInstanceId!!, JSONObject("{\"data\":\"data\"}"))
+        }
+
+        assertEquals(
+            "Form flow end reached but no action was taken because the 'onComplete' is empty. For form flow step: 'test:1:lastStep'",
+            error.message
+        )
     }
 
     @Test

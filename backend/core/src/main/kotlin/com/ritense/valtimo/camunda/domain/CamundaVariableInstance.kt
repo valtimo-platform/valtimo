@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.camunda.domain
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.ritense.valtimo.camunda.service.CamundaContextService
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -70,6 +71,7 @@ class CamundaVariableInstance(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "TASK_ID_", insertable = false, updatable = false)
+    @JsonIgnore
     val task: CamundaTask?,
 
     @Column(name = "BATCH_ID_", insertable = false, updatable = false)

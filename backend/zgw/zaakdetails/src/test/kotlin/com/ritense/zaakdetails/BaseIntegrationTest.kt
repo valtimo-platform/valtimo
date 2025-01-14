@@ -17,8 +17,11 @@
 package com.ritense.zaakdetails
 
 import com.ritense.objectenapi.client.ObjectenApiClient
+import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.mail.MailSender
+import com.ritense.zakenapi.ZaakUrlProvider
+import com.ritense.zakenapi.client.ZakenApiClient
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
@@ -38,4 +41,7 @@ class BaseIntegrationTest {
 
     @MockBean
     lateinit var objectenApiClient: ObjectenApiClient
+
+    @MockBean
+    lateinit var zakenApiClient: ZakenApiClient
 }

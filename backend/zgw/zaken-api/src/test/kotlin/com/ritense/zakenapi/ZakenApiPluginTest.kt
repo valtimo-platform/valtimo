@@ -32,6 +32,7 @@ import com.ritense.zakenapi.domain.PatchZaakRequest
 import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.ZaakHersteltermijn
 import com.ritense.zakenapi.domain.ZaakObject
+import com.ritense.zakenapi.domain.ZaakObjectRequest
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakeigenschapResponse
 import com.ritense.zakenapi.domain.ZaakopschortingRequest
@@ -1061,5 +1062,46 @@ internal class ZakenApiPluginTest {
 
         // then
         verify(zakenApiClient).deleteZaakeigenschap(any(), any(), any())
+    }
+
+    @Test
+    fun `should link object to zaak`() {
+        val zakenApiClient: ZakenApiClient = mock()
+        val zaakUrlProvider: ZaakUrlProvider = mock()
+        val storageService: TemporaryResourceStorageService = mock()
+        val zaakInstanceLinkRepository: ZaakInstanceLinkRepository = mock()
+        val pluginService: PluginService = mock()
+        val zaakHersteltermijnRepository: ZaakHersteltermijnRepository = mock()
+        val platformTransactionManager: PlatformTransactionManager = mock()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+        val documentService: DocumentService = mock()
+        val processDocumentAssociationService: ProcessDocumentAssociationService = mock()
+
+        val documentId = UUID.randomUUID()
+        whenever(zaakUrlProvider.getZaakUrl(any())).thenReturn(URI("https://zaak.url"))
+
+        val plugin = ZakenApiPlugin(
+            zakenApiClient,
+            zaakUrlProvider,
+            storageService,
+            zaakInstanceLinkRepository,
+            pluginService,
+            zaakHersteltermijnRepository,
+            platformTransactionManager,
+            documentService,
+            processDocumentAssociationService
+        )
+        plugin.url = URI("https://zaken.plugin.url")
+        plugin.authenticationPluginConfiguration = authenticationMock
+
+        plugin.createZaakObject(URI.create("https://zaak.url"), URI.create("https://object.url"), "zaakdetails", documentId)
+
+        val captor = argumentCaptor<ZaakObjectRequest>()
+        verify(zakenApiClient).createZaakObject(any(), any(), captor.capture())
+
+        val request = captor.firstValue
+        assertEquals("https://zaak.url", request.zaakUrl.toString())
+        assertEquals("https://object.url", request.objectUrl.toString()
+        )
     }
 }

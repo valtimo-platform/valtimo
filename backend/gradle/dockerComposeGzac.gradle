@@ -52,9 +52,3 @@ dockerCompose {
     removeContainers = false
     removeVolumes = false
 }
-
-tasks.register("bootRunWithDocker") {
-    group = "application"
-    dependsOn("composeUpGzac")
-    dependsOn("bootRun")
-}

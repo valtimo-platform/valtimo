@@ -228,13 +228,13 @@ valtimo:
             - image/png
     changelog:
         pbac:
-            clear-tables: true
+            clear-tables: false
         case-tabs:
-            clear-tables: true
+            clear-tables: false
         zgw-document-list-column:
-            clear-tables: true
+            clear-tables: false
         task-search-fields:
-            clear-tables: true
+            clear-tables: false
 
     outbox:
         enabled: true

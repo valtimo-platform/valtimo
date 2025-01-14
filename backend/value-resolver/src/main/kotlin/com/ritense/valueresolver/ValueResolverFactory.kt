@@ -112,11 +112,26 @@ interface ValueResolverFactory {
         return values
     }
 
+    @Deprecated("Deprecated since 12.6.0, Use getResolvableKeyOptions instead", ReplaceWith("getResolvableKeyOptions(documentDefinitionName, version)"))
     fun getResolvableKeys(documentDefinitionName: String, version: Long): List<String> {
         return emptyList()
     }
 
+    @Deprecated("Deprecated since 12.6.0, Use getResolvableKeyOptions instead", ReplaceWith("getResolvableKeyOptions(documentDefinitionName)"))
     fun getResolvableKeys(documentDefinitionName: String): List<String> {
         return emptyList()
+    }
+
+    fun getResolvableKeyOptions(documentDefinitionName: String, version: Long): List<ValueResolverOption> {
+        return emptyList()
+    }
+
+    fun getResolvableKeyOptions(documentDefinitionName: String): List<ValueResolverOption> {
+        return emptyList()
+    }
+
+    fun createFieldList(paths: List<String>): List<ValueResolverOption> {
+        val prefix = supportedPrefix()
+        return paths.map { ValueResolverOption("$prefix:$it", ValueResolverOptionType.FIELD) }
     }
 }

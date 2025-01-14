@@ -18,13 +18,14 @@ package com.ritense.processlink.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.processlink.domain.ActivityTypeWithEventName
-import com.ritense.processlink.domain.CustomProcessLink
-import com.ritense.processlink.domain.CustomProcessLinkCreateRequestDto
-import com.ritense.processlink.domain.CustomProcessLinkMapper
-import com.ritense.processlink.domain.CustomProcessLinkUpdateRequestDto
+import com.ritense.processlink.domain.TestProcessLink
+import com.ritense.processlink.domain.TestProcessLinkCreateRequestDto
+import com.ritense.processlink.domain.TestProcessLinkMapper
+import com.ritense.processlink.domain.TestProcessLinkUpdateRequestDto
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valtimo.service.CamundaProcessService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -52,13 +53,15 @@ internal class ProcessLinkResourceTest {
     lateinit var processLinkMappers: List<ProcessLinkMapper>
     lateinit var processLinkResource: ProcessLinkResource
     lateinit var objectMapper: ObjectMapper
+    lateinit var camdunaProcessService: CamundaProcessService
 
     @BeforeEach
     fun init() {
         objectMapper = MapperSingleton.get()
         processLinkService = mock()
-        processLinkMappers = listOf(CustomProcessLinkMapper(objectMapper))
-        processLinkResource = ProcessLinkResource(processLinkService, processLinkMappers)
+        camdunaProcessService = mock()
+        processLinkMappers = listOf(TestProcessLinkMapper(objectMapper))
+        processLinkResource = ProcessLinkResource(processLinkService, processLinkMappers, camdunaProcessService)
 
         val mappingJackson2HttpMessageConverter = MappingJackson2HttpMessageConverter()
         mappingJackson2HttpMessageConverter.objectMapper = objectMapper
@@ -78,13 +81,13 @@ internal class ProcessLinkResourceTest {
         val activityType = ActivityTypeWithEventName.SERVICE_TASK_START
 
         val processLinks = listOf(
-            CustomProcessLink(
+            TestProcessLink(
                 id = id1,
                 processDefinitionId = processDefinitionId,
                 activityId = activityId,
                 activityType = activityType
             ),
-            CustomProcessLink(
+            TestProcessLink(
                 id = id2,
                 processDefinitionId = processDefinitionId,
                 activityId = activityId,
@@ -116,7 +119,7 @@ internal class ProcessLinkResourceTest {
 
     @Test
     fun `should add process link`() {
-        val processLinkDto = CustomProcessLinkCreateRequestDto(
+        val processLinkDto = TestProcessLinkCreateRequestDto(
             processDefinitionId = UUID.randomUUID().toString(),
             activityId = "someActivity",
             activityType = ActivityTypeWithEventName.SERVICE_TASK_START
@@ -137,7 +140,7 @@ internal class ProcessLinkResourceTest {
 
     @Test
     fun `should update process link`() {
-        val processLinkDto = CustomProcessLinkUpdateRequestDto(
+        val processLinkDto = TestProcessLinkUpdateRequestDto(
             id = UUID.randomUUID(),
         )
 

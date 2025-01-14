@@ -37,5 +37,6 @@ class ValtimoImportTypes {
 
         // ZGW
         const val ZGW_DOCUMENT_LIST_COLUMN = "zgwdocumentlistcolumn"
+        const val ZGW_DOCUMENT_UPLOAD_FIELD = "zgwdocumentuploadfield"
     }
 }

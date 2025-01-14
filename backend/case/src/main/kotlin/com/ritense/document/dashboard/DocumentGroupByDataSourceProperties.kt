@@ -16,6 +16,8 @@
 
 package com.ritense.document.dashboard
 
+import com.ritense.valtimo.contract.dashboard.QueryCondition
+
 data class DocumentGroupByDataSourceProperties(
     val documentDefinition: String,
     val path: String,

@@ -32,7 +32,9 @@ class ValueResolverHttpSecurityConfigurer : HttpSecurityConfigurer {
                 requests
                     .requestMatchers(antMatcher(GET, "/api/management/v1/value-resolver")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/value-resolver/document-definition/{documentDefinitionName}/keys")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v2/value-resolver/document-definition/{documentDefinitionName}/keys")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "/api/management/v1/value-resolver/document-definition/{documentDefinitionName}/version/{version}/keys")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v2/value-resolver/document-definition/{documentDefinitionName}/version/{version}/keys")).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

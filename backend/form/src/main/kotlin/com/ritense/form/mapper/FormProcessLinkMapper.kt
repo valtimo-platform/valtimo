@@ -19,7 +19,9 @@ package com.ritense.form.mapper
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.exporter.request.ExportRequest
 import com.ritense.exporter.request.FormDefinitionExportRequest
+import com.ritense.form.domain.FormDisplayType
 import com.ritense.form.domain.FormProcessLink
+import com.ritense.form.domain.FormSizes
 import com.ritense.form.processlink.dto.FormProcessLinkDeployDto
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.web.rest.dto.FormProcessLinkCreateRequestDto
@@ -96,6 +98,8 @@ class FormProcessLinkMapper(
             id = existingProcessLinkId,
             formDefinitionId = formDefinition.id,
             viewModelEnabled = deployDto.viewModelEnabled,
+            formDisplayType = deployDto.formDisplayType,
+            formSize = deployDto.formSize,
             subtitles = deployDto.subtitles,
         )
     }
@@ -125,9 +129,9 @@ class FormProcessLinkMapper(
             activityId = createRequestDto.activityId,
             activityType = createRequestDto.activityType,
             formDefinitionId = createRequestDto.formDefinitionId,
-            viewModelEnabled = createRequestDto.viewModelEnabled,
-            formDisplayType = createRequestDto.formDisplayType,
-            formSize = createRequestDto.formSize,
+            viewModelEnabled = createRequestDto.viewModelEnabled ?: false,
+            formDisplayType = createRequestDto.formDisplayType ?: FormDisplayType.modal,
+            formSize = createRequestDto.formSize ?: FormSizes.medium,
             subtitles = createRequestDto.subtitles,
         )
     }
@@ -147,10 +151,10 @@ class FormProcessLinkMapper(
             activityId = processLinkToUpdate.activityId,
             activityType = processLinkToUpdate.activityType,
             formDefinitionId = updateRequestDto.formDefinitionId,
-            viewModelEnabled = updateRequestDto.viewModelEnabled,
-            formDisplayType = updateRequestDto.formDisplayType,
-            formSize = updateRequestDto.formSize,
-            subtitles = updateRequestDto.subtitles,
+            viewModelEnabled = updateRequestDto.viewModelEnabled ?: false,
+            formDisplayType = updateRequestDto.formDisplayType ?: FormDisplayType.modal,
+            formSize = updateRequestDto.formSize ?: FormSizes.medium,
+            subtitles = updateRequestDto.subtitles ?: emptyList(),
         )
     }
 
