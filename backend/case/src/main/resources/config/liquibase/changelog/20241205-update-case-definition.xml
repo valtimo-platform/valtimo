@@ -95,14 +95,20 @@
     <changeSet id="12" author="Ritense">
         <addColumn tableName="json_schema_document_definition">
             <column name="case_definition_key" type="VARCHAR(256)">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
         </addColumn>
         <addColumn tableName="json_schema_document_definition">
             <column name="case_definition_version_tag" type="VARCHAR(256)">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
         </addColumn>
+        <update tableName="json_schema_document_definition">
+            <column name="case_definition_key" valueComputed="document_definition_name"/>
+            <column name="case_definition_version_tag" value="1.0.0"/>
+        </update>
+        <addNotNullConstraint tableName="json_schema_document_definition" columnName="case_definition_key"/>
+        <addNotNullConstraint tableName="json_schema_document_definition" columnName="case_definition_version_tag"/>
     </changeSet>
 
     <changeSet id="13" author="Ritense">
