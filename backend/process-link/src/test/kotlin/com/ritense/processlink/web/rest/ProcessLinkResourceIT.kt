@@ -182,7 +182,7 @@ internal class ProcessLinkResourceIT @Autowired constructor(
         )
 
         val processLinks = listOf(
-            CustomProcessLinkCreateRequestDto(
+            TestProcessLinkCreateRequestDto(
                 processDefinitionId = "test-process",
                 activityId = "start",
                 activityType = SERVICE_TASK_START
