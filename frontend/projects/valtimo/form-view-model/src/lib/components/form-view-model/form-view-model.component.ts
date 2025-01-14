@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 import moment from 'moment';
 import {
   BehaviorSubject,
   catchError,
   combineLatest,
   debounceTime,
-  EMPTY,
+  EMPTY, filter,
   Observable,
-  of,
+  of, Subject, Subscription,
   switchMap,
   take,
-  tap,
+  tap, withLatestFrom,
 } from 'rxjs';
 import {
   FormioComponent,
@@ -41,6 +41,7 @@ import {FormIoStateService, ValtimoFormioOptions} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {CommonModule} from '@angular/common';
+import {isEqual} from 'lodash';
 
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
 
@@ -51,7 +52,7 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
   standalone: true,
   imports: [CommonModule, FormioModule],
 })
-export class FormViewModelComponent implements OnInit {
+export class FormViewModelComponent implements OnInit, OnDestroy {
   @ViewChild('formio') formio: FormioComponent;
 
   @Input() set options(optionsValue: any) {
@@ -108,11 +109,13 @@ export class FormViewModelComponent implements OnInit {
   public readonly taskInstanceId$ = new BehaviorSubject<string>(undefined);
   public readonly tokenSetInLocalStorage$ = new BehaviorSubject<boolean>(false);
   public readonly change$ = new BehaviorSubject<any>(null);
-  public readonly blur$ = new BehaviorSubject<FocusEvent>(null);
+  public readonly blur$ = new Subject<FocusEvent>();
+  public readonly focus$ = new BehaviorSubject<FocusEvent>(null);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly isStartForm$ = new BehaviorSubject<boolean>(false);
   public readonly processDefinitionKey$ = new BehaviorSubject<string>(undefined);
   public readonly documentDefinitionName$ = new BehaviorSubject<string>(undefined);
+  public readonly updateForm = new Subject<boolean>();
 
   public readonly currentLanguage$ = this.translateService.stream('key').pipe(
     map(() => this.translateService.currentLang),
@@ -150,6 +153,9 @@ export class FormViewModelComponent implements OnInit {
     })
   );
 
+  private focusSubscription: Subscription
+  private updateSubscription: Subscription
+
   constructor(
     private readonly viewModelService: ViewModelService,
     private readonly translateService: TranslateService,
@@ -162,6 +168,34 @@ export class FormViewModelComponent implements OnInit {
     } else {
       this.loadInitialViewModel();
     }
+
+    this.focusSubscription = this.focus$
+      .pipe(withLatestFrom(this.change$))
+      .subscribe(data => {
+        const dataAtFocus = !!data[1] && !!data[1].data ? JSON.parse(JSON.stringify(data[1].data)) : null
+        this.blur$
+          .pipe(take(1))
+          .pipe(withLatestFrom(this.change$))
+          .subscribe(dataBlur => {
+            const dataEqual = isEqual(dataAtFocus, dataBlur[1]?.data)
+            if(!dataEqual) {
+              this.updateForm.next(true)
+            }
+          })
+      })
+
+    this.updateSubscription = this.updateForm.pipe(filter(it => it), debounceTime(500)).subscribe(() => {
+      if (this.isStartForm$.value) {
+        this.updateViewModelForStartForm();
+      } else {
+        this.updateViewModel();
+      }
+    })
+  }
+
+  public ngOnDestroy(): void {
+    this.focusSubscription.unsubscribe()
+    this.updateSubscription.unsubscribe()
   }
 
   public beforeSubmitHook(instance: FormViewModelComponent): (submission, callback) => void {
@@ -251,9 +285,12 @@ export class FormViewModelComponent implements OnInit {
     this.formSubmit.next(submission);
   }
 
+  public onFocus($event: FocusEvent): void {
+    this.focus$.next($event);
+  }
+
   public onBlur(blurEvent: FocusEvent): void {
     this.blur$.next(blurEvent);
-    this.handleChanges();
   }
 
   public onChange(object: any): void {
@@ -265,13 +302,13 @@ export class FormViewModelComponent implements OnInit {
   public onNextPage(): void {
     this._preventNextPage = true;
     this.formio.formio.setPage(this.formio.formio.page - 1);
-    this.handleChanges();
+    this.updateForm.next(true);
   }
 
   public onPreviousPage(): void {
     this._preventPreviousPage = true;
     this.formio.formio.setPage(this.formio.formio.page + 1);
-    this.handleChanges();
+    this.updateForm.next(true);
   }
 
   private handlePageChange(): void {
@@ -408,15 +445,5 @@ export class FormViewModelComponent implements OnInit {
         })
       )
       .subscribe();
-  }
-
-  private handleChanges(): void {
-    this.blur$.pipe(debounceTime(500)).subscribe(() => {
-      if (this.isStartForm$.value) {
-        this.updateViewModelForStartForm();
-      } else {
-        this.updateViewModel();
-      }
-    });
   }
 }
