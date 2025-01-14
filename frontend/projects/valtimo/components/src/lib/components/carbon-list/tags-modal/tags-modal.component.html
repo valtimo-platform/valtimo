@@ -1,4 +1,10 @@
-<cds-modal valtimoCdsModal [title]="'interface.tags' | translate" size="xs" [open]="open">
+<cds-modal
+  valtimoCdsModal
+  [title]="'interface.tags' | translate"
+  size="xs"
+  [open]="open"
+  (close)="onCloseSelect()"
+>
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()">
     <h3 cdsModalHeading>{{ 'interface.tags' | translate }}</h3>
   </cds-modal-header>

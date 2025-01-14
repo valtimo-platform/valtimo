@@ -117,6 +117,7 @@
       validKey: validKey$ | async,
     } as modalObs"
     [open]="modalObs.show"
+    (close)="closeModal()"
   >
     <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
       <h3 cdsModalHeaderHeading>

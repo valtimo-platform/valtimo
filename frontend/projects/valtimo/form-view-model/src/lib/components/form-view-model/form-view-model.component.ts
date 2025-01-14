@@ -138,11 +138,11 @@ export class FormViewModelComponent implements OnInit {
         language,
         ...(typeof formioTranslations === 'object'
           ? {
-            language,
-            i18n: {
-              [language]: this.stateService.flattenTranslationsObject(formioTranslations),
-            },
-          }
+              language,
+              i18n: {
+                [language]: this.stateService.flattenTranslationsObject(formioTranslations),
+              },
+            }
           : {}),
       };
 

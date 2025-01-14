@@ -21,6 +21,7 @@
   showFooter="true"
   title="{{ 'dashboardManagement.widgets.editDashboard' | translate }}"
   class="edit-dashboard-modal"
+  (close)="closeModal()"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
     <h3 cdsModalHeaderHeading>{{ 'dashboardManagement.widgets.editDashboard' | translate }}</h3>

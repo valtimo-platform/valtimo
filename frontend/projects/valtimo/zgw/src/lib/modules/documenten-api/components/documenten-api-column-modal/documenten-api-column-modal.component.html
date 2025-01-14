@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-modal valtimoCdsModal [open]="type !== 'closed'" size="sm">
+<cds-modal valtimoCdsModal [open]="type !== 'closed'" size="sm" (close)="onClose()">
   <cds-modal-header showCloseButton="true" (closeSelect)="onClose()">
     <h3 cdsModalHeaderHeading>
       {{ (type === 'add' ? 'zgw.columns.add' : 'zgw.columns.edit') | translate }}

@@ -25,6 +25,7 @@
   } as obs"
   [open]="!obs.isClosed"
   size="sm"
+  (close)="onClose()"
 >
   <cds-modal-header showCloseButton="true" (closeSelect)="onClose()">
     <h3 cdsModalHeaderHeading>

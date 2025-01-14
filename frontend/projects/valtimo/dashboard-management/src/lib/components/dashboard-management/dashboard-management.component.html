@@ -41,6 +41,7 @@
   [open]="openModal$ | async"
   showFooter="true"
   title="{{ 'dashboardManagement.addDashboard' | translate }}"
+  (close)="closeModal()"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
     <h3 cdsModalHeaderHeading>

@@ -25,6 +25,7 @@ interface BpmnElement {
   id: string;
   type: string;
   activityListenerType?: string;
+  activityType?: string;
   name?: string;
 }
 

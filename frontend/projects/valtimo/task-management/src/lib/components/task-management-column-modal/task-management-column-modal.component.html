@@ -32,7 +32,7 @@
     sortItems: sortItems$ | async,
   } as obs"
 >
-  <cds-modal size="sm" [open]="obs.show" valtimoCdsModal>
+  <cds-modal size="sm" [open]="obs.show" valtimoCdsModal (close)="closeModal()">
     <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
       <h3 cdsModalHeaderHeading>
         {{

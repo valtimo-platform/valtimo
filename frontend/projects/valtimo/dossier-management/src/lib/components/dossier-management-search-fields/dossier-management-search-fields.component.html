@@ -99,6 +99,7 @@
     [open]="modalShowing$ | async"
     [showFooter]="true"
     size="sm"
+    (close)="onModalClose()"
   >
     <cds-modal-header [showCloseButton]="true" (closeSelect)="onModalClose()">
       <h3 cdsModalHeaderHeading>

@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-modal valtimoCdsModal [open]="modalOpen$ | async" size="sm">
+<cds-modal valtimoCdsModal [open]="modalOpen$ | async" size="sm" (close)="closeModal()">
   <cds-modal-header showCloseButton="true" (closeSelect)="closeModal()">
     <h3 cdsModalHeaderHeading>{{ 'processManagement.upload.modalTitle' | translate }}</h3>
   </cds-modal-header>

@@ -75,7 +75,7 @@ import {
 } from 'carbon-components-angular';
 import {DocumentenApiTagService} from '../../services/documenten-api-tag.service';
 import moment from 'moment';
-import {DocumentenApiUploadFieldDefaultValues} from "../../models/documenten-api-upload-field.model";
+import {DocumentenApiUploadFieldDefaultValues} from '../../models/documenten-api-upload-field.model';
 
 @Component({
   selector: 'valtimo-documenten-api-metadata-modal',

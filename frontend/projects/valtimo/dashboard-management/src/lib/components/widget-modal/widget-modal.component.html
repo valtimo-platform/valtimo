@@ -40,6 +40,7 @@
       size="md"
       title="{{ translations.title }}"
       class="widget-modal"
+      (close)="closeModal()"
     >
       <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
         <h3 cdsModalHeaderHeading>

@@ -84,6 +84,7 @@
     [title]="'zaakdetails.editModal.title' | translate"
     [open]="modalShowing$ | async"
     [showFooter]="true"
+    (close)="onModalClose()"
   >
     <cds-modal-header [showCloseButton]="true" (closeSelect)="onModalClose()">
       <h3 cdsModalHeaderHeading>

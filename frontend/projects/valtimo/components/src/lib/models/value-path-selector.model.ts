@@ -27,7 +27,7 @@ interface ValuePathSelectorCache {
 interface ValuePathCollectionCache {
   [documentDefinitionName: string]: {
     [version: string | number]: {
-    [prefix: string]: ValueCollectionCacheEntry;
+      [prefix: string]: ValueCollectionCacheEntry;
     };
   };
 }

@@ -22,27 +22,27 @@ interface DocumentenApiUploadField {
 }
 
 interface DocumentenApiUploadFieldDefaultValues {
-  auteur?: string,
-  vertrouwelijkheidaanduiding?: string,
-  beschrijving?: string,
-  titel?: string,
-  informatieobjecttype?: string,
-  bestandsnaam?: string,
-  taal?: string,
-  status?: string,
-  trefwoorden?: string[],
+  auteur?: string;
+  vertrouwelijkheidaanduiding?: string;
+  beschrijving?: string;
+  titel?: string;
+  informatieobjecttype?: string;
+  bestandsnaam?: string;
+  taal?: string;
+  status?: string;
+  trefwoorden?: string[];
 }
 
 interface DocumentenApiUploadFields {
-  auteur?: DocumentenApiUploadField,
-  vertrouwelijkheidaanduiding?: DocumentenApiUploadField,
-  beschrijving?: DocumentenApiUploadField,
-  titel?: DocumentenApiUploadField,
-  informatieobjecttype?: DocumentenApiUploadField,
-  bestandsnaam?: DocumentenApiUploadField,
-  taal?: DocumentenApiUploadField,
-  status?: DocumentenApiUploadField,
-  trefwoorden?: DocumentenApiUploadField,
+  auteur?: DocumentenApiUploadField;
+  vertrouwelijkheidaanduiding?: DocumentenApiUploadField;
+  beschrijving?: DocumentenApiUploadField;
+  titel?: DocumentenApiUploadField;
+  informatieobjecttype?: DocumentenApiUploadField;
+  bestandsnaam?: DocumentenApiUploadField;
+  taal?: DocumentenApiUploadField;
+  status?: DocumentenApiUploadField;
+  trefwoorden?: DocumentenApiUploadField;
 }
 
 enum DOCUMENTEN_API_UPLOAD_KEYS {
@@ -65,5 +65,5 @@ export {
   DocumentenApiUploadField,
   DocumentenApiUploadFieldDefaultValues,
   DocumentenApiUploadFields,
-  DOCUMENTEN_API_UPLOAD_KEYS
+  DOCUMENTEN_API_UPLOAD_KEYS,
 };

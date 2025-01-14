@@ -18,6 +18,7 @@
   [open]="open"
   (overlaySelected)="closeModal()"
   [formGroup]="duplicateForm"
+  (close)="closeModal()"
 >
   <cds-modal-header (closeSelect)="closeModal()">{{
     'formManagement.duplicate' | translate

@@ -21,6 +21,7 @@
   size="lg"
   valtimoCdsModal
   class="valtimo-dossier-management-widget-wizard"
+  (close)="onClose()"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onClose()">
     <h3 cdsModalHeaderHeading>
