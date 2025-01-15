@@ -16,73 +16,65 @@
 
 package com.ritense.case.service
 
-import CaseDefinitionDto
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.case_.repository.CaseDefinitionRepository
+import com.ritense.importer.ValtimoImportService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import mu.KotlinLogging
+import org.apache.commons.lang3.StringUtils
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
-import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.ResourcePatternUtils
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.util.StreamUtils
-import java.nio.charset.StandardCharsets
 
 
 @Transactional
 @Service
 @SkipComponentScan
 class CaseDefinitionDeploymentService(
-    private val resourceLoader: ResourceLoader,
-    private val objectMapper: ObjectMapper,
-    private val caseDefinitionRepository: CaseDefinitionRepository
+    val resourceLoader: ResourceLoader,
+    val valtimoImportService: ValtimoImportService,
 ) {
 
     @EventListener(ApplicationReadyEvent::class)
     fun deployOnStartup() {
-        try {
-            loadResources().forEach { resource ->
-                if (resource.filename != null) {
-                    val fileContent = StreamUtils.copyToString(resource.inputStream, StandardCharsets.UTF_8)
-                    deploy(fileContent)
-                }
+        val absoluteBasePathLength = ResourcePatternUtils
+            .getResourcePatternResolver(resourceLoader)
+            .getResource("classpath:/config/")
+            .file
+            .absolutePath
+            .length
+
+        val resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(PATH)
+            .groupBy {
+                val relativePath = it.file.absolutePath.substring(
+                    absoluteBasePathLength
+                )
+
+                relativePath.substring(0, StringUtils.ordinalIndexOf(relativePath, "/", 3))
             }
-        } catch (e: Exception) {
-            throw RuntimeException("Error deploying Case Definitions", e)
+            .map { (key, files) ->
+                key to (files.map {
+                    it.file.absolutePath.substring(
+                        absoluteBasePathLength
+                    ).substring(key.length) to it
+                })
+            }
+        resources.forEach { (_, files) ->
+            valtimoImportService.importCaseDefinition(files)
         }
+
+        // Group by 1st * and 2nd *
+        // Turn back into list of list resources
+        // Import for each list of resources in the list
+        // If one fails, everything fails.
+        // TODO Implement triggering of imports
     }
 
-    fun deploy(fileContent: String, forceDeploy: Boolean = false) {
-        val caseDefinitionDto = try {
-            objectMapper.readValue(fileContent, CaseDefinitionDto::class.java)
-        } catch (e: Exception) {
-            throw IllegalArgumentException("Failed to parse file content as a valid case definition: ${e.message}", e)
-        }
-
-        val caseDefinition = caseDefinitionDto.toEntity()
-
-        logger.debug { "Deploying case definition with id '${caseDefinition.id}'" }
-
-        val existingCaseDefinition = caseDefinitionRepository.findByIdOrNull(caseDefinition.id)
-
-        if (existingCaseDefinition == null || forceDeploy) {
-            caseDefinitionRepository.save(caseDefinition)
-            logger.debug { "Case definition with id '${caseDefinition.id}' was saved" }
-        } else {
-            logger.debug { "Not deploying case definition with '${caseDefinition.id}', it already exists" }
-        }
-    }
-
-    private fun loadResources(): Array<Resource> {
-        return ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(CASE_DEFINITION_PATH)
-    }
+    //private fun getRelativeMap
 
     companion object {
+        private const val PATH = "classpath:config/*/*/**/*.*" // TODO: Determine if we want to do config/case/ instead
         val logger = KotlinLogging.logger {}
-        const val CASE_DEFINITION_PATH = "classpath:config/*/*/case/definition/*.json"
     }
 }

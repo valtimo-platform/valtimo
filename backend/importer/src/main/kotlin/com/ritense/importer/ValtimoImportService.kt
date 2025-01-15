@@ -110,102 +110,89 @@ open class ValtimoImportService(
     }
 
     @Transactional
-    open fun importResources(resources: Array<Resource>) {
-        val entries = getEntriesFromResources(resources)
-        val importerEntriesMapGroupedByCaseDefinition = entries.map {
-            it.key to getEntriesByImporter(it.value)
-        }.toMap()
+    open fun importCaseDefinition(resources: List<Pair<String, Resource>>) {
+        // If case definition is already imported, don't import the rest of the files for the case definition
+        // (so a skip)
 
-        importerEntriesMapGroupedByCaseDefinition.forEach { (basePath, importerEntriesMap) ->
-            var caseDefinitionId: CaseDefinitionId? = null
-            if (basePath?.isNotEmpty() == true) {
-                val caseDefinitionEntries = importerEntriesMap
-                    .filter { it.key.type() == CASE_DEFINITION }
-                    .let {
-                        it[it.keys.first()]
-                    }
-
-                val caseDefinitionMap: Map<String, Any> = jacksonObjectMapper()
-                    .readValue(caseDefinitionEntries?.first()?.content!!)
-                caseDefinitionId = CaseDefinitionId(
-                    caseDefinitionMap["key"] as String,
-                    caseDefinitionMap["versionTag"] as String
-                )
+        val importerEntriesList = getEntriesByImporter(getEntriesFromResources(resources))
+        val caseDefinitionId: CaseDefinitionId?
+        val caseDefinitionEntries = importerEntriesList
+            .filter { it.key.type() == CASE_DEFINITION }
+            .let {
+                it[it.keys.first()]
             }
+        val caseDefinitionMap: Map<String, Any> = jacksonObjectMapper()
+            .readValue(caseDefinitionEntries?.first()?.content!!)
+        caseDefinitionId = CaseDefinitionId(
+            caseDefinitionMap["key"] as String,
+            caseDefinitionMap["versionTag"] as String
+        )
 
-            importerEntriesMap.forEach { (importer, entries) ->
-                entries.forEach { entry ->
-                    logger.debug { "Importing ${entry.fileName} with importer ${importer.type()}" }
-                    importer.import(ImportRequest(entry.fileName, entry.content, caseDefinitionId))
-                }
+        importerEntriesList.forEach { (importer, entries) ->
+            entries.forEach { entry ->
+                logger.debug { "Importing ${entry.fileName} with importer ${importer.type()}" }
+                importer.import(ImportRequest(entry.fileName, entry.content, caseDefinitionId))
             }
         }
+
     }
+
+//    @Transactional
+//    open fun importResources(resources: Array<Resource>) {
+//        val entries = getEntriesFromResources(resources)
+//        val importerEntriesMapGroupedByCaseDefinition = entries.map {
+//            it.key to getEntriesByImporter(it.value)
+//        }.toMap()
+//
+//        importerEntriesMapGroupedByCaseDefinition.forEach { (basePath, importerEntriesMap) ->
+//            var caseDefinitionId: CaseDefinitionId? = null
+//            if (basePath?.isNotEmpty() == true) {
+//                val caseDefinitionEntries = importerEntriesMap
+//                    .filter { it.key.type() == CASE_DEFINITION }
+//                    .let {
+//                        it[it.keys.first()]
+//                    }
+//
+//                val caseDefinitionMap: Map<String, Any> = jacksonObjectMapper()
+//                    .readValue(caseDefinitionEntries?.first()?.content!!)
+//                caseDefinitionId = CaseDefinitionId(
+//                    caseDefinitionMap["key"] as String,
+//                    caseDefinitionMap["versionTag"] as String
+//                )
+//            }
+//
+//            importerEntriesMap.forEach { (importer, entries) ->
+//                entries.forEach { entry ->
+//                    logger.debug { "Importing ${entry.fileName} with importer ${importer.type()}" }
+//                    importer.import(ImportRequest(entry.fileName, entry.content, caseDefinitionId))
+//                }
+//            }
+//        }
+//    }
 
     @Transactional
     override fun import(inputStream: InputStream) {
-        val entries = readZipEntries(inputStream)
-        val importerEntriesMapGroupedByCaseDefinition = entries.map {
-            it.key to getEntriesByImporter(it.value)
-        }.toMap()
 
-        importerEntriesMapGroupedByCaseDefinition.forEach { (basePath, importerEntriesMap) ->
-            var caseDefinitionId: CaseDefinitionId? = null
-            if (basePath?.isNotEmpty() == true) {
-                val caseDefinitionEntries = importerEntriesMap
-                    .filter { it.key.type() == CASE_DEFINITION }
-                    .let {
-                        it[it.keys.first()]
-                    }
+    }
 
-                val caseDefinitionMap: Map<String, Any> = jacksonObjectMapper()
-                    .readValue(caseDefinitionEntries?.first()?.content!!)
-                caseDefinitionId = CaseDefinitionId(
-                    caseDefinitionMap["key"] as String,
-                    caseDefinitionMap["versionTag"] as String
-                )
-            }
-
-            importerEntriesMap.forEach { (importer, entries) ->
-                entries.forEach { entry ->
-                    logger.debug { "Importing ${entry.fileName} with importer ${importer.type()}" }
-                    importer.import(ImportRequest(entry.fileName, entry.content, caseDefinitionId))
-                }
-            }
+    private fun getEntriesFromResources(resources: List<Pair<String, Resource>>): List<ZipFileEntry> {
+        return resources.map {
+            ZipFileEntry(it.first, it.second.contentAsByteArray)
         }
     }
 
-    private fun readZipEntries(inputStream: InputStream): Map<String?, List<ZipFileEntry>> {
-        // Read all entries with data from the stream and group them by base path, e.g. "config/loan/1-2-1/"
-        return try {
-            ZipInputStream(inputStream).use { stream ->
-                generateSequence { stream.nextEntry }
-                    .filter { !it.isDirectory }
-                    .map { ZipFileEntry(it.name, stream.readBytes()) }
-                    .groupBy { it.basePath }
-                    .toMutableMap()
-            }
-        } catch (ex: Exception) {
-            throw InvalidImportZipException(ex.message)
-        }.apply {
-            if (this.isEmpty()) {
-                throw InvalidImportZipException("Archive was empty or not a zip")
-            }
-        }
-    }
-
-    private fun getEntriesFromResources(resources: Array<Resource>): Map<String?, List<ZipFileEntry>> {
-        return try {
-            resources.map { ZipFileEntry(it.filename, it.contentAsByteArray) }
-                .groupBy { it.basePath }
-        } catch (ex: Exception) {
-            throw InvalidImportZipException(ex.message)
-        }.apply {
-            if (this.isEmpty()) {
-                throw InvalidImportZipException("Archive was empty or not a zip")
-            }
-        }
-    }
+//    private fun getEntriesFromResources(resources: List<Resource>): Map<String?, List<ZipFileEntry>> {
+//        return try {
+//            resources.map { ZipFileEntry(it.filename, it.contentAsByteArray) }
+//                .groupBy { it.basePath }
+//        } catch (ex: Exception) {
+//            throw InvalidImportZipException(ex.message)
+//        }.apply {
+//            if (this.isEmpty()) {
+//                throw InvalidImportZipException("Archive was empty or not a zip")
+//            }
+//        }
+//    }
 
     // change entries to be nested
     /**
@@ -267,8 +254,6 @@ open class ValtimoImportService(
             val fileName: String,
             val content: ByteArray
         ) {
-            // TODO: Do we want to validate whether this basepath matches the case definition file?
-            val basePath: String? = Regex("config(/[^/]+){2}/").find(fileName)?.groups?.first()?.value
 
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true

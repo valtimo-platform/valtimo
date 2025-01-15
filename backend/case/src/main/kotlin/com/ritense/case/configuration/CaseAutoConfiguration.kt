@@ -56,6 +56,7 @@ import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.DocumentService
 import com.ritense.exporter.ExportService
 import com.ritense.importer.ImportService
+import com.ritense.importer.ValtimoImportService
 import com.ritense.valtimo.changelog.service.ChangelogDeployer
 import com.ritense.valtimo.changelog.service.ChangelogService
 import com.ritense.valtimo.contract.authentication.UserManagementService
@@ -201,13 +202,11 @@ class CaseAutoConfiguration {
     @Bean
     fun caseDefinitionDeploymentService(
         resourceLoader: ResourceLoader,
-        objectMapper: ObjectMapper,
-        caseDefinitionRepository: CaseDefinitionRepository
+        valtimoImportService: ValtimoImportService,
     ): CaseDefinitionDeploymentService {
         return CaseDefinitionDeploymentService(
             resourceLoader,
-            objectMapper,
-            caseDefinitionRepository
+            valtimoImportService
         )
     }
 
@@ -377,9 +376,10 @@ class CaseAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CaseDefinitionImporter::class)
     fun caseDefinitionSettingsImporter(
-        deploymentService: CaseDefinitionDeploymentService
+        objectMapper: ObjectMapper,
+        caseDefinitionRepository: CaseDefinitionRepository
     ) = CaseDefinitionImporter(
-        deploymentService
+        objectMapper, caseDefinitionRepository
     )
 
     @Bean
