@@ -40,7 +40,7 @@ class CaseDefinitionDeploymentService(
     fun deployOnStartup() {
         val absoluteBasePathLength = ResourcePatternUtils
             .getResourcePatternResolver(resourceLoader)
-            .getResource("classpath:/config/")
+            .getResource("classpath:/config/case/")
             .file
             .absolutePath
             .length
@@ -74,7 +74,7 @@ class CaseDefinitionDeploymentService(
     //private fun getRelativeMap
 
     companion object {
-        private const val PATH = "classpath:config/*/*/**/*.*" // TODO: Determine if we want to do config/case/ instead
+        private const val PATH = "classpath:config/case/*/*/**/*.*" // TODO: Determine if we want to do config/case/ instead
         val logger = KotlinLogging.logger {}
     }
 }
