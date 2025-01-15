@@ -338,7 +338,10 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         final List<ObjectNode> inputFields = new LinkedList<>();
         List<ArrayNode> components = getComponentsWithInputs(formDefinition);
         components.forEach(componentsNode -> componentsNode.forEach(fieldNode -> {
-            if ((isInputComponent(fieldNode) || isTextFieldComponent(fieldNode)) && !isButtonTypeComponent(fieldNode)) {
+            if (
+                (isInputComponent(fieldNode) || isTextFieldComponent(fieldNode) || isHiddenFieldComponent(fieldNode))
+                && !isButtonTypeComponent(fieldNode)
+            ) {
                 inputFields.add((ObjectNode) fieldNode);
             }
         }));
@@ -570,6 +573,12 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
     private static boolean isTextFieldComponent(JsonNode jsonNode) {
         return jsonNode.has("type")
             && jsonNode.get("type").textValue().equalsIgnoreCase("textfield")
+            && jsonNode.has(PROPERTY_KEY);
+    }
+
+    private static boolean isHiddenFieldComponent(JsonNode jsonNode) {
+        return jsonNode.has("type")
+            && jsonNode.get("type").textValue().equalsIgnoreCase("hidden")
             && jsonNode.has(PROPERTY_KEY);
     }
 

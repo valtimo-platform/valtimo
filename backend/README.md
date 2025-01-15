@@ -59,8 +59,7 @@ For contributing code, please refer to the [coding guidelines](CODING-GUIDELINES
 
 #### Branching strategy
 For more information on what branches to create while working in this project, please refer
-to [this page](https://github.com/valtimo-platform/valtimo-documentation/blob/next-minor/contributing/branching-and-release-strategy.md).
-<!--- TODO: change url --->
+to [this page](https://docs.valtimo.nl/contributing-to-valtimo/branching-and-release-strategy).
 
 ### License
 The source files in this repo are licensed under the [EUPL 1.2](https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12).
