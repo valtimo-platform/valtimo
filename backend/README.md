@@ -68,5 +68,6 @@ If you have any questions about the use of this codebase in a larger work: pleas
 ### More information
 - Website: https://www.valtimo.nl
 - Documentation: https://docs.valtimo.nl
-- Training: https://academy.valtimo.nl
-- GZAC edition Exchange (Dutch municipalities) https://exchange.gzac.nl/
+- Academy: https://academy.valtimo.nl
+- Process Exchange (Dutch, GZAC edition only): https://exchange.gzac.nl/
+- Designer: https://designer.valtimo.nl/
