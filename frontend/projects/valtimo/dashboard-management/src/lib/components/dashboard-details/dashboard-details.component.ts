@@ -46,6 +46,10 @@ export class DashboardDetailsComponent implements AfterViewInit {
       callback: this.editWidget.bind(this),
     },
     {
+      label: 'Duplicate',
+      callback: this.duplicateWidget.bind(this),
+    },
+    {
       label: 'Delete',
       callback: this.deleteWidget.bind(this),
       type: 'danger',
@@ -158,6 +162,12 @@ export class DashboardDetailsComponent implements AfterViewInit {
   public editWidget(event: DashboardWidgetConfiguration): void {
     this.editWidgetConfiguration$.next({...event});
     this.modalType = 'edit';
+    this.showModal();
+  }
+
+  private duplicateWidget(event: DashboardWidgetConfiguration): void {
+    this.editWidgetConfiguration$.next({...event});
+    this.modalType = 'create';
     this.showModal();
   }
 
