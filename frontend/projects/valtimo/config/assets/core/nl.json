@@ -1815,7 +1815,8 @@
     "plugin": "Plugin",
     "form": "Formulier",
     "form-flow": "FormFlow",
-    "url": "URL"
+    "url": "URL",
+    "ui-component": "UI Component"
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Kies soort koppeling",
@@ -1846,7 +1847,8 @@
     "configurePluginAction": "Configureer je actie",
     "selectURL": "Configureer je URL",
     "subtitles": "Ondertitels",
-    "addSubtitle": "Ondertitel toevoegen"
+    "addSubtitle": "Ondertitel toevoegen",
+    "uiComponent": "Selecteer UI component"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een pluginconfiguratie aan om deze te kunnen koppelen aan een processtap.",

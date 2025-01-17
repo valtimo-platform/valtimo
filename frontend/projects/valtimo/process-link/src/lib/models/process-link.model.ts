@@ -34,6 +34,7 @@ interface ProcessLink {
   formDisplayType?: FormDisplayType;
   formSize?: FormSize;
   subtitles?: string[];
+  componentKey?: string;
 }
 
 type GetProcessLinkResponse = Array<ProcessLink>;
@@ -129,7 +130,20 @@ interface URLProcessLinkUpdateRequestDto {
   id: string;
 }
 
-type TaskProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url';
+interface UIComponentProcessLinkCreateRequestDto {
+  componentKey: string;
+  activityId: string;
+  activityType: string;
+  processLinkType: string;
+  processDefinitionId: string;
+}
+
+interface UIComponentProcessLinkUpdateRequestDto {
+  id: string;
+  componentKey: string;
+}
+
+type TaskProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url' | 'ui-component';
 
 interface TaskProcessLinkResult {
   processLinkId: string;
@@ -143,6 +157,7 @@ interface TaskProcessLinkResult {
     url?: string;
     formDisplayType?: FormDisplayType;
     formSize?: FormSize;
+    componentKey?: string
   };
 }
 
@@ -170,4 +185,6 @@ export {
   TaskProcessLinkType,
   TaskProcessLinkResult,
   TaskWithProcessLink,
+  UIComponentProcessLinkUpdateRequestDto,
+  UIComponentProcessLinkCreateRequestDto,
 };

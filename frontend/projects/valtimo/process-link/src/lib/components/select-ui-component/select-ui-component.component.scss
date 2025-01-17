@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,7 +14,19 @@
  * limitations under the License.
  */
 
-export * from './form-link.model';
-export * from './process-link.model';
-export * from './form-flow.model';
-export * from './form-custom-component.model';
+.custom-widget {
+  padding: 24px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__title {
+    color: var(--cds-text-primary);
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 24px;
+  }
+}

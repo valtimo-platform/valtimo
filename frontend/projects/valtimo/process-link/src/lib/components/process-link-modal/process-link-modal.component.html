@@ -111,6 +111,13 @@
     <valtimo-select-url
       *ngIf="obs.currentStepId === 'selectURL' || obs.typeOfSelectedProgressLink === 'url'"
     ></valtimo-select-url>
+    <ng-container
+        *ngIf="
+          obs.currentStepId === 'uiComponent' || obs.typeOfSelectedProgressLink === 'ui-component'
+        "
+      >
+      <valtimo-select-ui-component></valtimo-select-ui-component>
+    </ng-container>
   </div>
 </ng-template>
 

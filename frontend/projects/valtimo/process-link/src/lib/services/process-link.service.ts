@@ -29,6 +29,8 @@ import {
   PluginProcessLinkUpdateDto,
   ProcessLinkType,
   TaskWithProcessLink,
+  UIComponentProcessLinkCreateRequestDto,
+  UIComponentProcessLinkUpdateRequestDto,
   URLProcessLinkCreateDto,
   URLProcessLinkUpdateRequestDto,
 } from '../models';
@@ -72,6 +74,7 @@ export class ProcessLinkService {
       | FormFlowProcessLinkUpdateRequestDto
       | FormProcessLinkUpdateRequestDto
       | URLProcessLinkUpdateRequestDto
+      | UIComponentProcessLinkUpdateRequestDto
   ): Observable<null> {
     return this.http.put<null>(
       `${this.VALTIMO_ENDPOINT_URI}v1/process-link`,
@@ -85,6 +88,7 @@ export class ProcessLinkService {
       | FormFlowProcessLinkCreateRequestDto
       | PluginProcessLinkCreateDto
       | URLProcessLinkCreateDto
+      | UIComponentProcessLinkCreateRequestDto
   ): Observable<null> {
     return this.http.post<null>(
       `${this.VALTIMO_ENDPOINT_URI}v1/process-link`,

@@ -14,7 +14,22 @@
  * limitations under the License.
  */
 
-export * from './form-link.model';
-export * from './process-link.model';
-export * from './form-flow.model';
-export * from './form-custom-component.model';
+import {EventEmitter, Type} from '@angular/core';
+
+interface FormCustomComponent {
+  taskInstanceId: string | null;
+  processDefinitionKey: string | null;
+  documentDefinitionName: string | null;
+  submitEvent: EventEmitter<any>;
+}
+
+interface FormCustomComponentDefinition {
+    id: string;
+    component: FormCustomComponent;
+}
+
+interface FormCustomComponentConfig {
+  [id: string]: Type<FormCustomComponentDefinition>;
+}
+
+export {FormCustomComponent, FormCustomComponentDefinition, FormCustomComponentConfig};
