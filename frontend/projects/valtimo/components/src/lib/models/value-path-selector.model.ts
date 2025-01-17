@@ -24,36 +24,7 @@ interface ValuePathSelectorCache {
   };
 }
 
-interface ValuePathCollectionCache {
-  [documentDefinitionName: string]: {
-    [version: string | number]: {
-    [prefix: string]: ValueCollectionCacheEntry;
-    };
-  };
-}
-
-interface ValueCollectionCacheEntry {
-  [collectionPath: string]: string[];
-}
-
-interface ValueCollectionPath {
-  content: string;
-  prefix: string;
-  unformattedPath: string;
-}
-
 type DocumentDefinitionItemsCache = ListItem[];
-
-interface ValueResolverOption {
-  prefixes: ValuePathSelectorPrefix[];
-  type: ValueResolverOptionType;
-}
-
-interface ValueResolverResult {
-  path: string;
-  type: ValueResolverOptionType;
-  children?: ValueResolverResult[];
-}
 
 enum ValuePathSelectorPrefix {
   DOC = 'doc',
@@ -62,11 +33,6 @@ enum ValuePathSelectorPrefix {
   ZAAKRESULTAAT = 'zaakresultaat',
   ZAAKSTATUS = 'zaakstatus',
   ZAAK = 'zaak',
-}
-
-enum ValueResolverOptionType {
-  FIELD = 'FIELD',
-  COLLECTION = 'COLLECTION',
 }
 
 enum ValuePathSelectorInputMode {
@@ -79,16 +45,10 @@ type ValuePathSelectorNotation = 'dots' | 'slashes';
 type ValuePathVersionArgument = number | 'latest';
 
 export {
-  DocumentDefinitionItemsCache,
-  ValueCollectionCacheEntry,
-  ValueCollectionPath,
-  ValuePathCollectionCache,
   ValuePathSelectorCache,
-  ValuePathSelectorInputMode,
-  ValuePathSelectorNotation,
   ValuePathSelectorPrefix,
+  ValuePathSelectorInputMode,
   ValuePathVersionArgument,
-  ValueResolverOption,
-  ValueResolverOptionType,
-  ValueResolverResult,
+  DocumentDefinitionItemsCache,
+  ValuePathSelectorNotation,
 };

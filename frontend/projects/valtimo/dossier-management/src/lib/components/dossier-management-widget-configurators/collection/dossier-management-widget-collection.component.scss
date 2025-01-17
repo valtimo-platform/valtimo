@@ -20,21 +20,14 @@
   gap: 24px;
 
   &__form {
-    display: grid;
+    display: flex;
     gap: 16px;
-    grid-template-columns: repeat(3, 1fr);
-    align-items: flex-end;
   }
 
   &__subtitle {
     font-size: 16px;
     font-weight: 600;
     line-height: 22px;
-  }
-
-  &__path-selector {
-    display: flex;
-    flex-direction: column;
   }
 
   &__card {

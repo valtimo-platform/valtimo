@@ -40,10 +40,6 @@ import {
   CdsThemeService,
   CurrentCarbonTheme,
   InputLabelModule,
-  ValueCollectionPath,
-  ValuePathSelectorComponent,
-  ValuePathSelectorPrefix,
-  ValueResolverOptionType,
 } from '@valtimo/components';
 import {
   CaseWidgetCurrencyDisplayType,
@@ -63,13 +59,13 @@ import {
   InputModule,
   ListItem,
 } from 'carbon-components-angular';
-import {BehaviorSubject, debounceTime, map, Observable, Subscription} from 'rxjs';
+import {debounceTime, map, Observable, Subscription} from 'rxjs';
 
 import {WidgetContentComponent} from '../../../models';
 import {WidgetFieldsService, WidgetWizardService} from '../../../services';
 import {DossierManagementWidgetFieldsColumnComponent} from '../fields/column/dossier-management-widget-fields-column.component';
-import {ActivatedRoute, ParamMap} from '@angular/router';
 import {DossierManagementWidgetProcessSelectorComponent} from '../process-selector/dossier-management-widget-process-selector.component';
+import {ActivatedRoute, ParamMap} from '@angular/router';
 
 @Component({
   templateUrl: './dossier-management-widget-collection.component.html',
@@ -87,7 +83,6 @@ import {DossierManagementWidgetProcessSelectorComponent} from '../process-select
     ButtonModule,
     IconModule,
     InputLabelModule,
-    ValuePathSelectorComponent,
     DossierManagementWidgetProcessSelectorComponent,
   ],
 })
@@ -136,13 +131,10 @@ export class DossierManagementWidgetCollectionComponent
     )
   );
 
-  public readonly selectedCollectionPath$ = new BehaviorSubject<ValueCollectionPath | null>(null);
   public readonly CaseWidgetDisplayTypeKey = CaseWidgetDisplayTypeKey;
   public readonly content = this.widgetWizardService
     .widgetContent as WritableSignal<WidgetCollectionContent>;
   public readonly displayTypeItems: ListItem[] = this.widgetFieldsService.displayTypeItems;
-  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
-  public readonly ValueResolverOptionType = ValueResolverOptionType;
 
   public readonly documentDefinitionName$: Observable<string> = this.route.paramMap.pipe(
     map((paramMap: ParamMap) => paramMap.get('name') ?? '')
@@ -167,10 +159,10 @@ export class DossierManagementWidgetCollectionComponent
   constructor(
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
-    private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService,
     private readonly widgetWizardService: WidgetWizardService,
-    private readonly widgetFieldsService: WidgetFieldsService
+    private readonly widgetFieldsService: WidgetFieldsService,
+    private readonly route: ActivatedRoute
   ) {}
 
   public ngOnInit(): void {
@@ -246,10 +238,6 @@ export class DossierManagementWidgetCollectionComponent
           ),
         }) as WidgetCollectionContent
     );
-  }
-
-  public onCollectionPathSelected(collectionPath: ValueCollectionPath): void {
-    this.selectedCollectionPath$.next(collectionPath);
   }
 
   private initForm(): void {
