@@ -28,7 +28,7 @@ import * as valtimocomponents from '@valtimo/components';
 import * as tslib from 'tslib';
 import {NGXLogger} from 'ngx-logger';
 import {TabService} from '@valtimo/dossier-management';
-import {loadRemoteModule} from '@softarc/native-federation';
+import { loadRemoteModule } from '@angular-architects/module-federation';
 
 @Injectable({providedIn: 'root'})
 export class ExtensionService {
@@ -117,10 +117,11 @@ export class ExtensionService {
 
     // TODO: Use this: https://stackoverflow.com/questions/75445012/how-do-you-load-precompiled-angular-libraries-as-dynamic-modules/75527315#75527315
     loadRemoteModule({
+      type: 'module',
       remoteEntry: this.getFileUrl(extensionId, this.extensionFrontendInitJs),
       exposedModule: './WeatherPluginModule',
     }).then(m => {
-        createNgModule(m.WeatherPluginModule, this.injector);
+        this.loadModule(m.WeatherPluginModule);
         subject.next(true);
       },
       err => {
