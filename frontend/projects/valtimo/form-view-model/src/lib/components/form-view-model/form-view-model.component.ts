@@ -20,12 +20,16 @@ import {
   catchError,
   combineLatest,
   debounceTime,
-  EMPTY, filter,
+  EMPTY,
+  filter,
   Observable,
-  of, Subject, Subscription,
+  of,
+  Subject,
+  Subscription,
   switchMap,
   take,
-  tap, withLatestFrom,
+  tap,
+  withLatestFrom,
 } from 'rxjs';
 import {
   FormioComponent,
@@ -141,11 +145,11 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
         language,
         ...(typeof formioTranslations === 'object'
           ? {
-            language,
-            i18n: {
-              [language]: this.stateService.flattenTranslationsObject(formioTranslations),
-            },
-          }
+              language,
+              i18n: {
+                [language]: this.stateService.flattenTranslationsObject(formioTranslations),
+              },
+            }
           : {}),
       };
 
@@ -153,8 +157,8 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
     })
   );
 
-  private focusSubscription: Subscription
-  private updateSubscription: Subscription
+  private focusSubscription: Subscription;
+  private updateSubscription: Subscription;
 
   constructor(
     private readonly viewModelService: ViewModelService,
@@ -169,33 +173,37 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
       this.loadInitialViewModel();
     }
 
-    this.focusSubscription = this.focus$
-      .pipe(withLatestFrom(this.change$))
-      .subscribe(data => {
-        const dataAtFocus = !!data[1] && !!data[1].data ? JSON.parse(JSON.stringify(data[1].data)) : null
-        this.blur$
-          .pipe(take(1))
-          .pipe(withLatestFrom(this.change$))
-          .subscribe(dataBlur => {
-            const dataEqual = isEqual(dataAtFocus, dataBlur[1]?.data)
-            if(!dataEqual) {
-              this.updateForm.next(true)
-            }
-          })
-      })
+    this.focusSubscription = this.focus$.pipe(withLatestFrom(this.change$)).subscribe(data => {
+      const dataAtFocus =
+        !!data[1] && !!data[1].data ? JSON.parse(JSON.stringify(data[1].data)) : null;
+      this.blur$
+        .pipe(take(1))
+        .pipe(withLatestFrom(this.change$))
+        .subscribe(dataBlur => {
+          const dataEqual = isEqual(dataAtFocus, dataBlur[1]?.data);
+          if (!dataEqual) {
+            this.updateForm.next(true);
+          }
+        });
+    });
 
-    this.updateSubscription = this.updateForm.pipe(filter(it => it), debounceTime(500)).subscribe(() => {
-      if (this.isStartForm$.value) {
-        this.updateViewModelForStartForm();
-      } else {
-        this.updateViewModel();
-      }
-    })
+    this.updateSubscription = this.updateForm
+      .pipe(
+        filter(it => it),
+        debounceTime(500)
+      )
+      .subscribe(() => {
+        if (this.isStartForm$.value) {
+          this.updateViewModelForStartForm();
+        } else {
+          this.updateViewModel();
+        }
+      });
   }
 
   public ngOnDestroy(): void {
-    this.focusSubscription.unsubscribe()
-    this.updateSubscription.unsubscribe()
+    this.focusSubscription.unsubscribe();
+    this.updateSubscription.unsubscribe();
   }
 
   public beforeSubmitHook(instance: FormViewModelComponent): (submission, callback) => void {

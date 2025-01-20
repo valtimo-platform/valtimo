@@ -102,7 +102,7 @@ export class ProcessLinkStepService {
   setUIComponentStep(): void {
     this._steps$.next([
       {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.ui-component'},
-      {label: 'uiComponent'}
+      {label: 'uiComponent'},
     ]);
     this._currentStepIndex$.next(1);
   }

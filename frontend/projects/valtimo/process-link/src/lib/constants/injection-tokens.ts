@@ -23,7 +23,7 @@ const FORM_FLOW_COMPONENT_TOKEN = new InjectionToken<Array<FormFlowCustomCompone
 );
 
 const FORM_CUSTOM_COMPONENT_TOKEN = new InjectionToken<FormCustomComponentConfig>(
-    'Custom component that can be used instead of FormIO or form-flow'
+  'Custom component that can be used instead of FormIO or form-flow'
 );
 
 export {FORM_FLOW_COMPONENT_TOKEN, FORM_CUSTOM_COMPONENT_TOKEN};

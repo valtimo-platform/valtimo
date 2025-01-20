@@ -36,7 +36,13 @@ import {
 } from '@valtimo/components';
 import {ProcessDocumentDefinition} from '@valtimo/document';
 import {ProcessService} from '@valtimo/process';
-import {FORM_CUSTOM_COMPONENT_TOKEN, FormCustomComponent, FormCustomComponentConfig, FormSubmissionResult, ProcessLinkService} from '@valtimo/process-link';
+import {
+  FORM_CUSTOM_COMPONENT_TOKEN,
+  FormCustomComponent,
+  FormCustomComponentConfig,
+  FormSubmissionResult,
+  ProcessLinkService,
+} from '@valtimo/process-link';
 import {BehaviorSubject, combineLatest, switchMap} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
@@ -72,14 +78,18 @@ export class DossierSupportingProcessStartModalComponent {
   public readonly processDefinitionId$ = new BehaviorSubject<string>(undefined);
   public readonly formFlowInstanceId$ = new BehaviorSubject<string>(undefined);
   public readonly documentId$ = new BehaviorSubject<string>(undefined);
-  private readonly _formCustomComponentConfig$ = new BehaviorSubject<FormCustomComponentConfig | {}>({});
+  private readonly _formCustomComponentConfig$ = new BehaviorSubject<
+    FormCustomComponentConfig | {}
+  >({});
 
   constructor(
     private readonly router: Router,
     private readonly processService: ProcessService,
     private readonly processLinkService: ProcessLinkService,
     @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel,
-    @Optional() @Inject(FORM_CUSTOM_COMPONENT_TOKEN) private readonly formCustomComponentConfig: FormCustomComponentConfig
+    @Optional()
+    @Inject(FORM_CUSTOM_COMPONENT_TOKEN)
+    private readonly formCustomComponentConfig: FormCustomComponentConfig
   ) {
     this._formCustomComponentConfig$.next(formCustomComponentConfig);
   }
@@ -210,21 +220,22 @@ export class DossierSupportingProcessStartModalComponent {
   private setFormCustomComponent(formCustomComponentKey: string): void {
     this.formCustomComponentDynamicContainer.clear();
     if (!this.formCustomComponentConfig) return;
-    this._formCustomComponentConfig$.pipe(take(1)).subscribe(
-      (formCustomComponentConfig) => {
-        const customComponent = formCustomComponentConfig[formCustomComponentKey];
-        const renderedComponent = this.formCustomComponentDynamicContainer.createComponent(customComponent) as ComponentRef<FormCustomComponent>;
+    this._formCustomComponentConfig$.pipe(take(1)).subscribe(formCustomComponentConfig => {
+      const customComponent = formCustomComponentConfig[formCustomComponentKey];
+      const renderedComponent = this.formCustomComponentDynamicContainer.createComponent(
+        customComponent
+      ) as ComponentRef<FormCustomComponent>;
 
-        combineLatest([this.processDefinitionKey$, this.documentDefinitionName$]).pipe(take(1))
+      combineLatest([this.processDefinitionKey$, this.documentDefinitionName$])
+        .pipe(take(1))
         .subscribe(([processDefinitionKey, documentDefinitionName]) => {
           renderedComponent.instance.processDefinitionKey = processDefinitionKey;
           renderedComponent.instance.documentDefinitionName = documentDefinitionName;
         });
 
-        renderedComponent.instance.submitEvent.subscribe(() => {
-          this.formSubmitted();
-        });
-      }
-    );
+      renderedComponent.instance.submittedEvent.subscribe(() => {
+        this.formSubmitted();
+      });
+    });
   }
 }

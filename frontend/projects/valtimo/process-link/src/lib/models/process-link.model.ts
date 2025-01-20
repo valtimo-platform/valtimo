@@ -157,7 +157,7 @@ interface TaskProcessLinkResult {
     url?: string;
     formDisplayType?: FormDisplayType;
     formSize?: FormSize;
-    componentKey?: string
+    componentKey?: string;
   };
 }
 

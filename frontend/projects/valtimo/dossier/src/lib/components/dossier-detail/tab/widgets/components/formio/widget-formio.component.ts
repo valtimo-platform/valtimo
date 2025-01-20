@@ -81,7 +81,7 @@ export class WidgetFormioComponent extends WidgetProcess {
     protected readonly permissionService: PermissionService,
     private readonly formService: FormService,
     private readonly layoutService: DossierWidgetsLayoutService,
-    private readonly widgetsService: WidgetsService,
+    private readonly widgetsService: WidgetsService
   ) {
     super(documentService, permissionService);
   }

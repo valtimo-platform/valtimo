@@ -13,13 +13,13 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-  <cds-combo-box
-    [dropUp]="false"
-    formControlName="contentKey"
-    [items]="formCustomComponentListItems$ | async"
-    itemValueKey="contentKey"
-    [label]="'processLinkSteps.uiComponent' | translate"
-    (selected)="selectCustomComponent($event)"
-  >
+<cds-combo-box
+  [dropUp]="false"
+  formControlName="contentKey"
+  [items]="formCustomComponentListItems$ | async"
+  itemValueKey="contentKey"
+  [label]="'processLinkSteps.uiComponent' | translate"
+  (selected)="selectCustomComponent($event)"
+>
   <cds-dropdown-list></cds-dropdown-list>
 </cds-combo-box>

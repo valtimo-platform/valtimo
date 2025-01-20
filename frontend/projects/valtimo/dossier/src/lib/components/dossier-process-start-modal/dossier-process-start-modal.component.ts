@@ -90,7 +90,9 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
   @Output() noProcessLinked = new EventEmitter();
 
   private _subscriptions = new Subscription();
-  private readonly _formCustomComponentConfig$ = new BehaviorSubject<FormCustomComponentConfig | {}>({});
+  private readonly _formCustomComponentConfig$ = new BehaviorSubject<
+    FormCustomComponentConfig | {}
+  >({});
 
   constructor(
     private route: ActivatedRoute,
@@ -105,7 +107,9 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
     private startModalService: StartModalService,
     private configService: ConfigService,
     @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel,
-    @Optional() @Inject(FORM_CUSTOM_COMPONENT_TOKEN) private readonly formCustomComponentConfig: FormCustomComponentConfig,
+    @Optional()
+    @Inject(FORM_CUSTOM_COMPONENT_TOKEN)
+    private readonly formCustomComponentConfig: FormCustomComponentConfig,
     private urlResolverService: UrlResolverService
   ) {
     this._useStartEventNameAsStartFormTitle =
@@ -288,18 +292,18 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
   private setFormCustomComponent(formCustomComponentKey: string): void {
     this.formCustomComponentDynamicContainer.clear();
     if (!this.formCustomComponentConfig) return;
-    this._formCustomComponentConfig$.pipe(take(1)).subscribe(
-      (formCustomComponentConfig) => {
-        const customComponent = formCustomComponentConfig[formCustomComponentKey];
-        const renderedComponent = this.formCustomComponentDynamicContainer.createComponent(customComponent) as ComponentRef<FormCustomComponent>;
+    this._formCustomComponentConfig$.pipe(take(1)).subscribe(formCustomComponentConfig => {
+      const customComponent = formCustomComponentConfig[formCustomComponentKey];
+      const renderedComponent = this.formCustomComponentDynamicContainer.createComponent(
+        customComponent
+      ) as ComponentRef<FormCustomComponent>;
 
-        renderedComponent.instance.processDefinitionKey = this.processDefinitionKey;
-        renderedComponent.instance.documentDefinitionName = this.documentDefinitionName;
+      renderedComponent.instance.processDefinitionKey = this.processDefinitionKey;
+      renderedComponent.instance.documentDefinitionName = this.documentDefinitionName;
 
-        renderedComponent.instance.submitEvent.subscribe(() => {
-          this.modal.hide();
-        });
-      }
-    );
+      renderedComponent.instance.submittedEvent.subscribe(() => {
+        this.modal.hide();
+      });
+    });
   }
 }

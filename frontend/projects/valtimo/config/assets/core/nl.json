@@ -1853,7 +1853,8 @@
   "processLinkTypeDisabledTooltip": {
     "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een pluginconfiguratie aan om deze te kunnen koppelen aan een processtap.",
     "form": "Er zijn geen formulieren beschikbaar. Maak een formulier aan om deze te kunnen koppelen aan een processtap.",
-    "form-flow": "Er zijn geen FormFlows beschikbaar. Maak een FormFlow aan om deze te kunnen koppelen aan een processtap."
+    "form-flow": "Er zijn geen FormFlows beschikbaar. Maak een FormFlow aan om deze te kunnen koppelen aan een processtap.",
+    "ui-component": "Er zijn geen custom componenten geregistreerd maak er een aan om deze optie te kunnen gebruiken."
   },
   "processLinkUrlInvalid": "Ongeldige URL {{ URL }}",
   "accessControl": {

@@ -20,12 +20,12 @@ interface FormCustomComponent {
   taskInstanceId: string | null;
   processDefinitionKey: string | null;
   documentDefinitionName: string | null;
-  submitEvent: EventEmitter<any>;
+  submittedEvent: EventEmitter<any>;
 }
 
 interface FormCustomComponentDefinition {
-    id: string;
-    component: FormCustomComponent;
+  id: string;
+  component: FormCustomComponent;
 }
 
 interface FormCustomComponentConfig {

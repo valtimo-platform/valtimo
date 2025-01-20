@@ -22,11 +22,24 @@ import {
   OnInit,
   Optional,
 } from '@angular/core';
-import { BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take, tap } from 'rxjs';
-import { FormCustomComponentConfig, UIComponentProcessLinkUpdateRequestDto } from '../../models';
-import { ListItem } from 'carbon-components-angular';
-import { ProcessLinkButtonService, ProcessLinkService, ProcessLinkStateService } from '../../services';
-import { FORM_CUSTOM_COMPONENT_TOKEN } from '../../constants';
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
+import {FormCustomComponentConfig, UIComponentProcessLinkUpdateRequestDto} from '../../models';
+import {ListItem} from 'carbon-components-angular';
+import {
+  ProcessLinkButtonService,
+  ProcessLinkService,
+  ProcessLinkStateService,
+} from '../../services';
+import {FORM_CUSTOM_COMPONENT_TOKEN} from '../../constants';
 
 @Component({
   selector: 'valtimo-select-ui-component',
@@ -35,37 +48,40 @@ import { FORM_CUSTOM_COMPONENT_TOKEN } from '../../constants';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SelectUIComponentComponent implements OnInit, OnDestroy {
+  private readonly _formCustomComponentConfig$ = new BehaviorSubject<
+    FormCustomComponentConfig | {}
+  >({});
 
-  private readonly _formCustomComponentConfig$ = new BehaviorSubject<FormCustomComponentConfig | {}>({});
+  public readonly formCustomComponentListItems$: Observable<Array<ListItem>> = combineLatest([
+    this.stateService.selectedProcessLink$,
+    this._formCustomComponentConfig$,
+  ]).pipe(
+    map(([selectedProcessLink, formCustomComponentConfigs]) =>
+      Object.keys(formCustomComponentConfigs).map(key => ({
+        content: key,
+        selected: selectedProcessLink ? selectedProcessLink?.componentKey === key : false,
+      }))
+    ),
+    tap(formCustomComponentListItems => {
+      const selectedItem = formCustomComponentListItems.find(item => item.selected);
 
-  public readonly formCustomComponentListItems$: Observable<Array<ListItem>> =
-    combineLatest([this.stateService.selectedProcessLink$, this._formCustomComponentConfig$]).pipe(
-      map(([selectedProcessLink, formCustomComponentConfigs]) =>
-        Object.keys(formCustomComponentConfigs).map(key => ({
-          content: key,
-          selected: selectedProcessLink
-            ? selectedProcessLink?.componentKey === key
-            : false,
-        }))
-      ),
-      tap(formCustomComponentListItems => {
-        const selectedItem = formCustomComponentListItems.find(item => item.selected);
+      if (selectedItem) {
+        this.selectCustomComponent(selectedItem);
+      }
+    })
+  );
 
-        if (selectedItem) {
-          this.selectCustomComponent(selectedItem);
-        }
-      })
-    );
+  private readonly _subscriptions = new Subscription();
 
-    private readonly _subscriptions = new Subscription();
-
-    private _selectedCustomComponent: ListItem;
+  private _selectedCustomComponent: ListItem;
 
   constructor(
     private readonly stateService: ProcessLinkStateService,
     private readonly buttonService: ProcessLinkButtonService,
     private readonly processLinkService: ProcessLinkService,
-    @Optional() @Inject(FORM_CUSTOM_COMPONENT_TOKEN) private readonly formCustomComponentConfig: FormCustomComponentConfig,
+    @Optional()
+    @Inject(FORM_CUSTOM_COMPONENT_TOKEN)
+    private readonly formCustomComponentConfig: FormCustomComponentConfig
   ) {
     this._formCustomComponentConfig$.next(this.formCustomComponentConfig);
   }
@@ -82,7 +98,9 @@ export class SelectUIComponentComponent implements OnInit, OnDestroy {
   public selectCustomComponent(selectedCustomComponent: ListItem): void {
     this._selectedCustomComponent = selectedCustomComponent;
 
-    this._selectedCustomComponent.content ? this.buttonService.enableSaveButton() : this.buttonService.disableSaveButton();
+    this._selectedCustomComponent.content
+      ? this.buttonService.enableSaveButton()
+      : this.buttonService.disableSaveButton();
   }
 
   private openBackButtonSubscription(): void {
@@ -113,30 +131,26 @@ export class SelectUIComponentComponent implements OnInit, OnDestroy {
   }
 
   private updateProcessLink(): void {
-    this.stateService.selectedProcessLink$
-      .pipe(take(1))
-      .subscribe((selectedProcessLink) => {
-        const updateProcessLinkRequest: UIComponentProcessLinkUpdateRequestDto = {
-          id: selectedProcessLink.id,
-          componentKey: this._selectedCustomComponent.content,
-        };
+    this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
+      const updateProcessLinkRequest: UIComponentProcessLinkUpdateRequestDto = {
+        id: selectedProcessLink.id,
+        componentKey: this._selectedCustomComponent.content,
+      };
 
-        this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe({
-          next: () => {
-            this.stateService.closeModal();
-          },
-          error: () => {
-            this.stateService.stopSaving();
-          }
-        });
+      this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe({
+        next: () => {
+          this.stateService.closeModal();
+        },
+        error: () => {
+          this.stateService.stopSaving();
+        },
       });
+    });
   }
 
   private saveNewProcessLink(): void {
-    combineLatest([
-      this.stateService.modalParams$,
-      this.stateService.selectedProcessLinkTypeId$,
-    ]).pipe(
+    combineLatest([this.stateService.modalParams$, this.stateService.selectedProcessLinkTypeId$])
+      .pipe(
         take(1),
         switchMap(([modalParams, processLinkTypeId]) =>
           this.processLinkService.saveProcessLink({
@@ -144,16 +158,17 @@ export class SelectUIComponentComponent implements OnInit, OnDestroy {
             activityType: modalParams.element.activityListenerType || '',
             processDefinitionId: modalParams.processDefinitionId,
             processLinkType: processLinkTypeId,
-            activityId: modalParams.element.id
+            activityId: modalParams.element.id,
           })
         )
-      ).subscribe({
+      )
+      .subscribe({
         next: () => {
           this.stateService.closeModal();
         },
         error: () => {
           this.stateService.stopSaving();
-        }
+        },
       });
   }
 }

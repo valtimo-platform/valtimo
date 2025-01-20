@@ -60,11 +60,21 @@ import {
 import {IconService} from 'carbon-components-angular';
 import {NGXLogger} from 'ngx-logger';
 import {ToastrService} from 'ngx-toastr';
-import {BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Observable, Subscription, switchMap, take,} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+  take,
+} from 'rxjs';
 import {IntermediateSubmission, Task} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
 import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../../task-permissions';
-import { FormCustomComponent } from '@valtimo/process-link';
+import {FormCustomComponent} from '@valtimo/process-link';
 
 @Component({
   selector: 'valtimo-task-detail-content',
@@ -129,7 +139,9 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
 
   private readonly _processLinkId$ = new BehaviorSubject<string | null>(null);
   private readonly _subscriptions = new Subscription();
-  private readonly _formCustomComponentConfig$ = new BehaviorSubject<FormCustomComponentConfig | {}>({});
+  private readonly _formCustomComponentConfig$ = new BehaviorSubject<
+    FormCustomComponentConfig | {}
+  >({});
 
   private readonly _viewInitialized$ = new BehaviorSubject<boolean>(false);
 
@@ -152,7 +164,9 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     private readonly toastr: ToastrService,
     private readonly translateService: TranslateService,
     @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel,
-    @Optional() @Inject(FORM_CUSTOM_COMPONENT_TOKEN) private readonly formCustomComponentConfig: FormCustomComponentConfig,
+    @Optional()
+    @Inject(FORM_CUSTOM_COMPONENT_TOKEN)
+    private readonly formCustomComponentConfig: FormCustomComponentConfig,
     private readonly urlResolverService: UrlResolverService
   ) {
     this.intermediateSaveEnabled = !!this.configService.featureToggles?.enableIntermediateSave;
@@ -368,7 +382,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   }
 
   private setFormViewModelComponent() {
-    this._viewInitialized$.subscribe((viewInitialized) => {
+    this._viewInitialized$.subscribe(viewInitialized => {
       if (viewInitialized) {
         this.formViewModelDynamicContainer.clear();
         if (!this.formViewModel) return;
@@ -409,22 +423,22 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   }
 
   private setFormCustomComponent(formCustomComponentKey: string): void {
-    this._viewInitialized$.subscribe((viewInitialized) => {
+    this._viewInitialized$.subscribe(viewInitialized => {
       if (viewInitialized) {
         this.formCustomComponentDynamicContainer.clear();
         if (!this.formCustomComponentConfig) return;
         this._subscriptions.add(
-          this._formCustomComponentConfig$.subscribe(
-            (formCustomComponentConfig) => {
-              const customComponent = formCustomComponentConfig[formCustomComponentKey];
-              const renderedComponent = this.formCustomComponentDynamicContainer.createComponent(customComponent) as ComponentRef<FormCustomComponent>;
+          this._formCustomComponentConfig$.subscribe(formCustomComponentConfig => {
+            const customComponent = formCustomComponentConfig[formCustomComponentKey];
+            const renderedComponent = this.formCustomComponentDynamicContainer.createComponent(
+              customComponent
+            ) as ComponentRef<FormCustomComponent>;
 
-              renderedComponent.instance.taskInstanceId = this.taskInstanceId$.value;
-              renderedComponent.instance.submitEvent.subscribe(() => {
-                this.closeModalEvent.emit();
-              });
-            }
-          )
+            renderedComponent.instance.taskInstanceId = this.taskInstanceId$.value;
+            renderedComponent.instance.submittedEvent.subscribe(() => {
+              this.closeModalEvent.emit();
+            });
+          })
         );
       }
     });
