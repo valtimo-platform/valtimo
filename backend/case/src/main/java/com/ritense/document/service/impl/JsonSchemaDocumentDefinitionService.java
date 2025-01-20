@@ -44,7 +44,6 @@ import com.ritense.document.domain.EveritSchemaAllowsPropertyKt;
 import com.ritense.document.domain.impl.JsonSchema;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
-import com.ritense.document.exception.DocumentDefinitionDeploymentException;
 import com.ritense.document.exception.UnknownDocumentDefinitionException;
 import com.ritense.document.repository.DocumentDefinitionRepository;
 import com.ritense.document.repository.impl.specification.JsonSchemaDocumentDefinitionSpecificationHelper;
@@ -57,9 +56,7 @@ import com.ritense.logging.LoggableResource;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import jakarta.validation.ValidationException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -72,7 +69,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StreamUtils;
 
 @Transactional
 public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionService {
@@ -262,63 +258,13 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     }
 
     @Override
-    public void deployAll() {
+    public DeployDocumentDefinitionResult deploy(String schema, CaseDefinitionId caseDefinitionId) {
         //Authorization check is delegated to the store() method
-        deployAll(true, false);
+        var jsonSchema = JsonSchema.fromString(schema);
+        return deploy(jsonSchema, caseDefinitionId);
     }
 
-    @Override
-    public void deploy(InputStream inputStream) throws IOException {
-        //Authorization check is delegated to the store() method
-        deploy(inputStream, true, false);
-    }
-
-    @Override
-    public DeployDocumentDefinitionResult deploy(String schema) {
-        //Authorization check is delegated to the store() method
-        return deploy(schema, false, false);
-    }
-
-    @Override
-    public void deployAll(boolean readOnly, boolean force) {
-        //Authorization check is delegated to the store() method
-        logger.info("Deploy all schema's");
-        try {
-            for (var resource : loadResources()) {
-                if (resource.getFilename() != null) {
-                    try (InputStream is = resource.getInputStream()) {
-                        deploy(is, readOnly, force);
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            throw new DocumentDefinitionDeploymentException("Error deploying document schema's", ex);
-        }
-    }
-
-    @Override
-    public void deploy(InputStream inputStream, boolean readOnly, boolean force) throws IOException {
-        //Authorization check is delegated to the store() method
-        var jsonSchema = JsonSchema.fromString(StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8));
-//        deploy(jsonSchema, readOnly, force);
-    }
-
-    @Override
-    public DeployDocumentDefinitionResult deploy(String schema, boolean readOnly, boolean force) {
-        //Authorization check is delegated to the store() method
-        return null;
-//        try {
-//            var jsonSchema = JsonSchema.fromString(schema);
-//            return deploy(jsonSchema, readOnly, force);
-//        } catch (AccessDeniedException accessDeniedException) {
-//            throw accessDeniedException;
-//        } catch (Exception ex) {
-//            DocumentDefinitionError error = ex::getMessage;
-//            return new DeployDocumentDefinitionResultFailed(List.of(error));
-//        }
-    }
-
-    private DeployDocumentDefinitionResult deploy(JsonSchema jsonSchema, CaseDefinitionId caseDefinitionId, boolean readOnly, boolean force) {
+    public DeployDocumentDefinitionResult deploy(JsonSchema jsonSchema, CaseDefinitionId caseDefinitionId) {
         //Authorization check is delegated to the store() method
         try {
             final var documentDefinitionName = jsonSchema.getSchema().getId().replace(".schema", "");

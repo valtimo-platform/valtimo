@@ -171,7 +171,7 @@ public class JsonSchemaDocumentDefinitionResource implements DocumentDefinitionR
     public ResponseEntity<DeployDocumentDefinitionResult> deployDocumentDefinition(
         DocumentDefinitionCreateRequest request
     ) {
-        var result = runWithoutAuthorization(() -> documentDefinitionService.deploy(request.getDefinition()));
+        var result = runWithoutAuthorization(() -> documentDefinitionService.deploy(request.getDefinition(), request.getCaseDefinitionId()));
         var httpStatus = result.documentDefinition() != null ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(httpStatus).body(result);
     }

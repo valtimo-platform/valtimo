@@ -48,6 +48,7 @@ import com.ritense.document.service.result.DeployDocumentDefinitionResultSucceed
 import com.ritense.document.service.result.UndeployDocumentDefinitionResultFailed;
 import com.ritense.document.service.result.UndeployDocumentDefinitionResultSucceeded;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentDefinitionResource;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.json.MapperSingleton;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -274,9 +275,11 @@ class JsonSchemaDocumentDefinitionResourceTest extends BaseTest {
             "      \"minimum\": 0\n" +
             "    }\n" +
             "  }\n" +
-            "}\n");
+            "}\n",
+            CaseDefinitionId.of("caseDefinitionId", "1.0.0")
+        );
 
-        when(documentDefinitionService.deploy(anyString()))
+        when(documentDefinitionService.deploy(anyString(), any(CaseDefinitionId.class)))
             .thenReturn(new DeployDocumentDefinitionResultSucceeded(definition));
 
         mockMvc.perform(post("/api/v1/document-definition")
@@ -288,7 +291,7 @@ class JsonSchemaDocumentDefinitionResourceTest extends BaseTest {
             .andDo(print())
             .andExpect(status().isOk());
 
-        verify(documentDefinitionService, times(1)).deploy(anyString());
+        verify(documentDefinitionService, times(1)).deploy(anyString(), any(CaseDefinitionId.class));
     }
 
     @Test
@@ -314,9 +317,11 @@ class JsonSchemaDocumentDefinitionResourceTest extends BaseTest {
             "      \"minimum\": 0\n" +
             "    }\n" +
             "  }\n" +
-            "}\n");
+            "}\n",
+            CaseDefinitionId.of("caseDefinitionId", "1.0.0")
+        );
 
-        when(documentDefinitionService.deploy(anyString()))
+        when(documentDefinitionService.deploy(anyString(), any(CaseDefinitionId.class)))
             .thenReturn(new DeployDocumentDefinitionResultFailed(List.of(() -> "This schema was already deployed")));
 
         mockMvc.perform(post("/api/v1/document-definition")
@@ -328,7 +333,7 @@ class JsonSchemaDocumentDefinitionResourceTest extends BaseTest {
             .andDo(print())
             .andExpect(status().isBadRequest());
 
-        verify(documentDefinitionService, times(1)).deploy(anyString());
+        verify(documentDefinitionService, times(1)).deploy(anyString(), any(CaseDefinitionId.class));
     }
 
     @Test

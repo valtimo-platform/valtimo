@@ -60,17 +60,7 @@ public interface DocumentDefinitionService {
 
     List<CaseDefinitionId> findVersionsByName(String documentDefinitionName);
 
-    void deployAll();
-
-    DeployDocumentDefinitionResult deploy(String schema);
-
-    void deploy(InputStream inputStream) throws IOException;
-
-    void deployAll(boolean readOnly, boolean force);
-
-    DeployDocumentDefinitionResult deploy(String schema, boolean readOnly, boolean force);
-
-    void deploy(InputStream inputStream, boolean readOnly, boolean force) throws IOException;
+    DeployDocumentDefinitionResult deploy(String schema, CaseDefinitionId caseDefinitionId);
 
     void store(JsonSchemaDocumentDefinition documentDefinition);
 

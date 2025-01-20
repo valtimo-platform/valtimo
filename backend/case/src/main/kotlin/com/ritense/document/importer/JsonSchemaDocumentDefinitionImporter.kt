@@ -16,6 +16,7 @@
 
 package com.ritense.document.importer
 
+import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
@@ -33,10 +34,10 @@ class JsonSchemaDocumentDefinitionImporter(
     override fun supports(fileName: String) = fileName.matches(PATH_REGEX)
 
     override fun import(request: ImportRequest) {
-        jsonSchemaDocumentDefinitionService.deploy(request.content.toString(Charsets.UTF_8))
+        jsonSchemaDocumentDefinitionService.deploy(JsonSchema.fromString(request.content.toString(Charsets.UTF_8)), request.caseDefinitionId)
     }
 
     private companion object {
-        val PATH_REGEX = """config/document/definition/[^/]+\.json""".toRegex()
+        val PATH_REGEX = """/document/definition/[^/]+\.json""".toRegex()
     }
 }
