@@ -158,7 +158,8 @@ export class ExtensionService {
 
   private loadModule(module: any) {
     //createNgModule<NgModule>(module as any, this.injector);
-    const providers = module.ɵinj.providers
+    console.log(module);
+    const providers = module.__annotations__.flatMap(a => a.providers)
     providers
       .filter(provider => provider.provide == PLUGINS_TOKEN)
       .flatMap(provider => provider.useValue)
