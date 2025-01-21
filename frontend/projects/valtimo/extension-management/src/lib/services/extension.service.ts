@@ -116,6 +116,7 @@ export class ExtensionService {
     Object.keys(this.extensionImports).forEach(key => (window[key] = this.extensionImports[key]));
 
     // TODO: Use this: https://stackoverflow.com/questions/75445012/how-do-you-load-precompiled-angular-libraries-as-dynamic-modules/75527315#75527315
+    // https://github.com/angular/angular/issues/43133#issuecomment-921058960
     loadRemoteModule({
       type: 'module',
       remoteEntry: this.getFileUrl(extensionId, this.extensionFrontendInitJs),
@@ -156,7 +157,7 @@ export class ExtensionService {
   }
 
   private loadModule(module: any) {
-    createNgModule<NgModule>(module as any, this.injector);
+    //createNgModule<NgModule>(module as any, this.injector);
     const providers = module.ɵinj.providers
     providers
       .filter(provider => provider.provide == PLUGINS_TOKEN)
