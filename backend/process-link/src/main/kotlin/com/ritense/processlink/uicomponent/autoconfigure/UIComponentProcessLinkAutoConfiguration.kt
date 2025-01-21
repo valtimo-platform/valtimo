@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.annotation.Order
 
 @Configuration
 @EntityScan("com.ritense.processlink.uicomponent.domain")
@@ -44,6 +45,7 @@ class UIComponentProcessLinkAutoConfiguration {
     ) = UIComponentProcessLinkMapper()
 
     @Bean
+    @Order(50)
     @ConditionalOnMissingBean(UIComponentSupportedProcessLinksHandler::class)
     fun uiComponentSupportedProcessLinksHandler() = UIComponentSupportedProcessLinksHandler()
 

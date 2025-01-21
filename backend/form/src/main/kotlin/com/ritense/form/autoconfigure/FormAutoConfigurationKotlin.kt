@@ -54,6 +54,7 @@ import org.springframework.core.annotation.Order
 class FormAutoConfigurationKotlin {
 
     @Bean
+    @Order(10)
     @ConditionalOnMissingBean(FormSupportedProcessLinksHandler::class)
     fun formSupportedProcessLinks(
         formDefinitionService: FormDefinitionService
