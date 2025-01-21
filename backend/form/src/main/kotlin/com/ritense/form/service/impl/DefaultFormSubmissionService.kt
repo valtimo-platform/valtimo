@@ -176,19 +176,23 @@ class DefaultFormSubmissionService(
                     task
                 )
             )
-        } else if (document != null) {
-            authorizationService.hasPermission<CamundaExecution>(
-                RelatedEntityAuthorizationRequest<CamundaExecution>(
+        } else {
+            authorizationService.requirePermission(
+                RelatedEntityAuthorizationRequest(
                     CamundaExecution::class.java,
                     CamundaExecutionActionProvider.CREATE,
                     CamundaProcessDefinition::class.java,
                     processDefinitionId
-                ).withContext(
-                    AuthorizationResourceContext(
-                        JsonSchemaDocument::class.java,
-                        document
-                    )
-                )
+                ).apply {
+                    if (document != null) {
+                        withContext(
+                            AuthorizationResourceContext(
+                                JsonSchemaDocument::class.java,
+                                document
+                            )
+                        )
+                    }
+                }
             )
         }
     }

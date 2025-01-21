@@ -165,6 +165,7 @@ class FormFlowValtimoAutoConfiguration {
     }
 
     @Bean
+    @Order(20)
     @ConditionalOnMissingBean(FormFlowSupportedProcessLinksHandler::class)
     fun formFlowSupportedProcessLinks(formFlowService: FormFlowService): FormFlowSupportedProcessLinksHandler {
         return FormFlowSupportedProcessLinksHandler(formFlowService)
