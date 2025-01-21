@@ -122,6 +122,7 @@ export class ExtensionService {
       remoteEntry: this.getFileUrl(extensionId, this.extensionFrontendInitJs),
       exposedModule: './WeatherPluginModule',
     }).then(m => {
+        console.log(m);
         this.loadModule(m.WeatherPluginModule);
         subject.next(true);
       },
