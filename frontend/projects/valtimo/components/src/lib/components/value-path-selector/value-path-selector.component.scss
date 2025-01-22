@@ -33,7 +33,9 @@
 }
 
 .value-path-selector__form {
-  display: flex;
+  display: grid;
+  grid-template-columns: 110px 1fr;
+
   width: 100%;
   align-items: center;
   gap: 16px;
