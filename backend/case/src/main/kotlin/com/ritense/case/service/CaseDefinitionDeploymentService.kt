@@ -16,6 +16,7 @@
 
 package com.ritense.case.service
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.importer.ValtimoImportService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import mu.KotlinLogging
@@ -61,7 +62,9 @@ class CaseDefinitionDeploymentService(
                 })
             }
         resources.forEach { (_, files) ->
-            valtimoImportService.importCaseDefinition(files)
+            runWithoutAuthorization {
+                valtimoImportService.importCaseDefinition(files)
+            }
         }
 
         // Group by 1st * and 2nd *

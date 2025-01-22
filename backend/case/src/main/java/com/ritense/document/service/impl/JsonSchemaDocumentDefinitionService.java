@@ -271,14 +271,13 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
             return withLoggingContext("documentDefinitionName", documentDefinitionName, () -> {
 
                 final JsonSchemaDocumentDefinitionId documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId(
-                    jsonSchema.getSchema().getId(),
+                    documentDefinitionName,
                     caseDefinitionId
                 );
 
                 logger.info("Deploying schema {} for case definition {}", jsonSchema.getSchema().getId(), caseDefinitionId);
 
                 var documentDefinition = new JsonSchemaDocumentDefinition(documentDefinitionId, jsonSchema);
-
                 store(documentDefinition);
                 return new DeployDocumentDefinitionResultSucceeded(documentDefinition);
             });
