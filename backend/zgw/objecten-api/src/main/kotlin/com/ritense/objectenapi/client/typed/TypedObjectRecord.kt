@@ -14,32 +14,25 @@
  * limitations under the License.
  */
 
-package com.ritense.objectenapi.client
+package com.ritense.objectenapi.client.typed
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.JsonNode
-import com.ritense.objectenapi.client.typed.TypedObjectRequest
-import java.net.URI
-import java.util.UUID
+import com.ritense.objectenapi.client.ObjectGeometry
+import java.time.LocalDate
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class ObjectRequest(
-    val uuid: UUID?,
-    val type: URI,
-    val record: ObjectRecord
-) {
-    constructor(
-        type: URI,
-        record: ObjectRecord
-    ) : this(null, type, record)
-
-    companion object {
-        fun toTyped(objectRequest: ObjectRequest): TypedObjectRequest<JsonNode> {
-            return TypedObjectRequest(
-                objectRequest.uuid,
-                objectRequest.type,
-                ObjectRecord.toTyped(objectRequest.record)
-            )
-        }
-    }
-}
+open class TypedObjectRecord<T>(
+    val index: Int? = null,
+    val typeVersion: Int,
+    val data: T? = null,
+    val geometry: ObjectGeometry? = null,
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    val startAt: LocalDate,
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    val endAt: LocalDate? = null,
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    val registrationAt: LocalDate? = null,
+    val correctionFor: String? = null,
+    val correctedBy: String? = null
+)

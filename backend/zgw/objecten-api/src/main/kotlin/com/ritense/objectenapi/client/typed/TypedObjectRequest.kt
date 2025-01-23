@@ -14,32 +14,20 @@
  * limitations under the License.
  */
 
-package com.ritense.objectenapi.client
+package com.ritense.objectenapi.client.typed
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.JsonNode
-import com.ritense.objectenapi.client.typed.TypedObjectRequest
 import java.net.URI
 import java.util.UUID
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class ObjectRequest(
+data class TypedObjectRequest<T>(
     val uuid: UUID?,
     val type: URI,
-    val record: ObjectRecord
+    val record: TypedObjectRecord<T>
 ) {
     constructor(
         type: URI,
-        record: ObjectRecord
+        record: TypedObjectRecord<T>
     ) : this(null, type, record)
-
-    companion object {
-        fun toTyped(objectRequest: ObjectRequest): TypedObjectRequest<JsonNode> {
-            return TypedObjectRequest(
-                objectRequest.uuid,
-                objectRequest.type,
-                ObjectRecord.toTyped(objectRequest.record)
-            )
-        }
-    }
 }

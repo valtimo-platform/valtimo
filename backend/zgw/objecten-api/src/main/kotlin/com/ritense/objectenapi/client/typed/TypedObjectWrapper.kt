@@ -14,27 +14,14 @@
  * limitations under the License.
  */
 
-package com.ritense.objectenapi.client
+package com.ritense.objectenapi.client.typed
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.ritense.objectenapi.client.typed.TypedObjectWrapper
 import java.net.URI
 import java.util.UUID
 
-data class ObjectWrapper(
+data class TypedObjectWrapper<T>(
     val url: URI,
     val uuid: UUID,
     val type: URI,
-    val record: ObjectRecord
-)  {
-    companion object {
-        fun fromTyped(typedObjectWrapper: TypedObjectWrapper<JsonNode>): ObjectWrapper {
-            return ObjectWrapper(
-                url = typedObjectWrapper.url,
-                uuid = typedObjectWrapper.uuid,
-                type = typedObjectWrapper.type,
-                record = ObjectRecord.ofTyped(typedObjectWrapper.record)
-            )
-        }
-    }
-}
+    val record: TypedObjectRecord<T>
+)

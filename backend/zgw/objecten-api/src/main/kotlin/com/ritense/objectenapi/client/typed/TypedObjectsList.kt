@@ -14,27 +14,11 @@
  * limitations under the License.
  */
 
-package com.ritense.objectenapi.client
+package com.ritense.objectenapi.client.typed
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.ritense.objectenapi.client.typed.TypedObjectsList
-
-class ObjectsList(
+class TypedObjectsList<T>(
     val count: Int,
     val next: String? = null,
     val previous: String? = null,
-    val results: List<ObjectWrapper>
-) {
-    companion object {
-        fun fromTyped(typedObjectsList: TypedObjectsList<JsonNode>): ObjectsList {
-            return ObjectsList(
-                count = typedObjectsList.count,
-                next = typedObjectsList.next,
-                previous = typedObjectsList.previous,
-                results = typedObjectsList.results.map { typedObjectWrapper ->
-                    ObjectWrapper.fromTyped(typedObjectWrapper)
-                }
-            )
-        }
-    }
-}
+    val results: List<TypedObjectWrapper<T>>
+)
