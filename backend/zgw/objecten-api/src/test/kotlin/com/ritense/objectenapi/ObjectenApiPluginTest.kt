@@ -16,22 +16,30 @@
 
 package com.ritense.objectenapi
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectRequest
 import com.ritense.objectenapi.client.ObjectWrapper
 import com.ritense.objectenapi.client.ObjectenApiClient
+import com.ritense.objectenapi.client.dto.TypedObjectRecord
+import com.ritense.objectenapi.client.dto.TypedObjectWrapper
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
 import java.net.URI
+import java.time.LocalDate
+import java.util.UUID
 import kotlin.test.assertEquals
 
-internal class ObjectenApiPluginTest{
+internal class ObjectenApiPluginTest {
 
     val client = mock<ObjectenApiClient>()
     val plugin = ObjectenApiPlugin(client)
@@ -44,40 +52,46 @@ internal class ObjectenApiPluginTest{
 
     @Test
     fun `should call client on get object`() {
-        val objectUrl = URI("http://example.com/1")
-        val objectMock = mock<ObjectWrapper>()
-        whenever(client.getObject(plugin.authenticationPluginConfiguration, objectUrl)).thenReturn(objectMock)
+        val objectWrapper = createTypedObjectWrapper()
+        whenever(client.getObject(plugin.authenticationPluginConfiguration, objectWrapper.url, JsonNode::class.java)).thenReturn(objectWrapper)
 
-        val result = plugin.getObject(objectUrl)
+        val result = plugin.getObject(objectWrapper.url)
 
-        assertEquals(objectMock, result)
-        verify(client).getObject(any(), any())
+        assertEquals(ObjectWrapper.fromTyped(objectWrapper), result)
+        verify(client).getObject(any(), any(), eq(JsonNode::class.java))
     }
 
     @Test
     fun `should call client on update object`() {
-        val objectUrl =URI("http://example.com/1")
-        val objectMock = mock<ObjectWrapper>()
-        val objectRequest = mock<ObjectRequest>()
-        whenever(client.objectUpdate(plugin.authenticationPluginConfiguration, objectUrl, objectRequest)).thenReturn(objectMock)
+        val objectWrapper = createTypedObjectWrapper()
+        val objectRequest = createObjectRequest()
 
-        val result = plugin.objectUpdate(objectUrl,  objectRequest)
+        whenever(client.objectUpdate(plugin.authenticationPluginConfiguration, objectWrapper.url, ObjectRequest.toTyped(objectRequest), JsonNode::class.java))
+            .thenReturn(objectWrapper)
 
-        assertEquals(objectMock, result)
-        verify(client).objectUpdate(any(), any(), any())
+        val result = plugin.objectUpdate(objectWrapper.url, objectRequest)
+
+        assertEquals(ObjectWrapper.fromTyped(objectWrapper), result)
+        verify(client).objectUpdate(any(), any(), any(), eq(JsonNode::class.java))
     }
 
     @Test
     fun `should call client on patch object`() {
-        val objectUrl = URI("http://example.com/1")
-        val objectMock = mock<ObjectWrapper>()
-        val objectRequest = mock<ObjectRequest>()
-        whenever(client.objectPatch(plugin.authenticationPluginConfiguration, objectUrl, objectRequest)).thenReturn(objectMock)
+        val objectWrapper = createTypedObjectWrapper()
+        val objectRequest = createObjectRequest()
+        whenever(
+            client.objectPatch(
+                plugin.authenticationPluginConfiguration,
+                objectWrapper.url,
+                ObjectRequest.toTyped(objectRequest),
+                JsonNode::class.java
+            )
+        ).thenReturn(objectWrapper)
 
-        val result = plugin.objectPatch(objectUrl,  objectRequest)
+        val result = plugin.objectPatch(objectWrapper.url, objectRequest)
 
-        assertEquals(objectMock, result)
-        verify(client).objectPatch(any(), any(), any())
+        assertEquals(ObjectWrapper.fromTyped(objectWrapper), result)
+        verify(client).objectPatch(any(), any(), any(), eq(JsonNode::class.java))
     }
 
     @Test
@@ -102,4 +116,32 @@ internal class ObjectenApiPluginTest{
 
         verify(client, never()).deleteObject(any(), any())
     }
+
+    private fun createObjectRequest(): ObjectRequest {
+        return ObjectRequest(
+            type = URI("http://example.com/type/1"),
+            record = ObjectRecord.ofTyped(createTypedObjectRecord())
+        )
+    }
+
+    private fun createTypedObjectWrapper(): TypedObjectWrapper<JsonNode> {
+        return TypedObjectWrapper(
+            url = URI("http://example.com/object/1"),
+            uuid = UUID.randomUUID(),
+            type = URI("http://example.com/type/1"),
+            record = createTypedObjectRecord()
+        )
+    }
+
+    private fun createTypedObjectRecord() = TypedObjectRecord(
+        typeVersion = 1,
+        startAt = LocalDate.now(),
+        data = jacksonObjectMapper().readTree(
+            """
+                {
+                    "test": "yes"
+                }
+            """.trimIndent()
+        )
+    )
 }

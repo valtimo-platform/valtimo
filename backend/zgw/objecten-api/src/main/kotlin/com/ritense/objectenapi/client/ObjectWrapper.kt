@@ -17,7 +17,7 @@
 package com.ritense.objectenapi.client
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.ritense.objectenapi.client.typed.TypedObjectWrapper
+import com.ritense.objectenapi.client.dto.TypedObjectWrapper
 import java.net.URI
 import java.util.UUID
 

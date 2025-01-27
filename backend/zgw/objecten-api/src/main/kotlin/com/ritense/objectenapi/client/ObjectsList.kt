@@ -17,21 +17,22 @@
 package com.ritense.objectenapi.client
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.ritense.objectenapi.client.typed.TypedObjectsList
+import com.ritense.objectenapi.client.dto.TypedObjectsPage
 
-class ObjectsList(
+data class ObjectsList(
     val count: Int,
     val next: String? = null,
     val previous: String? = null,
     val results: List<ObjectWrapper>
 ) {
     companion object {
-        fun fromTyped(typedObjectsList: TypedObjectsList<JsonNode>): ObjectsList {
+
+        fun fromTyped(page: TypedObjectsPage<JsonNode>): ObjectsList {
             return ObjectsList(
-                count = typedObjectsList.count,
-                next = typedObjectsList.next,
-                previous = typedObjectsList.previous,
-                results = typedObjectsList.results.map { typedObjectWrapper ->
+                count = page.count,
+                next = page.next,
+                previous = page.previous,
+                results = page.results.map { typedObjectWrapper ->
                     ObjectWrapper.fromTyped(typedObjectWrapper)
                 }
             )

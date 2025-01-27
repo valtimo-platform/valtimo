@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package com.ritense.objectenapi.client.typed
+package com.ritense.objectenapi.client.dto
 
-class TypedObjectsList<T>(
-    val count: Int,
-    val next: String? = null,
-    val previous: String? = null,
-    val results: List<TypedObjectWrapper<T>>
+import java.net.URI
+import java.util.UUID
+
+data class TypedObjectWrapper<T>(
+    val url: URI,
+    val uuid: UUID,
+    val type: URI,
+    val record: TypedObjectRecord<T>
 )

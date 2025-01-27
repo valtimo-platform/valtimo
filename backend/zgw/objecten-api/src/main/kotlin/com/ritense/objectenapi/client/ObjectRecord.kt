@@ -17,10 +17,10 @@
 package com.ritense.objectenapi.client
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.ritense.objectenapi.client.typed.TypedObjectRecord
+import com.ritense.objectenapi.client.dto.TypedObjectRecord
 import java.time.LocalDate
 
-class ObjectRecord(
+data class ObjectRecord(
     val index: Int? = null,
     val typeVersion: Int,
     val data: JsonNode? = null,

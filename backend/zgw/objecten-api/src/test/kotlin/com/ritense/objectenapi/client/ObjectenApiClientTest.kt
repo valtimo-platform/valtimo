@@ -23,6 +23,8 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath
 import com.jayway.jsonpath.matchers.JsonPathMatchers.hasNoJsonPath
 import com.ritense.objectenapi.ObjectenApiAuthentication
+import com.ritense.objectenapi.client.dto.TypedObjectRecord
+import com.ritense.objectenapi.client.dto.TypedObjectRequest
 import com.ritense.objectenapi.event.ObjectCreated
 import com.ritense.objectenapi.event.ObjectDeleted
 import com.ritense.objectenapi.event.ObjectPatched
@@ -148,6 +150,73 @@ internal class ObjectenApiClientTest {
         assertEquals("henk", (result.record.data?.get("property1") as TextNode).asText())
         assertEquals(123, (result.record.data?.get("property2") as IntNode).asInt())
         assertEquals(2, result.record.data?.size())
+        assertEquals("string", result.record.geometry?.type)
+        assertEquals(0, result.record.geometry?.coordinates?.get(0))
+        assertEquals(0, result.record.geometry?.coordinates?.get(1))
+        assertEquals(2, result.record.geometry?.coordinates?.size)
+        assertEquals(LocalDate.of(2019, 8, 24), result.record.startAt)
+        assertEquals(LocalDate.of(2019, 8, 25), result.record.endAt)
+        assertEquals(LocalDate.of(2019, 8, 26), result.record.registrationAt)
+        assertEquals("string", result.record.correctionFor)
+        assertEquals("string2", result.record.correctedBy)
+    }
+
+    @Test
+    fun `should send get single object request and parse response as type`() {
+        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper)
+
+        val responseBody = """
+            {
+              "url": "http://example.com",
+              "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
+              "type": "http://example.com",
+              "record": {
+                "index": 0,
+                "typeVersion": 32767,
+                "data": {
+                  "property1": "henk",
+                  "property2": 123
+                },
+                "geometry": {
+                  "type": "string",
+                  "coordinates": [
+                    0,
+                    0
+                  ]
+                },
+                "startAt": "2019-08-24",
+                "endAt": "2019-08-25",
+                "registrationAt": "2019-08-26",
+                "correctionFor": "string",
+                "correctedBy": "string2"
+              }
+            }
+        """.trimIndent()
+
+        mockApi.enqueue(mockResponse(responseBody))
+
+        val objectUrl = mockApi.url("/some-object").toString()
+
+        val result = client.getObject(
+            TestAuthentication(),
+            URI(objectUrl),
+            TestDataDto::class.java
+        )
+
+        val recordedRequest = mockApi.takeRequest()
+        val requestedUrl = recordedRequest.requestUrl
+
+        assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
+
+        assertEquals(objectUrl, requestedUrl.toString())
+
+        assertEquals(URI("http://example.com"), result.url)
+        assertEquals(UUID.fromString("095be615-a8ad-4c33-8e9c-c7612fbf6c9f"), result.uuid)
+        assertEquals(URI("http://example.com"), result.type)
+        assertEquals(0, result.record.index)
+        assertEquals(32767, result.record.typeVersion)
+        assertEquals("henk", result.record.data?.property1)
+        assertEquals(123, result.record.data?.property2)
         assertEquals("string", result.record.geometry?.type)
         assertEquals(0, result.record.geometry?.coordinates?.get(0))
         assertEquals(0, result.record.geometry?.coordinates?.get(1))
@@ -312,6 +381,84 @@ internal class ObjectenApiClientTest {
         assertEquals("string", result.results[0].record.correctionFor)
         assertEquals("string2", result.results[0].record.correctedBy)
     }
+
+    @Test
+    fun `should get typed objectslist`() {
+        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper)
+
+        val responseBody = """
+            {
+              "count": 2,
+              "next": "next.url",
+              "previous": "previous.url",
+              "results": [{
+                  "url": "http://example.com",
+                  "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
+                  "type": "http://example.com",
+                  "record": {
+                    "index": 0,
+                    "typeVersion": 32767,
+                    "data": {
+                      "property1": "henk",
+                      "property2": 123
+                    },
+                    "geometry": {
+                      "type": "string",
+                      "coordinates": [
+                        0,
+                        0
+                      ]
+                    },
+                    "startAt": "2019-08-24",
+                    "endAt": "2019-08-25",
+                    "registrationAt": "2019-08-26",
+                    "correctionFor": "string",
+                    "correctedBy": "string2"
+                  }
+              }]
+            }
+        """.trimIndent()
+
+        mockApi.enqueue(mockResponse(responseBody))
+
+        val objectUrl = mockApi.url("/some-object").toString()
+        val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString()
+
+        val result = client.getObjectsByObjecttypeUrl(
+            TestAuthentication(),
+            URI(objectUrl),
+            URI(objectTypesApiUrl),
+            "typeId",
+            "",
+            PageRequest.of(0, 10),
+            TestDataDto::class.java
+        )
+
+        val recordedRequest = mockApi.takeRequest()
+
+        assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
+
+        assertEquals(2, result.count)
+        assertEquals("next.url", result.next)
+        assertEquals("previous.url", result.previous)
+        assertEquals(URI("http://example.com"), result.results[0].url)
+        assertEquals(UUID.fromString("095be615-a8ad-4c33-8e9c-c7612fbf6c9f"), result.results[0].uuid)
+        assertEquals(URI("http://example.com"), result.results[0].type)
+        assertEquals(0, result.results[0].record.index)
+        assertEquals(32767, result.results[0].record.typeVersion)
+        assertEquals("henk", result.results[0].record.data?.property1)
+        assertEquals(123, result.results[0].record.data?.property2)
+        assertEquals("string", result.results[0].record.geometry?.type)
+        assertEquals(0, result.results[0].record.geometry?.coordinates?.get(0))
+        assertEquals(0, result.results[0].record.geometry?.coordinates?.get(1))
+        assertEquals(2, result.results[0].record.geometry?.coordinates?.size)
+        assertEquals(LocalDate.of(2019, 8, 24), result.results[0].record.startAt)
+        assertEquals(LocalDate.of(2019, 8, 25), result.results[0].record.endAt)
+        assertEquals(LocalDate.of(2019, 8, 26), result.results[0].record.registrationAt)
+        assertEquals("string", result.results[0].record.correctionFor)
+        assertEquals("string2", result.results[0].record.correctedBy)
+    }
+
 
     @Test
     fun `should send outbox message when getting objects by object type url`() {
@@ -652,6 +799,65 @@ internal class ObjectenApiClientTest {
     }
 
     @Test
+    fun `should send post request when creating typed object`() {
+        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper)
+
+        val responseBody = """
+            {
+              "url": "http://example.com",
+              "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
+              "type": "http://example.com",
+              "record": {
+                "index": 0,
+                "typeVersion": 32767,
+                "data": {
+                  "property1": "henk",
+                  "property2": 123
+                },
+                "geometry": {
+                  "type": "string",
+                  "coordinates": [
+                    0,
+                    0
+                  ]
+                },
+                "startAt": "2019-08-24",
+                "endAt": "2019-08-25",
+                "registrationAt": "2019-08-26",
+                "correctionFor": "string",
+                "correctedBy": "string2"
+              }
+            }
+        """.trimIndent()
+
+        mockApi.enqueue(mockResponse(responseBody))
+
+        val objectUrl = mockApi.url("/some-object").toString()
+        val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
+
+        client.createObject(
+            TestAuthentication(),
+            URI(objectUrl),
+            TypedObjectRequest(
+                URI(objectTypesApiUrl),
+                TypedObjectRecord(
+                    index = 1,
+                    typeVersion = 2,
+                    data = TestDataDto("henk", 123),
+                    startAt = LocalDate.of(2000, 1, 2)
+                )
+            ),
+            TestDataDto::class.java
+        )
+
+        val request = mockApi.takeRequest()
+        val requestJson = request.body.readUtf8()
+
+        //don't send null uuid when none has been set
+        MatcherAssert.assertThat(requestJson, hasNoJsonPath("$.uuid"))
+    }
+
+    @Test
     fun `should send post request with uuid when uuid has been provided when creating object`() {
         val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper)
 
@@ -803,6 +1009,98 @@ internal class ObjectenApiClientTest {
     }
 
     @Test
+    fun `should send typed patch request`() {
+        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper)
+
+        val responseBody = """
+            {
+              "url": "http://example.com",
+              "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
+              "type": "http://example.com",
+              "record": {
+                "index": 0,
+                "typeVersion": 32767,
+                "data": {
+                  "property1": "henk",
+                  "property2": 123
+                },
+                "geometry": {
+                  "type": "string",
+                  "coordinates": [
+                    0,
+                    0
+                  ]
+                },
+                "startAt": "2019-08-24",
+                "endAt": "2019-08-25",
+                "registrationAt": "2019-08-26",
+                "correctionFor": "string",
+                "correctedBy": "string2"
+              }
+            }
+        """.trimIndent()
+
+        mockApi.enqueue(mockResponse(responseBody))
+
+        val objectUrl = mockApi.url("/some-object").toString()
+        val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
+
+        val result = client.objectPatch(
+            TestAuthentication(),
+            URI(objectUrl),
+            TypedObjectRequest(
+                URI(objectTypesApiUrl),
+                TypedObjectRecord(
+                    index = 1,
+                    typeVersion = 2,
+                    data = TestDataDto("henk", 123),
+                    startAt = LocalDate.of(2000, 1, 2)
+                )
+            ),
+            TestDataDto::class.java
+        )
+
+        val recordedRequest = mockApi.takeRequest()
+
+        val expectedRequest = """
+            {
+               "type":"$objectTypesApiUrl",
+               "record":{
+                  "index":1,
+                  "typeVersion":2,
+                  "data":{
+                     "property1": "henk",
+                     "property2": 123
+                  },
+                  "startAt":"2000-01-02"
+               }
+            }
+        """.trimIndent()
+
+        assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
+        assertEquals("PATCH", recordedRequest.method)
+        assertEquals(objectUrl, recordedRequest.requestUrl.toString())
+        JSONAssert.assertEquals(expectedRequest, recordedRequest.body.readUtf8(), false)
+
+        assertEquals(URI("http://example.com"), result.url)
+        assertEquals(UUID.fromString("095be615-a8ad-4c33-8e9c-c7612fbf6c9f"), result.uuid)
+        assertEquals(URI("http://example.com"), result.type)
+        assertEquals(0, result.record.index)
+        assertEquals(32767, result.record.typeVersion)
+        assertEquals("henk", result.record.data?.property1)
+        assertEquals(123, result.record.data?.property2)
+        assertEquals("string", result.record.geometry?.type)
+        assertEquals(0, result.record.geometry?.coordinates?.get(0))
+        assertEquals(0, result.record.geometry?.coordinates?.get(1))
+        assertEquals(2, result.record.geometry?.coordinates?.size)
+        assertEquals(LocalDate.of(2019, 8, 24), result.record.startAt)
+        assertEquals(LocalDate.of(2019, 8, 25), result.record.endAt)
+        assertEquals(LocalDate.of(2019, 8, 26), result.record.registrationAt)
+        assertEquals("string", result.record.correctionFor)
+        assertEquals("string2", result.record.correctedBy)
+    }
+
+    @Test
     fun `should send outbox message on patching object`() {
         val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper)
 
@@ -897,6 +1195,98 @@ internal class ObjectenApiClientTest {
         mockApi.takeRequest()
 
         verify(outboxService, times(0)).send(eventCapture.capture())
+    }
+
+    @Test
+    fun `should send typed update request`() {
+        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper)
+
+        val responseBody = """
+            {
+              "url": "http://example.com",
+              "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
+              "type": "http://example.com",
+              "record": {
+                "index": 0,
+                "typeVersion": 32767,
+                "data": {
+                  "property1": "henk",
+                  "property2": 123
+                },
+                "geometry": {
+                  "type": "string",
+                  "coordinates": [
+                    0,
+                    0
+                  ]
+                },
+                "startAt": "2019-08-24",
+                "endAt": "2019-08-25",
+                "registrationAt": "2019-08-26",
+                "correctionFor": "string",
+                "correctedBy": "string2"
+              }
+            }
+        """.trimIndent()
+
+        mockApi.enqueue(mockResponse(responseBody))
+
+        val objectUrl = mockApi.url("/some-object").toString()
+        val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
+
+        val result = client.objectUpdate(
+            TestAuthentication(),
+            URI(objectUrl),
+            TypedObjectRequest(
+                URI(objectTypesApiUrl),
+                TypedObjectRecord(
+                    index = 1,
+                    typeVersion = 2,
+                    data = TestDataDto("henk", 123),
+                    startAt = LocalDate.of(2000, 1, 2)
+                )
+            ),
+            TestDataDto::class.java
+        )
+
+        val recordedRequest = mockApi.takeRequest()
+
+        val expectedRequest = """
+            {
+               "type":"$objectTypesApiUrl",
+               "record":{
+                  "index":1,
+                  "typeVersion":2,
+                  "data":{
+                     "property1": "henk",
+                     "property2": 123
+                  },
+                  "startAt":"2000-01-02"
+               }
+            }
+        """.trimIndent()
+
+        assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
+        assertEquals("PUT", recordedRequest.method)
+        assertEquals(objectUrl, recordedRequest.requestUrl.toString())
+        JSONAssert.assertEquals(expectedRequest, recordedRequest.body.readUtf8(), false)
+
+        assertEquals(URI("http://example.com"), result.url)
+        assertEquals(UUID.fromString("095be615-a8ad-4c33-8e9c-c7612fbf6c9f"), result.uuid)
+        assertEquals(URI("http://example.com"), result.type)
+        assertEquals(0, result.record.index)
+        assertEquals(32767, result.record.typeVersion)
+        assertEquals("henk", result.record.data?.property1)
+        assertEquals(123, result.record.data?.property2)
+        assertEquals("string", result.record.geometry?.type)
+        assertEquals(0, result.record.geometry?.coordinates?.get(0))
+        assertEquals(0, result.record.geometry?.coordinates?.get(1))
+        assertEquals(2, result.record.geometry?.coordinates?.size)
+        assertEquals(LocalDate.of(2019, 8, 24), result.record.startAt)
+        assertEquals(LocalDate.of(2019, 8, 25), result.record.endAt)
+        assertEquals(LocalDate.of(2019, 8, 26), result.record.registrationAt)
+        assertEquals("string", result.record.correctionFor)
+        assertEquals("string2", result.record.correctedBy)
     }
 
     @Test
@@ -1063,4 +1453,9 @@ internal class ObjectenApiClientTest {
             return next.exchange(filteredRequest)
         }
     }
+
+    data class TestDataDto(
+        val property1: String,
+        val property2: Int,
+    )
 }

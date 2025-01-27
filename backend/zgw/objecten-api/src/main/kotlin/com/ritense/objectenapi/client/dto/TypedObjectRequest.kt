@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ritense.objectenapi.client.typed
+package com.ritense.objectenapi.client.dto
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import java.net.URI

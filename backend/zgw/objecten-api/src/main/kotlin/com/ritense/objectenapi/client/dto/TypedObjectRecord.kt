@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ritense.objectenapi.client.typed
+package com.ritense.objectenapi.client.dto
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -22,7 +22,7 @@ import com.ritense.objectenapi.client.ObjectGeometry
 import java.time.LocalDate
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-open class TypedObjectRecord<T>(
+data class TypedObjectRecord<T>(
     val index: Int? = null,
     val typeVersion: Int,
     val data: T? = null,
