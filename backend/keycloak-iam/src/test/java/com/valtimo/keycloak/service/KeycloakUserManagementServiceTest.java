@@ -29,9 +29,11 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ritense.valtimo.contract.OauthConfigHolder;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.model.SearchByUserGroupsCriteria;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
+import com.ritense.valtimo.contract.config.ValtimoProperties.Oauth;
 import jakarta.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Objects;
@@ -44,14 +46,10 @@ import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
-import com.ritense.valtimo.contract.OauthConfigHolder;
-import com.ritense.valtimo.contract.config.ValtimoProperties.Oauth;
-
 class KeycloakUserManagementServiceTest {
 
     private KeycloakService keycloakService;
     private KeycloakUserManagementService userManagementService;
-    private RequestScopeUserCache requestScopeUserCache;
 
     private UserRepresentation jamesVance;
     private UserRepresentation johnDoe;
@@ -65,8 +63,7 @@ class KeycloakUserManagementServiceTest {
     @BeforeEach
     public void before() {
         keycloakService = mock(KeycloakService.class, RETURNS_DEEP_STUBS);
-        requestScopeUserCache = new RequestScopeUserCache();
-        userManagementService = new KeycloakUserManagementService(keycloakService, "clientName", requestScopeUserCache);
+        userManagementService = new KeycloakUserManagementService(keycloakService, "clientName", mock());
 
         jamesVance = newUser("James", "Vance", List.of(USER));
         johnDoe = newUser("John", "Doe", List.of(USER, ADMIN));
