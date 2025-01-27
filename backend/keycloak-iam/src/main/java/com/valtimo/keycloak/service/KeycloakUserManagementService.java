@@ -371,8 +371,11 @@ public class KeycloakUserManagementService implements UserManagementService {
         }
         final var wrapper = cache.get(key);
         if (wrapper != null) {
+            logger.debug("Returning user information from cache {} with key {}.", cacheName, key);
             return (R) wrapper.get();
         }
+
+        logger.debug("Cache miss for {} with key {}. Adding user to cache.", cacheName, key);
         final var value = retrieve.apply(key);
         cache.put(key, value);
         return value;
