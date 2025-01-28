@@ -18,7 +18,6 @@ package com.ritense.objectenapi.client.dto
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
 import java.net.URI
 import java.util.UUID
@@ -42,49 +41,12 @@ class TypedObjectsPageTest {
         }
 
         var callCount = 0
-        val all = TypedObjectsPage.getAll(20) { page ->
+        val all = TypedObjectsPage.getAll { page ->
             callCount++
             pages[page]
         }
 
         assertThat(callCount).isEqualTo(10)
         assertThat(all.map { it.url.toString().toInt() }).isEqualTo(listOf(1,2,3,4,5,6,7,8,9,10))
-    }
-
-    @Test
-    fun `should stop after maxPages`() {
-        val pages = IntRange(1, 10).map { i ->
-            TypedObjectsPage(
-                1,
-                (if (i >= 10) null else ""),
-                (if (i <= 1) null else ""),
-                listOf(TypedObjectWrapper(
-                    url = URI(i.toString()),
-                    uuid = UUID.randomUUID(),
-                    type = URI(""),
-                    record = mock<TypedObjectRecord<Int>>()
-                ))
-            )
-        }
-
-        var callCount = 0
-        val all = TypedObjectsPage.getAll(3) { page ->
-            callCount++
-            pages[page]
-        }
-
-        assertThat(callCount).isEqualTo(3)
-        assertThat(all.map { it.url.toString().toInt() }).isEqualTo(listOf(1,2,3))
-    }
-
-    @Test
-    fun `should throw an exception when pageLimit is invalid`() {
-        val ex = assertThrows<IllegalArgumentException> {
-            TypedObjectsPage.getAll(0) { _ ->
-                mock<TypedObjectsPage<Int>>()
-            }
-        }
-
-        assertThat(ex.message).isEqualTo("pageLimit should be > 0 but was: 0")
     }
 }

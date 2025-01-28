@@ -172,7 +172,7 @@ class ObjectManagementFacade(
         logger.debug { "get objects unpaged objectName=$objectName searchString=$searchString" }
         val accessObject = getAccessObject(objectName)
 
-        val all = TypedObjectsPage.getAll(pageLimit = null) { pageNumber ->
+        val all = TypedObjectsPage.getAll { pageNumber ->
             findObjectsPaged(
                 accessObject = accessObject,
                 objectName = objectName,
