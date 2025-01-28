@@ -26,15 +26,11 @@ data class ObjectWrapper(
     val uuid: UUID,
     val type: URI,
     val record: ObjectRecord
-)  {
-    companion object {
-        fun fromTyped(typedObjectWrapper: TypedObjectWrapper<JsonNode>): ObjectWrapper {
-            return ObjectWrapper(
-                url = typedObjectWrapper.url,
-                uuid = typedObjectWrapper.uuid,
-                type = typedObjectWrapper.type,
-                record = ObjectRecord.ofTyped(typedObjectWrapper.record)
-            )
-        }
-    }
-}
+)
+
+fun TypedObjectWrapper<JsonNode>.toObjectWrapper() = ObjectWrapper(
+    url = url,
+    uuid = uuid,
+    type = type,
+    record = record.toObjectRecord()
+)

@@ -16,24 +16,22 @@
 
 package com.ritense.zaakdetails.documentobjectenapisync
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
-import com.ritense.objectenapi.client.ObjectWrapper
-import com.ritense.objectenapi.client.ObjectsList
+import com.ritense.objectenapi.client.dto.TypedObjectRecord
+import com.ritense.objectenapi.client.dto.TypedObjectWrapper
+import com.ritense.objectenapi.client.dto.TypedObjectsPage
 import com.ritense.zaakdetails.BaseIntegrationTest
-import com.ritense.zakenapi.domain.CreateZaakResponse
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.service.ZaakTypeLinkService
 import com.ritense.zakenapi.web.rest.request.CreateZaakTypeLinkRequest
 import com.ritense.zgw.Rsin
-import org.assertj.core.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
@@ -41,7 +39,6 @@ import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.TestPropertySource
 import org.springframework.transaction.annotation.Transactional
 import java.net.URI
 import java.time.LocalDate
@@ -69,11 +66,11 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
 
     @Test
     fun `should create zaakdetails object and link to the zaak when zaak exists`() {
-        val objectWrapper = ObjectWrapper(
+        val objectWrapper = TypedObjectWrapper<JsonNode>(
             URI.create("http://localhost:56273/objecten/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
             UUID.randomUUID(),
             URI.create("http://localhost:56273/objecttypen/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
-            mock()
+            TypedObjectRecord(typeVersion = 1, startAt = LocalDate.now())
         )
 
         documentObjectenApiSyncManagementService.saveSyncConfiguration(
@@ -94,10 +91,10 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
             )
         )
 
-        whenever(objectenApiClient.getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any()))
-            .thenReturn(ObjectsList(0, null, null, listOf()))
+        whenever(objectenApiClient.getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any(), eq(JsonNode::class.java)))
+            .thenReturn(TypedObjectsPage(0, null, null, listOf()))
 
-        whenever(objectenApiClient.createObject(any(), any(), any()))
+        whenever(objectenApiClient.createObject(any(), any(), any(), eq(JsonNode::class.java)))
             .thenReturn(objectWrapper)
 
         whenever(zakenApiClient.createZaak(any(), any(), any()))
@@ -115,19 +112,19 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
         assertTrue { result.errors().isEmpty() }
 
         verify(zakenApiClient, times(1)).createZaak(any(), any(), any())
-        verify(objectenApiClient, times(1)).getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any())
-        verify(objectenApiClient, times(1)).createObject(any(), any(), any())
+        verify(objectenApiClient, times(1)).getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any(), eq(JsonNode::class.java))
+        verify(objectenApiClient, times(1)).createObject(any(), any(), any(), eq(JsonNode::class.java))
         verifyNoMoreInteractions(objectenApiClient)
         verify(zakenApiClient, times(1)).createZaakObject(any(), any(), any())
     }
 
     @Test
     fun `should update zaakdetails object and link to the zaak when zaak exists`() {
-        val objectWrapper = ObjectWrapper(
+        val objectWrapper = TypedObjectWrapper<JsonNode>(
             URI.create("http://localhost:56273/objecten/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
             UUID.randomUUID(),
             URI.create("http://localhost:56273/objecttypen/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
-            mock()
+            TypedObjectRecord(typeVersion = 1, startAt = LocalDate.now())
         )
 
         documentObjectenApiSyncManagementService.saveSyncConfiguration(
@@ -148,10 +145,13 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
             )
         )
 
-        whenever(objectenApiClient.getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any()))
-            .thenReturn(ObjectsList(0, null, null, listOf()))
+        whenever(objectenApiClient.getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any(), eq(JsonNode::class.java)))
+            .thenReturn(TypedObjectsPage(0, null, null, listOf()))
 
-        whenever(objectenApiClient.createObject(any(), any(), any()))
+        whenever(objectenApiClient.createObject(any(), any(), any(), eq(JsonNode::class.java)))
+            .thenReturn(objectWrapper)
+
+        whenever(objectenApiClient.updateObject(any(), any(), any(), eq(JsonNode::class.java)))
             .thenReturn(objectWrapper)
 
         whenever(zakenApiClient.createZaak(any(), any(), any()))
@@ -173,9 +173,9 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
         }
 
         verify(zakenApiClient, times(1)).createZaak(any(), any(), any())
-        verify(objectenApiClient, times(1)).getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any())
-        verify(objectenApiClient, times(1)).createObject(any(), any(), any())
-        verify(objectenApiClient, times(1)).objectUpdate(any(), any(), any())
+        verify(objectenApiClient, times(1)).getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any(), eq(JsonNode::class.java))
+        verify(objectenApiClient, times(1)).createObject(any(), any(), any(), eq(JsonNode::class.java))
+        verify(objectenApiClient, times(1)).updateObject(any(), any(), any(), eq(JsonNode::class.java))
         verifyNoMoreInteractions(objectenApiClient)
         verify(zakenApiClient, times(1)).createZaakObject(any(), any(), any())
     }
@@ -208,11 +208,14 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
 
     @Test
     fun `should create zaakdetails object and not link to the zaak when zaak does not exist`() {
-        val objectWrapper = ObjectWrapper(
+        val objectWrapper = TypedObjectWrapper<JsonNode>(
             URI.create("http://localhost:56273/objecten/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
             UUID.randomUUID(),
             URI.create("http://localhost:56273/objecttypen/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
-            mock()
+            TypedObjectRecord(
+                typeVersion = 1,
+                startAt = LocalDate.now()
+            )
         )
 
         documentObjectenApiSyncManagementService.saveSyncConfiguration(
@@ -223,10 +226,10 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
             )
         )
 
-        whenever(objectenApiClient.getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any()))
-            .thenReturn(ObjectsList(0, null, null, listOf()))
+        whenever(objectenApiClient.getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any(), eq(JsonNode::class.java)))
+            .thenReturn(TypedObjectsPage(0, null, null, listOf()))
 
-        whenever(objectenApiClient.createObject(any(), any(), any()))
+        whenever(objectenApiClient.createObject(any(), any(), any(), eq(JsonNode::class.java)))
             .thenReturn(objectWrapper)
 
         val result = runWithoutAuthorization {
@@ -238,8 +241,8 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
             )
         }
 
-        verify(objectenApiClient, times(1)).getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any())
-        verify(objectenApiClient, times(1)).createObject(any(), any(), any())
+        verify(objectenApiClient, times(1)).getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any(), eq(JsonNode::class.java))
+        verify(objectenApiClient, times(1)).createObject(any(), any(), any(), eq(JsonNode::class.java))
         verifyNoInteractions(zakenApiClient)
     }
 

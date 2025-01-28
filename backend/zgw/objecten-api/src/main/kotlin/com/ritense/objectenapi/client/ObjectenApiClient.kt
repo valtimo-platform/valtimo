@@ -47,9 +47,7 @@ class ObjectenApiClient(
         authentication: ObjectenApiAuthentication,
         objectUrl: URI
     ): ObjectWrapper {
-        return ObjectWrapper.fromTyped(
-            getObject(authentication, objectUrl, JsonNode::class.java)
-        )
+        return getObject(authentication, objectUrl, JsonNode::class.java).toObjectWrapper()
     }
 
     fun <T> getObject(
@@ -78,7 +76,6 @@ class ObjectenApiClient(
         }
         return result
     }
-
 
 
     fun <T> getObjectsByObjecttypeUrlWithSearchParams(
@@ -134,17 +131,15 @@ class ObjectenApiClient(
         ordering: String? = "",
         pageable: Pageable
     ): ObjectsList {
-        return ObjectsList.fromTyped(
-            getObjectsByObjecttypeUrl(
-                authentication,
-                objecttypesApiUrl,
-                objectsApiUrl,
-                objectypeId,
-                ordering,
-                pageable,
-                JsonNode::class.java,
-            )
-        )
+        return getObjectsByObjecttypeUrl(
+            authentication,
+            objecttypesApiUrl,
+            objectsApiUrl,
+            objectypeId,
+            ordering,
+            pageable,
+            JsonNode::class.java,
+        ).toObjectsList()
     }
 
     fun <T> getObjectsByObjecttypeUrl(
@@ -199,18 +194,16 @@ class ObjectenApiClient(
         ordering: String? = "",
         pageable: Pageable
     ): ObjectsList {
-        return ObjectsList.fromTyped(
-            getObjectsByObjecttypeUrlWithSearchParams(
-                authentication,
-                objecttypesApiUrl,
-                objectsApiUrl,
-                objectypeId,
-                searchString,
-                ordering,
-                pageable,
-                JsonNode::class.java,
-            )
-        )
+        return getObjectsByObjecttypeUrlWithSearchParams(
+            authentication,
+            objecttypesApiUrl,
+            objectsApiUrl,
+            objectypeId,
+            searchString,
+            ordering,
+            pageable,
+            JsonNode::class.java,
+        ).toObjectsList()
     }
 
     fun createObject(
@@ -218,14 +211,12 @@ class ObjectenApiClient(
         objectsApiUrl: URI,
         objectRequest: ObjectRequest
     ): ObjectWrapper {
-        return ObjectWrapper.fromTyped(
-            createObject(
-                authentication,
-                objectsApiUrl,
-                ObjectRequest.toTyped(objectRequest),
-                JsonNode::class.java,
-            )
-        )
+        return createObject(
+            authentication,
+            objectsApiUrl,
+            ObjectRequest.toTyped(objectRequest),
+            JsonNode::class.java,
+        ).toObjectWrapper()
     }
 
 
@@ -269,23 +260,28 @@ class ObjectenApiClient(
         return result
     }
 
+    @Deprecated("Since 12.8.0", replaceWith = ReplaceWith("patchObject(authentication, objectsApiUrl, objectRequest))"))
     fun objectPatch(
         authentication: ObjectenApiAuthentication,
         objectUrl: URI,
         objectRequest: ObjectRequest
+    ) = patchObject(authentication, objectUrl, objectRequest)
+
+    fun patchObject(
+        authentication: ObjectenApiAuthentication,
+        objectUrl: URI,
+        objectRequest: ObjectRequest
     ): ObjectWrapper {
-        return ObjectWrapper.fromTyped(
-            objectPatch(
-                authentication,
-                objectUrl,
-                ObjectRequest.toTyped(objectRequest),
-                JsonNode::class.java,
-            )
-        )
+        return patchObject(
+            authentication,
+            objectUrl,
+            ObjectRequest.toTyped(objectRequest),
+            JsonNode::class.java,
+        ).toObjectWrapper()
     }
 
 
-    fun <T> objectPatch(
+    fun <T> patchObject(
         authentication: ObjectenApiAuthentication,
         objectUrl: URI,
         objectRequest: TypedObjectRequest<T>,
@@ -323,22 +319,27 @@ class ObjectenApiClient(
         return result
     }
 
+    @Deprecated("Since 12.8.0", replaceWith = ReplaceWith("updateObject(authentication, objectsApiUrl, objectRequest))"))
     fun objectUpdate(
         authentication: ObjectenApiAuthentication,
         objectUrl: URI,
         objectRequest: ObjectRequest
+    ) = updateObject(authentication, objectUrl, objectRequest)
+
+    fun updateObject(
+        authentication: ObjectenApiAuthentication,
+        objectUrl: URI,
+        objectRequest: ObjectRequest
     ): ObjectWrapper {
-        return ObjectWrapper.fromTyped(
-            objectUpdate(
-                authentication,
-                objectUrl,
-                ObjectRequest.toTyped(objectRequest),
-                JsonNode::class.java,
-            )
-        )
+        return updateObject(
+            authentication,
+            objectUrl,
+            ObjectRequest.toTyped(objectRequest),
+            JsonNode::class.java,
+        ).toObjectWrapper()
     }
 
-    fun <T> objectUpdate(
+    fun <T> updateObject(
         authentication: ObjectenApiAuthentication,
         objectUrl: URI,
         objectRequest: TypedObjectRequest<T>,

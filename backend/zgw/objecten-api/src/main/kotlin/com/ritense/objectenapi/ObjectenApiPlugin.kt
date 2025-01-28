@@ -25,6 +25,8 @@ import com.ritense.objectenapi.client.ObjectsList
 import com.ritense.objectenapi.client.dto.TypedObjectRequest
 import com.ritense.objectenapi.client.dto.TypedObjectWrapper
 import com.ritense.objectenapi.client.dto.TypedObjectsPage
+import com.ritense.objectenapi.client.toObjectWrapper
+import com.ritense.objectenapi.client.toObjectsList
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
@@ -73,12 +75,10 @@ class ObjectenApiPlugin(
     }
 
     fun getObject(objectUrl: URI): ObjectWrapper {
-        return ObjectWrapper.fromTyped(
-            getObject(
-                objectUrl = objectUrl,
-                type = JsonNode::class.java
-            )
-        )
+        return getObject(
+            objectUrl = objectUrl,
+            type = JsonNode::class.java
+        ).toObjectWrapper()
     }
 
     fun <T> getObject(
@@ -102,16 +102,14 @@ class ObjectenApiPlugin(
         ordering: String? = "",
         pageable: Pageable
     ): ObjectsList {
-        return ObjectsList.fromTyped(
-            getObjectsByObjectTypeId(
+        return getObjectsByObjectTypeId(
                 objecttypesApiUrl = objecttypesApiUrl,
                 objectsApiUrl = objectsApiUrl,
                 objecttypeId = objecttypeId,
                 ordering = ordering,
                 pageable = pageable,
                 type = JsonNode::class.java
-            )
-        )
+            ).toObjectsList()
     }
 
     fun <T> getObjectsByObjectTypeId(
@@ -141,16 +139,14 @@ class ObjectenApiPlugin(
         ordering: String? = "",
         pageable: Pageable
     ): ObjectsList {
-        return ObjectsList.fromTyped(
-            getObjectsByObjectTypeIdWithSearchParams(
-                objecttypesApiUrl = objecttypesApiUrl,
-                objecttypeId = objecttypeId,
-                searchString = searchString,
-                ordering = ordering,
-                pageable = pageable,
-                type = JsonNode::class.java
-            )
-        )
+        return getObjectsByObjectTypeIdWithSearchParams(
+            objecttypesApiUrl = objecttypesApiUrl,
+            objecttypeId = objecttypeId,
+            searchString = searchString,
+            ordering = ordering,
+            pageable = pageable,
+            type = JsonNode::class.java
+        ).toObjectsList()
     }
 
     fun <T> getObjectsByObjectTypeIdWithSearchParams(
@@ -174,26 +170,32 @@ class ObjectenApiPlugin(
         )
     }
 
+    @Deprecated("Since 12.8.0.", replaceWith = ReplaceWith("updateObject(objectUrl, objectRequest)"))
     fun objectUpdate(
         objectUrl: URI,
         objectRequest: ObjectRequest
     ): ObjectWrapper {
-        return ObjectWrapper.fromTyped(
-            objectUpdate(
-                objectUrl = objectUrl,
-                objectRequest = ObjectRequest.toTyped(objectRequest),
-                type = JsonNode::class.java
-            )
-        )
+        return updateObject(objectUrl, objectRequest)
     }
 
-    fun <T> objectUpdate(
+    fun updateObject(
+        objectUrl: URI,
+        objectRequest: ObjectRequest
+    ): ObjectWrapper {
+        return updateObject(
+            objectUrl = objectUrl,
+            objectRequest = ObjectRequest.toTyped(objectRequest),
+            type = JsonNode::class.java
+        ).toObjectWrapper()
+    }
+
+    fun <T> updateObject(
         objectUrl: URI,
         objectRequest: TypedObjectRequest<T>,
         type: Class<T>
     ): TypedObjectWrapper<T> {
         logger.info { "Updating Objecten API object with url '$objectUrl'" }
-        return objectenApiClient.objectUpdate(
+        return objectenApiClient.updateObject(
             authentication = authenticationPluginConfiguration,
             objectUrl = objectUrl,
             objectRequest = objectRequest,
@@ -201,26 +203,32 @@ class ObjectenApiPlugin(
         )
     }
 
+    @Deprecated("Since 12.8.0", replaceWith = ReplaceWith("patchObject(objectUrl, objectRequest)"))
     fun objectPatch(
         objectUrl: URI,
         objectRequest: ObjectRequest
     ): ObjectWrapper {
-        return ObjectWrapper.fromTyped(
-            objectPatch(
-                objectUrl = objectUrl,
-                objectRequest = ObjectRequest.toTyped(objectRequest),
-                type = JsonNode::class.java
-            )
-        )
+        return patchObject(objectUrl, objectRequest)
     }
 
-    fun <T> objectPatch(
+    fun patchObject(
+        objectUrl: URI,
+        objectRequest: ObjectRequest
+    ): ObjectWrapper {
+        return patchObject(
+            objectUrl = objectUrl,
+            objectRequest = ObjectRequest.toTyped(objectRequest),
+            type = JsonNode::class.java
+        ).toObjectWrapper()
+    }
+
+    fun <T> patchObject(
         objectUrl: URI,
         objectRequest: TypedObjectRequest<T>,
         type: Class<T>
     ): TypedObjectWrapper<T> {
         logger.info { "Patching Objecten API object with url '$objectUrl'" }
-        return objectenApiClient.objectPatch(
+        return objectenApiClient.patchObject(
             authentication = authenticationPluginConfiguration,
             objectUrl = objectUrl,
             objectRequest = objectRequest,
@@ -229,12 +237,10 @@ class ObjectenApiPlugin(
     }
 
     fun createObject(objectRequest: ObjectRequest): ObjectWrapper {
-        return ObjectWrapper.fromTyped(
-            createObject(
-                objectRequest = ObjectRequest.toTyped(objectRequest),
-                type = JsonNode::class.java
-            )
-        )
+        return createObject(
+            objectRequest = ObjectRequest.toTyped(objectRequest),
+            type = JsonNode::class.java
+        ).toObjectWrapper()
     }
 
     fun <T> createObject(

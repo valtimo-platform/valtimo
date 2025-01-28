@@ -18,12 +18,12 @@ package com.ritense.objectenapi
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectRequest
-import com.ritense.objectenapi.client.ObjectWrapper
 import com.ritense.objectenapi.client.ObjectenApiClient
 import com.ritense.objectenapi.client.dto.TypedObjectRecord
 import com.ritense.objectenapi.client.dto.TypedObjectWrapper
+import com.ritense.objectenapi.client.toObjectRecord
+import com.ritense.objectenapi.client.toObjectWrapper
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -57,7 +57,7 @@ internal class ObjectenApiPluginTest {
 
         val result = plugin.getObject(objectWrapper.url)
 
-        assertEquals(ObjectWrapper.fromTyped(objectWrapper), result)
+        assertEquals(objectWrapper.toObjectWrapper(), result)
         verify(client).getObject(any(), any(), eq(JsonNode::class.java))
     }
 
@@ -66,13 +66,13 @@ internal class ObjectenApiPluginTest {
         val objectWrapper = createTypedObjectWrapper()
         val objectRequest = createObjectRequest()
 
-        whenever(client.objectUpdate(plugin.authenticationPluginConfiguration, objectWrapper.url, ObjectRequest.toTyped(objectRequest), JsonNode::class.java))
+        whenever(client.updateObject(plugin.authenticationPluginConfiguration, objectWrapper.url, ObjectRequest.toTyped(objectRequest), JsonNode::class.java))
             .thenReturn(objectWrapper)
 
-        val result = plugin.objectUpdate(objectWrapper.url, objectRequest)
+        val result = plugin.updateObject(objectWrapper.url, objectRequest)
 
-        assertEquals(ObjectWrapper.fromTyped(objectWrapper), result)
-        verify(client).objectUpdate(any(), any(), any(), eq(JsonNode::class.java))
+        assertEquals(objectWrapper.toObjectWrapper(), result)
+        verify(client).updateObject(any(), any(), any(), eq(JsonNode::class.java))
     }
 
     @Test
@@ -80,7 +80,7 @@ internal class ObjectenApiPluginTest {
         val objectWrapper = createTypedObjectWrapper()
         val objectRequest = createObjectRequest()
         whenever(
-            client.objectPatch(
+            client.patchObject(
                 plugin.authenticationPluginConfiguration,
                 objectWrapper.url,
                 ObjectRequest.toTyped(objectRequest),
@@ -88,10 +88,10 @@ internal class ObjectenApiPluginTest {
             )
         ).thenReturn(objectWrapper)
 
-        val result = plugin.objectPatch(objectWrapper.url, objectRequest)
+        val result = plugin.patchObject(objectWrapper.url, objectRequest)
 
-        assertEquals(ObjectWrapper.fromTyped(objectWrapper), result)
-        verify(client).objectPatch(any(), any(), any(), eq(JsonNode::class.java))
+        assertEquals(objectWrapper.toObjectWrapper(), result)
+        verify(client).patchObject(any(), any(), any(), eq(JsonNode::class.java))
     }
 
     @Test
@@ -120,7 +120,7 @@ internal class ObjectenApiPluginTest {
     private fun createObjectRequest(): ObjectRequest {
         return ObjectRequest(
             type = URI("http://example.com/type/1"),
-            record = ObjectRecord.ofTyped(createTypedObjectRecord())
+            record = createTypedObjectRecord().toObjectRecord()
         )
     }
 

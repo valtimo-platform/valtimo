@@ -32,20 +32,6 @@ data class ObjectRecord(
     val correctedBy: String? = null
 ) {
     companion object {
-        fun ofTyped(typedObjectRecord: TypedObjectRecord<JsonNode>): ObjectRecord {
-            return ObjectRecord(
-                index = typedObjectRecord.index,
-                typeVersion = typedObjectRecord.typeVersion,
-                data = typedObjectRecord.data,
-                geometry = typedObjectRecord.geometry,
-                startAt = typedObjectRecord.startAt,
-                endAt = typedObjectRecord.endAt,
-                registrationAt = typedObjectRecord.registrationAt,
-                correctionFor = typedObjectRecord.correctionFor,
-                correctedBy = typedObjectRecord.correctedBy
-            )
-        }
-
         fun toTyped(objectRecord: ObjectRecord): TypedObjectRecord<JsonNode> {
             return TypedObjectRecord(
                 index = objectRecord.index,
@@ -61,6 +47,18 @@ data class ObjectRecord(
         }
     }
 }
+
+fun TypedObjectRecord<JsonNode>.toObjectRecord() = ObjectRecord(
+    index = index,
+    typeVersion = typeVersion,
+    data = data,
+    geometry = geometry,
+    startAt = startAt,
+    endAt = endAt,
+    registrationAt = registrationAt,
+    correctionFor = correctionFor,
+    correctedBy = correctedBy
+)
 
 class ObjectGeometry(
     val type: String,

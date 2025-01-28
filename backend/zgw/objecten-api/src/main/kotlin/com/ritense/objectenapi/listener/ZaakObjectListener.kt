@@ -32,7 +32,6 @@ import org.springframework.context.event.EventListener
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
-import kotlin.math.log
 
 class ZaakObjectListener(
     private val pluginService: PluginService,
@@ -70,7 +69,7 @@ class ZaakObjectListener(
         }
 
         findObjectenApiPlugin(objectUrl)
-            .objectUpdate(
+            .updateObject(
                 objectUrl,
                 ObjectRequest(
                     objectType.url,

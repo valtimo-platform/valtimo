@@ -24,18 +24,11 @@ data class ObjectsList(
     val next: String? = null,
     val previous: String? = null,
     val results: List<ObjectWrapper>
-) {
-    companion object {
+)
 
-        fun fromTyped(page: TypedObjectsPage<JsonNode>): ObjectsList {
-            return ObjectsList(
-                count = page.count,
-                next = page.next,
-                previous = page.previous,
-                results = page.results.map { typedObjectWrapper ->
-                    ObjectWrapper.fromTyped(typedObjectWrapper)
-                }
-            )
-        }
-    }
-}
+fun TypedObjectsPage<JsonNode>.toObjectsList() = ObjectsList(
+    count = count,
+    next = next,
+    previous = previous,
+    results = results.map { it.toObjectWrapper() }
+)

@@ -954,7 +954,7 @@ internal class ObjectenApiClientTest {
         val objectUrl = mockApi.url("/some-object").toString()
         val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
 
-        val result = client.objectPatch(
+        val result = client.patchObject(
             TestAuthentication(),
             URI(objectUrl),
             ObjectRequest(
@@ -1045,7 +1045,7 @@ internal class ObjectenApiClientTest {
         val objectUrl = mockApi.url("/some-object").toString()
         val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
 
-        val result = client.objectPatch(
+        val result = client.patchObject(
             TestAuthentication(),
             URI(objectUrl),
             TypedObjectRequest(
@@ -1139,7 +1139,7 @@ internal class ObjectenApiClientTest {
         val objectUrl = mockApi.url("/some-object").toString()
         val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
 
-        val result = client.objectPatch(
+        val result = client.patchObject(
             TestAuthentication(),
             URI(objectUrl),
             ObjectRequest(
@@ -1177,7 +1177,7 @@ internal class ObjectenApiClientTest {
         val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
 
         assertThrows<HttpClientErrorException> {
-            client.objectPatch(
+            client.patchObject(
                 TestAuthentication(),
                 URI(objectUrl),
                 ObjectRequest(
@@ -1234,7 +1234,7 @@ internal class ObjectenApiClientTest {
         val objectUrl = mockApi.url("/some-object").toString()
         val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
 
-        val result = client.objectUpdate(
+        val result = client.updateObject(
             TestAuthentication(),
             URI(objectUrl),
             TypedObjectRequest(
@@ -1328,7 +1328,7 @@ internal class ObjectenApiClientTest {
         val objectUrl = mockApi.url("/some-object").toString()
         val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
 
-        val result = client.objectUpdate(
+        val result = client.updateObject(
             TestAuthentication(),
             URI(objectUrl),
             ObjectRequest(
@@ -1366,7 +1366,7 @@ internal class ObjectenApiClientTest {
         val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
 
         assertThrows<HttpClientErrorException> {
-            client.objectUpdate(
+            client.updateObject(
                 TestAuthentication(),
                 URI(objectUrl),
                 ObjectRequest(

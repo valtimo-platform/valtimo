@@ -27,14 +27,18 @@ data class TypedObjectsPage<T>(
 ) {
     companion object {
         fun <T> getAll(
-            pageLimit: Int = 100,
+            pageLimit: Int? = 100,
             getPage: (page: Int) -> TypedObjectsPage<T>
         ): List<TypedObjectWrapper<T>> {
-            require(pageLimit > 0) { "pageLimit should be > 0 but was: $pageLimit" }
+            if (pageLimit != null) {
+                require(pageLimit > 0) { "pageLimit should be > 0 but was: $pageLimit" }
+            } else {
+                logger.warn { "No page limit is used. Please consider using a limit!" }
+            }
 
-            var page = 1
+            var page = 0
             val results = generateSequence(getPage(page)) { previousPage ->
-                if (page < pageLimit && previousPage.next != null) {
+                if (pageLimit?.let { page < pageLimit - 1  } != false && previousPage.next != null) {
                     getPage(++page)
                 } else {
                     null
@@ -42,9 +46,9 @@ data class TypedObjectsPage<T>(
             }.toList()
 
             if (results.last().next != null) {
-                logger.error { "Too many page request: Truncated after $page pages. Please use a paginated result!" }
-            } else if (page >= pageLimit / 2) {
-                logger.warn { "Retrieved $page pages. Page limit is $pageLimit. Please consider using a paginated result!" }
+                logger.error { "Too many page request: Truncated after ${page + 1} pages. Please use a paginated result!" }
+            } else if (pageLimit != null && page >= (pageLimit - 1) / 2) {
+                logger.warn { "Retrieved ${page + 1} pages. Page limit is $pageLimit. Please consider using a paginated result!" }
             }
 
             return results.flatMap(TypedObjectsPage<T>::results)

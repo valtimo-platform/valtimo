@@ -48,7 +48,8 @@ import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import java.net.URI
-import java.util.*
+import java.util.Optional
+import java.util.UUID
 
 internal class DocumentObjectenApiSyncServiceTest {
     lateinit var service: DocumentObjectenApiSyncService
@@ -181,11 +182,11 @@ internal class DocumentObjectenApiSyncServiceTest {
                 linkedToZaak = true
             )))
 
-        whenever(objectenApiPlugin.objectUpdate(any(), any()))
+        whenever(objectenApiPlugin.updateObject(any(), any()))
             .thenReturn(objectWrapper)
 
         service.handleDocumentCreatedEvent(documentCreatedEvent)
-        verify(objectenApiPlugin, times(1)).objectUpdate(any(), any())
+        verify(objectenApiPlugin, times(1)).updateObject(any(), any())
         verifyNoMoreInteractions(objectenApiPlugin)
         verifyNoInteractions(zakenApiPlugin)
     }
@@ -218,7 +219,7 @@ internal class DocumentObjectenApiSyncServiceTest {
         ))
             .thenReturn(ObjectsList(1, null, null, listOf(objectWrapper)))
 
-        whenever(objectenApiPlugin.objectUpdate(any(), any()))
+        whenever(objectenApiPlugin.updateObject(any(), any()))
             .thenReturn(objectWrapper)
 
         whenever(zaakUrlProvider.getZaakUrl(any()))
@@ -231,7 +232,7 @@ internal class DocumentObjectenApiSyncServiceTest {
         verify(objectenApiPlugin, times(1)).getObjectsByObjectTypeIdWithSearchParams(
             anyOrNull(), any(), any(), anyOrNull(), anyOrNull()
         )
-        verify(objectenApiPlugin, times(1)).objectUpdate(any(), any())
+        verify(objectenApiPlugin, times(1)).updateObject(any(), any())
         verifyNoMoreInteractions(objectenApiPlugin)
         verify(zaakdetailsObjectService, times(2)).save(any())
         verify(zakenApiPlugin, times(1)).getZaakObject(any(), any())

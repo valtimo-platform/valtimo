@@ -191,7 +191,7 @@ class PortaaltaakPlugin(
         taakObject = changeStatus(taakObject, TaakStatus.VERWERKT)
         val portaalTaakMetaObjectUpdated =
             changeDataInPortalTaakObject(portaalTaakMetaDataObject, objectMapper.convertValue(taakObject))
-        objectenApiPlugin.objectPatch(portaalTaakObjectUrl, portaalTaakMetaObjectUpdated)
+        objectenApiPlugin.patchObject(portaalTaakObjectUrl, portaalTaakMetaObjectUpdated)
 
         logger.info { "Portaaltaak object with URL '${portaalTaakObjectUrl}' completed by changing status to 'verwerkt'" }
     }

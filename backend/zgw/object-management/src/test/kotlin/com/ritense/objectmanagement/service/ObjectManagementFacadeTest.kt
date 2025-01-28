@@ -19,10 +19,12 @@ package com.ritense.objectmanagement.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.ritense.objectenapi.ObjectenApiPlugin
-import com.ritense.objectenapi.client.ObjectRecord
-import com.ritense.objectenapi.client.ObjectRequest
-import com.ritense.objectenapi.client.ObjectWrapper
-import com.ritense.objectenapi.client.ObjectsList
+import com.ritense.objectenapi.client.dto.TypedObjectRecord
+import com.ritense.objectenapi.client.dto.TypedObjectRequest
+import com.ritense.objectenapi.client.dto.TypedObjectWrapper
+import com.ritense.objectenapi.client.dto.TypedObjectsPage
+import com.ritense.objectenapi.client.toObjectWrapper
+import com.ritense.objectenapi.client.toObjectsList
 import com.ritense.objectmanagement.domain.ObjectManagement
 import com.ritense.objectmanagement.repository.ObjectManagementRepository
 import com.ritense.objecttypenapi.ObjecttypenApiPlugin
@@ -33,6 +35,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.clearInvocations
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -75,7 +78,7 @@ internal class ObjectManagementFacadeTest {
         whenever(objectenApiPlugin.url).thenReturn(URI.create("www.ritense.com/"))
         val expectedUrl = URI.create("www.ritense.com/objects/$objectUuid")
         val expectedResult = createObjectWrapper(url = expectedUrl, uuid = objectUuid)
-        whenever(objectenApiPlugin.getObject(expectedUrl)).thenReturn(expectedResult)
+        whenever(objectenApiPlugin.getObject(expectedUrl, JsonNode::class.java)).thenReturn(expectedResult)
         whenever(objectenApiPlugin.getObjectUrl(any())).thenCallRealMethod()
 
         val result = objectManagementFacade.getObjectByUuid(objectName, objectUuid)
@@ -85,8 +88,8 @@ internal class ObjectManagementFacadeTest {
         verify(pluginService).createInstance<ObjecttypenApiPlugin>(objecttypenApiPluginConfigurationId)
         verifyNoMoreInteractions(objectManagementRepository, pluginService)
 
-        verify(objectenApiPlugin).getObject(expectedUrl)
-        assertThat(result).isEqualTo(expectedResult)
+        verify(objectenApiPlugin).getObject(expectedUrl, JsonNode::class.java)
+        assertThat(result).isEqualTo(expectedResult.toObjectWrapper())
     }
 
     @Test
@@ -104,8 +107,8 @@ internal class ObjectManagementFacadeTest {
         val expectedUrl2 = URI.create("www.ritense.com/objects/$objectUuid2")
         val expectedResult1 = createObjectWrapper(url = expectedUrl1, uuid = objectUuid1)
         val expectedResult2 = createObjectWrapper(url = expectedUrl2, uuid = objectUuid2)
-        whenever(objectenApiPlugin.getObject(expectedUrl1)).thenReturn(expectedResult1)
-        whenever(objectenApiPlugin.getObject(expectedUrl2)).thenReturn(expectedResult2)
+        whenever(objectenApiPlugin.getObject(expectedUrl1, JsonNode::class.java)).thenReturn(expectedResult1)
+        whenever(objectenApiPlugin.getObject(expectedUrl2, JsonNode::class.java)).thenReturn(expectedResult2)
         whenever(objectenApiPlugin.getObjectUrl(any())).thenCallRealMethod()
 
         val result = objectManagementFacade.getObjectsByUuids(objectName, listOf(objectUuid1, objectUuid2))
@@ -115,10 +118,10 @@ internal class ObjectManagementFacadeTest {
         verify(pluginService).createInstance<ObjecttypenApiPlugin>(objecttypenApiPluginConfigurationId)
         verifyNoMoreInteractions(objectManagementRepository, pluginService)
 
-        verify(objectenApiPlugin).getObject(expectedUrl1)
-        verify(objectenApiPlugin).getObject(expectedUrl2)
+        verify(objectenApiPlugin).getObject(expectedUrl1, JsonNode::class.java)
+        verify(objectenApiPlugin).getObject(expectedUrl2, JsonNode::class.java)
         assertThat(result.results.size).isEqualTo(2)
-        assertThat(result.results).contains(expectedResult1, expectedResult2)
+        assertThat(result.results).contains(expectedResult1.toObjectWrapper(), expectedResult2.toObjectWrapper())
     }
 
     @Test
@@ -130,8 +133,8 @@ internal class ObjectManagementFacadeTest {
         val objecttypenApiPlugin = mock<ObjecttypenApiPlugin>()
         prepareAccessObject(objectName, objectenApiPlugin, objecttypenApiPlugin)
 
-        val expectedResult = createObjectWrapper(url = objectUri, uuid = UUID.randomUUID())
-        whenever(objectenApiPlugin.getObject(objectUri)).thenReturn(expectedResult)
+        val expectedResult = createObjectWrapper(url = objectUri)
+        whenever(objectenApiPlugin.getObject(objectUri, JsonNode::class.java)).thenReturn(expectedResult)
 
         val result = objectManagementFacade.getObjectByUri(objectName, objectUri)
 
@@ -140,8 +143,8 @@ internal class ObjectManagementFacadeTest {
         verify(pluginService).createInstance<ObjecttypenApiPlugin>(objecttypenApiPluginConfigurationId)
         verifyNoMoreInteractions(objectManagementRepository, pluginService)
 
-        verify(objectenApiPlugin).getObject(objectUri)
-        assertThat(result).isEqualTo(expectedResult)
+        verify(objectenApiPlugin).getObject(objectUri, JsonNode::class.java)
+        assertThat(result).isEqualTo(expectedResult.toObjectWrapper())
     }
 
     @Test
@@ -154,10 +157,10 @@ internal class ObjectManagementFacadeTest {
         val objecttypenApiPlugin = mock<ObjecttypenApiPlugin>()
         prepareAccessObject(objectName, objectenApiPlugin, objecttypenApiPlugin)
 
-        val expectedResult1 = createObjectWrapper(url = objectUri1, uuid = UUID.randomUUID())
-        val expectedResult2 = createObjectWrapper(url = objectUri2, uuid = UUID.randomUUID())
-        whenever(objectenApiPlugin.getObject(objectUri1)).thenReturn(expectedResult1)
-        whenever(objectenApiPlugin.getObject(objectUri2)).thenReturn(expectedResult2)
+        val expectedResult1 = createObjectWrapper(url = objectUri1)
+        val expectedResult2 = createObjectWrapper(url = objectUri2)
+        whenever(objectenApiPlugin.getObject(objectUri1, JsonNode::class.java)).thenReturn(expectedResult1)
+        whenever(objectenApiPlugin.getObject(objectUri2, JsonNode::class.java)).thenReturn(expectedResult2)
 
         val result = objectManagementFacade.getObjectsByUris(objectName, listOf(objectUri1, objectUri2))
 
@@ -166,10 +169,10 @@ internal class ObjectManagementFacadeTest {
         verify(pluginService).createInstance<ObjecttypenApiPlugin>(objecttypenApiPluginConfigurationId)
         verifyNoMoreInteractions(objectManagementRepository, pluginService)
 
-        verify(objectenApiPlugin).getObject(objectUri1)
-        verify(objectenApiPlugin).getObject(objectUri2)
+        verify(objectenApiPlugin).getObject(objectUri1, JsonNode::class.java)
+        verify(objectenApiPlugin).getObject(objectUri2, JsonNode::class.java)
         assertThat(result.results.size).isEqualTo(2)
-        assertThat(result.results).contains(expectedResult1, expectedResult2)
+        assertThat(result.results).contains(expectedResult1.toObjectWrapper(), expectedResult2.toObjectWrapper())
     }
 
     @Test
@@ -186,15 +189,18 @@ internal class ObjectManagementFacadeTest {
 
         val expectedPageRequest = PageRequest.of(pageNumber, pageSize)
         val expectedUrl = URI.create("www.ritense.com/")
-        val expectedObjectWrapper = createObjectWrapper(url = expectedUrl, uuid = UUID.randomUUID())
-        val expectedObjectsList = ObjectsList(count = 1, results = listOf(expectedObjectWrapper))
+        val expectedObjectWrapper = createObjectWrapper(url = expectedUrl)
+        val expectedObjectsList = TypedObjectsPage(count = 1, results = listOf(expectedObjectWrapper))
         whenever(objecttypenApiPlugin.url).thenReturn(expectedUrl)
-        whenever(objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(
-            objecttypesApiUrl = expectedUrl,
-            objecttypeId = objectTypeId,
-            searchString = searchString,
-            ordering = ordering,
-            pageable = expectedPageRequest)
+        whenever(
+            objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(
+                objecttypesApiUrl = expectedUrl,
+                objecttypeId = objectTypeId,
+                searchString = searchString,
+                ordering = ordering,
+                pageable = expectedPageRequest,
+                type = JsonNode::class.java
+            )
         ).thenReturn(expectedObjectsList)
 
         val result = objectManagementFacade.getObjectsPaged(objectName, searchString, pageNumber, ordering, pageSize)
@@ -209,9 +215,11 @@ internal class ObjectManagementFacadeTest {
             objecttypeId = objectTypeId,
             searchString = searchString,
             ordering = ordering,
-            pageable = expectedPageRequest)
-        verify(objectenApiPlugin, never()).getObjectsByObjectTypeId(any(), any(), any(), any(), any())
-        assertThat(result).isEqualTo(expectedObjectsList)
+            pageable = expectedPageRequest,
+            type = JsonNode::class.java
+        )
+        verify(objectenApiPlugin, never()).getObjectsByObjectTypeId(any(), any(), any(), any(), any(), eq(JsonNode::class.java))
+        assertThat(result).isEqualTo(expectedObjectsList.toObjectsList())
     }
 
     @Test
@@ -229,16 +237,19 @@ internal class ObjectManagementFacadeTest {
         val expectedPageRequest = PageRequest.of(pageNumber, pageSize)
         val expectedUrl1 = URI.create("www.ritense.com/1")
         val expectedUrl2 = URI.create("www.ritense.com/2")
-        val expectedObjectWrapper = createObjectWrapper(url = expectedUrl1, uuid = UUID.randomUUID())
-        val expectedObjectsList = ObjectsList(count = 1, results = listOf(expectedObjectWrapper))
+        val expectedObjectWrapper = createObjectWrapper(url = expectedUrl1)
+        val expectedObjectsList = TypedObjectsPage(count = 1, results = listOf(expectedObjectWrapper))
         whenever(objecttypenApiPlugin.url).thenReturn(expectedUrl1)
         whenever(objectenApiPlugin.url).thenReturn(expectedUrl2)
-        whenever(objectenApiPlugin.getObjectsByObjectTypeId(
-            objecttypesApiUrl = expectedUrl1,
-            objectsApiUrl = expectedUrl2,
-            objecttypeId = objectTypeId,
-            ordering = ordering,
-            pageable = expectedPageRequest)
+        whenever(
+            objectenApiPlugin.getObjectsByObjectTypeId(
+                objecttypesApiUrl = expectedUrl1,
+                objectsApiUrl = expectedUrl2,
+                objecttypeId = objectTypeId,
+                ordering = ordering,
+                pageable = expectedPageRequest,
+                type = JsonNode::class.java
+            )
         ).thenReturn(expectedObjectsList)
 
         val result = objectManagementFacade.getObjectsPaged(objectName, searchString, pageNumber, ordering, pageSize)
@@ -253,9 +264,11 @@ internal class ObjectManagementFacadeTest {
             objectsApiUrl = expectedUrl2,
             objecttypeId = objectTypeId,
             ordering = ordering,
-            pageable = expectedPageRequest)
-        verify(objectenApiPlugin, never()).getObjectsByObjectTypeIdWithSearchParams(any(), any(), any(), any(), any())
-        assertThat(result).isEqualTo(expectedObjectsList)
+            pageable = expectedPageRequest,
+            type = JsonNode::class.java
+        )
+        verify(objectenApiPlugin, never()).getObjectsByObjectTypeIdWithSearchParams(any(), any(), any(), any(), any(), eq(JsonNode::class.java))
+        assertThat(result).isEqualTo(expectedObjectsList.toObjectsList())
     }
 
     @Test
@@ -270,15 +283,18 @@ internal class ObjectManagementFacadeTest {
 
         val expectedPageRequest = PageRequest.of(0, 500)
         val expectedUrl = URI.create("www.ritense.com/")
-        val expectedObjectWrapper = createObjectWrapper(url = expectedUrl, uuid = UUID.randomUUID())
-        val expectedObjectsList = ObjectsList(count = 1, results = listOf(expectedObjectWrapper))
+        val expectedObjectWrapper = createObjectWrapper(url = expectedUrl)
+        val expectedObjectsList = TypedObjectsPage(count = 1, results = listOf(expectedObjectWrapper))
         whenever(objecttypenApiPlugin.url).thenReturn(expectedUrl)
-        whenever(objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(
-            objecttypesApiUrl = expectedUrl,
-            objecttypeId = objectTypeId,
-            searchString = searchString,
-            ordering = ordering,
-            pageable = expectedPageRequest)
+        whenever(
+            objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(
+                objecttypesApiUrl = expectedUrl,
+                objecttypeId = objectTypeId,
+                searchString = searchString,
+                ordering = ordering,
+                pageable = expectedPageRequest,
+                type = JsonNode::class.java
+            )
         ).thenReturn(expectedObjectsList)
 
         val result = objectManagementFacade.getObjectsUnpaged(objectName, searchString, ordering)
@@ -293,12 +309,14 @@ internal class ObjectManagementFacadeTest {
             objecttypeId = objectTypeId,
             searchString = searchString,
             ordering = ordering,
-            pageable = expectedPageRequest)
-        verify(objectenApiPlugin, never()).getObjectsByObjectTypeId(any(), any(), any(), any(), any())
+            pageable = expectedPageRequest,
+            type = JsonNode::class.java
+        )
+        verify(objectenApiPlugin, never()).getObjectsByObjectTypeId(any(), any(), any(), any(), any(), eq(JsonNode::class.java))
         assertThat(result.count).isEqualTo(expectedObjectsList.count)
         assertThat(result.next).isEqualTo(expectedObjectsList.next)
         assertThat(result.previous).isEqualTo(expectedObjectsList.previous)
-        assertThat(result.results).contains(expectedObjectWrapper)
+        assertThat(result.results).contains(expectedObjectWrapper.toObjectWrapper())
     }
 
     @Test
@@ -314,16 +332,19 @@ internal class ObjectManagementFacadeTest {
         val expectedPageRequest = PageRequest.of(0, 500)
         val expectedUrl1 = URI.create("www.ritense.com/1")
         val expectedUrl2 = URI.create("www.ritense.com/2")
-        val expectedObjectWrapper = createObjectWrapper(url = expectedUrl1, uuid = UUID.randomUUID())
-        val expectedObjectsList = ObjectsList(count = 1, results = listOf(expectedObjectWrapper))
+        val expectedObjectWrapper = createObjectWrapper(url = expectedUrl1)
+        val expectedObjectsList = TypedObjectsPage(count = 1, results = listOf(expectedObjectWrapper))
         whenever(objecttypenApiPlugin.url).thenReturn(expectedUrl1)
         whenever(objectenApiPlugin.url).thenReturn(expectedUrl2)
-        whenever(objectenApiPlugin.getObjectsByObjectTypeId(
-            objecttypesApiUrl = expectedUrl1,
-            objectsApiUrl = expectedUrl2,
-            objecttypeId = objectTypeId,
-            ordering = ordering,
-            pageable = expectedPageRequest)
+        whenever(
+            objectenApiPlugin.getObjectsByObjectTypeId(
+                objecttypesApiUrl = expectedUrl1,
+                objectsApiUrl = expectedUrl2,
+                objecttypeId = objectTypeId,
+                ordering = ordering,
+                pageable = expectedPageRequest,
+                type = JsonNode::class.java
+            )
         ).thenReturn(expectedObjectsList)
 
         val result = objectManagementFacade.getObjectsUnpaged(objectName, searchString, ordering)
@@ -338,12 +359,14 @@ internal class ObjectManagementFacadeTest {
             objectsApiUrl = expectedUrl2,
             objecttypeId = objectTypeId,
             ordering = ordering,
-            pageable = expectedPageRequest)
-        verify(objectenApiPlugin, never()).getObjectsByObjectTypeIdWithSearchParams(any(), any(), any(), any(), any())
+            pageable = expectedPageRequest,
+            type = JsonNode::class.java
+        )
+        verify(objectenApiPlugin, never()).getObjectsByObjectTypeIdWithSearchParams(any(), any(), any(), any(), any(), eq(JsonNode::class.java))
         assertThat(result.count).isEqualTo(expectedObjectsList.count)
         assertThat(result.next).isEqualTo(expectedObjectsList.next)
         assertThat(result.previous).isEqualTo(expectedObjectsList.previous)
-        assertThat(result.results).contains(expectedObjectWrapper)
+        assertThat(result.results).contains(expectedObjectWrapper.toObjectWrapper())
     }
 
     @Test
@@ -358,13 +381,15 @@ internal class ObjectManagementFacadeTest {
         val expectedUrl = URI.create("www.ritense.com")
         whenever(objecttypenApiPlugin.getObjectTypeUrlById(objectTypeId)).thenReturn(expectedUrl)
 
-        val objectRecord = ObjectRecord(
-        typeVersion = objectTypeVersion,
-        data = data,
-        startAt = LocalDate.now()
+        val objectRecord = TypedObjectRecord(
+            typeVersion = objectTypeVersion,
+            data = data,
+            startAt = LocalDate.now()
         )
 
-        val expectedObjectRequest = ObjectRequest(expectedUrl, objectRecord)
+        val objectRequest = TypedObjectRequest(expectedUrl, objectRecord)
+
+        whenever(objectenApiPlugin.createObject(objectRequest, JsonNode::class.java)).thenReturn(createObjectWrapper(url = URI("")))
 
         objectManagementFacade.createObject(objectName, data)
 
@@ -373,10 +398,10 @@ internal class ObjectManagementFacadeTest {
         verify(pluginService).createInstance<ObjecttypenApiPlugin>(objecttypenApiPluginConfigurationId)
         verifyNoMoreInteractions(objectManagementRepository, pluginService)
 
-        val objectRequestCaptor = argumentCaptor<ObjectRequest>()
-        verify(objectenApiPlugin).createObject(objectRequestCaptor.capture())
+        val objectRequestCaptor = argumentCaptor<TypedObjectRequest<JsonNode>>()
+        verify(objectenApiPlugin).createObject(objectRequestCaptor.capture(), eq(JsonNode::class.java))
         val actualObjectRequest = objectRequestCaptor.firstValue
-        assertThat(actualObjectRequest.type).isEqualTo(expectedObjectRequest.type)
+        assertThat(actualObjectRequest.type).isEqualTo(objectRequest.type)
         val actualObjectRecord = actualObjectRequest.record
         assertThat(actualObjectRecord.typeVersion).isEqualTo(objectTypeVersion)
         assertThat(actualObjectRecord.data).isEqualTo(data)
@@ -397,24 +422,37 @@ internal class ObjectManagementFacadeTest {
         val expectedUrl = URI.create("www.ritense.com")
         whenever(objecttypenApiPlugin.getObjectTypeUrlById(objectTypeId)).thenReturn(expectedUrl)
         whenever(objectenApiPlugin.url).thenReturn(expectedUrl)
-        whenever(objectenApiPlugin.getObjectUrl(any())).thenCallRealMethod()
+        val objectUrl = URI.create("www.ritense.com/1")
+        whenever(objectenApiPlugin.getObjectUrl(any())).thenReturn(objectUrl)
 
-        val objectRecord = ObjectRecord(
-            typeVersion = objectTypeVersion,
-            data = data,
-            startAt = LocalDate.now()
+        val objectRequest = TypedObjectRequest(
+            type = expectedUrl,
+            record = TypedObjectRecord(
+                typeVersion = objectTypeVersion,
+                data = data,
+                startAt = LocalDate.now()
+            )
         )
-
-        val expectedObjectRequest = ObjectRequest(expectedUrl, objectRecord)
+        whenever(objectenApiPlugin.createObject(objectRequest, JsonNode::class.java)).thenReturn(createObjectWrapper(url = URI("")))
 
         objectManagementFacade.createObject(objectName, data)
 
         clearInvocations(objectManagementRepository, pluginService, objectenApiPlugin)
 
+        val updateRequest = TypedObjectRequest(
+            type = expectedUrl,
+            record = TypedObjectRecord(
+                typeVersion = objectTypeVersion,
+                data = updateData,
+                startAt = LocalDate.now()
+            )
+        )
+        whenever(objectenApiPlugin.updateObject(objectUrl, updateRequest, JsonNode::class.java)).thenReturn(createObjectWrapper(url = URI("")))
+
         objectManagementFacade.updateObject(
             objectId = objectUuid,
             objectName = objectName,
-            data = updateData
+            data = updateData,
         )
 
         verify(objectManagementRepository).findByTitle(objectName)
@@ -422,10 +460,10 @@ internal class ObjectManagementFacadeTest {
         verify(pluginService).createInstance<ObjecttypenApiPlugin>(objecttypenApiPluginConfigurationId)
         verifyNoMoreInteractions(objectManagementRepository, pluginService)
 
-        val objectRequestCaptor = argumentCaptor<ObjectRequest>()
-        verify(objectenApiPlugin).objectUpdate(any(), objectRequestCaptor.capture())
+        val objectRequestCaptor = argumentCaptor<TypedObjectRequest<JsonNode>>()
+        verify(objectenApiPlugin).updateObject(any(), objectRequestCaptor.capture(), type = eq(JsonNode::class.java))
         val actualObjectRequest = objectRequestCaptor.firstValue
-        assertThat(actualObjectRequest.type).isEqualTo(expectedObjectRequest.type)
+        assertThat(actualObjectRequest.type).isEqualTo(objectRequest.type)
         val actualObjectRecord = actualObjectRequest.record
         assertThat(actualObjectRecord.typeVersion).isEqualTo(objectTypeVersion)
         assertThat(actualObjectRecord.data).isEqualTo(updateData)
@@ -445,6 +483,15 @@ internal class ObjectManagementFacadeTest {
         whenever(objecttypenApiPlugin.getObjectTypeUrlById(objectTypeId)).thenReturn(expectedUrl)
         whenever(objectenApiPlugin.url).thenReturn(expectedUrl)
         whenever(objectenApiPlugin.getObjectUrl(any())).thenCallRealMethod()
+
+        val objectRecord = TypedObjectRecord(
+            typeVersion = objectTypeVersion,
+            data = data,
+            startAt = LocalDate.now()
+        )
+
+        val objectRequest = TypedObjectRequest(expectedUrl, objectRecord)
+        whenever(objectenApiPlugin.createObject(objectRequest, JsonNode::class.java)).thenReturn(createObjectWrapper(url = URI("")))
 
         objectManagementFacade.createObject(objectName, data)
 
@@ -487,8 +534,8 @@ internal class ObjectManagementFacadeTest {
         objecttypeVersion = objectTypeVersion
     )
 
-    private fun createObjectWrapper(url: URI, uuid: UUID): ObjectWrapper = ObjectWrapper(
-        record = ObjectRecord(startAt = LocalDate.now(), typeVersion = 1),
+    private fun createObjectWrapper(url: URI = URI(""), uuid: UUID = UUID.randomUUID()) = TypedObjectWrapper<JsonNode>(
+        record = TypedObjectRecord(startAt = LocalDate.now(), typeVersion = 1),
         type = URI.create("myURL"),
         url = url,
         uuid = uuid

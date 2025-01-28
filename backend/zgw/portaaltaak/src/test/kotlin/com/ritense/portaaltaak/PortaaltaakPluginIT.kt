@@ -334,7 +334,7 @@ class PortaaltaakPluginIT : BaseIntegrationTest() {
 
         doReturn(objectenApiPlugin).whenever(pluginService).createInstance(any<PluginConfigurationId>())
         whenever(objectenApiPlugin.getObject(any())).thenReturn(objectWrapper)
-        whenever(objectenApiPlugin.objectPatch(any(), any())).thenReturn(null)
+        whenever(objectenApiPlugin.patchObject(any(), any())).thenReturn(null)
 
         portaaltaakPlugin.completePortaalTaak(delegateExecution)
 
