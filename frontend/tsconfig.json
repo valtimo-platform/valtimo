@@ -309,6 +309,12 @@
       "path": "./projects/valtimo/resource/tsconfig.spec.json"
     },
     {
+      "path": "./projects/valtimo/sse/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/sse/tsconfig.spec.json"
+    },
+    {
       "path": "./projects/valtimo/user-interface/tsconfig.lib.json"
     },
     {

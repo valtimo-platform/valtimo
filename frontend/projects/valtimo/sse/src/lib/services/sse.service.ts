@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {filter, Observable, Subject, Subscription} from 'rxjs';
+import {filter, map, Observable, Subject, Subscription} from 'rxjs';
 import {
   BaseSseEvent,
   EstablishedConnectionSseEvent,
@@ -85,12 +85,19 @@ export class SseService {
     this.connect();
   }
 
-  getSseMessagesObservableByEventType(
+  public getSseMessagesObservableByEventType(
     eventTypes: Array<SseEventType>
   ): Observable<MessageEvent<BaseSseEvent>> {
     return this._sseMessages$.asObservable().pipe(
       filter(message => !!message),
-      filter(message => eventTypes.includes(message?.data?.eventType))
+      filter(message => eventTypes.includes(message.data?.eventType))
+    );
+  }
+
+  public getSseEventObservable<Event>(eventType: SseEventType): Observable<Event> {
+    return this._sseMessages$.asObservable().pipe(
+      filter(message => eventType === message?.data?.eventType),
+      map(message => message.data as Event)
     );
   }
 

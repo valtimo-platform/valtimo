@@ -68,6 +68,15 @@
       <div class="task__header">
         <span class="task__title">{{ taskWithProcessLink.task.name }}</span>
 
+        @if (!!taskWithProcessLink.task.assignee) {
+          <cds-tag
+            class="cds-tag--no-margin"
+            [ngbTooltip]="'summary.taskIsAssigned' | translate"
+            [type]="'cool-gray'"
+          >
+            <svg cdsIcon="user--filled" size="20"></svg>
+          </cds-tag>
+        }
         <cds-tag
           class="cds-tag--no-margin"
           [type]="taskWithProcessLink.task.isLocked ? 'cool-gray' : 'green'"

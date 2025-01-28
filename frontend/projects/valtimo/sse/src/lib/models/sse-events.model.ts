@@ -30,11 +30,6 @@ interface BaseSseEvent {
   processInstanceId?: string;
 }
 
-// event implementations for json mapping objects in:
-interface TaskUpdateSseEvent extends BaseSseEvent {
-  processInstanceId: string;
-}
-
 interface EstablishedConnectionSseEvent extends BaseSseEvent {
   subscriptionId: string;
 }
@@ -45,11 +40,4 @@ interface SseError {
   data?: any;
 }
 
-export {
-  SseError,
-  EstablishedConnectionSseEvent,
-  TaskUpdateSseEvent,
-  BaseSseEvent,
-  SseEventListener,
-  SseEventType,
-};
+export {SseError, EstablishedConnectionSseEvent, BaseSseEvent, SseEventListener, SseEventType};

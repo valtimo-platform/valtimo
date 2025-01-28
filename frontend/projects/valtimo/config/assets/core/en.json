@@ -281,7 +281,8 @@
     "taskOpen": "Open",
     "taskCreated": "Created",
     "noResultsMyTasks": "No tasks available for to this user.",
-    "noResultsOtherTasks": "No tasks available to other users."
+    "noResultsOtherTasks": "No tasks available to other users.",
+    "taskIsAssigned": "Task is assigned"
   },
   "progress": {
     "noProcessDocumentInstances": "There is no process started yet",

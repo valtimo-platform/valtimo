@@ -35,7 +35,16 @@ import {
   TaskPageParams,
 } from '../../models';
 import {TaskDetailModalComponent} from '../task-detail-modal/task-detail-modal.component';
-import {BehaviorSubject, combineLatest, Observable, of, Subject, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  Observable,
+  of,
+  Subject,
+  Subscription,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {
   ConfigService,
   Page,
@@ -45,6 +54,7 @@ import {
   TaskListTab,
 } from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
+import {SseService} from '@valtimo/sse';
 import {distinctUntilChanged, filter, map, take} from 'rxjs/operators';
 import {PermissionService} from '@valtimo/access-control';
 import {
@@ -65,6 +75,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {TaskListSortService} from '../../services/task-list-sort.service';
 import {CarbonListNoResultsMessage, PageTitleService} from '@valtimo/components';
 import {TASK_LIST_NO_SEARCH_RESULTS_MESSAGE} from '../../constants';
+import {TaskUpdateSseEvent} from '../../models';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -247,6 +258,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
 
   public readonly setSearchFieldValuesSubject$ = new BehaviorSubject<SearchFieldValues>({});
   public readonly clearSearchFieldValuesSubject$ = new Subject<null>();
+  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly configService: ConfigService,
@@ -261,7 +273,8 @@ export class TaskListComponent implements OnInit, OnDestroy {
     private readonly taskListSortService: TaskListSortService,
     private readonly taskListSearchService: TaskListSearchService,
     private readonly taskListQueryParamService: TaskListQueryParamService,
-    private readonly pageTitleService: PageTitleService
+    private readonly pageTitleService: PageTitleService,
+    private readonly sseService: SseService
   ) {}
 
   public ngOnInit(): void {
@@ -269,10 +282,28 @@ export class TaskListComponent implements OnInit, OnDestroy {
     this.setVisibleTabs();
     this.pageTitleService.disableReset();
     this.setParamsFromQueryParams();
+    this.openTaskUpdateSseEventSubscription();
+  }
+
+  private openTaskUpdateSseEventSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([
+        this.sseService.getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE'),
+        this.caseDefinitionName$,
+      ])
+        .pipe(
+          filter(
+            ([event, caseDefinitionName]) =>
+              caseDefinitionName === null || event.caseDefinitionName === caseDefinitionName
+          )
+        )
+        .subscribe(() => this.reload())
+    );
   }
 
   public ngOnDestroy(): void {
     this.pageTitleService.enableReset();
+    this._subscriptions.unsubscribe();
   }
 
   public paginationClicked(page: number, type: TaskListTab | string): void {

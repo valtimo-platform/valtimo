@@ -281,7 +281,8 @@
     "taskOpen": "Open",
     "taskCreated": "Aangemaakt op",
     "noResultsMyTasks": "Er zijn geen taken beschikbaar voor deze gebruiker.",
-    "noResultsOtherTasks": "Er zijn geen taken beschikbaar voor andere gebruikers."
+    "noResultsOtherTasks": "Er zijn geen taken beschikbaar voor andere gebruikers.",
+    "taskIsAssigned": "Taak is toegewezen"
   },
   "progress": {
     "noProcessDocumentInstances": "Er is nog geen proces gestart",
