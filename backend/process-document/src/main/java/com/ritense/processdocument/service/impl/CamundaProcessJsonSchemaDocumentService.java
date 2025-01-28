@@ -293,6 +293,8 @@ public class CamundaProcessJsonSchemaDocumentService implements ProcessDocumentS
                 )
             );
 
+            request.doAdditionalModifications(document);
+
             //Part 2 process start
             final var processDefinitionKey = new CamundaProcessDefinitionKey(request.processDefinitionKey());
             final var processInstanceWithDefinition = startProcess(
@@ -306,8 +308,6 @@ public class CamundaProcessJsonSchemaDocumentService implements ProcessDocumentS
                 UUID.fromString(document.id().toString()),
                 processInstanceWithDefinition.getProcessDefinition().getName()
             ));
-
-            request.doAdditionalModifications(document);
 
             return new ModifyDocumentAndStartProcessResultSucceeded(document, camundaProcessInstanceId);
         } catch (RuntimeException ex) {
