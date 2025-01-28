@@ -44,6 +44,7 @@ dependencies {
         api(project(":form-view-model"))
         api(project(":command-handling"))
         api(project(":importer"))
+        api(project(":inbox"))
         api(project(":keycloak-iam"))
         api(project(":document-generation:local-document-generation"))
         api(project(":mail:local-mail"))

@@ -14,28 +14,34 @@
  *  limitations under the License.
  */
 
-package com.ritense.valtimo.sse.domain.listener
+package com.ritense.processdocument.sse.domain.listener
 
-import com.ritense.valtimo.sse.event.TaskUpdateSseEvent
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
+import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.processdocument.sse.event.TaskUpdateSseEvent
 import com.ritense.valtimo.web.sse.service.SseSubscriptionService
 import org.camunda.bpm.spring.boot.starter.event.TaskEvent
 import org.springframework.transaction.event.TransactionalEventListener
 
 class TaskUpdateListener(
-    private val sseSubscriptionService: SseSubscriptionService
+    private val sseSubscriptionService: SseSubscriptionService,
+    private val processDocumentService: ProcessDocumentService,
 ) {
 
     @TransactionalEventListener(
         condition = "#taskEvent.eventName=='create' " +
-                "|| #taskEvent.eventName=='complete' " +
-                "|| #taskEvent.eventName=='delete'"
-        ,
+            "|| #taskEvent.eventName=='assignment' " +
+            "|| #taskEvent.eventName=='complete' " +
+            "|| #taskEvent.eventName=='delete'",
         fallbackExecution = true
     )
     fun handle(taskEvent: TaskEvent) {
+        val document = processDocumentService.getDocument(CamundaProcessInstanceId(taskEvent.processInstanceId), null)
         sseSubscriptionService.notifySubscribers(
             TaskUpdateSseEvent(
-                processInstanceId = taskEvent.processInstanceId
+                taskId = taskEvent.id,
+                documentId = document.id().toString(),
+                caseDefinitionName = document.definitionId().name(),
             )
         )
     }

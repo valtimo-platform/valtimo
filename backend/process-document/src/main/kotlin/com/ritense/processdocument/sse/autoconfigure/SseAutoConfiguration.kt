@@ -14,10 +14,10 @@
  *  limitations under the License.
  */
 
-package com.ritense.valtimo.sse.autoconfigure
+package com.ritense.processdocument.sse.autoconfigure
 
-import com.ritense.valtimo.sse.domain.listener.ProcessEndListener
-import com.ritense.valtimo.sse.domain.listener.TaskUpdateListener
+import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.processdocument.sse.domain.listener.TaskUpdateListener
 import com.ritense.valtimo.web.sse.service.SseSubscriptionService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -29,13 +29,11 @@ class SseAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(TaskUpdateListener::class)
     fun taskUpdateListener(
-        sseSubscriptionService: SseSubscriptionService
-    ) = TaskUpdateListener(sseSubscriptionService)
-
-    @Bean
-    @ConditionalOnMissingBean(ProcessEndListener::class)
-    fun processEndListener(
-        sseSubscriptionService: SseSubscriptionService
-    ) = ProcessEndListener(sseSubscriptionService)
+        sseSubscriptionService: SseSubscriptionService,
+        processDocumentService: ProcessDocumentService,
+    ) = TaskUpdateListener(
+        sseSubscriptionService,
+        processDocumentService,
+    )
 
 }
