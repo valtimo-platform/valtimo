@@ -20,9 +20,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.document.domain.Document
 import com.ritense.document.domain.event.DocumentCreatedEvent
 import com.ritense.document.domain.event.DocumentModifiedEvent
-import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.service.DocumentService
-import com.ritense.logging.LoggableResource
 import com.ritense.objectenapi.ObjectenApiPlugin
 import com.ritense.objectenapi.client.Comparator.EQUAL_TO
 import com.ritense.objectenapi.client.ObjectRecord
@@ -31,7 +29,6 @@ import com.ritense.objectenapi.client.ObjectSearchParameter
 import com.ritense.objectenapi.client.ObjectWrapper
 import com.ritense.objectenapi.management.ObjectManagementInfo
 import com.ritense.objectenapi.management.ObjectManagementInfoProvider
-import com.ritense.objectsapi.service.ObjectSyncService
 import com.ritense.objecttypenapi.ObjecttypenApiPlugin
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -39,7 +36,6 @@ import com.ritense.zaakdetails.domain.ZaakdetailsObject
 import com.ritense.zaakdetails.service.ZaakdetailsObjectService
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPlugin
-import com.ritense.zakenapi.domain.ZaakObject
 import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import mu.KotlinLogging
 import org.springframework.context.event.EventListener
@@ -110,7 +106,7 @@ class DocumentObjectenApiSyncService(
                 logger.debug { "Zaakdetails object already exists: update." }
                 zaakdetailsObject = zaakdetailsObjectOptional.get()
 
-                objectenApiPlugin.objectUpdate(zaakdetailsObject.objectURI, objectRequest)
+                objectenApiPlugin.updateObject(zaakdetailsObject.objectURI, objectRequest)
 
                 checkExistingZaakObjectBeforeCreating = false
             } else {
@@ -118,7 +114,7 @@ class DocumentObjectenApiSyncService(
                 val existingObjectWrapper = getObjectWithCaseId(document, objectenApiPlugin, objectManagementConfiguration, objecttypenApiPlugin)
 
                 if(existingObjectWrapper != null) { //Zaakdetails object exists, but reference has not been stored: update and store reference
-                    objectenApiPlugin.objectUpdate(existingObjectWrapper.url, objectRequest)
+                    objectenApiPlugin.updateObject(existingObjectWrapper.url, objectRequest)
 
                     zaakdetailsObject = ZaakdetailsObject(
                         documentId = document.id().id,

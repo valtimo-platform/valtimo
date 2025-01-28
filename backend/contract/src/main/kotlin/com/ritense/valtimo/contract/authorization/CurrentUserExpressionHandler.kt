@@ -16,6 +16,8 @@
 
 package com.ritense.valtimo.contract.authorization
 
+import com.ritense.authorization.UserManagementServiceHolder
+
 object CurrentUserExpressionHandler {
 
     fun <V> resolveValue(value: V?): Any? {

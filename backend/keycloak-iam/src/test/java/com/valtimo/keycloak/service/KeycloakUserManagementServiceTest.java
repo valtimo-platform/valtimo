@@ -26,12 +26,15 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ritense.valtimo.contract.OauthConfigHolder;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.model.SearchByUserGroupsCriteria;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
+import com.ritense.valtimo.contract.config.ValtimoProperties.Oauth;
 import jakarta.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Objects;
@@ -43,15 +46,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-
-import com.ritense.valtimo.contract.OauthConfigHolder;
-import com.ritense.valtimo.contract.config.ValtimoProperties.Oauth;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCache;
 
 class KeycloakUserManagementServiceTest {
 
     private KeycloakService keycloakService;
     private KeycloakUserManagementService userManagementService;
-    private RequestScopeUserCache requestScopeUserCache;
 
     private UserRepresentation jamesVance;
     private UserRepresentation johnDoe;
@@ -65,8 +66,8 @@ class KeycloakUserManagementServiceTest {
     @BeforeEach
     public void before() {
         keycloakService = mock(KeycloakService.class, RETURNS_DEEP_STUBS);
-        requestScopeUserCache = new RequestScopeUserCache();
-        userManagementService = new KeycloakUserManagementService(keycloakService, "clientName", requestScopeUserCache);
+        CacheManager cacheManager = mock();
+        userManagementService = new KeycloakUserManagementService(keycloakService, "clientName", cacheManager);
 
         jamesVance = newUser("James", "Vance", List.of(USER));
         johnDoe = newUser("John", "Doe", List.of(USER, ADMIN));
@@ -82,6 +83,8 @@ class KeycloakUserManagementServiceTest {
             .thenReturn(Set.of());
         when(keycloakService.clientRolesResource(any()).get(any()).getRoleGroupMembers())
             .thenReturn(Set.of());
+
+        when(cacheManager.getCache("userRepresentationByEmail")).thenReturn(new ConcurrentMapCache("userRepresentationByEmail"));
     }
 
     @AfterEach
@@ -208,6 +211,17 @@ class KeycloakUserManagementServiceTest {
 
         verify(keycloakService.usersResource(any())).search(eq(johnDoe.getUsername()));
         assertThat(user).isNotNull();
+    }
+
+    @Test
+    void shouldRetrieveUserInfoFromCache() {
+        String email = "test@example.com";
+
+        userManagementService.findByEmail(email);
+        userManagementService.findByEmail(email);
+        userManagementService.findNamedUserByEmail(email);
+
+        verify(keycloakService.usersResource(any()), times(1)).search(null, null, null, email, 0, 1, true, true);
     }
 
     @Test

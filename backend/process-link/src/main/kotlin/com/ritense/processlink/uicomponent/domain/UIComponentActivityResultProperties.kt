@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,8 @@
  * limitations under the License.
  */
 
-package com.valtimo.keycloak.service
+package com.ritense.processlink.uicomponent.domain
 
-import com.ritense.valtimo.contract.authentication.ManageableUser
-import com.ritense.valtimo.contract.authentication.model.ValtimoUser
-import kotlin.reflect.KClass
-
-interface UserCache {
-    fun <T> get(cacheType: CacheType, key: String, requestFunction: (String) -> T?): T?
-}
-
-enum class CacheType(
-    val cachedClass: KClass<*>
-) {
-    EMAIL(ManageableUser::class),
-    USER_IDENTIFIER(ValtimoUser::class);
-}
+data class UIComponentActivityResultProperties(
+    val componentKey: String
+)

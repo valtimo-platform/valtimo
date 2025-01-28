@@ -18,10 +18,14 @@ package com.ritense.formviewmodel.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.formviewmodel.viewmodel.ViewModel
 import com.ritense.formviewmodel.viewmodel.ViewModelLoaderFactory
+import com.ritense.processlink.domain.ActivityTypeWithEventName
+import com.ritense.processlink.domain.ProcessLink
+import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.camunda.authorization.CamundaTaskActionProvider.Companion.VIEW
 import com.ritense.valtimo.camunda.domain.CamundaTask
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -36,88 +40,124 @@ class FormViewModelService(
     private val viewModelLoaderFactory: ViewModelLoaderFactory,
     private val camundaTaskService: CamundaTaskService,
     private val authorizationService: AuthorizationService,
-    private val processAuthorizationService: ProcessAuthorizationService
+    private val processAuthorizationService: ProcessAuthorizationService,
+    private val processLinkService: ProcessLinkService,
 ) {
 
+    @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("getStartFormViewModel(processDefinitionKey)"))
     fun getStartFormViewModel(
         formName: String,
         processDefinitionKey: String
+    ) = getStartFormViewModel(processDefinitionKey)
+
+    fun getStartFormViewModel(
+        processDefinitionKey: String
     ): ViewModel? {
         processAuthorizationService.checkAuthorization(processDefinitionKey)
-        return viewModelLoaderFactory.getViewModelLoader(formName)?.load()
+
+        return runWithoutAuthorization {
+            val processLink = getStartEventProcessLink(processDefinitionKey) ?: return@runWithoutAuthorization null
+
+            viewModelLoaderFactory.getViewModelLoader(processLink)?.load()
+        }
     }
 
+    @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("getUserTaskFormViewModel(taskInstanceId)"))
     fun getUserTaskFormViewModel(
         formName: String,
+        taskInstanceId: String
+    ) = getUserTaskFormViewModel(taskInstanceId)
+
+    fun getUserTaskFormViewModel(
         taskInstanceId: String
     ): ViewModel? {
         val task = camundaTaskService.findTaskById(taskInstanceId)
         authorizationService.requirePermission(
             EntityAuthorizationRequest(CamundaTask::class.java, VIEW, task)
         )
-        return viewModelLoaderFactory.getViewModelLoader(formName)?.load(task)
+
+        return runWithoutAuthorization {
+            val processLink = getUserTaskProcessLink(task) ?: return@runWithoutAuthorization null
+
+            viewModelLoaderFactory.getViewModelLoader(processLink)?.load(task)
+        }
     }
 
-    @Deprecated("Use method with page support instead")
+    @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("updateStartFormViewModel(processDefinitionKey, submission, page)"))
     fun updateStartFormViewModel(
         formName: String,
         processDefinitionKey: String,
         submission: ObjectNode
-    ): ViewModel? {
-        processAuthorizationService.checkAuthorization(processDefinitionKey)
-        val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(formName) ?: return null
-        val viewModelType = viewModelLoader.getViewModelType()
-        return parseViewModel(submission, viewModelType).update()
-    }
+    ) = updateStartFormViewModel(processDefinitionKey, submission, null)
 
+    @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("updateStartFormViewModel(processDefinitionKey, submission, page)"))
     fun updateStartFormViewModel(
         formName: String,
         processDefinitionKey: String,
         submission: ObjectNode,
         page: Int?,
         isWizard: Boolean?
+    ) = updateStartFormViewModel(processDefinitionKey, submission, page)
+
+    fun updateStartFormViewModel(
+        processDefinitionKey: String,
+        submission: ObjectNode,
+        page: Int?,
     ): ViewModel? {
         processAuthorizationService.checkAuthorization(processDefinitionKey)
-        val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(formName) ?: return null
-        val viewModelType = viewModelLoader.getViewModelType()
-        if (isWizard == true) {
-            return parseViewModel(submission, viewModelType).update(page = page)
+
+        return runWithoutAuthorization {
+            val processLink = getStartEventProcessLink(processDefinitionKey) ?: return@runWithoutAuthorization null
+
+            val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(processLink) ?: return@runWithoutAuthorization null
+            val viewModelType = viewModelLoader.getViewModelType()
+
+            if (page != null) {
+                parseViewModel(submission, viewModelType).update(page = page)
+            } else {
+                parseViewModel(submission, viewModelType).update()
+            }
         }
-        return parseViewModel(submission, viewModelType).update()
     }
 
-    @Deprecated("Use method with page support instead")
+    @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("updateStartFormViewModel(taskInstanceId, submission, page)"))
     fun updateUserTaskFormViewModel(
         formName: String,
         taskInstanceId: String,
         submission: ObjectNode
-    ): ViewModel? {
-        val task = camundaTaskService.findTaskById(taskInstanceId)
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(CamundaTask::class.java, VIEW, task)
-        )
-        val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(formName) ?: return null
-        val viewModelType = viewModelLoader.getViewModelType()
-        return parseViewModel(submission, viewModelType).update(task)
-    }
+    ) = updateUserTaskFormViewModel(taskInstanceId, submission, null)
 
+    @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("updateStartFormViewModel(taskInstanceId, submission, page)"))
     fun updateUserTaskFormViewModel(
         formName: String,
         taskInstanceId: String,
         submission: ObjectNode,
         page: Int?,
         isWizard: Boolean?
+    ) =  updateUserTaskFormViewModel(taskInstanceId, submission, page)
+
+    fun updateUserTaskFormViewModel(
+        taskInstanceId: String,
+        submission: ObjectNode,
+        page: Int?
     ): ViewModel? {
         val task = camundaTaskService.findTaskById(taskInstanceId)
         authorizationService.requirePermission(
             EntityAuthorizationRequest(CamundaTask::class.java, VIEW, task)
         )
-        val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(formName) ?: return null
-        val viewModelType = viewModelLoader.getViewModelType()
-        if (isWizard == true) {
-            return parseViewModel(submission, viewModelType).update(task = task, page = page)
+
+        return runWithoutAuthorization {
+            val processLink = getUserTaskProcessLink(task) ?: return@runWithoutAuthorization null
+
+            val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(processLink) ?: return@runWithoutAuthorization null
+            val viewModelType = viewModelLoader.getViewModelType()
+
+            if (page != null) {
+                parseViewModel(submission, viewModelType).update(task = task, page = page)
+            } else {
+                parseViewModel(submission, viewModelType).update(task)
+            }
         }
-        return parseViewModel(submission, viewModelType).update(task)
     }
 
     fun <T : ViewModel> parseViewModel(
@@ -128,4 +168,17 @@ class FormViewModelService(
         return objectMapper.convertValue(submission, viewModelType.java)
     }
 
+    private fun getStartEventProcessLink(processDefinitionKey: String) = processLinkService.getProcessLinksByProcessDefinitionKey(
+        processDefinitionKey
+    ).firstOrNull { it.activityType === ActivityTypeWithEventName.START_EVENT_START }
+
+    private fun getUserTaskProcessLink(task: CamundaTask): ProcessLink? {
+        return task.processDefinition?.let { processDefinition ->
+            processLinkService.getProcessLinksByProcessDefinitionKey(
+                processDefinition.key,
+            ).firstOrNull {
+                it.activityType == ActivityTypeWithEventName.USER_TASK_CREATE && it.activityId == task.taskDefinitionKey
+            }
+        }
+    }
 }

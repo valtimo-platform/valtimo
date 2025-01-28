@@ -17,6 +17,8 @@
 package com.ritense.objectenapi.client
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.JsonNode
+import com.ritense.objectenapi.client.dto.TypedObjectRequest
 import java.net.URI
 import java.util.UUID
 
@@ -30,4 +32,14 @@ data class ObjectRequest(
         type: URI,
         record: ObjectRecord
     ) : this(null, type, record)
+
+    companion object {
+        fun toTyped(objectRequest: ObjectRequest): TypedObjectRequest<JsonNode> {
+            return TypedObjectRequest(
+                objectRequest.uuid,
+                objectRequest.type,
+                ObjectRecord.toTyped(objectRequest.record)
+            )
+        }
+    }
 }

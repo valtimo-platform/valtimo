@@ -246,7 +246,7 @@ class ZaakObjectService(
             )
         ) as ObjectenApiPlugin
 
-        return objectenApiPlugin.objectUpdate(
+        return objectenApiPlugin.updateObject(
             objectUrl,
             updateObjectRequest
         ).url
@@ -313,7 +313,7 @@ class ZaakObjectService(
                 .toUriString()
         )
 
-        return objectenApiPlugin.objectPatch(objectUrl, objectRequest).url
+        return objectenApiPlugin.patchObject(objectUrl, objectRequest).url
     }
 
     companion object {

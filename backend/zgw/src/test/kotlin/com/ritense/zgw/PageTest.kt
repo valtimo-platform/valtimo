@@ -66,7 +66,7 @@ class PageTest {
     }
 
     @Test
-    fun `should throw an exception when pageLimit is valid`() {
+    fun `should throw an exception when pageLimit is invalid`() {
         val ex = assertThrows<IllegalArgumentException> {
             Page.getAll(0) { _ ->
                 Page(1, null, null, listOf(1))

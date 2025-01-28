@@ -16,8 +16,12 @@
 
 package com.ritense.objectenapi.client
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.objectenapi.ObjectenApiAuthentication
+import com.ritense.objectenapi.client.dto.TypedObjectRequest
+import com.ritense.objectenapi.client.dto.TypedObjectWrapper
+import com.ritense.objectenapi.client.dto.TypedObjectsPage
 import com.ritense.objectenapi.event.ObjectCreated
 import com.ritense.objectenapi.event.ObjectDeleted
 import com.ritense.objectenapi.event.ObjectPatched
@@ -25,10 +29,11 @@ import com.ritense.objectenapi.event.ObjectUpdated
 import com.ritense.objectenapi.event.ObjectViewed
 import com.ritense.objectenapi.event.ObjectsListed
 import com.ritense.outbox.OutboxService
+import org.apache.commons.lang3.reflect.TypeUtils
+import org.springframework.core.ParameterizedTypeReference
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.web.client.RestClient
-import org.springframework.web.client.body
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
 
@@ -42,11 +47,19 @@ class ObjectenApiClient(
         authentication: ObjectenApiAuthentication,
         objectUrl: URI
     ): ObjectWrapper {
+        return getObject(authentication, objectUrl, JsonNode::class.java).toObjectWrapper()
+    }
+
+    fun <T> getObject(
+        authentication: ObjectenApiAuthentication,
+        objectUrl: URI,
+        type: Class<T>,
+    ): TypedObjectWrapper<T> {
         val result = buildRestClient(authentication)
             .get()
             .uri(objectUrl)
             .retrieve()
-            .body<ObjectWrapper>()!!
+            .body(ParameterizedTypeReference.forType<TypedObjectWrapper<T>>(TypeUtils.parameterize(TypedObjectWrapper::class.java, type)))
 
         val response = if (result.type.host == HOST_DOCKER_INTERNAL)
             result.copy(
@@ -64,57 +77,17 @@ class ObjectenApiClient(
         return result
     }
 
-    fun getObjectsByObjecttypeUrl(
-        authentication: ObjectenApiAuthentication,
-        objecttypesApiUrl: URI,
-        objectsApiUrl: URI,
-        objectypeId: String,
-        ordering: String? = "",
-        pageable: Pageable
-    ): ObjectsList {
-        val host = if (objecttypesApiUrl.host == "localhost") {
-            HOST_DOCKER_INTERNAL
-        } else {
-            objecttypesApiUrl.host
-        }
-        val objectTypeUrl = UriComponentsBuilder.newInstance()
-            .uri(objecttypesApiUrl)
-            .host(host)
-            .pathSegment("objecttypes")
-            .pathSegment(objectypeId)
-            .toUriString()
 
-        val result = buildRestClient(authentication, objectsApiUrl.toASCIIString())
-            .get()
-            .uri { builder ->
-                builder.path("objects")
-                    .queryParam("type", objectTypeUrl)
-                    .queryParam("pageSize", pageable.pageSize)
-                    .queryParam("page", pageable.pageNumber + 1) //objects api pagination starts at 1 instead of 0
-                    .queryParam("ordering", ordering)
-                    .build()
-            }
-            .header(ACCEPT_CRS, EPSG_4326)
-            .retrieve()
-            .body<ObjectsList>()!!
-
-        outboxService.send {
-            ObjectsListed(
-                objectMapper.valueToTree(result.results)
-            )
-        }
-        return result
-    }
-
-    fun getObjectsByObjecttypeUrlWithSearchParams(
+    fun <T> getObjectsByObjecttypeUrlWithSearchParams(
         authentication: ObjectenApiAuthentication,
         objecttypesApiUrl: URI,
         objectsApiUrl: URI,
         objectypeId: String,
         searchString: String,
         ordering: String? = "",
-        pageable: Pageable
-    ): ObjectsList {
+        pageable: Pageable,
+        type: Class<T>,
+    ): TypedObjectsPage<T> {
         val host = if (objecttypesApiUrl.host == "localhost") {
             HOST_DOCKER_INTERNAL
         } else {
@@ -140,7 +113,7 @@ class ObjectenApiClient(
             }
             .header(ACCEPT_CRS, EPSG_4326)
             .retrieve()
-            .body<ObjectsList>()!!
+            .body(ParameterizedTypeReference.forType<TypedObjectsPage<T>>(TypeUtils.parameterize(TypedObjectsPage::class.java, type)))!!
 
         outboxService.send {
             ObjectsListed(
@@ -150,11 +123,109 @@ class ObjectenApiClient(
         return result
     }
 
+    fun getObjectsByObjecttypeUrl(
+        authentication: ObjectenApiAuthentication,
+        objecttypesApiUrl: URI,
+        objectsApiUrl: URI,
+        objectypeId: String,
+        ordering: String? = "",
+        pageable: Pageable
+    ): ObjectsList {
+        return getObjectsByObjecttypeUrl(
+            authentication,
+            objecttypesApiUrl,
+            objectsApiUrl,
+            objectypeId,
+            ordering,
+            pageable,
+            JsonNode::class.java,
+        ).toObjectsList()
+    }
+
+    fun <T> getObjectsByObjecttypeUrl(
+        authentication: ObjectenApiAuthentication,
+        objecttypesApiUrl: URI,
+        objectsApiUrl: URI,
+        objectypeId: String,
+        ordering: String? = "",
+        pageable: Pageable,
+        type: Class<T>,
+    ): TypedObjectsPage<T> {
+        val host = if (objecttypesApiUrl.host == "localhost") {
+            HOST_DOCKER_INTERNAL
+        } else {
+            objecttypesApiUrl.host
+        }
+        val objectTypeUrl = UriComponentsBuilder.newInstance()
+            .uri(objecttypesApiUrl)
+            .host(host)
+            .pathSegment("objecttypes")
+            .pathSegment(objectypeId)
+            .toUriString()
+
+        val result = buildRestClient(authentication, objectsApiUrl.toASCIIString())
+            .get()
+            .uri { builder ->
+                builder.path("objects")
+                    .queryParam("type", objectTypeUrl)
+                    .queryParam("pageSize", pageable.pageSize)
+                    .queryParam("page", pageable.pageNumber + 1) //objects api pagination starts at 1 instead of 0
+                    .queryParam("ordering", ordering)
+                    .build()
+            }
+            .header(ACCEPT_CRS, EPSG_4326)
+            .retrieve()
+            .body(ParameterizedTypeReference.forType<TypedObjectsPage<T>>(TypeUtils.parameterize(TypedObjectsPage::class.java, type)))!!
+
+        outboxService.send {
+            ObjectsListed(
+                objectMapper.valueToTree(result.results)
+            )
+        }
+        return result
+    }
+
+    fun getObjectsByObjecttypeUrlWithSearchParams(
+        authentication: ObjectenApiAuthentication,
+        objecttypesApiUrl: URI,
+        objectsApiUrl: URI,
+        objectypeId: String,
+        searchString: String,
+        ordering: String? = "",
+        pageable: Pageable
+    ): ObjectsList {
+        return getObjectsByObjecttypeUrlWithSearchParams(
+            authentication,
+            objecttypesApiUrl,
+            objectsApiUrl,
+            objectypeId,
+            searchString,
+            ordering,
+            pageable,
+            JsonNode::class.java,
+        ).toObjectsList()
+    }
+
     fun createObject(
         authentication: ObjectenApiAuthentication,
         objectsApiUrl: URI,
         objectRequest: ObjectRequest
     ): ObjectWrapper {
+        return createObject(
+            authentication,
+            objectsApiUrl,
+            ObjectRequest.toTyped(objectRequest),
+            JsonNode::class.java,
+        ).toObjectWrapper()
+    }
+
+
+    fun <T> createObject(
+        authentication: ObjectenApiAuthentication,
+        objectsApiUrl: URI,
+        objectRequest: TypedObjectRequest<T>,
+        type: Class<T>,
+    ): TypedObjectWrapper<T> {
         val objectRequestCorrectedHost = if (objectRequest.type.host == "localhost") {
             objectRequest.copy(
                 type = UriComponentsBuilder
@@ -174,7 +245,11 @@ class ObjectenApiClient(
             .header(CONTENT_CRS, EPSG_4326)
             .body(objectRequestCorrectedHost)
             .retrieve()
-            .body<ObjectWrapper>()!!
+            .body(
+                ParameterizedTypeReference.forType<TypedObjectWrapper<T>>(
+                    TypeUtils.parameterize(TypedObjectWrapper::class.java, type)
+                )
+            )!!
 
         outboxService.send {
             ObjectCreated(
@@ -185,11 +260,33 @@ class ObjectenApiClient(
         return result
     }
 
+    @Deprecated("Since 12.8.0", replaceWith = ReplaceWith("patchObject(authentication, objectsApiUrl, objectRequest))"))
     fun objectPatch(
         authentication: ObjectenApiAuthentication,
         objectUrl: URI,
         objectRequest: ObjectRequest
+    ) = patchObject(authentication, objectUrl, objectRequest)
+
+    fun patchObject(
+        authentication: ObjectenApiAuthentication,
+        objectUrl: URI,
+        objectRequest: ObjectRequest
     ): ObjectWrapper {
+        return patchObject(
+            authentication,
+            objectUrl,
+            ObjectRequest.toTyped(objectRequest),
+            JsonNode::class.java,
+        ).toObjectWrapper()
+    }
+
+
+    fun <T> patchObject(
+        authentication: ObjectenApiAuthentication,
+        objectUrl: URI,
+        objectRequest: TypedObjectRequest<T>,
+        type: Class<T>,
+    ): TypedObjectWrapper<T> {
         val objectRequestCorrectedHost = if (objectRequest.type.host == "localhost") {
             objectRequest.copy(
                 type = UriComponentsBuilder
@@ -207,7 +304,11 @@ class ObjectenApiClient(
             .header(CONTENT_CRS, EPSG_4326)
             .body(objectRequestCorrectedHost)
             .retrieve()
-            .body<ObjectWrapper>()!!
+            .body(
+                ParameterizedTypeReference.forType<TypedObjectWrapper<T>>(
+                    TypeUtils.parameterize(TypedObjectWrapper::class.java, type)
+                )
+            )!!
 
         outboxService.send {
             ObjectPatched(
@@ -218,11 +319,32 @@ class ObjectenApiClient(
         return result
     }
 
+    @Deprecated("Since 12.8.0", replaceWith = ReplaceWith("updateObject(authentication, objectsApiUrl, objectRequest))"))
     fun objectUpdate(
         authentication: ObjectenApiAuthentication,
         objectUrl: URI,
         objectRequest: ObjectRequest
+    ) = updateObject(authentication, objectUrl, objectRequest)
+
+    fun updateObject(
+        authentication: ObjectenApiAuthentication,
+        objectUrl: URI,
+        objectRequest: ObjectRequest
     ): ObjectWrapper {
+        return updateObject(
+            authentication,
+            objectUrl,
+            ObjectRequest.toTyped(objectRequest),
+            JsonNode::class.java,
+        ).toObjectWrapper()
+    }
+
+    fun <T> updateObject(
+        authentication: ObjectenApiAuthentication,
+        objectUrl: URI,
+        objectRequest: TypedObjectRequest<T>,
+        type: Class<T>,
+    ): TypedObjectWrapper<T> {
         val objectRequestCorrectedHost = if (objectRequest.type.host == "localhost") {
             objectRequest.copy(
                 type = UriComponentsBuilder
@@ -240,7 +362,11 @@ class ObjectenApiClient(
             .header(CONTENT_CRS, EPSG_4326)
             .body(objectRequestCorrectedHost)
             .retrieve()
-            .body<ObjectWrapper>()!!
+            .body(
+                ParameterizedTypeReference.forType<TypedObjectWrapper<T>>(
+                    TypeUtils.parameterize(TypedObjectWrapper::class.java, type)
+                )
+            )!!
 
         outboxService.send {
             ObjectUpdated(

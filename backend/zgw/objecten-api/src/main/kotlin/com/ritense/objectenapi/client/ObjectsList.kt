@@ -16,9 +16,19 @@
 
 package com.ritense.objectenapi.client
 
-class ObjectsList(
+import com.fasterxml.jackson.databind.JsonNode
+import com.ritense.objectenapi.client.dto.TypedObjectsPage
+
+data class ObjectsList(
     val count: Int,
     val next: String? = null,
     val previous: String? = null,
     val results: List<ObjectWrapper>
+)
+
+fun TypedObjectsPage<JsonNode>.toObjectsList() = ObjectsList(
+    count = count,
+    next = next,
+    previous = previous,
+    results = results.map { it.toObjectWrapper() }
 )

@@ -24,6 +24,9 @@ import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.formviewmodel.submission.FormViewModelStartFormSubmissionHandlerFactory
 import com.ritense.formviewmodel.submission.FormViewModelUserTaskSubmissionHandlerFactory
 import com.ritense.formviewmodel.viewmodel.Submission
+import com.ritense.processlink.domain.ActivityTypeWithEventName
+import com.ritense.processlink.domain.ProcessLink
+import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.camunda.authorization.CamundaTaskActionProvider.Companion.COMPLETE
 import com.ritense.valtimo.camunda.domain.CamundaTask
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -41,22 +44,35 @@ class FormViewModelSubmissionService(
     private val authorizationService: AuthorizationService,
     private val camundaTaskService: CamundaTaskService,
     private val objectMapper: ObjectMapper,
-    private val processAuthorizationService: ProcessAuthorizationService
+    private val processAuthorizationService: ProcessAuthorizationService,
+    private val processLinkService: ProcessLinkService,
 ) {
 
+    @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("handleStartFormSubmission(processDefinitionKey, documentDefinitionName, submission)"))
     fun handleStartFormSubmission(
         formName: String,
         processDefinitionKey: String,
         documentDefinitionName: String,
         submission: ObjectNode
+    ) = handleStartFormSubmission(processDefinitionKey, documentDefinitionName, submission)
+
+    fun handleStartFormSubmission(
+        processDefinitionKey: String,
+        documentDefinitionName: String,
+        submission: ObjectNode
     ) {
         processAuthorizationService.checkAuthorization(processDefinitionKey)
-        val startFormSubmissionHandler = formViewModelStartFormSubmissionHandlerFactory.getHandler(
-            formName = formName
-        ) ?: throw RuntimeException("No StartFormSubmissionHandler found for formName $formName")
-        val submissionType = startFormSubmissionHandler.getSubmissionType()
-        val submissionConverted = parseSubmission(submission, submissionType)
+
         runWithoutAuthorization {
+            val processLink = getStartEventProcessLink(processDefinitionKey)
+                ?: throw RuntimeException("No start event process link found for processDefinitionKey=$processDefinitionKey")
+
+            val startFormSubmissionHandler = formViewModelStartFormSubmissionHandlerFactory.getHandler(
+                processLink
+            ) ?: throw RuntimeException("No StartFormSubmissionHandler found for processDefinitionKey=$processDefinitionKey and processLink=${processLink.id}")
+            val submissionType = startFormSubmissionHandler.getSubmissionType()
+            val submissionConverted = parseSubmission(submission, submissionType)
+
             startFormSubmissionHandler.handle(
                 documentDefinitionName = documentDefinitionName,
                 processDefinitionKey = processDefinitionKey,
@@ -65,8 +81,14 @@ class FormViewModelSubmissionService(
         }
     }
 
+    @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("handleUserTaskSubmission(submission, taskInstanceId)"))
     fun handleUserTaskSubmission(
         formName: String,
+        submission: ObjectNode,
+        taskInstanceId: String
+    ) = handleUserTaskSubmission(submission, taskInstanceId)
+
+    fun handleUserTaskSubmission(
         submission: ObjectNode,
         taskInstanceId: String
     ) {
@@ -74,12 +96,14 @@ class FormViewModelSubmissionService(
         authorizationService.requirePermission(
             EntityAuthorizationRequest(CamundaTask::class.java, COMPLETE, task)
         )
-        val userTaskSubmissionHandler = formViewModelUserTaskSubmissionHandlerFactory.getHandler(
-            formName = formName
-        ) ?: throw RuntimeException("No UserTaskSubmissionHandler found for formName $formName")
-        val submissionType = userTaskSubmissionHandler.getSubmissionType()
-        val submissionConverted = parseSubmission(submission, submissionType)
+
         runWithoutAuthorization {
+            val processLink = getUserTaskProcessLink(task) ?: throw RuntimeException("No process link found for task ${task.processDefinition?.key}:${task.taskDefinitionKey}:${task.id}")
+            val userTaskSubmissionHandler = formViewModelUserTaskSubmissionHandlerFactory.getHandler(processLink
+            ) ?: throw RuntimeException("No UserTaskSubmissionHandler found for task=${task.processDefinition?.key}:${task.taskDefinitionKey}:${task.id} and processLink=${processLink.id}")
+            val submissionType = userTaskSubmissionHandler.getSubmissionType()
+            val submissionConverted = parseSubmission(submission, submissionType)
+
             userTaskSubmissionHandler.handle(
                 submission = submissionConverted,
                 task = task,
@@ -95,4 +119,15 @@ class FormViewModelSubmissionService(
         return objectMapper.convertValue(submission, submissionType.java)
     }
 
+    private fun getStartEventProcessLink(processDefinitionKey: String) = processLinkService.getProcessLinksByProcessDefinitionKey(
+        processDefinitionKey
+    ).firstOrNull { it.activityType === ActivityTypeWithEventName.START_EVENT_START }
+
+    private fun getUserTaskProcessLink(task: CamundaTask): ProcessLink? {
+        return task.processDefinition?.let { processDefinition ->
+            processLinkService.getProcessLinksByProcessDefinitionKey(
+                processDefinition.key,
+            ).firstOrNull { it.activityType == ActivityTypeWithEventName.USER_TASK_CREATE && it.activityId == task.taskDefinitionKey }
+        }
+    }
 }
