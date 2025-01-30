@@ -6,18 +6,20 @@ import com.ritense.formviewmodel.BaseTest
 import com.ritense.formviewmodel.submission.FormViewModelStartFormSubmissionHandlerFactory
 import com.ritense.formviewmodel.submission.FormViewModelUserTaskSubmissionHandlerFactory
 import com.ritense.formviewmodel.submission.TestStartFormSubmissionHandler
+import com.ritense.formviewmodel.viewmodel.FormViewModelLoader
+import com.ritense.formviewmodel.viewmodel.TestFormViewModelLoader
 import com.ritense.formviewmodel.viewmodel.TestViewModel
-import com.ritense.formviewmodel.viewmodel.TestViewModelLoader
 import com.ritense.formviewmodel.viewmodel.ViewModel
 import com.ritense.formviewmodel.viewmodel.ViewModelLoader
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.Mock
 import org.mockito.Mockito
-import org.mockito.Mockito.mock
+import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
@@ -25,24 +27,21 @@ import java.util.Optional
 import kotlin.reflect.KClass
 import kotlin.test.assertTrue
 
-class OnStartUpViewModelValidatorTest : BaseTest() {
-    private lateinit var formIoFormDefinitionService: FormIoFormDefinitionService
+@ExtendWith(MockitoExtension::class)
+class OnStartUpFormViewModelValidatorTest(
+    @Mock private val formIoFormDefinitionService: FormIoFormDefinitionService,
+    @Mock private val viewModelLoader: FormViewModelLoader<ViewModel>,
+    @Mock private val formViewModelStartFormSubmissionHandlerFactory: FormViewModelStartFormSubmissionHandlerFactory,
+    @Mock private val formViewModelUserTaskSubmissionHandlerFactory: FormViewModelUserTaskSubmissionHandlerFactory,
+) : BaseTest() {
     private lateinit var onStartUpViewModelValidator: OnStartUpViewModelValidator
-    private lateinit var viewModelLoaders: List<ViewModelLoader<*>>
-    private lateinit var viewModelLoader: ViewModelLoader<ViewModel>
-    private lateinit var formViewModelStartFormSubmissionHandlerFactory: FormViewModelStartFormSubmissionHandlerFactory
-    private lateinit var formViewModelUserTaskSubmissionHandlerFactory: FormViewModelUserTaskSubmissionHandlerFactory
+
 
     @BeforeEach
     fun setUp() {
-        formIoFormDefinitionService = mock()
-        viewModelLoader = mock(ViewModelLoader::class.java) as ViewModelLoader<ViewModel>
-        viewModelLoaders = listOf(viewModelLoader)
-        formViewModelStartFormSubmissionHandlerFactory = mock()
-        formViewModelUserTaskSubmissionHandlerFactory = mock()
         onStartUpViewModelValidator = OnStartUpViewModelValidator(
             formIoFormDefinitionService,
-            viewModelLoaders,
+            listOf(viewModelLoader),
             formViewModelStartFormSubmissionHandlerFactory,
             formViewModelUserTaskSubmissionHandlerFactory
         )
@@ -50,7 +49,7 @@ class OnStartUpViewModelValidatorTest : BaseTest() {
 
     @Test
     fun `should not find missing fields when all ViewModel fields match form`() {
-        val testViewModelLoader = TestViewModelLoader()
+        val testViewModelLoader = TestFormViewModelLoader()
         val missingFields = onStartUpViewModelValidator.validateViewModel(
             testViewModelLoader,
             formDefinitionOf("user-task-1")
@@ -60,7 +59,7 @@ class OnStartUpViewModelValidatorTest : BaseTest() {
 
     @Test
     fun `should find missing fields when ViewModel has extra fields`() {
-        val testViewModelLoader = TestViewModelLoader()
+        val testViewModelLoader = TestFormViewModelLoader()
         val missingFields = onStartUpViewModelValidator.validateViewModel(
             testViewModelLoader,
             formDefinitionOf("user-task-2")
@@ -92,7 +91,7 @@ class OnStartUpViewModelValidatorTest : BaseTest() {
 
     @Test
     fun `should throw exception when form could not be found`() {
-        val viewModelLoader: ViewModelLoader<*> = Mockito.mock()
+        val viewModelLoader: FormViewModelLoader<*> = Mockito.mock()
         whenever(viewModelLoader.getFormName()).thenReturn("I do not exist")
 
         val exception = assertThrows<NoSuchElementException> {
@@ -100,11 +99,12 @@ class OnStartUpViewModelValidatorTest : BaseTest() {
                 viewModelLoader
             )
         }
-        assertThat(exception.message).contains("Could not find form [I do not exist] declared in class com.ritense.formviewmodel.viewmodel.ViewModelLoader\$MockitoMock")
+        assertThat(exception.message).contains("Could not find form [I do not exist] declared in class com.ritense.formviewmodel.viewmodel.FormViewModelLoader\$MockitoMock")
     }
 
     @Test
     fun `should log validation errors to stdout`() {
+        val originalOut = System.out
         // Redirect System.err to capture what is printed
         val outputStream = ByteArrayOutputStream()
         val printStream = PrintStream(outputStream)
@@ -117,7 +117,7 @@ class OnStartUpViewModelValidatorTest : BaseTest() {
         onStartUpViewModelValidator.validate()
 
         // Reset System.err
-        System.setOut(System.out)
+        System.setOut(originalOut)
 
         // Get the captured output
         val printedStackTrace = outputStream.toString()
@@ -142,7 +142,7 @@ class OnStartUpViewModelValidatorTest : BaseTest() {
         }
         whenever(viewModelLoader.getFormName()).thenReturn(formName)
         whenever(viewModelLoader.getViewModelType()).thenReturn(viewModel::class as KClass<ViewModel>)
-        whenever(formViewModelStartFormSubmissionHandlerFactory.getHandler(formName)).thenReturn(
+        whenever(formViewModelStartFormSubmissionHandlerFactory.getHandlerForFormValidation(formName)).thenReturn(
             TestStartFormSubmissionHandler()
         )
         return viewModelLoader

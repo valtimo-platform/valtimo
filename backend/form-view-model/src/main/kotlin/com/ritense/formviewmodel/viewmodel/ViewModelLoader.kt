@@ -16,6 +16,7 @@
 
 package com.ritense.formviewmodel.viewmodel
 
+import com.ritense.processlink.domain.ProcessLink
 import com.ritense.valtimo.camunda.domain.CamundaTask
 import org.springframework.transaction.annotation.Transactional
 import kotlin.reflect.KClass
@@ -26,13 +27,10 @@ interface ViewModelLoader<T : ViewModel> {
 
     fun load(task: CamundaTask? = null): T
 
-    fun supports(formName: String) = getFormName() == formName
+    fun supports(processLink: ProcessLink): Boolean
 
     @Suppress("UNCHECKED_CAST")
     fun getViewModelType(): KClass<T> =
         this::class.allSupertypes.first { it.classifier == ViewModelLoader::class }.arguments.first().type?.let { it.classifier as KClass<T> }
             ?: throw IllegalArgumentException("Could not resolve ViewModelType for ${this::class}")
-
-    fun getFormName(): String
-
 }

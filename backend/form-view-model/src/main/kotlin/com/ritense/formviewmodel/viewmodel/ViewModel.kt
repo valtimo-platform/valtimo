@@ -20,8 +20,9 @@ import com.ritense.valtimo.camunda.domain.CamundaTask
 
 interface ViewModel {
 
+    @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("update(task, page)"))
     fun update(task: CamundaTask? = null): ViewModel {
-        return this
+        return update(task, null)
     }
 
     fun update(task: CamundaTask? = null, page: Int?): ViewModel {

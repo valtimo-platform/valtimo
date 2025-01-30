@@ -60,6 +60,7 @@ dependencies {
         api(project(":plugin-valtimo"))
         api(project(":process-document"))
         api(project(":process-link"))
+        api(project(":process-link-url"))
         api(project(":resource"))
         api(project(":search"))
         api(project(":document-generation::smartdocuments"))
