@@ -41,7 +41,7 @@ class SseAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(SseResource::class)
-    fun camundaEventResource(
+    fun sseResource(
         sseSubscriptionService: SseSubscriptionService
     ) = SseResource(sseSubscriptionService)
 
