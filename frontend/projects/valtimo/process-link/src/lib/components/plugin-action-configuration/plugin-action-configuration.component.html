@@ -14,6 +14,10 @@
   ~ limitations under the License.
   -->
 
+<valtimo-import-plugin-configuration
+  [pluginActionKey]="functionKey$ | async"
+></valtimo-import-plugin-configuration>
+
 <valtimo-plugin-configuration-container
   [pluginDefinitionKey]="pluginDefinitionKey$ | async"
   [functionKey]="functionKey$ | async"

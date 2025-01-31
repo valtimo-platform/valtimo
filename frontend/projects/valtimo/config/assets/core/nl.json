@@ -1809,7 +1809,14 @@
     "toggleViewModel": {
       "title": "View Model ingeschakeld?",
       "checkboxDescription": "Activeert Form View Model form afhandeling"
-    }
+    },
+    "importConfiguration": "Configuratie importeren",
+    "selectProcess": "Selecteer een proces",
+    "process": "Proces",
+    "version": "Versie",
+    "selectVersion": "Selecteer een versie",
+    "activity": "Procesactiviteit",
+    "selectActivity": "Selecteer een procesactiviteit"
   },
   "processLinkType": {
     "plugin": "Plugin",
