@@ -91,6 +91,10 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
     this.isStartForm$.next(isStartFormValue);
   }
 
+  @Input() set documentId(documentId: string) {
+    this.documentId$.next(documentId);
+  }
+
   @Input() set processDefinitionKey(processDefinitionKeyValue: string) {
     this.processDefinitionKey$.next(processDefinitionKeyValue);
   }
@@ -119,6 +123,7 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
   public readonly focus$ = new BehaviorSubject<FocusEvent>(null);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly isStartForm$ = new BehaviorSubject<boolean>(false);
+  public readonly documentId$ = new BehaviorSubject<string>(null);
   public readonly processDefinitionKey$ = new BehaviorSubject<string>(undefined);
   public readonly documentDefinitionName$ = new BehaviorSubject<string>(undefined);
   public readonly updateForm = new Subject<boolean>();
@@ -223,6 +228,7 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
       this.processDefinitionKey$,
       this.documentDefinitionName$,
       this.isStartForm$,
+      this.documentId$,
     ])
       .pipe(
         take(1),
@@ -233,12 +239,14 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
             processDefinitionKey,
             documentDefinitionName,
             isStartForm,
+            documentId,
           ]) =>
             isStartForm
               ? this.viewModelService
                   .submitViewModelForStartForm(
                     formName,
                     processDefinitionKey,
+                    documentId,
                     documentDefinitionName,
                     submission.data
                   )
@@ -403,11 +411,11 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
   }
 
   public loadInitialViewModelForStartForm(): void {
-    combineLatest([this.formName$, this.processDefinitionKey$])
+    combineLatest([this.formName$, this.processDefinitionKey$, this.documentId$])
       .pipe(
         take(1),
-        switchMap(([formName, processDefinitionKey]) =>
-          this.viewModelService.getViewModelForStartForm(formName, processDefinitionKey).pipe(
+        switchMap(([formName, processDefinitionKey, documentId]) =>
+          this.viewModelService.getViewModelForStartForm(formName, processDefinitionKey, documentId).pipe(
             tap(viewModel => {
               this.submission$.next({data: viewModel});
               this.change$.pipe(take(1)).subscribe(() => {
@@ -428,13 +436,14 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
         switchMap(updating => {
           if (!updating) {
             this.loading$.next(true);
-            return combineLatest([this.formName$, this.processDefinitionKey$, this.change$]).pipe(
+            return combineLatest([this.formName$, this.processDefinitionKey$, this.change$, this.documentId$]).pipe(
               take(1),
-              switchMap(([formName, processDefinitionKey, change]) =>
+              switchMap(([formName, processDefinitionKey, change, documentId]) =>
                 this.viewModelService
                   .updateViewModelForStartForm(
                     formName,
                     processDefinitionKey,
+                    documentId,
                     change.data,
                     this.formio.formio.page,
                     this._isWizard
