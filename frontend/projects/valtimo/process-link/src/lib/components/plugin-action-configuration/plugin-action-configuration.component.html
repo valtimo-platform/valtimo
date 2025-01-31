@@ -16,6 +16,7 @@
 
 <valtimo-import-plugin-configuration
   [pluginActionKey]="functionKey$ | async"
+  (configurationEvent)="onImportConfiguration($event)"
 ></valtimo-import-plugin-configuration>
 
 <valtimo-plugin-configuration-container

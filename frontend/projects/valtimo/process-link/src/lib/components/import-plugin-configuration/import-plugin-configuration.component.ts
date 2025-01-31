@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {AbstractControl, FormBuilder, FormControl, Validators} from '@angular/forms';
-import {BehaviorSubject, combineLatest, map, Observable, startWith} from 'rxjs';
-import {CompatiblePluginProcessLinks} from '../../models';
+import {BehaviorSubject, combineLatest, map, Observable, startWith, Subject} from 'rxjs';
+import {CompatiblePluginProcessLinks, ProcessLink} from '../../models';
 import {ProcessLinkService} from '../../services';
 import {ListItem} from 'carbon-components-angular';
 
@@ -31,6 +31,12 @@ export class ImportPluginConfigurationComponent {
     this.importPluginForm.reset();
     this.fetchCompatiblePluginProcessLinks(value);
   }
+
+  @Output() public readonly configurationEvent = new EventEmitter<
+    ProcessLink['actionProperties']
+  >();
+
+  public readonly open$ = new Subject<boolean>();
 
   private readonly _compatiblePluginProcessLinksSubject$ = new BehaviorSubject<
     CompatiblePluginProcessLinks[]
@@ -110,6 +116,26 @@ export class ImportPluginConfigurationComponent {
     private readonly formBuilder: FormBuilder,
     private readonly processLinkService: ProcessLinkService
   ) {}
+
+  public onSubmit(): void {
+    this.configurationEvent.emit(
+      this._compatiblePluginProcessLinksSubject$
+        .getValue()
+        .find(
+          compatiblePluginProcessLinks =>
+            compatiblePluginProcessLinks.processDefinitionKey === this.process.value
+        )
+        .versions.find(versionItem => versionItem.version === this.version.value)
+        .processLinks.find(processLinkItem => processLinkItem.activityId === this.activity.value)
+        .actionProperties
+    );
+
+    // needed to reliably trigger toggle tip closure
+    this.open$.next(true);
+    setTimeout(() => this.open$.next(false));
+
+    this.importPluginForm.reset();
+  }
 
   private fetchCompatiblePluginProcessLinks(pluginActionKey: string): void {
     this.processLinkService

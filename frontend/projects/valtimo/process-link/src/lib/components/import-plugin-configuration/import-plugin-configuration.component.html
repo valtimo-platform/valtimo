@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-toggletip [autoAlign]="true">
+<cds-toggletip [autoAlign]="true" [isOpen]="open$ | async">
   <button
     class="process-link-configuration-import-button"
     [disabled]="((compatiblePluginProcessLinks$ | async) || []).length === 0"
@@ -62,7 +62,7 @@
       ></cds-dropdown-list>
     </cds-dropdown>
 
-    <button cdsButton [disabled]="!importPluginForm.valid">
+    <button cdsButton [disabled]="!importPluginForm.valid" (click)="onSubmit()">
       {{ 'processLinkConfiguration.importConfiguration' | translate }}
     </button>
   </div>
