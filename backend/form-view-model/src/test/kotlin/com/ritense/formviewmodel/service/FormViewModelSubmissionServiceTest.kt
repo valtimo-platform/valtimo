@@ -3,6 +3,7 @@ package com.ritense.formviewmodel.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.AuthorizationService
+import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.form.domain.FormDefinition
 import com.ritense.form.domain.FormProcessLink
 import com.ritense.form.service.FormDefinitionService
@@ -26,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.ArgumentMatchers.isNull
 import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
@@ -49,6 +51,7 @@ class FormViewModelSubmissionServiceTest(
     @Mock private val processLinkService: ProcessLinkService,
     @Mock private val userTaskProcessLink: FormProcessLink,
     @Mock private val startEventProcessLink: FormProcessLink,
+    @Mock private val documentService: JsonSchemaDocumentService,
 ) : BaseTest() {
 
     private val objectMapper = ObjectMapper()
@@ -60,7 +63,7 @@ class FormViewModelSubmissionServiceTest(
 
     @BeforeEach
     fun setUp() {
-        testStartFormSubmissionHandler = spy(TestStartFormSubmissionHandler())
+        testStartFormSubmissionHandler = spy(TestStartFormSubmissionHandler(formDefinitionService = formDefinitionService))
         formViewModelStartFormSubmissionHandlerFactory = FormViewModelStartFormSubmissionHandlerFactory(
             handlers = listOf(testStartFormSubmissionHandler),
             formDefinitionService = formDefinitionService,
@@ -79,6 +82,7 @@ class FormViewModelSubmissionServiceTest(
             objectMapper = objectMapper,
             processAuthorizationService = processAuthorizationService,
             processLinkService = processLinkService,
+            documentService = documentService,
         )
 
         val processInstance = mock<CamundaExecution>().apply {
@@ -140,7 +144,7 @@ class FormViewModelSubmissionServiceTest(
         formViewModelSubmissionService.handleStartFormSubmission(
             processDefinitionKey = PROC_DEF_KEY,
             documentDefinitionName = DOC_DEF_NAME,
-            submission = submission
+            submission = submission,
         )
         val documentDefinitionNameCaptor = argumentCaptor<String>()
         val processDefinitionKeyCaptor = argumentCaptor<String>()
@@ -149,7 +153,8 @@ class FormViewModelSubmissionServiceTest(
         verify(testStartFormSubmissionHandler).handle(
             documentDefinitionName = documentDefinitionNameCaptor.capture(),
             processDefinitionKey = processDefinitionKeyCaptor.capture(),
-            submission = submissionCaptor.capture()
+            submission = submissionCaptor.capture(),
+            document = isNull()
         )
         assertThat(documentDefinitionNameCaptor.firstValue).isEqualTo(DOC_DEF_NAME)
         assertThat(processDefinitionKeyCaptor.firstValue).isEqualTo(PROC_DEF_KEY)

@@ -29,13 +29,14 @@ dockerCompose {
 }
 
 dependencies {
+    implementation project(":authorization")
+    implementation project(":command-handling")
     implementation project(":contract")
     implementation project(":core")
-    implementation project(":authorization")
+    implementation project(":document")
     implementation project(":form")
-    implementation project(":process-link")
     implementation project(":process-document")
-    implementation project(":command-handling")
+    implementation project(":process-link")
     implementation project(":web")
 
     api "org.springframework.security:spring-security-core"

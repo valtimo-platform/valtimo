@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.formviewmodel.viewmodel.ViewModel
 import com.ritense.formviewmodel.viewmodel.ViewModelLoaderFactory
 import com.ritense.processlink.domain.ActivityTypeWithEventName
@@ -31,6 +33,7 @@ import com.ritense.valtimo.camunda.domain.CamundaTask
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.service.CamundaTaskService
 import org.springframework.stereotype.Service
+import java.util.UUID
 import kotlin.reflect.KClass
 
 @Service
@@ -42,6 +45,7 @@ class FormViewModelService(
     private val authorizationService: AuthorizationService,
     private val processAuthorizationService: ProcessAuthorizationService,
     private val processLinkService: ProcessLinkService,
+    private val documentService: JsonSchemaDocumentService,
 ) {
 
     @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("getStartFormViewModel(processDefinitionKey)"))
@@ -51,15 +55,30 @@ class FormViewModelService(
     ) = getStartFormViewModel(processDefinitionKey)
 
     fun getStartFormViewModel(
-        processDefinitionKey: String
+        processDefinitionKey: String,
     ): ViewModel? {
-        processAuthorizationService.checkAuthorization(processDefinitionKey)
+        return getStartFormViewModel(processDefinitionKey, null)
+    }
 
-        return runWithoutAuthorization {
-            val processLink = getStartEventProcessLink(processDefinitionKey) ?: return@runWithoutAuthorization null
-
-            viewModelLoaderFactory.getViewModelLoader(processLink)?.load()
+    fun getStartFormViewModel(
+        processDefinitionKey: String,
+        documentId: UUID?,
+    ): ViewModel? {
+        val document = documentId?.let {
+            runWithoutAuthorization {
+                documentService.getDocumentBy(JsonSchemaDocumentId.existingId(documentId))
+            }
         }
+
+        processAuthorizationService.checkStartProcessAuthorization(processDefinitionKey, document)
+
+        val processLink = runWithoutAuthorization {
+             getStartEventProcessLink(processDefinitionKey)
+        } ?: return null
+
+        val modelLoader = viewModelLoaderFactory.getViewModelLoader(processLink)
+
+        return modelLoader?.load(task = null, document = document)
     }
 
     @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("getUserTaskFormViewModel(taskInstanceId)"))
@@ -76,11 +95,14 @@ class FormViewModelService(
             EntityAuthorizationRequest(CamundaTask::class.java, VIEW, task)
         )
 
-        return runWithoutAuthorization {
-            val processLink = getUserTaskProcessLink(task) ?: return@runWithoutAuthorization null
+        val processLink = runWithoutAuthorization {
+            getUserTaskProcessLink(task)
+        }?: return null
 
-            viewModelLoaderFactory.getViewModelLoader(processLink)?.load(task)
-        }
+        val loader = viewModelLoaderFactory.getViewModelLoader(processLink)
+
+        return loader?.load(task = task, document = null)
+
     }
 
     @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("updateStartFormViewModel(processDefinitionKey, submission, page)"))
@@ -103,21 +125,25 @@ class FormViewModelService(
         processDefinitionKey: String,
         submission: ObjectNode,
         page: Int?,
+        documentId: UUID? = null,
     ): ViewModel? {
-        processAuthorizationService.checkAuthorization(processDefinitionKey)
 
-        return runWithoutAuthorization {
-            val processLink = getStartEventProcessLink(processDefinitionKey) ?: return@runWithoutAuthorization null
-
-            val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(processLink) ?: return@runWithoutAuthorization null
-            val viewModelType = viewModelLoader.getViewModelType()
-
-            if (page != null) {
-                parseViewModel(submission, viewModelType).update(page = page)
-            } else {
-                parseViewModel(submission, viewModelType).update()
+        val document = documentId?.let {
+            runWithoutAuthorization {
+                documentService.getDocumentBy(JsonSchemaDocumentId.existingId(documentId))
             }
         }
+
+        processAuthorizationService.checkStartProcessAuthorization(processDefinitionKey, document)
+
+        val processLink =  runWithoutAuthorization {
+            getStartEventProcessLink(processDefinitionKey)
+        } ?: return null
+
+        val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(processLink) ?: return null
+        val viewModel = parseViewModel(submission, viewModelLoader.getViewModelType())
+
+        return viewModel.update(page = page, document = document)
     }
 
     @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("updateStartFormViewModel(taskInstanceId, submission, page)"))
@@ -146,18 +172,14 @@ class FormViewModelService(
             EntityAuthorizationRequest(CamundaTask::class.java, VIEW, task)
         )
 
-        return runWithoutAuthorization {
-            val processLink = getUserTaskProcessLink(task) ?: return@runWithoutAuthorization null
+        val processLink = runWithoutAuthorization {
+            getUserTaskProcessLink(task)
+        } ?: return null
 
-            val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(processLink) ?: return@runWithoutAuthorization null
-            val viewModelType = viewModelLoader.getViewModelType()
+        val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(processLink) ?: return null
+        val viewModel = parseViewModel(submission, viewModelLoader.getViewModelType())
 
-            if (page != null) {
-                parseViewModel(submission, viewModelType).update(task = task, page = page)
-            } else {
-                parseViewModel(submission, viewModelType).update(task)
-            }
-        }
+        return viewModel.update(task = task, page = page, document = null)
     }
 
     fun <T : ViewModel> parseViewModel(
