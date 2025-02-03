@@ -46,6 +46,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {CommonModule} from '@angular/common';
 import {isEqual} from 'lodash';
+import {LayerModule} from 'carbon-components-angular';
 
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
 
@@ -54,7 +55,7 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
   templateUrl: './form-view-model.component.html',
   styleUrls: ['./form-view-model.component.css'],
   standalone: true,
-  imports: [CommonModule, FormioModule],
+  imports: [CommonModule, FormioModule, LayerModule],
 })
 export class FormViewModelComponent implements OnInit, OnDestroy {
   @ViewChild('formio') formio: FormioComponent;
@@ -91,6 +92,10 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
     this.isStartForm$.next(isStartFormValue);
   }
 
+  @Input() set documentId(documentId: string) {
+    this.documentId$.next(documentId);
+  }
+
   @Input() set processDefinitionKey(processDefinitionKeyValue: string) {
     this.processDefinitionKey$.next(processDefinitionKeyValue);
   }
@@ -119,6 +124,7 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
   public readonly focus$ = new BehaviorSubject<FocusEvent>(null);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly isStartForm$ = new BehaviorSubject<boolean>(false);
+  public readonly documentId$ = new BehaviorSubject<string>(null);
   public readonly processDefinitionKey$ = new BehaviorSubject<string>(undefined);
   public readonly documentDefinitionName$ = new BehaviorSubject<string>(undefined);
   public readonly updateForm = new Subject<boolean>();
@@ -143,9 +149,7 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
     })
   );
 
-  public readonly renderOptions$: Observable<any> = combineLatest([
-    this.currentLanguage$,
-  ]).pipe(
+  public readonly renderOptions$: Observable<any> = combineLatest([this.currentLanguage$]).pipe(
     map(([language]) => {
       const formioTranslations = this.translateService.instant('formioTranslations');
 
@@ -153,11 +157,11 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
         language,
         ...(typeof formioTranslations === 'object'
           ? {
-            language,
-            i18n: {
-              [language]: this.stateService.flattenTranslationsObject(formioTranslations),
-            },
-          }
+              language,
+              i18n: {
+                [language]: this.stateService.flattenTranslationsObject(formioTranslations),
+              },
+            }
           : {}),
       };
     })
@@ -179,19 +183,23 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
       this.loadInitialViewModel();
     }
 
-    this.focusSubscription = this.focus$.pipe(withLatestFrom(this.change$, this.submission$)).subscribe(([_, changeData, submissionDate]) => {
-      const dataAtFocus =
-        !!changeData && !!changeData.data ? JSON.parse(JSON.stringify(changeData.data)) : JSON.parse(JSON.stringify(submissionDate.data));
-      this.blur$
-        .pipe(take(1))
-        .pipe(withLatestFrom(this.change$))
-        .subscribe(([_, blurData]) => {
-          const dataEqual = isEqual(dataAtFocus, blurData?.data);
-          if (!dataEqual) {
-            this.updateForm.next(true);
-          }
-        });
-    });
+    this.focusSubscription = this.focus$
+      .pipe(withLatestFrom(this.change$, this.submission$))
+      .subscribe(([_, changeData, submissionDate]) => {
+        const dataAtFocus =
+          !!changeData && !!changeData.data
+            ? JSON.parse(JSON.stringify(changeData.data))
+            : JSON.parse(JSON.stringify(submissionDate.data));
+        this.blur$
+          .pipe(take(1))
+          .pipe(withLatestFrom(this.change$))
+          .subscribe(([_, blurData]) => {
+            const dataEqual = isEqual(dataAtFocus, blurData?.data);
+            if (!dataEqual) {
+              this.updateForm.next(true);
+            }
+          });
+      });
 
     this.updateSubscription = this.updateForm
       .pipe(
@@ -223,6 +231,7 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
       this.processDefinitionKey$,
       this.documentDefinitionName$,
       this.isStartForm$,
+      this.documentId$,
     ])
       .pipe(
         take(1),
@@ -233,12 +242,14 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
             processDefinitionKey,
             documentDefinitionName,
             isStartForm,
+            documentId,
           ]) =>
             isStartForm
               ? this.viewModelService
                   .submitViewModelForStartForm(
                     formName,
                     processDefinitionKey,
+                    documentId,
                     documentDefinitionName,
                     submission.data
                   )
@@ -249,7 +260,10 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
                       return of(response);
                     }),
                     catchError(error => {
-                      const message = error instanceof HttpErrorResponse ? this.handleFormError(error) : error as string
+                      const message =
+                        error instanceof HttpErrorResponse
+                          ? this.handleFormError(error)
+                          : (error as string);
                       callback(message ? {message: message, component: null} : null, null);
                       return EMPTY; // return an empty observable to complete the stream
                     })
@@ -263,7 +277,10 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
                       return of(response);
                     }),
                     catchError(error => {
-                      const message = error instanceof HttpErrorResponse ? this.handleFormError(error) : error as string
+                      const message =
+                        error instanceof HttpErrorResponse
+                          ? this.handleFormError(error)
+                          : (error as string);
                       callback(message ? {message: message, component: null} : null, null);
                       return EMPTY; // return an empty observable to complete the stream
                     })
@@ -277,7 +294,7 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
     const formInstance = this.formio.formio;
     this.formErrors$.next([]);
     if (error.error?.componentErrors) {
-      const errors = []
+      const errors = [];
       error.error.componentErrors.forEach(componentError => {
         const component = formInstance.getComponent(componentError.component);
         if (component == null) {
@@ -286,8 +303,8 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
           component?.setCustomValidity(componentError.message);
         }
       });
-      this.formErrors$.next(errors)
-    } else if(error.error?.error) {
+      this.formErrors$.next(errors);
+    } else if (error.error?.error) {
       const component = formInstance.getComponent(error.error?.component);
       if (component == null) {
         this.formErrors$.next([error.error.error]);
@@ -295,7 +312,7 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
         component?.setCustomValidity(error.error.error);
       }
     } else {
-      return error.message
+      return error.message;
     }
   }
 
@@ -385,7 +402,7 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
                         this.handlePageChange();
                         this.refreshForm.emit({submission: submission});
                         this.loading$.next(false);
-                        this.formErrors$.next([])
+                        this.formErrors$.next([]);
                       },
                       error: error => {
                         this.loading$.next(false);
@@ -403,19 +420,21 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
   }
 
   public loadInitialViewModelForStartForm(): void {
-    combineLatest([this.formName$, this.processDefinitionKey$])
+    combineLatest([this.formName$, this.processDefinitionKey$, this.documentId$])
       .pipe(
         take(1),
-        switchMap(([formName, processDefinitionKey]) =>
-          this.viewModelService.getViewModelForStartForm(formName, processDefinitionKey).pipe(
-            tap(viewModel => {
-              this.submission$.next({data: viewModel});
-              this.change$.pipe(take(1)).subscribe(() => {
-                this.loading$.next(false);
-              });
-              this._isWizard = this.formio.form.display === 'wizard';
-            })
-          )
+        switchMap(([formName, processDefinitionKey, documentId]) =>
+          this.viewModelService
+            .getViewModelForStartForm(formName, processDefinitionKey, documentId)
+            .pipe(
+              tap(viewModel => {
+                this.submission$.next({data: viewModel});
+                this.change$.pipe(take(1)).subscribe(() => {
+                  this.loading$.next(false);
+                });
+                this._isWizard = this.formio.form.display === 'wizard';
+              })
+            )
         )
       )
       .subscribe();
@@ -428,13 +447,19 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
         switchMap(updating => {
           if (!updating) {
             this.loading$.next(true);
-            return combineLatest([this.formName$, this.processDefinitionKey$, this.change$]).pipe(
+            return combineLatest([
+              this.formName$,
+              this.processDefinitionKey$,
+              this.change$,
+              this.documentId$,
+            ]).pipe(
               take(1),
-              switchMap(([formName, processDefinitionKey, change]) =>
+              switchMap(([formName, processDefinitionKey, change, documentId]) =>
                 this.viewModelService
                   .updateViewModelForStartForm(
                     formName,
                     processDefinitionKey,
+                    documentId,
                     change.data,
                     this.formio.formio.page,
                     this._isWizard
@@ -448,7 +473,7 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
                         this.handlePageChange();
                         this.refreshForm.emit({submission: submission});
                         this.loading$.next(false);
-                        this.formErrors$.next([])
+                        this.formErrors$.next([]);
                       },
                       error: error => {
                         this.loading$.next(false);

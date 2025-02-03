@@ -52,6 +52,7 @@
         *ngIf="activeTab() === $index"
         [isFieldWidget]="true"
         [columnData]="selectedWidgetContent()?.[$index]"
+        [documentDefinitionName]="documentDefinitionName$ | async"
         (columnUpdateEvent)="onColumnUpdateEvent($event, $index)"
       ></valtimo-dossier-management-widget-fields-column>
     </cds-tab>

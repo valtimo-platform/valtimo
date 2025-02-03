@@ -34,12 +34,17 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import {ActivatedRoute, ParamMap} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   CARBON_THEME,
   CdsThemeService,
   CurrentCarbonTheme,
   InputLabelModule,
+  ValuePathItem,
+  ValuePathSelectorComponent,
+  ValuePathSelectorPrefix,
+  ValuePathType,
 } from '@valtimo/components';
 import {
   CaseWidgetCurrencyDisplayType,
@@ -59,13 +64,11 @@ import {
   InputModule,
   ListItem,
 } from 'carbon-components-angular';
-import {debounceTime, map, Observable, Subscription} from 'rxjs';
-
+import {BehaviorSubject, debounceTime, map, Observable, Subscription} from 'rxjs';
 import {WidgetContentComponent} from '../../../models';
 import {WidgetFieldsService, WidgetWizardService} from '../../../services';
 import {DossierManagementWidgetFieldsColumnComponent} from '../fields/column/dossier-management-widget-fields-column.component';
 import {DossierManagementWidgetProcessSelectorComponent} from '../process-selector/dossier-management-widget-process-selector.component';
-import {ActivatedRoute, ParamMap} from '@angular/router';
 
 @Component({
   templateUrl: './dossier-management-widget-collection.component.html',
@@ -84,6 +87,7 @@ import {ActivatedRoute, ParamMap} from '@angular/router';
     IconModule,
     InputLabelModule,
     DossierManagementWidgetProcessSelectorComponent,
+    ValuePathSelectorComponent,
   ],
 })
 export class DossierManagementWidgetCollectionComponent
@@ -131,11 +135,14 @@ export class DossierManagementWidgetCollectionComponent
     )
   );
 
+  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
+  public readonly ValuePathType = ValuePathType;
   public readonly CaseWidgetDisplayTypeKey = CaseWidgetDisplayTypeKey;
   public readonly content = this.widgetWizardService
     .widgetContent as WritableSignal<WidgetCollectionContent>;
   public readonly displayTypeItems: ListItem[] = this.widgetFieldsService.displayTypeItems;
 
+  public readonly selectedCollection$ = new BehaviorSubject<ValuePathItem | null>(null);
   public readonly documentDefinitionName$: Observable<string> = this.route.paramMap.pipe(
     map((paramMap: ParamMap) => paramMap.get('name') ?? '')
   );
@@ -238,6 +245,10 @@ export class DossierManagementWidgetCollectionComponent
           ),
         }) as WidgetCollectionContent
     );
+  }
+
+  public onCollectionSelected(item: ValuePathItem): void {
+    this.selectedCollection$.next(item);
   }
 
   private initForm(): void {

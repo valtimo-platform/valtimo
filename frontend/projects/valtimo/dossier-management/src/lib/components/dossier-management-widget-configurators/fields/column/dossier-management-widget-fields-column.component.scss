@@ -35,13 +35,18 @@
 
   &__content {
     display: grid;
-    grid-template-columns: 1fr 1fr 180px;
+    grid-template-columns: 1fr 180px 1fr;
     align-items: flex-end;
     gap: 16px;
 
     &--collection {
-      grid-template-columns: 1fr 1fr 180px 180px;
+      grid-template-columns: 1fr 180px 180px 1fr;
     }
+  }
+
+  &__path-selector {
+    display: flex;
+    flex-direction: column;
   }
 
   &__title {
