@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {CommonModule} from '@angular/common';
 import {
   Component,
   EventEmitter,
@@ -25,8 +25,23 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {ValuePathSelectorService} from '../../services';
+import {
+  AbstractControl,
+  ControlValueAccessor,
+  FormBuilder,
+  FormControl,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import {TranslateModule} from '@ngx-translate/core';
+import {DocumentService} from '@valtimo/document';
+import {
+  DropdownModule,
+  InputModule,
+  ListItem,
+  LoadingModule,
+  ToggleModule,
+} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -39,30 +54,15 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
+import {distinctUntilChanged} from 'rxjs/operators';
+import {ValuePathItem, ValuePathType} from '../../models';
 import {
   ValuePathSelectorInputMode,
   ValuePathSelectorNotation,
   ValuePathSelectorPrefix,
 } from '../../models/value-path-selector.model';
-import {
-  DropdownModule,
-  InputModule,
-  ListItem,
-  LoadingModule,
-  ToggleModule,
-} from 'carbon-components-angular';
-import {
-  AbstractControl,
-  ControlValueAccessor,
-  FormBuilder,
-  FormControl,
-  NG_VALUE_ACCESSOR,
-  ReactiveFormsModule,
-} from '@angular/forms';
+import {ValuePathSelectorService} from '../../services';
 import {InputLabelModule} from '../input-label/input-label.module';
-import {TranslateModule} from '@ngx-translate/core';
-import {DocumentService} from '@valtimo/document';
-import {distinctUntilChanged} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-value-path-selector',
@@ -166,7 +166,16 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     if (this.showDocumentDefinitionSelector)
       this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
   }
+  private readonly _type$ = new BehaviorSubject<ValuePathType>(ValuePathType.FIELD);
+  @Input() public set type(value: ValuePathType) {
+    this._type$.next(value);
+  }
+  private readonly _parentItem$ = new BehaviorSubject<ValuePathItem | null>(null);
+  @Input() public set parentItem(value: ValuePathItem | null) {
+    this._parentItem$.next(value);
+  }
   @Output() valueChangeEvent: EventEmitter<string> = new EventEmitter();
+  @Output() collectionSelected: EventEmitter<ValuePathItem> = new EventEmitter();
 
   private readonly _documentDefinitionNameSubject$ = new BehaviorSubject<string>('');
   private get _documentDefinitionName$(): Observable<string> {
@@ -181,43 +190,75 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   private readonly _inputMode$ = new BehaviorSubject<ValuePathSelectorInputMode>(
     ValuePathSelectorInputMode.DROPDOWN
   );
-  public get inputModeIsDropdown$(): Observable<boolean> {
-    return this._inputMode$.pipe(map(mode => mode === ValuePathSelectorInputMode.DROPDOWN));
-  }
+  public inputModeIsDropdown$: Observable<boolean> = this._inputMode$.pipe(
+    map(mode => {
+      return mode === ValuePathSelectorInputMode.DROPDOWN;
+    })
+  );
 
   public readonly loadingValuePathItems$ = new BehaviorSubject<boolean>(true);
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
 
-  private _cachedOptions: string[] = [];
+  private _cachedOptions: (ValuePathItem & {formattedPath: string})[] = [];
 
-  public valuePathListItems$: Observable<ListItem[]> = combineLatest([
-    this._documentDefinitionName$,
-    this._prefixes$,
-    this._version$,
-  ]).pipe(
+  public valuePathListItems$: Observable<ListItem[]> = this._parentItem$.pipe(
     tap(() => this.loadingValuePathItems$.next(true)),
-    switchMap(([documentDefinitionName, prefixes, version]) =>
-      typeof version === 'number'
-        ? this.valuePathSelectorService.getResolvableKeysPerPrefix(
-            prefixes,
-            documentDefinitionName,
-            version
+    switchMap((parentItem: ValuePathItem | null) =>
+      parentItem
+        ? of(parentItem.children?.map((child: string) => ({path: child})) ?? [])
+        : combineLatest([
+            this._documentDefinitionName$,
+            this._prefixes$,
+            this._type$,
+            this._version$,
+          ]).pipe(
+            switchMap(([documentDefinitionName, prefixes, type, version]) =>
+              typeof version === 'number'
+                ? this.valuePathSelectorService.getResolvableKeys(
+                    prefixes,
+                    documentDefinitionName,
+                    type,
+                    version
+                  )
+                : this.valuePathSelectorService.getResolvableKeys(
+                    prefixes,
+                    documentDefinitionName,
+                    type
+                  )
+            )
           )
-        : this.valuePathSelectorService.getResolvableKeysPerPrefix(prefixes, documentDefinitionName)
     ),
-    map(result =>
-      result.map(path => this.getFormattedPath(path)).sort((a, b) => a.localeCompare(b))
+    map((results: ValuePathItem[]) =>
+      results
+        .map((result: ValuePathItem) => ({
+          ...result,
+          formattedPath: !this._parentItem$.getValue()
+            ? this.getFormattedPath(result.path)
+            : result.path,
+        }))
+        .sort((a, b) => a.formattedPath.localeCompare(b.formattedPath))
     ),
     tap(options => (this._cachedOptions = options)),
     switchMap(options =>
       combineLatest([of(options), this._selectedPath$, this.inputModeIsDropdown$])
     ),
     tap(([options, selectedPath, inputModeIsDropdown]) => {
-      if (!options.includes(selectedPath) && !!selectedPath && inputModeIsDropdown)
+      const formattedOptions = options.map(option => option.formattedPath);
+      if (!formattedOptions.includes(selectedPath) && !!selectedPath && inputModeIsDropdown)
         this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
     }),
     map(([options, selectedPath]) =>
-      options.map(option => ({content: option, selected: option === selectedPath}))
+      options.map(option => {
+        const mappedOption = {
+          content: option.formattedPath,
+          selected: option.formattedPath === selectedPath,
+          path: option.path,
+          ...(!!option.children && {children: option.children}),
+        };
+
+        if (mappedOption.selected) this.onPathSelected({item: mappedOption});
+        return mappedOption;
+      })
     ),
     tap(() => this.loadingValuePathItems$.next(false))
   );
@@ -290,9 +331,12 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     }
   }
 
-  public onPathSelected(event: {item: {content: string}}): void {
+  public onPathSelected(event: {item: {content: string} & ValuePathItem}): void {
     const selectedPath = event?.item?.content;
     if (!selectedPath) return;
+
+    if (this.collectionSelected.observed) this.collectionSelected.emit(event.item);
+
     this.selectedPath.setValue(selectedPath);
   }
 
@@ -306,7 +350,10 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   public onInputModeChange(toDropdownMode: boolean): void {
     const currentPathValue = this.selectedPath.value;
 
-    if (toDropdownMode && !this._cachedOptions.includes(currentPathValue)) {
+    if (
+      toDropdownMode &&
+      !this._cachedOptions.map(option => option.formattedPath).includes(currentPathValue)
+    ) {
       this.selectedPath.setValue('');
     }
 

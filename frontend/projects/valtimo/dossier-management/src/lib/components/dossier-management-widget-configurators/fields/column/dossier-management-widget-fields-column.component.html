@@ -54,24 +54,6 @@
               />
             </cds-text-label>
 
-            <cds-text-label>
-              <v-input-label
-                [title]="'widgetTabManagement.content.fields.value' | translate"
-                [tooltip]="
-                  'widgetTabManagement.content.' + widgetType() + '.valueTooltip' | translate
-                "
-              >
-              </v-input-label>
-
-              <input
-                cdsText
-                [attr.data-carbon-theme]="inputTheme"
-                [placeholder]="'widgetTabManagement.content.fields.valuePlaceholder' | translate"
-                type="text"
-                formControlName="content"
-              />
-            </cds-text-label>
-
             <cds-dropdown
               [attr.data-carbon-theme]="inputTheme"
               [label]="'widgetTabManagement.content.fields.type' | translate"
@@ -86,6 +68,23 @@
             <ng-container
               *ngTemplateOutlet="fieldWidthDropdown; context: {index: $index}"
             ></ng-container>
+
+            <div class="valtimo-dossier-management-widget-field-column__path-selector">
+              <v-input-label
+                [title]="'widgetTabManagement.content.fields.value' | translate"
+                [tooltip]="
+                  'widgetTabManagement.content.' + widgetType() + '.valueTooltip' | translate
+                "
+              >
+              </v-input-label>
+
+              <valtimo-value-path-selector
+                formControlName="content"
+                [documentDefinitionName]="documentDefinitionName"
+                [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+                [parentItem]="selectedCollection"
+              ></valtimo-value-path-selector>
+            </div>
           </div>
 
           <div class="valtimo-dossier-management-widget-field-column__options">

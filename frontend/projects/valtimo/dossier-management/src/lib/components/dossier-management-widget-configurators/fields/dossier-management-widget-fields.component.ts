@@ -29,6 +29,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
+import {ActivatedRoute, ParamMap} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   CARBON_THEME,
@@ -39,11 +40,11 @@ import {
 import {FieldsCaseWidgetValue, WidgetFieldsContent} from '@valtimo/dossier';
 import {ButtonModule, IconModule, InputModule, Tab, TabsModule} from 'carbon-components-angular';
 import {debounceTime, map, Observable, Subscription} from 'rxjs';
+
 import {WidgetContentComponent} from '../../../models';
 import {WidgetWizardService} from '../../../services';
-import {DossierManagementWidgetFieldsColumnComponent} from './column/dossier-management-widget-fields-column.component';
-import {ActivatedRoute, ParamMap} from '@angular/router';
 import {DossierManagementWidgetProcessSelectorComponent} from '../process-selector/dossier-management-widget-process-selector.component';
+import {DossierManagementWidgetFieldsColumnComponent} from './column/dossier-management-widget-fields-column.component';
 
 @Component({
   templateUrl: './dossier-management-widget-fields.component.html',

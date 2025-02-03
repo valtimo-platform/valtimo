@@ -2,6 +2,7 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {FormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
+import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
 import {CaseWidgetAction} from '@valtimo/dossier';
 import {DropdownModule, InputModule, ListItem} from 'carbon-components-angular';
@@ -15,7 +16,6 @@ import {
   switchMap,
 } from 'rxjs';
 import {WidgetWizardService} from '../../../services';
-import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-dossier-management-widget-process-selector',

@@ -16,12 +16,30 @@
 
 import {ListItem} from 'carbon-components-angular';
 
+enum ValuePathType {
+  FIELD = 'FIELD',
+  COLLECTION = 'COLLECTION',
+}
+
+interface ValuePathResponse {
+  path: string;
+  type: ValuePathType;
+  children?: ValuePathResponse[];
+}
+
 interface ValuePathSelectorCache {
   [documentDefinitionName: string]: {
     [version: string | number]: {
-      [prefix: string]: string[];
+      [prefix: string]: {
+        [type in ValuePathType]: ValuePathItem[];
+      };
     };
   };
+}
+
+interface ValuePathItem {
+  path: string;
+  children?: string[];
 }
 
 type DocumentDefinitionItemsCache = ListItem[];
@@ -45,10 +63,13 @@ type ValuePathSelectorNotation = 'dots' | 'slashes';
 type ValuePathVersionArgument = number | 'latest';
 
 export {
-  ValuePathSelectorCache,
   ValuePathSelectorPrefix,
   ValuePathSelectorInputMode,
   ValuePathVersionArgument,
   DocumentDefinitionItemsCache,
   ValuePathSelectorNotation,
+  ValuePathType,
+  ValuePathResponse,
+  ValuePathSelectorCache,
+  ValuePathItem,
 };

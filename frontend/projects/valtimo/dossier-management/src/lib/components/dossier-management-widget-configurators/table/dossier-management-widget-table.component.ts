@@ -28,21 +28,25 @@ import {
   WritableSignal,
 } from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {ActivatedRoute, ParamMap} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   CARBON_THEME,
   CdsThemeService,
   CurrentCarbonTheme,
   InputLabelModule,
+  ValuePathItem,
+  ValuePathSelectorComponent,
+  ValuePathSelectorPrefix,
+  ValuePathType,
 } from '@valtimo/components';
 import {FieldsCaseWidgetValue, WidgetContentProperties, WidgetTableContent} from '@valtimo/dossier';
 import {ButtonModule, InputModule, ToggleModule} from 'carbon-components-angular';
-import {debounceTime, map, Observable, Subscription} from 'rxjs';
+import {BehaviorSubject, debounceTime, map, Observable, Subscription} from 'rxjs';
 import {WidgetContentComponent} from '../../../models';
 import {WidgetWizardService} from '../../../services';
 import {DossierManagementWidgetFieldsColumnComponent} from '../fields/column/dossier-management-widget-fields-column.component';
 import {DossierManagementWidgetProcessSelectorComponent} from '../process-selector/dossier-management-widget-process-selector.component';
-import {ActivatedRoute, ParamMap} from '@angular/router';
 
 @Component({
   templateUrl: './dossier-management-widget-table.component.html',
@@ -60,6 +64,7 @@ import {ActivatedRoute, ParamMap} from '@angular/router';
     ButtonModule,
     InputLabelModule,
     DossierManagementWidgetProcessSelectorComponent,
+    ValuePathSelectorComponent,
   ],
 })
 export class DossierManagementWidgetTableComponent
@@ -96,9 +101,13 @@ export class DossierManagementWidgetTableComponent
       (this.widgetWizardService.widgetContent() as WidgetTableContent)?.firstColumnAsTitle || false
   );
 
+  public readonly selectedCollection$ = new BehaviorSubject<ValuePathItem | null>(null);
   public readonly documentDefinitionName$: Observable<string> = this.route.paramMap.pipe(
     map((paramMap: ParamMap) => paramMap.get('name') ?? '')
   );
+
+  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
+  public readonly ValuePathType = ValuePathType;
 
   private readonly _contentValid = signal<boolean>(this.widgetWizardService.editMode());
   private readonly _subscriptions = new Subscription();
@@ -151,5 +160,9 @@ export class DossierManagementWidgetTableComponent
       (content: WidgetContentProperties | null) =>
         ({...content, firstColumnAsTitle}) as WidgetTableContent
     );
+  }
+
+  public onCollectionSelected(item: ValuePathItem): void {
+    this.selectedCollection$.next(item);
   }
 }

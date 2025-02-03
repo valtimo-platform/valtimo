@@ -17,31 +17,29 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable, OnDestroy} from '@angular/core';
 import {BaseApiService, ConfigService} from '@valtimo/config';
+import {BehaviorSubject, Observable, Subscription, interval, map, of, take, tap} from 'rxjs';
 import {
-  BehaviorSubject,
-  catchError,
-  combineLatest,
-  interval,
-  map,
-  Observable,
-  of,
-  Subscription,
-  switchMap,
-  take,
-} from 'rxjs';
-import {ValuePathSelectorCache, ValuePathSelectorPrefix, ValuePathVersionArgument} from '../models';
+  ValuePathItem,
+  ValuePathResponse,
+  ValuePathSelectorCache,
+  ValuePathSelectorPrefix,
+  ValuePathType,
+  ValuePathVersionArgument,
+} from '../models';
 import {deepmerge} from 'deepmerge-ts';
 import {DocumentDefinitions} from '@valtimo/document';
 import {isEqual} from 'lodash';
-import {tap} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ValuePathSelectorService extends BaseApiService implements OnDestroy {
+  private _prefixes: ValuePathSelectorPrefix[];
+  private _documentDefinitionName: string;
+  private _version: ValuePathVersionArgument;
+
   private _cache: ValuePathSelectorCache = {};
   private _documentDefinitionCache$ = new BehaviorSubject<DocumentDefinitions | null>(null);
-
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -50,49 +48,6 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
   ) {
     super(httpClient, configService);
     this.openClearCacheSubscription();
-  }
-
-  public getResolvableKeysPerPrefix(
-    prefixes: ValuePathSelectorPrefix[],
-    documentDefinitionName: string,
-    version: ValuePathVersionArgument = 'latest'
-  ): Observable<string[]> {
-    return of(version).pipe(
-      switchMap(version => {
-        const prefixesWithCache = prefixes.filter(
-          prefix => !!this.getResultFromCache(prefix, documentDefinitionName, version)
-        );
-        const resultsFromCache = prefixesWithCache
-          .map(prefix => this.getResultFromCache(prefix, documentDefinitionName, version))
-          .reduce((acc, curr) => [...acc, ...curr], []);
-        const prefixesWithoutCache = prefixes.filter(prefix => !prefixesWithCache.includes(prefix));
-        const httpCall =
-          typeof version !== 'number'
-            ? this.httpClient
-                .post<
-                  string[]
-                >(this.getApiUrl(`/management/v1/value-resolver/document-definition/${documentDefinitionName}/keys`), prefixesWithoutCache)
-                .pipe(catchError(() => of([])))
-            : this.httpClient
-                .post<
-                  string[]
-                >(this.getApiUrl(`/management/v1/value-resolver/document-definition/${documentDefinitionName}/version/${version}/keys`), prefixesWithoutCache)
-                .pipe(catchError(() => of([])));
-
-        return combineLatest([
-          prefixesWithoutCache.length > 0 ? httpCall : of([]),
-          of(resultsFromCache),
-        ]);
-      }),
-      tap(([result, resultsFromCache]) => {
-        const combinedResults = [...result, ...resultsFromCache];
-        prefixes.forEach(prefix => {
-          const prefixResults = combinedResults.filter(valuePath => valuePath.includes(prefix));
-          this.cacheResult(prefix, documentDefinitionName, version, prefixResults);
-        });
-      }),
-      map(([result, resultsFromCache]) => [...result, ...resultsFromCache])
-    );
   }
 
   public ngOnDestroy(): void {
@@ -109,6 +64,51 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     return this._documentDefinitionCache$.asObservable();
   }
 
+  public getResolvableKeys(
+    prefixes: ValuePathSelectorPrefix[],
+    documentDefinitionName: string,
+    type: ValuePathType = ValuePathType.FIELD,
+    version: ValuePathVersionArgument = 'latest'
+  ): Observable<ValuePathItem[]> {
+    this._prefixes = prefixes;
+    this._documentDefinitionName = documentDefinitionName;
+    this._version = version;
+
+    const url =
+      typeof version !== 'number'
+        ? `/management/v2/value-resolver/document-definition/${documentDefinitionName}/keys`
+        : `/management/v2/value-resolver/document-definition/${documentDefinitionName}/version/${version}/keys`;
+
+    const prefixesWithoutCache: ValuePathSelectorPrefix[] = prefixes.filter(
+      (prefix: ValuePathSelectorPrefix) => !this.getCacheResult(prefix, type)
+    );
+
+    return (
+      prefixesWithoutCache.length > 0
+        ? this.httpClient.post<ValuePathResponse[]>(this.getApiUrl(url), {
+            prefixes: prefixesWithoutCache,
+            type,
+          })
+        : of([])
+    ).pipe(
+      tap((results: ValuePathResponse[]) => {
+        if (type === ValuePathType.FIELD)
+          this.cacheMapping(
+            results.map((result: ValuePathResponse) => ({path: result.path})),
+            type
+          );
+        else
+          this.cacheMapping(
+            results.reduce((acc, curr) => [...acc, ...this.mapCollectionItem(curr)], []),
+            type
+          );
+      }),
+      map(() =>
+        prefixes.reduce((acc, curr) => [...acc, ...(this.getCacheResult(curr, type) ?? [])], [])
+      )
+    );
+  }
+
   private openClearCacheSubscription(): void {
     this._subscriptions.add(
       interval(60 * 1000).subscribe(() => {
@@ -118,30 +118,53 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     );
   }
 
-  private getResultFromCache(
-    prefix: string,
-    documentDefinitionName: string,
-    version: ValuePathVersionArgument = 'latest'
-  ): string[] | null {
-    return this._cache[documentDefinitionName]?.[version]?.[prefix] || null;
+  private getCacheResult(
+    prefix: ValuePathSelectorPrefix,
+    type: ValuePathType
+  ): ValuePathItem[] | undefined {
+    return this._cache[this._documentDefinitionName]?.[this._version]?.[prefix]?.[type];
   }
 
-  private cacheResult(
-    prefix: string,
-    documentDefinitionName: string,
-    version: ValuePathVersionArgument = 'latest',
-    result: string[]
-  ): void {
-    const resultCacheObject: ValuePathSelectorCache = {
-      [documentDefinitionName]: {
-        [version]: {
-          [prefix]: result,
+  private mapCollectionItem(item: ValuePathResponse, parentPath?: string): ValuePathItem[] {
+    const fieldChildren = [];
+    const collectionChildren = [];
+
+    item.children.forEach((child: ValuePathResponse) => {
+      if (child.type === ValuePathType.FIELD) fieldChildren.push(child);
+      else collectionChildren.push(child);
+    });
+
+    return [
+      {
+        path: `${parentPath ?? ''}${item.path}`,
+        children: fieldChildren.map((child: ValuePathResponse) => child.path),
+      },
+      ...collectionChildren.reduce(
+        (acc, curr) => [...acc, ...this.mapCollectionItem(curr, `${parentPath ?? ''}${item.path}`)],
+        []
+      ),
+    ];
+  }
+
+  private cacheMapping(results: ValuePathItem[], type: ValuePathType): void {
+    if (!results.length) return;
+
+    const prefixResults = this._prefixes.reduce(
+      (acc, curr) => ({
+        ...acc,
+        [curr]: {
+          [type]: results.filter((result: ValuePathItem) => result.path.split(':')[0] === curr),
         },
+      }),
+      {}
+    );
+
+    const tempCache: ValuePathSelectorCache = {
+      [this._documentDefinitionName]: {
+        [this._version]: prefixResults,
       },
     };
 
-    if (!this.getResultFromCache(prefix, documentDefinitionName, version)) {
-      this._cache = deepmerge(this._cache, resultCacheObject);
-    }
+    this._cache = deepmerge(this._cache, tempCache);
   }
 }
