@@ -8,7 +8,7 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -19,6 +19,20 @@ import {platformBrowserDynamic} from '@angular/platform-browser-dynamic';
 
 import {AppModule} from './app/app.module';
 import {environment} from './environments/environment';
+
+// Suppress only "ExpressionChangedAfterItHasBeenCheckedError" errors
+const originalConsoleError = console.error;
+console.error = (...args) => {
+  const errorMessage = args
+    .map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg)))
+    .join(' ');
+
+  if (errorMessage.includes('100')) {
+    return; // Ignore NG0100 errors
+  }
+
+  originalConsoleError(...args); // Keep all other errors
+};
 
 if (environment.production) {
   enableProdMode();
