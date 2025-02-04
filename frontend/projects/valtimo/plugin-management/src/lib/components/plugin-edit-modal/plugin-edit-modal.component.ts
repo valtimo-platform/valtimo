@@ -105,16 +105,16 @@ export class PluginEditModalComponent {
             configurationTitle,
             configurationData
           )
-          .subscribe(
-            () => {
+          .subscribe({
+            next: () => {
               this.stateService.refresh();
               this.hide();
             },
-            () => {
+            error: () => {
               this.logger.error('Something went wrong with updating the plugin configuration.');
               this.stateService.enableInput();
-            }
-          );
+            },
+          });
       });
   }
 
@@ -129,18 +129,18 @@ export class PluginEditModalComponent {
         delete duplicatedConfiguration.properties.configurationTitle;
         delete duplicatedConfiguration.properties.configurationId;
 
-        this.pluginManagementService.savePluginConfiguration(duplicatedConfiguration).subscribe(
-          () => {
+        this.pluginManagementService.savePluginConfiguration(duplicatedConfiguration).subscribe({
+          next: () => {
             this.stateService.refresh();
             this.hide();
           },
-          () => {
+          error: () => {
             this.logger.error(
               'Something went wrong with saving the duplicated plugin configuration.'
             );
             this.stateService.enableInput();
-          }
-        );
+          },
+        });
       });
   }
 }
