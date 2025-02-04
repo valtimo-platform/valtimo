@@ -20,6 +20,7 @@ import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
+import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.DOCUMENT_DEFINITION
 import org.springframework.transaction.annotation.Transactional
 
@@ -29,7 +30,7 @@ class JsonSchemaDocumentDefinitionImporter(
 ) : Importer {
     override fun type() = DOCUMENT_DEFINITION
 
-    override fun dependsOn() = emptySet<String>()
+    override fun dependsOn() = setOf(CASE_DEFINITION)
 
     override fun supports(fileName: String) = fileName.matches(PATH_REGEX)
 

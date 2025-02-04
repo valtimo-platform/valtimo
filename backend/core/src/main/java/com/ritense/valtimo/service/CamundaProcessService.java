@@ -36,6 +36,7 @@ import com.ritense.valtimo.camunda.repository.CamundaExecutionRepository;
 import com.ritense.valtimo.camunda.service.CamundaHistoryService;
 import com.ritense.valtimo.camunda.service.CamundaRepositoryService;
 import com.ritense.valtimo.camunda.service.CamundaRuntimeService;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.exception.FileExtensionNotSupportedException;
 import com.ritense.valtimo.exception.NoFileExtensionFoundException;
@@ -62,6 +63,7 @@ import org.camunda.bpm.engine.impl.persistence.entity.SuspensionState;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.model.bpmn.Bpmn;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
+import org.camunda.bpm.model.bpmn.instance.CallActivity;
 import org.camunda.bpm.model.bpmn.instance.Process;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperties;
 import org.camunda.bpm.model.dmn.Dmn;
@@ -315,6 +317,68 @@ public class CamundaProcessService {
                 throw new NoFileExtensionFoundException(fileName);
             }
         }
+    }
+
+    @Transactional
+    public void deploy(
+        CaseDefinitionId caseDefinitionId,
+        String fileName,
+        ByteArrayInputStream fileInput
+    ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
+
+        denyAuthorization();
+
+        if (fileName.endsWith(".bpmn")) {
+            BpmnModelInstance bpmnModel = Bpmn.readModelFromStream(fileInput);
+
+            setProcessesVersionTag(bpmnModel, caseDefinitionId);
+
+            if (!isDeployable(bpmnModel)) {
+                throw new ProcessNotDeployableException(fileName);
+            }
+
+            setProcessesExecutable(bpmnModel);
+
+            repositoryService.createDeployment().addModelInstance(fileName, bpmnModel).deploy();
+        } else if (fileName.endsWith(".dmn")) {
+            DmnModelInstance dmnModel = Dmn.readModelFromStream(fileInput);
+
+            setDecisionsVersionTag(dmnModel, caseDefinitionId);
+
+            repositoryService.createDeployment().addModelInstance(fileName, dmnModel).deploy();
+        } else {
+            String[] splitFileName = fileName.split("\\.");
+
+            if (splitFileName.length > 1) {
+                String fileExtension = splitFileName[splitFileName.length - 1];
+                throw new FileExtensionNotSupportedException(fileExtension);
+            } else {
+                throw new NoFileExtensionFoundException(fileName);
+            }
+        }
+    }
+
+    private void setProcessesVersionTag(BpmnModelInstance bpmnModel, CaseDefinitionId caseDefinitionId) {
+        bpmnModel.getDefinitions().getChildElementsByType(Process.class).forEach(
+            process -> {
+                process.setCamundaVersionTag(  caseDefinitionId.toString());
+                process.getChildElementsByType(CallActivity.class).forEach(
+                    callActivity -> {
+                        var elementBinding = callActivity.getCamundaCalledElementBinding();
+                        if (elementBinding == null) {
+                            callActivity.setCamundaCalledElementBinding("versionTag");
+                            callActivity.setCamundaCalledElementVersionTag("CD:" + caseDefinitionId);
+                        }
+                    }
+                );
+            }
+        );
+    }
+
+    private void setDecisionsVersionTag(DmnModelInstance dmnModel, CaseDefinitionId caseDefinitionId) {
+        dmnModel.getDefinitions().getChildElementsByType(Process.class).forEach(
+            dmn -> dmn.setCamundaVersionTag(  caseDefinitionId.toString())
+        );
     }
 
     private void setProcessesExecutable(BpmnModelInstance bpmnModel) {

@@ -279,6 +279,7 @@ camunda:
             id: Admin
             password: admin
             first-name: Admin account
+        auto-deployment-enabled: false
 
 external:
     case:

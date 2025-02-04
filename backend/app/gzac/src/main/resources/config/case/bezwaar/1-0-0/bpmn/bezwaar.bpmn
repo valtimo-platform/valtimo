@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1p8obyi" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.15.2">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1p8obyi" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.17.0">
   <bpmn:collaboration id="Collaboration_00emdqk">
     <bpmn:participant id="bezwaar-indienen" name="Bezwaar indienen" processRef="bezwaar" />
   </bpmn:collaboration>
@@ -8,8 +8,8 @@
       <bpmn:lane id="Lane_04l6c3s">
         <bpmn:flowNodeRef>validate-request</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Event_0m4dd1v</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>in-behandeling</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>start-event-bezwaar-proces-gestart</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>in-behandeling</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
     <bpmn:userTask id="validate-request" name="Valideer gegevens aanvrager" camunda:candidateGroups="ROLE_USER">
@@ -31,13 +31,13 @@
       <bpmn:incoming>Flow_10jcwwq</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_10jcwwq" sourceRef="in-behandeling" targetRef="Event_0m4dd1v" />
-    <bpmn:userTask id="in-behandeling" name="In behandeling" camunda:candidateGroups="ROLE_USER">
+    <bpmn:callActivity id="in-behandeling" name="In behandeling" calledElement="bezwaar">
       <bpmn:extensionElements>
         <camunda:executionListener expression="${documentDelegateService.setInternalStatus(execution,&#39;in-behandeling&#39;)}" event="start" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0ytx5d7</bpmn:incoming>
       <bpmn:outgoing>Flow_10jcwwq</bpmn:outgoing>
-    </bpmn:userTask>
+    </bpmn:callActivity>
   </bpmn:process>
   <bpmn:message id="Message_1p8fqc1" name="zaakdossier-created" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
@@ -60,9 +60,8 @@
       <bpmndi:BPMNShape id="Event_0m4dd1v_di" bpmnElement="Event_0m4dd1v">
         <dc:Bounds x="612" y="172" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1px2knc_di" bpmnElement="in-behandeling">
+      <bpmndi:BPMNShape id="Activity_1uestiw_di" bpmnElement="in-behandeling">
         <dc:Bounds x="460" y="150" width="100" height="80" />
-        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_162004p_di" bpmnElement="Flow_162004p">
         <di:waypoint x="262" y="190" />
