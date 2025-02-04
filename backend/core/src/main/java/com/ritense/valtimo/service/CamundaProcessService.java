@@ -63,6 +63,7 @@ import org.camunda.bpm.engine.impl.persistence.entity.SuspensionState;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.model.bpmn.Bpmn;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
+import org.camunda.bpm.model.bpmn.instance.BusinessRuleTask;
 import org.camunda.bpm.model.bpmn.instance.CallActivity;
 import org.camunda.bpm.model.bpmn.instance.Process;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperties;
@@ -368,6 +369,16 @@ public class CamundaProcessService {
                         if (elementBinding == null) {
                             callActivity.setCamundaCalledElementBinding("versionTag");
                             callActivity.setCamundaCalledElementVersionTag("CD:" + caseDefinitionId);
+                        }
+                    }
+                );
+
+                process.getChildElementsByType(BusinessRuleTask.class).forEach(
+                    businessRuleTask -> {
+                        var elementBinding = businessRuleTask.getCamundaDecisionRefBinding();
+                        if (elementBinding == null) {
+                            businessRuleTask.setCamundaDecisionRefBinding("versionTag");
+                            businessRuleTask.setCamundaDecisionRefVersionTag("CD:" + caseDefinitionId);
                         }
                     }
                 );
