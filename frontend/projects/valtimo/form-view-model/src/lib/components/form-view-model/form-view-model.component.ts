@@ -183,23 +183,23 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
       this.loadInitialViewModel();
     }
 
-    this.focusSubscription = this.focus$
-      .pipe(withLatestFrom(this.change$, this.submission$))
-      .subscribe(([_, changeData, submissionDate]) => {
-        const dataAtFocus =
-          !!changeData && !!changeData.data
-            ? JSON.parse(JSON.stringify(changeData.data))
-            : JSON.parse(JSON.stringify(submissionDate.data));
-        this.blur$
-          .pipe(take(1))
-          .pipe(withLatestFrom(this.change$))
-          .subscribe(([_, blurData]) => {
-            const dataEqual = isEqual(dataAtFocus, blurData?.data);
-            if (!dataEqual) {
-              this.updateForm.next(true);
-            }
-          });
-      });
+    this.focusSubscription = this.focus$.pipe(withLatestFrom(this.change$, this.submission$)).subscribe(([_, changeData, submissionDate]) => {
+      const dataAtFocus =
+        !!changeData && !!changeData.data
+          ? JSON.parse(JSON.stringify(changeData.data))
+          : !!submissionDate.data
+            ? JSON.parse(JSON.stringify(submissionDate.data))
+            : null;
+      this.blur$
+        .pipe(take(1))
+        .pipe(withLatestFrom(this.change$))
+        .subscribe(([_, blurData]) => {
+          const dataEqual = isEqual(dataAtFocus, blurData?.data);
+          if (!dataEqual) {
+            this.updateForm.next(true);
+          }
+        });
+    });
 
     this.updateSubscription = this.updateForm
       .pipe(
@@ -259,14 +259,7 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
                       callback(null, submission);
                       return of(response);
                     }),
-                    catchError(error => {
-                      const message =
-                        error instanceof HttpErrorResponse
-                          ? this.handleFormError(error)
-                          : (error as string);
-                      callback(message ? {message: message, component: null} : null, null);
-                      return EMPTY; // return an empty observable to complete the stream
-                    })
+                    catchError(error => this.handleSubmissionError(error, callback))
                   )
               : this.viewModelService
                   .submitViewModel(formName, taskInstanceId, submission.data)
@@ -276,18 +269,18 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
                       callback(null, submission);
                       return of(response);
                     }),
-                    catchError(error => {
-                      const message =
-                        error instanceof HttpErrorResponse
-                          ? this.handleFormError(error)
-                          : (error as string);
-                      callback(message ? {message: message, component: null} : null, null);
-                      return EMPTY; // return an empty observable to complete the stream
-                    })
+                    catchError(error => this.handleSubmissionError(error, callback))
                   )
         )
       )
       .subscribe();
+  }
+
+  private handleSubmissionError(error: any, callback: FormioSubmissionCallback): Observable<never> {
+    const message = (error instanceof HttpErrorResponse ? this.handleFormError(error) : error as string)
+      ?? this.translateService.instant("formioTranslations.formioFormViewModelComponent.submitError")
+    callback(message ? {message: message, component: null} : null, null);
+    return EMPTY; // return an empty observable to complete the stream
   }
 
   private handleFormError(error: HttpErrorResponse): string {

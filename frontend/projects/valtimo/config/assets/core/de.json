@@ -1775,6 +1775,9 @@
     },
     "formioCurrencyComponent": {
       "errorMessage": "Keine gültige Dezimalzahl. Bitte geben Sie eine gültige Dezimalzahl ein."
+    },
+    "formioFormViewModelComponent": {
+      "submitError": "Ungültige Einreichung"
     }
   },
   "viewTypeConverter": {
