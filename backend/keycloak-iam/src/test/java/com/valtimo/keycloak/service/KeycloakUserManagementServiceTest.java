@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -45,11 +46,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 
 class KeycloakUserManagementServiceTest {
 
     private KeycloakService keycloakService;
     private KeycloakUserManagementService userManagementService;
+    private CacheManager cacheManager;
+    private CacheManagerUserCache cacheManagerUserCache;
 
     private UserRepresentation jamesVance;
     private UserRepresentation johnDoe;
@@ -63,7 +68,9 @@ class KeycloakUserManagementServiceTest {
     @BeforeEach
     public void before() {
         keycloakService = mock(KeycloakService.class, RETURNS_DEEP_STUBS);
-        userManagementService = new KeycloakUserManagementService(keycloakService, "clientName", mock());
+        cacheManager = new ConcurrentMapCacheManager();
+        cacheManagerUserCache = new CacheManagerUserCache(cacheManager);
+        userManagementService = new KeycloakUserManagementService(keycloakService, "clientName", cacheManagerUserCache);
 
         jamesVance = newUser("James", "Vance", List.of(USER));
         johnDoe = newUser("John", "Doe", List.of(USER, ADMIN));
@@ -205,6 +212,16 @@ class KeycloakUserManagementServiceTest {
 
         verify(keycloakService.usersResource(any())).search(eq(johnDoe.getUsername()));
         assertThat(user).isNotNull();
+    }
+
+    @Test
+    void shouldRetrieveManageableUserFromCache() {
+        String email = "test@example.com";
+
+        userManagementService.findByEmail(email);
+        userManagementService.findByEmail(email);
+
+        verify(keycloakService.usersResource(any()), times(1)).search(null, null, null, email, 0, 1, true, true);
     }
 
     @Test
