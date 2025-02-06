@@ -205,12 +205,14 @@ class ProcessDocumentsAutoConfiguration {
     fun processDocumentLinkImporter(
         processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
         documentDefinitionService: DocumentDefinitionService,
-        objectMapper: ObjectMapper
+        objectMapper: ObjectMapper,
+        repositoryService: RepositoryService
     ): ProcessDocumentLinkImporter {
         return ProcessDocumentLinkImporter(
             processDefinitionCaseDefinitionService,
             documentDefinitionService,
-            objectMapper
+            objectMapper,
+            repositoryService
         )
     }
 

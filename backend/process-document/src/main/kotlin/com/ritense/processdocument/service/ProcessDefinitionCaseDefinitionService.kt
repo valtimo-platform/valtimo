@@ -44,7 +44,7 @@ class ProcessDefinitionCaseDefinitionService(
     fun deleteProcessDocumentDefinition(request: ProcessDocumentDefinitionRequest) {
         denyAuthorization()
         val id = ProcessDefinitionCaseDefinitionId(
-            ProcessDefinitionId(request.processDefinitionId),
+            request.processDefinitionId,
             request.caseDefinitionId
         )
 
@@ -56,7 +56,7 @@ class ProcessDefinitionCaseDefinitionService(
 
         val processDocumentDefinition = ProcessDefinitionCaseDefinition(
             id = ProcessDefinitionCaseDefinitionId(
-                ProcessDefinitionId(request.processDefinitionId),
+                request.processDefinitionId,
                 request.caseDefinitionId
             ),
             canInitializeDocument = request.canInitializeDocument,

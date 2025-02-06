@@ -20,7 +20,7 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 
 class ProcessDocumentDefinitionRequest(
     @JsonProperty
-    val processDefinitionId: String,
+    val processDefinitionId: ProcessDefinitionId, // TODO: Migration
     @JsonProperty
     val caseDefinitionId: CaseDefinitionId,
     @JsonProperty("canInitializeDocument")

@@ -23,7 +23,6 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
-import com.ritense.importer.ValtimoImportTypes.Companion.DOCUMENT_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.PROCESS_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.PROCESS_DOCUMENT_LINK
 import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinitionId
@@ -34,18 +33,20 @@ import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionServic
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import mu.KLogger
 import mu.KotlinLogging
+import org.camunda.bpm.engine.RepositoryService
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
 class ProcessDocumentLinkImporter(
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
     private val documentDefinitionService: DocumentDefinitionService,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val repositoryService: RepositoryService
 ) : Importer {
 
     override fun type() = PROCESS_DOCUMENT_LINK
 
-    override fun dependsOn() = setOf(DOCUMENT_DEFINITION, PROCESS_DEFINITION)
+    override fun dependsOn() = setOf(PROCESS_DEFINITION)
 
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
@@ -57,7 +58,8 @@ class ProcessDocumentLinkImporter(
     @Throws(JsonProcessingException::class)
     fun deploy(caseDefinitionId: CaseDefinitionId, documentDefinitionName: String, content: String) {
         val processDocumentLinkConfigItems: List<ProcessDocumentLinkConfigItem> = getJson(content)
-        val documentDefinitionOptional = documentDefinitionService.findByNameAndCaseDefinitionId(documentDefinitionName, caseDefinitionId)
+        val documentDefinitionOptional =
+            documentDefinitionService.findByNameAndCaseDefinitionId(documentDefinitionName, caseDefinitionId)
         if (documentDefinitionOptional.isPresent()) {
             processDocumentLinkConfigItems.forEach { item ->
                 createProcessDocumentLink(
@@ -74,9 +76,14 @@ class ProcessDocumentLinkImporter(
         documentDefinitionName: String,
         item: ProcessDocumentLinkConfigItem
     ) {
+        val processDefinition = repositoryService
+            .createProcessDefinitionQuery()
+            .processDefinitionKey(item.processDefinitionKey)
+            .versionTag("$caseDefinitionId")
+            .singleResult()
+
         val request = ProcessDocumentDefinitionRequest(
-            //TODO: need process definition id
-            "test",
+            ProcessDefinitionId(processDefinition.id),
             caseDefinitionId,
             item.canInitializeDocument,
             item.startableByUser
@@ -113,7 +120,7 @@ class ProcessDocumentLinkImporter(
     }
 
     companion object {
-        private val FILENAME_REGEX = """config/process-document-link/([^/]+)\.json""".toRegex()
+        private val FILENAME_REGEX = """/process-document-link/([^/]+)\.json""".toRegex()
         private val logger: KLogger = KotlinLogging.logger {}
     }
 }
