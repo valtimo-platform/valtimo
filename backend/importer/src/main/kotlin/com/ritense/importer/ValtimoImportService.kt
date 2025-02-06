@@ -21,15 +21,13 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
 import com.ritense.importer.exception.CyclicImporterDependencyException
 import com.ritense.importer.exception.DuplicateImporterTypeException
-import com.ritense.importer.exception.InvalidImportZipException
 import com.ritense.importer.exception.TooManyImportCandidatesException
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import java.io.InputStream
-import java.util.zip.ZipInputStream
 import mu.KLogger
 import mu.KotlinLogging
 import org.springframework.core.io.Resource
 import org.springframework.transaction.annotation.Transactional
+import java.io.InputStream
 
 open class ValtimoImportService(
     importers: Set<Importer>
@@ -110,7 +108,10 @@ open class ValtimoImportService(
     }
 
     @Transactional
-    open fun importCaseDefinition(resources: List<Pair<String, Resource>>) {
+    open fun importCaseDefinition(
+        resources: List<Pair<String, Resource>>,
+        caseDefinitionIdList: List<CaseDefinitionId>
+    ) {
         // If case definition is already imported, don't import the rest of the files for the case definition
         // (so a skip)
 
@@ -127,6 +128,10 @@ open class ValtimoImportService(
             caseDefinitionMap["key"] as String,
             caseDefinitionMap["versionTag"] as String
         )
+
+        if (caseDefinitionIdList.contains(caseDefinitionId)) {
+            return
+        }
 
         importerEntriesList.forEach { (importer, entries) ->
             entries.forEach { entry ->

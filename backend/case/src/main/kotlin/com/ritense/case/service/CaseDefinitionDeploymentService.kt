@@ -17,6 +17,7 @@
 package com.ritense.case.service
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.importer.ValtimoImportService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import mu.KotlinLogging
@@ -35,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional
 class CaseDefinitionDeploymentService(
     val resourceLoader: ResourceLoader,
     val valtimoImportService: ValtimoImportService,
+    val caseDefinitionRepository: CaseDefinitionRepository
 ) {
 
     @EventListener(ApplicationReadyEvent::class)
@@ -63,7 +65,7 @@ class CaseDefinitionDeploymentService(
             }
         resources.forEach { (_, files) ->
             runWithoutAuthorization {
-                valtimoImportService.importCaseDefinition(files)
+                valtimoImportService.importCaseDefinition(files, caseDefinitionRepository.findAll().map { it.id })
             }
         }
 
