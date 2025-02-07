@@ -31,13 +31,7 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs';
-import {
-  FormioComponent,
-  FormioModule,
-  FormioOptions,
-  FormioSubmission,
-  FormioSubmissionCallback,
-} from '@formio/angular';
+import {FormioComponent, FormioModule, FormioOptions, FormioSubmission, FormioSubmissionCallback,} from '@formio/angular';
 import {ViewModelService} from '../../services';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 import {deepmerge} from 'deepmerge-ts';
@@ -288,21 +282,37 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
     this.formErrors$.next([]);
     if (error.error?.componentErrors) {
       const errors = [];
+      const formioErrors = [];
       error.error.componentErrors.forEach(componentError => {
         const component = formInstance.getComponent(componentError.component);
         if (component == null) {
           errors.push(componentError.message);
         } else {
-          component?.setCustomValidity(componentError.message);
+          formioErrors.push(
+            {
+              "message": componentError.message,
+              "type": "custom",
+              "path": [componentError.component],
+              "level": "error"
+            }
+          )
         }
       });
+      formInstance.showErrors(formioErrors);
       this.formErrors$.next(errors);
     } else if (error.error?.error) {
       const component = formInstance.getComponent(error.error?.component);
       if (component == null) {
         this.formErrors$.next([error.error.error]);
       } else {
-        component?.setCustomValidity(error.error.error);
+        formInstance.showErrors([
+          {
+            "message": error.error.error,
+            "type": "custom",
+            "path": [error.error.component],
+            "level": "error"
+          }
+        ]);
       }
     } else {
       return error.message;
