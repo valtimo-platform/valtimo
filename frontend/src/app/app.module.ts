@@ -128,6 +128,7 @@ import {
 } from '@valtimo/zgw';
 import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
+import {BuildingBlockManagementModule} from '@valtimo/building-block-management';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -222,6 +223,7 @@ export function tabsFactory() {
     ZgwModule,
     FormViewModelModule,
     LoggingModule,
+    BuildingBlockManagementModule
   ],
   providers: [
     FormioComponent,

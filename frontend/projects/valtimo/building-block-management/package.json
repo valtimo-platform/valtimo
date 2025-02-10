@@ -1,0 +1,14 @@
+{
+  "name": "@valtimo/building-block-management",
+  "license": "EUPL-1.2",
+  "version": "12.2.0",
+  "peerDependencies": {
+    "@angular/common": "^17.2.2",
+    "@angular/core": "^17.2.2"
+  },
+  "dependencies": {
+    "dmn-js": "12.3.0",
+    "tslib": "2.6.3",
+    "@bpmn-io/dmn-migrate": "0.4.3"
+  }
+}

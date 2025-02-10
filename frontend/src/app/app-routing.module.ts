@@ -40,7 +40,8 @@ const routes: Routes = [
 })
 export class AppRoutingModule {
   constructor(private router: Router) {
-    this.router.errorHandler = () => {
+    this.router.errorHandler = (error) => {
+      console.log({error})
       this.router.navigate(['']);
     };
   }
