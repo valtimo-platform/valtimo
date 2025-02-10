@@ -238,7 +238,7 @@ class ConnectorApplicationReadyEventListener(
                 objectsApiConnectionName = PRODUCTAANVRAAG_OBJECTAPI_CONNECTOR_NAME,
                 typeMapping = listOf(
                     ProductAanvraagTypeMapping(
-                        "lening",
+                        "config/case/lening",
                         "leningen",
                         "lening-aanvragen"
                     )
