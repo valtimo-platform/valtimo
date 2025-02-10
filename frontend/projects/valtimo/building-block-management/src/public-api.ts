@@ -19,4 +19,4 @@
  */
 
 export * from './lib/building-block-management.module';
-export * from './lib/components/building-block-list/building-block-list.component';
+export * from './lib/components';

@@ -1,5 +1,7 @@
-import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import {CommonModule} from '@angular/common';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {BuildingBlockApiService} from '../../services';
+import {CarbonListModule, ColumnConfig} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-building-block-list',
@@ -7,6 +9,25 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
   styleUrl: './building-block-list.component.scss',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule]
+  imports: [CommonModule, CarbonListModule],
 })
-export class BuildingBlockList {}
+export class BuildingBlockList {
+  public readonly buildingBlocks$ = this.buildingBlockApiService.buildingBlocks$;
+
+  public readonly FIELDS: ColumnConfig[] = [
+    {
+      key: 'id',
+      label: 'Id',
+    },
+    {
+      key: 'name',
+      label: 'Name',
+    },
+    {
+      key: 'description',
+      label: 'Description',
+    },
+  ];
+
+  constructor(private readonly buildingBlockApiService: BuildingBlockApiService) {}
+}

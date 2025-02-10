@@ -1,1 +1,6 @@
-Building block works
+<valtimo-carbon-list
+  [items]="buildingBlocks$ | async"
+  [fields]="FIELDS"
+  [hideToolbar]="true"
+  [header]="false"
+></valtimo-carbon-list>
