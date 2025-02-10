@@ -1,0 +1,17 @@
+<cds-tabs *ngIf="buildingBlock$ | async" type="contained">
+  <cds-tab heading="Processes" active="true">
+    <valtimo-building-block-processes></valtimo-building-block-processes>
+  </cds-tab>
+
+  <cds-tab heading="Forms"><valtimo-building-block-forms></valtimo-building-block-forms></cds-tab>
+
+  <cds-tab heading="Form flows">
+    <valtimo-building-block-form-flows></valtimo-building-block-form-flows>
+  </cds-tab>
+
+  <cds-tab heading="Decisions">
+    <valtimo-building-block-decisions></valtimo-building-block-decisions>
+  </cds-tab>
+
+  <cds-tab heading="Cases"><valtimo-building-block-cases></valtimo-building-block-cases></cds-tab>
+</cds-tabs>

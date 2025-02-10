@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { ROLE_ADMIN } from '@valtimo/config';
-import { AuthGuardService } from '@valtimo/security';
-import { BuildingBlockList } from './components/building-block-list/building-block-list.component';
-
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+import {RouterModule, Routes} from '@angular/router';
+import {ROLE_ADMIN} from '@valtimo/config';
+import {AuthGuardService} from '@valtimo/security';
+import {BuildingBlockList} from './components/building-block-list/building-block-list.component';
+import {BuildingBlockDetails} from './components';
 
 const routes: Routes = [
   {
@@ -27,6 +27,12 @@ const routes: Routes = [
     component: BuildingBlockList,
     canActivate: [AuthGuardService],
     data: {title: 'Building blocks', roles: [ROLE_ADMIN]},
+  },
+  {
+    path: 'building-block-management/:id',
+    component: BuildingBlockDetails,
+    canActivate: [AuthGuardService],
+    data: {title: 'Building blocks', roles: [ROLE_ADMIN], customPageTitle: true},
   },
 ];
 
