@@ -29,7 +29,6 @@
     <property name="intType" value="int" dbms="mysql"/>
     <property name="intType" value="integer" dbms="postgresql"/>
 
-    <include file="changelog/20250113-major13-upgrade.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20190712-create-document-domain-changelog.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20190815-document-dates-added-changelog.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20190916-document-created-by-added-changelog.xml" relativeToChangelogFile="true"/>
@@ -48,4 +47,5 @@
     <include file="changelog/20240201-add-internal-case-status-table.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20240214-add-column-color-to-internal-case-status-table.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20241220-update-document-sequence.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20250113-major13-upgrade.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
