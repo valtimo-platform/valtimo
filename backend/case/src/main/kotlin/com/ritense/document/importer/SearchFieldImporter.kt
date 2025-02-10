@@ -70,6 +70,8 @@ class SearchFieldImporter(
 
         try {
             runWithoutAuthorization<Any?> {
+                // TODO: Do we want to do this, or only delete when the to be deployed case definition is newer than the
+                // last deployed case definition? Or something else entirely?
                 searchFieldService.deleteSearchFields(caseDefinitionId.key)
                 val searchConfigurationFields = searchConfiguration.toEntity(caseDefinitionId.key)
                 searchFieldService.createSearchConfiguration(searchConfigurationFields, caseDefinitionId)
