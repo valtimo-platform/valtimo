@@ -13,7 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ChangeDetectionStrategy, Component, OnInit, ViewChild} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import {Router} from '@angular/router';
 import {CarbonListComponent, ColumnConfig, ViewType} from '@valtimo/components';
 import {BehaviorSubject, finalize, Observable} from 'rxjs';
@@ -21,11 +28,14 @@ import {FormFlowDefinition, ListFormFlowDefinition} from '../../models';
 import {FormFlowService} from '../../services/form-flow.service';
 
 @Component({
+  selector: 'valtimo-form-flow-overview',
   templateUrl: './form-flow-overview.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FormFlowOverviewComponent implements OnInit {
   @ViewChild(CarbonListComponent) carbonList: CarbonListComponent;
+
+  @Output() public readonly editFormFlow = new EventEmitter<string>();
 
   public fields: ColumnConfig[] = [
     {
@@ -80,6 +90,7 @@ export class FormFlowOverviewComponent implements OnInit {
   }
 
   public onRowClick(formFlow: ListFormFlowDefinition): void {
-    this.router.navigate([`/form-flow-management/${formFlow.key}`]);
+    this.editFormFlow.emit(formFlow.key);
+    // this.router.navigate([`/form-flow-management/${formFlow.key}`]);
   }
 }

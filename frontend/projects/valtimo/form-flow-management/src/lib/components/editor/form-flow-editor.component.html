@@ -14,6 +14,55 @@
   ~ limitations under the License.
   -->
 
+<div
+  class="buttons-container"
+  *ngIf="{
+    model: model$ | async,
+    valid: valid$ | async,
+    readOnly: readOnly$ | async,
+    versions: formFlowDefinitionVersionItems$ | async,
+    compactMode: compactMode$ | async,
+  } as obs"
+>
+  <cds-dropdown
+    [disabled]="obs.versions.isLoading || obs.versions.value.length === 1"
+    [dropUp]="false"
+    [skeleton]="obs.versions.isLoading"
+    (selected)="loadFormFlowDefinitionId($event.item.formFlowDefinitionId)"
+    [size]="obs.compactMode ? 'sm' : 'md'"
+  >
+    <cds-dropdown-list [items]="obs.versions.value || []"></cds-dropdown-list>
+  </cds-dropdown>
+
+  <div class="buttons-container-right">
+    <cds-overflow-menu class="overflow-button">
+      <cds-overflow-menu-option
+        [disabled]="!obs.valid && !obs.readOnly"
+        (selected)="downloadFormFlowDefinition(obs.model)"
+        >{{ 'interface.export' | translate }}
+      </cds-overflow-menu-option>
+
+      <cds-overflow-menu-option
+        [disabled]="obs.readOnly"
+        type="danger"
+        (selected)="showDeleteModal()"
+        >{{ 'interface.delete' | translate }}
+      </cds-overflow-menu-option>
+    </cds-overflow-menu>
+
+    <button
+      [disabled]="!obs.valid || obs.readOnly"
+      cdsButton="primary"
+      [size]="obs.compactMode ? 'sm' : 'md'"
+      (click)="updateFormFlowDefinition()"
+    >
+      {{ 'interface.save' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="save" size="16"></svg>
+    </button>
+  </div>
+</div>
+
 <ng-container *ngIf="model$ | async as model; else loading">
   <valtimo-editor
     [disabled]="(loading$ | async) === false && readOnly$ | async"
@@ -25,58 +74,11 @@
   ></valtimo-editor>
 </ng-container>
 
-<ng-container renderInPageHeader>
-  <ng-template>
-    <div
-      class="buttons-container"
-      *ngIf="{
-        model: model$ | async,
-        valid: valid$ | async,
-        readOnly: readOnly$ | async,
-        versions: formFlowDefinitionVersionItems$ | async,
-        compactMode: compactMode$ | async,
-      } as obs"
-    >
-      <cds-dropdown
-        [disabled]="obs.versions.isLoading || obs.versions.value.length === 1"
-        [dropUp]="false"
-        [skeleton]="obs.versions.isLoading"
-        (selected)="loadFormFlowDefinitionId($event.item.formFlowDefinitionId)"
-        [size]="obs.compactMode ? 'sm' : 'md'"
-      >
-        <cds-dropdown-list [items]="obs.versions.value || []"></cds-dropdown-list>
-      </cds-dropdown>
+<!-- <ng-container renderInPageHeader> -->
+<!-- <ng-template> -->
 
-      <div class="buttons-container-right">
-        <cds-overflow-menu class="overflow-button">
-          <cds-overflow-menu-option
-            [disabled]="!obs.valid && !obs.readOnly"
-            (selected)="downloadFormFlowDefinition(obs.model)"
-            >{{ 'interface.export' | translate }}
-          </cds-overflow-menu-option>
-
-          <cds-overflow-menu-option
-            [disabled]="obs.readOnly"
-            type="danger"
-            (selected)="showDeleteModal()"
-            >{{ 'interface.delete' | translate }}
-          </cds-overflow-menu-option>
-        </cds-overflow-menu>
-
-        <button
-          [disabled]="!obs.valid || obs.readOnly"
-          cdsButton="primary"
-          [size]="obs.compactMode ? 'sm' : 'md'"
-          (click)="updateFormFlowDefinition()"
-        >
-          {{ 'interface.save' | translate }}
-
-          <svg class="cds--btn__icon" cdsIcon="save" size="16"></svg>
-        </button>
-      </div>
-    </div>
-  </ng-template>
-</ng-container>
+<!-- </ng-template> -->
+<!-- </ng-container> -->
 
 <ng-container *ngIf="{formFlowDefinitionId: formFlowDefinitionId$ | async} as obs">
   <valtimo-delete-form-flow-modal

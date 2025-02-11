@@ -1,1 +1,14 @@
-Form Flow Works
+<ng-container
+  *ngIf="{backButtonActive: backButtonActive$ | async, formFlowKey: formFlowKey$ | async} as obs"
+>
+  <valtimo-form-flow-overview
+    *ngIf="!obs.backButtonActive"
+    (editFormFlow)="onEditFormFlow($event)"
+  ></valtimo-form-flow-overview>
+
+  <valtimo-form-flow-editor
+    *ngIf="obs.backButtonActive"
+    [formFlowKey]="formFlowKey$ | async"
+    (formFlowUpdate)="onFormFlowUpdate()"
+  ></valtimo-form-flow-editor>
+</ng-container>

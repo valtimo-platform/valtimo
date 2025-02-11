@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FormFlowService} from '../../services/form-flow.service';
 import {
   BehaviorSubject,
@@ -45,6 +45,7 @@ import {ListItem} from 'carbon-components-angular/dropdown';
 import formFlowSchemaJson from './formflow.schema.json';
 
 @Component({
+  selector: 'valtimo-form-flow-editor',
   templateUrl: './form-flow-editor.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./form-flow-editor.component.scss'],
@@ -65,6 +66,12 @@ export class FormFlowEditorComponent implements OnInit, OnDestroy {
   public readonly formFlowSchemaJson = formFlowSchemaJson;
 
   private readonly _updatedModelValue$ = new BehaviorSubject<string>('');
+
+  @Input() public set formFlowKey(value: string | null) {
+    if (!value) return;
+    this.openFormFlowDefinitionSubscription(value);
+  }
+  @Output() public formFlowUpdate = new EventEmitter();
 
   public readonly formFlowDefinitionVersionItems$: Observable<LoadedValue<Array<ListItem>>> =
     combineLatest([this.formFlowDefinitionVersions$, this.formFlowDefinitionId$]).pipe(
@@ -99,7 +106,7 @@ export class FormFlowEditorComponent implements OnInit, OnDestroy {
   constructor(
     private readonly formFlowService: FormFlowService,
     private readonly route: ActivatedRoute,
-    private readonly pageTitleService: PageTitleService,
+    // private readonly pageTitleService: PageTitleService,
     private readonly router: Router,
     private readonly notificationService: NotificationService,
     private readonly translateService: TranslateService,
@@ -109,11 +116,11 @@ export class FormFlowEditorComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this.formFlowService.loadFormFlows();
-    this.openFormFlowDefinitionSubscription();
+    // this.openFormFlowDefinitionSubscription();
   }
 
   public ngOnDestroy(): void {
-    this.pageTitleService.enableReset();
+    // this.pageTitleService.enableReset();
     this._idSubscription?.unsubscribe();
     this._definitionSubscription?.unsubscribe();
   }
@@ -164,7 +171,8 @@ export class FormFlowEditorComponent implements OnInit, OnDestroy {
     this.formFlowService.dispatchAction(
       this.formFlowService.deleteFormFlowDefinition(formFlowDefinitionKey).pipe(
         finalize(() => {
-          this.router.navigate(['/form-flow-management']);
+          this.formFlowUpdate.emit();
+          // this.router.navigate(['/form-flow-management']);
         })
       )
     );
@@ -186,31 +194,24 @@ export class FormFlowEditorComponent implements OnInit, OnDestroy {
     }
   }
 
-  private openFormFlowDefinitionSubscription(): void {
+  private openFormFlowDefinitionSubscription(key: string): void {
     this.loading$.next(true);
 
-    this._idSubscription = this.route.params
-      .pipe(
-        filter(params => params?.key),
-        map(params => params.key),
-        switchMap(key =>
-          combineLatest([
-            of(key),
-            this.formFlowService.formFlows$.pipe(
-              map(
-                formFlowDefinitions =>
-                  formFlowDefinitions.find(definition => definition.key === key)?.versions
-              ),
-              filter(versions => !!versions),
-              take(1),
-              tap(versions => this.formFlowDefinitionVersions$.next(versions))
-            ),
-          ])
+    this._idSubscription = combineLatest([
+      of(key),
+      this.formFlowService.formFlows$.pipe(
+        map(
+          formFlowDefinitions =>
+            formFlowDefinitions.find(definition => definition.key === key)?.versions
         ),
-        map(([key, versions]) => ({key, version: versions[0]}) as FormFlowDefinitionId)
-      )
+        filter(versions => !!versions),
+        take(1),
+        tap(versions => this.formFlowDefinitionVersions$.next(versions ?? []))
+      ),
+    ])
+      .pipe(map(([key, versions]) => ({key, version: versions?.[0]}) as FormFlowDefinitionId))
       .subscribe(formFlowDefinitionId => {
-        this.pageTitleService.setCustomPageTitle(formFlowDefinitionId.key);
+        // this.pageTitleService.setCustomPageTitle(formFlowDefinitionId.key);
         this.formFlowDefinitionId$.next(formFlowDefinitionId);
       });
 

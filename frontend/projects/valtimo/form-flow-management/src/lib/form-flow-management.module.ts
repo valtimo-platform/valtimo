@@ -49,7 +49,7 @@ import {DeleteFormFlowModalComponent} from './components/delete-form-flow-modal/
   ],
   imports: [
     CommonModule,
-    FormFlowManagementRoutingModule,
+    // FormFlowManagementRoutingModule,
     ButtonModule,
     FormsModule,
     ModalModule,
@@ -66,6 +66,12 @@ import {DeleteFormFlowModalComponent} from './components/delete-form-flow-modal/
     NotificationModule,
     CarbonListModule,
     DropdownModule,
+  ],
+  exports: [
+    FormFlowOverviewComponent,
+    NewFormFlowModalComponent,
+    FormFlowEditorComponent,
+    DeleteFormFlowModalComponent,
   ],
 })
 export class FormFlowManagementModule {}

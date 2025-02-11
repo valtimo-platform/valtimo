@@ -21,3 +21,7 @@
 export * from './lib/models';
 export * from './lib/services';
 export * from './lib/form-flow-management.module';
+export * from './lib/components/delete-form-flow-modal/delete-form-flow-modal.component';
+export * from './lib/components/editor/form-flow-editor.component';
+export * from './lib/components/new-form-flow-modal/new-form-flow-modal.component';
+export * from './lib/components/overview/form-flow-overview.component';
