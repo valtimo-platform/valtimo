@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package com.ritense.document.deployment
+package com.ritense.document.importer
 
 import com.ritense.document.domain.InternalCaseStatus
 import com.ritense.document.domain.InternalCaseStatusColor
 
 data class InternalCaseStatusDto(
     val key: String,
-    val caseDefinitionName: String,
     val title: String,
     val visibleInCaseListByDefault: Boolean,
     val color: InternalCaseStatusColor
@@ -29,7 +28,6 @@ data class InternalCaseStatusDto(
     companion object {
         fun of(internalCaseStatus: InternalCaseStatus) = InternalCaseStatusDto(
             internalCaseStatus.id.key,
-            internalCaseStatus.id.caseDefinitionName,
             internalCaseStatus.title,
             internalCaseStatus.visibleInCaseListByDefault,
             internalCaseStatus.color

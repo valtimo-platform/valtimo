@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package com.ritense.document.deployment
+package com.ritense.document.importer
 
-data class InternalCaseStatusChangeset(
-    val changesetId: String,
+data class InternalCaseStatusDeploymentDto(
     val internalCaseStatuses: List<InternalCaseStatusDto>
 )

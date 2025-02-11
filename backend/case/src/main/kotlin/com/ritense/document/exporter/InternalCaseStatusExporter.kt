@@ -17,8 +17,8 @@
 package com.ritense.document.exporter
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.document.deployment.InternalCaseStatusChangeset
-import com.ritense.document.deployment.InternalCaseStatusDto
+import com.ritense.document.importer.InternalCaseStatusDeploymentDto
+import com.ritense.document.importer.InternalCaseStatusDto
 import com.ritense.document.service.InternalCaseStatusService
 import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportPrettyPrinter
@@ -26,7 +26,6 @@ import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.DocumentDefinitionExportRequest
 import org.springframework.transaction.annotation.Transactional
-import java.time.Instant
 
 @Transactional(readOnly = true)
 class InternalCaseStatusExporter(
@@ -43,8 +42,7 @@ class InternalCaseStatusExporter(
             return ExportResult()
         }
 
-        val caseTabChangeset = InternalCaseStatusChangeset(
-            "${request.name}.internal-case-status.${Instant.now().toEpochMilli()}",
+        val caseTabChangeset = InternalCaseStatusDeploymentDto(
             statuses.map(InternalCaseStatusDto::of)
         )
         val internalCaseStatusExport = ExportFile(
