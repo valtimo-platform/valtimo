@@ -81,7 +81,7 @@ export class ViewModelService extends BaseApiService {
       params: {
         formName,
         processDefinitionKey,
-        documentId,
+        ...(!!documentId && {documentId}),
       },
       headers: new HttpHeaders().set(InterceptorSkip, '400'),
     });
@@ -98,9 +98,9 @@ export class ViewModelService extends BaseApiService {
     const params = {
       formName,
       processDefinitionKey,
-      documentId,
       isWizard,
       ...(!isNaN(page) && {page}),
+      ...(!!documentId && {documentId}),
     };
     return this.httpClient.post(this.getApiUrl(`/v1/form/view-model/start-form`), viewModel, {
       params,
@@ -122,8 +122,8 @@ export class ViewModelService extends BaseApiService {
         params: {
           formName,
           processDefinitionKey,
-          documentId,
           documentDefinitionName,
+          ...(!!documentId && {documentId}),
         },
         headers: new HttpHeaders().set(InterceptorSkip, '400'),
       }
