@@ -1,17 +1,66 @@
-<cds-tabs *ngIf="buildingBlock$ | async" type="contained">
-  <cds-tab heading="Processes" active="true">
-    <valtimo-building-block-processes></valtimo-building-block-processes>
-  </cds-tab>
+<ng-container
+  *ngIf="{
+    activeTab: activeTab$ | async,
+    backButtonActive: backButtonActive$ | async,
+    buildingBlock: buildingBlock$ | async,
+  } as obs"
+>
+  <button *ngIf="obs.backButtonActive" cdsButton="secondary" (click)="onBackButtonClicked()">
+    Back
+  </button>
 
-  <cds-tab heading="Forms"><valtimo-building-block-forms></valtimo-building-block-forms></cds-tab>
+  <cds-tabs *ngIf="obs.buildingBlock && !obs.backButtonActive" type="contained">
+    <cds-tab
+      heading="Processes"
+      [active]="obs.activeTab === BUILDING_BLOCK_TAB.PROCESSES"
+      (selected)="onTabSelected(BUILDING_BLOCK_TAB.PROCESSES)"
+    >
+    </cds-tab>
 
-  <cds-tab heading="Form flows">
-    <valtimo-building-block-form-flows></valtimo-building-block-form-flows>
-  </cds-tab>
+    <cds-tab
+      heading="Forms"
+      [active]="obs.activeTab === BUILDING_BLOCK_TAB.FORMS"
+      (selected)="onTabSelected(BUILDING_BLOCK_TAB.FORMS)"
+    >
+    </cds-tab>
 
-  <cds-tab heading="Decisions">
-    <valtimo-building-block-decisions></valtimo-building-block-decisions>
-  </cds-tab>
+    <cds-tab
+      heading="Form flows"
+      [active]="obs.activeTab === BUILDING_BLOCK_TAB.FORM_FLOWS"
+      (selected)="onTabSelected(BUILDING_BLOCK_TAB.FORM_FLOWS)"
+    >
+    </cds-tab>
 
-  <cds-tab heading="Cases"><valtimo-building-block-cases></valtimo-building-block-cases></cds-tab>
-</cds-tabs>
+    <cds-tab
+      heading="Decisions"
+      [active]="obs.activeTab === BUILDING_BLOCK_TAB.DECISIONS"
+      (selected)="onTabSelected(BUILDING_BLOCK_TAB.DECISIONS)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      heading="Cases"
+      [active]="obs.activeTab === BUILDING_BLOCK_TAB.CASES"
+      (selected)="onTabSelected(BUILDING_BLOCK_TABS.CASES)"
+    >
+    </cds-tab>
+  </cds-tabs>
+
+  @switch (obs.activeTab) {
+    @case (BUILDING_BLOCK_TAB.PROCESSES) {
+      <valtimo-building-block-processes></valtimo-building-block-processes>
+    }
+    @case (BUILDING_BLOCK_TAB.FORMS) {
+      <valtimo-building-block-forms></valtimo-building-block-forms>
+    }
+    @case (BUILDING_BLOCK_TAB.FORM_FLOWS) {
+      <valtimo-building-block-form-flows></valtimo-building-block-form-flows>
+    }
+    @case (BUILDING_BLOCK_TAB.DECISIONS) {
+      <valtimo-building-block-decisions></valtimo-building-block-decisions>
+    }
+    @case (BUILDING_BLOCK_TAB.CASES) {
+      <valtimo-building-block-cases></valtimo-building-block-cases>
+    }
+  }
+</ng-container>

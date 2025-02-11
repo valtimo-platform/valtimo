@@ -1,1 +1,35 @@
-Forms Works
+<valtimo-form-management
+  *ngIf="(backButtonActive$ | async) === false"
+  (editForm)="onEditForm($event)"
+  (createForm)="onOpenCreateForm()"
+></valtimo-form-management>
+
+<valtimo-form-management-edit
+  *ngIf="formId$ | async as formId"
+  [formId]="formId"
+  (formCallComplete)="onFormCallComplete()"
+></valtimo-form-management-edit>
+
+<cds-modal
+  valtimoCdsModal
+  [open]="createModalOpen$ | async"
+  size="sm"
+  showFooter="true"
+  (close)="onCloseCreateModal()"
+>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseCreateModal()">
+    <h3 cdsModalHeaderHeading>Create form</h3>
+  </cds-modal-header>
+
+  <section cdsModalContent>
+    <input cdsText data-carbon-theme="white" [formControl]="nameControl" placeholder="Form name" />
+  </section>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="onCloseCreateModal()">Cancel</button>
+
+    <button [disabled]="nameControl.invalid" cdsButton="primary" (click)="onCreateForm()">
+      Create
+    </button>
+  </cds-modal-footer>
+</cds-modal>

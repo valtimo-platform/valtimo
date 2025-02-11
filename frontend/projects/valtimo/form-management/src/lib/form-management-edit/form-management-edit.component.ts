@@ -13,7 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, HostBinding, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  HostBinding,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewEncapsulation,
+} from '@angular/core';
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
 import {FormioForm} from '@formio/angular';
 import {
@@ -49,6 +58,11 @@ export class FormManagementEditComponent
   implements OnInit, OnDestroy
 {
   @HostBinding('class') public readonly class = 'valtimo-form-management-edit';
+  @Input() public set formId(value: string) {
+    this.loadFormDefinition(value);
+  }
+
+  @Output() public readonly formCallComplete = new EventEmitter();
 
   public modifiedFormDefinition: FormioForm | null = null;
   public validJsonChange: boolean | null = null;
@@ -103,14 +117,13 @@ export class FormManagementEditComponent
   }
 
   public ngOnInit(): void {
-    this.pageTitleService.disableReset();
-    this.loadFormDefinition();
+    // this.pageTitleService.disableReset();
     this.checkToOpenUploadModal();
   }
 
   public ngOnDestroy(): void {
     this._alertSub.unsubscribe();
-    this.pageTitleService.enableReset();
+    // this.pageTitleService.enableReset();
   }
 
   public formBuilderChanged(event, definition: EditorModel): void {
@@ -132,7 +145,8 @@ export class FormManagementEditComponent
     this.pendingChanges = false;
     this.formManagementService.deleteFormDefinition(definition.id).subscribe({
       next: () => {
-        this.router.navigate(['/form-management']);
+        // this.router.navigate(['/form-management']);
+        this.formCallComplete.emit();
         this.alertService.success('Form deleted');
       },
       error: () => {
@@ -166,7 +180,8 @@ export class FormManagementEditComponent
     };
     this.formManagementService.modifyFormDefinition(request).subscribe({
       next: () => {
-        this.router.navigate(['/form-management']);
+        this.formCallComplete.emit();
+        // this.router.navigate(['/form-management']);
         this.alertService.success('Form deployed');
       },
       error: () => {
@@ -276,17 +291,13 @@ export class FormManagementEditComponent
     });
   }
 
-  private loadFormDefinition(): void {
-    this.route.paramMap
-      .pipe(
-        take(1),
-        switchMap((paramMap: ParamMap) =>
-          this.formManagementService.getFormDefinition(paramMap.get('id') ?? '')
-        )
-      )
+  private loadFormDefinition(formId: string): void {
+    this.formManagementService
+      .getFormDefinition(formId ?? '')
+      .pipe(take(1))
       .subscribe((definition: FormDefinition) => {
         this._formDefinition$.next(definition);
-        this.pageTitleService.setCustomPageTitle(definition.name);
+        // this.pageTitleService.setCustomPageTitle(definition.name);
         this.jsonFormDefinition$.next({
           value: JSON.stringify(definition.formDefinition),
           language: 'json',

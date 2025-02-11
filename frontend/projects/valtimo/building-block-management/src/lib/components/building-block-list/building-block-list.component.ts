@@ -2,7 +2,7 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {BuildingBlockApiService} from '../../services';
 import {CarbonListModule, ColumnConfig} from '@valtimo/components';
-import {BehaviorSubject, debounceTime, tap} from 'rxjs';
+import {BehaviorSubject, debounceTime, delay, tap} from 'rxjs';
 import {Router} from '@angular/router';
 import {BuildingBlock} from '../../models';
 
@@ -13,7 +13,11 @@ import {BuildingBlock} from '../../models';
   imports: [CommonModule, CarbonListModule],
 })
 export class BuildingBlockList {
-  public readonly buildingBlocks$ = this.buildingBlockApiService.buildingBlocks$;
+  public readonly buildingBlocks$ = this.buildingBlockApiService.buildingBlocks$.pipe(
+    delay(500),
+    tap(() => this.loading$.next(false))
+  );
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
 
   public readonly FIELDS: ColumnConfig[] = [
     {
@@ -37,6 +41,5 @@ export class BuildingBlockList {
 
   public onRowClicked(block: BuildingBlock): void {
     this.router.navigate([`/building-block-management/${block.id}`]);
-    console.log('in here');
   }
 }

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component} from '@angular/core';
+import {Component, EventEmitter, Output} from '@angular/core';
 import {Router} from '@angular/router';
 import {Pagination} from '@valtimo/components';
-import {take} from 'rxjs';
+import {BehaviorSubject, delay, take} from 'rxjs';
 import {Upload16} from '@carbon/icons';
 
 import {FormDefinition} from './models';
@@ -29,6 +29,7 @@ import {IconService} from 'carbon-components-angular';
   styleUrls: ['./form-management.component.scss'],
 })
 export class FormManagementComponent {
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
   public formDefinitions: FormDefinition[] = [];
   public formDefinitionFields: any[] = [
     {key: 'name', label: 'Form name'},
@@ -40,6 +41,9 @@ export class FormManagementComponent {
     page: 1,
     size: 10,
   };
+
+  @Output() public readonly editForm = new EventEmitter<string>();
+  @Output() public readonly createForm = new EventEmitter();
 
   constructor(
     private formManagementService: FormManagementService,
@@ -70,6 +74,7 @@ export class FormManagementComponent {
       .queryFormDefinitions(params)
       .pipe(take(1))
       .subscribe(results => {
+        this.loading$.next(false);
         this.pagination = {
           ...this.pagination,
           collectionSize: results.body.totalElements,
@@ -79,10 +84,15 @@ export class FormManagementComponent {
   }
 
   public editFormDefinition(formDefinition: FormDefinition): void {
-    this.router.navigate(['/form-management/edit', formDefinition.id]);
+    this.editForm.emit(formDefinition.id);
+    // this.router.navigate(['/form-management/edit', formDefinition.id]);
   }
 
   public searchTermEntered(searchTerm: string): void {
     this.loadFormDefinitions(searchTerm);
+  }
+
+  public onCreateClick(): void {
+    this.createForm.emit();
   }
 }

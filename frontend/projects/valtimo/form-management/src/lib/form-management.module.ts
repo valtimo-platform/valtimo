@@ -63,7 +63,7 @@ import {
     FormManagementDuplicateComponent,
   ],
   imports: [
-    FormManagementRoutingModule,
+    // FormManagementRoutingModule,
     FormIoModule,
     CommonModule,
     ReactiveFormsModule,
@@ -96,6 +96,12 @@ import {
     ConfirmationModalModule,
     TagModule,
   ],
-  exports: [FormManagementComponent],
+  exports: [
+    FormManagementComponent,
+    FormManagementCreateComponent,
+    FormManagementEditComponent,
+    FormManagementUploadComponent,
+    FormManagementDuplicateComponent,
+  ],
 })
 export class FormManagementModule {}

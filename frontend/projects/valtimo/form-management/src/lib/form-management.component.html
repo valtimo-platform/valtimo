@@ -18,6 +18,7 @@
   [fields]="formDefinitionFields"
   [header]="false"
   [isSearchable]="true"
+  [loading]="loading$ | async"
   [items]="formDefinitions"
   [pagination]="pagination"
   paginationIdentifier="formManagementList"
@@ -30,13 +31,13 @@
     <button
       cdsButton="ghost"
       [iconOnly]="true"
-      [routerLink]="'create'"
-      [queryParams]="{upload: 'true'}"
-    >
+      >
+      <!-- [routerLink]="'create'"
+      [queryParams]="{upload: 'true'}" -->
       <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
     </button>
 
-    <button cdsButton="primary" [routerLink]="'create'">
+    <button cdsButton="primary" (click)="onCreateClick()">
       {{ 'Create new Form' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

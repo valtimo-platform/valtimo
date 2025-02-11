@@ -20,5 +20,8 @@
 
 export * from './lib/services/form-management.service';
 export * from './lib/form-management.component';
+export * from './lib/form-management-create/form-management-create.component';
+export * from './lib/form-management-duplicate/form-management-duplicate.component';
+export * from './lib/form-management-edit/form-management-edit.component';
 export * from './lib/form-management.module';
 export * from './lib/models';
