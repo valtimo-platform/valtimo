@@ -25,8 +25,8 @@
     <button cdsButton="ghost" [iconOnly]="true" (click)="openModal()">
       <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
     </button>
-
-    <button cdsButton="primary" [routerLink]="'create'">
+    <!-- [routerLink]="'create'" -->
+    <button cdsButton="primary" (click)="onCreateClick()">
       {{ 'Create new Process' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

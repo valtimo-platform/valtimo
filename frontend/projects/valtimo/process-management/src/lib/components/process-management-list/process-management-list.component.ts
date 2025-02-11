@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component} from '@angular/core';
-import {ProcessDefinition, ProcessService} from '@valtimo/process';
+import {Component, EventEmitter, Output} from '@angular/core';
 import {Router} from '@angular/router';
-import {ColumnConfig} from '@valtimo/components';
-import {BehaviorSubject, startWith, switchMap, tap} from 'rxjs';
-import {IconService} from 'carbon-components-angular';
 import {Upload16} from '@carbon/icons';
-import {ProcessManagementStateService} from '../../services';
+import {ColumnConfig} from '@valtimo/components';
+import {ProcessDefinition, ProcessService} from '@valtimo/process';
+import {IconService} from 'carbon-components-angular';
+import {BehaviorSubject, startWith, Subject, switchMap, tap} from 'rxjs';
 
 @Component({
   selector: 'valtimo-process-management-list',
@@ -29,11 +27,14 @@ import {ProcessManagementStateService} from '../../services';
   styleUrls: ['./process-management-list.component.scss'],
 })
 export class ProcessManagementListComponent {
+  @Output() public readonly addProcess = new EventEmitter();
+  @Output() public readonly editProcess = new EventEmitter<string>();
+  @Output() public readonly uploadProcess = new EventEmitter();
+
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  public readonly reloadDefinitions$ = this.processManagementStateService.reloadDefinitions$;
-
-  public readonly processDefinitions$ = this.reloadDefinitions$.pipe(
+  private readonly _reloadDefinitions$ = new Subject<null>();
+  public readonly processDefinitions$ = this._reloadDefinitions$.pipe(
     startWith(null),
     switchMap(() =>
       this.processService.getProcessDefinitions().pipe(tap(() => this.loading$.next(false)))
@@ -49,17 +50,23 @@ export class ProcessManagementListComponent {
   constructor(
     private readonly processService: ProcessService,
     private readonly router: Router,
-    private readonly iconService: IconService,
-    private readonly processManagementStateService: ProcessManagementStateService
+    private readonly iconService: IconService
+    // private readonly processManagementStateService: ProcessManagementStateService
   ) {
     this.iconService.registerAll([Upload16]);
   }
 
   public editProcessDefinition(processDefinition: ProcessDefinition): void {
-    this.router.navigate(['/processes/process', processDefinition.key]);
+    this.editProcess.emit(processDefinition.key);
+    // this.router.navigate(['/processes/process', processDefinition.key]);
   }
 
   public openModal(): void {
-    this.processManagementStateService.openModal();
+    this.uploadProcess.emit();
+    // this.processManagementStateService.openModal();
+  }
+
+  public onCreateClick(): void {
+    this.addProcess.emit();
   }
 }

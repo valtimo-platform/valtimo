@@ -65,6 +65,10 @@ import {
     FileUploaderModule,
     LayerModule,
   ],
-  exports: [ProcessManagementComponent],
+  exports: [
+    ProcessManagementComponent,
+    ProcessManagementListComponent,
+    ProcessManagementUploadComponent,
+  ],
 })
 export class ProcessManagementModule {}

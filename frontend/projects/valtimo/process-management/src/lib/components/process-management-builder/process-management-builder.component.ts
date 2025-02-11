@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {
   CARBON_CONSTANTS,
@@ -117,6 +126,17 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   @ViewChild('modelerPanel', {static: false}) modelerPanelElementRef!: ElementRef;
   @ViewChild('viewer', {static: false}) viewerElementRef!: ElementRef;
   @ViewChild('viewerPanel', {static: false}) viewerPanelElementRef!: ElementRef;
+  @Input() public set processKey(value: string | 'create') {
+    if (!value) return;
+
+    if (value === 'create') {
+      this.initIfCreate();
+      return;
+    }
+
+    this._processDefinitionKey$.next(value);
+  }
+  @Output() public readonly processUpdated = new EventEmitter();
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
@@ -132,7 +152,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       distinctUntilChanged((previous, current) => isEqual(previous, current)),
       tap(selectedProcessDefinition => {
         this.loading$.next(true);
-        this.pageTitleService.setCustomPageTitle(selectedProcessDefinition.name);
+        // this.pageTitleService.setCustomPageTitle(selectedProcessDefinition.name);
       }),
       switchMap(selectedProcessDefinition =>
         this.processService.getProcessDefinitionXml(selectedProcessDefinition.id)
@@ -147,10 +167,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       })
     );
 
-  private readonly _processDefinitionKey$ = this.route.params.pipe(
-    map(params => params.key),
-    filter(key => !!key)
-  );
+  private readonly _processDefinitionKey$ = new BehaviorSubject<string | null>(null);
 
   private readonly _reload$ = new Subject<null>();
 
@@ -247,7 +264,8 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         )
       )
       .subscribe(() => {
-        this.reload();
+        this.processUpdated.emit();
+        // this.reload();
       });
   }
 
@@ -270,7 +288,8 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         )
       )
       .subscribe(() => {
-        this.router.navigate(['/processes']);
+        this.processUpdated.emit();
+        // this.router.navigate(['/processes']);
         this.notificationService.showToast({
           caption: this.translateService.instant('formFlow.savedSuccessTitleMessage'),
           type: 'success',
@@ -476,9 +495,9 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private initIfCreate(): void {
-    const currentUrl = this.route.snapshot.url.toString();
+    // const currentUrl = this.route.snapshot.url.toString();
 
-    if (!currentUrl.includes('create')) return;
+    // if (!currentUrl.includes('create')) return;
 
     this.creatingNewProcess$.next(true);
     this._bpmnModeler?.importXML(EMPTY_BPMN);

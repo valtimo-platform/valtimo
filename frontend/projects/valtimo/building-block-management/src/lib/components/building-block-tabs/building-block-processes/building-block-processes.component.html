@@ -1,1 +1,15 @@
-Processes Works
+<ng-container
+  *ngIf="{processKey: processKey$ | async, backButtonActive: backButtonActive$ | async} as obs"
+>
+  <valtimo-process-management-list
+    *ngIf="!obs.backButtonActive"
+    (addProcess)="onAddProcess()"
+    (editProcess)="onEditProcess($event)"
+  ></valtimo-process-management-list>
+
+  <valtimo-process-management-builder
+    *ngIf="obs.backButtonActive"
+    [processKey]="obs.processKey"
+    (processUpdated)="onProcessUpdated()"
+  ></valtimo-process-management-builder>
+</ng-container>

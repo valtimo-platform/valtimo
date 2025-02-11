@@ -17,7 +17,7 @@ import {BUILDING_BLOCK_TABS} from '../building-block-tabs';
 })
 export class BuildingBlockDetails implements OnDestroy {
   public readonly activeTab$ = new BehaviorSubject<BUILDING_BLOCK_TAB>(
-    BUILDING_BLOCK_TAB.FORM_FLOWS
+    BUILDING_BLOCK_TAB.PROCESSES
   );
   public readonly buildingBlock$: Observable<BuildingBlock | null> = this.route.params.pipe(
     switchMap((params: Params) => this.buildingBlockApiService.getBuildingBlock(params['id'])),

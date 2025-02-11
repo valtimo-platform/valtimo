@@ -20,3 +20,6 @@
 
 export * from './lib/process-management.module';
 export * from './lib/components/process-management/process-management.component';
+export * from './lib/components/process-management-list/process-management-list.component';
+export * from './lib/components/process-management-upload/process-management-upload.component';
+export * from './lib/components/process-management-builder/process-management-builder.component';

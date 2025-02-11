@@ -15,6 +15,72 @@
   -->
 
 <div
+  class="page-header-actions"
+  *ngIf="{
+    processDefinitionVersionsListItems: processDefinitionVersionsListItems$ | async,
+    loading: loading$ | async,
+    changesPending: changesPending$ | async,
+    isReadOnlyProcess: isReadOnlyProcess$ | async,
+    isSystemProcess: isSystemProcess$ | async,
+    compactMode: compactMode$ | async,
+    creatingNewProcess: creatingNewProcess$ | async,
+  } as actionsObs"
+>
+  <div class="page-header-actions__left-container">
+    <cds-dropdown
+      *ngIf="!actionsObs.creatingNewProcess"
+      class="page-header-actions__version-dropdown"
+      (selected)="selectedVersionChange($event)"
+      [disabled]="
+        actionsObs.loading ||
+        (actionsObs.processDefinitionVersionsListItems || []).length === 0 ||
+        (actionsObs.processDefinitionVersionsListItems || []).length === 1
+      "
+      [size]="actionsObs.compactMode ? 'sm' : 'md'"
+    >
+      <cds-dropdown-list
+        [items]="actionsObs.processDefinitionVersionsListItems || []"
+      ></cds-dropdown-list>
+    </cds-dropdown>
+
+    <div class="page-header-actions__tags">
+      <cds-tag *ngIf="actionsObs.isReadOnlyProcess" type="blue">{{
+        'processManagement.readOnly' | translate
+      }}</cds-tag>
+
+      <cds-tag *ngIf="actionsObs.isSystemProcess" type="red">{{
+        'processManagement.systemProcess' | translate
+      }}</cds-tag>
+    </div>
+  </div>
+
+  <div class="page-header-actions__buttons">
+    <cds-overflow-menu class="overflow-button">
+      <cds-overflow-menu-option
+        [disabled]="actionsObs.loading"
+        (selected)="export(actionsObs.isReadOnlyProcess)"
+        >{{ 'interface.export' | translate }}
+      </cds-overflow-menu-option>
+    </cds-overflow-menu>
+
+    <button
+      [disabled]="!actionsObs.changesPending"
+      cdsButton="primary"
+      (click)="
+        !actionsObs.creatingNewProcess
+          ? deployChanges(actionsObs.isReadOnlyProcess)
+          : deployNewProcessDefinition()
+      "
+      [size]="actionsObs.compactMode ? 'sm' : 'md'"
+    >
+      {{ 'processManagement.deploy' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="deploy" size="16"></svg>
+    </button>
+  </div>
+</div>
+
+<div
   fitPage
   [disableOverflow]="true"
   *ngIf="{
@@ -45,72 +111,8 @@
 
 <valtimo-process-link-modal></valtimo-process-link-modal>
 
-<ng-container renderInPageHeader [fullWidth]="true">
-  <ng-template>
-    <div
-      class="page-header-actions"
-      *ngIf="{
-        processDefinitionVersionsListItems: processDefinitionVersionsListItems$ | async,
-        loading: loading$ | async,
-        changesPending: changesPending$ | async,
-        isReadOnlyProcess: isReadOnlyProcess$ | async,
-        isSystemProcess: isSystemProcess$ | async,
-        compactMode: compactMode$ | async,
-        creatingNewProcess: creatingNewProcess$ | async,
-      } as actionsObs"
-    >
-      <div class="page-header-actions__left-container">
-        <cds-dropdown
-          *ngIf="!actionsObs.creatingNewProcess"
-          class="page-header-actions__version-dropdown"
-          (selected)="selectedVersionChange($event)"
-          [disabled]="
-            actionsObs.loading ||
-            (actionsObs.processDefinitionVersionsListItems || []).length === 0 ||
-            (actionsObs.processDefinitionVersionsListItems || []).length === 1
-          "
-          [size]="actionsObs.compactMode ? 'sm' : 'md'"
-        >
-          <cds-dropdown-list
-            [items]="actionsObs.processDefinitionVersionsListItems || []"
-          ></cds-dropdown-list>
-        </cds-dropdown>
+<!-- <ng-container renderInPageHeader [fullWidth]="true"> -->
+<!-- <ng-template> -->
 
-        <div class="page-header-actions__tags">
-          <cds-tag *ngIf="actionsObs.isReadOnlyProcess" type="blue">{{
-            'processManagement.readOnly' | translate
-          }}</cds-tag>
-
-          <cds-tag *ngIf="actionsObs.isSystemProcess" type="red">{{
-            'processManagement.systemProcess' | translate
-          }}</cds-tag>
-        </div>
-      </div>
-
-      <div class="page-header-actions__buttons">
-        <cds-overflow-menu class="overflow-button">
-          <cds-overflow-menu-option
-            [disabled]="actionsObs.loading"
-            (selected)="export(actionsObs.isReadOnlyProcess)"
-            >{{ 'interface.export' | translate }}
-          </cds-overflow-menu-option>
-        </cds-overflow-menu>
-
-        <button
-          [disabled]="!actionsObs.changesPending"
-          cdsButton="primary"
-          (click)="
-            !actionsObs.creatingNewProcess
-              ? deployChanges(actionsObs.isReadOnlyProcess)
-              : deployNewProcessDefinition()
-          "
-          [size]="actionsObs.compactMode ? 'sm' : 'md'"
-        >
-          {{ 'processManagement.deploy' | translate }}
-
-          <svg class="cds--btn__icon" cdsIcon="deploy" size="16"></svg>
-        </button>
-      </div>
-    </div>
-  </ng-template>
-</ng-container>
+<!-- </ng-template> -->
+<!-- </ng-container> -->
