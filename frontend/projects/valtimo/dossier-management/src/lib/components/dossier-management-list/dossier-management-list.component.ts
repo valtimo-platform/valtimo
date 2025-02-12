@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {Router} from '@angular/router';
 import {Search20, TrashCan20, Upload16} from '@carbon/icons';
 import {ColumnConfig, MenuService, Pagination, ViewType} from '@valtimo/components';
@@ -26,7 +26,7 @@ import {
 } from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import moment from 'moment';
-import {BehaviorSubject, map, Observable, switchMap, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, switchMap, take, tap} from 'rxjs';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -42,21 +42,36 @@ export class DossierManagementListComponent {
     size: 10,
   };
 
+  private readonly _filterIds$ = new BehaviorSubject<string[]>([]);
+  @Input() public set filterIds(values: string[]) {
+    this._filterIds$.next(values);
+  }
+
   private readonly _refreshData$ = new BehaviorSubject<null>(null);
   public dossiers$: Observable<DocumentDefinition[]> = this._refreshData$.pipe(
     switchMap(() =>
-      this.documentService.queryDefinitionsForManagement({
-        page: this.pagination.page - 1,
-        size: this.pagination.size,
-      })
+      combineLatest([
+        this.documentService.queryDefinitionsForManagement({
+          page: this.pagination.page - 1,
+          size: this.pagination.size,
+        }),
+        this._filterIds$,
+      ])
     ),
-    map((documentDefinitionPage: Page<DocumentDefinition>) => {
+    map(([documentDefinitionPage, filterIds]) => {
       this.pagination = {
         ...this.pagination,
         collectionSize: documentDefinitionPage.totalElements,
       };
 
-      return documentDefinitionPage.content.map((documentDefinition: DocumentDefinition) => ({
+      const content =
+        filterIds.length === 0
+          ? documentDefinitionPage.content
+          : documentDefinitionPage.content.filter((documentDefinition: DocumentDefinition) =>
+              filterIds.includes(documentDefinition.id.name)
+            );
+
+      return content.map((documentDefinition: DocumentDefinition) => ({
         ...documentDefinition,
         createdOn: moment(documentDefinition.createdOn).format('DD MMM YYYY HH:mm'),
       }));

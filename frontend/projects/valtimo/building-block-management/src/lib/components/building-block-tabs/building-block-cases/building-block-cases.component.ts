@@ -1,5 +1,6 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {DossierManagementModule} from '@valtimo/dossier-management';
 
 @Component({
   selector: 'valtimo-building-block-cases',
@@ -7,6 +8,6 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
   styleUrl: './building-block-cases.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DossierManagementModule],
 })
 export class BuildingBlockCasesComponent {}

@@ -159,6 +159,7 @@ import {DossierManagementWidgetsEditorComponent} from './components/dossier-mana
     DossierManagementWidgetsEditorComponent,
     ValuePathSelectorComponent,
   ],
+  exports: [DossierManagementListComponent],
   providers: [TabManagementService],
 })
 export class DossierManagementModule {}

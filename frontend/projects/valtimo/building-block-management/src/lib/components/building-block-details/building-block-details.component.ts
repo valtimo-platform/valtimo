@@ -16,9 +16,7 @@ import {BUILDING_BLOCK_TABS} from '../building-block-tabs';
   imports: [CommonModule, TabsModule, ButtonModule, ...BUILDING_BLOCK_TABS],
 })
 export class BuildingBlockDetails implements OnDestroy {
-  public readonly activeTab$ = new BehaviorSubject<BUILDING_BLOCK_TAB>(
-    BUILDING_BLOCK_TAB.PROCESSES
-  );
+  public readonly activeTab$ = new BehaviorSubject<BUILDING_BLOCK_TAB>(BUILDING_BLOCK_TAB.CASES);
   public readonly buildingBlock$: Observable<BuildingBlock | null> = this.route.params.pipe(
     switchMap((params: Params) => this.buildingBlockApiService.getBuildingBlock(params['id'])),
     tap((block: BuildingBlock | null) => {
