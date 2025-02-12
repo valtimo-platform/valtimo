@@ -61,6 +61,7 @@ import {
 import {
   AccordionModule,
   ButtonModule,
+  CheckboxModule,
   Dropdown,
   DropdownModule,
   IconModule,
@@ -89,6 +90,7 @@ import {WidgetFieldsService, WidgetWizardService} from '../../../../services';
     AccordionModule,
     InputLabelModule,
     ValuePathSelectorComponent,
+    CheckboxModule,
   ],
 })
 export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnDestroy {
@@ -169,6 +171,7 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
           null,
           Validators.pattern('[1-9][0-9]*')
         ),
+        hideWhenEmpty: this.fb.control<boolean | false>(false),
       })
     );
   }
@@ -223,6 +226,9 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
           Validators.pattern('[1-9][0-9]*')
         ),
       }),
+      hideWhenEmpty: this.fb.control(
+        (row.displayProperties as CaseWidgetTextDisplayType)?.hideWhenEmpty ?? false
+      ),
       ...([CaseWidgetDisplayTypeKey.NUMBER, CaseWidgetDisplayTypeKey.PERCENT].includes(
         row.displayProperties?.type as CaseWidgetDisplayTypeKey
       ) && {
@@ -295,6 +301,7 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
               ...(!!row?.ellipsisCharacterLimit && {
                 ellipsisCharacterLimit: row.ellipsisCharacterLimit,
               }),
+              ...(!!row?.hideWhenEmpty && {hideWhenEmpty: row.hideWhenEmpty}),
               ...(!!row?.currencyCode && {currencyCode: row.currencyCode}),
               ...(!!row?.display && {display: row.display}),
               ...(!!row?.digitsInfo && {digitsInfo: row.digitsInfo}),

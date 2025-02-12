@@ -29,7 +29,7 @@ import {
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule, EllipsisPipe, ViewContentService, ViewType} from '@valtimo/components';
 import {ButtonModule, InputModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, tap} from 'rxjs';
 import {
   CaseWidgetAction,
   CaseWidgetTextDisplayType,
@@ -37,7 +37,6 @@ import {
 } from '../../../../../../models';
 import {WidgetsService} from '../../widgets.service';
 import {PermissionService} from '@valtimo/access-control';
-import {CAN_CREATE_CAMUNDA_EXECUTION_PERMISSION} from '../../widgets.permissions';
 import {ActivatedRoute} from '@angular/router';
 import {WidgetProcess} from '../widget-process/widget-process';
 import {DocumentService} from '@valtimo/document';
@@ -70,6 +69,7 @@ export class WidgetFieldComponent extends WidgetProcess implements AfterViewInit
     this.baseWidgetConfiguration = value;
   }
   public readonly isEmptyWidgetData$ = new BehaviorSubject<boolean>(false);
+  public readonly noVisibleFields$ = new BehaviorSubject<boolean>(true);
 
   @Input() public set widgetData(value: object) {
     if (!value) return;
@@ -82,7 +82,12 @@ export class WidgetFieldComponent extends WidgetProcess implements AfterViewInit
   public readonly widgetData$ = new BehaviorSubject<object | null>(null);
 
   public readonly widgetPropertyValue$: Observable<
-    {title: string; value: string; ellipsisCharacterLimit: number | null}[][]
+    {
+      title: string;
+      value: string;
+      ellipsisCharacterLimit: number | null;
+      hideWhenEmpty: boolean | false;
+    }[][]
   > = combineLatest([this.widgetConfiguration$, this.widgetData$]).pipe(
     map(([widget, widgetData]) =>
       widget?.properties.columns.map(column =>
@@ -96,6 +101,9 @@ export class WidgetFieldComponent extends WidgetProcess implements AfterViewInit
                     ellipsisCharacterLimit:
                       (property.displayProperties as CaseWidgetTextDisplayType)
                         ?.ellipsisCharacterLimit ?? null,
+                    hideWhenEmpty:
+                      (property.displayProperties as CaseWidgetTextDisplayType)?.hideWhenEmpty ??
+                      false,
                     value: this.viewContentService.get(widgetData[property.key], {
                       ...property.displayProperties,
                       viewType: property.displayProperties?.type ?? ViewType.TEXT,
@@ -107,7 +115,8 @@ export class WidgetFieldComponent extends WidgetProcess implements AfterViewInit
           []
         )
       )
-    )
+    ),
+    tap(columns => this.checkEmptyFields(columns))
   );
 
   private _observer!: ResizeObserver;
@@ -159,5 +168,14 @@ export class WidgetFieldComponent extends WidgetProcess implements AfterViewInit
 
   private checkEmptyWidgetData(widgetData: Object): boolean {
     return widgetData && Object.keys(widgetData).length === 0;
+  }
+
+  private checkEmptyFields(columns: any[][]): void {
+    columns.forEach(column => {
+      column.forEach(field => {
+        if (!field?.hideWhenEmpty || (field?.hideWhenEmpty && field?.value && field?.value !== '-'))
+          this.noVisibleFields$.next(false);
+      });
+    });
   }
 }

@@ -176,6 +176,7 @@
     "rowLocked": "Je hebt geen toegang tot dit dossier",
     "widgets": {
       "noData": "Geen data gevonden",
+      "emptyFields": "Nichts hier",
       "noWidgets": "Geen widgets",
       "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",
       "noWidget": "Widget niet beschikbaar",
@@ -788,6 +789,7 @@
       "widgetTitle": "Widget titel",
       "widgetTitlePlaceholder": "Kies een korte naam",
       "widgetTitleTooltip": "Titel die bovenaan de widget wordt weergegeven",
+      "hideWhenEmpty": "Verbergen als leeg",
       "column": "Kolom {{number}}",
       "fields": {
         "add": "Veld toevoegen",

@@ -176,6 +176,7 @@
     "rowLocked": "Kein Zugriff zu dieser Fall!",
     "widgets": {
       "noData": "Keine Data gefunden",
+      "emptyFields": "Niets hier",
       "noWidgets": "Keine Widgets",
       "noWidgetsDescription": "Für dieses Tab sind keine Widgets konfiguriert, oder Sie verfügen nicht über die entsprechenden Berechtigungen, um sie anzuzeigen.",
       "noCustomComponent": "Widget nicht verfügbar",
@@ -788,6 +789,7 @@
       "widgetTitle": "Widget-Titel",
       "widgetTitlePlaceholder": "Wählen Sie einen Kurznamen",
       "widgetTitleTooltip": "Titel, der oben im Widget angezeigt wird",
+      "hideWhenEmpty": "Ausblenden, wenn leer",
       "column": "Spalte {{number}}",
       "fields": {
         "add": "Feld hinzufügen",

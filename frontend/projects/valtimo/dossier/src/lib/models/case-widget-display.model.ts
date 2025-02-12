@@ -12,10 +12,12 @@ enum CaseWidgetDisplayTypeKey {
 interface CaseWidgetTextDisplayType {
   type: CaseWidgetDisplayTypeKey.TEXT;
   ellipsisCharacterLimit: number;
+  hideWhenEmpty: boolean;
 }
 
 interface CaseWidgetBooleanDisplayType {
   type: CaseWidgetDisplayTypeKey.BOOLEAN;
+  hideWhenEmpty: boolean;
 }
 
 interface CaseWidgetCurrencyDisplayType {
@@ -23,16 +25,19 @@ interface CaseWidgetCurrencyDisplayType {
   currencyCode?: string;
   display?: string;
   digitsInfo?: string;
+  hideWhenEmpty: boolean;
 }
 
 interface CaseWidgetDateDisplayType {
   type: CaseWidgetDisplayTypeKey.DATE;
   format?: string;
+  hideWhenEmpty: boolean;
 }
 
 interface CaseWidgetDateTimeDisplayType {
   type: CaseWidgetDisplayTypeKey.DATE_TIME;
   format?: string;
+  hideWhenEmpty: boolean;
 }
 
 interface CaseWidgetEnumDisplayType {
@@ -40,16 +45,19 @@ interface CaseWidgetEnumDisplayType {
   values: {
     [key: string]: string;
   };
+  hideWhenEmpty: boolean;
 }
 
 interface CaseWidgetNumberDisplayType {
   type: CaseWidgetDisplayTypeKey.NUMBER;
   digitsInfo?: string;
+  hideWhenEmpty: boolean;
 }
 
 interface CaseWidgetPercentDisplayType {
   type: CaseWidgetDisplayTypeKey.PERCENT;
   digitsInfo?: string;
+  hideWhenEmpty: boolean;
 }
 
 type CaseWidgetDisplayType =
