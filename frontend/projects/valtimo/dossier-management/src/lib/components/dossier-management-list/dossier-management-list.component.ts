@@ -95,7 +95,6 @@ export class DossierManagementListComponent {
     private readonly router: Router
   ) {
     this.iconService.registerAll([Search20, TrashCan20, Upload16]);
-    this.buildingBlockApiService.buildingBlocks$.subscribe(res => console.log({res}));
   }
 
   public onCloseUploadModal(definitionUploaded: boolean): void {

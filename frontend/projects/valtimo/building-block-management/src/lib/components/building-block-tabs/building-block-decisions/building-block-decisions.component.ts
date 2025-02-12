@@ -29,7 +29,6 @@ export class BuildingBlockDecisionsComponent {
   ) {}
 
   public onEditDecision(decisionId: string): void {
-    console.log({decisionId});
     this.decisionId$.next(decisionId);
     this.buildingBlockService.viewChanged();
   }

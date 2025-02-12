@@ -1,0 +1,39 @@
+<valtimo-carbon-list
+  [items]="buildingBlocks$ | async"
+  [fields]="FIELDS"
+  [actionItems]="ACTION_ITEMS"
+  [header]="false"
+  [loading]="loading$ | async"
+>
+  <button cdsButton="primary" carbonToolbarContent (click)="onLinkClick()">
+    Link building block
+
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</valtimo-carbon-list>
+
+<cds-modal [open]="linkModalOpen$ | async" size="sm" showFooter="true">
+  <cds-modal-header showCloseButton="true" (closeSelect)="onCloseLinkModal()">
+    Link building block
+  </cds-modal-header>
+
+  <section cdsModalContent class="link-modal-content">
+    <p>Choose a block to link to the case</p>
+
+    <cds-dropdown (selected)="onBlockSelected($event)" [appendInline]="true" [dropUp]="false">
+      <cds-dropdown-list [items]="availableBuildingBlocksItems$ | async"></cds-dropdown-list>
+    </cds-dropdown>
+  </section>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="onCloseLinkModal()">Cancel</button>
+
+    <button
+      cdsButton="primary"
+      [disabled]="(selectedBlock$ | async) === null"
+      (click)="onConfirmLinkModal()"
+    >
+      Confirm
+    </button>
+  </cds-modal-footer>
+</cds-modal>

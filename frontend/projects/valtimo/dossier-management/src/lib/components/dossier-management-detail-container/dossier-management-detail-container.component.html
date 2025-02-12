@@ -85,6 +85,19 @@
       ></valtimo-dossier-management-statuses>
     </cds-tab>
 
+    <cds-tab
+      *ngIf="{active: obs.currentTab === TabEnum.BUILDING_BLOCKS} as vars"
+      class="no-padding-left-right no-padding-top-bottom"
+      [active]="vars.active"
+      heading="Building blocks"
+      (selected)="displayBodyComponent(TabEnum.BUILDING_BLOCKS)"
+    >
+      <valtimo-dossier-management-building-blocks
+        *ngIf="vars.active"
+        [documentDefinitionName]="documentDefinitionName$ | async"
+      ></valtimo-dossier-management-building-blocks>
+    </cds-tab>
+
     @for (injectedTab of obs.injectedTabs; track injectedTab.translationKey) {
       <cds-tab
         class="no-padding-left-right no-padding-top-bottom"

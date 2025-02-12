@@ -16,7 +16,7 @@ import {map, Observable, switchMap} from 'rxjs';
 export class BuildingBlockCasesComponent {
   public filterIds$: Observable<string[]> = this.route.params.pipe(
     switchMap((params: Params) => this.buildingBlockApiService.getBuildingBlock(params['id'])),
-    map((buildingBlock: BuildingBlock | null) => buildingBlock?.linkedCasesIds ?? [])
+    map((buildingBlock: BuildingBlock | null) => buildingBlock?.linkedCaseIds ?? [])
   );
 
   constructor(
