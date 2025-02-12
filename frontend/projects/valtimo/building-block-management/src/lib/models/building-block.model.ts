@@ -2,6 +2,7 @@ export interface BuildingBlock {
   id: string;
   name: string;
   description?: string;
+  linkedCasesIds: string[];
 }
 
 export enum BUILDING_BLOCK_TAB {

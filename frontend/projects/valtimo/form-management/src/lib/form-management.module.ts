@@ -100,7 +100,7 @@ import {
     FormManagementComponent,
     FormManagementCreateComponent,
     FormManagementEditComponent,
-    FormManagementUploadComponent,
+    // FormManagementUploadComponent,
     FormManagementDuplicateComponent,
   ],
 })

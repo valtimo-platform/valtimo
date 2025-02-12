@@ -42,7 +42,7 @@ export class DossierManagementListComponent {
     size: 10,
   };
 
-  private readonly _filterIds$ = new BehaviorSubject<string[]>([]);
+  private readonly _filterIds$ = new BehaviorSubject<string[] | null>(null);
   @Input() public set filterIds(values: string[]) {
     this._filterIds$.next(values);
   }
@@ -64,12 +64,11 @@ export class DossierManagementListComponent {
         collectionSize: documentDefinitionPage.totalElements,
       };
 
-      const content =
-        filterIds.length === 0
-          ? documentDefinitionPage.content
-          : documentDefinitionPage.content.filter((documentDefinition: DocumentDefinition) =>
-              filterIds.includes(documentDefinition.id.name)
-            );
+      const content = !filterIds
+        ? documentDefinitionPage.content
+        : documentDefinitionPage.content.filter((documentDefinition: DocumentDefinition) =>
+            filterIds.includes(documentDefinition.id.name)
+          );
 
       return content.map((documentDefinition: DocumentDefinition) => ({
         ...documentDefinition,
