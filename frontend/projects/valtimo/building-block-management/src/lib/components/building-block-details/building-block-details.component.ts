@@ -2,11 +2,15 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, OnDestroy, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute, ParamMap, Params} from '@angular/router';
 import {BehaviorSubject, Observable, switchMap, tap} from 'rxjs';
-import {BUILDING_BLOCK_TAB, BuildingBlock} from '../../models';
-import {BuildingBlockApiService, BuildingBlockService} from '../../services';
+import {BuildingBlockService} from '../../services';
 import {PageTitleService} from '@valtimo/components';
 import {ButtonModule, TabsModule} from 'carbon-components-angular';
 import {BUILDING_BLOCK_TABS} from '../building-block-tabs';
+import {
+  BUILDING_BLOCK_TAB,
+  BuildingBlock,
+  BuildingBlockApiService,
+} from '@valtimo/building-block-resources';
 
 @Component({
   templateUrl: './building-block-details.component.html',

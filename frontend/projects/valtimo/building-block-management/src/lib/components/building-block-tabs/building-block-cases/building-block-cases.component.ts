@@ -1,10 +1,9 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {ActivatedRoute, Params} from '@angular/router';
+import {BuildingBlock, BuildingBlockApiService} from '@valtimo/building-block-resources';
 import {DossierManagementModule} from '@valtimo/dossier-management';
 import {map, Observable, switchMap} from 'rxjs';
-import {BuildingBlock} from '../../../models';
-import {BuildingBlockApiService} from '../../../services';
 
 @Component({
   selector: 'valtimo-building-block-cases',

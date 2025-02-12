@@ -4,7 +4,8 @@
   "version": "12.2.0",
   "peerDependencies": {
     "@angular/common": "^17.2.2",
-    "@angular/core": "^17.2.2"
+    "@angular/core": "^17.2.2",
+    "@valtimo/building-block-resources": "12.2.0"
   },
   "dependencies": {
     "dmn-js": "12.3.0",
