@@ -16,6 +16,7 @@
 import {Component, Input} from '@angular/core';
 import {Router} from '@angular/router';
 import {Search20, TrashCan20, Upload16} from '@carbon/icons';
+import {BuildingBlockApiService} from '@valtimo/building-block-resources';
 import {ColumnConfig, MenuService, Pagination, ViewType} from '@valtimo/components';
 import {
   DocumentDefinition,
@@ -87,12 +88,14 @@ export class DossierManagementListComponent {
   public readonly showUploadModal$ = new BehaviorSubject<boolean>(false);
 
   constructor(
+    private readonly buildingBlockApiService: BuildingBlockApiService,
     private readonly documentService: DocumentService,
     private readonly iconService: IconService,
     private readonly menuService: MenuService,
     private readonly router: Router
   ) {
     this.iconService.registerAll([Search20, TrashCan20, Upload16]);
+    this.buildingBlockApiService.buildingBlocks$.subscribe(res => console.log({res}));
   }
 
   public onCloseUploadModal(definitionUploaded: boolean): void {

@@ -63,6 +63,8 @@
       "@valtimo/process-management/*": ["dist/valtimo/process-management/*"],
       "@valtimo/decision": ["dist/valtimo/decision"],
       "@valtimo/decision/*": ["dist/valtimo/decision/*"],
+      "@valtimo/building-block-resources": ["dist/valtimo/building-block-resources"],
+      "@valtimo/building-block-resources/*": ["dist/valtimo/building-block-resources/*"],
       "@valtimo/building-block-management": ["dist/valtimo/building-block-management"],
       "@valtimo/building-block-management/*": ["dist/valtimo/building-block-management/*"],
       "@valtimo/milestone": ["dist/valtimo/milestone"],
@@ -243,6 +245,12 @@
     },
     {
       "path": "./projects/valtimo/decision/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/building-block-resources/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/building-block-resources/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/building-block-management/tsconfig.lib.json"

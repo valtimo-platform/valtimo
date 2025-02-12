@@ -1041,6 +1041,43 @@
         }
       }
     },
+    "@valtimo/building-block-resources": {
+      "projectType": "library",
+      "root": "projects/valtimo/building-block-resources",
+      "sourceRoot": "projects/valtimo/building-block-resources/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/valtimo/building-block-resources/tsconfig.lib.json",
+            "project": "projects/valtimo/building-block-resources/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/building-block-resources/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.ts",
+            "tsConfig": "projects/valtimo/building-block-resources/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/building-block-resources/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/building-block-resources/src/**/*.ts",
+              "projects/valtimo/building-block-resources/src/**/*.html"
+            ]
+          }
+        }
+      }
+    },
     "@valtimo/building-block-management": {
       "projectType": "library",
       "root": "projects/valtimo/building-block-management",
