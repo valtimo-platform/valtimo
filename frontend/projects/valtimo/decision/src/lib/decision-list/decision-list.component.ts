@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Output, ViewChild} from '@angular/core';
 import {Decision} from '../models';
 import {DecisionService} from '../decision.service';
 import {Router} from '@angular/router';
@@ -32,6 +32,7 @@ import {Upload16} from '@carbon/icons';
 })
 export class DecisionListComponent {
   @ViewChild('decisionDeploy') deploy: DecisionDeployComponent;
+  @Output() public readonly editDecision = new EventEmitter<string>();
 
   public fields = [
     {key: 'key', label: 'Key'},
@@ -74,10 +75,11 @@ export class DecisionListComponent {
   }
 
   viewDecisionTable(decision: Decision) {
-    if (this.experimentalEditing) {
-      this.router.navigate(['/decision-tables/edit', decision.id]);
-    } else {
-      this.router.navigate(['/decision-tables', decision.id]);
-    }
+    this.editDecision.emit(decision.id);
+    // if (this.experimentalEditing) {
+    //   this.router.navigate(['/decision-tables/edit', decision.id]);
+    // } else {
+    //   this.router.navigate(['/decision-tables', decision.id]);
+    // }
   }
 }

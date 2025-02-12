@@ -56,6 +56,12 @@ import {ButtonModule, IconModule} from 'carbon-components-angular';
     ButtonModule,
     IconModule,
   ],
-  exports: [DecisionComponent, DecisionModelerComponent],
+  exports: [
+    DecisionComponent,
+    DecisionDeployComponent,
+    DecisionDisplayComponent,
+    DecisionListComponent,
+    DecisionModelerComponent,
+  ],
 })
 export class DecisionModule {}

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, OnInit, ViewEncapsulation} from '@angular/core';
+import {Component, Input, OnInit, ViewEncapsulation} from '@angular/core';
 import {DecisionService} from '../decision.service';
 import DmnViewer from 'dmn-js';
 import {DecisionXml} from '../models';
@@ -30,8 +30,12 @@ import {migrateDiagram} from '@bpmn-io/dmn-migrate';
 })
 export class DecisionDisplayComponent implements OnInit {
   public viewer: DmnViewer;
-  private decisionId: string;
+  private _decisionId: string;
   public decisionXml: string;
+  @Input() public set decisionId(value: string | null) {
+    if (!value) return;
+    this._decisionId = value;
+  }
 
   constructor(
     private readonly decisionService: DecisionService,
@@ -43,12 +47,12 @@ export class DecisionDisplayComponent implements OnInit {
     this.viewer = new DmnViewer({
       container: '#canvas',
     });
-    this.decisionId = this.route.snapshot.paramMap.get('id');
+    // this._decisionId = this.route.snapshot.paramMap.get('id');
     this.loadDecisionXml();
   }
 
   loadDecisionXml(): void {
-    this.decisionService.getDecisionXml(this.decisionId).subscribe((decision: DecisionXml) => {
+    this.decisionService.getDecisionXml(this._decisionId).subscribe((decision: DecisionXml) => {
       this.viewer.importXML(decision.dmnXml, error => {
         if (error) {
           this.migrateAndLoadDecisionXml(decision);
@@ -74,7 +78,7 @@ export class DecisionDisplayComponent implements OnInit {
   download(): void {
     const file = new Blob([this.decisionXml], {type: 'text/xml'});
     const link = document.createElement('a');
-    link.download = `decision_table_${this.decisionId}.dmn`;
+    link.download = `decision_table_${this._decisionId}.dmn`;
     link.href = window.URL.createObjectURL(file);
     link.click();
     window.URL.revokeObjectURL(link.href);

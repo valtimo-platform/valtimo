@@ -1,1 +1,20 @@
-Decisions Works
+<ng-container
+  *ngIf="{
+    backButtonActive: backButtonActive$ | async,
+    decisionId: decisionId$ | async,
+    experimentalEditing: experimentalEditing$ | async,
+  } as obs"
+>
+  <valtimo-decision-list
+    *ngIf="!obs.backButtonActive"
+    (editDecision)="onEditDecision($event)"
+  ></valtimo-decision-list>
+
+  @if (obs.backButtonActive) {
+    @if (obs.experimentalEditing) {
+      <valtimo-decision-modeler [decisionId]="obs.decisionId"></valtimo-decision-modeler>
+    } @else {
+      <valtimo-decision-display [decisionId]="obs.decisionId"></valtimo-decision-display>
+    }
+  }
+</ng-container>

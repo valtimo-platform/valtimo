@@ -21,4 +21,7 @@
 export * from './lib/models';
 export * from './lib/decision.module';
 export * from './lib/decision.component';
+export * from './lib/decision-deploy/decision-deploy.component';
+export * from './lib/decision-display/decision-display.component';
+export * from './lib/decision-list/decision-list.component';
 export * from './lib/decision-modeler/decision-modeler.component';

@@ -15,7 +15,7 @@
  */
 
 import {DecisionService} from '../decision.service';
-import {AfterViewInit, Component} from '@angular/core';
+import {AfterViewInit, Component, Input} from '@angular/core';
 import DmnJS from 'dmn-js/dist/dmn-modeler.development.js';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Decision, DecisionXml} from '../models';
@@ -59,8 +59,12 @@ export class DecisionModelerComponent implements AfterViewInit {
 
   readonly isCreating$ = new BehaviorSubject<boolean>(false);
 
-  private readonly decisionId$: Observable<string | null> = this.route.params.pipe(
-    map(params => params?.id),
+  private readonly _decisionId$ = new BehaviorSubject<string | null>(null);
+  @Input() public set decisionId(value: string | null) {
+    if (!value) return;
+    this._decisionId$.next(value);
+  }
+  private readonly decisionId$: Observable<string | null> = this._decisionId$.pipe(
     tap(decisionId => this.isCreating$.next(decisionId === 'create')),
     filter(decisionId => !!decisionId && decisionId !== 'create'),
     tap(() => this.versionSelectionDisabled$.next(true))
@@ -80,7 +84,7 @@ export class DecisionModelerComponent implements AfterViewInit {
   readonly decisionTitle$: Observable<string> = this.decision$.pipe(
     map(decision => decision?.key || ''),
     tap(decisionTitle => {
-      this.pageTitleService.setCustomPageTitle(decisionTitle);
+      // this.pageTitleService.setCustomPageTitle(decisionTitle);
     })
   );
 
