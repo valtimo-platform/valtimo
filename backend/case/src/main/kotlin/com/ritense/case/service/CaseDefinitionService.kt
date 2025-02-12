@@ -88,17 +88,17 @@ class CaseDefinitionService(
 
     @Throws(InvalidListColumnException::class)
     fun createListColumn(
-        caseDefinitionName: String,
+        caseDefinitionKey: String,
         caseListColumnDto: CaseListColumnDto
     ) {
         denyManagementOperation()
 
         runWithoutAuthorization {
-            validators[Operation.CREATE]!!.validate(caseDefinitionName, caseListColumnDto)
+            validators[Operation.CREATE]!!.validate(caseDefinitionKey, caseListColumnDto)
         }
-        caseListColumnDto.order = caseDefinitionListColumnRepository.countByIdCaseDefinitionName(caseDefinitionName)
+        caseListColumnDto.order = caseDefinitionListColumnRepository.countByIdCaseDefinitionKey(caseDefinitionKey)
         caseDefinitionListColumnRepository
-            .save(CaseListColumnMapper.toEntity(caseDefinitionName, caseListColumnDto))
+            .save(CaseListColumnMapper.toEntity(caseDefinitionKey, caseListColumnDto))
     }
 
     fun updateListColumns(
@@ -120,30 +120,30 @@ class CaseDefinitionService(
 
 
     @Throws(UnknownDocumentDefinitionException::class)
-    fun getListColumns(caseDefinitionName: String): List<CaseListColumnDto> {
+    fun getListColumns(caseDefinitionKey: String): List<CaseListColumnDto> {
         // TODO: Implement PBAC:
         // It currently relies on the VIEW check in findLatestByName via assertDocumentDefinitionExists.
         // Doing a check here forces this class to be a JsonSchemaDocument implementation, which is undesirable.
-        assertDocumentDefinitionExists(caseDefinitionName)
+        assertDocumentDefinitionExists(caseDefinitionKey)
 
         return CaseListColumnMapper
             .toDtoList(
-                caseDefinitionListColumnRepository.findByIdCaseDefinitionNameOrderByOrderAsc(
-                    caseDefinitionName
+                caseDefinitionListColumnRepository.findByIdCaseDefinitionKeyOrderByOrderAsc(
+                    caseDefinitionKey
                 )
             )
     }
 
     @Throws(UnknownDocumentDefinitionException::class)
-    fun deleteCaseListColumn(caseDefinitionName: String, columnKey: String) {
+    fun deleteCaseListColumn(caseDefinitionKey: String, columnKey: String) {
         denyManagementOperation()
 
-        runWithoutAuthorization { assertDocumentDefinitionExists(caseDefinitionName) }
+        runWithoutAuthorization { assertDocumentDefinitionExists(caseDefinitionKey) }
 
         if (caseDefinitionListColumnRepository
-                .existsByIdCaseDefinitionNameAndIdKey(caseDefinitionName, columnKey)
+                .existsByIdCaseDefinitionKeyAndIdKey(caseDefinitionKey, columnKey)
         ) {
-            caseDefinitionListColumnRepository.deleteByIdCaseDefinitionNameAndIdKey(caseDefinitionName, columnKey)
+            caseDefinitionListColumnRepository.deleteByIdCaseDefinitionKeyAndIdKey(caseDefinitionKey, columnKey)
         }
     }
 
@@ -157,8 +157,8 @@ class CaseDefinitionService(
     }
 
     @Throws(UnknownDocumentDefinitionException::class)
-    private fun assertDocumentDefinitionExists(caseDefinitionName: String): DocumentDefinition {
-        return documentDefinitionService.findLatestByName(caseDefinitionName)
-            .getOrNull() ?: throw UnknownCaseDefinitionException(caseDefinitionName)
+    private fun assertDocumentDefinitionExists(caseDefinitionKey: String): DocumentDefinition {
+        return documentDefinitionService.findLatestByName(caseDefinitionKey)
+            .getOrNull() ?: throw UnknownCaseDefinitionException(caseDefinitionKey)
     }
 }

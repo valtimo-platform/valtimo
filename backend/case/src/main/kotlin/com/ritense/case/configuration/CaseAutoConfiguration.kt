@@ -35,7 +35,6 @@ import com.ritense.case.service.CaseDefinitionExporter
 import com.ritense.case.service.CaseDefinitionImporter
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.CaseInstanceService
-import com.ritense.case.service.CaseListDeploymentService
 import com.ritense.case.service.CaseListExporter
 import com.ritense.case.service.CaseListImporter
 import com.ritense.case.service.CaseTabExporter
@@ -218,20 +217,6 @@ class CaseAutoConfiguration {
         return PathMatchingResourcePatternResolver(resourceLoader)
     }
 
-    @Bean
-    @Order(Ordered.LOWEST_PRECEDENCE)
-    fun caseListDeploymentService(
-        resourcePatternResolver: ResourcePatternResolver,
-        objectMapper: ObjectMapper,
-        caseDefinitionService: CaseDefinitionService
-    ): CaseListDeploymentService {
-        return CaseListDeploymentService(
-            resourcePatternResolver,
-            objectMapper,
-            caseDefinitionService
-        )
-    }
-
     @Order(300)
     @Bean
     @ConditionalOnMissingBean(CaseHttpSecurityConfigurer::class)
@@ -338,8 +323,10 @@ class CaseAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CaseListImporter::class)
     fun caseListImporter(
-        caseListDeploymentService: CaseListDeploymentService
-    ) = CaseListImporter(caseListDeploymentService)
+        resourcePatternResolver: ResourcePatternResolver,
+        objectMapper: ObjectMapper,
+        caseDefinitionService: CaseDefinitionService
+    ) = CaseListImporter(resourcePatternResolver, objectMapper, caseDefinitionService)
 
     @Bean
     @ConditionalOnMissingBean(CaseTabImporter::class)

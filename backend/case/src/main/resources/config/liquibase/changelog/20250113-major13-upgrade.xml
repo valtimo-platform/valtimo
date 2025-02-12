@@ -45,4 +45,8 @@
                       newColumnName="ics_case_definition_key"/>
     </changeSet>
 
+    <changeSet id="6" author="Ritense">
+        <renameColumn tableName="case_list_column" oldColumnName="case_definition_name" newColumnName="case_definition_key"/>
+    </changeSet>
+
 </databaseChangeLog>
