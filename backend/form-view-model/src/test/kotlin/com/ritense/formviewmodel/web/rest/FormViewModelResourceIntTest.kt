@@ -3,10 +3,13 @@ package com.ritense.formviewmodel.web.rest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.formviewmodel.BaseIntegrationTest
+import com.ritense.formviewmodel.submission.TestStartFormSubmissionHandler
+import com.ritense.formviewmodel.submission.TestStartFormUIComponentSubmissionHandler
 import com.ritense.formviewmodel.submission.TestUserTaskSubmissionHandler
 import com.ritense.formviewmodel.submission.TestUserTaskUIComponentSubmissionHandler
 import com.ritense.formviewmodel.viewmodel.TestViewModel
 import com.ritense.formviewmodel.web.rest.FormViewModelResourceTest.Companion.BASE_URL
+import com.ritense.formviewmodel.web.rest.FormViewModelResourceTest.Companion.START_FORM
 import com.ritense.formviewmodel.web.rest.FormViewModelResourceTest.Companion.USER_TASK
 import com.ritense.valtimo.camunda.domain.ProcessInstanceWithDefinition
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -16,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.isNull
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,7 +40,9 @@ class FormViewModelResourceIntTest @Autowired constructor(
     private val processService: CamundaProcessService,
     private val taskService: TaskService,
     private val testUserTaskSubmissionHandler: TestUserTaskSubmissionHandler,
-    private val testUserTaskUIComponentSubmissionHandler: TestUserTaskUIComponentSubmissionHandler
+    private val testUserTaskUIComponentSubmissionHandler: TestUserTaskUIComponentSubmissionHandler,
+    private val testStartFormSubmissionHandler: TestStartFormSubmissionHandler,
+    private val testStartFormUIComponentSubmissionHandler: TestStartFormUIComponentSubmissionHandler,
 ) : BaseIntegrationTest() {
 
     lateinit var mockMvc: MockMvc
@@ -156,6 +162,58 @@ class FormViewModelResourceIntTest @Autowired constructor(
         }
 
         verify(testUserTaskUIComponentSubmissionHandler, times(1)).handle(any<TestViewModel>(), any(), eq(processInstance.processInstanceDto.businessKey))
+    }
+
+    @Test
+    fun `should submit start form for ui-component`() {
+        val processDefinitionKey = "fvm-uicomponent-task-process"
+        val documentDefinitionName = "fvm"
+        val testViewModel = TestViewModel(age = 22)
+
+        runWithoutAuthorization {
+            mockMvc.perform(
+                post("$BASE_URL/submit/$START_FORM")
+                    .queryParam("processDefinitionKey", processDefinitionKey)
+                    .queryParam("documentDefinitionName", documentDefinitionName)
+                    .accept(APPLICATION_JSON_UTF8_VALUE)
+                    .contentType(APPLICATION_JSON_UTF8_VALUE)
+                    .content(
+                        objectMapper.writeValueAsString(
+                            testViewModel
+                        )
+                    )
+            ).andExpect(status().isOk)
+                .andExpect(jsonPath("$.documentId").value(testStartFormUIComponentSubmissionHandler.newDocumentId.toString()))
+
+        }
+
+        verify(testStartFormUIComponentSubmissionHandler, times(1)).handle(eq(documentDefinitionName), eq(processDefinitionKey), eq(testViewModel), isNull())
+    }
+
+    @Test
+    fun `should submit start form for form`() {
+        val processDefinitionKey = "fvm-form-task-process"
+        val documentDefinitionName = "fvm"
+        val testViewModel = TestViewModel(age = 22)
+
+        runWithoutAuthorization {
+            mockMvc.perform(
+                post("$BASE_URL/submit/$START_FORM")
+                    .queryParam("processDefinitionKey", processDefinitionKey)
+                    .queryParam("documentDefinitionName", documentDefinitionName)
+                    .accept(APPLICATION_JSON_UTF8_VALUE)
+                    .contentType(APPLICATION_JSON_UTF8_VALUE)
+                    .content(
+                        objectMapper.writeValueAsString(
+                            testViewModel
+                        )
+                    )
+            ).andExpect(status().isOk)
+                .andExpect(jsonPath("$.documentId").value(testStartFormSubmissionHandler.newDocumentId.toString()))
+
+        }
+
+        verify(testStartFormSubmissionHandler, times(1)).handle(eq(documentDefinitionName), eq(processDefinitionKey), eq(testViewModel), isNull())
     }
 
     private fun startNewProcess(processDefinitionKey: String = "fvm-form-task-process"): ProcessInstanceWithDefinition = runWithoutAuthorization {

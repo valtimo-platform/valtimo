@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
+import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
 class FormViewModelResourceTest(
@@ -160,11 +161,27 @@ class FormViewModelResourceTest(
     fun `should get start form view model`() {
         whenever(
             formViewModelService.getStartFormViewModel(
-                processDefinitionKey = eq("processDefinitionKey")
+                processDefinitionKey = eq("processDefinitionKey"),
+                documentId = eq(null)
             )
         ).thenReturn(TestViewModel())
         mockMvc.perform(
             get("$BASE_URL/$START_FORM?formName=test&processDefinitionKey=processDefinitionKey")
+                .accept(APPLICATION_JSON_UTF8_VALUE)
+                .contentType(APPLICATION_JSON_UTF8_VALUE)
+        ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `should get start form view model with documentId`() {
+        whenever(
+            formViewModelService.getStartFormViewModel(
+                processDefinitionKey = eq("processDefinitionKey"),
+                documentId = eq(UUID.fromString("c91f14fe-aebb-4598-8485-98d1c4ac1cc8"))
+            )
+        ).thenReturn(TestViewModel())
+        mockMvc.perform(
+            get("$BASE_URL/$START_FORM?formName=test&processDefinitionKey=processDefinitionKey&documentId=c91f14fe-aebb-4598-8485-98d1c4ac1cc8")
                 .accept(APPLICATION_JSON_UTF8_VALUE)
                 .contentType(APPLICATION_JSON_UTF8_VALUE)
         ).andExpect(status().isOk)
@@ -194,13 +211,35 @@ class FormViewModelResourceTest(
             formViewModelService.updateStartFormViewModel(
                 submission = anyOrNull(),
                 processDefinitionKey = anyOrNull(),
-                page = anyOrNull()
+                page = anyOrNull(),
+                documentId = anyOrNull()
             )
         ).thenReturn(TestViewModel())
         mockMvc.perform(
             post(
                 "$BASE_URL/$START_FORM?formName={formName}&processDefinitionKey={processDefinitionKey}",
                 "test", "processDefinitionKey"
+            ).accept(APPLICATION_JSON_UTF8_VALUE)
+                .contentType(APPLICATION_JSON_UTF8_VALUE)
+                .content(jacksonObjectMapper().writeValueAsString(TestViewModel()))
+        ).andExpect(status().isOk)
+            .andExpect(content().contentType(APPLICATION_JSON_UTF8_VALUE))
+    }
+
+    @Test
+    fun `should update start form view model with document ID`() {
+        whenever(
+            formViewModelService.updateStartFormViewModel(
+                submission = anyOrNull(),
+                processDefinitionKey = anyOrNull(),
+                page = anyOrNull(),
+                documentId = anyOrNull()
+            )
+        ).thenReturn(TestViewModel())
+        mockMvc.perform(
+            post(
+                "$BASE_URL/$START_FORM?formName={formName}&processDefinitionKey={processDefinitionKey}&documentId={documentId}",
+                "test", "processDefinitionKey", "c91f14fe-aebb-4598-8485-98d1c4ac1cc8"
             ).accept(APPLICATION_JSON_UTF8_VALUE)
                 .contentType(APPLICATION_JSON_UTF8_VALUE)
                 .content(jacksonObjectMapper().writeValueAsString(TestViewModel()))
@@ -229,7 +268,23 @@ class FormViewModelResourceTest(
             ).accept(APPLICATION_JSON_UTF8_VALUE)
                 .contentType(APPLICATION_JSON_UTF8_VALUE)
                 .content(objectMapper.writeValueAsString(TestViewModel()))
-        ).andExpect(status().isNoContent)
+        ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `should submit start form view model with documentId`() {
+        mockMvc.perform(
+            post(
+                "$BASE_URL/submit/$START_FORM?" +
+                    "formName={formName}&" +
+                    "processDefinitionKey={processDefinitionKey}&" +
+                    "documentDefinitionName={documentDefinitionName}" +
+                    "documentId={documentId}",
+                "test", "processDefinitionKey", "documentDefinitionName", "c91f14fe-aebb-4598-8485-98d1c4ac1cc8"
+            ).accept(APPLICATION_JSON_UTF8_VALUE)
+                .contentType(APPLICATION_JSON_UTF8_VALUE)
+                .content(objectMapper.writeValueAsString(TestViewModel()))
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -240,7 +295,8 @@ class FormViewModelResourceTest(
             formViewModelSubmissionService.handleStartFormSubmission(
                 processDefinitionKey = eq(processDefinitionKey),
                 documentDefinitionName = eq(documentDefinitionName),
-                submission = any()
+                submission = any(),
+                documentId = anyOrNull()
             )
         ).then {
             throw FormException(message = "Im a child", "age")
