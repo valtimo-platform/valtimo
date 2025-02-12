@@ -3,6 +3,7 @@ package com.ritense.formviewmodel.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.AuthorizationService
+import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.form.domain.FormDefinition
 import com.ritense.form.domain.FormProcessLink
 import com.ritense.form.service.FormDefinitionService
@@ -45,6 +46,7 @@ class FormViewModelServiceTest(
     @Mock private val processLinkService: ProcessLinkService,
     @Mock private val formDefinitionService: FormDefinitionService,
     @Mock private val userTaskProcessLink: FormProcessLink,
+    @Mock private val documentService: JsonSchemaDocumentService,
 ) : BaseTest() {
 
     private lateinit var objectMapper: ObjectMapper
@@ -61,7 +63,9 @@ class FormViewModelServiceTest(
             camundaTaskService = camundaTaskService,
             authorizationService = authorizationService,
             processAuthorizationService = processAuthorizationService,
-            processLinkService = processLinkService
+            processLinkService = processLinkService,
+            documentService = documentService,
+
         )
 
         val formDefinitionId = UUID.randomUUID()
