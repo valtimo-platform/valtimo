@@ -101,6 +101,7 @@ export class DossierManagementWidgetFieldsColumnComponent implements OnInit, OnD
   @Input() public documentDefinitionName?: string;
   @Input() public fieldWidthDropdown?: TemplateRef<Dropdown>;
   @Input() public selectedCollection?: ValuePathItem;
+  @Input() public showHideWhenEmptyCheckbox = false;
 
   @Output() public columnUpdateEvent = new EventEmitter<{
     data: FieldsCaseWidgetValue[];

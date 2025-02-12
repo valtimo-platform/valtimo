@@ -53,6 +53,7 @@
         [isFieldWidget]="true"
         [columnData]="selectedWidgetContent()?.[$index]"
         [documentDefinitionName]="documentDefinitionName$ | async"
+        [showHideWhenEmptyCheckbox]="true"
         (columnUpdateEvent)="onColumnUpdateEvent($event, $index)"
       ></valtimo-dossier-management-widget-fields-column>
     </cds-tab>

@@ -330,7 +330,7 @@
               />
             </cds-text-label>
 
-            <cds-checkbox formControlName="hideWhenEmpty">
+            <cds-checkbox *ngIf="showHideWhenEmptyCheckbox" formControlName="hideWhenEmpty">
               {{ 'widgetTabManagement.content.hideWhenEmpty' | translate }}
             </cds-checkbox>
           </div>
