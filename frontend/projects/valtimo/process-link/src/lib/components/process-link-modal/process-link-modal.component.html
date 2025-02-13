@@ -68,7 +68,9 @@
   <div [ngClass]="{hidden: obs.saving}">
     <ng-container>
       <ng-container *ngIf="obs.currentStepId === 'chooseProcessLinkType'">
-        <valtimo-choose-process-link-type></valtimo-choose-process-link-type>
+        <valtimo-choose-process-link-type
+          [isFromCase]="isFromCase$ | async"
+        ></valtimo-choose-process-link-type>
       </ng-container>
       <ng-container
         *ngIf="obs.currentStepId === 'selectForm' || obs.typeOfSelectedProgressLink === 'form'"

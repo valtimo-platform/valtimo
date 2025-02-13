@@ -1,6 +1,16 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {BehaviorSubject, Observable, combineLatest, filter, map, switchMap, take, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  combineLatest,
+  delay,
+  filter,
+  map,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {BuildingBlock, BuildingBlockApiService} from '@valtimo/building-block-resources';
 import {ActionItem, CarbonListModule, ColumnConfig} from '@valtimo/components';
 import {
@@ -28,7 +38,7 @@ export class DossierManagementBuildingBlocksComponent {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly buildingBlocks$ = combineLatest([
     this._documentDefinitionName$,
-    this.buildingBlockApiService.buildingBlocks$,
+    this.buildingBlockApiService.buildingBlocks$.pipe(delay(500)),
   ]).pipe(
     tap(() => this.loading$.next(true)),
     map(([documentDefinitionName, buildingBlocks]) =>

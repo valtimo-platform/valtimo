@@ -48,6 +48,19 @@
     </cds-tab>
 
     <cds-tab
+      *ngIf="{active: obs.currentTab === TabEnum.PROCESS_MANAGER} as vars"
+      class="no-padding-left-right no-padding-top-bottom"
+      [active]="vars.active"
+      heading="Process manager"
+      (selected)="displayBodyComponent(TabEnum.PROCESS_MANAGER)"
+    >
+      <valtimo-dossier-management-process-manager
+        *ngIf="vars.active"
+        [documentDefinitionName]="documentDefinitionName$ | async"
+      ></valtimo-dossier-management-process-manager>
+    </cds-tab>
+
+    <cds-tab
       class="main-content no-padding-left-right no-padding-bottom"
       [active]="obs.currentTab === TabEnum.SEARCH"
       [heading]="'dossierManagement.tabs.searchFields' | translate"

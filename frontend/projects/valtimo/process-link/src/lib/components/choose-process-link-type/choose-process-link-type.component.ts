@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {ProcessLinkStateService} from '../../services';
+import {BehaviorSubject} from 'rxjs';
 
 @Component({
   selector: 'valtimo-choose-process-link-type',
@@ -23,6 +24,11 @@ import {ProcessLinkStateService} from '../../services';
   styleUrls: ['./choose-process-link-type.component.scss'],
 })
 export class ChooseProcessLinkTypeComponent {
+  private readonly _isFromCase$ = new BehaviorSubject<boolean>(false);
+  @Input() public set isFromCase(value: boolean) {
+    console.log({value});
+    this._isFromCase$.next(value);
+  }
   public readonly availableProcessLinkTypes$ =
     this.processLinkStateService.availableProcessLinkTypes$;
 

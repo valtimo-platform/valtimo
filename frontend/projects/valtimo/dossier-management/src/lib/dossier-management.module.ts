@@ -84,7 +84,8 @@ import {DossierManagementStatusesComponent} from './components/dossier-managemen
 import {DossierManagementStatusModalComponent} from './components/dossier-management-statuses/dossier-management-status-modal/dossier-management-status-modal.component';
 import {DossierManagementCreateComponent} from './components/dossier-management-create/dossier-management-create.component';
 import {DossierManagementWidgetsEditorComponent} from './components/dossier-management-widget-tab/editor/dossier-management-widgets-editor.component';
-import { DossierManagementBuildingBlocksComponent } from './components/dossier-management-building-blocks/dossier-management-building-blocks.component';
+import {DossierManagementBuildingBlocksComponent} from './components/dossier-management-building-blocks/dossier-management-building-blocks.component';
+import {DossierManagementProcessManagerComponent} from './components/dossier-management-process-manager/dossier-manager-process-manager.component';
 
 @NgModule({
   declarations: [
@@ -159,7 +160,8 @@ import { DossierManagementBuildingBlocksComponent } from './components/dossier-m
     TooltipModule,
     DossierManagementWidgetsEditorComponent,
     ValuePathSelectorComponent,
-    DossierManagementBuildingBlocksComponent
+    DossierManagementBuildingBlocksComponent,
+    DossierManagementProcessManagerComponent,
   ],
   exports: [DossierManagementListComponent],
   providers: [TabManagementService],

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {
   PluginStateService,
   ProcessLinkButtonService,
@@ -25,6 +25,7 @@ import {
 import {take} from 'rxjs/operators';
 import {ConfigService} from '@valtimo/config';
 import {ProcessLinkEditMode} from '../../models';
+import {BehaviorSubject, Observable} from 'rxjs';
 
 @Component({
   selector: 'valtimo-process-link-modal',
@@ -32,6 +33,15 @@ import {ProcessLinkEditMode} from '../../models';
   styleUrls: ['./process-link-modal.component.scss'],
 })
 export class ProcessLinkModalComponent {
+  private readonly _isFromCase$ = new BehaviorSubject<boolean>(false);
+  @Input() public set isFromCase(value: boolean) {
+    console.log('processLinkModal', value);
+    this._isFromCase$.next(value);
+  }
+  public get isFromCase$(): Observable<boolean> {
+    return this._isFromCase$.asObservable();
+  }
+
   public readonly showModal$ = this.stateService.showModal$;
   public readonly processStepName$ = this.stateService.elementName$;
   public readonly steps$ = this.stepService.steps$;

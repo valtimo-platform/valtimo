@@ -22,5 +22,6 @@ export enum TabEnum {
   LIST = 'list',
   TABS = 'tabs',
   STATUSES = 'statuses',
-  BUILDING_BLOCKS = 'buildingBlocks'
+  BUILDING_BLOCKS = 'buildingBlocks',
+  PROCESS_MANAGER = 'processManager',
 }

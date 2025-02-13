@@ -34,7 +34,7 @@ export class TabService {
     return this._injectedCaseManagementTabs$.asObservable();
   }
 
-  private _currentTab$ = new BehaviorSubject<TabEnum | string>(TabEnum.BUILDING_BLOCKS);
+  private _currentTab$ = new BehaviorSubject<TabEnum | string>(TabEnum.PROCESS_MANAGER);
   public get currentTab$(): Observable<TabEnum | string> {
     return this._currentTab$.asObservable();
   }
