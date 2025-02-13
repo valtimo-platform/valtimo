@@ -72,6 +72,7 @@ import {
   DOSSIER_DETAIL_DEFAULT_DISPLAY_SIZE,
   DOSSIER_DETAIL_DEFAULT_DISPLAY_TYPE,
   DOSSIER_DETAIL_GUTTER_SIZE,
+  DOSSIER_DETAIL_START_PROCESS_DROPDOWN_WIDTH,
 } from '../../constants';
 import {TabImpl, TabLoaderImpl} from '../../models';
 import {
@@ -110,7 +111,7 @@ export class DossierDetailComponent
   public documentDefinitionNameTitle: string;
   public documentId: string;
   public processDefinitionListFields: Array<any> = [];
-  public processDocumentDefinitions: ProcessDocumentDefinition[] = [];
+  public processDocumentDefinitions: (ProcessDocumentDefinition & {displayName?: string})[] = [];
   public tabLoader: TabLoaderImpl | null = null;
 
   public readonly assigneeId$ = new BehaviorSubject<string>('');
@@ -127,6 +128,9 @@ export class DossierDetailComponent
   private readonly _caseStatusKey$ = new BehaviorSubject<string | null | 'NOT_AVAILABLE'>(null);
   private readonly _taskPanelToggle = this.configService.featureToggles?.enableTaskPanel;
 
+  public readonly dropdownWidth$ = new BehaviorSubject<number>(
+    DOSSIER_DETAIL_START_PROCESS_DROPDOWN_WIDTH.small
+  );
   public readonly caseStatusKey$: Observable<string | 'NOT_AVAILABLE'> = this._caseStatusKey$.pipe(
     filter(key => !!key)
   );
@@ -342,10 +346,17 @@ export class DossierDetailComponent
   }
 
   public getAllAssociatedProcessDefinitions(): void {
-    this.documentService
-      .findProcessDocumentDefinitionsForDocument(this.documentId, {startableByUser: true})
-      .subscribe((processDocumentDefinitions: ProcessDocumentDefinition[]) => {
-        this.processDocumentDefinitions = processDocumentDefinitions;
+    this._subscriptions.add(
+      combineLatest([
+        this.documentService.findProcessDocumentDefinitionsForDocument(this.documentId, {
+          startableByUser: true,
+        }),
+        this.translateService.stream('key'),
+      ]).subscribe(([processDocumentDefinitions]) => {
+        this.processDocumentDefinitions = this.mapProcessDocumentDefinitions(
+          processDocumentDefinitions
+        );
+        this.setProcessDropdownWidth();
 
         this.processDefinitionListFields = [
           {
@@ -353,7 +364,8 @@ export class DossierDetailComponent
             label: 'Proces',
           },
         ];
-      });
+      })
+    );
   }
 
   public startProcess(processDocumentDefinition: ProcessDocumentDefinition): void {
@@ -656,5 +668,36 @@ export class DossierDetailComponent
       }),
       duration: CARBON_CONSTANTS.notificationDuration,
     });
+  }
+
+  private mapProcessDocumentDefinitions(
+    processDocumentDefinitions: ProcessDocumentDefinition[]
+  ): (ProcessDocumentDefinition & {displayName: string})[] {
+    return processDocumentDefinitions.map(
+      (processDocoumentDefinition: ProcessDocumentDefinition) => ({
+        ...processDocoumentDefinition,
+        displayName:
+          this.translateService.instant(processDocoumentDefinition?.id?.processDefinitionKey) !==
+          processDocoumentDefinition?.id?.processDefinitionKey
+            ? this.translateService.instant(processDocoumentDefinition.id.processDefinitionKey)
+            : processDocoumentDefinition.processName,
+      })
+    );
+  }
+
+  private setProcessDropdownWidth(): void {
+    const longestName = this.processDocumentDefinitions.reduce(
+      (acc, curr) =>
+        !!curr.displayName && curr.displayName.length > acc ? curr.displayName.length : acc,
+      0
+    );
+
+    this.dropdownWidth$.next(
+      longestName < 20
+        ? DOSSIER_DETAIL_START_PROCESS_DROPDOWN_WIDTH.small
+        : longestName < 40
+          ? DOSSIER_DETAIL_START_PROCESS_DROPDOWN_WIDTH.medium
+          : DOSSIER_DETAIL_START_PROCESS_DROPDOWN_WIDTH.large
+    );
   }
 }

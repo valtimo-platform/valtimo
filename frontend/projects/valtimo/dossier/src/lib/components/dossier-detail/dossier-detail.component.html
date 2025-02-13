@@ -302,21 +302,17 @@
         <cds-overflow-menu
           valtimoCdsOverflowButton
           [ngClass]="{'--compact': compactMode$ | async}"
-          [width]="250"
+          [width]="dropdownWidth$ | async"
           [customTrigger]="customStartTrigger"
           [offset]="{y: 48, x: 35}"
           class="overflow-button case-detail-overflow"
         >
           <cds-overflow-menu-option
             *ngFor="let processDocumentDefinition of processDocumentDefinitions"
+            [attr.title]="processDocumentDefinition.displayName"
             (click)="startProcess(processDocumentDefinition)"
           >
-            {{
-              (processDocumentDefinition?.id?.processDefinitionKey | translate) !==
-              processDocumentDefinition?.id?.processDefinitionKey
-                ? (processDocumentDefinition.id.processDefinitionKey | translate)
-                : processDocumentDefinition.processName
-            }}
+            {{ processDocumentDefinition.displayName }}
           </cds-overflow-menu-option>
         </cds-overflow-menu>
       </div>
