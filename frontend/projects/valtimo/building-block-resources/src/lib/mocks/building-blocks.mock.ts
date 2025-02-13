@@ -5,7 +5,7 @@ export const BUILDING_BLOCKS: BuildingBlock[] = [
     id: 'block1',
     name: 'Block 1',
     description: 'Block 1',
-    linkedCaseIds: ['bezwaar', 'evenementenvergunningen']
+    linkedCaseIds: ['generieke-zaak', 'evenementenvergunningen']
   },
   {
     id: 'block2',
