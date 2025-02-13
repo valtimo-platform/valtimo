@@ -18,19 +18,19 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {ROLE_ADMIN} from '@valtimo/config';
 import {AuthGuardService} from '@valtimo/security';
-import {BuildingBlockList} from './components/building-block-list/building-block-list.component';
-import {BuildingBlockDetails} from './components';
+import {BuildingBlockListComponent} from './components/building-block-list/building-block-list.component';
+import {BuildingBlockDetailsComponent} from './components';
 
 const routes: Routes = [
   {
     path: 'building-block-management',
-    component: BuildingBlockList,
+    component: BuildingBlockListComponent,
     canActivate: [AuthGuardService],
     data: {title: 'Building blocks', roles: [ROLE_ADMIN]},
   },
   {
     path: 'building-block-management/:id',
-    component: BuildingBlockDetails,
+    component: BuildingBlockDetailsComponent,
     canActivate: [AuthGuardService],
     data: {title: 'Building blocks', roles: [ROLE_ADMIN], customPageTitle: true},
   },

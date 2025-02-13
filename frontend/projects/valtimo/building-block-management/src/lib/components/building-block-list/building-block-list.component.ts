@@ -11,7 +11,7 @@ import {Router} from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, CarbonListModule],
 })
-export class BuildingBlockList {
+export class BuildingBlockListComponent {
   public readonly buildingBlocks$ = this.buildingBlockApiService.buildingBlocks$.pipe(
     delay(500),
     tap(() => this.loading$.next(false))

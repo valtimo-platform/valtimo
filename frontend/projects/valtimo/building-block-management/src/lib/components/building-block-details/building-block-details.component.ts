@@ -19,7 +19,7 @@ import {
   standalone: true,
   imports: [CommonModule, TabsModule, ButtonModule, ...BUILDING_BLOCK_TABS],
 })
-export class BuildingBlockDetails implements OnDestroy {
+export class BuildingBlockDetailsComponent implements OnDestroy {
   public readonly activeTab$ = new BehaviorSubject<BUILDING_BLOCK_TAB>(
     BUILDING_BLOCK_TAB.PROCESSES
   );
