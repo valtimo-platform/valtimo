@@ -99,9 +99,11 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   private _completeDataSource: TableItem[][];
 
   private readonly _items$ = new BehaviorSubject<CarbonListItem[]>([]);
+
   private get _items(): CarbonListItem[] {
     return this._items$.getValue();
   }
+
   public get items(): CarbonListItem[] {
     return this._items;
   }
@@ -113,6 +115,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   public currentOpenActionId: string | null = null;
 
   private readonly _fields$ = new BehaviorSubject<ColumnConfig[]>([]);
+
   @Input() set fields(value: ColumnConfig[]) {
     this._fields$.next(value);
   }
@@ -120,6 +123,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   private _tableTranslations$: BehaviorSubject<CarbonListTranslations> = new BehaviorSubject(
     DEFAULT_LIST_TRANSLATIONS
   );
+
   @Input() set tableTranslations(value: Partial<CarbonListTranslations>) {
     this._tableTranslations$.next({...DEFAULT_LIST_TRANSLATIONS, ...value});
   }
@@ -127,7 +131,9 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() paginatorConfig: CarbonPaginatorConfig = DEFAULT_PAGINATOR_CONFIG;
   private _pagination: Pagination;
   private _isPaginationInit = false;
-  @Input() public set pagination(value: Partial<Pagination> | false) {
+
+  @Input()
+  public set pagination(value: Partial<Pagination> | false) {
     if (!value) {
       return;
     }
@@ -144,6 +150,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.setPaginationSize(value.size.toString());
     this._isPaginationInit = true;
   }
+
   public get pagination(): Pagination {
     return this._pagination;
   }
@@ -158,10 +165,12 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() header: boolean;
   @Input() hideColumnHeader: boolean;
   @Input() initialSortState: SortState;
+
   @Input() set sortState(value: SortState) {
     if (!value) return;
     this.sort$.next(value);
   }
+
   @Input() isSearchable = false;
   @Input() enableSingleSelection = false;
   /**
@@ -455,7 +464,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
                 template: this.booleanTemplate,
               });
             case ViewType.TAGS: {
-              return this.resolveTagObject(item.tags);
+              return this.resolveTagObject(item, field.key);
             }
             default:
               const resolvedObject: string = this.resolveObject(field, item);
@@ -695,12 +704,31 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     return filteredItems;
   }
 
-  private resolveTagObject(itemTags: CarbonTag[] | undefined): TableItem {
-    if (!itemTags || itemTags.length === 0)
+  private resolveTagObject(item: CarbonListItem, key: string): TableItem {
+    const itemTags = item[key];
+
+    if (key === 'internalStatus') {
       return new TableItem({
-        data: {tags: []},
+        data: {tags: [{content: item.tags[0].content, type: item.tags[0].type}]},
         template: this.tagTemplate,
       });
+    }
+
+    if (!Array.isArray(itemTags)) {
+      return new TableItem({
+        data: {
+          tags: !itemTags
+            ? []
+            : [
+                {
+                  content: item[key],
+                  type: item.tags[0].type,
+                },
+              ],
+        },
+        template: this.tagTemplate,
+      });
+    }
 
     const tags = itemTags.map((tag: CarbonTag, index: number) =>
       index === 0
