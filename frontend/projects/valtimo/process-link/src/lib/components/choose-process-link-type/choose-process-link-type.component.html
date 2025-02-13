@@ -23,6 +23,15 @@
     {{ 'processLinkConfiguration.chooseProcessLinkTypeDescription' | translate }}
   </p>
   <div class="process-link-grid">
+    <button
+      (click)="onBlockSelect()"
+      cdsButton="secondary"
+      size="xl"
+      class="process-link-type-button"
+    >
+      Building block
+    </button>
+
     <div
       class="process-link-item"
       *ngFor="let availableProcessLinkType of obs.availableProcessLinkTypes"

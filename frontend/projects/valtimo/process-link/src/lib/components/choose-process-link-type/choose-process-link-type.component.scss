@@ -20,10 +20,8 @@
 
 .process-link-grid {
   margin-top: 24px;
-  display: flex;
-  justify-content: flex-start;
-  width: 100%;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
 

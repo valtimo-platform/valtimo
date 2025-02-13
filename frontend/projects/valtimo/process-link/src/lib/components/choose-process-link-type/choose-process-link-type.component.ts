@@ -16,7 +16,7 @@
 
 import {Component, Input} from '@angular/core';
 import {ProcessLinkStateService} from '../../services';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 
 @Component({
   selector: 'valtimo-choose-process-link-type',
@@ -26,8 +26,10 @@ import {BehaviorSubject} from 'rxjs';
 export class ChooseProcessLinkTypeComponent {
   private readonly _isFromCase$ = new BehaviorSubject<boolean>(false);
   @Input() public set isFromCase(value: boolean) {
-    console.log({value});
     this._isFromCase$.next(value);
+  }
+  public get isFromCase$(): Observable<boolean> {
+    return this._isFromCase$.asObservable();
   }
   public readonly availableProcessLinkTypes$ =
     this.processLinkStateService.availableProcessLinkTypes$;
@@ -36,5 +38,9 @@ export class ChooseProcessLinkTypeComponent {
 
   selectProcessLinkType(processLinkTypeId: string): void {
     this.processLinkStateService.selectProcessLinkType(processLinkTypeId);
+  }
+
+  onBlockSelect(): void {
+    console.log('block selected');
   }
 }
