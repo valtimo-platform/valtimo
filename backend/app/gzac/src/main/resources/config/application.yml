@@ -250,6 +250,8 @@ valtimo:
             enabled: true
     logging:
         retentionInMinutes: 1440
+    featureToggles:
+        enablePbacDocumentenApiDocuments: true
 
 spring-actuator:
     username: admin

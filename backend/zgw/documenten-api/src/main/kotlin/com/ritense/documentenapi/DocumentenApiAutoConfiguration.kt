@@ -74,12 +74,17 @@ class DocumentenApiAutoConfiguration {
         restClientBuilder: RestClient.Builder,
         outboxService: OutboxService,
         objectMapper: ObjectMapper,
-        platformTransactionManager: PlatformTransactionManager
+        platformTransactionManager: PlatformTransactionManager,
+        authorizationService: AuthorizationService,
+        @Value("\${valtimo.featureToggles.enablePbacDocumentenApiDocuments:false}")
+        enablePbacDocumentenApiDocuments: Boolean,
     ) = DocumentenApiClient(
         restClientBuilder,
         outboxService,
         objectMapper,
-        platformTransactionManager
+        platformTransactionManager,
+        authorizationService,
+        enablePbacDocumentenApiDocuments,
     )
 
     @Bean
