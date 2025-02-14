@@ -36,4 +36,24 @@ export class TagsService extends BaseApiService {
       this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag`)
     );
   }
+
+  public saveTag(caseDefinitionName: string, status: TagsStatus): Observable<TagsStatus> {
+    return this.httpClient.post<TagsStatus>(
+      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag`),
+      status
+    );
+  }
+
+  public updateTagsStatus(
+    caseDefinitionName: string,
+    currentStatusKey: string,
+    updatedStatus: TagsStatus
+  ): Observable<TagsStatus> {
+    return this.httpClient.put<TagsStatus>(
+      this.getApiUrl(
+        `/management/v1/case-definition/${caseDefinitionName}/case-tag/${currentStatusKey}`
+      ),
+      updatedStatus
+    );
+  }
 }

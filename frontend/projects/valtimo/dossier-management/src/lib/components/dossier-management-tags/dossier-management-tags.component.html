@@ -38,13 +38,13 @@
   ></valtimo-no-results>
 </valtimo-carbon-list>
 
-<valtimo-dossier-management-status-modal
+<valtimo-dossier-management-tags-modal
   [type]="statusModalType$ | async"
   [prefill]="prefillStatus$ | async"
   [usedKeys]="usedKeys$ | async"
   [documentDefinitionName]="documentDefinitionName$ | async"
   (closeModalEvent)="closeModal($event)"
-></valtimo-dossier-management-status-modal>
+></valtimo-dossier-management-tags-modal>
 
 <valtimo-confirmation-modal
   confirmButtonTextTranslationKey="interface.delete"

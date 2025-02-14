@@ -40,7 +40,7 @@ import {
   MoveRowEvent,
   ViewType,
 } from '@valtimo/components';
-import {StatusModalCloseEvent, StatusModalType} from '../../models';
+import {TagsModalCloseEvent, TagsModalType} from '../../models';
 
 @Component({
   selector: 'valtimo-dossier-management-tags',
@@ -108,7 +108,7 @@ export class DossierManagementTagsComponent implements AfterViewInit {
     },
   ];
 
-  public readonly statusModalType$ = new BehaviorSubject<StatusModalType>('closed');
+  public readonly statusModalType$ = new BehaviorSubject<TagsModalType>('closed');
   public readonly prefillStatus$ = new BehaviorSubject<TagsStatus>(undefined);
 
   public readonly statusToDelete$ = new BehaviorSubject<TagsStatus>(undefined);
@@ -137,7 +137,7 @@ export class DossierManagementTagsComponent implements AfterViewInit {
     this.statusModalType$.next('add');
   }
 
-  public closeModal(closeModalEvent: StatusModalCloseEvent): void {
+  public closeModal(closeModalEvent: TagsModalCloseEvent): void {
     if (closeModalEvent === 'closeAndRefresh') {
       this.reload();
     }
@@ -189,24 +189,24 @@ export class DossierManagementTagsComponent implements AfterViewInit {
     this.fields$.next([
       {
         key: 'title',
-        label: 'dossierManagement.statuses.columns.title',
+        label: 'dossierManagement.tags.columns.title',
         viewType: ViewType.TEXT,
       },
       {
         key: 'key',
-        label: 'dossierManagement.statuses.columns.key',
+        label: 'dossierManagement.tags.columns.key',
         viewType: ViewType.TEXT,
       },
       {
         key: 'visibleInCaseListByDefault',
-        label: 'dossierManagement.statuses.columns.visible',
+        label: 'dossierManagement.tags.columns.visible',
         viewType: ViewType.BOOLEAN,
       },
       {
         viewType: ViewType.TEMPLATE,
         template: this.colorColumnTemplate,
         key: 'color',
-        label: 'dossierManagement.statuses.columns.color',
+        label: 'dossierManagement.tags.columns.color',
       },
     ]);
   }

@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-export * from './list-column.model';
-export * from './status.model';
-export * from './tab.enum';
-export * from './widget-content.model';
-export * from './widget-editor.model';
-export * from './widget-wizard.model';
-export * from './tags.model';
+type TagsModalType = 'edit' | 'add' | 'closed';
+
+type TagsModalCloseEvent = 'close' | 'closeAndRefresh';
+
+export {TagsModalType, TagsModalCloseEvent};
