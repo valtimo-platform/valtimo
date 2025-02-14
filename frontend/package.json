@@ -331,6 +331,7 @@
     "@valtimo/process-management": "file:dist/valtimo/process-management",
     "@valtimo/resource": "file:dist/valtimo/resource",
     "@valtimo/security": "file:dist/valtimo/security",
+    "@valtimo/sse": "file:dist/valtimo/sse",
     "@valtimo/swagger": "file:dist/valtimo/swagger",
     "@valtimo/task": "file:dist/valtimo/task",
     "@valtimo/task-management": "file:dist/valtimo/task-management",
