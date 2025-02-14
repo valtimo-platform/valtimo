@@ -165,7 +165,7 @@ mailing:
     sendRedirectedMailsTo:
 
 valtimo:
-    app:
+                    app:
         scheme: http
     database: postgres
     mandrill:
@@ -248,10 +248,10 @@ valtimo:
     authorization:
         dashboard:
             enabled: true
+        zgwDocuments:
+            enabled:true
     logging:
         retentionInMinutes: 1440
-    featureToggles:
-        enablePbacDocumentenApiDocuments: true
 
 spring-actuator:
     username: admin

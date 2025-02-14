@@ -46,14 +46,14 @@ class UploadProcessAutoConfiguration {
         resourceService: TemporaryResourceStorageService,
         uploadProcessService: UploadProcessService,
         authorizationService: AuthorizationService,
-        @Value("\${valtimo.featureToggles.enablePbacDocumentenApiDocuments:false}")
-        enablePbacDocumentenApiDocuments: Boolean,
+        @Value("\${valtimo.authorization.zgwDocuments.enabled:false}")
+        authorizationEnabled: Boolean,
     ): ResourceUploadedToDocumentEventListener {
         return ResourceUploadedToDocumentEventListener(
             resourceService,
             uploadProcessService,
             authorizationService,
-            enablePbacDocumentenApiDocuments,
+            authorizationEnabled,
         )
     }
 

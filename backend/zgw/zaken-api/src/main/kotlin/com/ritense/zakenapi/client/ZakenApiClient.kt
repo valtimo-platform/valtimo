@@ -74,14 +74,14 @@ class ZakenApiClient(
     private val outboxService: OutboxService,
     private val objectMapper: ObjectMapper,
     private val authorizationService: AuthorizationService,
-    private val enablePbacDocumentenApiDocuments: Boolean = false,
+    private val authorizationEnabled: Boolean = false,
 ) {
     fun linkDocument(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         request: LinkDocumentRequest
     ): LinkDocumentResult {
-        if (enablePbacDocumentenApiDocuments) {
+        if (authorizationEnabled) {
             authorizationService.requirePermission(
                 EntityAuthorizationRequest(
                     ResourcePermission::class.java,
@@ -159,7 +159,7 @@ class ZakenApiClient(
         zaakUrl: URI? = null,
         informatieobjectUrl: URI? = null,
     ): List<ZaakInformatieObject> {
-        if (enablePbacDocumentenApiDocuments && !authorizationService.hasPermission(
+        if (authorizationEnabled && !authorizationService.hasPermission(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.VIEW_LIST,
@@ -487,7 +487,7 @@ class ZakenApiClient(
         require(zaakInformatieobjectUrl.toString().startsWith(baseUrl.toString())) {
             "zaakInformatieobjectUrl '$zaakInformatieobjectUrl' does not start with baseUrl '$baseUrl'"
         }
-        if (enablePbacDocumentenApiDocuments) {
+        if (authorizationEnabled) {
             authorizationService.requirePermission(
                 EntityAuthorizationRequest(
                     ResourcePermission::class.java,

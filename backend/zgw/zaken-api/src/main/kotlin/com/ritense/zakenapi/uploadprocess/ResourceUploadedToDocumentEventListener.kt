@@ -30,7 +30,7 @@ class ResourceUploadedToDocumentEventListener(
     private val resourceService: TemporaryResourceStorageService,
     private val uploadProcessService: UploadProcessService,
     private val authorizationService: AuthorizationService,
-    private val enablePbacDocumentenApiDocuments: Boolean = false,
+    private val authorizationEnabled: Boolean = false,
 ) {
 
     @EventListener(TemporaryResourceUploadedEvent::class)
@@ -41,7 +41,7 @@ class ResourceUploadedToDocumentEventListener(
         val caseId = metadata[MetadataType.DOCUMENT_ID.key] as String?
 
         if (caseId != null) {
-            if (enablePbacDocumentenApiDocuments) {
+            if (authorizationEnabled) {
                 authorizationService.requirePermission(
                     EntityAuthorizationRequest(
                         ResourcePermission::class.java,

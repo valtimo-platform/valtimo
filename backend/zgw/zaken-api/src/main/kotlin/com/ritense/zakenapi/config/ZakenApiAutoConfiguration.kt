@@ -81,14 +81,14 @@ class ZakenApiAutoConfiguration {
         outboxService: OutboxService,
         objectMapper: ObjectMapper,
         authorizationService: AuthorizationService,
-        @Value("\${valtimo.featureToggles.enablePbacDocumentenApiDocuments:false}")
-        enablePbacDocumentenApiDocuments: Boolean,
+        @Value("\${valtimo.authorization.zgwDocuments.enabled:false}")
+        authorizationEnabled: Boolean,
     ) = ZakenApiClient(
         restClientBuilder,
         outboxService,
         objectMapper,
         authorizationService,
-        enablePbacDocumentenApiDocuments,
+        authorizationEnabled,
     )
 
     @Bean
