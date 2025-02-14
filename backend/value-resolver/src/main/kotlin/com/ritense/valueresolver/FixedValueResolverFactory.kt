@@ -58,13 +58,29 @@ class FixedValueResolverFactory(
     private fun createResolver(): Function<String, Any?> {
         return Function { requestedValue->
             requestedValue.toBooleanStrictOrNull()
-                ?: requestedValue.toLongOrNull()
-                ?: requestedValue.toDoubleOrNull()
+                ?: toLongOrNullSave(requestedValue)
+                ?: toDoubleOrNullSave(requestedValue)
                 ?:  if (prefix.isEmpty()) {
                         requestedValue
                     } else {
                         "$prefix:$requestedValue"
                     }
+        }
+    }
+
+    private fun toLongOrNullSave(value: String): Long? {
+        return if (value.length >= 2 && value[0] == '0') {
+            null
+        } else {
+            value.toLongOrNull()
+        }
+    }
+
+    private fun toDoubleOrNullSave(value: String): Double? {
+        return if (value.length >= 2 && value[0] == '0' && value[1] != '.') {
+            null
+        } else {
+            value.toDoubleOrNull()
         }
     }
 
