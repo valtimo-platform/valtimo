@@ -14,11 +14,29 @@
  * limitations under the License.
  */
 
-export * from './document.model';
-export * from './list-sorting.model';
-export * from './audit.model';
-export * from './advanced-document-search-request';
-export * from './document-search-request';
-export * from './internal-case-status.model';
-export * from './process-document-definition-search.model';
-export * from './tags-status.model';
+import {TagType} from 'carbon-components-angular';
+
+enum TagsColor {
+  WarmGray = 'WARMGRAY',
+  Red = 'RED',
+  Magenta = 'MAGENTA',
+  Purple = 'PURPLE',
+  Blue = 'BLUE',
+  Cyan = 'CYAN',
+  Teal = 'TEAL',
+  Green = 'GREEN',
+  Gray = 'GRAY',
+  CoolGray = 'COOLGRAY',
+  HighContrast = 'HIGHCONTRAST',
+  Outline = 'OUTLINE',
+}
+
+interface TagsStatus {
+  key: string;
+  title: string;
+  color: TagsColor;
+  caseDefinitionName?: string;
+  tagType?: TagType;
+}
+
+export {TagsStatus, TagsColor};

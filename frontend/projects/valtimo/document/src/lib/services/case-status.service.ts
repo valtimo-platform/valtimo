@@ -39,6 +39,12 @@ export class CaseStatusService extends BaseApiService {
     );
   }
 
+  public getTagsManagement(caseDefinitionName: string): Observable<any[]> {
+    return this.httpClient.get<InternalCaseStatus[]>(
+      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag`)
+    );
+  }
+
   public getInternalCaseStatuses(caseDefinitionName: string): Observable<InternalCaseStatus[]> {
     return this.httpClient.get<InternalCaseStatus[]>(
       this.getApiUrl(`/v1/case-definition/${caseDefinitionName}/internal-status`)

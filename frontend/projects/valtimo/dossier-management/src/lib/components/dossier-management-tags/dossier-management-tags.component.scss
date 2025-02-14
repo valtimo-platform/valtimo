@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-export * from './document.model';
-export * from './list-sorting.model';
-export * from './audit.model';
-export * from './advanced-document-search-request';
-export * from './document-search-request';
-export * from './internal-case-status.model';
-export * from './process-document-definition-search.model';
-export * from './tags-status.model';
+::ng-deep .cds-tag--no-margin {
+  margin: 0;
+}

@@ -14,11 +14,22 @@
  * limitations under the License.
  */
 
-export * from './document.model';
-export * from './list-sorting.model';
-export * from './audit.model';
-export * from './advanced-document-search-request';
-export * from './document-search-request';
-export * from './internal-case-status.model';
-export * from './process-document-definition-search.model';
-export * from './tags-status.model';
+import {TagsColor} from '../models';
+import {TagType} from 'carbon-components-angular';
+
+class TagsUtils {
+  static getTagTypeFromTagsColor(internalCaseStatusColor: TagsColor): TagType {
+    switch (internalCaseStatusColor) {
+      case TagsColor.HighContrast:
+        return 'high-contrast';
+      case TagsColor.CoolGray:
+        return 'cool-gray';
+      case TagsColor.WarmGray:
+        return 'warm-gray';
+      default:
+        return internalCaseStatusColor?.toLowerCase() as TagType;
+    }
+  }
+}
+
+export {TagsUtils};

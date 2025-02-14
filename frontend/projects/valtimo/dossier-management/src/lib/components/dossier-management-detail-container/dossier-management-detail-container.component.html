@@ -84,6 +84,15 @@
         *ngIf="vars.active"
       ></valtimo-dossier-management-statuses>
     </cds-tab>
+    <cds-tab
+      *ngIf="{active: obs.currentTab === TabEnum.TAGS} as vars"
+      class="no-padding-left-right no-padding-top-bottom"
+      [active]="vars.active"
+      [heading]="'dossierManagement.tabs.tags' | translate"
+      (selected)="displayBodyComponent(TabEnum.TAGS)"
+    >
+      <valtimo-dossier-management-tags *ngIf="vars.active"></valtimo-dossier-management-tags>
+    </cds-tab>
 
     @for (injectedTab of obs.injectedTabs; track injectedTab.translationKey) {
       <cds-tab
