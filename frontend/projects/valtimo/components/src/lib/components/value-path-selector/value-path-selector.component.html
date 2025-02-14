@@ -24,7 +24,14 @@
 >
   <v-input-label [required]="required" [title]="label" [tooltip]="tooltip"> </v-input-label>
 
-  <form [formGroup]="formGroup" class="value-path-selector__form">
+  <form
+    [formGroup]="formGroup"
+    class="value-path-selector__form"
+    [ngClass]="{
+      'value-path-selector__form--doc-def-selection':
+        showDocumentDefinitionSelector && obs.inputModeIsDropdown,
+    }"
+  >
     <cds-toggle
       data-testid="value-path-selector-toggle"
       size="sm"

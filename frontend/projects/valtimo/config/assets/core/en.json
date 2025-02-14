@@ -1813,7 +1813,14 @@
     "toggleViewModel": {
       "title": "View Model enabled?",
       "checkboxDescription": "Enables Form View Model form processing"
-    }
+    },
+    "importConfiguration": "Import configuration",
+    "selectProcess": "Select process",
+    "process": "Process",
+    "version": "Version",
+    "selectVersion": "Select version",
+    "activity": "Process activity",
+    "selectActivity": "Select process activity"
   },
   "processLinkType": {
     "plugin": "Plugin",

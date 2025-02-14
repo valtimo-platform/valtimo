@@ -18,6 +18,7 @@ import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
 import {map, Observable} from 'rxjs';
 import {
+  CompatiblePluginProcessLinks,
   FormFlowProcessLinkCreateRequestDto,
   FormFlowProcessLinkUpdateRequestDto,
   FormProcessLinkCreateRequestDto,
@@ -58,7 +59,9 @@ export class ProcessLinkService {
       .pipe(map(res => res || []));
   }
 
-  getProcessLink(getProcessLinkRequest: GetProcessLinkRequest): Observable<GetProcessLinkResponse> {
+  public getProcessLink(
+    getProcessLinkRequest: GetProcessLinkRequest
+  ): Observable<GetProcessLinkResponse> {
     const params = new HttpParams()
       .set('activityId', getProcessLinkRequest.activityId)
       .set('processDefinitionId', getProcessLinkRequest.processDefinitionId);
@@ -68,7 +71,7 @@ export class ProcessLinkService {
     });
   }
 
-  updateProcessLink(
+  public updateProcessLink(
     updateProcessLinkRequest:
       | PluginProcessLinkUpdateDto
       | FormFlowProcessLinkUpdateRequestDto
@@ -82,7 +85,7 @@ export class ProcessLinkService {
     );
   }
 
-  saveProcessLink(
+  public saveProcessLink(
     saveProcessLinkRequest:
       | FormProcessLinkCreateRequestDto
       | FormFlowProcessLinkCreateRequestDto
@@ -96,32 +99,17 @@ export class ProcessLinkService {
     );
   }
 
-  private emptyStringToNull<T extends Record<string, any>>(object: T): T {
-    if (object && typeof object === 'object') {
-      Object.keys(object).forEach(key => {
-        const typedKey = key as keyof T;
-        const value = object[typedKey];
-        if (typeof value === 'object' && value !== null) {
-          this.emptyStringToNull(value);
-        } else if (value === '') {
-          object[typedKey] = null as any;
-        }
-      });
-    }
-    return object;
-  }
-
-  deleteProcessLink(id: string): Observable<null> {
+  public deleteProcessLink(id: string): Observable<null> {
     return this.http.delete<null>(`${this.VALTIMO_ENDPOINT_URI}v1/process-link/${id}`);
   }
 
-  getProcessLinkCandidates(activityType: string): Observable<Array<ProcessLinkType>> {
+  public getProcessLinkCandidates(activityType: string): Observable<Array<ProcessLinkType>> {
     return this.http.get<Array<ProcessLinkType>>(
       `${this.VALTIMO_ENDPOINT_URI}v1/process-link/types?activityType=${activityType}`
     );
   }
 
-  submitForm(
+  public submitForm(
     processLinkId: string,
     formData: object,
     documentId?: string,
@@ -182,5 +170,28 @@ export class ProcessLinkService {
 
   public getVariables(): Observable<URLVariables> {
     return this.http.get<URLVariables>(`${this.VALTIMO_ENDPOINT_URI}v1/process-link/url/variables`);
+  }
+
+  public getCompatiblePluginProcessLinks(
+    pluginActionDefinitionKey: string
+  ): Observable<CompatiblePluginProcessLinks[]> {
+    return this.http.get<CompatiblePluginProcessLinks[]>(
+      `${this.VALTIMO_ENDPOINT_URI}/v1/process-link/plugin?pluginActionDefinitionKey=${pluginActionDefinitionKey}`
+    );
+  }
+
+  private emptyStringToNull<T extends Record<string, any>>(object: T): T {
+    if (object && typeof object === 'object') {
+      Object.keys(object).forEach(key => {
+        const typedKey = key as keyof T;
+        const value = object[typedKey];
+        if (typeof value === 'object' && value !== null) {
+          this.emptyStringToNull(value);
+        } else if (value === '') {
+          object[typedKey] = null as any;
+        }
+      });
+    }
+    return object;
   }
 }

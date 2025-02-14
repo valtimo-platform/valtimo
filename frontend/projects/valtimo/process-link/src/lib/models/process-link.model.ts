@@ -166,6 +166,16 @@ interface TaskWithProcessLink {
   processLinkActivityResult: TaskProcessLinkResult;
 }
 
+interface CompatibleProcessVersion {
+  version: string;
+  processLinks: ProcessLink[];
+}
+
+interface CompatiblePluginProcessLinks {
+  processDefinitionKey: string;
+  versions: CompatibleProcessVersion[];
+}
+
 export {
   GetProcessLinkRequest,
   ProcessLink,
@@ -187,4 +197,5 @@ export {
   TaskWithProcessLink,
   UIComponentProcessLinkUpdateRequestDto,
   UIComponentProcessLinkCreateRequestDto,
+  CompatiblePluginProcessLinks,
 };

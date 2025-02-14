@@ -22,10 +22,10 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
-import {combineLatest, Observable, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {PluginConfiguration, PluginConfigurationData} from '@valtimo/plugin';
-import {PluginProcessLinkCreateDto, PluginProcessLinkUpdateDto} from '../../models';
+import {PluginProcessLinkCreateDto, PluginProcessLinkUpdateDto, ProcessLink} from '../../models';
 
 @Component({
   selector: 'valtimo-plugin-action-configuration',
@@ -42,8 +42,21 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   public readonly functionKey$ = this.pluginStateService.functionKey$;
   public readonly save$ = this.pluginStateService.save$;
   public readonly saving$ = this.stateService.saving$;
-  public readonly prefillConfiguration$ = this.stateService.selectedProcessLink$.pipe(
+
+  private readonly _prefillConfigurationSubject$ = new BehaviorSubject<
+    ProcessLink['actionProperties'] | null
+  >(null);
+  private readonly _prefillConfiguration$ = this.stateService.selectedProcessLink$.pipe(
     map(processLink => (processLink ? processLink?.actionProperties : undefined))
+  );
+  public readonly prefillConfiguration$ = combineLatest([
+    this._prefillConfigurationSubject$,
+    this._prefillConfiguration$,
+  ]).pipe(
+    map(
+      ([prefillConfigurationSubjectValue, prefillConfiguration]) =>
+        prefillConfigurationSubjectValue || prefillConfiguration
+    )
   );
 
   private _subscriptions = new Subscription();
@@ -83,6 +96,10 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
         this.saveNewProcessLink(configuration);
       }
     });
+  }
+
+  public onImportConfiguration(configuration: ProcessLink['actionProperties']): void {
+    this._prefillConfigurationSubject$.next(configuration);
   }
 
   private updateProcessLink(configuration: PluginConfigurationData): void {

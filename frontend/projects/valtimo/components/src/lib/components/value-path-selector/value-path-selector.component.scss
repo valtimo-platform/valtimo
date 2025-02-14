@@ -35,11 +35,14 @@
 .value-path-selector__form {
   display: grid;
   grid-template-columns: 110px 1fr;
-
   width: 100%;
   align-items: center;
   gap: 16px;
   justify-content: space-between;
+
+  &--doc-def-selection {
+    grid-template-columns: 110px 1fr 1fr;
+  }
 
   ::ng-deep cds-dropdown {
     width: 100%;
