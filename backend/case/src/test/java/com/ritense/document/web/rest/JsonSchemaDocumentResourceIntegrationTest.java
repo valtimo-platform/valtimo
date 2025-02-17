@@ -22,10 +22,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -37,9 +39,11 @@ import com.ritense.document.domain.Document;
 import com.ritense.document.domain.impl.JsonDocumentContent;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.request.AssignToDocumentsRequest;
+import com.ritense.document.exception.DocumentNotFoundException;
 import com.ritense.document.repository.DocumentRepository;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentResource;
 import com.ritense.outbox.domain.BaseEvent;
+import com.ritense.valtimo.contract.event.DocumentDeletedEvent;
 import java.util.List;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,12 +60,9 @@ import org.springframework.transaction.annotation.Transactional;
 class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
     private static final String USER_EMAIL = "user@valtimo.nl";
 
-    private Document document;
+    private JsonSchemaDocument document;
     private JsonSchemaDocumentResource jsonSchemaDocumentResource;
     private MockMvc mockMvc;
-
-    @Autowired
-    private DocumentRepository documentRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -272,5 +273,27 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
         assertEquals("com.ritense.document.domain.impl.JsonSchemaDocument", event.getResultType());
         assertEquals(document.id().toString(), event.getResultId());
         assertEquals(objectMapper.valueToTree(document), event.getResult());
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL, authorities = {FULL_ACCESS_ROLE})
+    void shouldDeleteDocumentAndSendEvent() throws Exception {
+        mockMvc.perform(delete("/api/v1/document/{documentId}", document.id().getId().toString()))
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(documentRepository, times(1)).delete(document);
+
+        assertEquals(1, events.stream(DocumentDeletedEvent.class).count());
+        var applicationEvent = events.stream(DocumentDeletedEvent.class).findFirst().orElseThrow();
+        assertEquals(document.id().getId(), applicationEvent.getDocumentId());
+
+        ArgumentCaptor<Supplier<BaseEvent>> outboxEventCaptor = ArgumentCaptor.forClass(Supplier.class);
+        verify(outboxService, times(2)).send(outboxEventCaptor.capture());
+        //first event is the viewed event, so we get the second one
+        var outboxEvent = outboxEventCaptor.getAllValues().get(1).get();
+        assertEquals("com.ritense.valtimo.document.deleted", outboxEvent.getType());
+        assertEquals("com.ritense.document.domain.impl.JsonSchemaDocument", outboxEvent.getResultType());
+        assertEquals(document.id().toString(), outboxEvent.getResultId());
     }
 }

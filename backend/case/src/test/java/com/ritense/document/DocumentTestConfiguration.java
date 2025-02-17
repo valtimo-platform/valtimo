@@ -53,5 +53,4 @@ public class DocumentTestConfiguration {
     public static class TestConfig {
         //Beans extra
     }
-
 }

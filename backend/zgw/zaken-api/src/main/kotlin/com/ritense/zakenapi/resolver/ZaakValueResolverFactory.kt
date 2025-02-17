@@ -17,6 +17,8 @@
 package com.ritense.zakenapi.resolver
 
 import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.zakenapi.service.ZaakDocumentService
 import org.camunda.bpm.engine.delegate.VariableScope
 import java.util.UUID
@@ -45,12 +47,12 @@ class ZaakValueResolverFactory(
         TODO()
     }
 
-    override fun getResolvableKeys(documentDefinitionName: String, version: Long): List<String> {
-        return ZAAK_FIELD_LIST
+    override fun getResolvableKeyOptions(documentDefinitionName: String, caseDefinitionId: CaseDefinitionId): List<ValueResolverOption> {
+        return createFieldList(ZAAK_FIELD_LIST)
     }
 
-    override fun getResolvableKeys(documentDefinitionName: String): List<String> {
-        return ZAAK_FIELD_LIST
+    override fun getResolvableKeyOptions(documentDefinitionName: String): List<ValueResolverOption> {
+        return createFieldList(ZAAK_FIELD_LIST)
     }
 
     companion object {

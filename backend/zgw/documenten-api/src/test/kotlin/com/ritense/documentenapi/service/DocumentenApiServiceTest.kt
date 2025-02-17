@@ -26,17 +26,22 @@ import com.ritense.documentenapi.DocumentenApiPlugin
 import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.documentenapi.domain.DocumentenApiVersion
 import com.ritense.documentenapi.repository.DocumentenApiColumnRepository
+import com.ritense.documentenapi.repository.DocumentenApiUploadFieldRepository
 import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.service.PluginService
+import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zgw.Rsin
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -51,29 +56,35 @@ class DocumentenApiServiceTest {
     private lateinit var pluginService: PluginService
     private lateinit var catalogiService: CatalogiService
     private lateinit var documentenApiColumnRepository: DocumentenApiColumnRepository
+    private lateinit var documentenApiUploadFieldRepository: DocumentenApiUploadFieldRepository
     private lateinit var authorizationService: AuthorizationService
     private lateinit var valtimoDocumentService: DocumentService
     private lateinit var documentDefinitionService: JsonSchemaDocumentDefinitionService
     private lateinit var documentenApiVersionService: DocumentenApiVersionService
+    private lateinit var valueResolverService: ValueResolverService
 
     @BeforeEach
     fun before() {
         pluginService = mock<PluginService>()
         catalogiService = mock<CatalogiService>()
         documentenApiColumnRepository = mock<DocumentenApiColumnRepository>()
+        documentenApiUploadFieldRepository = mock<DocumentenApiUploadFieldRepository>()
         authorizationService = mock<AuthorizationService>()
         valtimoDocumentService = mock<DocumentService>()
         documentDefinitionService = mock<JsonSchemaDocumentDefinitionService>()
         documentenApiVersionService = mock<DocumentenApiVersionService>()
+        valueResolverService = mock<ValueResolverService>()
 
         service = DocumentenApiService(
             pluginService,
             catalogiService,
             documentenApiColumnRepository,
+            documentenApiUploadFieldRepository,
             authorizationService,
             valtimoDocumentService,
             documentDefinitionService,
             documentenApiVersionService,
+            valueResolverService,
         )
     }
 
@@ -112,6 +123,29 @@ class DocumentenApiServiceTest {
         assertEquals(1, firstResult.versie)
         assertEquals("http://localhost/informatieobjecttype", firstResult.informatieobjecttype)
         assertEquals("y", firstResult.auteur)
+    }
+
+    @Test
+    fun `should call plugin to delete informatie object`() {
+        val documentUrl = URI("http://some.url")
+        val pluginInstance = mock<DocumentenApiPlugin>()
+        whenever(pluginService.createInstance<DocumentenApiPlugin>(any(), any())).thenReturn(pluginInstance)
+
+        service.deleteInformatieObject(documentUrl)
+
+        verify(pluginInstance).deleteInformatieObject(documentUrl)
+    }
+
+    @Test
+    fun `should throw exception when trying to delete informatie object but plugin does not exist`() {
+        val documentUrl = URI("http://some.url")
+        whenever(pluginService.createInstance<DocumentenApiPlugin>(any(), any())).thenReturn(null)
+
+        val ex = assertThrows<IllegalArgumentException> {
+            service.deleteInformatieObject(documentUrl)
+        }
+
+        assertEquals("Trying to delete informatie object by url, but could not find DocumentenApiPlugin instance for informatieobjectUrl http://some.url", ex.message)
     }
 
     private fun createDocumentInformatieObject() = DocumentInformatieObject(

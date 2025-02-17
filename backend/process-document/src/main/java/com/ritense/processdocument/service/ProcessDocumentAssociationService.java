@@ -35,6 +35,8 @@ public interface ProcessDocumentAssociationService {
 
     List<ProcessDocumentInstanceDto> findProcessDocumentInstanceDtos(Document.Id documentId);
 
+    void deleteProcessDocumentInstance(ProcessDocumentInstanceId processDocumentInstanceId);
+
     void deleteProcessDocumentInstances(String processName);
 
     FunctionResult<? extends ProcessDocumentInstance, OperationError> getProcessDocumentInstanceResult(

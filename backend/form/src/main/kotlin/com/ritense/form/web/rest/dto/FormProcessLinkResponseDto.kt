@@ -33,5 +33,5 @@ data class FormProcessLinkResponseDto(
     val viewModelEnabled: Boolean,
     val formDisplayType: FormDisplayType,
     val formSize: FormSizes,
-    val subtitles: List<String>
+    val subtitles: List<String>? = null
 ) : ProcessLinkResponseDto

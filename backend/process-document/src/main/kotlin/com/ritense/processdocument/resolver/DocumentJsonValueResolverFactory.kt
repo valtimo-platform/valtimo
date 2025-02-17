@@ -34,8 +34,11 @@ import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
 import com.ritense.valueresolver.ValueResolverFactory
+import com.ritense.valueresolver.ValueResolverOption
+import com.ritense.valueresolver.ValueResolverOptionType
 import com.ritense.valueresolver.exception.ValueResolverValidationException
 import org.camunda.bpm.engine.delegate.VariableScope
 import java.util.UUID
@@ -129,14 +132,18 @@ class DocumentJsonValueResolverFactory(
         return emptyDocumentContent
     }
 
-    override fun getResolvableKeys(documentDefinitionName: String, version: Long): List<String> {
-        val documentDefinition = documentDefinitionService.findByNameAndVersion(documentDefinitionName, version).orElseThrow()
-        return documentDefinitionService.getPropertyNames(documentDefinition)
+    override fun getResolvableKeyOptions(documentDefinitionName: String, caseDefinitionId: CaseDefinitionId): List<ValueResolverOption> {
+        val documentDefinition = documentDefinitionService.findByCaseDefinitionId(caseDefinitionId).orElseThrow()
+        val schemaAsNode = documentDefinition.getSchema()
+            .asJson() as ObjectNode
+        return getPropertyNamesFromObjectNode(documentDefinition, schemaAsNode, "$PREFIX:")
     }
 
-    override fun getResolvableKeys(documentDefinitionName: String): List<String> {
+    override fun getResolvableKeyOptions(documentDefinitionName: String): List<ValueResolverOption> {
         val documentDefinition = documentDefinitionService.findLatestByName(documentDefinitionName).orElseThrow()
-        return documentDefinitionService.getPropertyNames(documentDefinition)
+        val schemaAsNode = documentDefinition.getSchema()
+            .asJson() as ObjectNode
+        return getPropertyNamesFromObjectNode(documentDefinition, schemaAsNode, "$PREFIX:")
     }
 
     private fun buildJsonPatch(jsonNode: JsonNode, values: Map<String, Any?>) {
@@ -213,6 +220,51 @@ class DocumentJsonValueResolverFactory(
 
     companion object {
         const val PREFIX = "doc"
+    }
+
+    private fun getPropertyNamesFromObjectNode(
+        definition: JsonSchemaDocumentDefinition,
+        node: ObjectNode,
+        path: String
+    ): List<ValueResolverOption> {
+        val options: MutableList<ValueResolverOption> = mutableListOf()
+        if (node.has("type")) {
+            val propertyType = node["type"].asText()
+            if (isSimpleObject(propertyType)) {
+                options += ValueResolverOption(path, ValueResolverOptionType.FIELD)
+            } else if (propertyType == "object") {
+                node["properties"].fields().forEach { jsonNode ->
+                    options += getPropertyNamesFromObjectNode(
+                        definition,
+                        jsonNode.value as ObjectNode,
+                        "$path/${jsonNode.key}"
+                    )
+                }
+            } else if (propertyType == "array") {
+                options += ValueResolverOption(
+                    path,
+                    ValueResolverOptionType.COLLECTION,
+                    node["items"]?.let { getPropertyNamesFromObjectNode(definition, it as ObjectNode, "") }
+                )
+            }
+        } else if (node.has("\$ref")) {
+            val internalDefinition = node["\$ref"].asText().substring(1)
+            if (internalDefinition.startsWith("/")) {
+                val referencedNode = definition.schema().at(internalDefinition) as ObjectNode
+                options += getPropertyNamesFromObjectNode(
+                    definition,
+                    referencedNode,
+                    path
+                )
+            }
+        }
+
+        return options
+    }
+
+    private fun isSimpleObject(propertyType: String): Boolean {
+        val simpleTypes = listOf("string", "boolean", "integer", "number")
+        return simpleTypes.contains(propertyType)
     }
 
 }

@@ -49,22 +49,25 @@ class ValueResolverServiceImpl(
         return resolverFactoryMap.keys.filter { prefix -> prefix != "" }.toList()
     }
 
+
     override fun getResolvableKeys(
-        prefixes: List<String>,
+        request: ValueResolverOptionRequest,
         @LoggableResource("documentDefinitionName") documentDefinitionName: String
-    ): List<String> {
-        return prefixes.fold(emptyList()) { acc, prefix ->
-            (acc + (addPrefixToResolvableKeys(prefix, resolverFactoryMap[prefix]?.getResolvableKeys(documentDefinitionName))))
+    ): List<ValueResolverOption> {
+        return request.prefixes.fold(emptyList()) { list, prefix ->
+            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(documentDefinitionName) ?: emptyList()
+            list + newOptions.filter { option -> request.type.equals(option.type) }
         }
     }
 
     override fun getResolvableKeys(
-        prefixes: List<String>,
-        documentDefinitionName: String,
+        request: ValueResolverOptionRequest,
+        @LoggableResource("documentDefinitionName") documentDefinitionName: String,
         caseDefinitionId: CaseDefinitionId
-    ): List<String> {
-        return prefixes.fold(emptyList()) { acc, prefix ->
-            (acc + (addPrefixToResolvableKeys(prefix, resolverFactoryMap[prefix]?.getResolvableKeys(documentDefinitionName, caseDefinitionId))))
+    ): List<ValueResolverOption> {
+        return request.prefixes.fold(emptyList()) { list, prefix ->
+            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(documentDefinitionName, caseDefinitionId) ?: emptyList()
+            list + newOptions.filter { option -> request.type.equals(option.type) }
         }
     }
 

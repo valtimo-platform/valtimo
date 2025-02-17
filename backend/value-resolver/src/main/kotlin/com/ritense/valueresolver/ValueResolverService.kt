@@ -98,7 +98,9 @@ interface ValueResolverService {
 
     fun getValueResolvers(): List<String>
 
-    fun getResolvableKeys(prefixes: List<String>, documentDefinitionName: String, caseDefinitionId: CaseDefinitionId): List<String>
+    fun getResolvableKeys(
+        request: ValueResolverOptionRequest, documentDefinitionName: String, caseDefinitionId: CaseDefinitionId
+    ): List<ValueResolverOption>
 
-    fun getResolvableKeys(prefixes: List<String>, documentDefinitionName: String): List<String>
+    fun getResolvableKeys(request: ValueResolverOptionRequest, documentDefinitionName: String): List<ValueResolverOption>
 }

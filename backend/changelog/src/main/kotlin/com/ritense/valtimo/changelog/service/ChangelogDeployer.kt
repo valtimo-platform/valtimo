@@ -26,6 +26,7 @@ import com.ritense.valtimo.changelog.domain.ChangesetDeployer
 import mu.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
+import org.springframework.core.env.Environment
 import org.springframework.transaction.annotation.Transactional
 import java.util.TreeMap
 
@@ -34,6 +35,7 @@ import java.util.TreeMap
 class ChangelogDeployer(
     private val changelogService: ChangelogService,
     private val changesetDeployers: List<ChangesetDeployer>,
+    private val environment: Environment,
 ) {
     // Create new objectmapper only used for md5 checksum sanitization to prevent config changes from impacting checksum
     private val objectMapper: ObjectMapper = JsonMapper
@@ -55,7 +57,8 @@ class ChangelogDeployer(
                 val filename = changelogService.getFilename(resource)
                 logger.info { "Running deployer changeset: $filename" }
                 val resourceContent = resource.inputStream.bufferedReader().use { it.readText() }
-                deploy(changesetDeployer, filename, resourceContent)
+                val resolvedResourceContent = resolveProperties(resourceContent)
+                deploy(changesetDeployer, filename, resolvedResourceContent)
             }
         }
         logger.info { "Finished running deployer" }
@@ -76,6 +79,23 @@ class ChangelogDeployer(
         } catch (e: Exception) {
             throw IllegalStateException("Failed to execute changelog: $filename", e)
         }
+    }
+
+    fun resolveProperties(content: String): String {
+        var resolvedContent = content
+        Regex("\\$\\{([^\\}]+)\\}").findAll(content)
+            .map { it.groupValues }
+            .forEach { (placeholder, placeholderValue) ->
+                try {
+                    val resolvedValue = environment.getProperty(placeholderValue)
+                    if (!resolvedValue.isNullOrBlank()) {
+                        resolvedContent = resolvedContent.replace(placeholder, resolvedValue)
+                    }
+                } catch (e: Exception) {
+                    // ignored
+                }
+            }
+        return resolvedContent
     }
 
     // Uses TreeMap when parsing to ObjectNode. Will sort keys alphabetically when serialized

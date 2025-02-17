@@ -11,6 +11,12 @@
                     "title": "Widget 2",
                     "width": 2,
                     "highContrast": true,
+                    "actions": [
+                        {
+                            "name": "Edit",
+                            "processDefinitionKey": "edit-process"
+                        }
+                    ],
                     "properties": {
                         "columns": [
                             [

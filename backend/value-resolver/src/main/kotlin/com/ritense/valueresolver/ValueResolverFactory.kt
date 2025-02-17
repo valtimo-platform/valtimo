@@ -113,15 +113,16 @@ interface ValueResolverFactory {
         return values
     }
 
-    fun getResolvableKeys(documentDefinitionName: String, version: Long): List<String> {
+    fun getResolvableKeyOptions(documentDefinitionName: String, caseDefinitionId: CaseDefinitionId): List<ValueResolverOption> {
         return emptyList()
     }
 
-    fun getResolvableKeys(documentDefinitionName: String, caseDefinitionId: CaseDefinitionId): List<String> {
+    fun getResolvableKeyOptions(documentDefinitionName: String): List<ValueResolverOption> {
         return emptyList()
     }
 
-    fun getResolvableKeys(documentDefinitionName: String): List<String> {
-        return emptyList()
+    fun createFieldList(paths: List<String>): List<ValueResolverOption> {
+        val prefix = supportedPrefix()
+        return paths.map { ValueResolverOption("$prefix:$it", ValueResolverOptionType.FIELD) }
     }
 }

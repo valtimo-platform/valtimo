@@ -53,6 +53,7 @@ import com.ritense.zakenapi.service.DocumentMetadataAvailableEventListener
 import com.ritense.zakenapi.service.UploadProcessDelegate
 import com.ritense.zakenapi.service.ZaakDocumentService
 import com.ritense.zakenapi.service.ZaakTypeLinkService
+import com.ritense.zakenapi.service.ZakenApiDocumentDeletedEventListener
 import com.ritense.zakenapi.service.ZakenApiEventListener
 import com.ritense.zakenapi.service.ZakenDocumentDeleteHandler
 import com.ritense.zakenapi.web.rest.DefaultZaakTypeLinkResource
@@ -269,5 +270,18 @@ class ZakenApiAutoConfiguration {
         zaakTypeLinkService: ZaakTypeLinkService
     ) = DefaultZaaktypeUrlProvider(
         zaakTypeLinkService
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(ZakenApiDocumentDeletedEventListener::class)
+    @Order(200)
+    fun zakenApiDocumentDeletedEventListener(
+        zaakInstanceService: ZaakInstanceLinkService,
+        zaakDocumentService: ZaakDocumentService,
+        pluginService: PluginService
+    ) = ZakenApiDocumentDeletedEventListener(
+        zaakInstanceService,
+        zaakDocumentService,
+        pluginService
     )
 }

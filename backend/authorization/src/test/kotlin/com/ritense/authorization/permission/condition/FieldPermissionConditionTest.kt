@@ -18,7 +18,6 @@ package com.ritense.authorization.permission.condition
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.ritense.authorization.UserManagementServiceHolder
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.EQUAL_TO
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.GREATER_THAN
 import com.ritense.authorization.permission.condition.PermissionConditionOperator.LESS_THAN
@@ -27,10 +26,8 @@ import com.ritense.authorization.permission.condition.PermissionConditionOperato
 import com.ritense.authorization.testimpl.TestChildEntity
 import com.ritense.authorization.testimpl.TestEntity
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.authorization.UserManagementServiceHolder
 import com.ritense.valtimo.contract.json.MapperSingleton
-import java.time.LocalDate
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.BeforeEach
@@ -41,6 +38,9 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
+import java.time.LocalDate
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class FieldPermissionConditionTest {
     lateinit var mapper: ObjectMapper

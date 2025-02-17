@@ -34,8 +34,10 @@ dependencies {
     implementation project(":contract")
     implementation project(":objects-api")
     implementation project(":plugin")
+    implementation project(":zgw")
     implementation project(":zgw:objecten-api")
     implementation project(":zgw:objecttypen-api")
+    implementation project(":zgw:zaken-api")
     implementation project(":logging")
 
     implementation "io.github.microutils:kotlin-logging:${kotlinLoggingVersion}"
@@ -45,6 +47,7 @@ dependencies {
 
     testImplementation project(":authorization")
     testImplementation project(":test-utils-common")
+    testImplementation project(":plugin-authentication:openzaak-plugin-authentication")
 
     testImplementation "org.springframework.boot:spring-boot-starter-data-jpa"
     testImplementation "org.jetbrains.kotlin:kotlin-test"

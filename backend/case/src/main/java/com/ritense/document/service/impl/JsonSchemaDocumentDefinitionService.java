@@ -181,15 +181,6 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
         );
     }
 
-    // TODO: Remove
-    @Override
-    public Optional<JsonSchemaDocumentDefinition> findByNameAndVersion(
-        @LoggableResource("documentDefinitionName") String documentDefinitionName,
-        long version
-    ) {
-        return null;
-    }
-
     @Override
     public Optional<JsonSchemaDocumentDefinition> findByCaseDefinitionId(
         CaseDefinitionId caseDefinitionId

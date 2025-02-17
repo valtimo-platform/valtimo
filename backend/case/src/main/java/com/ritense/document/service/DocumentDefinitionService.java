@@ -44,9 +44,6 @@ public interface DocumentDefinitionService {
 
     void requirePermission(String documentDefinitionName, Action action);
 
-    // TODO: Remove
-    Optional<? extends DocumentDefinition> findByNameAndVersion(String documentDefinitionName, long version);
-
     Optional<? extends DocumentDefinition> findByCaseDefinitionId(
         CaseDefinitionId caseDefinitionId
     );

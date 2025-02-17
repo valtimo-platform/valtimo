@@ -45,6 +45,7 @@ include(
     "haalcentraal",
     "haalcentraal:haalcentraal-brp",
     "importer",
+    "inbox",
     "keycloak-iam",
     "klant",
     "localization",

@@ -45,7 +45,7 @@ class FormIoCaseWidgetDataProviderTest(
 
         val data = dataProvider.getData(
             documentId, mock(), FormIoCaseWidget(
-                CaseWidgetTabWidgetId("k"), "t", 0, 4, false, FormIoWidgetProperties(
+                CaseWidgetTabWidgetId("k"), "t", 0, 4, false, emptyList(), FormIoWidgetProperties(
                     formDefinitionName
                 )
             ), Pageable.unpaged()
@@ -63,7 +63,7 @@ class FormIoCaseWidgetDataProviderTest(
 
         val data = dataProvider.getData(
             documentId, mock(), FormIoCaseWidget(
-                CaseWidgetTabWidgetId("k"), "t", 0, 4, false, FormIoWidgetProperties(
+                CaseWidgetTabWidgetId("k"), "t", 0, 4, false, emptyList(), FormIoWidgetProperties(
                     formDefinitionName
                 )
             ), Pageable.unpaged()

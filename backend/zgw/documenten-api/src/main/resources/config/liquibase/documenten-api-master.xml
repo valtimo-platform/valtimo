@@ -27,4 +27,5 @@
 
     <include file="changelog/20240221-add-documente-api-list-column.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20240222-add-documenten-api-trefwoorden.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20241203-add-documenten-api-upload-field.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

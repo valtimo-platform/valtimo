@@ -21,16 +21,18 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.processlink.BaseIntegrationTest
 import com.ritense.processlink.autodeployment.ProcessLinkDeploymentApplicationReadyEventListener
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
-import com.ritense.processlink.domain.CustomProcessLink
-import com.ritense.processlink.domain.CustomProcessLinkCreateRequestDto
-import com.ritense.processlink.domain.CustomProcessLinkUpdateRequestDto
+import com.ritense.processlink.domain.TestProcessLink
+import com.ritense.processlink.domain.TestProcessLinkCreateRequestDto
+import com.ritense.processlink.domain.TestProcessLinkUpdateRequestDto
 import com.ritense.processlink.repository.ProcessLinkRepository
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
@@ -62,7 +64,7 @@ internal class ProcessLinkResourceIT @Autowired constructor(
 
     @Test
     fun `should create a process-link`() {
-        val createDto = CustomProcessLinkCreateRequestDto(
+        val createDto = TestProcessLinkCreateRequestDto(
             processDefinitionId = PROCESS_DEF_ID,
             activityId = ACTIVITY_ID,
             activityType = SERVICE_TASK_START
@@ -81,7 +83,7 @@ internal class ProcessLinkResourceIT @Autowired constructor(
 
     @Test
     fun `should create a process-link without processLinkType`() {
-        val createDto = CustomProcessLinkCreateRequestDto(
+        val createDto = TestProcessLinkCreateRequestDto(
             processDefinitionId = PROCESS_DEF_ID,
             activityId = ACTIVITY_ID,
             activityType = SERVICE_TASK_START
@@ -125,7 +127,7 @@ internal class ProcessLinkResourceIT @Autowired constructor(
     fun `should update a process-link`() {
         val processLinkId = createProcessLink()
 
-        val updateDto = CustomProcessLinkUpdateRequestDto(
+        val updateDto = TestProcessLinkUpdateRequestDto(
             id = processLinkId
         )
 
@@ -159,9 +161,58 @@ internal class ProcessLinkResourceIT @Autowired constructor(
             .andExpect(jsonPath("$[0].someValue").value("changed"))
     }
 
+    @Test
+    fun `should deploy process definition and process links`() {
+        val bpmnFile = MockMultipartFile(
+            "file",
+            "test-process.bpmn",
+            MediaType.APPLICATION_XML_VALUE,
+            """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd"
+                     targetNamespace="http://camunda.org/examples">
+            <process id="test-process" name="Test Process">
+                <startEvent id="start" />
+                <endEvent id="end" />
+            </process>
+        </definitions>
+        """.trimIndent().toByteArray()
+        )
+
+        val processLinks = listOf(
+            TestProcessLinkCreateRequestDto(
+                processDefinitionId = "test-process",
+                activityId = "start",
+                activityType = SERVICE_TASK_START
+            )
+        )
+
+        val processLinksJson = ObjectMapper().writeValueAsString(processLinks)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.multipart("/api/v1/process/definition/deployment/process-link")
+                .file(bpmnFile)
+                .file(
+                    MockMultipartFile(
+                        "processLinks",
+                        "processLinks.json",
+                        MediaType.APPLICATION_JSON_VALUE,
+                        processLinksJson.toByteArray()
+                    )
+                )
+                .param("processDefinitionId", PROCESS_DEF_ID)
+                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isNoContent)
+    }
+
     private fun createProcessLink(): UUID {
         return processLinkRepository.save(
-            CustomProcessLink(
+            TestProcessLink(
                 UUID.randomUUID(),
                 processDefinitionId = PROCESS_DEF_ID,
                 activityId = ACTIVITY_ID,

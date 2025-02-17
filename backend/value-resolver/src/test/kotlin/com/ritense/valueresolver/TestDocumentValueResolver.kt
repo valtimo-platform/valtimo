@@ -16,6 +16,7 @@
 
 package com.ritense.valueresolver
 
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.exception.ValueResolverValidationException
 import org.camunda.bpm.engine.delegate.VariableScope
 import java.util.function.Function
@@ -51,12 +52,12 @@ class TestDocumentValueResolver(
         throw NotImplementedError("Unable to handle value: {${firstValue.key} to ${firstValue.value}}")
     }
 
-    override fun getResolvableKeys(documentDefinitionName: String, version: Long): List<String> {
-        return COLUMN_LIST
+    override fun getResolvableKeyOptions(documentDefinitionName: String, caseDefinitionId: CaseDefinitionId): List<ValueResolverOption> {
+        return createFieldList(COLUMN_LIST)
     }
 
-    override fun getResolvableKeys(documentDefinitionName: String): List<String> {
-        return COLUMN_LIST
+    override fun getResolvableKeyOptions(documentDefinitionName: String): List<ValueResolverOption> {
+        return createFieldList(COLUMN_LIST)
     }
 
     companion object {

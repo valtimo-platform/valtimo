@@ -10,7 +10,6 @@ com.ritense.valtimo.autoconfigure.HibernateJsonMapperConfiguration
 com.ritense.valtimo.autoconfigure.SchedulerAutoConfiguration
 com.ritense.valtimo.contract.config.LiquibaseRunnerAutoConfiguration
 com.ritense.valtimo.autoconfigure.CamundaContextConfiguration
-com.ritense.valtimo.sse.autoconfigure.SseAutoConfiguration
 com.ritense.valtimo.autoconfiguration.JobAutoConfiguration
 com.ritense.valtimo.autoconfiguration.ValtimoCamundaAutoConfiguration
 com.ritense.valtimo.autoconfiguration.ExportAutoConfiguration
@@ -21,3 +20,4 @@ com.ritense.valtimo.config.CustomFailedJobConfiguration
 com.ritense.valtimo.config.JacksonConfiguration
 com.ritense.valtimo.config.ValtimoDatabaseConfiguration
 com.ritense.valtimo.logging.CamundaLoggingAutoConfiguration
+com.ritense.valtimo.autoconfiguration.TaskWidgetAutoConfiguration

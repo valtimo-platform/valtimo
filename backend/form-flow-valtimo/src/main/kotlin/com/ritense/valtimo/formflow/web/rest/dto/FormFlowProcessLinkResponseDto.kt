@@ -32,5 +32,5 @@ data class FormFlowProcessLinkResponseDto(
     val formFlowDefinitionId: String,
     val formDisplayType: FormDisplayType,
     val formSize: FormSizes,
-    val subtitles: List<String> = emptyList(),
+    val subtitles: List<String>? = null
 ) : ProcessLinkResponseDto

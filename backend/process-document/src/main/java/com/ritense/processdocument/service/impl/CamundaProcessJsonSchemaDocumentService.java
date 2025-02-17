@@ -75,6 +75,7 @@ import org.camunda.bpm.engine.delegate.DelegateTask;
 import org.camunda.bpm.engine.delegate.VariableScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 
 public class CamundaProcessJsonSchemaDocumentService implements ProcessDocumentService {
@@ -156,6 +157,8 @@ public class CamundaProcessJsonSchemaDocumentService implements ProcessDocumentS
                 )
             );
 
+            request.doAdditionalModifications(document);
+
             return new NewDocumentAndStartProcessResultSucceeded(
                 document,
                 camundaProcessInstanceId
@@ -209,6 +212,8 @@ public class CamundaProcessJsonSchemaDocumentService implements ProcessDocumentS
 
             final var document = modifyDocumentResult.resultingDocument().orElseThrow();
 
+            request.doAdditionalModifications(document);
+
             AuthorizationContext.runWithoutAuthorization(
                 () -> {
                     camundaTaskService.completeTaskWithFormData(request.taskId(), request.getProcessVars());
@@ -255,6 +260,8 @@ public class CamundaProcessJsonSchemaDocumentService implements ProcessDocumentS
                 processName
             );
 
+            request.doAdditionalModifications(document);
+
             return new NewDocumentForRunningProcessResultSucceeded(
                 document,
                 processInstanceId
@@ -287,6 +294,8 @@ public class CamundaProcessJsonSchemaDocumentService implements ProcessDocumentS
                 )
             );
 
+            request.doAdditionalModifications(document);
+
             //Part 2 process start
             final var processDefinitionKey = new CamundaProcessDefinitionId(request.processDefinitionKey());
             final var processInstanceWithDefinition = startProcess(
@@ -300,6 +309,7 @@ public class CamundaProcessJsonSchemaDocumentService implements ProcessDocumentS
                 UUID.fromString(document.id().toString()),
                 processInstanceWithDefinition.getProcessDefinition().getName()
             ));
+
             return new ModifyDocumentAndStartProcessResultSucceeded(document, camundaProcessInstanceId);
         } catch (RuntimeException ex) {
             return new ModifyDocumentAndStartProcessResultFailed(parseAndLogException(ex));
@@ -339,13 +349,19 @@ public class CamundaProcessJsonSchemaDocumentService implements ProcessDocumentS
                 document.id().getId(),
                 processInstanceWithDefinition.getProcessDefinition().getName()
             ));
+
+            request.doAdditionalModifications(document);
+
             return new StartProcessForDocumentResultSucceeded(document, camundaProcessInstanceId);
         } catch (RuntimeException ex) {
             return new StartProcessForDocumentResultFailed(parseAndLogException(ex));
         }
     }
 
-    public JsonSchemaDocumentId getDocumentId(ProcessInstanceId processInstanceId, VariableScope variableScope) {
+    public JsonSchemaDocumentId getDocumentId(
+        ProcessInstanceId processInstanceId,
+        @Nullable VariableScope variableScope
+    ) {
         denyAuthorization();
         var processDocumentInstance = processDocumentAssociationService
             .findProcessDocumentInstance(processInstanceId)

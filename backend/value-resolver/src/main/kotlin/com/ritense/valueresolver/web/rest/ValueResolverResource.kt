@@ -19,6 +19,9 @@ package com.ritense.valueresolver.web.rest
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.valueresolver.ValueResolverOption
+import com.ritense.valueresolver.ValueResolverOptionRequest
+import com.ritense.valueresolver.ValueResolverOptionType
 import com.ritense.valueresolver.ValueResolverService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -44,23 +47,33 @@ class ValueResolverResource(
         @PathVariable documentDefinitionName: String,
         @RequestBody prefixes: List<String>,
     ): ResponseEntity<List<String>> {
-        return ResponseEntity.ok(valueResolverService.getResolvableKeys(prefixes, documentDefinitionName))
+        val options = valueResolverService.getResolvableKeys(
+            ValueResolverOptionRequest(prefixes, ValueResolverOptionType.FIELD),
+            documentDefinitionName
+        )
+        return ResponseEntity.ok(options.map { it.path })
     }
 
-    @PostMapping("/management/v1/value-resolver/document-definition/{documentDefinitionName}/case/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/keys")
+    @PostMapping("/management/v2/value-resolver/document-definition/{documentDefinitionName}/keys")
+    fun getResolvableKeys(
+        @PathVariable documentDefinitionName: String,
+        @RequestBody request: ValueResolverOptionRequest
+    ): ResponseEntity<List<ValueResolverOption>> {
+        return ResponseEntity.ok(valueResolverService.getResolvableKeys(request, documentDefinitionName))
+    }
+
+    @PostMapping("/management/v2/value-resolver/document-definition/{documentDefinitionName}/version/{version}/keys")
     fun getResolvableKeys(
         @PathVariable documentDefinitionName: String,
         @PathVariable caseDefinitionKey: String,
         @PathVariable caseDefinitionVersionTag: String,
-        @RequestBody prefixes: List<String>,
-    ): ResponseEntity<List<String>> {
+        @RequestBody request: ValueResolverOptionRequest
+    ): ResponseEntity<List<ValueResolverOption>> {
         return ResponseEntity.ok(
             valueResolverService.getResolvableKeys(
-                prefixes,
-                documentDefinitionName,
+                request, documentDefinitionName,
                 CaseDefinitionId.of(
-                    caseDefinitionKey,
-                    caseDefinitionVersionTag
+                    caseDefinitionKey, caseDefinitionVersionTag
                 )
             )
         )

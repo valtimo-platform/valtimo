@@ -16,7 +16,6 @@
 
 package com.ritense.document.autoconfiguration
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.document.dashboard.DocumentWidgetDataSource
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
 import com.ritense.valtimo.contract.database.QueryDialectHelper
@@ -33,7 +32,6 @@ class DocumentWidgetAutoConfiguration {
     fun documentWidgetDataSource(
         documentRepository: JsonSchemaDocumentRepository,
         queryDialectHelper: QueryDialectHelper,
-        objectMapper: ObjectMapper,
         entityManager: EntityManager
-    ) = DocumentWidgetDataSource(documentRepository, queryDialectHelper, objectMapper, entityManager)
+    ) = DocumentWidgetDataSource(documentRepository, queryDialectHelper, entityManager)
 }

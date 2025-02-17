@@ -51,6 +51,10 @@ class InternalCaseStatusService(
         return internalCaseStatusRepository.getReferenceById(InternalCaseStatusId(caseDefinitionName, statusKey))
     }
 
+    fun exists(caseDefinitionKey: String, statusKey: String): Boolean {
+        return internalCaseStatusRepository.existsByIdCaseDefinitionKeyAndIdKey(caseDefinitionKey, statusKey)
+    }
+
     fun create(
         caseDefinitionKey: String,
         @Valid request: InternalCaseStatusCreateRequestDto

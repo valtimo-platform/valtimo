@@ -30,7 +30,7 @@ data class FormFlowProcessLinkExportResponseDto(
     val formFlowDefinitionId: String,
     val formDisplayType: FormDisplayType,
     val formSize: FormSizes,
-    val subtitles: List<String> = emptyList(),
+    val subtitles: List<String>? = null
 ) : ProcessLinkExportResponseDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE_FORM_FLOW

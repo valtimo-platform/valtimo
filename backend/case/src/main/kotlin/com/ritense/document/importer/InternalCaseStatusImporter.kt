@@ -21,6 +21,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.document.service.InternalCaseStatusService
 import com.ritense.document.web.rest.dto.InternalCaseStatusCreateRequestDto
+import com.ritense.document.web.rest.dto.InternalCaseStatusUpdateRequestDto
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
@@ -46,15 +47,28 @@ class InternalCaseStatusImporter(
     private fun deploy(caseDefinitionKey: String, internalCaseStatuses: List<InternalCaseStatusDto>) {
         AuthorizationContext.runWithoutAuthorization {
             internalCaseStatuses.forEach {
-                internalCaseStatusService.create(
-                    caseDefinitionKey,
-                    InternalCaseStatusCreateRequestDto(
-                        it.key,
-                        it.title,
-                        it.visibleInCaseListByDefault,
-                        it.color
+                if (!internalCaseStatusService.exists(caseDefinitionKey, it.key)) {
+                    internalCaseStatusService.create(
+                        caseDefinitionKey,
+                        InternalCaseStatusCreateRequestDto(
+                            it.key,
+                            it.title,
+                            it.visibleInCaseListByDefault,
+                            it.color
+                        )
                     )
-                )
+                } else {
+                    internalCaseStatusService.update(
+                        caseDefinitionKey,
+                        it.key,
+                        InternalCaseStatusUpdateRequestDto(
+                            it.key,
+                            it.title,
+                            it.visibleInCaseListByDefault,
+                            it.color
+                        )
+                    )
+                }
             }
         }
     }

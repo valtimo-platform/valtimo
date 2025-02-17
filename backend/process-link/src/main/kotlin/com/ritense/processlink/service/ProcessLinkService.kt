@@ -120,8 +120,12 @@ class ProcessLinkService(
         return withLoggingContext(ProcessLink::class, updateRequest.id) {
             val processLinkToUpdate = processLinkRepository.findById(updateRequest.id)
                 .getOrElse { throw IllegalStateException("No ProcessLink found with id ${updateRequest.id}") }
-            val mapper = getProcessLinkMapper(processLinkToUpdate.processLinkType)
+            val mapper = getProcessLinkMapper(updateRequest.processLinkType)
             val processLinkUpdated = mapper.toUpdatedProcessLink(processLinkToUpdate, updateRequest)
+            if (processLinkToUpdate::class != processLinkUpdated::class) {
+                // Hibernate does not allow 2 different objects with the same identifier in the session, so do delete + insert instead
+                processLinkRepository.delete(processLinkToUpdate)
+            }
             processLinkRepository.save(processLinkUpdated)
         }
     }
