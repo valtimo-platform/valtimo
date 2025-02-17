@@ -176,7 +176,7 @@ export class ProcessLinkService {
     pluginActionDefinitionKey: string
   ): Observable<CompatiblePluginProcessLinks[]> {
     return this.http.get<CompatiblePluginProcessLinks[]>(
-      `${this.VALTIMO_ENDPOINT_URI}/v1/process-link/plugin?pluginActionDefinitionKey=${pluginActionDefinitionKey}`
+      `${this.VALTIMO_ENDPOINT_URI}v1/process-link/plugin?pluginActionDefinitionKey=${pluginActionDefinitionKey}`
     );
   }
 
