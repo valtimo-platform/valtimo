@@ -196,7 +196,7 @@ internal class ProcessLinkResourceIT @Autowired constructor(
         val processLinksJson = ObjectMapper().writeValueAsString(processLinks)
 
         mockMvc.perform(
-            MockMvcRequestBuilders.multipart("/api/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process", "test-case", "1.0.0")
+            MockMvcRequestBuilders.multipart("/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process-definition", "test-case", "1.0.0")
                 .file(bpmnFile)
                 .file(
                     MockMultipartFile(

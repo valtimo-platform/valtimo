@@ -138,7 +138,7 @@ class ProcessLinkResource(
     }
 
     @GetMapping(
-        value = ["/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process"],
+        value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition"],
     )
     @Transactional
     fun getProcessDefinitionsAndProcessLinks(
@@ -174,7 +174,7 @@ class ProcessLinkResource(
     }
 
 //    @DeleteMapping(
-//        value = ["/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/{processDefinitionId}"],
+//        value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/{processDefinitionId}"],
 //    )
 //    @Transactional
 //    fun deleteProcessDefinitionsAndProcessLinks(
@@ -201,7 +201,7 @@ class ProcessLinkResource(
 //    }
 
     @PostMapping(
-        value = ["/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process"],
+        value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process-definition"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
