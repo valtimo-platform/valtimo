@@ -142,8 +142,8 @@ class ProcessLinkResource(
     )
     @Transactional
     fun getProcessDefinitionsAndProcessLinks(
-        @RequestParam("caseDefinitionKey") caseDefinitionKey: String,
-        @RequestParam("versionTag") versionTag: String
+        @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
+        @PathVariable("versionTag") versionTag: String
     ): ResponseEntity<List<CaseProcessDefinitionResponseDto>> {
         val definitions = runWithoutAuthorization {
             camundaProcessService
@@ -178,9 +178,9 @@ class ProcessLinkResource(
     )
     @Transactional
     fun deleteProcessDefinitionsAndProcessLinks(
-        @RequestParam("caseDefinitionKey") caseDefinitionKey: String,
-        @RequestParam("versionTag") versionTag: String,
-        @RequestParam("processDefinitionId") processDefinitionId: String,
+        @PathVariable("caseDefinitionKey") caseDefinitionKey: String,
+        @PathVariable("versionTag") versionTag: String,
+        @PathVariable("processDefinitionId") processDefinitionId: String,
     ): ResponseEntity<Any> {
 
 
