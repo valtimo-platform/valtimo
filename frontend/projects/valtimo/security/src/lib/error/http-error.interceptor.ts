@@ -50,7 +50,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
             skipStatusCode => skipStatusCode === 'all' || skipStatusCode === error.status.toString()
           )
         ) {
-          return throwError(() => error);
+          return response$;
         }
         let errorMessage = '';
         if (error?.error instanceof ErrorEvent) {
