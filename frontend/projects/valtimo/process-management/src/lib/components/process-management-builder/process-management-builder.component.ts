@@ -242,7 +242,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
           this.processLinkService.deployProcessWithProcessLinks(
             processLinks as ProcessLinkCreateEvent[],
             selectedProcessDefinition.id,
-            !isReadOnlyProcess ? result.xml : null
+            !isReadOnlyProcess ? (result?.xml ?? '') : null
           )
         )
       )
@@ -265,7 +265,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
               processDefinitionId: '-',
             })) as ProcessLinkCreateEvent[],
             null,
-            result.xml
+            result.xml ?? ''
           )
         )
       )
@@ -285,7 +285,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     (isReadOnlyProcess ? from(this._bpmnViewer.saveXML()) : from(this._bpmnModeler.saveXML()))
       .pipe(take(1))
       .subscribe(result => {
-        const file = new Blob([result.xml], {type: 'text/xml'});
+        const file = new Blob([result.xml ?? ''], {type: 'text/xml'});
         const link = document.createElement('a');
         link.download = 'diagram.bpmn';
         link.href = window.URL.createObjectURL(file);
@@ -416,18 +416,18 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   private handleUpdateEvent(event: OpenProcessLinkModalEvent): void {
     this.modalService.setModalData(event?.modalParams);
     this.processLinkStateService.setModalParams(event?.modalParams);
-    this.processLinkStateService.setElementName(event?.modalParams?.element?.name);
+    this.processLinkStateService.setElementName(event?.modalParams?.element?.name ?? '');
     this.processLinkStateService.selectProcessLink(event.processLink);
     this.processLinkStateService.showModal();
   }
 
   private handleCreateEvent(event: OpenProcessLinkModalEvent): void {
     this.processLinkService
-      .getProcessLinkCandidates(event.modalParams.element.activityListenerType)
+      .getProcessLinkCandidates(event.modalParams.element.activityListenerType ?? '')
       .subscribe(candidates => {
         this.modalService.setModalData(event?.modalParams);
         this.processLinkStateService.setModalParams(event?.modalParams);
-        this.processLinkStateService.setElementName(event?.modalParams?.element?.name);
+        this.processLinkStateService.setElementName(event?.modalParams?.element?.name ?? '');
         this.processLinkStateService.setAvailableProcessLinkTypes(candidates);
         this.processLinkStateService.showModal();
       });

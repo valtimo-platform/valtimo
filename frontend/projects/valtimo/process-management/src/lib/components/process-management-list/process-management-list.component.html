@@ -22,11 +22,11 @@
   [isSearchable]="true"
 >
   <ng-container carbonToolbarContent>
-    <button cdsButton="ghost" [iconOnly]="true" (click)="openModal()">
+    <button cdsButton="ghost" [iconOnly]="true" disabled="true" (click)="openModal()">
       <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
     </button>
 
-    <button cdsButton="primary" [routerLink]="'create'">
+    <button cdsButton="primary" (click)="onCreateClick()">
       {{ 'Create new Process' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

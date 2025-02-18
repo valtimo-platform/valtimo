@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component, ViewChild} from '@angular/core';
-import {ProcessManagementListComponent} from '../process-management-list/process-management-list.component';
+import {CommonModule} from '@angular/common';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {ProcessManagementStateService} from '../../services';
+import {ProcessManagementListComponent} from '../process-management-list/process-management-list.component';
+import {ProcessManagementUploadComponent} from '../process-management-upload/process-management-upload.component';
 
 @Component({
   selector: 'valtimo-process-management',
   templateUrl: './process-management.component.html',
   styleUrls: ['./process-management.component.scss'],
   providers: [ProcessManagementStateService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule, ProcessManagementListComponent, ProcessManagementUploadComponent],
 })
-export class ProcessManagementComponent {
-  @ViewChild('processManagementList') processManagementList: ProcessManagementListComponent;
-}
+export class ProcessManagementComponent {}

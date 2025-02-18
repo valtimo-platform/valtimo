@@ -13,20 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {NgModule} from '@angular/core';
-import {ProcessManagementRoutingModule} from './process-management-routing';
 import {CommonModule} from '@angular/common';
-import {CarbonListModule, ListModule, WidgetModule} from '@valtimo/components';
+import {NgModule} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
+import {CarbonListModule, ListModule, WidgetModule} from '@valtimo/components';
 import {ProcessLinkModule} from '@valtimo/process-link';
-import {
-  ProcessManagementBuilderComponent,
-  ProcessManagementComponent,
-  ProcessManagementListComponent,
-  ProcessManagementUploadComponent,
-} from './components';
 import {
   ButtonModule,
   DropdownModule,
@@ -37,13 +29,10 @@ import {
   NotificationModule,
   RadioModule,
 } from 'carbon-components-angular';
+import {ProcessManagementBuilderComponent, ProcessManagementComponent} from './components';
+import {ProcessManagementRoutingModule} from './process-management-routing.module';
 
 @NgModule({
-  declarations: [
-    ProcessManagementComponent,
-    ProcessManagementListComponent,
-    ProcessManagementUploadComponent,
-  ],
   imports: [
     CommonModule,
     ProcessManagementRoutingModule,
@@ -52,6 +41,7 @@ import {
     FormsModule,
     TranslateModule,
     ProcessLinkModule,
+    ProcessManagementComponent,
     ProcessManagementBuilderComponent,
     CarbonListModule,
     ButtonModule,
@@ -65,6 +55,5 @@ import {
     FileUploaderModule,
     LayerModule,
   ],
-  exports: [ProcessManagementComponent],
 })
 export class ProcessManagementModule {}

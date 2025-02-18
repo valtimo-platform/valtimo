@@ -13,20 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component} from '@angular/core';
-import {ProcessDefinition, ProcessService} from '@valtimo/process';
+import {CommonModule} from '@angular/common';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Router} from '@angular/router';
-import {ColumnConfig} from '@valtimo/components';
-import {BehaviorSubject, startWith, switchMap, tap} from 'rxjs';
-import {IconService} from 'carbon-components-angular';
 import {Upload16} from '@carbon/icons';
+import {TranslateModule} from '@ngx-translate/core';
+import {CarbonListModule, ColumnConfig} from '@valtimo/components';
+import {ProcessDefinition, ProcessService} from '@valtimo/process';
+import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
+import {BehaviorSubject, startWith, switchMap, tap} from 'rxjs';
 import {ProcessManagementStateService} from '../../services';
 
 @Component({
   selector: 'valtimo-process-management-list',
   templateUrl: './process-management-list.component.html',
   styleUrls: ['./process-management-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule, ButtonModule, CarbonListModule, IconModule, TranslateModule],
 })
 export class ProcessManagementListComponent {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
@@ -61,5 +65,9 @@ export class ProcessManagementListComponent {
 
   public openModal(): void {
     this.processManagementStateService.openModal();
+  }
+
+  public onCreateClick(): void {
+    this.router.navigate(['create']);
   }
 }
