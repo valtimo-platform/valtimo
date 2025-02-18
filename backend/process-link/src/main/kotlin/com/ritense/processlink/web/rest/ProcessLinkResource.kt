@@ -29,6 +29,7 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.exception.BpmnParseException
 import com.ritense.valtimo.service.CamundaProcessService
@@ -127,17 +128,20 @@ class ProcessLinkResource(
     }
 
     @PostMapping(
-        value = ["/v1/process/definition/deployment/process-link"],
+        value = ["/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
     @Transactional
     fun deployProcessDefinitionAndProcessLinks(
+        @PathVariable(name = "caseDefinitionKey") caseDefinitionKey: String,
+        @PathVariable(name = "caseDefinitionVersionTag") caseDefinitionVersionTag: String,
         @RequestPart(name = "file") bpmn: MultipartFile?,
         @RequestPart(name = "processLinks") processLinks: List<ProcessLinkCreateRequestDto>,
         @RequestPart(name = "processDefinitionId") processDefinitionId: String?
     ): ResponseEntity<Any> {
         val deployedProcessDefinitionId: String
+        val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
 
         if (bpmn !== null) {
             val correctFileExtension = bpmn.originalFilename?.endsWith(".bpmn") == true
@@ -148,7 +152,7 @@ class ProcessLinkResource(
 
             try {
                 val deployment = runWithoutAuthorization {
-                    camundaProcessService.deploy(bpmn.originalFilename, ByteArrayInputStream(bpmn.bytes), true, false)
+                    camundaProcessService.deploy(caseDefinitionId, bpmn.originalFilename, ByteArrayInputStream(bpmn.bytes), true, false)
                 }
                 val deployedProcessDefinition = runWithoutAuthorization {
                     camundaProcessService.getProcessDefinitionByDeploymentId(deployment.id)
@@ -161,7 +165,7 @@ class ProcessLinkResource(
         } else {
             try {
                 val deployment = runWithoutAuthorization {
-                    camundaProcessService.duplicateProcessDefinitionById(processDefinitionId, true, true)
+                    camundaProcessService.duplicateProcessDefinitionById(caseDefinitionId, processDefinitionId, true, true)
                 }
                 val deployedProcessDefinition = runWithoutAuthorization {
                     camundaProcessService.getProcessDefinitionByDeploymentId(deployment.id)

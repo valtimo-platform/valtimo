@@ -308,14 +308,7 @@ public class CamundaProcessService {
 
     @Transactional
     public DeploymentWithDefinitions deploy(
-        String fileName,
-        ByteArrayInputStream fileInput
-    ) throws ProcessNotDeployableException, FileExtensionNotSupportedException, NoFileExtensionFoundException {
-        return deploy(fileName, fileInput, false, false);
-    }
-
-    @Transactional
-    public DeploymentWithDefinitions deploy(
+        CaseDefinitionId caseDefinitionId,
         String fileName,
         ByteArrayInputStream fileInput,
         boolean skipProcessLinksCopy,
@@ -331,6 +324,7 @@ public class CamundaProcessService {
             }
 
             setProcessesExecutable(bpmnModel);
+            setProcessesVersionTag(bpmnModel, caseDefinitionId);
 
             var deploymentBuilder = repositoryService.createDeployment().addModelInstance(fileName, bpmnModel);
 
@@ -429,6 +423,7 @@ public class CamundaProcessService {
 
     @Transactional
     public DeploymentWithDefinitions duplicateProcessDefinitionById(
+        CaseDefinitionId caseDefinitionId,
         String processDefinitionId,
         boolean skipProcessLinksCopy,
         boolean skipIsDeployableCheck
@@ -462,7 +457,7 @@ public class CamundaProcessService {
 
         try (ByteArrayInputStream fileInput = new ByteArrayInputStream(
             repositoryService.getResourceAsStream(deploymentId, fileName).readAllBytes())) {
-            return deploy(fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck);
+            return deploy(caseDefinitionId, fileName, fileInput, skipProcessLinksCopy, skipIsDeployableCheck);
 
         } catch (IOException e) {
             logger.error("Error reading resource stream for file: {}", fileName, e);

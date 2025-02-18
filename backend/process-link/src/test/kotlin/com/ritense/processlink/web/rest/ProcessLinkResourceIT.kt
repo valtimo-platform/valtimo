@@ -18,6 +18,7 @@ package com.ritense.processlink.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.processlink.BaseIntegrationTest
 import com.ritense.processlink.autodeployment.ProcessLinkDeploymentApplicationReadyEventListener
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
@@ -25,6 +26,7 @@ import com.ritense.processlink.domain.TestProcessLink
 import com.ritense.processlink.domain.TestProcessLinkCreateRequestDto
 import com.ritense.processlink.domain.TestProcessLinkUpdateRequestDto
 import com.ritense.processlink.repository.ProcessLinkRepository
+import com.ritense.valtimo.service.CamundaProcessService
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -44,12 +46,14 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
 import java.nio.charset.StandardCharsets
 import java.util.UUID
+import kotlin.test.assertEquals
 
 
 @Transactional
 internal class ProcessLinkResourceIT @Autowired constructor(
     private val webApplicationContext: WebApplicationContext,
     private val processLinkRepository: ProcessLinkRepository,
+    private val camundaProcessService: CamundaProcessService,
     private val listener: ProcessLinkDeploymentApplicationReadyEventListener
 ) : BaseIntegrationTest() {
 
@@ -192,7 +196,7 @@ internal class ProcessLinkResourceIT @Autowired constructor(
         val processLinksJson = ObjectMapper().writeValueAsString(processLinks)
 
         mockMvc.perform(
-            MockMvcRequestBuilders.multipart("/api/v1/process/definition/deployment/process-link")
+            MockMvcRequestBuilders.multipart("/api/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process", "test-case", "1.0.0")
                 .file(bpmnFile)
                 .file(
                     MockMultipartFile(
@@ -208,6 +212,11 @@ internal class ProcessLinkResourceIT @Autowired constructor(
         )
             .andDo(print())
             .andExpect(status().isNoContent)
+
+        runWithoutAuthorization {
+            val deployedProcess = camundaProcessService.getProcessDefinition("test-process")
+            assertEquals("test-case-1.0.0", deployedProcess?.versionTag)
+        }
     }
 
     private fun createProcessLink(): UUID {

@@ -28,6 +28,7 @@ import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.ResourcePatternUtils
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.FileNotFoundException
 
 
 @Transactional
@@ -41,12 +42,18 @@ class CaseDefinitionDeploymentService(
 
     @EventListener(ApplicationReadyEvent::class)
     fun deployOnStartup() {
-        val absoluteBasePathLength = ResourcePatternUtils
-            .getResourcePatternResolver(resourceLoader)
-            .getResource("classpath:/config/case/")
-            .file
-            .absolutePath
-            .length
+        val absoluteBasePathLength = try {
+            ResourcePatternUtils
+                .getResourcePatternResolver(resourceLoader)
+                .getResource("classpath:/config/case/")
+                .file
+                .absolutePath
+                .length
+        } catch (ex: FileNotFoundException) {
+            // No resources found, nothing to import
+            logger.info { "No case definitions found. Continuing startup without importing." }
+            return
+        }
 
         val resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(PATH)
             .groupBy {
