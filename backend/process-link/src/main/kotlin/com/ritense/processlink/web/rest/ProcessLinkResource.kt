@@ -173,32 +173,30 @@ class ProcessLinkResource(
         return ResponseEntity.ok(definitions)
     }
 
-//    @DeleteMapping(
-//        value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/{processDefinitionId}"],
-//    )
-//    @Transactional
-//    fun deleteProcessDefinitionsAndProcessLinks(
-//        @RequestParam("caseDefinitionKey") caseDefinitionKey: String,
-//        @RequestParam("versionTag") versionTag: String,
-//        @RequestParam("processDefinitionId") processDefinitionId: String,
-//    ): ResponseEntity<Any> {
-//
-//
-//        camundaProcessService
-//            .getProcessDefinitionById(processDefinitionId)
-//            .let { definition: CamundaProcessDefinition? ->
-//                processDefinitionCaseDefinitionService.deleteProcessDocumentDefinition(
-//
-//                )
-//                processDefinitionCaseDefinitionService.findByProcessDefinitionId(
-//                    ProcessDefinitionId(definition!!.id))
-//                processLinkService.getProcessLinks(definition.id).map {
-//                    getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
-//                }
-//            }
-//
-//        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
-//    }
+    @DeleteMapping(
+        value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/{processDefinitionId}"],
+    )
+    @Transactional
+    fun deleteProcessDefinitionsAndProcessLinks(
+        @RequestParam("caseDefinitionKey") caseDefinitionKey: String,
+        @RequestParam("versionTag") versionTag: String,
+        @RequestParam("processDefinitionId") processDefinitionId: String,
+    ): ResponseEntity<Any> {
+
+
+        camundaProcessService
+            .getProcessDefinitionById(processDefinitionId)
+            .let { definition: CamundaProcessDefinition? ->
+                processDefinitionCaseDefinitionService.deleteProcessDocumentDefinition(
+                    ProcessDefinitionId(processDefinitionId),
+                    CaseDefinitionId.of(caseDefinitionKey, versionTag)
+                )
+                processLinkService.deleteProcessLinksForProcessDefinition(processDefinitionId)
+                camundaProcessService.deleteProcessDefinition(processDefinitionId)
+            }
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
+    }
 
     @PostMapping(
         value = ["/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process-definition"],

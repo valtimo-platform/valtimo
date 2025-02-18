@@ -316,6 +316,19 @@ public class CamundaProcessService {
     }
 
     @Transactional
+    public void deleteProcessDefinition(String processDefinitionId) {
+        denyAuthorization();
+
+        // TODO: Discuss if cascade = true is the correct way to go about this
+        AuthorizationContext.runWithoutAuthorization(() -> {
+            repositoryService.deleteProcessDefinition(processDefinitionId, true);
+            return null;
+        });
+
+
+    }
+
+    @Transactional
     public DeploymentWithDefinitions deploy(
         CaseDefinitionId caseDefinitionId,
         String fileName,

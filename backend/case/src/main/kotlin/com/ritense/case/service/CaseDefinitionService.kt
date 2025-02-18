@@ -66,6 +66,10 @@ class CaseDefinitionService(
         )
     )
 
+    fun getCaseDefinitions(): List<CaseDefinition> {
+        return caseDefinitionRepository.findAllLatestCaseDefinitions()
+    }
+
     fun getCaseDefinition(caseDefinitionId: CaseDefinitionId): CaseDefinition {
         return caseDefinitionRepository.findByIdOrNull(caseDefinitionId)
             ?: throw UnknownCaseDefinitionException(caseDefinitionId)

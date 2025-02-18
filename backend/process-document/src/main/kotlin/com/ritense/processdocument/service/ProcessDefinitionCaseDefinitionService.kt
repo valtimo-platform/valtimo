@@ -41,11 +41,11 @@ class ProcessDefinitionCaseDefinitionService(
         return processDefinitionCaseDefinitionRepository.findByIdCaseDefinitionId(caseDefinitionId)
     }
 
-    fun deleteProcessDocumentDefinition(request: ProcessDocumentDefinitionRequest) {
+    fun deleteProcessDocumentDefinition(processDefinitionId: ProcessDefinitionId, caseDefinitionId: CaseDefinitionId) {
         denyAuthorization()
         val id = ProcessDefinitionCaseDefinitionId(
-            request.processDefinitionId,
-            request.caseDefinitionId
+            processDefinitionId,
+            caseDefinitionId
         )
 
         processDefinitionCaseDefinitionRepository.deleteById(id)

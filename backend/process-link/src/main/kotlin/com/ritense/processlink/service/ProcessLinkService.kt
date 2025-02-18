@@ -137,6 +137,10 @@ class ProcessLinkService(
         processLinkRepository.deleteById(id)
     }
 
+    fun deleteProcessLinksForProcessDefinition(processDefinitionId: String) {
+        processLinkRepository.deleteAllByProcessDefinitionId(processDefinitionId)
+    }
+
     fun getProcessLinkMapper(processLinkType: String): ProcessLinkMapper {
         return processLinkMappers.singleOrNull { it.supportsProcessLinkType(processLinkType) }
             ?: throw IllegalStateException("No ProcessLinkMapper found for processLinkType $processLinkType")

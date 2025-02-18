@@ -16,15 +16,16 @@
 
 package com.ritense.case.web.rest
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.service.CaseDefinitionService
+import com.ritense.case.web.rest.dto.CaseDefinitionResponseDto
 import com.ritense.case.web.rest.dto.CaseDefinitionSettingsResponseDto
 import com.ritense.case.web.rest.dto.CaseListColumnDto
 import com.ritense.case.web.rest.dto.CaseSettingsDto
 import com.ritense.exporter.ExportService
 import com.ritense.exporter.request.CaseDefinitionExportRequest
-import com.ritense.exporter.request.DocumentDefinitionExportRequest
 import com.ritense.importer.ImportService
 import com.ritense.importer.exception.ImportServiceException
 import com.ritense.logging.LoggableResource
@@ -56,6 +57,15 @@ class CaseDefinitionResource(
     private val exportService: ExportService,
     private val importService: ImportService
 ) {
+
+    @GetMapping("/management/v1/case-definition")
+    fun getCaseDefinitions(): ResponseEntity<List<CaseDefinitionResponseDto>> {
+        return ResponseEntity.ok(
+            runWithoutAuthorization {
+                service.getCaseDefinitions().map { CaseDefinitionResponseDto.of(it) }
+            }
+        )
+    }
 
     @GetMapping("/v1/case/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")
     fun getCaseSettings(

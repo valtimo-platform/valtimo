@@ -101,7 +101,10 @@ class ProcessDocumentLinkImporter(
                         "Updating process-document-links from {}.json",
                         documentDefinitionName
                     )
-                    processDefinitionCaseDefinitionService.deleteProcessDocumentDefinition(request)
+                    processDefinitionCaseDefinitionService.deleteProcessDocumentDefinition(
+                        request.processDefinitionId,
+                        request.caseDefinitionId
+                    )
                     processDefinitionCaseDefinitionService.createProcessDocumentDefinition(request)
                 }
             } else {
