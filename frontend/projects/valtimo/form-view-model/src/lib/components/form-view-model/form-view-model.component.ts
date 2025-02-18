@@ -31,7 +31,13 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs';
-import {FormioComponent, FormioModule, FormioOptions, FormioSubmission, FormioSubmissionCallback,} from '@formio/angular';
+import {
+  FormioComponent,
+  FormioModule,
+  FormioOptions,
+  FormioSubmission,
+  FormioSubmissionCallback,
+} from '@formio/angular';
 import {ViewModelService} from '../../services';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 import {deepmerge} from 'deepmerge-ts';
@@ -180,23 +186,25 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
       this.loadInitialViewModel();
     }
 
-    this.focusSubscription = this.focus$.pipe(withLatestFrom(this.change$, this.submission$)).subscribe(([_, changeData, submissionDate]) => {
-      const dataAtFocus =
-        !!changeData && !!changeData.data
-          ? JSON.parse(JSON.stringify(changeData.data))
-          : !!submissionDate.data
-            ? JSON.parse(JSON.stringify(submissionDate.data))
-            : null;
-      this.blur$
-        .pipe(take(1))
-        .pipe(withLatestFrom(this.change$))
-        .subscribe(([_, blurData]) => {
-          const dataEqual = isEqual(dataAtFocus, blurData?.data);
-          if (!dataEqual) {
-            this.updateForm.next(true);
-          }
-        });
-    });
+    this.focusSubscription = this.focus$
+      .pipe(withLatestFrom(this.change$, this.submission$))
+      .subscribe(([_, changeData, submissionDate]) => {
+        const dataAtFocus =
+          !!changeData && !!changeData.data
+            ? JSON.parse(JSON.stringify(changeData.data))
+            : !!submissionDate.data
+              ? JSON.parse(JSON.stringify(submissionDate.data))
+              : null;
+        this.blur$
+          .pipe(take(1))
+          .pipe(withLatestFrom(this.change$))
+          .subscribe(([_, blurData]) => {
+            const dataEqual = isEqual(dataAtFocus, blurData?.data);
+            if (!dataEqual) {
+              this.updateForm.next(true);
+            }
+          });
+      });
 
     this.updateSubscription = this.updateForm
       .pipe(
@@ -291,14 +299,12 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
         if (component == null) {
           errors.push(componentError.message);
         } else {
-          formioErrors.push(
-            {
-              "message": componentError.message,
-              "type": "custom",
-              "path": [componentError.component],
-              "level": "error"
-            }
-          )
+          formioErrors.push({
+            message: componentError.message,
+            type: 'custom',
+            path: [componentError.component],
+            level: 'error',
+          });
         }
       });
       formInstance.showErrors(formioErrors);
@@ -310,11 +316,11 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
       } else {
         formInstance.showErrors([
           {
-            "message": error.error.error,
-            "type": "custom",
-            "path": [error.error.component],
-            "level": "error"
-          }
+            message: error.error.error,
+            type: 'custom',
+            path: [error.error.component],
+            level: 'error',
+          },
         ]);
       }
     } else {
