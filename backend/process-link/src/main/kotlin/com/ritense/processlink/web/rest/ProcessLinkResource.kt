@@ -19,10 +19,13 @@ package com.ritense.processlink.web.rest
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
+import com.ritense.processdocument.domain.ProcessDefinitionId
+import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.domain.ProcessLinkType
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.processlink.web.rest.dto.CaseProcessDefinitionResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
@@ -33,7 +36,10 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.exception.BpmnParseException
 import com.ritense.valtimo.service.CamundaProcessService
+import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
 import org.camunda.bpm.engine.ParseException
+import org.camunda.bpm.engine.RepositoryService
+import org.camunda.bpm.engine.impl.util.IoUtil
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -50,7 +56,9 @@ import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import java.io.ByteArrayInputStream
+import java.nio.charset.StandardCharsets
 import java.util.UUID
+import java.util.stream.Collectors
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
@@ -60,7 +68,9 @@ import kotlin.reflect.full.primaryConstructor
 class ProcessLinkResource(
     private var processLinkService: ProcessLinkService,
     private val processLinkMappers: List<ProcessLinkMapper>,
-    private val camundaProcessService: CamundaProcessService
+    private val camundaProcessService: CamundaProcessService,
+    private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
+    private val repositoryService: RepositoryService
 ) {
 
     @GetMapping("/v1/process-link")
@@ -126,6 +136,69 @@ class ProcessLinkResource(
 
         return ResponseEntity.ok(list)
     }
+
+    @GetMapping(
+        value = ["/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process"],
+    )
+    @Transactional
+    fun getProcessDefinitionsAndProcessLinks(
+        @RequestParam("caseDefinitionKey") caseDefinitionKey: String,
+        @RequestParam("versionTag") versionTag: String
+    ): ResponseEntity<List<CaseProcessDefinitionResponseDto>> {
+        val definitions = runWithoutAuthorization {
+            camundaProcessService
+                .getDeployedDefinitions(CaseDefinitionId.of(caseDefinitionKey, versionTag))
+                .stream()
+                .map { definition: CamundaProcessDefinition? ->
+                    CaseProcessDefinitionResponseDto(
+                        ProcessDefinitionWithPropertiesDto.fromProcessDefinition(
+                            definition
+                        ),
+                        processDefinitionCaseDefinitionService.findByProcessDefinitionId(
+                            ProcessDefinitionId(definition!!.id)),
+                        processLinkService.getProcessLinks(definition.id).map {
+                            getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
+                         },
+                        String(
+                            IoUtil.readInputStream(
+                                repositoryService.getProcessModel(definition.id),
+                                "processModelBpmn20Xml"
+                            ), StandardCharsets.UTF_8
+                        )
+                    )
+                }
+                .collect(Collectors.toList())
+        }
+
+        return ResponseEntity.ok(definitions)
+    }
+
+//    @DeleteMapping(
+//        value = ["/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/{processDefinitionId}"],
+//    )
+//    @Transactional
+//    fun deleteProcessDefinitionsAndProcessLinks(
+//        @RequestParam("caseDefinitionKey") caseDefinitionKey: String,
+//        @RequestParam("versionTag") versionTag: String,
+//        @RequestParam("processDefinitionId") processDefinitionId: String,
+//    ): ResponseEntity<Any> {
+//
+//
+//        camundaProcessService
+//            .getProcessDefinitionById(processDefinitionId)
+//            .let { definition: CamundaProcessDefinition? ->
+//                processDefinitionCaseDefinitionService.deleteProcessDocumentDefinition(
+//
+//                )
+//                processDefinitionCaseDefinitionService.findByProcessDefinitionId(
+//                    ProcessDefinitionId(definition!!.id))
+//                processLinkService.getProcessLinks(definition.id).map {
+//                    getProcessLinkMapper(it.processLinkType).toProcessLinkResponseDto(it)
+//                }
+//            }
+//
+//        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
+//    }
 
     @PostMapping(
         value = ["/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process"],
