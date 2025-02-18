@@ -32,7 +32,6 @@
         </cds-tabs>
       </ng-container>
     </ng-template>
-
     <div
       #tabContentContainer
       class="tab-content-container"
@@ -320,6 +319,17 @@
           </cds-overflow-menu-option>
         </cds-overflow-menu>
       </div>
+    </div>
+    <div
+      *ngIf="{
+        caseTags: caseTags$ | async,
+      } as observables"
+    >
+      @if (observables.caseTags) {
+        <cds-tag *ngFor="let tag of observables.caseTags" size="sm" [type]="tag.tagType">{{
+          tag.title
+        }}</cds-tag>
+      }
     </div>
   </ng-template>
 </ng-container>

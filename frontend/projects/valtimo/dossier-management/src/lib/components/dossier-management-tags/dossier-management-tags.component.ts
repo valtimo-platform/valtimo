@@ -146,15 +146,15 @@ export class DossierManagementTagsComponent implements AfterViewInit {
   }
 
   public confirmDeleteStatus(status: TagsStatus): void {
-    // this.documentDefinitionName$
-    //   .pipe(
-    //     switchMap(documentDefinitionName =>
-    //       this.tagsService.deleteInternalCaseStatus(documentDefinitionName, status.key)
-    //     )
-    //   )
-    //   .subscribe(() => {
-    //     this.reload();
-    //   });
+    this.documentDefinitionName$
+      .pipe(
+        switchMap(documentDefinitionName =>
+          this.tagsService.deleteCaseTag(documentDefinitionName, status.key)
+        )
+      )
+      .subscribe(() => {
+        this.reload();
+      });
   }
 
   public onMoveRowClick(event: MoveRowEvent): void {

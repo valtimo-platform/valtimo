@@ -56,4 +56,10 @@ export class TagsService extends BaseApiService {
       updatedStatus
     );
   }
+
+  public deleteCaseTag(caseDefinitionName: string, statusKey: string): Observable<void> {
+    return this.httpClient.delete<void>(
+      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag/${statusKey}`)
+    );
+  }
 }

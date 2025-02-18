@@ -18,8 +18,8 @@ import {TagsColor} from '../models';
 import {TagType} from 'carbon-components-angular';
 
 class TagsUtils {
-  static getTagTypeFromTagsColor(internalCaseStatusColor: TagsColor): TagType {
-    switch (internalCaseStatusColor) {
+  static getTagTypeFromTagsColor(tagColor: TagsColor): TagType {
+    switch (tagColor) {
       case TagsColor.HighContrast:
         return 'high-contrast';
       case TagsColor.CoolGray:
@@ -27,7 +27,7 @@ class TagsUtils {
       case TagsColor.WarmGray:
         return 'warm-gray';
       default:
-        return internalCaseStatusColor?.toLowerCase() as TagType;
+        return tagColor?.toLowerCase() as TagType;
     }
   }
 }
