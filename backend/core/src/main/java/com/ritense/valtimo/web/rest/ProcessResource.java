@@ -612,7 +612,7 @@ public class ProcessResource extends AbstractProcessResource {
     }
 
     //TODO: Upload endpoint for bpmn files, should be replaced
-/*    @PostMapping(value = "/v1/process/definition/deployment", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+/*    @PostMapping(value = "/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/process", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<Object> deployProcessDefinition(
             @RequestPart(name = "file") MultipartFile bpmn) {
         boolean correctFileExtension = Objects.requireNonNull(bpmn.getOriginalFilename()).endsWith(".bpmn")
