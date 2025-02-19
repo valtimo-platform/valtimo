@@ -38,6 +38,8 @@ import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverService
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -66,8 +68,8 @@ class CaseDefinitionService(
         )
     )
 
-    fun getCaseDefinitions(): List<CaseDefinition> {
-        return caseDefinitionRepository.findAllLatestCaseDefinitions()
+    fun getCaseDefinitions(pageable: Pageable): Page<CaseDefinition> {
+        return caseDefinitionRepository.findAllLatestCaseDefinitions(pageable)
     }
 
     fun getCaseDefinition(caseDefinitionId: CaseDefinitionId): CaseDefinition {
@@ -78,6 +80,13 @@ class CaseDefinitionService(
     fun getLatestCaseDefinition(caseDefinitionKey: String): CaseDefinition? {
         return caseDefinitionRepository.findFirstByIdKeyOrderByIdVersionTagDesc(caseDefinitionKey)
     }
+
+    fun getCaseDefinitionVersions(caseDefinitionKey: String): List<String> {
+        return caseDefinitionRepository.findVersionsForCaseDefinitionKey(caseDefinitionKey).map {
+            it.toString()
+        }
+    }
+
 
     @Throws(UnknownDocumentDefinitionException::class)
     fun updateCaseSettings(caseDefinitionId: CaseDefinitionId, newSettings: CaseSettingsDto): CaseDefinition {

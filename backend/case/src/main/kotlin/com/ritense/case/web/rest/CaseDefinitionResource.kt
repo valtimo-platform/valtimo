@@ -33,6 +33,10 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import mu.KotlinLogging
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -59,10 +63,23 @@ class CaseDefinitionResource(
 ) {
 
     @GetMapping("/management/v1/case-definition")
-    fun getCaseDefinitions(): ResponseEntity<List<CaseDefinitionResponseDto>> {
+    fun getCaseDefinitions(
+        @PageableDefault(sort = ["case_definition_key"], direction = Sort.Direction.ASC) pageable: Pageable
+    ): ResponseEntity<Page<CaseDefinitionResponseDto>> {
         return ResponseEntity.ok(
             runWithoutAuthorization {
-                service.getCaseDefinitions().map { CaseDefinitionResponseDto.of(it) }
+                service.getCaseDefinitions(pageable).map { CaseDefinitionResponseDto.of(it) }
+            }
+        )
+    }
+
+    @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version")
+    fun getCaseDefinitionVersions(
+        @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
+    ): ResponseEntity<List<String>> {
+        return ResponseEntity.ok(
+            runWithoutAuthorization {
+                service.getCaseDefinitionVersions(caseDefinitionKey)
             }
         )
     }
