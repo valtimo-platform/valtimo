@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {TagsStatus} from '../models';
+import {Tags} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -31,35 +31,33 @@ export class TagsService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public getTagsManagement(caseDefinitionName: string): Observable<TagsStatus[]> {
-    return this.httpClient.get<TagsStatus[]>(
+  public getCaseTagsManagement(caseDefinitionName: string): Observable<Tags[]> {
+    return this.httpClient.get<Tags[]>(
       this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag`)
     );
   }
 
-  public saveTag(caseDefinitionName: string, status: TagsStatus): Observable<TagsStatus> {
-    return this.httpClient.post<TagsStatus>(
+  public saveCaseTag(caseDefinitionName: string, tag: Tags): Observable<Tags> {
+    return this.httpClient.post<Tags>(
       this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag`),
-      status
+      tag
     );
   }
 
-  public updateTagsStatus(
+  public updateCaseTag(
     caseDefinitionName: string,
-    currentStatusKey: string,
-    updatedStatus: TagsStatus
-  ): Observable<TagsStatus> {
-    return this.httpClient.put<TagsStatus>(
-      this.getApiUrl(
-        `/management/v1/case-definition/${caseDefinitionName}/case-tag/${currentStatusKey}`
-      ),
-      updatedStatus
+    currentTag: string,
+    updatedTag: Tags
+  ): Observable<Tags> {
+    return this.httpClient.put<Tags>(
+      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag/${currentTag}`),
+      updatedTag
     );
   }
 
-  public deleteCaseTag(caseDefinitionName: string, statusKey: string): Observable<void> {
+  public deleteCaseTag(caseDefinitionName: string, tag: string): Observable<void> {
     return this.httpClient.delete<void>(
-      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag/${statusKey}`)
+      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag/${tag}`)
     );
   }
 }

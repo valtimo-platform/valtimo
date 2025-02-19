@@ -31,7 +31,7 @@ enum TagsColor {
   Outline = 'OUTLINE',
 }
 
-interface TagsStatus {
+interface Tags {
   key: string;
   title: string;
   color: TagsColor;
@@ -39,4 +39,4 @@ interface TagsStatus {
   tagType?: TagType;
 }
 
-export {TagsStatus, TagsColor};
+export {Tags, TagsColor};

@@ -21,7 +21,7 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import {TagsStatus, TagsUtils, TagsService} from '@valtimo/document';
+import {Tags, TagsUtils, TagsService} from '@valtimo/document';
 import {
   BehaviorSubject,
   combineLatest,
@@ -66,7 +66,7 @@ export class DossierManagementTagsComponent implements AfterViewInit {
 
   public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
 
-  private _documentStatuses: TagsStatus[] = [];
+  private _documentStatuses: Tags[] = [];
 
   public readonly documentStatuses$ = combineLatest([
     this._documentDefinitionName$,
@@ -78,7 +78,7 @@ export class DossierManagementTagsComponent implements AfterViewInit {
       }
     }),
     switchMap(([documentDefinitionName]) =>
-      this.tagsService.getTagsManagement(documentDefinitionName)
+      this.tagsService.getCaseTagsManagement(documentDefinitionName)
     ),
     map(statuses =>
       statuses.map(status => ({
@@ -109,9 +109,9 @@ export class DossierManagementTagsComponent implements AfterViewInit {
   ];
 
   public readonly statusModalType$ = new BehaviorSubject<TagsModalType>('closed');
-  public readonly prefillStatus$ = new BehaviorSubject<TagsStatus>(undefined);
+  public readonly prefillStatus$ = new BehaviorSubject<Tags>(undefined);
 
-  public readonly statusToDelete$ = new BehaviorSubject<TagsStatus>(undefined);
+  public readonly statusToDelete$ = new BehaviorSubject<Tags>(undefined);
   public readonly showDeleteModal$ = new Subject<boolean>();
 
   constructor(
@@ -123,12 +123,12 @@ export class DossierManagementTagsComponent implements AfterViewInit {
     this.initFields();
   }
 
-  public openDeleteModal(status: TagsStatus): void {
+  public openDeleteModal(status: Tags): void {
     this.statusToDelete$.next(status);
     this.showDeleteModal$.next(true);
   }
 
-  public openEditModal(status: TagsStatus): void {
+  public openEditModal(status: Tags): void {
     this.prefillStatus$.next(status);
     this.statusModalType$.next('edit');
   }
@@ -145,7 +145,7 @@ export class DossierManagementTagsComponent implements AfterViewInit {
     this.statusModalType$.next('closed');
   }
 
-  public confirmDeleteStatus(status: TagsStatus): void {
+  public confirmDeleteStatus(status: Tags): void {
     this.documentDefinitionName$
       .pipe(
         switchMap(documentDefinitionName =>
@@ -178,7 +178,7 @@ export class DossierManagementTagsComponent implements AfterViewInit {
     this._reload$.next(noAnimation ? 'noAnimation' : null);
   }
 
-  private swapStatuses(statuses: TagsStatus[], index1: number, index2: number): TagsStatus[] {
+  private swapStatuses(statuses: Tags[], index1: number, index2: number): Tags[] {
     const temp = [...statuses];
     temp[index1] = temp.splice(index2, 1, temp[index1])[0];
 

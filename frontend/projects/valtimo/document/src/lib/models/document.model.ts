@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {TagsStatus} from './tags-status.model';
+import {Tags} from './tags-status.model';
 
 interface SortResult {
   sorted: boolean;
@@ -116,7 +116,7 @@ interface Document {
   assigneeFullName: string;
   assigneeId: string;
   internalStatus?: string;
-  caseTags?: TagsStatus[];
+  caseTags?: Tags[];
 }
 
 interface DocumentDefinitionId {

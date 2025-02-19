@@ -42,7 +42,7 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import {TagsService, TagsStatus, TagsColor, TagsUtils} from '@valtimo/document';
+import {TagsService, Tags, TagsColor, TagsUtils} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import {Edit16} from '@carbon/icons';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
@@ -67,7 +67,7 @@ export class DossierManagementTagsModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  @Input() public set prefill(value: TagsStatus) {
+  @Input() public set prefill(value: Tags) {
     this._prefillStatus.next(value);
   }
 
@@ -78,7 +78,7 @@ export class DossierManagementTagsModalComponent implements OnInit, OnDestroy {
 
   private readonly _type$ = new BehaviorSubject<TagsModalType>(undefined);
   private readonly _typeAnimationDelay$ = new BehaviorSubject<TagsModalType>(undefined);
-  private readonly _prefillStatus = new BehaviorSubject<TagsStatus>(undefined);
+  private readonly _prefillStatus = new BehaviorSubject<Tags>(undefined);
 
   public readonly statusFormGroup = this.fb.group({
     title: this.fb.control('', Validators.required),
@@ -206,7 +206,7 @@ export class DossierManagementTagsModalComponent implements OnInit, OnDestroy {
   public addStatus(): void {
     this.disable();
 
-    this.tagsService.saveTag(this.documentDefinitionName, this.getFormValue()).subscribe({
+    this.tagsService.saveCaseTag(this.documentDefinitionName, this.getFormValue()).subscribe({
       next: () => {
         this.enable();
         this.closeAndRefresh();
@@ -224,7 +224,7 @@ export class DossierManagementTagsModalComponent implements OnInit, OnDestroy {
       .pipe(
         take(1),
         switchMap(originalStatusKey =>
-          this.tagsService.updateTagsStatus(
+          this.tagsService.updateCaseTag(
             this.documentDefinitionName,
             originalStatusKey,
             this.getFormValue()
@@ -259,7 +259,7 @@ export class DossierManagementTagsModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  private prefillForm(prefillStatus: TagsStatus): void {
+  private prefillForm(prefillStatus: Tags): void {
     this._originalStatusKey$.next(prefillStatus.key);
     this.statusFormGroup.patchValue({
       key: prefillStatus.key,
@@ -374,7 +374,7 @@ export class DossierManagementTagsModalComponent implements OnInit, OnDestroy {
     this.closeModalEvent.emit('closeAndRefresh');
   }
 
-  private getFormValue(): TagsStatus {
+  private getFormValue(): Tags {
     return {
       key: this.key.value,
       title: this.title.value,
