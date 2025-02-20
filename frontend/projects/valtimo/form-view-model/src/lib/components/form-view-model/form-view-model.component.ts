@@ -183,26 +183,30 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
       this.loadInitialViewModel();
     }
 
-    this.focusSubscription = this.focus$.subscribe(() => {
-      this.pendingUpdateSubscription?.unsubscribe();
-      this.blurSubscription?.unsubscribe();
-
-      this.blurSubscription = this.blur$
-        .pipe(
-          filter(e => {
-            // Filter out events where relatedTarget is not null.
-            // The relatedTarget will be null when no new input is focused.
-
-            // Note: The date-time picker with the time-component is behaving non-standard,
-            // and will not trigger an update because of this filter
-            return !e.relatedTarget;
-          })
-        )
-        .subscribe(() => {
-          this.setWaitCursor(true);
-          this.updateForm.next(true);
-        });
-    });
+    this.focusSubscription = this.focus$
+      .pipe(
+        filter(e => {
+          // We only want to handle blur events after entering an input
+          return !!e && e.target instanceof HTMLInputElement;
+        })
+      )
+      .subscribe(() => {
+        this.pendingUpdateSubscription?.unsubscribe();
+        this.blurSubscription?.unsubscribe();
+        this.blurSubscription = this.blur$
+          .pipe(
+            filter(e => {
+              // Filter out events where relatedTarget is not null.
+              // The relatedTarget will be null when no new input is focused.
+              return !e.relatedTarget;
+            })
+          )
+          .subscribe(() => {
+            this.blurSubscription?.unsubscribe();
+            this.setWaitCursor(true);
+            this.updateForm.next(true);
+          });
+      });
 
     this.updateSubscription = this.updateForm.subscribe(() => {
       if (this.isStartForm$.value) {
@@ -218,6 +222,7 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
     this.focusSubscription?.unsubscribe();
     this.updateSubscription?.unsubscribe();
     this.pendingUpdateSubscription?.unsubscribe();
+    this.setWaitCursor(false);
   }
 
   public beforeSubmitHook(instance: FormViewModelComponent): (submission, callback) => void {
@@ -225,6 +230,9 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
   }
 
   public beforeSubmit(submission: any, callback: FormioSubmissionCallback): void {
+    this.pendingUpdateSubscription?.unsubscribe();
+    this.setWaitCursor(false);
+
     combineLatest([
       this.formName$,
       this.taskInstanceId$,
@@ -289,35 +297,23 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
     this.formErrors$.next([]);
     if (error.error?.componentErrors) {
       const errors = [];
-      const formioErrors = [];
       error.error.componentErrors.forEach(componentError => {
         const component = formInstance.getComponent(componentError.component);
         if (component == null) {
           errors.push(componentError.message);
         } else {
-          formioErrors.push({
-            message: componentError.message,
-            type: 'custom',
-            path: [componentError.component],
-            level: 'error',
-          });
+          // `true` makes the error dirty, setting the css class properly
+          component.setCustomValidity(componentError.message, true);
         }
       });
-      formInstance.showErrors(formioErrors);
       this.formErrors$.next(errors);
     } else if (error.error?.error) {
       const component = formInstance.getComponent(error.error?.component);
       if (component == null) {
         this.formErrors$.next([error.error.error]);
       } else {
-        formInstance.showErrors([
-          {
-            message: error.error.error,
-            type: 'custom',
-            path: [error.error.component],
-            level: 'error',
-          },
-        ]);
+        // `true` makes the error dirty, setting the css class properly
+        component.setCustomValidity(error.error.error, true);
       }
     } else {
       return error.message;
