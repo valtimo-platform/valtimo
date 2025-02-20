@@ -35,6 +35,7 @@ import com.ritense.valtimo.service.CamundaProcessService
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.semver4j.Semver
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
@@ -286,7 +287,10 @@ internal class ProcessLinkResourceIT @Autowired constructor(
 
 
             val procdef = camundaProcessService.getProcessDefinition("test-process")
-            processDefinitionCaseDefinitionService.findByProcessDefinitionId(ProcessDefinitionId(procdef.id))
+            val processCaseLink = processDefinitionCaseDefinitionService.findByProcessDefinitionId(ProcessDefinitionId(procdef.id))
+
+            assertEquals("test-case", processCaseLink.id.caseDefinitionId.key)
+            assertEquals(Semver("1.0.0"), processCaseLink.id.caseDefinitionId.versionTag)
         }
     }
 

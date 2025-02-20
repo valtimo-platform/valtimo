@@ -20,6 +20,7 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.logging.LoggableResource
 import com.ritense.logging.withLoggingContext
 import com.ritense.processdocument.domain.ProcessDefinitionId
+import com.ritense.processdocument.domain.ProcessDocumentDefinitionRequest
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.domain.ProcessLinkType
@@ -246,6 +247,17 @@ class ProcessLinkResource(
             } catch (e: Exception) {
                 throw RuntimeException("Failed to duplicate process definition. Rolling back deployment.", e)
             }
+        }
+
+        runWithoutAuthorization {
+            processDefinitionCaseDefinitionService.createProcessDocumentDefinition(
+                ProcessDocumentDefinitionRequest(
+                    processDefinitionId = ProcessDefinitionId(deployedProcessDefinitionId),
+                    caseDefinitionId = caseDefinitionId,
+                    canInitializeDocument = false,
+                    startableByUser = false
+                )
+            )
         }
 
         try {
