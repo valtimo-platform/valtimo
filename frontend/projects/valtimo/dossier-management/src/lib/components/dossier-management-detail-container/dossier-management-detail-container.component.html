@@ -25,9 +25,10 @@
   <cds-tabs class="dossier-management-tabs" type="contained">
     <cds-tab
       class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.DOCUMENT"
       [active]="obs.currentTab === TabEnum.DOCUMENT"
       [heading]="'dossierManagement.tabs.document' | translate"
-      (selected)="displayBodyComponent(TabEnum.DOCUMENT)"
+      (selected)="displayBodyComponent(TabEnum.DOCUMENT, obs.currentTab)"
     >
     </cds-tab>
 
@@ -35,54 +36,59 @@
       class="no-padding-left-right main-content"
       [active]="obs.currentTab === TabEnum.CASE"
       [heading]="'dossierManagement.tabs.cases' | translate"
-      (selected)="displayBodyComponent(TabEnum.CASE)"
+      (selected)="displayBodyComponent(TabEnum.CASE, obs.currentTab)"
     >
     </cds-tab>
 
     <cds-tab
       class="no-padding-left-right main-content"
+      [id]="TabEnum.PROCESSES"
       [active]="obs.currentTab === TabEnum.PROCESSES"
       [heading]="'dossierManagement.tabs.processes' | translate"
-      (selected)="displayBodyComponent(TabEnum.PROCESSES)"
+      (selected)="displayBodyComponent(TabEnum.PROCESSES, obs.currentTab)"
     >
     </cds-tab>
 
     <cds-tab
       class="main-content no-padding-left-right no-padding-bottom"
+      [id]="TabEnum.SEARCH"
       [active]="obs.currentTab === TabEnum.SEARCH"
       [heading]="'dossierManagement.tabs.searchFields' | translate"
-      (selected)="displayBodyComponent(TabEnum.SEARCH)"
+      (selected)="displayBodyComponent(TabEnum.SEARCH, obs.currentTab)"
     >
     </cds-tab>
 
     <cds-tab
       *ngIf="caseListColumn"
       class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.LIST"
       [active]="obs.currentTab === TabEnum.LIST"
       [heading]="'dossierManagement.tabs.listColumns' | translate"
-      (selected)="displayBodyComponent(TabEnum.LIST)"
+      (selected)="displayBodyComponent(TabEnum.LIST, obs.currentTab)"
     >
     </cds-tab>
 
     <cds-tab
       *ngIf="tabManagementEnabled"
       class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.TABS"
       [active]="obs.currentTab === TabEnum.TABS"
       [heading]="'dossierManagement.tabs.tabManagement' | translate"
-      (selected)="displayBodyComponent(TabEnum.TABS)"
+      (selected)="displayBodyComponent(TabEnum.TABS, obs.currentTab)"
     >
     </cds-tab>
 
     <cds-tab
       *ngIf="{active: obs.currentTab === TabEnum.STATUSES} as vars"
       class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.STATUSES"
       [active]="vars.active"
       [heading]="'dossierManagement.tabs.statuses' | translate"
-      (selected)="displayBodyComponent(TabEnum.STATUSES)"
+      (selected)="displayBodyComponent(TabEnum.STATUSES, obs.currentTab)"
     >
-      <valtimo-dossier-management-statuses
+      <!-- <valtimo-dossier-management-statuses
         *ngIf="vars.active"
-      ></valtimo-dossier-management-statuses>
+      ></valtimo-dossier-management-statuses> -->
     </cds-tab>
 
     @for (injectedTab of obs.injectedTabs; track injectedTab.translationKey) {
@@ -97,7 +103,8 @@
   </cds-tabs>
 
   <div class="dossier-management-detail-container__content">
-    <ng-template #contentContainer></ng-template>
+    <router-outlet></router-outlet>
+    <!-- <ng-template #contentContainer></ng-template>
 
     <valtimo-dossier-management-document-definition
       *ngIf="
@@ -133,16 +140,16 @@
     <valtimo-dossier-management-tabs
       *ngIf="(obs.currentTab === TabEnum.TABS && !pendingChanges) || pendingTab === TabEnum.TABS"
       [documentDefinitionName]="documentDefinitionName$ | async"
-    ></valtimo-dossier-management-tabs>
+    ></valtimo-dossier-management-tabs> -->
   </div>
 </div>
 
 <ng-container renderInPageHeader [fullWidth]="true">
   <ng-template>
-    <valtimo-dossier-management-detail-container-actions
+    <!-- <valtimo-dossier-management-detail-container-actions
       [documentDefinitionTitle]="documentDefinitionTitle$ | async"
       [documentDefinitionName]="documentDefinitionName$ | async"
       (versionSet)="onVersionSet($event)"
-    ></valtimo-dossier-management-detail-container-actions>
+    ></valtimo-dossier-management-detail-container-actions> -->
   </ng-template>
 </ng-container>

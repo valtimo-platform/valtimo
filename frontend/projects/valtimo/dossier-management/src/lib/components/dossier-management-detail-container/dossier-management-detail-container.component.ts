@@ -19,24 +19,32 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  QueryList,
   ViewChild,
+  ViewChildren,
   ViewContainerRef,
 } from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {PageTitleService, PendingChangesComponent} from '@valtimo/components';
+import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
+import {PageTitleService} from '@valtimo/components';
 import {CaseManagementTabConfig, ConfigService} from '@valtimo/config';
 import {
+  BehaviorSubject,
   combineLatest,
-  distinctUntilChanged,
   filter,
+  forkJoin,
   map,
   Observable,
+  of,
+  startWith,
+  Subject,
   Subscription,
+  switchMap,
   tap,
 } from 'rxjs';
 import {TabEnum} from '../../models';
 import {DossierDetailService, TabService} from '../../services';
 import {DossierManagementDocumentDefinitionComponent} from '../dossier-management-document-definition/dossier-management-document-definition.component';
+import {Tab} from 'carbon-components-angular';
 
 @Component({
   selector: 'valtimo-dossier-management-detail-container',
@@ -45,14 +53,12 @@ import {DossierManagementDocumentDefinitionComponent} from '../dossier-managemen
   providers: [DossierDetailService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DossierManagementDetailContainerComponent
-  extends PendingChangesComponent
-  implements OnInit, AfterViewInit, OnDestroy
-{
+export class DossierManagementDetailContainerComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('contentContainer', {read: ViewContainerRef})
   private _contentContainer: ViewContainerRef;
   @ViewChild(DossierManagementDocumentDefinitionComponent)
   private _documentDefinitionTab: DossierManagementDocumentDefinitionComponent;
+  @ViewChildren(Tab) private _tabs: QueryList<Tab>;
 
   public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
     map(params => params.name || ''),
@@ -62,13 +68,29 @@ export class DossierManagementDetailContainerComponent
   public caseListColumn!: boolean;
   public tabManagementEnabled!: boolean;
 
-  public _activeTab: TabEnum;
-  public pendingTab: TabEnum | null;
-  public currentTab$ = this.tabService.currentTab$.pipe(
-    tap((currentTab: TabEnum) => {
-      this._activeTab = currentTab;
-    })
+  public _activeTab: TabEnum | string;
+  public pendingTab: TabEnum | null | string;
+  // public readonly currentTab$ = new BehaviorSubject<TabEnum | string | undefined>(
+  //   this.route.firstChild?.routeConfig?.path
+  // );
+  public readonly currentTab$ = this.router.events.pipe(
+    filter(event => event instanceof NavigationEnd),
+    map(event => {
+      const splitUrl = (event as NavigationEnd).url.split('/');
+      return splitUrl[splitUrl.length - 1];
+    }),
+    startWith(this.route.firstChild?.routeConfig?.path)
   );
+  // private stuff = of(this.route.firstChild?.routeConfig?.path);
+  // public currentTab$ = this.stuff.pipe(
+  //   switchMap(s => {
+  //     console.log({s});
+  //     return this.tabService.currentTab$;
+  //   }),
+  //   tap((currentTab: TabEnum | string) => {
+  //     this._activeTab = currentTab;
+  //   })
+  // );
   public readonly injectedCaseManagementTabs$: Observable<CaseManagementTabConfig[]> =
     this.tabService.injectedCaseManagementTabs$;
   public readonly documentDefinitionTitle$ = this.pageTitleService.customPageTitle$;
@@ -83,11 +105,11 @@ export class DossierManagementDetailContainerComponent
   constructor(
     private readonly dossierDetailService: DossierDetailService,
     private readonly route: ActivatedRoute,
+    private readonly router: Router,
     private readonly configService: ConfigService,
     private readonly tabService: TabService,
     private readonly pageTitleService: PageTitleService
   ) {
-    super();
     const featureToggles = this.configService.config.featureToggles;
     this.caseListColumn = featureToggles?.caseListColumn ?? true;
     this.tabManagementEnabled = featureToggles?.enableTabManagement ?? true;
@@ -98,28 +120,55 @@ export class DossierManagementDetailContainerComponent
   }
 
   public ngAfterViewInit(): void {
-    if (this._documentDefinitionTab) this.customModal = this._documentDefinitionTab.cancelModal;
+    // if (this._documentDefinitionTab) this.customModal = this._documentDefinitionTab.cancelModal;
     this.openInjectedTabSubscription();
+    this.openTabCheckSubscription();
   }
 
   public ngOnDestroy(): void {
     this.tabService.currentTab = TabEnum.DOCUMENT;
     this._subscriptions.unsubscribe();
-    this.pageTitleService.enableReset();
+    // this.pageTitleService.enableReset();
   }
 
-  public displayBodyComponent(tab: TabEnum | string, isInjectedTab = false): void {
-    if (!this.customModal && !!this._documentDefinitionTab)
-      this.customModal = this._documentDefinitionTab.cancelModal;
-
-    if (this.pendingChanges) {
-      this.onCanDeactivate();
+  private _tabsInit = false;
+  private readonly _tabToChange$ = new Subject<TabEnum | string>();
+  public displayBodyComponent(tab: TabEnum | string): void {
+    if (!this._tabsInit) {
+      this._tabsInit = true;
+      return;
     }
-    this.tabService.currentTab = tab;
+    this._tabs.notifyOnChanges();
+    // console.log('in display body component');
+    // if (!this.customModal && !!this._documentDefinitionTab)
+    //   this.customModal = this._documentDefinitionTab.cancelModal;
+
+    // if (this.pendingChanges) {
+    //   this.onCanDeactivate();
+    // }
+    // this.tabService.currentTab = tab;
+    this.router.navigate([`dossier-management/dossier/bezwaar/${tab}`]);
+    // this.currentTab$.next(tab);
+  }
+
+  public openTabCheckSubscription(): void {
+    combineLatest([this._tabs.changes, this.currentTab$]).subscribe(([tabs, currentTab]) => {
+      console.log({tabs, currentTab});
+      tabs.forEach((tab: Tab) => (tab.active = tab.id === currentTab));
+    });
+    // .subscribe(({tabToChange, currentTab}) => {
+    //   console.log({currentTab, tabToChange});
+    //   const tab = this._tabs.find((tab: Tab) => tab.id === tabToChange);
+    //   if (!tab || tab.active === true) return;
+
+    //   console.log('in here');
+    //   this._tabs?.forEach(tab => (tab.active = false));
+    //   tab.active = true;
+    // });
   }
 
   public onCancelRedirectEvent(): void {
-    this.onCustomCancel();
+    // this.onCustomCancel();
     if (this._activeVersion) {
       this.dossierDetailService.setPreviousSelectedVersionNumber(this._activeVersion);
       this._activeVersion = null;
@@ -133,27 +182,27 @@ export class DossierManagementDetailContainerComponent
   }
 
   public onConfirmRedirectEvent(): void {
-    this.pendingTab = null;
-    this._activeVersion = null;
-    if (this._pendingVersion) {
-      this.dossierDetailService.setSelectedVersionNumber(this._pendingVersion);
-      this._pendingVersion = null;
-      this.dossierDetailService.setPreviousSelectedVersionNumber(null);
-    }
-    this.onCustomConfirm();
+    // this.pendingTab = null;
+    // this._activeVersion = null;
+    // if (this._pendingVersion) {
+    //   this.dossierDetailService.setSelectedVersionNumber(this._pendingVersion);
+    //   this._pendingVersion = null;
+    //   this.dossierDetailService.setPreviousSelectedVersionNumber(null);
+    // }
+    // this.onCustomConfirm();
   }
 
   public onPendingChangesUpdate(pendingChanges: boolean): void {
-    this.pendingChanges = pendingChanges;
-    this.pendingTab = pendingChanges ? this._activeTab : null;
+    // this.pendingChanges = pendingChanges;
+    // this.pendingTab = pendingChanges ? this._activeTab : null;
   }
 
   public onVersionSet(version: number): void {
-    if (this.pendingChanges) {
-      this.onCanDeactivate();
-      this._pendingVersion = version;
-      return;
-    }
+    // if (this.pendingChanges) {
+    //   this.onCanDeactivate();
+    //   this._pendingVersion = version;
+    //   return;
+    // }
     this.dossierDetailService.setSelectedVersionNumber(version);
   }
 
@@ -166,21 +215,20 @@ export class DossierManagementDetailContainerComponent
   }
 
   private openInjectedTabSubscription(): void {
-    this._subscriptions.add(
-      combineLatest([
-        this.currentTab$.pipe(distinctUntilChanged()),
-        this.injectedCaseManagementTabs$,
-      ]).subscribe(([currentTab, injectedCaseManagementTabs]) => {
-        const findInjectedTab = injectedCaseManagementTabs.find(
-          injectedTab => injectedTab.translationKey === currentTab
-        );
-
-        this._contentContainer.clear();
-        if (findInjectedTab && this._contentContainer) {
-          this._contentContainer.createComponent(findInjectedTab.component);
-        }
-      })
-    );
+    // this._subscriptions.add(
+    //   combineLatest([
+    //     this.currentTab$.pipe(distinctUntilChanged()),
+    //     this.injectedCaseManagementTabs$,
+    //   ]).subscribe(([currentTab, injectedCaseManagementTabs]) => {
+    //     const findInjectedTab = injectedCaseManagementTabs.find(
+    //       injectedTab => injectedTab.translationKey === currentTab
+    //     );
+    //     this._contentContainer.clear();
+    //     if (findInjectedTab && this._contentContainer) {
+    //       this._contentContainer.createComponent(findInjectedTab.component);
+    //     }
+    //   })
+    // );
   }
 
   protected onCanDeactivate(): void {

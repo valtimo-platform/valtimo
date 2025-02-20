@@ -21,6 +21,8 @@ import {AuthGuardService} from '@valtimo/security';
 import {DossierManagementDetailContainerComponent} from './components/dossier-management-detail-container/dossier-management-detail-container.component';
 import {DossierManagementListComponent} from './components/dossier-management-list/dossier-management-list.component';
 import {DossierManagementWidgetTabComponent} from './components/dossier-management-widget-tab/dossier-management-widget-tab.component';
+import {CASE_MANAGEMENT_CHILDREN, TabEnum} from './models';
+import {DossierManagementProcessesComponent} from './components/dossier-management-processes/dossier-management-processes.component';
 
 const routes: Routes = [
   {
@@ -33,7 +35,7 @@ const routes: Routes = [
     path: 'dossier-management/dossier/:name/widget-tab/:key',
     component: DossierManagementWidgetTabComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
+    // canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Widget tab',
       roles: [ROLE_ADMIN],
@@ -45,13 +47,14 @@ const routes: Routes = [
     path: 'dossier-management/dossier/:name',
     component: DossierManagementDetailContainerComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
-    data: {title: 'Dossier details', roles: [ROLE_ADMIN], customPageTitle: true},
+    // canDeactivate: [pendingChangesGuard],
+    data: {title: 'Dossier details', roles: [ROLE_ADMIN]},
+    children: CASE_MANAGEMENT_CHILDREN,
   },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
   declarations: [],
 })

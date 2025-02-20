@@ -32,6 +32,7 @@ import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {map, switchMap, take, tap} from 'rxjs/operators';
 import {DossierDetailService} from '../../services';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'valtimo-dossier-management-document-definition',
@@ -88,7 +89,8 @@ export class DossierManagementDocumentDefinitionComponent {
     private readonly documentService: DocumentService,
     private readonly dossierDetailService: DossierDetailService,
     private readonly iconService: IconService,
-    private readonly pageHeaderService: PageHeaderService
+    private readonly pageHeaderService: PageHeaderService,
+    private readonly route: ActivatedRoute
   ) {
     this.iconService.registerAll([Edit16, Save16]);
   }
