@@ -15,19 +15,18 @@
   -->
 
 <valtimo-carbon-list
-  *ngIf="dossiers$ | async as dossiers; else loading"
-  [items]="dossiers"
-  [fields]="dossierFields"
-  [pagination]="pagination"
-  paginationIdentifier="dossierManagementList"
-  (paginationClicked)="paginationClicked($event)"
-  (paginationSet)="paginationSet($event)"
+  [items]="caseListItems$ | async"
+  [fields]="FIELDS"
   (rowClicked)="redirectToDetails($event)"
 >
+  <!-- [pagination]="pagination"
+  paginationIdentifier="dossierManagementList"
+  (paginationClicked)="paginationClicked($event)"
+  (paginationSet)="paginationSet($event)" -->
   <ng-container carbonToolbarContent [ngTemplateOutlet]="importCaseDefinitionButton"></ng-container>
 
   <valtimo-no-results
-    [action]="addCaseDefinitionButton"
+    [action]="importCaseDefinitionButton"
     [description]="'dossierManagement.noResults.description' | translate"
     [title]="'dossierManagement.noResults.title' | translate"
   ></valtimo-no-results>
