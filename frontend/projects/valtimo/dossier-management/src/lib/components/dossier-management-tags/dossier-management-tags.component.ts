@@ -158,20 +158,20 @@ export class DossierManagementTagsComponent implements AfterViewInit {
   }
 
   public onMoveRowClick(event: MoveRowEvent): void {
-    // const {direction, index} = event;
-    // const orderedStatuses: InternalCaseStatus[] =
-    //   direction === MoveRowDirection.UP
-    //     ? this.swapStatuses(this._documentStatuses, index - 1, index)
-    //     : this.swapStatuses(this._documentStatuses, index, index + 1);
-    // this.documentDefinitionName$
-    //   .pipe(
-    //     switchMap(documentDefinitionName =>
-    //       this.tagsService.updateInternalCaseStatuses(documentDefinitionName, orderedStatuses)
-    //     )
-    //   )
-    //   .subscribe(() => {
-    //     this.reload(true);
-    //   });
+    const {direction, index} = event;
+    const orderedStatuses: Tags[] =
+      direction === MoveRowDirection.UP
+        ? this.swapStatuses(this._documentStatuses, index - 1, index)
+        : this.swapStatuses(this._documentStatuses, index, index + 1);
+    this.documentDefinitionName$
+      .pipe(
+        switchMap(documentDefinitionName =>
+          this.tagsService.updateCaseTags(documentDefinitionName, orderedStatuses)
+        )
+      )
+      .subscribe(() => {
+        this.reload(true);
+      });
   }
 
   private reload(noAnimation = false): void {

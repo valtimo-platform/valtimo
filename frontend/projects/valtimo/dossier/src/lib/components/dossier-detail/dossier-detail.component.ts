@@ -204,14 +204,15 @@ export class DossierDetailComponent
 
   public readonly caseTags$: Observable<Tags[] | undefined> = this.documentDefinitionName$.pipe(
     filter(documentDefinitionName => !!documentDefinitionName),
-    switchMap(documentDefinitionName => this._caseTags$)
-    // map(
-    //   tag =>
-    //     tag && {
-    //       ...tag,
-    //       tagType: TagsUtils.getTagTypeFromTagsColor(tag.color),
-    //     }
-    // )
+    switchMap(documentDefinitionName => this._caseTags$),
+    map(
+      tag =>
+        tag &&
+        tag.map(caseTag => ({
+          ...caseTag,
+          tagType: TagsUtils.getTagTypeFromTagsColor(caseTag.color),
+        }))
+    )
   );
 
   public readonly userId$: Observable<string | undefined> = of(

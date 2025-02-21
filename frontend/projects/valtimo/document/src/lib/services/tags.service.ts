@@ -60,4 +60,11 @@ export class TagsService extends BaseApiService {
       this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag/${tag}`)
     );
   }
+
+  public updateCaseTags(caseDefinitionName: string, reorderedStatus: Tags[]): Observable<Tags[]> {
+    return this.httpClient.put<Tags[]>(
+      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag`),
+      reorderedStatus
+    );
+  }
 }
