@@ -17,12 +17,9 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} fr
 import moment from 'moment';
 import {
   BehaviorSubject,
-  catchError,
   combineLatest,
-  EMPTY,
   filter,
   Observable,
-  of,
   Subject,
   Subscription,
   switchMap,
@@ -261,38 +258,29 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
                     documentDefinitionName,
                     submission.data
                   )
-                  .pipe(
-                    take(1),
-                    switchMap(response => {
-                      callback(null, submission);
-                      return of(response);
-                    }),
-                    catchError(error => this.handleSubmissionError(error, callback))
-                  )
               : this.viewModelService
                   .submitViewModel(formName, taskInstanceId, submission.data)
-                  .pipe(
-                    take(1),
-                    switchMap(response => {
-                      callback(null, submission);
-                      return of(response);
-                    }),
-                    catchError(error => this.handleSubmissionError(error, callback))
-                  )
         )
       )
-      .subscribe();
+      .subscribe({
+        next: _ => {
+          callback(null, submission);
+        },
+        error: err => {
+          this.handleSubmissionError(err, callback);
+        }
+      });
   }
 
-  private handleSubmissionError(error: any, callback: FormioSubmissionCallback): Observable<never> {
-    const message =
-      (error instanceof HttpErrorResponse ? this.handleFormError(error) : (error as string)) ??
-      this.translateService.instant('formioTranslations.formioFormViewModelComponent.submitError');
-    callback(message ? {message: message, component: null} : null, null);
-    return EMPTY; // return an empty observable to complete the stream
+  private handleSubmissionError(error: any, callback: FormioSubmissionCallback): void {
+    callback({ message: '', component: null, silent: true }, null);
+
+    if (error instanceof HttpErrorResponse) {
+      this.handleFormError(error);
+    }
   }
 
-  private handleFormError(error: HttpErrorResponse): string {
+  private handleFormError(error: HttpErrorResponse): void {
     const formInstance = this.formio.formio;
     this.formErrors$.next([]);
     if (error.error?.componentErrors) {
@@ -315,8 +303,6 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
         // `true` makes the error dirty, setting the css class properly
         component.setCustomValidity(error.error.error, true);
       }
-    } else {
-      return error.message;
     }
   }
 
