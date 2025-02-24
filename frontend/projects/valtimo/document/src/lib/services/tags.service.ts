@@ -37,7 +37,7 @@ export class TagsService extends BaseApiService {
     );
   }
 
-  public saveCaseTag(caseDefinitionName: string, tag: Tags): Observable<Tags> {
+  public saveCaseTag(caseDefinitionName: string, tag: any): Observable<Tags> {
     return this.httpClient.post<Tags>(
       this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag`),
       tag
@@ -47,7 +47,7 @@ export class TagsService extends BaseApiService {
   public updateCaseTag(
     caseDefinitionName: string,
     currentTag: string,
-    updatedTag: Tags
+    updatedTag: any
   ): Observable<Tags> {
     return this.httpClient.put<Tags>(
       this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag/${currentTag}`),
@@ -61,7 +61,7 @@ export class TagsService extends BaseApiService {
     );
   }
 
-  public updateCaseTags(caseDefinitionName: string, reorderedStatus: Tags[]): Observable<Tags[]> {
+  public updateCaseTags(caseDefinitionName: string, reorderedStatus: any[]): Observable<Tags[]> {
     return this.httpClient.put<Tags[]>(
       this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag`),
       reorderedStatus

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-type StatusModalType = 'edit' | 'add' | 'closed';
+type StatusModalType = 'edit' | 'add' | 'closed' | 'editCaseTags' | 'addCaseTags';
 
 type StatusModalCloseEvent = 'close' | 'closeAndRefresh';
 

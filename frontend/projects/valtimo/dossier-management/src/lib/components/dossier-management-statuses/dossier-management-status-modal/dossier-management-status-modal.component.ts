@@ -47,6 +47,7 @@ import {
   InternalCaseStatus,
   InternalCaseStatusColor,
   InternalCaseStatusUtils,
+  TagsService,
 } from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import {Edit16} from '@carbon/icons';
@@ -81,6 +82,8 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
 
   @Output() public closeModalEvent = new EventEmitter<StatusModalCloseEvent>();
 
+  public isCaseTag: boolean = false;
+
   private readonly _type$ = new BehaviorSubject<StatusModalType>(undefined);
   private readonly _typeAnimationDelay$ = new BehaviorSubject<StatusModalType>(undefined);
   private readonly _prefillStatus = new BehaviorSubject<InternalCaseStatus>(undefined);
@@ -100,14 +103,16 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
 
   public readonly isEdit$ = combineLatest([this._typeAnimationDelay$, this._prefillStatus]).pipe(
     tap(([type, prefillStatus]) => {
-      if (type === 'edit' && prefillStatus) this.prefillForm(prefillStatus);
+      if ((type === 'edit' || type === 'editCaseTags') && prefillStatus)
+        this.prefillForm(prefillStatus);
+      if (type === 'addCaseTags' || type === 'editCaseTags') this.isCaseTag = true;
     }),
-    map(([type]) => type === 'edit'),
+    map(([type]) => type === 'edit' || type === 'editCaseTags'),
     tap(isEdit => (this._isEdit = isEdit))
   );
 
   public readonly isAdd$ = this._typeAnimationDelay$.pipe(
-    map(type => type === 'add'),
+    map(type => type === 'add' || type === 'addCaseTags'),
     tap(isAdd => {
       if (isAdd) this.resetForm();
     })
@@ -185,7 +190,8 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
     private readonly fb: FormBuilder,
     private readonly iconService: IconService,
     private readonly caseStatusService: CaseStatusService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly tagsService: TagsService
   ) {
     this.iconService.registerAll([Edit16]);
   }
@@ -211,10 +217,8 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
 
   public addStatus(): void {
     this.disable();
-
-    this.caseStatusService
-      .saveInternalCaseStatus(this.documentDefinitionName, this.getFormValue())
-      .subscribe({
+    if (this.isCaseTag) {
+      this.tagsService.saveCaseTag(this.documentDefinitionName, this.getFormValue()).subscribe({
         next: () => {
           this.enable();
           this.closeAndRefresh();
@@ -223,6 +227,19 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
           this.enable(false);
         },
       });
+    } else {
+      this.caseStatusService
+        .saveInternalCaseStatus(this.documentDefinitionName, this.getFormValue())
+        .subscribe({
+          next: () => {
+            this.enable();
+            this.closeAndRefresh();
+          },
+          error: () => {
+            this.enable(false);
+          },
+        });
+    }
   }
 
   public editStatus(): void {
@@ -231,13 +248,21 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
     this._originalStatusKey$
       .pipe(
         take(1),
-        switchMap(originalStatusKey =>
-          this.caseStatusService.updateInternalCaseStatus(
-            this.documentDefinitionName,
-            originalStatusKey,
-            this.getFormValue()
-          )
-        )
+        switchMap(originalStatusKey => {
+          if (this.isCaseTag) {
+            return this.tagsService.updateCaseTag(
+              this.documentDefinitionName,
+              originalStatusKey,
+              this.getFormValue()
+            );
+          } else {
+            return this.caseStatusService.updateInternalCaseStatus(
+              this.documentDefinitionName,
+              originalStatusKey,
+              this.getFormValue()
+            );
+          }
+        })
       )
       .subscribe({
         next: () => {

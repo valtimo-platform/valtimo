@@ -28,8 +28,10 @@
 >
   <cds-modal-header showCloseButton="true" (closeSelect)="onClose()">
     <h3 cdsModalHeaderHeading>
-      {{ obs.isAdd ? ('dossierManagement.statuses.add' | translate) : '' }}
-      {{ obs.isEdit ? ('dossierManagement.statuses.edit' | translate) : '' }}
+      {{ !this.isCaseTag ? ('dossierManagement.statuses.add' | translate) : '' }}
+      {{ !this.isCaseTag ? ('dossierManagement.statuses.edit' | translate) : '' }}
+      {{ this.isCaseTag ? ('dossierManagement.tags.edit' | translate) : '' }}
+      {{ this.isCaseTag ? ('dossierManagement.tags.add' | translate) : '' }}
     </h3>
   </cds-modal-header>
 
@@ -53,13 +55,14 @@
 <ng-template #statusForm let-obs="obs">
   <form [formGroup]="statusFormGroup" class="status-form">
     <cds-label>
-      {{ 'dossierManagement.statuses.columns.title' | translate }}
-
+      {{ !this.isCaseTag ? ('dossierManagement.statuses.columns.title' | translate) : '' }}
+      {{ this.isCaseTag ? ('dossierManagement.tags.columns.title' | translate) : '' }}
       <input cdsText formControlName="title" [attr.modal-primary-focus]="true" />
     </cds-label>
 
     <cds-label>
-      {{ 'dossierManagement.statuses.columns.key' | translate }}
+      {{ !this.isCaseTag ? ('dossierManagement.statuses.columns.key' | translate) : '' }}
+      {{ this.isCaseTag ? ('dossierManagement.tags.columns.key' | translate) : '' }}
 
       <div class="edit-key-input">
         <input
@@ -86,12 +89,17 @@
 
     <div class="horizontal-inputs">
       <cds-label>
-        {{ 'dossierManagement.statuses.columns.color' | translate }}
+        {{ !this.isCaseTag ? ('dossierManagement.statuses.columns.color' | translate) : '' }}
+        {{ this.isCaseTag ? ('dossierManagement.tags.columns.color' | translate) : '' }}
 
         <cds-dropdown
           [id]="'status-color-dropdown'"
           [appendInline]="false"
-          [placeholder]="'dossierManagement.statuses.colorPlaceholder' | translate"
+          [placeholder]="
+            this.isCaseTag
+              ? ('dossierManagement.tags.colorPlaceholder' | translate)
+              : ('dossierManagement.statuses.colorPlaceholder' | translate)
+          "
           (selected)="colorDropdownChange($event)"
         >
           <cds-dropdown-list [items]="colorListItems$" [listTpl]="colorDropdownItemTemplate">
@@ -100,9 +108,21 @@
       </cds-label>
 
       <cds-toggle
-        [label]="'dossierManagement.statuses.visibleTitle' | translate"
-        [onText]="'dossierManagement.statuses.visible' | translate"
-        [offText]="'dossierManagement.statuses.invisible' | translate"
+        [label]="
+          this.isCaseTag
+            ? ('dossierManagement.tags.visibleTitle' | translate)
+            : ('dossierManagement.statuses.visibleTitle' | translate)
+        "
+        [onText]="
+          this.isCaseTag
+            ? ('dossierManagement.tags.visible' | translate)
+            : ('dossierManagement.statuses.visible' | translate)
+        "
+        [offText]="
+          this.isCaseTag
+            ? ('dossierManagement.tags.invisible' | translate)
+            : ('dossierManagement.statuses.invisible' | translate)
+        "
         [disabled]="obs.disabled"
         [checked]="visibleInCaseListByDefault?.value"
         (checkedChange)="toggleCheckedChange($event)"

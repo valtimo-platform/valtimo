@@ -18,10 +18,18 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  Input,
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import {CaseStatusService, InternalCaseStatus, InternalCaseStatusUtils} from '@valtimo/document';
+import {
+  CaseStatusService,
+  InternalCaseStatus,
+  InternalCaseStatusUtils,
+  TagsService,
+  Tags,
+  TagsUtils,
+} from '@valtimo/document';
 import {
   BehaviorSubject,
   combineLatest,
@@ -49,6 +57,7 @@ import {StatusModalCloseEvent, StatusModalType} from '../../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DossierManagementStatusesComponent implements AfterViewInit {
+  @Input() displayCaseTags = false;
   @ViewChild('colorColumnTemplate') colorColumnTemplate: TemplateRef<any>;
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
@@ -78,12 +87,16 @@ export class DossierManagementStatusesComponent implements AfterViewInit {
       }
     }),
     switchMap(([documentDefinitionName]) =>
-      this.caseStatusService.getInternalCaseStatusesManagement(documentDefinitionName)
+      this.displayCaseTags
+        ? this.tagsService.getCaseTagsManagement(documentDefinitionName)
+        : this.caseStatusService.getInternalCaseStatusesManagement(documentDefinitionName)
     ),
     map(statuses =>
       statuses.map(status => ({
         ...status,
-        tagType: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
+        tagType: this.displayCaseTags
+          ? TagsUtils.getTagTypeFromTagsColor(status.color)
+          : InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
       }))
     ),
     tap(statuses => {
@@ -116,6 +129,7 @@ export class DossierManagementStatusesComponent implements AfterViewInit {
 
   constructor(
     private readonly caseStatusService: CaseStatusService,
+    private readonly tagsService: TagsService,
     private readonly route: ActivatedRoute
   ) {}
 
@@ -130,11 +144,11 @@ export class DossierManagementStatusesComponent implements AfterViewInit {
 
   public openEditModal(status: InternalCaseStatus): void {
     this.prefillStatus$.next(status);
-    this.statusModalType$.next('edit');
+    this.statusModalType$.next(this.displayCaseTags ? 'editCaseTags' : 'edit');
   }
 
   public openAddModal(): void {
-    this.statusModalType$.next('add');
+    this.statusModalType$.next(this.displayCaseTags ? 'addCaseTags' : 'add');
   }
 
   public closeModal(closeModalEvent: StatusModalCloseEvent): void {
@@ -149,7 +163,9 @@ export class DossierManagementStatusesComponent implements AfterViewInit {
     this.documentDefinitionName$
       .pipe(
         switchMap(documentDefinitionName =>
-          this.caseStatusService.deleteInternalCaseStatus(documentDefinitionName, status.key)
+          this.displayCaseTags
+            ? this.tagsService.deleteCaseTag(documentDefinitionName, status.key)
+            : this.caseStatusService.deleteInternalCaseStatus(documentDefinitionName, status.key)
         )
       )
       .subscribe(() => {
@@ -168,7 +184,12 @@ export class DossierManagementStatusesComponent implements AfterViewInit {
     this.documentDefinitionName$
       .pipe(
         switchMap(documentDefinitionName =>
-          this.caseStatusService.updateInternalCaseStatuses(documentDefinitionName, orderedStatuses)
+          this.displayCaseTags
+            ? this.tagsService.updateCaseTags(documentDefinitionName, orderedStatuses)
+            : this.caseStatusService.updateInternalCaseStatuses(
+                documentDefinitionName,
+                orderedStatuses
+              )
         )
       )
       .subscribe(() => {
@@ -195,24 +216,32 @@ export class DossierManagementStatusesComponent implements AfterViewInit {
     this.fields$.next([
       {
         key: 'title',
-        label: 'dossierManagement.statuses.columns.title',
+        label: this.displayCaseTags
+          ? 'dossierManagement.tags.columns.title'
+          : 'dossierManagement.statuses.columns.title',
         viewType: ViewType.TEXT,
       },
       {
         key: 'key',
-        label: 'dossierManagement.statuses.columns.key',
+        label: this.displayCaseTags
+          ? 'dossierManagement.tags.columns.key'
+          : 'dossierManagement.statuses.columns.key',
         viewType: ViewType.TEXT,
       },
       {
         key: 'visibleInCaseListByDefault',
-        label: 'dossierManagement.statuses.columns.visible',
+        label: this.displayCaseTags
+          ? 'dossierManagement.tags.columns.visible'
+          : 'dossierManagement.statuses.columns.visible',
         viewType: ViewType.BOOLEAN,
       },
       {
         viewType: ViewType.TEMPLATE,
         template: this.colorColumnTemplate,
         key: 'color',
-        label: 'dossierManagement.statuses.columns.color',
+        label: this.displayCaseTags
+          ? 'dossierManagement.tags.columns.color'
+          : 'dossierManagement.statuses.columns.color',
       },
     ]);
   }
