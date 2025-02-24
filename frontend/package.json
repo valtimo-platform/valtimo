@@ -25,7 +25,7 @@
     "compodoc-generate": "npx compodoc -p tsconfig.json -n 'Valtimo Console'",
     "compodoc-serve": "npx compodoc -s -o -r 8088",
     "libs-build-all": "rimraf dist && run-s libs:build-1:* && run-p -l --max-parallel 8 libs:build-2:* && run-s libs:build-3:* && run-s libs:build-4:* && run-s libs:build-5:* && run-s libs:build-6:* && run-p -l --max-parallel 8 libs:build:* && run-s libs:build-7:* ",
-    "libs-build-all-cicd": "rimraf dist && npm-run-all libs:build-1:* && npm-run-all -p -l --max-parallel 8 libs:build-2:* && npm-run-all libs:build-3:* && npm-run-all libs:build-4:* && npm-run-all libs:build-5:* && npm-run-all -p -l --max-parallel 8 libs:build:* && npm-run-all libs:build-7:* ",
+    "libs-build-all-cicd": "rimraf dist && npm-run-all libs:build-1:* && npm-run-all -p -l --max-parallel 8 libs:build-2:* && npm-run-all libs:build-3:* && npm-run-all libs:build-4:* && npm-run-all libs:build-5:* && npm-run-all libs:build-6:* && npm-run-all -p -l --max-parallel 8 libs:build:* && npm-run-all libs:build-7:* ",
     "libs-test-all": "WATCH_TESTS=false SOURCE_MAPS=false TEST_BROWSER=ChromeHeadless npm-run-all libs:test:*",
     "libs-test-all-cicd": "WATCH_TESTS=false SOURCE_MAPS=false TEST_BROWSER=ChromeHeadless npm-run-all -p -l --max-parallel 8 libs:test:*",
     "libs-lint-all": "npm-run-all libs:lint:*",
