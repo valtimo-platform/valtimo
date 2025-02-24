@@ -259,6 +259,7 @@ export const environment: ValtimoConfig = {
     enableIntermediateSave: true,
     enableFormFlowBreadcrumbs: true,
     enableTaskPanel: true,
+    enablePbacDocumentenApiDocuments: true,
   },
   customDossierHeader: {
     leningen: [

@@ -31,7 +31,15 @@ import {
   ViewType,
 } from '@valtimo/components';
 import {ConfigService, Direction} from '@valtimo/config';
-import {DownloadService, UploadProviderService} from '@valtimo/resource';
+import {
+  CAN_CREATE_RESOURCE_PERMISSION,
+  CAN_DELETE_RESOURCE_PERMISSION,
+  CAN_MODIFY_RESOURCE_PERMISSION,
+  CAN_VIEW_RESOURCE_PERMISSION,
+  DownloadService,
+  RESOURCE_PERMISSION_RESOURCE,
+  UploadProviderService,
+} from '@valtimo/resource';
 import {UserProviderService} from '@valtimo/security';
 import {ButtonModule, DialogModule, IconModule, IconService} from 'carbon-components-angular';
 import {
@@ -60,6 +68,7 @@ import {
   DocumentenApiUploadFieldDefaultValues,
   DocumentenApiUploadFields,
 } from '../../models/documenten-api-upload-field.model';
+import {PermissionRequest, PermissionService} from '@valtimo/access-control';
 
 @Component({
   selector: 'valtimo-dossier-detail-tab-documenten-api-documents',
@@ -138,6 +147,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
     {
       label: 'document.download',
       callback: this.onDownloadActionClick.bind(this),
+      disabledCallback: this.downloadDisabled.bind(this),
       type: 'normal',
     },
     {
@@ -149,6 +159,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
     {
       label: 'document.delete',
       callback: this.onDeleteActionClick.bind(this),
+      disabledCallback: this.deleteDisabled.bind(this),
       type: 'danger',
     },
   ];
@@ -287,6 +298,22 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
     })
   );
 
+  public readonly enablePbacDocumentenApiDocuments$: Observable<boolean> =
+    this.configService.getFeatureToggleObservable('enablePbacDocumentenApiDocuments');
+
+  public filePermissions: {
+    [fileId: string]: {canView: boolean; canModify: boolean; canDelete: boolean};
+  } = {};
+
+  public readonly canCreateResource$: Observable<boolean> = this.documentId$.pipe(
+    switchMap(documentId =>
+      this.getPermission(CAN_CREATE_RESOURCE_PERMISSION, {
+        resource: RESOURCE_PERMISSION_RESOURCE.jsonSchemaDocument,
+        identifier: documentId,
+      })
+    )
+  );
+
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -300,7 +327,8 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
     private readonly iconService: IconService,
     private readonly documentenApiDocumentService: DocumentenApiDocumentService,
     private readonly documentenApiColumnService: DocumentenApiColumnService,
-    private readonly documentenApiVersionService: DocumentenApiVersionService
+    private readonly documentenApiVersionService: DocumentenApiVersionService,
+    private readonly permissionService: PermissionService
   ) {
     this.iconService.register(Filter16);
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
@@ -311,6 +339,33 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
     this.setUploadProcessLinked();
     this.isUserAdmin();
     this.iconService.registerAll([Filter16, TagGroup16, Upload16]);
+    this.registerPermissionSubscriptions();
+  }
+
+  public registerPermissionSubscriptions(): void {
+    this._subscriptions.add(
+      this.relatedFiles$
+        .pipe(
+          switchMap(files =>
+            combineLatest({
+              files: of(files),
+              canView: this.getPermissions(files, CAN_VIEW_RESOURCE_PERMISSION),
+              canModify: this.getPermissions(files, CAN_MODIFY_RESOURCE_PERMISSION),
+              canDelete: this.getPermissions(files, CAN_DELETE_RESOURCE_PERMISSION),
+            })
+          )
+        )
+        .subscribe(permissions =>
+          permissions.files.map(
+            file =>
+              (this.filePermissions[file.fileId] = {
+                canView: permissions.canView[file.fileId],
+                canModify: permissions.canModify[file.fileId],
+                canDelete: permissions.canDelete[file.fileId],
+              })
+          )
+        )
+    );
   }
 
   public ngOnDestroy(): void {
@@ -424,7 +479,9 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
   }
 
   public onRowClick(event: any): void {
-    this.downloadDocument(event, false);
+    if (this.filePermissions[event.fileId]?.canView) {
+      this.downloadDocument(event, false);
+    }
   }
 
   public onPaginationClicked(page: number): void {
@@ -460,8 +517,16 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
     this._refetch$.next(null);
   }
 
+  private downloadDisabled(file: DocumentenApiRelatedFile): boolean {
+    return !this.filePermissions[file.fileId]?.canView;
+  }
+
   private editDisabled(file: DocumentenApiRelatedFile): boolean {
-    return file.status === 'definitief';
+    return file.status === 'definitief' || !this.filePermissions[file.fileId]?.canModify;
+  }
+
+  private deleteDisabled(file: DocumentenApiRelatedFile): boolean {
+    return !this.filePermissions[file.fileId]?.canDelete;
   }
 
   private downloadDocument(relatedFile: DocumentenApiRelatedFile, forceDownload: boolean): void {
@@ -543,5 +608,34 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
     }
 
     return null;
+  }
+
+  private getPermissions(
+    files: DocumentenApiRelatedFile[],
+    permissionRequest: PermissionRequest
+  ): Observable<{
+    [key: string]: boolean;
+  }> {
+    return combineLatest(
+      files.map(file =>
+        this.getPermission(permissionRequest, {
+          resource: RESOURCE_PERMISSION_RESOURCE.resourcePermission,
+          identifier: file.fileId,
+        }).pipe(map(available => ({[file.fileId]: available})))
+      )
+    ).pipe(
+      map(permissions => permissions.reduce((acc, permission) => ({...acc, ...permission}), {}))
+    );
+  }
+
+  private getPermission(permissionRequest: PermissionRequest, context?: any): Observable<boolean> {
+    return this.enablePbacDocumentenApiDocuments$.pipe(
+      switchMap(enabled => {
+        if (!enabled) {
+          return of(true);
+        }
+        return this.permissionService.requestPermission(permissionRequest, context);
+      })
+    );
   }
 }
