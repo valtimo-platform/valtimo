@@ -46,8 +46,6 @@ import {
   InternalCaseStatus,
   InternalCaseStatusUtils,
   ProcessDocumentDefinition,
-  TagsUtils,
-  Tags,
 } from '@valtimo/document';
 import {TaskWithProcessLink} from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
@@ -133,7 +131,7 @@ export class DossierDetailComponent
     filter(key => !!key)
   );
 
-  public readonly _caseTags$ = new BehaviorSubject<Tags[] | null>(null);
+  public readonly _caseTags$ = new BehaviorSubject<InternalCaseStatus[] | null>(null);
 
   public readonly showDeleteModal$: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
@@ -202,18 +200,19 @@ export class DossierDetailComponent
       )
     );
 
-  public readonly caseTags$: Observable<Tags[] | undefined> = this.documentDefinitionName$.pipe(
-    filter(documentDefinitionName => !!documentDefinitionName),
-    switchMap(documentDefinitionName => this._caseTags$),
-    map(
-      tag =>
-        tag &&
-        tag.map(caseTag => ({
-          ...caseTag,
-          tagType: TagsUtils.getTagTypeFromTagsColor(caseTag.color),
-        }))
-    )
-  );
+  public readonly caseTags$: Observable<InternalCaseStatus[] | undefined> =
+    this.documentDefinitionName$.pipe(
+      filter(documentDefinitionName => !!documentDefinitionName),
+      switchMap(documentDefinitionName => this._caseTags$),
+      map(
+        tag =>
+          tag &&
+          tag.map(caseTag => ({
+            ...caseTag,
+            tagType: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(caseTag.color),
+          }))
+      )
+    );
 
   public readonly userId$: Observable<string | undefined> = of(
     this.keyCloakService.isLoggedIn()

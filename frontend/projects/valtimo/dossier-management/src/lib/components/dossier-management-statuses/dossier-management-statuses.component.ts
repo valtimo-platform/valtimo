@@ -26,9 +26,7 @@ import {
   CaseStatusService,
   InternalCaseStatus,
   InternalCaseStatusUtils,
-  TagsService,
-  Tags,
-  TagsUtils,
+  CaseTagService,
 } from '@valtimo/document';
 import {
   BehaviorSubject,
@@ -88,15 +86,13 @@ export class DossierManagementStatusesComponent implements AfterViewInit {
     }),
     switchMap(([documentDefinitionName]) =>
       this.displayCaseTags
-        ? this.tagsService.getCaseTagsManagement(documentDefinitionName)
+        ? this.caseTagService.getCaseTagsManagement(documentDefinitionName)
         : this.caseStatusService.getInternalCaseStatusesManagement(documentDefinitionName)
     ),
     map(statuses =>
       statuses.map(status => ({
         ...status,
-        tagType: this.displayCaseTags
-          ? TagsUtils.getTagTypeFromTagsColor(status.color)
-          : InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
+        tagType: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
       }))
     ),
     tap(statuses => {
@@ -129,7 +125,7 @@ export class DossierManagementStatusesComponent implements AfterViewInit {
 
   constructor(
     private readonly caseStatusService: CaseStatusService,
-    private readonly tagsService: TagsService,
+    private readonly caseTagService: CaseTagService,
     private readonly route: ActivatedRoute
   ) {}
 
@@ -164,7 +160,7 @@ export class DossierManagementStatusesComponent implements AfterViewInit {
       .pipe(
         switchMap(documentDefinitionName =>
           this.displayCaseTags
-            ? this.tagsService.deleteCaseTag(documentDefinitionName, status.key)
+            ? this.caseTagService.deleteCaseTag(documentDefinitionName, status.key)
             : this.caseStatusService.deleteInternalCaseStatus(documentDefinitionName, status.key)
         )
       )
@@ -185,7 +181,7 @@ export class DossierManagementStatusesComponent implements AfterViewInit {
       .pipe(
         switchMap(documentDefinitionName =>
           this.displayCaseTags
-            ? this.tagsService.updateCaseTags(documentDefinitionName, orderedStatuses)
+            ? this.caseTagService.updateCaseTags(documentDefinitionName, orderedStatuses)
             : this.caseStatusService.updateInternalCaseStatuses(
                 documentDefinitionName,
                 orderedStatuses

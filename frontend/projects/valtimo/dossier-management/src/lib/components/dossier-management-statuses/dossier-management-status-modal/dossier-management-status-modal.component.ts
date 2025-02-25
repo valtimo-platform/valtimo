@@ -47,7 +47,7 @@ import {
   InternalCaseStatus,
   InternalCaseStatusColor,
   InternalCaseStatusUtils,
-  TagsService,
+  CaseTagService,
 } from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import {Edit16} from '@carbon/icons';
@@ -191,7 +191,7 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
     private readonly iconService: IconService,
     private readonly caseStatusService: CaseStatusService,
     private readonly translateService: TranslateService,
-    private readonly tagsService: TagsService
+    private readonly caseTagService: CaseTagService
   ) {
     this.iconService.registerAll([Edit16]);
   }
@@ -218,7 +218,7 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
   public addStatus(): void {
     this.disable();
     if (this.isCaseTag) {
-      this.tagsService.saveCaseTag(this.documentDefinitionName, this.getFormValue()).subscribe({
+      this.caseTagService.saveCaseTag(this.documentDefinitionName, this.getFormValue()).subscribe({
         next: () => {
           this.enable();
           this.closeAndRefresh();
@@ -250,7 +250,7 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
         take(1),
         switchMap(originalStatusKey => {
           if (this.isCaseTag) {
-            return this.tagsService.updateCaseTag(
+            return this.caseTagService.updateCaseTag(
               this.documentDefinitionName,
               originalStatusKey,
               this.getFormValue()

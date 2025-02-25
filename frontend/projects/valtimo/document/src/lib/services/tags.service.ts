@@ -18,12 +18,12 @@ import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {Tags} from '../models';
+import {InternalCaseStatus} from '../models';
 
 @Injectable({
   providedIn: 'root',
 })
-export class TagsService extends BaseApiService {
+export class CaseTagService extends BaseApiService {
   constructor(
     protected readonly httpClient: HttpClient,
     protected readonly configService: ConfigService
@@ -31,14 +31,17 @@ export class TagsService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public getCaseTagsManagement(caseDefinitionName: string): Observable<Tags[]> {
-    return this.httpClient.get<Tags[]>(
+  public getCaseTagsManagement(caseDefinitionName: string): Observable<InternalCaseStatus[]> {
+    return this.httpClient.get<InternalCaseStatus[]>(
       this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag`)
     );
   }
 
-  public saveCaseTag(caseDefinitionName: string, tag: any): Observable<Tags> {
-    return this.httpClient.post<Tags>(
+  public saveCaseTag(
+    caseDefinitionName: string,
+    tag: InternalCaseStatus
+  ): Observable<InternalCaseStatus> {
+    return this.httpClient.post<InternalCaseStatus>(
       this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag`),
       tag
     );
@@ -47,9 +50,9 @@ export class TagsService extends BaseApiService {
   public updateCaseTag(
     caseDefinitionName: string,
     currentTag: string,
-    updatedTag: any
-  ): Observable<Tags> {
-    return this.httpClient.put<Tags>(
+    updatedTag: InternalCaseStatus
+  ): Observable<InternalCaseStatus> {
+    return this.httpClient.put<InternalCaseStatus>(
       this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag/${currentTag}`),
       updatedTag
     );
@@ -61,8 +64,11 @@ export class TagsService extends BaseApiService {
     );
   }
 
-  public updateCaseTags(caseDefinitionName: string, reorderedStatus: any[]): Observable<Tags[]> {
-    return this.httpClient.put<Tags[]>(
+  public updateCaseTags(
+    caseDefinitionName: string,
+    reorderedStatus: any[]
+  ): Observable<InternalCaseStatus[]> {
+    return this.httpClient.put<InternalCaseStatus[]>(
       this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag`),
       reorderedStatus
     );

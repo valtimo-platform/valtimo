@@ -29,7 +29,7 @@ import {
 import {FormControl} from '@angular/forms';
 import {ArrowDown16, ArrowUp16, Draggable16, SettingsView16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {SortState, Tags, TagsUtils} from '@valtimo/document';
+import {SortState} from '@valtimo/document';
 import {
   IconService,
   OverflowMenu,
@@ -455,11 +455,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
                 template: this.booleanTemplate,
               });
             case ViewType.TAGS: {
-              if (item.label) {
-                return this.resolveCaseTagObject(item.label);
-              } else {
-                return this.resolveTagObject(item.tags);
-              }
+              return this.resolveTagObject(item.tags);
             }
             default:
               const resolvedObject: string = this.resolveObject(field, item);
@@ -697,18 +693,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     filteredItems.splice(index2, 0, itemToInsert);
 
     return filteredItems;
-  }
-
-  //todo dit moet in dossier list carbon list mag geen specifieke code bevatten
-  private resolveCaseTagObject(items: Tags[] | undefined): TableItem {
-    let tagTypedCaseTags = items?.map(item => ({
-      ...item,
-      tagType: TagsUtils.getTagTypeFromTagsColor(item.color),
-    }));
-    return new TableItem({
-      data: {items: tagTypedCaseTags},
-      template: this.tagTemplate,
-    });
   }
 
   private resolveTagObject(itemTags: CarbonTag[] | undefined): TableItem {
