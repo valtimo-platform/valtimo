@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService} from '@valtimo/config';
 import {InterceptorSkip} from '@valtimo/security';
+import {Observable} from 'rxjs';
 
 @Injectable({providedIn: 'root'})
 export class ViewModelService extends BaseApiService {
@@ -75,7 +74,7 @@ export class ViewModelService extends BaseApiService {
   public getViewModelForStartForm(
     formName: string,
     processDefinitionKey: string,
-    documentId: string = null,
+    documentId: string = null
   ): Observable<object> {
     return this.httpClient.get<any>(this.getApiUrl('/v1/form/view-model/start-form'), {
       params: {

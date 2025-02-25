@@ -50,7 +50,7 @@ export class PermissionService {
 
   public requestPermission(
     permissionRequest: PermissionRequest,
-    context: PermissionContext
+    context?: PermissionContext
   ): Observable<boolean> {
     const permissionRequestWithContext = {...permissionRequest, context};
     const permissionRequestKey = getPermissionRequestKey(permissionRequestWithContext);

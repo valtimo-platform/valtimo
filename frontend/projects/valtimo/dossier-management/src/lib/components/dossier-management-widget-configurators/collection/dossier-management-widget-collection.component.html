@@ -76,20 +76,21 @@
 
   <form [formGroup]="cardForm" class="valtimo-dossier-management-widget-collection__card">
     <section class="valtimo-dossier-management-widget-collection__card-title">
-      <cds-text-label>
+      <div class="valtimo-dossier-management-widget-collection__path-selector">
         <v-input-label
           [title]="'widgetTabManagement.content.fields.value' | translate"
           [tooltip]="'widgetTabManagement.content.collection.valueTooltip' | translate"
-        ></v-input-label>
+        >
+        </v-input-label>
 
-        <input
-          cdsText
-          [attr.data-carbon-theme]="obs.theme"
-          [placeholder]="'widgetTabManagement.content.fields.valuePlaceholder' | translate"
-          type="text"
+        <valtimo-value-path-selector
           formControlName="value"
-        />
-      </cds-text-label>
+          [attr.data-carbon-theme]="obs.theme"
+          [documentDefinitionName]="documentDefinitionName"
+          [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+          [parentItem]="selectedCollection$ | async"
+        ></valtimo-value-path-selector>
+      </div>
 
       <cds-dropdown
         [attr.data-carbon-theme]="obs.theme"

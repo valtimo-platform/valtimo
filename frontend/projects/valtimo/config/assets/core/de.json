@@ -1809,7 +1809,14 @@
     "toggleViewModel": {
       "title": "View Model ermöglicht?",
       "checkboxDescription": "Aktiviert die Form View Model Formularverarbeitung"
-    }
+    },
+    "importConfiguration": "Konfiguration importieren",
+    "selectProcess": "Wählen Sie einen Prozess aus",
+    "process": "Prozess",
+    "version": "Version",
+    "selectVersion": "Wählen Sie eine Version aus",
+    "activity": "Prozessaktivität",
+    "selectActivity": "Wählen Sie eine Prozessaktivität aus"
   },
   "processLinkType": {
     "plugin": "Plugin",

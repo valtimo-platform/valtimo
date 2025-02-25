@@ -114,26 +114,6 @@
 >
 </valtimo-confirmation-modal>
 
-<ng-template #downloadButton let-index="index" let-item="item">
-  <div
-    *ngIf="{isDownloading: indexesIncludeIndex(downloadingFileIndexes$ | async, index)} as vars"
-    class="download-button-container"
-  >
-    <button
-      *ngIf="!vars.isDownloading"
-      cdsButton="primary"
-      size="sm"
-      (click)="downloadDocument(item, index)"
-    >
-      {{ 'interface.download' | translate }}
-
-      <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
-    </button>
-
-    <cds-loading size="sm" *ngIf="vars.isDownloading"></cds-loading>
-  </div>
-</ng-template>
-
 <ng-template #noResults>
   @if ((filter$ | async | keyvalue)?.length) {
     <valtimo-no-results
@@ -173,7 +153,12 @@
 
 <ng-template #uploadButton let-disabled="disabled">
   <button
-    [disabled]="(uploadProcessLinkedSet && !uploadProcessLinked) || showZaakLinkWarning || disabled"
+    [disabled]="
+      (uploadProcessLinkedSet && !uploadProcessLinked) ||
+      showZaakLinkWarning ||
+      disabled ||
+      (canCreateResource$ | async) === false
+    "
     [vTooltip]="getUploadButtonTooltip() | translate"
     (click)="onUploadButtonClick()"
     cdsButton="primary"

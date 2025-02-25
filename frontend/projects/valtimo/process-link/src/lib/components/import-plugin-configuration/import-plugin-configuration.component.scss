@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-export * from './modal.service';
-export * from './prompt.service';
-export * from './shell.service';
-export * from './stepper.service';
-export * from './user-interface.service';
-export * from './valtimo-modal.service';
-export * from './page-header.service';
-export * from './cds-theme.service';
-export * from './choice-field.service';
-export * from './page-subtitle.service';
-export * from './page-title.service';
-export * from './key-generator.service';
-export * from './value-path-selector.service';
+.process-link-configuration-import-button {
+  margin-bottom: 16px;
+}
+
+.process-link-configuration-select {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .cds--btn {
+    width: 100%;
+  }
+}

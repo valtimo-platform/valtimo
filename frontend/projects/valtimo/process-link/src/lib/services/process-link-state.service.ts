@@ -53,6 +53,7 @@ export class ProcessLinkStateService implements OnDestroy {
             return type;
           });
         }
+        return types;
       })
     );
   }
