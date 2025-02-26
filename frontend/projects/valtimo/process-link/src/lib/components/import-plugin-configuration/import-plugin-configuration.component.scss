@@ -14,17 +14,23 @@
  * limitations under the License.
  */
 
+:host ::ng-deep .cds--popover-content {
+  max-inline-size: unset;
+}
+
 .process-link-configuration-import-button {
   margin-bottom: 16px;
 }
 
 .process-link-configuration-select {
   width: 400px;
+  max-inline-size: 400px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 
   .cds--btn {
     width: 100%;
+    max-width: unset;
   }
 }

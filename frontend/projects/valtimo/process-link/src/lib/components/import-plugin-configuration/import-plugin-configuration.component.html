@@ -14,13 +14,16 @@
   ~ limitations under the License.
   -->
 
-<cds-toggletip [autoAlign]="true" [isOpen]="open$ | async">
+<cds-toggletip align="right-bottom" [autoAlign]="true" [isOpen]="open$ | async">
   <button
     class="process-link-configuration-import-button"
     [disabled]="((compatiblePluginProcessLinks$ | async) || []).length === 0"
     cdsToggletipButton
+    cdsButton="ghost"
   >
     {{ 'processLinkConfiguration.importConfiguration' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
   </button>
 
   <div cdsToggletipContent data-carbon-theme="g90" class="process-link-configuration-select">
@@ -29,6 +32,7 @@
       [placeholder]="'processLinkConfiguration.selectProcess' | translate"
       (selected)="processSelected($event)"
       [appendInline]="true"
+      [cdsLayer]="1"
     >
       <cds-dropdown-list
         [items]="processListItems$ | async"
@@ -42,6 +46,7 @@
       [disabled]="!process.value"
       (selected)="versionSelected($event)"
       [appendInline]="true"
+      [cdsLayer]="1"
     >
       <cds-dropdown-list
         [items]="versionListItems$ | async"
@@ -55,6 +60,7 @@
       [disabled]="!process.value || !version.value"
       (selected)="activitySelected($event)"
       [appendInline]="true"
+      [cdsLayer]="1"
     >
       <cds-dropdown-list
         [items]="activityListItems$ | async"
@@ -62,7 +68,7 @@
       ></cds-dropdown-list>
     </cds-dropdown>
 
-    <button cdsButton [disabled]="!importPluginForm.valid" (click)="onSubmit()">
+    <button cdsButton [disabled]="!importPluginForm.valid" (click)="onSubmit()" [cdsLayer]="1">
       {{ 'processLinkConfiguration.importConfiguration' | translate }}
     </button>
   </div>
