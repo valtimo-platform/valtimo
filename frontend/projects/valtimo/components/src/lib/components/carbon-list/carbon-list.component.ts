@@ -156,6 +156,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   @Input() loading: boolean;
+  @Input() displayCaseTags = true;
 
   /**
    * @deprecated The actions field is deprecated. Actions can be added through the **@Input field**.
@@ -710,6 +711,13 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     if (key === 'internalStatus') {
       return new TableItem({
         data: {tags: [{content: item.tags?.[0].content ?? '-', type: item.tags?.[0].type}]},
+        template: this.tagTemplate,
+      });
+    }
+
+    if (key === 'caseTags') {
+      return new TableItem({
+        data: {tags: item.tags},
         template: this.tagTemplate,
       });
     }

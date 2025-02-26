@@ -172,34 +172,44 @@
 
 <ng-template #tagTemplate let-data="data">
   <ng-container *ngIf="!data.tags && !data.items">-</ng-container>
-
   <div *ngIf="data.tags" class="tag-template">
     @if (data.tags.length === 0) {
       -
     } @else {
-      <cds-tag *ngIf="!!data.tags[0].content" class="cds-tag--no-margin" [type]="data.tags[0].type">
-        {{ data.tags[0].ellipsisContent ?? data.tags[0].content }}
-      </cds-tag>
+      @if (displayCaseTags) {
+        <cds-tag
+          *ngFor="let tag of data.tags.slice(0, 2)"
+          class="cds-tag--no-margin"
+          [type]="tag.type"
+        >
+          {{ tag.ellipsisContent ?? tag.content }}
+        </cds-tag>
+        <cds-tag
+          *ngIf="data.tags.length > 2"
+          class="cds-tag--no-margin valtimo-carbon-list__expand-tag"
+          type="high-contrast"
+          (click)="onTagClick($event, data.tags)"
+        >
+          {{ data.tags.length - 2 }} <svg cdsIcon="add" size="16"></svg>
+        </cds-tag>
+      } @else {
+        <cds-tag
+          *ngIf="!!data.tags[0].content"
+          class="cds-tag--no-margin"
+          [type]="data.tags[0].type"
+        >
+          {{ data.tags[0].ellipsisContent ?? data.tags[0].content }}
+        </cds-tag>
 
-      <cds-tag
-        *ngIf="data.tags.length > 1"
-        class="cds-tag--no-margin valtimo-carbon-list__expand-tag"
-        type="high-contrast"
-        (click)="onTagClick($event, data.tags)"
-      >
-        {{ data.tags.length - 1 }} <svg cdsIcon="add" size="16"></svg>
-      </cds-tag>
-    }
-  </div>
-  <div *ngIf="data.items" class="tag-template">
-    @if (data.items.length > 0) {
-      <cds-tag
-        *ngFor="let caseTag of data.items"
-        [type]="caseTag.tagType"
-        class="cds-tag--no-margin"
-      >
-        {{ caseTag.title }}
-      </cds-tag>
+        <cds-tag
+          *ngIf="data.tags.length > 1"
+          class="cds-tag--no-margin valtimo-carbon-list__expand-tag"
+          type="high-contrast"
+          (click)="onTagClick($event, data.tags)"
+        >
+          {{ data.tags.length - 1 }} <svg cdsIcon="add" size="16"></svg>
+        </cds-tag>
+      }
     }
   </div>
 </ng-template>

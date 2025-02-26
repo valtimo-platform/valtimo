@@ -48,7 +48,7 @@ import {
   InternalCaseStatusUtils,
   SpecifiedDocuments,
 } from '@valtimo/document';
-import {Tab, Tabs} from 'carbon-components-angular';
+import {Tab, Tabs, TagType} from 'carbon-components-angular';
 import {isEqual} from 'lodash';
 import {
   BehaviorSubject,
@@ -420,7 +420,6 @@ export class DossierListComponent implements OnInit, OnDestroy {
         this.paginationService.setCollectionSize(res.documents);
         this.paginationService.checkPage(res.documents);
         this.updateNoResultsMessage(res.isSearchResult);
-
         return {
           data: this.listService.mapDocuments(
             res.documents,
@@ -435,15 +434,25 @@ export class DossierListComponent implements OnInit, OnDestroy {
       if (!Array.isArray(res.data)) return res.data;
 
       return res.data.map(item => {
+        let arr: {content: string; type: TagType}[];
+        if (item?.caseTags) {
+          arr = item.caseTags.map(caseTag => {
+            return {
+              content: caseTag.title,
+              type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(caseTag.color),
+            };
+          });
+        }
+
         const status = res.statuses.find(
           (status: InternalCaseStatus) =>
             status.key === item.internalStatus || status.key === item.status
         );
         if (!status) return item;
-
         return {
           ...item,
           tags: [
+            ...arr,
             {
               content: status.title,
               type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),

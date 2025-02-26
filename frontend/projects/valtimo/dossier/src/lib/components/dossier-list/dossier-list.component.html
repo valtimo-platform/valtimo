@@ -94,6 +94,7 @@
     (paginationSet)="pageSizeChange($event)"
     (rowClicked)="rowClick($event)"
     (sortChanged)="sortChanged($event)"
+    [displayCaseTags]="true"
   >
     <ng-container carbonToolbarActions>
       <button cdsButton="primary" (click)="showAssignModal()">
