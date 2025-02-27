@@ -434,31 +434,54 @@ export class DossierListComponent implements OnInit, OnDestroy {
       if (!Array.isArray(res.data)) return res.data;
 
       return res.data.map(item => {
-        let arr: {content: string; type: TagType}[];
-        if (item?.caseTags) {
-          arr = item.caseTags.map(caseTag => {
-            return {
-              content: caseTag.title,
-              type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(caseTag.color),
-            };
-          });
-        }
+        let arr = item?.caseTags
+          ? item.caseTags.map(caseTag => {
+              return {
+                content: caseTag.title,
+                type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(caseTag.color),
+              };
+            })
+          : [];
 
         const status = res.statuses.find(
           (status: InternalCaseStatus) =>
             status.key === item.internalStatus || status.key === item.status
         );
-        if (!status) return item;
-        return {
-          ...item,
-          tags: [
-            ...arr,
-            {
-              content: status.title,
-              type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
-            },
-          ],
-        };
+
+        if (status && arr.length > 0) {
+          console.log('status & arr');
+          return {
+            ...item,
+            tags: [
+              ...arr,
+              {
+                content: status.title,
+                type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
+              },
+            ],
+          };
+        }
+        if (status) {
+          console.log('status');
+          return {
+            ...item,
+            tags: [
+              {
+                content: status.title,
+                type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
+              },
+            ],
+          };
+        }
+        if (arr.length > 0) {
+          console.log('arr');
+          return {
+            ...item,
+            tags: [...arr],
+          };
+        }
+
+        return item;
       });
     }),
     tap(() => {

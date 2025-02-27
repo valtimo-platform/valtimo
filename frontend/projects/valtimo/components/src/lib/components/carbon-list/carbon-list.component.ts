@@ -156,7 +156,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   @Input() loading: boolean;
-  @Input() displayCaseTags = true;
+  @Input() displayCaseTags = false;
 
   /**
    * @deprecated The actions field is deprecated. Actions can be added through the **@Input field**.
