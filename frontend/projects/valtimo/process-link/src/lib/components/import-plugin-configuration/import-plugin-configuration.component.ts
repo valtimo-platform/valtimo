@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, EventEmitter, Input, Output} from '@angular/core';
 import {AbstractControl, FormBuilder, FormControl, Validators} from '@angular/forms';
 import {BehaviorSubject, combineLatest, map, Observable, startWith, Subject} from 'rxjs';
 import {CompatiblePluginProcessLinks, ProcessLink} from '../../models';
 import {ProcessLinkService} from '../../services';
-import {ListItem} from 'carbon-components-angular';
+import {IconService, ListItem} from 'carbon-components-angular';
+import {Upload16} from '@carbon/icons';
 
 @Component({
   selector: 'valtimo-import-plugin-configuration',
   templateUrl: './import-plugin-configuration.component.html',
   styleUrls: ['./import-plugin-configuration.component.scss'],
 })
-export class ImportPluginConfigurationComponent {
+export class ImportPluginConfigurationComponent implements AfterViewInit {
   @Input() public set pluginActionKey(value: string) {
     this.importPluginForm.reset();
     this.fetchCompatiblePluginProcessLinks(value);
@@ -82,10 +83,11 @@ export class ImportPluginConfigurationComponent {
         ? []
         : compatibleProcessLinks
             .find(compatibleLinks => compatibleLinks.processDefinitionKey === processValue)
-            .versions.map(versionItem => ({
+            ?.versions.sort((a, b) => Number(b.version) - Number(a.version))
+            .map(versionItem => ({
               content: versionItem.version,
               selected: versionItem.version === versionValue,
-            }))
+            })) || []
     )
   );
 
@@ -114,8 +116,18 @@ export class ImportPluginConfigurationComponent {
 
   constructor(
     private readonly formBuilder: FormBuilder,
-    private readonly processLinkService: ProcessLinkService
-  ) {}
+    private readonly processLinkService: ProcessLinkService,
+    private readonly iconService: IconService,
+    private readonly elementRef: ElementRef<HTMLElement>
+  ) {
+    this.iconService.register(Upload16);
+  }
+
+  public ngAfterViewInit(): void {
+    const button = this.elementRef.nativeElement.querySelector('button.cds--toggletip-button');
+    if (!button) return;
+    button.classList.remove('cds--toggletip-button');
+  }
 
   public onSubmit(): void {
     this.configurationEvent.emit(
