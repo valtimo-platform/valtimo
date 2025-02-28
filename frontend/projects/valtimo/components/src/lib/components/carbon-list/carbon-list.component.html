@@ -171,7 +171,7 @@
 </ng-template>
 
 <ng-template #tagTemplate let-data="data">
-  <ng-container *ngIf="!data.tags && !data.items">-</ng-container>
+  <ng-container *ngIf="!data.tags">-</ng-container>
   <div *ngIf="data.tags" class="tag-template">
     @if (data.tags.length === 0) {
       -
