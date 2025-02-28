@@ -432,13 +432,13 @@ export class DossierListComponent implements OnInit, OnDestroy {
     ),
     map(res => {
       if (!Array.isArray(res.data)) return res.data;
-
       return res.data.map(item => {
         let arr = item?.caseTags
           ? item.caseTags.map(caseTag => {
               return {
                 content: caseTag.title,
                 type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(caseTag.color),
+                key: 'caseTags',
               };
             })
           : [];
@@ -449,7 +449,6 @@ export class DossierListComponent implements OnInit, OnDestroy {
         );
 
         if (status && arr.length > 0) {
-          console.log('status & arr');
           return {
             ...item,
             tags: [
@@ -457,24 +456,24 @@ export class DossierListComponent implements OnInit, OnDestroy {
               {
                 content: status.title,
                 type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
+                key: 'internalStatus',
               },
             ],
           };
         }
         if (status) {
-          console.log('status');
           return {
             ...item,
             tags: [
               {
                 content: status.title,
                 type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
+                key: 'internalStatus',
               },
             ],
           };
         }
         if (arr.length > 0) {
-          console.log('arr');
           return {
             ...item,
             tags: [...arr],

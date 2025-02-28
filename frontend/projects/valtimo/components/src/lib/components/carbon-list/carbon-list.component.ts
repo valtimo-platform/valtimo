@@ -707,17 +707,18 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private resolveTagObject(item: CarbonListItem, key: string): TableItem {
     const itemTags = item[key];
-
     if (key === 'internalStatus') {
+      let filteredTags = item.tags?.filter(tag => tag?.key === key);
       return new TableItem({
-        data: {tags: [{content: item.tags?.[0].content ?? '-', type: item.tags?.[0].type}]},
+        data: {tags: [{content: filteredTags?.[0].content ?? '-', type: filteredTags?.[0].type}]},
         template: this.tagTemplate,
       });
     }
 
     if (key === 'caseTags') {
+      let filteredTags = item.tags?.filter(tag => tag?.key === key);
       return new TableItem({
-        data: {tags: item.tags},
+        data: {tags: filteredTags},
         template: this.tagTemplate,
       });
     }
