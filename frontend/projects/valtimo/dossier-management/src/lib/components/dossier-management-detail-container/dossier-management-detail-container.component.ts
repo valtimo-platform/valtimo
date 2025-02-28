@@ -132,43 +132,25 @@ export class DossierManagementDetailContainerComponent implements OnInit, AfterV
   }
 
   private _tabsInit = false;
-  private readonly _tabToChange$ = new Subject<TabEnum | string>();
   public displayBodyComponent(tab: TabEnum | string): void {
     if (!this._tabsInit) {
       this._tabsInit = true;
       return;
     }
-    this._tabs.notifyOnChanges();
-    // console.log('in display body component');
-    // if (!this.customModal && !!this._documentDefinitionTab)
-    //   this.customModal = this._documentDefinitionTab.cancelModal;
 
-    // if (this.pendingChanges) {
-    //   this.onCanDeactivate();
-    // }
-    // this.tabService.currentTab = tab;
+    this._tabs.notifyOnChanges();
     this.router.navigate([`dossier-management/dossier/bezwaar/${tab}`]);
-    // this.currentTab$.next(tab);
   }
 
   public openTabCheckSubscription(): void {
-    combineLatest([this._tabs.changes, this.currentTab$]).subscribe(([tabs, currentTab]) => {
-      console.log({tabs, currentTab});
-      tabs.forEach((tab: Tab) => (tab.active = tab.id === currentTab));
-    });
-    // .subscribe(({tabToChange, currentTab}) => {
-    //   console.log({currentTab, tabToChange});
-    //   const tab = this._tabs.find((tab: Tab) => tab.id === tabToChange);
-    //   if (!tab || tab.active === true) return;
-
-    //   console.log('in here');
-    //   this._tabs?.forEach(tab => (tab.active = false));
-    //   tab.active = true;
-    // });
+    this._subscriptions.add(
+      combineLatest([this._tabs.changes, this.currentTab$]).subscribe(([tabs, currentTab]) => {
+        tabs.forEach((tab: Tab) => (tab.active = tab.id === currentTab));
+      })
+    );
   }
 
   public onCancelRedirectEvent(): void {
-    // this.onCustomCancel();
     if (this._activeVersion) {
       this.dossierDetailService.setPreviousSelectedVersionNumber(this._activeVersion);
       this._activeVersion = null;

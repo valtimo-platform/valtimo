@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 
-import {DossierManagementSearchFieldsComponent} from '../components/dossier-management-search-fields/dossier-management-search-fields.component';
-import {DossierManagementDetailComponent} from '../components/dossier-management-detail/dossier-management-detail.component';
-import {DossierManagementDocumentDefinitionComponent} from '../components/dossier-management-document-definition/dossier-management-document-definition.component';
-import {DossierManagementTabsComponent} from '../components/dossier-management-tabs/dossier-management-tabs.component';
-import {DossierManagementStatusesComponent} from '../components/dossier-management-statuses/dossier-management-statuses.component';
-import {DossierManagementListColumnsComponent} from '../components/dossier-management-list-columns/dossier-management-list-columns.component';
-import {CaseManagementProcessesComponent} from '../components/case-management-processes/case-management-processes.component';
-import {Routes} from '@angular/router';
-import {pendingChangesGuard} from '@valtimo/components';
-
 export enum TabEnum {
   DOCUMENT = 'document',
   CASE = 'case',
@@ -33,35 +23,3 @@ export enum TabEnum {
   TABS = 'tabs',
   STATUSES = 'statuses',
 }
-
-export const CASE_MANAGEMENT_CHILDREN: Routes = [
-  {
-    path: TabEnum.DOCUMENT,
-    component: DossierManagementDocumentDefinitionComponent,
-  },
-  {
-    path: TabEnum.CASE,
-    component: DossierManagementDetailComponent,
-  },
-  {
-    path: TabEnum.PROCESSES,
-    component: CaseManagementProcessesComponent,
-    canDeactivate: [pendingChangesGuard],
-  },
-  {
-    path: TabEnum.SEARCH,
-    component: DossierManagementSearchFieldsComponent,
-  },
-  {
-    path: TabEnum.LIST,
-    component: DossierManagementListColumnsComponent,
-  },
-  {
-    path: TabEnum.TABS,
-    component: DossierManagementTabsComponent,
-  },
-  {
-    path: TabEnum.STATUSES,
-    component: DossierManagementStatusesComponent,
-  },
-];

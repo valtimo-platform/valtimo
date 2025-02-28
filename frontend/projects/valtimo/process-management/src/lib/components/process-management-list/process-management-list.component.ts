@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Router} from '@angular/router';
 import {Upload16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule, ColumnConfig} from '@valtimo/components';
+import {CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
-import {BehaviorSubject, startWith, switchMap, tap} from 'rxjs';
-import {ProcessManagementStateService} from '../../services';
+import {BehaviorSubject, Subject, filter, map, startWith, switchMap, tap} from 'rxjs';
+import {ProcessManagementStateService, ProcessManagementApiService} from '../../services';
 
 @Component({
   selector: 'valtimo-process-management-list',
@@ -33,28 +33,49 @@ import {ProcessManagementStateService} from '../../services';
   imports: [CommonModule, ButtonModule, CarbonListModule, IconModule, TranslateModule],
 })
 export class ProcessManagementListComponent {
+  private readonly _params$ = new BehaviorSubject<{
+    documentDefinitionKey: string;
+    versionTag: string;
+  } | null>(null);
+  @Input() public set params(value: {documentDefinitionKey: string; versionTag: string} | null) {
+    if (!value) return;
+
+    this._params$.next(value);
+  }
+
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  public readonly reloadDefinitions$ = this.processManagementStateService.reloadDefinitions$;
+  // public readonly reloadDefinitions$ = this.processManagementStateService.reloadDefinitions$;
 
-  public readonly processDefinitions$ = this.reloadDefinitions$.pipe(
-    startWith(null),
-    switchMap(() =>
-      this.processService.getProcessDefinitions().pipe(tap(() => this.loading$.next(false)))
-    )
+  public readonly processDefinitions$ = this._params$.pipe(
+    filter(params => !!params),
+    tap(value => console.log({value})),
+    switchMap(params => {
+      console.log({params});
+      return this.processManagementApiService.getProcesses(
+        params?.documentDefinitionKey ?? '',
+        params?.versionTag ?? ''
+      );
+    }),
+    map(res => {
+      console.log({res});
+      return res.map(i => i.processDefinition);
+    }),
+    tap(() => this.loading$.next(false))
   );
 
   public readonly FIELDS: ColumnConfig[] = [
     {key: 'name', label: 'Name'},
     {key: 'key', label: 'Key'},
-    {key: 'readOnly', label: 'Read-only'},
+    {key: 'readOnly', label: 'Read-only', viewType: ViewType.BOOLEAN},
   ];
 
   constructor(
+    private readonly processManagementApiService: ProcessManagementApiService,
     private readonly processService: ProcessService,
     private readonly router: Router,
-    private readonly iconService: IconService,
-    private readonly processManagementStateService: ProcessManagementStateService
+    private readonly iconService: IconService
+    // private readonly processManagementStateService: ProcessManagementStateService
   ) {
     this.iconService.registerAll([Upload16]);
   }
@@ -64,7 +85,7 @@ export class ProcessManagementListComponent {
   }
 
   public openModal(): void {
-    this.processManagementStateService.openModal();
+    // this.processManagementStateService.openModal();
   }
 
   public onCreateClick(): void {

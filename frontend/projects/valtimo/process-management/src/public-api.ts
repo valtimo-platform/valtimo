@@ -21,3 +21,4 @@
 export * from './lib/process-management.module';
 export * from './lib/components/process-management/process-management.component';
 export * from './lib/components/process-management-builder/process-management-builder.component';
+export * from './lib/components/process-management-list/process-management-list.component';

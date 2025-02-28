@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {CaseWidgetDisplayType} from '.';
 import {Type} from '@angular/core';
 import {
   WidgetCollectionContent,
@@ -23,6 +22,7 @@ import {
   WidgetFieldsContent,
   WidgetTableContent,
 } from './case-widget-content.model';
+import {CaseWidgetDisplayType} from './case-widget-display.model';
 
 enum CaseWidgetType {
   FIELDS = 'fields',

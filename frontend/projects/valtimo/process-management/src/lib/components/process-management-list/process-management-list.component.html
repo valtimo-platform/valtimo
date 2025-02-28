@@ -15,13 +15,13 @@
   -->
 
 <valtimo-carbon-list
-  [items]="(processDefinitions$ | async) || []"
+  [items]="processDefinitions$ | async"
   [loading]="loading$ | async"
   [fields]="FIELDS"
-  (rowClicked)="editProcessDefinition($event)"
   [isSearchable]="true"
 >
-  <ng-container carbonToolbarContent>
+  <!-- (rowClicked)="editProcessDefinition($event)" -->
+  <!-- <ng-container carbonToolbarContent>
     <button cdsButton="ghost" [iconOnly]="true" disabled="true" (click)="openModal()">
       <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
     </button>
@@ -31,5 +31,5 @@
 
       <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
     </button>
-  </ng-container>
+  </ng-container> -->
 </valtimo-carbon-list>

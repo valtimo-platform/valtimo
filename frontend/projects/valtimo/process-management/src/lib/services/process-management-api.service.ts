@@ -14,9 +14,18 @@ export class ProcessManagementApiService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public getProcesses(documentDefinitionKey: string, version: string): Observable<any> {
-    return this.httpClient.get(
-      'http://localhost:4200/api/management/v1/case-definition/bezwaar/version/1.0.0-test/process-definition'
+  public getProcesses(documentDefinitionKey: string, versionTag: string): Observable<any> {
+    console.log(
+      this.getApiUrl(
+        `/management/v1/case-definition/${documentDefinitionKey}/version/${versionTag}/process-definition`
+      )
+    );
+
+    return this.httpClient.get<any>(
+      this.getApiUrl(
+        `/management/v1/case-definition/${documentDefinitionKey}/version/${versionTag}/process-definition`
+      )
+      // 'http://localhost:4200/api/management/v1/case-definition/bezwaar/version/1.0.0-test/process-definition'
     );
     // return this.httpClient.get(
     //   `${this.getApiUrl('/management/v1/case-definition/')}${documentDefinitionKey}/version/${version}/process-definition`
