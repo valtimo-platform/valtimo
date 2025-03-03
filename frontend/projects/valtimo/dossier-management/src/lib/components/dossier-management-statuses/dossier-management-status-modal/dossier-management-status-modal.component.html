@@ -123,21 +123,10 @@
       </cds-label>
 
       <cds-toggle
-        [label]="
-          this.isCaseTag
-            ? ('dossierManagement.tags.visibleTitle' | translate)
-            : ('dossierManagement.statuses.visibleTitle' | translate)
-        "
-        [onText]="
-          this.isCaseTag
-            ? ('dossierManagement.tags.visible' | translate)
-            : ('dossierManagement.statuses.visible' | translate)
-        "
-        [offText]="
-          this.isCaseTag
-            ? ('dossierManagement.tags.invisible' | translate)
-            : ('dossierManagement.statuses.invisible' | translate)
-        "
+        *ngIf="!isCaseTag"
+        [label]="'dossierManagement.statuses.visibleTitle' | translate"
+        [onText]="'dossierManagement.statuses.visible' | translate"
+        [offText]="'dossierManagement.statuses.invisible' | translate"
         [disabled]="obs.disabled"
         [checked]="visibleInCaseListByDefault?.value"
         (checkedChange)="toggleCheckedChange($event)"

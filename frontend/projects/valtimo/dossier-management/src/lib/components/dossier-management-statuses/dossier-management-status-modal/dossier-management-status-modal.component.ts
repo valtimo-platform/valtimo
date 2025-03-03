@@ -103,8 +103,11 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
 
   public readonly isEdit$ = combineLatest([this._typeAnimationDelay$, this._prefillStatus]).pipe(
     tap(([type, prefillStatus]) => {
-      if ((type === 'edit' || type === 'editCaseTags') && prefillStatus)
+      if ((type === 'edit' || type === 'editCaseTags') && prefillStatus) {
+        if (type === 'editCaseTags') prefillStatus.visibleInCaseListByDefault = true;
         this.prefillForm(prefillStatus);
+      }
+
       if (type === 'addCaseTags' || type === 'editCaseTags') this.isCaseTag = true;
     }),
     map(([type]) => type === 'edit' || type === 'editCaseTags'),
