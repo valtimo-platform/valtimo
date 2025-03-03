@@ -40,7 +40,7 @@ import {
   TableItem,
   TableModel,
 } from 'carbon-components-angular';
-import {get as _get} from 'lodash';
+import {get as _get, isArray} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
@@ -464,7 +464,10 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
                 template: this.booleanTemplate,
               });
             case ViewType.TAGS: {
-              return this.resolveTagObject(item, field.key);
+              return new TableItem({
+                data: this.resolveTagObject(item, field.key),
+                template: this.tagTemplate,
+              });
             }
             default:
               const resolvedObject: string = this.resolveObject(field, item);
@@ -704,41 +707,26 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     return filteredItems;
   }
 
-  private resolveTagObject(item: CarbonListItem, key: string): TableItem {
-    const itemTags = item[key];
+  private resolveTagObject(item: CarbonListItem, key: string): CarbonTag[] | null {
+    const object: string | string[] | CarbonTag | CarbonTag[] = item[key];
 
-    if (key === 'internalStatus') {
-      return new TableItem({
-        data: {tags: [{content: item.tags?.[0].content ?? '-', type: item.tags?.[0].type}]},
-        template: this.tagTemplate,
-      });
-    }
+    if (!object) return null;
 
-    if (!Array.isArray(itemTags)) {
-      return new TableItem({
-        data: {
-          tags: !itemTags
-            ? []
-            : [
-                {
-                  content: item[key],
-                  type: item.tags[0].type,
-                },
-              ],
+    if (isArray(object) && typeof object[0] !== 'string') return object as CarbonTag[];
+
+    if (!isArray(object) && typeof object !== 'string') return [object];
+
+    if (typeof object === 'string')
+      return [
+        {
+          content: object,
+          type: 'blue',
         },
-        template: this.tagTemplate,
-      });
-    }
+      ];
 
-    const tags = itemTags.map((tag: CarbonTag, index: number) =>
-      index === 0
-        ? {...tag, ellipsisContent: this.ellipsisPipe.transform(tag.content, TAG_ELLIPSIS_LIMIT)}
-        : tag
-    );
-
-    return new TableItem({
-      data: {tags},
-      template: this.tagTemplate,
-    });
+    return (object as string[]).map((content: string) => ({
+      content,
+      type: 'blue',
+    }));
   }
 }

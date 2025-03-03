@@ -196,12 +196,16 @@ export class DossierListComponent implements OnInit, OnDestroy {
 
   public readonly showStatusSelector$ = this.statusService.showStatusSelector$;
 
+  private readonly INTERNAL_STATUS_COLUMN = 'internalStatus';
   private readonly _statusField: ListField = {
     label: 'document.status',
-    key: 'internalStatus',
+    key: this.INTERNAL_STATUS_COLUMN,
     viewType: ViewType.TAGS,
     sortable: true,
   };
+  private readonly _internalStatusKeys$ = new BehaviorSubject<string[]>([
+    this.INTERNAL_STATUS_COLUMN,
+  ]);
   public readonly fields$: Observable<Array<ListField>> = combineLatest([
     this._canHaveAssignee$,
     this._columns$,
@@ -214,6 +218,14 @@ export class DossierListComponent implements OnInit, OnDestroy {
       this.canHaveAssignee = canHaveAssignee;
     }),
     map(([canHaveAssignee, columns, hasEnvConfig, hasApiConfig, statuses]) => {
+      this._internalStatusKeys$.next([
+        ...this._internalStatusKeys$.getValue(),
+        ...columns.reduce(
+          (acc, curr) =>
+            curr.propertyName === this.INTERNAL_STATUS_COLUMN ? [...acc, curr.translationKey] : acc,
+          []
+        ),
+      ]);
       const filteredAssigneeColumns = this.assigneeService.filterAssigneeColumns(
         columns,
         canHaveAssignee
@@ -396,9 +408,10 @@ export class DossierListComponent implements OnInit, OnDestroy {
               .pipe(take(1))
           )
         ).pipe(defaultIfEmpty([] as boolean[])),
+        this._internalStatusKeys$,
       ])
     ),
-    map(([res, documentsAuthorization]) => ({
+    map(([res, documentsAuthorization, statusColumnKeys]) => ({
       ...res,
       documents: {
         ...res.documents,
@@ -407,6 +420,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
           locked: !documentsAuthorization[index],
         })),
       },
+      statusColumnKeys,
     })),
     map(
       (res: {
@@ -416,6 +430,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         isSearchResult: boolean;
         selectedStatuses: InternalCaseStatus[];
         allStatuses: InternalCaseStatus[];
+        statusColumnKeys: string[];
       }) => {
         this.paginationService.setCollectionSize(res.documents);
         this.paginationService.checkPage(res.documents);
@@ -428,6 +443,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
             res.hasApiColumnConfig
           ),
           statuses: res.allStatuses,
+          statusColumnKeys: res.statusColumnKeys,
         };
       }
     ),
@@ -435,20 +451,24 @@ export class DossierListComponent implements OnInit, OnDestroy {
       if (!Array.isArray(res.data)) return res.data;
 
       return res.data.map(item => {
-        const status = res.statuses.find(
-          (status: InternalCaseStatus) =>
-            status.key === item.internalStatus || status.key === item.status
-        );
-        if (!status) return item;
+        const mappedInternalStatusColumns = res.statusColumnKeys.reduce((acc, curr) => {
+          const status = res.statuses.find(
+            (status: InternalCaseStatus) => status.key === item[curr] || status.key === item.status
+          );
+          return !status
+            ? acc
+            : {
+                ...acc,
+                [curr]: {
+                  content: status.title,
+                  type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
+                },
+              };
+        }, {});
 
         return {
           ...item,
-          tags: [
-            {
-              content: status.title,
-              type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
-            },
-          ],
+          ...mappedInternalStatusColumns,
         };
       });
     }),
