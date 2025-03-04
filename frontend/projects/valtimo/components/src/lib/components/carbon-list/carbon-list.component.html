@@ -195,32 +195,6 @@
   }
 </ng-template>
 
-<ng-template #caseTagTemplate let-data="data">
-  <ng-container *ngIf="!data.tags">-</ng-container>
-
-  <div *ngIf="data.tags" class="tag-template">
-    @if (data.tags.length === 0) {
-      -
-    } @else {
-      <cds-tag
-        *ngFor="let tag of data.tags.slice(0, 2)"
-        class="cds-tag--no-margin"
-        [type]="tag.type"
-      >
-        {{ tag.ellipsisContent ?? tag.content }}
-      </cds-tag>
-      <cds-tag
-        *ngIf="data.tags.length > 2"
-        class="cds-tag--no-margin valtimo-carbon-list__expand-tag"
-        type="high-contrast"
-        (click)="onTagClick($event, data.tags)"
-      >
-        {{ data.tags.length - 2 }} <svg cdsIcon="add" size="16"></svg>
-      </cds-tag>
-    }
-  </div>
-</ng-template>
-
 <ng-template #defaultTemplate let-data="data">
   <span>{{ data }}</span>
 </ng-template>

@@ -93,7 +93,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('dragAndDropTemplate') dragAndDropTemplate: TemplateRef<any>;
   @ViewChild('rowDisabled') rowDisabled: TemplateRef<any>;
   @ViewChild('tagTemplate') tagTemplate: TemplateRef<any>;
-  @ViewChild('caseTagTemplate') caseTagTemplate: TemplateRef<any>;
   @ViewChild('defaultTemplate') defaultTemplate: TemplateRef<any>;
   @ViewChild(Table) private _table: Table;
 

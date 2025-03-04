@@ -20,7 +20,6 @@ export interface CarbonTag {
   content: string;
   type: TagType;
   ellipsisContent?: string;
-  key?: string;
 }
 
 export const TAG_ELLIPSIS_LIMIT = 20;
