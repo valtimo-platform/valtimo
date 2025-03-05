@@ -13,9 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild,
+} from '@angular/core';
+import {ReactiveFormsModule} from '@angular/forms';
+import {Deploy16, Download16, ArrowLeft16} from '@carbon/icons';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   CARBON_CONSTANTS,
   FitPageDirectiveModule,
@@ -24,53 +35,7 @@ import {
   PageTitleService,
   RenderInPageHeaderDirectiveModule,
 } from '@valtimo/components';
-import {ActivatedRoute, Router} from '@angular/router';
-import {
-  BehaviorSubject,
-  combineLatest,
-  filter,
-  from,
-  map,
-  Observable,
-  of,
-  startWith,
-  Subject,
-  Subscription,
-  switchMap,
-  take,
-  tap,
-} from 'rxjs';
-import {ProcessDefinition, ProcessService} from '@valtimo/process';
-import {
-  ButtonModule,
-  DialogModule,
-  DropdownModule,
-  IconModule,
-  IconService,
-  ListItem,
-  LoadingModule,
-  NotificationModule,
-  NotificationService,
-  SelectModule,
-  TagModule,
-} from 'carbon-components-angular';
-import Modeler from 'bpmn-js/lib/Modeler';
-import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
-import {ReactiveFormsModule} from '@angular/forms';
-import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {Deploy16, Download16} from '@carbon/icons';
-import {
-  BpmnPropertiesPanelModule,
-  BpmnPropertiesProviderModule,
-  CamundaPlatformPropertiesProviderModule,
-} from 'bpmn-js-properties-panel';
-import camundaPlatformBehaviors from 'camunda-bpmn-js-behaviors/lib/camunda-platform';
-import CamundaBpmnModdle from 'camunda-bpmn-moddle/resources/camunda.json';
-import {ValtimoPropertiesProviderModule} from './panel';
-import {distinctUntilChanged} from 'rxjs/operators';
-import {isEqual} from 'lodash';
-import {ProcessManagementEditorService} from '../../services';
-import {OpenProcessLinkModalEvent, ProcessManagementWindow} from '../../models';
+import {ProcessService} from '@valtimo/process';
 import {
   ProcessLinkButtonService,
   ProcessLinkCreateEvent,
@@ -80,8 +45,45 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '@valtimo/process-link';
-import {EMPTY_BPMN} from '../../constants';
+import {
+  BpmnPropertiesPanelModule,
+  BpmnPropertiesProviderModule,
+  CamundaPlatformPropertiesProviderModule,
+} from 'bpmn-js-properties-panel';
+import Modeler from 'bpmn-js/lib/Modeler';
+import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
+import camundaPlatformBehaviors from 'camunda-bpmn-js-behaviors/lib/camunda-platform';
+import CamundaBpmnModdle from 'camunda-bpmn-moddle/resources/camunda.json';
+import {
+  ButtonModule,
+  DialogModule,
+  DropdownModule,
+  IconModule,
+  IconService,
+  LoadingModule,
+  NotificationModule,
+  NotificationService,
+  SelectModule,
+  TagModule,
+} from 'carbon-components-angular';
+import {isEqual} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  from,
+  Subscription,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
+import {distinctUntilChanged} from 'rxjs/operators';
+
+import {EMPTY_BPMN} from '../../constants';
+import {OpenProcessLinkModalEvent, ProcessManagementWindow} from '../../models';
+import {ProcessManagementEditorService} from '../../services';
+import {ValtimoPropertiesProviderModule} from './panel';
 
 @Component({
   selector: 'valtimo-process-management-builder',
@@ -126,6 +128,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.processManagementEditorService.setSelectedProcessDefinition(value.processDefinition);
     this.processManagementEditorService.setProcessLinksForSelectedDefinition(value.processLinks);
   }
+  @Output() public readonly navigateBack = new EventEmitter();
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
@@ -156,40 +159,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       })
     );
 
-  private readonly _reload$ = new Subject<null>();
-
   public readonly changesPending$ = new BehaviorSubject<boolean>(false);
-
-  // public readonly processDefinitionVersions$ = combineLatest([
-  //   this._processDefinitionKey$,
-  //   this._reload$.pipe(startWith(null)),
-  // ]).pipe(
-  //   filter(([processDefinitionKey]) => !!processDefinitionKey),
-  //   switchMap(([processDefinitionKey]) =>
-  //     this.processService.getProcessDefinitionVersions(processDefinitionKey ?? '')
-  //   ),
-  //   tap(processDefinitions => {
-  //     this.changesPending$.next(false);
-  //     this.setSelectedProcessDefinitionToLatest(processDefinitions);
-  //   })
-  // );
-
-  // public readonly processDefinitionVersionsListItems$: Observable<ListItem[]> = combineLatest([
-  //   this.processDefinitionVersions$,
-  //   this.processManagementEditorService.selectionProcessDefinition$,
-  //   this.translateService.stream('key'),
-  // ]).pipe(
-  //   map(([processDefinitionVersions, selectionProcessDefinition]) =>
-  //     processDefinitionVersions
-  //       .map(processDefinitionVersion => ({
-  //         id: processDefinitionVersion.version,
-  //         content: `${this.translateService.instant('processManagement.version')}${processDefinitionVersion.version}`,
-  //         selected: selectionProcessDefinition.version === processDefinitionVersion.version,
-  //         processDefinitionVersion,
-  //       }))
-  //       .sort((a, b) => b.id - a.id)
-  //   )
-  // );
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
@@ -198,7 +168,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   private readonly _subscriptions = new Subscription();
 
   constructor(
-    private readonly route: ActivatedRoute,
     private readonly processService: ProcessService,
     private readonly pageTitleService: PageTitleService,
     private readonly translateService: TranslateService,
@@ -208,11 +177,10 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     private readonly modalService: ModalService,
     private readonly processLinkService: ProcessLinkService,
     private readonly processLinkStateService: ProcessLinkStateService,
-    private readonly router: Router,
     private readonly notificationService: NotificationService,
     private readonly logger: NGXLogger
   ) {
-    this.iconService.registerAll([Deploy16, Download16]);
+    this.iconService.registerAll([Deploy16, Download16, ArrowLeft16]);
     (window as any as ProcessManagementWindow).processManagementEditorService =
       processManagementEditorService;
     (window as any as ProcessManagementWindow).translateService = translateService;
@@ -253,7 +221,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         )
       )
       .subscribe(() => {
-        this.reload();
+        this.navigateBack.emit();
       });
   }
 
@@ -276,6 +244,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         )
       )
       .subscribe(() => {
+        this.navigateBack.emit();
         this.notificationService.showToast({
           caption: this.translateService.instant('formFlow.savedSuccessTitleMessage'),
           type: 'success',
@@ -298,25 +267,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         window.URL.revokeObjectURL(link.href);
         link.remove();
       });
-  }
-
-  public selectedVersionChange(event: {item: {processDefinitionVersion: ProcessDefinition}}): void {
-    this.processManagementEditorService.selectionProcessDefinition$
-      .pipe(take(1))
-      .subscribe(selectedVersion => {
-        if (selectedVersion.id !== event.item.processDefinitionVersion.id) {
-          this.processManagementEditorService.setSelectedProcessDefinition(
-            event?.item?.processDefinitionVersion
-          );
-          this.changesPending$.next(false);
-        }
-      });
-  }
-
-  private setSelectedProcessDefinitionToLatest(processDefinitions: ProcessDefinition[]): void {
-    this.processManagementEditorService.setSelectedProcessDefinition(
-      processDefinitions.reduce((acc, version) => (version.version > acc.version ? version : acc))
-    );
   }
 
   private initModeler(): void {
@@ -412,10 +362,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this._bpmnViewer.on('import.done', () => {
       disableCommands();
     });
-  }
-
-  private reload(): void {
-    this._reload$.next(null);
   }
 
   private handleUpdateEvent(event: OpenProcessLinkModalEvent): void {
@@ -533,16 +479,15 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       .pipe(
         filter(selectedProcess => selectedProcess !== null && selectedProcess !== 'create'),
         distinctUntilChanged((previous, current) => isEqual(previous, current)),
-        tap(() => this.loading$.next(true)),
-        tap(result => {
-          this.cleanUpListenersOnModeler();
-          this._bpmnModeler?.importXML(result.bpmn20Xml);
-          this._bpmnViewer?.importXML(result.bpmn20Xml);
-          this.isReadOnlyProcess$.next(result.readOnly);
-          this.isSystemProcess$.next(result.systemProcess);
-          this.loading$.next(false);
-        })
+        tap(() => this.loading$.next(true))
       )
-      .subscribe();
+      .subscribe(result => {
+        this.cleanUpListenersOnModeler();
+        this._bpmnModeler?.importXML(result.bpmn20Xml);
+        this._bpmnViewer?.importXML(result.bpmn20Xml);
+        this.isReadOnlyProcess$.next(result.readOnly);
+        this.isSystemProcess$.next(result.systemProcess);
+        this.loading$.next(false);
+      });
   }
 }

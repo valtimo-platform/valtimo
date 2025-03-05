@@ -18,7 +18,6 @@
   [actionItems]="ACTION_ITEMS"
   [fields]="FIELDS"
   [header]="false"
-  [isSearchable]="true"
   [items]="processDefinitions$ | async"
   [loading]="loading$ | async"
   (rowClicked)="editProcessDefinition($event)"
@@ -34,15 +33,14 @@
       <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
     </button>
   </ng-container>
-  <!-- <ng-container carbonToolbarContent>
-    <button cdsButton="ghost" [iconOnly]="true" disabled="true" (click)="openModal()">
-      <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
-    </button>
-
-    <button cdsButton="primary" (click)="onCreateClick()">
-      {{ 'Create new Process' | translate }}
-
-      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-    </button>
-  </ng-container> -->
 </valtimo-carbon-list>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="processManagement.deleteModal.content"
+  [outputOnConfirm]="processToDelete$ | async"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="processManagement.deleteModal.title"
+  (confirmEvent)="onDeleteConfirm($event)"
+></valtimo-confirmation-modal>

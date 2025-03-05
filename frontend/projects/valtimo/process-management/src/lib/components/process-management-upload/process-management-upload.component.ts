@@ -26,9 +26,7 @@ import {
   NotificationService,
 } from 'carbon-components-angular';
 import {map, startWith} from 'rxjs';
-
-import {ProcessManagementService} from '../../process-management.service';
-import {ProcessManagementStateService} from '../../services';
+import {ProcessManagementService, ProcessManagementStateService} from '../../services';
 
 @Component({
   selector: 'valtimo-process-management-upload',
@@ -62,8 +60,8 @@ export class ProcessManagementUploadComponent {
   );
 
   constructor(
-    private readonly processManagementService: ProcessManagementService,
     private readonly processManagementStateService: ProcessManagementStateService,
+    private readonly processManagementService: ProcessManagementService,
     private readonly formBuilder: FormBuilder,
     private readonly notificationService: NotificationService,
     private readonly translateService: TranslateService

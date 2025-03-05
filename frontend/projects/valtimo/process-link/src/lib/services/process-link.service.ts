@@ -112,7 +112,6 @@ export class ProcessLinkService {
     if (processXml) formData.append('file', new File([processXml], 'process.bpmn'));
     if (processDefinitionId) formData.append('processDefinitionId', processDefinitionId);
     formData.append('processLinks', processLinksBlob);
-    console.log({formData});
 
     return this.http.post(
       `${this.VALTIMO_ENDPOINT_URI}management/v1/case-definition/bezwaar/version/1.0.0-test/process-definition`,

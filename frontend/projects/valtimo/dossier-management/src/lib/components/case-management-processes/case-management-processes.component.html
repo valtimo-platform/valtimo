@@ -1,14 +1,1 @@
-<ng-container *ngIf="{selectedProcess: selectedProcess$ | async} as obs">
-  @if (obs.selectedProcess === null) {
-    <valtimo-process-management-list
-      [params]="params$ | async"
-      (processSelected)="onProcessSelected($event)"
-    ></valtimo-process-management-list>
-  } @else {
-    <valtimo-process-management-builder
-      [selectedProcess]="obs.selectedProcess"
-    ></valtimo-process-management-builder>
-  }
-</ng-container>
-
-<valtimo-process-management-upload></valtimo-process-management-upload>
+<valtimo-process-management [params]="params$ | async"></valtimo-process-management>

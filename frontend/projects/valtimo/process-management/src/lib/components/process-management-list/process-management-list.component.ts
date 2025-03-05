@@ -14,25 +14,21 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
-import {Router} from '@angular/router';
+import {ChangeDetectionStrategy, Component, EventEmitter, Output} from '@angular/core';
 import {Upload16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
-import {ActionItem, CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
-import {ProcessDefinition, ProcessService} from '@valtimo/process';
-import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {
-  BehaviorSubject,
-  Observable,
-  Subject,
-  filter,
-  map,
-  startWith,
-  switchMap,
-  take,
-  tap,
-} from 'rxjs';
-import {ProcessManagementStateService, ProcessManagementApiService} from '../../services';
+  ActionItem,
+  CarbonListModule,
+  ColumnConfig,
+  ConfirmationModalModule,
+  ViewType,
+} from '@valtimo/components';
+import {ProcessDefinition} from '@valtimo/process';
+import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
+import {BehaviorSubject, map, Observable, switchMap, take, tap} from 'rxjs';
+import {CaseProcessInstance} from '../../models';
+import {ProcessManagementService, ProcessManagementStateService} from '../../services';
 
 @Component({
   selector: 'valtimo-process-management-list',
@@ -40,21 +36,21 @@ import {ProcessManagementStateService, ProcessManagementApiService} from '../../
   styleUrls: ['./process-management-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, ButtonModule, CarbonListModule, IconModule, IconModule, TranslateModule],
-  providers: [ProcessManagementApiService],
+  imports: [
+    CommonModule,
+    ButtonModule,
+    CarbonListModule,
+    IconModule,
+    IconModule,
+    TranslateModule,
+    ConfirmationModalModule,
+  ],
 })
 export class ProcessManagementListComponent {
-  private readonly _params$ = new BehaviorSubject<{
-    documentDefinitionKey: string;
-    versionTag: string;
-  } | null>(null);
-  @Input() public set params(value: {documentDefinitionKey: string; versionTag: string} | null) {
-    if (!value) return;
+  @Output() public readonly processSelected = new EventEmitter<CaseProcessInstance | 'create'>();
 
-    this._params$.next(value);
-  }
-  @Output() public readonly processSelected = new EventEmitter<ProcessDefinition | 'create'>();
-
+  public readonly processToDelete$ = new BehaviorSubject<ProcessDefinition | null>(null);
+  public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly ACTION_ITEMS: ActionItem[] = [
     {
@@ -64,18 +60,12 @@ export class ProcessManagementListComponent {
     },
   ];
 
-  // public readonly reloadDefinitions$ = this.processManagementStateService.reloadDefinitions$;
-
-  public readonly processDefinitions$: Observable<any[]> = this._params$.pipe(
-    filter(params => !!params),
-    switchMap(params => {
-      this.processManagementApiService.setParams(
-        params?.documentDefinitionKey ?? '',
-        params?.versionTag ?? ''
-      );
-
-      return this.processManagementApiService.getProcesses();
-    }),
+  public readonly processDefinitions$: Observable<
+    (ProcessDefinition & {data: CaseProcessInstance})[]
+  > = this.processManagementStateService.reloadDefinitions$.pipe(
+    tap(() => this.loading$.next(true)),
+    switchMap(() => this.processManagementService.getProcesses()),
+    tap(res => console.log({res})),
     map(res => res.map(i => ({...i.processDefinition, data: i}))),
     tap(() => this.loading$.next(false))
   );
@@ -87,18 +77,17 @@ export class ProcessManagementListComponent {
   ];
 
   constructor(
-    private readonly processManagementApiService: ProcessManagementApiService,
+    private readonly processManagementService: ProcessManagementService,
     private readonly processManagementStateService: ProcessManagementStateService,
-    private readonly processService: ProcessService,
-    private readonly router: Router,
     private readonly iconService: IconService
   ) {
     this.iconService.registerAll([Upload16]);
   }
 
-  public editProcessDefinition(processDefinition: any): void {
+  public editProcessDefinition(
+    processDefinition: ProcessDefinition & {data: CaseProcessInstance}
+  ): void {
     this.processSelected.emit(processDefinition.data);
-    // this.router.navigate(['/processes/process', processDefinition.key]);
   }
 
   public openModal(): void {
@@ -107,10 +96,19 @@ export class ProcessManagementListComponent {
 
   public onCreateProcess(): void {
     this.processSelected.emit('create');
-    // this.router.navigate(['create']);
   }
 
-  public onDeleteProcess(processDefinition: any): void {
-    this.processManagementApiService.deleteProcess(processDefinition.id).pipe(take(1)).subscribe();
+  public onDeleteConfirm(processDefinition: ProcessDefinition): void {
+    this.processManagementService
+      .deleteProcess(processDefinition.key)
+      .pipe(take(1))
+      .subscribe(() => {
+        this.processManagementStateService.reloadDefinitions();
+      });
+  }
+
+  public onDeleteProcess(processDefinition: ProcessDefinition): void {
+    this.processToDelete$.next(processDefinition);
+    this.showDeleteModal$.next(true);
   }
 }

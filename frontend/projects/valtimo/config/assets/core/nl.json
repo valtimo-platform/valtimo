@@ -1081,6 +1081,10 @@
     "systemProcessWarningMessage": "Dit is een systeemproces. Let goed op bij het maken van aanpassingen aan dit proces",
     "readOnlySystemProcessWarningMessage": "Dit is een systeemproces, daarmee is het gemarkeerd als alleen-lezen. Dit proces is wel te gebruiken maar niet aan te passen.",
     "version": "Versie: ",
+    "deleteModal": {
+      "title": "Proces verwijderen",
+      "content": "Weet u zeker dat u dit proces wilt verwijderen?"
+    },
     "upload": {
       "modalTitle": "Upload procesdefinitie",
       "title": "Upload bestand",

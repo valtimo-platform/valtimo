@@ -2,12 +2,9 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {PendingChangesComponent} from '@valtimo/components';
-import {ProcessDefinition} from '@valtimo/process';
 import {
-  ProcessManagementBuilderComponent,
-  ProcessManagementListComponent,
+  ProcessManagementComponent,
   ProcessManagementStateService,
-  ProcessManagementUploadComponent,
 } from '@valtimo/process-management';
 import {ButtonModule} from 'carbon-components-angular';
 import {BehaviorSubject, map} from 'rxjs';
@@ -17,13 +14,7 @@ import {BehaviorSubject, map} from 'rxjs';
   styleUrl: './case-management-processes.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [
-    CommonModule,
-    ButtonModule,
-    ProcessManagementListComponent,
-    ProcessManagementBuilderComponent,
-    ProcessManagementUploadComponent,
-  ],
+  imports: [CommonModule, ButtonModule, ProcessManagementComponent],
   providers: [ProcessManagementStateService],
 })
 export class CaseManagementProcessesComponent extends PendingChangesComponent {

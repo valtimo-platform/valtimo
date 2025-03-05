@@ -1082,6 +1082,10 @@
     "systemProcessWarningMessage": "This is a system process. Pay close attention when making adjustments to this process",
     "readOnlySystemProcessWarningMessage": "This is a system process, so it is marked as read-only. This process can be used but not modified.",
     "version": "Version: ",
+    "deleteModal": {
+      "title": "Delete process",
+      "content": "Are you sure you want to delete this process?"
+    },
     "upload": {
       "modalTitle": "Upload process definition",
       "title": "Upload file",

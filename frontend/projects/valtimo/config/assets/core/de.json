@@ -1079,6 +1079,10 @@
     "systemProcessWarningMessage": "Dies ist ein Systemprozess. Achten Sie genau darauf, wenn Sie Anpassungen an diesem Prozess vornehmen",
     "readOnlySystemProcessWarningMessage": "Dies ist ein Systemprozess, daher ist er als schreibgeschützt gekennzeichnet. Dieser Prozess kann verwendet, aber nicht geändert werden.",
     "version": "Version: ",
+    "deleteModal": {
+      "title": "Prozess löschen",
+      "content": "Möchten Sie diesen Prozess wirklich löschen?"
+    },
     "upload": {
       "modalTitle": "Prozessdefinition hochladen",
       "title": "Datei hochladen",

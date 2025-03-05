@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of process-management
- */
+import {ProcessDocumentDefinition} from '@valtimo/document';
+import {ProcessDefinition} from '@valtimo/process';
+import {ProcessLink} from '@valtimo/process-link';
 
-export * from './lib/process-management.module';
-export * from './lib/services/process-management-state.service';
-export * from './lib/components/process-management/process-management.component';
+export interface CaseProcessInstance {
+  bpmn20Xml: string;
+  processCaseLink: ProcessDocumentDefinition;
+  processDefinition: ProcessDefinition;
+  processLinks: ProcessLink[];
+}
