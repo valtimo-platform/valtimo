@@ -463,12 +463,15 @@ export class DossierListComponent implements OnInit, OnDestroy {
                 },
               };
         }, {});
-        const mappedCaseTagsColumns = item.caseTags.map(tag => {
-          return {
-            content: tag.title,
-            type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(tag.color),
-          };
-        });
+        let mappedCaseTagsColumns = <any>[];
+        if (item?.caseTags) {
+          mappedCaseTagsColumns = item.caseTags.map(tag => {
+            return {
+              content: tag.title,
+              type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(tag.color),
+            };
+          });
+        }
 
         return {
           ...item,
