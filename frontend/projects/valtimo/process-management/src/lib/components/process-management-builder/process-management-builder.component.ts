@@ -32,6 +32,7 @@ import {
   from,
   map,
   Observable,
+  of,
   startWith,
   Subject,
   Subscription,
@@ -121,6 +122,9 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   private readonly _selectedProcess$ = new BehaviorSubject<any | 'create' | null>(null);
   @Input() public set selectedProcess(value: any | 'create') {
     this._selectedProcess$.next(value);
+    if (value === 'create') return;
+    this.processManagementEditorService.setSelectedProcessDefinition(value.processDefinition);
+    this.processManagementEditorService.setProcessLinksForSelectedDefinition(value.processLinks);
   }
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
@@ -272,7 +276,6 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
         )
       )
       .subscribe(() => {
-        this.router.navigate(['/processes']);
         this.notificationService.showToast({
           caption: this.translateService.instant('formFlow.savedSuccessTitleMessage'),
           type: 'success',

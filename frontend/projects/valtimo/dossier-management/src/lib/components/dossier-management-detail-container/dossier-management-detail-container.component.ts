@@ -114,7 +114,7 @@ export class DossierManagementDetailContainerComponent implements OnInit, AfterV
   }
 
   public ngOnDestroy(): void {
-    this.tabService.currentTab = TabEnum.DOCUMENT;
+    this.tabService.currentTab = TabEnum.PROCESSES;
     this._subscriptions.unsubscribe();
     // this.pageTitleService.enableReset();
   }
@@ -123,6 +123,9 @@ export class DossierManagementDetailContainerComponent implements OnInit, AfterV
   public displayBodyComponent(tab: TabEnum | string): void {
     if (!this._tabsInit) {
       this._tabsInit = true;
+      this.router.navigate([`dossier-management/dossier/bezwaar/${tab}`], {
+        skipLocationChange: true,
+      });
       return;
     }
 

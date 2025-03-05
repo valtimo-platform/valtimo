@@ -24,23 +24,6 @@
   <valtimo-documenten-api></valtimo-documenten-api>
   <cds-tabs class="dossier-management-tabs" type="contained">
     <cds-tab
-      class="no-padding-left-right no-padding-top-bottom"
-      [id]="TabEnum.DOCUMENT"
-      [active]="obs.currentTab === TabEnum.DOCUMENT"
-      [heading]="'dossierManagement.tabs.document' | translate"
-      (selected)="displayBodyComponent(TabEnum.DOCUMENT, obs.currentTab)"
-    >
-    </cds-tab>
-
-    <cds-tab
-      class="no-padding-left-right main-content"
-      [active]="obs.currentTab === TabEnum.CASE"
-      [heading]="'dossierManagement.tabs.cases' | translate"
-      (selected)="displayBodyComponent(TabEnum.CASE, obs.currentTab)"
-    >
-    </cds-tab>
-
-    <cds-tab
       class="no-padding-left-right main-content"
       [id]="TabEnum.PROCESSES"
       [active]="obs.currentTab === TabEnum.PROCESSES"
@@ -50,10 +33,30 @@
     </cds-tab>
 
     <cds-tab
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.DOCUMENT"
+      [active]="obs.currentTab === TabEnum.DOCUMENT"
+      [heading]="'dossierManagement.tabs.document' | translate"
+      disabled="true"
+      (selected)="displayBodyComponent(TabEnum.DOCUMENT, obs.currentTab)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right main-content"
+      [active]="obs.currentTab === TabEnum.CASE"
+      [heading]="'dossierManagement.tabs.cases' | translate"
+      disabled="true"
+      (selected)="displayBodyComponent(TabEnum.CASE, obs.currentTab)"
+    >
+    </cds-tab>
+
+    <cds-tab
       class="main-content no-padding-left-right no-padding-bottom"
       [id]="TabEnum.SEARCH"
       [active]="obs.currentTab === TabEnum.SEARCH"
       [heading]="'dossierManagement.tabs.searchFields' | translate"
+      disabled="true"
       (selected)="displayBodyComponent(TabEnum.SEARCH, obs.currentTab)"
     >
     </cds-tab>
@@ -64,6 +67,7 @@
       [id]="TabEnum.LIST"
       [active]="obs.currentTab === TabEnum.LIST"
       [heading]="'dossierManagement.tabs.listColumns' | translate"
+      disabled="true"
       (selected)="displayBodyComponent(TabEnum.LIST, obs.currentTab)"
     >
     </cds-tab>
@@ -74,6 +78,7 @@
       [id]="TabEnum.TABS"
       [active]="obs.currentTab === TabEnum.TABS"
       [heading]="'dossierManagement.tabs.tabManagement' | translate"
+      disabled="true"
       (selected)="displayBodyComponent(TabEnum.TABS, obs.currentTab)"
     >
     </cds-tab>
@@ -84,6 +89,7 @@
       [id]="TabEnum.STATUSES"
       [active]="vars.active"
       [heading]="'dossierManagement.tabs.statuses' | translate"
+      disabled="true"
       (selected)="displayBodyComponent(TabEnum.STATUSES, obs.currentTab)"
     >
       <!-- <valtimo-dossier-management-statuses
@@ -96,6 +102,7 @@
         class="no-padding-left-right no-padding-top-bottom"
         [active]="obs.currentTab === injectedTab.translationKey"
         [heading]="injectedTab.translationKey | translate"
+        disabled="true"
         (selected)="displayBodyComponent(injectedTab.translationKey, true)"
       >
       </cds-tab>

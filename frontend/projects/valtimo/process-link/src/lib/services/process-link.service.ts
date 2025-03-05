@@ -112,11 +112,10 @@ export class ProcessLinkService {
     if (processXml) formData.append('file', new File([processXml], 'process.bpmn'));
     if (processDefinitionId) formData.append('processDefinitionId', processDefinitionId);
     formData.append('processLinks', processLinksBlob);
-    formData.append('deployment-name', 'valtimoConsoleApp');
-    formData.append('deployment-source', 'process application');
+    console.log({formData});
 
     return this.http.post(
-      `${this.VALTIMO_ENDPOINT_URI}v1/process/definition/deployment/process-link`,
+      `${this.VALTIMO_ENDPOINT_URI}management/v1/case-definition/bezwaar/version/1.0.0-test/process-definition`,
       formData
     );
   }

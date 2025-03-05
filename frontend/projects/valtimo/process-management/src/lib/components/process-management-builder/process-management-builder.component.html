@@ -15,6 +15,23 @@
   -->
 <!-- processDefinitionVersions: processDefinitionVersions$ | async, -->
 <!-- selectedProcessDefinitionXml: selectedProcessDefinitionXml$ | async, -->
+<button
+  *ngIf="{
+    creatingNewProcess: creatingNewProcess$ | async,
+    isReadOnlyProcess: isReadOnlyProcess$ | async,
+    compactMode: compactMode$ | async,
+  } as obs"
+  cdsButton="primary"
+  [size]="obs.compactMode ? 'sm' : 'md'"
+  (click)="
+    obs.creatingNewProcess ? deployNewProcessDefinition() : deployChanges(obs.isReadOnlyProcess)
+  "
+>
+  {{ 'processManagement.deploy' | translate }}
+
+  <svg class="cds--btn__icon" cdsIcon="deploy" size="16"></svg>
+</button>
+
 <div
   fitPage
   [disableOverflow]="true"
@@ -41,6 +58,8 @@
     <div class="bpmn__modeler-panel" #viewerPanel></div>
   </div>
 </div>
+
+<!-- [disabled]="!actionsObs.changesPending" -->
 
 <valtimo-process-link-modal></valtimo-process-link-modal>
 
