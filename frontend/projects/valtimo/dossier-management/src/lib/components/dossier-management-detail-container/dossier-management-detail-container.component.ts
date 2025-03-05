@@ -70,9 +70,6 @@ export class DossierManagementDetailContainerComponent implements OnInit, AfterV
 
   public _activeTab: TabEnum | string;
   public pendingTab: TabEnum | null | string;
-  // public readonly currentTab$ = new BehaviorSubject<TabEnum | string | undefined>(
-  //   this.route.firstChild?.routeConfig?.path
-  // );
   public readonly currentTab$ = this.router.events.pipe(
     filter(event => event instanceof NavigationEnd),
     map(event => {
@@ -81,16 +78,7 @@ export class DossierManagementDetailContainerComponent implements OnInit, AfterV
     }),
     startWith(this.route.firstChild?.routeConfig?.path)
   );
-  // private stuff = of(this.route.firstChild?.routeConfig?.path);
-  // public currentTab$ = this.stuff.pipe(
-  //   switchMap(s => {
-  //     console.log({s});
-  //     return this.tabService.currentTab$;
-  //   }),
-  //   tap((currentTab: TabEnum | string) => {
-  //     this._activeTab = currentTab;
-  //   })
-  // );
+
   public readonly injectedCaseManagementTabs$: Observable<CaseManagementTabConfig[]> =
     this.tabService.injectedCaseManagementTabs$;
   public readonly documentDefinitionTitle$ = this.pageTitleService.customPageTitle$;

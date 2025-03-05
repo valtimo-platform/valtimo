@@ -2,18 +2,32 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {PendingChangesComponent} from '@valtimo/components';
-import {ProcessManagementListComponent} from '@valtimo/process-management';
+import {ProcessDefinition} from '@valtimo/process';
+import {
+  ProcessManagementBuilderComponent,
+  ProcessManagementListComponent,
+  ProcessManagementStateService,
+  ProcessManagementUploadComponent,
+} from '@valtimo/process-management';
 import {ButtonModule} from 'carbon-components-angular';
-import {map} from 'rxjs';
+import {BehaviorSubject, map} from 'rxjs';
 
 @Component({
   templateUrl: './case-management-processes.component.html',
   styleUrl: './case-management-processes.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, ButtonModule, ProcessManagementListComponent],
+  imports: [
+    CommonModule,
+    ButtonModule,
+    ProcessManagementListComponent,
+    ProcessManagementBuilderComponent,
+    ProcessManagementUploadComponent,
+  ],
+  providers: [ProcessManagementStateService],
 })
 export class CaseManagementProcessesComponent extends PendingChangesComponent {
+  public readonly selectedProcess$ = new BehaviorSubject<any | 'create' | null>(null);
   public readonly params$ = this.route.parent?.params.pipe(
     map(params => ({
       documentDefinitionKey: params['name'],
@@ -31,5 +45,9 @@ export class CaseManagementProcessesComponent extends PendingChangesComponent {
 
   public onDeactivatePendingChanges(): void {
     this.pendingChanges = false;
+  }
+
+  public onProcessSelected(process: any | 'create'): void {
+    this.selectedProcess$.next(process);
   }
 }

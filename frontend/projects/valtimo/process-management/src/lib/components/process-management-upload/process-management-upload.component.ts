@@ -19,6 +19,7 @@ import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 import {
+  ButtonModule,
   FileUploaderModule,
   LayerModule,
   ModalModule,
@@ -43,6 +44,7 @@ import {ProcessManagementStateService} from '../../services';
     ModalModule,
     LayerModule,
     ReactiveFormsModule,
+    ButtonModule,
   ],
 })
 export class ProcessManagementUploadComponent {

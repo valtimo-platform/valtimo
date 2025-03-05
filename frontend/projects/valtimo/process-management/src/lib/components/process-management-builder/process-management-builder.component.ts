@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {
   CARBON_CONSTANTS,
@@ -118,6 +118,11 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   @ViewChild('viewer', {static: false}) viewerElementRef!: ElementRef;
   @ViewChild('viewerPanel', {static: false}) viewerPanelElementRef!: ElementRef;
 
+  private readonly _selectedProcess$ = new BehaviorSubject<any | 'create' | null>(null);
+  @Input() public set selectedProcess(value: any | 'create') {
+    this._selectedProcess$.next(value);
+  }
+
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
   private _bpmnModeler!: Modeler;
@@ -147,44 +152,40 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
       })
     );
 
-  private readonly _processDefinitionKey$ = this.route.params.pipe(
-    map(params => params.key),
-    filter(key => !!key)
-  );
-
   private readonly _reload$ = new Subject<null>();
 
   public readonly changesPending$ = new BehaviorSubject<boolean>(false);
 
-  public readonly processDefinitionVersions$ = combineLatest([
-    this._processDefinitionKey$,
-    this._reload$.pipe(startWith(null)),
-  ]).pipe(
-    switchMap(([processDefinitionKey]) =>
-      this.processService.getProcessDefinitionVersions(processDefinitionKey)
-    ),
-    tap(processDefinitions => {
-      this.changesPending$.next(false);
-      this.setSelectedProcessDefinitionToLatest(processDefinitions);
-    })
-  );
+  // public readonly processDefinitionVersions$ = combineLatest([
+  //   this._processDefinitionKey$,
+  //   this._reload$.pipe(startWith(null)),
+  // ]).pipe(
+  //   filter(([processDefinitionKey]) => !!processDefinitionKey),
+  //   switchMap(([processDefinitionKey]) =>
+  //     this.processService.getProcessDefinitionVersions(processDefinitionKey ?? '')
+  //   ),
+  //   tap(processDefinitions => {
+  //     this.changesPending$.next(false);
+  //     this.setSelectedProcessDefinitionToLatest(processDefinitions);
+  //   })
+  // );
 
-  public readonly processDefinitionVersionsListItems$: Observable<ListItem[]> = combineLatest([
-    this.processDefinitionVersions$,
-    this.processManagementEditorService.selectionProcessDefinition$,
-    this.translateService.stream('key'),
-  ]).pipe(
-    map(([processDefinitionVersions, selectionProcessDefinition]) =>
-      processDefinitionVersions
-        .map(processDefinitionVersion => ({
-          id: processDefinitionVersion.version,
-          content: `${this.translateService.instant('processManagement.version')}${processDefinitionVersion.version}`,
-          selected: selectionProcessDefinition.version === processDefinitionVersion.version,
-          processDefinitionVersion,
-        }))
-        .sort((a, b) => b.id - a.id)
-    )
-  );
+  // public readonly processDefinitionVersionsListItems$: Observable<ListItem[]> = combineLatest([
+  //   this.processDefinitionVersions$,
+  //   this.processManagementEditorService.selectionProcessDefinition$,
+  //   this.translateService.stream('key'),
+  // ]).pipe(
+  //   map(([processDefinitionVersions, selectionProcessDefinition]) =>
+  //     processDefinitionVersions
+  //       .map(processDefinitionVersion => ({
+  //         id: processDefinitionVersion.version,
+  //         content: `${this.translateService.instant('processManagement.version')}${processDefinitionVersion.version}`,
+  //         selected: selectionProcessDefinition.version === processDefinitionVersion.version,
+  //         processDefinitionVersion,
+  //       }))
+  //       .sort((a, b) => b.id - a.id)
+  //   )
+  // );
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
@@ -222,6 +223,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     this.subscribeToProcessLinkDeleteEvents();
     this.processLinkStateService.setEditMode(ProcessLinkEditMode.EMIT_EVENTS);
     this.initIfCreate();
+    this.initProcessDefinition();
   }
 
   public ngOnDestroy(): void {
@@ -476,9 +478,7 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
   }
 
   private initIfCreate(): void {
-    const currentUrl = this.route.snapshot.url.toString();
-
-    if (!currentUrl.includes('create')) return;
+    if (this._selectedProcess$.getValue() !== 'create') return;
 
     this.creatingNewProcess$.next(true);
     this._bpmnModeler?.importXML(EMPTY_BPMN);
@@ -523,5 +523,23 @@ export class ProcessManagementBuilderComponent implements AfterViewInit, OnDestr
     eventBus.off('shape.added', this.shapeAddedHandler);
     eventBus.off('shape.removed', this.shapeRemovedHandler);
     eventBus.off('element.changed', this.elementChangedHandler);
+  }
+
+  private initProcessDefinition(): void {
+    this._selectedProcess$
+      .pipe(
+        filter(selectedProcess => selectedProcess !== null && selectedProcess !== 'create'),
+        distinctUntilChanged((previous, current) => isEqual(previous, current)),
+        tap(() => this.loading$.next(true)),
+        tap(result => {
+          this.cleanUpListenersOnModeler();
+          this._bpmnModeler?.importXML(result.bpmn20Xml);
+          this._bpmnViewer?.importXML(result.bpmn20Xml);
+          this.isReadOnlyProcess$.next(result.readOnly);
+          this.isSystemProcess$.next(result.systemProcess);
+          this.loading$.next(false);
+        })
+      )
+      .subscribe();
   }
 }

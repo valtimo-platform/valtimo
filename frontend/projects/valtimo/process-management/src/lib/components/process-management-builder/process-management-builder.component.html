@@ -13,22 +13,21 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
+<!-- processDefinitionVersions: processDefinitionVersions$ | async, -->
+<!-- selectedProcessDefinitionXml: selectedProcessDefinitionXml$ | async, -->
 <div
   fitPage
   [disableOverflow]="true"
   *ngIf="{
-    processDefinitionVersions: processDefinitionVersions$ | async,
-    selectedProcessDefinitionXml: selectedProcessDefinitionXml$ | async,
     loading: loading$ | async,
     isReadOnlyProcess: isReadOnlyProcess$ | async,
   } as obs"
   data-carbon-theme="g10"
   class="bpmn__container"
 >
-  <div *ngIf="obs.loading" class="bpmn__loading">
+  <!-- <div *ngIf="obs.loading" class="bpmn__loading">
     <cds-loading></cds-loading>
-  </div>
+  </div> -->
 
   <div class="bpmn__modeler" [style.display]="obs.isReadOnlyProcess ? 'none' : 'flex'">
     <div class="bpmn__modeler-canvas" #modeler></div>
@@ -45,7 +44,7 @@
 
 <valtimo-process-link-modal></valtimo-process-link-modal>
 
-<ng-container renderInPageHeader [fullWidth]="true">
+<!-- <ng-container renderInPageHeader [fullWidth]="true">
   <ng-template>
     <div
       class="page-header-actions"
@@ -113,4 +112,4 @@
       </div>
     </div>
   </ng-template>
-</ng-container>
+</ng-container> -->

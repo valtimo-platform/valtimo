@@ -18,6 +18,7 @@
 ::ng-deep.dossier-management-tabs {
   .cds--tab-content {
     background-color: var(--cds-layer);
+    padding: 0 !important;
 
     &:focus {
       outline: none;

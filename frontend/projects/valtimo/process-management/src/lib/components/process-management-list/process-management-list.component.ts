@@ -14,14 +14,24 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {Router} from '@angular/router';
 import {Upload16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
+import {ActionItem, CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
-import {BehaviorSubject, Subject, filter, map, startWith, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  Subject,
+  filter,
+  map,
+  startWith,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {ProcessManagementStateService, ProcessManagementApiService} from '../../services';
 
 @Component({
@@ -30,7 +40,8 @@ import {ProcessManagementStateService, ProcessManagementApiService} from '../../
   styleUrls: ['./process-management-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, ButtonModule, CarbonListModule, IconModule, TranslateModule],
+  imports: [CommonModule, ButtonModule, CarbonListModule, IconModule, IconModule, TranslateModule],
+  providers: [ProcessManagementApiService],
 })
 export class ProcessManagementListComponent {
   private readonly _params$ = new BehaviorSubject<{
@@ -42,25 +53,30 @@ export class ProcessManagementListComponent {
 
     this._params$.next(value);
   }
+  @Output() public readonly processSelected = new EventEmitter<ProcessDefinition | 'create'>();
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly ACTION_ITEMS: ActionItem[] = [
+    {
+      label: 'Delete',
+      callback: this.onDeleteProcess.bind(this),
+      type: 'danger',
+    },
+  ];
 
   // public readonly reloadDefinitions$ = this.processManagementStateService.reloadDefinitions$;
 
-  public readonly processDefinitions$ = this._params$.pipe(
+  public readonly processDefinitions$: Observable<any[]> = this._params$.pipe(
     filter(params => !!params),
-    tap(value => console.log({value})),
     switchMap(params => {
-      console.log({params});
-      return this.processManagementApiService.getProcesses(
+      this.processManagementApiService.setParams(
         params?.documentDefinitionKey ?? '',
         params?.versionTag ?? ''
       );
+
+      return this.processManagementApiService.getProcesses();
     }),
-    map(res => {
-      console.log({res});
-      return res.map(i => i.processDefinition);
-    }),
+    map(res => res.map(i => ({...i.processDefinition, data: i}))),
     tap(() => this.loading$.next(false))
   );
 
@@ -72,23 +88,29 @@ export class ProcessManagementListComponent {
 
   constructor(
     private readonly processManagementApiService: ProcessManagementApiService,
+    private readonly processManagementStateService: ProcessManagementStateService,
     private readonly processService: ProcessService,
     private readonly router: Router,
     private readonly iconService: IconService
-    // private readonly processManagementStateService: ProcessManagementStateService
   ) {
     this.iconService.registerAll([Upload16]);
   }
 
-  public editProcessDefinition(processDefinition: ProcessDefinition): void {
-    this.router.navigate(['/processes/process', processDefinition.key]);
+  public editProcessDefinition(processDefinition: any): void {
+    this.processSelected.emit(processDefinition.data);
+    // this.router.navigate(['/processes/process', processDefinition.key]);
   }
 
   public openModal(): void {
-    // this.processManagementStateService.openModal();
+    this.processManagementStateService.openModal();
   }
 
-  public onCreateClick(): void {
-    this.router.navigate(['create']);
+  public onCreateProcess(): void {
+    this.processSelected.emit('create');
+    // this.router.navigate(['create']);
+  }
+
+  public onDeleteProcess(processDefinition: any): void {
+    this.processManagementApiService.deleteProcess(processDefinition.id).pipe(take(1)).subscribe();
   }
 }
