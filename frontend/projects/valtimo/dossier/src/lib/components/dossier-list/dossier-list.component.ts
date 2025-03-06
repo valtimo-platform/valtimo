@@ -197,6 +197,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
   public readonly showStatusSelector$ = this.statusService.showStatusSelector$;
 
   private readonly INTERNAL_STATUS_COLUMN = 'internalStatus';
+  private readonly CASE_TAGS_COLUMN = 'caseTags';
   private readonly _statusField: ListField = {
     label: 'document.status',
     key: this.INTERNAL_STATUS_COLUMN,
@@ -206,6 +207,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
   private readonly _internalStatusKeys$ = new BehaviorSubject<string[]>([
     this.INTERNAL_STATUS_COLUMN,
   ]);
+  private readonly _caseTagsKeys$ = new BehaviorSubject<string[]>([this.CASE_TAGS_COLUMN]);
   public readonly fields$: Observable<Array<ListField>> = combineLatest([
     this._canHaveAssignee$,
     this._columns$,
@@ -223,6 +225,14 @@ export class DossierListComponent implements OnInit, OnDestroy {
         ...columns.reduce(
           (acc, curr) =>
             curr.propertyName === this.INTERNAL_STATUS_COLUMN ? [...acc, curr.translationKey] : acc,
+          []
+        ),
+      ]);
+      this._caseTagsKeys$.next([
+        ...this._caseTagsKeys$.getValue(),
+        ...columns.reduce(
+          (acc, curr) =>
+            curr.propertyName === this.CASE_TAGS_COLUMN ? [...acc, curr.translationKey] : acc,
           []
         ),
       ]);
@@ -409,9 +419,10 @@ export class DossierListComponent implements OnInit, OnDestroy {
           )
         ).pipe(defaultIfEmpty([] as boolean[])),
         this._internalStatusKeys$,
+        this._caseTagsKeys$,
       ])
     ),
-    map(([res, documentsAuthorization, statusColumnKeys]) => ({
+    map(([res, documentsAuthorization, statusColumnKeys, caseTagsKeys]) => ({
       ...res,
       documents: {
         ...res.documents,
@@ -421,6 +432,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         })),
       },
       statusColumnKeys,
+      caseTagsKeys,
     })),
     map(
       (res: {
@@ -431,6 +443,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         selectedStatuses: InternalCaseStatus[];
         allStatuses: InternalCaseStatus[];
         statusColumnKeys: string[];
+        caseTagsKeys: string[];
       }) => {
         this.paginationService.setCollectionSize(res.documents);
         this.paginationService.checkPage(res.documents);
@@ -443,6 +456,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
           ),
           statuses: res.allStatuses,
           statusColumnKeys: res.statusColumnKeys,
+          caseTagsKeys: res.caseTagsKeys,
         };
       }
     ),
@@ -463,20 +477,23 @@ export class DossierListComponent implements OnInit, OnDestroy {
                 },
               };
         }, {});
-        let mappedCaseTagsColumns = <any>[];
-        if (item?.caseTags) {
-          mappedCaseTagsColumns = item.caseTags.map(tag => {
+        const mappedTagColumns = res.caseTagsKeys.reduce((acc, curr) => {
+          if (item[curr]) {
             return {
-              content: tag.title,
-              type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(tag.color),
+              ...acc,
+              [curr]: item[curr].map(tag => ({
+                content: tag.title,
+                type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(tag.color),
+              })),
             };
-          });
-        }
+          }
+          return acc;
+        }, {});
 
         return {
           ...item,
           ...mappedInternalStatusColumns,
-          caseTags: mappedCaseTagsColumns,
+          ...mappedTagColumns,
         };
       });
     }),
