@@ -54,7 +54,7 @@ export class CaseTagsSelectorComponent {
   @Input() public carbonTheme: CARBON_THEME = CARBON_THEME.WHITE;
   @Input() public disabled!: boolean;
 
-  @Output() public selectedStatusesChangeEvent = new EventEmitter<InternalCaseStatus[]>();
+  @Output() public selectedCaseTagsChangeEvent = new EventEmitter<InternalCaseStatus[]>();
 
   private readonly _caseTags$ = new BehaviorSubject<InternalCaseStatus[]>([]);
 
@@ -92,7 +92,7 @@ export class CaseTagsSelectorComponent {
         .map(item => caseTags.find(status => status.key === item.key))
         .filter(caseTag => !!caseTag);
 
-      this.selectedStatusesChangeEvent.emit(newSelectedCaseTags);
+      this.selectedCaseTagsChangeEvent.emit(newSelectedCaseTags);
     });
   }
 }

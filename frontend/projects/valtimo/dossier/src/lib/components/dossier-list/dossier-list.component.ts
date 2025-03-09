@@ -142,6 +142,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
     tap(() => (this.loadingStatuses = false))
   );
   public readonly selectedStatuses$ = this.statusService.selectedCaseStatuses$;
+  public readonly selectedCaseTags$ = this.dossierListCaseTagService.selectedCaseTags$;
 
   public readonly documentDefinitionName$ = this.listService.documentDefinitionName$;
 
@@ -306,10 +307,12 @@ export class DossierListComponent implements OnInit, OnDestroy {
         this.assigneeFilter$,
         this.searchFieldValues$,
         this.statusService.selectedCaseStatuses$,
+        this.dossierListCaseTagService.selectedCaseTags$,
         this.listService.forceRefresh$,
         this._hasEnvColumnConfig$,
         this._hasApiColumnConfig$,
         this.statusService.caseStatuses$,
+        this.dossierListCaseTagService.caseTags$,
       ]).pipe(debounceTime(50))
     ),
     distinctUntilChanged(
@@ -319,6 +322,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
           prevAssigneeFilter,
           prevSearchFieldValues,
           prevSelectedStatuses,
+          prevCaseTags,
           prevForceRefresh,
         ],
         [
@@ -326,6 +330,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
           currAssigneeFilter,
           currSearchFieldValues,
           currSelectedStatuses,
+          currCaseTags,
           currForceRefresh,
         ]
       ) =>
@@ -335,6 +340,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
             assignee: prevAssigneeFilter,
             ...prevSearchFieldValues,
             ...prevSelectedStatuses.map((status: InternalCaseStatus) => status.key),
+            ...prevCaseTags.map((caseTag: InternalCaseStatus) => caseTag.key),
             forceRefresh: prevForceRefresh,
           },
           {
@@ -342,6 +348,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
             assignee: currAssigneeFilter,
             ...currSearchFieldValues,
             ...currSelectedStatuses.map((status: InternalCaseStatus) => status.key),
+            ...currCaseTags.map((caseTag: InternalCaseStatus) => caseTag.key),
             forceRefresh: currForceRefresh,
           }
         )
@@ -352,6 +359,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
         assigneeFilter,
         searchValues,
         selectedStatuses,
+        selectedCaseTags,
         _,
         hasEnvColumnConfig,
         hasApiColumnConfig,
@@ -362,6 +370,8 @@ export class DossierListComponent implements OnInit, OnDestroy {
         const statusKeys: (string | null)[] = selectedStatuses.map((status: InternalCaseStatus) =>
           status.key === CASES_WITHOUT_STATUS_KEY ? null : status.key
         );
+        selectedCaseTags.map(caseTag => console.log('casetag', caseTag));
+        const caseTagsKeys = selectedCaseTags.map(caseTag => caseTag.key);
         if ((Object.keys(searchValues) || []).length > 0) {
           return forkJoin({
             documents:
@@ -371,14 +381,16 @@ export class DossierListComponent implements OnInit, OnDestroy {
                     'AND',
                     assigneeFilter,
                     this.searchService.mapSearchValuesToFilters(searchValues),
-                    statusKeys
+                    statusKeys,
+                    caseTagsKeys
                   )
                 : this.documentService.getSpecifiedDocumentsSearch(
                     documentSearchRequest,
                     'AND',
                     assigneeFilter,
                     this.searchService.mapSearchValuesToFilters(searchValues),
-                    statusKeys
+                    statusKeys,
+                    caseTagsKeys
                   ),
             hasEnvColumnConfig: obsEnv,
             hasApiColumnConfig: obsApi,
@@ -395,14 +407,16 @@ export class DossierListComponent implements OnInit, OnDestroy {
                   'AND',
                   assigneeFilter,
                   undefined,
-                  statusKeys
+                  statusKeys,
+                  caseTagsKeys
                 )
               : this.documentService.getSpecifiedDocumentsSearch(
                   documentSearchRequest,
                   'AND',
                   assigneeFilter,
                   undefined,
-                  statusKeys
+                  statusKeys,
+                  caseTagsKeys
                 ),
           hasEnvColumnConfig: obsEnv,
           hasApiColumnConfig: obsApi,
@@ -665,6 +679,10 @@ export class DossierListComponent implements OnInit, OnDestroy {
 
   public onSelectedStatusesChange(statuses: InternalCaseStatus[]): void {
     this.statusService.setSelectedStatuses(statuses);
+  }
+
+  public onSelectedCaseTagsChange(caseTags: InternalCaseStatus[]): void {
+    this.dossierListCaseTagService.setSelectedCaseTags(caseTags);
   }
 
   public onStartButtonDisableEvent(disabled: boolean): void {
