@@ -48,6 +48,7 @@ import {
   SelectModule,
   SpinnerModule,
   StatusSelectorComponent,
+  CaseTagsSelectorComponent,
   TableModule,
   TimelineModule,
   TitleModule,
@@ -191,6 +192,7 @@ export type TabsFactory = () => Map<string, object>;
     DossierDetailTaskListComponent,
     DossierDetailsTaskDetailComponent,
     AngularSplitModule,
+    CaseTagsSelectorComponent,
   ],
   exports: [DossierListComponent, DossierDetailComponent, DossierProcessStartModalComponent],
 })

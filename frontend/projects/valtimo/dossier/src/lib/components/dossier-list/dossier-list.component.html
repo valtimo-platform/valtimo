@@ -24,8 +24,10 @@
     showAssignModal: showAssignModal$ | async,
     selectedDocumentIds: selectedDocumentIds$ | async,
     statuses: statuses$ | async,
+    caseTags: caseTags$ | async,
     selectedStatuses: selectedStatuses$ | async,
     showStatusSelector: showStatusSelector$ | async,
+    showCaseTagsSelector: showCaseTagsSelector$ | async,
     loaded:
       !loadingFields &&
       !loadingPagination &&
@@ -75,6 +77,10 @@
         [disabled]="!obs.loaded"
         (selectedStatusesChangeEvent)="onSelectedStatusesChange($event)"
       ></valtimo-status-selector>
+      <valtimo-case-tags-selector
+        *ngIf="obs.showCaseTagsSelector"
+        [caseTags]="obs.caseTags"
+      ></valtimo-case-tags-selector>
     </valtimo-search-fields>
   </div>
 </ng-template>

@@ -37,6 +37,12 @@ export class CaseTagService extends BaseApiService {
     );
   }
 
+  public getCaseTags(caseDefinitionName: string): Observable<InternalCaseStatus[]> {
+    return this.httpClient.get<InternalCaseStatus[]>(
+      this.getApiUrl(`/v1/case-definition/${caseDefinitionName}/case-tag`)
+    );
+  }
+
   public saveCaseTag(
     caseDefinitionName: string,
     tag: InternalCaseStatus

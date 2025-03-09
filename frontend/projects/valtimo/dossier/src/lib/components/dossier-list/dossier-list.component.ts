@@ -86,6 +86,7 @@ import {
   DossierListService,
   DossierListStatusService,
   DossierParameterService,
+  DossierListCaseTagService,
 } from '../../services';
 import {DossierListActionsComponent} from '../dossier-list-actions/dossier-list-actions.component';
 
@@ -101,6 +102,7 @@ import {DossierListActionsComponent} from '../dossier-list-actions/dossier-list-
     DossierListPaginationService,
     DossierListSearchService,
     DossierListStatusService,
+    DossierListCaseTagService,
   ],
 })
 export class DossierListComponent implements OnInit, OnDestroy {
@@ -134,6 +136,9 @@ export class DossierListComponent implements OnInit, OnDestroy {
     this.searchService.documentSearchFields$.pipe(tap(() => (this.loadingSearchFields = false)));
 
   public readonly statuses$ = this.statusService.caseStatuses$.pipe(
+    tap(() => (this.loadingStatuses = false))
+  );
+  public readonly caseTags$ = this.dossierListCaseTagService.caseTags$.pipe(
     tap(() => (this.loadingStatuses = false))
   );
   public readonly selectedStatuses$ = this.statusService.selectedCaseStatuses$;
@@ -195,6 +200,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
     );
 
   public readonly showStatusSelector$ = this.statusService.showStatusSelector$;
+  public readonly showCaseTagsSelector$ = this.dossierListCaseTagService.showCaseTagsSelector$;
 
   private readonly INTERNAL_STATUS_COLUMN = 'internalStatus';
   private readonly CASE_TAGS_COLUMN = 'caseTags';
@@ -522,12 +528,14 @@ export class DossierListComponent implements OnInit, OnDestroy {
     private readonly searchService: DossierListSearchService,
     private readonly translateService: TranslateService,
     private readonly permissionService: PermissionService,
-    private readonly statusService: DossierListStatusService
+    private readonly statusService: DossierListStatusService,
+    private readonly dossierListCaseTagService: DossierListCaseTagService
   ) {}
 
   public ngOnInit(): void {
     this.setVisibleTabs();
     this.openDocumentDefinitionNameSubscription();
+    this.caseTags$.subscribe(data => console.log(data));
   }
 
   public ngOnDestroy(): void {
