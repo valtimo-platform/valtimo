@@ -47,6 +47,8 @@ import {
   InternalCaseStatus,
   InternalCaseStatusUtils,
   SpecifiedDocuments,
+  CaseTag,
+  CaseTagsUtils,
 } from '@valtimo/document';
 import {Tab, Tabs, TagType} from 'carbon-components-angular';
 import {isEqual} from 'lodash';
@@ -340,7 +342,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
             assignee: prevAssigneeFilter,
             ...prevSearchFieldValues,
             ...prevSelectedStatuses.map((status: InternalCaseStatus) => status.key),
-            ...prevCaseTags.map((caseTag: InternalCaseStatus) => caseTag.key),
+            ...prevCaseTags.map((caseTag: CaseTag) => caseTag.key),
             forceRefresh: prevForceRefresh,
           },
           {
@@ -348,7 +350,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
             assignee: currAssigneeFilter,
             ...currSearchFieldValues,
             ...currSelectedStatuses.map((status: InternalCaseStatus) => status.key),
-            ...currCaseTags.map((caseTag: InternalCaseStatus) => caseTag.key),
+            ...currCaseTags.map((caseTag: CaseTag) => caseTag.key),
             forceRefresh: currForceRefresh,
           }
         )
@@ -502,7 +504,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
               ...acc,
               [curr]: item[curr].map(tag => ({
                 content: tag.title,
-                type: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(tag.color),
+                type: CaseTagsUtils.getTagTypeFromInternalCaseStatusColor(tag.color),
               })),
             };
           }
@@ -679,7 +681,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
     this.statusService.setSelectedStatuses(statuses);
   }
 
-  public onSelectedCaseTagsChange(caseTags: InternalCaseStatus[]): void {
+  public onSelectedCaseTagsChange(caseTags: CaseTag[]): void {
     this.dossierListCaseTagService.setSelectedCaseTags(caseTags);
   }
 

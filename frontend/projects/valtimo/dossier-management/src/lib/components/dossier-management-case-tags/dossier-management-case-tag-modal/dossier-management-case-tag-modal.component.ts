@@ -42,27 +42,19 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import {
-  CaseStatusService,
-  InternalCaseStatus,
-  InternalCaseStatusColor,
-  InternalCaseStatusUtils,
-  CaseTagService,
-} from '@valtimo/document';
+import {CaseTagService, CaseTagsUtils, CaseTag, CaseTagColor} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import {Edit16} from '@carbon/icons';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
 import {TranslateService} from '@ngx-translate/core';
-import {CaseTag} from '@valtimo/document';
-import {CaseTagColor} from '@valtimo/document';
 
 @Component({
-  selector: 'valtimo-dossier-management-status-modal',
-  templateUrl: './dossier-management-status-modal.component.html',
-  styleUrls: ['./dossier-management-status-modal.component.scss'],
+  selector: 'valtimo-dossier-management-case-tag-modal',
+  templateUrl: './dossier-management-case-tag-modal.component.html',
+  styleUrls: ['./dossier-management-case-tag-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DossierManagementStatusModalComponent implements OnInit, OnDestroy {
+export class DossierManagementModalComponent implements OnInit, OnDestroy {
   @Input() public set type(value: StatusModalType) {
     this._type$.next(value);
 
@@ -75,7 +67,7 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
     }
   }
 
-  @Input() public set prefill(value: InternalCaseStatus) {
+  @Input() public set prefill(value: CaseTag) {
     this._prefillStatus.next(value);
   }
 
@@ -88,7 +80,7 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
 
   private readonly _type$ = new BehaviorSubject<StatusModalType>(undefined);
   private readonly _typeAnimationDelay$ = new BehaviorSubject<StatusModalType>(undefined);
-  private readonly _prefillStatus = new BehaviorSubject<InternalCaseStatus>(undefined);
+  private readonly _prefillStatus = new BehaviorSubject<CaseTag>(undefined);
 
   public readonly statusFormGroup = this.fb.group({
     title: this.fb.control('', Validators.required),
@@ -105,19 +97,16 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
 
   public readonly isEdit$ = combineLatest([this._typeAnimationDelay$, this._prefillStatus]).pipe(
     tap(([type, prefillStatus]) => {
-      if ((type === 'edit' || type === 'editCaseTags') && prefillStatus) {
-        if (type === 'editCaseTags') prefillStatus.visibleInCaseListByDefault = true;
+      if (type === 'edit' && prefillStatus) {
         this.prefillForm(prefillStatus);
       }
-
-      if (type === 'addCaseTags' || type === 'editCaseTags') this.isCaseTag = true;
     }),
-    map(([type]) => type === 'edit' || type === 'editCaseTags'),
+    map(([type]) => type === 'edit'),
     tap(isEdit => (this._isEdit = isEdit))
   );
 
   public readonly isAdd$ = this._typeAnimationDelay$.pipe(
-    map(type => type === 'add' || type === 'addCaseTags'),
+    map(type => type === 'add'),
     tap(isAdd => {
       if (isAdd) this.resetForm();
     })
@@ -127,22 +116,22 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
 
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
 
-  private readonly COLORS: InternalCaseStatusColor[] = [
-    InternalCaseStatusColor.Red,
-    InternalCaseStatusColor.Magenta,
-    InternalCaseStatusColor.Purple,
-    InternalCaseStatusColor.Blue,
-    InternalCaseStatusColor.Teal,
-    InternalCaseStatusColor.Green,
-    InternalCaseStatusColor.Cyan,
-    InternalCaseStatusColor.Gray,
-    InternalCaseStatusColor.CoolGray,
-    InternalCaseStatusColor.WarmGray,
-    InternalCaseStatusColor.HighContrast,
-    InternalCaseStatusColor.Outline,
+  private readonly COLORS: CaseTagColor[] = [
+    CaseTagColor.Red,
+    CaseTagColor.Magenta,
+    CaseTagColor.Purple,
+    CaseTagColor.Blue,
+    CaseTagColor.Teal,
+    CaseTagColor.Green,
+    CaseTagColor.Cyan,
+    CaseTagColor.Gray,
+    CaseTagColor.CoolGray,
+    CaseTagColor.WarmGray,
+    CaseTagColor.HighContrast,
+    CaseTagColor.Outline,
   ];
 
-  private readonly _selectedColor$ = new BehaviorSubject<InternalCaseStatusColor>(undefined);
+  private readonly _selectedColor$ = new BehaviorSubject<CaseTagColor>(undefined);
 
   public readonly colorListItems$: Observable<ListItem[]> = combineLatest([
     this._selectedColor$,
@@ -152,11 +141,10 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
       this.COLORS.map(color => ({
         selected: color === selectedColor,
         content: this.translateService.instant(
-          'interface.tagType.' +
-            InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(color)
+          'interface.tagType.' + CaseTagsUtils.getTagTypeFromInternalCaseStatusColor(color)
         ),
         color,
-        tagType: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(color),
+        tagType: CaseTagsUtils.getTagTypeFromInternalCaseStatusColor(color),
       }))
     )
   );
@@ -194,7 +182,6 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
   constructor(
     private readonly fb: FormBuilder,
     private readonly iconService: IconService,
-    private readonly caseStatusService: CaseStatusService,
     private readonly translateService: TranslateService,
     private readonly caseTagService: CaseTagService
   ) {
@@ -222,31 +209,16 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
 
   public addStatus(): void {
     this.disable();
-    if (this.isCaseTag) {
-      this.caseTagService
-        .saveCaseTag(this.documentDefinitionName, this.getFormValueCaseTag())
-        .subscribe({
-          next: () => {
-            this.enable();
-            this.closeAndRefresh();
-          },
-          error: () => {
-            this.enable(false);
-          },
-        });
-    } else {
-      this.caseStatusService
-        .saveInternalCaseStatus(this.documentDefinitionName, this.getFormValue())
-        .subscribe({
-          next: () => {
-            this.enable();
-            this.closeAndRefresh();
-          },
-          error: () => {
-            this.enable(false);
-          },
-        });
-    }
+
+    this.caseTagService.saveCaseTag(this.documentDefinitionName, this.getFormValue()).subscribe({
+      next: () => {
+        this.enable();
+        this.closeAndRefresh();
+      },
+      error: () => {
+        this.enable(false);
+      },
+    });
   }
 
   public editStatus(): void {
@@ -256,19 +228,11 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
       .pipe(
         take(1),
         switchMap(originalStatusKey => {
-          if (this.isCaseTag) {
-            return this.caseTagService.updateCaseTag(
-              this.documentDefinitionName,
-              originalStatusKey,
-              this.getFormValueCaseTag()
-            );
-          } else {
-            return this.caseStatusService.updateInternalCaseStatus(
-              this.documentDefinitionName,
-              originalStatusKey,
-              this.getFormValue()
-            );
-          }
+          return this.caseTagService.updateCaseTag(
+            this.documentDefinitionName,
+            originalStatusKey,
+            this.getFormValue()
+          );
         })
       )
       .subscribe({
@@ -290,7 +254,7 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
     item: {color: string; content: string; selected: boolean};
     isUpdate: boolean;
   }): void {
-    const newColor = event?.item?.color as InternalCaseStatusColor;
+    const newColor = event?.item?.color as CaseTagColor;
 
     if (newColor) {
       this._selectedColor$.next(newColor);
@@ -299,7 +263,7 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
     }
   }
 
-  private prefillForm(prefillStatus: InternalCaseStatus): void {
+  private prefillForm(prefillStatus: CaseTag): void {
     this._originalStatusKey$.next(prefillStatus.key);
     this.statusFormGroup.patchValue({
       key: prefillStatus.key,
@@ -317,9 +281,9 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
       key: '',
       title: '',
       visibleInCaseListByDefault: true,
-      color: InternalCaseStatusColor.Blue,
+      color: CaseTagColor.Blue,
     });
-    this._selectedColor$.next(InternalCaseStatusColor.Blue);
+    this._selectedColor$.next(CaseTagColor.Blue);
     this.statusFormGroup.markAsPristine();
     this.resetEditingKey();
   }
@@ -414,16 +378,7 @@ export class DossierManagementStatusModalComponent implements OnInit, OnDestroy 
     this.closeModalEvent.emit('closeAndRefresh');
   }
 
-  private getFormValue(): InternalCaseStatus {
-    return {
-      key: this.key.value,
-      title: this.title.value,
-      visibleInCaseListByDefault: this.visibleInCaseListByDefault.value,
-      color: this.color.value as InternalCaseStatusColor,
-    };
-  }
-
-  private getFormValueCaseTag(): CaseTag {
+  private getFormValue(): CaseTag {
     return {
       key: this.key.value,
       title: this.title.value,

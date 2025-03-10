@@ -91,10 +91,9 @@
       [heading]="'dossierManagement.tabs.tags' | translate"
       (selected)="displayBodyComponent(TabEnum.TAGS)"
     >
-      <valtimo-dossier-management-statuses
+      <valtimo-dossier-management-case-tags
         *ngIf="vars.active"
-        [displayCaseTags]="true"
-      ></valtimo-dossier-management-statuses>
+      ></valtimo-dossier-management-case-tags>
     </cds-tab>
 
     @for (injectedTab of obs.injectedTabs; track injectedTab.translationKey) {

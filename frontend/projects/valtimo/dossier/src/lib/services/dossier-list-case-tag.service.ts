@@ -16,17 +16,17 @@
 
 import {Injectable} from '@angular/core';
 import {DossierListService} from './dossier-list.service';
-import {InternalCaseStatus, CaseTagService} from '@valtimo/document';
+import {CaseTagService, CaseTag} from '@valtimo/document';
 import {DossierParameterService} from './dossier-parameter.service';
-import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, take, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, switchMap, take, tap} from 'rxjs';
 
 @Injectable()
 export class DossierListCaseTagService {
-  private readonly _selectedCaseTags$ = new BehaviorSubject<InternalCaseStatus[]>([]);
+  private readonly _selectedCaseTags$ = new BehaviorSubject<CaseTag[]>([]);
 
   private readonly _showCaseTagsSelector$ = new BehaviorSubject<boolean>(false);
 
-  private readonly _caseTags$: Observable<Array<InternalCaseStatus>> =
+  private readonly _caseTags$: Observable<Array<CaseTag>> =
     this.dossierListService.documentDefinitionName$.pipe(
       switchMap(documentDefinitionName =>
         combineLatest([
@@ -44,7 +44,7 @@ export class DossierListCaseTagService {
       tap(caseTags => this._showCaseTagsSelector$.next((caseTags || []).length > 1))
     );
 
-  public get caseTags$(): Observable<Array<InternalCaseStatus>> {
+  public get caseTags$(): Observable<Array<CaseTag>> {
     return this._caseTags$;
   }
 
@@ -52,7 +52,7 @@ export class DossierListCaseTagService {
     return this._showCaseTagsSelector$.asObservable();
   }
 
-  public get selectedCaseTags$(): Observable<Array<InternalCaseStatus>> {
+  public get selectedCaseTags$(): Observable<Array<CaseTag>> {
     return this._selectedCaseTags$;
   }
 
@@ -62,7 +62,7 @@ export class DossierListCaseTagService {
     private readonly dossierParameterService: DossierParameterService
   ) {}
 
-  public setSelectedCaseTags(caseTags: InternalCaseStatus[]): void {
+  public setSelectedCaseTags(caseTags: CaseTag[]): void {
     this._selectedCaseTags$.next(caseTags);
     this.dossierParameterService.setCaseTagParameter(caseTags.map(caseTag => caseTag.key));
   }
