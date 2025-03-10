@@ -83,9 +83,9 @@ export class DocumentService {
 
   constructor(
     private http: HttpClient,
-    configService: ConfigService
+    private configService: ConfigService
   ) {
-    this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
+    this.valtimoEndpointUri = this.configService.config.valtimoApi.endpointUri;
   }
 
   // Document-calls
@@ -478,9 +478,16 @@ export class DocumentService {
   public getProcessDocumentDefinitionFromProcessInstanceId(
     processInstanceId: string
   ): Observable<ProcessDocumentDefinition> {
-    return this.http.get<ProcessDocumentDefinition>(
-      `${this.valtimoEndpointUri}v1/process-document/definition/processinstance/${processInstanceId}`
-    );
+    return this.configService.getFeatureToggle('enableSuppressDocumentError')
+      ? this.http.get<ProcessDocumentDefinition>(
+          `${this.valtimoEndpointUri}v1/process-document/definition/processinstance/${processInstanceId}`,
+          {
+            headers: new HttpHeaders().set(InterceptorSkip, '400'),
+          }
+        )
+      : this.http.get<ProcessDocumentDefinition>(
+          `${this.valtimoEndpointUri}v1/process-document/definition/processinstance/${processInstanceId}`
+        );
   }
 
   public assignHandlerToDocument(
