@@ -110,6 +110,20 @@ export class DossierParameterService implements OnDestroy {
     );
   }
 
+  public get queryCaseTagsParams$(): Observable<string[] | null> {
+    return this.route.queryParams.pipe(
+      map(params => {
+        if (params?.casetags) {
+          return JSON.parse(atob(params.casetags)) as string[];
+        }
+        return null;
+      }),
+      distinctUntilChanged(
+        (prevParams, currParams) => JSON.stringify(prevParams) === JSON.stringify(currParams)
+      )
+    );
+  }
+
   private _dossierParametersSubscription!: Subscription;
 
   constructor(
@@ -180,6 +194,22 @@ export class DossierParameterService implements OnDestroy {
       } else {
         if (dossierParameters?.status) {
           delete dossierParameters.status;
+        }
+        this._dossierParameters$.next(dossierParameters);
+      }
+    });
+  }
+
+  public setCaseTagParameter(caseTagKeyParameters: string[]): void {
+    this._dossierParameters$.pipe(take(1)).subscribe(dossierParameters => {
+      if ((caseTagKeyParameters || []).length > 0) {
+        this._dossierParameters$.next({
+          ...dossierParameters,
+          casetags: this.objectToBase64(caseTagKeyParameters),
+        });
+      } else {
+        if (dossierParameters?.casetags) {
+          delete dossierParameters.casetags;
         }
         this._dossierParameters$.next(dossierParameters);
       }

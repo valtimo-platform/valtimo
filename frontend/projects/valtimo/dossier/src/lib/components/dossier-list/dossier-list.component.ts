@@ -370,7 +370,6 @@ export class DossierListComponent implements OnInit, OnDestroy {
         const statusKeys: (string | null)[] = selectedStatuses.map((status: InternalCaseStatus) =>
           status.key === CASES_WITHOUT_STATUS_KEY ? null : status.key
         );
-        selectedCaseTags.map(caseTag => console.log('casetag', caseTag));
         const caseTagsKeys = selectedCaseTags.map(caseTag => caseTag.key);
         if ((Object.keys(searchValues) || []).length > 0) {
           return forkJoin({
@@ -549,7 +548,6 @@ export class DossierListComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     this.setVisibleTabs();
     this.openDocumentDefinitionNameSubscription();
-    this.caseTags$.subscribe(data => console.log(data));
   }
 
   public ngOnDestroy(): void {

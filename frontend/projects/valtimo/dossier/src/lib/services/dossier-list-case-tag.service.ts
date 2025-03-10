@@ -16,10 +16,9 @@
 
 import {Injectable} from '@angular/core';
 import {DossierListService} from './dossier-list.service';
-import {CaseStatusService, InternalCaseStatus, CaseTagService} from '@valtimo/document';
+import {InternalCaseStatus, CaseTagService} from '@valtimo/document';
 import {DossierParameterService} from './dossier-parameter.service';
 import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, take, tap} from 'rxjs';
-import {CASE_WITHOUT_STATUS_STATUS} from '../constants';
 
 @Injectable()
 export class DossierListCaseTagService {
@@ -32,23 +31,17 @@ export class DossierListCaseTagService {
       switchMap(documentDefinitionName =>
         combineLatest([
           this.caseTagsService.getCaseTags(documentDefinitionName),
-          this.dossierParameterService.queryStatusParams$,
+          this.dossierParameterService.queryCaseTagsParams$,
         ]).pipe(take(1))
       ),
-      //   switchMap(([statuses, queryStatuses]) =>
-      //     combineLatest([of([CASE_WITHOUT_STATUS_STATUS, ...statuses]), of(queryStatuses)])
-      //   ),
-      //   tap(([statuses, queryStatuses]) => {
-      //     const selectedStatuses = queryStatuses
-      //       ? statuses.filter(status => queryStatuses.includes(status.key))
-      //       : [
-      //           ...statuses.filter(status => status.visibleInCaseListByDefault),
-      //           CASE_WITHOUT_STATUS_STATUS,
-      //         ];
-      //     this.setSelectedCaseTags(selectedStatuses);
-      //   }),
-      map(([statuses]) => statuses),
-      tap(statuses => this._showCaseTagsSelector$.next((statuses || []).length > 1))
+      tap(([caseTags, queryCaseTags]) => {
+        const selectedCaseTags = queryCaseTags
+          ? caseTags.filter(caseTag => queryCaseTags.includes(caseTag.key))
+          : [...caseTags.filter(caseTag => caseTag.visibleInCaseListByDefault)];
+        this.setSelectedCaseTags(selectedCaseTags);
+      }),
+      map(([caseTags]) => caseTags),
+      tap(caseTags => this._showCaseTagsSelector$.next((caseTags || []).length > 1))
     );
 
   public get caseTags$(): Observable<Array<InternalCaseStatus>> {
@@ -71,6 +64,6 @@ export class DossierListCaseTagService {
 
   public setSelectedCaseTags(caseTags: InternalCaseStatus[]): void {
     this._selectedCaseTags$.next(caseTags);
-    this.dossierParameterService.setStatusParameter(caseTags.map(caseTag => caseTag.key));
+    this.dossierParameterService.setCaseTagParameter(caseTags.map(caseTag => caseTag.key));
   }
 }

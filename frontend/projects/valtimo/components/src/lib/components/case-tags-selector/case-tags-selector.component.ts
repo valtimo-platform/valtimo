@@ -26,10 +26,9 @@ import {
 } from 'carbon-components-angular';
 import {CARBON_THEME} from '../../models';
 import {CommonModule} from '@angular/common';
-import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {TranslateModule} from '@ngx-translate/core';
 import {distinctUntilChanged, filter, take} from 'rxjs/operators';
 import {isEqual} from 'lodash';
-import {CASES_WITHOUT_STATUS_KEY} from '../../constants';
 
 @Component({
   selector: 'valtimo-case-tags-selector',
@@ -60,20 +59,14 @@ export class CaseTagsSelectorComponent {
 
   private readonly _selectedCaseTags$ = new BehaviorSubject<InternalCaseStatus[]>([]);
 
-  public readonly CASES_WITHOUT_STATUS_KEY = CASES_WITHOUT_STATUS_KEY;
-
   public readonly listItems$: Observable<ListItem[]> = combineLatest([
     this._caseTags$,
     this._selectedCaseTags$,
-    this.translateService.stream('key'),
   ]).pipe(
     filter(([caseTags, selectedCaseTags]) => !!caseTags && !!selectedCaseTags),
     map(([caseTags, selectedCaseTags]) =>
       caseTags.map(caseTag => ({
-        content:
-          caseTag.key === this.CASES_WITHOUT_STATUS_KEY
-            ? this.translateService.instant('dossierManagement.tags.withoutStatus')
-            : caseTag.title,
+        content: caseTag.title,
         selected: !!selectedCaseTags.find(selectedStatus => selectedStatus.key === caseTag.key),
         key: caseTag.key,
         tagType: caseTag.tagType,
@@ -82,7 +75,7 @@ export class CaseTagsSelectorComponent {
     distinctUntilChanged((previous, current) => isEqual(previous, current))
   );
 
-  constructor(private readonly translateService: TranslateService) {}
+  constructor() {}
 
   public itemSelected(event: ListItem[]): void {
     const newSelectedItems = event?.filter(item => item?.selected) || [];
