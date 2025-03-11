@@ -20,6 +20,41 @@
   </cds-modal-header>
 
   <section cdsModalContent class="valtimo-log-details__content">
-    <ngx-json-viewer *ngIf="logEvent" [json]="logEvent"></ngx-json-viewer>
+    <h4 class="log-header">
+      {{ 'logging.formattedMessage' | translate }}
+    </h4>
+
+    <div>{{ logEventFormatted?.formattedMessage || '-' }}</div>
+
+    <h4 class="log-header">
+      {{ 'logging.timestamp' | translate }}
+    </h4>
+
+    <div>
+      {{ logEventFormatted?.timestamp || '-' }}
+    </div>
+
+    @if (logEventFormatted?.properties?.length > 0) {
+      <h4 class="log-header">
+        {{ 'logging.properties' | translate }}
+      </h4>
+      <div>
+        @for (property of logEventFormatted.properties; track property.key) {
+          <div>
+            <span class="property-key">{{ property.key }}: </span>
+            <span class="property-value">{{ property.value }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (logEventFormatted?.stacktrace) {
+      <h4 class="log-header">
+        {{ 'logging.stacktrace' | translate }}
+      </h4>
+      <div>
+        <pre class="valtimo-log-stacktrace" [innerHtml]="logEventFormatted.stacktrace"></pre>
+      </div>
+    }
   </section>
 </cds-modal>

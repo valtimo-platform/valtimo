@@ -1948,6 +1948,10 @@
       "searchDescription": "Keine Protokolle entsprechen Ihren Suchkriterien",
       "title": "Es gibt keine Protokolle"
     },
-    "detailsTitle": "Protokolldetails"
+    "detailsTitle": "Protokolldetails",
+    "timestamp": "Zeit",
+    "formattedMessage": "Nachricht",
+    "properties": "Eigenschaften",
+    "stacktrace": "Stapelverfolgung"
   }
 }
