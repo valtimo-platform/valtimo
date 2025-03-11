@@ -18,7 +18,7 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  Input,
+  signal,
   TemplateRef,
   ViewChild,
 } from '@angular/core';
@@ -34,13 +34,7 @@ import {
   tap,
 } from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
-import {
-  ActionItem,
-  ColumnConfig,
-  MoveRowDirection,
-  MoveRowEvent,
-  ViewType,
-} from '@valtimo/components';
+import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
 import {StatusModalCloseEvent, StatusModalType} from '../../models';
 
 @Component({
@@ -64,7 +58,7 @@ export class DossierManagementCaseTagComponent implements AfterViewInit {
   }
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
-
+  public readonly dragAndDropDisabled = signal(false);
   public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
 
   private _documentCaseTags: CaseTag[] = [];
@@ -124,13 +118,13 @@ export class DossierManagementCaseTagComponent implements AfterViewInit {
     this.initFields();
   }
 
-  public openDeleteModal(status: CaseTag): void {
-    this.caseTagToDelete$.next(status);
+  public openDeleteModal(caseTag: CaseTag): void {
+    this.caseTagToDelete$.next(caseTag);
     this.showDeleteModal$.next(true);
   }
 
-  public openEditModal(status: CaseTag): void {
-    this.prefillCaseTag$.next(status);
+  public openEditModal(caseTag: CaseTag): void {
+    this.prefillCaseTag$.next(caseTag);
     this.statusModalType$.next('edit');
   }
 
@@ -146,11 +140,11 @@ export class DossierManagementCaseTagComponent implements AfterViewInit {
     this.statusModalType$.next('closed');
   }
 
-  public confirmDeleteStatus(status: CaseTag): void {
+  public confirmDeleteStatus(caseTag: CaseTag): void {
     this.documentDefinitionName$
       .pipe(
         switchMap(documentDefinitionName =>
-          this.caseTagService.deleteCaseTag(documentDefinitionName, status.key)
+          this.caseTagService.deleteCaseTag(documentDefinitionName, caseTag.key)
         )
       )
       .subscribe(() => {
@@ -158,23 +152,20 @@ export class DossierManagementCaseTagComponent implements AfterViewInit {
       });
   }
 
-  public onMoveRowClick(event: MoveRowEvent): void {
-    const {direction, index} = event;
+  public onItemsReorderedEvent(reorderedItems: CaseTag[]): void {
+    if (!reorderedItems) return;
 
-    const orderedCaseTags: CaseTag[] =
-      direction === MoveRowDirection.UP
-        ? this.swapStatuses(this._documentCaseTags, index - 1, index)
-        : this.swapStatuses(this._documentCaseTags, index, index + 1);
-
+    this.dragAndDropDisabled.set(true);
     this.documentDefinitionName$
       .pipe(
         switchMap(documentDefinitionName =>
-          this.caseTagService.updateCaseTags(documentDefinitionName, orderedCaseTags)
+          this.caseTagService.updateCaseTags(documentDefinitionName, reorderedItems)
         )
       )
       .subscribe(() => {
         this.reload(true);
       });
+    this.dragAndDropDisabled.set(false);
   }
 
   private reload(noAnimation = false): void {

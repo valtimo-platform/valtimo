@@ -23,10 +23,11 @@
   [fields]="fields$ | async"
   [header]="false"
   [loading]="obs.loading"
-  [movingRowsEnabled]="true"
   [actionItems]="ACTION_ITEMS"
   (rowClicked)="openEditModal($event)"
-  (moveRow)="onMoveRowClick($event)"
+  [dragAndDrop]="true"
+  [dragAndDropDisabled]="dragAndDropDisabled()"
+  (itemsReordered)="onItemsReorderedEvent($event)"
 >
   <ng-container
     carbonToolbarContent
