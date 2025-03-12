@@ -694,11 +694,9 @@
       }
     },
     "caseTags": {
-      "withoutStatus": "Show tags without a status",
       "searchFieldTitle": "Tag",
-      "add": "Add status",
-      "edit": "Edit status",
-      "visibleTitle": "Default visibility in case list",
+      "add": "Add tag",
+      "edit": "Edit tag",
       "visible": "Visible",
       "invisible": "Not visible",
       "deleteText": "Are you sure you want to delete this tag? This action cannot be undone.",
@@ -711,7 +709,7 @@
         "color": "Color"
       },
       "noResults": {
-        "title": "No statuses",
+        "title": "No tags",
         "description": "Add a tag to start"
       }
     }
