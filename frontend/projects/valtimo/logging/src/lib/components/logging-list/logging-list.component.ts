@@ -97,7 +97,7 @@ export class LoggingListComponent implements OnInit, OnDestroy {
 
       return loggingPage.content.map((logEvent: LoggingEvent) => ({
         ...logEvent,
-        tags: [
+        levelTags: [
           {
             content: logEvent.level,
             type: LOG_LEVEL_TAG[logEvent.level],
@@ -126,7 +126,7 @@ export class LoggingListComponent implements OnInit, OnDestroy {
       viewType: ViewType.DATE_TIME,
     },
     {
-      key: 'level',
+      key: 'levelTags',
       label: 'logging.columns.level',
       viewType: ViewType.TAGS,
     },
