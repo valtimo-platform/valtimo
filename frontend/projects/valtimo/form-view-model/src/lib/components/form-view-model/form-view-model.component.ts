@@ -250,16 +250,14 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
             documentId,
           ]) =>
             isStartForm
-              ? this.viewModelService
-                  .submitViewModelForStartForm(
-                    formName,
-                    processDefinitionKey,
-                    documentId,
-                    documentDefinitionName,
-                    submission.data
-                  )
-              : this.viewModelService
-                  .submitViewModel(formName, taskInstanceId, submission.data)
+              ? this.viewModelService.submitViewModelForStartForm(
+                  formName,
+                  processDefinitionKey,
+                  documentId,
+                  documentDefinitionName,
+                  submission.data
+                )
+              : this.viewModelService.submitViewModel(formName, taskInstanceId, submission.data)
         )
       )
       .subscribe({
@@ -268,12 +266,12 @@ export class FormViewModelComponent implements OnInit, OnDestroy {
         },
         error: err => {
           this.handleSubmissionError(err, callback);
-        }
+        },
       });
   }
 
   private handleSubmissionError(error: any, callback: FormioSubmissionCallback): void {
-    callback({ message: '', component: null, silent: true }, null);
+    callback({message: '', component: null, silent: true}, null);
 
     if (error instanceof HttpErrorResponse) {
       this.handleFormError(error);

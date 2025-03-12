@@ -3,6 +3,5 @@
   "dest": "../../../dist/valtimo/process-link",
   "lib": {
     "entryFile": "src/public-api.ts"
-  },
-  "allowedNonPeerDependencies": []
+  }
 }
