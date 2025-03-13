@@ -18,6 +18,7 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  OnDestroy,
   signal,
   TemplateRef,
   ViewChild,
@@ -32,6 +33,7 @@ import {
   Subject,
   switchMap,
   tap,
+  Subscription,
 } from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
@@ -43,7 +45,7 @@ import {StatusModalCloseEvent, StatusModalType} from '../../models';
   styleUrls: ['./dossier-management-case-tags.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DossierManagementCaseTagComponent implements AfterViewInit {
+export class DossierManagementCaseTagComponent implements AfterViewInit, OnDestroy {
   @ViewChild('colorColumnTemplate') colorColumnTemplate: TemplateRef<any>;
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
@@ -62,6 +64,7 @@ export class DossierManagementCaseTagComponent implements AfterViewInit {
   public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
 
   private _documentCaseTags: CaseTag[] = [];
+  private _subscriptions = new Subscription();
 
   public readonly documentCaseTags$ = combineLatest([
     this._documentDefinitionName$,
@@ -78,7 +81,7 @@ export class DossierManagementCaseTagComponent implements AfterViewInit {
     map(caseTags =>
       caseTags.map(caseTag => ({
         ...caseTag,
-        tagType: CaseTagsUtils.getTagTypeFromInternalCaseStatusColor(caseTag.color),
+        tagType: CaseTagsUtils.getTagTypeFromCaseTagColor(caseTag.color),
       }))
     ),
     tap(caseTags => {
@@ -118,6 +121,10 @@ export class DossierManagementCaseTagComponent implements AfterViewInit {
     this.initFields();
   }
 
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
+
   public openDeleteModal(caseTag: CaseTag): void {
     this.caseTagToDelete$.next(caseTag);
     this.showDeleteModal$.next(true);
@@ -140,43 +147,40 @@ export class DossierManagementCaseTagComponent implements AfterViewInit {
     this.statusModalType$.next('closed');
   }
 
-  public confirmDeleteStatus(caseTag: CaseTag): void {
-    this.documentDefinitionName$
-      .pipe(
-        switchMap(documentDefinitionName =>
-          this.caseTagService.deleteCaseTag(documentDefinitionName, caseTag.key)
+  public confirmDeleteCaseTag(caseTag: CaseTag): void {
+    this._subscriptions.add(
+      this.documentDefinitionName$
+        .pipe(
+          switchMap(documentDefinitionName =>
+            this.caseTagService.deleteCaseTag(documentDefinitionName, caseTag.key)
+          )
         )
-      )
-      .subscribe(() => {
-        this.reload();
-      });
+        .subscribe(() => {
+          this.reload();
+        })
+    );
   }
 
   public onItemsReorderedEvent(reorderedItems: CaseTag[]): void {
     if (!reorderedItems) return;
 
     this.dragAndDropDisabled.set(true);
-    this.documentDefinitionName$
-      .pipe(
-        switchMap(documentDefinitionName =>
-          this.caseTagService.updateCaseTags(documentDefinitionName, reorderedItems)
+    this._subscriptions.add(
+      this.documentDefinitionName$
+        .pipe(
+          switchMap(documentDefinitionName =>
+            this.caseTagService.updateCaseTags(documentDefinitionName, reorderedItems)
+          )
         )
-      )
-      .subscribe(() => {
-        this.reload(true);
-      });
+        .subscribe(() => {
+          this.reload(true);
+        })
+    );
     this.dragAndDropDisabled.set(false);
   }
 
   private reload(noAnimation = false): void {
     this._reload$.next(noAnimation ? 'noAnimation' : null);
-  }
-
-  private swapStatuses(statuses: CaseTag[], index1: number, index2: number): CaseTag[] {
-    const temp = [...statuses];
-    temp[index1] = temp.splice(index2, 1, temp[index1])[0];
-
-    return temp;
   }
 
   private initFields(): void {

@@ -34,7 +34,6 @@ enum CaseTagColor {
 interface CaseTag {
   key: string;
   title: string;
-  visibleInCaseListByDefault: boolean;
   color: CaseTagColor;
   documentDefinitionName?: string;
   order?: number;

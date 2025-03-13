@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-label class="status-selector" *ngIf="listItems$ | async as listItems">
+<cds-label class="case-tag-selector" *ngIf="listItems$ | async as listItems">
   {{ 'dossierManagement.caseTags.searchFieldTitle' | translate }}
 
   <cds-dropdown
@@ -32,18 +32,10 @@
 </cds-label>
 
 <ng-template #colorDropdownItemTemplate let-item="item">
-  <div class="status-selector-dropdown-template">
+  <div class="case-tag-selector-dropdown-template">
     <cds-checkbox [checked]="item.selected"></cds-checkbox>
 
-    <span *ngIf="item.key === CASES_WITHOUT_STATUS_KEY" class="generic-span">{{
-      item?.content
-    }}</span>
-
-    <cds-tag
-      *ngIf="item.key !== CASES_WITHOUT_STATUS_KEY"
-      class="cds-tag--no-margin"
-      [type]="item?.tagType"
-    >
+    <cds-tag class="cds-tag--no-margin" [type]="item?.tagType">
       {{ item?.content }}
     </cds-tag>
   </div>

@@ -55,7 +55,7 @@
   [outputOnConfirm]="caseTagToDelete$ | async"
   [showModalSubject$]="showDeleteModal$"
   titleTranslationKey="interface.delete"
-  (confirmEvent)="confirmDeleteStatus($event)"
+  (confirmEvent)="confirmDeleteCaseTag($event)"
 ></valtimo-confirmation-modal>
 
 <ng-template #buttons let-obs="obs">

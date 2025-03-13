@@ -504,7 +504,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
               ...acc,
               [curr]: item[curr].map(tag => ({
                 content: tag.title,
-                type: CaseTagsUtils.getTagTypeFromInternalCaseStatusColor(tag.color),
+                type: CaseTagsUtils.getTagTypeFromCaseTagColor(tag.color),
               })),
             };
           }

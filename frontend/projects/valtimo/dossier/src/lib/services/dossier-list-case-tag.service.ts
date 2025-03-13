@@ -26,7 +26,7 @@ export class DossierListCaseTagService {
 
   private readonly _showCaseTagsSelector$ = new BehaviorSubject<boolean>(false);
 
-  private readonly _caseTags$: Observable<Array<CaseTag>> =
+  private readonly _caseTags$: Observable<CaseTag[]> =
     this.dossierListService.documentDefinitionName$.pipe(
       switchMap(documentDefinitionName =>
         combineLatest([
@@ -45,7 +45,7 @@ export class DossierListCaseTagService {
       tap(caseTags => this._showCaseTagsSelector$.next((caseTags || []).length > 1))
     );
 
-  public get caseTags$(): Observable<Array<CaseTag>> {
+  public get caseTags$(): Observable<CaseTag[]> {
     return this._caseTags$;
   }
 
@@ -53,7 +53,7 @@ export class DossierListCaseTagService {
     return this._showCaseTagsSelector$.asObservable();
   }
 
-  public get selectedCaseTags$(): Observable<Array<CaseTag>> {
+  public get selectedCaseTags$(): Observable<CaseTag[]> {
     return this._selectedCaseTags$;
   }
 

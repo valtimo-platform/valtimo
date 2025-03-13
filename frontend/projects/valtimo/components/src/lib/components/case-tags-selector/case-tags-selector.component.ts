@@ -16,7 +16,6 @@
 
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
-import {InternalCaseStatus, InternalCaseStatusUtils} from '@valtimo/document';
 import {
   CheckboxModule,
   DropdownModule,
@@ -29,6 +28,7 @@ import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {distinctUntilChanged, filter, take} from 'rxjs/operators';
 import {isEqual} from 'lodash';
+import {CaseTag, CaseTagsUtils} from '@valtimo/document';
 
 @Component({
   selector: 'valtimo-case-tags-selector',
@@ -39,25 +39,25 @@ import {isEqual} from 'lodash';
   imports: [CommonModule, DropdownModule, CheckboxModule, InputModule, TranslateModule, TagModule],
 })
 export class CaseTagsSelectorComponent {
-  @Input() public set caseTags(value: InternalCaseStatus[]) {
+  @Input() public set caseTags(value: CaseTag[]) {
     this._caseTags$.next(
       (value || []).map(caseTags => ({
         ...caseTags,
-        tagType: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(caseTags.color),
+        tagType: CaseTagsUtils.getTagTypeFromCaseTagColor(caseTags.color),
       }))
     );
   }
-  @Input() public set selectedCaseTags(value: InternalCaseStatus[]) {
+  @Input() public set selectedCaseTags(value: CaseTag[]) {
     this._selectedCaseTags$.next(value);
   }
   @Input() public carbonTheme: CARBON_THEME = CARBON_THEME.WHITE;
   @Input() public disabled!: boolean;
 
-  @Output() public selectedCaseTagsChangeEvent = new EventEmitter<InternalCaseStatus[]>();
+  @Output() public selectedCaseTagsChangeEvent = new EventEmitter<CaseTag[]>();
 
-  private readonly _caseTags$ = new BehaviorSubject<InternalCaseStatus[]>([]);
+  private readonly _caseTags$ = new BehaviorSubject<CaseTag[]>([]);
 
-  private readonly _selectedCaseTags$ = new BehaviorSubject<InternalCaseStatus[]>([]);
+  private readonly _selectedCaseTags$ = new BehaviorSubject<CaseTag[]>([]);
 
   public readonly listItems$: Observable<ListItem[]> = combineLatest([
     this._caseTags$,
@@ -67,7 +67,7 @@ export class CaseTagsSelectorComponent {
     map(([caseTags, selectedCaseTags]) =>
       caseTags.map(caseTag => ({
         content: caseTag.title,
-        selected: !!selectedCaseTags.find(selectedStatus => selectedStatus.key === caseTag.key),
+        selected: !!selectedCaseTags.find(selectedCaseTag => selectedCaseTag.key === caseTag.key),
         key: caseTag.key,
         tagType: caseTag.tagType,
       }))
@@ -75,14 +75,12 @@ export class CaseTagsSelectorComponent {
     distinctUntilChanged((previous, current) => isEqual(previous, current))
   );
 
-  constructor() {}
-
   public itemSelected(event: ListItem[]): void {
     const newSelectedItems = event?.filter(item => item?.selected) || [];
 
     this._caseTags$.pipe(take(1)).subscribe(caseTags => {
       const newSelectedCaseTags = newSelectedItems
-        .map(item => caseTags.find(status => status.key === item.key))
+        .map(item => caseTags.find(caseTag => caseTag.key === item.key))
         .filter(caseTag => !!caseTag);
 
       this.selectedCaseTagsChangeEvent.emit(newSelectedCaseTags);

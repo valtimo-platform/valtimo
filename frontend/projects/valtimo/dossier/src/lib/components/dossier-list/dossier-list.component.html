@@ -78,6 +78,7 @@
         [disabled]="!obs.loaded"
         (selectedStatusesChangeEvent)="onSelectedStatusesChange($event)"
       ></valtimo-status-selector>
+
       <valtimo-case-tags-selector
         *ngIf="obs.showCaseTagsSelector"
         [caseTags]="obs.caseTags"
@@ -104,7 +105,6 @@
     (paginationSet)="pageSizeChange($event)"
     (rowClicked)="rowClick($event)"
     (sortChanged)="sortChanged($event)"
-    [displayCaseTags]="true"
   >
     <ng-container carbonToolbarActions>
       <button cdsButton="primary" (click)="showAssignModal()">

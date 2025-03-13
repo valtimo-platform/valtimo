@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-::ng-deep .status-selector .cds--label {
+::ng-deep .case-tag-selector .cds--label {
   width: 100%;
   margin-bottom: 0 !important;
 }
 
-::ng-deep .status-selector .cds--multiselect {
+::ng-deep .case-tag-selector .cds--multiselect {
   margin-top: 8px;
 }
 
-::ng-deep .status-selector-dropdown-template {
+::ng-deep .case-tag-selector-dropdown-template {
   display: flex;
   margin-top: -4px;
 

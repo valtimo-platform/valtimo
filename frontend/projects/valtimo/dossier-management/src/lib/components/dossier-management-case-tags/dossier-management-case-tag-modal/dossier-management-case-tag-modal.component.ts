@@ -68,7 +68,7 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
   }
 
   @Input() public set prefill(value: CaseTag) {
-    this._prefillStatus.next(value);
+    this._prefillCaseTag.next(value);
   }
 
   @Input() public usedKeys!: string[];
@@ -80,9 +80,9 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
 
   private readonly _type$ = new BehaviorSubject<StatusModalType>(undefined);
   private readonly _typeAnimationDelay$ = new BehaviorSubject<StatusModalType>(undefined);
-  private readonly _prefillStatus = new BehaviorSubject<CaseTag>(undefined);
+  private readonly _prefillCaseTag = new BehaviorSubject<CaseTag>(undefined);
 
-  public readonly statusFormGroup = this.fb.group({
+  public readonly caseTagFormGroup = this.fb.group({
     title: this.fb.control('', Validators.required),
     key: this.fb.control('', [
       Validators.required,
@@ -95,10 +95,10 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
 
   private _isEdit!: boolean;
 
-  public readonly isEdit$ = combineLatest([this._typeAnimationDelay$, this._prefillStatus]).pipe(
-    tap(([type, prefillStatus]) => {
-      if (type === 'edit' && prefillStatus) {
-        this.prefillForm(prefillStatus);
+  public readonly isEdit$ = combineLatest([this._typeAnimationDelay$, this._prefillCaseTag]).pipe(
+    tap(([type, prefillCaseTag]) => {
+      if (type === 'edit' && prefillCaseTag) {
+        this.prefillForm(prefillCaseTag);
       }
     }),
     map(([type]) => type === 'edit'),
@@ -141,41 +141,37 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
       this.COLORS.map(color => ({
         selected: color === selectedColor,
         content: this.translateService.instant(
-          'interface.tagType.' + CaseTagsUtils.getTagTypeFromInternalCaseStatusColor(color)
+          'interface.tagType.' + CaseTagsUtils.getTagTypeFromCaseTagColor(color)
         ),
         color,
-        tagType: CaseTagsUtils.getTagTypeFromInternalCaseStatusColor(color),
+        tagType: CaseTagsUtils.getTagTypeFromCaseTagColor(color),
       }))
     )
   );
 
-  public get visibleInCaseListByDefault(): AbstractControl<boolean, boolean> {
-    return this.statusFormGroup?.get('visibleInCaseListByDefault');
-  }
-
   public get key(): AbstractControl<string, string> {
-    return this.statusFormGroup?.get('key');
+    return this.caseTagFormGroup?.get('key');
   }
 
   public get title(): AbstractControl<string, string> {
-    return this.statusFormGroup?.get('title');
+    return this.caseTagFormGroup?.get('title');
   }
 
   public get color(): AbstractControl<string, string> {
-    return this.statusFormGroup?.get('color');
+    return this.caseTagFormGroup?.get('color');
   }
 
   public get invalid(): boolean {
-    return !!this.statusFormGroup?.invalid;
+    return !!this.caseTagFormGroup?.invalid;
   }
 
   public get pristine(): boolean {
-    return !!this.statusFormGroup?.pristine;
+    return !!this.caseTagFormGroup?.pristine;
   }
 
   public readonly editingKey$ = new BehaviorSubject<boolean>(false);
 
-  private readonly _originalStatusKey$ = new BehaviorSubject<string>('');
+  private readonly _originalCaseTagKey$ = new BehaviorSubject<string>('');
 
   private readonly _subscriptions = new Subscription();
 
@@ -201,13 +197,13 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
   }
 
   public toggleCheckedChange(checked: boolean): void {
-    this.statusFormGroup.patchValue({
+    this.caseTagFormGroup.patchValue({
       visibleInCaseListByDefault: checked,
     });
-    this.statusFormGroup.markAsDirty();
+    this.caseTagFormGroup.markAsDirty();
   }
 
-  public addStatus(): void {
+  public addCaseTag(): void {
     this.disable();
 
     this.caseTagService.saveCaseTag(this.documentDefinitionName, this.getFormValue()).subscribe({
@@ -221,16 +217,16 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  public editStatus(): void {
+  public editCaseTag(): void {
     this.disable();
 
-    this._originalStatusKey$
+    this._originalCaseTagKey$
       .pipe(
         take(1),
-        switchMap(originalStatusKey => {
+        switchMap(originalCaseTagKey => {
           return this.caseTagService.updateCaseTag(
             this.documentDefinitionName,
-            originalStatusKey,
+            originalCaseTagKey,
             this.getFormValue()
           );
         })
@@ -258,33 +254,31 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
 
     if (newColor) {
       this._selectedColor$.next(newColor);
-      this.statusFormGroup.patchValue({color: newColor});
-      this.statusFormGroup.markAsDirty();
+      this.caseTagFormGroup.patchValue({color: newColor});
+      this.caseTagFormGroup.markAsDirty();
     }
   }
 
-  private prefillForm(prefillStatus: CaseTag): void {
-    this._originalStatusKey$.next(prefillStatus.key);
-    this.statusFormGroup.patchValue({
-      key: prefillStatus.key,
-      title: prefillStatus.title,
-      visibleInCaseListByDefault: prefillStatus.visibleInCaseListByDefault,
-      color: prefillStatus.color,
+  private prefillForm(prefillCaseTag: CaseTag): void {
+    this._originalCaseTagKey$.next(prefillCaseTag.key);
+    this.caseTagFormGroup.patchValue({
+      key: prefillCaseTag.key,
+      title: prefillCaseTag.title,
+      color: prefillCaseTag.color,
     });
-    this._selectedColor$.next(prefillStatus.color);
-    this.statusFormGroup.markAsPristine();
+    this._selectedColor$.next(prefillCaseTag.color);
+    this.caseTagFormGroup.markAsPristine();
     this.resetEditingKey();
   }
 
   private resetForm(): void {
-    this.statusFormGroup.patchValue({
+    this.caseTagFormGroup.patchValue({
       key: '',
       title: '',
-      visibleInCaseListByDefault: true,
       color: CaseTagColor.Blue,
     });
     this._selectedColor$.next(CaseTagColor.Blue);
-    this.statusFormGroup.markAsPristine();
+    this.caseTagFormGroup.markAsPristine();
     this.resetEditingKey();
   }
 
@@ -298,7 +292,7 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
         ([isAdd, titleValue, editingKey]) => {
           if (isAdd && !editingKey) {
             if (titleValue) {
-              this.statusFormGroup.patchValue({key: this.getUniqueKey(titleValue)});
+              this.caseTagFormGroup.patchValue({key: this.getUniqueKey(titleValue)});
             } else {
               this.clearKey();
             }
@@ -341,7 +335,7 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
   }
 
   private clearKey(): void {
-    this.statusFormGroup.patchValue({key: ''});
+    this.caseTagFormGroup.patchValue({key: ''});
   }
 
   private uniqueKeyValidator(): AsyncValidatorFn {
@@ -357,14 +351,14 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
 
   private disable(): void {
     this.disabled$.next(true);
-    this.statusFormGroup.disable();
+    this.caseTagFormGroup.disable();
   }
 
   private enable(delay = true): void {
     setTimeout(
       () => {
         this.disabled$.next(false);
-        this.statusFormGroup.enable();
+        this.caseTagFormGroup.enable();
       },
       delay ? CARBON_CONSTANTS.modalAnimationMs : 0
     );
@@ -382,7 +376,6 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
     return {
       key: this.key.value,
       title: this.title.value,
-      visibleInCaseListByDefault: this.visibleInCaseListByDefault.value,
       color: this.color.value as CaseTagColor,
     };
   }

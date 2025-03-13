@@ -18,18 +18,15 @@
   [ngClass]="{'main-content--no-horizontal-overflow': tabHorizontalOverflowDisabled()}"
 >
   <div class="container-fluid">
-    <div
-      class="mb-2"
-      *ngIf="{
-        caseTags: caseTags$ | async,
-      } as observables"
-    >
-      @if (observables.caseTags) {
-        <cds-tag *ngFor="let tag of observables.caseTags" size="sm" [type]="tag.tagType">{{
-          tag.title
-        }}</cds-tag>
+    <ng-container *ngIf="caseTags$ | async as caseTags">
+      @if (caseTags && caseTags.length > 0) {
+        <div class="mb-2">
+          <cds-tag *ngFor="let tag of caseTags" size="sm" [type]="tag.tagType">{{
+            tag.title
+          }}</cds-tag>
+        </div>
       }
-    </div>
+    </ng-container>
 
     <ng-container *ngTemplateOutlet="tabs"></ng-container>
 

@@ -51,7 +51,7 @@
 </ng-template>
 
 <ng-template #statusForm let-obs="obs">
-  <form [formGroup]="statusFormGroup" class="status-form">
+  <form [formGroup]="statusFormGroup" class="case-tag-form">
     <cds-label>
       {{ 'dossierManagement.caseTags.columns.title' | translate }}
       <input cdsText formControlName="title" [attr.modal-primary-focus]="true" />

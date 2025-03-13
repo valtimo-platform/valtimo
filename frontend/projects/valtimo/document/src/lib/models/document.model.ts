@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {InternalCaseStatus} from './internal-case-status.model';
+import {CaseTag} from './case-tags.model';
 
 interface SortResult {
   sorted: boolean;
@@ -117,7 +117,7 @@ interface Document {
   assigneeFullName: string;
   assigneeId: string;
   internalStatus?: string;
-  caseTags?: InternalCaseStatus[];
+  caseTags?: CaseTag[];
 }
 
 interface DocumentDefinitionId {
