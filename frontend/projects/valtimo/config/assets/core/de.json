@@ -1711,7 +1711,9 @@
     "enumTooltipOptional": "Die Werte, die verwendet werden, um Anzeigedaten in die Tabelle umzuwandeln.",
     "downloadButtonText": "Konfiguration herunterladen",
     "deleteColumn": "Spalte löschen",
-    "deleteColumnConfirmation": "Möchten Sie diese Spalte wirklich löschen?"
+    "deleteColumnConfirmation": "Möchten Sie diese Spalte wirklich löschen?",
+    "tagAmount": "Wie viele Tags sollen angezeigt werden?",
+    "tagAmountTooltip": "Die Menge darf immer eine positive Zahl größer als null sein."
   },
   "listColumnDisplayType": {
     "select": "Wählen Sie einen Anzeigetyp aus",

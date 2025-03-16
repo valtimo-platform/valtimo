@@ -1716,7 +1716,9 @@
     "enumTooltipOptional": "De waarden die gebruikt worden om weergavedata om te zetten in de tabel.",
     "downloadButtonText": "Download configuratie",
     "deleteColumn": "Kolom verwijderen",
-    "deleteColumnConfirmation": "Weet u zeker dat u deze kolom wilt verwijderen?"
+    "deleteColumnConfirmation": "Weet u zeker dat u deze kolom wilt verwijderen?",
+    "tagAmount": "Hoeveel tags moeten weergegeven worden",
+    "tagAmountTooltip": "De hoeveelheid moet altijd een positief getal zijn dat groter is dan nul."
   },
   "listColumnDisplayType": {
     "select": "Selecteer een weergavetype",

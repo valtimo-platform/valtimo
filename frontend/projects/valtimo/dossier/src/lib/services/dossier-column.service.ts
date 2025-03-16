@@ -74,6 +74,7 @@ export class DossierColumnService {
         ...(column.viewType && {viewType: column.viewType}),
         ...(column.enum && {enum: column.enum}),
         ...(column.format && {format: column.format}),
+        ...(column.tagAmount && {tagAmount: column.tagAmount}),
         ...(column.default && {default: column.default}),
       };
     });
@@ -94,6 +95,9 @@ export class DossierColumnService {
       }),
       ...(caseListColumn.displayType?.displayTypeParameters?.dateFormat && {
         format: caseListColumn.displayType?.displayTypeParameters?.dateFormat,
+      }),
+      ...(caseListColumn.displayType?.displayTypeParameters?.tagAmount && {
+        tagAmount: caseListColumn.displayType?.displayTypeParameters?.tagAmount,
       }),
     }));
   }

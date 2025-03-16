@@ -37,6 +37,7 @@ interface DefinitionColumn {
   title?: string;
   format?: string;
   key?: string;
+  tagAmount?: number;
 }
 
 interface CustomDossierHeaderItem {
