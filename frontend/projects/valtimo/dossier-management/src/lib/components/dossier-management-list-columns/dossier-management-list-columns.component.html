@@ -225,7 +225,12 @@
         ></v-tooltip-icon>
       </span>
 
-      <input cdsText formControlName="tagAmount" type="number" [min]="1" [step]="1" />
+      <cds-number
+        formControlName="tagAmount"
+        [min]="1"
+        [step]="1"
+        (change)="updateTagAmount($event)"
+      ></cds-number>
     </cds-label>
 
     <cds-label *ngIf="showDateFormat$ | async" [disabled]="modalObs.disableInput">

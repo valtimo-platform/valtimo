@@ -59,6 +59,7 @@ import {
   TagModule,
   ToggleModule,
   TooltipModule,
+  NumberModule,
 } from 'carbon-components-angular';
 
 import {DossierManagementAssigneeComponent} from './components/dossier-management-assignee/dossier-management-assignee.component';
@@ -162,6 +163,7 @@ import {DossierManagementCaseTagComponent} from './components/dossier-management
     TooltipModule,
     DossierManagementWidgetsEditorComponent,
     ValuePathSelectorComponent,
+    NumberModule,
   ],
   providers: [TabManagementService],
 })

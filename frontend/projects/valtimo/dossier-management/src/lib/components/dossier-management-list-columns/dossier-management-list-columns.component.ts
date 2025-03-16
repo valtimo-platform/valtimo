@@ -35,7 +35,7 @@ import {
   DisplayTypeParameters,
   DocumentService,
 } from '@valtimo/document';
-import {IconService} from 'carbon-components-angular';
+import {IconService, NumberChange} from 'carbon-components-angular';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
 import {
   BehaviorSubject,
@@ -503,6 +503,12 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
 
         this.openModal('edit');
       });
+  }
+
+  public updateTagAmount(event: NumberChange): void {
+    event instanceof NumberChange
+      ? this.formGroup.controls.tagAmount.setValue(event.value)
+      : this.formGroup.controls.tagAmount.setValue(1);
   }
 
   private updateCaseListColumns(
