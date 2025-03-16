@@ -215,6 +215,19 @@
       </cds-dropdown>
     </cds-label>
 
+    <cds-label *ngIf="showTagAmount$ | async" [disabled]="modalObs.disableInput">
+      <span class="label-with-tooltip select-label">
+        {{ 'listColumn.tagAmount' | translate }}
+
+        <v-tooltip-icon
+          [tooltip]="'listColumn.tagAmountTooltip' | translate"
+          [disabled]="modalObs.disableInput"
+        ></v-tooltip-icon>
+      </span>
+
+      <input cdsText formControlName="tagAmount" type="number" [min]="1" [step]="1" />
+    </cds-label>
+
     <cds-label *ngIf="showDateFormat$ | async" [disabled]="modalObs.disableInput">
       <span class="label-with-tooltip">
         {{ 'listColumn.dateFormat' | translate }}

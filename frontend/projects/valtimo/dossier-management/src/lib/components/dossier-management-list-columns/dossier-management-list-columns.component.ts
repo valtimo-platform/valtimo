@@ -181,7 +181,8 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
           column.displayType.displayTypeParameters
         ),
       }))
-    )
+    ),
+    tap(col => console.log(col))
   );
 
   readonly currentModalType$ = new BehaviorSubject<ListColumnModal>('create');
@@ -205,6 +206,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
       key: this.INVALID_KEY,
     }),
     enum: new FormControl([]),
+    tagAmount: new FormControl(),
   });
 
   readonly disableDefaultSort$ = combineLatest([
@@ -234,6 +236,16 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
     tap(showDateFormat => {
       if (showDateFormat === false && !!this.formGroup.value.dateFormat) {
         this.formGroup.patchValue({dateFormat: ''});
+      }
+    }),
+    startWith(false)
+  );
+
+  readonly showTagAmount$ = this.formGroup.valueChanges.pipe(
+    map(formValues => !!(formValues.displayType?.key === this.DISPLAY_TYPES[6])),
+    tap(showTagAmount => {
+      if (showTagAmount === false && !!this.formGroup.value.tagAmount) {
+        this.formGroup.patchValue({tagAmount: 1});
       }
     }),
     startWith(false)
@@ -455,6 +467,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
         const enumValues = column?.displayType?.displayTypeParameters?.enum;
         const mappedEnumValues: MultiInputValues = [];
         const columnDateFormat = column?.displayType?.displayTypeParameters?.dateFormat;
+        const tagAmount = column?.displayType?.displayTypeParameters?.tagAmount;
 
         this.selectedViewTypeItemIndex$.next(viewTypeItemIndex);
 
@@ -483,6 +496,9 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
           ...(columnDateFormat && {
             dateFormat: columnDateFormat,
           }),
+          ...(tagAmount && {
+            tagAmount: tagAmount,
+          }),
         });
 
         this.openModal('edit');
@@ -510,7 +526,6 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
 
   private addColumn(): void {
     const formValue = this.formGroup.value;
-
     this.documentDefinitionName$.pipe(take(1)).subscribe(docDefName => {
       this.documentService
         .postCaseListForManagement(docDefName, this.mapFormValuesToColumn(formValue))
@@ -529,6 +544,8 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
   private getDisplayTypeParametersView(displayTypeParameters: DisplayTypeParameters): string {
     if (displayTypeParameters?.dateFormat) {
       return displayTypeParameters.dateFormat;
+    } else if (displayTypeParameters?.tagAmount) {
+      return displayTypeParameters.tagAmount.toString();
     } else if (displayTypeParameters?.enum) {
       return Object.keys(displayTypeParameters.enum).reduce((acc, curr) => {
         const keyValuePairString = `${curr}: ${displayTypeParameters.enum[curr]}`;
@@ -629,6 +646,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
       displayType: {
         type: formValue.displayType?.key,
         displayTypeParameters: {
+          ...(formValue.tagAmount && {tagAmount: formValue.tagAmount}),
           ...(formValue.dateFormat && {dateFormat: formValue.dateFormat}),
           ...(Array.isArray(formValue.enum) &&
             formValue.enum.length > 0 && {
