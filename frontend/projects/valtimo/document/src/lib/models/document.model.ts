@@ -346,6 +346,7 @@ interface DisplayTypeParameters {
     [key: string]: string;
   };
   dateFormat?: string;
+  tagAmount?: number;
 }
 
 interface DocumentDefinitionVersionsResult {
