@@ -178,13 +178,11 @@
       @if (data.tags.length === 0) {
         -
       } @else {
-        <cds-tag
-          *ngIf="!!data.tags[0].content"
-          class="cds-tag--no-margin"
-          [type]="data.tags[0].type"
-        >
-          {{ data.tags[0].ellipsisContent ?? data.tags[0].content }}
-        </cds-tag>
+        @for (tag of data.tags.slice(0, data.tagAmount); track tag) {
+          <cds-tag class="cds-tag--no-margin" [type]="tag.type">
+            {{ tag.ellipsisContent ?? tag.content }}
+          </cds-tag>
+        }
 
         <cds-tag
           *ngIf="data.tags.length > data.tagAmount"
