@@ -20,6 +20,7 @@ import {CATALOGI_API_PLUGIN_LOGO_BASE64} from './assets';
 import {GetStatustypeConfigurationComponent} from './components/get-statustype/get-statustype-configuration.component';
 import {GetBesluittypeConfigurationComponent} from './components/get-besluittype/get-besluittype-configuration.component';
 import {GetResultaattypeConfigurationComponent} from './components/get-resultaattype/get-resultaattype-configuration.component';
+import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/get-eigenschap-configuration.component';
 
 const catalogiApiPluginSpecification: PluginSpecification = {
   pluginId: 'catalogiapi',
@@ -29,6 +30,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
     'get-besluittype': GetBesluittypeConfigurationComponent,
     'get-resultaattype': GetResultaattypeConfigurationComponent,
     'get-statustype': GetStatustypeConfigurationComponent,
+    'get-eigenschap': GetEigenschapConfigurationComponent
   },
   pluginTranslations: {
     nl: {
@@ -63,6 +65,12 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       resultaattypeTooltip: 'Omschrijving van de aard van het resultaat.',
       reslutaatProcessVariableTooltip:
         'Nadat de resultaattype is opgehaald, wordt deze opgeslagen in een process variable met deze naam.',
+      'get-eigenschap': 'Eigenschap opvragen',
+      getEigenschapInformation: 'De eigenschap wordt opgehald en daarna opgeslagen in een process variable',
+      eigenschap: 'Eigenschap',
+      eigenschapTooltip: 'Naam van de aard van het eigenschaap.',
+      eigenschapProcessVariableTooltip:
+        'Nadat de eigenschap is opgehaald, wordt deze opgeslagen in een process variable met deze naam.'
     },
     en: {
       title: 'Catalogi API',
@@ -95,6 +103,12 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       resultaattypeTooltip: 'Description of the nature of the result.',
       reslutaatProcessVariableTooltip:
         'After the resultaattype is retrieved, it is stored in a process variable with this name.',
+      'get-eigenschap': 'Retrieve eigenschap',
+      getEigenschapInformation: 'The eigenschap is retrieved and then stored in a process variable',
+      eigenschap: 'Eigenschap',
+      eigenschapTooltip: 'Name of the nature of the eigenschaap.',
+      eigenschapProcessVariableTooltip:
+        'After the eigenschap is retrieved, it is stored in a process variable with this name.'
     },
     de: {
       title: 'Catalogi API',
@@ -128,6 +142,12 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       resultaattypeTooltip: 'Beschreibung der Art der resultaat.',
       reslutaatProcessVariableTooltip:
         'Sobald der resultaattype abgerufen wurde, wird er in einer Prozessvariablen mit diesem Namen gespeichert.',
+      'get-eigenschap': 'Eigenschap anfordern',
+      getEigenschapInformation: 'Der eigenschap wird abgerufen und dann in einer Prozessvariablen gespeichert.',
+      eigenschap: 'Eigenschap',
+      eigenschapTooltip: 'Name der Art der eigenschap.',
+      eigenschapProcessVariableTooltip:
+        'Sobald der eigenschap abgerufen wurde, wird er in einer Prozessvariablen mit diesem Namen gespeichert.'
     },
   },
 };
