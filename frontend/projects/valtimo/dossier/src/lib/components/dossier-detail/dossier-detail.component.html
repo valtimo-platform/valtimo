@@ -20,10 +20,12 @@
   <div class="container-fluid">
     <ng-container *ngIf="caseTags$ | async as caseTags">
       @if (caseTags && caseTags.length > 0) {
-        <div class="mb-2">
-          <cds-tag *ngFor="let tag of caseTags" size="sm" [type]="tag.tagType">{{
-            tag.title
-          }}</cds-tag>
+        <div class="spacing-case-tags">
+          @for (tag of caseTags; track tag) {
+            <cds-tag size="sm" [type]="tag.tagType">
+              {{ tag.title }}
+            </cds-tag>
+          }
         </div>
       }
     </ng-container>

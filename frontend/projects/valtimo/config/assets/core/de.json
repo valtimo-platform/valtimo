@@ -693,7 +693,7 @@
       }
     },
     "caseTags": {
-      "searchFieldTitle": "Tag",
+      "searchFieldTitle": "Tags",
       "add": "Tag hinzufügen",
       "edit": "Tag bearbeiten",
       "visible": "Sichtbar",
