@@ -24,21 +24,13 @@ import {
   Output,
 } from '@angular/core';
 import {StatusModalCloseEvent, StatusModalType} from '../../../models';
-import {
-  BehaviorSubject,
-  combineLatest,
-  map,
-  Observable,
-  Subscription,
-  switchMap,
-  take,
-  tap,
-} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 import {
   AbstractControl,
   AsyncValidatorFn,
   FormBuilder,
+  FormControl,
   ValidationErrors,
   Validators,
 } from '@angular/forms';
@@ -79,9 +71,11 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
 
   public isCaseTag: boolean = false;
 
-  private readonly _type$ = new BehaviorSubject<StatusModalType>(undefined);
-  private readonly _typeAnimationDelay$ = new BehaviorSubject<StatusModalType>(undefined);
-  private readonly _prefillCaseTag = new BehaviorSubject<CaseTag>(undefined);
+  private readonly _type$ = new BehaviorSubject<StatusModalType | undefined>(undefined);
+  private readonly _typeAnimationDelay$ = new BehaviorSubject<StatusModalType | undefined>(
+    undefined
+  );
+  private readonly _prefillCaseTag = new BehaviorSubject<CaseTag | undefined>(undefined);
 
   public readonly caseTagFormGroup = this.fb.group({
     title: this.fb.control('', Validators.required),
@@ -90,20 +84,16 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
       Validators.minLength(3),
       this.uniqueKeyValidator,
     ]),
-    visibleInCaseListByDefault: this.fb.control(true, Validators.required),
     color: this.fb.control('', Validators.required),
   });
 
-  private _isEdit!: boolean;
-
   public readonly isEdit$ = combineLatest([this._typeAnimationDelay$, this._prefillCaseTag]).pipe(
-    tap(([type, prefillCaseTag]) => {
+    map(([type, prefillCaseTag]) => {
       if (type === 'edit' && prefillCaseTag) {
         this.prefillForm(prefillCaseTag);
       }
-    }),
-    map(([type]) => type === 'edit'),
-    tap(isEdit => (this._isEdit = isEdit))
+      return type === 'edit';
+    })
   );
 
   public readonly isAdd$ = this._typeAnimationDelay$.pipe(
@@ -118,7 +108,7 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
 
   private readonly COLORS: TagColor[] = Object.values(TagColor);
-  private readonly _selectedColor$ = new BehaviorSubject<TagColor>(undefined);
+  private readonly _selectedColor$ = new BehaviorSubject<TagColor | undefined>(undefined);
 
   public readonly colorListItems$: Observable<ListItem[]> = combineLatest([
     this._selectedColor$,
@@ -136,16 +126,16 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
     )
   );
 
-  public get key(): AbstractControl<string, string> {
-    return this.caseTagFormGroup?.get('key');
+  public get key(): AbstractControl<string | null, string | null> {
+    return this.caseTagFormGroup?.get('key') ?? new FormControl('');
   }
 
-  public get title(): AbstractControl<string, string> {
-    return this.caseTagFormGroup?.get('title');
+  public get title(): AbstractControl<string | null, string | null> {
+    return this.caseTagFormGroup?.get('title') ?? new FormControl('');
   }
 
-  public get color(): AbstractControl<string, string> {
-    return this.caseTagFormGroup?.get('color');
+  public get color(): AbstractControl<string | null, string | null> {
+    return this.caseTagFormGroup?.get('color') ?? new FormControl('');
   }
 
   public get invalid(): boolean {
@@ -177,13 +167,6 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
-  }
-
-  public toggleCheckedChange(checked: boolean): void {
-    this.caseTagFormGroup.patchValue({
-      visibleInCaseListByDefault: checked,
-    });
-    this.caseTagFormGroup.markAsDirty();
   }
 
   public addCaseTag(): void {
