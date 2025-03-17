@@ -67,7 +67,10 @@ export class CaseTagService extends BaseApiService {
     );
   }
 
-  public updateCaseTags(caseDefinitionName: string, reorderedStatus: any[]): Observable<CaseTag[]> {
+  public updateCaseTags(
+    caseDefinitionName: string,
+    reorderedStatus: CaseTag[]
+  ): Observable<CaseTag[]> {
     return this.httpClient.put<CaseTag[]>(
       this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag`),
       reorderedStatus

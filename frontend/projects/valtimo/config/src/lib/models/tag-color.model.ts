@@ -1,0 +1,14 @@
+export enum TagColor {
+  WarmGray = 'WARMGRAY',
+  Red = 'RED',
+  Magenta = 'MAGENTA',
+  Purple = 'PURPLE',
+  Blue = 'BLUE',
+  Cyan = 'CYAN',
+  Teal = 'TEAL',
+  Green = 'GREEN',
+  Gray = 'GRAY',
+  CoolGray = 'COOLGRAY',
+  HighContrast = 'HIGHCONTRAST',
+  Outline = 'OUTLINE',
+}

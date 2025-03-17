@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import {CaseTagColor} from '../models';
 import {TagType} from 'carbon-components-angular';
+import {TagColor} from '@valtimo/config';
 
 class CaseTagsUtils {
-  static getTagTypeFromCaseTagColor(caseTagColor: CaseTagColor): TagType {
+  static getTagTypeFromCaseTagColor(caseTagColor: TagColor): TagType {
     switch (caseTagColor) {
-      case CaseTagColor.HighContrast:
+      case TagColor.HighContrast:
         return 'high-contrast';
-      case CaseTagColor.CoolGray:
+      case TagColor.CoolGray:
         return 'cool-gray';
-      case CaseTagColor.WarmGray:
+      case TagColor.WarmGray:
         return 'warm-gray';
       default:
         return caseTagColor?.toLowerCase() as TagType;

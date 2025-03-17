@@ -18,9 +18,10 @@
   *ngIf="{
     loading: loading$ | async,
     documentCaseTags: documentCaseTags$ | async,
+    fields: fields$ | async,
   } as obs"
   [items]="obs.documentCaseTags"
-  [fields]="fields$ | async"
+  [fields]="obs.fields"
   [header]="false"
   [loading]="obs.loading"
   [actionItems]="ACTION_ITEMS"

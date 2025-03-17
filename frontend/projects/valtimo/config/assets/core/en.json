@@ -694,7 +694,7 @@
       }
     },
     "caseTags": {
-      "searchFieldTitle": "Tag",
+      "searchFieldTitle": "Tags",
       "add": "Add tag",
       "edit": "Edit tag",
       "visible": "Visible",

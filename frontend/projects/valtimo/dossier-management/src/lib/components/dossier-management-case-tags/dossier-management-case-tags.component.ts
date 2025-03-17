@@ -107,9 +107,9 @@ export class DossierManagementCaseTagComponent implements AfterViewInit, OnDestr
   ];
 
   public readonly statusModalType$ = new BehaviorSubject<StatusModalType>('closed');
-  public readonly prefillCaseTag$ = new BehaviorSubject<CaseTag>(undefined);
+  public readonly prefillCaseTag$ = new BehaviorSubject<CaseTag | undefined>(undefined);
 
-  public readonly caseTagToDelete$ = new BehaviorSubject<CaseTag>(undefined);
+  public readonly caseTagToDelete$ = new BehaviorSubject<CaseTag | undefined>(undefined);
   public readonly showDeleteModal$ = new Subject<boolean>();
 
   constructor(

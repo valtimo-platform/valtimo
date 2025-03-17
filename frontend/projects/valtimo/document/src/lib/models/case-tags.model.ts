@@ -15,29 +15,15 @@
  */
 
 import {TagType} from 'carbon-components-angular';
-
-enum CaseTagColor {
-  WarmGray = 'WARMGRAY',
-  Red = 'RED',
-  Magenta = 'MAGENTA',
-  Purple = 'PURPLE',
-  Blue = 'BLUE',
-  Cyan = 'CYAN',
-  Teal = 'TEAL',
-  Green = 'GREEN',
-  Gray = 'GRAY',
-  CoolGray = 'COOLGRAY',
-  HighContrast = 'HIGHCONTRAST',
-  Outline = 'OUTLINE',
-}
+import {TagColor} from '@valtimo/config';
 
 interface CaseTag {
   key: string;
   title: string;
-  color: CaseTagColor;
+  color: TagColor;
   documentDefinitionName?: string;
   order?: number;
   tagType?: TagType;
 }
 
-export {CaseTag, CaseTagColor};
+export {CaseTag};

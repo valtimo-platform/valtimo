@@ -42,11 +42,12 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import {CaseTagService, CaseTagsUtils, CaseTag, CaseTagColor} from '@valtimo/document';
+import {CaseTagService, CaseTagsUtils, CaseTag} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import {Edit16} from '@carbon/icons';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
 import {TranslateService} from '@ngx-translate/core';
+import {TagColor} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-dossier-management-case-tag-modal',
@@ -106,9 +107,9 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
   );
 
   public readonly isAdd$ = this._typeAnimationDelay$.pipe(
-    map(type => type === 'add'),
-    tap(isAdd => {
-      if (isAdd) this.resetForm();
+    map(type => {
+      if (type === 'add') this.resetForm();
+      return type === 'add';
     })
   );
 
@@ -116,22 +117,8 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
 
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
 
-  private readonly COLORS: CaseTagColor[] = [
-    CaseTagColor.Red,
-    CaseTagColor.Magenta,
-    CaseTagColor.Purple,
-    CaseTagColor.Blue,
-    CaseTagColor.Teal,
-    CaseTagColor.Green,
-    CaseTagColor.Cyan,
-    CaseTagColor.Gray,
-    CaseTagColor.CoolGray,
-    CaseTagColor.WarmGray,
-    CaseTagColor.HighContrast,
-    CaseTagColor.Outline,
-  ];
-
-  private readonly _selectedColor$ = new BehaviorSubject<CaseTagColor>(undefined);
+  private readonly COLORS: TagColor[] = Object.values(TagColor);
+  private readonly _selectedColor$ = new BehaviorSubject<TagColor>(undefined);
 
   public readonly colorListItems$: Observable<ListItem[]> = combineLatest([
     this._selectedColor$,
@@ -192,10 +179,6 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  public onClose(): void {
-    this.close();
-  }
-
   public toggleCheckedChange(checked: boolean): void {
     this.caseTagFormGroup.patchValue({
       visibleInCaseListByDefault: checked,
@@ -205,16 +188,17 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
 
   public addCaseTag(): void {
     this.disable();
-
-    this.caseTagService.saveCaseTag(this.documentDefinitionName, this.getFormValue()).subscribe({
-      next: () => {
-        this.enable();
-        this.closeAndRefresh();
-      },
-      error: () => {
-        this.enable(false);
-      },
-    });
+    this._subscriptions.add(
+      this.caseTagService.saveCaseTag(this.documentDefinitionName, this.getFormValue()).subscribe({
+        next: () => {
+          this.enable();
+          this.closeAndRefresh();
+        },
+        error: () => {
+          this.enable(false);
+        },
+      })
+    );
   }
 
   public editCaseTag(): void {
@@ -250,13 +234,17 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
     item: {color: string; content: string; selected: boolean};
     isUpdate: boolean;
   }): void {
-    const newColor = event?.item?.color as CaseTagColor;
+    const newColor = event?.item?.color as TagColor;
 
     if (newColor) {
       this._selectedColor$.next(newColor);
       this.caseTagFormGroup.patchValue({color: newColor});
       this.caseTagFormGroup.markAsDirty();
     }
+  }
+
+  public close(): void {
+    this.closeModalEvent.emit('close');
   }
 
   private prefillForm(prefillCaseTag: CaseTag): void {
@@ -275,9 +263,9 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
     this.caseTagFormGroup.patchValue({
       key: '',
       title: '',
-      color: CaseTagColor.Blue,
+      color: TagColor.Blue,
     });
-    this._selectedColor$.next(CaseTagColor.Blue);
+    this._selectedColor$.next(TagColor.Blue);
     this.caseTagFormGroup.markAsPristine();
     this.resetEditingKey();
   }
@@ -364,10 +352,6 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
     );
   }
 
-  private close(): void {
-    this.closeModalEvent.emit('close');
-  }
-
   private closeAndRefresh(): void {
     this.closeModalEvent.emit('closeAndRefresh');
   }
@@ -376,7 +360,7 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
     return {
       key: this.key.value,
       title: this.title.value,
-      color: this.color.value as CaseTagColor,
+      color: this.color.value as TagColor,
     };
   }
 }

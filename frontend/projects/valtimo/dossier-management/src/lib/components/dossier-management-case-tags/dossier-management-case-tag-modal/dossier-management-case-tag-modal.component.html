@@ -26,7 +26,7 @@
   [open]="!obs.isClosed"
   size="sm"
 >
-  <cds-modal-header showCloseButton="true" (closeSelect)="onClose()">
+  <cds-modal-header showCloseButton="true" (closeSelect)="close()">
     <h3 cdsModalHeaderHeading>
       {{ obs.isEdit ? ('dossierManagement.caseTags.edit' | translate) : '' }}
       {{ obs.isAdd ? ('dossierManagement.caseTags.add' | translate) : '' }}
@@ -34,7 +34,7 @@
   </cds-modal-header>
 
   <section cdsModalContent>
-    <ng-container *ngTemplateOutlet="statusForm; context: {obs: obs}"></ng-container>
+    <ng-container *ngTemplateOutlet="caseTagForm; context: {obs: obs}"></ng-container>
   </section>
 
   <cds-modal-footer>
@@ -43,15 +43,17 @@
 </cds-modal>
 
 <ng-template #colorDropdownItemTemplate let-item="item">
-  <div class="dropdown-color-tag">
-    <cds-tag *ngIf="item && item.content" class="cds-tag--no-margin" [type]="item?.tagType">
-      {{ 'interface.tagType.' + item?.tagType | translate }}
-    </cds-tag>
-  </div>
+  <cds-tag
+    *ngIf="item && item.content"
+    class="cds-tag--no-margin case-tag-margins"
+    [type]="item?.tagType"
+  >
+    {{ 'interface.tagType.' + item?.tagType | translate }}
+  </cds-tag>
 </ng-template>
 
-<ng-template #statusForm let-obs="obs">
-  <form [formGroup]="statusFormGroup" class="case-tag-form">
+<ng-template #caseTagForm let-obs="obs">
+  <form [formGroup]="caseTagFormGroup" class="case-tag-form">
     <cds-label>
       {{ 'dossierManagement.caseTags.columns.title' | translate }}
       <input cdsText formControlName="title" [attr.modal-primary-focus]="true" />
@@ -110,7 +112,7 @@
     *ngIf="obs.isAdd"
     cdsButton="primary"
     [disabled]="invalid || pristine || obs.disabled"
-    (click)="addStatus()"
+    (click)="addCaseTag()"
   >
     {{ 'interface.add' | translate }}
   </button>
@@ -119,7 +121,7 @@
     *ngIf="obs.isEdit"
     cdsButton="primary"
     [disabled]="invalid || pristine || obs.disabled"
-    (click)="editStatus()"
+    (click)="editCaseTag()"
   >
     {{ 'interface.save' | translate }}
   </button>
