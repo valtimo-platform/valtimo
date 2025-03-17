@@ -126,16 +126,16 @@ export class ProcessManagementEditorService implements OnDestroy {
     this.updateBpmnView();
   }
 
+  public setProcessLinksForSelectedDefinition(processLinks: ProcessLink[]): void {
+    this._processLinksForSelectedDefinition$.next(processLinks);
+  }
+
   private openSelectedProcessDefinitionSubscription(): void {
     this._subscriptions.add(
       this.selectionProcessDefinition$.subscribe(definition => {
         this.fetchProcessLinksForDefinition(definition.id);
       })
     );
-  }
-
-  private setProcessLinksForSelectedDefinition(processLinks: ProcessLink[]): void {
-    this._processLinksForSelectedDefinition$.next(processLinks);
   }
 
   private fetchProcessLinksForDefinition(processDefinitionId: string): void {

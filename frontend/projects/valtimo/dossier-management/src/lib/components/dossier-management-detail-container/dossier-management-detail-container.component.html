@@ -21,13 +21,23 @@
   } as obs"
   class="dossier-management-detail-container"
 >
-  <valtimo-documenten-api></valtimo-documenten-api>
-  <cds-tabs class="dossier-management-tabs" type="contained">
+  <cds-tabs class="dossier-management-tabs" type="inline">
+    <cds-tab
+      class="no-padding-left-right main-content"
+      [id]="TabEnum.PROCESSES"
+      [active]="obs.currentTab === TabEnum.PROCESSES"
+      [heading]="'dossierManagement.tabs.processes' | translate"
+      (selected)="navigateToTab(TabEnum.PROCESSES, obs.currentTab)"
+    >
+    </cds-tab>
+
     <cds-tab
       class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.DOCUMENT"
       [active]="obs.currentTab === TabEnum.DOCUMENT"
       [heading]="'dossierManagement.tabs.document' | translate"
-      (selected)="displayBodyComponent(TabEnum.DOCUMENT)"
+      disabled="true"
+      (selected)="navigateToTab(TabEnum.DOCUMENT, obs.currentTab)"
     >
     </cds-tab>
 
@@ -35,54 +45,52 @@
       class="no-padding-left-right main-content"
       [active]="obs.currentTab === TabEnum.CASE"
       [heading]="'dossierManagement.tabs.cases' | translate"
-      (selected)="displayBodyComponent(TabEnum.CASE)"
-    >
-    </cds-tab>
-
-    <cds-tab
-      class="no-padding-left-right main-content"
-      [active]="obs.currentTab === TabEnum.PROCESSES"
-      [heading]="'dossierManagement.tabs.processes' | translate"
-      (selected)="displayBodyComponent(TabEnum.PROCESSES)"
+      disabled="true"
+      (selected)="navigateToTab(TabEnum.CASE, obs.currentTab)"
     >
     </cds-tab>
 
     <cds-tab
       class="main-content no-padding-left-right no-padding-bottom"
+      [id]="TabEnum.SEARCH"
       [active]="obs.currentTab === TabEnum.SEARCH"
       [heading]="'dossierManagement.tabs.searchFields' | translate"
-      (selected)="displayBodyComponent(TabEnum.SEARCH)"
+      disabled="true"
+      (selected)="navigateToTab(TabEnum.SEARCH, obs.currentTab)"
     >
     </cds-tab>
 
     <cds-tab
       *ngIf="caseListColumn"
       class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.LIST"
       [active]="obs.currentTab === TabEnum.LIST"
       [heading]="'dossierManagement.tabs.listColumns' | translate"
-      (selected)="displayBodyComponent(TabEnum.LIST)"
+      disabled="true"
+      (selected)="navigateToTab(TabEnum.LIST, obs.currentTab)"
     >
     </cds-tab>
 
     <cds-tab
       *ngIf="tabManagementEnabled"
       class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.TABS"
       [active]="obs.currentTab === TabEnum.TABS"
       [heading]="'dossierManagement.tabs.tabManagement' | translate"
-      (selected)="displayBodyComponent(TabEnum.TABS)"
+      disabled="true"
+      (selected)="navigateToTab(TabEnum.TABS, obs.currentTab)"
     >
     </cds-tab>
 
     <cds-tab
       *ngIf="{active: obs.currentTab === TabEnum.STATUSES} as vars"
       class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.STATUSES"
       [active]="vars.active"
       [heading]="'dossierManagement.tabs.statuses' | translate"
-      (selected)="displayBodyComponent(TabEnum.STATUSES)"
+      disabled="true"
+      (selected)="navigateToTab(TabEnum.STATUSES, obs.currentTab)"
     >
-      <valtimo-dossier-management-statuses
-        *ngIf="vars.active"
-      ></valtimo-dossier-management-statuses>
     </cds-tab>
 
     @for (injectedTab of obs.injectedTabs; track injectedTab.translationKey) {
@@ -90,50 +98,15 @@
         class="no-padding-left-right no-padding-top-bottom"
         [active]="obs.currentTab === injectedTab.translationKey"
         [heading]="injectedTab.translationKey | translate"
-        (selected)="displayBodyComponent(injectedTab.translationKey, true)"
+        disabled="true"
+        (selected)="navigateToTab(injectedTab.translationKey, true)"
       >
       </cds-tab>
     }
   </cds-tabs>
 
   <div class="dossier-management-detail-container__content">
-    <ng-template #contentContainer></ng-template>
-
-    <valtimo-dossier-management-document-definition
-      *ngIf="
-        (obs.currentTab === TabEnum.DOCUMENT && !pendingChanges) || pendingTab === TabEnum.DOCUMENT
-      "
-      [documentDefinitionName]="documentDefinitionName$ | async"
-      (pendingChangesUpdate)="onPendingChangesUpdate($event)"
-      (cancelRedirect)="onCancelRedirectEvent()"
-      (confirmRedirect)="onConfirmRedirectEvent()"
-    ></valtimo-dossier-management-document-definition>
-
-    <valtimo-dossier-management-detail
-      *ngIf="(obs.currentTab === TabEnum.CASE && !pendingChanges) || pendingTab === TabEnum.CASE"
-    ></valtimo-dossier-management-detail>
-
-    <valtimo-dossier-management-processes
-      *ngIf="
-        (obs.currentTab === TabEnum.PROCESSES && !pendingChanges) ||
-        pendingTab === TabEnum.PROCESSES
-      "
-    ></valtimo-dossier-management-processes>
-
-    <valtimo-dossier-management-search-fields
-      *ngIf="
-        (obs.currentTab === TabEnum.SEARCH && !pendingChanges) || pendingTab === TabEnum.SEARCH
-      "
-    ></valtimo-dossier-management-search-fields>
-
-    <valtimo-dossier-management-list-columns
-      *ngIf="(obs.currentTab === TabEnum.LIST && !pendingChanges) || pendingTab === TabEnum.LIST"
-    ></valtimo-dossier-management-list-columns>
-
-    <valtimo-dossier-management-tabs
-      *ngIf="(obs.currentTab === TabEnum.TABS && !pendingChanges) || pendingTab === TabEnum.TABS"
-      [documentDefinitionName]="documentDefinitionName$ | async"
-    ></valtimo-dossier-management-tabs>
+    <router-outlet></router-outlet>
   </div>
 </div>
 
@@ -141,7 +114,7 @@
   <ng-template>
     <valtimo-dossier-management-detail-container-actions
       [documentDefinitionTitle]="documentDefinitionTitle$ | async"
-      [documentDefinitionName]="documentDefinitionName$ | async"
+      [caseDefinitionName]="caseDefinitionName$ | async"
       (versionSet)="onVersionSet($event)"
     ></valtimo-dossier-management-detail-container-actions>
   </ng-template>

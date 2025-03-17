@@ -19,7 +19,7 @@
   *ngIf="{
     exporting: exporting$ | async,
     loadingVersion: loadingVersion$ | async,
-    versionListItems: versionListItems$ | async,
+    versions: versions$ | async,
     selectedDocumentDefinition: selectedDocumentDefinition$ | async,
     selectedDocumentDefinitionIsReadOnly: selectedDocumentDefinitionIsReadOnly$ | async,
     compactMode: compactMode$ | async,
@@ -38,12 +38,11 @@
 <ng-template #versionSelection let-obs="obs">
   <cds-dropdown
     class="version-selection"
-    [disabled]="obs.loadingVersion || (obs.versionListItems.length || []) === 1"
     [skeleton]="obs.loadingVersion"
     (selected)="setVersion($event)"
     [size]="obs.compactMode ? 'sm' : 'md'"
   >
-    <cds-dropdown-list [items]="obs.versionListItems || []"></cds-dropdown-list>
+    <cds-dropdown-list [items]="obs.versions || []"></cds-dropdown-list>
   </cds-dropdown>
 </ng-template>
 

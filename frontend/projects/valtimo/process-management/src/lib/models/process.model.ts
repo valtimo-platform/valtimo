@@ -14,4 +14,13 @@
  * limitations under the License.
  */
 
-export * from './process-management.component';
+import {ProcessDocumentDefinition} from '@valtimo/document';
+import {ProcessDefinition} from '@valtimo/process';
+import {ProcessLink} from '@valtimo/process-link';
+
+export interface CaseProcessInstance {
+  bpmn20Xml: string;
+  processCaseLink: ProcessDocumentDefinition;
+  processDefinition: ProcessDefinition;
+  processLinks: ProcessLink[];
+}

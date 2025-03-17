@@ -13,21 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component} from '@angular/core';
-import {ProcessManagementService} from '../../process-management.service';
+import {CommonModule} from '@angular/common';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS} from '@valtimo/components';
-import {ProcessManagementStateService} from '../../services';
-import {FormBuilder, Validators} from '@angular/forms';
+import {
+  ButtonModule,
+  FileUploaderModule,
+  LayerModule,
+  ModalModule,
+  NotificationService,
+} from 'carbon-components-angular';
 import {map, startWith} from 'rxjs';
-import {NotificationService} from 'carbon-components-angular';
-import {TranslateService} from '@ngx-translate/core';
+import {ProcessManagementService, ProcessManagementStateService} from '../../services';
 
 @Component({
   selector: 'valtimo-process-management-upload',
   templateUrl: './process-management-upload.component.html',
   styleUrls: ['./process-management-upload.component.scss'],
   providers: [NotificationService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    CommonModule,
+    TranslateModule,
+    FileUploaderModule,
+    ModalModule,
+    LayerModule,
+    ReactiveFormsModule,
+    ButtonModule,
+  ],
 })
 export class ProcessManagementUploadComponent {
   public readonly modalOpen$ = this.processManagementStateService.openModal$;
@@ -38,14 +54,14 @@ export class ProcessManagementUploadComponent {
     file: this.formBuilder.control(new Set<any>(), [Validators.required]),
   });
 
-  public readonly fileSelected$ = this.form.get('file').valueChanges.pipe(
+  public readonly fileSelected$ = this.form.get('file')?.valueChanges.pipe(
     startWith(null),
     map(value => !!(value instanceof Set && value.size > 0))
   );
 
   constructor(
-    private readonly processManagementService: ProcessManagementService,
     private readonly processManagementStateService: ProcessManagementStateService,
+    private readonly processManagementService: ProcessManagementService,
     private readonly formBuilder: FormBuilder,
     private readonly notificationService: NotificationService,
     private readonly translateService: TranslateService

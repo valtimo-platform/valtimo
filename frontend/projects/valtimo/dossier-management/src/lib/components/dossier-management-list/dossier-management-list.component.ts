@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 import {Component} from '@angular/core';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {Search20, TrashCan20, Upload16} from '@carbon/icons';
-import {ColumnConfig, MenuService, Pagination, ViewType} from '@valtimo/components';
+import {ColumnConfig, MenuService, Pagination} from '@valtimo/components';
 import {
-  DocumentDefinition,
+  CreateDocumentDefinitionResponse,
   DocumentService,
   Page,
   TemplatePayload,
-  CreateDocumentDefinitionResponse,
 } from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import moment from 'moment';
 import {BehaviorSubject, map, Observable, switchMap, take} from 'rxjs';
+import {CaseListItem} from '../../models';
+import {CaseManagementService} from '../../services';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -36,46 +37,35 @@ moment.locale(localStorage.getItem('langKey') || '');
   styleUrls: ['./dossier-management-list.component.scss'],
 })
 export class DossierManagementListComponent {
-  public pagination: Pagination = {
-    collectionSize: 0,
-    page: 1,
-    size: 10,
-  };
+  public readonly pagination$ = new BehaviorSubject<Pagination | null>(null);
 
-  private readonly _refreshData$ = new BehaviorSubject<null>(null);
-  public dossiers$: Observable<DocumentDefinition[]> = this._refreshData$.pipe(
-    switchMap(() =>
-      this.documentService.queryDefinitionsForManagement({
-        page: this.pagination.page - 1,
-        size: this.pagination.size,
-      })
-    ),
-    map((documentDefinitionPage: Page<DocumentDefinition>) => {
-      this.pagination = {
-        ...this.pagination,
-        collectionSize: documentDefinitionPage.totalElements,
-      };
-
-      return documentDefinitionPage.content.map((documentDefinition: DocumentDefinition) => ({
-        ...documentDefinition,
-        createdOn: moment(documentDefinition.createdOn).format('DD MMM YYYY HH:mm'),
-      }));
+  public readonly caseListItems$: Observable<CaseListItem[]> = this.route.queryParams.pipe(
+    switchMap(params => this.caseManagementService.getCaseDefinitions(params)),
+    map((page: Page<CaseListItem>) => {
+      this.pagination$.next({
+        size: page.size,
+        page: page.number + 1,
+        collectionSize: +page.totalElements,
+      });
+      return page.content;
     })
   );
-
-  public dossierFields: ColumnConfig[] = [
-    {key: 'schema.title', label: 'fieldLabels.title', viewType: ViewType.TEXT},
-    {key: 'createdOn', label: 'fieldLabels.createdOn', viewType: ViewType.TEXT},
-    {key: 'readOnly', label: 'fieldLabels.readOnly', viewType: ViewType.BOOLEAN},
+  public readonly FIELDS: ColumnConfig[] = [
+    {key: 'name', label: 'Name'},
+    {key: 'caseDefinitionKey', label: 'Key'},
+    {key: 'caseDefinitionVersionTag', label: 'Version'},
   ];
 
   public readonly showCreateModal$ = new BehaviorSubject<boolean>(false);
   public readonly showUploadModal$ = new BehaviorSubject<boolean>(false);
 
+  private _paginationInitialized = false;
   constructor(
+    private readonly caseManagementService: CaseManagementService,
     private readonly documentService: DocumentService,
     private readonly iconService: IconService,
     private readonly menuService: MenuService,
+    private readonly route: ActivatedRoute,
     private readonly router: Router
   ) {
     this.iconService.registerAll([Search20, TrashCan20, Upload16]);
@@ -87,7 +77,6 @@ export class DossierManagementListComponent {
     if (!definitionUploaded) {
       return;
     }
-    this._refreshData$.next(null);
     this.menuService.reload();
   }
 
@@ -101,22 +90,39 @@ export class DossierManagementListComponent {
       .createDocumentDefinitionTemplate(templatePayload)
       .pipe(take(1))
       .subscribe((response: CreateDocumentDefinitionResponse) => {
-        this.redirectToDetails(response.documentDefinition);
+        //TODO: resolve this when DocumentDefinition is reintroduced
+        // this.redirectToDetails(response.documentDefinition);
       });
   }
 
   public paginationClicked(page: number): void {
-    this.pagination = {...this.pagination, page};
-    this._refreshData$.next(null);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {page: page - 1},
+      queryParamsHandling: 'merge',
+    });
   }
 
   public paginationSet(size: number): void {
-    this.pagination = {...this.pagination, size};
-    this._refreshData$.next(null);
+    if (!this._paginationInitialized) {
+      this._paginationInitialized = true;
+      return;
+    }
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {size},
+      queryParamsHandling: 'merge',
+    });
   }
 
-  public redirectToDetails(documentDefinition: DocumentDefinition): void {
-    this.router.navigate(['/dossier-management/dossier', documentDefinition.id.name]);
+  public redirectToDetails(caseListItem: CaseListItem): void {
+    this.router.navigate([
+      '/dossier-management/dossier',
+      caseListItem.caseDefinitionKey,
+      'version',
+      caseListItem.caseDefinitionVersionTag,
+    ]);
   }
 
   public showUploadModal(): void {

@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
 .bpmn {
   &__container {
     position: relative;
@@ -81,6 +87,17 @@
   &__buttons {
     display: flex;
     gap: 16px;
+  }
+}
+
+.valtimo-process-builder {
+  &__header {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  &__actions > *:not(:last-child) {
+    margin-right: 8px;
   }
 }
 

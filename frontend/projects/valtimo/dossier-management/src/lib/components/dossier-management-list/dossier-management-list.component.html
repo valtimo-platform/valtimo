@@ -15,19 +15,18 @@
   -->
 
 <valtimo-carbon-list
-  *ngIf="dossiers$ | async as dossiers; else loading"
-  [items]="dossiers"
-  [fields]="dossierFields"
-  [pagination]="pagination"
+  [items]="caseListItems$ | async"
+  [fields]="FIELDS"
+  (rowClicked)="redirectToDetails($event)"
+  [pagination]="pagination$ | async"
   paginationIdentifier="dossierManagementList"
   (paginationClicked)="paginationClicked($event)"
   (paginationSet)="paginationSet($event)"
-  (rowClicked)="redirectToDetails($event)"
 >
   <ng-container carbonToolbarContent [ngTemplateOutlet]="importCaseDefinitionButton"></ng-container>
 
   <valtimo-no-results
-    [action]="addCaseDefinitionButton"
+    [action]="importCaseDefinitionButton"
     [description]="'dossierManagement.noResults.description' | translate"
     [title]="'dossierManagement.noResults.title' | translate"
   ></valtimo-no-results>
@@ -48,15 +47,17 @@
 ></valtimo-dossier-management-create>
 
 <ng-template #importCaseDefinitionButton>
-  <button cdsButton="ghost" (click)="showUploadModal()">
-    {{ 'Upload' | translate }}
+  <div class="valtimo-dossier-management-list__actions">
+    <button cdsButton="ghost" disabled="true" (click)="showUploadModal()">
+      {{ 'Upload' | translate }}
 
-    <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
-  </button>
+      <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
+    </button>
 
-  <button cdsButton="primary" (click)="showCreateModal()">
-    {{ 'interface.create' | translate }}
+    <button cdsButton="primary" disabled="true" (click)="showCreateModal()">
+      {{ 'interface.create' | translate }}
 
-    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-  </button>
+      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+    </button>
+  </div>
 </ng-template>

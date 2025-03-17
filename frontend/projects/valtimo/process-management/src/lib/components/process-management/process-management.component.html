@@ -14,6 +14,23 @@
   ~ limitations under the License.
   -->
 
-<valtimo-process-management-list #processManagementList></valtimo-process-management-list>
+<ng-container
+  *ngIf="{paramsAreSet: paramsAreSet$ | async, selectedProcess: selectedProcess$ | async} as obs"
+>
+  @if (obs.paramsAreSet) {
+    @if (!obs.selectedProcess) {
+      <valtimo-process-management-list
+        (processSelected)="onProcessSelected($event)"
+      ></valtimo-process-management-list>
 
-<valtimo-process-management-upload></valtimo-process-management-upload>
+      <valtimo-process-management-upload></valtimo-process-management-upload>
+    } @else {
+      <valtimo-process-management-builder
+        [selectedProcess]="obs.selectedProcess"
+        (navigateBack)="navigateBack($event)"
+      ></valtimo-process-management-builder>
+    }
+  } @else {
+    <cds-loading></cds-loading>
+  }
+</ng-container>

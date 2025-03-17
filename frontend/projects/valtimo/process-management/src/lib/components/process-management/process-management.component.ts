@@ -13,17 +13,69 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component, ViewChild} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {TranslateService} from '@ngx-translate/core';
+import {CARBON_CONSTANTS} from '@valtimo/components';
+import {LoadingModule, NotificationModule, NotificationService} from 'carbon-components-angular';
+import {BehaviorSubject} from 'rxjs';
+import {CaseProcessInstance, ProcessManagementContext, ProcessManagementParams} from '../../models';
+import {ProcessManagementService} from '../../services';
+import {ProcessManagementBuilderComponent} from '../process-management-builder/process-management-builder.component';
 import {ProcessManagementListComponent} from '../process-management-list/process-management-list.component';
-import {ProcessManagementStateService} from '../../services';
+import {ProcessManagementUploadComponent} from '../process-management-upload/process-management-upload.component';
 
 @Component({
   selector: 'valtimo-process-management',
   templateUrl: './process-management.component.html',
   styleUrls: ['./process-management.component.scss'],
-  providers: [ProcessManagementStateService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    CommonModule,
+    ProcessManagementListComponent,
+    ProcessManagementUploadComponent,
+    ProcessManagementBuilderComponent,
+    LoadingModule,
+    NotificationModule,
+  ],
+  providers: [NotificationService, TranslateService],
 })
 export class ProcessManagementComponent {
-  @ViewChild('processManagementList') processManagementList: ProcessManagementListComponent;
+  public readonly selectedProcess$ = new BehaviorSubject<CaseProcessInstance | null>(null);
+
+  @Input() public set context(value: ProcessManagementContext) {
+    this.processManagementService.context = value;
+  }
+  public readonly paramsAreSet$ = new BehaviorSubject<boolean>(false);
+  @Input() public set params(value: ProcessManagementParams | null) {
+    if (!value) return;
+
+    this.processManagementService.setParams(value.definitionName, value.versionTag);
+    this.paramsAreSet$.next(true);
+  }
+
+  constructor(
+    private readonly notificationService: NotificationService,
+    private readonly processManagementService: ProcessManagementService,
+    private readonly translateService: TranslateService
+  ) {}
+
+  public navigateBack(notification: null | 'success' | 'error'): void {
+    this.selectedProcess$.next(null);
+
+    if (!notification) return;
+
+    this.notificationService.showToast({
+      caption: this.translateService.instant(`processManagement.${notification}Notification`),
+      type: notification,
+      duration: CARBON_CONSTANTS.notificationDuration,
+      showClose: true,
+      title: this.translateService.instant(`interface.${notification}`),
+    });
+  }
+
+  public onProcessSelected(process: CaseProcessInstance): void {
+    this.selectedProcess$.next(process);
+  }
 }

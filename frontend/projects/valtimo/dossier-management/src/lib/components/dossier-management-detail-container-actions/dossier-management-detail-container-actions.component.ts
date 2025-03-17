@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {DOCUMENT} from '@angular/common';
+import {HttpResponse} from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -24,16 +25,15 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
-import {ListItem, Notification, NotificationService} from 'carbon-components-angular';
-import {DossierDetailService, DossierExportService} from '../../services';
+import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {DOCUMENT} from '@angular/common';
-import {HttpResponse} from '@angular/common/http';
-import {DocumentService} from '@valtimo/document';
-import {take} from 'rxjs/operators';
-import {DossierManagementRemoveModalComponent} from '../dossier-management-remove-modal/dossier-management-remove-modal.component';
 import {PageHeaderService} from '@valtimo/components';
+import {DocumentService} from '@valtimo/document';
+import {ListItem, Notification, NotificationService} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
+import {take} from 'rxjs/operators';
+import {CaseManagementService, DossierDetailService, DossierExportService} from '../../services';
+import {DossierManagementRemoveModalComponent} from '../dossier-management-remove-modal/dossier-management-remove-modal.component';
 
 @Component({
   selector: 'valtimo-dossier-management-detail-container-actions',
@@ -49,7 +49,7 @@ export class DossierManagementDetailContainerActionsComponent {
   private readonly _dossierRemoveModal: DossierManagementRemoveModalComponent;
 
   @Input() public documentDefinitionTitle = '';
-  @Input() public set documentDefinitionName(value: string) {
+  @Input() public set caseDefinitionName(value: string) {
     this.dossierDetailService.setSelectedDocumentDefinitionName(value);
   }
   @Output() public versionSet = new EventEmitter<number>();
@@ -58,42 +58,39 @@ export class DossierManagementDetailContainerActionsComponent {
 
   public readonly exporting$ = new BehaviorSubject<boolean>(false);
   public readonly selectedVersionNumber$ = this.dossierDetailService.selectedVersionNumber$;
-  private readonly _previousSelectedVersionNumber$ =
-    this.dossierDetailService.previousSelectedVersionNumber$;
-  private readonly _documentDefinitionName$ =
-    this.dossierDetailService.selectedDocumentDefinitionName$;
-  public readonly loadingVersion$ = new BehaviorSubject<boolean>(true);
-  private readonly _documentDefinitionVersions$ = this._documentDefinitionName$.pipe(
-    switchMap(documentDefinitionName =>
-      this.documentService.getDocumentDefinitionVersions(documentDefinitionName)
-    ),
-    tap(res => {
-      this.dossierDetailService.setSelectedVersionNumber(this.findLargestInArray(res.versions));
-      this.loadingVersion$.next(false);
-    })
-  );
 
-  public readonly versionListItems$: Observable<Array<ListItem>> = combineLatest([
-    this._documentDefinitionVersions$,
-    this.selectedVersionNumber$,
-    this._previousSelectedVersionNumber$,
-    this.translateService.stream('key'),
-  ]).pipe(
-    map(
-      ([versionsRes, selectVersionNumber, previousVersionNumber]) =>
-        versionsRes?.versions?.map(version => ({
-          content: `${this.translateService.instant('dossierManagement.version')}${version}`,
-          selected: selectVersionNumber === version || previousVersionNumber === version,
-          id: `${version}`,
-        })) || []
-    )
-  );
+  private readonly _caseDefinitionName$ = this.dossierDetailService.selectedDocumentDefinitionName$;
+  public readonly loadingVersion$ = new BehaviorSubject<boolean>(true);
+
   public readonly selectedDocumentDefinition$ = this.dossierDetailService.documentDefinition$;
 
   public readonly selectedDocumentDefinitionIsReadOnly$ =
     this.dossierDetailService.selectedDocumentDefinitionIsReadOnly$;
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
+
+  private readonly _cachedVersions = new BehaviorSubject<ListItem[] | null>(null);
+  public readonly versions$: Observable<ListItem[] | null> = this.route.params.pipe(
+    switchMap(({caseDefinitionName, caseVersionTag}) =>
+      combineLatest([
+        this._cachedVersions.getValue() === null
+          ? this.caseManagementService.getCaseDefinitionVersions(caseDefinitionName)
+          : this._cachedVersions.asObservable(),
+        of(caseVersionTag),
+      ])
+    ),
+    map(([caseDefinitionVersions, caseVersionTag]) => {
+      const mapping: ListItem[] | null =
+        caseDefinitionVersions?.map((caseDefinitionVersion: string) => ({
+          content: caseDefinitionVersion,
+          selected: caseDefinitionVersion === caseVersionTag,
+        })) ?? null;
+
+      if (this._cachedVersions.getValue() === null) this._cachedVersions.next(mapping);
+
+      return mapping;
+    })
+  );
 
   private _currentNotification!: Notification;
 
@@ -104,7 +101,10 @@ export class DossierManagementDetailContainerActionsComponent {
     private readonly translateService: TranslateService,
     private readonly documentService: DocumentService,
     private readonly dossierDetailService: DossierDetailService,
-    private readonly pageHeaderService: PageHeaderService
+    private readonly pageHeaderService: PageHeaderService,
+    private readonly caseManagementService: CaseManagementService,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router
   ) {}
 
   public export(): void {
@@ -120,7 +120,7 @@ export class DossierManagementDetailContainerActionsComponent {
 
     this.startExporting();
 
-    combineLatest([this.selectedVersionNumber$, this._documentDefinitionName$])
+    combineLatest([this.selectedVersionNumber$, this._caseDefinitionName$])
       .pipe(
         take(1),
         tap(([selectedVersion]) => (selectedVersionNumber = selectedVersion)),
@@ -156,7 +156,10 @@ export class DossierManagementDetailContainerActionsComponent {
   }
 
   public setVersion(version: any): void {
-    this.versionSet.emit(Number(version.item.id));
+    this.router.navigate(
+      [`../${version.item.content}/${this.route.firstChild?.routeConfig?.path}`],
+      {relativeTo: this.route}
+    );
   }
 
   public openDossierRemoveModal(): void {
@@ -180,7 +183,7 @@ export class DossierManagementDetailContainerActionsComponent {
     const fileName = splitContentDisposition.length > 1 && splitContentDisposition[1];
 
     link.href = this.document.defaultView.URL.createObjectURL(response.body);
-    link.download = fileName || `${this.documentDefinitionName}_${versionNumber}.valtimo.zip`;
+    link.download = fileName || `${this.caseDefinitionName}_${versionNumber}.valtimo.zip`;
     link.target = '_blank';
     link.click();
     link.remove();

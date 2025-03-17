@@ -18,7 +18,7 @@
  * Public API Surface of dossier-management
  */
 
+export * from './lib/models';
 export * from './lib/dossier-management.module';
 export * from './lib/components/dossier-management-list/dossier-management-list.component';
-export * from './lib/models';
 export * from './lib/services';

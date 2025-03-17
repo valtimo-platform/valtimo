@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute, ParamMap} from '@angular/router';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
-import {Observable, switchMap} from 'rxjs';
+import {Observable, switchMap, tap} from 'rxjs';
 import {ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN} from '@valtimo/config';
 
 @Component({
@@ -39,7 +39,9 @@ export class DossierManagementDetailComponent implements AfterViewInit {
 
   public readonly documentDefinition$: Observable<DocumentDefinition> = this.route.paramMap.pipe(
     switchMap((params: ParamMap) =>
-      this.documentService.getDocumentDefinitionForManagement(params.get('name') ?? '')
+      this.documentService.getDocumentDefinitionForManagement(
+        params.get('caseDefinitionName') ?? ''
+      )
     )
   );
 
