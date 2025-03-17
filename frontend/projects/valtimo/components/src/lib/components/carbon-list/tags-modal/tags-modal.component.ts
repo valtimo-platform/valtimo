@@ -12,7 +12,8 @@ export class CarbonTagsModalComponent {
 
   private _tags: CarbonTag[];
   @Input() public set tags(value: CarbonTag[]) {
-    this._tags = value.sort((a: CarbonTag, b: CarbonTag) => (a.content < b.content ? -1 : 1));
+    const deepCopy = structuredClone(value);
+    this._tags = deepCopy.sort((a: CarbonTag, b: CarbonTag) => (a.content < b.content ? -1 : 1));
   }
   public get tags(): CarbonTag[] {
     return this._tags;
