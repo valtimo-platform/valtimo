@@ -32,6 +32,8 @@ import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
 import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
 import {WidgetContentComponent} from '../../../models';
 import {WidgetWizardService} from '../../../services';
+import {DossierManagementWidgetProcessSelectorComponent} from '../process-selector/dossier-management-widget-process-selector.component';
+import {ActivatedRoute, ParamMap} from '@angular/router';
 
 @Component({
   templateUrl: './dossier-management-widget-formio.component.html',
@@ -45,6 +47,7 @@ import {WidgetWizardService} from '../../../services';
     ReactiveFormsModule,
     SelectModule,
     DropdownModule,
+    DossierManagementWidgetProcessSelectorComponent,
   ],
 })
 export class DossierManagementWidgetFormioComponent
@@ -70,6 +73,9 @@ export class DossierManagementWidgetFormioComponent
 
   private readonly _formDefinitionOptions$ = new BehaviorSubject<FormDefinitionOption[]>([]);
 
+  public readonly documentDefinitionName$: Observable<string> = this.route.paramMap.pipe(
+    map((paramMap: ParamMap) => paramMap.get('name') ?? '')
+  );
   public readonly formListItems$: Observable<ListItem[]> = combineLatest([
     this._formDefinitionOptions$,
     this._selectedFormDefinitionId$,
@@ -90,7 +96,8 @@ export class DossierManagementWidgetFormioComponent
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
     private readonly widgetWizardService: WidgetWizardService,
-    private readonly formService: FormService
+    private readonly formService: FormService,
+    private readonly route: ActivatedRoute
   ) {}
 
   public componentDropDownChange(event: {

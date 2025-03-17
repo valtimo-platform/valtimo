@@ -50,6 +50,13 @@ export class DossierManagementListComponent {
       return page.content;
     })
   );
+
+  public pagination: Pagination = {
+    collectionSize: 0,
+    page: 1,
+    size: 10,
+  };
+
   public readonly FIELDS: ColumnConfig[] = [
     {key: 'name', label: 'Name'},
     {key: 'caseDefinitionKey', label: 'Key'},

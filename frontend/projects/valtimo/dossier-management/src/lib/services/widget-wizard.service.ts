@@ -1,12 +1,12 @@
 import {computed, Injectable, Signal, signal, WritableSignal} from '@angular/core';
-import {WidgetStyle, WidgetTypeSelection} from '../models';
 import {
   BasicCaseWidget,
+  CaseWidgetAction,
   CaseWidgetType,
   CaseWidgetWidth,
   WidgetContentProperties,
 } from '@valtimo/dossier';
-import {DossierManagementWidgetCollectionComponent} from '../components/dossier-management-widget-configurators';
+import {WidgetStyle, WidgetTypeSelection} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -24,6 +24,8 @@ export class WidgetWizardService {
 
   public readonly widgetKey: WritableSignal<string | null> = signal(null);
 
+  public readonly widgetActions: WritableSignal<CaseWidgetAction[] | undefined> = signal(undefined);
+
   public readonly widgetsConfig: Signal<BasicCaseWidget> = computed(() => ({
     key: this.widgetKey() ?? '',
     title: this.widgetTitle() ?? '',
@@ -31,6 +33,7 @@ export class WidgetWizardService {
     width: this.widgetWidth() ?? 4,
     highContrast: (this.widgetStyle() ?? WidgetStyle.DEFAULT) === WidgetStyle.HIGH_CONTRAST,
     properties: this.widgetContent() ?? ({} as any),
+    actions: this.widgetActions() ?? [],
   }));
 
   public readonly editMode: WritableSignal<boolean> = signal(false);
@@ -42,6 +45,7 @@ export class WidgetWizardService {
     this.widgetContent.set(null);
     this.widgetTitle.set(null);
     this.widgetKey.set(null);
+    this.widgetActions.set(undefined);
     this.editMode.set(false);
   }
 }

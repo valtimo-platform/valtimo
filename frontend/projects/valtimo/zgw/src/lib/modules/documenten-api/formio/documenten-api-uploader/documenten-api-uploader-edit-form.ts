@@ -112,6 +112,17 @@ export const documentenApiUploaderEditForm = () => ({
       },
     },
     {
+      type: 'checkbox',
+      input: true,
+      inputType: 'checkbox',
+      key: 'disabled',
+      label: 'Disabled',
+      tooltip: 'Disable the upload field',
+      validate: {
+        required: false,
+      },
+    },
+    {
       label: 'HTML',
       tag: 'div',
       content: '<h3>Documenten API metadata</h3>',

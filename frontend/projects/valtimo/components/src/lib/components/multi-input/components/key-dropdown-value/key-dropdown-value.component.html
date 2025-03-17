@@ -14,7 +14,11 @@
   ~ limitations under the License.
   -->
 
-<div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
+<div
+  class="v-multi-input__input"
+  [ngClass]="{'--full-width': fullWidth}"
+  [style.flex]="keyColumnFlex"
+>
   <cds-label *ngIf="index === 0 && keyColumnTitle">{{ keyColumnTitle }}</cds-label>
 
   <input
@@ -31,6 +35,7 @@
   class="v-multi-input__input"
   [ngClass]="{'--full-width': fullWidth}"
   [style.minWidth.px]="dropdownWidth"
+  [style.flex]="dropdownColumnFlex"
 >
   <cds-label *ngIf="index === 0 && dropdownColumnTitle">{{ dropdownColumnTitle }}</cds-label>
 
@@ -41,7 +46,11 @@
 
 <div class="v-multi-input__separator"></div>
 
-<div class="v-multi-input__input" [ngClass]="{'--full-width': fullWidth}">
+<div
+  class="v-multi-input__input"
+  [ngClass]="{'--full-width': fullWidth}"
+  [style.flex]="valueColumnFlex"
+>
   <cds-label *ngIf="index === 0 && valueColumnTitle">{{ valueColumnTitle }}</cds-label>
 
   <input

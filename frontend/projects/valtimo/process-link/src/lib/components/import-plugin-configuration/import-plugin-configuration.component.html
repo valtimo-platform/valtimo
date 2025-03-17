@@ -1,0 +1,75 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-toggletip align="right-bottom" [autoAlign]="true" [isOpen]="open$ | async">
+  <button
+    class="process-link-configuration-import-button"
+    [disabled]="((compatiblePluginProcessLinks$ | async) || []).length === 0"
+    cdsToggletipButton
+    cdsButton="ghost"
+  >
+    {{ 'processLinkConfiguration.importConfiguration' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
+  </button>
+
+  <div cdsToggletipContent data-carbon-theme="g90" class="process-link-configuration-select">
+    <cds-dropdown
+      [label]="'processLinkConfiguration.process' | translate"
+      [placeholder]="'processLinkConfiguration.selectProcess' | translate"
+      (selected)="processSelected($event)"
+      [appendInline]="true"
+      [cdsLayer]="1"
+    >
+      <cds-dropdown-list
+        [items]="processListItems$ | async"
+        onclick="event.stopPropagation()"
+      ></cds-dropdown-list>
+    </cds-dropdown>
+
+    <cds-dropdown
+      [label]="'processLinkConfiguration.version' | translate"
+      [placeholder]="'processLinkConfiguration.selectVersion' | translate"
+      [disabled]="!process.value"
+      (selected)="versionSelected($event)"
+      [appendInline]="true"
+      [cdsLayer]="1"
+    >
+      <cds-dropdown-list
+        [items]="versionListItems$ | async"
+        onclick="event.stopPropagation()"
+      ></cds-dropdown-list>
+    </cds-dropdown>
+
+    <cds-dropdown
+      [label]="'processLinkConfiguration.activity' | translate"
+      [placeholder]="'processLinkConfiguration.selectActivity' | translate"
+      [disabled]="!process.value || !version.value"
+      (selected)="activitySelected($event)"
+      [appendInline]="true"
+      [cdsLayer]="1"
+    >
+      <cds-dropdown-list
+        [items]="activityListItems$ | async"
+        onclick="event.stopPropagation()"
+      ></cds-dropdown-list>
+    </cds-dropdown>
+
+    <button cdsButton [disabled]="!importPluginForm.valid" (click)="onSubmit()" [cdsLayer]="1">
+      {{ 'processLinkConfiguration.importConfiguration' | translate }}
+    </button>
+  </div>
+</cds-toggletip>

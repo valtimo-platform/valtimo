@@ -390,28 +390,14 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   );
 
   public readonly documentTypeItems$: Observable<Array<ListItem>> = combineLatest([
-    this.route?.params || of(null),
-    this.route?.firstChild?.params || of(null),
     this.valtimoModalService.documentDefinitionName$,
     this.informatieobjecttypeFormControl.valueChanges.pipe(
       startWith(this.informatieobjecttypeFormControl.value)
     ),
   ]).pipe(
-    filter(
-      ([params, firstChildParams, documentDefinitionName]) =>
-        !!(
-          params?.documentDefinitionName ||
-          firstChildParams?.documentDefinitionName ||
-          documentDefinitionName
-        )
-    ),
-    switchMap(([params, firstChildParams, documentDefinitionName, informatieobjecttypeValue]) =>
+    switchMap(([documentDefinitionName, informatieobjecttypeValue]) =>
       combineLatest([
-        this.documentService.getDocumentTypes(
-          params?.documentDefinitionName ||
-            firstChildParams?.documentDefinitionName ||
-            documentDefinitionName
-        ),
+        this.documentService.getDocumentTypes(documentDefinitionName),
         of(informatieobjecttypeValue),
       ])
     ),
@@ -429,6 +415,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
 
   private _subscriptions = new Subscription();
   private _fileSubscription!: Subscription;
+  private _fileNameAndAuthorSubscription!: Subscription;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -451,6 +438,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
     this._fileSubscription?.unsubscribe();
+    this._fileNameAndAuthorSubscription?.unsubscribe();
     this.isDefinitiveStatus$.next(false);
   }
 
@@ -492,6 +480,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
 
   public prefillForm(file) {
     this.prefillFilenameAndAuthor();
+
     if (file) {
       const {
         beschrijving,
@@ -555,31 +544,30 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   }
 
   private prefillFilenameAndAuthor() {
-    this._subscriptions.add(
-      combineLatest([this.file$, this.userEmail$])
-        .pipe(
-          tap(([file, userEmail]) => {
-            const filename = file?.bestandsnaam || this.defaultValues.bestandsnaam || file?.name;
-            this.filenameExtension = filename?.split('.')?.pop() || '';
-            if (this.filenameExtension.length === filename?.length) {
-              this.filenameExtension = '';
-            }
-            this.documentenApiMetadataForm.patchValue({
-              bestandsnaam: filename,
-              auteur: file?.auteur || this.defaultValues.auteur || userEmail,
-              creatiedatum: file?.creatiedatum || new Date(Date.now()),
-              titel:
-                file?.titel ||
-                this.defaultValues.titel ||
-                this.filenameToTitle(file?.name || this.defaultValues.bestandsnaam),
-            });
-            if (this.areAllFieldsHidden()) {
-              this.save();
-            }
-          })
-        )
-        .subscribe()
-    );
+    this._fileNameAndAuthorSubscription?.unsubscribe();
+    this._fileNameAndAuthorSubscription = combineLatest([this.file$, this.userEmail$])
+      .pipe(
+        tap(([file, userEmail]) => {
+          const filename = file?.bestandsnaam || this.defaultValues.bestandsnaam || file?.name;
+          this.filenameExtension = filename?.split('.')?.pop() || '';
+          if (this.filenameExtension.length === filename?.length) {
+            this.filenameExtension = '';
+          }
+          this.documentenApiMetadataForm.patchValue({
+            bestandsnaam: filename,
+            auteur: file?.auteur || this.defaultValues.auteur || userEmail,
+            creatiedatum: file?.creatiedatum || new Date(Date.now()),
+            titel:
+              file?.titel ||
+              this.defaultValues.titel ||
+              this.filenameToTitle(file?.name || this.defaultValues.bestandsnaam),
+          });
+          if (this.areAllFieldsHidden()) {
+            this.save();
+          }
+        })
+      )
+      .subscribe();
   }
 
   private filenameToTitle(filename?: string) {
@@ -648,14 +636,17 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
 
   private openDocumentDefinitionSubscription() {
     this._subscriptions.add(
-      this.route?.params
+      combineLatest([this.route?.params || of(null), this.route?.firstChild?.params || of(null)])
         .pipe(
-          map(params => params?.documentDefinitionName),
-          filter(documentDefinitionName => documentDefinitionName)
+          map(
+            ([params, firstChildParams]) =>
+              (params?.documentDefinitionName || firstChildParams?.documentDefinitionName) as string
+          ),
+          filter(documentDefinitionName => !!documentDefinitionName)
         )
-        .subscribe(documentDefinitionName => {
-          this.valtimoModalService.setDocumentDefinitionName(documentDefinitionName);
-        })
+        .subscribe(documentDefinitionName =>
+          this.valtimoModalService.setDocumentDefinitionName(documentDefinitionName)
+        )
     );
   }
 

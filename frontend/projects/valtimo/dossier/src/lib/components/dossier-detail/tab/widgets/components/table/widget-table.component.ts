@@ -25,10 +25,19 @@ import {
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListItem, CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
 import {Page} from '@valtimo/config';
-import {PaginationModel, PaginationModule, TilesModule} from 'carbon-components-angular';
+import {
+  ButtonModule,
+  PaginationModel,
+  PaginationModule,
+  TilesModule,
+} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
-import {FieldsCaseWidgetValue, TableCaseWidget} from '../../../../../../models';
+import {CaseWidgetAction, FieldsCaseWidgetValue, TableCaseWidget} from '../../../../../../models';
 import {DossierWidgetsApiService} from '../../../../../../services';
+import {WidgetProcess} from '../widget-process/widget-process';
+import {DocumentService} from '@valtimo/document';
+import {PermissionService} from '@valtimo/access-control';
+import {WidgetsService} from '../../widgets.service';
 
 @Component({
   selector: 'valtimo-widget-table',
@@ -37,15 +46,23 @@ import {DossierWidgetsApiService} from '../../../../../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [CommonModule, CarbonListModule, PaginationModule, TilesModule, TranslateModule],
+  imports: [
+    CommonModule,
+    CarbonListModule,
+    PaginationModule,
+    TilesModule,
+    TranslateModule,
+    ButtonModule,
+  ],
 })
-export class WidgetTableComponent {
+export class WidgetTableComponent extends WidgetProcess {
   @Input({required: true}) public documentId: string;
   @Input({required: true}) public tabKey: string;
 
   private _widgetConfiguration: TableCaseWidget;
   @Input({required: true}) public set widgetConfiguration(value: TableCaseWidget) {
     this._widgetConfiguration = value;
+    this.baseWidgetConfiguration = value;
     this.fields$.next(
       value.properties.columns.map((column: FieldsCaseWidgetValue, index: number) => ({
         key: column.key,
@@ -143,9 +160,14 @@ export class WidgetTableComponent {
   );
 
   constructor(
+    protected readonly documentService: DocumentService,
+    protected readonly permissionService: PermissionService,
     private readonly dossierWidgetsApiService: DossierWidgetsApiService,
-    private readonly cdr: ChangeDetectorRef
-  ) {}
+    private readonly cdr: ChangeDetectorRef,
+    private readonly widgetsService: WidgetsService
+  ) {
+    super(documentService, permissionService);
+  }
 
   public onSelectPage(page: number): void {
     this._queryParams$.next(`page=${page - 1}&size=${this.paginationModel().pageLength}`);
@@ -153,5 +175,9 @@ export class WidgetTableComponent {
       ...model,
       currentPage: page,
     }));
+  }
+
+  public onProcessStartClick(process: CaseWidgetAction): void {
+    this.widgetsService.startProcess(process.processDefinitionKey);
   }
 }

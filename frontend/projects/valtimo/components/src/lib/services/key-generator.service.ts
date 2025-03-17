@@ -25,7 +25,7 @@ export class KeyGeneratorService {
       .toLowerCase()
       .replace(/[^a-z0-9-_]+|-[^a-z0-9]+/g, '-')
       .replace(/_[-_]+/g, '_')
-      .replace(/^[^a-z]+/g, '');
+      .replace(/^[^a-z]+|[^a-z0-9]+$/g, '');
 
     if (!usedKeys.includes(dashCaseKey)) {
       return dashCaseKey;

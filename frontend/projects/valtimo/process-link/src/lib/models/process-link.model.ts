@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {ProcessInstanceTask} from '@valtimo/process';
 
 interface ProcessLink {
@@ -34,6 +33,7 @@ interface ProcessLink {
   formDisplayType?: FormDisplayType;
   formSize?: FormSize;
   subtitles?: string[];
+  componentKey?: string;
 }
 
 type GetProcessLinkResponse = Array<ProcessLink>;
@@ -120,6 +120,19 @@ type FormDisplayType = 'modal' | 'panel';
 
 type FormSize = 'extraSmall' | 'small' | 'medium' | 'large';
 
+interface UIComponentProcessLinkCreateRequestDto {
+  componentKey: string;
+  activityId: string;
+  activityType: string;
+  processLinkType: string;
+  processDefinitionId: string;
+}
+
+interface UIComponentProcessLinkUpdateRequestDto {
+  id: string;
+  componentKey: string;
+}
+
 interface URLProcessLinkCreateDto {
   url: string;
   activityId: string;
@@ -133,7 +146,7 @@ interface URLProcessLinkUpdateRequestDto {
   activityId: string;
 }
 
-type TaskProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url';
+type TaskProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url' | 'ui-component';
 
 interface TaskProcessLinkResult {
   processLinkId: string;
@@ -147,6 +160,7 @@ interface TaskProcessLinkResult {
     url?: string;
     formDisplayType?: FormDisplayType;
     formSize?: FormSize;
+    componentKey?: string;
   };
 }
 
@@ -161,11 +175,26 @@ type ProcessLinkUpdateEvent =
   | FormProcessLinkUpdateRequestDto
   | URLProcessLinkUpdateRequestDto;
 
+interface ProcessLinkDeleteEvent {
+  activityId: string;
+}
+
+interface CompatibleProcessVersion {
+  version: string;
+  processLinks: ProcessLink[];
+}
+
+interface CompatiblePluginProcessLinks {
+  processDefinitionKey: string;
+  versions: CompatibleProcessVersion[];
+}
+
 type ProcessLinkCreateEvent =
   | FormProcessLinkCreateRequestDto
   | FormFlowProcessLinkCreateRequestDto
   | PluginProcessLinkCreateDto
-  | URLProcessLinkCreateDto;
+  | URLProcessLinkCreateDto
+  | UIComponentProcessLinkCreateRequestDto;
 
 interface ProcessLinkDeleteEvent {
   activityId: string;
@@ -176,27 +205,41 @@ enum ProcessLinkEditMode {
   EMIT_EVENTS,
 }
 
+interface CompatibleProcessVersion {
+  version: string;
+  processLinks: ProcessLink[];
+}
+
+interface CompatiblePluginProcessLinks {
+  processDefinitionKey: string;
+  versions: CompatibleProcessVersion[];
+}
+
 export {
-  GetProcessLinkRequest,
-  ProcessLink,
-  GetProcessLinkResponse,
-  PluginProcessLinkUpdateDto,
-  ProcessLinkType,
-  ProcessLinkConfigurationStep,
-  FormProcessLinkCreateRequestDto,
-  FormFlowProcessLinkCreateRequestDto,
-  PluginProcessLinkCreateDto,
-  FormFlowProcessLinkUpdateRequestDto,
-  FormProcessLinkUpdateRequestDto,
-  URLProcessLinkCreateDto,
-  URLProcessLinkUpdateRequestDto,
+  CompatiblePluginProcessLinks,
+  CompatibleProcessVersion,
   FormDisplayType,
+  FormFlowProcessLinkCreateRequestDto,
+  FormFlowProcessLinkUpdateRequestDto,
+  FormProcessLinkCreateRequestDto,
+  FormProcessLinkUpdateRequestDto,
   FormSize,
-  TaskProcessLinkType,
-  TaskProcessLinkResult,
-  TaskWithProcessLink,
-  ProcessLinkUpdateEvent,
+  GetProcessLinkRequest,
+  GetProcessLinkResponse,
+  PluginProcessLinkCreateDto,
+  PluginProcessLinkUpdateDto,
+  ProcessLink,
+  ProcessLinkConfigurationStep,
   ProcessLinkCreateEvent,
   ProcessLinkDeleteEvent,
   ProcessLinkEditMode,
+  ProcessLinkType,
+  ProcessLinkUpdateEvent,
+  TaskProcessLinkResult,
+  TaskProcessLinkType,
+  TaskWithProcessLink,
+  UIComponentProcessLinkCreateRequestDto,
+  UIComponentProcessLinkUpdateRequestDto,
+  URLProcessLinkCreateDto,
+  URLProcessLinkUpdateRequestDto,
 };

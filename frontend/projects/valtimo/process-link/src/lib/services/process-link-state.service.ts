@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Injectable, OnDestroy} from '@angular/core';
 import {BehaviorSubject, map, Observable, Subject, Subscription} from 'rxjs';
 import {
@@ -25,9 +24,9 @@ import {
   ProcessLinkType,
   ProcessLinkUpdateEvent,
 } from '../models';
-import {ProcessLinkStepService} from './process-link-step.service';
-import {ProcessLinkButtonService} from './process-link-button.service';
 import {PluginStateService} from './plugin-state.service';
+import {ProcessLinkButtonService} from './process-link-button.service';
+import {ProcessLinkStepService} from './process-link-step.service';
 
 @Injectable({
   providedIn: 'root',

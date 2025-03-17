@@ -19,8 +19,8 @@ import {PluginManagementStateService} from '../../services';
 import {take} from 'rxjs/operators';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {
-  PluginConfigurationData,
   PluginConfiguration,
+  PluginConfigurationData,
   PluginManagementService,
 } from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
@@ -31,7 +31,8 @@ import {NGXLogger} from 'ngx-logger';
   styleUrls: ['./plugin-edit-modal.component.scss'],
 })
 export class PluginEditModalComponent {
-  @Input() open = false;
+  @Input() public readonly open = false;
+  @Input() public readonly saveNewConfiguration = false;
 
   @Output() closeModal: EventEmitter<boolean> = new EventEmitter();
 
@@ -84,6 +85,11 @@ export class PluginEditModalComponent {
   public onPluginConfiguration(configuration: PluginConfigurationData): void {
     this.stateService.disableInput();
 
+    if (this.saveNewConfiguration) {
+      this.saveNewPluginConfiguration(configuration);
+      return;
+    }
+
     this.stateService.selectedPluginConfiguration$
       .pipe(take(1))
       .subscribe(selectedPluginConfiguration => {
@@ -99,16 +105,42 @@ export class PluginEditModalComponent {
             configurationTitle,
             configurationData
           )
-          .subscribe(
-            () => {
+          .subscribe({
+            next: () => {
               this.stateService.refresh();
               this.hide();
             },
-            () => {
+            error: () => {
               this.logger.error('Something went wrong with updating the plugin configuration.');
               this.stateService.enableInput();
-            }
-          );
+            },
+          });
+      });
+  }
+
+  private saveNewPluginConfiguration(configuration: PluginConfigurationData): void {
+    this.stateService.selectedPluginConfiguration$
+      .pipe(take(1))
+      .subscribe(selectedPluginConfiguration => {
+        const duplicatedConfiguration = {...selectedPluginConfiguration, properties: configuration};
+
+        duplicatedConfiguration.title = duplicatedConfiguration.properties.configurationTitle;
+
+        delete duplicatedConfiguration.properties.configurationTitle;
+        delete duplicatedConfiguration.properties.configurationId;
+
+        this.pluginManagementService.savePluginConfiguration(duplicatedConfiguration).subscribe({
+          next: () => {
+            this.stateService.refresh();
+            this.hide();
+          },
+          error: () => {
+            this.logger.error(
+              'Something went wrong with saving the duplicated plugin configuration.'
+            );
+            this.stateService.enableInput();
+          },
+        });
       });
   }
 }

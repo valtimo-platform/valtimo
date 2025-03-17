@@ -54,6 +54,8 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
         'De locatie van het gegenereerde document wordt opgeslagen in een procesvariabele. Deze procesvariabele kan gebruikt worden om het document te verwerken in een andere BPMN-taak.',
       generateDocumentWarning:
         'Deze actie genereert een tijdelijk bestand. Het verwerken hiervan moet door een andere actie worden gedaan.',
+      key: 'Sleutel',
+      value: 'Waarde',
     },
     en: {
       title: 'SmartDocuments',
@@ -80,6 +82,8 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
         'The location of the generated document is stored in a process variable. This process variable can be used to access the document in another BPMN task.',
       generateDocumentWarning:
         'This action generates a temporary file. It needs to be stored in a following task.',
+      key: 'Key',
+      value: 'Value',
     },
     de: {
       title: 'SmartDocuments',
@@ -106,6 +110,8 @@ const smartDocumentsPluginSpecification: PluginSpecification = {
         'Der Ort des generierten Dokuments wird in einer Prozessvariablen gespeichert. Diese Prozessvariable wird verwendet, um in einer anderen BPMN-Aufgabe auf das Dokument zuzugreifen.',
       generateDocumentWarning:
         'Diese Aktion erzeugt eine temporäre Datei. Die Verarbeitung muss durch eine andere Aktion erfolgen.',
+      key: 'Schlüssel',
+      value: 'Wert',
     },
   },
 };

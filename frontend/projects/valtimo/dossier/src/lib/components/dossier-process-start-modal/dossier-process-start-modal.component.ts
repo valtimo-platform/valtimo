@@ -16,6 +16,7 @@
 
 import {
   Component,
+  ComponentRef,
   EventEmitter,
   Inject,
   OnDestroy,
@@ -29,6 +30,9 @@ import {
 import {PermissionService} from '@valtimo/access-control';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
 import {
+  FORM_CUSTOM_COMPONENT_TOKEN,
+  FormCustomComponent,
+  FormCustomComponentConfig,
   FormFlowService,
   FormSubmissionResult,
   ProcessLinkService,
@@ -52,7 +56,7 @@ import {DossierListService, StartModalService} from '../../services';
 import {ConfigService} from '@valtimo/config';
 import {FORM_VIEW_MODEL_TOKEN} from '@valtimo/config';
 import {FormViewModel} from '@valtimo/config';
-import {Subscription} from 'rxjs';
+import {BehaviorSubject, Subscription} from 'rxjs';
 
 @Component({
   selector: 'valtimo-dossier-process-start-modal',
@@ -75,14 +79,20 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
   public options: ValtimoFormioOptions;
   public isAdmin: boolean;
   public isFormViewModel = false;
+  public isUIComponent = false;
   @ViewChild('form', {static: false}) form: FormioComponent;
   @ViewChild('processStartModal', {static: false}) modal: ModalComponent;
   @ViewChild('formViewModelComponent', {static: true, read: ViewContainerRef})
   public formViewModelDynamicContainer: ViewContainerRef;
+  @ViewChild('formCustomComponent', {static: false, read: ViewContainerRef})
+  public formCustomComponentDynamicContainer: ViewContainerRef;
   @Output() formFlowComplete = new EventEmitter();
   @Output() noProcessLinked = new EventEmitter();
 
   private _subscriptions = new Subscription();
+  private readonly _formCustomComponentConfig$ = new BehaviorSubject<
+    FormCustomComponentConfig | {}
+  >({});
 
   constructor(
     private route: ActivatedRoute,
@@ -97,10 +107,15 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
     private startModalService: StartModalService,
     private configService: ConfigService,
     @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel,
+    @Optional()
+    @Inject(FORM_CUSTOM_COMPONENT_TOKEN)
+    private readonly formCustomComponentConfig: FormCustomComponentConfig,
     private urlResolverService: UrlResolverService
   ) {
     this._useStartEventNameAsStartFormTitle =
       this.configService.config.featureToggles?.useStartEventNameAsStartFormTitle;
+
+    this._formCustomComponentConfig$.next(formCustomComponentConfig);
   }
 
   ngOnInit() {
@@ -166,7 +181,11 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
                       this.submitCompleted(result);
                     });
                 });
-
+              break;
+            case 'ui-component':
+              this.setFormCustomComponent(startProcessResult.properties.componentKey);
+              this.isUIComponent = true;
+              this.modal.show();
               break;
           }
         } else {
@@ -268,5 +287,23 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
         this.modal.hide();
       })
     );
+  }
+
+  private setFormCustomComponent(formCustomComponentKey: string): void {
+    this.formCustomComponentDynamicContainer.clear();
+    if (!this.formCustomComponentConfig) return;
+    this._formCustomComponentConfig$.pipe(take(1)).subscribe(formCustomComponentConfig => {
+      const customComponent = formCustomComponentConfig[formCustomComponentKey];
+      const renderedComponent = this.formCustomComponentDynamicContainer.createComponent(
+        customComponent
+      ) as ComponentRef<FormCustomComponent>;
+
+      renderedComponent.instance.processDefinitionKey = this.processDefinitionKey;
+      renderedComponent.instance.documentDefinitionName = this.documentDefinitionName;
+
+      renderedComponent.instance.submittedEvent.subscribe(() => {
+        this.modal.hide();
+      });
+    });
   }
 }

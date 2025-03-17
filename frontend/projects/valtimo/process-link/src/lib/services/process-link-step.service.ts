@@ -101,6 +101,14 @@ export class ProcessLinkStepService {
     this._currentStepIndex$.next(0);
   }
 
+  setUIComponentStep(): void {
+    this._steps$.next([
+      {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.ui-component'},
+      {label: 'uiComponent'},
+    ]);
+    this._currentStepIndex$.next(1);
+  }
+
   setFormFlowSteps(): void {
     this._steps$.next([
       {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.form-flow'},
@@ -273,6 +281,11 @@ export class ProcessLinkStepService {
           this.buttonService.showBackButton();
           this.buttonService.showSaveButton();
         }
+        break;
+      case 'ui-component':
+        this.setUIComponentStep();
+        this.buttonService.showBackButton();
+        this.buttonService.showSaveButton();
         break;
     }
   }

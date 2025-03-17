@@ -176,6 +176,7 @@
     "rowLocked": "Kein Zugriff zu dieser Fall!",
     "widgets": {
       "noData": "Keine Data gefunden",
+      "emptyFields": "Niets hier",
       "noWidgets": "Keine Widgets",
       "noWidgetsDescription": "Für dieses Tab sind keine Widgets konfiguriert, oder Sie verfügen nicht über die entsprechenden Berechtigungen, um sie anzuzeigen.",
       "noCustomComponent": "Widget nicht verfügbar",
@@ -789,6 +790,7 @@
       "widgetTitle": "Widget-Titel",
       "widgetTitlePlaceholder": "Wählen Sie einen Kurznamen",
       "widgetTitleTooltip": "Titel, der oben im Widget angezeigt wird",
+      "hideWhenEmpty": "Ausblenden, wenn leer",
       "column": "Spalte {{number}}",
       "fields": {
         "add": "Feld hinzufügen",
@@ -872,6 +874,12 @@
     "cancelModal": {
       "title": "Verlassen des Editors",
       "content": "Sind Sie sicher, dass Sie den Editor verlassen möchten? Möglicherweise gehen nicht gespeicherte Änderungen verloren. Beachten Sie beim Speichern, dass das Entfernen oder Ändern eines Attributs die Widget-Konfiguration zerstören kann."
+    },
+    "processes": {
+      "buttonTextLabel": "Neuer Prozessschaltflächentext (Optional)",
+      "buttonTextPlaceholder": "Schaltflächentext",
+      "selectorLabel": "Schaltfläche Neuer Prozess (Optional)",
+      "selectorPlaceholder": "Wählen Sie einen Prozess"
     },
     "saveModalContent": "Sind Sie sicher, dass Sie die Widget-Konfiguration speichern möchten? Das Entfernen oder Ändern eines Attributs kann die Widget-Konfiguration zerstören."
   },
@@ -1187,6 +1195,7 @@
     "collapse": "Kollaps",
     "expand": "Expandieren",
     "download": "Herunterladen",
+    "duplicate": "Duplikat",
     "openInNewTab": "In neuem Tab öffnen",
     "create": "Erstellen",
     "save": "Speichern",
@@ -1786,6 +1795,9 @@
     },
     "formioCurrencyComponent": {
       "errorMessage": "Keine gültige Dezimalzahl. Bitte geben Sie eine gültige Dezimalzahl ein."
+    },
+    "formioFormViewModelComponent": {
+      "submitError": "Ungültige Einreichung"
     }
   },
   "viewTypeConverter": {
@@ -1814,13 +1826,21 @@
     "toggleViewModel": {
       "title": "View Model ermöglicht?",
       "checkboxDescription": "Aktiviert die Form View Model Formularverarbeitung"
-    }
+    },
+    "importConfiguration": "Konfiguration importieren",
+    "selectProcess": "Wählen Sie einen Prozess aus",
+    "process": "Prozess",
+    "version": "Version",
+    "selectVersion": "Wählen Sie eine Version aus",
+    "activity": "Prozessaktivität",
+    "selectActivity": "Wählen Sie eine Prozessaktivität aus"
   },
   "processLinkType": {
     "plugin": "Plugin",
     "form": "Formular",
     "form-flow": "FormFlow",
-    "url": "URL"
+    "url": "URL",
+    "ui-component": "UI Component"
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Linktyp wählen",
@@ -1851,12 +1871,14 @@
     "configurePluginAction": "Konfigurieren Sie Ihre Aktion",
     "selectURL": "Konfigurieren Sie Ihre URL",
     "subtitles": "Untertitels",
-    "addSubtitle": "Untertitel hinzufügen"
+    "addSubtitle": "Untertitel hinzufügen",
+    "uiComponent": "UI-Komponente auswählen"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "Es sind keine Plugin-Konfigurationen verfügbar. Erstellen Sie eine Plugin-Konfiguration, um sie mit einem Prozessschritt verknüpfen zu können.",
     "form": "Es sind keine Formulare vorhanden. Erstellen Sie ein Formular, um es mit einem Prozessschritt verknüpfen zu können.",
-    "form-flow": "Es sind keine FormFlows verfügbar. Erstellen Sie einen FormFlow, um ihn mit einem Prozessschritt verknüpfen zu können."
+    "form-flow": "Es sind keine FormFlows verfügbar. Erstellen Sie einen FormFlow, um ihn mit einem Prozessschritt verknüpfen zu können.",
+    "ui-component": "Es sind keine benutzerdefinierten Komponenten registriert. Bitte erstellen Sie eine, wenn Sie diese Option verwenden möchten."
   },
   "processLinkUrlInvalid": "Ungültige URL {{ URL }}",
   "accessControl": {

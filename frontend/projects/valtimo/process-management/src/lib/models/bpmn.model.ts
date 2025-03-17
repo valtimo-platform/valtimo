@@ -19,5 +19,4 @@ interface BpmnElement {
   id: string;
   di?: {id?: string; bpmnElement?: {name?: string}};
 }
-
 export {BpmnElement};

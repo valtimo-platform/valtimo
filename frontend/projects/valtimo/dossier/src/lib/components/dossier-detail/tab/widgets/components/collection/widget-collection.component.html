@@ -18,9 +18,22 @@
   *ngIf="{
     widgetConfiguration: widgetConfiguration$ | async,
     collectionWidgetCards: collectionWidgetCards$ | async,
+    noVisibleFields: noVisibleFields$ | async,
   } as obs"
 >
-  <span class="valtimo-widget-collection__title">{{ widgetTitle() }}</span>
+  <section class="valtimo-widget-collection__header">
+    <span class="valtimo-widget-collection__title">{{ widgetTitle() }}</span>
+
+    @if (obs.widgetConfiguration?.actions?.length === 1) {
+      <button
+        *ngIf="canCreateCamundaExecution$ | async"
+        cdsButton="ghost"
+        (click)="onProcessStartClick(obs.widgetConfiguration?.actions[0])"
+      >
+        {{ obs.widgetConfiguration?.actions[0].name }}
+      </button>
+    }
+  </section>
 
   <div
     #widgetCollection
@@ -33,6 +46,7 @@
   >
     @for (card of obs?.collectionWidgetCards; track card.key) {
       <div
+        *ngIf="!obs.noVisibleFields"
         class="valtimo-widget-collection__card"
         [ngClass]="{'valtimo-widget-collection__card--hidden': card.hidden}"
       >
@@ -40,6 +54,10 @@
 
         @for (field of card.fields; track field.key) {
           <div
+            *ngIf="
+              (field?.value !== null && field?.value !== '-' && field?.hideWhenEmpty) ||
+              !field?.hideWhenEmpty
+            "
             [ngClass]="{
               'valtimo-widget-collection__full-width-input': field?.width === 'full',
               'valtimo-widget-collection__half-width-input': field?.width === 'half',
@@ -60,6 +78,14 @@
       </div>
     }
   </div>
+
+  @if (obs.noVisibleFields) {
+    <valtimo-no-results
+      [collapseVertically]="true"
+      [description]="'dossier.widgets.emptyFields' | translate"
+      [smallPadding]="true"
+    ></valtimo-no-results>
+  }
 
   @if (!obs?.collectionWidgetCards?.length) {
     <valtimo-no-results

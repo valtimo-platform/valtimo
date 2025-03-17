@@ -28,9 +28,18 @@ import {
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule, EllipsisPipe, ViewContentService, ViewType} from '@valtimo/components';
-import {InputModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
-import {CaseWidgetTextDisplayType, FieldsCaseWidget} from '../../../../../../models';
+import {ButtonModule, InputModule} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, map, Observable, tap} from 'rxjs';
+import {
+  CaseWidgetAction,
+  CaseWidgetTextDisplayType,
+  FieldsCaseWidget,
+} from '../../../../../../models';
+import {WidgetsService} from '../../widgets.service';
+import {PermissionService} from '@valtimo/access-control';
+import {ActivatedRoute} from '@angular/router';
+import {WidgetProcess} from '../widget-process/widget-process';
+import {DocumentService} from '@valtimo/document';
 
 @Component({
   selector: 'valtimo-widget-field',
@@ -39,9 +48,16 @@ import {CaseWidgetTextDisplayType, FieldsCaseWidget} from '../../../../../../mod
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [CommonModule, InputModule, TranslateModule, CarbonListModule, EllipsisPipe],
+  imports: [
+    CommonModule,
+    InputModule,
+    TranslateModule,
+    CarbonListModule,
+    EllipsisPipe,
+    ButtonModule,
+  ],
 })
-export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
+export class WidgetFieldComponent extends WidgetProcess implements AfterViewInit, OnDestroy {
   @HostBinding('class') public readonly class = 'widget-field';
 
   @ViewChild('widgetField') private _widgetFieldRef: ElementRef<HTMLDivElement>;
@@ -50,8 +66,10 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
   @Input() public set widgetConfiguration(value: FieldsCaseWidget) {
     if (!value) return;
     this.widgetConfiguration$.next(value);
+    this.baseWidgetConfiguration = value;
   }
   public readonly isEmptyWidgetData$ = new BehaviorSubject<boolean>(false);
+  public readonly noVisibleFields$ = new BehaviorSubject<boolean>(true);
 
   @Input() public set widgetData(value: object) {
     if (!value) return;
@@ -64,7 +82,12 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
   public readonly widgetData$ = new BehaviorSubject<object | null>(null);
 
   public readonly widgetPropertyValue$: Observable<
-    {title: string; value: string; ellipsisCharacterLimit: number | null}[][]
+    {
+      title: string;
+      value: string;
+      ellipsisCharacterLimit: number | null;
+      hideWhenEmpty: boolean | false;
+    }[][]
   > = combineLatest([this.widgetConfiguration$, this.widgetData$]).pipe(
     map(([widget, widgetData]) =>
       widget?.properties.columns.map(column =>
@@ -78,6 +101,9 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
                     ellipsisCharacterLimit:
                       (property.displayProperties as CaseWidgetTextDisplayType)
                         ?.ellipsisCharacterLimit ?? null,
+                    hideWhenEmpty:
+                      (property.displayProperties as CaseWidgetTextDisplayType)?.hideWhenEmpty ??
+                      false,
                     value: this.viewContentService.get(widgetData[property.key], {
                       ...property.displayProperties,
                       viewType: property.displayProperties?.type ?? ViewType.TEXT,
@@ -89,12 +115,21 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
           []
         )
       )
-    )
+    ),
+    tap(columns => this.checkEmptyFields(columns))
   );
 
   private _observer!: ResizeObserver;
 
-  constructor(private viewContentService: ViewContentService) {}
+  constructor(
+    protected readonly documentService: DocumentService,
+    protected readonly permissionService: PermissionService,
+    private readonly route: ActivatedRoute,
+    private readonly viewContentService: ViewContentService,
+    private readonly widgetsService: WidgetsService
+  ) {
+    super(documentService, permissionService);
+  }
 
   public ngAfterViewInit(): void {
     if (this.collapseVertically && this._widgetFieldRef) this.openWidthObserver();
@@ -102,6 +137,10 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this._observer?.disconnect();
+  }
+
+  public onProcessStartClick(process: CaseWidgetAction): void {
+    this.widgetsService.startProcess(process.processDefinitionKey);
   }
 
   private openWidthObserver(): void {
@@ -129,5 +168,14 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
 
   private checkEmptyWidgetData(widgetData: Object): boolean {
     return widgetData && Object.keys(widgetData).length === 0;
+  }
+
+  private checkEmptyFields(columns: any[][]): void {
+    columns.forEach(column => {
+      column.forEach(field => {
+        if (!field?.hideWhenEmpty || (field?.hideWhenEmpty && field?.value && field?.value !== '-'))
+          this.noVisibleFields$.next(false);
+      });
+    });
   }
 }

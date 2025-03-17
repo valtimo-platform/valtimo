@@ -176,6 +176,7 @@
     "rowLocked": "Je hebt geen toegang tot dit dossier",
     "widgets": {
       "noData": "Geen data gevonden",
+      "emptyFields": "Nichts hier",
       "noWidgets": "Geen widgets",
       "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",
       "noWidget": "Widget niet beschikbaar",
@@ -789,6 +790,7 @@
       "widgetTitle": "Widget titel",
       "widgetTitlePlaceholder": "Kies een korte naam",
       "widgetTitleTooltip": "Titel die bovenaan de widget wordt weergegeven",
+      "hideWhenEmpty": "Verbergen als leeg",
       "column": "Kolom {{number}}",
       "fields": {
         "add": "Veld toevoegen",
@@ -872,6 +874,12 @@
     "cancelModal": {
       "title": "De editor verlaten",
       "content": "Weet je zeker dat je de editor wilt verlaten? Er kunnen niet-opgeslagen wijzigingen zijn die verloren gaan. Houd er bij het opslaan rekening mee dat het verwijderen of wijzigen van een attribuut de widget configuratie kan beschadigen."
+    },
+    "processes": {
+      "buttonTextLabel": "Nieuwe procesknoptekst (Optioneel)",
+      "buttonTextPlaceholder": "Knop tekst",
+      "selectorLabel": "Nieuwe procesknop (Optioneel)",
+      "selectorPlaceholder": "Kies een proces"
     },
     "saveModalContent": "Weet je zeker dat je de widget configuratie wilt opslaan? Het verwijderen of wijzigen van een attribuut kan de widget configuratie verbreken."
   },
@@ -1190,6 +1198,7 @@
     "collapse": "Inklappen",
     "expand": "Uitklappen",
     "download": "Download",
+    "duplicate": "Dupliceren",
     "openInNewTab": "In nieuw tabblad openen",
     "create": "Aanmaken",
     "save": "Opslaan",
@@ -1792,6 +1801,9 @@
     },
     "formioCurrencyComponent": {
       "errorMessage": "Geen geldig decimaal getal. Voer een geldig decimaal getal in."
+    },
+    "formioFormViewModelComponent": {
+      "submitError": "Ongeldige submissie"
     }
   },
   "viewTypeConverter": {
@@ -1820,13 +1832,21 @@
     "toggleViewModel": {
       "title": "View Model ingeschakeld?",
       "checkboxDescription": "Activeert Form View Model form afhandeling"
-    }
+    },
+    "importConfiguration": "Configuratie importeren",
+    "selectProcess": "Selecteer een proces",
+    "process": "Proces",
+    "version": "Versie",
+    "selectVersion": "Selecteer een versie",
+    "activity": "Procesactiviteit",
+    "selectActivity": "Selecteer een procesactiviteit"
   },
   "processLinkType": {
     "plugin": "Plugin",
     "form": "Formulier",
     "form-flow": "FormFlow",
-    "url": "URL"
+    "url": "URL",
+    "ui-component": "UI Component"
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Kies soort koppeling",
@@ -1857,12 +1877,14 @@
     "configurePluginAction": "Configureer je actie",
     "selectURL": "Configureer je URL",
     "subtitles": "Ondertitels",
-    "addSubtitle": "Ondertitel toevoegen"
+    "addSubtitle": "Ondertitel toevoegen",
+    "uiComponent": "Selecteer UI component"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een pluginconfiguratie aan om deze te kunnen koppelen aan een processtap.",
     "form": "Er zijn geen formulieren beschikbaar. Maak een formulier aan om deze te kunnen koppelen aan een processtap.",
-    "form-flow": "Er zijn geen FormFlows beschikbaar. Maak een FormFlow aan om deze te kunnen koppelen aan een processtap."
+    "form-flow": "Er zijn geen FormFlows beschikbaar. Maak een FormFlow aan om deze te kunnen koppelen aan een processtap.",
+    "ui-component": "Er zijn geen custom componenten geregistreerd maak er een aan om deze optie te kunnen gebruiken."
   },
   "processLinkUrlInvalid": "Ongeldige URL {{ URL }}",
   "accessControl": {

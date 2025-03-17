@@ -67,7 +67,6 @@ export class DossierManagementDetailContainerComponent implements OnInit, OnDest
     }),
     startWith(this.route.firstChild?.routeConfig?.path)
   );
-
   public readonly injectedCaseManagementTabs$: Observable<CaseManagementTabConfig[]> =
     this.tabService.injectedCaseManagementTabs$;
   public readonly documentDefinitionTitle$ = this.pageTitleService.customPageTitle$;
@@ -102,10 +101,17 @@ export class DossierManagementDetailContainerComponent implements OnInit, OnDest
   }
 
   public navigateToTab(tab: TabEnum | string): void {
-    this._tabs.notifyOnChanges();
     this.router.navigate([
       `dossier-management/dossier/${this._params.caseDefinitionName}/version/${this._params.caseVersionTag}/${tab}`,
     ]);
+  }
+
+  public openTabCheckSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([this._tabs.changes, this.currentTab$]).subscribe(([tabs, currentTab]) => {
+        tabs.forEach((tab: Tab) => (tab.active = tab.id === currentTab));
+      })
+    );
   }
 
   public onCancelRedirectEvent(): void {

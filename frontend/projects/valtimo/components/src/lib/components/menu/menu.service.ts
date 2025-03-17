@@ -19,7 +19,6 @@ import {NavigationEnd, NavigationStart, ResolveEnd, Router} from '@angular/route
 import {ConfigService, MenuConfig, MenuIncludeService, MenuItem} from '@valtimo/config';
 import {DocumentDefinitions, DocumentService} from '@valtimo/document';
 import {UserProviderService} from '@valtimo/security';
-import {SseService} from '@valtimo/sse';
 import {KeycloakService} from 'keycloak-angular';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, Observable, Subject, timer} from 'rxjs';
@@ -52,8 +51,7 @@ export class MenuService {
     private readonly menuIncludeService: MenuIncludeService,
     private readonly pendingChangesService: PendingChangesService,
     private readonly router: Router,
-    private readonly userProviderService: UserProviderService,
-    private readonly sseService: SseService
+    private readonly userProviderService: UserProviderService
   ) {
     const config = configService?.config;
     this.menuConfig = config?.menu;
@@ -294,21 +292,16 @@ export class MenuService {
       countMap.set(definition.id.name, new Subject<number>())
     );
 
-    this.updateDocumentCount(countMap);
+    timer(0, 5000).subscribe(() => {
+      this.documentService.getOpenDocumentCount().subscribe(openDocumentCountList => {
+        openDocumentCountList.forEach(openDocumentCount => {
+          const mapEntry = countMap.get(openDocumentCount.documentDefinitionName);
 
-    this.sseService
-      .getSseMessagesObservableByEventType(['CASE_UNASSIGNED', 'CASE_ASSIGNED', 'CASE_CREATED'])
-      .subscribe(() => this.updateDocumentCount(countMap));
-    return countMap;
-  }
-
-  private updateDocumentCount(countMap: Map<string, Subject<number>>): void {
-    this.documentService.getOpenDocumentCount().subscribe(openDocumentCountList => {
-      openDocumentCountList.forEach(openDocumentCount => {
-        const mapEntry = countMap.get(openDocumentCount.documentDefinitionName);
-        if (mapEntry) mapEntry.next(openDocumentCount.openDocumentCount);
+          if (mapEntry) mapEntry.next(openDocumentCount.openDocumentCount);
+        });
       });
     });
+    return countMap;
   }
 
   private applyMenuRoleSecurity(menuItems: MenuItem[]): MenuItem[] {

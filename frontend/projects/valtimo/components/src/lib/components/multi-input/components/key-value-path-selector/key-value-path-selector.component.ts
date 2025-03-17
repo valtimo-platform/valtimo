@@ -52,6 +52,8 @@ export class KeyValuePathSelectorComponent {
   @Input() public readonly prefixes: ValuePathSelectorPrefix[] = [];
   @Input() public readonly showDocumentDefinitionSelector = false;
   @Input() public readonly notation: ValuePathSelectorNotation = 'dots';
+  @Input() public readonly keyColumnFlex = 1;
+  @Input() public readonly valueColumnFlex = 1;
 
   @Output() public readonly valueChange: EventEmitter<{
     value: MultiInputKeyValue;

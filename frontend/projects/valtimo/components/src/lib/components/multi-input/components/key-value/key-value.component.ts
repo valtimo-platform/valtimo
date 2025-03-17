@@ -34,6 +34,8 @@ export class KeyValueComponent {
   @Input() public readonly value!: MultiInputKeyValue;
   @Input() @HostBinding('class.--full-width') public readonly fullWidth = false;
   @Input() public readonly disabled = false;
+  @Input() public readonly keyColumnFlex = 1;
+  @Input() public readonly valueColumnFlex = 1;
 
   @Output() public readonly valueChange: EventEmitter<{
     value: MultiInputKeyValue;

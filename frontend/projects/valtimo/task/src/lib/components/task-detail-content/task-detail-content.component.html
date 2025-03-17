@@ -27,6 +27,7 @@
     submission: submission$ | async,
     processLinkIsForm: processLinkIsForm$ | async,
     processLinkIsFormViewModel: processLinkIsFormViewModel$ | async,
+    processLinkIsUiComponent: processLinkIsUiComponent$ | async,
     formioOptions: formioOptions$ | async,
     processLinkIsFormFlow: processLinkIsFormFlow$ | async,
     formFlowInstanceId: formFlowInstanceId$ | async,
@@ -59,7 +60,11 @@
 
   <div
     *ngIf="
-      obs.loading === false && !obs.formDefinition && !obs.formFlowInstanceId && !obs.errorMessage
+      obs.loading === false &&
+      !obs.formDefinition &&
+      !obs.formFlowInstanceId &&
+      !obs.errorMessage &&
+      !obs.processLinkIsUiComponent
     "
     class="bg-warning text-black mb-0 p-3 text-center"
   >
@@ -76,5 +81,6 @@
 
   <div class="m-2">
     <ng-template #formViewModelComponent></ng-template>
+    <ng-template #formCustomComponent></ng-template>
   </div>
 </ng-container>

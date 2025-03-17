@@ -40,7 +40,7 @@ import {
   TableItem,
   TableModel,
 } from 'carbon-components-angular';
-import {get as _get} from 'lodash';
+import {get as _get, isArray} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
@@ -99,9 +99,11 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   private _completeDataSource: TableItem[][];
 
   private readonly _items$ = new BehaviorSubject<CarbonListItem[]>([]);
+
   private get _items(): CarbonListItem[] {
     return this._items$.getValue();
   }
+
   public get items(): CarbonListItem[] {
     return this._items;
   }
@@ -113,6 +115,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   public currentOpenActionId: string | null = null;
 
   private readonly _fields$ = new BehaviorSubject<ColumnConfig[]>([]);
+
   @Input() set fields(value: ColumnConfig[]) {
     this._fields$.next(value);
   }
@@ -120,6 +123,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   private _tableTranslations$: BehaviorSubject<CarbonListTranslations> = new BehaviorSubject(
     DEFAULT_LIST_TRANSLATIONS
   );
+
   @Input() set tableTranslations(value: Partial<CarbonListTranslations>) {
     this._tableTranslations$.next({...DEFAULT_LIST_TRANSLATIONS, ...value});
   }
@@ -127,7 +131,9 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() paginatorConfig: CarbonPaginatorConfig = DEFAULT_PAGINATOR_CONFIG;
   private _pagination: Pagination;
   private _isPaginationInit = false;
-  @Input() public set pagination(value: Partial<Pagination> | false) {
+
+  @Input()
+  public set pagination(value: Partial<Pagination> | false) {
     if (!value) {
       return;
     }
@@ -144,6 +150,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.setPaginationSize(value.size.toString());
     this._isPaginationInit = true;
   }
+
   public get pagination(): Pagination {
     return this._pagination;
   }
@@ -158,10 +165,12 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() header: boolean;
   @Input() hideColumnHeader: boolean;
   @Input() initialSortState: SortState;
+
   @Input() set sortState(value: SortState) {
     if (!value) return;
     this.sort$.next(value);
   }
+
   @Input() isSearchable = false;
   @Input() enableSingleSelection = false;
   /**
@@ -455,7 +464,10 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
                 template: this.booleanTemplate,
               });
             case ViewType.TAGS: {
-              return this.resolveTagObject(item.tags);
+              return new TableItem({
+                data: this.resolveTagObject(item, field.key),
+                template: this.tagTemplate,
+              });
             }
             default:
               const resolvedObject: string = this.resolveObject(field, item);
@@ -695,22 +707,38 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     return filteredItems;
   }
 
-  private resolveTagObject(itemTags: CarbonTag[] | undefined): TableItem {
-    if (!itemTags || itemTags.length === 0)
-      return new TableItem({
-        data: {tags: []},
-        template: this.tagTemplate,
-      });
+  private resolveTagObject(item: CarbonListItem, key: string): CarbonTag[] | null {
+    const object: string | string[] | CarbonTag | CarbonTag[] = item[key];
 
-    const tags = itemTags.map((tag: CarbonTag, index: number) =>
-      index === 0
-        ? {...tag, ellipsisContent: this.ellipsisPipe.transform(tag.content, TAG_ELLIPSIS_LIMIT)}
-        : tag
-    );
+    if (!object) return null;
 
-    return new TableItem({
-      data: {tags},
-      template: this.tagTemplate,
-    });
+    if (isArray(object) && typeof object[0] !== 'string')
+      return (object as CarbonTag[]).map((tag: CarbonTag) => ({
+        ...tag,
+        ellipsisContent: this.ellipsisPipe.transform(tag.content, TAG_ELLIPSIS_LIMIT),
+      }));
+
+    if (!isArray(object) && typeof object !== 'string')
+      return [
+        {
+          ...object,
+          ellipsisContent: this.ellipsisPipe.transform(object.content, TAG_ELLIPSIS_LIMIT),
+        },
+      ];
+
+    if (typeof object === 'string')
+      return [
+        {
+          content: object,
+          ellipsisContent: this.ellipsisPipe.transform(object, TAG_ELLIPSIS_LIMIT),
+          type: 'blue',
+        },
+      ];
+
+    return (object as string[]).map((content: string) => ({
+      content,
+      ellipsisContent: this.ellipsisPipe.transform(content, TAG_ELLIPSIS_LIMIT),
+      type: 'blue',
+    }));
   }
 }

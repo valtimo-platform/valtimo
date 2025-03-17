@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, HostBinding, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
+import {TranslateModule} from '@ngx-translate/core';
+import {CarbonListModule} from '@valtimo/components';
+import {LoadingModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, delay, filter, map, Observable, switchMap, tap} from 'rxjs';
 import {
   DossierTabService,
   DossierWidgetsApiService,
   DossierWidgetsLayoutService,
 } from '../../../../services';
-import {LoadingModule} from 'carbon-components-angular';
 import {WidgetsContainerComponent} from './components/widgets-container/widgets-container.component';
-import {CarbonListModule} from '@valtimo/components';
-import {TranslateModule} from '@ngx-translate/core';
 
 @Component({
   templateUrl: './widgets.component.html',

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -24,20 +24,21 @@ import {
   Optional,
   Output,
 } from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {TranslateModule} from '@ngx-translate/core';
-import {DropdownModule, InputModule, SelectModule} from 'carbon-components-angular';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {WidgetContentComponent} from '../../../models';
+import {ActivatedRoute, ParamMap} from '@angular/router';
+import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
-import {WidgetWizardService} from '../../../services';
 import {
   CUSTOM_CASE_WIDGET_TOKEN,
   CustomCaseWidgetConfig,
   WidgetCustomContent,
 } from '@valtimo/dossier';
-import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
+import {DropdownModule, InputModule, SelectModule} from 'carbon-components-angular';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
+import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
+import {WidgetContentComponent} from '../../../models';
+import {WidgetWizardService} from '../../../services';
+import {DossierManagementWidgetProcessSelectorComponent} from '../process-selector/dossier-management-widget-process-selector.component';
 
 @Component({
   templateUrl: './dossier-management-widget-custom.component.html',
@@ -51,6 +52,7 @@ import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
     ReactiveFormsModule,
     SelectModule,
     DropdownModule,
+    DossierManagementWidgetProcessSelectorComponent,
   ],
 })
 export class DossierManagementWidgetCustomComponent
@@ -70,6 +72,10 @@ export class DossierManagementWidgetCustomComponent
     map((theme: CurrentCarbonTheme) =>
       theme === CurrentCarbonTheme.G10 ? CARBON_THEME.WHITE : CARBON_THEME.G90
     )
+  );
+
+  public readonly documentDefinitionName$: Observable<string> = this.route.paramMap.pipe(
+    map((paramMap: ParamMap) => paramMap.get('name') ?? '')
   );
 
   private readonly _selectedCustomComponentKey$ = new BehaviorSubject<string | null>(null);
@@ -96,7 +102,8 @@ export class DossierManagementWidgetCustomComponent
     private readonly customCaseWidgetConfig: CustomCaseWidgetConfig,
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
-    private readonly widgetWizardService: WidgetWizardService
+    private readonly widgetWizardService: WidgetWizardService,
+    private readonly route: ActivatedRoute
   ) {
     if (customCaseWidgetConfig) this._customCaseWidgetConfig$.next(customCaseWidgetConfig);
   }

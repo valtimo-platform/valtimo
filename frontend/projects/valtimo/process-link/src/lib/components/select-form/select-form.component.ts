@@ -17,6 +17,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormService} from '@valtimo/form';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, tap} from 'rxjs';
 import {take} from 'rxjs/operators';
+
 import {
   FormDefinitionListItem,
   FormDisplayType,

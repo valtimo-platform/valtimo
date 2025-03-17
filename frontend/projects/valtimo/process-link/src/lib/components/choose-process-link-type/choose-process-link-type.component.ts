@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, Inject, OnDestroy, Optional} from '@angular/core';
 import {ProcessLinkStateService} from '../../services';
+import {FormCustomComponentConfig, ProcessLinkType} from '../../models';
+import {FORM_CUSTOM_COMPONENT_TOKEN} from '../../constants';
+import {map, Subscription} from 'rxjs';
 
 @Component({
   selector: 'valtimo-choose-process-link-type',

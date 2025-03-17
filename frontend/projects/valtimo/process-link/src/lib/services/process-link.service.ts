@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
 import {map, Observable} from 'rxjs';
+
 import {
+  CompatiblePluginProcessLinks,
   FormFlowProcessLinkUpdateRequestDto,
   FormProcessLinkUpdateRequestDto,
   FormSubmissionResult,
@@ -27,9 +29,9 @@ import {
   ProcessLinkCreateEvent,
   ProcessLinkType,
   TaskWithProcessLink,
+  UIComponentProcessLinkUpdateRequestDto,
   URLProcessLinkUpdateRequestDto,
 } from '../models';
-import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {URLVariables} from '../models/process-link-url.model';
 
 @Injectable({
@@ -74,6 +76,7 @@ export class ProcessLinkService {
       | FormFlowProcessLinkUpdateRequestDto
       | FormProcessLinkUpdateRequestDto
       | URLProcessLinkUpdateRequestDto
+      | UIComponentProcessLinkUpdateRequestDto
   ): Observable<null> {
     return this.http.put<null>(
       `${this.VALTIMO_ENDPOINT_URI}v1/process-link`,
@@ -180,6 +183,14 @@ export class ProcessLinkService {
 
   public getVariables(): Observable<URLVariables> {
     return this.http.get<URLVariables>(`${this.VALTIMO_ENDPOINT_URI}v1/process-link/url/variables`);
+  }
+
+  public getCompatiblePluginProcessLinks(
+    pluginActionDefinitionKey: string
+  ): Observable<CompatiblePluginProcessLinks[]> {
+    return this.http.get<CompatiblePluginProcessLinks[]>(
+      `${this.VALTIMO_ENDPOINT_URI}v1/process-link/plugin?pluginActionDefinitionKey=${pluginActionDefinitionKey}`
+    );
   }
 
   private emptyStringToNull<T extends Record<string, any>>(object: T): T {

@@ -20,6 +20,7 @@
   </div>
   <div body>
     <ng-template #formViewModelComponent></ng-template>
+    <ng-template #formCustomComponent></ng-template>
   </div>
   <div body *ngIf="formFlowInstanceId">
     <valtimo-form-flow
@@ -27,7 +28,7 @@
       (formFlowComplete)="formFlowSubmitted()"
     ></valtimo-form-flow>
   </div>
-  <div body *ngIf="!formFlowInstanceId && !formDefinition && isAdmin">
+  <div body *ngIf="!formFlowInstanceId && !formDefinition && isAdmin && !isUIComponent">
     <div
       class="bg-warning text-black mb-0 p-3 text-center"
       [translate]="'formManagement.noFormDefinitionFoundAdmin'"
@@ -43,7 +44,7 @@
       </button>
     </div>
   </div>
-  <div body *ngIf="!formFlowInstanceId && !formDefinition && !isAdmin">
+  <div body *ngIf="!formFlowInstanceId && !formDefinition && !isAdmin && !isUIComponent">
     <div
       class="bg-warning text-black mb-0 p-3 text-center"
       [translate]="'formManagement.noFormDefinitionFoundUser'"

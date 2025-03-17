@@ -24,9 +24,9 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import {ActivatedRoute, ParamMap} from '@angular/router';
-import {DocumentDefinition, DocumentService} from '@valtimo/document';
-import {Observable, switchMap, tap} from 'rxjs';
 import {ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN} from '@valtimo/config';
+import {DocumentDefinition, DocumentService} from '@valtimo/document';
+import {Observable, switchMap} from 'rxjs';
 
 @Component({
   selector: 'valtimo-dossier-management-detail',

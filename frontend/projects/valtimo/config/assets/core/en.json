@@ -176,6 +176,7 @@
     "rowLocked": "You don't have access to this case",
     "widgets": {
       "noData": "No data found",
+      "emptyFields": "Nothing here",
       "noWidgets": "No widgets",
       "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",
       "noWidget": "Widget not found",
@@ -790,6 +791,7 @@
       "widgetTitle": "Widget title",
       "widgetTitlePlaceholder": "Choose a short name",
       "widgetTitleTooltip": "Title that displays at the top of the widget",
+      "hideWhenEmpty": "Hide when empty",
       "column": "Column {{number}}",
       "fields": {
         "add": "Add field",
@@ -873,6 +875,12 @@
     "cancelModal": {
       "title": "Leaving the editor",
       "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost. When saving, beware that removing or changing an attribute can break the widget configuration."
+    },
+    "processes": {
+      "buttonTextLabel": "New process button text (Optional)",
+      "buttonTextPlaceholder": "Button text",
+      "selectorLabel": "New process button (Optional)",
+      "selectorPlaceholder": "Choose a process"
     },
     "saveModalContent": "Are you sure you want to save the widget configuration? Removing or changing an attribute can break the widget configuration."
   },
@@ -1191,6 +1199,7 @@
     "collapse": "Collapse",
     "expand": "Expand",
     "download": "Download",
+    "duplicate": "Duplicate",
     "openInNewTab": "Open in new tab",
     "create": "Create",
     "save": "Save",
@@ -1791,6 +1800,9 @@
     },
     "formioCurrencyComponent": {
       "errorMessage": "Not a valid decimal number. Please enter a valid decimal number."
+    },
+    "formioFormViewModelComponent": {
+      "submitError": "Invalid submissions"
     }
   },
   "viewTypeConverter": {
@@ -1819,13 +1831,21 @@
     "toggleViewModel": {
       "title": "View Model enabled?",
       "checkboxDescription": "Enables Form View Model form processing"
-    }
+    },
+    "importConfiguration": "Import configuration",
+    "selectProcess": "Select process",
+    "process": "Process",
+    "version": "Version",
+    "selectVersion": "Select version",
+    "activity": "Process activity",
+    "selectActivity": "Select process activity"
   },
   "processLinkType": {
     "plugin": "Plugin",
     "form": "Form",
     "form-flow": "FormFlow",
-    "url": "URL"
+    "url": "URL",
+    "ui-component": "UI Component"
   },
   "processLinkSteps": {
     "chooseProcessLinkType": "Choose link type",
@@ -1856,12 +1876,14 @@
     "configurePluginAction": "Configure your action",
     "selectURL": "Configure your URL",
     "subtitles": "Subtitles",
-    "addSubtitle": "Add subtitle"
+    "addSubtitle": "Add subtitle",
+    "uiComponent": "Select UI component"
   },
   "processLinkTypeDisabledTooltip": {
     "plugin": "No plugin configurations are available. Create a plugin configuration to be able to link it to a process step.",
     "form": "There are no forms available. Create a form to be able to link it to a process step.",
-    "form-flow": "There are no FormFlows available. Create a FormFlow to be able to link it to a process step."
+    "form-flow": "There are no FormFlows available. Create a FormFlow to be able to link it to a process step.",
+    "ui-component": "There are no custom components registered please create one if you wish to use this option."
   },
   "processLinkUrlInvalid": "Invalid URL {{ URL }}",
   "accessControl": {

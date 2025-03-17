@@ -18,8 +18,8 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, tap} from
 import {take} from 'rxjs/operators';
 import {
   FormDefinitionListItem,
-  FormDisplayType,
   FormFlowProcessLinkUpdateRequestDto,
+  FormDisplayType,
   FormSize,
   ProcessLinkEditMode,
 } from '../../models';

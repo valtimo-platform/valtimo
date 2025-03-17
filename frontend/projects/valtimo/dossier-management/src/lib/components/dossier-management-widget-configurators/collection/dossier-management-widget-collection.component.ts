@@ -34,16 +34,17 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import {ActivatedRoute, ParamMap} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   CARBON_THEME,
   CdsThemeService,
   CurrentCarbonTheme,
   InputLabelModule,
-  ValueCollectionPath,
+  ValuePathItem,
   ValuePathSelectorComponent,
   ValuePathSelectorPrefix,
-  ValueResolverOptionType,
+  ValuePathType,
 } from '@valtimo/components';
 import {
   CaseWidgetCurrencyDisplayType,
@@ -64,11 +65,10 @@ import {
   ListItem,
 } from 'carbon-components-angular';
 import {BehaviorSubject, debounceTime, map, Observable, Subscription} from 'rxjs';
-
 import {WidgetContentComponent} from '../../../models';
 import {WidgetFieldsService, WidgetWizardService} from '../../../services';
 import {DossierManagementWidgetFieldsColumnComponent} from '../fields/column/dossier-management-widget-fields-column.component';
-import {ActivatedRoute, ParamMap} from '@angular/router';
+import {DossierManagementWidgetProcessSelectorComponent} from '../process-selector/dossier-management-widget-process-selector.component';
 
 @Component({
   templateUrl: './dossier-management-widget-collection.component.html',
@@ -86,6 +86,7 @@ import {ActivatedRoute, ParamMap} from '@angular/router';
     ButtonModule,
     IconModule,
     InputLabelModule,
+    DossierManagementWidgetProcessSelectorComponent,
     ValuePathSelectorComponent,
   ],
 })
@@ -134,17 +135,18 @@ export class DossierManagementWidgetCollectionComponent
     )
   );
 
-  public readonly selectedCollectionPath$ = new BehaviorSubject<ValueCollectionPath | null>(null);
+  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
+  public readonly ValuePathType = ValuePathType;
   public readonly CaseWidgetDisplayTypeKey = CaseWidgetDisplayTypeKey;
   public readonly content = this.widgetWizardService
     .widgetContent as WritableSignal<WidgetCollectionContent>;
   public readonly displayTypeItems: ListItem[] = this.widgetFieldsService.displayTypeItems;
-  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
-  public readonly ValueResolverOptionType = ValueResolverOptionType;
 
   public readonly documentDefinitionName$: Observable<string> = this.route.paramMap.pipe(
     map((paramMap: ParamMap) => paramMap.get('name') ?? '')
   );
+
+  public readonly selectedCollection$ = new BehaviorSubject<ValuePathItem | null>(null);
 
   public WIDTH_ITEMS: ListItem[] = [
     {
@@ -246,8 +248,8 @@ export class DossierManagementWidgetCollectionComponent
     );
   }
 
-  public onCollectionPathSelected(collectionPath: ValueCollectionPath): void {
-    this.selectedCollectionPath$.next(collectionPath);
+  public onCollectionSelected(item: ValuePathItem): void {
+    this.selectedCollection$.next(item);
   }
 
   private initForm(): void {

@@ -51,5 +51,6 @@
 
 <valtimo-plugin-edit-modal
   [open]="showEditModal$ | async"
+  [saveNewConfiguration]="saveNewConfiguration$ | async"
   (closeModal)="closeEditModal()"
 ></valtimo-plugin-edit-modal>

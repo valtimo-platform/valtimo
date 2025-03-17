@@ -60,7 +60,7 @@ interface ProcessDefinitionStartForm {
   genericForm: boolean;
 }
 
-type StartProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url';
+type StartProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url' | 'ui-component';
 
 interface ProcessDefinitionStartProcessLink {
   processLinkId: string;
@@ -72,6 +72,7 @@ interface ProcessDefinitionStartProcessLink {
     formName?: string;
     formDefinition?: object;
     url?: string;
+    componentKey?: string;
   };
 }
 

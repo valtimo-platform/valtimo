@@ -15,6 +15,7 @@
  */
 import {
   Component,
+  ComponentRef,
   EventEmitter,
   Inject,
   Input,
@@ -35,7 +36,13 @@ import {
 } from '@valtimo/components';
 import {ProcessDocumentDefinition} from '@valtimo/document';
 import {ProcessService} from '@valtimo/process';
-import {FormSubmissionResult, ProcessLinkService} from '@valtimo/process-link';
+import {
+  FORM_CUSTOM_COMPONENT_TOKEN,
+  FormCustomComponent,
+  FormCustomComponentConfig,
+  FormSubmissionResult,
+  ProcessLinkService,
+} from '@valtimo/process-link';
 import {BehaviorSubject, combineLatest, switchMap} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
@@ -51,11 +58,14 @@ export class DossierSupportingProcessStartModalComponent {
   @ViewChild('supportingProcessStartModal', {static: false}) modal: ModalComponent;
   @ViewChild('formViewModelComponent', {static: true, read: ViewContainerRef})
   public formViewModelDynamicContainer: ViewContainerRef;
+  @ViewChild('formCustomComponent', {static: false, read: ViewContainerRef})
+  public formCustomComponentDynamicContainer: ViewContainerRef;
 
   @Input() isAdmin: boolean;
   @Output() formSubmit = new EventEmitter();
 
   protected isFormViewModel = false;
+  public isUIComponent = false;
 
   public readonly processDefinitionKey$ = new BehaviorSubject<string>('');
   public readonly documentDefinitionName$ = new BehaviorSubject<string>('');
@@ -68,13 +78,21 @@ export class DossierSupportingProcessStartModalComponent {
   public readonly processDefinitionId$ = new BehaviorSubject<string>(undefined);
   public readonly formFlowInstanceId$ = new BehaviorSubject<string>(undefined);
   public readonly documentId$ = new BehaviorSubject<string>(undefined);
+  private readonly _formCustomComponentConfig$ = new BehaviorSubject<
+    FormCustomComponentConfig | {}
+  >({});
 
   constructor(
     private readonly router: Router,
     private readonly processService: ProcessService,
     private readonly processLinkService: ProcessLinkService,
-    @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel
-  ) {}
+    @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel,
+    @Optional()
+    @Inject(FORM_CUSTOM_COMPONENT_TOKEN)
+    private readonly formCustomComponentConfig: FormCustomComponentConfig
+  ) {
+    this._formCustomComponentConfig$.next(formCustomComponentConfig);
+  }
 
   private loadProcessLink(): void {
     combineLatest([this.processDefinitionId$, this.documentId$])
@@ -101,6 +119,11 @@ export class DossierSupportingProcessStartModalComponent {
             case 'form-view-model':
               this.formDefinition$.next(startProcessResult.properties.formDefinition);
               this.setFormViewModelComponent(startProcessResult.properties.formName);
+              this.modal.show();
+              break;
+            case 'ui-component':
+              this.setFormCustomComponent(startProcessResult.properties.componentKey);
+              this.isUIComponent = true;
               this.modal.show();
               break;
           }
@@ -176,15 +199,17 @@ export class DossierSupportingProcessStartModalComponent {
       this.processDefinitionKey$,
       this.documentDefinitionName$,
       this.options$,
+      this.documentId$,
     ])
       .pipe(take(1))
-      .subscribe(([form, processDefinitionKey, documentDefinitionName, options]) => {
+      .subscribe(([form, processDefinitionKey, documentDefinitionName, options, documentId]) => {
         formViewModelComponent.instance.formName = formName;
         formViewModelComponent.instance.form = form;
         formViewModelComponent.instance.processDefinitionKey = processDefinitionKey;
         formViewModelComponent.instance.documentDefinitionName = documentDefinitionName;
         formViewModelComponent.instance.options = options;
         formViewModelComponent.instance.isStartForm = true;
+        formViewModelComponent.instance.documentId = documentId;
       });
 
     formViewModelComponent.instance.formSubmit.pipe(take(1)).subscribe(() => {
@@ -192,5 +217,27 @@ export class DossierSupportingProcessStartModalComponent {
     });
 
     this.isFormViewModel = true;
+  }
+
+  private setFormCustomComponent(formCustomComponentKey: string): void {
+    this.formCustomComponentDynamicContainer.clear();
+    if (!this.formCustomComponentConfig) return;
+    this._formCustomComponentConfig$.pipe(take(1)).subscribe(formCustomComponentConfig => {
+      const customComponent = formCustomComponentConfig[formCustomComponentKey];
+      const renderedComponent = this.formCustomComponentDynamicContainer.createComponent(
+        customComponent
+      ) as ComponentRef<FormCustomComponent>;
+
+      combineLatest([this.processDefinitionKey$, this.documentDefinitionName$])
+        .pipe(take(1))
+        .subscribe(([processDefinitionKey, documentDefinitionName]) => {
+          renderedComponent.instance.processDefinitionKey = processDefinitionKey;
+          renderedComponent.instance.documentDefinitionName = documentDefinitionName;
+        });
+
+      renderedComponent.instance.submittedEvent.subscribe(() => {
+        this.formSubmitted();
+      });
+    });
   }
 }

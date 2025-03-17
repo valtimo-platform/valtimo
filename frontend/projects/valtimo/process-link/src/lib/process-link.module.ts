@@ -55,6 +55,7 @@ import {
   StructuredListModule,
   TilesModule,
   ToggleModule,
+  ToggletipModule,
 } from 'carbon-components-angular';
 import {ChooseProcessLinkTypeComponent} from './components/choose-process-link-type';
 import {SelectFormComponent} from './components/select-form';
@@ -65,6 +66,8 @@ import {SelectUrlComponent} from './components/select-url/select-url.component';
 import {UrlValidatorService} from './services/url-validator.service';
 import {UrlResolverService} from './services/url-resolver.service';
 import {FormDisplayConfigurationComponent} from './components/form-display-configuration/form-display-configuration.component';
+import {SelectUIComponent} from './components/select-ui/select-ui.component';
+import {ImportPluginConfigurationComponent} from './components/import-plugin-configuration/import-plugin-configuration.component';
 
 @NgModule({
   declarations: [
@@ -81,6 +84,8 @@ import {FormDisplayConfigurationComponent} from './components/form-display-confi
     FormFlowConfigurationContainerComponent,
     SelectUrlComponent,
     FormDisplayConfigurationComponent,
+    SelectUIComponent,
+    ImportPluginConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -116,6 +121,7 @@ import {FormDisplayConfigurationComponent} from './components/form-display-confi
     ToggleModule,
     CarbonMultiInputModule,
     LayerModule,
+    ToggletipModule,
   ],
   exports: [
     ProcessLinkComponent,

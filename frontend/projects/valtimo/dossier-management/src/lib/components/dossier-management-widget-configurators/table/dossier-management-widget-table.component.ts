@@ -28,16 +28,17 @@ import {
   WritableSignal,
 } from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {ActivatedRoute, ParamMap} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   CARBON_THEME,
   CdsThemeService,
   CurrentCarbonTheme,
   InputLabelModule,
-  ValueCollectionPath,
+  ValuePathItem,
   ValuePathSelectorComponent,
   ValuePathSelectorPrefix,
-  ValueResolverOptionType,
+  ValuePathType,
 } from '@valtimo/components';
 import {FieldsCaseWidgetValue, WidgetContentProperties, WidgetTableContent} from '@valtimo/dossier';
 import {ButtonModule, InputModule, ToggleModule} from 'carbon-components-angular';
@@ -45,7 +46,7 @@ import {BehaviorSubject, debounceTime, map, Observable, Subscription} from 'rxjs
 import {WidgetContentComponent} from '../../../models';
 import {WidgetWizardService} from '../../../services';
 import {DossierManagementWidgetFieldsColumnComponent} from '../fields/column/dossier-management-widget-fields-column.component';
-import {ActivatedRoute, ParamMap} from '@angular/router';
+import {DossierManagementWidgetProcessSelectorComponent} from '../process-selector/dossier-management-widget-process-selector.component';
 
 @Component({
   templateUrl: './dossier-management-widget-table.component.html',
@@ -62,6 +63,7 @@ import {ActivatedRoute, ParamMap} from '@angular/router';
     ToggleModule,
     ButtonModule,
     InputLabelModule,
+    DossierManagementWidgetProcessSelectorComponent,
     ValuePathSelectorComponent,
   ],
 })
@@ -85,8 +87,6 @@ export class DossierManagementWidgetTableComponent
       Validators.required
     ),
   });
-  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
-  public readonly ValueResolverOptionType = ValueResolverOptionType;
 
   public readonly theme$: Observable<CARBON_THEME> = this.cdsThemeService.currentTheme$.pipe(
     map((currentTheme: CurrentCarbonTheme) =>
@@ -103,7 +103,11 @@ export class DossierManagementWidgetTableComponent
     () =>
       (this.widgetWizardService.widgetContent() as WidgetTableContent)?.firstColumnAsTitle || false
   );
-  public readonly selectedCollectionPath$ = new BehaviorSubject<ValueCollectionPath | null>(null);
+
+  public readonly selectedCollection$ = new BehaviorSubject<ValuePathItem | null>(null);
+
+  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
+  public readonly ValuePathType = ValuePathType;
 
   private readonly _contentValid = signal<boolean>(this.widgetWizardService.editMode());
   private readonly _subscriptions = new Subscription();
@@ -111,8 +115,8 @@ export class DossierManagementWidgetTableComponent
   constructor(
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
-    private readonly route: ActivatedRoute,
-    private readonly widgetWizardService: WidgetWizardService
+    private readonly widgetWizardService: WidgetWizardService,
+    private readonly route: ActivatedRoute
   ) {}
 
   public ngOnInit(): void {
@@ -158,7 +162,7 @@ export class DossierManagementWidgetTableComponent
     );
   }
 
-  public onCollectionPathSelected(collectionPath: ValueCollectionPath): void {
-    this.selectedCollectionPath$.next(collectionPath);
+  public onCollectionSelected(item: ValuePathItem): void {
+    this.selectedCollection$.next(item);
   }
 }

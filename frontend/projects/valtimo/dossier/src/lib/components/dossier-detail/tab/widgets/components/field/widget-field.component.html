@@ -20,9 +20,22 @@
     widgetPropertyValue: widgetPropertyValue$ | async,
     widgetData: widgetData$ | async,
     isEmptyWidgetData: isEmptyWidgetData$ | async,
+    noVisibleFields: noVisibleFields$ | async,
   } as obs"
 >
-  <h4 class="widget-field__title">{{ obs?.widgetConfiguration?.title }}</h4>
+  <section class="widget-field__header">
+    <h4 class="widget-field__title">{{ obs?.widgetConfiguration?.title }}</h4>
+
+    @if (obs.widgetConfiguration.actions?.length === 1) {
+      <button
+        *ngIf="canCreateCamundaExecution$ | async"
+        cdsButton="ghost"
+        (click)="onProcessStartClick(obs.widgetConfiguration.actions[0])"
+      >
+        {{ obs.widgetConfiguration.actions[0].name }}
+      </button>
+    }
+  </section>
 
   @if (obs?.isEmptyWidgetData) {
     <valtimo-no-results
@@ -40,20 +53,36 @@
         'widget-field__container': renderVertically() === 4,
       }"
     >
-      @for (column of obs?.widgetPropertyValue; track column.key) {
-        <div class="widget-field__column">
-          @for (property of column; track property) {
-            <div class="widget-field__field">
-              <label class="widget-field__field-label" [attr.title]="property?.title">
-                {{ property?.title }}</label
+      @if (obs.noVisibleFields) {
+        <valtimo-no-results
+          [collapseVertically]="true"
+          [description]="'dossier.widgets.emptyFields' | translate"
+          [smallPadding]="true"
+        ></valtimo-no-results>
+      } @else {
+        @for (column of obs?.widgetPropertyValue; track column.key) {
+          <div class="widget-field__column">
+            @for (property of column; track property) {
+              <div
+                *ngIf="
+                  (property?.value !== null &&
+                    property?.value !== '-' &&
+                    property?.hideWhenEmpty) ||
+                  !property?.hideWhenEmpty
+                "
+                class="widget-field__field"
               >
+                <label class="widget-field__field-label" [attr.title]="property?.title">
+                  {{ property?.title }}</label
+                >
 
-              <div [attr.title]="property?.value" class="widget-field__field-value">
-                {{ property?.value | valtimoEllipsis: property?.ellipsisCharacterLimit }}
+                <div [attr.title]="property?.value" class="widget-field__field-value">
+                  {{ property?.value | valtimoEllipsis: property?.ellipsisCharacterLimit }}
+                </div>
               </div>
-            </div>
-          }
-        </div>
+            }
+          </div>
+        }
       }
     </div>
   }

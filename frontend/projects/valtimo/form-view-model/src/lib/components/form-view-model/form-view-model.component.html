@@ -16,12 +16,15 @@
 
 <div
   class="form-container formio-carbon"
+  cdsLayer="1.0"
   *ngIf="{
     submission: submission$ | async,
     form: form$ | async,
     tokenSetInLocalStorage: tokenSetInLocalStorage$ | async,
     formioOptions: formioOptions$ | async,
     loading: loading$ | async,
+    errors: formErrors$ | async,
+    renderOptions: renderOptions$ | async,
   } as obs"
 >
   <div *ngIf="obs.loading" class="overlay">
@@ -30,9 +33,9 @@
     </div>
   </div>
 
-  <div *ngIf="errors.length > 0" class="alert alert-danger pt-5 pb-5 mb-2">
+  <div *ngIf="obs.errors.length > 0" class="alert alert-danger pt-5 pb-5 mb-2">
     <ol>
-      <li *ngFor="let error of errors" class="pl-2">
+      <li *ngFor="let error of obs.errors" class="pl-2">
         {{ error }}
       </li>
     </ol>
@@ -43,9 +46,11 @@
     [submission]="obs.submission"
     [form]="obs.form"
     [options]="obs.formioOptions"
+    [renderOptions]="obs.renderOptions"
     [refresh]="refreshForm"
     (submit)="onSubmit($event)"
     (change)="onChange($event)"
+    (focusin)="onFocus($event)"
     (focusout)="onBlur($event)"
     (nextPage)="onNextPage()"
     (prevPage)="onPreviousPage()"

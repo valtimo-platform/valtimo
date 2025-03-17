@@ -17,3 +17,4 @@
 export * from './form-link.model';
 export * from './process-link.model';
 export * from './form-flow.model';
+export * from './form-custom-component.model';

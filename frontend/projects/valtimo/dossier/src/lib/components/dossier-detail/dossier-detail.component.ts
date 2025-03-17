@@ -72,6 +72,7 @@ import {
   DOSSIER_DETAIL_DEFAULT_DISPLAY_SIZE,
   DOSSIER_DETAIL_DEFAULT_DISPLAY_TYPE,
   DOSSIER_DETAIL_GUTTER_SIZE,
+  DOSSIER_DETAIL_START_PROCESS_DROPDOWN_WIDTH,
 } from '../../constants';
 import {TabImpl, TabLoaderImpl} from '../../models';
 import {
@@ -83,6 +84,7 @@ import {
 } from '../../permissions';
 import {DossierDetailLayoutService, DossierService, DossierTabService} from '../../services';
 import {DossierSupportingProcessStartModalComponent} from '../dossier-supporting-process-start-modal/dossier-supporting-process-start-modal.component';
+import {WidgetsService} from './tab/widgets/widgets.service';
 
 @Component({
   selector: 'valtimo-dossier-detail',
@@ -109,7 +111,7 @@ export class DossierDetailComponent
   public documentDefinitionNameTitle: string;
   public documentId: string;
   public processDefinitionListFields: Array<any> = [];
-  public processDocumentDefinitions: ProcessDocumentDefinition[] = [];
+  public processDocumentDefinitions: (ProcessDocumentDefinition & {displayName?: string})[] = [];
   public tabLoader: TabLoaderImpl | null = null;
 
   public readonly assigneeId$ = new BehaviorSubject<string>('');
@@ -125,6 +127,9 @@ export class DossierDetailComponent
 
   private readonly _caseStatusKey$ = new BehaviorSubject<string | null | 'NOT_AVAILABLE'>(null);
 
+  public readonly dropdownWidth$ = new BehaviorSubject<number>(
+    DOSSIER_DETAIL_START_PROCESS_DROPDOWN_WIDTH.small
+  );
   public readonly caseStatusKey$: Observable<string | 'NOT_AVAILABLE'> = this._caseStatusKey$.pipe(
     filter(key => !!key)
   );
@@ -311,6 +316,7 @@ export class DossierDetailComponent
     private readonly renderer: Renderer2,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
+    private readonly widgetsService: WidgetsService,
     private readonly userProviderService: UserProviderService,
     @Inject(DOCUMENT) private readonly htmlDocument: Document
   ) {
@@ -328,6 +334,7 @@ export class DossierDetailComponent
     this.iconService.registerAll([ChevronDown16]);
     this.setDocumentStyle();
     this.enableResetOnBackNavigation();
+    this.openWidgetProcessSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -338,10 +345,17 @@ export class DossierDetailComponent
   }
 
   public getAllAssociatedProcessDefinitions(): void {
-    this.documentService
-      .findProcessDocumentDefinitionsForDocument(this.documentId, {startableByUser: true})
-      .subscribe((processDocumentDefinitions: ProcessDocumentDefinition[]) => {
-        this.processDocumentDefinitions = processDocumentDefinitions;
+    this._subscriptions.add(
+      combineLatest([
+        this.documentService.findProcessDocumentDefinitionsForDocument(this.documentId, {
+          startableByUser: true,
+        }),
+        this.translateService.stream('key'),
+      ]).subscribe(([processDocumentDefinitions]) => {
+        this.processDocumentDefinitions = this.mapProcessDocumentDefinitions(
+          processDocumentDefinitions
+        );
+        this.setProcessDropdownWidth();
 
         this.processDefinitionListFields = [
           {
@@ -349,11 +363,22 @@ export class DossierDetailComponent
             label: 'Proces',
           },
         ];
-      });
+      })
+    );
   }
 
   public startProcess(processDocumentDefinition: ProcessDocumentDefinition): void {
     this.supportingProcessStart.openModal(processDocumentDefinition, this.documentId);
+  }
+
+  public openWidgetProcessSubscription(): void {
+    this._subscriptions.add(
+      this.widgetsService.startProcessEvent
+        .pipe(switchMap(() => this.widgetsService.activeProcess$))
+        .subscribe((processDocumentDefinitions: ProcessDocumentDefinition[]) => {
+          this.startProcess(processDocumentDefinitions[0]);
+        })
+    );
   }
 
   public claimAssignee(): void {
@@ -642,5 +667,36 @@ export class DossierDetailComponent
       }),
       duration: CARBON_CONSTANTS.notificationDuration,
     });
+  }
+
+  private mapProcessDocumentDefinitions(
+    processDocumentDefinitions: ProcessDocumentDefinition[]
+  ): (ProcessDocumentDefinition & {displayName: string})[] {
+    return processDocumentDefinitions.map(
+      (processDocoumentDefinition: ProcessDocumentDefinition) => ({
+        ...processDocoumentDefinition,
+        displayName:
+          this.translateService.instant(processDocoumentDefinition?.id?.processDefinitionKey) !==
+          processDocoumentDefinition?.id?.processDefinitionKey
+            ? this.translateService.instant(processDocoumentDefinition.id.processDefinitionKey)
+            : processDocoumentDefinition.processName,
+      })
+    );
+  }
+
+  private setProcessDropdownWidth(): void {
+    const longestName = this.processDocumentDefinitions.reduce(
+      (acc, curr) =>
+        !!curr.displayName && curr.displayName.length > acc ? curr.displayName.length : acc,
+      0
+    );
+
+    this.dropdownWidth$.next(
+      longestName < 20
+        ? DOSSIER_DETAIL_START_PROCESS_DROPDOWN_WIDTH.small
+        : longestName < 40
+          ? DOSSIER_DETAIL_START_PROCESS_DROPDOWN_WIDTH.medium
+          : DOSSIER_DETAIL_START_PROCESS_DROPDOWN_WIDTH.large
+    );
   }
 }

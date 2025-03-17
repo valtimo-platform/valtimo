@@ -96,15 +96,14 @@ export class DossierManagementDetailContainerActionsComponent {
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
-    private readonly notificationService: NotificationService,
-    private readonly dossierExportService: DossierExportService,
-    private readonly translateService: TranslateService,
-    private readonly documentService: DocumentService,
-    private readonly dossierDetailService: DossierDetailService,
-    private readonly pageHeaderService: PageHeaderService,
     private readonly caseManagementService: CaseManagementService,
+    private readonly dossierDetailService: DossierDetailService,
+    private readonly dossierExportService: DossierExportService,
+    private readonly notificationService: NotificationService,
+    private readonly pageHeaderService: PageHeaderService,
     private readonly route: ActivatedRoute,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly translateService: TranslateService
   ) {}
 
   public export(): void {

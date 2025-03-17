@@ -19,6 +19,7 @@
     breadcrumbs: breadcrumbs$ | async,
     currentStepIndex: currentStepIndex$ | async,
     enableFormFlowBreadcrumbs: enableFormFlowBreadcrumbs$ | async,
+    formFlowInstanceId: formFlowInstanceId$ | async,
   } as obs"
 >
   <div *ngIf="formDefinition && (formFlowStepType$ | async) === 'form'">
@@ -42,10 +43,11 @@
       [options]="formioOptions"
     ></valtimo-form-io>
   </div>
+
   <div *ngIf="(formFlowStepType$ | async) === 'custom-component'">
     <valtimo-form-flow-configuration-container
       [componentId]="FormFlowCustomComponentId$ | async"
-      [formFlowInstanceId]="formFlowInstanceId"
+      [formFlowInstanceId]="obs.formFlowInstanceId"
       [disabled]="disabled$ | async"
       (submitEvent)="onSubmit($event)"
       (changeEvent)="onChange($event)"

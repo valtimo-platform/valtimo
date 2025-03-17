@@ -44,6 +44,11 @@
     }
   }
 
+  &__path-selector {
+    display: flex;
+    flex-direction: column;
+  }
+
   &__title {
     display: flex;
     justify-content: space-between;

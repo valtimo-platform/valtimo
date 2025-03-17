@@ -17,10 +17,7 @@
 .valtimo-dossier-management-widget-custom {
   display: flex;
   flex-direction: column;
-
-  > *:first-child {
-    margin-bottom: 16px;
-  }
+  gap: 16px;
 
   ::ng-deep.dropdown-label {
     label {

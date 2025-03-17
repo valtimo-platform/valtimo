@@ -76,6 +76,9 @@
           [valuePathSelectorPrefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
           [valuePathSelectorShowDocumentDefinitionSelector]="false"
           [valuePathSelectorDocumentDefinitionName]="obs.selectedDocumentDefinition"
+          [keyColumnFlex]="2"
+          [dropdownColumnFlex]="1"
+          [valueColumnFlex]="1"
           (valueChange)="conditionsValueChange(i, $event)"
         ></valtimo-carbon-multi-input>
       </div>

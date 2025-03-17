@@ -48,6 +48,7 @@ interface CollectionWidgetResolvedField {
   title: string;
   value: string;
   width: CollectionCaseWidgetFieldWidth;
+  hideWhenEmpty: boolean;
 }
 
 interface CollectionCaseWidgetCardData {

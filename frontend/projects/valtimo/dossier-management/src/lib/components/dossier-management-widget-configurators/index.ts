@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-export * from './fields/dossier-management-widget-fields.component';
-export * from './custom/dossier-management-widget-custom.component';
-export * from './formio/dossier-management-widget-formio.component';
-export * from './table/dossier-management-widget-table.component';
 export * from './collection/dossier-management-widget-collection.component';
+export * from './custom/dossier-management-widget-custom.component';
+export * from './fields/dossier-management-widget-fields.component';
+export * from './formio/dossier-management-widget-formio.component';
+export * from './process-selector/dossier-management-widget-process-selector.component';
+export * from './table/dossier-management-widget-table.component';

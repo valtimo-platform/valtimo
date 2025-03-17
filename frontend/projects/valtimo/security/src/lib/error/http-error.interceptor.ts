@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   HttpErrorResponse,
   HttpEvent,
@@ -21,27 +20,23 @@ import {
   HttpInterceptor,
   HttpRequest,
 } from '@angular/common/http';
-import {Observable, throwError} from 'rxjs';
-import {catchError} from 'rxjs/operators';
 import {Injectable} from '@angular/core';
 import {ToastrService} from 'ngx-toastr';
+import {Observable, throwError} from 'rxjs';
+import {catchError} from 'rxjs/operators';
 import {InterceptorSkip} from './error';
-import {NGXLogger} from 'ngx-logger';
 
 @Injectable({
   providedIn: 'root',
 })
 export class HttpErrorInterceptor implements HttpInterceptor {
-  constructor(
-    private toastr: ToastrService,
-    private logger: NGXLogger
-  ) {}
+  constructor(private readonly toastr: ToastrService) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     let skipStatusCodes: string[] = [];
     let response$: Observable<HttpEvent<any>>;
     if (request.headers && request.headers.has(InterceptorSkip)) {
-      skipStatusCodes = request.headers.get(InterceptorSkip).split(',');
+      skipStatusCodes = request.headers.get(InterceptorSkip)?.split(',') ?? [];
       const headers = request.headers.delete(InterceptorSkip);
       response$ = next.handle(request.clone({headers}));
     } else {
@@ -55,7 +50,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
             skipStatusCode => skipStatusCode === 'all' || skipStatusCode === error.status.toString()
           )
         ) {
-          return response$;
+          return throwError(() => error);
         }
         let errorMessage = '';
         if (error?.error instanceof ErrorEvent) {
@@ -79,7 +74,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
           enableHtml: true,
           tapToDismiss: false,
         });
-        return throwError(errorMessage);
+        return throwError(() => error);
       })
     );
   }

@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+.widget-modal .cds--modal-container {
+  inline-size: 75% !important;
+  max-width: 1200px !important;
+}
+
 .widget-modal .form {
   &__row {
     display: flex;

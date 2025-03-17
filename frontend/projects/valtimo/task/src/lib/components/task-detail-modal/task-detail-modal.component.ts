@@ -18,7 +18,6 @@ import {
   EventEmitter,
   Input,
   OnInit,
-  OnDestroy,
   Output,
   ViewChild,
   ViewEncapsulation,
@@ -27,17 +26,15 @@ import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {CarbonModalSize} from '@valtimo/components';
-import {SseService} from '@valtimo/sse';
 import {FormSize, formSizeToCarbonModalSizeMap, TaskWithProcessLink} from '@valtimo/process-link';
 import {Modal} from 'carbon-components-angular';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
-import {IntermediateSubmission, Task, TaskUpdateSseEvent} from '../../models';
+import {BehaviorSubject, Subscription} from 'rxjs';
+import {IntermediateSubmission, Task} from '../../models';
 import {TaskIntermediateSaveService} from '../../services';
 import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../../task-permissions';
 import {TaskDetailIntermediateSaveComponent} from '../task-detail-intermediate-save/task-detail-intermediate-save.component';
-import {filter} from 'rxjs/operators';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -47,7 +44,7 @@ moment.locale(localStorage.getItem('langKey') || '');
   styleUrls: ['./task-detail-modal.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class TaskDetailModalComponent implements OnInit, OnDestroy {
+export class TaskDetailModalComponent implements OnInit {
   @ViewChild('taskDetailModal') private readonly _modal: Modal;
   @ViewChild(TaskDetailIntermediateSaveComponent)
   private readonly _intermediateSaveComponent: TaskDetailIntermediateSaveComponent;
@@ -82,20 +79,10 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly permissionService: PermissionService,
     private readonly logger: NGXLogger,
-    private readonly taskIntermediateSaveService: TaskIntermediateSaveService,
-    private readonly sseService: SseService
+    private readonly taskIntermediateSaveService: TaskIntermediateSaveService
   ) {}
 
   public ngOnInit(): void {
-    this.openTaskSubscription();
-    this.openTaskUpdateSseEventSubscription();
-  }
-
-  public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
-  }
-
-  private openTaskSubscription(): void {
     this._subscriptions.add(
       this.task$.subscribe(task => {
         if (task) {
@@ -113,17 +100,6 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
           this.canAssignUserToTask$.next(false);
         }
       })
-    );
-  }
-
-  private openTaskUpdateSseEventSubscription(): void {
-    this._subscriptions.add(
-      combineLatest([
-        this.task$,
-        this.sseService.getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE'),
-      ])
-        .pipe(filter(([task, event]) => task?.id === event.taskId))
-        .subscribe(() => this.closeModal())
     );
   }
 
