@@ -132,6 +132,7 @@
       disableDefaultSort: disableDefaultSort$ | async,
       showEnum: showEnum$ | async,
       isYesNo: isYesNo$ | async,
+      showTagAmount: showTagAmount$ | async,
     } as modalObs"
     [open]="modalObs.show"
     size="sm"
@@ -210,12 +211,16 @@
         ></v-tooltip-icon>
       </span>
 
-      <cds-dropdown formControlName="displayType" [disabled]="modalObs.disableInput">
+      <cds-dropdown
+        formControlName="displayType"
+        [disabled]="modalObs.disableInput"
+        (selected)="selectedDisplayType($event)"
+      >
         <cds-dropdown-list [items]="viewTypeItems$ | async"></cds-dropdown-list>
       </cds-dropdown>
     </cds-label>
 
-    <cds-label *ngIf="showTagAmount$ | async" [disabled]="modalObs.disableInput">
+    <cds-label *ngIf="modalObs.showTagAmount" [disabled]="modalObs.disableInput">
       <span class="label-with-tooltip select-label">
         {{ 'listColumn.tagAmount' | translate }}
 
@@ -225,12 +230,7 @@
         ></v-tooltip-icon>
       </span>
 
-      <cds-number
-        formControlName="tagAmount"
-        [min]="1"
-        [step]="1"
-        (change)="updateTagAmount($event)"
-      ></cds-number>
+      <cds-number formControlName="tagAmount" [min]="1" [step]="1"></cds-number>
     </cds-label>
 
     <cds-label *ngIf="showDateFormat$ | async" [disabled]="modalObs.disableInput">
@@ -277,9 +277,13 @@
       ></valtimo-carbon-multi-input>
     </cds-label>
 
-    <cds-checkbox formControlName="sortable">{{ 'listColumn.sortable' | translate }} </cds-checkbox>
+    <cds-checkbox formControlName="sortable" [disabled]="modalObs.showTagAmount"
+      >{{ 'listColumn.sortable' | translate }}
+    </cds-checkbox>
 
-    <cds-label [disabled]="modalObs.disableInput || modalObs.disableDefaultSort">
+    <cds-label
+      [disabled]="modalObs.disableInput || modalObs.disableDefaultSort || modalObs.showTagAmount"
+    >
       <span class="label-with-tooltip select-label">
         {{ 'listColumn.defaultSortTitle' | translate }}
 
@@ -291,7 +295,7 @@
 
       <cds-dropdown
         formControlName="defaultSort"
-        [disabled]="modalObs.disableInput || modalObs.disableDefaultSort"
+        [disabled]="modalObs.disableInput || modalObs.disableDefaultSort || modalObs.showTagAmount"
       >
         <cds-dropdown-list [items]="sortItems$ | async"></cds-dropdown-list>
       </cds-dropdown>

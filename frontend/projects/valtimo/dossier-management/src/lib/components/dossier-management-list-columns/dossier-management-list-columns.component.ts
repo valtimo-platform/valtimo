@@ -35,7 +35,7 @@ import {
   DisplayTypeParameters,
   DocumentService,
 } from '@valtimo/document';
-import {IconService, NumberChange} from 'carbon-components-angular';
+import {IconService} from 'carbon-components-angular';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
 import {
   BehaviorSubject,
@@ -59,7 +59,7 @@ import {ListColumnModal} from '../../models';
 })
 export class DossierManagementListColumnsComponent implements AfterViewInit {
   readonly downloadName$ = new BehaviorSubject<string>('');
-  readonly downloadUrl$ = new BehaviorSubject<SafeUrl>(undefined);
+  readonly downloadUrl$ = new BehaviorSubject<SafeUrl | undefined>(undefined);
 
   public readonly actionItems: ActionItem[] = [
     {
@@ -181,8 +181,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
           column.displayType.displayTypeParameters
         ),
       }))
-    ),
-    tap(col => console.log(col))
+    )
   );
 
   readonly currentModalType$ = new BehaviorSubject<ListColumnModal>('create');
@@ -206,7 +205,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
       key: this.INVALID_KEY,
     }),
     enum: new FormControl([]),
-    tagAmount: new FormControl(),
+    tagAmount: new FormControl(1),
   });
 
   readonly disableDefaultSort$ = combineLatest([
@@ -242,13 +241,8 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
   );
 
   readonly showTagAmount$ = this.formGroup.valueChanges.pipe(
-    map(formValues => !!(formValues.displayType?.key === this.DISPLAY_TYPES[6])),
-    tap(showTagAmount => {
-      if (showTagAmount === false && !!this.formGroup.value.tagAmount) {
-        this.formGroup.patchValue({tagAmount: 1});
-      }
-    }),
-    startWith(false)
+    map(formValues => formValues.displayType?.key === this.DISPLAY_TYPES[6]),
+    startWith(this.formGroup.value.displayType?.key === this.DISPLAY_TYPES[6] ? true : false)
   );
 
   readonly showEnum$ = this.formGroup.valueChanges.pipe(
@@ -325,7 +319,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
   readonly validKey$ = combineLatest([this.formGroup.valueChanges, this.currentModalType$]).pipe(
     map(([formValues, currentModalType]) => {
       const existingKeys = this.cachedCaseListColumns.map(column => column.key);
-      return currentModalType === 'create' ? !existingKeys.includes(formValues.key) : true;
+      return currentModalType === 'create' ? !existingKeys.includes(formValues.key ?? '') : true;
     }),
     startWith(false)
   );
@@ -337,7 +331,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
           formValues.displayType?.key !== this.INVALID_KEY &&
           formValues.path &&
           validKey &&
-          (formValues.displayType.key === 'enum' ? formValues.enum?.length > 0 : true)
+          (formValues?.displayType?.key === 'enum' ? formValues.enum?.length > 0 : true)
         )
     ),
     startWith(false)
@@ -347,7 +341,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
 
   readonly deleteRowKey$ = new BehaviorSubject<string>('');
 
-  readonly defaultEnumValues$ = new BehaviorSubject<MultiInputValues>(undefined);
+  readonly defaultEnumValues$ = new BehaviorSubject<MultiInputValues | undefined>(undefined);
 
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
@@ -458,12 +452,12 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
         const column = this.cachedCaseListColumns.find(
           cachedColumn => cachedColumn.key === row.key
         );
-        const viewTypeItem = viewTypeItems.find(item => item.key === column.displayType.type);
+        const viewTypeItem = viewTypeItems.find(item => item.key === column?.displayType.type);
         const viewTypeItemIndex = viewTypeItems.findIndex(
-          item => item.key === column.displayType.type
+          item => item.key === column?.displayType.type
         );
-        const sortItem = sortItems.find(item => item.key === column.defaultSort);
-        const sortItemIndex = sortItems.findIndex(item => item.key === column.defaultSort);
+        const sortItem = sortItems.find(item => item.key === column?.defaultSort);
+        const sortItemIndex = sortItems.findIndex(item => item.key === column?.defaultSort);
         const enumValues = column?.displayType?.displayTypeParameters?.enum;
         const mappedEnumValues: MultiInputValues = [];
         const columnDateFormat = column?.displayType?.displayTypeParameters?.dateFormat;
@@ -483,12 +477,11 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
         } else {
           this.defaultEnumValues$.next([{key: '', value: ''}]);
         }
-
         this.formGroup.patchValue({
-          key: column.key,
-          title: column.title,
-          path: column.path,
-          sortable: column.sortable,
+          key: column?.key,
+          title: column?.title,
+          path: column?.path,
+          sortable: column?.sortable,
           // @ts-ignore
           displayType: {...viewTypeItem},
           // @ts-ignore
@@ -505,10 +498,10 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
       });
   }
 
-  public updateTagAmount(event: NumberChange): void {
-    event instanceof NumberChange
-      ? this.formGroup.controls.tagAmount.setValue(event.value)
-      : this.formGroup.controls.tagAmount.setValue(1);
+  public selectedDisplayType(event: ListItem): void {
+    if (event.item.selected && event.item.key === 'tags') {
+      this.formGroup.patchValue({sortable: undefined, defaultSort: {key: ''}});
+    }
   }
 
   private updateCaseListColumns(
