@@ -331,7 +331,8 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
           formValues.displayType?.key !== this.INVALID_KEY &&
           formValues.path &&
           validKey &&
-          (formValues?.displayType?.key === 'enum' ? formValues.enum?.length > 0 : true)
+          (formValues?.displayType?.key === 'enum' ? formValues.enum?.length > 0 : true) &&
+          (formValues?.displayType?.key === 'tags' ? formValues.tagAmount > 0 : true)
         )
     ),
     startWith(false)
